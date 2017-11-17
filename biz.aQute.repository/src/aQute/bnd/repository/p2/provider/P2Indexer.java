@@ -23,6 +23,7 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +43,6 @@ import aQute.bnd.service.RepositoryPlugin.DownloadListener;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
-import aQute.lib.promise.PromiseExecutor;
 import aQute.p2.api.Artifact;
 import aQute.p2.provider.P2Impl;
 import aQute.service.reporter.Reporter;
@@ -53,7 +53,7 @@ class P2Indexer implements Closeable {
 	private final Reporter					reporter;
 	final File								location;
 	private final HttpClient				client;
-	private final PromiseExecutor		executor;
+	private final PromiseFactory		promiseFactory;
 	private final URI						url;
 	private final String					name;
 	private final String				urlHash;
@@ -71,7 +71,7 @@ class P2Indexer implements Closeable {
 		this.location = location;
 		this.indexFile = new File(location, "index.xml.gz");
 		this.client = client;
-		this.executor = new PromiseExecutor(client.executor());
+		this.promiseFactory = client.promiseFactory();
 		this.url = url;
 		this.name = name;
 		this.urlHash = client.toName(url);
@@ -140,7 +140,7 @@ class P2Indexer implements Closeable {
 	}
 
 	private Repository readRepository() throws Exception {
-		P2Impl p2 = new P2Impl(client, this.url, client.executor());
+		P2Impl p2 = new P2Impl(client, this.url, promiseFactory);
 		List<Artifact> artifacts = p2.getArtifacts();
 		List<Promise<Resource>> fetched = new ArrayList<>(artifacts.size());
 		Set<URI> visitedURIs = new HashSet<>(artifacts.size());
@@ -168,7 +168,7 @@ class P2Indexer implements Closeable {
 				if (!visitedArtifacts.add(id))
 					continue;
 				if (knownResources.containsKey(id)) {
-					fetched.add(executor.resolved(knownResources.get(id)));
+					fetched.add(promiseFactory.resolved(knownResources.get(id)));
 					continue;
 				}
 			}
@@ -207,7 +207,7 @@ class P2Indexer implements Closeable {
 			fetched.add(promise);
 		}
 
-		Promise<List<Resource>> all = executor.all(fetched);
+		Promise<List<Resource>> all = promiseFactory.all(fetched);
 		return all.map(new Function<List<Resource>,ResourcesRepository>() {
 			@Override
 			public ResourcesRepository apply(List<Resource> resources) {

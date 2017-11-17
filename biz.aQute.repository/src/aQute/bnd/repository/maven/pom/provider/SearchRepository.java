@@ -48,7 +48,7 @@ class SearchRepository extends InnerRepository {
 
 	void refresh() throws Exception {
 		SearchResult result = query();
-		Traverser traverser = new Traverser(getMavenRepository(), client, client.executor(), transitive)
+		Traverser traverser = new Traverser(getMavenRepository(), client, transitive)
 				.revisions(result.response.docsToRevisions());
 		Promise<Map<Archive,Resource>> p = traverser.getResources();
 		Collection<Resource> resources = p.getValue().values();

@@ -1,5 +1,7 @@
 package aQute.bnd.repository.fileset;
 
+import static aQute.lib.promise.PromiseCollectors.toPromise;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
@@ -16,6 +18,7 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +36,6 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
-import aQute.lib.promise.PromiseExecutor;
 import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA256;
 import aQute.service.reporter.Reporter;
@@ -44,13 +46,13 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	private final Collection<File>				files;
 	private final Deferred<BridgeRepository>	repository;
 	private Reporter							reporter;
-	private final PromiseExecutor				executor;
+	private final PromiseFactory				promiseFactory;
 
 	public FileSetRepository(String name, Collection<File> files) throws Exception {
 		this.name = name;
 		this.files = files;
-		executor = new PromiseExecutor();
-		repository = executor.deferred();
+		promiseFactory = new PromiseFactory(PromiseFactory.inlineExecutor());
+		repository = promiseFactory.deferred();
 	}
 
 	private Collection<File> getFiles() {
@@ -68,7 +70,7 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	private Promise<BridgeRepository> readFiles() {
 		Promise<List<Resource>> resources = getFiles().stream()
 				.map(this::parseFile)
-				.collect(executor.toPromise());
+				.collect(toPromise(promiseFactory));
 		if (logger.isDebugEnabled()) {
 			resources.onSuccess(l -> l.stream().filter(Objects::nonNull).forEachOrdered(
 					r -> logger.debug("{}: adding resource {}", getName(), r)));
@@ -78,7 +80,7 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	}
 
 	private Promise<Resource> parseFile(File file) {
-		Promise<Resource> resource = executor.submit(() -> {
+		Promise<Resource> resource = promiseFactory.submit(() -> {
 			if (!file.isFile()) {
 				return null;
 			}
@@ -138,7 +140,7 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 			return null;
 		}
 		logger.debug("{}: get returning {}", getName(), uri);
-		return executor.resolved(new File(uri));
+		return promiseFactory.resolved(new File(uri));
 	}
 
 	@Override

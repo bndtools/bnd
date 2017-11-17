@@ -73,7 +73,7 @@ public class BndPomRepository extends BaseRepository
 					reporter, localRepo, client);
 
 			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot,
-					client.executor(), reporter, null);
+					client.promiseFactory().executor(), reporter, null);
 
 			boolean transitive = configuration.transitive(true);
 

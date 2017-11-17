@@ -13,7 +13,6 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.converter.TypeReference;
-import aQute.lib.promise.PromiseExecutor;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -40,11 +39,9 @@ public class HttpRequest<T> {
 	Reporter			reporter;
 	File				useCacheFile;
 	boolean				updateTag;
-	private final PromiseExecutor	executor;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
-		executor = new PromiseExecutor(client.executor());
 	}
 
 	/**
@@ -198,14 +195,14 @@ public class HttpRequest<T> {
 
 	public Promise<T> async(URL url) {
 		this.url = url;
-		return executor.submit(() -> (T) client.send(this));
+		return client.promiseFactory().submit(() -> (T) client.send(this));
 	}
 
 	public Promise<T> async(URI uri) {
 		try {
 			return async(uri.toURL());
 		} catch (MalformedURLException e) {
-			return executor.failed(e);
+			return client.promiseFactory().failed(e);
 		}
 	}
 	@Override

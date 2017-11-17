@@ -490,7 +490,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					localRepo, client);
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 					localRepo, client);
-			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.executor(), reporter,
+			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.promiseFactory().executor(),
+					reporter,
 					getRefreshCallback());
 
 			File base = IO.work;
@@ -501,7 +502,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			}
 
 			File indexFile = IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
-			IndexFile ixf = new IndexFile(reporter, indexFile, storage);
+			IndexFile ixf = new IndexFile(reporter, indexFile, storage, client.promiseFactory());
 			ixf.open();
 			this.index = ixf;
 			startPoll(index);

@@ -1,5 +1,6 @@
 package aQute.bnd.repository.osgi;
 
+import static aQute.lib.promise.PromiseCollectors.toPromise;
 import static java.util.stream.Collectors.toList;
 
 import java.io.File;
@@ -15,6 +16,7 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +30,12 @@ import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
-import aQute.lib.promise.PromiseExecutor;
 
 class OSGiIndex {
 	private final static Logger				logger	= LoggerFactory.getLogger(OSGiIndex.class);
 	private final Promise<BridgeRepository>	repository;
 	private final HttpClient				client;
-	private final PromiseExecutor			executor;
+	private final PromiseFactory			promiseFactory;
 	private final long						staleTime;
 	private final File						cache;
 	private final String					name;
@@ -45,7 +46,7 @@ class OSGiIndex {
 		this.name = name;
 		this.uris = uris;
 		this.client = client;
-		this.executor = new PromiseExecutor(client.executor());
+		this.promiseFactory = client.promiseFactory();
 		this.cache = checkCache(cache);
 		this.staleTime = staleTime * 1000L;
 		this.repository = readIndexes(refresh);
@@ -54,7 +55,7 @@ class OSGiIndex {
 	private Promise<BridgeRepository> readIndexes(boolean refresh) throws Exception {
 		Promise<List<Resource>> resources = getURIs().stream()
 				.map(uri -> download(uri, refresh))
-				.collect(executor.toPromise())
+				.collect(toPromise(promiseFactory))
 				.map(ll -> ll.stream().flatMap(List::stream).collect(toList()));
 		Promise<BridgeRepository> bridge = resources.map(ResourcesRepository::new).map(BridgeRepository::new);
 		return bridge;
@@ -116,7 +117,7 @@ class OSGiIndex {
 	 * @throws Exception
 	 */
 	boolean isStale() throws Exception {
-		final Deferred<List<Void>> freshness = executor.deferred();
+		final Deferred<List<Void>> freshness = promiseFactory.deferred();
 		List<Promise<Void>> promises = new ArrayList<>(getURIs().size());
 		for (final URI uri : getURIs()) {
 			if (freshness.getPromise().isDone()) {
@@ -152,7 +153,7 @@ class OSGiIndex {
 		}
 
 		// Resolve when all uris checked
-		Promise<List<Void>> all = executor.all(promises);
+		Promise<List<Void>> all = promiseFactory.all(promises);
 		freshness.resolveWith(all);
 
 		// Block until freshness is resolved

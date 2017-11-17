@@ -6,6 +6,7 @@ import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
 import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
+import static java.util.Objects.requireNonNull;
 
 import java.io.Closeable;
 import java.io.File;
@@ -36,10 +37,12 @@ import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,14 +90,14 @@ public class HttpClient implements Closeable, URLConnector {
 	private Registry							registry				= null;
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;
-	private final Executor						executor;
+	private final PromiseFactory				promiseFactory;
 
 	public HttpClient() {
-		this(Processor.getExecutor());
+		this(Processor.getExecutor(), Processor.getScheduledExecutor());
 	}
 
-	public HttpClient(Executor executor) {
-		this.executor = executor;
+	public HttpClient(Executor executor, ScheduledExecutorService scheduledExecutor) {
+		promiseFactory = new PromiseFactory(requireNonNull(executor), requireNonNull(scheduledExecutor));
 	}
 
 	synchronized void init() {
@@ -708,7 +711,7 @@ public class HttpClient implements Closeable, URLConnector {
 		this.offline = offline;
 	}
 
-	public Executor executor() {
-		return executor;
+	public PromiseFactory promiseFactory() {
+		return promiseFactory;
 	}
 }

@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -24,13 +23,13 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
-import aQute.lib.promise.PromiseExecutor;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IPom.Dependency;
 import aQute.maven.api.MavenScope;
@@ -44,7 +43,7 @@ class Traverser {
 	static final Resource					DUMMY		= new ResourceBuilder().build();
 	static final String						ROOT		= "<>";
 	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
-	private final PromiseExecutor			executor;
+	private final PromiseFactory			promiseFactory;
 	final List<Revision>					revisions;
 	final List<URI>							uris;
 	final AtomicInteger						count		= new AtomicInteger(-1);
@@ -53,11 +52,11 @@ class Traverser {
 	final HttpClient						client;
 	final boolean							transitive;
 
-	Traverser(MavenRepository repo, HttpClient client, Executor executor, boolean transitive) {
+	Traverser(MavenRepository repo, HttpClient client, boolean transitive) {
 		this.repo = repo;
 		this.client = client;
-		this.executor = new PromiseExecutor(executor);
-		this.deferred = this.executor.deferred();
+		this.promiseFactory = client.promiseFactory();
+		this.deferred = promiseFactory.deferred();
 		this.transitive = transitive;
 		this.revisions = new ArrayList<>();
 		this.uris = new ArrayList<>();
@@ -124,7 +123,7 @@ class Traverser {
 			//
 
 			count.incrementAndGet();
-			executor.execute(() -> {
+			promiseFactory.executor().execute(() -> {
 				try {
 					logger.debug("parse archive {}", archive);
 					parseArchive(archive);
