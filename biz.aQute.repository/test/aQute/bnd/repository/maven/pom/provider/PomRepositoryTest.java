@@ -57,7 +57,7 @@ public class PomRepositoryTest extends TestCase {
 				.version("1.0.8");
 
 		HttpClient client = new HttpClient();
-		Traverser t = new Traverser(mr, client, client.executor(), true).revision(revision);
+		Traverser t = new Traverser(mr, client, true).revision(revision);
 		Map<Archive,Resource> value = t.getResources().getValue();
 		assertEquals(8, value.size());
 		assertAllBndCap(value);
@@ -70,7 +70,7 @@ public class PomRepositoryTest extends TestCase {
 				.version("1.0.8");
 
 		HttpClient client = new HttpClient();
-		Traverser t = new Traverser(mr, client, client.executor(), false).revision(revision);
+		Traverser t = new Traverser(mr, client, false).revision(revision);
 		Map<Archive,Resource> value = t.getResources().getValue();
 		assertEquals(1, value.size());
 		assertAllBndCap(value);
@@ -540,7 +540,8 @@ public class PomRepositoryTest extends TestCase {
 		List<MavenBackingRepository> apache = MavenBackingRepository
 				.create("https://repository.apache.org/content/groups/snapshots/", reporter, localRepo, client);
 
-		MavenRepository mr = new MavenRepository(localRepo, "test", central, apache, client.executor(), reporter,
+		MavenRepository mr = new MavenRepository(localRepo, "test", central, apache, client.promiseFactory().executor(),
+				reporter,
 				null);
 		return mr;
 	}

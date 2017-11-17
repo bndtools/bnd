@@ -60,11 +60,11 @@ class PomRepository extends InnerRepository {
 	}
 
 	void readUris() throws Exception {
-		save(new Traverser(getMavenRepository(), client, client.executor(), transitive).uris(uris));
+		save(new Traverser(getMavenRepository(), client, transitive).uris(uris));
 	}
 
 	void readRevisons() throws Exception {
-		save(new Traverser(getMavenRepository(), client, client.executor(), transitive).revisions(revisions));
+		save(new Traverser(getMavenRepository(), client, transitive).revisions(revisions));
 	}
 
 	void save(Traverser traverser) throws Exception {

@@ -32,7 +32,7 @@ public class CentralTest extends TestCase {
 		local.mkdirs();
 		HttpClient client = new HttpClient();
 		repo = MavenRemoteRepository.create(REPO_URL, reporter, local, client);
-		storage = new MavenRepository(local, "central", this.repo, null, client.executor(),
+		storage = new MavenRepository(local, "central", this.repo, null, client.promiseFactory().executor(),
 				null, null);
 	}
 

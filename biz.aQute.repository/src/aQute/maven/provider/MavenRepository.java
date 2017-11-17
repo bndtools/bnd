@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.WeakHashMap;
 import java.util.concurrent.Callable;
@@ -19,6 +20,7 @@ import java.util.regex.Matcher;
 
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +28,6 @@ import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
-import aQute.lib.promise.PromiseExecutor;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
@@ -41,7 +42,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private final String								id;
 	private final List<MavenBackingRepository>			release		= new ArrayList<>();
 	private final List<MavenBackingRepository>			snapshot	= new ArrayList<>();
-	private final PromiseExecutor				executor;
+	private final PromiseFactory				promiseFactory;
 	private final boolean								localOnly;
 	private final Map<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
 
@@ -55,7 +56,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		if (snapshot != null)
 			this.snapshot.addAll(snapshot);
 
-		this.executor = new PromiseExecutor(executor);
+		this.promiseFactory = new PromiseFactory(Objects.requireNonNull(executor));
 		this.localOnly = this.release.isEmpty() && this.snapshot.isEmpty();
 		IO.mkdirs(base);
 	}
@@ -121,13 +122,13 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		final File file = toLocalFile(archive);
 
 		if (file.isFile() && !archive.isSnapshot()) {
-			return executor.resolved(file);
+			return promiseFactory.resolved(file);
 		}
 
 		if (localOnly || isFresh(file)) {
-			return executor.resolved(file.isFile() ? file : null);
+			return promiseFactory.resolved(file.isFile() ? file : null);
 		}
-		return executor.submit(() -> {
+		return promiseFactory.submit(() -> {
 			File f = getFile(archive, file);
 			if (thrw && f == null) {
 				throw new FileNotFoundException("For Maven artifact " + archive);
@@ -311,7 +312,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			if (promise != null) {
 				return promise;
 			}
-			deferred = executor.deferred();
+			deferred = promiseFactory.deferred();
 			poms.put(revision, deferred.getPromise());
 		}
 		Archive pomArchive = revision.getPomArchive();

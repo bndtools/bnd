@@ -602,7 +602,7 @@ public class Workspace extends Processor {
 			list.add(new SubsystemExporter());
 
 			try {
-				HttpClient client = new HttpClient(getExecutor());
+				HttpClient client = new HttpClient(getExecutor(), getScheduledExecutor());
 				client.setOffline(getOffline());
 				client.setRegistry(this);
 				try (ConnectionSettings cs = new ConnectionSettings(this, client)) {

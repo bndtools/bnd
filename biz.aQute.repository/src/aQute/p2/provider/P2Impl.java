@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
@@ -22,6 +21,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tukaani.xz.XZInputStream;
@@ -29,7 +29,6 @@ import org.tukaani.xz.XZInputStream;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.lib.io.IO;
-import aQute.lib.promise.PromiseExecutor;
 import aQute.lib.strings.Strings;
 import aQute.p2.api.Artifact;
 import aQute.p2.api.P2Index;
@@ -40,11 +39,11 @@ public class P2Impl {
 	private final URI								base;
 	private final Set<URI>							defaults	= Collections
 			.newSetFromMap(new ConcurrentHashMap<URI,Boolean>());
-	private final PromiseExecutor					executor;
+	private final PromiseFactory	promiseFactory;
 
-	public P2Impl(HttpClient c, URI base, Executor executor) throws Exception {
+	public P2Impl(HttpClient c, URI base, PromiseFactory promiseFactory) throws Exception {
 		this.client = c;
-		this.executor = new PromiseExecutor(executor);
+		this.promiseFactory = promiseFactory;
 		this.base = normalize(base);
 	}
 
@@ -63,7 +62,7 @@ public class P2Impl {
 
 	private Promise<List<Artifact>> getArtifacts(Set<URI> cycles, URI uri) {
 		if (!cycles.add(uri)) {
-			return executor
+			return promiseFactory
 					.failed(new IllegalStateException("There is a cycle in the p2 setup : " + cycles + " -> " + uri));
 		}
 
@@ -82,15 +81,15 @@ public class P2Impl {
 			defaults.add(uri);
 			return parseIndexArtifacts(cycles, uri);
 		} catch (Exception e) {
-			return executor.failed(e);
+			return promiseFactory.failed(e);
 		}
 	}
 
 	private Promise<List<Artifact>> parseArtifacts(InputStream in, URI uri) throws Exception {
 		if (in == null)
-			return executor.resolved(Collections.emptyList());
+			return promiseFactory.resolved(Collections.emptyList());
 
-		return executor.submit(() -> {
+		return promiseFactory.submit(() -> {
 			try {
 				ArtifactRepository ar = new ArtifactRepository(in, uri);
 				return ar.getArtifacts();
@@ -111,7 +110,7 @@ public class P2Impl {
 	private Promise<List<Artifact>> parseCompositeArtifacts(final Set<URI> cycles, final InputStream in, final URI base)
 			throws Exception {
 		if (in == null)
-			return executor.resolved(Collections.emptyList());
+			return promiseFactory.resolved(Collections.emptyList());
 
 		CompositeArtifacts ca = new CompositeArtifacts(in);
 		ca.parse();
@@ -120,8 +119,8 @@ public class P2Impl {
 	}
 
 	private Promise<List<Artifact>> getArtifacts(final Set<URI> cycles, final Collection<URI> uris) {
-		final Deferred<List<Artifact>> deferred = executor.deferred();
-		executor.execute(new Runnable() {
+		final Deferred<List<Artifact>> deferred = promiseFactory.deferred();
+		promiseFactory.executor().execute(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -144,7 +143,7 @@ public class P2Impl {
 								}));
 					}
 
-					Promise<List<List<Artifact>>> all = executor.all(promises);
+					Promise<List<List<Artifact>>> all = promiseFactory.all(promises);
 					deferred.resolveWith(all.map(new Function<List<List<Artifact>>,List<Artifact>>() {
 						@Override
 						public List<Artifact> apply(List<List<Artifact>> lists) {
@@ -235,7 +234,7 @@ public class P2Impl {
 				try {
 					return parseIndexArtifacts(cycles, uri, file);
 				} catch (Throwable e) {
-					return executor.failed(e);
+					return promiseFactory.failed(e);
 				}
 			}
 		});
