@@ -1,7 +1,10 @@
 package org.bndtools.core.resolve;
 
+import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -23,7 +26,7 @@ public class ResolveJob extends Job {
     private ResolutionResult result;
 
     public ResolveJob(BndEditModel model) {
-        super("Resolving...");
+        super("Resolving " + model.getBndResourceName());
         this.model = model;
     }
 
@@ -41,9 +44,15 @@ public class ResolveJob extends Job {
             if (runfw == null)
                 return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
 
-            EE ee = EE.parse(p.getProperty(Constants.RUNEE));
-            if (ee == null)
+            String eeStr = p.getProperty(Constants.RUNEE);
+            if (eeStr == null)
                 return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, Messages.ResolutionJob_errorFrameworkOrExecutionEnvironmentUnspecified, null);
+
+            EE ee = EE.parse(eeStr);
+            if (ee == null) {
+                String supportedEEs = Arrays.stream(EE.values()).map(EE::getEEName).collect(Collectors.joining(",\n - "));
+                return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Unrecognized Execution Environment: \"{0}\".\n\nSupported values are:\n - {1}", eeStr, supportedEEs), null);
+            }
 
             return Status.OK_STATUS;
         } catch (Exception e) {
