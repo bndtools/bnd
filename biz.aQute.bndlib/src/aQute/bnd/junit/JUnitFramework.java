@@ -23,8 +23,8 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.build.Container;
@@ -68,7 +68,8 @@ import aQute.lib.io.IO;
  * JUnit code runs. This is normally a separately started VM.
  */
 public class JUnitFramework implements AutoCloseable {
-	ExecutorService								executor	= Executors.newCachedThreadPool();
+	final ExecutorService						executor		= Executors.newCachedThreadPool();
+	final PromiseFactory						promiseFactory	= new PromiseFactory(executor);
 	public final List<ServiceTracker< ? , ? >>	trackers	= new ArrayList<>();
 	public final Jar							bin_test;
 	public final Framework						framework;
@@ -201,25 +202,16 @@ public class JUnitFramework implements AutoCloseable {
 	}
 
 	public <T> Promise<T> waitForService(final Class<T> class1, final long timeoutInMs) throws Exception {
-		final Deferred<T> deferred = new Deferred<>();
-		executor.execute(new Runnable() {
-			@Override
-			public void run() {
-				ServiceTracker<T,T> tracker = new ServiceTracker<>(context, class1, null);
-				tracker.open();
-				try {
-					T s = tracker.waitForService(timeoutInMs);
-					if (s != null)
-						deferred.resolve(s);
-					else
-						deferred.fail(new Exception("No service object " + class1));
-				} catch (InterruptedException e) {
-					deferred.fail(e);
-				}
+		return promiseFactory.submit(() -> {
+			ServiceTracker<T,T> tracker = new ServiceTracker<>(context, class1, null);
+			tracker.open();
+			T s = tracker.waitForService(timeoutInMs);
+			if (s == null) {
+				tracker.close();
+				throw new Exception("No service object " + class1);
 			}
+			return s;
 		});
-
-		return deferred.getPromise();
 	}
 
 	static AtomicInteger n = new AtomicInteger();
