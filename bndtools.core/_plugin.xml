@@ -520,6 +520,16 @@
       </launchConfigurationType>
    </extension>
 
+   <!-- A status handler for "no available JVM matching EE" from the launch infra -->
+   <extension point="org.eclipse.debug.core.statusHandlers">
+      <statusHandler 
+         id="bndtools.launch.ui.internal.NoVMForEEStatusHandler"
+         class="bndtools.launch.ui.internal.NoVMForEEStatusHandler"
+         plugin="bndtools.core"
+         code="101">
+      </statusHandler>
+    </extension>
+
    <!-- DEFINE THE "Bnd Dependencies" SOURCE CONTAINER TYPE -->
    <extension point="org.eclipse.debug.core.sourceContainerTypes">
       <sourceContainerType

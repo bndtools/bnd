@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -22,11 +23,17 @@ import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.IStatusHandler;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.jdt.launching.IVMInstall;
 import org.eclipse.jdt.launching.JavaLaunchDelegate;
+import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jdt.launching.environments.IExecutionEnvironment;
+import org.eclipse.jdt.launching.environments.IExecutionEnvironmentsManager;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
 import bndtools.Plugin;
+import bndtools.StatusCode;
 import bndtools.launch.util.LaunchUtils;
 import bndtools.preferences.BndPreferences;
 
@@ -42,6 +49,78 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
     protected abstract void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception;
 
     protected abstract IStatus getLauncherStatus();
+
+    @Override
+    public boolean preLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
+        // override AbstractJavaLaunchConfigurationDelegate#preLaunchCheck, to avoid loading the Java
+        // project (which is not required when we are using a bndrun file).
+        return true;
+    }
+
+    @Override
+    protected IProject[] getBuildOrder(ILaunchConfiguration configuration, String mode) throws CoreException {
+        return new IProject[0];
+    }
+
+    @Override
+    protected IProject[] getProjectsForProblemSearch(ILaunchConfiguration configuration, String mode) throws CoreException {
+        return new IProject[0];
+    }
+
+    @Override
+    public IVMInstall getVMInstall(ILaunchConfiguration configuration) throws CoreException {
+        IExecutionEnvironmentsManager eeMgr = JavaRuntime.getExecutionEnvironmentsManager();
+
+        // Look for a matching JVM install from the -runee setting
+        String runee = run.getRunee();
+        if (runee != null) {
+            IExecutionEnvironment ee = eeMgr.getEnvironment(runee);
+            if (ee != null) {
+                // Return the default VM for this EE if the user has selected one
+                IVMInstall defaultVm = ee.getDefaultVM();
+                if (defaultVm != null)
+                    return defaultVm;
+
+                IVMInstall[] compatibleVMs = ee.getCompatibleVMs();
+                if (compatibleVMs != null && compatibleVMs.length > 0) {
+                    // Return the strictly compatible VM (i.e. perfect match) if there is one
+                    for (IVMInstall vm : compatibleVMs) {
+                        if (ee.isStrictlyCompatible(vm))
+                            return vm;
+                    }
+
+                    // No strictly compatible VM, just return the last in the list.
+                    return compatibleVMs[compatibleVMs.length - 1];
+                }
+            }
+            throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, StatusCode.NoVMForEE.getCode(), "Could not find JRE installation matching Execution Environment: " + runee, null));
+        }
+
+        // Still nothing? Use the default JVM from the workspace.
+        // Eclipse tries really hard to force you to set a default VM, but this can still be null if the default has been disposed somehow.
+        IVMInstall defaultVm = JavaRuntime.getDefaultVMInstall();
+        if (defaultVm != null) {
+            return defaultVm;
+        }
+
+        // You still here?? The superclass will look into the Java project, if the run file is in one.
+        try {
+            return super.getVMInstall(configuration);
+        } catch (CoreException e) {
+            // ignore
+        }
+
+        throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, StatusCode.NoVMForEE.getCode(),
+                "Could not select a JRE for launch. No Execution Environment is specified\n(using '-runee'), there is no default JRE in preferences and no relevant\nJava project settings.", null));
+    }
+
+    @Override
+    public String[][] getBootpathExt(ILaunchConfiguration configuration) throws CoreException {
+        // TODO: support deriving bootclasspath extensions from the bndrun file
+        return new String[][] {
+                null, null, null
+        };
+    }
 
     @Override
     public boolean buildForLaunch(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
@@ -174,8 +253,6 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
                 builder.append(" ");
         }
         String args = builder.toString();
-
-        args = addJavaLibraryPath(configuration, args);
         return args;
     }
 
@@ -191,30 +268,6 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         }
 
         return builder.toString();
-    }
-
-    protected String addJavaLibraryPath(ILaunchConfiguration configuration, String args) throws CoreException {
-        String a = args;
-        // Following code copied from AbstractJavaLaunchConfigurationDelegate
-        int libraryPath = a.indexOf("-Djava.library.path"); //$NON-NLS-1$
-        if (libraryPath < 0) {
-            // if a library path is already specified, do not override
-            String[] javaLibraryPath = getJavaLibraryPath(configuration);
-            if (javaLibraryPath != null && javaLibraryPath.length > 0) {
-                StringBuffer path = new StringBuffer(a);
-                path.append(" -Djava.library.path="); //$NON-NLS-1$
-                path.append("\""); //$NON-NLS-1$
-                for (int i = 0; i < javaLibraryPath.length; i++) {
-                    if (i > 0) {
-                        path.append(File.pathSeparatorChar);
-                    }
-                    path.append(javaLibraryPath[i]);
-                }
-                path.append("\""); //$NON-NLS-1$
-                a = path.toString();
-            }
-        }
-        return a;
     }
 
     protected static void enableTraceOptionIfSetOnConfiguration(ILaunchConfiguration configuration, ProjectLauncher launcher) throws CoreException {
