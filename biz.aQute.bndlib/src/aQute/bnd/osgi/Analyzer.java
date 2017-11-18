@@ -41,6 +41,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -57,6 +58,8 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.slf4j.Logger;
@@ -1809,30 +1812,39 @@ public class Analyzer extends Processor {
 	 * @throws Exception
 	 */
 	Set<PackageRef> findProvidedPackages() throws Exception {
-		Set<PackageRef> providers = Create.set();
-		Set<TypeRef> cached = Create.set();
-
-		for (Clazz c : classspace.values()) {
-			TypeRef[] interfaces = c.getInterfaces();
-			if (interfaces != null)
-				for (TypeRef t : interfaces)
-					if (cached.contains(t) || isProvider(t)) {
-						cached.add(t);
-						providers.add(t.getPackageRef());
+		Set<PackageRef> providers = classspace.values()
+				.stream()
+				.flatMap(c -> {
+					TypeRef[] interfaces = c.getInterfaces();
+					if (interfaces == null) {
+						return Stream.empty();
 					}
-		}
+					// filter out interfaces in the same package as the class implementing the
+					// interface.
+					PackageRef pkg = c.getClassName().getPackageRef();
+					return Arrays.stream(interfaces).filter(i -> !Objects.equals(pkg, i.getPackageRef()));
+				})
+				.distinct()
+				.filter(this::isProvider)
+				.map(TypeRef::getPackageRef)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 		return providers;
 	}
 
-	private boolean isProvider(TypeRef t) throws Exception {
-		Clazz c = findClass(t);
+	private boolean isProvider(TypeRef t) {
+		Clazz c;
+		try {
+			c = findClass(t);
+		} catch (Exception e) {
+			return false;
+		}
 		if (c == null)
 			return false;
 
 		if (c.annotations == null)
 			return false;
 
-		TypeRef r6pt = getTypeRefFromFQN("org.osgi.annotation.versioning.ProviderType");
+		TypeRef r6pt = getTypeRef("org/osgi/annotation/versioning/ProviderType");
 		if (c.annotations.contains(r6pt)) {
 			return true;
 		}
