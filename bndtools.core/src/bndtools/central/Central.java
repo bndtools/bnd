@@ -264,7 +264,7 @@ public class Central implements IStartupParticipant {
 
     public static Promise<Workspace> onWorkspace(Consumer<Workspace> callback) {
         Promise<Workspace> p = workspaceQueue.getPromise();
-        return p.thenAccept(workspace -> callback.accept(workspace)).onFailure(failure -> logger.logError("onWorkspaceInit callback failed", failure));
+        return p.thenAccept(workspace -> callback.accept(workspace)).onFailure(failure -> logger.logError("onWorkspace callback failed", failure));
     }
 
     public static Promise<Workspace> onWorkspaceAsync(Consumer<Workspace> callback) {
@@ -281,7 +281,7 @@ public class Central implements IStartupParticipant {
                 }
             });
             return completion.getPromise();
-        }).onFailure(failure -> logger.logError("onWorkspaceInitAsync callback failed", failure));
+        }).onFailure(failure -> logger.logError("onWorkspaceAsync callback failed", failure));
     }
 
     public static PromiseFactory promiseFactory() {
