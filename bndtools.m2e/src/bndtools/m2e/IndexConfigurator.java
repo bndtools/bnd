@@ -159,7 +159,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
                 IProject[] refs = facade.getProject().getReferencedProjects();
                 for (int i = 0; !needsBuild && i < refs.length; i++) {
                     IMavenProjectFacade pf = MavenPlugin.getMavenProjectRegistry().getProject(refs[i]);
-                    needsBuild = needsBuild(delta, keysToTypes, pf, progress.newChild(1));
+                    needsBuild = pf != null ? needsBuild(delta, keysToTypes, pf, progress.newChild(1)) : false;
                 }
 
                 if (needsBuild) {
@@ -293,8 +293,8 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
      * check is done to see if the change might be interesting, and if so a Job is scheduled to do a more comprehensive
      * check (and possibly a build).
      * <p>
-     * As this listener may be called a lot for "uninteresting projects", this seems like the best option, but it could
-     * be changed later with implementation experience.
+     * As this listener may be called a lot for "uninteresting projects", this seems like the best option, but it could be
+     * changed later with implementation experience.
      */
     @Override
     public void resourceChanged(final IResourceChangeEvent event) {
