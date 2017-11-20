@@ -114,9 +114,7 @@ public class R5LabelFormatter {
             r = "icons/contract.png";
         else if ("osgi.whiteboard".equals(ns))
             r = "icons/whiteboard.png";
-        else if (ns.startsWith("osgi.enroute"))
-            r = "enroute/enroute-color-16x16.png";
-        else if ("osgi.missing".equalsIgnoreCase(ns) || "donotresolve".equalsIgnoreCase(ns) || "compile-only".equalsIgnoreCase(ns))
+        else if ("osgi.unresolvable".equalsIgnoreCase(ns) || "osgi.missing".equalsIgnoreCase(ns) || "donotresolve".equalsIgnoreCase(ns) || "compile-only".equalsIgnoreCase(ns))
             r = "icons/prohibition.png";
 
         return r;
