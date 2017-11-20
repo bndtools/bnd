@@ -210,6 +210,7 @@ public class XMLResourceParser extends Processor {
 
 			}
 		}
+		next();
 		tagEnd(TAG_REFERRAL);
 	}
 
