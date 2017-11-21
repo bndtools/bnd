@@ -5,8 +5,13 @@ import java.util.List;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ResolveMode;
+import org.bndtools.core.resolve.ResolveJob;
 import org.bndtools.core.ui.icons.Icons;
+import org.bndtools.utils.swt.SWTConcurrencyUtil;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -39,6 +44,7 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 
     private final Image resolveIcon = Icons.desc("resolve").createImage();
     private Button btnResolveNow;
+    private JobChangeAdapter resolveJobListener;
 
     public RunRequirementsPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -85,6 +91,22 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
                 doResolve();
             }
         });
+        resolveJobListener = new JobChangeAdapter() {
+            @Override
+            public void running(IJobChangeEvent event) {
+                if (event.getJob() instanceof ResolveJob) {
+                    SWTConcurrencyUtil.execForControl(btnResolveNow, true, () -> btnResolveNow.setEnabled(false));
+                }
+            }
+
+            @Override
+            public void done(IJobChangeEvent event) {
+                if (event.getJob() instanceof ResolveJob) {
+                    SWTConcurrencyUtil.execForControl(btnResolveNow, true, () -> btnResolveNow.setEnabled(true));
+                }
+            }
+        };
+        Job.getJobManager().addJobChangeListener(resolveJobListener);
 
         // Layout
         GridLayout layout;
@@ -104,6 +126,13 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
 
         gd = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
         btnResolveNow.setLayoutData(gd);
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        Job.getJobManager().removeJobChangeListener(resolveJobListener);
+        resolveIcon.dispose();
     }
 
     private void doResolve() {

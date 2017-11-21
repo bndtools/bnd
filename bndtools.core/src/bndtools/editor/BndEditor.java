@@ -235,6 +235,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private final AtomicBoolean saving = new AtomicBoolean(false);
     private IHandlerActivation resolveHandlerActivation;
+    private JobChangeAdapter resolveJobListener;
 
     @Override
     public void doSave(IProgressMonitor monitor) {
@@ -551,15 +552,32 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     private void setupActions() {
         String fileName = getFileAndProject(getEditorInput()).getFirst();
         if (fileName.endsWith(LaunchConstants.EXT_BNDRUN)) {
-            IHandlerService handlerSvc = (IHandlerService) getEditorSite().getService(IHandlerService.class);
-            handlerSvc.activateHandler("bndtools.runEditor.resolve", new AbstractHandler() {
+            final IHandlerService handlerSvc = (IHandlerService) getEditorSite().getService(IHandlerService.class);
+            final AbstractHandler handler = new AbstractHandler() {
                 @Override
                 public Object execute(ExecutionEvent event) throws ExecutionException {
                     resolveRunBundles(new NullProgressMonitor(), false);
                     return null;
                 }
-            });
+            };
+            final IHandlerActivation activation = handlerSvc.activateHandler("bndtools.runEditor.resolve", handler);
+
+            this.resolveJobListener = new JobChangeAdapter() {
+                @Override
+                public void running(IJobChangeEvent event) {
+                    if (event.getJob() instanceof ResolveJob)
+                        handlerSvc.deactivateHandler(activation);
+                }
+
+                @Override
+                public void done(IJobChangeEvent event) {
+                    if (event.getJob() instanceof ResolveJob)
+                        handlerSvc.activateHandler(activation);
+                }
+            };
+            Job.getJobManager().addJobChangeListener(resolveJobListener);
         }
+
     }
 
     private Promise<Workspace> loadEditModel() throws Exception {
@@ -665,6 +683,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         buildFileImg.dispose();
         if (resolveHandlerActivation != null) {
             resolveHandlerActivation.getHandlerService().deactivateHandler(resolveHandlerActivation);
+        }
+        if (resolveJobListener != null) {
+            Job.getJobManager().removeJobChangeListener(resolveJobListener);
         }
     }
 
