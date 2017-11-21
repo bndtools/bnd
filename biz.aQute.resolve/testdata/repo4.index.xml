@@ -159,5 +159,5 @@
     <requirement namespace='osgi.wiring.package'>
       <directive name='filter' value='(osgi.wiring.package=org.apache.felix.gogo.api)'/>
     </requirement>
-  </resource>`
+  </resource>
 </repository>

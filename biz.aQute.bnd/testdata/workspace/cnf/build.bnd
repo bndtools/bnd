@@ -1,1 +1,1 @@
--plugin: aQute.bnd.deployer.repository.FixedIndexedRepo; name=Local; locations=file://${workspace}/cnf/repo/index.xml 
+-plugin: aQute.bnd.repository.osgi.OSGiRepository; name=Local; locations="${fileuri;${workspace}/cnf/repo/index.xml}"

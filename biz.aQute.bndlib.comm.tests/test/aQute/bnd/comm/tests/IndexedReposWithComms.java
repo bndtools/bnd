@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Set;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.jpm.Repository;
+import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.service.url.URLConnector;
 import aQute.bnd.version.Version;
@@ -68,7 +68,7 @@ public class IndexedReposWithComms extends TestCase {
 	}
 
 	/*
-	 * Uses workspaces/indexed Sets up a FixedIndexedRepo to the local server.
+	 * Uses workspaces/indexed Sets up a OSGiRepository to the local server.
 	 */
 
 	public void testIndexedRepo() throws IOException, Exception {
@@ -78,7 +78,7 @@ public class IndexedReposWithComms extends TestCase {
 			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/indexed"));
 			assertNotNull(ws);
 			ws.setProperty("repo", ht.getBaseURI().toASCIIString() + "/index");
-			FixedIndexedRepo plugin = ws.getPlugin(FixedIndexedRepo.class);
+			OSGiRepository plugin = ws.getPlugin(OSGiRepository.class);
 			assertTrue(ws.check());
 			assertNotNull(plugin);
 
@@ -90,7 +90,7 @@ public class IndexedReposWithComms extends TestCase {
 	}
 
 	/*
-	 * Uses workspaces/indexed Sets up a FixedIndexedRepo to the local server.
+	 * Uses workspaces/indexed Sets up a OSGiRepository to the local server.
 	 */
 
 	public void testIndexedRepoWithPassword() throws IOException, Exception {
@@ -101,7 +101,7 @@ public class IndexedReposWithComms extends TestCase {
 			assertNotNull(ws);
 			ws.setProperty("-connection-settings", "${build}/settings-withpassword.xml");
 			ws.setProperty("repo", ht.getBaseURI().toASCIIString() + "/index-auth/user/good");
-			FixedIndexedRepo plugin = ws.getPlugin(FixedIndexedRepo.class);
+			OSGiRepository plugin = ws.getPlugin(OSGiRepository.class);
 			assertTrue(ws.check());
 			assertNotNull(plugin);
 

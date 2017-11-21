@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
+import aQute.bnd.deployer.obr.OBR;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
@@ -18,7 +19,7 @@ public class TestObrRepo extends TestCase {
 
 	private static final String		obrSrc	= "testdata/fullobr.xml";
 	private static final String		obrDst	= "testdata/fullobr.tmp.xml";
-	private static FixedIndexedRepo	obr;
+	private static OBR			obr;
 	private static NanoHTTPD		httpd;
 	private static int				httpdPort;
 	private static Processor		reporter;
@@ -31,7 +32,7 @@ public class TestObrRepo extends TestCase {
 		Sed.file2File(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
 
 		reporter = new Processor();
-		obr = new FixedIndexedRepo();
+		obr = new OBR();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("name", "obr");
 		config.put("locations", new File(obrDst).toURI().toString());

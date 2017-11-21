@@ -7,15 +7,20 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipException;
 
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
+import aQute.libg.cryptography.SHA256;
 import junit.framework.TestCase;
 import test.lib.MockRegistry;
 import test.repository.FailingGeneratingProvider;
@@ -79,11 +84,14 @@ public class TestLocalIndexGeneration extends TestCase {
 		File indexFileSha = IO.getFile(outputDir, "index.xml.sha");
 		assertTrue(indexFileSha.exists());
 
-		AbstractIndexedRepo repo2 = createRepoForIndex(indexFile);
-		File[] files = repo2.get("name.njbartlett.osgi.emf.minimal", null);
-		assertNotNull(files);
-		assertEquals(1, files.length);
-		assertEquals(deployedFile.getAbsoluteFile(), files[0]);
+		try (OSGiRepository repo2 = createRepoForIndex(indexFile)) {
+			SortedSet<Version> versions = repo2.versions("name.njbartlett.osgi.emf.minimal");
+			assertNotNull(versions);
+			assertEquals(1, versions.size());
+			File file = repo2.get("name.njbartlett.osgi.emf.minimal", versions.first(), null);
+			assertNotNull(file);
+			assertEquals(SHA256.digest(deployedFile), SHA256.digest(file));
+		}
 	}
 
 	public void testOverwrite() throws Exception {
@@ -229,13 +237,18 @@ public class TestLocalIndexGeneration extends TestCase {
 
 	// UTILS
 
-	private static AbstractIndexedRepo createRepoForIndex(File index) {
-		FixedIndexedRepo newRepo = new FixedIndexedRepo();
+	private OSGiRepository createRepoForIndex(File index) throws Exception {
+		OSGiRepository repo = new OSGiRepository();
+		HttpClient httpClient = new HttpClient();
+		Map<String,String> map = new HashMap<>();
+		map.put("locations", index.getAbsoluteFile().toURI().toString());
+		map.put("name", getName());
+		map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+		repo.setProperties(map);
+		Processor p = new Processor();
+		p.addBasicPlugin(httpClient);
+		repo.setRegistry(p);
 
-		Map<String,String> config = new HashMap<String,String>();
-		config.put("locations", index.getAbsoluteFile().toURI().toString());
-		newRepo.setProperties(config);
-
-		return newRepo;
+		return repo;
 	}
 }

@@ -31,13 +31,14 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import junit.framework.TestCase;
@@ -109,7 +110,7 @@ public class ResolveTest extends TestCase {
 
 	public void testenRouteGuard() throws Exception {
 		MockRegistry registry = new MockRegistry();
-		Repository repo = createRepo(IO.getFile("testdata/enroute/index.xml"));
+		Repository repo = createRepo(IO.getFile("testdata/enroute/index.xml"), getName());
 		registry.addPlugin(repo);
 
 		List<Requirement> reqs = CapReqBuilder.getRequirementsFrom(
@@ -179,7 +180,7 @@ public class ResolveTest extends TestCase {
 
 	}
 
-	private static void assertAugmentResolveFails(String augment, String require, String effective) throws Exception {
+	private void assertAugmentResolveFails(String augment, String require, String effective) throws Exception {
 		try {
 			assertAugmentResolve(augment, require, effective);
 			fail("Failed to fail augment=" + augment + ", require=" + require + ", effective=" + effective);
@@ -188,10 +189,10 @@ public class ResolveTest extends TestCase {
 		}
 	}
 
-	private static void assertAugmentResolve(String augment, String require, String effective) throws Exception {
+	private void assertAugmentResolve(String augment, String require, String effective) throws Exception {
 
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
 
 		Processor model = new Processor();
 		model.setRunfw("org.apache.felix.framework");
@@ -217,28 +218,34 @@ public class ResolveTest extends TestCase {
 	 * @throws URISyntaxException
 	 * @throws MalformedURLException
 	 */
-	public void testMinimalSetup() throws MalformedURLException, URISyntaxException {
-		File index = IO.getFile("testdata/repo3.index.xml");
-		FixedIndexedRepo fir = new FixedIndexedRepo();
-		fir.setLocations(index.toURI().toString());
+	public void testMinimalSetup() throws Exception {
+		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
+			Map<String,String> map = new HashMap<>();
+			map.put("locations", IO.getFile("testdata/repo3.index.xml").toURI().toString());
+			map.put("name", getName());
+			map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+			repo.setProperties(map);
+			Processor model = new Processor();
+			model.addBasicPlugin(httpClient);
+			repo.setRegistry(model);
 
-		Processor model = new Processor();
 
-		model.setProperty("-runfw", "org.apache.felix.framework");
-		model.setProperty("-runrequires", "osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)'");
-		BndrunResolveContext context = new BndrunResolveContext(model, null, model, log);
-		context.setLevel(0);
-		context.addRepository(fir);
-		context.init();
-		try (ResolverLogger logger = new ResolverLogger(4)) {
-			Resolver resolver = new BndResolver(logger);
-			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
-			Set<Resource> resources = resolved.keySet();
-			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
-			assertNotNull(shell);
-		} catch (ResolutionException e) {
-			e.printStackTrace();
-			fail("Resolve failed");
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires", "osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)'");
+			BndrunResolveContext context = new BndrunResolveContext(model, null, model, log);
+			context.setLevel(0);
+			context.addRepository(repo);
+			context.init();
+			try (ResolverLogger logger = new ResolverLogger(4)) {
+				Resolver resolver = new BndResolver(logger);
+				Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+				Set<Resource> resources = resolved.keySet();
+				Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
+				assertNotNull(shell);
+			} catch (ResolutionException e) {
+				e.printStackTrace();
+				fail("Resolve failed");
+			}
 		}
 	}
 
@@ -247,10 +254,10 @@ public class ResolveTest extends TestCase {
 	 * 
 	 * @throws ResolutionException
 	 */
-	public void testResolveWithDistro() throws ResolutionException {
+	public void testResolveWithDistro() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
 
 		BndEditModel model = new BndEditModel();
 		model.setDistro(Arrays.asList("testdata/distro.jar;version=file"));
@@ -278,10 +285,10 @@ public class ResolveTest extends TestCase {
 	 * this is done in the same way. The {@link #testResolveWithDistro()} has a
 	 * negative check while this one checks positive.
 	 */
-	public void testSimpleResolve() {
+	public void testSimpleResolve() throws Exception {
 
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml")));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
 
 		BndEditModel model = new BndEditModel();
 
@@ -407,11 +414,11 @@ public class ResolveTest extends TestCase {
 	 * 
 	 * @throws ResolutionException
 	 */
-	public void testMultipleOptionsNotDuplicated() throws ResolutionException {
+	public void testMultipleOptionsNotDuplicated() throws Exception {
 
 		// Resolve against repo 5
 		MockRegistry registry = new MockRegistry();
-		registry.addPlugin(createRepo(IO.getFile("testdata/repo5/index.xml"), "Test-5"));
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo5/index.xml"), getName()));
 
 		// Set up a simple Java 7 Felix requirement as per Issue #971
 		BndEditModel runModel = new BndEditModel();

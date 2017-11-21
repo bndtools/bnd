@@ -32,7 +32,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	 * @throws Exception
 	 */
 	public void testSimpleResolve() throws Exception {
-		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"));
+		Repository repository = createRepo(IO.getFile("testdata/repo3.index.xml"), getName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.setLevel(2);
 		grc.addRepository(repository);
@@ -51,9 +51,11 @@ public class GenericResolveContextResolveTest extends TestCase {
 
 	/**
 	 * Check default directive
+	 * 
+	 * @throws Exception
 	 */
-	public void testResolveRequirementNoDirective() {
-		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"));
+	public void testResolveRequirementNoDirective() throws Exception {
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.setLevel(2);
 		grc.addRepository(repository);
@@ -69,10 +71,12 @@ public class GenericResolveContextResolveTest extends TestCase {
 
 	/**
 	 * Check expressly set directive
+	 * 
+	 * @throws Exception
 	 */
-	public void testResolveRequirementResolveDirective() {
+	public void testResolveRequirementResolveDirective() throws Exception {
 
-		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"));
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.addRepository(repository);
 		Requirement logservice = new CapReqBuilder("osgi.service")
@@ -86,8 +90,8 @@ public class GenericResolveContextResolveTest extends TestCase {
 		assertNames(providers, "test.a", "test.b");
 	}
 
-	public void testResolveRequirementActiveDirective() {
-		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"));
+	public void testResolveRequirementActiveDirective() throws Exception {
+		Repository repository = createRepo(IO.getFile("testdata/repo6/index.xml"), getName());
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.addRepository(repository);
 

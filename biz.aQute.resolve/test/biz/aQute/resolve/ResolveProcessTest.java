@@ -6,11 +6,10 @@ import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 import static org.osgi.resource.Namespace.REQUIREMENT_FILTER_DIRECTIVE;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +19,10 @@ import java.util.TreeSet;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
-import org.osgi.service.resolver.ResolutionException;
 
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
 import test.lib.MockRegistry;
@@ -47,7 +46,7 @@ public class ResolveProcessTest extends TestCase {
 		}
 	}
 
-	public void testResolveRequired() throws ResolutionException, MalformedURLException, URISyntaxException {
+	public void testResolveRequired() throws Exception {
 		ResolveProcess process = new ResolveProcess();
 		try (ResolverLogger logger = new ResolverLogger()) {
 			MockRegistry registry = new MockRegistry();
@@ -83,7 +82,7 @@ public class ResolveProcessTest extends TestCase {
 		}
 	}
 
-	public void testBigNastyResolveRequired() throws ResolutionException, MalformedURLException, URISyntaxException {
+	public void testBigNastyResolveRequired() throws Exception {
 		ResolveProcess process = new ResolveProcess();
 		try (ResolverLogger logger = new ResolverLogger()) {
 			MockRegistry registry = new MockRegistry();
@@ -141,11 +140,18 @@ public class ResolveProcessTest extends TestCase {
 		}
 	}
 
-	protected FixedIndexedRepo getIndex(String location) throws MalformedURLException, URISyntaxException {
-		File index = IO.getFile(location);
-		FixedIndexedRepo fir = new FixedIndexedRepo();
-		fir.setLocations(index.toURI().toString());
-		return fir;
+	private OSGiRepository getIndex(String location) throws Exception {
+		OSGiRepository repo = new OSGiRepository();
+		HttpClient httpClient = new HttpClient();
+		Map<String,String> map = new HashMap<>();
+		map.put("locations", IO.getFile(location).toURI().toString());
+		map.put("name", getName());
+		map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+		repo.setProperties(map);
+		Processor p = new Processor();
+		p.addBasicPlugin(httpClient);
+		repo.setRegistry(p);
+		return repo;
 	}
 
 	private void checkOptionalResource(ResolveProcess process, Resource resource, String bsn, Version version,

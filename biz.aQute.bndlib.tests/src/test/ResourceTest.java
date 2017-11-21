@@ -2,10 +2,9 @@ package test;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -19,16 +18,18 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
@@ -164,7 +165,7 @@ public class ResourceTest extends TestCase {
 		assertEquals(expected, rba.build().equals(rbb.build()));
 	}
 
-	public void testResourceEquals() throws MalformedURLException, URISyntaxException {
+	public void testResourceEquals() throws Exception {
 		String locations = ResourceTest.class.getResource("larger-repo.xml").toString();
 		Set<Resource> a = getResources(locations);
 		Set<Resource> b = getResources(locations);
@@ -222,11 +223,19 @@ public class ResourceTest extends TestCase {
 		assertEquals("demo-fragment;version=snapshot", sb.toString());
 	}
 
-	private Set<Resource> getResources(String locations) throws MalformedURLException, URISyntaxException {
-		FixedIndexedRepo repo = new FixedIndexedRepo();
-		repo.setLocations(locations);
-		Requirement wildcard = ResourceUtils.createWildcardRequirement();
-		Collection<Capability> caps = repo.findProviders(Collections.singleton(wildcard)).get(wildcard);
-		return ResourceUtils.getResources(caps);
+	private Set<Resource> getResources(String locations) throws Exception {
+		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
+			Map<String,String> map = new HashMap<>();
+			map.put("locations", locations);
+			map.put("name", getName());
+			map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+			repo.setProperties(map);
+			Processor p = new Processor();
+			p.addBasicPlugin(httpClient);
+			repo.setRegistry(p);
+			Requirement wildcard = ResourceUtils.createWildcardRequirement();
+			Collection<Capability> caps = repo.findProviders(Collections.singleton(wildcard)).get(wildcard);
+			return ResourceUtils.getResources(caps);
+		}
 	}
 }

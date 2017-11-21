@@ -5,12 +5,11 @@ import static aQute.bnd.osgi.resource.ResourceUtils.createWildcardRequirement;
 import static aQute.bnd.osgi.resource.ResourceUtils.getIdentityCapability;
 import static java.util.Collections.singleton;
 
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,7 @@ import org.osgi.service.resolver.Resolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceParser;
@@ -34,6 +33,7 @@ import aQute.bnd.osgi.resource.ResolutionDirective;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.lib.strings.Strings;
 
 public class ResolverValidator extends Processor {
@@ -72,9 +72,18 @@ public class ResolverValidator extends Processor {
 	}
 
 	public List<Resolution> validate() throws Exception {
-		FixedIndexedRepo repository = getRepository();
-		Set<Resource> resources = getAllResources(repository);
-		return validateResources(repository, resources);
+		try (OSGiRepository repository = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
+			Map<String,String> map = new HashMap<>();
+			map.put("locations", Strings.join(repositories));
+			map.put("name", "ResolverValidator");
+			repository.setProperties(map);
+			Processor registry = new Processor();
+			registry.addBasicPlugin(httpClient);
+			repository.setRegistry(registry);
+			repository.setReporter(this);
+			Set<Resource> resources = getAllResources(repository);
+			return validateResources(repository, resources);
+		}
 	}
 
 	public List<Resolution> validate(Collection<Resource> toBeChecked) throws Exception {
@@ -85,12 +94,6 @@ public class ResolverValidator extends Processor {
 		allResources.addAll(toBeChecked);
 		ResourcesRepository repository = new ResourcesRepository(allResources);
 		return validateResources(repository, toBeChecked);
-	}
-
-	FixedIndexedRepo getRepository() throws MalformedURLException, URISyntaxException {
-		FixedIndexedRepo repository = new FixedIndexedRepo();
-		repository.setLocations(Strings.join(repositories));
-		return repository;
 	}
 
 	public List<Resolution> validateResources(Repository repository, Collection<Resource> resources) throws Exception {
