@@ -1,6 +1,6 @@
 -connection-settings: ${.}/settings.xml
 
 -plugin.indexed = \
-	aQute.bnd.deployer.repository.FixedIndexedRepo; \
+	aQute.bnd.repository.osgi.OSGiRepository; \
 		name='Test'; \
 		locations=${repo}

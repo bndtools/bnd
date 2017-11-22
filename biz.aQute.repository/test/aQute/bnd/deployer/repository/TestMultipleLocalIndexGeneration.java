@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
 
+import aQute.bnd.deployer.obr.OBR;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
@@ -98,7 +99,7 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 	}
 
 	public void testReadMixedRepoTypes() throws Exception {
-		FixedIndexedRepo repo = new FixedIndexedRepo();
+		OBR repo = new OBR();
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("locations",
 				IO.getFile("testdata/fullobr.xml").toURI() + "," + IO.getFile("testdata/minir5.xml").toURI());
@@ -118,11 +119,15 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 
 	// UTILS
 
-	private static AbstractIndexedRepo createRepoForIndex(File index) {
-		FixedIndexedRepo newRepo = new FixedIndexedRepo();
+	private AbstractIndexedRepo createRepoForIndex(File index) throws Exception {
+		OBR newRepo = new OBR();
 
 		Map<String,String> config = new HashMap<String,String>();
 		config.put("locations", index.getAbsoluteFile().toURI().toString());
+		config.put("name", getName());
+		File cacheDir = new File("generated/tmp/test/cache/" + getName());
+		IO.mkdirs(cacheDir);
+		config.put("cache", cacheDir.getAbsolutePath());
 		newRepo.setProperties(config);
 
 		return newRepo;

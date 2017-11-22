@@ -1,16 +1,20 @@
 package aQute.bnd.deployer.repository;
 
+import static aQute.bnd.deployer.repository.RepoConstants.DEFAULT_CACHE_DIR;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -40,7 +44,7 @@ import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 
-public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, Participant, Actionable {
+public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable, Participant, Actionable {
 
 	private final String		UPWARDS_ARROW			= " \u2191";
 	private final String		DOWNWARDS_ARROW			= " \u2193";
@@ -62,11 +66,31 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 	// @GuardedBy("newFilesInCoordination")
 	private final List<URI>		newFilesInCoordination	= new LinkedList<URI>();
+	private static final String	EMPTY_LOCATION			= "";
+
+	public static final String	PROP_LOCATIONS			= "locations";
+	public static final String	PROP_CACHE				= "cache";
+
+	private String				locations;
+	protected File				cacheDir				= new File(
+			System.getProperty("user.home") + File.separator + DEFAULT_CACHE_DIR);
 
 	@SuppressWarnings("deprecation")
 	@Override
 	public synchronized void setProperties(Map<String,String> map) {
 		super.setProperties(map);
+		locations = map.get(PROP_LOCATIONS);
+		String cachePath = map.get(PROP_CACHE);
+		if (cachePath != null) {
+			cacheDir = new File(cachePath);
+			if (!cacheDir.isDirectory())
+				try {
+					throw new IllegalArgumentException(String.format(
+							"Cache path '%s' does not exist, or is not a directory.", cacheDir.getCanonicalPath()));
+				} catch (IOException e) {
+					throw new IllegalArgumentException("Could not get cacheDir canonical path", e);
+				}
+		}
 
 		// Load essential properties
 		String localDirPath = map.get(PROP_LOCAL_DIR);
@@ -94,7 +118,17 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 	@Override
 	protected synchronized List<URI> loadIndexes() throws Exception {
-		Collection<URI> remotes = super.loadIndexes();
+		List<URI> remotes;
+		try {
+			if (locations != null)
+				remotes = parseLocations(locations);
+			else
+				remotes = Collections.emptyList();
+		} catch (MalformedURLException e) {
+			throw new IllegalArgumentException(
+					String.format("Invalid location, unable to parse as URL list: %s", locations), e);
+		}
+
 		List<URI> indexes = new ArrayList<URI>(remotes.size() + generatingProviders.size());
 
 		for (IRepositoryContentProvider contentProvider : generatingProviders) {
@@ -118,6 +152,24 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 
 		indexes.addAll(remotes);
 		return indexes;
+	}
+
+	public synchronized File getCacheDirectory() {
+		return cacheDir;
+	}
+
+	public void setCacheDirectory(File cacheDir) {
+		if (cacheDir == null)
+			throw new IllegalArgumentException("null cache directory not permitted");
+		this.cacheDir = cacheDir;
+	}
+
+	@Override
+	public synchronized String getName() {
+		if (name != null && !name.equals(this.getClass().getName()))
+			return name;
+
+		return locations;
 	}
 
 	/**
@@ -405,11 +457,16 @@ public class LocalIndexedRepo extends FixedIndexedRepo implements Refreshable, P
 		StringBuilder builder = new StringBuilder();
 		builder.append(storageDir.getAbsolutePath());
 
-		String otherPaths = super.getLocation();
+		String otherPaths = (locations == null) ? EMPTY_LOCATION : locations.toString();
 		if (otherPaths != null && otherPaths.length() > 0)
 			builder.append(", ").append(otherPaths);
 
 		return builder.toString();
+	}
+
+	public void setLocations(String locations) throws MalformedURLException, URISyntaxException {
+		parseLocations(locations); // for verification right syntax
+		this.locations = locations;
 	}
 
 	public Map<String,Runnable> actions(Object... target) throws Exception {

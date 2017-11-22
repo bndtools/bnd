@@ -26,7 +26,6 @@ OPTIONS
 	biz.aQute.junit                             1.3.0  /Ws/bnd/biz.aQute.junit/generated/biz.aQute.junit.jar
 	biz.aQute.launcher                          1.4.0  /Ws/bnd/biz.aQute.launcher/generated/biz.aQute.launcher.jar
 	biz.aQute.repository                        2.2.0  /Ws/bnd/biz.aQute.repository/generated/biz.aQute.repository.jar
-	biz.aQute.repository.aether                 0.0.1  /Ws/bnd/biz.aQute.repository.aether/generated/biz.aQute.repository.aether.jar
 	biz.aQute.resolve                           0.2.0  /Ws/bnd/biz.aQute.resolve/generated/biz.aQute.resolve.jar
 	cnf                                         0.0.0  /Ws/bnd/cnf/generated/cnf.jar
 	demo                                        1.1.0  /Ws/bnd/demo/generated/demo.jar

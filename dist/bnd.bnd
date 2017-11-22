@@ -16,7 +16,6 @@
              biz.aQute.launcher, \
              biz.aQute.remote, \
              biz.aQute.repository, \
-             biz.aQute.repository.aether, \
              biz.aQute.resolve, \
              org.osgi.impl.bundle.repoindex.api, \
              org.osgi.impl.bundle.repoindex.lib, \

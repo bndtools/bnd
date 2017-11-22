@@ -3,7 +3,6 @@ package aQute.bnd.deployer.obr;
 import java.util.Map;
 
 import aQute.bnd.deployer.repository.AbstractIndexedRepo;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
 
 public class Conversions {
 
@@ -18,7 +17,7 @@ public class Conversions {
 
 		String location = map.get("location");
 		if (location != null)
-			map.put(FixedIndexedRepo.PROP_LOCATIONS, location);
+			map.put(OBR.PROP_LOCATIONS, location);
 
 		String mode = map.get("mode");
 		if (mode != null)

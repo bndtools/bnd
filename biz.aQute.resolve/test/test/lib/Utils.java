@@ -11,32 +11,27 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
 
-import aQute.bnd.deployer.repository.AbstractIndexedRepo;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
+import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.repository.osgi.OSGiRepository;
 
 public class Utils {
 
-	public static Repository createRepo(File index) {
-		return createRepo(index, null);
-	}
-
-	public static Repository createRepo(URI uri) {
-		return createRepo(uri, null);
-	}
-
-	public static Repository createRepo(File index, String name) {
-		FixedIndexedRepo repo = new FixedIndexedRepo();
-
-		Map<String,String> props = new HashMap<String,String>();
-		props.put(FixedIndexedRepo.PROP_LOCATIONS, index.toURI().toString());
-		if (name != null)
-			props.put(AbstractIndexedRepo.PROP_NAME, name);
-		repo.setProperties(props);
-
+	public static Repository createRepo(File index, String name) throws Exception {
+		OSGiRepository repo = new OSGiRepository();
+		HttpClient httpClient = new HttpClient();
+		Map<String,String> map = new HashMap<>();
+		map.put("locations", index.getAbsoluteFile().toURI().toString());
+		map.put("name", name);
+		map.put("cache", new File("generated/tmp/test/cache/" + name).getAbsolutePath());
+		repo.setProperties(map);
+		Processor p = new Processor();
+		p.addBasicPlugin(httpClient);
+		repo.setRegistry(p);
 		return repo;
 	}
 
-	public static Repository createRepo(String uriStr, String name) {
+	public static Repository createRepo(String uriStr, String name) throws Exception {
 		try {
 			URI uri = new URI(uriStr);
 			return createRepo(uri, name);
@@ -45,15 +40,17 @@ public class Utils {
 		}
 	}
 
-	public static Repository createRepo(URI uri, String name) {
-		FixedIndexedRepo repo = new FixedIndexedRepo();
-
-		Map<String,String> props = new HashMap<String,String>();
-		props.put(FixedIndexedRepo.PROP_LOCATIONS, uri.toString());
-		if (name != null)
-			props.put(AbstractIndexedRepo.PROP_NAME, name);
-		repo.setProperties(props);
-
+	public static Repository createRepo(URI uri, String name) throws Exception {
+		OSGiRepository repo = new OSGiRepository();
+		HttpClient httpClient = new HttpClient();
+		Map<String,String> map = new HashMap<>();
+		map.put("locations", uri.toString());
+		map.put("name", name);
+		map.put("cache", new File("generated/tmp/test/cache/" + name).getAbsolutePath());
+		repo.setProperties(map);
+		Processor p = new Processor();
+		p.addBasicPlugin(httpClient);
+		repo.setRegistry(p);
 		return repo;
 	}
 

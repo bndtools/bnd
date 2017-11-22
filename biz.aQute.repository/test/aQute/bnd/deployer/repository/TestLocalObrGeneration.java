@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import aQute.bnd.deployer.obr.OBR;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
@@ -77,14 +78,17 @@ public class TestLocalObrGeneration extends TestCase {
 
 	// UTILS
 
-	private static AbstractIndexedRepo createRepoForIndex(File index) {
-		FixedIndexedRepo newRepo = new FixedIndexedRepo();
+	private AbstractIndexedRepo createRepoForIndex(File index) throws Exception {
+		OBR repo = new OBR();
+		Map<String,String> map = new HashMap<>();
+		map.put("locations", index.getAbsoluteFile().toURI().toString());
+		map.put("name", getName());
+		File cacheDir = new File("generated/tmp/test/cache/" + getName());
+		IO.mkdirs(cacheDir);
+		map.put("cache", cacheDir.getAbsolutePath());
+		map.put("type", "OBR");
+		repo.setProperties(map);
 
-		Map<String,String> config = new HashMap<String,String>();
-		config.put("locations", index.getAbsoluteFile().toURI().toString());
-		config.put("type", "OBR");
-		newRepo.setProperties(config);
-
-		return newRepo;
+		return repo;
 	}
 }
