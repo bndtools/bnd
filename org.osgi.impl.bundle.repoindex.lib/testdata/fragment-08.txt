@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="0.0.0"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="e0dcb0880b8245acbe6ed60f5b59ae25f4d2a9a0b208333c0af0c2223262921c"/>
+    <attribute name="osgi.content" value="E0DCB0880B8245ACBE6ED60F5B59AE25F4D2A9A0B208333C0AF0C2223262921C"/>
     <attribute name="url" value="testdata/08-fragmenthost.jar"/>
     <attribute name="size" type="Long" value="1117"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

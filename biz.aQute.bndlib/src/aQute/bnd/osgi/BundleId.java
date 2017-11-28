@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import java.util.Objects;
+
 /**
  * Holds the bundle bsn + version pair
  */
@@ -31,7 +33,7 @@ public class BundleId implements Comparable<BundleId> {
 
 	@Override
 	public int hashCode() {
-		return bsn.hashCode() ^ version.hashCode();
+		return Objects.hash(bsn, version);
 	}
 
 	public int compareTo(BundleId other) {

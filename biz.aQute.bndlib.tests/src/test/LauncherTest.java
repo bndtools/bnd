@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.jar.Manifest;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -420,40 +419,6 @@ public class LauncherTest extends TestCase {
 	}
 
 	/**
-	 * Test the sha packager
-	 * 
-	 * @throws Exception
-	 */
-	public static void testShaPackager() throws Exception {
-		Project project = getProject();
-		project.clear();
-		project.setProperty("-package", "jpm");
-		ProjectLauncher l = project.getProjectLauncher();
-		l.setTrace(true);
-		Jar executable = l.executable();
-		assertNotNull(executable);
-		Manifest m = executable.getManifest();
-		m.write(System.out);
-		System.out.flush();
-		assertNotNull(m.getMainAttributes().getValue("JPM-Classpath"));
-		assertNotNull(m.getMainAttributes().getValue("JPM-Runbundles"));
-
-		Resource r = executable.getResource("launcher.properties");
-		assertNotNull(r);
-
-		Properties p = new Properties();
-		try (InputStream in = r.openInputStream()) {
-			p.load(in);
-		}
-
-		System.out.println(p);
-
-		String s = p.getProperty("launch.bundles");
-		assertTrue(s.contains("${JPMREPO}/"));
-		assertEquals("false", p.getProperty("launch.embedded"));
-	}
-
-	/**
 	 * This needs to be adapted because the previous left lots of files after
 	 * testing. This current one does not work since the demo project uses the
 	 * snapshots of the launcher and tester, and when copied they are not there
@@ -462,7 +427,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testWorkspaceWithSpace() throws Exception {
+	// public static void testWorkspaceWithSpace() throws Exception {
 		// // reuse built .class files from the demo project.
 		// String base = new
 		// File("").getAbsoluteFile().getParentFile().getAbsolutePath();
@@ -485,7 +450,7 @@ public class LauncherTest extends TestCase {
 		// finally {
 		// IO.delete(ws);
 		// }
-	}
+	// }
 
 	/**
 	 * @throws Exception

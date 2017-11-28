@@ -1,10 +1,8 @@
 -plugin: \
 \
-    aQute.bnd.jpm.Repository; \
-        name=JPM; \
-        location=${build}/cache/shas; \
-        index=${workspace}/cnf/jpm4j.json, \
-\
-	aQute.bnd.deployer.repository.wrapper.Plugin; \
-		location="${build}/cache/wrapper"; \
-		reindex=true
+		 aQute.bnd.repository.maven.provider.MavenBndRepository;\
+            releaseUrl="https://repo1.maven.org/maven2";\
+            index=${build}/central.mvn;\
+            name='Maven Central';\
+            local=${build}/cache;\
+            readOnly=true

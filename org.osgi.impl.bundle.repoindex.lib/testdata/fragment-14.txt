@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="0.0.0"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="f8bf42e82383c6298ca5ade1c8dce4d161b25a114d795257020d06a79f13823f"/>
+    <attribute name="osgi.content" value="F8BF42E82383C6298CA5ADE1C8DCE4D161B25A114D795257020D06A79F13823F"/>
     <attribute name="url" value="testdata/14-provide-require-cap.jar"/>
     <attribute name="size" type="Long" value="1181"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

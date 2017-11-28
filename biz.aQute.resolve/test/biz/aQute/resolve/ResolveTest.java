@@ -77,7 +77,7 @@ public class ResolveTest extends TestCase {
 		File f = IO.getFile("testdata/resolve/includebndrun/" + file);
 		File wsf = IO.getFile("testdata/ws");
 
-		Workspace ws = Workspace.getWorkspace(wsf);
+		Workspace ws = new Workspace(wsf);
 		ws.setProperty("-resolve.effective", "active;skip:='workspace'");
 
 		Run run = Run.createRun(ws, f);

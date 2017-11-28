@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="0.0.0"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="ac0caea013b4e876a5c880c1ff9c75aa9bed9d2290180b18864efe66a9625274"/>
+    <attribute name="osgi.content" value="AC0CAEA013B4E876A5C880C1FF9C75AA9BED9D2290180B18864EFE66A9625274"/>
     <attribute name="url" value="testdata/12-nofragments.jar"/>
     <attribute name="size" type="Long" value="1119"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

@@ -1084,11 +1084,6 @@ public class bnd extends Processor {
 
 		@Description("Profile name. Default no profile")
 		String profile();
-
-		@Description("Use JPM to deliver the -runbundles and -runpath. This will include the SHAs of the jars in the manifest. When JPM installs such a "
-				+ "JAR it will automatically fetchs these jars and place them in the proper place. The filepaths to these artifacts will contain a ${JPMREPO} "
-				+ "macro that points at the directory where the sha based named files are stored.")
-		boolean jpm();
 	}
 
 	/**
@@ -1146,9 +1141,6 @@ public class bnd extends Processor {
 
 			run.setProperty(PROFILE, profile);
 			run.use(this);
-			if (opts.jpm())
-				run.setProperty(Constants.PACKAGE, Constants.PACKAGE_JPM);
-
 			try {
 				Jar jar = run.pack(profile);
 				path = path.replaceAll(".bnd(run)?$", "") + ".jar";
@@ -3075,7 +3067,7 @@ public class bnd extends Processor {
 	/**
 	 * Handle the global settings
 	 */
-	@Description("Set bnd/jpm global variables. The key can be wildcard.")
+	@Description("Set bnd global variables. The key can be wildcard.")
 	@Arguments(arg = {
 			"<key>[=<value>]..."
 	})
@@ -3106,7 +3098,7 @@ public class bnd extends Processor {
 
 	}
 
-	@Description("Set bnd/jpm global variables")
+	@Description("Set bnd global variables")
 	public void _settings(settingOptions opts) throws Exception {
 		try {
 			Settings settings = this.settings;

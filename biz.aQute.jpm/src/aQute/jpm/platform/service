@@ -1,2 +1,0 @@
-#!/bin/sh -e
-/usr/local/bin/jpm $1 `basename $0` $* | sh

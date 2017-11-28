@@ -2,6 +2,7 @@ package aQute.bnd.differ;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Objects;
 
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
@@ -115,7 +116,7 @@ class Element implements Tree {
 
 	@Override
 	public int hashCode() {
-		return type.hashCode() ^ name.hashCode();
+		return Objects.hash(type, name);
 	}
 
 	public Tree[] getChildren() {

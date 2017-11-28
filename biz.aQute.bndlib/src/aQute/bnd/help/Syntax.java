@@ -691,7 +691,7 @@ public class Syntax implements Constants {
 																					null, null),
 																			new Syntax(PACKAGE,
 																					"Defines the options for packaging",
-																					PACKAGE + "=" + PACKAGE_JPM, null,
+					PACKAGE + "=<packaging-type>", null,
 																					null),
 																			new Syntax(UPTO,
 																					"Limit bnd's behavior like it was up to the given version",

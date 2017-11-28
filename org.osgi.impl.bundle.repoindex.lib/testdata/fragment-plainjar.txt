@@ -4,7 +4,7 @@
     <attribute name="type" value="jarfile"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="15dab616e296ed2eb426e46c1b79615126197a5b9a2ee942bfa72b15c5e3dadd"/>
+    <attribute name="osgi.content" value="15DAB616E296ED2EB426E46C1B79615126197A5B9A2EE942BFA72B15C5E3DADD"/>
     <attribute name="url" value="testdata/jcip-annotations.jar"/>
     <attribute name="size" type="Long" value="2250"/>
     <attribute name="mime" value="application/java-archive"/>

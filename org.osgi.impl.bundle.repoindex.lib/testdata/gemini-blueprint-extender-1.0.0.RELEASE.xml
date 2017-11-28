@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="1.0.0.RELEASE"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="f0bdd4d1d28c5de7432e0f914b0b3c58f094f0111837efdc8d355744f33bd172"/>
+    <attribute name="osgi.content" value="F0BDD4D1D28C5DE7432E0F914B0B3C58F094F0111837EFDC8D355744F33BD172"/>
     <attribute name="url" value="testdata/gemini-blueprint-extender-1.0.0.RELEASE.jar"/>
     <attribute name="size" type="Long" value="178525"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

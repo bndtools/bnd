@@ -54,8 +54,11 @@ public class TestObrCapReqParsing extends TestCase {
 		List<Capability> contentCaps = resource.getCapabilities("osgi.content");
 		assertEquals(1, contentCaps.size());
 		assertEquals(
-				IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.7.0.jar").getAbsoluteFile().toURI(),
-				contentCaps.get(0).getAttributes().get("url"));
+				IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.7.0.jar")
+						.getAbsoluteFile()
+						.toURI()
+						.toString(),
+				contentCaps.get(0).getAttributes().get("url").toString());
 
 		// Check bundle
 		List<Capability> bundleCaps = resource.getCapabilities("osgi.wiring.bundle");

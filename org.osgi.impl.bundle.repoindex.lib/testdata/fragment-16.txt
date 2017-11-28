@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="0.0.0"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="8e765c2d20f07731e59f895e151769c7062dcf68edd1315475a3159fdbdd69c0"/>
+    <attribute name="osgi.content" value="8E765C2D20F07731E59F895E151769C7062DCF68EDD1315475A3159FDBDD69C0"/>
     <attribute name="url" value="testdata/16-optionalrequirebundle.jar"/>
     <attribute name="size" type="Long" value="376"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

@@ -1,6 +1,0 @@
-Bundle-Description: A test daemon, just prints out a number every 3 seconds
-Private-Package: aQute.daemon
-Main-Class: aQute.daemon.Daemon
-JPM-Service: testd
-JPM-Command: 
-JPM-Embedded: 

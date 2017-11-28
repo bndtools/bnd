@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="0.0.0"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="67d366b7705690f65e0efca396d0862d33874a9ddd64672390593694ce77bef2"/>
+    <attribute name="osgi.content" value="67D366B7705690F65E0EFCA396D0862D33874A9DDD64672390593694CE77BEF2"/>
     <attribute name="url" value="testdata/02-localization.jar"/>
     <attribute name="size" type="Long" value="1544"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

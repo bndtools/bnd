@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="2.2.0"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="e4d019c20015b7b36ff6480730255dfbd6c9091615a99353ee4c1cc815ab2cf3"/>
+    <attribute name="osgi.content" value="E4D019C20015B7B36FF6480730255DFBD6C9091615A99353EE4C1CC815AB2CF3"/>
     <attribute name="url" value="testdata/org.apache.felix.http.jetty-2.2.0.jar"/>
     <attribute name="size" type="Long" value="941716"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

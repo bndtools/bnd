@@ -1,5 +1,7 @@
 package aQute.bnd.osgi.resource;
 
+import java.util.Objects;
+
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -49,7 +51,7 @@ public class WireImpl implements Wire {
 
 	@Override
 	public int hashCode() {
-		return capability.hashCode() + requirement.hashCode();
+		return Objects.hash(capability, requirement);
 	}
 
 	@Override
