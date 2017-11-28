@@ -112,8 +112,7 @@ public class IndexedReposWithComms extends TestCase {
 		SocksServerBuilder builder = SocksServerBuilder.newSocks5ServerBuilder();
 		builder.setBindAddr(InetAddress.getLoopbackAddress());
 		builder.setBindPort(9090);
-		builder.setUserManager(userManager);
-		builder.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator() {
+		builder.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator(userManager) {
 			@Override
 			public void doAuthenticate(Credentials arg0, Session arg1) throws AuthenticationException {
 				System.out.println("Authenticating"); // does not get called?

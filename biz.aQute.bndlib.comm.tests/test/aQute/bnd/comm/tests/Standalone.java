@@ -32,14 +32,14 @@ public class Standalone {
 		// builder.setUserManager(userManager);
 
 		UsernamePasswordMethod usernamePasswordMethod = new UsernamePasswordMethod();
-		usernamePasswordMethod.setAuthenticator(new UsernamePasswordAuthenticator() {
+		usernamePasswordMethod.setAuthenticator(new UsernamePasswordAuthenticator(userManager) {
 			@Override
 			public void doAuthenticate(Credentials arg0, Session arg1) throws AuthenticationException {
 				super.doAuthenticate(arg0, arg1);
 				System.out.println("Auth " + arg0 + " " + arg1);
 			}
 		});
-		builder.setSocksMethods(usernamePasswordMethod).setUserManager(userManager);
+		builder.setSocksMethods(usernamePasswordMethod);
 		socks5Proxy = builder.build();
 
 		socks5Proxy.getSessionManager().addSessionListener("abc", new SessionListener() {

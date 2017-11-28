@@ -356,8 +356,7 @@ public class HttpClientProxyTest extends TestCase {
 		userManager.create(new User("proxyuser", "good"));
 		SocksServerBuilder builder = SocksServerBuilder.newSocks5ServerBuilder()
 				.setBindPort(++socksProxyPort)
-				.setUserManager(userManager)
-				.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator() {
+				.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator(userManager) {
 					@Override
 					public void doAuthenticate(Credentials arg0, Session arg1) throws AuthenticationException {
 						System.out.println("Authenticating"); // does not get

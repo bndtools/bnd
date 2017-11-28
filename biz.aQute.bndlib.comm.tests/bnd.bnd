@@ -9,7 +9,7 @@
 	org.osgi.util.promise;version=latest,\
 	biz.aQute.bndlib;version=latest;packages=*,\
 	biz.aQute.http.testservers;version=latest,\
-	jar/sockslib-1.0.0.jar;version=file,\
+	com.github.mike10004:fengyouchao-sockslib;version=latest,\
 	${junit},\
 	slf4j.api;version=latest,\
 	slf4j.simple;version=latest,\
