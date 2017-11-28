@@ -5,6 +5,7 @@ import static java.util.Collections.unmodifiableMap;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -54,14 +55,7 @@ class CapReq {
 		if (hashCode != 0) {
 			return hashCode;
 		}
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + attributes.hashCode();
-		result = prime * result + directives.hashCode();
-		result = prime * result + mode.hashCode();
-		result = prime * result + namespace.hashCode();
-		result = prime * result + ((resource == null) ? 0 : resource.hashCode());
-		return hashCode = result;
+		return hashCode = Objects.hash(attributes, directives, mode, namespace, resource);
 	}
 
 	@Override

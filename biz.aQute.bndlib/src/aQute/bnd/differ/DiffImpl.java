@@ -17,6 +17,7 @@ import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.util.Formatter;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import aQute.bnd.service.diff.Delta;
@@ -211,7 +212,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 
 	@Override
 	public int hashCode() {
-		return getDelta().hashCode() ^ getType().hashCode() ^ getName().hashCode();
+		return Objects.hash(getDelta(), getType(), getName());
 	}
 
 	public int compareTo(DiffImpl other) {

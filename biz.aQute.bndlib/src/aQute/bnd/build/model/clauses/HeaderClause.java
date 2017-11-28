@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
@@ -133,11 +134,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 	@SuppressWarnings("deprecation")
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((attribs == null) ? 0 : attribs.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		return result;
+		return Objects.hash(attribs, name);
 	}
 
 	@Override

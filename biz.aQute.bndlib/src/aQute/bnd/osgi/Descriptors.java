@@ -515,7 +515,10 @@ public class Descriptors {
 
 		@Override
 		public int hashCode() {
-			return prototype == null ? type.hashCode() : type.hashCode() ^ Arrays.hashCode(prototype);
+			final int prime = 31;
+			int result = prime + type.hashCode();
+			result = prime * result + ((prototype == null) ? 0 : Arrays.hashCode(prototype));
+			return result;
 		}
 
 		@Override
