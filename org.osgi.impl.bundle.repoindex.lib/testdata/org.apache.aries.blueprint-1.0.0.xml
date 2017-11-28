@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="1.0.0"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="22def9db2e6a1b4542c588e5b79433a557a7e8ee1066ca4d014164dde27a65e8"/>
+    <attribute name="osgi.content" value="22DEF9DB2E6A1B4542C588E5B79433A557A7E8EE1066CA4D014164DDE27A65E8"/>
     <attribute name="url" value="testdata/org.apache.aries.blueprint-1.0.0.jar"/>
     <attribute name="size" type="Long" value="437187"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

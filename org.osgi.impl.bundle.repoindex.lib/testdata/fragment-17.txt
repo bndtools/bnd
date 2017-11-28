@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="0.0.0"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="6add4c0f742eec622aa5237f3ea9959998a48adc1cc5940470db14a5da3ab103"/>
+    <attribute name="osgi.content" value="6ADD4C0F742EEC622AA5237F3EA9959998A48ADC1CC5940470DB14A5DA3AB103"/>
     <attribute name="url" value="testdata/17-blueprint1.jar"/>
     <attribute name="size" type="Long" value="878"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

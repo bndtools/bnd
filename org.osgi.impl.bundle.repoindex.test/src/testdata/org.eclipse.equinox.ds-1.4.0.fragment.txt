@@ -6,7 +6,7 @@
     <directive name="singleton" value="true"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="5766436c3ab47ed7e7517be295b39f6ba896db18985a4034b472d701b866be79"/>
+    <attribute name="osgi.content" value="5766436C3AB47ED7E7517BE295B39F6BA896DB18985A4034B472D701B866BE79"/>
     <attribute name="url" value="testdata/org.eclipse.equinox.ds-1.4.0.jar"/>
     <attribute name="size" type="Long" value="194031"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

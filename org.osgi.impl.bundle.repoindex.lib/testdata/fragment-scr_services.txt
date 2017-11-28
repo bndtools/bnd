@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="0.0.0"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="703817bba9c5dddc95338d2c2f3720557dc756ee54269b6153ade8896083b9a1"/>
+    <attribute name="osgi.content" value="703817BBA9C5DDDC95338D2C2F3720557DC756EE54269B6153ADE8896083B9A1"/>
     <attribute name="url" value="testdata/scr_services.jar"/>
     <attribute name="size" type="Long" value="2766"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>

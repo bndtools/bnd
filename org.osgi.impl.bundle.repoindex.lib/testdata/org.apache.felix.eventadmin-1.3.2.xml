@@ -5,7 +5,7 @@
     <attribute name="version" type="Version" value="1.3.2"/>
   </capability>
   <capability namespace="osgi.content">
-    <attribute name="osgi.content" value="d12e7c15e655e0795cf9bc33bb15219cfb55a63ead195583e6f62958761d3af0"/>
+    <attribute name="osgi.content" value="D12E7C15E655E0795CF9BC33BB15219CFB55A63EAD195583E6F62958761D3AF0"/>
     <attribute name="url" value="testdata/org.apache.felix.eventadmin-1.3.2.jar"/>
     <attribute name="size" type="Long" value="216530"/>
     <attribute name="mime" value="application/vnd.osgi.bundle"/>
