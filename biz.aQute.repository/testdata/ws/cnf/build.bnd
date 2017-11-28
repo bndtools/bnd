@@ -1,9 +1,9 @@
 -plugin: \
 \
-    aQute.bnd.jpm.Repository; \
-        name=JPM; \
-        location="generated/tmp/test/cache/shas"; \
-        index=${workspace}/cnf/jpm4j.json, \
+    aQute.lib.deployer.FileRepo; \
+        name=Repo; \
+        location=${workspace}/cnf/repo; \
+        readonly=true, \
 \
 	aQute.bnd.deployer.repository.wrapper.Plugin; \
 		location="generated/tmp/test/cache/wrapper"; \

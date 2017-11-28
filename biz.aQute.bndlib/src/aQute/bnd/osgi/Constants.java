@@ -166,7 +166,6 @@ public interface Constants {
 	String							OUTPUTMASK									= "-outputmask";																																						// default
 																																																														// ${@bsn}.jar
 	String							PACKAGE										= "-package";
-	String							PACKAGE_JPM									= "jpm";
 	String							PEDANTIC									= "-pedantic";
 	String							PACKAGEINFOTYPE								= "-packageinfotype";
 	String							PLUGIN										= "-plugin";

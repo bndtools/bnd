@@ -17,8 +17,6 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
-import aQute.bnd.build.Workspace;
-import aQute.bnd.jpm.Repository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.version.Version;
@@ -33,7 +31,6 @@ public class TestWrapper extends TestCase {
 
 	public void setUp() throws Exception {
 		tmp = IO.getFile("generated/tmp/test/" + getName());
-		System.setProperty("jpm4j.in.test", "true");
 		tmp.mkdirs();
 		IO.delete(tmp);
 		tmp.mkdirs();
@@ -85,12 +82,6 @@ public class TestWrapper extends TestCase {
 		assertEquals(1, provider.size());
 	}
 
-	public void testJPMRepoBasic() throws Exception {
-		try (Repository repo = getJpmRepo();) {
-			testRepo(1, repo);
-		}
-	}
-
 	public void testFileRepoBasic() throws Exception {
 		try (InfoFileRepo repo = getFileRepo(true);) {
 			testRepo(1, repo);
@@ -107,12 +98,12 @@ public class TestWrapper extends TestCase {
 		List<InfoRepository> repos = Arrays.asList(repo);
 
 		for (InfoRepository r : repos) {
-			assertNotNull(r.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
+			assertNotNull(r.get("osgi.logger.provider", new Version("1.1.0"), null));
 		}
 
 		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, repos);
 
-		Requirement req = CapReqBuilder.createBundleRequirement("biz.aQute.jpm.daemon", null)
+		Requirement req = CapReqBuilder.createBundleRequirement("osgi.logger.provider", null)
 				.buildSyntheticRequirement();
 
 		Map<Requirement,Collection<Capability>> result = iw.findProviders(Arrays.asList(req));
@@ -139,24 +130,18 @@ public class TestWrapper extends TestCase {
 	 * with a file from the workspace.
 	 */
 
-	public void testAugment() throws Exception {
-		Repository repo = getJpmRepo();
-
-		augmentTest(repo);
-	}
-
 	public void testFileRepoAugment() throws Exception {
 		InfoFileRepo repo = getFileRepo(true);
 		augmentTest(repo);
 	}
 
 	private void augmentTest(InfoRepository repo) throws Exception, IOException {
-		assertNotNull(repo.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
+		assertNotNull(repo.get("osgi.logger.provider", new Version("1.1.0"), null));
 
 		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
 
 		Properties augments = new UTF8Properties();
-		augments.load(new StringReader("biz.aQute.jpm.daemon: cap=test;test=1\n"));
+		augments.load(new StringReader("osgi.logger.provider: cap=test;test=1\n"));
 		iw.addAugment(augments);
 
 		//
@@ -165,7 +150,7 @@ public class TestWrapper extends TestCase {
 
 		Requirement testreq = new CapReqBuilder("test").filter("(test=1)").buildSyntheticRequirement();
 
-		Requirement identity = new CapReqBuilder("osgi.identity").filter("(osgi.identity=biz.aQute.jpm.daemon)")
+		Requirement identity = new CapReqBuilder("osgi.identity").filter("(osgi.identity=osgi.logger.provider)")
 				.buildSyntheticRequirement();
 
 		Map<Requirement,Collection<Capability>> result = iw.findProviders(Arrays.asList(testreq, identity));
@@ -191,56 +176,8 @@ public class TestWrapper extends TestCase {
 	 * with a file from the workspace.
 	 */
 
-	public void testAugment2() throws Exception {
-
-		File cache = new File("generated/tmp/test/cache");
-		IO.deleteWithException(cache);
-
-		Workspace ws = Workspace.getWorkspace(IO.getFile("testdata/ws"));
-
-		assertNotNull(ws);
-
-		Repository repo = ws.getPlugin(Repository.class);
-		assertNotNull(repo);
-
-		assertNotNull(repo.get("biz.aQute.jpm.daemon", new Version("1.1.0"), null));
-
-		org.osgi.service.repository.Repository osgi = ws.getPlugin(org.osgi.service.repository.Repository.class);
-
-		//
-		// Get the test and identity capability
-		//
-
-		Requirement testreq = new CapReqBuilder("test").filter("(test=1)").buildSyntheticRequirement();
-
-		Requirement identity = new CapReqBuilder("osgi.identity").filter("(osgi.identity=biz.aQute.jpm.daemon)")
-				.buildSyntheticRequirement();
-
-		Map<Requirement,Collection<Capability>> result = osgi.findProviders(Arrays.asList(testreq, identity));
-
-		assertNotNull(result);
-		assertEquals(2, result.size());
-
-		//
-		// Test if they come from the same resource
-		//
-
-		Capability testcap = result.get(testreq).iterator().next();
-		Capability identitycap = result.get(identity).iterator().next();
-		assertNotNull(testcap);
-		assertNotNull(identitycap);
-		assertEquals(testcap.getResource(), identitycap.getResource());
-
-	}
-
-	private Repository getJpmRepo() {
-		Repository repo = new Repository();
-		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "testdata/ws/cnf/jpm4j.json"));
-		return repo;
-	}
-
 	private InfoRepositoryWrapper getRepo() throws Exception {
-		Repository repo = getJpmRepo();
+		InfoFileRepo repo = getFileRepo(true);
 		InfoRepositoryWrapper iw = new InfoRepositoryWrapper(tmp, Collections.singleton(repo));
 		return iw;
 	}
@@ -249,7 +186,7 @@ public class TestWrapper extends TestCase {
 		InfoFileRepo repo = new InfoFileRepo();
 		repo.setProperties(MAP.$("location", tmp.getAbsolutePath()).$("index", "" + info));
 
-		Collection<File> files = IO.tree(IO.getFile("testdata/ws/cnf/jar"), "*.jar");
+		Collection<File> files = IO.tree(IO.getFile("testdata/ws/cnf/repo"), "*.jar");
 		for (File f : files) {
 			repo.put(new FileInputStream(f), null);
 		}

@@ -5,21 +5,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
-import aQute.bnd.jpm.Repository;
 import aQute.bnd.repository.osgi.OSGiRepository;
-import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.service.url.URLConnector;
-import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer;
 import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
-import aQute.libg.cryptography.SHA256;
 import junit.framework.TestCase;
 import sockslib.common.AuthenticationException;
 import sockslib.common.Credentials;
@@ -112,47 +106,6 @@ public class IndexedReposWithComms extends TestCase {
 		}
 	}
 
-	public void testJpmRepoQuery() throws Exception {
-		try (HttpTestServer ht = http();) {
-
-			createSecureSocks5();
-
-			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/jpm"));
-			assertNotNull(ws);
-			ws.setProperty("repo", ht.getBaseURI().toASCIIString());
-			ws.setProperty("tmp", tmp.toURI().getPath());
-			ws.setProperty("-fixupmessages.jpmdeprecated", "aQute.bnd.jpm.Repository is deprecated");
-			Repository plugin = ws.getPlugin(Repository.class);
-			assertTrue(ws.check());
-			assertNotNull(plugin);
-
-			Set<ResourceDescriptor> query = plugin.query("bla");
-			assertTrue(ws.check());
-			assertTrue(query.size() > 0);
-
-		}
-	}
-
-	public void testJpmRepoDownload() throws Exception {
-		try (HttpTestServer ht = http();) {
-
-			createSecureSocks5();
-
-			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/jpm"));
-			assertNotNull(ws);
-			ws.setProperty("repo", ht.getBaseURI().toASCIIString());
-			ws.setProperty("tmp", tmp.toURI().getPath());
-			Repository plugin = ws.getPlugin(Repository.class);
-			ResourceDescriptor descriptor = plugin.getDescriptor("slf4j.simple", new Version("1.7.13"));
-			assertNotNull(descriptor);
-
-			File file = plugin.get("slf4j.simple", new Version("1.7.13"), null);
-			assertTrue(file.isFile());
-			byte[] digest = SHA256.digest(file).digest();
-			assertTrue(Arrays.equals(descriptor.sha256, digest));
-		}
-	}
-
 	private void createSecureSocks5() throws IOException, InterruptedException {
 		UserManager userManager = new MemoryBasedUserManager();
 		userManager.create(new User("proxyuser", "good"));
@@ -206,23 +159,10 @@ public class IndexedReposWithComms extends TestCase {
 			socks5Proxy.shutdown();
 	}
 
-	public static class HS extends Httpbin {
-
-		public HS(Config config) throws Exception {
-			super(config);
-		}
-
-		// jsonrpc/2.0/jpm
-		public void _jsonrpc$2f2$2e0$2fjpm(Request rq, Response rsp) throws IOException {
-			rsp.content = IO.read(IO.getFile("workspaces/jpm/cnf/programs.json"));
-			rsp.mimeType = "application/json";
-		}
-	}
-
 	HttpTestServer http() throws Exception, IOException {
 		HttpTestServer.Config config = new HttpTestServer.Config();
 		config.host = "localhost";
-		HttpTestServer ht = new HS(config);
+		HttpTestServer ht = new Httpbin(config);
 		ht.start();
 		return ht;
 	}
@@ -231,7 +171,7 @@ public class IndexedReposWithComms extends TestCase {
 		HttpTestServer.Config config = new HttpTestServer.Config();
 		config.host = "localhost";
 		config.https = true;
-		HttpTestServer ht = new HS(config);
+		HttpTestServer ht = new Httpbin(config);
 		ht.start();
 		return ht;
 	}

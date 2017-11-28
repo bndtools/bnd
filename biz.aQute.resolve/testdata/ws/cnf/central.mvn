@@ -1,0 +1,7 @@
+# 3rd party artifacts
+org.apache.felix:org.apache.felix.framework:4.4.0
+org.apache.felix:org.apache.felix.scr:1.8.2
+org.apache.felix:org.apache.felix.webconsole:4.0.0
+org.apache.felix:org.apache.felix.gogo.runtime:0.10.0
+org.apache.felix:org.apache.felix.gogo.runtime:0.12.0
+org.apache.felix:org.apache.felix.gogo.shell:0.10.0

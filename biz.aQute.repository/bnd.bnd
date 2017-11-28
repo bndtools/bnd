@@ -22,7 +22,6 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 	osgi.cmpn;version=@6,\
 	javax.xml.stream;version=latest,\
 	slf4j.api;version=latest,\
-	aQute.jpm.clnt;version=latest;packages=*,\
 	org.tukaani.xz;version=latest,\
 	biz.aQute.bnd.annotation;version=latest
 	
@@ -57,7 +56,6 @@ Export-Package: \
 	aQute.bnd.deployer.repository.providers;bnd-plugins=true,\
 	aQute.bnd.deployer.repository.wrapper;bnd-plugins=true,\
 	aQute.bnd.repository.maven.provider;bnd-plugins=true,\
-	aQute.bnd.jpm;bnd-plugins=true,\
 	org.osgi.service.coordinator,\
 	org.osgi.service.indexer,\
 	aQute.bnd.repository.p2.provider;bnd-plugins=true,\
@@ -73,14 +71,7 @@ Private-Package: \
 	aQute.p2.provider,\
 	${repoindex-pkgs},\
 	org.osgi.service.log;-split-package:=first,\
-	org.osgi.framework;-split-package:=first,\
-	aQute.jpm.facade.repo,\
-	aQute.jsonrpc.proxy,\
-	aQute.rest.urlclient,\
-	aQute.service.library,\
-	aQute.jsonrpc.domain,\
-	aQute.struct,\
-	aQute.bnd.jpm.util
+	org.osgi.framework;-split-package:=first
 
 Conditional-Package:\
 	aQute.lib.*;-split-package:=first,\
