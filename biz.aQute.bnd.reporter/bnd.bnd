@@ -1,0 +1,48 @@
+
+
+-buildpath: \
+	aQute.libg;version=latest,\
+	biz.aQute.bndlib;version=latest,\
+	osgi.annotation;version=6.0,\
+	slf4j.api;version=1.7,\
+	osgi.core;version=6.0,\
+	org.jtwig:jtwig-core;version=5.86,\
+	org.apache.commons.lang3;version=3.4,\
+	org.parboiled:parboiled-java;version=1.1,\
+	com.google.guava;version=18.0,\
+	org.jtwig:jtwig-reflection;version=5.86,\
+	com.googlecode.concurrentlinkedhashmap.lru;version=1.4,\
+	org.objectweb.asm;version=5.0,\
+	org.objectweb.asm.analysis;version=5.0,\
+	org.objectweb.asm.tree;version=5.0,\
+	org.objectweb.asm.util;version=5.0,\
+	org.parboiled:parboiled-core;version=1.1
+	
+-testpath: \
+	org.apache.servicemix.bundles.junit
+	
+Export-Package: \
+	biz.aQute.bnd.reporter.generator,\
+	biz.aQute.bnd.reporter.plugins,\
+	aQute.bnd.service.reporter,\
+	aQute.service.reporter
+
+-conditionalpackage: \
+	aQute.lib.*;-package-split:=merge-first,\
+	aQute.libg.*;-package-split:=merge-first,\
+	com.google.common.*,\
+	com.googlecode.*,\
+	org.apache.commons.lang3.*
+	
+	
+Private-Package: \
+	biz.aQute.bnd.reporter.plugins.dto,\
+	biz.aQute.bnd.reporter.plugins.headers,\
+	biz.aQute.bnd.reporter.plugins.headers.dto,\
+	biz.aQute.bnd.reporter.helpers,\
+	org.osgi.dto,\
+	org.parboiled.*;-package-split:=merge-first,\
+	org.objectweb.asm.*,\
+	org.jtwig.*
+
+-fixupmessages: Split

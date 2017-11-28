@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<rootElement xmlns="startData.xsd" xmlns:xn="standardData.xsd"
+	xmlns:cs="CompanySpecific.1.0.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<fileHeader fileFormat="v1.0" companyName="CompanyABC" />
+	<fileData>
+		<xn:childContainer>
+			<xn:attributes>
+				<xn:childLabel>Store 0001 Inventory</xn:childLabel>
+				<xn:childType>Stock</xn:childType>
+			</xn:attributes>
+			<xn:CompanySpecificContainer>
+				<xn:attributes>
+					<xn:csDataType>csStore</xn:csDataType>
+					<xn:csDataFormat>CompanySpecific.1.0</xn:csDataFormat>
+					<cs:csStore>
+						<cs:label>Store 0001</cs:label>
+						<cs:name>Product 1</cs:name>
+						<cs:value>In Stock</cs:value>
+					</cs:csStore>
+				</xn:attributes>
+				<xn:CompanySpecificContainer>
+					<xn:attributes>
+						<xn:csDataType>csProduct</xn:csDataType>
+						<xn:csDataFormat>CompanySpecific.1.0</xn:csDataFormat>
+						<cs:csProduct>
+							<cs:label>Product 1</cs:label>
+							<cs:name>Quantity</cs:name>
+							<cs:value>10</cs:value>
+						</cs:csProduct>
+					</xn:attributes>
+				</xn:CompanySpecificContainer>
+			</xn:CompanySpecificContainer>
+			<xn:salesInformation>
+				<xn:storeNumber>Store 0001</xn:storeNumber>
+				<xn:orderNumber>12345</xn:orderNumber>
+				<xn:salesDate>20-SEP-2007</xn:salesDate>
+				<xn:product>Product 1</xn:product>
+				<xn:quantity>1</xn:quantity>
+				<xn:price>110.00</xn:price>
+			</xn:salesInformation>
+		</xn:childContainer>
+	</fileData>
+	<fileFooter timeStamp="20-SEP-2007" />
+</rootElement>

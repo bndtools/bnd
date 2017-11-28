@@ -1,0 +1,27 @@
+{"metatypes":[{
+  "attributes":[],"description":"","factoryPids":[],"icons":[],"id":"org.metatype.test.Metatype1","name":"Org metatype test metatype1","pids":[]
+},{
+  "attributes":[{
+    "cardinality":2147483647,"description":null,"id":"dede","max":null,"min":null,"name":"Dede","options":[],"required":true,"type":"Integer","values":[]
+  },{
+    "cardinality":0,"description":null,"id":"dada","max":null,"min":null,"name":"Dada","options":[{
+      "label":"ONE","value":"ONE"
+    },{
+      "label":"OTHER","value":"OTHER"
+    }],"required":true,"type":"String","values":[]
+  },{
+    "cardinality":0,"description":"description","id":"didi","max":"max","min":"min","name":"name","options":[],"required":false,"type":"Password","values":["One"]
+  }],"description":"description","factoryPids":["on","two"],"icons":[{
+    "resource":"path","size":54
+  }],"id":"org.metatype.test.Metatype2","name":"name","pids":["ones","other"]
+},{
+  "attributes":[{
+    "cardinality":2,"description":"un descrip","id":"didi","max":"max","min":"min","name":"un name","options":[{
+      "label":"un Cool","value":"Two"
+    },{
+      "label":"un Super","value":"pick"
+    }],"required":false,"type":"String","values":["One"]
+  }],"description":"un descrip","factoryPids":["o","twco"],"icons":[{
+    "resource":"path","size":54
+  }],"id":"org.metatype.test.Metatype3","name":"un name","pids":["onecs","othcer"]
+}]}

@@ -1,16 +1,29 @@
 package aQute.lib.tag;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Pattern;
+
+import aQute.lib.exceptions.Exceptions;
 
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element
@@ -20,16 +33,16 @@ import java.util.regex.Pattern;
  */
 public class Tag {
 
-	final static String			NameStartChar	= ":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]\uFDF0-\uFFFD";
-	final static String			NameChar		= "[" + NameStartChar + "0-9.\u00B7\u0300-\u036F\u203F-\u2040\\-]";
-	final static String			Name			= "[" + NameStartChar + "]" + NameChar + "*";
-	final public static Pattern	NAME_P			= Pattern.compile(Name);
+	final static String				NameStartChar	= ":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]\uFDF0-\uFFFD";
+	final static String				NameChar		= "[" + NameStartChar + "0-9.\u00B7\u0300-\u036F\u203F-\u2040\\-]";
+	final static String				Name			= "[" + NameStartChar + "]" + NameChar + "*";
+	final public static Pattern		NAME_P			= Pattern.compile(Name);
 
-	Tag								parent;														// Parent
-	String							name;														// Name
-	final Map<String,String>		attributes	= new LinkedHashMap<String,String>();
-	final List<Object>				content		= new ArrayList<Object>();						// Content
-	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	Tag								parent;																																											// Parent
+	String							name;																																											// Name
+	final Map<String,String>		attributes		= new LinkedHashMap<String,String>();
+	final List<Object>				content			= new ArrayList<Object>();																																		// Content
+	final static SimpleDateFormat	format			= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 	boolean							cdata;
 
 	/**
@@ -60,8 +73,8 @@ public class Tag {
 	}
 
 	/**
-	 * Construct a new Tag with a name and a set of attributes. The attributes
-	 * are given as ( name, value ) ...
+	 * Construct a new Tag with a name and a set of attributes. The attributes are
+	 * given as ( name, value ) ...
 	 */
 	public Tag(String name, String[] attributes, Object... contents) {
 		this(name, contents);
@@ -132,6 +145,84 @@ public class Tag {
 	}
 
 	/**
+	 * Add new content tags derived from the DTO value.
+	 */
+	public Tag addContent(String name, Object dto) {
+		if (dto != null) {
+			if (isComplex(dto)) {
+				List<Object> flattedDtos = new LinkedList<>();
+
+				if (flatCollection(dto, flattedDtos, true)) {
+					for (Object d : flattedDtos) {
+						addContent(name, d);
+					}
+				} else if (dto instanceof Map) {
+					Tag tag = new Tag(name);
+					for (Entry< ? , ? > entry : ((Map< ? , ? >) dto).entrySet()) {
+						tag.addContent(Objects.toString(entry.getKey()), entry.getValue());
+					}
+					if (!tag.content.isEmpty()) {
+						addContent(tag);
+					}
+				} else {
+					Tag tag = new Tag(name);
+					for (Field field : getFields(dto.getClass())) {
+						try {
+							tag.addContent(field.getName(), field.get(dto));
+						} catch (IllegalAccessException bug) {
+							/* should not be thrown if input respect dto spec */
+							throw new RuntimeException(bug);
+						}
+					}
+					addContent(tag);
+				}
+			} else {
+				addContent(new Tag(name, dto.toString()));
+			}
+		}
+		return this;
+	}
+
+	private boolean flatCollection(Object dto, List<Object> result, boolean topLevel) {
+		if (dto != null) {
+			if (dto.getClass().isArray()) {
+				int length = Array.getLength(dto);
+				for (int i = 0; i < length; i++) {
+					flatCollection(Array.get(dto, i), result, false);
+				}
+
+				return true;
+			} else if (dto instanceof Collection) {
+				for (Object d : (Collection< ? >) dto) {
+					flatCollection(d, result, false);
+				}
+
+				return true;
+			} else if (!topLevel) {
+				result.add(dto);
+			}
+		}
+		return false;
+	}
+
+	private boolean isComplex(Object a) {
+		return a instanceof Map || a instanceof Collection || a.getClass().isArray()
+				|| getFields(a.getClass()).length > 0;
+	}
+
+	private Field[] getFields(Class< ? > c) {
+		List<Field> publicFields = new ArrayList<>();
+
+		for (Field field : c.getFields()) {
+			if (field.isEnumConstant() || field.isSynthetic() || Modifier.isStatic(field.getModifiers()))
+				continue;
+			publicFields.add(field);
+		}
+
+		return publicFields.toArray(new Field[publicFields.size()]);
+	}
+
+	/**
 	 * Return the name of the tag.
 	 */
 	public String getName() {
@@ -168,8 +259,7 @@ public class Tag {
 	}
 
 	/**
-	 * Return a string representation of this Tag and all its children
-	 * recursively.
+	 * Return a string representation of this Tag and all its children recursively.
 	 */
 	@Override
 	public String toString() {
@@ -179,8 +269,7 @@ public class Tag {
 	}
 
 	/**
-	 * Return only the tags of the first level of descendants that match the
-	 * name.
+	 * Return only the tags of the first level of descendants that match the name.
 	 */
 	public List<Object> getContents(String tag) {
 		List<Object> out = new ArrayList<Object>();
@@ -494,5 +583,18 @@ public class Tag {
 			return name;
 		else
 			return parent.getPath() + "/" + name;
+	}
+
+	public InputStream toInputStream() {
+		try {
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(bout, "UTF-8"));
+			this.print(2, pw);
+			pw.flush();
+			return new ByteArrayInputStream(bout.toByteArray());
+		} catch (UnsupportedEncodingException e) {
+			// impossible
+			throw Exceptions.duck(e);
+		}
 	}
 }

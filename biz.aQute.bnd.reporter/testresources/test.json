@@ -1,0 +1,55 @@
+{"manifest":{"bundleClasspaths":["."],"bundleDescription":"The provider bundle for org.component.test. ","exportPackages":[{
+  "arbitraryAttributes":{"provide":"true"},"excludes":[],"includes":[],"mandatories":[],"packageName":"org.component.test.api","uses":[],"version":{
+    "major":1,"micro":0,"minor":0,"qualifier":null
+  }
+}],"importPackages":[{
+  "arbitraryAttributes":{},"bundleSymbolicName":null,"bundleVersion":{
+    "ceiling":null,"floor":{
+      "include":true,"major":0,"micro":0,"minor":0,"qualifier":null
+    }
+  },"packageName":"org.component.test.api","resolution":"mandatory","version":{
+    "ceiling":null,"floor":{
+      "include":true,"major":0,"micro":0,"minor":0,"qualifier":null
+    }
+  }
+},{
+  "arbitraryAttributes":{},"bundleSymbolicName":null,"bundleVersion":{
+    "ceiling":null,"floor":{
+      "include":true,"major":0,"micro":0,"minor":0,"qualifier":null
+    }
+  },"packageName":"org.osgi.service.cm","resolution":"mandatory","version":{
+    "ceiling":{
+      "include":false,"major":2,"micro":0,"minor":0,"qualifier":null
+    },"floor":{
+      "include":true,"major":1,"micro":0,"minor":5,"qualifier":null
+    }
+  }
+},{
+  "arbitraryAttributes":{},"bundleSymbolicName":null,"bundleVersion":{
+    "ceiling":null,"floor":{
+      "include":true,"major":0,"micro":0,"minor":0,"qualifier":null
+    }
+  },"packageName":"org.osgi.service.event","resolution":"mandatory","version":{
+    "ceiling":{
+      "include":false,"major":2,"micro":0,"minor":0,"qualifier":null
+    },"floor":{
+      "include":true,"major":1,"micro":0,"minor":3,"qualifier":null
+    }
+  }
+}],"bundleManifestVersion":2,"bundleName":"org.component.test","provideCapabilities":[{
+  "arbitraryDirectives":{},"effective":"resolve","namespace":"osgi.service","typedAttributes":[{
+    "multiValue":true,"name":"objectClass","type":"String","values":["org.component.test.api.SomeApi","org.component.test.api.SomeOtherApi"]
+  }],"uses":[]
+}],"requireCapabilities":[{
+  "cardinality":"single","effective":"resolve","filter":"(&(osgi.extender=osgi.component)(version>=1.3.0)(!(version>=2.0.0)))","namespace":"osgi.extender","resolution":"mandatory","typedAttributes":[]
+},{
+  "cardinality":"single","effective":"active","filter":"(objectClass=org.osgi.service.cm.ConfigurationAdmin)","namespace":"osgi.service","resolution":"mandatory","typedAttributes":[]
+},{
+  "cardinality":"single","effective":"active","filter":"(objectClass=org.osgi.service.event.EventAdmin)","namespace":"osgi.service","resolution":"optional","typedAttributes":[]
+},{
+  "cardinality":"single","effective":"resolve","filter":"(&(osgi.ee=JavaSE)(version=1.8))","namespace":"osgi.ee","resolution":"mandatory","typedAttributes":[]
+}],"bundleSymbolicName":{
+  "arbitraryAttributes":{},"fragmentAttachment":"mandatory","mandatories":[],"singleton":false,"symbolicName":"org.component.test"
+},"bundleVersion":{
+  "major":1,"micro":0,"minor":0,"qualifier":"201709111023"
+}}}
