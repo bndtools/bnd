@@ -96,6 +96,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	// Class we're currently processing
 	Clazz							current;
 
+	// The meta annotations we have processed, used to avoid infinite loops
+	final Set<String>				processed				= new HashSet<>();
+
 	// we parse the annotations separately at the end
 	boolean							finalizing;
 
@@ -128,7 +131,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	@Override
 	public boolean classStart(Clazz c) {
-
+		processed.clear();
 		//
 		// Parse any classes except annotations
 		//
@@ -219,21 +222,54 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * @throws Exception
 	 */
 	void doAnnotatedAnnotation(final Annotation annotation, TypeRef name) throws Exception {
-		final Clazz c = analyzer.findClass(annotation.getName());
+		final String fqn = name.getFQN();
+		if (processed.contains(fqn)) {
+			analyzer.getLogger().debug("Detected an annotation cycle when processing %s. The cycled annotation was %s",
+					current.getFQN(), fqn);
+			return;
+		}
+		final Clazz c = analyzer.findClass(name);
 		if (c != null && c.annotations != null) {
-			if (c.annotations.stream().map(TypeRef::getFQN).anyMatch(interesting::contains)) {
+			boolean scanThisType = false;
+			for (TypeRef tr : c.annotations) {
+				// No point in scanning core Java annotations
+				if (tr.getPackageRef().isJava()) {
+					continue;
+				}
+
+				if (interesting.contains(tr.getFQN())) {
+					scanThisType = true;
+				} else {
+					processed.add(fqn);
+					doAnnotatedAnnotation(annotation, tr);
+				}
+			}
+			if (scanThisType) {
 				c.parseClassFileWithCollector(new ClassDataCollector() {
 					@Override
 					public void annotation(Annotation a) throws Exception {
 						if (interesting.contains(a.getName().getFQN())) {
-							a.merge(annotation);
-							a.addDefaults(c);
+							// Bnd annotations support merging of child properties,
+							// but this is not in the specification as far as I can tell
+							if(isBndAnnotation(a)) {
+								a.merge(annotation);
+								a.addDefaults(c);
+							}
 							AnnotationHeaders.this.annotation(a);
 						}
 					}
+
 				});
 			}
+		} else if (c == null) {
+			analyzer.warning(
+					"Unable to determine whether the meta annotation %s applied to type %s provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
+					fqn, current.getFQN());
 		}
+	}
+
+	private boolean isBndAnnotation(Annotation a) {
+		return a.getName().getFQN().startsWith("aQute.bnd.annotation.headers");
 	}
 
 	/*
