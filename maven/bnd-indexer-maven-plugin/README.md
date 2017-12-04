@@ -195,6 +195,18 @@ By default the `bnd-indexer-maven-plugin` will include dependencies with
         </scopes>
     </configuration>
 
+#### Avoiding attaching the generated index
+
+By default the OSGi index output files generate by this plugin are attached as deployable 
+artifacts with the classifier `osgi-index`. This behaviour is not always desirable, for
+example if the index is only used as input to another plugin within the build. Attaching
+the generated indexes can be disabled as follows:
+
+    <configuration>
+        <attach>false</attach>
+    </configuration>
+
+
 #### Including the current project output as part of the index
 
 A nice application of the `bnd-indexer-maven-plugin` is using it in conjunction with the
@@ -221,6 +233,7 @@ Setting up an integration test project using this approach could be achieved as 
     <configuration>
         <includeJar>true</includeJar>
         <localURLs>REQUIRED</localURLs>
+        <attach>false</attach>
     </configuration>
     ...
     <!-- Testing plugin configuration -->
