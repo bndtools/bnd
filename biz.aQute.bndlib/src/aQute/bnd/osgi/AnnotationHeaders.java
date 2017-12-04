@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
@@ -9,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.osgi.annotation.bundle.Capabilities;
 import org.osgi.annotation.bundle.Capability;
@@ -69,6 +72,21 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	static final Pattern			SIMPLE_PARAM_PATTERN	= Pattern
 			.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
+
+	// Annotations to ignore scanning further because they are known to be
+	// uninteresting
+	// to this scanner. This speeds us up (a little) and also avoids printing
+	// warnings
+	// for annotations that aren't supposed to be needed on the classpath
+	// (usually
+	// OSGi versioning annotations).
+	static final Set<String>	DO_NOT_SCAN;
+
+	static {
+		DO_NOT_SCAN = Stream.of("org.osgi.annotation.versioning.ProviderType",
+				"org.osgi.annotation.versioning.ConsumerType", "org.osgi.annotation.versioning.Version")
+				.collect(toSet());
+	}
 
 	final Analyzer					analyzer;
 	final Set<String>				interesting				= new HashSet<>();
@@ -149,10 +167,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 */
 	public void annotation(Annotation annotation) throws Exception {
 		TypeRef name = annotation.getName();
-		if (name.isJava())
+		String fqn = name.getFQN();
+
+		if (name.isJava() || DO_NOT_SCAN.contains(fqn))
 			return;
 
-		switch (name.getFQN()) {
+		switch (fqn) {
 			case BUNDLE_LICENSE :
 				doLicense(annotation);
 				break;
@@ -232,12 +252,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		if (c != null && c.annotations != null) {
 			boolean scanThisType = false;
 			for (TypeRef tr : c.annotations) {
+				String trName = tr.getFQN();
 				// No point in scanning core Java annotations
-				if (tr.getPackageRef().isJava()) {
+				if (tr.isJava() || DO_NOT_SCAN.contains(trName)) {
 					continue;
 				}
 
-				if (interesting.contains(tr.getFQN())) {
+				if (interesting.contains(trName)) {
 					scanThisType = true;
 				} else {
 					processed.add(fqn);
