@@ -87,6 +87,9 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.skip", defaultValue = "false")
 	private boolean						skip;
 
+	@Parameter(property = "bnd.indexer.attach", defaultValue = "true")
+	private boolean						attach;
+
 	/**
 	 * This configuration parameter is used by the maven-deploy-plugin to define
 	 * a release repo for deployment
@@ -242,6 +245,12 @@ public class IndexerMojo extends AbstractMojo {
 	}
 
 	private void attach(File file, String type, String extension) {
+		if (!attach) {
+			logger.debug("The indexer is not attaching file {} with type {} and extension {} as attachment is disabled",
+					file, type, extension);
+			return;
+		}
+
 		DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
 		handler.setExtension(extension);
 		DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), project.getArtifactId(),
