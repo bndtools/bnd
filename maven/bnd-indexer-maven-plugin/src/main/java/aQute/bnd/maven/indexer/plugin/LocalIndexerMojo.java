@@ -54,9 +54,13 @@ public class LocalIndexerMojo extends AbstractMojo {
 		}
 
         if(baseFile == null) {
-        	baseFile = outputFile.getParentFile();
+			baseFile = outputFile.getParentFile();
         }
-        
+
+		if (!inputDir.isDirectory()) {
+			throw new MojoExecutionException("inputDir does not refer to a directory");
+		}
+
 		logger.debug("Indexing dependencies in folder: {}", inputDir.getAbsolutePath());
 		logger.debug("Outputting index to: {}", outputFile.getAbsolutePath());
 		logger.debug("Producing additional gzip index: {}", includeGzip);
