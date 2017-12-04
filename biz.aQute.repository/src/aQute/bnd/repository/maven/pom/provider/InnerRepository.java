@@ -25,4 +25,6 @@ abstract class InnerRepository extends ResourcesRepository {
 	}
 
 	abstract void refresh() throws Exception;
+
+	abstract boolean isStale() throws Exception;
 }
