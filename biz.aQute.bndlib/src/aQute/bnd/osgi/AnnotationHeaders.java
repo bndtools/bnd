@@ -19,6 +19,8 @@ import org.osgi.annotation.bundle.Header;
 import org.osgi.annotation.bundle.Headers;
 import org.osgi.annotation.bundle.Requirement;
 import org.osgi.annotation.bundle.Requirements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.headers.BundleCategory;
 import aQute.bnd.annotation.headers.BundleContributors;
@@ -70,6 +72,8 @@ import aQute.lib.strings.Strings;
  */
 class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
+	private static final Logger	LOGGER					= LoggerFactory.getLogger(AnnotationHeaders.class);
+
 	static final Pattern			SIMPLE_PARAM_PATTERN	= Pattern
 			.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
 
@@ -115,7 +119,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	Clazz							current;
 
 	// The meta annotations we have processed, used to avoid infinite loops
+	// This Set must be cleared for each #classStart(Clazz)
 	final Set<String>				processed				= new HashSet<>();
+
+	// The annotations we could not load. used to avoid repeatedly logging the
+	// same missing annotation for the same project. Note that this should not
+	// be reset for each #classStart(Clazz).
+	final Set<String>				loggedMissing		= new HashSet<>();
 
 	// we parse the annotations separately at the end
 	boolean							finalizing;
@@ -283,9 +293,19 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				});
 			}
 		} else if (c == null) {
-			analyzer.warning(
-					"Unable to determine whether the meta annotation %s applied to type %s provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
-					fqn, current.getFQN());
+			// Don't repeatedly log for the same missing annotation
+			if (loggedMissing.add(fqn)) {
+				// Only issue a warning if pedantic
+				if (analyzer.isPedantic()) {
+					analyzer.warning(
+							"Unable to determine whether the meta annotation %s applied to type %s provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
+							fqn, current.getFQN());
+				} else {
+					LOGGER.info(
+							"Unable to determine whether the meta annotation {} applied to type {} provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
+							fqn, current.getFQN());
+				}
+			}
 		}
 	}
 
