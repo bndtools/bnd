@@ -52,3 +52,4 @@ Here's an example setting the `bundles` used for resolution.
 |`bundlesOnly`          | Instead of creating an executable jar place runbundles into `targetDir`. _Defaults to `false`._|
 |`bundles`              | This is the collection of files to use for locating bundles during the bndrun resolution. Paths are relative to `${project.basedir}` by default. Absolute paths are allowed. _Defaults to dependencies in the `compile` and `runtime`, plus the current artifact (if any)._|
 |`useMavenDependencies` | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._|
+|`attach` | If `true` then the generated runnable jar file will be attached as an output of the current artifact. `bundlesOnly` outputs will not be attached even if `attach` is set to `true`. _Defaults to `true`._|

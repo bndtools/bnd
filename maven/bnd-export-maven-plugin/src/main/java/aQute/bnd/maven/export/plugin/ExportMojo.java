@@ -5,6 +5,8 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import java.io.File;
 import java.util.List;
 
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -60,6 +62,9 @@ public class ExportMojo extends AbstractMojo {
 
 	@Parameter(defaultValue = "false")
 	private boolean				bundlesOnly;
+
+	@Parameter(defaultValue = "true")
+	private boolean						attach;
 
 	@Parameter(defaultValue = "${session}", readonly = true)
 	private MavenSession session;
@@ -137,6 +142,7 @@ public class ExportMojo extends AbstractMojo {
 				} else {
 					File executableJar = new File(targetDir, bndrun + ".jar");
 					run.export(null, false, executableJar);
+					attach(executableJar, bndrun);
 				}
 			} finally {
 				report(run);
@@ -158,6 +164,24 @@ public class ExportMojo extends AbstractMojo {
 			logger.error("Error   : {}", error);
 			errors++;
 		}
+	}
+
+	private void attach(File file, String classifier) {
+		if (!attach) {
+			logger.debug(
+					"The export plugin has been configured not to attach the generated application to the project.");
+			return;
+		} else if (bundlesOnly) {
+			logger.debug("The export plugin will not attach a bundles-only output to the project.");
+			return;
+		}
+
+		DefaultArtifactHandler handler = new DefaultArtifactHandler("jar");
+		handler.setExtension("jar");
+		DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), project.getArtifactId(),
+				project.getVersion(), null, "jar", classifier, handler);
+		artifact.setFile(file);
+		project.addAttachedArtifact(artifact);
 	}
 
 }
