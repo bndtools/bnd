@@ -134,11 +134,7 @@ class DeltaWrapper {
         if (has(processor.getPropertiesFile()))
             return true;
 
-        List<File> included = processor.getIncluded();
-        if (included == null)
-            return false;
-
-        for (File incl : included) {
+        for (File incl : processor.getIncluded()) {
             if (has(incl))
                 return true;
         }
@@ -200,8 +196,7 @@ class DeltaWrapper {
     }
 
     /**
-     * Check if the target JARs have gone. We look for the buildfiles and the listed jars. If anything is odd, we
-     * rebuild.
+     * Check if the target JARs have gone. We look for the buildfiles and the listed jars. If anything is odd, we rebuild.
      */
     public boolean hasNoTarget(Project model) throws Exception {
 
