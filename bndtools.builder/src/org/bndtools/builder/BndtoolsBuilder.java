@@ -8,12 +8,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
+
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.builder.classpath.BndContainerInitializer;
 import org.bndtools.builder.decorator.ui.PackageDecorator;
 import org.bndtools.utils.workspace.WorkspaceUtils;
 import org.eclipse.core.resources.IMarker;
@@ -27,6 +28,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
@@ -83,19 +86,19 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      * @return List of projects we depend on
      */
     @Override
-    protected IProject[] build(final int kind, Map<String,String> args, final IProgressMonitor monitor) throws CoreException {
+    protected IProject[] build(int kind, Map<String,String> args, IProgressMonitor monitor) throws CoreException {
 
-        final IProject myProject = getProject();
+        IProject myProject = getProject();
         BndPreferences prefs = new BndPreferences();
         buildLog = new BuildLogger(prefs.getBuildLogging(), myProject.getName(), kind);
 
-        final BuildListeners listeners = new BuildListeners();
+        BuildListeners listeners = new BuildListeners();
 
         try {
 
             listeners.fireBuildStarting(myProject);
 
-            final MarkerSupport markers = new MarkerSupport(myProject);
+            MarkerSupport markers = new MarkerSupport(myProject);
 
             //
             // First time after a restart
@@ -116,139 +119,145 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             }
 
             try {
-                return Central.bndCall(new Callable<IProject[]>() {
-                    @Override
-                    public IProject[] call() throws Exception {
-                        boolean force = kind == FULL_BUILD;
+                return Central.bndCall(() -> {
+                    boolean force = kind == FULL_BUILD;
+                    model.clear();
+
+                    DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
+
+                    boolean setupChanged = false;
+
+                    if (!postponed && (delta.havePropertiesChanged(model) || delta.hasChangedSubbundles())) {
+                        buildLog.basic("project was dirty from changed bnd files postponed = " + postponed);
+                        model.forceRefresh();
+                        setupChanged = true;
+                    }
+
+                    if (dirty.remove(model) && !setupChanged) {
+                        buildLog.basic("project was dirty from a workspace refresh postponed = " + postponed);
+                        setupChanged = !postponed;
+                    }
+
+                    if (!force && !setupChanged && delta.hasEclipseChanged()) {
+                        buildLog.basic("Eclipse project had a buildpath change");
+                        force = true;
+                    }
+
+                    //
+                    // If we already know we are going to build, we
+                    // must handle the path errors. We make sure
+                    // prepare() is called so we get any build errors.
+                    //
+
+                    if (force || setupChanged) {
+                        model.setChanged();
+                        model.setDelayRunDependencies(true);
+                        model.prepare();
+
+                        markers.validate(model);
+                        markers.setMarkers(model, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
                         model.clear();
 
-                        DeltaWrapper delta = new DeltaWrapper(model, getDelta(myProject), buildLog);
+                        dependsOn = calculateDependsOn(model);
 
-                        boolean setupChanged = false;
+                        // perform both actions before potentially postponing
+                        boolean changedBuildOrder = setBuildOrder(monitor);
+                        boolean changedClasspath = setupChanged && requestClasspathContainerUpdate(myProject);
 
-                        if (!postponed && (delta.havePropertiesChanged(model) || delta.hasChangedSubbundles())) {
-                            buildLog.basic("project was dirty from changed bnd files postponed = " + postponed);
-                            model.forceRefresh();
-                            setupChanged = true;
+                        if (changedBuildOrder) {
+                            buildLog.basic("Build order changed");
+                            return postpone();
                         }
 
-                        if (dirty.remove(model)) {
-                            buildLog.basic("project was dirty from a workspace refresh postponed = " + postponed);
-                            setupChanged = true && !postponed;
+                        if (changedClasspath) {
+                            buildLog.basic("Classpath changed");
+                            return postpone();
                         }
 
-                        if (!force && !setupChanged && delta.hasEclipseChanged()) {
-                            buildLog.basic("Eclipse project had a buildpath change");
-                            setupChanged = true;
-                        }
+                        force = true;
+                    }
 
-                        //
-                        // If we already know we are going to build, we
-                        // must handle the path errors. We make sure
-                        // prepare() is called so we get any build errors.
-                        //
+                    //
+                    // We did not postpone, so reset the flag
+                    //
+                    if (postponed) {
+                        buildLog.full("Was postponed");
+                        force = true;
+                        postponed = false;
+                    }
 
-                        if (force || setupChanged) {
-                            model.setChanged();
-                            model.setDelayRunDependencies(true);
-                            model.prepare();
+                    if (!force && delta.hasProjectChanged()) {
+                        buildLog.basic("project had changed files");
+                        force = true;
+                    }
 
-                            markers.validate(model);
-                            markers.setMarkers(model, BndtoolsConstants.MARKER_BND_PATH_PROBLEM);
-                            model.clear();
+                    if (!force && hasUpstreamChanges()) {
+                        buildLog.basic("project had upstream changes");
+                        force = true;
+                    }
 
-                            dependsOn = calculateDependsOn(model);
+                    if (!force && delta.hasNoTarget(model)) {
+                        buildLog.basic("project has no target files");
+                        force = true;
+                    }
 
-                            if (setBuildOrder(monitor)) {
-                                buildLog.basic("Build order changed");
-                                return postpone();
-                            }
+                    //
+                    // If we're not forced to build at this point
+                    // then we have an incremental build and
+                    // no reason to rebuild.
+                    //
 
-                            force = true;
-                        }
+                    if (!force) {
+                        buildLog.full("Auto/Incr. build, no changes detected");
+                        return noreport();
+                    }
 
-                        //
-                        // We did not postpone, so reset the flag
-                        //
-                        if (postponed) {
-                            buildLog.full("Was postponed");
-                            force = true;
-                            postponed = false;
-                        }
+                    WorkingSetTracker.doWorkingSets(model, myProject);
 
-                        if (!force && delta.hasProjectChanged()) {
-                            buildLog.basic("project had changed files");
-                            force = true;
-                        }
-
-                        if (!force && hasUpstreamChanges()) {
-                            buildLog.basic("project had upstream changes");
-                            force = true;
-                        }
-
-                        if (!force && delta.hasNoTarget(model)) {
-                            buildLog.basic("project has no target files");
-                            force = true;
-                        }
-
-                        //
-                        // If we're not forced to build at this point
-                        // then we have an incremental build and
-                        // no reason to rebuild.
-                        //
-
-                        if (!force) {
-                            buildLog.full("Auto/Incr. build, no changes detected");
-                            return noreport();
-                        }
-
-                        WorkingSetTracker.doWorkingSets(model, myProject);
-
-                        if (model.isNoBundles()) {
-                            buildLog.basic("-nobundles was set, so no build");
-                            buildLog.setFiles(0);
-                            return report(markers);
-                        }
-
-                        if (markers.hasBlockingErrors(delta)) {
-                            CompileErrorAction actionOnCompileError = getActionOnCompileError();
-                            if (actionOnCompileError != CompileErrorAction.build) {
-                                if (actionOnCompileError == CompileErrorAction.delete) {
-                                    buildLog.basic("Blocking errors, delete build files, quit");
-                                    deleteBuildFiles(model);
-                                    model.error("Will not build project %s until the compilation and/or path problems are fixed, output files are deleted.", myProject.getName());
-                                } else {
-                                    buildLog.basic("Blocking errors, leave old build files, quit");
-                                    model.error("Will not build project %s until the compilation and/or path problems are fixed, output files are kept.", myProject.getName());
-                                }
-                                return report(markers);
-                            }
-                            buildLog.basic("Blocking errors, continuing anyway");
-                            model.warning("Project %s has blocking errors but requested to continue anyway", myProject.getName());
-                        }
-
-                        Central.invalidateIndex();
-
-                        File buildFiles[] = model.build();
-
-                        if (buildFiles != null) {
-                            listeners.updateListeners(buildFiles, myProject);
-                            buildLog.setFiles(buildFiles.length);
-                        }
-
-                        // We can now decorate based on the build we just did.
-                        BndProjectInfoAdapter adapter = new BndProjectInfoAdapter(model);
-
-                        PackageDecorator.updateDecoration(myProject, adapter);
-
-                        ComponentMarker.updateComponentMarkers(myProject, adapter);
-
-                        if (model.isCnf()) {
-                            model.getWorkspace().refresh(); // this is for bnd plugins built in cnf
-                        }
-
+                    if (model.isNoBundles()) {
+                        buildLog.basic("-nobundles was set, so no build");
+                        buildLog.setFiles(0);
                         return report(markers);
                     }
+
+                    if (markers.hasBlockingErrors(delta)) {
+                        CompileErrorAction actionOnCompileError = getActionOnCompileError();
+                        if (actionOnCompileError != CompileErrorAction.build) {
+                            if (actionOnCompileError == CompileErrorAction.delete) {
+                                buildLog.basic("Blocking errors, delete build files, quit");
+                                deleteBuildFiles(model);
+                                model.error("Will not build project %s until the compilation and/or path problems are fixed, output files are deleted.", myProject.getName());
+                            } else {
+                                buildLog.basic("Blocking errors, leave old build files, quit");
+                                model.error("Will not build project %s until the compilation and/or path problems are fixed, output files are kept.", myProject.getName());
+                            }
+                            return report(markers);
+                        }
+                        buildLog.basic("Blocking errors, continuing anyway");
+                        model.warning("Project %s has blocking errors but requested to continue anyway", myProject.getName());
+                    }
+
+                    Central.invalidateIndex();
+
+                    File buildFiles[] = model.build();
+
+                    if (buildFiles != null) {
+                        listeners.updateListeners(buildFiles, myProject);
+                        buildLog.setFiles(buildFiles.length);
+                    }
+
+                    // We can now decorate based on the build we just did.
+                    BndProjectInfoAdapter adapter = new BndProjectInfoAdapter(model);
+
+                    PackageDecorator.updateDecoration(myProject, adapter);
+
+                    ComponentMarker.updateComponentMarkers(myProject, adapter);
+
+                    if (model.isCnf()) {
+                        model.getWorkspace().refresh(); // this is for bnd plugins built in cnf
+                    }
+
+                    return report(markers);
                 }, monitor);
             } catch (TimeoutException | InterruptedException e) {
                 logger.logWarning("Unable to build project " + myProject.getName(), e);
@@ -290,7 +299,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             MarkerSupport markers = new MarkerSupport(myProject);
             markers.deleteMarkers("*");
 
-            final Project model;
+            Project model;
             try {
                 model = Central.getProject(myProject);
             } catch (Exception e) {
@@ -301,12 +310,9 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 return;
 
             try {
-                Central.bndCall(new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        model.clean();
-                        return null;
-                    }
+                Central.bndCall(() -> {
+                    model.clean();
+                    return null;
                 }, monitor);
             } catch (TimeoutException | InterruptedException e) {
                 logger.logWarning("Unable to clean project " + myProject.getName(), e);
@@ -364,6 +370,11 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             logger.logError("Failed to set build order", e);
         }
         return true;
+    }
+
+    private boolean requestClasspathContainerUpdate(IProject myProject) throws CoreException {
+        IJavaProject javaProject = JavaCore.create(myProject);
+        return (javaProject == null) ? false : BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
     }
 
     private void deleteBuildFiles(Project model) throws Exception {
