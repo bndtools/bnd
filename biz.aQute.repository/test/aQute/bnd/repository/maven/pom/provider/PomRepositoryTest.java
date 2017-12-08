@@ -51,7 +51,7 @@ public class PomRepositoryTest extends TestCase {
 	private HttpClient	client;
 
 	protected void setUp() {
-		tmp = IO.getFile("generated/tmp/" + getName());
+		tmp = IO.getFile("generated/tmp/test/" + getName());
 		localRepo = IO.getFile(MAVEN_REPO_LOCAL);
 		location = IO.getFile(tmp, "index.xml");
 		IO.delete(tmp);

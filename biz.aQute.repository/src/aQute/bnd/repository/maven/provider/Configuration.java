@@ -11,9 +11,7 @@ public interface Configuration {
 	String releaseUrl();
 
 	/**
-	 * The url to the remote snapshot repository. If this is not specified,
-	 * it falls back to the release repository or just local if this is also
-	 * not specified.
+	 * The url to the remote snapshot repository.
 	 */
 	String snapshotUrl();
 

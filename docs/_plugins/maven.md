@@ -62,7 +62,7 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 | Property         | Type  | Default | Description |
 |------------------|-------|---------|-------------|
 | `releaseUrl`     | `URI` |       |The URL to the repositories of released artifacts.| 
-| `snapshotUrl`    | `URI` |       |The URL to the repositories of snapshot artifacts. If this is not specified then snapshots will also be attempted to be released to the `releaseUrl`.|
+| `snapshotUrl`    | `URI` |       |The URL to the repositories of snapshot artifacts.|
 | `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository. This is by  |
 |                  |       |                    | default the `~/.m2/repository` defined by maven. If specified, it should use forward 
 |                  |       |                    | slashes. If the directory does not exist, the plugin will attempt to create it.|

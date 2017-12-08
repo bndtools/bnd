@@ -53,7 +53,7 @@ import aQute.service.reporter.Reporter;
 public class BndPomRepository extends BaseRepository
 		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable, Closeable {
 	static final String				MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
-	static int						DEFAULT_POLL_TIME	= (int) TimeUnit.MINUTES.toSeconds(5);
+	static final int				DEFAULT_POLL_TIME	= (int) TimeUnit.MINUTES.toSeconds(5);
 
 	private boolean					inited;
 	private PomConfiguration		configuration;
