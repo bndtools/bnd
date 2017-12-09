@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.Callable;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -56,7 +55,7 @@ import bndtools.preferences.BndPreferences;
  */
 public class BndContainerInitializer extends ClasspathContainerInitializer implements ModelListener {
 
-    static final ILogger logger = Logger.getLogger(BndContainerInitializer.class);
+    private static final ILogger logger = Logger.getLogger(BndContainerInitializer.class);
     private static final ClasspathContainerSerializationHelper<BndContainer> serializationHelper = new ClasspathContainerSerializationHelper<>();
 
     public BndContainerInitializer() {
@@ -139,16 +138,19 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
      *
      * @param javaProject
      *            The java project of interest. Must not be null.
+     * @return true if the classpath container was updated.
      * @throws CoreException
      */
-    public static void requestClasspathContainerUpdate(IJavaProject javaProject) throws CoreException {
-        if (getClasspathContainer(javaProject) == null) {
-            return; // project does not have a BndContainer
+    public static boolean requestClasspathContainerUpdate(IJavaProject javaProject) throws CoreException {
+        IClasspathContainer oldContainer = getClasspathContainer(javaProject);
+        if (oldContainer == null) {
+            return false; // project does not have a BndContainer
         }
         ClasspathContainerInitializer initializer = JavaCore.getClasspathContainerInitializer(BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
         if (initializer != null) {
             initializer.requestClasspathContainerUpdate(BndtoolsConstants.BND_CLASSPATH_ID, javaProject, null);
         }
+        return getClasspathContainer(javaProject) != oldContainer;
     }
 
     private static BndContainer loadClasspathContainer(IProject project) {
@@ -214,14 +216,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
 
             List<IClasspathEntry> newClasspath = Collections.emptyList();
-            final List<IResource> filesToRefresh = new ArrayList<IResource>(20);
+            List<IResource> filesToRefresh = new ArrayList<IResource>(20);
             try {
-                newClasspath = Central.bndCall(new Callable<List<IClasspathEntry>>() {
-                    @Override
-                    public List<IClasspathEntry> call() throws Exception {
-                        return calculateProjectClasspath(filesToRefresh);
-                    }
-                });
+                newClasspath = Central.bndCall(() -> calculateProjectClasspath(filesToRefresh));
             } catch (Exception e) {
                 SetLocation error = error("Unable to calculate classpath for project %s", e, project.getName());
                 logger.logError(error.location().message, e);

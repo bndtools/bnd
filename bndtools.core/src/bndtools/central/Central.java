@@ -32,7 +32,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaProject;
@@ -589,7 +588,7 @@ public class Central implements IStartupParticipant {
      *             If the callable throws an exception.
      */
     public static <V> V bndCall(Callable<V> callable) throws Exception {
-        return bndCall(callable, new NullProgressMonitor());
+        return bndCall(callable, null);
     }
 
     /**
@@ -613,7 +612,7 @@ public class Central implements IStartupParticipant {
         try {
             long progress = bndLockProgress.get();
             for (int i = 0; i < 120; i++) {
-                if (monitor.isCanceled()) {
+                if ((monitor != null) && monitor.isCanceled()) {
                     throw new CancellationException("Cancelled waiting to acquire bndLock; has waiters: " + bndLock.getQueueLength());
                 }
                 boolean locked = false;
