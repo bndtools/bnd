@@ -1,9 +1,10 @@
 package aQute.bnd.repository.maven.pom.provider;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +20,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.maven.api.Archive;
+import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MavenRepository;
 import aQute.service.reporter.Reporter;
@@ -118,11 +120,7 @@ class SearchRepository extends InnerRepository {
 		public SearchResult() throws Exception {};
 
 		public long getLastModified() {
-			long timestamp = -1;
-			for (Doc doc : Arrays.asList(response.docs))
-				if (doc.timestamp > timestamp)
-					timestamp = doc.timestamp;
-			return timestamp;
+			return Arrays.stream(response.docs).mapToLong(doc -> doc.timestamp).max().orElse(-1);
 		}
 
 		public ResponseHeader	responseHeader;
@@ -153,10 +151,7 @@ class SearchRepository extends InnerRepository {
 		public List<Revision> docsToRevisions() {
 			if (list != null)
 				return list;
-			List<Revision> newList = new ArrayList<>();
-			for (Doc doc : docs)
-				newList.add(doc.toRevision());
-			return list = newList;
+			return list = Arrays.stream(docs).map(Doc::toRevision).collect(toList());
 		}
 		/*
 		 * "response":{ "numFound":648, "start":0, "docs":[ ... ] }
@@ -182,7 +177,7 @@ class SearchRepository extends InnerRepository {
 		}
 
 		public Revision toRevision() {
-			return Revision.valueOf(toString());
+			return Program.valueOf(g, a).version(getVersion());
 		}
 
 		public String toString() {

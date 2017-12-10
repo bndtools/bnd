@@ -134,20 +134,15 @@ public class OSGiRepository extends BaseRepository
 				int polltime = config.poll_time(DEFAULT_POLL_TIME);
 				if (polltime > 0) {
 
-					poller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
-
-						@Override
-						public void run() {
-							if (inPoll.getAndSet(true))
-								return;
-
-							try {
-								poll();
-							} catch (Exception e) {
-								logger.debug("During polling", e);
-							} finally {
-								inPoll.set(false);
-							}
+					poller = Processor.getScheduledExecutor().scheduleAtFixedRate(() -> {
+						if (inPoll.getAndSet(true))
+							return;
+						try {
+							poll();
+						} catch (Exception e) {
+							logger.debug("During polling", e);
+						} finally {
+							inPoll.set(false);
 						}
 					}, polltime, polltime, TimeUnit.SECONDS);
 				}
@@ -210,32 +205,24 @@ public class OSGiRepository extends BaseRepository
 		Map<String,Runnable> menu = new LinkedHashMap<>();
 		switch (target.length) {
 			case 0 :
-				menu.put("Reload Index & Bundles", new Runnable() {
-
-					@Override
-					public void run() {
-						try {
-							getIndex(true);
-						} catch (Exception e) {
-							throw Exceptions.duck(e);
-						}
+				menu.put("Reload Index & Bundles", () -> {
+					try {
+						getIndex(true);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
 					}
 				});
 				break;
 			case 2 :
-				menu.put("Reload Bundle", new Runnable() {
-
-					@Override
-					public void run() {
-						try {
-							String bsn = (String) target[0];
-							Version version = (Version) target[1];
-							File f = get(bsn, version, null);
-							if (f != null)
-								IO.delete(f);
-						} catch (Exception e) {
-							throw Exceptions.duck(e);
-						}
+				menu.put("Reload Bundle", () -> {
+					try {
+						String bsn = (String) target[0];
+						Version version = (Version) target[1];
+						File f = get(bsn, version, null);
+						if (f != null)
+							IO.delete(f);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
 					}
 				});
 				break;

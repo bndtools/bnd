@@ -1,9 +1,15 @@
 package aQute.bnd.repository.maven.provider;
 
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toSet;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -15,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,8 +32,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.util.function.Function;
-import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 
@@ -37,7 +42,7 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.repository.Phase;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
-import aQute.lib.collections.MultiMap;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.lib.strings.Strings;
@@ -106,18 +111,12 @@ class IndexFile {
 	}
 
 	private void sync() throws Exception {
-		List<Promise<Void>> sync = new ArrayList<>(promises.size());
+		List<Promise<File>> sync = new ArrayList<>(promises.size());
 		for (Iterator<Entry<Archive,Promise<File>>> i = promises.entrySet().iterator(); i.hasNext();) {
 			Entry<Archive,Promise<File>> entry = i.next();
-			final Archive archive = entry.getKey();
-			Promise<File> promise = entry.getValue();
 			i.remove();
-			sync.add(promise.<Void> then(null, new Failure() {
-				@Override
-				public void fail(Promise< ? > resolved) throws Exception {
-					reporter.exception(resolved.getFailure(), "Failed to sync %s", archive);
-				}
-			}));
+			sync.add(entry.getValue()
+					.onFailure(failure -> reporter.exception(failure, "Failed to sync %s", entry.getKey())));
 		}
 		promiseFactory.all(sync).getFailure(); // block until all promises resolved
 	}
@@ -150,22 +149,15 @@ class IndexFile {
 	}
 
 	Collection<String> list() {
-		Set<String> result = new HashSet<>();
-		for (BundleDescriptor descriptor : descriptors.values()) {
-			result.add(descriptor.bsn);
-		}
-		return result;
+		return descriptors.values().stream().map(descriptor -> descriptor.bsn).collect(toSet());
 	}
 
 	Collection<Version> list(String bsn) {
-
-		Set<Version> result = new HashSet<>();
-		for (BundleDescriptor descriptor : descriptors.values()) {
-			if (isBsn(bsn, descriptor)) {
-				result.add(descriptor.version);
-			}
-		}
-		return result;
+		return descriptors.values()
+				.stream()
+				.filter(descriptor -> isBsn(bsn, descriptor))
+				.map(descriptor -> descriptor.version)
+				.collect(toSet());
 	}
 
 	boolean isBsn(String bsn, BundleDescriptor descriptor) {
@@ -174,29 +166,27 @@ class IndexFile {
 
 	public synchronized BundleDescriptor getDescriptor(String bsn, Version version) throws Exception {
 		sync();
-		for (BundleDescriptor descriptor : descriptors.values()) {
-			if (isBsn(bsn, descriptor) && version.equals(descriptor.version)) {
-				return descriptor;
-			}
-		}
-		return null;
+		return descriptors.values()
+				.stream()
+				.filter(descriptor -> isBsn(bsn, descriptor) && version.equals(descriptor.version))
+				.findFirst()
+				.orElse(null);
 	}
 
 	int getErrors(String name) {
-		int errors = 0;
-		for (BundleDescriptor bd : descriptors.values())
-			if ((name == null || name.equals(bd.bsn)) && bd.error != null)
-				errors++;
-		return errors;
+		return (int) descriptors.values()
+				.stream()
+				.filter(descriptor -> name == null || name.equals(descriptor.bsn))
+				.filter(descriptor -> descriptor.error != null)
+				.count();
 	}
 
 	Set<Program> getProgramsForBsn(String name) {
-		Set<Program> set = new HashSet<>();
-		for (BundleDescriptor bd : descriptors.values())
-			if (name == null || name.equals(bd.bsn)) {
-				set.add(bd.archive.revision.program);
-			}
-		return set;
+		return descriptors.values()
+				.stream()
+				.filter(descriptor -> name == null || name.equals(descriptor.bsn))
+				.map(descriptor -> descriptor.archive.revision.program)
+				.collect(toSet());
 	}
 
 	long last = 0L;
@@ -208,23 +198,25 @@ class IndexFile {
 		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
 			loadIndexFile();
 			last = System.currentTimeMillis();
-
 			return true;
-		} else {
-			boolean refreshed = false;
-			for (BundleDescriptor bd : descriptors.values()) {
-				if ((bd.promise != null) && bd.promise.isDone() && (bd.promise.getFailure() == null)) {
-					File f = bd.promise.getValue();
-					if ((f != null) && f.isFile() && (f.lastModified() != bd.lastModified)) {
-						updateDescriptor(bd, f);
-						refreshed = true;
-					}
-				}
-			}
-			if (refreshed)
-				return true;
 		}
-		return false;
+		return descriptors.values()
+				.stream()
+				.filter(descriptor -> {
+					try {
+						if ((descriptor.promise != null) && descriptor.promise.isDone() && (descriptor.promise.getFailure() == null)) {
+							File f = descriptor.promise.getValue();
+							if ((f != null) && f.isFile() && (f.lastModified() != descriptor.lastModified)) {
+								updateDescriptor(descriptor, f);
+								return true;
+							}
+						}
+					} catch (InvocationTargetException | InterruptedException e) {
+						throw Exceptions.duck(e);
+					}
+					return false;
+				})
+				.count() > 0L;
 	}
 
 	private void loadIndexFile() throws Exception {
@@ -349,13 +341,7 @@ class IndexFile {
 	}
 
 	Promise<File> updateAsync(final BundleDescriptor descriptor, Promise<File> promise) throws Exception {
-		descriptor.promise = promise.map(new Function<File,File>() {
-			@Override
-			public File apply(File file) {
-				updateDescriptor(descriptor, file);
-				return file;
-			}
-		});
+		descriptor.promise = promise.thenAccept(file -> updateDescriptor(descriptor, file));
 		descriptor.resource = null;
 		promises.put(descriptor.archive, descriptor.promise);
 		return descriptor.promise;
@@ -381,11 +367,7 @@ class IndexFile {
 		try {
 			File tmp = File.createTempFile("index", null);
 			try (PrintWriter pw = new PrintWriter(tmp)) {
-				List<Archive> archives = new ArrayList<>(this.descriptors.keySet());
-				Collections.sort(archives);
-				for (Archive archive : archives) {
-					pw.println(archive);
-				}
+				descriptors.keySet().stream().sorted().forEachOrdered(archive -> pw.println(archive));
 			}
 			Files.move(tmp.toPath(), indexFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} finally {
@@ -403,23 +385,34 @@ class IndexFile {
 		return descriptors.keySet();
 	}
 
-	@SuppressWarnings({
-			"unchecked", "rawtypes"
-	})
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		MultiMap<Requirement,Capability> providers = new MultiMap<>();
-		for (BundleDescriptor bd : descriptors.values()) {
-			Resource r = bd.getResource();
-			if (r != null) {
-				for (Requirement req : requirements) {
-					for (Capability cap : r.getCapabilities(req.getNamespace())) {
-						if (ResourceUtils.matches(req, cap))
-							providers.add(req, cap);
-					}
-				}
-			}
-		}
-		return (Map) providers;
+		return descriptors.values()
+				.stream()
+				.map(BundleDescriptor::getResource)
+				.filter(Objects::nonNull)
+				.flatMap(res -> requirements.stream()
+						.flatMap(req -> res.getCapabilities(req.getNamespace())
+								.stream()
+								.filter(cap -> ResourceUtils.matches(req, cap))
+								.map(cap -> new ReqCap(req, cap))))
+				.collect(groupingBy(ReqCap::req, mapping(ReqCap::cap, toCollection(ArrayList::new))));
 	}
 
+	private static class ReqCap {
+		private final Requirement	req;
+		private final Capability	cap;
+
+		ReqCap(Requirement req, Capability cap) {
+			this.req = req;
+			this.cap = cap;
+		}
+
+		Requirement req() {
+			return req;
+		}
+
+		Capability cap() {
+			return cap;
+		}
+	}
 }

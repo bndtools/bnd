@@ -19,7 +19,7 @@ public class Program implements Comparable<Program> {
 	public final String	path;
 
 	final private static Map<String,Program>	programCache	= new WeakHashMap<>();
-	private Map<MavenVersion,Revision>			revisionCache	= new WeakHashMap<>();
+	final private Map<MavenVersion,Revision>	revisionCache	= new WeakHashMap<>();
 
 	Program(String group, String artifact) {
 		this.group = group;

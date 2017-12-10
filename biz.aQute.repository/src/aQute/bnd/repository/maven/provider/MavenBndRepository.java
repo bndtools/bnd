@@ -522,22 +522,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			return;
 		}
 		final AtomicBoolean busy = new AtomicBoolean();
-		indexPoller = Processor.getScheduledExecutor().scheduleAtFixedRate(new Runnable() {
-
-			@Override
-			public void run() {
-				if (busy.getAndSet(true))
-					return;
-
-				try {
-					poll();
-				} catch (Exception e) {
-					reporter.error("Error when polling index for %s for change", this);
-				} finally {
-					busy.set(false);
-				}
+		indexPoller = Processor.getScheduledExecutor().scheduleAtFixedRate(() -> {
+			if (busy.getAndSet(true))
+				return;
+			try {
+				poll();
+			} catch (Exception e) {
+				reporter.error("Error when polling index for %s for change", this);
+			} finally {
+				busy.set(false);
 			}
-
 		}, 5000, 5000, TimeUnit.MILLISECONDS);
 	}
 

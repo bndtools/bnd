@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collector;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -60,5 +61,14 @@ public class ResourcesRepository extends BaseRepository {
 
 	public List<Resource> getResources() {
 		return new ArrayList<>(resources);
+	}
+
+	public static Collector<Resource,ResourcesRepository,ResourcesRepository> toResourcesRepository() {
+		return Collector.of(ResourcesRepository::new, ResourcesRepository::add, ResourcesRepository::combiner);
+	}
+
+	private static ResourcesRepository combiner(ResourcesRepository t, ResourcesRepository u) {
+		t.addAll(u.resources);
+		return t;
 	}
 }
