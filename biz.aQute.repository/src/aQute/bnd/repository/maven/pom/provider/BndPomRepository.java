@@ -1,14 +1,16 @@
 package aQute.bnd.repository.maven.pom.provider;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -159,28 +161,19 @@ public class BndPomRepository extends BaseRepository
 		this.name = configuration.name();
 
 		if (configuration.pom() != null) {
-			List<String> parts = Strings.split(configuration.pom());
-			pomFiles = new ArrayList<>();
-			for (String part : parts) {
+			pomFiles = Strings.split(configuration.pom()).stream().map(part -> {
 				File f = IO.getFile(part);
-				if (f.isFile()) {
-					pomFiles.add(f.toURI());
-				} else {
-					pomFiles.add(URI.create(part));
-				}
-			}
+				return f.isFile() ? f.toURI() : URI.create(part);
+			}).collect(toList());
 			if (pomFiles.isEmpty()) {
 				throw new IllegalArgumentException("Pom is neither a file nor a revision " + configuration.pom());
 			}
 		} else if (configuration.revision() != null) {
-			List<String> parts = Strings.split(configuration.revision());
-			revisions = new ArrayList<>();
-			for (String part : parts) {
-				Revision revision = Revision.valueOf(part);
-				if (revision != null) {
-					revisions.add(revision);
-				}
-			}
+			revisions = Strings.split(configuration.revision())
+					.stream()
+					.map(Revision::valueOf)
+					.filter(Objects::nonNull)
+					.collect(toList());
 			if (revisions.isEmpty()) {
 				throw new IllegalArgumentException(
 						"Revision is neither a file nor a revision " + configuration.revision());

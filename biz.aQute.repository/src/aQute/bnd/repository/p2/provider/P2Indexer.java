@@ -1,18 +1,21 @@
 package aQute.bnd.repository.p2.provider;
 
+import static aQute.bnd.osgi.repository.ResourcesRepository.toResourcesRepository;
 import static aQute.bnd.osgi.resource.ResourceUtils.toVersion;
+import static aQute.lib.promise.PromiseCollectors.toPromise;
 import static java.util.Collections.singleton;
+import static java.util.stream.Collectors.toMap;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +24,6 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.Repository;
-import org.osgi.util.function.Function;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
@@ -105,12 +107,7 @@ class P2Indexer implements Closeable {
 
 		IO.createSymbolicLinkOrCopy(link, source);
 
-		Promise<File> go = client.build().useCache(MAX_STALE).async(url.toURL()).map(new Function<File,File>() {
-			@Override
-			public File apply(File t) {
-				return link;
-			}
-		});
+		Promise<File> go = client.build().useCache(MAX_STALE).async(url.toURL()).map(file -> link);
 
 		if (listeners.length == 0)
 			return go.getValue();
@@ -140,86 +137,48 @@ class P2Indexer implements Closeable {
 	}
 
 	private Repository readRepository() throws Exception {
+		Map<ArtifactID,Resource> knownResources = (getBridge() != null) ? getBridge().getRepository()
+				.findProviders(singleton(MD5_REQUIREMENT))
+				.get(MD5_REQUIREMENT)
+				.stream()
+				.collect(toMap(capability -> {
+					IdentityCapability identity = ResourceUtils.getIdentityCapability(capability.getResource());
+					return new ArtifactID(identity.osgi_identity(), identity.version(),
+							(String) capability.getAttributes().get(MD5_ATTRIBUTE));
+				}, Capability::getResource, (u, v) -> v)) : new HashMap<>();
+
 		P2Impl p2 = new P2Impl(client, this.url, promiseFactory);
 		List<Artifact> artifacts = p2.getArtifacts();
-		List<Promise<Resource>> fetched = new ArrayList<>(artifacts.size());
-		Set<URI> visitedURIs = new HashSet<>(artifacts.size());
 		Set<ArtifactID> visitedArtifacts = new HashSet<>(artifacts.size());
-		Map<ArtifactID,Resource> knownResources = new HashMap<>();
+		Set<URI> visitedURIs = new HashSet<>(artifacts.size());
 
-		if (getBridge() != null) {
-			for (Capability capability : getBridge().getRepository()
-					.findProviders(singleton(MD5_REQUIREMENT))
-					.get(MD5_REQUIREMENT)) {
-				Resource resource = capability.getResource();
-				IdentityCapability identity = ResourceUtils.getIdentityCapability(resource);
-				ArtifactID artifact = new ArtifactID(identity.osgi_identity(), identity.version(),
-						(String) capability.getAttributes().get(MD5_ATTRIBUTE));
-
-				knownResources.put(artifact, resource);
-			}
-		}
-
-		for (final Artifact a : artifacts) {
+		Promise<List<Resource>> all = artifacts.stream().map(a -> {
 			if (!visitedURIs.add(a.uri))
-				continue;
+				return null;
 			if (a.md5 != null) {
 				ArtifactID id = new ArtifactID(a.id, toVersion(a.version), a.md5);
 				if (!visitedArtifacts.add(id))
-					continue;
+					return null;
 				if (knownResources.containsKey(id)) {
-					fetched.add(promiseFactory.resolved(knownResources.get(id)));
-					continue;
+					return promiseFactory.resolved(knownResources.get(id));
 				}
 			}
 
-			Promise<Resource> promise = client.build()
-					.useCache(MAX_STALE)
-					.async(a.uri.toURL())
-					.map(new Function<File,Resource>() {
-						@Override
-						public Resource apply(File file) {
-							try {
-								ResourceBuilder rb = new ResourceBuilder();
-								rb.addFile(file, a.uri);
-								if (a.md5 != null)
-									rb.addCapability(new CapabilityBuilder(P2_CAPABILITY_NAMESPACE)
-											.addAttribute(MD5_ATTRIBUTE, a.md5));
-								return rb.build();
-							} catch (Exception e) {
-								logger.debug("{}: Failed to create resource for %s from {}", name, a, file, e);
-								return RECOVERY;
-							}
-						}
-					})
-					.recover(new Function<Promise< ? >,Resource>() {
-						@Override
-						public Resource apply(Promise< ? > failed) {
-							try {
-								logger.debug("{}: Failed to create resource for {}", name, a,
-										failed.getFailure());
-							} catch (InterruptedException e) {
-								// impossible
-							}
-							return RECOVERY;
-						}
-					});
-			fetched.add(promise);
-		}
-
-		Promise<List<Resource>> all = promiseFactory.all(fetched);
-		return all.map(new Function<List<Resource>,ResourcesRepository>() {
-			@Override
-			public ResourcesRepository apply(List<Resource> resources) {
-				ResourcesRepository rr = new ResourcesRepository();
-				for (Resource resource : resources) {
-					if (resource != RECOVERY) {
-						rr.add(resource);
-					}
+			return client.build().useCache(MAX_STALE).async(a.uri).map(file -> {
+				ResourceBuilder rb = new ResourceBuilder();
+				rb.addFile(file, a.uri);
+				if (a.md5 != null) {
+					rb.addCapability(new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
 				}
-				return rr;
-			}
-		}).getValue();
+				return rb.build();
+			}).recover(failed -> {
+				logger.debug("{}: Failed to create resource for {}", name, a, failed.getFailure());
+				return RECOVERY;
+			});
+		}).filter(Objects::nonNull).collect(toPromise(promiseFactory));
+
+		return all.map(resources -> resources.stream().filter(resource -> resource != RECOVERY).collect(
+				toResourcesRepository())).getValue();
 	}
 
 	private Repository save(Repository repository) throws IOException, Exception {

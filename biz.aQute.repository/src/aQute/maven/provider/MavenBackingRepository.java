@@ -1,5 +1,7 @@
 package aQute.maven.provider;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -25,7 +27,6 @@ import aQute.maven.api.Program;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MetadataParser.ProgramMetadata;
 import aQute.maven.provider.MetadataParser.RevisionMetadata;
-import aQute.maven.provider.MetadataParser.SnapshotVersion;
 import aQute.service.reporter.Reporter;
 
 public abstract class MavenBackingRepository implements Closeable {
@@ -150,15 +151,10 @@ public abstract class MavenBackingRepository implements Closeable {
 	}
 
 	public List<Archive> getSnapshotArchives(Revision revision) throws Exception {
-		RevisionMetadata metadata = getMetadata(revision);
-		List<Archive> archives = new ArrayList<>();
-		for (SnapshotVersion snapshotVersion : metadata.snapshotVersions) {
-			Archive archive = revision.archive(snapshotVersion.value, snapshotVersion.extension,
-					snapshotVersion.classifier);
-			archives.add(archive);
-		}
-
-		return archives;
+		return getMetadata(revision).snapshotVersions.stream()
+				.map(snapshotVersion -> revision.archive(snapshotVersion.value, snapshotVersion.extension,
+						snapshotVersion.classifier))
+				.collect(toList());
 	}
 
 	public MavenVersion getVersion(Revision revision) throws Exception {

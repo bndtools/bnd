@@ -1,5 +1,8 @@
 package aQute.p2.provider;
 
+import static aQute.lib.promise.PromiseCollectors.toPromise;
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -18,7 +21,6 @@ import java.util.zip.ZipEntry;
 
 import javax.xml.xpath.XPathExpressionException;
 
-import org.osgi.util.function.Function;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
@@ -107,7 +109,7 @@ public class P2Impl {
 	 * @throws IOException
 	 * @throws XPathExpressionException
 	 */
-	private Promise<List<Artifact>> parseCompositeArtifacts(final Set<URI> cycles, final InputStream in, final URI base)
+	private Promise<List<Artifact>> parseCompositeArtifacts(Set<URI> cycles, InputStream in, URI base)
 			throws Exception {
 		if (in == null)
 			return promiseFactory.resolved(Collections.emptyList());
@@ -118,45 +120,20 @@ public class P2Impl {
 		return getArtifacts(cycles, ca.uris);
 	}
 
-	private Promise<List<Artifact>> getArtifacts(final Set<URI> cycles, final Collection<URI> uris) {
-		final Deferred<List<Artifact>> deferred = promiseFactory.deferred();
-		promiseFactory.executor().execute(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					List<Promise<List<Artifact>>> promises = new ArrayList<>(uris.size());
-					for (final URI uri : uris) {
-						URI nuri = base.resolve(uri);
-						promises.add(getArtifacts(cycles, nuri)
-								.recover(new Function<Promise< ? >,List<Artifact>>() {
-									@Override
-									public List<Artifact> apply(Promise< ? > failed) {
-										if (!defaults.contains(uri)) {
-											try {
-												logger.info("Failed to get artifacts for %s", uri, failed.getFailure());
-											} catch (InterruptedException e) {
-												// impossible
-											}
-										}
-										return Collections.emptyList();
-									}
-								}));
-					}
-
-					Promise<List<List<Artifact>>> all = promiseFactory.all(promises);
-					deferred.resolveWith(all.map(new Function<List<List<Artifact>>,List<Artifact>>() {
-						@Override
-						public List<Artifact> apply(List<List<Artifact>> lists) {
-							List<Artifact> result = new ArrayList<>();
-							for (List<Artifact> list : lists) {
-								result.addAll(list);
+	private Promise<List<Artifact>> getArtifacts(Set<URI> cycles, final Collection<URI> uris) {
+		Deferred<List<Artifact>> deferred = promiseFactory.deferred();
+		promiseFactory.executor().execute(() -> {
+			try {
+				deferred.resolveWith(
+						uris.stream().map(uri -> getArtifacts(cycles, base.resolve(uri)).recover(failed -> {
+							if (!defaults.contains(uri)) {
+								logger.info("Failed to get artifacts for %s", uri, failed.getFailure());
 							}
-							return result;
-						}
-					}));
-				} catch (Throwable e) {
-					deferred.fail(e);
-				}
+							return Collections.emptyList();
+						})).collect(toPromise(promiseFactory)).map(
+								ll -> ll.stream().flatMap(List::stream).collect(toList())));
+			} catch (Throwable e) {
+				deferred.fail(e);
 			}
 		});
 		return deferred.getPromise();
@@ -226,18 +203,9 @@ public class P2Impl {
 	 * @param base
 	 * @throws Exception
 	 */
-	private Promise<List<Artifact>> parseIndexArtifacts(final Set<URI> cycles, final URI uri) throws Exception {
+	private Promise<List<Artifact>> parseIndexArtifacts(Set<URI> cycles, final URI uri) throws Exception {
 		Promise<File> file = client.build().useCache().get().async(uri.toURL());
-		return file.flatMap(new Function<File,Promise< ? extends List<Artifact>>>() {
-			@Override
-			public Promise<List<Artifact>> apply(File file) {
-				try {
-					return parseIndexArtifacts(cycles, uri, file);
-				} catch (Throwable e) {
-					return promiseFactory.failed(e);
-				}
-			}
-		});
+		return file.flatMap(f -> parseIndexArtifacts(cycles, uri, f));
 	}
 
 	private Promise<List<Artifact>> parseIndexArtifacts(Set<URI> cycles, URI uri, File file) throws Exception {

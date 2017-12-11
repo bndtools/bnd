@@ -1,8 +1,6 @@
 package aQute.maven.api;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.Comparator;
 import java.util.Map;
 
 import aQute.bnd.util.dto.DTO;
@@ -46,22 +44,14 @@ public interface IPom {
 
 		public void bindToVersion(MavenRepository repo) throws Exception {
 			if (MavenVersionRange.isRange(version)) {
-
 				MavenVersionRange range = new MavenVersionRange(version);
-				List<Revision> revisions = repo.getRevisions(program);
-
-				for (Iterator<Revision> it = revisions.iterator(); it.hasNext();) {
-					Revision r = it.next();
-					if (!range.includes(r.version))
-						it.remove();
-				}
-
-				if (!revisions.isEmpty()) {
-
-					Collections.sort(revisions);
-					Revision highest = revisions.get(revisions.size() - 1);
-					version = highest.version.toString();
-				}
+				repo.getRevisions(program)
+						.stream()
+						.filter(r -> range.includes(r.version))
+						.max(Comparator.naturalOrder())
+						.ifPresent(highest -> {
+							version = highest.version.toString();
+						});
 			}
 		}
 	}
