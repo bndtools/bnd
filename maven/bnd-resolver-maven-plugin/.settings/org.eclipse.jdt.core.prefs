@@ -278,7 +278,7 @@ org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_declaration_th
 org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_invocation_arguments=insert
 org.eclipse.jdt.core.formatter.insert_space_after_comma_in_multiple_field_declarations=insert
 org.eclipse.jdt.core.formatter.insert_space_after_comma_in_multiple_local_declarations=insert
-org.eclipse.jdt.core.formatter.insert_space_after_comma_in_parameterized_type_reference=do not insert
+org.eclipse.jdt.core.formatter.insert_space_after_comma_in_parameterized_type_reference=insert
 org.eclipse.jdt.core.formatter.insert_space_after_comma_in_superinterfaces=insert
 org.eclipse.jdt.core.formatter.insert_space_after_comma_in_type_arguments=insert
 org.eclipse.jdt.core.formatter.insert_space_after_comma_in_type_parameters=insert
@@ -307,7 +307,7 @@ org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_while=do not 
 org.eclipse.jdt.core.formatter.insert_space_after_postfix_operator=do not insert
 org.eclipse.jdt.core.formatter.insert_space_after_prefix_operator=do not insert
 org.eclipse.jdt.core.formatter.insert_space_after_question_in_conditional=insert
-org.eclipse.jdt.core.formatter.insert_space_after_question_in_wildcard=insert
+org.eclipse.jdt.core.formatter.insert_space_after_question_in_wildcard=do not insert
 org.eclipse.jdt.core.formatter.insert_space_after_semicolon_in_for=insert
 org.eclipse.jdt.core.formatter.insert_space_after_semicolon_in_try_resources=insert
 org.eclipse.jdt.core.formatter.insert_space_after_unary_operator=do not insert
@@ -397,7 +397,7 @@ org.eclipse.jdt.core.formatter.insert_space_before_parenthesized_expression_in_t
 org.eclipse.jdt.core.formatter.insert_space_before_postfix_operator=do not insert
 org.eclipse.jdt.core.formatter.insert_space_before_prefix_operator=do not insert
 org.eclipse.jdt.core.formatter.insert_space_before_question_in_conditional=insert
-org.eclipse.jdt.core.formatter.insert_space_before_question_in_wildcard=insert
+org.eclipse.jdt.core.formatter.insert_space_before_question_in_wildcard=do not insert
 org.eclipse.jdt.core.formatter.insert_space_before_semicolon=do not insert
 org.eclipse.jdt.core.formatter.insert_space_before_semicolon_in_for=do not insert
 org.eclipse.jdt.core.formatter.insert_space_before_semicolon_in_try_resources=do not insert
