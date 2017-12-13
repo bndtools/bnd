@@ -72,7 +72,13 @@ The output index file name can be changed very easily:
     <configuration>
         <outputFile>${project.build.directory}/custom.xml</outputFile>
     </configuration>
-    
+
+The name attribute of the repository index can also be changed:
+
+    <configuration>
+        <indexName>my-index</indexName>
+    </configuration>
+
 The gzip version of the output artifact can also be disabled if desired:    
     
     <configuration>
