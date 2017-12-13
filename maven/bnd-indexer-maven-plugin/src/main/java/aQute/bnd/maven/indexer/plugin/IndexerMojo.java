@@ -105,6 +105,13 @@ public class IndexerMojo extends AbstractMojo {
 	private String						altSnapshotDeploymentRepository;
 
 	/**
+	 * This configuration parameter is used to set the name of the repository in the
+	 * generated index
+	 */
+	@Parameter(property = "bnd.indexer.name", defaultValue = "${project.artifactId}")
+	private String						indexName;
+
+	/**
 	 * This configuration parameter is the old mechanism used by the
 	 * maven-deploy-plugin to define a release repo for deployment
 	 */
@@ -191,7 +198,7 @@ public class IndexerMojo extends AbstractMojo {
 					resourcesRepository.add(resourceBuilder.build());
 				}
 			}
-			xmlResourceGenerator.repository(resourcesRepository).save(outputFile);
+			xmlResourceGenerator.name(indexName).repository(resourcesRepository).save(outputFile);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}

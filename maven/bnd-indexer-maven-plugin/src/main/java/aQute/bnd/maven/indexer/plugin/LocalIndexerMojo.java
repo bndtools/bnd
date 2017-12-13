@@ -44,6 +44,13 @@ public class LocalIndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.skip", defaultValue = "false")
 	private boolean						skip;
 
+	/**
+	 * This configuration parameter is used to set the name of the repository in the
+	 * generated index
+	 */
+	@Parameter(property = "bnd.indexer.name", defaultValue = "${project.artifactId}")
+	private String				indexName;
+
 	private boolean						fail;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
@@ -85,7 +92,7 @@ public class LocalIndexerMojo extends AbstractMojo {
 
 		try {
 			IO.mkdirs(outputFile.getParentFile());
-			xmlResourceGenerator.repository(resourcesRepository).save(outputFile);
+			xmlResourceGenerator.name(indexName).repository(resourcesRepository).save(outputFile);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}

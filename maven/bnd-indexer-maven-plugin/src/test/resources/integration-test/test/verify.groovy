@@ -18,9 +18,11 @@ public Repository check(String xmlFile, String gzipFile, int size, boolean local
 	// Load repository
 	XMLResourceParser xrp = new XMLResourceParser(xml.toURI());
 	List<Resource> resources = xrp.parse();
+	
 	assert xrp.check();
 	assert resources != null;
 	assert size == resources.size();
+	assert xrp.name() != null;
 	
 	ResourcesRepository repo = new ResourcesRepository(resources);
 	
