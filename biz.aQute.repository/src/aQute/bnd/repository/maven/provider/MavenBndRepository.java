@@ -533,10 +533,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	void poll() throws Exception {
-		if (index.refresh()) {
-			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class))
-				listener.repositoryRefreshed(this);
-		}
+		refresh();
 	}
 
 	@Override
@@ -569,7 +566,18 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public boolean refresh() throws Exception {
-		return index.refresh();
+		init();
+		boolean refreshed = index.refresh();
+		if (refreshed) {
+			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
+				try {
+					listener.repositoryRefreshed(this);
+				} catch (Exception e) {
+					reporter.exception(e, "Updating listener plugin %s", listener);
+				}
+			}
+		}
+		return refreshed;
 	}
 
 	@Override
