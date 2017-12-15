@@ -29,4 +29,10 @@ public interface Configuration {
 	String index(String deflt);
 
 	boolean noupdateOnRelease();
+
+	/**
+	 * Sets the time in seconds when to check for changes in the pom-files
+	 */
+	// default: 5 seconds
+	int poll_time(int pollTimeInSecs);
 }

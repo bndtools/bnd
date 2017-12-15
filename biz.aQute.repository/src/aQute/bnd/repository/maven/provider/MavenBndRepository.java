@@ -83,10 +83,10 @@ import aQute.service.reporter.Reporter;
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
 		Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
 	private final static Logger		logger						= LoggerFactory.getLogger(MavenBndRepository.class);
+	private static final int	DEFAULT_POLL_TIME	= 5;
 
 	private static final String		NONE						= "NONE";
-	static final String				MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
-			"~/.m2/repository");
+	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 	private Configuration			configuration;
 	private Registry				registry;
 	private File					localRepo;
@@ -502,34 +502,38 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			IndexFile ixf = new IndexFile(reporter, indexFile, storage, client.promiseFactory());
 			ixf.open();
 			this.index = ixf;
-			startPoll(index);
 
+			startPoll();
 			logger.debug("initing {}", this);
 		} catch (Exception e) {
-			reporter.exception(e, "Init for maven repo failed %s", configuration);
-			throw new RuntimeException(e);
+			reporter.exception(e, "Init for MavenBndRepository failed %s", configuration);
+			throw Exceptions.duck(e);
 		}
 	}
 
-	private void startPoll(final IndexFile index) {
+	private void startPoll() {
 		Workspace ws = registry.getPlugin(Workspace.class);
 		if ((ws != null) && (ws.getGestalt().containsKey(Constants.GESTALT_BATCH)
 				|| ws.getGestalt().containsKey(Constants.GESTALT_CI)
 				|| ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE))) {
 			return;
 		}
-		final AtomicBoolean busy = new AtomicBoolean();
-		indexPoller = Processor.getScheduledExecutor().scheduleAtFixedRate(() -> {
-			if (busy.getAndSet(true))
-				return;
-			try {
-				poll();
-			} catch (Exception e) {
-				reporter.error("Error when polling index for %s for change", this);
-			} finally {
-				busy.set(false);
-			}
-		}, 5000, 5000, TimeUnit.MILLISECONDS);
+		int polltime = configuration.poll_time(DEFAULT_POLL_TIME);
+		if (polltime > 0) {
+			AtomicBoolean inPoll = new AtomicBoolean();
+			indexPoller = Processor.getScheduledExecutor()
+				.scheduleAtFixedRate(() -> {
+					if (inPoll.getAndSet(true))
+						return;
+					try {
+						poll();
+					} catch (Exception e) {
+						reporter.error("Error when polling index for %s for change", this);
+					} finally {
+						inPoll.set(false);
+					}
+				}, polltime, polltime, TimeUnit.SECONDS);
+		}
 	}
 
 	void poll() throws Exception {
