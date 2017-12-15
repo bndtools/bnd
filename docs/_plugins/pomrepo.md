@@ -49,28 +49,29 @@ Maven Central supports a [searching facility](http://blog.sonatype.com/2011/06/y
     -plugin.query = \
         aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
             releaseUrls=https://repo1.maven.org/maven2; \
-            query='q=g=%22biz.aQute.bnd%22'; \
+            query='q=g:%22biz.aQute.bnd%22'; \
             name=Query
 
-TODO: Refreshing does not work well, you need to delete the file specified by location.
-TODO: The syntax of the query part might change
+The query must return a JSON response.
 
 ## Configuration
 
-| Property         | Type          | Description |
-|------------------|---------------|-------------|
-| `releaseUrls`    | `URI...`      |Required comma separated list of URLs to the repositories of released artifacts.| 
-| `snapshotUrls`   | `URI...`      |Optional comma separated list of URLs to the repositories of snapshot artifacts.|
-|                  |               |If this is not specified, it falls back to the release repository |
-|                  |               |or just the local ~/.m2 repository if this is also not specified.|
-| `local`          | `PATH`        |Optional Path to local repository. The default `~/.m2/repository` can be 
-|                  |               |overridden with the `maven.repo.local` System property as in Maven| 
-| `revision`       | `GAV...`      |A comma separated list of Maven coordinates. The GAV will be searched in the normal way.|
-| `pom`            | `PATH...`     |A comma separated list of paths to a POM file.|
-| `location`       | `PATH`        |Optional cached index of the parsed POMs. The default is  `cnf/cache/pom-<name>.xml` |
-| `query`          |               |A Solr query string. This is the part after ? and must be properly URL encoded|
-| `queryUrl`       | `URI`         |Optional URI to the search engine, default  `http://search.maven.org/solrsearch/select`.|
-| `name`           | `STRING`      |Required name of the repo.|
+| Property         | Type  | Default | Description |
+|------------------|-------|---------|-------------|
+| `releaseUrls`    | `URI...` |      | Comma separated list of URLs to the repositories of released artifacts.| 
+| `snapshotUrls`   | `URI...` |      | Comma separated list of URLs to the repositories of snapshot artifacts.|
+|                  |       |         | If this is not specified, it falls back to the release repository or just `local` if that is also not specified.|
+| `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository.  |
+|                  |       |                    | If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.|
+|                  |       |         | The default can be overridden with the `maven.repo.local` System property.|
+| `revision`       | `GAV...` |      | A comma separated list of Maven coordinates. The GAV will be searched in the normal way.|
+| `pom`            | `URI...` |      | A comma separated list of URLs to POM files.|
+| `location`       | `PATH` | `cnf/cache/pom-<name>.xml` | Optional cached index of the parsed POMs. |
+| `query`          | `STRING` |      | A Solr query string. This is the part after `?` and must be properly URL encoded|
+| `queryUrl`       | `URI` | `http://search.maven.org/solrsearch/select` | Optional URL to the search engine.|
+| `name`           | `STRING`|       | Required name of the repo.|
+| `transitive`     | `true|false` | `true` | If set to _truthy_ then dependencies are transitive.|
+| `poll.time`      | `integer`| 5 minutes | Number of seconds between checks for changes to POM files referenced by `pom` or `revision`. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
 
 
 One, and only one, of the `pom`, `revision`, or `query` configurations can be set. If multiple are set then the first in `[pom, revision, query]` is used and the remainders are ignored.
