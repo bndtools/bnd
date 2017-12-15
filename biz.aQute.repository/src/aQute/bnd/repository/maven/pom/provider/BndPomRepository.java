@@ -51,11 +51,11 @@ import aQute.service.reporter.Reporter;
 /**
  * This is the Bnd repository for Maven.
  */
-@BndPlugin(name = "PomRepository")
+@BndPlugin(name = "BndPomRepository")
 public class BndPomRepository extends BaseRepository
 		implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Actionable, Closeable {
-	static final String				MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
-	static final int				DEFAULT_POLL_TIME	= (int) TimeUnit.MINUTES.toSeconds(5);
+	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+	private static final int	DEFAULT_POLL_TIME	= 300;
 
 	private boolean					inited;
 	private PomConfiguration		configuration;
@@ -75,6 +75,8 @@ public class BndPomRepository extends BaseRepository
 		try {
 			if (inited)
 				return;
+			inited = true;
+
 			Workspace workspace = registry.getPlugin(Workspace.class);
 			HttpClient client = registry.getPlugin(HttpClient.class);
 			File localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
@@ -86,7 +88,9 @@ public class BndPomRepository extends BaseRepository
 					reporter, localRepo, client);
 
 			MavenRepository repository = new MavenRepository(localRepo, name, release, snapshot,
-					client.promiseFactory().executor(), reporter, null);
+				client.promiseFactory()
+					.executor(),
+				reporter);
 
 			boolean transitive = configuration.transitive(true);
 
@@ -100,11 +104,11 @@ public class BndPomRepository extends BaseRepository
 				repository.close();
 				throw new IllegalStateException("We have neither a pom, revision, or query set!");
 			}
-			startPoll();
-
 			bridge = new BridgeRepository(repoImpl);
-			inited = true;
+
+			startPoll();
 		} catch (Exception e) {
+			reporter.exception(e, "Init for BndPomRepository failed %s", configuration);
 			throw Exceptions.duck(e);
 		}
 	}
@@ -136,9 +140,6 @@ public class BndPomRepository extends BaseRepository
 	private void poll() throws Exception {
 		if (repoImpl.isStale()) {
 			refresh();
-			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
-				listener.repositoryRefreshed(this);
-			}
 		}
 	}
 
@@ -147,6 +148,13 @@ public class BndPomRepository extends BaseRepository
 		init();
 		repoImpl.refresh();
 		bridge = new BridgeRepository(repoImpl);
+		for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
+			try {
+				listener.repositoryRefreshed(this);
+			} catch (Exception e) {
+				reporter.exception(e, "Updating listener plugin %s", listener);
+			}
+		}
 		return true;
 	}
 

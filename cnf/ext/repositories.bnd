@@ -15,12 +15,14 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
         name='OSGi Snapshots';\
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        name='Local',\
+        name='Local';\
+        noupdateOnRelease=true,\
     aQute.lib.deployer.FileRepo;name='Main'   ;location=${mainrepo}; latest=false,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name='Release';\
         releaseUrl="${fileuri;${releaserepo}}";\
-        snapshotUrl="${fileuri;${releaserepo}}",\
+        snapshotUrl="${fileuri;${releaserepo}}";\
+        noupdateOnRelease=true,\
 	aQute.bnd.signing.JartoolSigner, \
     aQute.bnd.repository.osgi.OSGiRepository; \
         name='Baseline'; \

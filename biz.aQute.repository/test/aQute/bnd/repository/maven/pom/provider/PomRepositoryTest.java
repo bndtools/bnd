@@ -628,8 +628,7 @@ public class PomRepositoryTest extends TestCase {
 				.create("https://repository.apache.org/content/groups/snapshots/", reporter, localRepo, client);
 
 		MavenRepository mr = new MavenRepository(localRepo, "test", central, apache, client.promiseFactory().executor(),
-				reporter,
-				null);
+			reporter);
 		return mr;
 	}
 

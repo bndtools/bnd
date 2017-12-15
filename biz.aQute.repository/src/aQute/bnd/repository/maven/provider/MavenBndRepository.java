@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,9 +27,7 @@ import java.util.jar.Manifest;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
-import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,17 +81,16 @@ import aQute.service.reporter.Reporter;
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
 		Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
 	private final static Logger		logger						= LoggerFactory.getLogger(MavenBndRepository.class);
+	private static final int	DEFAULT_POLL_TIME	= 5;
 
 	private static final String		NONE						= "NONE";
-	static final String				MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
-			"~/.m2/repository");
+	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 	private Configuration			configuration;
 	private Registry				registry;
 	private File					localRepo;
 	private Reporter				reporter;
 	IMavenRepo						storage;
 	private boolean					inited;
-	private boolean					ok							= true;
 	IndexFile						index;
 	private ScheduledFuture< ? >	indexPoller;
 	private RepoActions				actions						= new RepoActions(this);
@@ -404,26 +400,20 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			if (listeners.length == 0)
 				return promise.getValue();
 
-			promise.then(new Success<File,Void>() {
-				@Override
-				public Promise<Void> call(Promise<File> resolved) throws Exception {
-					File value = resolved.getValue();
-					if (value == null) {
-						throw new FileNotFoundException("Download failed");
-					}
-					for (DownloadListener dl : listeners) {
-						try {
-							dl.success(value);
-						} catch (Exception e) {
-							reporter.exception(e, "Download listener failed in success callback %s", dl);
-						}
-					}
-					return null;
+			promise.thenAccept(value -> {
+				if (value == null) {
+					throw new FileNotFoundException("Download failed");
 				}
-			}).then(null, new Failure() {
-				@Override
-				public void fail(Promise< ? > resolved) throws Exception {
-					String reason = Exceptions.toString(resolved.getFailure());
+				for (DownloadListener dl : listeners) {
+					try {
+						dl.success(value);
+					} catch (Exception e) {
+						reporter.exception(e, "Download listener failed in success callback %s", dl);
+					}
+				}
+			})
+				.onFailure(failure -> {
+					String reason = Exceptions.toString(failure);
 					for (DownloadListener dl : listeners) {
 						try {
 							dl.failure(file, reason);
@@ -431,8 +421,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							reporter.exception(e, "Download listener failed in failure callback %s", dl);
 						}
 					}
-				}
-			});
+				});
 			return file;
 		}
 		return null;
@@ -491,8 +480,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 					localRepo, client);
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.promiseFactory().executor(),
-					reporter,
-					getRefreshCallback());
+				reporter);
 
 			File base = IO.work;
 			if (registry != null) {
@@ -505,41 +493,42 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			IndexFile ixf = new IndexFile(reporter, indexFile, storage, client.promiseFactory());
 			ixf.open();
 			this.index = ixf;
-			startPoll(index);
 
+			startPoll();
 			logger.debug("initing {}", this);
 		} catch (Exception e) {
-			reporter.exception(e, "Init for maven repo failed %s", configuration);
-			throw new RuntimeException(e);
+			reporter.exception(e, "Init for MavenBndRepository failed %s", configuration);
+			throw Exceptions.duck(e);
 		}
 	}
 
-	private void startPoll(final IndexFile index) {
+	private void startPoll() {
 		Workspace ws = registry.getPlugin(Workspace.class);
 		if ((ws != null) && (ws.getGestalt().containsKey(Constants.GESTALT_BATCH)
 				|| ws.getGestalt().containsKey(Constants.GESTALT_CI)
 				|| ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE))) {
 			return;
 		}
-		final AtomicBoolean busy = new AtomicBoolean();
-		indexPoller = Processor.getScheduledExecutor().scheduleAtFixedRate(() -> {
-			if (busy.getAndSet(true))
-				return;
-			try {
-				poll();
-			} catch (Exception e) {
-				reporter.error("Error when polling index for %s for change", this);
-			} finally {
-				busy.set(false);
-			}
-		}, 5000, 5000, TimeUnit.MILLISECONDS);
+		int polltime = configuration.poll_time(DEFAULT_POLL_TIME);
+		if (polltime > 0) {
+			AtomicBoolean inPoll = new AtomicBoolean();
+			indexPoller = Processor.getScheduledExecutor()
+				.scheduleAtFixedRate(() -> {
+					if (inPoll.getAndSet(true))
+						return;
+					try {
+						poll();
+					} catch (Exception e) {
+						reporter.error("Error when polling index for %s for change", this);
+					} finally {
+						inPoll.set(false);
+					}
+				}, polltime, polltime, TimeUnit.SECONDS);
+		}
 	}
 
 	void poll() throws Exception {
-		if (index.refresh()) {
-			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class))
-				listener.repositoryRefreshed(this);
-		}
+		refresh();
 	}
 
 	@Override
@@ -570,26 +559,20 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			indexPoller.cancel(true);
 	}
 
-	private Callable<Boolean> getRefreshCallback() {
-		return new Callable<Boolean>() {
-
-			@Override
-			public Boolean call() throws Exception {
-				for (RepositoryListenerPlugin rp : registry.getPlugins(RepositoryListenerPlugin.class)) {
-					try {
-						rp.repositoryRefreshed(MavenBndRepository.this);
-					} catch (Exception e) {
-						reporter.exception(e, "Updating listener plugin %s", rp);
-					}
-				}
-				return ok;
-			}
-		};
-	}
-
 	@Override
 	public boolean refresh() throws Exception {
-		return index.refresh();
+		init();
+		boolean refreshed = index.refresh();
+		if (refreshed) {
+			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
+				try {
+					listener.repositoryRefreshed(this);
+				} catch (Exception e) {
+					reporter.exception(e, "Updating listener plugin %s", listener);
+				}
+			}
+		}
+		return refreshed;
 	}
 
 	@Override
