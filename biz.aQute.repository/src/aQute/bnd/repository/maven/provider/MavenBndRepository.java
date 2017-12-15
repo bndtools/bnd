@@ -27,9 +27,7 @@ import java.util.jar.Manifest;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
-import org.osgi.util.promise.Failure;
 import org.osgi.util.promise.Promise;
-import org.osgi.util.promise.Success;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -402,26 +400,20 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			if (listeners.length == 0)
 				return promise.getValue();
 
-			promise.then(new Success<File,Void>() {
-				@Override
-				public Promise<Void> call(Promise<File> resolved) throws Exception {
-					File value = resolved.getValue();
-					if (value == null) {
-						throw new FileNotFoundException("Download failed");
-					}
-					for (DownloadListener dl : listeners) {
-						try {
-							dl.success(value);
-						} catch (Exception e) {
-							reporter.exception(e, "Download listener failed in success callback %s", dl);
-						}
-					}
-					return null;
+			promise.thenAccept(value -> {
+				if (value == null) {
+					throw new FileNotFoundException("Download failed");
 				}
-			}).then(null, new Failure() {
-				@Override
-				public void fail(Promise< ? > resolved) throws Exception {
-					String reason = Exceptions.toString(resolved.getFailure());
+				for (DownloadListener dl : listeners) {
+					try {
+						dl.success(value);
+					} catch (Exception e) {
+						reporter.exception(e, "Download listener failed in success callback %s", dl);
+					}
+				}
+			})
+				.onFailure(failure -> {
+					String reason = Exceptions.toString(failure);
 					for (DownloadListener dl : listeners) {
 						try {
 							dl.failure(file, reason);
@@ -429,8 +421,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							reporter.exception(e, "Download listener failed in failure callback %s", dl);
 						}
 					}
-				}
-			});
+				});
 			return file;
 		}
 		return null;
