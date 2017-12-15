@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -94,7 +93,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private Reporter				reporter;
 	IMavenRepo						storage;
 	private boolean					inited;
-	private boolean					ok							= true;
 	IndexFile						index;
 	private ScheduledFuture< ? >	indexPoller;
 	private RepoActions				actions						= new RepoActions(this);
@@ -491,8 +489,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
 					localRepo, client);
 			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.promiseFactory().executor(),
-					reporter,
-					getRefreshCallback());
+				reporter);
 
 			File base = IO.work;
 			if (registry != null) {
@@ -568,23 +565,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		IO.close(storage);
 		if (indexPoller != null)
 			indexPoller.cancel(true);
-	}
-
-	private Callable<Boolean> getRefreshCallback() {
-		return new Callable<Boolean>() {
-
-			@Override
-			public Boolean call() throws Exception {
-				for (RepositoryListenerPlugin rp : registry.getPlugins(RepositoryListenerPlugin.class)) {
-					try {
-						rp.repositoryRefreshed(MavenBndRepository.this);
-					} catch (Exception e) {
-						reporter.exception(e, "Updating listener plugin %s", rp);
-					}
-				}
-				return ok;
-			}
-		};
 	}
 
 	@Override

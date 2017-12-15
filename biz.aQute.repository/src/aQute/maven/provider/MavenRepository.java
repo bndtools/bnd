@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.WeakHashMap;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -47,7 +46,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	private final Map<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
-			List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter, Callable<Boolean> callback)
+		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter)
 					throws Exception {
 		this.base = base;
 		this.id = id;
