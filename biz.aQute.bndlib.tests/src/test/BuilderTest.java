@@ -2568,6 +2568,11 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setClasspath(new File[] {
 					new File("bin")
 			});
+			bmaker.setProperty("-fixupmessages.export",
+					"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
+			bmaker.setProperty("-fixupmessages.directive",
+					"Unknown directive foobar: in Export-Package, allowed directives are uses:,mandatory:,include:,exclude:,-import:, and 'x-*'");
+
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 			report("testFindActivator", bmaker, jar);

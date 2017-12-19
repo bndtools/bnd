@@ -121,6 +121,8 @@ public class VersionPolicyTest extends TestCase {
 														// not automatically
 														// added?
 		a.setProperty("build", "123");
+		a.setProperty("-fixupmessages",
+				"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
 		Jar jar = a.build();
 		assertTrue(a.check());
 		Manifest m = jar.getManifest();
@@ -168,6 +170,8 @@ public class VersionPolicyTest extends TestCase {
 		a.setPrivatePackage("test.versionpolicy.uses");
 		a.setExportPackage("test.versionpolicy.api");
 		a.setProperty("build", "123");
+		a.setProperty("-fixupmessages",
+				"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
 		Jar jar = a.build();
 		assertTrue(a.check());
 		Manifest m = jar.getManifest();
