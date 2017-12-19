@@ -389,9 +389,7 @@ public class Analyzer extends Processor {
 				.map(Clazz::getClassName)
 				.map(TypeRef::getPackageRef)
 				.map(PackageRef::getFQN)
-				.reduce((a, b) -> a + "," + b)
-				.map(Parameters::new)
-				.orElse(new Parameters());
+				.collect(Parameters.toParameters());
 	}
 
 	private Clazz getPackageInfoClazz(PackageRef pr) {

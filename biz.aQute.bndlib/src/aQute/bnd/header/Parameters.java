@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collector;
 
 import aQute.lib.collections.SortedList;
 import aQute.service.reporter.Reporter;
@@ -249,5 +250,11 @@ public class Parameters implements Map<String,Attrs> {
 
 	public boolean allowDuplicateAttributes() {
 		return allowDuplicateAttributes;
+	}
+
+	public static Collector<String,StringBuilder,Parameters> toParameters() {
+		return Collector.of(StringBuilder::new, (b, s) -> b.append(b.length() == 0 ? "" : ",").append(s),
+				(a, b) -> new StringBuilder(a).append(a.length() == 0 ? "" : ",").append(b),
+				b -> new Parameters(b.toString()));
 	}
 }
