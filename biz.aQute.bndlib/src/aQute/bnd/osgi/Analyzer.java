@@ -254,12 +254,14 @@ public class Analyzer extends Processor {
 
 				Instructions filter = new Instructions(getExportPackage());
 				filter.append(getExportContents());
+				filter.append(getExportedByAnnotation());
 
 				exports = filter(filter, contained, unused);
 
 				if (!unused.isEmpty()) {
 					warning("Unused " + Constants.EXPORT_PACKAGE + " instructions: %s ", unused)
-							.header(Constants.EXPORT_PACKAGE).context(unused.iterator().next().input);
+							.header(Constants.EXPORT_PACKAGE)
+							.context(unused.iterator().next().input);
 				}
 
 				// See what information we can find to augment the
@@ -300,7 +302,8 @@ public class Analyzer extends Processor {
 					// We ignore the end wildcard catch
 					if (!(unused.size() == 1 && unused.iterator().next().toString().equals("*")))
 						warning("Unused " + Constants.IMPORT_PACKAGE + " instructions: %s ", unused)
-								.header(Constants.IMPORT_PACKAGE).context(unused.iterator().next().input);
+								.header(Constants.IMPORT_PACKAGE)
+								.context(unused.iterator().next().input);
 				}
 
 				// See what information we can find to augment the
@@ -357,6 +360,45 @@ public class Analyzer extends Processor {
 						uses.transpose().get(Descriptors.DEFAULT_PACKAGE));
 			}
 
+			// Check for use of the deprecated bnd @Export annotation
+
+			TypeRef bndAnnotation = descriptors.getTypeRefFromFQN(aQute.bnd.annotation.Export.class.getName());
+			contained.keySet()
+					.stream()
+					.map(this::getPackageInfoClazz)
+					.filter(clz -> clz != null)
+					.filter(clz -> clz.annotations != null)
+					.filter(clz -> clz.annotations.contains(bndAnnotation))
+					.map(Clazz::getClassName)
+					.map(TypeRef::getPackageRef)
+					.map(PackageRef::getFQN)
+					.forEach(fqn -> warning(
+							"The annotation aQute.bnd.annotation.Export applied to package %s is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead",
+							fqn));
+		}
+	}
+
+	private Parameters getExportedByAnnotation() {
+		TypeRef exportAnnotation = descriptors.getTypeRefFromFQN("org.osgi.annotation.bundle.Export");
+		return contained.keySet()
+				.stream()
+				.map(this::getPackageInfoClazz)
+				.filter(clz -> clz != null)
+				.filter(clz -> clz.annotations != null)
+				.filter(clz -> clz.annotations.contains(exportAnnotation))
+				.map(Clazz::getClassName)
+				.map(TypeRef::getPackageRef)
+				.map(PackageRef::getFQN)
+				.collect(Parameters.toParameters());
+	}
+
+	private Clazz getPackageInfoClazz(PackageRef pr) {
+		String bin = pr.getBinary() + "/package-info";
+		TypeRef tr = descriptors.getTypeRef(bin);
+		try {
+			return findClass(tr);
+		} catch (Exception e) {
+			return null;
 		}
 	}
 
@@ -563,6 +605,38 @@ public class Analyzer extends Processor {
 								// Ignore
 							}
 						}
+						break;
+					case "org.osgi.annotation.bundle.Export" :
+						Object[] attributes = a.get("attribute");
+
+						if (attributes != null) {
+							for (Object s : attributes) {
+								String[] attr = ((String) s).split("=", 2);
+								if (attr.length != 2) {
+									warning("The annotation attribute %s of the exported package %s could not be understood",
+											s, clazz.getClassName().getPackageRef().getFQN());
+									continue;
+								}
+								info.put(attr[0], attr[1]);
+							}
+						}
+
+						Object[] usesClause = a.get("uses");
+						if (usesClause != null) {
+							String old = info.get(USES_DIRECTIVE);
+							if (old == null)
+								old = "";
+							StringBuilder sb = new StringBuilder(old);
+							String del = sb.length() == 0 ? "" : ",";
+
+							for (Object use : usesClause) {
+								sb.append(del);
+								sb.append(use);
+								del = ",";
+							}
+							info.put(USES_DIRECTIVE, sb.toString());
+						}
+
 						break;
 					case "aQute.bnd.annotation.Export" :
 						// Check mandatory attributes
