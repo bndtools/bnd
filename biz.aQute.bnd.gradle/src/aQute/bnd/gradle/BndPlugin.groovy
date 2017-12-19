@@ -24,6 +24,7 @@ import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
 import biz.aQute.resolve.Bndrun
 import biz.aQute.resolve.ResolveProcess
+import biz.aQute.bnd.reporter.generator.ProjectReportGenerator
 
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
@@ -32,7 +33,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.compile.JavaCompile
-
+import groovy.lang.MissingPropertyException
 import org.osgi.service.resolver.ResolutionException
 
 public class BndPlugin implements Plugin<Project> {
@@ -488,6 +489,46 @@ public class BndPlugin implements Plugin<Project> {
               }
             }
           }
+        }
+      }
+      
+      task('listReport') {
+        description 'Displays the list of documents that can be generated.'
+        group 'help'
+        doLast {
+        	ProjectReportGenerator g;
+        	try {
+        		g = new ProjectReportGenerator(bndProject) 
+				g.getAvailableReports().each { r ->
+	            	println "${r}"
+          		}  
+        	} catch (Exception e) {
+	        	throw new GradleException("report failure", e)
+        	} finally {
+	        	bndProject.getInfo(g)
+        		checkErrors(logger)
+        		g.close()
+        	}
+        }
+      }
+      
+      task('report') {
+        description "Generates the documents that match the given glob expression. Use -Pglob='<glob expression>'"
+        group 'export'
+        doLast {
+        	ProjectReportGenerator g;
+        	try {
+        		g = new ProjectReportGenerator(bndProject) 
+				g.generateReports("$glob"); 
+        	} catch (MissingPropertyException e) {
+	        	throw new GradleException("Missing glob expression, use -Pglob='<glob expression>'", e)
+        	} catch (Exception e) {
+	        	throw new GradleException("report failure", e)
+        	} finally {
+	        	bndProject.getInfo(g)
+        		checkErrors(logger)
+        		g.close()
+        	}
         }
       }
 
