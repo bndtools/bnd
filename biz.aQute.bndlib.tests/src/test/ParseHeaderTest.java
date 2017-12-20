@@ -3,6 +3,7 @@ package test;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Attrs.Type;
@@ -72,7 +73,7 @@ public class ParseHeaderTest extends TestCase {
 
 	}
 
-	public static void testPropertiesSimple() {
+	public void testPropertiesSimple() {
 		Map<String,String> p = OSGiHeader.parseProperties("a=1, b=\"3   3\", c=c");
 		assertEquals("c", p.get("c"));
 		assertEquals("1", p.get("a"));
@@ -88,7 +89,7 @@ public class ParseHeaderTest extends TestCase {
 	 * osgi.service.http.port=8180,\ osgi.console= while the following does
 	 * work: -runproperties: osgi.console=,\ osgi.service.http.port=8180
 	 */
-	public static void testUnfinishedProperties() {
+	public void testUnfinishedProperties() {
 		Map<String,String> p = OSGiHeader.parseProperties("osgi.console");
 		assertEquals("", p.get("osgi.console"));
 		p = OSGiHeader.parseProperties("osgi.console=");
@@ -105,7 +106,7 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals("", p.get("osgi.console"));
 	}
 
-	public static void testClauseName() {
+	public void testClauseName() {
 		assertNames("a,b,c;", new String[] {
 				"a", "b", "c"
 		});
@@ -175,7 +176,7 @@ public class ParseHeaderTest extends TestCase {
 			assertEquals(0, p.getWarnings().size());
 	}
 
-	public static void testSimple() {
+	public void testSimple() {
 		String s = "a;a=a1;b=a2;c=a3, b;a=b1;b=b2;c=b3, c;d;e;a=x1";
 		Parameters map = Processor.parseHeader(s, null);
 		assertEquals(5, map.size());
@@ -194,7 +195,7 @@ public class ParseHeaderTest extends TestCase {
 		System.err.println(map);
 	}
 
-	public static void testParseMultiValueAttribute() {
+	public void testParseMultiValueAttribute() {
 		String s = "capability;foo:List<String>=\"MacOSX,Mac OS X\";version:List<Version>=\"1.0, 2.0, 2.1\"";
 		Parameters map = Processor.parseHeader(s, null);
 
@@ -212,5 +213,31 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals(new Version(1), version.get(0));
 		assertEquals(new Version(2), version.get(1));
 		assertEquals(new Version(2, 1), version.get(2));
+	}
+
+	public void testParametersCollector() throws Exception {
+		Stream<String> pkgs = Stream.of("com.foo;com.fuu;fizz=bazz;dir:=dar", "com.bar;a=b,org.foo;provide:=true",
+			"org.fuu");
+		Parameters p = pkgs.collect(Parameters.toParameters());
+		Attrs a;
+		a = p.get("com.foo");
+		assertNotNull(a);
+		assertEquals("bazz", a.get("fizz"));
+		assertEquals("dar", a.get("dir:"));
+		a = p.get("com.fuu");
+		assertNotNull(a);
+		assertEquals("bazz", a.get("fizz"));
+		assertEquals("dar", a.get("dir:"));
+		a = p.get("com.bar");
+		assertNotNull(a);
+		assertEquals("b", a.get("a"));
+		assertNull(a.get("provide:"));
+		a = p.get("org.foo");
+		assertNotNull(a);
+		assertNull(a.get("a"));
+		assertEquals("true", a.get("provide:"));
+		a = p.get("org.fuu");
+		assertNotNull(a);
+		assertTrue(a.isEmpty());
 	}
 }
