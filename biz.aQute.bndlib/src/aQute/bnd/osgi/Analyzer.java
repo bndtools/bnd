@@ -1677,7 +1677,6 @@ public class Analyzer extends Processor {
 			// }
 
 			parameters = new Attrs();
-			parameters.remove(VERSION_ATTRIBUTE);
 			result.put(ep, parameters);
 		}
 		return result;
@@ -1801,9 +1800,14 @@ public class Analyzer extends Processor {
 					// be defined externally or locally
 					//
 
-					boolean provider = isTrue(importAttributes.get(PROVIDE_DIRECTIVE))
-							|| isTrue(exportAttributes.get(PROVIDE_DIRECTIVE)) || provided.contains(packageRef);
-
+					boolean provider;
+					if (importAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+						provider = isTrue(importAttributes.get(PROVIDE_DIRECTIVE));
+					} else if (exportAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+						provider = isTrue(exportAttributes.get(PROVIDE_DIRECTIVE));
+					} else {
+						provider = provided.contains(packageRef);
+					}
 					exportVersion = cleanupVersion(exportVersion);
 
 					importRange = applyVersionPolicy(exportVersion, importRange, provider);
