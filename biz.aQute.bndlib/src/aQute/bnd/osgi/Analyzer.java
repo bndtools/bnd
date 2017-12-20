@@ -2091,9 +2091,7 @@ public class Analyzer extends Processor {
 		Attrs clause = exports.get(packageRef);
 
 		// Check if someone already set the uses: directive
-		String override = clause.get(USES_DIRECTIVE);
-		if (override == null)
-			override = USES_USES;
+		String override = clause.get(USES_DIRECTIVE, USES_USES);
 
 		// Get the used packages
 		Collection<PackageRef> usedPackages = uses.get(packageRef);
@@ -2132,10 +2130,17 @@ public class Analyzer extends Processor {
 				override = override.substring(0, override.length() - 1);
 			if (override.startsWith(","))
 				override = override.substring(1);
-			if (override.length() > 0) {
+			if (override.isEmpty()) {
+				clause.remove(USES_DIRECTIVE);
+			} else {
 				clause.put(USES_DIRECTIVE, override);
 			}
+		} else {
+			if (override.equals(USES_USES)) {
+				clause.remove(USES_DIRECTIVE);
+			}
 		}
+
 	}
 
 	/**
