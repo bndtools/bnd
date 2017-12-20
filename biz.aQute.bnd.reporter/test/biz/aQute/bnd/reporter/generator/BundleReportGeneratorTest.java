@@ -27,44 +27,44 @@ public class BundleReportGeneratorTest extends TestCase {
 			GeneratorAsserts.verify(rg, 1, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "excludes='manifest'");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "excludes='manifest'");
 			GeneratorAsserts.verify(rg, 0, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "imports='notFound'");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "imports='notFound'");
 			GeneratorAsserts.verify(rg, 1, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "imports='../bnd.bnd:prop:properties'");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "imports='../bnd.bnd:prop:properties'");
 			GeneratorAsserts.verify(rg, 2, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "imports='../bnd.bnd::properties'");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "imports='../bnd.bnd::properties'");
 			GeneratorAsserts.verify(rg, 2, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "imports='prop.properties: : '");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "imports='prop.properties: : '");
 			GeneratorAsserts.verify(rg, 2, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "imports='prop.properties: '");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "imports='prop.properties: '");
 			GeneratorAsserts.verify(rg, 2, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "imports='prop.properties'");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "imports='prop.properties'");
 			GeneratorAsserts.verify(rg, 2, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "imports='c ,:c'");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "imports='c ,:c'");
 			GeneratorAsserts.verify(rg, 1, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "includes='manifest'");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "includes='manifest'");
 			ws.addBasicPlugin(new ComponentsEntryPlugin());
 			GeneratorAsserts.verify(rg, 1, a, 0);
 			
 			a.clear();
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "locales='en_US',@a=cool");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "locales='en_US',@a=cool");
 			GeneratorAsserts.verify(rg, 4, a, 0);
 		}
 	}
@@ -100,7 +100,7 @@ public class BundleReportGeneratorTest extends TestCase {
 			a.clear();
 			a.add(ws.getBase().getCanonicalPath() + File.separator + "test2.json");
 			a.add(ws.getBase().getCanonicalPath() + File.separator + "cool.xml");
-			ws.setProperty(Constants.REPORT_BUNDLE_MODEL, "imports=@OSGI-INF/org.test.project1.xml,locales='en_US'");
+			ws.setProperty(Constants.REPORT_MODEL_BUNDLE, "imports=@OSGI-INF/org.test.project1.xml,locales='en_US'");
 			ws.setProperty(Constants.REPORT_BUNDLE, "cool.xml,test2.json;template:=xslt.xslt;param1=test");
 			ws.setProperty(Constants.BUNDLE_SYMBOLICNAME, "org.component.test");
 			GeneratorAsserts.verify(rg, 3, a, 2);

@@ -30,7 +30,7 @@ public class ReporterCommand extends Processor {
 
 	@Description(value = "Extract and generate documents of a workspace, a project or a jar.")
 	@Arguments(arg = {
-			"[worskpace | project | jar]", "..."
+		"[worskpace | project | jar]", "..."
 	})
 	public interface ReporterOptions extends Options {}
 
@@ -52,10 +52,10 @@ public class ReporterCommand extends Processor {
 	}
 
 	@Description(value = "Extract and generate documents of a workspace."
-			+ " By default, show the list of documents that can be generated."
-			+ " If a glob expression is specified, it will generate the matched documents.")
+		+ " By default, show the list of documents that can be generated."
+		+ " If a glob expression is specified, it will generate the matched documents.")
 	@Arguments(arg = {
-			"[glob expression]"
+		"[glob expression]"
 	})
 	public interface ReporterWsOptions extends Options {
 		@Description("Path to workspace, default current directory")
@@ -67,8 +67,10 @@ public class ReporterCommand extends Processor {
 		File base = null;
 		String glob = null;
 
-		if (!wsOptions._arguments().isEmpty()) {
-			glob = wsOptions._arguments().get(0);
+		if (!wsOptions._arguments()
+			.isEmpty()) {
+			glob = wsOptions._arguments()
+				.get(0);
 		}
 
 		if (wsOptions.workspace() == null) {
@@ -82,18 +84,43 @@ public class ReporterCommand extends Processor {
 		if (ws != null) {
 			if (glob == null) {
 				try (WorkspaceReportGenerator g = new WorkspaceReportGenerator(ws)) {
+					System.out.println("Documents list");
 					System.out.println("-------------------");
-					System.out.println("Available reports:");
+					System.out.println(ws + ":");
 					Set<String> reports = g.getAvailableReports();
 					reports.forEach(System.out::println);
 					this.getInfo(g);
 				}
+				for (Project project : ws.getAllProjects()) {
+					try (ProjectReportGenerator g = new ProjectReportGenerator(project)) {
+						System.out.println("---");
+						System.out.println(project.getName() + ":");
+						Set<String> reports = g.getAvailableReports();
+						if (reports.size() > 0) {
+							reports.forEach(System.out::println);
+						} else {
+							System.out.println("No available documents");
+						}
+						this.getInfo(g);
+					}
+				}
 			} else {
 				try (WorkspaceReportGenerator g = new WorkspaceReportGenerator(ws)) {
+					System.out.println("Generate documents [glob = " + glob + "]");
 					System.out.println("-------------------");
-					System.out.println("Generate reports: [glob: " + glob + "]");
 					g.generateReports(glob);
 					this.getInfo(g);
+				}
+				for (Project project : ws.getAllProjects()) {
+					try (ProjectReportGenerator g = new ProjectReportGenerator(project)) {
+						System.out.println("---");
+						System.out.println(project.getName() + ":");
+						if (g.generateReports(glob)
+							.size() == 0) {
+							System.out.println("No generated documents");
+						}
+						this.getInfo(g);
+					}
 				}
 			}
 		} else {
@@ -102,10 +129,10 @@ public class ReporterCommand extends Processor {
 	}
 
 	@Description(value = "Extract and generate documents of a project."
-			+ " By default, show the list of documents that can be generated."
-			+ " If a glob expression is specified, it will generate the matched documents.")
+		+ " By default, show the list of documents that can be generated."
+		+ " If a glob expression is specified, it will generate the matched documents.")
 	@Arguments(arg = {
-			"[glob expression]"
+		"[glob expression]"
 	})
 	public interface ReporterProjOptions extends Options {
 		@Description("Path to project, default current directory")
@@ -117,24 +144,35 @@ public class ReporterCommand extends Processor {
 		Project project = getProject(projOptions.project());
 		String glob = null;
 
-		if (!projOptions._arguments().isEmpty()) {
-			glob = projOptions._arguments().get(0);
+		if (!projOptions._arguments()
+			.isEmpty()) {
+			glob = projOptions._arguments()
+				.get(0);
 		}
 
 		if (project != null) {
 			if (glob == null) {
 				try (ProjectReportGenerator g = new ProjectReportGenerator(project)) {
+					System.out.println("Documents list");
 					System.out.println("-------------------");
-					System.out.println("Available reports:");
+					System.out.println(project.getName() + ":");
 					Set<String> reports = g.getAvailableReports();
-					reports.forEach(System.out::println);
+					if (reports.size() > 0) {
+						reports.forEach(System.out::println);
+					} else {
+						System.out.println("No available documents");
+					}
 					this.getInfo(g);
 				}
 			} else {
 				try (ProjectReportGenerator g = new ProjectReportGenerator(project)) {
+					System.out.println("Generate documents [glob = " + glob + "]");
 					System.out.println("-------------------");
-					System.out.println("Generate reports: [glob: " + glob + "]");
-					g.generateReports(glob);
+					System.out.println(project.getName() + ":");
+					if (g.generateReports(glob)
+						.size() == 0) {
+						System.out.println("No generated documents");
+					}
 					this.getInfo(g);
 				}
 			}
@@ -151,7 +189,8 @@ public class ReporterCommand extends Processor {
 		}
 
 		if (f.isFile()) {
-			if (f.getName().endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
+			if (f.getName()
+				.endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
 				Workspace ws = Workspace.findWorkspace(f.getParentFile());
 				Run run = Run.createRun(ws, f);
 				return run;
@@ -173,21 +212,21 @@ public class ReporterCommand extends Processor {
 
 	@Description(value = "Extract and generate a document of a jar.")
 	@Arguments(arg = {
-			"jar path", "output path"
+		"jar path", "output path"
 	})
 	public interface ReporterJarOptions extends Options {
 		@Description("Path to a bnd file to use as base.")
 		String bndfile();
 
 		@Description("A list of locales <language_COUNTRY_variant>. Used to extract the Jar"
-				+ " metadata for different languages. eg: --locales 'en,en_US,fr'")
+			+ " metadata for different languages. eg: --locales 'en,en_US,fr'")
 		String[] locales();
 
 		@Description("Paths to files that must be imported into the extracted metadata. If a path start with `@`, "
-				+ "it will be relative to the root of the Jar. "
-				+ "The entry name and the format will be derived from the file name and its extension,"
-				+ " but can be overridden with the syntax <path>:<parentName>:<type>. "
-				+ "eg: --imports '@maven/pom.xml, ./config.cfg:configuration:properties'")
+			+ "it will be relative to the root of the Jar. "
+			+ "The entry name and the format will be derived from the file name and its extension,"
+			+ " but can be overridden with the syntax <path>:<parentName>:<type>. "
+			+ "eg: --imports '@maven/pom.xml, ./config.cfg:configuration:properties'")
 		String[] imports();
 
 		@Description("A list of properties to include in the extracted metadata. eg: --properties 'oneProp=Rambo,anotherProp=Titeuf'")
@@ -202,8 +241,10 @@ public class ReporterCommand extends Processor {
 
 	@Description(value = "Extract and generate documents of a jar.")
 	public void _jar(ReporterJarOptions jarOptions) throws Exception {
-		String jarPath = jarOptions._arguments().get(0);
-		String outputPath = jarOptions._arguments().get(1);
+		String jarPath = jarOptions._arguments()
+			.get(0);
+		String outputPath = jarOptions._arguments()
+			.get(1);
 		Jar jar = getJar(jarPath);
 
 		if (jarOptions.bndfile() != null) {
@@ -211,7 +252,7 @@ public class ReporterCommand extends Processor {
 		}
 
 		if (isOk() && jar != null) {
-			setProperty(Constants.REPORT_BUNDLE_MODEL, getMetadataProperty(jarOptions));
+			setProperty(Constants.REPORT_MODEL_BUNDLE, getMetadataProperty(jarOptions));
 
 			if (jarOptions.template() != null) {
 
@@ -235,9 +276,8 @@ public class ReporterCommand extends Processor {
 					}
 				}
 
-				setProperty(Constants.REPORT_BUNDLE, outputPath + ";"
-						+ BundleReportGenerator.TEMPLATE_DIRECTIVE + "=" + jarOptions.template()
-						+ parameterBuilder.toString());
+				setProperty(Constants.REPORT_BUNDLE, outputPath + ";" + BundleReportGenerator.TEMPLATE_DIRECTIVE + "="
+					+ jarOptions.template() + parameterBuilder.toString());
 			} else {
 				setProperty(Constants.REPORT_BUNDLE, outputPath);
 			}

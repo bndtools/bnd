@@ -388,7 +388,7 @@ public class Syntax implements Constants {
 					SUB + "=com.acme.*.bnd", null, null),
 			new Syntax(REPORT_BUNDLE,
 					"Specifies a list of reports path that can be exported based on extracted metadata. "
-							+ "You can optionally configure the metadata extraction with the " + REPORT_BUNDLE_MODEL
+							+ "You can optionally configure the metadata extraction with the " + REPORT_MODEL_BUNDLE
 							+ " instruction.",
 					REPORT_BUNDLE + ": readme.md;template:=bundle.xslt;param1=value", null, null,
 					new Syntax("template:",
@@ -399,7 +399,7 @@ public class Syntax implements Constants {
 							"param1=value", null, null)),
 			new Syntax(REPORT_PROJECT,
 					"Specifies a list of reports path that can be exported based on extracted metadata. "
-							+ "You can optionally configure the metadata extraction with the " + REPORT_PROJECT_MODEL
+							+ "You can optionally configure the metadata extraction with the " + REPORT_MODEL_PROJECT
 							+ " instruction.",
 					REPORT_PROJECT + ": readme.md;template:=project.xslt;param1=value", null, null,
 					new Syntax("template:",
@@ -410,7 +410,7 @@ public class Syntax implements Constants {
 							"param1=value", null, null)),
 			new Syntax(REPORT_WORKSPACE,
 					"Specifies a list of reports path that can be exported based on extracted metadata. "
-							+ "You can optionally configure the metadata extraction with the " + REPORT_WORKSPACE_MODEL
+							+ "You can optionally configure the metadata extraction with the " + REPORT_MODEL_WORKSPACE
 							+ " instruction.",
 					REPORT_WORKSPACE + ": readme.md;template:=workspace.xslt;param1=value", null, null,
 					new Syntax("template:",
@@ -419,8 +419,8 @@ public class Syntax implements Constants {
 					new Syntax("<anyAttr>",
 							"Arbitrary attributes that will be provided to the transformation process if any.",
 							"param1=value", null, null)),
-			new Syntax(REPORT_BUNDLE_MODEL, "Configure the bundle metadata extraction.",
-					REPORT_BUNDLE_MODEL + ": imports=@META-INF/maven/pom.xml,locales=en_US,@<anyProp>='a value'", null,
+			new Syntax(REPORT_MODEL_BUNDLE, "Configure the bundle metadata extraction.",
+					REPORT_MODEL_BUNDLE + ": imports=@META-INF/maven/pom.xml,locales=en_US,@<anyProp>='a value'", null,
 					null,
 					new Syntax("imports",
 							"Paths to files that must be imported into the extracted metadata. If a path start with `@`, "
@@ -439,8 +439,8 @@ public class Syntax implements Constants {
 							"excludes='metatypes'", null, null),
 					new Syntax("@<anyProp>", "Arbitrary properties can be included in the extracted metadata.",
 							"@oneProp=Rambo,@anotherProp=Titeuf", null, null)),
-			new Syntax(REPORT_PROJECT_MODEL, "Configure the project metadata extraction.",
-					REPORT_PROJECT_MODEL + ": imports=bnd.bnd::properties,@<anyProp>='a value'", null, null,
+			new Syntax(REPORT_MODEL_PROJECT, "Configure the project metadata extraction.",
+					REPORT_MODEL_PROJECT + ": imports=bnd.bnd::properties,@<anyProp>='a value'", null, null,
 					new Syntax("imports", "Paths to files that must be imported into the extracted metadata."
 							+ "The entry name and the format will be derived from the file name and its extension,"
 							+ " but can be overridden with the syntax <path>:<parentName>:<type>",
@@ -453,8 +453,8 @@ public class Syntax implements Constants {
 							"excludes='contents'", null, null),
 					new Syntax("@<anyProp>", "Arbitrary properties can be included in the extracted metadata.",
 							"@oneProp=Rambo,@anotherProp=Titeuf", null, null)),
-			new Syntax(REPORT_WORKSPACE_MODEL, "Configure the workspace metadata extraction.",
-					REPORT_PROJECT_MODEL + ": imports=build.bnd::properties,@<anyProp>='a value'", null, null,
+			new Syntax(REPORT_MODEL_WORKSPACE, "Configure the workspace metadata extraction.",
+			REPORT_MODEL_WORKSPACE + ": imports=build.bnd::properties,@<anyProp>='a value'", null, null,
 					new Syntax("imports", "Paths to files that must be imported into the extracted metadata."
 							+ "The entry name and the format will be derived from the file name and its extension,"
 							+ " but can be overridden with the syntax <path>:<parentName>:<type>",

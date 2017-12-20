@@ -187,9 +187,9 @@ public interface Constants {
 	String							REPORT_BUNDLE								= "-report.bundle";
 	String							REPORT_PROJECT								= "-report.project";
 	String							REPORT_WORKSPACE							= "-report.workspace";
-	String							REPORT_BUNDLE_MODEL							= "-report.bundle.model";
-	String							REPORT_PROJECT_MODEL						= "-report.project.model";
-	String							REPORT_WORKSPACE_MODEL						= "-report.workspace.model";
+	String								REPORT_MODEL_BUNDLE							= "-report.model.bundle";
+	String								REPORT_MODEL_PROJECT						= "-report.model.project";
+	String								REPORT_MODEL_WORKSPACE						= "-report.model.workspace";
 	String							RUNNOREFERENCES								= "-runnoreferences";
 	String							RUNPROPERTIES								= "-runproperties";
 	String							RUNSYSTEMPACKAGES							= "-runsystempackages";
@@ -269,7 +269,7 @@ public interface Constants {
 			JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA, JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND,
 			GROUPID, STANDALONE, IGNORE_STANDALONE, RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS,
 			RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE, REPORT_BUNDLE, REPORT_PROJECT, REPORT_WORKSPACE,
-			REPORT_BUNDLE_MODEL, REPORT_PROJECT_MODEL, REPORT_WORKSPACE_MODEL
+			REPORT_MODEL_BUNDLE, REPORT_MODEL_PROJECT, REPORT_MODEL_WORKSPACE
 
 	};
 
