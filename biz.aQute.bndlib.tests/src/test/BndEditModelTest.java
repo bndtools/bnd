@@ -1,5 +1,6 @@
 package test;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
@@ -8,6 +9,7 @@ import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 
+import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.ExportedPackage;
@@ -146,5 +148,25 @@ public class BndEditModelTest extends TestCase {
 		List<String> runrepos = model.getRunRepos();
 		assertEquals(1, runrepos.size());
 		assertEquals("testing", runrepos.get(0));
+	}
+
+	public static void testRemovePropertyFromStandalone() throws Exception {
+		File runFile = new File("testresources/standalone.bndrun");
+		Run run = Run.createRun(null, runFile);
+
+		BndEditModel model = new BndEditModel();
+		model.setWorkspace(run.getWorkspace());
+		model.loadFrom(runFile);
+
+		assertEquals("A", model.getProperties().get("a"));
+		assertEquals("B", model.getProperties().get("b"));
+		assertEquals("C", model.getProperties().get("c"));
+
+		String newContent = "-standalone\n" + "a: A\n" + "c: C"; // remove b
+		model.loadFrom(new ByteArrayInputStream(newContent.getBytes()));
+
+		assertEquals("A", model.getProperties().get("a"));
+		assertNull("removed property should be null", model.getProperties().get("b"));
+		assertEquals("C", model.getProperties().get("c"));
 	}
 }
