@@ -41,6 +41,10 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class ResourceBuilder {
+
+	private static final String SYSTEM_BUNDLE_VERSION = Version.emptyVersion.toString();
+	private static final String SYSTEM_BUNDLE_BSN = "system.bundle";
+
 	private final static String		BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
 	private final static String		JAR_MIME_TYPE		= "application/java-archive";
 	private final ResourceImpl		resource		= new ResourceImpl();
@@ -228,7 +232,7 @@ public class ResourceBuilder {
 		// to be converted to osgi.wiring.package ns
 		//
 
-		addExportPackages(manifest.getExportPackage());
+		addExportPackages(manifest.getExportPackage(), bsn.getKey(), version.toString());
 
 		//
 		// Add the imported package. These need
@@ -510,21 +514,43 @@ public class ResourceBuilder {
 	}
 
 	/**
+	 * Adds a set of package exports assuming they are from the system bundle.
+     *
+	 * @deprecated Use {@link #addExportPackages(Parameters, String, String)} in preference.
+	 */
+	@Deprecated
+	public void addSystemBundleExportPackages(Parameters exports) throws Exception {
+		addExportPackages(exports, SYSTEM_BUNDLE_BSN, SYSTEM_BUNDLE_VERSION);
+	}
+	/**
 	 * Add Exported Packages
 	 * 
 	 * @throws Exception
 	 */
-	public void addExportPackages(Parameters exports) throws Exception {
+	public void addExportPackages(Parameters exports, String bsn, String bundleVersion)
+		throws Exception {
 		for (Entry<String,Attrs> clause : exports.entrySet()) {
 			String pname = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
+
+			attrs.put(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, bsn);
+			attrs.put(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE,
+				bundleVersion != null ? bundleVersion : Version.emptyVersion.toString());
 
 			addExportPackage(pname, attrs);
 		}
 	}
 
+	/**
+	 * @deprecated Infers (probably incorrect) bundle-symbolic-name and bundle-version attributes for the system bundle exports. Use {@link #addEE(EE, String, String)} in preference.
+	 */
+	@Deprecated
 	public void addEE(EE ee) throws Exception {
-		addExportPackages(ee.getPackages());
+		addEE(ee, SYSTEM_BUNDLE_BSN, SYSTEM_BUNDLE_VERSION);
+	}
+
+	public void addEE(EE ee, String bsn, String bundleVersion) throws Exception {
+		addExportPackages(ee.getPackages(), bsn, bundleVersion);
 		EE[] compatibles = ee.getCompatible();
 		addExecutionEnvironment(ee);
 		for (EE compatible : compatibles) {
@@ -582,8 +608,15 @@ public class ResourceBuilder {
 		addCapability(builder);
 	}
 
+	/**
+	 * @deprecated Infers (probably incorrect) bundle-symbolic-name and bundle-version attributes for the system bundle exports. Use {@link #addAllExecutionEnvironments(EE, String, String)} in preference.
+	 */
+	@Deprecated
 	public void addAllExecutionEnvironments(EE ee) throws Exception {
-		addExportPackages(ee.getPackages());
+		addAllExecutionEnvironments(ee, SYSTEM_BUNDLE_BSN, SYSTEM_BUNDLE_VERSION);
+	}
+	public void addAllExecutionEnvironments(EE ee, String bsn, String bundleVersion) throws Exception {
+		addExportPackages(ee.getPackages(), bsn, bundleVersion);
 		addExecutionEnvironment(ee);
 		for (EE compatibleEE : ee.getCompatible()) {
 			addExecutionEnvironment(compatibleEE);

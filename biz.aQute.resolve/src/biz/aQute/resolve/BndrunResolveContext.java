@@ -187,7 +187,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 				Parameters systemPackages = new Parameters(properties.mergeProperties(Constants.RUNSYSTEMPACKAGES),
 						project);
-				system.addExportPackages(systemPackages);
+				system.addSystemBundleExportPackages(systemPackages);
 
 				//
 				// We make the system capabilities as coming from the system
