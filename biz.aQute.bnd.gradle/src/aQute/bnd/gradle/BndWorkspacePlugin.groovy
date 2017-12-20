@@ -131,6 +131,8 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 
       /* Apply workspace plugin to root project */
       gradle.projectsLoaded { gradle ->
+        gradle.rootProject.ext.bnd_cnf = cnf
+        gradle.rootProject.ext.bndWorkspace = workspace
         gradle.rootProject.apply plugin: BndWorkspacePlugin.class
       }
     }
@@ -143,12 +145,16 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       }
 
       /* Initialize the Bnd workspace */
-      ext.bnd_cnf = findProperty('bnd_cnf') ?: 'cnf'
-      Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
-      Workspace.addGestalt(Constants.GESTALT_BATCH, null)
-      ext.bndWorkspace = new Workspace(rootDir, bnd_cnf).setOffline(gradle.startParameter.offline)
-      if (gradle.ext.has('bndWorkspaceConfigure')) {
-        gradle.bndWorkspaceConfigure(bndWorkspace)
+      if (!ext.has('bnd_cnf')) { // if not passed from settings
+        ext.bnd_cnf = findProperty('bnd_cnf') ?: 'cnf'
+      }
+      if (!ext.has('bndWorkspace')) { // if not passed from settings
+        Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
+        Workspace.addGestalt(Constants.GESTALT_BATCH, null)
+        ext.bndWorkspace = new Workspace(rootDir, bnd_cnf).setOffline(gradle.startParameter.offline)
+        if (gradle.ext.has('bndWorkspaceConfigure')) {
+          gradle.bndWorkspaceConfigure(bndWorkspace)
+        }
       }
 
       /* Configure cnf project */
