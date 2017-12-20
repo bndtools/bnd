@@ -108,6 +108,8 @@ public class Command {
 		}
 
 		p.directory(cwd);
+		if (in == System.in)
+			p.redirectInput(ProcessBuilder.Redirect.INHERIT);
 		process = p.start();
 
 		// Make sure the command will not linger when we go
@@ -174,7 +176,6 @@ public class Command {
 					rdInThread.setDaemon(true);
 					rdInThread.start();
 				} else {
-
 					IO.copy(in, stdin);
 					stdin.close();
 				}
@@ -193,7 +194,8 @@ public class Command {
 		byte exitValue = (byte) process.waitFor();
 		finished.set(true);
 		if (rdInThread != null) {
-			IO.close(in);
+			if (in != System.in)
+				IO.close(in);
 			rdInThread.interrupt();
 		}
 
