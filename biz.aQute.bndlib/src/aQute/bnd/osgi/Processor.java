@@ -1446,21 +1446,45 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static void printClause(Map< ? , ? > map, StringBuilder sb) throws IOException {
+		if (map instanceof Attrs) {
+			Attrs attrs = (Attrs) map;
+			for (Entry<String, String> entry : attrs.entrySet()) {
+				String key = entry.getKey();
+				// Skip directives we do not recognize
+				if (skipPrint(key))
+					continue;
 
-		for (Entry< ? , ? > entry : map.entrySet()) {
-			Object key = entry.getKey();
-			// Skip directives we do not recognize
-			if (key.equals(INTERNAL_SOURCE_DIRECTIVE) || key.equals(INTERNAL_EXPORTED_DIRECTIVE)
-					|| key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE)
-					|| key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
-				continue;
+				sb.append(";");
+				attrs.append(sb, entry);
+			}
+		} else {
+			for (Entry<?, ?> entry : map.entrySet()) {
+				String key = entry.getKey()
+					.toString();
+				// Skip directives we do not recognize
+				if (skipPrint(key))
+					continue;
 
-			String value = ((String) entry.getValue()).trim();
-			sb.append(";");
-			sb.append(key);
-			sb.append("=");
+				sb.append(";");
+				sb.append(key);
+				sb.append("=");
+				String value = ((String) entry.getValue()).trim();
+				quote(sb, value);
+			}
+		}
+	}
 
-			quote(sb, value);
+	private static boolean skipPrint(String key) {
+		switch (key) {
+			case INTERNAL_SOURCE_DIRECTIVE :
+			case INTERNAL_EXPORTED_DIRECTIVE :
+			case NO_IMPORT_DIRECTIVE :
+			case PROVIDE_DIRECTIVE :
+			case SPLIT_PACKAGE_DIRECTIVE :
+			case FROM_DIRECTIVE :
+				return true;
+			default :
+				return false;
 		}
 	}
 

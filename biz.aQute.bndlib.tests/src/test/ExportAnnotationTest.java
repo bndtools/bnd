@@ -37,6 +37,8 @@ public class ExportAnnotationTest extends TestCase {
 			assertNotNull(a);
 			assertEquals("buzz", a.get("fizz"));
 			assertEquals("fizzbuzz", a.get("foobar:"));
+			assertEquals(Version.valueOf("1.2.3.qual"), Version.valueOf(a.get("viking")));
+			assertEquals(Attrs.Type.VERSION, a.getType("viking"));
 			assertEquals("test.export.annotation." + getName() + ".used", a.get("uses:"));
 			assertEquals(Version.valueOf("1.0.0"), Version.valueOf(a.get("version")));
 
