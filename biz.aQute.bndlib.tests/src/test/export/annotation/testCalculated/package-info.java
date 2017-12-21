@@ -1,5 +1,5 @@
 @Export(attribute = {
-		"fizz=buzz", "foobar:=fizzbuzz"
+	"fizz:String=buzz", "foobar:=fizzbuzz", "viking:Version=\"1.2.3.qual\""
 }, substitution = Substitution.CALCULATED)
 @Version("1.0.0")
 package test.export.annotation.testCalculated;

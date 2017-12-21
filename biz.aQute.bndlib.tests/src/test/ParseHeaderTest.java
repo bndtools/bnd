@@ -22,7 +22,7 @@ public class ParseHeaderTest extends TestCase {
 		String s = p.toString();
 		System.out.println(s);
 		assertEquals(
-				"a;a:Long=1;b:Double=\"3.2\";c:String=abc;d:Version=1;"
+			"a;a:Long=1;b:Double=\"3.2\";c=abc;d:Version=1;"
 						+ "e:List<Long>=\"1,2,3\";f:List<Double>=\"1.0,1.1,1.2\";g:List<String>=\"abc,def,ghi\";h:List<Version>=\"1.0.1,1.0.2\"",
 				s);
 
@@ -217,7 +217,7 @@ public class ParseHeaderTest extends TestCase {
 
 	public void testParametersCollector() throws Exception {
 		Stream<String> pkgs = Stream.of("com.foo;com.fuu;fizz=bazz;dir:=dar", "com.bar;a=b,org.foo;provide:=true",
-			"org.fuu");
+			"org.fuu", "io.hiho;viking:Version=2");
 		Parameters p = pkgs.collect(Parameters.toParameters());
 		Attrs a;
 		a = p.get("com.foo");
@@ -239,5 +239,9 @@ public class ParseHeaderTest extends TestCase {
 		a = p.get("org.fuu");
 		assertNotNull(a);
 		assertTrue(a.isEmpty());
+		a = p.get("io.hiho");
+		assertNotNull(a);
+		assertEquals(Attrs.Type.VERSION, a.getType("viking"));
+		assertEquals(Version.parseVersion("2.0.0"), Version.parseVersion(a.get("viking")));
 	}
 }

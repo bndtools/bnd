@@ -5,10 +5,12 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -21,49 +23,49 @@ public class Attrs implements Map<String,String> {
 		Type type();
 	}
 
-	public static DataType<String>			STRING			= new DataType<String>() {
+	public static final DataType<String>		STRING			= new DataType<String>() {
 
 																public Type type() {
 																	return Type.STRING;
 																}
 															};
-	public static DataType<Long>			LONG			= new DataType<Long>() {
+	public static final DataType<Long>			LONG			= new DataType<Long>() {
 
 																public Type type() {
 																	return Type.LONG;
 																}
 															};;
-	public static DataType<Double>			DOUBLE			= new DataType<Double>() {
+	public static final DataType<Double>		DOUBLE			= new DataType<Double>() {
 
 																public Type type() {
 																	return Type.DOUBLE;
 																}
 															};;
-	public static DataType<Version>			VERSION			= new DataType<Version>() {
+	public static final DataType<Version>		VERSION			= new DataType<Version>() {
 
 																public Type type() {
 																	return Type.VERSION;
 																}
 															};;
-	public static DataType<List<String>>	LIST_STRING		= new DataType<List<String>>() {
+	public static final DataType<List<String>>	LIST_STRING		= new DataType<List<String>>() {
 
 																public Type type() {
 																	return Type.STRINGS;
 																}
 															};;
-	public static DataType<List<Long>>		LIST_LONG		= new DataType<List<Long>>() {
+	public static final DataType<List<Long>>	LIST_LONG		= new DataType<List<Long>>() {
 
 																public Type type() {
 																	return Type.LONGS;
 																}
 															};;
-	public static DataType<List<Double>>	LIST_DOUBLE		= new DataType<List<Double>>() {
+	public static final DataType<List<Double>>	LIST_DOUBLE		= new DataType<List<Double>>() {
 
 																public Type type() {
 																	return Type.DOUBLES;
 																}
 															};;
-	public static DataType<List<Version>>	LIST_VERSION	= new DataType<List<Version>>() {
+	public static final DataType<List<Version>>	LIST_VERSION	= new DataType<List<Version>>() {
 
 																public Type type() {
 																	return Type.VERSIONS;
@@ -113,29 +115,30 @@ public class Attrs implements Map<String,String> {
 	 * scalar ’>’
 	 * </pre>
 	 */
-	static String				EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
-	static String				SCALAR		= "String|Version|Long|Double";
-	static String				LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
+	private static final String	EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
+	private static final String	SCALAR		= "String|Version|Long|Double";
+	private static final String	LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
 	public static final Pattern	TYPED		= Pattern
 			.compile("\\s*(" + EXTENDED + ")\\s*:\\s*(" + SCALAR + "|" + LIST + ")\\s*");
 
-	private Map<String,String>	map;
-	private Map<String,Type>	types		= new LinkedHashMap<String,Type>();
-	static Map<String,String>	EMPTY		= Collections.emptyMap();
-	public static Attrs			EMPTY_ATTRS	= new Attrs();
+	private final Map<String, String>	map;
+	private final Map<String, Type>		types;
+	public static final Attrs			EMPTY_ATTRS	= new Attrs(Collections.emptyMap(), Collections.emptyMap());
 
-	static {
-		EMPTY_ATTRS.map = Collections.emptyMap();
+	private Attrs(Map<String, String> map, Map<String, Type> types) {
+		this.map = map;
+		this.types = types;
 	}
 
-	public Attrs() {}
+	public Attrs() {
+		this(new LinkedHashMap<String, String>(), new HashMap<String, Type>());
+	}
 
 	public Attrs(Attrs... attrs) {
+		this();
 		for (Attrs a : attrs) {
 			if (a != null) {
 				putAll(a);
-				if (a.types != null)
-					types.putAll(a.types);
 			}
 		}
 	}
@@ -216,12 +219,10 @@ public class Attrs implements Map<String,String> {
 
 	public void clear() {
 		map.clear();
+		types.clear();
 	}
 
 	public boolean containsKey(String name) {
-		if (map == null)
-			return false;
-
 		return map.containsKey(name);
 	}
 
@@ -229,16 +230,10 @@ public class Attrs implements Map<String,String> {
 	@Deprecated
 	public boolean containsKey(Object name) {
 		assert name instanceof String;
-		if (map == null)
-			return false;
-
 		return map.containsKey(name);
 	}
 
 	public boolean containsValue(String value) {
-		if (map == null)
-			return false;
-
 		return map.containsValue(value);
 	}
 
@@ -246,16 +241,10 @@ public class Attrs implements Map<String,String> {
 	@Deprecated
 	public boolean containsValue(Object value) {
 		assert value instanceof String;
-		if (map == null)
-			return false;
-
 		return map.containsValue(value);
 	}
 
 	public Set<java.util.Map.Entry<String,String>> entrySet() {
-		if (map == null)
-			return EMPTY.entrySet();
-
 		return map.entrySet();
 	}
 
@@ -263,16 +252,10 @@ public class Attrs implements Map<String,String> {
 	@Deprecated
 	public String get(Object key) {
 		assert key instanceof String;
-		if (map == null)
-			return null;
-
 		return map.get(key);
 	}
 
 	public String get(String key) {
-		if (map == null)
-			return null;
-
 		return map.get(key);
 	}
 
@@ -284,22 +267,16 @@ public class Attrs implements Map<String,String> {
 	}
 
 	public boolean isEmpty() {
-		return map == null || map.isEmpty();
+		return map.isEmpty();
 	}
 
 	public Set<String> keySet() {
-		if (map == null)
-			return EMPTY.keySet();
-
 		return map.keySet();
 	}
 
 	public String put(String key, String value) {
 		if (key == null)
 			return null;
-
-		if (map == null)
-			map = new LinkedHashMap<String,String>();
 
 		Matcher m = TYPED.matcher(key);
 		if (m.matches()) {
@@ -327,7 +304,11 @@ public class Attrs implements Map<String,String> {
 				else if ("Version".equals(type))
 					t = Type.VERSION;
 			}
-			types.put(key, t);
+			if (t != Type.STRING) {
+				types.put(key, t);
+			} else {
+				types.remove(key);
+			}
 
 			// TODO verify value?
 		}
@@ -336,45 +317,47 @@ public class Attrs implements Map<String,String> {
 	}
 
 	public Type getType(String key) {
-		if (types == null)
-			return Type.STRING;
 		Type t = types.get(key);
 		if (t == null)
 			return Type.STRING;
 		return t;
 	}
 
-	public void putAll(Map< ? extends String, ? extends String> map) {
-		for (Map.Entry< ? extends String, ? extends String> e : map.entrySet())
+	public void putAll(Attrs attrs) {
+		types.keySet()
+			.removeAll(attrs.map.keySet());
+		map.putAll(attrs.map);
+		types.putAll(attrs.types);
+	}
+
+	public void putAll(Map<? extends String, ? extends String> other) {
+		if (other instanceof Attrs) {
+			putAll((Attrs) other);
+			return;
+		}
+		for (Map.Entry<? extends String, ? extends String> e : other.entrySet()) {
 			put(e.getKey(), e.getValue());
+		}
 	}
 
 	@SuppressWarnings("cast")
 	@Deprecated
 	public String remove(Object var0) {
 		assert var0 instanceof String;
-		if (map == null)
-			return null;
-
+		types.remove(var0);
 		return map.remove(var0);
 	}
 
 	public String remove(String var0) {
-		if (map == null)
-			return null;
+		types.remove(var0);
 		return map.remove(var0);
 	}
 
 	public int size() {
-		if (map == null)
-			return 0;
 		return map.size();
 	}
 
 	public Collection<String> values() {
-		if (map == null)
-			return EMPTY.values();
-
 		return map.values();
 	}
 
@@ -404,13 +387,12 @@ public class Attrs implements Map<String,String> {
 	}
 
 	public void append(StringBuilder sb, Map.Entry<String,String> e) throws IOException {
-		sb.append(e.getKey());
-
-		if (types != null) {
-			Type type = types.get(e.getKey());
-			if (type != null) {
-				sb.append(":").append(type);
-			}
+		String key = e.getKey();
+		sb.append(key);
+		Type type = getType(key);
+		if (type != Type.STRING) {
+			sb.append(":")
+				.append(type);
 		}
 		sb.append("=");
 		OSGiHeader.quote(sb, e.getValue());
@@ -444,10 +426,12 @@ public class Attrs implements Map<String,String> {
 			return false;
 
 		for (String key : keySet()) {
-			String value = get(key);
-			String valueo = other.get(key);
-			if (!(value == valueo || (value != null && value.equals(valueo))))
+			if (!Objects.equals(get(key), other.get(key))) {
 				return false;
+			}
+			if (getType(key) != other.getType(key)) {
+				return false;
+			}
 		}
 		return true;
 	}
@@ -556,9 +540,16 @@ public class Attrs implements Map<String,String> {
 
 	public void mergeWith(Attrs other, boolean override) {
 		for (Map.Entry<String,String> e : other.entrySet()) {
-			String local = get(e.getKey());
-			if (override || local == null)
-				put(e.getKey(), e.getValue());
+			String key = e.getKey();
+			if (override || !containsKey(key)) {
+				map.put(key, e.getValue());
+				Type t = other.getType(key);
+				if (t != Type.STRING) {
+					types.put(key, t);
+				} else {
+					types.remove(key);
+				}
+			}
 		}
 	}
 
