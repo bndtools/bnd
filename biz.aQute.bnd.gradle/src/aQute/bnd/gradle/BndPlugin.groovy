@@ -512,9 +512,9 @@ project.allsourcepath:  ${bnd.allSrcDirs.asPath}
 project.testsrc:        ${sourceSets.test.java.sourceDirectories.asPath}
 project.testoutput:     ${compileTestJava.destinationDir}
 project.testpath:       ${compileTestJava.classpath.asPath}
-project.bootclasspath:  ${compileJava.options.bootClasspath}
+project.bootclasspath:  ${compileJava.options.hasProperty('bootstrapClasspath')?compileJava.options.bootstrapClasspath?.asPath?:'':compileJava.options.bootClasspath?:''}
 project.deliverables:   ${configurations.archives.artifacts.files*.path}
-javac:                  ${compileJava.options.forkOptions.executable}
+javac:                  ${compileJava.options.forkOptions.executable?:'javac'}
 javac.source:           ${compileJava.sourceCompatibility}
 javac.target:           ${compileJava.targetCompatibility}
 javac.profile:          ${javacProfile}

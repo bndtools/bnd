@@ -252,9 +252,14 @@ public class Parameters implements Map<String,Attrs> {
 		return allowDuplicateAttributes;
 	}
 
-	public static Collector<String,StringBuilder,Parameters> toParameters() {
-		return Collector.of(StringBuilder::new, (b, s) -> b.append(b.length() == 0 ? "" : ",").append(s),
-				(a, b) -> new StringBuilder(a).append(a.length() == 0 ? "" : ",").append(b),
-				b -> new Parameters(b.toString()));
+	public static Collector<String, Parameters, Parameters> toParameters() {
+		return Collector.of(Parameters::new, Parameters::accumulator, Parameters::combiner);
+	}
+	private static void accumulator(Parameters p, String s) {
+		OSGiHeader.parseHeader(s, null, p);
+	}
+	private static Parameters combiner(Parameters t, Parameters u) {
+		t.mergeWith(u, true);
+		return t;
 	}
 }

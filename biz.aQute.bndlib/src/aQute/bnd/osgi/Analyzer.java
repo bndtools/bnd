@@ -51,6 +51,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.StringJoiner;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
@@ -607,36 +608,46 @@ public class Analyzer extends Processor {
 						}
 						break;
 					case "org.osgi.annotation.bundle.Export" :
-						Object[] attributes = a.get("attribute");
-
-						if (attributes != null) {
-							for (Object s : attributes) {
-								String[] attr = ((String) s).split("=", 2);
-								if (attr.length != 2) {
-									warning("The annotation attribute %s of the exported package %s could not be understood",
-											s, clazz.getClassName().getPackageRef().getFQN());
-									continue;
-								}
-								info.put(attr[0], attr[1]);
-							}
-						}
-
-						Object[] usesClause = a.get("uses");
-						if (usesClause != null) {
+						Object[] usesClauses = a.get("uses");
+						if (usesClauses != null) {
+							StringJoiner sj = new StringJoiner(",");
 							String old = info.get(USES_DIRECTIVE);
-							if (old == null)
-								old = "";
-							StringBuilder sb = new StringBuilder(old);
-							String del = sb.length() == 0 ? "" : ",";
-
-							for (Object use : usesClause) {
-								sb.append(del);
-								sb.append(use);
-								del = ",";
+							if (old != null)
+								sj.add(old);
+							for (Object usesClause : usesClauses) {
+								sj.add(usesClause.toString());
 							}
-							info.put(USES_DIRECTIVE, sb.toString());
+							info.put(USES_DIRECTIVE, sj.toString());
 						}
 
+						Object substitution = a.get("substitution");
+						if (substitution != null) {
+							switch (substitution.toString()) {
+								case "CONSUMER" :
+									info.put(PROVIDE_DIRECTIVE, "false");
+									break;
+								case "PROVIDER" :
+									info.put(PROVIDE_DIRECTIVE, "true");
+									break;
+								case "NOIMPORT" :
+									info.put(NO_IMPORT_DIRECTIVE, "true");
+									break;
+								case "CALCULATED" :
+									// nothing to do; this is the normal case
+									break;
+								default :
+									error("Export annotation in %s has invalid substitution value: %s", clazz,
+										substitution);
+									break;
+							}
+						}
+
+						Object[] attributes = a.get("attribute");
+						if (attributes != null) {
+							for (Object attribute : attributes) {
+								info.mergeWith(OSGiHeader.parseProperties(attribute.toString(), Analyzer.this), false);
+							}
+						}
 						break;
 					case "aQute.bnd.annotation.Export" :
 						// Check mandatory attributes
@@ -1677,7 +1688,6 @@ public class Analyzer extends Processor {
 			// }
 
 			parameters = new Attrs();
-			parameters.remove(VERSION_ATTRIBUTE);
 			result.put(ep, parameters);
 		}
 		return result;
@@ -1801,9 +1811,14 @@ public class Analyzer extends Processor {
 					// be defined externally or locally
 					//
 
-					boolean provider = isTrue(importAttributes.get(PROVIDE_DIRECTIVE))
-							|| isTrue(exportAttributes.get(PROVIDE_DIRECTIVE)) || provided.contains(packageRef);
-
+					boolean provider;
+					if (importAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+						provider = isTrue(importAttributes.get(PROVIDE_DIRECTIVE));
+					} else if (exportAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+						provider = isTrue(exportAttributes.get(PROVIDE_DIRECTIVE));
+					} else {
+						provider = provided.contains(packageRef);
+					}
 					exportVersion = cleanupVersion(exportVersion);
 
 					importRange = applyVersionPolicy(exportVersion, importRange, provider);
@@ -2087,9 +2102,7 @@ public class Analyzer extends Processor {
 		Attrs clause = exports.get(packageRef);
 
 		// Check if someone already set the uses: directive
-		String override = clause.get(USES_DIRECTIVE);
-		if (override == null)
-			override = USES_USES;
+		String override = clause.get(USES_DIRECTIVE, USES_USES);
 
 		// Get the used packages
 		Collection<PackageRef> usedPackages = uses.get(packageRef);
@@ -2128,10 +2141,17 @@ public class Analyzer extends Processor {
 				override = override.substring(0, override.length() - 1);
 			if (override.startsWith(","))
 				override = override.substring(1);
-			if (override.length() > 0) {
+			if (override.isEmpty()) {
+				clause.remove(USES_DIRECTIVE);
+			} else {
 				clause.put(USES_DIRECTIVE, override);
 			}
+		} else {
+			if (override.equals(USES_USES)) {
+				clause.remove(USES_DIRECTIVE);
+			}
 		}
+
 	}
 
 	/**
