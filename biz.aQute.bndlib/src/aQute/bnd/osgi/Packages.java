@@ -1,7 +1,6 @@
 package aQute.bnd.osgi;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -10,89 +9,63 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 
 public class Packages implements Map<PackageRef,Attrs> {
-	private LinkedHashMap<PackageRef,Attrs>	map;
-	static Map<PackageRef,Attrs>			EMPTY	= Collections.emptyMap();
+	private final Map<PackageRef, Attrs> map;
 
 	public static enum QUERY {
 		ANY, ANNOTATED, NAMED, VERSIONED
 	}
 
 	public Packages(Packages other) {
-		if (other.map != null) {
-			map = new LinkedHashMap<Descriptors.PackageRef,Attrs>(other.map);
-		}
+		map = new LinkedHashMap<>(other.map);
 	}
 
-	public Packages() {}
+	public Packages() {
+		map = new LinkedHashMap<>();
+	}
 
 	public void clear() {
-		if (map != null)
-			map.clear();
+		map.clear();
 	}
 
 	public boolean containsKey(PackageRef name) {
-		if (map == null)
-			return false;
-
 		return map.containsKey(name);
 	}
 
 	@Deprecated
 	public boolean containsKey(Object name) {
 		assert name instanceof PackageRef;
-		if (map == null)
-			return false;
-
 		return map.containsKey(name);
 	}
 
 	public boolean containsValue(Attrs value) {
-		if (map == null)
-			return false;
-
 		return map.containsValue(value);
 	}
 
 	@Deprecated
 	public boolean containsValue(Object value) {
 		assert value instanceof Attrs;
-		if (map == null)
-			return false;
-
 		return map.containsValue(value);
 	}
 
 	public Set<java.util.Map.Entry<PackageRef,Attrs>> entrySet() {
-		if (map == null)
-			return EMPTY.entrySet();
-
 		return map.entrySet();
 	}
 
 	@Deprecated
 	public Attrs get(Object key) {
 		assert key instanceof PackageRef;
-		if (map == null)
-			return null;
-
 		return map.get(key);
 	}
 
 	public Attrs get(PackageRef key) {
-		if (map == null)
-			return null;
-
 		return map.get(key);
 	}
 
 	public boolean isEmpty() {
-		return map == null || map.isEmpty();
+		return map.isEmpty();
 	}
 
 	public Set<PackageRef> keySet() {
-		if (map == null)
-			return EMPTY.keySet();
-
 		return map.keySet();
 	}
 
@@ -107,18 +80,10 @@ public class Packages implements Map<PackageRef,Attrs> {
 	}
 
 	public Attrs put(PackageRef key, Attrs value) {
-		if (map == null)
-			map = new LinkedHashMap<PackageRef,Attrs>();
-
 		return map.put(key, value);
 	}
 
 	public void putAll(Map< ? extends PackageRef, ? extends Attrs> map) {
-		if (this.map == null) {
-			if (map.isEmpty())
-				return;
-			this.map = new LinkedHashMap<PackageRef,Attrs>();
-		}
 		this.map.putAll(map);
 	}
 
@@ -132,35 +97,22 @@ public class Packages implements Map<PackageRef,Attrs> {
 	@Deprecated
 	public Attrs remove(Object var0) {
 		assert var0 instanceof PackageRef;
-		if (map == null)
-			return null;
-
 		return map.remove(var0);
 	}
 
 	public Attrs remove(PackageRef var0) {
-		if (map == null)
-			return null;
 		return map.remove(var0);
 	}
 
 	public int size() {
-		if (map == null)
-			return 0;
 		return map.size();
 	}
 
 	public Collection<Attrs> values() {
-		if (map == null)
-			return EMPTY.values();
-
 		return map.values();
 	}
 
 	public Attrs getByFQN(String s) {
-		if (map == null)
-			return null;
-
 		for (Map.Entry<PackageRef,Attrs> pr : map.entrySet()) {
 			if (pr.getKey().getFQN().equals(s))
 				return pr.getValue();
@@ -169,9 +121,6 @@ public class Packages implements Map<PackageRef,Attrs> {
 	}
 
 	public Attrs getByBinaryName(String s) {
-		if (map == null)
-			return null;
-
 		for (Map.Entry<PackageRef,Attrs> pr : map.entrySet()) {
 			if (pr.getKey().getBinary().equals(s))
 				return pr.getValue();
