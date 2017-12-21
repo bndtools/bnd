@@ -148,7 +148,7 @@ public class Project extends Processor {
 	private volatile RefreshData	data							= new RefreshData();
 	public Map<String,Container>	unreferencedClasspathEntries	= new HashMap<>();
 
-	public Project(Workspace workspace, File unused, File buildFile) throws Exception {
+	public Project(Workspace workspace, File unused, File buildFile) {
 		super(workspace);
 		this.workspace = workspace;
 		setFileMustExist(false);
@@ -159,11 +159,11 @@ public class Project extends Processor {
 		readBuildProperties();
 	}
 
-	public Project(Workspace workspace, File buildDir) throws Exception {
+	public Project(Workspace workspace, File buildDir) {
 		this(workspace, buildDir, new File(buildDir, BNDFILE));
 	}
 
-	private void readBuildProperties() throws Exception {
+	private void readBuildProperties() {
 		try {
 			File f = getFile("build.properties");
 			if (f.isFile()) {
