@@ -1,5 +1,7 @@
 package aQute.bnd.build;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +10,9 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -276,7 +282,7 @@ public class Workspace extends Processor {
 		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
 	}
 
-	public Project getProjectFromFile(File projectDir) throws Exception {
+	public Project getProjectFromFile(File projectDir) {
 		projectDir = projectDir.getAbsoluteFile();
 		assert projectDir.isDirectory();
 
@@ -286,7 +292,7 @@ public class Workspace extends Processor {
 		return null;
 	}
 
-	public Project getProject(String bsn) throws Exception {
+	public Project getProject(String bsn) {
 		synchronized (models) {
 			Project project = models.get(bsn);
 			if (project != null)
@@ -378,15 +384,14 @@ public class Workspace extends Processor {
 	}
 
 	public Collection<Project> getAllProjects() throws Exception {
-		List<Project> projects = new ArrayList<Project>();
-		for (File file : getBase().listFiles()) {
-			if (new File(file, Project.BNDFILE).isFile()) {
-				Project p = getProject(file.getAbsoluteFile().getName());
-				if (p != null) {
-					projects.add(p);
-				}
-			}
-		}
+		Path basePath = getBase().toPath();
+		Path bndfile = Paths.get(Project.BNDFILE);
+		List<Project> projects = Files.walk(basePath, 1, FileVisitOption.FOLLOW_LINKS)
+			.filter(p -> !basePath.equals(p) && Files.isDirectory(p) && Files.isRegularFile(p.resolve(bndfile)))
+			.map(p -> getProject(p.getFileName()
+				.toString()))
+			.filter(Objects::nonNull)
+			.collect(toList());
 		return projects;
 	}
 

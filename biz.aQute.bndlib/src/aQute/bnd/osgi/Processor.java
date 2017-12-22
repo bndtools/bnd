@@ -1180,10 +1180,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * setProperties(Properties) which will handle the includes.
 	 *
 	 * @param propertiesFile
-	 * @throws FileNotFoundException
-	 * @throws IOException
 	 */
-	public void setProperties(File propertiesFile) throws IOException {
+	public void setProperties(File propertiesFile) {
 		propertiesFile = propertiesFile.getAbsoluteFile();
 		setProperties(propertiesFile, propertiesFile.getParentFile());
 	}

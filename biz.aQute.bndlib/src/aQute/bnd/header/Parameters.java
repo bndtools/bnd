@@ -1,7 +1,6 @@
 package aQute.bnd.header;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -11,26 +10,24 @@ import aQute.lib.collections.SortedList;
 import aQute.service.reporter.Reporter;
 
 public class Parameters implements Map<String,Attrs> {
-	private LinkedHashMap<String,Attrs>	map;
-	static Map<String,Attrs>			EMPTY	= Collections.emptyMap();
-	String								error;
+	private final Map<String, Attrs>	map;
 	private final boolean				allowDuplicateAttributes;
 
 	public Parameters(boolean allowDuplicateAttributes) {
 		this.allowDuplicateAttributes = allowDuplicateAttributes;
+		map = new LinkedHashMap<>();
 	}
 
 	public Parameters() {
-		allowDuplicateAttributes = false;
+		this(false);
 	}
 
 	public Parameters(String header) {
-		allowDuplicateAttributes = false;
-		OSGiHeader.parseHeader(header, null, this);
+		this(header, null);
 	}
 
 	public Parameters(String header, Reporter reporter) {
-		allowDuplicateAttributes = false;
+		this(false);
 		OSGiHeader.parseHeader(header, reporter, this);
 	}
 
@@ -44,10 +41,7 @@ public class Parameters implements Map<String,Attrs> {
 		put(key, attrs);
 	}
 
-	public boolean containsKey(final String name) {
-		if (map == null)
-			return false;
-
+	public boolean containsKey(String name) {
 		return map.containsKey(name);
 	}
 
@@ -55,16 +49,10 @@ public class Parameters implements Map<String,Attrs> {
 	@Deprecated
 	public boolean containsKey(Object name) {
 		assert name instanceof String;
-		if (map == null)
-			return false;
-
 		return map.containsKey(name);
 	}
 
 	public boolean containsValue(Attrs value) {
-		if (map == null)
-			return false;
-
 		return map.containsValue(value);
 	}
 
@@ -72,16 +60,10 @@ public class Parameters implements Map<String,Attrs> {
 	@Deprecated
 	public boolean containsValue(Object value) {
 		assert value instanceof Attrs;
-		if (map == null)
-			return false;
-
 		return map.containsValue(value);
 	}
 
 	public Set<java.util.Map.Entry<String,Attrs>> entrySet() {
-		if (map == null)
-			return EMPTY.entrySet();
-
 		return map.entrySet();
 	}
 
@@ -89,46 +71,28 @@ public class Parameters implements Map<String,Attrs> {
 	@Deprecated
 	public Attrs get(Object key) {
 		assert key instanceof String;
-		if (map == null)
-			return null;
-
 		return map.get(key);
 	}
 
 	public Attrs get(String key) {
-		if (map == null)
-			return null;
-
 		return map.get(key);
 	}
 
 	public boolean isEmpty() {
-		return map == null || map.isEmpty();
+		return map.isEmpty();
 	}
 
 	public Set<String> keySet() {
-		if (map == null)
-			return EMPTY.keySet();
-
 		return map.keySet();
 	}
 
 	public Attrs put(String key, Attrs value) {
 		assert key != null;
 		assert value != null;
-
-		if (map == null)
-			map = new LinkedHashMap<String,Attrs>();
-
 		return map.put(key, value);
 	}
 
 	public void putAll(Map< ? extends String, ? extends Attrs> map) {
-		if (this.map == null) {
-			if (map.isEmpty())
-				return;
-			this.map = new LinkedHashMap<String,Attrs>();
-		}
 		this.map.putAll(map);
 	}
 
@@ -143,28 +107,18 @@ public class Parameters implements Map<String,Attrs> {
 	@Deprecated
 	public Attrs remove(Object var0) {
 		assert var0 instanceof String;
-		if (map == null)
-			return null;
-
 		return map.remove(var0);
 	}
 
 	public Attrs remove(String var0) {
-		if (map == null)
-			return null;
 		return map.remove(var0);
 	}
 
 	public int size() {
-		if (map == null)
-			return 0;
 		return map.size();
 	}
 
 	public Collection<Attrs> values() {
-		if (map == null)
-			return EMPTY.values();
-
 		return map.values();
 	}
 
