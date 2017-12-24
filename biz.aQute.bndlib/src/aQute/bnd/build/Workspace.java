@@ -10,7 +10,6 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,6 +19,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -40,6 +40,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.naming.TimeLimitExceededException;
 
@@ -104,8 +105,8 @@ public class Workspace extends Processor {
 
 	private final static Map<File,WeakReference<Workspace>>	cache					= newHashMap();
 	static Processor							defaults				= null;
-	final Map<String,Project>					models					= newHashMap();
-	private final Set<String>					modelsUnderConstruction	= newSet();
+	private final Map<String, Project>							models					= new HashMap<>();
+	private final Set<String>									modelsUnderConstruction	= new HashSet<>();
 	final Map<String,Action>					commands				= newMap();
 	final Maven									maven					= new Maven(Processor.getExecutor());
 	private final AtomicBoolean								offline					= new AtomicBoolean();
@@ -296,22 +297,27 @@ public class Workspace extends Processor {
 	public Project getProject(String bsn) {
 		synchronized (models) {
 			Project project = models.get(bsn);
-			if (project != null)
+			if (project != null) {
 				return project;
-
-			if (modelsUnderConstruction.add(bsn)) {
-				try {
-					File projectDir = getFile(bsn);
-					project = new Project(this, projectDir);
-					if (!project.isValid())
-						return null;
-
-					models.put(bsn, project);
-				} finally {
-					modelsUnderConstruction.remove(bsn);
-				}
 			}
-			return project;
+			if (!modelsUnderConstruction.add(bsn)) {
+				return null;
+			}
+			try {
+				File projectDir = getFile(bsn);
+				File bnd = getFile(projectDir, Project.BNDFILE);
+				if (!bnd.isFile()) {
+					return null;
+				}
+				project = new Project(this, projectDir);
+				if (!project.isValid()) {
+					return null;
+				}
+				models.put(bsn, project);
+				return project;
+			} finally {
+				modelsUnderConstruction.remove(bsn);
+			}
 		}
 	}
 
@@ -385,15 +391,15 @@ public class Workspace extends Processor {
 	}
 
 	public Collection<Project> getAllProjects() throws Exception {
-		Path basePath = getBase().toPath();
-		Path bndfile = Paths.get(Project.BNDFILE);
-		List<Project> projects = Files.walk(basePath, 1, FileVisitOption.FOLLOW_LINKS)
-			.filter(p -> !basePath.equals(p) && Files.isDirectory(p) && Files.isRegularFile(p.resolve(bndfile)))
-			.map(p -> getProject(p.getFileName()
-				.toString()))
-			.filter(Objects::nonNull)
-			.collect(toList());
-		return projects;
+		try (Stream<Path> paths = Files.list(getBase().toPath())) {
+			List<Project> projects = paths
+				.filter(p -> Files.isDirectory(p) && Files.isRegularFile(p.resolve(Project.BNDPATH)))
+				.map(p -> getProject(p.getFileName()
+					.toString()))
+				.filter(Objects::nonNull)
+				.collect(toList());
+			return projects;
+		}
 	}
 
 	/**

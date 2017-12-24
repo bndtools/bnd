@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -113,6 +114,7 @@ public class Project extends Processor {
 
 	final static String				DEFAULT_ACTIONS					= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
 	public final static String		BNDFILE							= "bnd.bnd";
+	final static Path				BNDPATH							= Paths.get(BNDFILE);
 	public final static String		BNDCNF							= "cnf";
 	public final static String		SHA_256							= "SHA-256";
 	final Workspace					workspace;
