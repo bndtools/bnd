@@ -2,6 +2,7 @@ package aQute.bnd.osgi;
 
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.joining;
 
 import java.io.Closeable;
 import java.io.File;
@@ -36,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -54,6 +56,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +72,7 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
-import aQute.lib.collections.SortedList;
+import aQute.lib.collections.Iterables;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -1277,32 +1281,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return getWildcardProperty(deflt, separator, inherit, ins);
 		}
 
-		@SuppressWarnings("resource")
-		Processor source = this;
-
-		return getLiteralProperty(key, deflt, source, inherit);
+		return getLiteralProperty(key, deflt, this, inherit);
 	}
 
 	private String getWildcardProperty(String deflt, String separator, boolean inherit, Instruction ins) {
 		// Handle a wildcard key, make sure they're sorted
 		// for consistency
-		SortedList<String> sortedList = SortedList.fromIterator(iterator(inherit));
-		StringBuilder sb = new StringBuilder();
-		String del = "";
-		for (String k : sortedList) {
-			if (ins.matches(k)) {
-				String v = getLiteralProperty(k, null, this, inherit);
-				if ((v != null) && !v.isEmpty()) {
-					sb.append(del);
-					del = separator;
-					sb.append(v);
-				}
-			}
-		}
-		if (sb.length() == 0)
-			return deflt;
-
-		return sb.toString();
+		String result = stream(inherit).filter(ins::matches)
+			.sorted()
+			.map(k -> getLiteralProperty(k, null, this, inherit))
+			.filter(v -> (v != null) && !v.isEmpty())
+			.collect(joining(separator));
+		return result.isEmpty() ? deflt : result;
 	}
 
 	private String getLiteralProperty(String key, String deflt, Processor source, boolean inherit) {
@@ -1320,21 +1310,24 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				}
 			}
 		} else {
-			while (source != null) {
-				Object raw = source.getProperties().get(key);
+			for (Processor proc = source; proc != null; proc = proc.getParent()) {
+				Object raw = proc.getProperties()
+					.get(key);
 				if (raw != null) {
 					if (raw instanceof String) {
 						value = (String) raw;
 					} else {
 						warning("Key '%s' has a non-String value: %s:%s", key,
-								raw == null ? "" : raw.getClass().getName(), raw);
+							raw == null ? ""
+								: raw.getClass()
+									.getName(),
+							raw);
 					}
+					source = proc;
 					break;
 				}
 
-				if (inherit)
-					source = source.getParent();
-				else
+				if (!inherit)
 					break;
 			}
 			//
@@ -1527,18 +1520,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Return all inherited property keys
+	 * Return all inherited property keys. The keys are sorted for consistent
+	 * ordering.
 	 */
 	public Set<String> getPropertyKeys(boolean inherit) {
 		Set<String> result;
 		if (parent == null || !inherit) {
-			result = Create.set();
+			result = new TreeSet<>();
 		} else {
 			result = parent.getPropertyKeys(inherit);
 		}
-		for (Object o : getProperties0().keySet())
+		for (Object o : getProperties0().keySet()) {
 			result.add(o.toString());
-
+		}
 		return result;
 	}
 
@@ -2212,29 +2206,35 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		getProperties().setProperty(key, value);
 	}
 
-	@Override
-	public Iterator<String> iterator() {
-		return iterator(true);
+	Stream<String> stream() {
+		return stream(true);
 	}
 
-	private Iterator<String> iterator(boolean inherit) {
-		Set<String> keys = getPropertyKeys(inherit);
-		final Iterator<String> it = keys.iterator();
-		return new Iterator<String>() {
-			String current;
+	private Stream<String> stream(boolean inherit) {
+		return StreamSupport.stream(iterable(inherit).spliterator(), false);
+	}
 
-			public boolean hasNext() {
-				return it.hasNext();
-			}
+	@Override
+	public Iterator<String> iterator() {
+		return iterable(true).iterator();
+	}
 
-			public String next() {
-				return current = it.next();
-			}
+	@Override
+	public Spliterator<String> spliterator() {
+		return iterable(true).spliterator();
+	}
 
-			public void remove() {
-				getProperties().remove(current);
-			}
-		};
+	private Iterable<String> iterable(boolean inherit) {
+		Set<Object> first = getProperties0().keySet();
+		Iterable<? extends Object> second;
+		if (parent == null || !inherit) {
+			second = Collections.emptyList();
+		} else {
+			second = parent.iterable(inherit);
+		}
+
+		Iterable<String> iterable = Iterables.intersection(first, second, o -> o.toString());
+		return iterable;
 	}
 
 	public Set<String> keySet() {
@@ -2558,7 +2558,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	private String makeWildcard(String key) {
-		return key + "|" + key + ".*";
+		return key + ".*";
 	}
 
 	/**
