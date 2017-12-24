@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -545,28 +546,22 @@ public class Workspace extends Processor {
 	}
 
 	public Collection<Project> getBuildOrder() throws Exception {
-		List<Project> result = new ArrayList<Project>();
+		Set<Project> result = new LinkedHashSet<Project>();
 		for (Project project : getAllProjects()) {
 			Collection<Project> dependsOn = project.getDependson();
 			getBuildOrder(dependsOn, result);
-			if (!result.contains(project)) {
-				result.add(project);
-			}
+			result.add(project);
 		}
 		return result;
 	}
 
-	private void getBuildOrder(Collection<Project> dependsOn, List<Project> result) throws Exception {
+	private void getBuildOrder(Collection<Project> dependsOn, Set<Project> result) throws Exception {
 		for (Project project : dependsOn) {
 			Collection<Project> subProjects = project.getDependson();
 			for (Project subProject : subProjects) {
-				if (!result.contains(subProject)) {
-					result.add(subProject);
-				}
+				result.add(subProject);
 			}
-			if (!result.contains(project)) {
-				result.add(project);
-			}
+			result.add(project);
 		}
 	}
 
