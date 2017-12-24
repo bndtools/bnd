@@ -52,85 +52,93 @@ public class Instruction {
 	final boolean		duplicate;
 	final boolean		literal;
 	final boolean		any;
-	final boolean		caseInsensitive;
+	private final int	matchFlags;
 
 	public Instruction(String input) {
 		this.input = input;
-
-		String s = Processor.removeDuplicateMarker(input);
-		duplicate = !s.equals(input);
-
-		if (s.startsWith("!")) {
-			negated = true;
-			s = s.substring(1);
-		} else
-			negated = false;
-
-		if (s.endsWith(":i")) {
-			caseInsensitive = true;
-			s = s.substring(0, s.length() - 2);
-		} else
-			caseInsensitive = false;
 
 		if (input.equals("*")) {
 			any = true;
 			literal = false;
 			match = null;
+			negated = false;
+			matchFlags = 0;
+			duplicate = false;
+			return;
+		}
+		any = false;
+
+		String s = Processor.removeDuplicateMarker(input);
+		duplicate = !s.equals(input);
+
+		int start = 0;
+		int end = s.length();
+
+		if (s.charAt(start) == '!') {
+			negated = true;
+			start++;
+		} else {
+			negated = false;
+		}
+
+		if (s.endsWith(":i")) {
+			matchFlags = Pattern.CASE_INSENSITIVE;
+			end -= 2;
+		} else {
+			matchFlags = 0;
+		}
+
+
+		if (s.charAt(start) == '=') {
+			match = s.substring(start + 1, end);
+			literal = true;
 			return;
 		}
 
-		any = false;
-		if (s.startsWith("=")) {
-			match = s.substring(1);
-			literal = true;
-		} else {
-			boolean wildcards = false;
-
-			StringBuilder sb = new StringBuilder();
-			loop: for (int c = 0; c < s.length(); c++) {
-				switch (s.charAt(c)) {
-					case '.' :
-						// If we end in a wildcard .* then we need to
-						// also include the last full package. I.e.
-						// com.foo.* includes com.foo (unlike OSGi)
-						if (c == s.length() - 2 && '*' == s.charAt(c + 1)) {
-							sb.append("(\\..*)?");
-							wildcards = true;
-							break loop;
-						}
-						sb.append("\\.");
-
-						break;
-					case '*' :
-						sb.append(".*");
+		boolean wildcards = false;
+		StringBuilder sb = new StringBuilder();
+		loop: for (int c = start; c < end; c++) {
+			switch (s.charAt(c)) {
+				case '.' :
+					// If we end in a wildcard .* then we need to
+					// also include the last full package. I.e.
+					// com.foo.* includes com.foo (unlike OSGi)
+					if (c == end - 2 && '*' == s.charAt(c + 1)) {
+						sb.append("(\\..*)?");
 						wildcards = true;
-						break;
-					case '$' :
-						sb.append("\\$");
-						break;
-					case '?' :
-						sb.append(".?");
-						wildcards = true;
-						break;
-					case '|' :
-						sb.append('|');
-						wildcards = true;
-						break;
-					default :
-						sb.append(s.charAt(c));
-						break;
-				}
-			}
+						break loop;
+					}
+					sb.append("\\.");
 
-			if (!wildcards) {
-				literal = true;
-				match = s;
-			} else {
-				literal = false;
-				match = sb.toString();
+					break;
+				case '*' :
+					sb.append(".*");
+					wildcards = true;
+					break;
+				case '$' :
+					sb.append("\\$");
+					break;
+				case '?' :
+					sb.append(".?");
+					wildcards = true;
+					break;
+				case '|' :
+					sb.append('|');
+					wildcards = true;
+					break;
+				default :
+					sb.append(s.charAt(c));
+					break;
 			}
 		}
 
+		if (wildcards) {
+			literal = false;
+			match = sb.toString();
+		} else {
+			literal = true;
+			match = s.substring(start, end);
+		}
 	}
 
 	public boolean matches(String value) {
@@ -162,10 +170,7 @@ public class Instruction {
 	public Matcher getMatcher(String value) {
 		if (pattern == null) {
 			String m = match == null ? ".*" : match;
-			if (!caseInsensitive)
-				pattern = Pattern.compile(m);
-			else
-				pattern = Pattern.compile(m, Pattern.CASE_INSENSITIVE);
+			pattern = Pattern.compile(m, matchFlags);
 		}
 		return pattern.matcher(value);
 	}
