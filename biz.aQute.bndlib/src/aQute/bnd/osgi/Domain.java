@@ -150,23 +150,7 @@ public abstract class Domain implements Iterable<String> {
 
 			@Override
 			public Iterator<String> iterator() {
-				final Iterator<String> it = processor.getPropertyKeys(true).iterator();
-
-				return new Iterator<String>() {
-					String current;
-
-					public boolean hasNext() {
-						return it.hasNext();
-					}
-
-					public String next() {
-						return current = it.next();
-					}
-
-					public void remove() {
-						processor.getProperties().remove(current);
-					}
-				};
+				return processor.iterator();
 			}
 		};
 	}

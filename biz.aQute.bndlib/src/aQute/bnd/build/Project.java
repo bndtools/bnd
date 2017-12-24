@@ -2832,7 +2832,7 @@ public class Project extends Processor {
 				Jar jar = launcher.executable();
 				Manifest m = jar.getManifest();
 				Attributes main = m.getMainAttributes();
-				for (String key : getPropertyKeys(true)) {
+				for (String key : this) {
 					if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
 						String value = getProperty(key);
 						if (value == null)
