@@ -1,6 +1,7 @@
 package aQute.bnd.osgi;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.joining;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -176,44 +178,35 @@ public class Macro {
 
 		if (key != null) {
 			key = key.trim();
-			if (key.length() > 0) {
-				Processor source = domain;
-				String value = null;
-
+			if (!key.isEmpty()) {
 				if (key.indexOf(';') < 0) {
 					Instruction ins = new Instruction(key);
 					if (!ins.isLiteral()) {
-						SortedList<String> sortedList = SortedList.fromIterator(domain.iterator());
-						StringBuilder sb = new StringBuilder();
-						String del = "";
-						for (String k : sortedList) {
-							if (ins.matches(k)) {
-								String v = replace(k, new Link(source, link, key), begin, end);
-								if (v != null) {
-									sb.append(del);
-									del = ",";
-									sb.append(v);
-								}
-							}
-						}
-						return sb.toString();
+						String keyname = key;
+						return domain.stream()
+							.filter(ins::matches)
+							.sorted()
+							.map(k -> replace(k, new Link(domain, link, keyname), begin, end))
+							.filter(Objects::nonNull)
+							.collect(joining(","));
 					}
 				}
-				while (value == null && source != null) {
-					value = source.getProperties().getProperty(key);
-					source = source.getParent();
+
+				for (Processor source = domain; source != null; source = source.getParent()) {
+					String value = source.getProperties()
+						.getProperty(key);
+					if (value != null) {
+						return process(value, new Link(source, link, key));
+					}
 				}
 
-				if (value != null)
-					return process(value, new Link(source, link, key));
-
-				value = doCommands(key, link);
+				String value = doCommands(key, link);
 				if (value != null) {
 					if (value == NULLVALUE)
 						return null;
 					if (value == LITERALVALUE)
 						return LITERALVALUE;
-					return process(value, new Link(source, link, key));
+					return process(value, new Link(domain, link, key));
 				}
 
 				if (key != null && key.trim().length() > 0) {
@@ -302,9 +295,11 @@ public class Macro {
 		if (args[0].startsWith("^")) {
 			String varname = args[0].substring(1).trim();
 
-			Processor parent = source.start.getParent();
-			if (parent != null)
-				return parent.getProperty(varname);
+			if (source != null) {
+				Processor parent = source.start.getParent();
+				if (parent != null)
+					return parent.getProperty(varname);
+			}
 			return null;
 		}
 
@@ -1150,14 +1145,14 @@ public class Macro {
 	// Helper class to track expansion of variables
 	// on the stack.
 	static class Link {
-		Link		previous;
-		String		key;
-		Processor	start;
+		final Link		previous;
+		final String	key;
+		final Processor	start;
 
 		public Link(Processor start, Link previous, String key) {
+			this.start = Objects.requireNonNull(start);
 			this.previous = previous;
 			this.key = key;
-			this.start = start;
 		}
 
 		public boolean contains(String key) {
