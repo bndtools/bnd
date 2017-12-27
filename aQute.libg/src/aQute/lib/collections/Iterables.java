@@ -28,21 +28,28 @@ public class Iterables {
 		@Override
 		public Iterator<R> iterator() {
 			return new Iterator<R>() {
-				final Iterator<? extends T>	it1	= first.iterator();
-				final Iterator<? extends T>	it2	= second.iterator();
-				R	current;
-				R	next;
+				private final Iterator<? extends T>	it1		= first.iterator();
+				private final Iterator<? extends T>	it2		= second.iterator();
+				private boolean						it1next	= true;;
+				private R							next;
 
 				public boolean hasNext() {
-					if (it1.hasNext()) {
-						return true;
-					}
 					if (next != null) {
 						return true;
 					}
+					while (it1.hasNext()) {
+						T t = it1.next();
+						R r = mapper.apply(t);
+						if (r != null) {
+							next = r;
+							return true;
+						}
+					}
+					it1next = false;
 					while (it2.hasNext()) {
-						R r = mapper.apply(it2.next());
-						if (!first.contains(r)) {
+						T t = it2.next();
+						R r = mapper.apply(t);
+						if ((r != null) && !first.contains(t)) {
 							next = r;
 							return true;
 						}
@@ -51,26 +58,16 @@ public class Iterables {
 				}
 
 				public R next() {
-					if (it1.hasNext()) {
-						return current = mapper.apply(it1.next());
-					}
-					current = null;
-					if (next != null) {
+					if (hasNext()) {
 						R r = next;
 						next = null;
 						return r;
-					}
-					while (it2.hasNext()) {
-						R r = mapper.apply(it2.next());
-						if (!first.contains(r)) {
-							return r;
-						}
 					}
 					throw new NoSuchElementException();
 				}
 
 				public void remove() {
-					if (current != null) {
+					if (it1next) {
 						it1.remove();
 					}
 				}
@@ -80,21 +77,23 @@ public class Iterables {
 		@Override
 		public Spliterator<R> spliterator() {
 			return new Spliterator<R>() {
-				final Spliterator<? extends T>	it1	= first.spliterator();
-				final Spliterator<? extends T>	it2	= second.spliterator();
+				private final Spliterator<? extends T>	it1	= first.spliterator();
+				private final Spliterator<? extends T>	it2	= second.spliterator();
 
 				@Override
 				public boolean tryAdvance(Consumer<? super R> action) {
 					requireNonNull(action);
 					if (it1.tryAdvance(t -> {
 						R r = mapper.apply(t);
-						action.accept(r);
+						if (r != null) {
+							action.accept(r);
+						}
 					})) {
 						return true;
 					}
 					return it2.tryAdvance(t -> {
 						R r = mapper.apply(t);
-						if (!first.contains(r)) {
+						if ((r != null) && !first.contains(t)) {
 							action.accept(r);
 						}
 					});
