@@ -30,8 +30,7 @@ public class Iterables {
 			return new Iterator<R>() {
 				private final Iterator<? extends T>	it1		= first.iterator();
 				private final Iterator<? extends T>	it2		= second.iterator();
-				private boolean						it1next	= true;;
-				private R							next;
+				private R							next	= null;
 
 				public boolean hasNext() {
 					if (next != null) {
@@ -45,7 +44,6 @@ public class Iterables {
 							return true;
 						}
 					}
-					it1next = false;
 					while (it2.hasNext()) {
 						T t = it2.next();
 						R r = mapper.apply(t);
@@ -65,12 +63,6 @@ public class Iterables {
 					}
 					throw new NoSuchElementException();
 				}
-
-				public void remove() {
-					if (it1next) {
-						it1.remove();
-					}
-				}
 			};
 		}
 
@@ -83,7 +75,7 @@ public class Iterables {
 				@Override
 				public boolean tryAdvance(Consumer<? super R> action) {
 					requireNonNull(action);
-					if (it1.tryAdvance(t -> {
+					if (it1.tryAdvance((T t) -> {
 						R r = mapper.apply(t);
 						if (r != null) {
 							action.accept(r);
@@ -91,7 +83,7 @@ public class Iterables {
 					})) {
 						return true;
 					}
-					return it2.tryAdvance(t -> {
+					return it2.tryAdvance((T t) -> {
 						R r = mapper.apply(t);
 						if ((r != null) && !first.contains(t)) {
 							action.accept(r);
