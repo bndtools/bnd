@@ -60,7 +60,7 @@ The default launcher in bnd. It creates a new VM with the given options, creates
 	
 	-runproperties:            org.osgi.service.http.port=8080
 	
-	-runrequire:\
+	-runrequires:\
 		bundle:(symbolicname=org.apache.felix.shell),\
 		bundle:(symbolicname=org.apache.felix.shell.tui),\
 		bundle:(symbolicname=org.apache.felix.webconsole),\
