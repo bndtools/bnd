@@ -2233,7 +2233,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			second = parent.iterable(inherit);
 		}
 
-		Iterable<String> iterable = Iterables.intersection(first, second,
+		Iterable<String> iterable = Iterables.distinct(first, second,
 			o -> (o instanceof String) ? (String) o : null);
 		return iterable;
 	}

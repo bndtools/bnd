@@ -2,10 +2,9 @@ package aQute.lib.collections;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Collection;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -13,12 +12,12 @@ import java.util.function.Function;
 public class Iterables {
 	private Iterables() {}
 
-	private static class Intersection<T, R> implements Iterable<R> {
-		private final Collection<? extends T>			first;
+	private static class Distinct<T, R> implements Iterable<R> {
+		private final Set<? extends T>					first;
 		private final Iterable<? extends T>				second;
 		private final Function<? super T, ? extends R>	mapper;
 
-		Intersection(Collection<? extends T> first, Iterable<? extends T> second,
+		Distinct(Set<? extends T> first, Iterable<? extends T> second,
 			Function<? super T, ? extends R> mapper) {
 			this.first = requireNonNull(first);
 			this.second = requireNonNull(second);
@@ -103,25 +102,18 @@ public class Iterables {
 
 				@Override
 				public int characteristics() {
-					return it1.characteristics() & it2.characteristics();
-				}
-
-				@Override
-				public Comparator<? super R> getComparator() {
-					if (hasCharacteristics(Spliterator.SORTED))
-						return null;
-					throw new IllegalStateException();
+					return Spliterator.DISTINCT | Spliterator.SIZED;
 				}
 			};
 		}
 	}
 
-	public static <T> Iterable<T> intersection(Collection<? extends T> first, Iterable<? extends T> second) {
-		return new Intersection<T, T>(first, second, Function.identity());
+	public static <T> Iterable<T> distinct(Set<? extends T> first, Iterable<? extends T> second) {
+		return new Distinct<T, T>(first, second, Function.identity());
 	}
 
-	public static <T, R> Iterable<R> intersection(Collection<? extends T> first, Iterable<? extends T> second,
+	public static <T, R> Iterable<R> distinct(Set<? extends T> first, Iterable<? extends T> second,
 		Function<? super T, ? extends R> mapper) {
-		return new Intersection<T, R>(first, second, mapper);
+		return new Distinct<T, R>(first, second, mapper);
 	}
 }
