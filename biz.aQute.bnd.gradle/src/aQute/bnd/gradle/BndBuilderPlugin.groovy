@@ -7,7 +7,8 @@
  * <p>
  * This plugin applies the java plugin to a project and modifies the jar
  * task by adding the properties from the {@link BundleTaskConvention},
- * setting the bndfile to 'bnd.bnd, and building the jar file as a bundle.
+ * setting the bndfile to 'bnd.bnd', if the file exists, and building the
+ * jar file as a bundle.
  * <p>
  * This plugin also defines a 'baseline' configuration and a baseline task
  * of type {@link Baseline}. The baseline task will be set up with the
@@ -47,7 +48,10 @@ public class BndBuilderPlugin implements Plugin<Project> {
       jar {
         description 'Assembles a bundle containing the main classes.'
         convention.plugins.bundle = new BundleTaskConvention(jar)
-        bndfile = 'bnd.bnd'
+        def defaultBndfile = project.file('bnd.bnd')
+        if (defaultBndfile.isFile()) {
+          bndfile = defaultBndfile
+        }
         doLast {
           buildBundle()
         }
