@@ -132,6 +132,13 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(filter, filter.contains("(&(version>=2.0.0)(!(version>=3.0.0)))"));
 			assertTrue(filter, filter.contains("(require=Required2)"));
 
+			p = req.get("maybe");
+			assertNotNull(p);
+			assertTrue(p.containsKey("filter:"));
+			assertEquals("(maybe=test)", p.get("filter:"));
+			assertEquals("optional", p.get("resolution:"));
+			assertEquals("multiple", p.get("cardinality:"));
+
 			p = cap.get("provide" + DUPLICATE_MARKER + DUPLICATE_MARKER);
 			assertNotNull(p);
 			assertTrue(p.containsKey("provide"));
