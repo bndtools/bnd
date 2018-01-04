@@ -580,13 +580,13 @@ Project ${project.name}
     checkProjectErrors(bndProject, logger, ignoreFailures)
   }
 
-  private void checkProjectErrors(aQute.bnd.build.Project project, Logger logger, boolean ignoreFailures = false) {
-    project.getInfo(project.getWorkspace(), "${project.getWorkspace().getBase().name} :")
-    boolean failed = !ignoreFailures && !project.isOk()
-    int errorCount = project.getErrors().size()
-    logReport(project, logger)
-    project.getWarnings().clear()
-    project.getErrors().clear()
+  private void checkProjectErrors(aQute.bnd.build.Project p, Logger logger, boolean ignoreFailures = false) {
+    p.getInfo(p.getWorkspace(), "${p.getWorkspace().getBase().name} :")
+    boolean failed = !ignoreFailures && !p.isOk()
+    int errorCount = p.getErrors().size()
+    logReport(p, logger)
+    p.getWarnings().clear()
+    p.getErrors().clear()
     if (failed) {
       String str = ' even though no errors were reported'
       if (errorCount == 1) {
@@ -594,7 +594,7 @@ Project ${project.name}
       } else if (errorCount > 1) {
         str = ", ${errorCount} errors were reported"
       }
-      throw new GradleException("${project.getName()} has errors${str}")
+      throw new GradleException("${p.getName()} has errors${str}")
     }
   }
 }
