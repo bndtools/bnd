@@ -50,12 +50,12 @@ public class BndPlugin implements Plugin<Project> {
       if (plugins.hasPlugin(BndBuilderPlugin.PLUGINID)) {
           throw new GradleException("Project already has '${BndBuilderPlugin.PLUGINID}' plugin applied.")
       }
-      if (!rootProject.hasProperty('bndWorkspace')) {
-        rootProject.ext.bndWorkspace = new Workspace(rootDir).setOffline(rootProject.gradle.startParameter.offline)
+      if (!parent.hasProperty('bndWorkspace')) {
+        parent.ext.bndWorkspace = new Workspace(parent.projectDir).setOffline(gradle.startParameter.offline)
       }
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {
-        throw new GradleException("Unable to load bnd project ${name} from workspace ${rootDir}")
+        throw new GradleException("Unable to load bnd project ${name} from workspace ${parent.projectDir}")
       }
       bndProject.prepare()
       if (!bndProject.isValid()) {
@@ -500,7 +500,7 @@ public class BndPlugin implements Plugin<Project> {
 Project ${project.name}
 ------------------------------------------------------------
 
-project.workspace:      ${rootDir}
+project.workspace:      ${parent.projectDir}
 project.name:           ${project.name}
 project.dir:            ${projectDir}
 target:                 ${buildDir}
@@ -547,7 +547,7 @@ Project ${project.name}
       builtBy path.findAll { Container c ->
         c.getType() == TYPE.PROJECT
       }.collect { Container c ->
-        ":${c.getProject().getName()}:jar"
+        "${project.parent.absoluteProjectPath(c.getProject().getName())}:jar"
       }
     }
   }
@@ -555,7 +555,7 @@ Project ${project.name}
   private Closure buildDependencies(String taskName, Closure transformer = { it }) {
     return {
       bndProject.getBuildDependencies()*.getName().collect { String dependency ->
-        transformer(":${dependency}:${taskName}")
+        transformer("${project.parent.absoluteProjectPath(dependency)}:${taskName}")
       }
     }
   }
@@ -563,7 +563,7 @@ Project ${project.name}
   private Closure testDependencies(String taskName, Closure transformer = { it }) {
     return {
       bndProject.getTestDependencies()*.getName().collect { String dependency ->
-        transformer(":${dependency}:${taskName}")
+        transformer("${project.parent.absoluteProjectPath(dependency)}:${taskName}")
       }
     }
   }
@@ -571,7 +571,7 @@ Project ${project.name}
   private Closure dependents(String taskName, Closure transformer = { it }) {
     return {
       bndProject.getDependents()*.getName().collect { String dependency ->
-        transformer(":${dependency}:${taskName}")
+        transformer("${project.parent.absoluteProjectPath(dependency)}:${taskName}")
       }
     }
   }
