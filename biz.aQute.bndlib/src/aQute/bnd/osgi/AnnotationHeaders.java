@@ -518,11 +518,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		if (a.keySet().contains("resolution")) {
-			req.append(";resolution:=").append(annotation.resolution().name().toLowerCase());
+			req.append(";resolution:=")
+				.append(annotation.resolution());
 		}
 
 		if (a.keySet().contains("cardinality")) {
-			req.append(";cardinality:=").append(annotation.cardinality().name().toLowerCase());
+			req.append(";cardinality:=")
+				.append(annotation.cardinality());
 		}
 
 		if (a.keySet().contains("effective")) {
