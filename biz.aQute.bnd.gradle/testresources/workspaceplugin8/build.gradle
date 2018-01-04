@@ -1,0 +1,11 @@
+/*
+ */
+
+task('build') {
+  doLast {
+    if (project.ext.has('bndWorkspace')) {
+      throw new GradleException("rootProject has a Bnd Workspace")
+    }
+    println "### Project ${project.name} ${project.path} is rootProject"
+  }
+}

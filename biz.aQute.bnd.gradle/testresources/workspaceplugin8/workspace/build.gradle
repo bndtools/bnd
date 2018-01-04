@@ -1,0 +1,23 @@
+/*
+ * Master Gradle build script
+ *
+ * Depends on bndPlugin property set by settings.gradle.
+ * and bnd_* values from gradle.properties.
+ */
+
+buildscript {
+  dependencies {
+    classpath files(new File(bnd_plugin).canonicalFile)
+  }
+}
+
+apply plugin: 'biz.aQute.bnd.workspace'
+
+task('build') {
+  doLast {
+    if (!project.ext.has('bndWorkspace')) {
+      throw new GradleException("workspace does not have a Bnd Workspace")
+    }
+    println "### Project ${project.name} ${project.path} ${bndWorkspace}"
+  }
+}

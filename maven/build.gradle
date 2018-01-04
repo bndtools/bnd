@@ -6,11 +6,11 @@ def localrepo = System.getProperty('maven.repo.local')
 if (localrepo) {
   localrepo = relativePath(uri(gradle.startParameter.currentDir).resolve(localrepo))
 }
-def releaserepo = uri(bnd('releaserepo', rootProject.file('dist/bundles'))) /* Release repository. */
+def releaserepo = uri(bnd('releaserepo', parent.file('dist/bundles'))) /* Release repository. */
 
 task deploy(type:Exec) {
-  dependsOn ':dist:build'
-  tasks.getByPath(':dist:index').mustRunAfter it
+  dependsOn "${parent.absoluteProjectPath('dist')}:build"
+  tasks.getByPath("${parent.absoluteProjectPath('dist')}:index").mustRunAfter it
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
     args '/c', rootProject.file('mvnw.cmd')

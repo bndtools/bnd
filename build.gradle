@@ -42,7 +42,7 @@ subprojects {
         }
       }).withPropertyName('testFolders')
       if (System.properties['maven.repo.local']) {
-        systemProperty 'maven.repo.local', IO.getFile(rootProject.rootDir, System.properties['maven.repo.local'])
+        systemProperty 'maven.repo.local', IO.getFile(gradle.startParameter.currentDir, System.properties['maven.repo.local'])
       }
     }
   }
