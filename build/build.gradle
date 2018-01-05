@@ -4,19 +4,19 @@
 
 def buildProject = project
 
-/* Configure the rootProject */
-configure(rootProject) {
-  defaultTasks = [':build']
+/* Configure the workspace project */
+configure(parent) {
   buildDir = buildProject.buildDir
 
   task build {
-    dependsOn ":${buildProject.name}:build"
-    dependsOn ":${buildProject.name}:checkNeeded"
-    dependsOn ":${buildProject.name}:releaseNeeded"
-    dependsOn ":${buildProject.name}:dist"
+    dependsOn "${buildProject.path}:build"
+    dependsOn "${buildProject.path}:checkNeeded"
+    dependsOn "${buildProject.path}:releaseNeeded"
+    dependsOn "${buildProject.path}:dist"
     description "Assembles and packages the ${buildProject.name} project."
     group 'build'
   }
+  defaultTasks = [build.path]
 }
 
 import org.apache.tools.ant.filters.ReplaceTokens
@@ -31,7 +31,7 @@ void copyProjectBundles(String[] projs, String dstDir) {
     throw new GradleException("Could not create directory ${targetDir}")
   }
   projs.each {
-    def proj = rootProject.findProject(it)
+    def proj = parent.findProject(it)
     if (proj == null) {
       throw new GradleException("Could not find project ${it}")
     }
