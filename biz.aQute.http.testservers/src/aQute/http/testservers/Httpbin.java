@@ -166,7 +166,9 @@ public class Httpbin extends HttpTestServer {
 	public void _redirect(Request rq, Response rsp, int count, int response) throws URISyntaxException {
 		if (count > 0) {
 			System.out.println("redirect " + count);
-			rsp.headers.put("Location", getBaseURI() + "/redirect/" + (--count) + "/" + response);
+			String location = (!rq.args.containsKey("relative") ? getBaseURI() : "") + "/redirect/" + (--count) + "/"
+					+ response;
+			rsp.headers.put("Location", location);
 			rsp.code = 301;
 		} else {
 			rsp.code = response;

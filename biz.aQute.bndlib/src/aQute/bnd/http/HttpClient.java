@@ -506,7 +506,7 @@ public class HttpClient implements Closeable, URLConnector {
 					|| code == HTTP_TEMPORARY_REDIRECT || code == HTTP_PERMANENT_REDIRECT) {
 				if (request.redirects-- > 0) {
 					String location = hcon.getHeaderField("Location");
-					request.url = new URL(location);
+					request.url = new URL(request.url, location);
 					task.done("Redirected " + code + " " + location, null);
 					return send0(request);
 				}
