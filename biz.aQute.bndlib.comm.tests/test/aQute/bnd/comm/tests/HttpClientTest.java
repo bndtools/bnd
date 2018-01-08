@@ -183,6 +183,14 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	public void testRedirectRelative() throws Exception {
+		try (HttpClient hc = new HttpClient();) {
+			TaggedData tag = hc.build().get(TaggedData.class).go(httpServer.getBaseURI("redirect/3/200?relative=true"));
+			assertNotNull(tag);
+			assertEquals(200, tag.getResponseCode());
+		}
+	}
+
 	public void testRedirectTooMany() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData tag = hc.build()
