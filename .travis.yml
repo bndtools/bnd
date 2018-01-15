@@ -21,7 +21,7 @@ jdk:
 before_install:
   - unset _JAVA_OPTIONS
   - rvm --version
-  - rvm install 2.0.0
+  - rvm use 2.4 --install --binary --fuzzy
 
 install:
   - ./gradlew --version
