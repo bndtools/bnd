@@ -19,7 +19,7 @@ public class HugeRepositoryTest extends TestCase {
 	public void testHugeWithSpecificResources() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
-			system.addEE(EE.JavaSE_1_7);
+			system.addEE(EE.JavaSE_1_7, "system.bundle", "0.0.0");
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
@@ -39,7 +39,7 @@ public class HugeRepositoryTest extends TestCase {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder resourceBuilder = new ResourceBuilder();
 
-			resourceBuilder.addEE(EE.JavaSE_1_7);
+			resourceBuilder.addEE(EE.JavaSE_1_7, "system.bundle", "0.0.0");
 			resourceBuilder.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(resourceBuilder.build());
 			validator.setTrace(true);

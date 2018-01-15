@@ -42,9 +42,6 @@ import aQute.service.reporter.Reporter;
 
 public class ResourceBuilder {
 
-	private static final String SYSTEM_BUNDLE_VERSION = Version.emptyVersion.toString();
-	private static final String SYSTEM_BUNDLE_BSN = "system.bundle";
-
 	private final static String		BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
 	private final static String		JAR_MIME_TYPE		= "application/java-archive";
 	private final ResourceImpl		resource		= new ResourceImpl();
@@ -514,15 +511,6 @@ public class ResourceBuilder {
 	}
 
 	/**
-	 * Adds a set of package exports assuming they are from the system bundle.
-     *
-	 * @deprecated Use {@link #addExportPackages(Parameters, String, String)} in preference.
-	 */
-	@Deprecated
-	public void addSystemBundleExportPackages(Parameters exports) throws Exception {
-		addExportPackages(exports, SYSTEM_BUNDLE_BSN, SYSTEM_BUNDLE_VERSION);
-	}
-	/**
 	 * Add Exported Packages
 	 * 
 	 * @throws Exception
@@ -539,14 +527,6 @@ public class ResourceBuilder {
 
 			addExportPackage(pname, attrs);
 		}
-	}
-
-	/**
-	 * @deprecated Infers (probably incorrect) bundle-symbolic-name and bundle-version attributes for the system bundle exports. Use {@link #addEE(EE, String, String)} in preference.
-	 */
-	@Deprecated
-	public void addEE(EE ee) throws Exception {
-		addEE(ee, SYSTEM_BUNDLE_BSN, SYSTEM_BUNDLE_VERSION);
 	}
 
 	public void addEE(EE ee, String bsn, String bundleVersion) throws Exception {
@@ -608,13 +588,6 @@ public class ResourceBuilder {
 		addCapability(builder);
 	}
 
-	/**
-	 * @deprecated Infers (probably incorrect) bundle-symbolic-name and bundle-version attributes for the system bundle exports. Use {@link #addAllExecutionEnvironments(EE, String, String)} in preference.
-	 */
-	@Deprecated
-	public void addAllExecutionEnvironments(EE ee) throws Exception {
-		addAllExecutionEnvironments(ee, SYSTEM_BUNDLE_BSN, SYSTEM_BUNDLE_VERSION);
-	}
 	public void addAllExecutionEnvironments(EE ee, String bsn, String bundleVersion) throws Exception {
 		addExportPackages(ee.getPackages(), bsn, bundleVersion);
 		addExecutionEnvironment(ee);

@@ -21,7 +21,7 @@ public class ValidatorTest extends TestCase {
 	public void testMultipleSameRequirements() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
-			system.addEE(EE.JavaSE_1_8);
+			system.addEE(EE.JavaSE_1_8, "system.bundle", "0.0.0");
 
 			CapReqBuilder b1 = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
 			b1.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, "javax.script");
@@ -49,7 +49,7 @@ public class ValidatorTest extends TestCase {
 	public void testSmallWithSpecificResources() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
-			system.addEE(EE.JavaSE_1_8);
+			system.addEE(EE.JavaSE_1_8, "system.bundle", "0.0.0");
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
@@ -63,7 +63,7 @@ public class ValidatorTest extends TestCase {
 	public void testSmall() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
-			system.addEE(EE.JavaSE_1_8);
+			system.addEE(EE.JavaSE_1_8, "system.bundle", "0.0.0");
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
@@ -76,7 +76,7 @@ public class ValidatorTest extends TestCase {
 	public void testDelibarateFail() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
-			system.addEE(EE.JavaSE_1_8);
+			system.addEE(EE.JavaSE_1_8, "system.bundle", "0.0.0");
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
@@ -94,7 +94,7 @@ public class ValidatorTest extends TestCase {
 	public void testDelibarateFailWithSpecificResources() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
-			system.addEE(EE.JavaSE_1_8);
+			system.addEE(EE.JavaSE_1_8, "system.bundle", "0.0.0");
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
@@ -113,7 +113,7 @@ public class ValidatorTest extends TestCase {
 	public void testValidatingResourcesWithDocumentaryAttributes() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
-			system.addEE(EE.JavaSE_1_8);
+			system.addEE(EE.JavaSE_1_8, "system.bundle", "0.0.0");
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
@@ -137,7 +137,7 @@ public class ValidatorTest extends TestCase {
 	public void _testLarger() throws Exception {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
-			system.addEE(EE.JavaSE_1_8);
+			system.addEE(EE.JavaSE_1_8, "system.bundle", "0.0.0");
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
