@@ -64,80 +64,85 @@ class CapabilityValidation {
 		}
 	}
 
-	private final Map<String, List<Attribute<?>>>	validationAttributes	= new HashMap<>();
-	private final Map<String, List<Directive>>		validationDirectives	= new HashMap<>();
+	private static final Map<String, List<Attribute<?>>>	VALIDATION_ATTRIBUTES	= new HashMap<>();
+	private static final Map<String, List<Directive>>		VALIDATION_DIRECTIVES	= new HashMap<>();
 
-	CapabilityValidation() {
-		final Function<Object, String> mandatoryString = cast(String.class).andThen(this::mandatory);
+	static {
+		final Function<Object, String> mandatoryString = cast(String.class).andThen(CapabilityValidation::mandatory);
 
+		// Identity Namespace
 		{
-			// Identity Namespace
 			List<Attribute<?>> a = new LinkedList<>();
 			a.add(new Attribute<>(IdentityNamespace.IDENTITY_NAMESPACE, IdentityNamespace.IDENTITY_NAMESPACE,
 				mandatoryString));
 			a.add(new Attribute<>(IdentityNamespace.IDENTITY_NAMESPACE, IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
 				cast(String.class).andThen(s -> s == null ? "osgi.bundle" : s)));
 			a.add(new Attribute<>(IdentityNamespace.IDENTITY_NAMESPACE, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE,
-				this::defaultingVersion));
+				CapabilityValidation::defaultingVersion));
 
-			validationAttributes.put(IdentityNamespace.IDENTITY_NAMESPACE, a);
+			VALIDATION_ATTRIBUTES.put(IdentityNamespace.IDENTITY_NAMESPACE, a);
 		}
+
+		// EE Namespace
 		{
-			// EE Namespace
 			List<Attribute<?>> a = new LinkedList<>();
 			a.add(new Attribute<>(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE,
 				ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, mandatoryString));
 			a.add(new Attribute<>(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE,
-				ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE, this::defaultingVersion));
+				ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE, CapabilityValidation::defaultingVersion));
 
-			validationAttributes.put(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, a);
+			VALIDATION_ATTRIBUTES.put(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, a);
 		}
+
+		// Package Namespace
 		{
-			// Package Namespace
 			List<Attribute<?>> a = new LinkedList<>();
 			a.add(new Attribute<>(PackageNamespace.PACKAGE_NAMESPACE, PackageNamespace.PACKAGE_NAMESPACE,
 				mandatoryString));
 			a.add(new Attribute<>(PackageNamespace.PACKAGE_NAMESPACE, PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE,
-				this::defaultingVersion));
+				CapabilityValidation::defaultingVersion));
 			a.add(new Attribute<>(PackageNamespace.PACKAGE_NAMESPACE,
 				PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, mandatoryString));
 			a.add(new Attribute<>(PackageNamespace.PACKAGE_NAMESPACE,
-				PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, this::defaultingVersion));
+				PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, CapabilityValidation::defaultingVersion));
 
-			validationAttributes.put(PackageNamespace.PACKAGE_NAMESPACE, a);
+			VALIDATION_ATTRIBUTES.put(PackageNamespace.PACKAGE_NAMESPACE, a);
 		}
+
+		// Bundle Namespace
 		{
-			// Bundle Namespace
 			List<Attribute<?>> a = new LinkedList<>();
 			a.add(new Attribute<>(BundleNamespace.BUNDLE_NAMESPACE, BundleNamespace.BUNDLE_NAMESPACE,
 				mandatoryString));
 			a.add(new Attribute<>(BundleNamespace.BUNDLE_NAMESPACE, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE,
-				this::defaultingVersion));
+				CapabilityValidation::defaultingVersion));
 
-			validationAttributes.put(BundleNamespace.BUNDLE_NAMESPACE, a);
+			VALIDATION_ATTRIBUTES.put(BundleNamespace.BUNDLE_NAMESPACE, a);
 		}
+
+		// Bundle Namespace
 		{
-			// Bundle Namespace
 			List<Attribute<?>> a = new LinkedList<>();
 			a.add(new Attribute<>(HostNamespace.HOST_NAMESPACE, HostNamespace.HOST_NAMESPACE, mandatoryString));
 			a.add(new Attribute<>(HostNamespace.HOST_NAMESPACE, HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE,
-				this::defaultingVersion));
+				CapabilityValidation::defaultingVersion));
 
-			validationAttributes.put(HostNamespace.HOST_NAMESPACE, a);
+			VALIDATION_ATTRIBUTES.put(HostNamespace.HOST_NAMESPACE, a);
 		}
+
+		// Native Namespace
 		{
-			// Native Namespace
 			List<Attribute<?>> a = new LinkedList<>();
 			a.add(new Attribute<>(NativeNamespace.NATIVE_NAMESPACE, NativeNamespace.CAPABILITY_OSNAME_ATTRIBUTE,
-				collectionLike(String.class).andThen(this::mandatory)));
+				collectionLike(String.class).andThen(CapabilityValidation::mandatory)));
 			a.add(new Attribute<>(NativeNamespace.NATIVE_NAMESPACE, NativeNamespace.CAPABILITY_OSVERSION_ATTRIBUTE,
-				this::defaultingVersion));
+				CapabilityValidation::defaultingVersion));
 			a.add(new Attribute<>(NativeNamespace.NATIVE_NAMESPACE, NativeNamespace.CAPABILITY_PROCESSOR_ATTRIBUTE,
-				collectionLike(String.class).andThen(this::mandatory)));
+				collectionLike(String.class).andThen(CapabilityValidation::mandatory)));
 			a.add(new Attribute<>(NativeNamespace.NATIVE_NAMESPACE, NativeNamespace.CAPABILITY_LANGUAGE_ATTRIBUTE,
 				mandatoryString));
 
-			validationAttributes.put(NativeNamespace.NATIVE_NAMESPACE, a);
+			VALIDATION_ATTRIBUTES.put(NativeNamespace.NATIVE_NAMESPACE, a);
 		}
 	}
 
@@ -147,14 +152,14 @@ class CapabilityValidation {
 		boolean modified = false;
 
 		// Check attribs
-		List<Attribute<?>> validationAttribList = validationAttributes.get(original.getNamespace());
+		List<Attribute<?>> validationAttribList = VALIDATION_ATTRIBUTES.get(original.getNamespace());
 		if (validationAttribList != null) {
 			for (Attribute<?> validationAttrib : validationAttribList) {
 				modified |= validationAttrib.validate(attribs);
 			}
 		}
 		// Check directives
-		List<Directive> validationDirectiveList = validationDirectives.get(original.getNamespace());
+		List<Directive> validationDirectiveList = VALIDATION_DIRECTIVES.get(original.getNamespace());
 		if (validationDirectiveList != null) {
 			for (Directive validationDirective : validationDirectiveList) {
 				modified |= validationDirective.validate(directives);
@@ -175,17 +180,17 @@ class CapabilityValidation {
 		return result;
 	}
 
-	private final <T> Function<Object, T> cast(Class<T> type) {
+	private static final <T> Function<Object, T> cast(Class<T> type) {
 		return type::cast;
 	}
 
-	private final <T> T mandatory(T t) {
+	private static final <T> T mandatory(T t) {
 		if (t == null)
 			throw new IllegalArgumentException("Missing mandatory value");
 		return t;
 	}
 
-	private final Version defaultingVersion(Object o) {
+	private static final Version defaultingVersion(Object o) {
 		final Version result;
 		if (o == null) {
 			result = Version.emptyVersion;
@@ -202,7 +207,7 @@ class CapabilityValidation {
 		return result;
 	}
 
-	private final <T> Function<Object, Collection<T>> collectionLike(Class<T> componentType) {
+	private static final <T> Function<Object, Collection<T>> collectionLike(Class<T> componentType) {
 		return o -> {
 			final Collection<T> coll;
 			if (o == null) {
