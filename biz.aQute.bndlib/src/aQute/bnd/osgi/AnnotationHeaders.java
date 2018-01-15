@@ -675,6 +675,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		try {
 			value = macro.process(value);
 			headers.add(name, value);
+			if (!analyzer.keySet()
+				.contains(name)) {
+				// The header isn't in the bnd configuration, so we need to add
+				// it lest bnd completely ignores the header added by the
+				// annotation
+				analyzer.set(name, value);
+			}
 			next.close();
 		} finally {
 			macro.setNosystem(prev);
@@ -694,11 +701,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			// Remove duplicates and sort
 			//
 			Set<String> set = new TreeSet<String>(headers.get(name));
-			String header = Strings.join(set);
-			if (value == null)
-				return header;
-			else
-				return value + "," + header;
+			if (value != null)
+				set.add(value);
+			return Strings.join(set);
 		}
 		return value;
 	}

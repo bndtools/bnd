@@ -59,9 +59,8 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("Provided2", p.get("provide"));
 			assertEquals("2", p.get("version:Version"));
 
-			// TODO for some reason these headers aren't included
-			// assertEquals("bar", mainAttributes.getValue("Foo"));
-			// assertEquals("buzz", mainAttributes.getValue("Fizz"));
+			assertEquals("bar", mainAttributes.getValue("Foo"));
+			assertEquals("buzz", mainAttributes.getValue("Fizz"));
 
 		}
 	}
@@ -110,9 +109,8 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("Indirectly-Provided2", p.get("provide"));
 			assertEquals("2", p.get("version:Version"));
 
-			// TODO for some reason these headers aren't included
-			// assertEquals("bar", mainAttributes.getValue("Foo"));
-			// assertEquals("buzz", mainAttributes.getValue("Fizz"));
+			assertEquals("bar", mainAttributes.getValue("Foo"));
+			assertEquals("buzz", mainAttributes.getValue("Fizz"));
 
 			// Indirect annotation
 
@@ -150,10 +148,8 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("Provided2", p.get("provide"));
 			assertEquals("2", p.get("version:Version"));
 
-			// TODO for some reason these headers aren't included
-			// assertEquals("Indirectly-bar", mainAttributes.getValue("Foo2"));
-			// assertEquals("Indirectly-buzz",
-			// mainAttributes.getValue("Fizz2"));
+			assertEquals("Indirectly-bar", mainAttributes.getValue("Foo2"));
+			assertEquals("Indirectly-buzz", mainAttributes.getValue("Fizz2"));
 		}
 	}
 
