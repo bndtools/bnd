@@ -12,7 +12,7 @@ import org.osgi.annotation.bundle.Requirement;
 @Requirement(namespace = "require", name = "Required", version = "1", filter = "(a=b)")
 @Requirement(namespace = "require", name = "Required2", version = "2", filter = "(a=b)")
 @Requirement(namespace = "maybe", name = "test", resolution = OPTIONAL, cardinality = MULTIPLE)
-@Header(name = "foo", value = "bar")
-@Header(name = "fizz", value = "buzz")
+@Header(name = "Foo", value = "bar")
+@Header(name = "Fizz", value = "buzz")
 public @interface AnnotatedAnnotation {
 }

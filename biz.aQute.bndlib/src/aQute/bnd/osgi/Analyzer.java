@@ -930,19 +930,6 @@ public class Analyzer extends Processor {
 				}
 			}
 
-			//
-			// Ensure we pick up any headers only set by the
-			// annotations (see AnnotationHeaders)
-			//
-
-			doHeader(main, BUNDLE_LICENSE);
-			doHeader(main, BUNDLE_DEVELOPERS);
-			doHeader(main, BUNDLE_CONTRIBUTORS);
-			doHeader(main, BUNDLE_COPYRIGHT);
-			doHeader(main, BUNDLE_DOCURL);
-			doHeader(main, BUNDLE_LICENSE);
-			doHeader(main, BUNDLE_CATEGORY);
-
 			// Copy old values into new manifest, when they
 			// exist in the old one, but not in the new one
 			merge(manifest, dot.getManifest());
