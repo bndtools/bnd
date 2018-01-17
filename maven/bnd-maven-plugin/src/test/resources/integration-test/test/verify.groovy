@@ -12,6 +12,8 @@ File impl_bundle = new File(basedir, 'test-impl-bundle/target/test-impl-bundle-0
 assert impl_bundle.isFile()
 File wrapper_bundle = new File(basedir, 'test-wrapper-bundle/target/test-wrapper-bundle-0.0.1-BUILD-SNAPSHOT.jar')
 assert wrapper_bundle.isFile()
+File in_build_pluginManagement_api_bundle = new File(basedir, 'test-in-build-pluginManagement-inheritance/test-inheriting-api-bundle/target/test-inheriting-api-bundle-0.0.1.jar')
+assert in_build_pluginManagement_api_bundle.isFile()
 
 // Load manifests
 JarFile api_jar = new JarFile(api_bundle)
@@ -20,11 +22,14 @@ JarFile impl_jar = new JarFile(impl_bundle)
 Attributes impl_manifest = impl_jar.getManifest().getMainAttributes()
 JarFile wrapper_jar = new JarFile(wrapper_bundle)
 Attributes wrapper_manifest = wrapper_jar.getManifest().getMainAttributes()
+JarFile in_build_pluginManagement_api_jar = new JarFile(in_build_pluginManagement_api_bundle)
+Attributes in_build_pluginManagement_api_manifest = in_build_pluginManagement_api_jar.getManifest().getMainAttributes()
 
 // Basic manifest check
 assert api_manifest.getValue('Bundle-SymbolicName') == 'test.api.bundle'
 assert impl_manifest.getValue('Bundle-SymbolicName') == 'test-impl-bundle'
 assert wrapper_manifest.getValue('Bundle-SymbolicName') == 'test.wrapper.bundle'
+assert in_build_pluginManagement_api_manifest.getValue('Bundle-SymbolicName') == 'biz.aQute.bnd-test.test-inheriting-api-bundle'
 assert api_manifest.getValue('Bundle-Name') == 'Test API Bundle'
 assert impl_manifest.getValue('Bundle-Name') == 'Test Impl Bundle'
 assert wrapper_manifest.getValue('Bundle-Name') == 'test-wrapper-bundle'
@@ -32,12 +37,15 @@ assert api_manifest.getValue('Bundle-Version') == '0.0.1.bndqual'
 assert impl_manifest.getValue('Bundle-Version') == '0.0.1.SNAPSHOT'
 assert wrapper_manifest.getValue('Bundle-Version') != '0.0.1.BUILD-SNAPSHOT'
 assert wrapper_manifest.getValue('Bundle-Version') =~ /^0\.0\.1\.BUILD-/
+assert in_build_pluginManagement_api_manifest.getValue('Bundle-Version') == '0.0.1'
 assert wrapper_manifest.getValue('Bundle-ClassPath') == '.,lib/osgi.annotation.jar'
 
 // Check inheritance of properties in bnd.bnd from the parent project
 assert api_manifest.getValue('X-ParentProjectProperty') == 'it worked'
 assert impl_manifest.getValue('X-ParentProjectProperty') == 'it worked'
 assert wrapper_manifest.getValue('X-ParentProjectProperty') == 'overridden'
+assert in_build_pluginManagement_api_manifest.getValue('X-ParentProjectProperty') == 'overridden'
+assert in_build_pluginManagement_api_manifest.getValue('X-ParentProjectProperty2') == 'it worked'
 
 // Check -include of bnd files
 assert api_manifest.getValue('X-IncludedParentProjectProperty') == 'Included via -include in parent bnd.bnd file'
