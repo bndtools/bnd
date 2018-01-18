@@ -1256,6 +1256,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 
 	public String getUnprocessedProperty(String key, String deflt) {
+		if (filter != null && filter.contains(key)) {
+			return (String) getProperties().getOrDefault(key, deflt);
+		}
 		return getProperties().getProperty(key, deflt);
 	}
 
