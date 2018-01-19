@@ -40,8 +40,8 @@ import aQute.service.reporter.Reporter;
  */
 public class UTF8Properties extends Properties {
 	private static final long	serialVersionUID	= 1L;
-	private static final List<ThreadLocalCharsetDecoder>	decoders			= Collections.unmodifiableList(
-			Arrays.asList(new ThreadLocalCharsetDecoder(UTF_8), new ThreadLocalCharsetDecoder(ISO_8859_1)));
+	private static final List<ThreadLocal<CharsetDecoder>>	decoders			= Collections.unmodifiableList(
+		Arrays.asList(ThreadLocal.withInitial(UTF_8::newDecoder), ThreadLocal.withInitial(ISO_8859_1::newDecoder)));
 
 	public UTF8Properties(Properties p) {
 		super(p);
@@ -79,7 +79,7 @@ public class UTF8Properties extends Properties {
 	private String decode(byte[] buffer) throws IOException {
 		ByteBuffer bb = ByteBuffer.wrap(buffer);
 		CharBuffer cb = CharBuffer.allocate(buffer.length * 4);
-		for (ThreadLocalCharsetDecoder tl : decoders) {
+		for (ThreadLocal<CharsetDecoder> tl : decoders) {
 			CharsetDecoder decoder = tl.get();
 			boolean success = !decoder.decode(bb, cb, true).isError();
 			if (success) {

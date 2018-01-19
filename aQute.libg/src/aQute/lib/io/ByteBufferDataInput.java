@@ -17,17 +17,17 @@ public class ByteBufferDataInput implements DataInput {
 	}
 
 	@Override
-	public void readFully(byte[] b) throws IOException {
+	public void readFully(byte[] b) {
 		bb.get(b, 0, b.length);
 	}
 
 	@Override
-	public void readFully(byte[] b, int off, int len) throws IOException {
+	public void readFully(byte[] b, int off, int len) {
 		bb.get(b, off, len);
 	}
 
 	@Override
-	public int skipBytes(int n) throws IOException {
+	public int skipBytes(int n) {
 		if (n <= 0) {
 			return 0;
 		}
@@ -37,57 +37,57 @@ public class ByteBufferDataInput implements DataInput {
 	}
 
 	@Override
-	public boolean readBoolean() throws IOException {
+	public boolean readBoolean() {
 		return bb.get() != 0;
 	}
 
 	@Override
-	public byte readByte() throws IOException {
+	public byte readByte() {
 		return bb.get();
 	}
 
 	@Override
-	public int readUnsignedByte() throws IOException {
+	public int readUnsignedByte() {
 		return 0xFF & bb.get();
 	}
 
 	@Override
-	public short readShort() throws IOException {
+	public short readShort() {
 		return bb.getShort();
 	}
 
 	@Override
-	public int readUnsignedShort() throws IOException {
+	public int readUnsignedShort() {
 		return 0xFFFF & bb.getShort();
 	}
 
 	@Override
-	public char readChar() throws IOException {
+	public char readChar() {
 		return bb.getChar();
 	}
 
 	@Override
-	public int readInt() throws IOException {
+	public int readInt() {
 		return bb.getInt();
 	}
 
 	@Override
-	public long readLong() throws IOException {
+	public long readLong() {
 		return bb.getLong();
 	}
 
 	@Override
-	public float readFloat() throws IOException {
+	public float readFloat() {
 		return bb.getFloat();
 	}
 
 	@Override
-	public double readDouble() throws IOException {
+	public double readDouble() {
 		return bb.getDouble();
 	}
 
 	@Override
-	public String readLine() throws IOException {
+	public String readLine() {
 		throw new UnsupportedOperationException();
 	}
 
