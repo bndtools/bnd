@@ -3,8 +3,6 @@ package aQute.lib.io;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataOutput;
 import java.io.File;
@@ -180,6 +178,15 @@ public class IO {
 		}
 	}
 
+	public static ByteBufferOutputStream copy(InputStream in, ByteBufferOutputStream out) throws IOException {
+		try {
+			out.write(in);
+			return out;
+		} finally {
+			in.close();
+		}
+	}
+
 	public static DataOutput copy(InputStream in, DataOutput out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
@@ -214,9 +221,9 @@ public class IO {
 			if (bb.hasArray()) {
 				byte[] buffer = bb.array();
 				int offset = bb.arrayOffset();
-				for (int size; bb.hasRemaining()
-						&& (size = in.read(buffer, offset + bb.position(), bb.remaining())) > 0;) {
-					bb.position(bb.position() + size);
+				for (int size, position; bb.hasRemaining()
+					&& (size = in.read(buffer, offset + (position = bb.position()), bb.remaining())) > 0;) {
+					bb.position(position + size);
 				}
 			} else {
 				int length = Math.min(bb.remaining(), BUFFER_SIZE);
@@ -424,8 +431,8 @@ public class IO {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
-			for (int size; (size = in.read(buffer, bb.position(), bb.remaining())) > 0;) {
-				bb.position(bb.position() + size);
+			for (int size, position; (size = in.read(buffer, position = bb.position(), bb.remaining())) > 0;) {
+				bb.position(position + size);
 				bb.flip();
 				out.write(bb);
 				bb.compact();
@@ -490,9 +497,7 @@ public class IO {
 	}
 
 	public static byte[] read(InputStream in) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream(IOConstants.PAGE_SIZE);
-		copy(in, out);
-		return out.toByteArray();
+		return copy(in, new ByteBufferOutputStream()).toByteArray();
 	}
 
 	public static void write(byte[] data, OutputStream out) throws Exception {
@@ -843,7 +848,7 @@ public class IO {
 	}
 
 	public static InputStream stream(byte[] data) {
-		return new ByteArrayInputStream(data);
+		return stream(ByteBuffer.wrap(data));
 	}
 
 	public static InputStream stream(ByteBuffer bb) {

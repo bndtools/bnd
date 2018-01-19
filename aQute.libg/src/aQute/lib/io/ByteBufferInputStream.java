@@ -65,4 +65,11 @@ public class ByteBufferInputStream extends InputStream {
 	public boolean markSupported() {
 		return true;
 	}
+
+	/**
+	 * For use by {@link ByteBufferOutputStream#write(InputStream)}
+	 */
+	ByteBuffer buffer() {
+		return bb;
+	}
 }

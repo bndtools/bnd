@@ -2,7 +2,6 @@ package aQute.bnd.signing;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +23,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.base64.Base64;
+import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 /**
@@ -59,14 +59,13 @@ public class Signer extends Processor {
 
 		getAlgorithms(digestNames, digestAlgorithms);
 
-		try {
+		try (ByteBufferOutputStream o = new ByteBufferOutputStream()) {
 			Manifest manifest = jar.getManifest();
 			manifest.getMainAttributes().putValue("Signed-By", "Bnd");
 
 			// Create a new manifest that contains the
 			// Name parts with the specified digests
 
-			ByteArrayOutputStream o = new ByteArrayOutputStream();
 			manifest.write(o);
 			doManifest(jar, digestNames, digestAlgorithms, o);
 			o.flush();
@@ -111,8 +110,9 @@ public class Signer extends Processor {
 			// is an idea but we will to have do ASN.1 BER
 			// encoding ...
 
-			ByteArrayOutputStream tmpStream = new ByteArrayOutputStream();
-			jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteArray(), 0));
+			try (ByteBufferOutputStream tmpStream = new ByteBufferOutputStream()) {
+				jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteArray(), 0));
+			}
 		} catch (Exception e) {
 			exception(e, "During signing: %s", e);
 		}
@@ -120,7 +120,7 @@ public class Signer extends Processor {
 
 	private byte[] doSignatureFile(String[] digestNames, MessageDigest[] algorithms, byte[] manbytes)
 			throws IOException {
-		try (ByteArrayOutputStream out = new ByteArrayOutputStream(); PrintWriter ps = IO.writer(out)) {
+		try (ByteBufferOutputStream out = new ByteBufferOutputStream(); PrintWriter ps = IO.writer(out)) {
 			ps.print("Signature-Version: 1.0\r\n");
 
 			for (int a = 0; a < algorithms.length; a++) {

@@ -1,13 +1,12 @@
 package aQute.bnd.osgi;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
+import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
-import aQute.lib.io.IOConstants;
 
 public abstract class WriteResource implements Resource {
 	private ByteBuffer	buffer;
@@ -21,9 +20,9 @@ public abstract class WriteResource implements Resource {
 		if (buffer != null) {
 			return buffer;
 		}
-		ByteArrayOutputStream out = new ByteArrayOutputStream(IOConstants.PAGE_SIZE);
+		ByteBufferOutputStream out = new ByteBufferOutputStream();
 		write(out);
-		return buffer = ByteBuffer.wrap(out.toByteArray());
+		return buffer = out.toByteBuffer();
 	}
 
 	public InputStream openInputStream() throws Exception {
