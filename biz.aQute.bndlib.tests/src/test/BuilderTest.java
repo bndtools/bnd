@@ -4,6 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.FileVisitOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,6 +22,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -1998,7 +2003,10 @@ public class BuilderTest extends BndTestCase {
 
 			Map<String,Resource> map = jar.getDirectories().get("bnd");
 			assertNotNull(map);
-			assertEquals(2, map.size());
+			try (Stream<Path> paths = Files.find(Paths.get("bnd"), Integer.MAX_VALUE, (t, a) -> a.isRegularFile(),
+				FileVisitOption.FOLLOW_LINKS)) {
+				assertEquals(paths.count(), map.size());
+			}
 		} finally {
 			bmaker.close();
 		}
