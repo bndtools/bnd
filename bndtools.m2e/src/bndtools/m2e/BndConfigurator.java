@@ -37,6 +37,7 @@ import org.eclipse.m2e.core.lifecyclemapping.model.IPluginExecutionMetadata;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.ResolverConfiguration;
 import org.eclipse.m2e.core.project.configurator.AbstractBuildParticipant;
+import org.eclipse.m2e.core.project.configurator.AbstractBuildParticipant2;
 import org.eclipse.m2e.core.project.configurator.AbstractProjectConfigurator;
 import org.eclipse.m2e.core.project.configurator.MojoExecutionBuildParticipant;
 import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
@@ -110,6 +111,11 @@ public class BndConfigurator extends AbstractProjectConfigurator {
             public Set<IProject> build(int kind, IProgressMonitor monitor) throws Exception {
                 // build mojo like normal
                 final Set<IProject> build = super.build(kind, monitor);
+
+                // nothing to do if configuration build
+                if (kind == AbstractBuildParticipant2.PRECONFIGURE_BUILD) {
+                    return build;
+                }
 
                 // now we make sure jar is built in separate job, doing this during maven builder will throw lifecycle errors
                 final IProject project = projectFacade.getProject();
