@@ -77,16 +77,31 @@ although it will be valid, the bundle may not be *useful*.
 For further usage information, see the integration test projects under the included
 `src/test/resources/integration-test/test` directory.
 
-## Configuration Properties
+## Configuration Parameters
 
-|Configuration Property | Description |
+|Configuration Parameter | Description |
 | ---                   | ---         |
+|`bndfile`            | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.|
+|`bnd`            | Bnd instructions for this project specified directly in the pom file. This is generally be done using a {@code <![CDATA[]]>} section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
 |`targetDir`            | The director into which to export the result. _Defaults to `${project.build.directory}`._|
 |`sourceDir`            | Specify an alternative source directory. _Defaults to `${project.build.sourceDirectory}`._|
 |`resources`            | Specify an alternative resources directory. _Defaults to `${project.build.resources}`._|
 |`classesDir`           | Specify an alternative classes directory. _Defaults to `${project.build.outputDirectory}`._|
 |`manifestPath`         | Specify the path to a manifest file to use. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._|
 |`skip`                 | Skip the index process altogether. _Defaults to `false`._ Override with property `bnd.skip`.|
+
+## Inheritance of bnd instructions
+
+Bnd instructions in general are being merged with the ones being set on the Maven project's parent. This works slightly differently than [default plugin configuration merging in Maven](http://blog.sonatype.com/2011/01/maven-how-to-merging-plugin-configuration-in-complex-projects/). From the following places the bnd instructions are collected from all pom.xmls in the hierarchy (starting with the top level parent pom and ending with the leaf project's pom):
+
+1. From the `<pluginManagement>` section for this plugin (both configuration within the current execution and the global one)
+   1. the bnd file (given through configuration parameter `bndfile` or the implicit default `bnd.bnd` in pluginManagement. _The implicit default can only be used where the parent is not resolved from the Maven repository but rather from a parent directory in the filesystem_
+   2. the bnd instructions given explicitly via `bnd`
+1. From the `<plugins>` section for this plugin(both configuration within the current execution and the global one)
+   1. the bnd file (given through configuration parameter `bndfile` or the implicit default `bnd.bnd` in pluginManagement. _The implicit default can only be used where the parent is not resolved from the Maven repository but rather from a parent directory in the filesystem_
+   2. the bnd instructions given explicitly via `bnd`
+
+While the bnd instructions from 1.1, 1.2, 2.1 and 2.2 are *mutually exclusive*  (it means that bnd instructions from 2.1 fully overwrite ones from 1.1 or 1.2) the ones being extracted from one Maven pom.xml (i.e. the top level parent) are being merged with the instructions being extracted from another Maven pom.xml level (i.e. the one from the project's basedir).
 
 ## IMPORTANT NOTE
 
