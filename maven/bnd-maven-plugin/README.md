@@ -77,16 +77,29 @@ although it will be valid, the bundle may not be *useful*.
 For further usage information, see the integration test projects under the included
 `src/test/resources/integration-test/test` directory.
 
-## Configuration Properties
+## Configuration Parameters
 
-|Configuration Property | Description |
+|Configuration Parameter | Description |
 | ---                   | ---         |
+|`bndfile`              | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.|
+|`bnd`                  | Bnd instructions for this project specified directly in the pom file. This is generally be done using a {@code <![CDATA[]]>} section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
 |`targetDir`            | The director into which to export the result. _Defaults to `${project.build.directory}`._|
 |`sourceDir`            | Specify an alternative source directory. _Defaults to `${project.build.sourceDirectory}`._|
 |`resources`            | Specify an alternative resources directory. _Defaults to `${project.build.resources}`._|
 |`classesDir`           | Specify an alternative classes directory. _Defaults to `${project.build.outputDirectory}`._|
 |`manifestPath`         | Specify the path to a manifest file to use. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._|
 |`skip`                 | Skip the index process altogether. _Defaults to `false`._ Override with property `bnd.skip`.|
+
+## Bnd Instruction Inheritance
+
+This plugin supports a hybrid configuration model where Bnd instructions can come from a bnd file or configuration
+in the project pom. Inheritance of configuration from parent projects is also supported for this hybrid configuration model.
+At each project level in the project hierarchy, the configuration can come from a bnd file in the project or
+from the configuration in the pom with the former taking precedence. This plugin merges the configurations from the parent project with the
+configuration from the current project. If a parent project does not define a configuration for this plugin, then
+the configuration, if any, from the `pluginManagement` section for this plugin is used as the configuration from
+the parent project. This configuration contribution from the `pluginManagement` section for this plugin
+is evaluated in the context of the current project.
 
 ## IMPORTANT NOTE
 
