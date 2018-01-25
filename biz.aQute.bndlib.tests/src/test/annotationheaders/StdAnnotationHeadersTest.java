@@ -121,6 +121,11 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(filter, filter.contains("(a=b)"));
 			assertTrue(filter, filter.contains("(&(version>=1.0.0)(!(version>=2.0.0)))"));
 			assertTrue(filter, filter.contains("(require=Required)"));
+			assertTrue(p.containsKey("open"));
+			assertEquals("sesame", p.get("open"));
+			assertTrue(p.containsKey("usedName"));
+			assertEquals("sunflower", p.get("usedName"));
+			assertFalse(p.containsKey("ignoredName"));
 
 			p = req.get("require" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
 			assertNotNull(p);
@@ -129,6 +134,11 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(filter, filter.contains("(a=b)"));
 			assertTrue(filter, filter.contains("(&(version>=2.0.0)(!(version>=3.0.0)))"));
 			assertTrue(filter, filter.contains("(require=Required2)"));
+			assertTrue(p.containsKey("open"));
+			assertEquals("sesame", p.get("open"));
+			assertTrue(p.containsKey("usedName"));
+			assertEquals("sunflower", p.get("usedName"));
+			assertFalse(p.containsKey("ignoredName"));
 
 			p = req.get("maybe");
 			assertNotNull(p);
@@ -136,17 +146,35 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("(maybe=test)", p.get("filter:"));
 			assertEquals("optional", p.get("resolution:"));
 			assertEquals("multiple", p.get("cardinality:"));
+			assertTrue(p.containsKey("open"));
+			assertEquals("sesame", p.get("open"));
+			assertTrue(p.containsKey("usedName"));
+			assertEquals("sunflower", p.get("usedName"));
+			assertFalse(p.containsKey("ignoredName"));
 
+			// These two values are out of order with respect to the annotations
+			// due to the TreeSet sorting we do on the values. This has been
+			// done for a long time so I won't change it...
 			p = cap.get("provide" + DUPLICATE_MARKER + DUPLICATE_MARKER);
-			assertNotNull(p);
-			assertTrue(p.containsKey("provide"));
-			assertEquals("Provided", p.get("provide"));
-
-			p = cap.get("provide" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
 			assertNotNull(p);
 			assertTrue(p.containsKey("provide"));
 			assertEquals("Provided2", p.get("provide"));
 			assertEquals("2", p.get("version:Version"));
+			assertTrue(p.containsKey("open"));
+			assertEquals("sesame", p.get("open"));
+			assertTrue(p.containsKey("usedName"));
+			assertEquals("sunflower", p.get("usedName"));
+			assertFalse(p.containsKey("ignoredName"));
+
+			p = cap.get("provide" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
+			assertNotNull(p);
+			assertTrue(p.containsKey("provide"));
+			assertEquals("Provided", p.get("provide"));
+			assertTrue(p.containsKey("open"));
+			assertEquals("sesame", p.get("open"));
+			assertTrue(p.containsKey("usedName"));
+			assertEquals("sunflower", p.get("usedName"));
+			assertFalse(p.containsKey("ignoredName"));
 
 			assertEquals("Indirectly-bar", mainAttributes.getValue("Foo2"));
 			assertEquals("Indirectly-buzz", mainAttributes.getValue("Fizz2"));
