@@ -203,15 +203,15 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
 											instructions.javadoc.options,
 											instructions.javadoc.packages == JavadocPackages.EXPORT)) {
-										save(releaser, pom.getRevision(), jar, "javadoc");
+										save(releaser, pom.getRevision(), jar);
 									}
 								}
 							}
 
 							if (instructions.sources != null) {
 								if (!NONE.equals(instructions.sources.path)) {
-									try (Jar jar = getSource(tool, options.context, instructions.sources.path)) {
-										save(releaser, pom.getRevision(), jar, "sources");
+									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
+										save(releaser, pom.getRevision(), jar);
 									}
 								}
 							}
@@ -248,12 +248,13 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return instructions.type == ReleaseType.LOCAL;
 	}
 
-	private Jar getSource(Tool tool, Processor context, String path) throws Exception {
+	private Jar getSources(Tool tool, Processor context, String path) throws Exception {
 		Jar jar = toJar(context, path);
 		if (jar == null) {
 			jar = tool.doSource();
 		}
 		jar.ensureManifest();
+		jar.setName("sources"); // set jar name to classifier
 		tool.addClose(jar);
 		return jar;
 	}
@@ -265,6 +266,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			jar = tool.doJavadoc(options, exports);
 		}
 		jar.ensureManifest();
+		jar.setName("javadoc"); // set jar name to classifier
 		tool.addClose(jar);
 		return jar;
 	}
@@ -280,8 +282,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return null;
 	}
 
-	private void save(Release releaser, Revision revision, Jar jar, String classifier) throws Exception {
-		String extension = IO.getExtension(jar.getName(), "jar");
+	private void save(Release releaser, Revision revision, Jar jar) throws Exception {
+		String classifier = jar.getName(); // jar name is classifier
+		String extension = "jar";
 		File tmp = File.createTempFile(classifier, extension);
 		try {
 			jar.write(tmp);
