@@ -17,6 +17,7 @@ Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable, aQute.remot
  @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
  @${repo;biz.aQute.repository;latest}!/!META-INF/*, \
  @${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
+ @${repo;biz.aQute.bnd.reporter;latest}!/!META-INF/*, \
  @${repo;slf4j.api;latest}!/!META-INF/*, \
  @${repo;slf4j.simple;latest}!/!META-INF/*
 
@@ -47,6 +48,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	org.osgi.impl.bundle.bindex;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\
+	biz.aQute.bnd.reporter, \
 	slf4j.api;version=latest
 
 

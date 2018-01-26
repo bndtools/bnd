@@ -1,7 +1,12 @@
 package aQute.lib.tag;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import aQute.lib.exceptions.Exceptions;
+
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element
  * with a hashtable of named attributes. Methods are provided to walk the tree
@@ -20,16 +27,16 @@ import java.util.regex.Pattern;
  */
 public class Tag {
 
-	final static String			NameStartChar	= ":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]\uFDF0-\uFFFD";
-	final static String			NameChar		= "[" + NameStartChar + "0-9.\u00B7\u0300-\u036F\u203F-\u2040\\-]";
-	final static String			Name			= "[" + NameStartChar + "]" + NameChar + "*";
-	final public static Pattern	NAME_P			= Pattern.compile(Name);
+	final static String				NameStartChar	= ":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]\uFDF0-\uFFFD";
+	final static String				NameChar		= "[" + NameStartChar + "0-9.\u00B7\u0300-\u036F\u203F-\u2040\\-]";
+	final static String				Name			= "[" + NameStartChar + "]" + NameChar + "*";
+	final public static Pattern		NAME_P			= Pattern.compile(Name);
 
-	Tag								parent;														// Parent
-	String							name;														// Name
-	final Map<String,String>		attributes	= new LinkedHashMap<String,String>();
-	final List<Object>				content		= new ArrayList<Object>();						// Content
-	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	Tag								parent;																																											// Parent
+	String							name;																																											// Name
+	final Map<String,String>		attributes		= new LinkedHashMap<String,String>();
+	final List<Object>				content			= new ArrayList<Object>();																																		// Content
+	final static SimpleDateFormat	format			= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 	boolean							cdata;
 
 	/**
@@ -494,5 +501,18 @@ public class Tag {
 			return name;
 		else
 			return parent.getPath() + "/" + name;
+	}
+
+	public InputStream toInputStream() {
+		try {
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(bout, "UTF-8"));
+			this.print(2, pw);
+			pw.flush();
+			return new ByteArrayInputStream(bout.toByteArray());
+		} catch (UnsupportedEncodingException e) {
+			// impossible
+			throw Exceptions.duck(e);
+		}
 	}
 }
