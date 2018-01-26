@@ -168,10 +168,12 @@ public class InfoRepositoryWrapper extends BaseRepository {
 			throws Exception {
 		init();
 
-		nextReq: for (Requirement req : requirements) {
+		for (Requirement req : requirements) {
+			result.putIfAbsent(req, new ArrayList<Capability>(1));
+
 			String f = req.getDirectives().get("filter");
 			if (f == null)
-				continue nextReq;
+				continue;
 
 			Filter filter = new Filter(f);
 
@@ -179,10 +181,8 @@ public class InfoRepositoryWrapper extends BaseRepository {
 				Resource resource = presource.getResource();
 				for (Capability cap : resource.getCapabilities(req.getNamespace())) {
 					if (filter.matchMap(cap.getAttributes())) {
-						List<Capability> l = result.get(req);
-						if (l == null)
-							result.put(req, l = new ArrayList<Capability>());
-						l.add(cap);
+						result.get(req)
+							.add(cap);
 					}
 				}
 			}
