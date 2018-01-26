@@ -1,8 +1,6 @@
 package aQute.bnd.repository.maven.provider;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toCollection;
+import static aQute.bnd.osgi.repository.ResourcesRepository.toResourcesRepository;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.BufferedReader;
@@ -21,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -387,32 +384,9 @@ class IndexFile {
 
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
 		return descriptors.values()
-				.stream()
-				.map(BundleDescriptor::getResource)
-				.filter(Objects::nonNull)
-				.flatMap(res -> requirements.stream()
-						.flatMap(req -> res.getCapabilities(req.getNamespace())
-								.stream()
-								.filter(cap -> ResourceUtils.matches(req, cap))
-								.map(cap -> new ReqCap(req, cap))))
-				.collect(groupingBy(ReqCap::req, mapping(ReqCap::cap, toCollection(ArrayList::new))));
-	}
-
-	private static class ReqCap {
-		private final Requirement	req;
-		private final Capability	cap;
-
-		ReqCap(Requirement req, Capability cap) {
-			this.req = req;
-			this.cap = cap;
-		}
-
-		Requirement req() {
-			return req;
-		}
-
-		Capability cap() {
-			return cap;
-		}
+			.stream()
+			.map(BundleDescriptor::getResource)
+			.collect(toResourcesRepository())
+			.findProviders(requirements);
 	}
 }
