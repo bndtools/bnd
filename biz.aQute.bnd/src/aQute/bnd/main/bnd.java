@@ -91,7 +91,6 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.Def;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Domain;

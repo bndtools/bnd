@@ -32,7 +32,6 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.BndResolver;
-import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolveProcess;
 import biz.aQute.resolve.ResolverLogger;
 import junit.framework.TestCase;
