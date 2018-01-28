@@ -60,7 +60,7 @@ public class ResolveProcessTest extends TestCase {
 					"osgi.extender;filter:='(&(osgi.extender=osgi.component)(version>=1.3)(!(version>=2)))'");
 
 			Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
-					new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
+					new BndResolver(logger), Collections.emptyList(), logger);
 
 			Collection<Resource> optionalResources = process.getOptionalResources();
 
@@ -98,7 +98,7 @@ public class ResolveProcessTest extends TestCase {
 			model.setProperty("-runrequires", "osgi.extender;filter:='(osgi.extender=osgi.component)'");
 
 			Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
-					new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
+					new BndResolver(logger), Collections.emptyList(), logger);
 
 			Collection<Resource> optionalResources = process.getOptionalResources();
 

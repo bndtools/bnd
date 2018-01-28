@@ -443,7 +443,7 @@ public class ResolveTest extends TestCase {
 		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
 		Resolver resolver = new BndResolver(new org.apache.felix.resolver.Logger(4));
 		Collection<Resource> resolvedResources = new ResolveProcess()
-				.resolveRequired(runModel, registry, resolver, Collections.<ResolutionCallback> emptyList(), log)
+				.resolveRequired(runModel, registry, resolver, Collections.emptyList(), log)
 				.keySet();
 
 		Map<String,Resource> mandatoryResourcesBySymbolicName = new HashMap<>();

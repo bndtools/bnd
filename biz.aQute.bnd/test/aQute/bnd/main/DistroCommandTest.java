@@ -182,7 +182,7 @@ public class DistroCommandTest extends TestCase {
 					"osgi.wiring.package;filter:='(osgi.wiring.package=com.liferay.dynamic.data.mapping.taglib.servlet.taglib)'");
 
 			Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
-					new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
+					new BndResolver(logger), Collections.emptyList(), logger);
 
 			assertEquals(1, requiredResources.size());
 		}

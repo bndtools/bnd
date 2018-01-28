@@ -264,7 +264,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 				deltas.remove(Delta.UNCHANGED);
 			}
 			int indent = Math.max(width, 0);
-			format(formatter, this, Create.<String> list(), deltas, indent, 0);
+			format(formatter, this, Create.list(), deltas, indent, 0);
 		} else {
 			StringBuilder sb = new StringBuilder();
 			sb.append('%');

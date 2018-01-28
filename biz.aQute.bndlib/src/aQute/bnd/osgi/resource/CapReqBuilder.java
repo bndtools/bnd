@@ -354,7 +354,7 @@ public class CapReqBuilder {
 
 			CapReqBuilder builder = new CapReqBuilder(literalNs);
 			copyAttribs(requirement, builder, consumedAttribs);
-			copyDirectives(requirement, builder, Collections.<String> emptySet());
+			copyDirectives(requirement, builder, Collections.emptySet());
 			requirement = builder.buildSyntheticRequirement();
 		} else if (REQ_ALIAS_IDENTITY.equals(ns)) {
 			final String bsn = Objects.toString(requirement.getAttributes().get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);

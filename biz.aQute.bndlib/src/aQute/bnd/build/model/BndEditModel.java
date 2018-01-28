@@ -838,10 +838,10 @@ public class BndEditModel {
 	@SuppressWarnings("deprecation")
 	public List<String> getTestSuites() {
 		List<String> testCases = doGetObject(aQute.bnd.osgi.Constants.TESTCASES, listConverter);
-		testCases = testCases != null ? testCases : Collections.<String> emptyList();
+		testCases = testCases != null ? testCases : Collections.emptyList();
 
 		List<String> testSuites = doGetObject(aQute.bnd.osgi.Constants.TESTSUITES, listConverter);
-		testSuites = testSuites != null ? testSuites : Collections.<String> emptyList();
+		testSuites = testSuites != null ? testSuites : Collections.emptyList();
 
 		List<String> result = new ArrayList<>(testCases.size() + testSuites.size());
 		result.addAll(testCases);
