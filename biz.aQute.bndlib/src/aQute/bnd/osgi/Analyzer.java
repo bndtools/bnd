@@ -3338,7 +3338,6 @@ public class Analyzer extends Processor {
 		table.put("Imported", getImports().entrySet());
 		table.put("Exported", getExports().entrySet());
 		table.put("Referred", getReferred().entrySet());
-		table.put("Referred", getReferred().entrySet());
 		table.put("Bundle Symbolic Name", getBsn());
 		table.put("Execution Environments", ees);
 	}
