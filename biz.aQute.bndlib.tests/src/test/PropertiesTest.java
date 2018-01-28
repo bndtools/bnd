@@ -119,7 +119,7 @@ public class PropertiesTest extends TestCase {
 		System.err.println(analyzer.getWarnings());
 		assertTrue(analyzer.getWarnings()
 				.get(0)
-				.indexOf("Empty clause, usually caused by repeating a comma without") >= 0);
+				.contains("Empty clause, usually caused by repeating a comma without"));
 		System.err.println(analyzer.getWarnings());
 	}
 

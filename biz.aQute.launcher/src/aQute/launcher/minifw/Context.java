@@ -186,7 +186,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		do {
 			int part = filePattern.indexOf('*');
 			if (part < 0) {
-				return path.indexOf(filePattern) >= 0;
+				return path.contains(filePattern);
 			}
 			String match = filePattern.substring(0, part);
 			int m = path.indexOf(match);

@@ -419,7 +419,7 @@ public class ComponentTest extends TestCase {
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
 		assertEquals(1, b.getErrors().size());
-		assertTrue(b.getErrors().get(0).indexOf("Unrecognized directive") >= 0);
+		assertTrue(b.getErrors().get(0).contains("Unrecognized directive"));
 		assertEquals(0, b.getWarnings().size());
 	}
 
@@ -464,7 +464,7 @@ public class ComponentTest extends TestCase {
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
 		assertEquals(1, b.getErrors().size());
-		assertTrue(b.getErrors().get(0).indexOf("Invalid target filter") >= 0);
+		assertTrue(b.getErrors().get(0).contains("Invalid target filter"));
 		assertEquals(0, b.getWarnings().size());
 	}
 

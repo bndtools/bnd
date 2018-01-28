@@ -142,7 +142,7 @@ public class FilterParser {
 		}
 
 		static Expression make(String key, SimpleExpression low, SimpleExpression high) {
-			if (key.indexOf("version") >= 0) {
+			if (key.contains("version")) {
 				try {
 					Version a = Version.parseVersion(low.value);
 					Version b = Version.parseVersion(high.value);

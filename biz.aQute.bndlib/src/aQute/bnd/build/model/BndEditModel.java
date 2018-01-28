@@ -686,7 +686,7 @@ public class BndEditModel {
 		if (exports != null) {
 			for (ExportedPackage pkg : exports) {
 				String versionString = pkg.getVersionString();
-				if (versionString != null && versionString.indexOf(BUNDLE_VERSION_MACRO) > -1) {
+				if (versionString != null && versionString.contains(BUNDLE_VERSION_MACRO)) {
 					referencesBundleVersion = true;
 				}
 			}

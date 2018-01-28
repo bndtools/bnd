@@ -916,12 +916,11 @@ public class MacroTest extends TestCase {
 			analyzer.setJar(IO.getFile("jar/asm.jar"));
 			Macro m = new Macro(analyzer);
 
-			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("FieldVisitor.xyz,") >= 0);
-			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("MethodVisitor.xyz,") >= 0);
+			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").contains("FieldVisitor.xyz,"));
+			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").contains("MethodVisitor.xyz,"));
 			assertTrue(
-					m.process("${findpath;(.*)\\.class}").indexOf("org/objectweb/asm/AnnotationVisitor.class,") >= 0);
-			assertTrue(m.process("${findpath;(.*)\\.class}")
-					.indexOf("org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,") >= 0);
+					m.process("${findpath;(.*)\\.class}").contains("org/objectweb/asm/AnnotationVisitor.class,"));
+			assertTrue(m.process("${findpath;(.*)\\.class}").contains("org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,"));
 			assertEquals("META-INF/MANIFEST.MF", m.process("${findpath;META-INF/MANIFEST.MF}"));
 			assertEquals("Label.class", m.process("${findname;Label\\..*}"));
 			assertEquals("Adapter, Visitor, Writer", m.process("${findname;Method(.*)\\.class;$1}"));
@@ -1054,10 +1053,10 @@ public class MacroTest extends TestCase {
 		String fwusers = b.getProperty("fwusers");
 		String foo = b.getProperty("foo");
 		assertTrue(fwusers.length() > foo.length());
-		assertTrue(fwusers.indexOf("org.osgi.framework.ServicePermission") >= 0);
-		assertTrue(fwusers.indexOf("org.eclipse.equinox.ds.instance.BuildDispose") >= 0);
-		assertFalse(foo.indexOf("org.osgi.framework.ServicePermission") >= 0);
-		assertTrue(foo.indexOf("org.eclipse.equinox.ds.instance.BuildDispose") >= 0);
+		assertTrue(fwusers.contains("org.osgi.framework.ServicePermission"));
+		assertTrue(fwusers.contains("org.eclipse.equinox.ds.instance.BuildDispose"));
+		assertFalse(foo.contains("org.osgi.framework.ServicePermission"));
+		assertTrue(foo.contains("org.eclipse.equinox.ds.instance.BuildDispose"));
 		System.err.println(b.getProperty("fwusers"));
 		System.err.println(b.getProperty("foo"));
 

@@ -242,8 +242,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			String urlTemplate = state.getUrlTemplate();
 
 			if (urlTemplate != null) {
-				String bsn = (urlTemplate.indexOf("%s") == -1) ? "" : Util.getSymbolicName(resource).getName();
-				Version version = (urlTemplate.indexOf("%v") == -1) ? Version.emptyVersion : Util.getVersion(resource);
+				String bsn = urlTemplate.contains("%s") ? Util.getSymbolicName(resource).getName() : "";
+				Version version = urlTemplate.contains("%v") ? Util.getVersion(resource) : Version.emptyVersion;
 				urlTemplate = urlTemplate.replaceAll("%s", "%1\\$s")
 						.replaceAll("%f", "%2\\$s")
 						.replaceAll("%p", "%3\\$s")

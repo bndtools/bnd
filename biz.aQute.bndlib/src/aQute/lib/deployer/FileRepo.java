@@ -865,7 +865,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			int result = 0;
 			StringBuilder stdout = new StringBuilder();
 			StringBuilder stderr = new StringBuilder();
-			if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+			if (System.getProperty("os.name").toLowerCase().contains("win")) {
 
 				// FIXME ignoring possible shell setting stdin approach used
 				// below does not work in windows

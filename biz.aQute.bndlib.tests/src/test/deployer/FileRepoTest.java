@@ -239,7 +239,7 @@ public class FileRepoTest extends TestCase {
 
 	public void testDeployToNonexistentRepoFails() throws Exception {
 
-		if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+		if (System.getProperty("os.name").toLowerCase().contains("win")) {
 			// File#setReadonly() is broken on windows
 			return;
 		}

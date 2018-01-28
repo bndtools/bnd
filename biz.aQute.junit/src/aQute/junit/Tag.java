@@ -223,7 +223,7 @@ public class Tag {
 			pw.print(key);
 			pw.print("=");
 			String quote = "'";
-			if (value.indexOf(quote) >= 0)
+			if (value.contains(quote))
 				quote = "\"";
 			pw.print(quote);
 			pw.print(value);
