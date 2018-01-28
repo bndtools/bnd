@@ -458,7 +458,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private synchronized Collection< ? extends ProxyHandler> getProxyHandlers() throws Exception {
 		if (proxyHandlers.isEmpty() && registry != null) {
 			List<ProxyHandler> proxyHandlers = registry.getPlugins(ProxyHandler.class);
-			proxyHandlers.addAll(proxyHandlers);
+			this.proxyHandlers.addAll(proxyHandlers);
 			logger.debug("Proxy handlers {}", proxyHandlers);
 		}
 		return proxyHandlers;
