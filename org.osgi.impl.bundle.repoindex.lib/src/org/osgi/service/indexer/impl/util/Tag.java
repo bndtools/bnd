@@ -321,7 +321,7 @@ public class Tag {
 		if (s == null)
 			return "?null?";
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
@@ -458,7 +458,7 @@ public class Tag {
 	}
 
 	public String getStringContent() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Object c : content) {
 			if (!(c instanceof Tag))
 				sb.append(c);

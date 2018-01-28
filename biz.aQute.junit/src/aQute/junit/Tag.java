@@ -330,7 +330,7 @@ public class Tag {
 	 * Escape a string, do entity conversion.
 	 */
 	String escape(String s) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
@@ -470,7 +470,7 @@ public class Tag {
 	}
 
 	public String getStringContent() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
 			Object c = e.nextElement();
 			if (!(c instanceof Tag))

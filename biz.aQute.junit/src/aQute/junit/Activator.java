@@ -626,7 +626,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	static public String replace(String source, String symbol, String replace) {
-		StringBuffer sb = new StringBuffer(source);
+		StringBuilder sb = new StringBuilder(source);
 		int n = sb.indexOf(symbol, 0);
 		while (n > 0) {
 			sb.replace(n, n + symbol.length(), replace);
