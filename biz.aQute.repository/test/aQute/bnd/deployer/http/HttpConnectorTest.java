@@ -157,7 +157,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectHTTPS() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
 
@@ -183,7 +183,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectTaggedHTTPS() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
 
@@ -209,7 +209,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectNoUserPass() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("configs", "");
 		connector.setProperties(config);
 
@@ -224,7 +224,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectWithUserPass() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth.properties");
 		connector.setProperties(config);
 
@@ -235,7 +235,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectHTTPSBadCertificate() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth.properties");
 		connector.setProperties(config);
 
@@ -250,7 +250,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectWithUserPassHTTPS() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth.properties");
 		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
@@ -262,7 +262,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectWithWrongUserPass() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth_wrong.properties");
 		connector.setProperties(config);
 
@@ -277,7 +277,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectWithWrongUserPassHTTPS() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth_wrong.properties");
 		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
@@ -293,7 +293,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectWithUserPassAndTag() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth.properties");
 		connector.setProperties(config);
 

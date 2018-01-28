@@ -30,13 +30,13 @@ import aQute.lib.tag.Tag;
 class ComponentDef extends ExtensionDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
 	final static String				MARKER			= new String("|marker");
-	final List<String>				properties		= new ArrayList<String>();
-	final MultiMap<String,String>	property		= new MultiMap<String,String>();			// key
+	final List<String>				properties		= new ArrayList<>();
+	final MultiMap<String,String>	property		= new MultiMap<>();			// key
 																								// is
 																								// property
 																								// name
-	final Map<String,String>		propertyType	= new HashMap<String,String>();
-	final Map<String,ReferenceDef>	references		= new LinkedHashMap<String,ReferenceDef>();
+	final Map<String,String>		propertyType	= new HashMap<>();
+	final Map<String,ReferenceDef>	references		= new LinkedHashMap<>();
 	Version							version;
 	String							name;
 	String							factory;
@@ -51,7 +51,7 @@ class ComponentDef extends ExtensionDef {
 	Boolean							enabled;
 	String							xmlns;
 	String[]						configurationPid;
-	List<Tag>						propertyTags	= new ArrayList<Tag>();
+	List<Tag>						propertyTags	= new ArrayList<>();
 
 	public ComponentDef(XMLAttributeFinder finder, Version minVersion) {
 		super(finder);
@@ -141,7 +141,7 @@ class ComponentDef extends ExtensionDef {
 	}
 
 	void sortReferences() {
-		Map<String,ReferenceDef> temp = new TreeMap<String,ReferenceDef>(references);
+		Map<String,ReferenceDef> temp = new TreeMap<>(references);
 		references.clear();
 		references.putAll(temp);
 	}

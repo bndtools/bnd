@@ -73,7 +73,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 
 		vsdir = Processor.getFile(vsdir, artifactId);
 
-		List<File> result = new ArrayList<File>();
+		List<File> result = new ArrayList<>();
 		if (vsdir.isDirectory()) {
 			String versions[] = vsdir.list();
 			for (String v : versions) {
@@ -100,7 +100,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	}
 
 	public List<String> list(String regex) {
-		List<String> bsns = new ArrayList<String>();
+		List<String> bsns = new ArrayList<>();
 		Pattern match = Pattern.compile(".*");
 		if (regex != null)
 			match = Pattern.compile(regex);
@@ -138,7 +138,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 	public SortedSet<Version> versions(String bsn) throws Exception {
 
 		File files[] = get(bsn, null);
-		List<Version> versions = new ArrayList<Version>();
+		List<Version> versions = new ArrayList<>();
 		for (File f : files) {
 			String version = f.getParentFile().getName();
 			version = Builder.cleanupVersion(version);
@@ -148,7 +148,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		if (versions.isEmpty())
 			return SortedList.empty();
 
-		return new SortedList<Version>(versions);
+		return new SortedList<>(versions);
 	}
 
 	public void setProperties(Map<String,String> map) {

@@ -33,8 +33,8 @@ import aQute.lib.utf8properties.UTF8Properties;
 public class PomParser extends Processor {
 	static DocumentBuilderFactory	dbf			= DocumentBuilderFactory.newInstance();
 	static XPathFactory				xpathf		= XPathFactory.newInstance();
-	static Set<String>				multiple	= new HashSet<String>();
-	static Set<String>				skip		= new HashSet<String>();
+	static Set<String>				multiple	= new HashSet<>();
+	static Set<String>				skip		= new HashSet<>();
 
 	static {
 		dbf.setNamespaceAware(false);

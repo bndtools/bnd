@@ -104,9 +104,9 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	/**
 	 * Make sure the content providers are always processed in the same order.
 	 */
-	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new TreeMap<String,IRepositoryContentProvider>();
+	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new TreeMap<>();
 
-	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<IRepositoryContentProvider>();
+	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<>();
 
 	protected Registry										registry;
 	protected Reporter										reporter;
@@ -394,7 +394,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	public List<String> list(String pattern) throws Exception {
 		init();
 		Glob glob = pattern != null ? new Glob(pattern) : null;
-		List<String> result = new LinkedList<String>();
+		List<String> result = new LinkedList<>();
 
 		for (String bsn : identityMap.getIdentities()) {
 			if (glob == null || glob.matcher(bsn).matches())
@@ -420,9 +420,9 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			throw new RuntimeException(e);
 		}
 
-		Map<Requirement,Collection<Capability>> result = new HashMap<Requirement,Collection<Capability>>();
+		Map<Requirement,Collection<Capability>> result = new HashMap<>();
 		for (Requirement requirement : requirements) {
-			List<Capability> matches = new LinkedList<Capability>();
+			List<Capability> matches = new LinkedList<>();
 			result.put(requirement, matches);
 
 			capabilityIndex.appendMatchingCapabilities(requirement, matches);
@@ -432,9 +432,9 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 
 	static List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap,
 			Filter filter) throws Exception {
-		List<Resource> result = new ArrayList<Resource>(versionMap.size());
+		List<Resource> result = new ArrayList<>(versionMap.size());
 
-		Dictionary<String,String> dict = new Hashtable<String,String>();
+		Dictionary<String,String> dict = new Hashtable<>();
 		dict.put("package", pkgName);
 
 		for (Entry<Version,Resource> entry : versionMap.entrySet()) {
@@ -447,7 +447,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	}
 
 	List<ResourceHandle> mapResourcesToHandles(Collection<Resource> resources) throws Exception {
-		List<ResourceHandle> result = new ArrayList<ResourceHandle>(resources.size());
+		List<ResourceHandle> result = new ArrayList<>(resources.size());
 
 		for (Resource resource : resources) {
 			ResourceHandle handle = mapResourceToHandle(resource);
@@ -584,7 +584,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	 */
 	protected static List<URI> parseLocations(String locationsStr) throws MalformedURLException, URISyntaxException {
 		StringTokenizer tok = new StringTokenizer(locationsStr, ",");
-		List<URI> urls = new ArrayList<URI>(tok.countTokens());
+		List<URI> urls = new ArrayList<>(tok.countTokens());
 		while (tok.hasMoreTokens()) {
 			String urlStr = tok.nextToken().trim();
 			urls.add(new URL(urlStr).toURI());

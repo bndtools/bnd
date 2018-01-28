@@ -11,7 +11,7 @@ import junit.framework.TestCase;
 public class FormattersTest extends TestCase {
 
 	public void testCollectionFormatter() {
-		Converter<String,Collection< ? >> formatter = new CollectionFormatter<Object>(",\\\n\t", (String) null);
+		Converter<String,Collection< ? >> formatter = new CollectionFormatter<>(",\\\n\t", (String) null);
 		String formatted = formatter.convert(Arrays.asList(new String[] {
 				"a", "b", "c"
 		}));
@@ -22,7 +22,7 @@ public class FormattersTest extends TestCase {
 	 * Don't add leading separator for single entries
 	 */
 	public void testCollectionFormatterSingleEntry() {
-		Converter<String,Collection< ? >> formatter = new CollectionFormatter<Object>(",\\\n\t", (String) null);
+		Converter<String,Collection< ? >> formatter = new CollectionFormatter<>(",\\\n\t", (String) null);
 		String formatted = formatter.convert(Arrays.asList(new String[] {
 				"a"
 		}));

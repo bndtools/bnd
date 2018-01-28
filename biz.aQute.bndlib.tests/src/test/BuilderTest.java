@@ -1807,11 +1807,11 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	static void assertList(Collection<String> a, Collection<String> b) {
-		List<String> onlyInA = new ArrayList<String>();
+		List<String> onlyInA = new ArrayList<>();
 		onlyInA.addAll(a);
 		onlyInA.removeAll(b);
 
-		List<String> onlyInB = new ArrayList<String>();
+		List<String> onlyInB = new ArrayList<>();
 		onlyInB.addAll(b);
 		onlyInB.removeAll(a);
 
@@ -1822,7 +1822,7 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	static Collection<String> asl(String s) {
-		return new TreeSet<String>(Processor.split(s));
+		return new TreeSet<>(Processor.split(s));
 	}
 
 	public static void testImportMicroNotTruncated() throws Exception {
@@ -3005,7 +3005,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.check());
 			assertEquals(
 					"[test/activator/AbstractActivator.class, test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class, test/activator/DefaultVisibilityActivator.class, test/activator/IActivator.class, test/activator/MissingNoArgsConstructorActivator.class, test/activator/NotAnActivator.class]",
-					new SortedList<String>(jar.getDirectories().get("test/activator").keySet()).toString());
+					new SortedList<>(jar.getDirectories().get("test/activator").keySet()).toString());
 		} finally {
 			bmaker.close();
 		}

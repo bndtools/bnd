@@ -137,7 +137,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 
 	List<X509Certificate> createCertificates(String paths)
 			throws FileNotFoundException, CertificateException, IOException {
-		List<X509Certificate> certificates = new ArrayList<X509Certificate>();
+		List<X509Certificate> certificates = new ArrayList<>();
 		if (paths != null) {
 			for (String path : paths.split("\\s*,\\s*")) {
 				File file = new File(path); // This is a system specific path!

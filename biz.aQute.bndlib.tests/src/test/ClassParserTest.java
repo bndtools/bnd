@@ -146,7 +146,7 @@ public class ClassParserTest extends TestCase {
 	 */
 
 	public void testConstantValues() throws Exception {
-		final Map<String,Object> values = new HashMap<String,Object>();
+		final Map<String,Object> values = new HashMap<>();
 		Clazz c = new Clazz(a, "ConstantValues",
 				new FileResource(IO.getFile(new File("").getAbsoluteFile(), "bin/test/ConstantValues.class")));
 		c.parseClassFileWithCollector(new ClassDataCollector() {

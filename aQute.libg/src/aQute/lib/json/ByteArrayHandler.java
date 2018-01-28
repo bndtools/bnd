@@ -26,7 +26,7 @@ public class ByteArrayHandler extends Handler {
 	public Object decodeArray(Decoder r) throws Exception {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		ArrayList<Object> list = new ArrayList<Object>();
+		ArrayList<Object> list = new ArrayList<>();
 		r.codec.parseArray(list, Byte.class, r);
 		for (Object b : list) {
 			out.write(((Byte) b).byteValue());

@@ -77,7 +77,7 @@ public class XMLResourceParser extends Processor {
 	}
 
 	public XMLResourceParser(InputStream in, String what, URI uri) throws Exception {
-		this(in, what, 100, new HashSet<URI>(), uri);
+		this(in, what, 100, new HashSet<>(), uri);
 	}
 
 	public void setDepth(int n) {

@@ -22,7 +22,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 
 	public Instructions(Instructions other) {
 		if (other.map != null && !other.map.isEmpty()) {
-			map = new LinkedHashMap<Instruction,Attrs>(other.map);
+			map = new LinkedHashMap<>(other.map);
 		}
 	}
 
@@ -115,7 +115,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 
 	public Attrs put(Instruction key, Attrs value) {
 		if (map == null)
-			map = new LinkedHashMap<Instruction,Attrs>();
+			map = new LinkedHashMap<>();
 
 		return map.put(key, value);
 	}
@@ -124,7 +124,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 		if (this.map == null) {
 			if (map.isEmpty())
 				return;
-			this.map = new LinkedHashMap<Instruction,Attrs>();
+			this.map = new LinkedHashMap<>();
 		}
 		this.map.putAll(map);
 	}
@@ -173,11 +173,11 @@ public class Instructions implements Map<Instruction,Attrs> {
 	}
 
 	public <T> Collection<T> select(Collection<T> set, Set<Instruction> unused, boolean emptyIsAll) {
-		List<T> input = new ArrayList<T>(set);
+		List<T> input = new ArrayList<>(set);
 		if (emptyIsAll && isEmpty())
 			return input;
 
-		List<T> result = new ArrayList<T>();
+		List<T> result = new ArrayList<>();
 
 		for (Instruction instruction : keySet()) {
 			boolean used = false;
@@ -198,8 +198,8 @@ public class Instructions implements Map<Instruction,Attrs> {
 	}
 
 	public <T> Collection<T> reject(Collection<T> set) {
-		List<T> input = new ArrayList<T>(set);
-		List<T> result = new ArrayList<T>();
+		List<T> input = new ArrayList<>(set);
+		List<T> result = new ArrayList<>();
 
 		for (Instruction instruction : keySet()) {
 			for (Iterator<T> o = input.iterator(); o.hasNext();) {
@@ -256,7 +256,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 	 */
 	public Map<File,Attrs> select(File base) {
 
-		Map<File,Attrs> result = new HashMap<File,Attrs>();
+		Map<File,Attrs> result = new HashMap<>();
 
 		//
 		// We allow literals to be specified so that we can actually include

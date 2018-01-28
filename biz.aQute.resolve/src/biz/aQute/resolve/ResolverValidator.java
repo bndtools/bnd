@@ -87,7 +87,7 @@ public class ResolverValidator extends Processor {
 	}
 
 	public List<Resolution> validate(Collection<Resource> toBeChecked) throws Exception {
-		Set<Resource> allResources = new LinkedHashSet<Resource>();
+		Set<Resource> allResources = new LinkedHashSet<>();
 		for (URI uri : repositories) {
 			allResources.addAll(XMLResourceParser.getResources(uri));
 		}

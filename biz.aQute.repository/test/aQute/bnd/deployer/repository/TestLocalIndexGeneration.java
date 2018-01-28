@@ -45,7 +45,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		// Setup the repo
 		reporter = new Processor();
 		repo = new LocalIndexedRepo();
-		config = new HashMap<String,String>();
+		config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "R5");
 		config.put("pretty", "true");
@@ -122,7 +122,7 @@ public class TestLocalIndexGeneration extends TestCase {
 
 	public void testInvalidContentProvider() throws Exception {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "Rubbish");
 		repo.setProperties(config);
@@ -146,7 +146,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setRegistry(registry);
 		repo.setReporter(reporter);
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "Nongenerating");
 		repo.setProperties(config);
@@ -169,7 +169,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setRegistry(registry);
 		repo.setReporter(reporter);
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "Fail");
 		repo.setProperties(config);
@@ -206,7 +206,7 @@ public class TestLocalIndexGeneration extends TestCase {
 
 	public void testUncompressedIndexFile() throws Exception {
 		repo = new LocalIndexedRepo();
-		config = new HashMap<String,String>();
+		config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "R5");
 		config.put("pretty", "true");

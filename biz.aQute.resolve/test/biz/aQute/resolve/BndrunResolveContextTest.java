@@ -400,10 +400,10 @@ public class BndrunResolveContextTest extends TestCase {
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
-		HashMap<String,String> blacklistProp = new HashMap<String,String>();
+		HashMap<String,String> blacklistProp = new HashMap<>();
 
 		BndEditModel runModel = new BndEditModel();
-		ArrayList<Requirement> blacklistlist = new ArrayList<Requirement>();
+		ArrayList<Requirement> blacklistlist = new ArrayList<>();
 
 		blacklistlist.add(CapReqBuilder.createSimpleRequirement("osgi.identity", "osgi.cmpn", "4.3.0")
 				.buildSyntheticRequirement());
@@ -430,10 +430,10 @@ public class BndrunResolveContextTest extends TestCase {
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
-		HashMap<String,String> blacklistProp = new HashMap<String,String>();
+		HashMap<String,String> blacklistProp = new HashMap<>();
 
 		BndEditModel runModel = new BndEditModel();
-		ArrayList<Requirement> blacklistlist = new ArrayList<Requirement>();
+		ArrayList<Requirement> blacklistlist = new ArrayList<>();
 		blacklistlist.add(CapReqBuilder.createSimpleRequirement("osgi.identity", "osgi.cmpn", "[4.0.0,4.3.0)")
 				.buildSyntheticRequirement());
 		runModel.setRunBlacklist(blacklistlist);
@@ -460,10 +460,10 @@ public class BndrunResolveContextTest extends TestCase {
 
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
-		HashMap<String,String> blacklistProp = new HashMap<String,String>();
+		HashMap<String,String> blacklistProp = new HashMap<>();
 
 		BndEditModel runModel = new BndEditModel();
-		ArrayList<Requirement> blacklistlist = new ArrayList<Requirement>();
+		ArrayList<Requirement> blacklistlist = new ArrayList<>();
 		blacklistlist.add(CapReqBuilder.createSimpleRequirement("osgi.identity", "osgi.cmpn", "[4.0.0,4.4.0)")
 				.buildSyntheticRequirement());
 		runModel.setRunBlacklist(blacklistlist);
@@ -789,7 +789,7 @@ public class BndrunResolveContextTest extends TestCase {
 
 		model.setDistro(Arrays.asList("testdata/distro.jar;version=file"));
 
-		List<Requirement> requires = new ArrayList<Requirement>();
+		List<Requirement> requires = new ArrayList<>();
 		List<Capability> caps = CapReqBuilder.getCapabilitiesFrom(
 				new Parameters("osgi.service;objectClass=foo.bar.FooBarService;effective:=active"));
 		Requirement req = CapReqBuilder.createRequirementFromCapability(caps.get(0)).buildSyntheticRequirement();

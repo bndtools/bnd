@@ -19,16 +19,16 @@ public class TestTarjan extends TestCase {
 		assertEquals(2, scc.size());
 		for (Collection<String> set : scc) {
 			if (set.size() == 3)
-				assertEquals(new HashSet<String>(Arrays.asList("E", "C", "D")), set);
+				assertEquals(new HashSet<>(Arrays.asList("E", "C", "D")), set);
 			else if (set.size() == 2)
-				assertEquals(new HashSet<String>(Arrays.asList("B", "A")), set);
+				assertEquals(new HashSet<>(Arrays.asList("B", "A")), set);
 			else
 				fail();
 		}
 	}
 
 	private MultiMap<String,String> mkGraph(String string) {
-		MultiMap<String,String> map = new MultiMap<String,String>();
+		MultiMap<String,String> map = new MultiMap<>();
 
 		String key = null;
 
@@ -43,7 +43,7 @@ public class TestTarjan extends TestCase {
 				default :
 					if (key == null) {
 						key = c + "";
-						map.put(key, new ArrayList<String>());
+						map.put(key, new ArrayList<>());
 					} else
 						map.add(key, c + "");
 			}

@@ -76,17 +76,17 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	private static final long						THRESHOLD						= 4 * 3600 * 1000;											// 4
 	protected static final DownloadListener[]		EMPTY_LISTENER					= new DownloadListener[0];
 	static JSONCodec								codec							= new JSONCodec();
-	private final List<Listener>					listeners						= new CopyOnWriteArrayList<ResourceRepository.Listener>();
+	private final List<Listener>					listeners						= new CopyOnWriteArrayList<>();
 	private boolean									dirty;
 	private FileLayout								index;
-	private Map<URI,Long>							failures						= new HashMap<URI,Long>();
+	private Map<URI,Long>							failures						= new HashMap<>();
 	private File									cache;
 	private File									hosting;
 	private Reporter								reporter						= new ReporterAdapter(System.out);
 	private Executor								executor;
 	private File									indexFile;
 	private URLConnectionHandler					connector						= new DefaultURLConnectionHandler();
-	final MultiMap<File,DownloadListener>			queues							= new MultiMap<File,RepositoryPlugin.DownloadListener>();
+	final MultiMap<File,DownloadListener>			queues							= new MultiMap<>();
 	final Semaphore									limitDownloads					= new Semaphore(5);
 
 	{
@@ -99,7 +99,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	 */
 	static public class FileLayout {
 		public int							version;
-		public List<ResourceDescriptorImpl>	descriptors	= new ArrayList<ResourceDescriptorImpl>();
+		public List<ResourceDescriptorImpl>	descriptors	= new ArrayList<>();
 		public int							increment;
 		public long							date;
 
@@ -131,7 +131,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	 * List the resources. We skip the filter for now.
 	 */
 	public List<ResourceDescriptorImpl> filter(String repoId, String filter) throws Exception {
-		List<ResourceDescriptorImpl> result = new ArrayList<ResourceDescriptorImpl>();
+		List<ResourceDescriptorImpl> result = new ArrayList<>();
 		for (ResourceDescriptorImpl rdi : getIndex().descriptors) {
 			if (repoId == null || rdi.repositories.contains(repoId))
 				result.add(rdi);
@@ -531,7 +531,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	}
 
 	public SortedSet<ResourceDescriptor> find(String repoId, String bsn, VersionRange range) throws Exception {
-		TreeSet<ResourceDescriptor> result = new TreeSet<ResourceDescriptor>(RESOURCE_DESCRIPTOR_COMPARATOR);
+		TreeSet<ResourceDescriptor> result = new TreeSet<>(RESOURCE_DESCRIPTOR_COMPARATOR);
 
 		for (ResourceDescriptorImpl r : filter(repoId, null)) {
 			if (!bsn.equals(r.bsn))

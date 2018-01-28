@@ -92,7 +92,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 
 		int o = 0;
 		int n = 0;
-		List<DiffImpl> children = new ArrayList<DiffImpl>();
+		List<DiffImpl> children = new ArrayList<>();
 		while (true) {
 			Tree nw = n < newerChildren.length ? newerChildren[n] : null;
 			Tree ol = o < olderChildren.length ? olderChildren[o] : null;

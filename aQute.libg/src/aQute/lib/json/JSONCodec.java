@@ -54,7 +54,7 @@ public class JSONCodec {
 	final static String								START_CHARACTERS	= "[{\"-0123456789tfn";
 
 	// Handlers
-	private final static WeakHashMap<Type,Handler>	handlers			= new WeakHashMap<Type,Handler>();
+	private final static WeakHashMap<Type,Handler>	handlers			= new WeakHashMap<>();
 	private static StringHandler					sh					= new StringHandler();
 	private static BooleanHandler					bh					= new BooleanHandler();
 	private static CharacterHandler					ch					= new CharacterHandler();
@@ -67,7 +67,7 @@ public class JSONCodec {
 	private static UUIDHandler						uuidh				= new UUIDHandler();
 
 	boolean											ignorenull;
-	Map<Type,Handler>								localHandlers		= new ConcurrentHashMap<Type,Handler>();
+	Map<Type,Handler>								localHandlers		= new ConcurrentHashMap<>();
 
 	/**
 	 * Create a new Encoder with the state and appropriate API.

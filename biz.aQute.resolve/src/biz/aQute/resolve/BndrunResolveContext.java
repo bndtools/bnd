@@ -323,12 +323,12 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		if (effective == null)
 			return null;
 
-		HashMap<String,Set<String>> effectiveSet = new HashMap<String,Set<String>>();
+		HashMap<String,Set<String>> effectiveSet = new HashMap<>();
 
 		for (Entry<String,Attrs> entry : new Parameters(effective, project).entrySet()) {
 			String skip = entry.getValue().get("skip:");
-			Set<String> toSkip = skip == null ? new HashSet<String>()
-					: new HashSet<String>(Arrays.asList(skip.split(",")));
+			Set<String> toSkip = skip == null ? new HashSet<>()
+					: new HashSet<>(Arrays.asList(skip.split(",")));
 			effectiveSet.put(entry.getKey(), toSkip);
 		}
 
@@ -366,7 +366,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 			// Map the repository names...
 
-			Map<String,Repository> repoNameMap = new HashMap<String,Repository>(allRepos.size());
+			Map<String,Repository> repoNameMap = new HashMap<>(allRepos.size());
 			for (Repository repo : allRepos) {
 				String name;
 				if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
@@ -511,7 +511,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		boolean prefsUsed = false;
 
 		if (resolvePrefs != null && !resolvePrefs.isEmpty()) {
-			List<Capability> insertions = new LinkedList<Capability>();
+			List<Capability> insertions = new LinkedList<>();
 			for (Iterator<Capability> iterator = candidates.iterator(); iterator.hasNext();) {
 				Capability cap = iterator.next();
 				if (resolvePrefs.containsKey(getResourceIdentity(cap.getResource()))) {

@@ -229,7 +229,7 @@ public class bnd extends Processor {
 
 	public void start(String args[]) throws Exception {
 		CommandLine cl = new CommandLine(this);
-		String help = cl.execute(this, "bnd", new ExtList<String>(args));
+		String help = cl.execute(this, "bnd", new ExtList<>(args));
 		check();
 		if (help != null)
 			err.println(help);
@@ -726,7 +726,7 @@ public class bnd extends Processor {
 			return;
 		}
 
-		List<String> l = new ArrayList<String>(options._arguments());
+		List<String> l = new ArrayList<>(options._arguments());
 		if (l.isEmpty()) {
 			err.printf("Name         %s\n", project.getName());
 			err.printf("Actions      %s\n", project.getActions().keySet());
@@ -1183,7 +1183,7 @@ public class bnd extends Processor {
 		else
 			projects = project.getWorkspace().getAllProjects();
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 
 		for (Project p : projects) {
 			containers.addAll(p.getDeliverables());
@@ -1264,7 +1264,7 @@ public class bnd extends Processor {
 	 */
 	@Description("Release this project")
 	public void _release(releaseOptions options) throws Exception {
-		Set<Project> projects = new LinkedHashSet<Project>();
+		Set<Project> projects = new LinkedHashSet<>();
 
 		Workspace ws = Workspace.findWorkspace(getBase());
 		if (ws == null) {
@@ -1323,8 +1323,8 @@ public class bnd extends Processor {
 	}
 
 	static public class All {
-		public Map<TypeRef,List<TypeRef>>		classes		= new HashMap<Descriptors.TypeRef,List<TypeRef>>();
-		public Map<PackageRef,List<PackageRef>>	packages	= new HashMap<Descriptors.PackageRef,List<PackageRef>>();
+		public Map<TypeRef,List<TypeRef>>		classes		= new HashMap<>();
+		public Map<PackageRef,List<PackageRef>>	packages	= new HashMap<>();
 	}
 
 	/**
@@ -1333,8 +1333,8 @@ public class bnd extends Processor {
 	@Description("Show a cross references for all classes in a set of jars.")
 	public void _xref(xrefOptions options) throws IOException, Exception {
 		Analyzer analyzer = new Analyzer();
-		final MultiMap<TypeRef,TypeRef> table = new MultiMap<TypeRef,TypeRef>();
-		final MultiMap<PackageRef,PackageRef> packages = new MultiMap<PackageRef,PackageRef>();
+		final MultiMap<TypeRef,TypeRef> table = new MultiMap<>();
+		final MultiMap<PackageRef,PackageRef> packages = new MultiMap<>();
 		Set<TypeRef> set = Create.set();
 		Instructions filter = new Instructions(options.match());
 		for (String arg : options._arguments()) {
@@ -1399,7 +1399,7 @@ public class bnd extends Processor {
 			if (e == null) {
 				// ignore
 			} else {
-				Set<Object> set = new LinkedHashSet<Object>(e);
+				Set<Object> set = new LinkedHashSet<>(e);
 				set.remove(element);
 				Iterator< ? > row = set.iterator();
 				String first = "";
@@ -1480,9 +1480,9 @@ public class bnd extends Processor {
 
 		// Create a build order
 
-		List<Builder> builders = new ArrayList<Builder>();
-		List<String> order = new ArrayList<String>();
-		List<String> active = new ArrayList<String>();
+		List<Builder> builders = new ArrayList<>();
+		List<String> order = new ArrayList<>();
+		List<String> active = new ArrayList<>();
 
 		for (String s : options._arguments()) {
 			prebuild(active, order, builders, s);
@@ -1812,7 +1812,7 @@ public class bnd extends Processor {
 	}
 
 	private void report(Justif justif, String string, Processor processor) throws Exception {
-		Map<String,Object> table = new LinkedHashMap<String,Object>();
+		Map<String,Object> table = new LinkedHashMap<>();
 		processor.report(table);
 		Justif j = new Justif(140, 40, 44, 48, 100);
 		j.formatter().format("$-\n%s %s\n$-\n", string, processor);
@@ -1984,8 +1984,8 @@ public class bnd extends Processor {
 						}
 					}
 				}
-				print(Constants.IMPORT_PACKAGE, new TreeMap<String,Attrs>(imports));
-				print(Constants.EXPORT_PACKAGE, new TreeMap<String,Attrs>(exports));
+				print(Constants.IMPORT_PACKAGE, new TreeMap<>(imports));
+				print(Constants.EXPORT_PACKAGE, new TreeMap<>(exports));
 			} else
 				warning("File has no manifest");
 		}
@@ -1997,8 +1997,8 @@ public class bnd extends Processor {
 			if (m != null) {
 				Parameters provide = domain.getProvideCapability();
 				Parameters require = domain.getRequireCapability();
-				print(Constants.PROVIDE_CAPABILITY, new TreeMap<String,Attrs>(provide));
-				print(Constants.REQUIRE_CAPABILITY, new TreeMap<String,Attrs>(require));
+				print(Constants.PROVIDE_CAPABILITY, new TreeMap<>(provide));
+				print(Constants.REQUIRE_CAPABILITY, new TreeMap<>(require));
 			} else
 				warning("File has no manifest");
 		}
@@ -2038,7 +2038,7 @@ public class bnd extends Processor {
 							out.println();
 							out.printf("%s refers to private Packages (not good)\n\n", export);
 							for (Entry<Def,List<TypeRef>> e : xRef.entrySet()) {
-								TreeSet<PackageRef> refs = new TreeSet<Descriptors.PackageRef>();
+								TreeSet<PackageRef> refs = new TreeSet<>();
 								for (TypeRef ref : e.getValue())
 									refs.add(ref.getPackageRef());
 
@@ -2060,7 +2060,7 @@ public class bnd extends Processor {
 				}
 				if ((options & USEDBY) != 0) {
 					out.println("[USEDBY]");
-					MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<Descriptors.PackageRef,Descriptors.PackageRef>(
+					MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<>(
 							uses).transpose();
 					printMultiMap(usedBy);
 				}
@@ -2110,7 +2110,7 @@ public class bnd extends Processor {
 	 * @param manifest
 	 */
 	void printManifest(Manifest manifest) {
-		SortedSet<String> sorted = new TreeSet<String>();
+		SortedSet<String> sorted = new TreeSet<>();
 		for (Object element : manifest.getMainAttributes().keySet()) {
 			sorted.add(element.toString());
 		}
@@ -2202,11 +2202,11 @@ public class bnd extends Processor {
 	}
 
 	<T extends Comparable< ? super T>> void printMultiMap(Map<T, ? extends Collection< ? >> map) {
-		SortedList<T> keys = new SortedList<T>(map.keySet());
+		SortedList<T> keys = new SortedList<>(map.keySet());
 		for (Object key : keys) {
 			String name = key.toString();
 
-			SortedList<Object> values = new SortedList<Object>(map.get(key), null);
+			SortedList<Object> values = new SortedList<>(map.get(key), null);
 			String list = vertical(40, values);
 			out.printf("%-40s %s\n", name, list);
 		}
@@ -2791,9 +2791,9 @@ public class bnd extends Processor {
 			}
 
 			Domain domain = Domain.domain(jar.getManifest());
-			Hashtable<String,Object> ht = new Hashtable<String,Object>();
+			Hashtable<String,Object> ht = new Hashtable<>();
 			Iterator<String> i = domain.iterator();
-			Set<String> realNames = new HashSet<String>();
+			Set<String> realNames = new HashSet<>();
 
 			while (i.hasNext()) {
 				String key = i.next();
@@ -2808,7 +2808,7 @@ public class bnd extends Processor {
 					continue;
 			}
 
-			Set<Instruction> unused = new HashSet<Instruction>();
+			Set<Instruction> unused = new HashSet<>();
 			Collection<String> select = instructions.select(realNames, unused, true);
 			for (String h : select) {
 				if (opts.path()) {
@@ -2948,7 +2948,7 @@ public class bnd extends Processor {
 		boolean any = options.runbundles() || options.buildpath() || options.classpath() || options.dependsOn()
 				|| options.vmpath();
 
-		MultiMap<String,Object> table = new MultiMap<String,Object>();
+		MultiMap<String,Object> table = new MultiMap<>();
 		if (any || options.runbundles()) {
 			table.addAll("Run", p.getRunbundles());
 		}
@@ -3006,7 +3006,7 @@ public class bnd extends Processor {
 		}
 
 		if (args.isEmpty()) {
-			args = new ExtList<String>(getBase().list(new FilenameFilter() {
+			args = new ExtList<>(getBase().list(new FilenameFilter() {
 
 				public boolean accept(File dir, String name) {
 					return name.endsWith(".jar");
@@ -3016,7 +3016,7 @@ public class bnd extends Processor {
 
 		Set<String> headers = opts.headers();
 		if (headers == null)
-			headers = new TreeSet<String>();
+			headers = new TreeSet<>();
 
 		if (opts.exports())
 			headers.add(Constants.EXPORT_PACKAGE);
@@ -3469,7 +3469,7 @@ public class bnd extends Processor {
 	}
 
 	public void _find(FindOptions options) throws Exception {
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 
 		List<String> args = options._arguments();
 		if (args.size() == 0) {
@@ -3625,7 +3625,7 @@ public class bnd extends Processor {
 
 			final Collection<Project> targets = p == null ? workspace.getAllProjects() : p.getDependson();
 
-			final Forker<Project> forker = new Forker<Project>(pool);
+			final Forker<Project> forker = new Forker<>(pool);
 
 			for (final Project dep : targets) {
 				forker.doWhen(dep.getDependson(), dep, new Runnable() {
@@ -3702,7 +3702,7 @@ public class bnd extends Processor {
 			return;
 		}
 
-		MultiMap<String,Version> revisions = new MultiMap<String,Version>();
+		MultiMap<String,Version> revisions = new MultiMap<>();
 
 		for (RepositoryPlugin repo : p.getPlugins(RepositoryPlugin.class)) {
 			if (!(repo instanceof InfoRepository))
@@ -3981,7 +3981,7 @@ public class bnd extends Processor {
 			}
 
 			CommandLine cl = new CommandLine(this);
-			String help = cl.execute(new Plugins(this, ws), "add", new ExtList<String>(args));
+			String help = cl.execute(new Plugins(this, ws), "add", new ExtList<>(args));
 			if (help != null)
 				out.println(help);
 			getInfo(ws);
@@ -4027,7 +4027,7 @@ public class bnd extends Processor {
 
 		if ("plugin".equals(what)) {
 			CommandLine cl = new CommandLine(this);
-			String help = cl.execute(new Plugins(this, ws), "remove", new ExtList<String>(args));
+			String help = cl.execute(new Plugins(this, ws), "remove", new ExtList<>(args));
 			if (help != null)
 				out.println(help);
 			return;

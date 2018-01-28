@@ -38,7 +38,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		if (app == null)
 			to();
 
-		codec.encode(this, object, null, new IdentityHashMap<Object,Type>());
+		codec.encode(this, object, null, new IdentityHashMap<>());
 		flush();
 		if (!keepOpen)
 			close();

@@ -189,7 +189,7 @@ public class Decoder implements Closeable {
 
 	public Map<String,Object> getExtra() {
 		if (extra == null)
-			extra = new HashMap<String,Object>();
+			extra = new HashMap<>();
 		return extra;
 	}
 

@@ -54,7 +54,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 
 		List<V> set = get(key);
 		if (set == null) {
-			set = new ArrayList<V>();
+			set = new ArrayList<>();
 			if (valueClass != Object.class) {
 				set = Collections.checkedList(set, (Class<V>) valueClass);
 			}
@@ -77,7 +77,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		assert keyClass.isInstance(key);
 		List<V> set = get(key);
 		if (set == null) {
-			set = new ArrayList<V>();
+			set = new ArrayList<>();
 			if (valueClass != Object.class) {
 				set = Collections.checkedList(set, (Class<V>) valueClass);
 			}
@@ -164,7 +164,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 	}
 
 	public Map<K,V> flatten() {
-		Map<K,V> map = new LinkedHashMap<K,V>();
+		Map<K,V> map = new LinkedHashMap<>();
 		for (Map.Entry<K,List<V>> entry : entrySet()) {
 			List<V> v = entry.getValue();
 			if (v == null || v.isEmpty())
@@ -176,7 +176,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 	}
 
 	public MultiMap<V,K> transpose() {
-		MultiMap<V,K> inverted = new MultiMap<V,K>();
+		MultiMap<V,K> inverted = new MultiMap<>();
 		for (Map.Entry<K,List<V>> entry : entrySet()) {
 			K key = entry.getKey();
 
@@ -197,7 +197,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 	 * @return all values
 	 */
 	public List<V> allValues() {
-		return new IteratorList<V>(all());
+		return new IteratorList<>(all());
 	}
 
 }

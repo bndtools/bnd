@@ -51,7 +51,7 @@ public abstract class DTO {
 	 */
 	@Override
 	public String toString() {
-		return appendValue(new StringBuilder(), new IdentityHashMap<Object,String>(), "#", this).toString();
+		return appendValue(new StringBuilder(), new IdentityHashMap<>(), "#", this).toString();
 	}
 
 	/**

@@ -47,7 +47,7 @@ public class Justif {
 	 * @param sb
 	 */
 	public void wrap(StringBuilder sb) {
-		List<Integer> indents = new ArrayList<Integer>();
+		List<Integer> indents = new ArrayList<>();
 
 		int indent = 0;
 		int linelength = 0;

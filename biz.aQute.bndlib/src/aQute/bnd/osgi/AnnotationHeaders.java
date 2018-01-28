@@ -773,7 +773,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			//
 			// Remove duplicates and sort
 			//
-			Set<String> set = new TreeSet<String>(headers.get(name));
+			Set<String> set = new TreeSet<>(headers.get(name));
 			if (value != null)
 				set.add(value);
 			return Strings.join(set);

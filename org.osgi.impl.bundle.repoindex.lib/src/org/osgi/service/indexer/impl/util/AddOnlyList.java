@@ -67,19 +67,19 @@ public class AddOnlyList<T> implements List<T> {
 	// WRAPPING METHODS: create restricted iterators and sublists
 
 	public Iterator<T> iterator() {
-		return new AddOnlyIterator<T>(delegate.iterator());
+		return new AddOnlyIterator<>(delegate.iterator());
 	}
 
 	public ListIterator<T> listIterator() {
-		return new AddOnlyListIterator<T>(delegate.listIterator());
+		return new AddOnlyListIterator<>(delegate.listIterator());
 	}
 
 	public ListIterator<T> listIterator(int index) {
-		return new AddOnlyListIterator<T>(delegate.listIterator(index));
+		return new AddOnlyListIterator<>(delegate.listIterator(index));
 	}
 
 	public List<T> subList(int fromIndex, int toIndex) {
-		return new AddOnlyList<T>(delegate.subList(fromIndex, toIndex));
+		return new AddOnlyList<>(delegate.subList(fromIndex, toIndex));
 	}
 
 	// STRAIGHT-THROUGH DELEGATED METHODS

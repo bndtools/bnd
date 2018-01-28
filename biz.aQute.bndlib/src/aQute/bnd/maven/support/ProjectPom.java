@@ -22,7 +22,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 
 public class ProjectPom extends Pom {
 
-	final List<URI>		repositories	= new ArrayList<URI>();
+	final List<URI>		repositories	= new ArrayList<>();
 	final Properties	properties		= new UTF8Properties();
 	String				packaging;
 	String				url;

@@ -51,7 +51,7 @@ public abstract class Pom {
 	String				groupId;
 	String				artifactId;
 	String				version;
-	List<Dependency>	dependencies	= new ArrayList<Dependency>();
+	List<Dependency>	dependencies	= new ArrayList<>();
 	File				pomFile;
 	String				description		= "";
 	String				name;
@@ -67,7 +67,7 @@ public abstract class Pom {
 		String		groupId;
 		String		artifactId;
 		String		version;
-		Set<String>	exclusions	= new HashSet<String>();
+		Set<String>	exclusions	= new HashSet<>();
 
 		public Scope getScope() {
 			return scope;
@@ -221,9 +221,9 @@ public abstract class Pom {
 	}
 
 	public Set<Pom> getDependencies(Scope scope, URI... urls) throws Exception {
-		Set<Pom> result = new LinkedHashSet<Pom>();
+		Set<Pom> result = new LinkedHashSet<>();
 
-		List<Rover> queue = new ArrayList<Rover>();
+		List<Rover> queue = new ArrayList<>();
 		for (Dependency d : dependencies) {
 			queue.add(new Rover(null, d));
 		}

@@ -110,7 +110,7 @@ public class WorkspaceRepositoryTest extends TestCase {
 	}
 
 	public void testGetExact() throws Exception {
-		File file = repo.get("p2", new Version("1.2.3"), new HashMap<String,String>());
+		File file = repo.get("p2", new Version("1.2.3"), new HashMap<>());
 		assertTrue(workspace.check());
 		assertNotNull(file);
 	}

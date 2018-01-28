@@ -51,8 +51,8 @@ public class CapReqBuilder {
 
 	private final String				namespace;
 	private Resource					resource;
-	private final Map<String,Object>	attributes	= new HashMap<String,Object>();
-	private final Map<String,String>	directives	= new HashMap<String,String>();
+	private final Map<String,Object>	attributes	= new HashMap<>();
+	private final Map<String,String>	directives	= new HashMap<>();
 
 	public CapReqBuilder(String namespace) {
 		this.namespace = namespace;
@@ -292,7 +292,7 @@ public class CapReqBuilder {
 	 * @throws Exception
 	 */
 	public static List<Requirement> getRequirementsFrom(Parameters rr, boolean unalias) throws Exception {
-		List<Requirement> requirements = new ArrayList<Requirement>();
+		List<Requirement> requirements = new ArrayList<>();
 		for (Entry<String,Attrs> e : rr.entrySet()) {
 			Requirement req = getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue(), unalias);
 			requirements.add(req);
@@ -469,7 +469,7 @@ public class CapReqBuilder {
 	}
 
 	public void addFilter(String ns, String name, String version, Attrs attrs) {
-		List<String> parts = new ArrayList<String>();
+		List<String> parts = new ArrayList<>();
 
 		parts.add("(" + ns + "=" + name + ")");
 		if (version != null && VersionRange.isOSGiVersionRange(version)) {

@@ -33,7 +33,7 @@ public class EmbeddedLauncher {
 			String runpath = m.getMainAttributes().getValue(EMBEDDED_RUNPATH);
 			if (runpath != null) {
 				MANIFEST = m;
-				List<URL> classpath = new ArrayList<URL>();
+				List<URL> classpath = new ArrayList<>();
 
 				for (String path : runpath.split("\\s*,\\s*")) {
 					URL url = toFileURL(cl.getResource(path));

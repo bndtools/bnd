@@ -78,13 +78,13 @@ public class IO {
 	}
 
 	public static Collection<File> tree(File current) {
-		Set<File> files = new LinkedHashSet<File>();
+		Set<File> files = new LinkedHashSet<>();
 		traverse(files, current, null);
 		return files;
 	}
 
 	public static Collection<File> tree(File current, String glob) {
-		Set<File> files = new LinkedHashSet<File>();
+		Set<File> files = new LinkedHashSet<>();
 		traverse(files, current, glob == null ? null : new Glob(glob));
 		return files;
 	}

@@ -124,7 +124,7 @@ public class Converter {
 
 		if (o instanceof Dictionary && !(o instanceof Map)) {
 			Dictionary< ? , ? > dict = (Dictionary< ? , ? >) o;
-			Map<Object,Object> map = new HashMap<Object,Object>();
+			Map<Object,Object> map = new HashMap<>();
 			Enumeration< ? > e = dict.keys();
 			while (e.hasMoreElements()) {
 				Object k = e.nextElement();
@@ -310,7 +310,7 @@ public class Converter {
 						Field f = resultType.getField("__extra");
 						Map<String,Object> extra = (Map<String,Object>) f.get(instance);
 						if (extra == null) {
-							extra = new HashMap<String,Object>();
+							extra = new HashMap<>();
 							f.set(instance, extra);
 						}
 						extra.put(key, convert(Object.class, e.getValue()));
@@ -473,7 +473,7 @@ public class Converter {
 		if (o.getClass().isArray()) {
 			if (o.getClass().getComponentType().isPrimitive()) {
 				int length = Array.getLength(o);
-				List<Object> result = new ArrayList<Object>(length);
+				List<Object> result = new ArrayList<>(length);
 				for (int i = 0; i < length; i++) {
 					result.add(Array.get(o, i));
 				}
@@ -511,11 +511,11 @@ public class Converter {
 	public Converter hook(Type type, Hook hook) {
 		if (type != null) {
 			if (hooks == null)
-				hooks = new HashMap<Type,Converter.Hook>();
+				hooks = new HashMap<>();
 			this.hooks.put(type, hook);
 		} else {
 			if (allHooks == null)
-				allHooks = new ArrayList<Converter.Hook>();
+				allHooks = new ArrayList<>();
 			allHooks.add(hook);
 		}
 

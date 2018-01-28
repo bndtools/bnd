@@ -19,7 +19,7 @@ public class XMLTypeProcessor implements AnalyzerPlugin {
 	}
 
 	protected List<XMLType> getTypes(@SuppressWarnings("unused") Analyzer analyzer) throws Exception {
-		return new ArrayList<XMLType>();
+		return new ArrayList<>();
 	}
 
 	protected void process(List<XMLType> types, String resource, String paths, String pattern) throws Exception {

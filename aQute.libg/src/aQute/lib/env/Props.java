@@ -115,7 +115,7 @@ public class Props implements Map<String,String> {
 			return null;
 
 		if (map == null)
-			map = new LinkedHashMap<String,String>();
+			map = new LinkedHashMap<>();
 
 		return map.put(key, value);
 	}
@@ -204,8 +204,8 @@ public class Props implements Map<String,String> {
 		if (isEmpty())
 			return true;
 
-		SortedList<String> l = new SortedList<String>(keySet());
-		SortedList<String> lo = new SortedList<String>(other.keySet());
+		SortedList<String> l = new SortedList<>(keySet());
+		SortedList<String> lo = new SortedList<>(other.keySet());
 		if (!l.isEqual(lo))
 			return false;
 

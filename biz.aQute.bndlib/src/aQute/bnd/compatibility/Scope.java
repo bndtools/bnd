@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Scope {
-	final Map<String,Scope>	children	= new LinkedHashMap<String,Scope>();
+	final Map<String,Scope>	children	= new LinkedHashMap<>();
 
 	// class: slashed name
 	// field: name ":" typed

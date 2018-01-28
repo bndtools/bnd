@@ -52,7 +52,7 @@ public class BndEditModelTest extends TestCase {
 				r.get(2));
 
 		// Test Set with variables
-		List<Requirement> rr = new LinkedList<Requirement>();
+		List<Requirement> rr = new LinkedList<>();
 		rr.add(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
 				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=b)").buildSyntheticRequirement());
 		rr.add(new CapReqBuilder("${var}").buildSyntheticRequirement());
@@ -68,7 +68,7 @@ public class BndEditModelTest extends TestCase {
 		assertEquals("osgi.identity;filter:='(osgi.identity=variable2)'", rrr[2]);
 
 		// Test SET
-		rr = new LinkedList<Requirement>();
+		rr = new LinkedList<>();
 		rr.add(getReq("(osgi.identity=b)"));
 		rr.add(getReq("(osgi.identity=c)"));
 		model.setRunRequires(rr);
@@ -117,7 +117,7 @@ public class BndEditModelTest extends TestCase {
 		assertEquals("com.sun.xml.internal.bind", model.getProperties().mergeProperties(Constants.RUNSYSTEMPACKAGES));
 
 		ExportedPackage e = new ExportedPackage("testing", null);
-		ep = new LinkedList<ExportedPackage>();
+		ep = new LinkedList<>();
 		ep.add(e);
 
 		model.setSystemPackages(ep);
@@ -127,7 +127,7 @@ public class BndEditModelTest extends TestCase {
 		assertEquals("testing", ep.get(0).getName());
 
 		e = new ExportedPackage("${var}", null);
-		ep = new LinkedList<ExportedPackage>();
+		ep = new LinkedList<>();
 		ep.add(e);
 
 		model.setSystemPackages(ep);

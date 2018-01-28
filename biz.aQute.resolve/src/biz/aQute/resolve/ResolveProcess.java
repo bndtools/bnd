@@ -66,8 +66,8 @@ public class ResolveProcess {
 
 	public Map<Resource,List<Wire>> resolveRequired(Processor properties, Project project, Registry plugins,
 			Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
-		required = new HashMap<Resource,List<Wire>>();
-		optional = new HashMap<Resource,List<Wire>>();
+		required = new HashMap<>();
+		optional = new HashMap<>();
 
 		BndrunResolveContext rc = new BndrunResolveContext(properties, project, plugins, log);
 		rc.addCallbacks(callbacks);
@@ -83,13 +83,13 @@ public class ResolveProcess {
 		Pair<Resource,List<Wire>> initialRequirement = null;
 		for (Map.Entry<Resource,List<Wire>> wiring : wirings.entrySet()) {
 			if (rc.getInputResource() == wiring.getKey()) {
-				initialRequirement = new Pair<Resource,List<Wire>>(wiring.getKey(), wiring.getValue());
+				initialRequirement = new Pair<>(wiring.getKey(), wiring.getValue());
 				break;
 			}
 		}
 
 		// 3. Save the resolved root resources
-		final List<Resource> resources = new ArrayList<Resource>();
+		final List<Resource> resources = new ArrayList<>();
 		for (Resource r : rc.getMandatoryResources()) {
 			reqs: for (Requirement req : r.getRequirements(null)) {
 				for (Resource found : wirings.keySet()) {
@@ -110,7 +110,7 @@ public class ResolveProcess {
 		}
 
 		// 4. Add any 'osgi.wiring.bundle' requirements
-		List<Resource> wiredBundles = new ArrayList<Resource>();
+		List<Resource> wiredBundles = new ArrayList<>();
 		for (Resource resource : resources) {
 			addWiredBundle(wirings, resource, wiredBundles);
 		}
@@ -120,7 +120,7 @@ public class ResolveProcess {
 			}
 		}
 
-		final Map<Resource,List<Wire>> discoveredOptional = new LinkedHashMap<Resource,List<Wire>>();
+		final Map<Resource,List<Wire>> discoveredOptional = new LinkedHashMap<>();
 
 		// 5. Resolve the rest
 		BndrunResolveContext rc2 = new BndrunResolveContext(properties, project, plugins, log) {
@@ -155,7 +155,7 @@ public class ResolveProcess {
 					// the optional
 					// map
 
-					for (Capability cap : findProvidersFromRepositories(requirement, new LinkedHashSet<Capability>())) {
+					for (Capability cap : findProvidersFromRepositories(requirement, new LinkedHashSet<>())) {
 
 						Resource optionalRes = cap.getResource();
 
@@ -286,7 +286,7 @@ public class ResolveProcess {
 		// satisfies our requirement and its 1st level requirements.
 		//
 
-		Set<Resource> candidates = new HashSet<Resource>();
+		Set<Resource> candidates = new HashSet<>();
 
 		Requirement missing = null;
 		caps: for (Capability cap : providers) {
@@ -415,7 +415,7 @@ public class ResolveProcess {
 	 */
 	private static Map<Resource,List<Wire>> invertWirings(Map<Resource, ? extends Collection<Wire>> wirings,
 			AbstractResolveContext rc) {
-		Map<Resource,List<Wire>> inverted = new HashMap<Resource,List<Wire>>();
+		Map<Resource,List<Wire>> inverted = new HashMap<>();
 		for (Entry<Resource, ? extends Collection<Wire>> entry : wirings.entrySet()) {
 			Resource requirer = entry.getKey();
 			for (Wire wire : entry.getValue()) {
@@ -428,7 +428,7 @@ public class ResolveProcess {
 
 				List<Wire> incoming = inverted.get(provider);
 				if (incoming == null) {
-					incoming = new LinkedList<Wire>();
+					incoming = new LinkedList<>();
 					inverted.put(provider, incoming);
 				}
 				incoming.add(wire);
@@ -465,9 +465,9 @@ public class ResolveProcess {
 
 	private static Map<Resource,List<Wire>> tidyUpOptional(Map<Resource,List<Wire>> required,
 			Map<Resource,List<Wire>> discoveredOptional, LogService log) {
-		Map<Resource,List<Wire>> toReturn = new HashMap<Resource,List<Wire>>();
+		Map<Resource,List<Wire>> toReturn = new HashMap<>();
 
-		Set<Capability> requiredIdentities = new HashSet<Capability>();
+		Set<Capability> requiredIdentities = new HashSet<>();
 		for (Resource r : required.keySet()) {
 			Capability normalisedIdentity = toPureIdentity(r, log);
 			if (normalisedIdentity != null) {
@@ -492,7 +492,7 @@ public class ResolveProcess {
 			}
 
 			// Only wires to required resources should kept
-			List<Wire> validWires = new ArrayList<Wire>();
+			List<Wire> validWires = new ArrayList<>();
 			optional: for (Wire optionalWire : entry.getValue()) {
 				Resource requirer = optionalWire.getRequirer();
 				Capability requirerIdentity = toPureIdentity(requirer, log);

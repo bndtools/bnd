@@ -130,7 +130,7 @@ public class JSONTest extends TestCase {
 	}
 
 	public void testGenerics() throws Exception {
-		Generics<String> s = new Generics<String>();
+		Generics<String> s = new Generics<>();
 		s.field = "abc";
 
 		String string = codec.enc().put(s).toString();
@@ -141,7 +141,7 @@ public class JSONTest extends TestCase {
 	}
 
 	static class A {
-		public MultiMap<String,B> mmap = new MultiMap<String,B>();
+		public MultiMap<String,B> mmap = new MultiMap<>();
 	}
 
 	static class B {
@@ -319,7 +319,7 @@ public class JSONTest extends TestCase {
 
 	public void testMaps() throws Exception {
 		Encoder enc = codec.enc();
-		Map<String,Object> map = new HashMap<String,Object>();
+		Map<String,Object> map = new HashMap<>();
 		map.put("a", new int[] {
 				1, 2
 		});
@@ -639,7 +639,7 @@ public class JSONTest extends TestCase {
 		data1.l = 2l;
 		data1.s = "abc";
 		data1.sh = -10;
-		data1.map = new HashMap<String,Object>();
+		data1.map = new HashMap<>();
 		data1.map.put("a", Arrays.asList(1, 2, 3));
 		String s = enc.to().put(data1).toString();
 		assertEquals(
@@ -862,7 +862,7 @@ public class JSONTest extends TestCase {
 		public String		name;
 		public Sex			sex;
 		public Date			birthday;
-		public List<Person>	offspring	= new ArrayList<Person>();
+		public List<Person>	offspring	= new ArrayList<>();
 	}
 
 	public void testBlog() throws Exception {

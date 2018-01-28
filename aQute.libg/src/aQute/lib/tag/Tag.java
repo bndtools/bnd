@@ -27,8 +27,8 @@ public class Tag {
 
 	Tag								parent;														// Parent
 	String							name;														// Name
-	final Map<String,String>		attributes	= new LinkedHashMap<String,String>();
-	final List<Object>				content		= new ArrayList<Object>();						// Content
+	final Map<String,String>		attributes	= new LinkedHashMap<>();
+	final List<Object>				content		= new ArrayList<>();						// Content
 	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 	boolean							cdata;
 
@@ -183,7 +183,7 @@ public class Tag {
 	 * name.
 	 */
 	public List<Object> getContents(String tag) {
-		List<Object> out = new ArrayList<Object>();
+		List<Object> out = new ArrayList<>();
 		for (Object o : content) {
 			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
 				out.add(o);
@@ -314,7 +314,7 @@ public class Tag {
 	}
 
 	public Collection<Tag> select(String path, Tag mapping) {
-		List<Tag> v = new ArrayList<Tag>();
+		List<Tag> v = new ArrayList<>();
 		select(path, v, mapping);
 		return v;
 	}

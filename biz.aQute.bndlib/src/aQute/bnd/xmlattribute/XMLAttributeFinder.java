@@ -16,8 +16,8 @@ public class XMLAttributeFinder extends ClassDataCollector {
 
 	private final Analyzer			analyzer;
 
-	Map<TypeRef,XMLAttribute>		annoCache		= new HashMap<TypeRef,XMLAttribute>();
-	Map<TypeRef,Map<String,String>>	defaultsCache	= new HashMap<TypeRef,Map<String,String>>();
+	Map<TypeRef,XMLAttribute>		annoCache		= new HashMap<>();
+	Map<TypeRef,Map<String,String>>	defaultsCache	= new HashMap<>();
 
 	public XMLAttributeFinder(Analyzer analyzer) {
 		this.analyzer = analyzer;
@@ -52,14 +52,14 @@ public class XMLAttributeFinder extends ClassDataCollector {
 		if (defaults == null)
 			defaults = extractDefaults(name, analyzer);
 		if (defaults == null)
-			return new LinkedHashMap<String,String>();
-		return new LinkedHashMap<String,String>(defaults);
+			return new LinkedHashMap<>();
+		return new LinkedHashMap<>(defaults);
 	}
 
 	private Map<String,String> extractDefaults(TypeRef name, final Analyzer analyzer) {
 		try {
 			Clazz clazz = analyzer.findClass(name);
-			final Map<String,String> props = new LinkedHashMap<String,String>();
+			final Map<String,String> props = new LinkedHashMap<>();
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 
 				@Override

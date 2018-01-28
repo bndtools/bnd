@@ -74,7 +74,7 @@ public class Coverage {
 	}
 
 	private static Map<MethodDef,List<MethodDef>> buildCatalog(Collection<Clazz> sources) throws Exception {
-		final Map<MethodDef,List<MethodDef>> catalog = new TreeMap<MethodDef,List<MethodDef>>(
+		final Map<MethodDef,List<MethodDef>> catalog = new TreeMap<>(
 				new Comparator<MethodDef>() {
 					public int compare(MethodDef a, MethodDef b) {
 						return a.getName().compareTo(b.getName());
@@ -91,7 +91,7 @@ public class Coverage {
 				@Override
 				public void method(MethodDef source) {
 					if (source.isPublic() || source.isProtected())
-						catalog.put(source, new ArrayList<MethodDef>());
+						catalog.put(source, new ArrayList<>());
 				}
 
 			});

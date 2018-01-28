@@ -54,11 +54,11 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 
 	private Set<String> getStringSet(String attrib) {
 		List<String> list = getListAttrib(attrib);
-		return list != null ? new HashSet<String>(list) : new HashSet<String>();
+		return list != null ? new HashSet<>(list) : new HashSet<>();
 	}
 
 	public void setPropertiesMap(Map<String,String> properties) {
-		List<String> strings = new ArrayList<String>(properties.size());
+		List<String> strings = new ArrayList<>(properties.size());
 		for (Entry<String,String> entry : properties.entrySet()) {
 			String line = new StringBuilder().append(entry.getKey()).append("=").append(entry.getValue()).toString();
 			strings.add(line);
@@ -67,7 +67,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	}
 
 	public Map<String,String> getPropertiesMap() {
-		Map<String,String> result = new LinkedHashMap<String,String>();
+		Map<String,String> result = new LinkedHashMap<>();
 
 		List<String> list = getListAttrib(COMPONENT_PROPERTIES);
 		if (list != null) {
@@ -101,9 +101,9 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 		}
 
 		// Add in the references
-		Set<String> dynamic = new HashSet<String>();
-		Set<String> optional = new HashSet<String>();
-		Set<String> multiple = new HashSet<String>();
+		Set<String> dynamic = new HashSet<>();
+		Set<String> optional = new HashSet<>();
+		Set<String> multiple = new HashSet<>();
 		for (ComponentSvcReference ref : refs) {
 			// Build the reference name with bind and unbind
 			String expandedRefName = ref.getName();
@@ -175,7 +175,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	}
 
 	public List<ComponentSvcReference> getSvcRefs() {
-		List<ComponentSvcReference> result = new ArrayList<ComponentSvcReference>();
+		List<ComponentSvcReference> result = new ArrayList<>();
 
 		Set<String> dynamicSet = getStringSet(COMPONENT_DYNAMIC);
 		Set<String> optionalSet = getStringSet(COMPONENT_OPTIONAL);

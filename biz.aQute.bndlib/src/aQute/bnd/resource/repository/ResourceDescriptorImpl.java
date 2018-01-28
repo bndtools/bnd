@@ -9,7 +9,7 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 
 public class ResourceDescriptorImpl extends ResourceDescriptor implements Comparable<ResourceDescriptorImpl> {
 
-	public Set<String> repositories = new HashSet<String>();
+	public Set<String> repositories = new HashSet<>();
 
 	public ResourceDescriptorImpl() {}
 

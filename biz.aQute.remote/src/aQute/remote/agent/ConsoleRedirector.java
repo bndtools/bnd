@@ -16,7 +16,7 @@ public class ConsoleRedirector implements Redirector {
 	private static RedirectOutput						stdout;
 	private static RedirectOutput						stderr;
 	private static RedirectInput						stdin;
-	private static CopyOnWriteArrayList<AgentServer>	agents	= new CopyOnWriteArrayList<AgentServer>();
+	private static CopyOnWriteArrayList<AgentServer>	agents	= new CopyOnWriteArrayList<>();
 	volatile boolean									quit	= false;
 	private final AgentServer							agent;
 

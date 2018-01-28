@@ -261,7 +261,7 @@ public class ResolveTest extends TestCase {
 
 		BndEditModel model = new BndEditModel();
 		model.setDistro(Arrays.asList("testdata/distro.jar;version=file"));
-		List<Requirement> requires = new ArrayList<Requirement>();
+		List<Requirement> requires = new ArrayList<>();
 		CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
 		requires.add(capReq.buildSyntheticRequirement());
 
@@ -294,7 +294,7 @@ public class ResolveTest extends TestCase {
 
 		model.setRunFw("org.apache.felix.framework");
 
-		List<Requirement> requires = new ArrayList<Requirement>();
+		List<Requirement> requires = new ArrayList<>();
 		CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
 		requires.add(capReq.buildSyntheticRequirement());
 
@@ -428,7 +428,7 @@ public class ResolveTest extends TestCase {
 		runModel.setGenericString("-resolve.effective", "active");
 
 		// Require the log service, GoGo shell and GoGo commands
-		List<Requirement> requirements = new ArrayList<Requirement>();
+		List<Requirement> requirements = new ArrayList<>();
 
 		requirements.add(new CapReqBuilder("osgi.identity")
 				.addDirective("filter", "(osgi.identity=org.apache.felix.log)").buildSyntheticRequirement());
@@ -446,7 +446,7 @@ public class ResolveTest extends TestCase {
 				.resolveRequired(runModel, registry, resolver, Collections.<ResolutionCallback> emptyList(), log)
 				.keySet();
 
-		Map<String,Resource> mandatoryResourcesBySymbolicName = new HashMap<String,Resource>();
+		Map<String,Resource> mandatoryResourcesBySymbolicName = new HashMap<>();
 		for (Resource r : resolvedResources) {
 			Capability cap = r.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0);
 			// We shouldn't have more than one match for each symbolic name for

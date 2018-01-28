@@ -21,7 +21,7 @@ public class HeaderClauseListConverter<R> implements Converter<List<R>,String> {
 		if (input == null)
 			return null;
 
-		List<R> result = new ArrayList<R>();
+		List<R> result = new ArrayList<>();
 
 		Parameters header = new Parameters(input);
 		for (Entry<String,Attrs> entry : header.entrySet()) {
@@ -35,7 +35,7 @@ public class HeaderClauseListConverter<R> implements Converter<List<R>,String> {
 
 	@Override
 	public List<R> error(String msg) {
-		List<R> l = new ArrayList<R>();
+		List<R> l = new ArrayList<>();
 		l.add(itemConverter.error(msg));
 		return l;
 	}

@@ -44,8 +44,8 @@ public class ResourceBuilder {
 	private final static String		BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
 	private final static String		JAR_MIME_TYPE		= "application/java-archive";
 	private final ResourceImpl		resource		= new ResourceImpl();
-	private final List<Capability>	capabilities	= new LinkedList<Capability>();
-	private final List<Requirement>	requirements	= new LinkedList<Requirement>();
+	private final List<Capability>	capabilities	= new LinkedList<>();
+	private final List<Requirement>	requirements	= new LinkedList<>();
 	private ReporterAdapter			reporter		= new ReporterAdapter();
 
 	private boolean built = false;
@@ -306,7 +306,7 @@ public class ResourceBuilder {
 			return null;
 
 		boolean optional = false;
-		List<String> options = new LinkedList<String>();
+		List<String> options = new LinkedList<>();
 
 		RequirementBuilder rb = new RequirementBuilder(NativeNamespace.NATIVE_NAMESPACE);
 		FilterBuilder sb = new FilterBuilder();
@@ -627,7 +627,7 @@ public class ResourceBuilder {
 		if (filter == null || capabilities.isEmpty())
 			return Collections.emptyList();
 
-		List<Capability> capabilities = new ArrayList<Capability>();
+		List<Capability> capabilities = new ArrayList<>();
 		Filter f = new Filter(filter);
 
 		for (Capability c : getCapabilities()) {
@@ -644,7 +644,7 @@ public class ResourceBuilder {
 	}
 
 	public Map<Capability,Capability> from(Resource bundle) throws Exception {
-		Map<Capability,Capability> mapping = new HashMap<Capability,Capability>();
+		Map<Capability,Capability> mapping = new HashMap<>();
 
 		addRequirements(bundle.getRequirements(null));
 

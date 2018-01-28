@@ -18,9 +18,9 @@ import aQute.service.reporter.Reporter;
  * Mainly used for testing where reporters are needed.
  */
 public class ReporterAdapter implements Reporter, Report, Runnable {
-	final List<String>			errors		= new ArrayList<String>();
-	final List<String>			warnings	= new ArrayList<String>();
-	final List<LocationImpl>	locations	= new ArrayList<LocationImpl>();
+	final List<String>			errors		= new ArrayList<>();
+	final List<String>			warnings	= new ArrayList<>();
+	final List<LocationImpl>	locations	= new ArrayList<>();
 
 	static class LocationImpl extends Location implements SetLocation {
 

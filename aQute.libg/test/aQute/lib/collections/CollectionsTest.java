@@ -52,8 +52,8 @@ public class CollectionsTest extends TestCase {
 		if (a.equals(b))
 			return true;
 
-		List<T> aa = new ArrayList<T>(a);
-		List<T> bb = new ArrayList<T>(b);
+		List<T> aa = new ArrayList<>(a);
+		List<T> bb = new ArrayList<>(b);
 		return aa.equals(bb);
 	}
 
@@ -74,10 +74,10 @@ public class CollectionsTest extends TestCase {
 		assertEquals("[c, c]", sl.headSet("c ").tailSet("b ").toString());
 
 		Iterable<String> it = sl.headSet("c ").tailSet("b ");
-		ExtList<String> l = new ExtList<String>(it);
+		ExtList<String> l = new ExtList<>(it);
 		assertEquals("[c, c]", l.toString());
 
-		ExtList<String> ll = new ExtList<String>(sl.tailSet("c"));
+		ExtList<String> ll = new ExtList<>(sl.tailSet("c"));
 		assertEquals("[c, c, d, e, f]", ll.toString());
 
 		assertEquals(-1, sl.indexOf("g"));
@@ -108,13 +108,13 @@ public class CollectionsTest extends TestCase {
 
 	public void testComparator() {
 		Comparator<String> reverseOrder = Collections.reverseOrder();
-		SortedList<String> sl = new SortedList<String>(Arrays.asList("f", "a", "b", "c", "d", "c", "e"), reverseOrder);
+		SortedList<String> sl = new SortedList<>(Arrays.asList("f", "a", "b", "c", "d", "c", "e"), reverseOrder);
 		assertEquals("[f, e, d, c, c, b, a]", sl.toString());
 	}
 
 	public void testListIterator() throws Exception {
 		Comparator<String> reverseOrder = Collections.reverseOrder();
-		List<String> sl = new SortedList<String>(Arrays.asList("f", "a", "b", "c", "d", "c", "e"), reverseOrder);
+		List<String> sl = new SortedList<>(Arrays.asList("f", "a", "b", "c", "d", "c", "e"), reverseOrder);
 		// sl = new ArrayList<String>(sl);
 		ListIterator<String> li = sl.listIterator(1);
 		assertEquals(1, li.nextIndex());

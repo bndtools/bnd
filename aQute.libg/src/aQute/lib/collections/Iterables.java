@@ -109,11 +109,11 @@ public class Iterables {
 	}
 
 	public static <T> Iterable<T> distinct(Set<? extends T> first, Iterable<? extends T> second) {
-		return new Distinct<T, T>(first, second, Function.identity());
+		return new Distinct<>(first, second, Function.identity());
 	}
 
 	public static <T, R> Iterable<R> distinct(Set<? extends T> first, Iterable<? extends T> second,
 		Function<? super T, ? extends R> mapper) {
-		return new Distinct<T, R>(first, second, mapper);
+		return new Distinct<>(first, second, mapper);
 	}
 }

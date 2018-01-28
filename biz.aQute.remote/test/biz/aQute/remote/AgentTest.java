@@ -50,7 +50,7 @@ public class AgentTest extends TestCase {
 				this.getClass().getClassLoader());
 
 		FrameworkFactory ff = sl.iterator().next();
-		Map<String,String> configuration = new HashMap<String,String>();
+		Map<String,String> configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
 		framework = ff.newFramework(configuration);

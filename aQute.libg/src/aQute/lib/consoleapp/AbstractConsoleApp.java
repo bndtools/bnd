@@ -60,7 +60,7 @@ public abstract class AbstractConsoleApp extends Env {
 	public void run(String args[]) throws Exception {
 		try {
 			CommandLine cl = new CommandLine(this);
-			ExtList<String> list = new ExtList<String>(args);
+			ExtList<String> list = new ExtList<>(args);
 			String help = cl.execute(target, "_main", list);
 			check();
 			if (help != null)

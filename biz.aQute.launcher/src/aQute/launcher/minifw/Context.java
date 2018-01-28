@@ -68,7 +68,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 		@Override
 		public Enumeration<String> keys() {
-			Vector<String> v = new Vector<String>();
+			Vector<String> v = new Vector<>();
 			for (Iterator<Object> i = manifest.getMainAttributes().keySet().iterator(); i.hasNext();) {
 				Attributes.Name name = (Attributes.Name) i.next();
 				v.add(name.toString());
@@ -161,7 +161,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 			if (!path.endsWith("/"))
 				path += "/";
 
-			Vector<URL> paths = new Vector<URL>();
+			Vector<URL> paths = new Vector<>();
 			for (Iterator<String> i = getPaths().iterator(); i.hasNext();) {
 				String entry = i.next();
 				if (entry.startsWith(path)) {
@@ -202,7 +202,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		if (paths != null)
 			return paths;
 
-		paths = new TreeSet<String>();
+		paths = new TreeSet<>();
 		try (JarFile jar = new JarFile(new File(location))) {
 			for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements();) {
 				ZipEntry entry = e.nextElement();

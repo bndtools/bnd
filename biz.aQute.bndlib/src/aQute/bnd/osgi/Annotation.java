@@ -75,7 +75,7 @@ public class Annotation {
 
 	public <T> void put(String string, Object v) {
 		if (elements == null)
-			elements = new LinkedHashMap<String,Object>();
+			elements = new LinkedHashMap<>();
 
 		elements.put(string, v);
 	}
@@ -106,7 +106,7 @@ public class Annotation {
 		if (!c.getName().equals(cname))
 			return null;
 		return CONVERTER.convert(c,
-				elements == null ? elements = new LinkedHashMap<String,Object>() : elements);
+				elements == null ? elements = new LinkedHashMap<>() : elements);
 	}
 
 	public void merge(Annotation annotation) {

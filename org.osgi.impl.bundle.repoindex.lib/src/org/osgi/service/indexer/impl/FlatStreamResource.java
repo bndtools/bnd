@@ -14,7 +14,7 @@ class FlatStreamResource implements Resource {
 	private final String					location;
 	private final InputStream				stream;
 
-	private final Dictionary<String,Object>	properties	= new Hashtable<String,Object>();
+	private final Dictionary<String,Object>	properties	= new Hashtable<>();
 
 	FlatStreamResource(String name, String location, InputStream stream) {
 		this.location = location;

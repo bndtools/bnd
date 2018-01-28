@@ -150,7 +150,7 @@ public class CommandLineOptions {
 	 */
 
 	@Argument(metaVar = "<file> [<file>*]", required = false, index = 0, usage = "The directories and/or files to index. Must be specified at least once, can be specified multiple times (default = none)")
-	List<File>					fileList			= new LinkedList<File>();
+	List<File>					fileList			= new LinkedList<>();
 
 	/*
 	 * Help

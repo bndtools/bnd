@@ -28,11 +28,11 @@ public class Tag {
 																								// of
 																								// the
 																								// tag
-	Hashtable<String,String>		attributes	= new Hashtable<String,String>();				// Attributes
+	Hashtable<String,String>		attributes	= new Hashtable<>();				// Attributes
 																								// name
 																								// ->
 																								// value
-	Vector<Object>					content		= new Vector<Object>();							// Content
+	Vector<Object>					content		= new Vector<>();							// Content
 																								// elements
 	boolean							cdata;
 
@@ -176,7 +176,7 @@ public class Tag {
 	 * name.
 	 */
 	public Vector<Object> getContents(String tag) {
-		Vector<Object> out = new Vector<Object>();
+		Vector<Object> out = new Vector<>();
 		for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
 			Object o = e.nextElement();
 			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
@@ -367,7 +367,7 @@ public class Tag {
 	}
 
 	public Tag[] select(String path, Tag mapping) {
-		Vector<Tag> v = new Vector<Tag>();
+		Vector<Tag> v = new Vector<>();
 		select(path, v, mapping);
 		Tag[] result = new Tag[v.size()];
 		v.copyInto(result);

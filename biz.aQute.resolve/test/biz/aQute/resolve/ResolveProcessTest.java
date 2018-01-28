@@ -67,7 +67,7 @@ public class ResolveProcessTest extends TestCase {
 			assertEquals(1, requiredResources.size());
 			assertEquals(3, optionalResources.size());
 
-			SortedSet<Resource> set = new TreeSet<Resource>(new ResourceComparator());
+			SortedSet<Resource> set = new TreeSet<>(new ResourceComparator());
 
 			set.addAll(optionalResources);
 
@@ -105,7 +105,7 @@ public class ResolveProcessTest extends TestCase {
 			assertEquals(1, requiredResources.size());
 			assertEquals(13, optionalResources.size());
 
-			SortedSet<Resource> set = new TreeSet<Resource>(new ResourceComparator());
+			SortedSet<Resource> set = new TreeSet<>(new ResourceComparator());
 
 			set.addAll(optionalResources);
 

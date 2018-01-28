@@ -174,7 +174,7 @@ public class Diagnostics {
 					"-a", "--all" }, absentValue = "false", presentValue = "true") boolean all,
 			@Descriptor("Check exports against private packages") @Parameter(names = { "-p",
 					"--private" }, absentValue = "false", presentValue = "true") boolean privatePackages) {
-		Map<String, Export> map = new HashMap<String, Export>();
+		Map<String, Export> map = new HashMap<>();
 
 		List<Capability> caps = caps(-1, PackageNamespace.PACKAGE_NAMESPACE);
 

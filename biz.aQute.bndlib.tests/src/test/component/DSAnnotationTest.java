@@ -2829,7 +2829,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	private List<Attrs> getAll(Parameters p, String key) {
-		List<Attrs> l = new ArrayList<Attrs>();
+		List<Attrs> l = new ArrayList<>();
 		for (; p.containsKey(key); key += aQute.bnd.osgi.Constants.DUPLICATE_MARKER) {
 			l.add(p.get(key));
 		}
@@ -3239,7 +3239,7 @@ public class DSAnnotationTest extends BndTestCase {
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
 		assertEquals(4, b.getErrors().size());
-		List<String> errors = new ArrayList<String>(b.getErrors());
+		List<String> errors = new ArrayList<>(b.getErrors());
 		Collections.sort(errors);
 		assertEquals(
 				"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Activate on method start with signature ()V. It is an error to mix these two types of annotations",
@@ -3296,10 +3296,10 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	static class FinalDynamicCollectionField {
 		@Reference(policy = ReferencePolicy.DYNAMIC)
-		private final List<LogService>	logs1	= new CopyOnWriteArrayList<LogService>();
+		private final List<LogService>	logs1	= new CopyOnWriteArrayList<>();
 
 		@Reference
-		private final List<LogService>	logs2	= new CopyOnWriteArrayList<LogService>();
+		private final List<LogService>	logs2	= new CopyOnWriteArrayList<>();
 
 	}
 
@@ -3627,7 +3627,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	private List<String> indices = new ArrayList<String>();
+	private List<String> indices = new ArrayList<>();
 
 	public void testReferenceType() throws Exception {
 
@@ -3647,7 +3647,7 @@ public class DSAnnotationTest extends BndTestCase {
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 
-		Collection<String> indices = new TreeSet<String>();
+		Collection<String> indices = new TreeSet<>();
 		for (int i = 1; i < 16; i++)
 			indices.add(Integer.toString(i));
 		this.indices.addAll(indices);

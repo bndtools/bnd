@@ -24,7 +24,7 @@ import org.osgi.framework.wiring.FrameworkWiring;
  * it quick and easy to update the constellation.
  */
 public class EmbeddedActivator implements BundleActivator {
-	final List<Bundle>			bundles			= new ArrayList<Bundle>();
+	final List<Bundle>			bundles			= new ArrayList<>();
 	final static String			SYMBOLICNAME_S	= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
 	public final static String	VERSION_S		= "(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:[-_\\da-zA-Z]+))?)?)?";
 
@@ -47,7 +47,7 @@ public class EmbeddedActivator implements BundleActivator {
 			if (embedded == null)
 				throw new IllegalArgumentException("Requires a Bnd-Embedded header");
 
-			Map<String,Version> index = new HashMap<String,Version>();
+			Map<String,Version> index = new HashMap<>();
 
 			String[] clauses = embedded.split("\\s*,\\s*");
 			for (String clause : clauses) {
@@ -62,8 +62,8 @@ public class EmbeddedActivator implements BundleActivator {
 				index.put(tbsn, new Version(tversion));
 			}
 
-			List<Bundle> toStop = new ArrayList<Bundle>();
-			List<Bundle> toUpdate = new ArrayList<Bundle>();
+			List<Bundle> toStop = new ArrayList<>();
+			List<Bundle> toUpdate = new ArrayList<>();
 
 			Pattern bsn_p = Pattern.compile(Pattern.quote(bsn) + "@(.*)");
 			for (Bundle b : context.getBundles()) {
@@ -116,7 +116,7 @@ public class EmbeddedActivator implements BundleActivator {
 				}
 			}
 
-			List<Bundle> toStart = new ArrayList<Bundle>();
+			List<Bundle> toStart = new ArrayList<>();
 
 			for (Bundle b : toStop) {
 				b.stop();
@@ -172,7 +172,7 @@ public class EmbeddedActivator implements BundleActivator {
 		Bundle ours = context.getBundle();
 		String bsn = ours.getSymbolicName();
 		Pattern bsn_p = Pattern.compile(Pattern.quote(bsn) + "@(.*)");
-		List<Exception> exceptions = new ArrayList<Exception>();
+		List<Exception> exceptions = new ArrayList<>();
 
 		for (Bundle b : context.getBundles()) {
 			if (b == ours || isGC(b))

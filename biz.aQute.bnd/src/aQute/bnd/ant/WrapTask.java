@@ -29,14 +29,14 @@ public class WrapTask extends BaseTask {
 	/**
 	 * List of jars to wrap
 	 */
-	List<File>	jars		= new ArrayList<File>();
+	List<File>	jars		= new ArrayList<>();
 
 	/**
 	 * Output directory or file (directory must be used
 	 */
 	File		output		= null;
 	File		definitions	= null;
-	List<File>	classpath	= new ArrayList<File>();
+	List<File>	classpath	= new ArrayList<>();
 	String		bsn;
 	Version		version;
 	boolean		force;

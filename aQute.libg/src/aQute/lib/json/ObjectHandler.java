@@ -21,7 +21,7 @@ public class ObjectHandler extends Handler {
 	ObjectHandler(JSONCodec codec, Class< ? > c) throws Exception {
 		rawClass = c;
 
-		List<Field> fields = new ArrayList<Field>();
+		List<Field> fields = new ArrayList<>();
 		for (Field f : c.getFields()) {
 			if (Modifier.isStatic(f.getModifiers()))
 				continue;
@@ -136,7 +136,7 @@ public class ObjectHandler extends Handler {
 					@SuppressWarnings("unchecked")
 					Map<String,Object> map = (Map<String,Object>) extra.get(targetObject);
 					if (map == null) {
-						map = new LinkedHashMap<String,Object>();
+						map = new LinkedHashMap<>();
 						extra.set(targetObject, map);
 					}
 					Object value = r.codec.decode(null, r);

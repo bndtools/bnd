@@ -47,7 +47,7 @@ public class SpringComponent implements AnalyzerPlugin {
 			transformer = tf.newTransformer(source);
 		}
 
-		Set<CharSequence> refers = new HashSet<CharSequence>();
+		Set<CharSequence> refers = new HashSet<>();
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		Result r = new StreamResult(bout);

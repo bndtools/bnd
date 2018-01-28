@@ -699,7 +699,7 @@ public class Syntax implements Constants {
 																					Version.VERSION)
 																		};
 
-	public final static Map<String,Syntax>	HELP					= new HashMap<String,Syntax>();
+	public final static Map<String,Syntax>	HELP					= new HashMap<>();
 
 	static {
 		for (Syntax s : syntaxes) {

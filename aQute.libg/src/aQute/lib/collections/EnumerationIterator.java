@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class EnumerationIterator<T> implements Iterable<T>, Iterator<T> {
 
 	public static <T> EnumerationIterator<T> iterator(Enumeration< ? extends T> e) {
-		return new EnumerationIterator<T>(e);
+		return new EnumerationIterator<>(e);
 	}
 
 	private final Enumeration< ? extends T>	enumerator;

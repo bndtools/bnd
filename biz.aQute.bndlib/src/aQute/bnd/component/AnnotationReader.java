@@ -92,7 +92,7 @@ public class AnnotationReader extends ClassDataCollector {
 	final static Map<String,Class< ? >>	wrappers;
 
 	static {
-		Map<String,Class< ? >> map = new HashMap<String,Class< ? >>();
+		Map<String,Class< ? >> map = new HashMap<>();
 		map.put("boolean", Boolean.class);
 		map.put("byte", Byte.class);
 		map.put("short", Short.class);
@@ -117,16 +117,16 @@ public class AnnotationReader extends ClassDataCollector {
 	FieldDef												member;
 	TypeRef													className;
 	Analyzer												analyzer;
-	MultiMap<String,Clazz.MethodDef>						methods					= new MultiMap<String,Clazz.MethodDef>();
+	MultiMap<String,Clazz.MethodDef>						methods					= new MultiMap<>();
 	TypeRef													extendsClass;
 	boolean													baseclass				= true;
 	final EnumSet<Options>									options;
 
-	final Map<FieldDef,ReferenceDef>						referencesByMember		= new HashMap<FieldDef,ReferenceDef>();
+	final Map<FieldDef,ReferenceDef>						referencesByMember		= new HashMap<>();
 
 	final XMLAttributeFinder								finder;
 
-	Map<String,List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<String,List<DeclarativeServicesAnnotationError>>();
+	Map<String,List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<>();
 
 	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder, Version minVersion) {
 		this.analyzer = analyzer;
@@ -300,7 +300,7 @@ public class AnnotationReader extends ClassDataCollector {
 		}
 		List<DeclarativeServicesAnnotationError> errors = mismatchedAnnotations.get(fqn);
 		if (errors == null) {
-			errors = new ArrayList<DeclarativeServicesAnnotationError>();
+			errors = new ArrayList<>();
 			mismatchedAnnotations.put(fqn, errors);
 		}
 		errors.add(errorDetails);
@@ -506,7 +506,7 @@ public class AnnotationReader extends ClassDataCollector {
 	private final class ComponentPropertyTypeDataCollector extends ClassDataCollector {
 		private final String								methodDescriptor;
 		private final DeclarativeServicesAnnotationError	details;
-		private final MultiMap<String,String>				props			= new MultiMap<String,String>();
+		private final MultiMap<String,String>				props			= new MultiMap<>();
 		private final Map<String,String>					propertyTypes	= new HashMap<>();
 		private int											hasNoDefault	= 0;
 		private boolean										hasValue		= false;
@@ -1132,7 +1132,7 @@ public class AnnotationReader extends ClassDataCollector {
 			// Use the found interfaces, but convert from internal to
 			// fqn.
 			if (interfaces != null) {
-				List<TypeRef> result = new ArrayList<TypeRef>();
+				List<TypeRef> result = new ArrayList<>();
 				for (int i = 0; i < interfaces.length; i++) {
 					if (!interfaces[i].equals(analyzer.getTypeRef("scala/ScalaObject")))
 						result.add(interfaces[i]);
@@ -1174,7 +1174,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 	private void doProperty(String[] properties) {
 		if (properties != null && properties.length > 0) {
-			MultiMap<String,String> props = new MultiMap<String,String>();
+			MultiMap<String,String> props = new MultiMap<>();
 			for (String p : properties) {
 				Matcher m = PROPERTY_PATTERN.matcher(p);
 

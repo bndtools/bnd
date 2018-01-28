@@ -27,7 +27,7 @@ public class TestForker extends TestCase {
 	}
 
 	public void testSimple() throws InterruptedException {
-		final Forker<Integer> forker = new Forker<Integer>();
+		final Forker<Integer> forker = new Forker<>();
 		final Collection<Integer> result = Collections.synchronizedList(new ArrayList<Integer>());
 
 		forker.doWhen(Arrays.asList(3), 2, new R(result, 2));
@@ -38,7 +38,7 @@ public class TestForker extends TestCase {
 	}
 
 	public void testSimple2() throws InterruptedException {
-		final Forker<Integer> forker = new Forker<Integer>();
+		final Forker<Integer> forker = new Forker<>();
 		final Collection<Integer> result = Collections.synchronizedList(new ArrayList<Integer>());
 
 		forker.doWhen(Arrays.asList(1, 2, 3), 4, new R(result, 4));
@@ -53,7 +53,7 @@ public class TestForker extends TestCase {
 	}
 
 	public void testInvalid() {
-		final Forker<Integer> forker = new Forker<Integer>();
+		final Forker<Integer> forker = new Forker<>();
 		final Collection<Integer> result = Collections.synchronizedList(new ArrayList<Integer>());
 		forker.doWhen(Arrays.asList(1, 2, 3), 4, new R(result, 4));
 		try {
@@ -67,7 +67,7 @@ public class TestForker extends TestCase {
 	}
 
 	public void testCancel() throws InterruptedException {
-		final Forker<Integer> forker = new Forker<Integer>();
+		final Forker<Integer> forker = new Forker<>();
 		final Collection<Integer> result = Collections.synchronizedList(new ArrayList<Integer>());
 
 		forker.doWhen(EMPTY, 4, new Runnable() {

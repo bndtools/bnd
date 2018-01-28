@@ -92,7 +92,7 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "test.activator");
 		String uses = findUses(bmaker, "test.activator");
-		Set<String> usesSet = new HashSet<String>(Arrays.asList(uses.split(",")));
+		Set<String> usesSet = new HashSet<>(Arrays.asList(uses.split(",")));
 		assertTrue(usesSet.contains("org.osgi.service.component"));
 		assertTrue(usesSet.contains("org.osgi.framework"));
 	}

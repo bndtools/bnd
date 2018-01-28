@@ -15,7 +15,7 @@ public class PropertiesConverter implements Converter<Map<String,String>,String>
 
 	@Override
 	public Map<String,String> error(String msg) {
-		HashMap<String,String> result = new HashMap<String,String>();
+		HashMap<String,String> result = new HashMap<>();
 		result.put("ERROR", msg);
 		return result;
 	}

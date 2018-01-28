@@ -158,7 +158,7 @@ public class MavenCommand extends Processor {
 	 * @throws Exception
 	 */
 	private void bundle(String args[], int i) throws Exception {
-		List<String> developers = new ArrayList<String>();
+		List<String> developers = new ArrayList<>();
 		Properties properties = new UTF8Properties();
 
 		String scm = null;
@@ -563,7 +563,7 @@ public class MavenCommand extends Processor {
 	void view(String args[], int i) throws Exception {
 		Maven maven = new Maven(executor);
 
-		List<URI> urls = new ArrayList<URI>();
+		List<URI> urls = new ArrayList<>();
 		Path output = null;
 		while (i < args.length && args[i].startsWith("-")) {
 			if ("-r".equals(args[i])) {
@@ -604,7 +604,7 @@ public class MavenCommand extends Processor {
 						pw.println(a.getClasspath());
 						a.build();
 
-						TreeSet<PackageRef> sorted = new TreeSet<PackageRef>(a.getImports().keySet());
+						TreeSet<PackageRef> sorted = new TreeSet<>(a.getImports().keySet());
 						for (PackageRef p : sorted) {
 							pw.printf("%-40s\n", p);
 						}

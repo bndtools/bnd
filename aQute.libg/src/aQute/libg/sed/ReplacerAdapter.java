@@ -50,7 +50,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	static final Random	random		= new Random();
 	static Pattern		WILDCARD	= Pattern.compile("[*?|[\\\\]\\(\\)]");
 	Domain				domain;
-	List<Object>		targets		= new ArrayList<Object>();
+	List<Object>		targets		= new ArrayList<>();
 	boolean				flattening;
 	File				base		= new File(System.getProperty("user.dir"));
 	Reporter			reporter	= this;
@@ -264,7 +264,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 						if (template != null) {
 							final Domain old = domain;
 							try {
-								final Map<String,String> args = new HashMap<String,String>();
+								final Map<String,String> args = new HashMap<>();
 								for (int i = 0; i < 16; i++) {
 									args.put("" + i, i < parts.length ? parts[i] : "null");
 								}
@@ -279,7 +279,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 									}
 
 								};
-								ExtList<String> args0 = new ExtList<String>(parts);
+								ExtList<String> args0 = new ExtList<>(parts);
 								args0.remove(0);
 								args.put("#", args0.join());
 
@@ -304,7 +304,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	private List<String> getAllKeys() {
-		List<String> l = new ArrayList<String>();
+		List<String> l = new ArrayList<>();
 		Domain source = domain;
 		do {
 			l.addAll(source.getMap().keySet());
@@ -395,11 +395,11 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	public String _uniq(String args[]) {
 		verifyCommand(args, _uniqHelp, null, 1, Integer.MAX_VALUE);
-		Set<String> set = new LinkedHashSet<String>();
+		Set<String> set = new LinkedHashSet<>();
 		for (int i = 1; i < args.length; i++) {
 			set.addAll(ExtList.from(args[i].trim()));
 		}
-		ExtList<String> rsult = new ExtList<String>();
+		ExtList<String> rsult = new ExtList<>();
 		rsult.addAll(set);
 		return rsult.join(",");
 	}
@@ -441,7 +441,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	public String _sort(String args[]) {
 		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);
 
-		ExtList<String> result = new ExtList<String>();
+		ExtList<String> result = new ExtList<>();
 		for (int i = 1; i < args.length; i++) {
 			result.addAll(ExtList.from(args[i]));
 		}
@@ -454,7 +454,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	public String _nsort(String args[]) {
 		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
 
-		ExtList<String> result = new ExtList<String>();
+		ExtList<String> result = new ExtList<>();
 		for (int i = 1; i < args.length; i++) {
 			result.addAll(ExtList.from(args[i]));
 		}
@@ -485,7 +485,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		verifyCommand(args, _joinHelp, null, 1, Integer.MAX_VALUE);
 
-		ExtList<String> result = new ExtList<String>();
+		ExtList<String> result = new ExtList<>();
 		for (int i = 1; i < args.length; i++) {
 			result.addAll(ExtList.from(args[i]));
 		}
@@ -516,7 +516,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		verifyCommand(args, _fmodifiedHelp, null, 2, Integer.MAX_VALUE);
 
 		long time = 0;
-		Collection<String> names = new ExtList<String>();
+		Collection<String> names = new ExtList<>();
 		for (int i = 1; i < args.length; i++) {
 			names.addAll(ExtList.from(args[i]));
 		}
@@ -604,7 +604,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		verifyCommand(args, _toclassnameHelp, null, 2, 2);
 		Collection<String> paths = ExtList.from(args[1]);
 
-		ExtList<String> names = new ExtList<String>(paths.size());
+		ExtList<String> names = new ExtList<>(paths.size());
 		for (String path : paths) {
 			if (path.endsWith(".class")) {
 				String name = path.substring(0, path.length() - 6).replace('/', '.');
@@ -632,7 +632,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			cl = Boolean.valueOf(args[2]);
 
 		ExtList<String> names = ExtList.from(args[1]);
-		ExtList<String> paths = new ExtList<String>(names.size());
+		ExtList<String> paths = new ExtList<>(names.size());
 		for (String name : names) {
 			String path = name.replace('.', '/') + (cl ? ".class" : "");
 			paths.add(path);
@@ -761,14 +761,14 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			throw new IllegalArgumentException(
 					"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
 
-		List<File> files = new ArrayList<File>(new SortedList<File>(dir.listFiles()));
+		List<File> files = new ArrayList<>(new SortedList<>(dir.listFiles()));
 
 		for (int i = 2; i < args.length; i++) {
 			Glob filters = new Glob(args[i]);
 			filters.select(files);
 		}
 
-		ExtList<String> result = new ExtList<String>();
+		ExtList<String> result = new ExtList<>();
 		for (File file : files)
 			result.add(relative ? file.getName() : file.getAbsolutePath().replace(File.separatorChar, '/'));
 
@@ -949,7 +949,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		// do not report unknown macros while flattening
 		flattening = true;
 		try {
-			Map<String,String> flattened = new HashMap<String,String>();
+			Map<String,String> flattened = new HashMap<>();
 			Map<String,String> source = domain.getMap();
 			for (String key : source.keySet()) {
 				if (!key.startsWith("_"))
@@ -974,7 +974,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	}
 
 	public String _path(String args[]) {
-		ExtList<String> list = new ExtList<String>();
+		ExtList<String> list = new ExtList<>();
 		for (int i = 1; i < args.length; i++) {
 			list.addAll(ExtList.from(args[i]));
 		}

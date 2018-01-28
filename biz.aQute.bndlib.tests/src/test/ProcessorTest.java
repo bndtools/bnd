@@ -169,7 +169,7 @@ public class ProcessorTest extends TestCase {
 	}
 
 	private void assertNative(String in, String filter, String... fixup) throws Exception {
-		List<String> split = in == null ? new ArrayList<String>() : Strings.split("\\s*;\\s*", in);
+		List<String> split = in == null ? new ArrayList<>() : Strings.split("\\s*;\\s*", in);
 		split.add(0, "native_capability");
 		try (Processor p = new Processor();) {
 			String s = p._native_capability(split.toArray(new String[0]));

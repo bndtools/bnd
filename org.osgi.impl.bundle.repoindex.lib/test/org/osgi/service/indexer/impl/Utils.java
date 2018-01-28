@@ -50,7 +50,7 @@ public class Utils {
 	}
 
 	public static List<Capability> findCaps(String namespace, Collection<Capability> caps) {
-		List<Capability> result = new ArrayList<Capability>();
+		List<Capability> result = new ArrayList<>();
 
 		for (Capability cap : caps) {
 			if (namespace.equals(cap.getNamespace()))
@@ -61,7 +61,7 @@ public class Utils {
 	}
 
 	public static List<Requirement> findReqs(String namespace, Collection<Requirement> reqs) {
-		List<Requirement> result = new ArrayList<Requirement>();
+		List<Requirement> result = new ArrayList<>();
 
 		for (Requirement req : reqs) {
 			if (namespace.equals(req.getNamespace()))

@@ -33,7 +33,7 @@ public class ExtList<T> extends ArrayList<T> {
 	}
 
 	public static ExtList<String> from(String s, String delimeter) {
-		ExtList<String> result = new ExtList<String>();
+		ExtList<String> result = new ExtList<>();
 		String[] parts = s.split(delimeter);
 		for (String p : parts)
 			result.add(p);

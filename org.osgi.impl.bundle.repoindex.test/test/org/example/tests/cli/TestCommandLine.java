@@ -57,7 +57,7 @@ public class TestCommandLine extends TestCase {
 	}
 
 	private void execute(String[] args, boolean runInTempDir) throws Exception {
-		List<String> cmdLine = new LinkedList<String>();
+		List<String> cmdLine = new LinkedList<>();
 		cmdLine.add("java");
 		// cmdLine.add("-Xdebug
 		// -Xrunjdwp:transport=dt_socket,server=y,address=9001,suspend=y");

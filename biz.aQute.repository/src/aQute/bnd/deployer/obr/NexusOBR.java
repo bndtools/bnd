@@ -139,7 +139,7 @@ public class NexusOBR extends AbstractIndexedRepo {
 	protected List<URI> loadIndexes() throws Exception {
 		List<URI> result;
 		if (nexusRepositoryUrl != null) {
-			result = new ArrayList<URI>();
+			result = new ArrayList<>();
 
 			result.add(new URL(nexusRepositoryUrl + ".meta/obr.xml").toURI());
 		} else {

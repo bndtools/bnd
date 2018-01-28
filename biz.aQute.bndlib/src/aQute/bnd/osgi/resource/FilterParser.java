@@ -19,7 +19,7 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 
 public class FilterParser {
-	final Map<String,Expression> cache = new HashMap<String,FilterParser.Expression>();
+	final Map<String,Expression> cache = new HashMap<>();
 
 	public enum Op {
 		GREATER(">"), GREATER_OR_EQUAL(">="), LESS("<"), LESS_OR_EQUAL("<="), EQUAL("="), NOT_EQUAL("!="), RANGE("..");
@@ -555,7 +555,7 @@ public class FilterParser {
 				return expressions[0].query();
 			}
 
-			List<String> words = new ArrayList<String>();
+			List<String> words = new ArrayList<>();
 			for (Expression e : expressions) {
 				String query = e.query();
 				if (query != null)
@@ -1011,7 +1011,7 @@ public class FilterParser {
 	}
 
 	private List<Expression> parseExprs(Rover rover) {
-		ArrayList<Expression> exprs = new ArrayList<Expression>();
+		ArrayList<Expression> exprs = new ArrayList<>();
 		rover.ws();
 		while (rover.current() == '(') {
 			Expression expr = parse(rover);

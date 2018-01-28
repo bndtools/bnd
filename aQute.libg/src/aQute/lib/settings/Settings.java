@@ -43,7 +43,7 @@ public class Settings implements Map<String,String> {
 		public int					version	= 1;
 		public byte[]				secret;
 		public byte[]				id;
-		public Map<String,String>	map		= new HashMap<String,String>();
+		public Map<String,String>	map		= new HashMap<>();
 	}
 
 	Data			data	= new Data();

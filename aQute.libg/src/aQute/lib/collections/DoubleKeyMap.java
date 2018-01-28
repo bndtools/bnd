@@ -48,7 +48,7 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 
 		Map<K2,V> map = get(key1);
 		if (map == null) {
-			map = new HashMap<K2,V>();
+			map = new HashMap<>();
 			if (valueClass != Object.class) {
 				map = Collections.checkedMap(map, (Class<K2>) k2Class, (Class<V>) valueClass);
 			}

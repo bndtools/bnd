@@ -74,10 +74,10 @@ public class Clazz {
 					try (InputStream in = Clazz.class.getResourceAsStream("profiles-" + this + ".properties")) {
 						p.load(in);
 					}
-					profiles = new HashMap<String,Set<String>>();
+					profiles = new HashMap<>();
 					for (Map.Entry<Object,Object> prop : p.entrySet()) {
 						String list = (String) prop.getValue();
-						Set<String> set = new HashSet<String>();
+						Set<String> set = new HashSet<>();
 						for (String s : list.split("\\s*,\\s*")) {
 							set.add(s);
 						}
@@ -516,7 +516,7 @@ public class Clazz {
 		logger.debug("parseClassFile(): path={} resource={}", path, resource);
 
 		++depth;
-		xref = new HashSet<TypeRef>();
+		xref = new HashSet<>();
 
 		boolean crawl = cd != null; // Crawl the byte code if we have a
 		// collector
@@ -648,7 +648,7 @@ public class Clazz {
 
 		accessx = in.readUnsignedShort(); // access
 		if (Modifier.isPublic(accessx))
-			api = new HashSet<PackageRef>();
+			api = new HashSet<>();
 
 		int this_class = in.readUnsignedShort();
 		className = analyzer.getTypeRef((String) pool[intPool[this_class]]);
@@ -1533,7 +1533,7 @@ public class Clazz {
 			int access_flags) throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
-			annotations = new HashSet<TypeRef>();
+			annotations = new HashSet<>();
 
 		String typeName = (String) pool[type_index];
 		TypeRef typeRef = null;
@@ -1558,7 +1558,7 @@ public class Clazz {
 			Object value = doElementValue(in, member, policy, collect, access_flags);
 			if (collect) {
 				if (elements == null)
-					elements = new LinkedHashMap<String,Object>();
+					elements = new LinkedHashMap<>();
 				elements.put(element, value);
 			}
 		}
@@ -2203,7 +2203,7 @@ public class Clazz {
 
 	public Map<String,Object> getDefaults() throws Exception {
 		if (defaults == null) {
-			defaults = new HashMap<String,Object>();
+			defaults = new HashMap<>();
 
 			class DefaultReader extends ClassDataCollector {
 				@Override

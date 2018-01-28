@@ -102,7 +102,7 @@ public class TestStandaloneLibrary extends TestCase {
 			File osFile = new File(file.replace('/', File.separatorChar));
 			assertTrue(osFile + " does not exist", osFile.isFile());
 
-			Map<String,String> config = new HashMap<String,String>();
+			Map<String,String> config = new HashMap<>();
 			config.put(ResourceIndexer.ROOT_URL, rootURI);
 
 			indexer.indexFragment(Collections.singleton(osFile), writer, config);
@@ -122,7 +122,7 @@ public class TestStandaloneLibrary extends TestCase {
 		File tempDir = createTempDir();
 		File tempFile = copyToTempFile(tempDir, "testdata/01-bsn+version.jar");
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(tempFile), writer, config);
 
@@ -140,7 +140,7 @@ public class TestStandaloneLibrary extends TestCase {
 		File tempDir = createTempDir();
 		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(tempFile), writer, config);
 
@@ -166,7 +166,7 @@ public class TestStandaloneLibrary extends TestCase {
 		File tempDir = createTempDir();
 		File tempFile = copyToTempFile(tempDir, "testdata/org.eclipse.equinox.ds-1.4.0.jar");
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(tempFile), writer, config);
 
@@ -185,7 +185,7 @@ public class TestStandaloneLibrary extends TestCase {
 		File tempDir = createTempDir();
 		File tempFile = copyToTempFile(tempDir, "testdata/jcip-annotations.jar");
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put(ResourceIndexer.ROOT_URL, tempDir.getAbsoluteFile().toURI().toString());
 		indexer.indexFragment(Collections.singleton(tempFile), writer, config);
 

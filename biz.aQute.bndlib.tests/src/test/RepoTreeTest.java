@@ -24,13 +24,13 @@ public class RepoTreeTest extends TestCase {
 
 		when(a.getName()).thenReturn("a");
 		when(a.list(null)).thenReturn(Arrays.asList("a", "b"));
-		when(a.versions("a")).thenReturn(new SortedList<Version>(new Version("1"), new Version("2")));
-		when(a.versions("b")).thenReturn(new SortedList<Version>(new Version("2"), new Version("3")));
+		when(a.versions("a")).thenReturn(new SortedList<>(new Version("1"), new Version("2")));
+		when(a.versions("b")).thenReturn(new SortedList<>(new Version("2"), new Version("3")));
 
 		when(b.getName()).thenReturn("b");
 		when(b.list(null)).thenReturn(Arrays.asList("b", "c"));
-		when(b.versions("b")).thenReturn(new SortedList<Version>(new Version("1"), new Version("2")));
-		when(b.versions("c")).thenReturn(new SortedList<Version>(new Version("2"), new Version("3")));
+		when(b.versions("b")).thenReturn(new SortedList<>(new Version("1"), new Version("2")));
+		when(b.versions("c")).thenReturn(new SortedList<>(new Version("2"), new Version("3")));
 
 		Tree ta = RepositoryElement.getTree(a);
 		Tree tb = RepositoryElement.getTree(b);

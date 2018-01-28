@@ -331,7 +331,7 @@ public class Filter {
 
 	public String verify() throws Exception {
 		try {
-			new DictQuery(new Hashtable<Object,Object>()).match();
+			new DictQuery(new Hashtable<>()).match();
 		} catch (IllegalArgumentException e) {
 			return e.getMessage();
 		}

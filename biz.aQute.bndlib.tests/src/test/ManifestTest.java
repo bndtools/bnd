@@ -205,8 +205,8 @@ public class ManifestTest extends TestCase {
 	}
 
 	public static void testQuotes() throws IOException {
-		Map<String,Map<String,String>> map = new HashMap<String,Map<String,String>>();
-		Map<String,String> clause = new HashMap<String,String>();
+		Map<String,Map<String,String>> map = new HashMap<>();
+		Map<String,String> clause = new HashMap<>();
 		clause.put("version1", "0");
 		clause.put("version2", "0.0");
 		clause.put("version3", "\"0.0\"");

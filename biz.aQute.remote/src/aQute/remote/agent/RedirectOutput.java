@@ -18,7 +18,7 @@ public class RedirectOutput extends PrintStream {
 	private final PrintStream			out;
 	private StringBuilder				sb		= new StringBuilder();
 	private boolean						err;
-	private static ThreadLocal<Boolean>	onStack	= new ThreadLocal<Boolean>();
+	private static ThreadLocal<Boolean>	onStack	= new ThreadLocal<>();
 	private TimerTask					active;
 	private String						lastOutput	= "";
 

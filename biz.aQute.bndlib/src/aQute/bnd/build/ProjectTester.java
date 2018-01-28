@@ -11,7 +11,7 @@ import aQute.lib.io.IO;
 public abstract class ProjectTester {
 	private final Project			project;
 	private final ProjectLauncher	launcher;
-	private final List<String>		tests		= new ArrayList<String>();
+	private final List<String>		tests		= new ArrayList<>();
 	private File					reportDir;
 	private boolean					continuous	= true;
 
@@ -37,7 +37,7 @@ public abstract class ProjectTester {
 	}
 
 	public Collection<File> getReports() {
-		List<File> reports = new ArrayList<File>();
+		List<File> reports = new ArrayList<>();
 		for (File report : reportDir.listFiles()) {
 			if (report.isFile())
 				reports.add(report);

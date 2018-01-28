@@ -128,7 +128,7 @@ public class SubsystemExporter implements Exporter {
 	}
 
 	private List<File> getBundles(Collection<Container> bundles, Processor reporter) throws Exception {
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 
 		for (Container c : bundles) {
 			switch (c.getType()) {

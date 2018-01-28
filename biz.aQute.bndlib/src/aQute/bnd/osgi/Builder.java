@@ -65,7 +65,7 @@ public class Builder extends Analyzer {
 	private static final int		SPLIT_ERROR					= 3;
 	private static final int		SPLIT_FIRST					= 4;
 	private static final int		SPLIT_DEFAULT				= 0;
-	private final List<File>		sourcePath					= new ArrayList<File>();
+	private final List<File>		sourcePath					= new ArrayList<>();
 	private final Make				make						= new Make(this);
 	private Instructions			defaultPreProcessMatcher	= null;
 
@@ -234,7 +234,7 @@ public class Builder extends Analyzer {
 		logger.debug("wab {} {}", wab, wablib);
 		setBundleClasspath(append("WEB-INF/classes", getProperty(BUNDLE_CLASSPATH)));
 
-		Set<String> paths = new HashSet<String>(dot.getResources().keySet());
+		Set<String> paths = new HashSet<>(dot.getResources().keySet());
 
 		for (String path : paths) {
 			if (path.indexOf('/') > 0 && !Character.isUpperCase(path.charAt(0))) {
@@ -539,7 +539,7 @@ public class Builder extends Analyzer {
 
 		// Build an index of the class path that we can then
 		// use destructively
-		MultiMap<String,Jar> packages = new MultiMap<String,Jar>();
+		MultiMap<String,Jar> packages = new MultiMap<>();
 		for (Jar srce : getClasspath()) {
 			dot.updateModified(srce.lastModified, srce + " (" + srce.lastModifiedReason + ")");
 			for (Entry<String,Map<String,Resource>> e : srce.getDirectories().entrySet()) {
@@ -654,7 +654,7 @@ public class Builder extends Analyzer {
 		if (from.isAny())
 			return providers;
 
-		List<Jar> np = new ArrayList<Jar>();
+		List<Jar> np = new ArrayList<>();
 		for (Iterator<Jar> i = providers.iterator(); i.hasNext();) {
 			Jar j = i.next();
 			if (from.matches(j.getName())) {
@@ -965,7 +965,7 @@ public class Builder extends Analyzer {
 
 		String cmd = extra.get("cmd");
 
-		List<String> paths = new ArrayList<String>();
+		List<String> paths = new ArrayList<>();
 
 		for (String item : Processor.split(repeat)) {
 			File f = IO.getFile(item);
@@ -1283,7 +1283,7 @@ public class Builder extends Analyzer {
 			return result;
 		}
 
-		List<Jar> result = new ArrayList<Jar>();
+		List<Jar> result = new ArrayList<>();
 		List<Builder> builders;
 
 		builders = getSubBuilders();
@@ -1326,7 +1326,7 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 	public List<Builder> getSubBuilders() throws Exception {
-		List<Builder> builders = new ArrayList<Builder>();
+		List<Builder> builders = new ArrayList<>();
 		String sub = getProperty(SUB);
 		if (sub == null || sub.trim().length() == 0 || EMPTY_HEADER.equals(sub)) {
 			builders.add(this);
@@ -1347,7 +1347,7 @@ public class Builder extends Analyzer {
 
 		Instructions instructions = new Instructions(subsMap);
 
-		List<File> members = new ArrayList<File>(Arrays.asList(getBase().listFiles()));
+		List<File> members = new ArrayList<>(Arrays.asList(getBase().listFiles()));
 
 		nextFile: while (members.size() > 0) {
 
@@ -1425,7 +1425,7 @@ public class Builder extends Analyzer {
 	 *
 	 */
 	public void removeBundleSpecificHeaders() {
-		Set<String> set = new HashSet<String>(Arrays.asList(BUNDLE_SPECIFIC_HEADERS));
+		Set<String> set = new HashSet<>(Arrays.asList(BUNDLE_SPECIFIC_HEADERS));
 		setForceLocal(set);
 	}
 
@@ -1477,7 +1477,7 @@ public class Builder extends Analyzer {
 	 * Include-Resource header.
 	 */
 	private Collection<String> getIncludedResourcePrefixes() {
-		List<String> prefixes = new ArrayList<String>();
+		List<String> prefixes = new ArrayList<>();
 		Parameters includeResource = getIncludeResource();
 		for (Entry<String,Attrs> p : includeResource.entrySet()) {
 			if (p.getValue().containsKey("literal"))

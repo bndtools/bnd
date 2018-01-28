@@ -27,7 +27,7 @@ public class Z<C> extends X<String> implements Y<Integer> {
 	// Fields
 	public X<Y<C>>				field;
 	public Z<Long>.V<Integer>	referenceToNestedClass;
-	public V<C>					vc	= new V<C>();
+	public V<C>					vc	= new V<>();
 
 	// Methods
 	public <T> void method() {}

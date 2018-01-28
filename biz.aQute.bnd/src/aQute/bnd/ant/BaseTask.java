@@ -26,14 +26,14 @@ public class BaseTask extends Task implements Reporter {
 	private final static Logger	logger			= LoggerFactory.getLogger(BaseTask.class);
 	ReporterAdapter			reporter		= new ReporterAdapter();
 
-	List<String>			errors			= new ArrayList<String>();
-	List<String>			warnings		= new ArrayList<String>();
-	List<String>			progress		= new ArrayList<String>();
+	List<String>			errors			= new ArrayList<>();
+	List<String>			warnings		= new ArrayList<>();
+	List<String>			progress		= new ArrayList<>();
 	boolean					pedantic;
 	boolean					trace;
 	String					onfail;
-	final List<Property>	properties		= new LinkedList<Property>();
-	final List<Property>	workspaceProps	= new LinkedList<Property>();
+	final List<Property>	properties		= new LinkedList<>();
+	final List<Property>	workspaceProps	= new LinkedList<>();
 	final AntMessages		messages		= ReporterMessages.base(this, AntMessages.class);
 	boolean					exceptions;
 
@@ -90,7 +90,7 @@ public class BaseTask extends Task implements Reporter {
 
 	protected List<String> split(String dependsOn, String string) {
 		if (dependsOn == null)
-			return new ArrayList<String>();
+			return new ArrayList<>();
 
 		return Arrays.asList(string.split("\\s*" + string + "\\s*"));
 	}

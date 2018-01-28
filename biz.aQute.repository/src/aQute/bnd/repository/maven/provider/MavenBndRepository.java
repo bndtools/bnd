@@ -452,7 +452,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
-		TreeSet<Version> versions = new TreeSet<Version>();
+		TreeSet<Version> versions = new TreeSet<>();
 
 		for (Version version : index.list(bsn)) {
 			versions.add(version);

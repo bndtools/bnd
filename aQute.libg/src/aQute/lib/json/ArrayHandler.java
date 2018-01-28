@@ -43,7 +43,7 @@ public class ArrayHandler extends Handler {
 
 	@Override
 	public Object decodeArray(Decoder r) throws Exception {
-		ArrayList<Object> list = new ArrayList<Object>();
+		ArrayList<Object> list = new ArrayList<>();
 		r.codec.parseArray(list, componentType, r);
 		Object array = Array.newInstance(r.codec.getRawClass(componentType), list.size());
 		int n = 0;

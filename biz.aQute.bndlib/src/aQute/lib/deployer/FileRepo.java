@@ -235,7 +235,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	private static final String				LATEST_POSTFIX		= "-" + Constants.VERSION_ATTR_LATEST + ".jar";
 	public static final Version				LATEST_VERSION		= new Version(MAX_MAJOR, 0, 0);
-	private static final SortedSet<Version>	LATEST_SET			= new TreeSet<Version>(
+	private static final SortedSet<Version>	LATEST_SET			= new TreeSet<>(
 			Collections.singleton(LATEST_VERSION));
 
 	final static JSONCodec					codec				= new JSONCodec();
@@ -305,7 +305,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		}
 
 		if (hasIndex)
-			index = new PersistentMap<ResourceDescriptor>(new File(root, ".index"), ResourceDescriptor.class);
+			index = new PersistentMap<>(new File(root, ".index"), ResourceDescriptor.class);
 
 		open();
 		return true;
@@ -509,7 +509,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (regex != null)
 			pattern = new Instruction(regex);
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		if (root == null) {
 			if (reporter != null)
 				reporter.error("FileRepo root directory is not set.");
@@ -538,7 +538,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		boolean latest = false;
 		if (dir.isDirectory()) {
 			String versions[] = dir.list();
-			List<Version> list = new ArrayList<Version>();
+			List<Version> list = new ArrayList<>();
 			for (String v : versions) {
 				Matcher m = REPO_FILE.matcher(v);
 				if (m.matches()) {
@@ -552,7 +552,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (list.isEmpty() && latest)
 				return LATEST_SET;
 			else
-				return new SortedList<Version>(list);
+				return new SortedList<>(list);
 		}
 		return SortedList.empty();
 	}
@@ -613,7 +613,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	public Map<String,Runnable> actions(Object... target) throws Exception {
 		if (target == null || target.length == 0) {
-			Map<String,Runnable> actions = new LinkedHashMap<String,Runnable>();
+			Map<String,Runnable> actions = new LinkedHashMap<>();
 			actions.put("Rebuild Resource Index", new Runnable() {
 
 				public void run() {
@@ -635,7 +635,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (f == null)
 				return null;
 
-			Map<String,Runnable> actions = new HashMap<String,Runnable>();
+			Map<String,Runnable> actions = new HashMap<>();
 			actions.put("Delete " + bsn + "-" + status(bsn, version), new Runnable() {
 				public void run() {
 					IO.delete(f);
@@ -949,7 +949,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public SortedSet<ResourceDescriptor> getResources() throws Exception {
 		init();
 		if (hasIndex) {
-			TreeSet<ResourceDescriptor> resources = new TreeSet<ResourceDescriptor>(
+			TreeSet<ResourceDescriptor> resources = new TreeSet<>(
 					new Comparator<ResourceDescriptor>() {
 
 						public int compare(ResourceDescriptor a, ResourceDescriptor b) {

@@ -107,7 +107,7 @@ public class Strings {
 			return Collections.emptyList();
 
 		String[] split = s.split(regex);
-		List<String> l = new ArrayList<String>(split.length);
+		List<String> l = new ArrayList<>(split.length);
 		for (int i = 0; i < split.length; i++)
 			l.add(split[i]);
 		return l;

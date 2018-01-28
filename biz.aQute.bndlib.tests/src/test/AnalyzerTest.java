@@ -429,9 +429,9 @@ public class AnalyzerTest extends BndTestCase {
 			a.analyze();
 
 			String result = a._classes("cmd", "named", "org.osgi.service.http.*", "abstract");
-			TreeSet<String> r = new TreeSet<String>(Processor.split(result));
+			TreeSet<String> r = new TreeSet<>(Processor.split(result));
 			assertEquals(
-					new TreeSet<String>(
+					new TreeSet<>(
 							Arrays.asList("org.osgi.service.http.HttpContext", "org.osgi.service.http.HttpService")),
 					r);
 		}
@@ -1118,7 +1118,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	static void assertNotPresent(Collection< ? > map, String string) {
-		Collection<String> ss = new HashSet<String>();
+		Collection<String> ss = new HashSet<>();
 		for (Object o : map)
 			ss.add(o + "");
 
@@ -1130,7 +1130,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	static void assertPresent(Collection< ? > map, String string) {
-		Collection<String> ss = new HashSet<String>();
+		Collection<String> ss = new HashSet<>();
 		for (Object o : map)
 			ss.add(o + "");
 
