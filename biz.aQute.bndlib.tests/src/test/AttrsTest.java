@@ -50,9 +50,7 @@ public class AttrsTest extends TestCase {
 		assertEquals("List<Version>", attr.getType("versions").toString());
 		assertEquals(new Version("1.2.3"), attr.getTyped("version"));
 		Object a = attr.getTyped("versions");
-		List<Version> b = Arrays.asList(new Version[] {
-				new Version("1.2.3"), new Version("2.1.0")
-		});
+		List<Version> b = Arrays.asList(new Version("1.2.3"), new Version("2.1.0"));
 		assertEquals(a.toString(), b.toString());
 		assertEquals("1.2.3", attr.get("version"));
 		assertEquals("1.2.3,2.1.0", attr.get("versions"));

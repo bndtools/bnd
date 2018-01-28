@@ -264,9 +264,7 @@ public class BndrunResolveContextTest extends TestCase {
 		BndEditModel runModel;
 
 		runModel = new BndEditModel();
-		runModel.setRunRepos(Arrays.asList(new String[] {
-				getName() + "2", getName() + "1"
-		}));
+		runModel.setRunRepos(Arrays.asList(getName() + "2", getName() + "1"));
 
 		context = new BndrunResolveContext(runModel, registry, log);
 		providers = context.findProviders(req);

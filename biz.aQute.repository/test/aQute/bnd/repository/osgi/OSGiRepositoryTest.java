@@ -167,7 +167,7 @@ public class OSGiRepositoryTest extends TestCase {
 			});
 			File file = r.get("dummybundle", new Version("0"), null);
 			assertNotNull(file);
-			assertNull(r.title(new Object[0])); // not stale, default name
+			assertNull(r.title()); // not stale, default name
 
 			System.out.println("1");
 			Thread.sleep(3000);
@@ -186,8 +186,8 @@ public class OSGiRepositoryTest extends TestCase {
 			System.out.println("6");
 
 			assertEquals(r, refreshed.get());
-			assertEquals("test [stale]", r.title(new Object[0]));
-			System.out.println(r.tooltip(new Object[0]));
+			assertEquals("test [stale]", r.title());
+			System.out.println(r.tooltip());
 		}
 	}
 
@@ -258,8 +258,8 @@ public class OSGiRepositoryTest extends TestCase {
 			System.out.println("3 ");
 
 			assertEquals(r, refreshed.get());
-			assertEquals("test [stale]", r.title(new Object[0]));
-			System.out.println(r.tooltip(new Object[0]));
+			assertEquals("test [stale]", r.title());
+			System.out.println(r.tooltip());
 		}
 	}
 	public void testBndRepo() throws Exception {

@@ -364,9 +364,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		else {
 			String cname = "_" + method.replaceAll("-", "_");
 			try {
-				Method m = target.getClass().getMethod(cname, new Class[] {
-						String[].class
-				});
+				Method m = target.getClass().getMethod(cname, String[].class);
 				return "" + m.invoke(target, new Object[] {
 						args
 				});

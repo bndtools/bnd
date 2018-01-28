@@ -42,9 +42,7 @@ public class EmbeddedLauncher {
 
 				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]), cl)) {
 					Class< ? > embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
-					Method method = embeddedLauncher.getMethod("main", new Class< ? >[] {
-							String[].class
-					});
+					Method method = embeddedLauncher.getMethod("main", String[].class);
 					method.invoke(null, new Object[] {
 							args
 					});

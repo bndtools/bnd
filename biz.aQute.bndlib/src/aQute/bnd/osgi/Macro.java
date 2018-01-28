@@ -339,9 +339,7 @@ public class Macro {
 
 			String cname = "_" + part;
 			try {
-				Method m = target.getClass().getMethod(cname, new Class[] {
-						String[].class
-				});
+				Method m = target.getClass().getMethod(cname, String[].class);
 				Object result = m.invoke(target, new Object[] {
 						args
 				});
