@@ -648,14 +648,14 @@ public class Analyzer extends Processor {
 						break;
 					case "aQute.bnd.annotation.Export" :
 						// Check mandatory attributes
-						Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz, getReplacer());
+						Attrs attrs = doAttrbutes(a.get(Export.MANDATORY), clazz, getReplacer());
 						if (!attrs.isEmpty()) {
 							info.putAll(attrs);
 							info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
 						}
 
 						// Check optional attributes
-						attrs = doAttrbutes((Object[]) a.get(Export.OPTIONAL), clazz, getReplacer());
+						attrs = doAttrbutes(a.get(Export.OPTIONAL), clazz, getReplacer());
 						if (!attrs.isEmpty()) {
 							info.putAll(attrs);
 						}

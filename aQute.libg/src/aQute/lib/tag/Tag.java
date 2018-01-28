@@ -310,7 +310,7 @@ public class Tag {
 	 * root/preferences/native/os
 	 */
 	public Collection<Tag> select(String path) {
-		return select(path, (Tag) null);
+		return select(path, null);
 	}
 
 	public Collection<Tag> select(String path, Tag mapping) {

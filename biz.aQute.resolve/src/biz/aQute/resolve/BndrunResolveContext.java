@@ -399,7 +399,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		if (!augments.isEmpty()) {
 			AggregateRepository aggregate = new AggregateRepository(orderedRepositories);
 			AugmentRepository augment = new AugmentRepository(augments, aggregate);
-			orderedRepositories = Collections.singleton((Repository) augment);
+			orderedRepositories = Collections.singleton(augment);
 		}
 
 		for (Repository repository : orderedRepositories) {

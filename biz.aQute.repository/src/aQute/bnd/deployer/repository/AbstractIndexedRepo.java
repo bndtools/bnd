@@ -216,7 +216,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 						URI indexLocation = new URI(referral.getUrl());
 						try {
 							CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation,
-									getCacheDirectory(), connector, (String) null);
+									getCacheDirectory(), connector, null);
 							indexHandle.setReporter(reporter);
 							InputStream indexStream = GZipUtils
 									.detectCompression(IO.stream(indexHandle.request()));
@@ -239,7 +239,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			for (URI indexLocation : indexLocations) {
 				try {
 					CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation,
-							getCacheDirectory(), connector, (String) null);
+							getCacheDirectory(), connector, null);
 					// If there is a cachedFile, then just use it IF
 					// 1) the cachedFile is within the timeout period
 					// OR 2) online is false
