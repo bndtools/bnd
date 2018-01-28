@@ -12,6 +12,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -150,9 +151,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 				}
 			}
 		} else if (certificateChain != null) {
-			for (X509Certificate cert : certificateChain) {
-				certificates.add(cert);
-			}
+			Collections.addAll(certificates, certificateChain);
 		}
 		return certificates;
 	}

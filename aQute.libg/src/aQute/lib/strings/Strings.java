@@ -108,8 +108,7 @@ public class Strings {
 
 		String[] split = s.split(regex);
 		List<String> l = new ArrayList<>(split.length);
-		for (int i = 0; i < split.length; i++)
-			l.add(split[i]);
+		Collections.addAll(l, split);
 		return l;
 	}
 

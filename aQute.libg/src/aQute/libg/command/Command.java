@@ -9,6 +9,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -209,8 +210,7 @@ public class Command {
 	}
 
 	public void add(String... args) {
-		for (String arg : args)
-			arguments.add(arg);
+		Collections.addAll(arguments, args);
 	}
 
 	public void addAll(Collection<String> args) {

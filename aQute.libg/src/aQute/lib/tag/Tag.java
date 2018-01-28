@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.LinkedHashMap;
@@ -37,8 +38,7 @@ public class Tag {
 	 */
 	public Tag(String name, Object... contents) {
 		this.name = name;
-		for (Object c : contents)
-			content.add(c);
+		Collections.addAll(content, contents);
 	}
 
 	public Tag(Tag parent, String name, Object... contents) {

@@ -165,8 +165,7 @@ public abstract class BaseRepository implements Repository {
 				exprs = new ArrayList<>();
 				exprs.add(expr1);
 				exprs.add(expr2);
-				for (int i = 0; i < moreExprs.length; i++)
-					exprs.add(moreExprs[i]);
+				Collections.addAll(exprs, moreExprs);
 
 				return Collections.unmodifiableList(exprs);
 			}

@@ -78,9 +78,7 @@ public class Clazz {
 					for (Map.Entry<Object,Object> prop : p.entrySet()) {
 						String list = (String) prop.getValue();
 						Set<String> set = new HashSet<>();
-						for (String s : list.split("\\s*,\\s*")) {
-							set.add(s);
-						}
+						Collections.addAll(set, list.split("\\s*,\\s*"));
 						profiles.put((String) prop.getKey(), set);
 					}
 				}
