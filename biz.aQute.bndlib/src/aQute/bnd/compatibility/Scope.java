@@ -144,12 +144,7 @@ public class Scope {
 	}
 
 	public void cleanRoot() {
-		Iterator<Map.Entry<String,Scope>> i = children.entrySet().iterator();
-		while (i.hasNext()) {
-			Map.Entry<String,Scope> entry = i.next();
-			if (!entry.getValue().isTop())
-				i.remove();
-		}
+		children.entrySet().removeIf(entry -> !entry.getValue().isTop());
 	}
 
 	public void prune(EnumSet<Access> level) {

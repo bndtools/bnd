@@ -284,10 +284,7 @@ public class Analyzer extends Processor {
 				removeDynamicImports(referredAndExported);
 
 				// Remove any Java references ... where are the closures???
-				for (Iterator<PackageRef> i = referredAndExported.keySet().iterator(); i.hasNext();) {
-					if (i.next().isJava())
-						i.remove();
-				}
+				referredAndExported.keySet().removeIf(PackageRef::isJava);
 
 				Set<Instruction> unused = Create.set();
 				String h = getProperty(IMPORT_PACKAGE);
@@ -3221,10 +3218,7 @@ public class Analyzer extends Processor {
 			if (!removeJava)
 				continue;
 
-			for (Iterator<PackageRef> i = e.getValue().iterator(); i.hasNext();) {
-				if (i.next().isJava())
-					i.remove();
-			}
+			e.getValue().removeIf(PackageRef::isJava);
 		}
 		return map;
 	}

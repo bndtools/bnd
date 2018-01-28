@@ -429,10 +429,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		ExtList<String> list = ExtList.from(args[1]);
 		Pattern pattern = Pattern.compile(args[2]);
 
-		for (Iterator<String> i = list.iterator(); i.hasNext();) {
-			if (pattern.matcher(i.next()).matches() == include)
-				i.remove();
-		}
+		list.removeIf(s -> pattern.matcher(s).matches() == include);
 		return list.join();
 	}
 

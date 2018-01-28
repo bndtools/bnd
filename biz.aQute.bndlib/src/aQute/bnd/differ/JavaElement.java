@@ -176,12 +176,7 @@ class JavaElement {
 
 		for (Map.Entry<PackageRef,List<Element>> entry : packages.entrySet()) {
 			List<Element> set = entry.getValue();
-			for (Iterator<Element> i = set.iterator(); i.hasNext();) {
-
-				if (notAccessible.contains(analyzer.getTypeRefFromFQN(i.next().getName())))
-					i.remove();
-
-			}
+			set.removeIf(element -> notAccessible.contains(analyzer.getTypeRefFromFQN(element.getName())));
 			String version = exports.get(entry.getKey()).get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {
 				Version v = new Version(version);

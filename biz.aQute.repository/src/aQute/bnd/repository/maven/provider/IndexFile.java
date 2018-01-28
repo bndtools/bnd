@@ -138,10 +138,7 @@ class IndexFile {
 	}
 
 	public void remove(String bsn) throws Exception {
-		for (Iterator<BundleDescriptor> bd = descriptors.values().iterator(); bd.hasNext();) {
-			if (isBsn(bsn, bd.next()))
-				bd.remove();
-		}
+		descriptors.values().removeIf(bundleDescriptor -> isBsn(bsn, bundleDescriptor));
 		saveIndexFile();
 	}
 

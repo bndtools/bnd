@@ -310,12 +310,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 		Collection<Capability> caps = map.get(requirement);
 
-		for (Iterator<Capability> c = caps.iterator(); c.hasNext();) {
-			Capability capability = c.next();
-
-			if (blacklistedResources.contains(capability.getResource()))
-				c.remove();
-		}
+		caps.removeIf(capability -> blacklistedResources.contains(capability.getResource()));
 		return caps;
 	}
 

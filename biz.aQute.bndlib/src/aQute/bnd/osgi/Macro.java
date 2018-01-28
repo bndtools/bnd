@@ -412,10 +412,7 @@ public class Macro {
 		Collection<String> list = toCollection(args[1]);
 		Pattern pattern = Pattern.compile(args[2]);
 
-		for (Iterator<String> i = list.iterator(); i.hasNext();) {
-			if (pattern.matcher(i.next()).matches() == include)
-				i.remove();
-		}
+		list.removeIf(s -> pattern.matcher(s).matches() == include);
 		return Processor.join(list);
 	}
 

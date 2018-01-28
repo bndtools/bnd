@@ -93,12 +93,7 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 
 	public void setSvcRefs(List< ? extends ComponentSvcReference> refs) {
 		// First remove all existing references, i.e. non-directives
-		for (Iterator<String> iter = attribs.keySet().iterator(); iter.hasNext();) {
-			String name = iter.next();
-			if (!name.endsWith(":")) {
-				iter.remove();
-			}
-		}
+		attribs.keySet().removeIf(name -> !name.endsWith(":"));
 
 		// Add in the references
 		Set<String> dynamic = new HashSet<>();

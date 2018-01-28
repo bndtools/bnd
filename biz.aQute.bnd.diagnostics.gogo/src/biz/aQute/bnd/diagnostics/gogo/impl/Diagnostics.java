@@ -215,12 +215,7 @@ public class Diagnostics {
 		}
 
 		Set<Export> s = new HashSet<>(map.values());
-		for (Iterator<Export> i = s.iterator(); i.hasNext();) {
-			Export e = i.next();
-			if (e.exporters.size() == 1 && e.privates.isEmpty()) {
-				i.remove();
-			}
-		}
+		s.removeIf(e -> e.exporters.size() == 1 && e.privates.isEmpty());
 		return s;
 	}
 

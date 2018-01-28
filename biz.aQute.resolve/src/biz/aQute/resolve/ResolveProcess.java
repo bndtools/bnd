@@ -400,11 +400,7 @@ public class ResolveProcess {
 
 	private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap,
 			AbstractResolveContext rc) {
-		for (Iterator<Resource> iter = resourceMap.keySet().iterator(); iter.hasNext();) {
-			Resource resource = iter.next();
-			if (rc.isSystemResource(resource))
-				iter.remove();
-		}
+		resourceMap.keySet().removeIf(rc::isSystemResource);
 	}
 
 	/**
