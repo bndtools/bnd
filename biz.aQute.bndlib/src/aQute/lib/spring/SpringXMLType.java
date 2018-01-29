@@ -20,7 +20,7 @@ public class SpringXMLType extends XMLTypeProcessor {
 
 	@Override
 	protected List<XMLType> getTypes(Analyzer analyzer) throws Exception {
-		List<XMLType> types = new ArrayList<XMLType>();
+		List<XMLType> types = new ArrayList<>();
 
 		String header = analyzer.getProperty(Constants.BUNDLE_BLUEPRINT, "OSGI-INF/blueprint");
 		process(types, "extract.xsl", header, ".*\\.xml");

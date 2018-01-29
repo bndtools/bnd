@@ -92,7 +92,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	private final ReporterLogger					log			= new ReporterLogger(0);
 	private final Resolver							resolver	= new BndResolver(new ReporterLogger(0));
 	private final ResolveProcess					resolve		= new ResolveProcess();
-	private final Collection<ResolutionCallback>	cbs			= new ArrayList<ResolutionCallback>();
+	private final Collection<ResolutionCallback>	cbs			= new ArrayList<>();
 
 	public ProjectResolver(Project project) {
 		super(project);
@@ -121,7 +121,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 			resolution = resolve();
 		}
 
-		List<Container> containers = new ArrayList<Container>();
+		List<Container> containers = new ArrayList<>();
 		for (Resource r : resolution.keySet()) {
 			IdentityCapability identity = ResourceUtils.getIdentityCapability(r);
 			if (identity == null) {

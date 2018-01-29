@@ -29,7 +29,7 @@ public class Index implements Iterable<byte[]> {
 	final int							valueSize	= 8;
 	final int							capacity;
 	public Page							root;
-	final LinkedHashMap<Integer,Page>	cache		= new LinkedHashMap<Integer,Index.Page>();
+	final LinkedHashMap<Integer,Page>	cache		= new LinkedHashMap<>();
 	final MappedByteBuffer				settings;
 
 	private int							nextPage;

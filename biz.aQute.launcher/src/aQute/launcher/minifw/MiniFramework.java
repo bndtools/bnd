@@ -33,7 +33,7 @@ import org.osgi.framework.launch.Framework;
 public class MiniFramework implements Framework, Bundle, BundleContext {
 	ClassLoader			loader;
 	Properties			properties;
-	Map<Long,Bundle>	bundles	= new HashMap<Long,Bundle>();
+	Map<Long,Bundle>	bundles	= new HashMap<>();
 	int					ID		= 0;
 	int					state	= Bundle.INSTALLED;
 	ClassLoader			last;
@@ -90,7 +90,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public Dictionary<String,String> getHeaders() {
-		return new Hashtable<String,String>();
+		return new Hashtable<>();
 	}
 
 	@Override

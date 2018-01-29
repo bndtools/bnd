@@ -73,7 +73,7 @@ public class Profiles extends Processor {
 		Parameters packages = new Parameters();
 		Parameters capabilities = new Parameters();
 
-		Collection<String> paths = new ArrayList<String>(new Parameters(b.getProperty("-paths"), bnd).keySet());
+		Collection<String> paths = new ArrayList<>(new Parameters(b.getProperty("-paths"), bnd).keySet());
 		if (paths.isEmpty())
 			paths = options._arguments();
 

@@ -134,7 +134,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 	}
 
 	void assertNames(List<Capability> providers, String... ids) {
-		Set<String> resourceNames = new HashSet<String>();
+		Set<String> resourceNames = new HashSet<>();
 		for (Capability cap : providers) {
 			resourceNames.add(cap.getResource()
 					.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE)
@@ -144,7 +144,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 					.toString());
 		}
 
-		Set<String> expectedResourceNames = new HashSet<String>(Arrays.asList(ids));
+		Set<String> expectedResourceNames = new HashSet<>(Arrays.asList(ids));
 
 		assertEquals(expectedResourceNames, resourceNames);
 	}

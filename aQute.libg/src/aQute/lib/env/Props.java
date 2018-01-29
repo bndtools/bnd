@@ -48,7 +48,7 @@ public class Props implements Map<String,String> {
 		if (map == null)
 			return false;
 
-		return map.containsKey((String) name);
+		return map.containsKey(name);
 	}
 
 	public boolean containsValue(String value) {
@@ -65,7 +65,7 @@ public class Props implements Map<String,String> {
 		if (map == null)
 			return false;
 
-		return map.containsValue((String) value);
+		return map.containsValue(value);
 	}
 
 	public Set<java.util.Map.Entry<String,String>> entrySet() {
@@ -82,7 +82,7 @@ public class Props implements Map<String,String> {
 		if (map == null)
 			return null;
 
-		return map.get((String) key);
+		return map.get(key);
 	}
 
 	public String get(String key) {
@@ -115,7 +115,7 @@ public class Props implements Map<String,String> {
 			return null;
 
 		if (map == null)
-			map = new LinkedHashMap<String,String>();
+			map = new LinkedHashMap<>();
 
 		return map.put(key, value);
 	}
@@ -132,7 +132,7 @@ public class Props implements Map<String,String> {
 		if (map == null)
 			return null;
 
-		return map.remove((String) var0);
+		return map.remove(var0);
 	}
 
 	public String remove(String var0) {
@@ -204,8 +204,8 @@ public class Props implements Map<String,String> {
 		if (isEmpty())
 			return true;
 
-		SortedList<String> l = new SortedList<String>(keySet());
-		SortedList<String> lo = new SortedList<String>(other.keySet());
+		SortedList<String> l = new SortedList<>(keySet());
+		SortedList<String> lo = new SortedList<>(other.keySet());
 		if (!l.isEqual(lo))
 			return false;
 

@@ -117,7 +117,7 @@ public class Util {
 
 		QuotedTokenizer tokenizer = new QuotedTokenizer(value, ",");
 		String[] tokens = tokenizer.getTokens();
-		List<Object> result = new ArrayList<Object>(tokens.length);
+		List<Object> result = new ArrayList<>(tokens.length);
 		for (String token : tokens)
 			result.add(parseScalarValue(token, typeStr));
 
@@ -227,7 +227,7 @@ public class Util {
 		if (children == null)
 			return Collections.emptyList();
 
-		List<String> result = new ArrayList<String>(children.size());
+		List<String> result = new ArrayList<>(children.size());
 
 		for (String child : children) {
 			if (pattern.matcher(child).matches())

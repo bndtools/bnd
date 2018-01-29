@@ -53,7 +53,7 @@ public class LinkTest extends TestCase {
 		Link<Local,Remote> link;
 
 		public LocalImpl(Class<Remote> type, InputStream in, OutputStream out) {
-			link = new Link<Local,Remote>(type, this, in, out);
+			link = new Link<>(type, this, in, out);
 		}
 
 		public int bar() {
@@ -78,7 +78,7 @@ public class LinkTest extends TestCase {
 		Link<Remote,Local> link;
 
 		public RemoteImpl(Class<Local> type, InputStream in, OutputStream out) {
-			link = new Link<Remote,Local>(type, this, in, out);
+			link = new Link<>(type, this, in, out);
 		}
 
 		public int foo() {

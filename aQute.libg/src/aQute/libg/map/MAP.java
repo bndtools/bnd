@@ -25,18 +25,18 @@ public class MAP {
 		}
 
 		public Hashtable<K,V> asHashtable() {
-			return new Hashtable<K,V>(this);
+			return new Hashtable<>(this);
 		}
 	}
 
 	public static <Kx, Vx> MAPX<Kx,Vx> $(Kx key, Vx value) {
-		MAPX<Kx,Vx> map = new MAPX<Kx,Vx>();
+		MAPX<Kx,Vx> map = new MAPX<>();
 		map.put(key, value);
 		return map;
 	}
 
 	public <K, V> Map<K,V> dictionary(Dictionary<K,V> dict) {
-		Map<K,V> map = new LinkedHashMap<K,V>();
+		Map<K,V> map = new LinkedHashMap<>();
 		for (Enumeration<K> e = dict.keys(); e.hasMoreElements();) {
 			K k = e.nextElement();
 			V v = dict.get(k);

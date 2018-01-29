@@ -34,7 +34,7 @@ import aQute.lib.tag.Tag;
 public class HeaderReader extends Processor {
 	final static Pattern				PROPERTY_PATTERN	= Pattern
 			.compile("(([^=:@]+)([:@](Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
-	private final static Set<String>	LIFECYCLE_METHODS	= new HashSet<String>(
+	private final static Set<String>	LIFECYCLE_METHODS	= new HashSet<>(
 			Arrays.asList("activate", "deactivate", "modified"));
 
 	private final Analyzer				analyzer;
@@ -43,9 +43,9 @@ public class HeaderReader extends Processor {
 	private final static String			BundleContextTR		= "org.osgi.framework.BundleContext";
 	private final static String			MapTR				= Map.class.getName();
 	private final static String			IntTR				= int.class.getName();
-	final static Set<String>			allowed				= new HashSet<String>(
+	final static Set<String>			allowed				= new HashSet<>(
 			Arrays.asList(ComponentContextTR, BundleContextTR, MapTR));
-	final static Set<String>			allowedDeactivate	= new HashSet<String>(
+	final static Set<String>			allowedDeactivate	= new HashSet<>(
 			Arrays.asList(ComponentContextTR, BundleContextTR, MapTR, IntTR));
 
 	private final static String			ServiceReferenceTR	= "org.osgi.framework.ServiceReference";
@@ -87,8 +87,8 @@ public class HeaderReader extends Processor {
 		}
 
 		// analyze the class for suitable methods.
-		final Map<String,MethodDef> lifecycleMethods = new HashMap<String,MethodDef>();
-		final Map<String,MethodDef> bindmethods = new HashMap<String,MethodDef>();
+		final Map<String,MethodDef> lifecycleMethods = new HashMap<>();
+		final Map<String,MethodDef> bindmethods = new HashMap<>();
 		TypeRef typeRef = analyzer.getTypeRefFromFQN(impl);
 		Clazz clazz = analyzer.findClass(typeRef);
 		boolean privateAllowed = true;
@@ -97,8 +97,8 @@ public class HeaderReader extends Processor {
 		while (clazz != null) {
 			final boolean pa = privateAllowed;
 			final boolean da = defaultAllowed;
-			final Map<String,MethodDef> classLifecyclemethods = new HashMap<String,MethodDef>();
-			final Map<String,MethodDef> classBindmethods = new HashMap<String,MethodDef>();
+			final Map<String,MethodDef> classLifecyclemethods = new HashMap<>();
+			final Map<String,MethodDef> classBindmethods = new HashMap<>();
 
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 
@@ -285,7 +285,7 @@ public class HeaderReader extends Processor {
 	void provide(ComponentDef cd, String provides, String impl) {
 		if (provides != null) {
 			StringTokenizer st = new StringTokenizer(provides, ",");
-			List<TypeRef> provide = new ArrayList<TypeRef>();
+			List<TypeRef> provide = new ArrayList<>();
 			while (st.hasMoreTokens()) {
 				String interfaceName = st.nextToken();
 				TypeRef ref = analyzer.getTypeRefFromFQN(interfaceName);
@@ -357,10 +357,10 @@ public class HeaderReader extends Processor {
 	 */
 	void reference(Map<String,String> info, String impl, ComponentDef cd, Map<String,MethodDef> descriptors)
 			throws Exception {
-		Collection<String> dynamic = new ArrayList<String>(split(info.get(COMPONENT_DYNAMIC)));
-		Collection<String> optional = new ArrayList<String>(split(info.get(COMPONENT_OPTIONAL)));
-		Collection<String> multiple = new ArrayList<String>(split(info.get(COMPONENT_MULTIPLE)));
-		Collection<String> greedy = new ArrayList<String>(split(info.get(COMPONENT_GREEDY)));
+		Collection<String> dynamic = new ArrayList<>(split(info.get(COMPONENT_DYNAMIC)));
+		Collection<String> optional = new ArrayList<>(split(info.get(COMPONENT_OPTIONAL)));
+		Collection<String> multiple = new ArrayList<>(split(info.get(COMPONENT_MULTIPLE)));
+		Collection<String> greedy = new ArrayList<>(split(info.get(COMPONENT_GREEDY)));
 
 		for (Map.Entry<String,String> entry : info.entrySet()) {
 

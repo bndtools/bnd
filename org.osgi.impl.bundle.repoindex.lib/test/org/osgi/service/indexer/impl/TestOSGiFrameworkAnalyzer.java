@@ -15,8 +15,8 @@ import junit.framework.TestCase;
 public class TestOSGiFrameworkAnalyzer extends TestCase {
 
 	public void testOsgiFramework() throws Exception {
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		JarResource input = new JarResource(new File("testdata/org.apache.felix.framework-4.0.2.jar"));
 		new BundleAnalyzer(new XNullLogSvc()).analyzeResource(input, caps, reqs);
@@ -38,29 +38,29 @@ public class TestOSGiFrameworkAnalyzer extends TestCase {
 		LinkedList<Capability> caps;
 		LinkedList<Requirement> reqs;
 
-		caps = new LinkedList<Capability>();
-		reqs = new LinkedList<Requirement>();
+		caps = new LinkedList<>();
+		reqs = new LinkedList<>();
 		JarResource inputResource = new JarResource(new File("testdata/org.apache.felix.framework-4.0.2.jar"));
 		new BundleAnalyzer(new XNullLogSvc()).analyzeResource(inputResource, caps, reqs);
 		new OSGiFrameworkAnalyzer(new XNullLogSvc()).analyzeResource(inputResource, caps, reqs);
 		assertEquals(new Version("4.3.0"), findCaps("osgi.contract", caps).get(0).getAttributes().get("version"));
 
-		caps = new LinkedList<Capability>();
-		reqs = new LinkedList<Requirement>();
+		caps = new LinkedList<>();
+		reqs = new LinkedList<>();
 		inputResource = new JarResource(new File("testdata/org.eclipse.osgi_3.7.2.v20120110-1415.jar"));
 		new BundleAnalyzer(new XNullLogSvc()).analyzeResource(inputResource, caps, reqs);
 		new OSGiFrameworkAnalyzer(new XNullLogSvc()).analyzeResource(inputResource, caps, reqs);
 		assertEquals(new Version("4.3.0"), findCaps("osgi.contract", caps).get(0).getAttributes().get("version"));
 
-		caps = new LinkedList<Capability>();
-		reqs = new LinkedList<Requirement>();
+		caps = new LinkedList<>();
+		reqs = new LinkedList<>();
 		inputResource = new JarResource(new File("testdata/org.apache.felix.framework-3.2.2.jar"));
 		new BundleAnalyzer(new XNullLogSvc()).analyzeResource(inputResource, caps, reqs);
 		new OSGiFrameworkAnalyzer(new XNullLogSvc()).analyzeResource(inputResource, caps, reqs);
 		assertEquals(new Version("4.2.0"), findCaps("osgi.contract", caps).get(0).getAttributes().get("version"));
 
-		caps = new LinkedList<Capability>();
-		reqs = new LinkedList<Requirement>();
+		caps = new LinkedList<>();
+		reqs = new LinkedList<>();
 		inputResource = new JarResource(new File("testdata/org.eclipse.osgi_3.6.2.R36x_v20110210.jar"));
 		new BundleAnalyzer(new XNullLogSvc()).analyzeResource(inputResource, caps, reqs);
 		new OSGiFrameworkAnalyzer(new XNullLogSvc()).analyzeResource(inputResource, caps, reqs);
@@ -70,8 +70,8 @@ public class TestOSGiFrameworkAnalyzer extends TestCase {
 
 	public void testNonOsgiFramework() throws Exception {
 		OSGiFrameworkAnalyzer a = new OSGiFrameworkAnalyzer(new XNullLogSvc());
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		a.analyzeResource(new JarResource(new File("testdata/03-export.jar")), caps, reqs);
 

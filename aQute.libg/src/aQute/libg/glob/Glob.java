@@ -137,7 +137,7 @@ public class Glob {
 	 * @return file list
 	 */
 	public List<File> getFiles(File root, boolean recursive, boolean usePath) {
-		List<File> result = new ArrayList<File>();
+		List<File> result = new ArrayList<>();
 		getFiles(root, result, recursive, usePath);
 		return result;
 	}

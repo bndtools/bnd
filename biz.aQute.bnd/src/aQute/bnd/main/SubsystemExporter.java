@@ -66,8 +66,8 @@ public class SubsystemExporter implements Exporter {
 		List<File> distroFiles = getBundles(distro, project);
 		List<File> files = getBundles(project.getRunbundles(), project);
 
-		MultiMap<String,Attrs> imports = new MultiMap<String,Attrs>();
-		MultiMap<String,Attrs> exports = new MultiMap<String,Attrs>();
+		MultiMap<String,Attrs> imports = new MultiMap<>();
+		MultiMap<String,Attrs> exports = new MultiMap<>();
 		Parameters requirements = new Parameters();
 		Parameters capabilities = new Parameters();
 
@@ -128,7 +128,7 @@ public class SubsystemExporter implements Exporter {
 	}
 
 	private List<File> getBundles(Collection<Container> bundles, Processor reporter) throws Exception {
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 
 		for (Container c : bundles) {
 			switch (c.getType()) {

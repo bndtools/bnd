@@ -9,10 +9,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -152,11 +150,7 @@ class Traverser {
 	 * @return the pruned resources
 	 */
 	private Map<Archive,Resource> prune(Map<Archive,Resource> resources) {
-		for (Iterator<Entry<Archive,Resource>> e = resources.entrySet().iterator(); e.hasNext();) {
-			Entry<Archive,Resource> next = e.next();
-			if (next.getValue() == DUMMY)
-				e.remove();
-		}
+		resources.entrySet().removeIf(next -> next.getValue() == DUMMY);
 		return resources;
 	}
 

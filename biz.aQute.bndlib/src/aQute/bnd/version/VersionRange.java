@@ -145,7 +145,7 @@ public class VersionRange {
 	}
 
 	public Iterable<Version> filter(final Iterable<Version> versions) {
-		List<Version> list = new ArrayList<Version>();
+		List<Version> list = new ArrayList<>();
 		for (Version v : versions) {
 			if (includes(v))
 				list.add(v);

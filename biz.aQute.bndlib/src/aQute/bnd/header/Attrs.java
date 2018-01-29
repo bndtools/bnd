@@ -131,7 +131,7 @@ public class Attrs implements Map<String,String> {
 	}
 
 	public Attrs() {
-		this(new LinkedHashMap<String, String>(), new HashMap<String, Type>());
+		this(new LinkedHashMap<>(), new HashMap<>());
 	}
 
 	public Attrs(Attrs... attrs) {
@@ -420,8 +420,8 @@ public class Attrs implements Map<String,String> {
 		if (isEmpty())
 			return true;
 
-		TreeSet<String> l = new TreeSet<String>(keySet());
-		TreeSet<String> lo = new TreeSet<String>(other.keySet());
+		TreeSet<String> l = new TreeSet<>(keySet());
+		TreeSet<String> lo = new TreeSet<>(other.keySet());
 		if (!l.equals(lo))
 			return false;
 
@@ -499,7 +499,7 @@ public class Attrs implements Map<String,String> {
 			}
 			return null;
 		}
-		List<Object> list = new ArrayList<Object>();
+		List<Object> list = new ArrayList<>();
 
 		List<String> split = splitListAttribute(s);
 		for (String p : split)
@@ -508,7 +508,7 @@ public class Attrs implements Map<String,String> {
 	}
 
 	static List<String> splitListAttribute(String input) throws IllegalArgumentException {
-		List<String> result = new LinkedList<String>();
+		List<String> result = new LinkedList<>();
 
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < input.length(); i++) {

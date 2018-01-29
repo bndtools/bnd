@@ -16,7 +16,7 @@ import aQute.bnd.build.Workspace;
 public class DeployTask extends BaseTask {
 	private final static Logger	logger		= LoggerFactory.getLogger(DeployTask.class);
 	private String	deployRepo	= null;
-	List<FileSet>	filesets	= new ArrayList<FileSet>();
+	List<FileSet>	filesets	= new ArrayList<>();
 
 	@Override
 	public void execute() throws BuildException {

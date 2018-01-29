@@ -8,7 +8,7 @@ import aQute.bnd.properties.Document.DelimiterInfo;
 public class LineTracker {
 
 	/** The line information */
-	private final List<Line>	fLines	= new ArrayList<Line>();
+	private final List<Line>	fLines	= new ArrayList<>();
 	/** The length of the tracked text */
 	private int					fTextLength;
 

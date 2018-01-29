@@ -63,7 +63,7 @@ public class Index {
 	public static void main(String args[]) {
 		try {
 			// Configure PojoSR
-			Map<String,Object> pojoSrConfig = new HashMap<String,Object>();
+			Map<String,Object> pojoSrConfig = new HashMap<>();
 			pojoSrConfig.put(PojoServiceRegistryFactory.BUNDLE_DESCRIPTORS, new ClasspathScanner());
 
 			// Start PojoSR 'framework'
@@ -72,7 +72,7 @@ public class Index {
 			framework.start();
 
 			// Look for indexer and run index generation
-			ServiceTracker<ResourceIndexer,ResourceIndexer> tracker = new ServiceTracker<ResourceIndexer,ResourceIndexer>(
+			ServiceTracker<ResourceIndexer,ResourceIndexer> tracker = new ServiceTracker<>(
 					framework.getBundleContext(), ResourceIndexer.class, null);
 			tracker.open();
 			ResourceIndexer index = tracker.waitForService(1000);
@@ -80,8 +80,8 @@ public class Index {
 				throw new IllegalStateException("Timed out waiting for ResourceIndexer service.");
 
 			// Process arguments
-			Set<File> fileList = new LinkedHashSet<File>();
-			Map<String,String> config = new HashMap<String,String>();
+			Set<File> fileList = new LinkedHashSet<>();
+			Map<String,String> config = new HashMap<>();
 			File outputFile = processArgs(args, System.err, config, fileList, framework.getBundleContext());
 			if (outputFile == null) {
 				System.exit(1);

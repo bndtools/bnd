@@ -117,7 +117,7 @@ public class Header implements Map<String,Props> {
 		assert value != null;
 
 		if (map == null)
-			map = new LinkedHashMap<String,Props>();
+			map = new LinkedHashMap<>();
 
 		return map.put(key, value);
 	}
@@ -126,7 +126,7 @@ public class Header implements Map<String,Props> {
 		if (this.map == null) {
 			if (map.isEmpty())
 				return;
-			this.map = new LinkedHashMap<String,Props>();
+			this.map = new LinkedHashMap<>();
 		}
 		this.map.putAll(map);
 	}
@@ -210,8 +210,8 @@ public class Header implements Map<String,Props> {
 		if (isEmpty())
 			return true;
 
-		SortedList<String> l = new SortedList<String>(keySet());
-		SortedList<String> lo = new SortedList<String>(other.keySet());
+		SortedList<String> l = new SortedList<>(keySet());
+		SortedList<String> lo = new SortedList<>(other.keySet());
 		if (!l.isEqual(lo))
 			return false;
 

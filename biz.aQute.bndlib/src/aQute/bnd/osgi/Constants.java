@@ -424,14 +424,14 @@ public interface Constants {
 			COMPONENT_DESIGNATEFACTORY, COMPONENT_GREEDY, COMPONENT_NAMESPACE
 	};
 
-	Set<String>						SET_COMPONENT_DIRECTIVES					= new HashSet<String>(
+	Set<String>						SET_COMPONENT_DIRECTIVES					= new HashSet<>(
 			Arrays.asList(componentDirectives));
 
 	Set<String>						SET_COMPONENT_DIRECTIVES_1_1				=																																										//
-			new HashSet<String>(Arrays.asList(COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED,
+			new HashSet<>(Arrays.asList(COMPONENT_VERSION, COMPONENT_CONFIGURATION_POLICY, COMPONENT_MODIFIED,
 					COMPONENT_ACTIVATE, COMPONENT_DEACTIVATE));
 
-	Set<String>						SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<String>(
+	Set<String>						SET_COMPONENT_DIRECTIVES_1_2				= new HashSet<>(
 			Arrays.asList(COMPONENT_GREEDY));
 
 	String							VERSION_ATTR_LATEST							= "latest";

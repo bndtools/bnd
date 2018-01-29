@@ -117,7 +117,7 @@ public class Workspace extends Processor {
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>					signalBusy				= new ThreadLocal<Reporter>();
+	final ThreadLocal<Reporter>					signalBusy				= new ThreadLocal<>();
 	ResourceRepositoryImpl						resourceRepositoryImpl;
 	private Parameters							gestalt;
 	private String								driver;
@@ -220,7 +220,7 @@ public class Workspace extends Processor {
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir, bndDir);
-				cache.put(workspaceDir, new WeakReference<Workspace>(ws));
+				cache.put(workspaceDir, new WeakReference<>(ws));
 			}
 			return ws;
 		}
@@ -552,7 +552,7 @@ public class Workspace extends Processor {
 	}
 
 	public Collection<Project> getBuildOrder() throws Exception {
-		Set<Project> result = new LinkedHashSet<Project>();
+		Set<Project> result = new LinkedHashSet<>();
 		for (Project project : getAllProjects()) {
 			Collection<Project> dependsOn = project.getDependson();
 			getBuildOrder(dependsOn, result);
@@ -638,7 +638,7 @@ public class Workspace extends Processor {
 		// <bsn>; version=<range>
 		//
 		Parameters extensions = getMergedParameters(EXTENSION);
-		Map<DownloadBlocker,Attrs> blockers = new HashMap<DownloadBlocker,Attrs>();
+		Map<DownloadBlocker,Attrs> blockers = new HashMap<>();
 
 		for (Entry<String,Attrs> i : extensions.entrySet()) {
 			String bsn = removeDuplicateMarker(i.getKey());
@@ -775,7 +775,7 @@ public class Workspace extends Processor {
 				it.remove();
 			}
 		}
-		List<String> digests = new ArrayList<String>();
+		List<String> digests = new ArrayList<>();
 		for (RepositoryPlugin repo : repos) {
 			try {
 				if (repo instanceof RepositoryDigest) {

@@ -38,7 +38,7 @@ public class XMLType {
 	}
 
 	public Set<String> analyze(InputStream in) throws Exception {
-		Set<String> refers = new HashSet<String>();
+		Set<String> refers = new HashSet<>();
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		Result r = new StreamResult(bout);

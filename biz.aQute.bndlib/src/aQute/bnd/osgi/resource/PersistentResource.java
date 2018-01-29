@@ -113,15 +113,15 @@ public class PersistentResource extends DTO implements Resource {
 
 	public PersistentResource(Resource resource) {
 
-		MultiMap<String,Capability> capMap = new MultiMap<String,Capability>();
+		MultiMap<String,Capability> capMap = new MultiMap<>();
 		for (Capability cap : resource.getCapabilities(null))
 			capMap.add(cap.getNamespace(), cap);
 
-		MultiMap<String,Requirement> reqMap = new MultiMap<String,Requirement>();
+		MultiMap<String,Requirement> reqMap = new MultiMap<>();
 		for (Requirement req : resource.getRequirements(null))
 			reqMap.add(req.getNamespace(), req);
 
-		Set<String> names = new HashSet<String>(capMap.keySet());
+		Set<String> names = new HashSet<>(capMap.keySet());
 		names.addAll(reqMap.keySet());
 
 		namespaces = new Namespace[names.size()];
@@ -250,7 +250,7 @@ public class PersistentResource extends DTO implements Resource {
 	private static RCData getData(boolean require, Map<String,Object> attributes, Map<String,String> directives) {
 		RCData data = new RCData();
 		data.require = require;
-		List<Attr> props = new ArrayList<Attr>(attributes.size() + directives.size());
+		List<Attr> props = new ArrayList<>(attributes.size() + directives.size());
 
 		for (Entry<String,Object> entry : attributes.entrySet()) {
 			props.add(getAttr(entry.getKey(), entry.getValue(), false));

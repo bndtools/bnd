@@ -114,7 +114,7 @@ public class RunconfigToDistributionTask extends BaseTask {
 	}
 
 	private Map<String,Jar> indexBundleSnapshots() {
-		Map<String,Jar> snapshots = new HashMap<String,Jar>();
+		Map<String,Jar> snapshots = new HashMap<>();
 		File[] projectFolders = rootDir.listFiles(new NonTestProjectFileFilter());
 		for (File projectFolder : projectFolders) {
 			File[] generatedFiles = new File(projectFolder, "generated").listFiles(new JarFileFilter());

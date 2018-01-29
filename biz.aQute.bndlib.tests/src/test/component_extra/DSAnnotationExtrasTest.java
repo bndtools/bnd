@@ -83,7 +83,7 @@ public class DSAnnotationExtrasTest extends BndTestCase {
 	}
 
 	private static List<Attrs> getAll(Parameters p, String key) {
-		List<Attrs> l = new ArrayList<Attrs>();
+		List<Attrs> l = new ArrayList<>();
 		for (; p.containsKey(key); key += aQute.bnd.osgi.Constants.DUPLICATE_MARKER) {
 			l.add(p.get(key));
 		}

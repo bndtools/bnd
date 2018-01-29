@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
@@ -46,7 +45,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		if (string == null)
 			return null;
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		StringTokenizer tokenizer = new StringTokenizer(string, ",");
 		while (tokenizer.hasMoreTokens()) {
 			result.add(tokenizer.nextToken().trim());
@@ -86,7 +85,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		if (attribs != null) {
 			Set<Entry<String,String>> set;
 			if (sorter != null) {
-				set = new TreeSet<Map.Entry<String,String>>(sorter);
+				set = new TreeSet<>(sorter);
 				set.addAll(attribs.entrySet());
 			} else {
 				set = attribs.entrySet();

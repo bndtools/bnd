@@ -122,8 +122,8 @@ public interface ResourceIndexer {
 
 	class IndexResult {
 		public Resource				resource;
-		public List<Capability>		capabilities	= new ArrayList<Capability>();
-		public List<Requirement>	requirements	= new ArrayList<Requirement>();
+		public List<Capability>		capabilities	= new ArrayList<>();
+		public List<Requirement>	requirements	= new ArrayList<>();
 
 		/**
 		 * A unique signature for this indexer. It should be some kind of hash

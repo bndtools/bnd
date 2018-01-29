@@ -33,9 +33,9 @@ import java.util.Vector;
 public class Tag {
 	Tag						parent;
 	String					name;
-	Map<String,String>		attributes	= new TreeMap<String,String>();
-	Vector<Object>			content		= new Vector<Object>();
-	Vector<String>			comments	= new Vector<String>();
+	Map<String,String>		attributes	= new TreeMap<>();
+	Vector<Object>			content		= new Vector<>();
+	Vector<String>			comments	= new Vector<>();
 
 	static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 
@@ -183,7 +183,7 @@ public class Tag {
 	 * name.
 	 */
 	public Vector<Object> getContents(String tag) {
-		Vector<Object> out = new Vector<Object>();
+		Vector<Object> out = new Vector<>();
 		for (Object o : content) {
 			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
 				out.addElement(o);
@@ -321,7 +321,7 @@ public class Tag {
 		if (s == null)
 			return "?null?";
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
@@ -351,11 +351,11 @@ public class Tag {
 	 * root/preferences/native/os
 	 */
 	public Tag[] select(String path) {
-		return select(path, (Tag) null);
+		return select(path, null);
 	}
 
 	public Tag[] select(String path, Tag mapping) {
-		Vector<Object> v = new Vector<Object>();
+		Vector<Object> v = new Vector<>();
 		select(path, v, mapping);
 		Tag[] result = new Tag[v.size()];
 		v.copyInto(result);
@@ -458,7 +458,7 @@ public class Tag {
 	}
 
 	public String getStringContent() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Object c : content) {
 			if (!(c instanceof Tag))
 				sb.append(c);

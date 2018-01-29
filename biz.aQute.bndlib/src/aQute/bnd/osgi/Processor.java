@@ -101,12 +101,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	static Pattern									PACKAGES_IGNORED	= Pattern
 			.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
-	static ThreadLocal<Processor>					current				= new ThreadLocal<Processor>();
+	static ThreadLocal<Processor>					current				= new ThreadLocal<>();
 	private final static ScheduledExecutorService	sheduledExecutor;
 	private final static ExecutorService			executor;
 	static {
 		ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), threadFactory,
+		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactory,
 				new RejectedExecutionHandler() {
 					/*
 					 * We are stealing another's thread because we have hit max
@@ -136,10 +136,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
 	public final static String		LIST_SPLITTER	= "\\s*,\\s*";
-	final List<String>				errors			= new ArrayList<String>();
-	final List<String>				warnings		= new ArrayList<String>();
-	final Set<Object>				basicPlugins	= new HashSet<Object>();
-	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
+	final List<String>				errors			= new ArrayList<>();
+	final List<String>				warnings		= new ArrayList<>();
+	final Set<Object>				basicPlugins	= new HashSet<>();
+	private final Set<Closeable>	toBeClosed		= new HashSet<>();
 	private Set<Object>				plugins;
 
 	boolean							pedantic;
@@ -440,7 +440,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return A list of plugins
 	 */
 	public <T> List<T> getPlugins(Class<T> clazz) {
-		List<T> l = new ArrayList<T>();
+		List<T> l = new ArrayList<>();
 		Set<Object> all = getPlugins();
 		for (Object plugin : all) {
 			if (clazz.isInstance(plugin))
@@ -478,7 +478,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return p;
 
 			plugins = p = new CopyOnWriteArraySet<>();
-			missingCommand = new HashSet<String>();
+			missingCommand = new HashSet<>();
 		}
 		// We only use plugins now when they are defined on our level
 		// and not if it is in our parent. We inherit from our parent
@@ -571,7 +571,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		// model.
 		//
 
-		Set<String> loaded = new HashSet<String>();
+		Set<String> loaded = new HashSet<>();
 		for (Entry<String,Attrs> entry : plugins.entrySet()) {
 			String className = removeDuplicateMarker(entry.getKey());
 			Attrs attrs = entry.getValue();
@@ -826,31 +826,31 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public <T> List<T> newList() {
-		return new ArrayList<T>();
+		return new ArrayList<>();
 	}
 
 	public <T> Set<T> newSet() {
-		return new TreeSet<T>();
+		return new TreeSet<>();
 	}
 
 	public static <K, V> Map<K,V> newMap() {
-		return new LinkedHashMap<K,V>();
+		return new LinkedHashMap<>();
 	}
 
 	public static <K, V> Map<K,V> newHashMap() {
-		return new LinkedHashMap<K,V>();
+		return new LinkedHashMap<>();
 	}
 
 	public <T> List<T> newList(Collection<T> t) {
-		return new ArrayList<T>(t);
+		return new ArrayList<>(t);
 	}
 
 	public <T> Set<T> newSet(Collection<T> t) {
-		return new TreeSet<T>(t);
+		return new TreeSet<>(t);
 	}
 
 	public <K, V> Map<K,V> newMap(Map<K,V> t) {
-		return new LinkedHashMap<K,V>(t);
+		return new LinkedHashMap<>(t);
 	}
 
 	public void close() throws IOException {
@@ -1662,7 +1662,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static String merge(String... strings) {
-		ArrayList<String> result = new ArrayList<String>();
+		ArrayList<String> result = new ArrayList<>();
 		for (String s : strings) {
 			if (s != null)
 				split(s, result);
@@ -2277,7 +2277,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Create a location object and add it to the locations
 	 */
-	List<Location> locations = new ArrayList<Location>();
+	List<Location> locations = new ArrayList<>();
 
 	static class SetLocationImpl extends Location implements SetLocation {
 		public SetLocationImpl(String s) {
@@ -2696,7 +2696,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public String _findfile(String args[]) {
 		File f = getFile(args[1]);
-		List<String> files = new ArrayList<String>();
+		List<String> files = new ArrayList<>();
 		tree(files, f, "", new Instruction(args[2]));
 		return join(files);
 	}

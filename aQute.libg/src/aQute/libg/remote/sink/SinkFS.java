@@ -13,8 +13,8 @@ import aQute.libg.remote.Delta;
 import aQute.libg.remote.Source;
 
 public class SinkFS {
-	final Map<File,String>	shas	= new ConcurrentHashMap<File,String>();
-	final Map<String,File>	files	= new ConcurrentHashMap<String,File>();
+	final Map<File,String>	shas	= new ConcurrentHashMap<>();
+	final Map<String,File>	files	= new ConcurrentHashMap<>();
 	private Source[]		sources;
 	private File			shacache;
 

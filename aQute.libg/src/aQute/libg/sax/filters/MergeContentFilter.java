@@ -14,7 +14,7 @@ public class MergeContentFilter extends ContentFilterImpl {
 
 	private int						elementDepth	= 0;
 
-	private final List<SAXElement>	rootElements	= new LinkedList<SAXElement>();
+	private final List<SAXElement>	rootElements	= new LinkedList<>();
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {

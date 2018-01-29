@@ -28,7 +28,7 @@ public class ADDef extends ExtensionDef {
 	String					max;
 	String[]				defaults;
 	boolean					required	= true;
-	final List<OptionDef>	options		= new ArrayList<OptionDef>();
+	final List<OptionDef>	options		= new ArrayList<>();
 
 	public ADDef(XMLAttributeFinder finder) {
 		super(finder);

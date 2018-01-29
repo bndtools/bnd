@@ -12,10 +12,10 @@ public final class Builder {
 	private String						namespace	= null;
 
 	/** the attributes */
-	private final Map<String,Object>	attributes	= new LinkedHashMap<String,Object>();
+	private final Map<String,Object>	attributes	= new LinkedHashMap<>();
 
 	/** the directives */
-	private final Map<String,String>	directives	= new LinkedHashMap<String,String>();
+	private final Map<String,String>	directives	= new LinkedHashMap<>();
 
 	/**
 	 * @param namespace the namespace to set
@@ -59,8 +59,8 @@ public final class Builder {
 		if (namespace == null)
 			throw new IllegalStateException("Namespace not set");
 
-		return new Capability(namespace, new LinkedHashMap<String,Object>(attributes),
-				new LinkedHashMap<String,String>(directives));
+		return new Capability(namespace, new LinkedHashMap<>(attributes),
+				new LinkedHashMap<>(directives));
 	}
 
 	/**
@@ -72,7 +72,7 @@ public final class Builder {
 		if (namespace == null)
 			throw new IllegalStateException("Namespace not set");
 
-		return new Requirement(namespace, new LinkedHashMap<String,Object>(attributes),
-				new LinkedHashMap<String,String>(directives));
+		return new Requirement(namespace, new LinkedHashMap<>(attributes),
+				new LinkedHashMap<>(directives));
 	}
 }

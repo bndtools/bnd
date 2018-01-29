@@ -7,7 +7,7 @@ public class Table {
 	int					row;
 	int					column;
 	int					maxColumn	= 0;
-	List<List<Justif>>	matrix		= new ArrayList<List<Justif>>();
+	List<List<Justif>>	matrix		= new ArrayList<>();
 
 	public Justif nextCell(String format, Object args) {
 		return cell(row, column++);
@@ -19,7 +19,7 @@ public class Table {
 
 	private Justif cell(int row, int column) {
 		while (matrix.size() <= row)
-			matrix.add(new ArrayList<Justif>());
+			matrix.add(new ArrayList<>());
 
 		List<Justif> line = matrix.get(row);
 		while (line.size() <= column) {

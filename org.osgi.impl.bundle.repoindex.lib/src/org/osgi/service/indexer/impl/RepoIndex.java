@@ -67,7 +67,7 @@ public class RepoIndex implements ResourceIndexer {
 	 * the list of analyzer/filter pairs. The filter determines which resources
 	 * can be analyzed
 	 */
-	private final List<Pair<ResourceAnalyzer,Filter>>	analyzers						= new LinkedList<Pair<ResourceAnalyzer,Filter>>();
+	private final List<Pair<ResourceAnalyzer,Filter>>	analyzers						= new LinkedList<>();
 
 	private final List<URLResolver>						resolvers						= new ArrayList<>();
 
@@ -128,9 +128,9 @@ public class RepoIndex implements ResourceIndexer {
 	 */
 	public void index(Set<File> files, OutputStream out, Map<String,String> config) throws Exception {
 		if (config == null)
-			config = new HashMap<String,String>(0);
+			config = new HashMap<>(0);
 
-		Set<File> filesToIndex = new TreeSet<File>();
+		Set<File> filesToIndex = new TreeSet<>();
 		if (files != null && !files.isEmpty()) {
 			resolveDirectories(files, filesToIndex);
 		}
@@ -195,7 +195,7 @@ public class RepoIndex implements ResourceIndexer {
 			} else {
 				File[] dirFiles = file.listFiles();
 				if (dirFiles.length > 0) {
-					Set<File> dirFilesSet = new LinkedHashSet<File>(Arrays.asList(dirFiles));
+					Set<File> dirFilesSet = new LinkedHashSet<>(Arrays.asList(dirFiles));
 					resolveDirectories(dirFilesSet, filesToIndex);
 				}
 			}
@@ -223,8 +223,8 @@ public class RepoIndex implements ResourceIndexer {
 	private Tag generateResource(File file, Map<String,String> config) throws Exception {
 
 		JarResource resource = new JarResource(file);
-		List<Capability> caps = new AddOnlyList<Capability>(new LinkedList<Capability>());
-		List<Requirement> reqs = new AddOnlyList<Requirement>(new LinkedList<Requirement>());
+		List<Capability> caps = new AddOnlyList<>(new LinkedList<>());
+		List<Requirement> reqs = new AddOnlyList<>(new LinkedList<>());
 
 		Tag resourceTag = new Tag(Schema.ELEM_RESOURCE);
 		try {
@@ -351,7 +351,7 @@ public class RepoIndex implements ResourceIndexer {
 	 */
 
 	public List<ResourceAnalyzer> getAnalyzers() {
-		List<ResourceAnalyzer> list = new ArrayList<ResourceAnalyzer>();
+		List<ResourceAnalyzer> list = new ArrayList<>();
 		for (Pair<ResourceAnalyzer,Filter> entry : analyzers) {
 			list.add(entry.getFirst());
 		}

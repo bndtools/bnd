@@ -164,7 +164,7 @@ public class ParseHeaderTest extends TestCase {
 		if (expectedError != null) {
 			System.err.println(p.getErrors());
 			assertTrue(p.getErrors().size() > 0);
-			assertTrue(p.getErrors().get(0).indexOf(expectedError) >= 0);
+			assertTrue(p.getErrors().get(0).contains(expectedError));
 		} else
 			assertEquals(0, p.getErrors().size());
 		if (expectedWarning != null) {

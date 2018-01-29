@@ -22,7 +22,7 @@ public class Classpath {
 		boolean visit(Clazz clazz) throws Exception;
 	}
 
-	List<File>	entries	= new ArrayList<File>();
+	List<File>	entries	= new ArrayList<>();
 
 	public Classpath(Reporter project, String name) {}
 

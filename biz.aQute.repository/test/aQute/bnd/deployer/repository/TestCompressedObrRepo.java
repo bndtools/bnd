@@ -33,7 +33,7 @@ public class TestCompressedObrRepo extends TestCase {
 
 		reporter = new Processor();
 		obr = new OBR();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("name", "obr");
 		config.put("locations", new File(obrDst).toURI().toString());
 		config.put("type", "OBR");

@@ -33,7 +33,7 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 		String match();
 	}
 
-	private final Set<Glob>	matchers	= new HashSet<Glob>();
+	private final Set<Glob>	matchers	= new HashSet<>();
 	private Reporter		reporter;
 	protected Registry		registry	= null;
 

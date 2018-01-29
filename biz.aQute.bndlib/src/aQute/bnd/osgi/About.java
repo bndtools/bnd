@@ -229,7 +229,7 @@ public class About {
 															"It is now possible to specify a URL on a plugin path so that if the resource is not on the file system it will get downloaded."
 														};
 
-	public static final Map<Version,String[]>	CHANGES		= new TreeMap<Version,String[]>(Collections.reverseOrder());
+	public static final Map<Version,String[]>	CHANGES		= new TreeMap<>(Collections.reverseOrder());
 
 	static {
 		CHANGES.put(_4_0, CHANGES_4_0);

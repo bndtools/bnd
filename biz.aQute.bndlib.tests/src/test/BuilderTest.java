@@ -1807,11 +1807,11 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	static void assertList(Collection<String> a, Collection<String> b) {
-		List<String> onlyInA = new ArrayList<String>();
+		List<String> onlyInA = new ArrayList<>();
 		onlyInA.addAll(a);
 		onlyInA.removeAll(b);
 
-		List<String> onlyInB = new ArrayList<String>();
+		List<String> onlyInB = new ArrayList<>();
 		onlyInB.addAll(b);
 		onlyInB.removeAll(a);
 
@@ -1822,7 +1822,7 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	static Collection<String> asl(String s) {
-		return new TreeSet<String>(Processor.split(s));
+		return new TreeSet<>(Processor.split(s));
 	}
 
 	public static void testImportMicroNotTruncated() throws Exception {
@@ -1872,9 +1872,9 @@ public class BuilderTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			m.write(System.err);
 			String ip = m.getMainAttributes().getValue("Export-Package");
-			assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.1\"") >= 0);
-			assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.2\"") >= 0);
-			assertTrue(ip.indexOf("org.objectweb.asm;version=\"2.3\"") >= 0);
+			assertTrue(ip.contains("org.objectweb.asm;version=\"1.1\""));
+			assertTrue(ip.contains("org.objectweb.asm;version=\"1.2\""));
+			assertTrue(ip.contains("org.objectweb.asm;version=\"2.3\""));
 		} finally {
 			bmaker.close();
 		}
@@ -1940,7 +1940,7 @@ public class BuilderTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			m.write(System.err);
 			String ip = m.getMainAttributes().getValue("Export-Package");
-			assertTrue(ip.indexOf("org.objectweb.asm;version=\"1.2\"") >= 0);
+			assertTrue(ip.contains("org.objectweb.asm;version=\"1.2\""));
 		} finally {
 			bmaker.close();
 		}
@@ -1963,7 +1963,7 @@ public class BuilderTest extends BndTestCase {
 			jar.getManifest().write(System.err);
 			Manifest m = jar.getManifest();
 			String ip = m.getMainAttributes().getValue("Export-Package");
-			assertTrue(ip.indexOf("org.objectweb.asm") >= 0);
+			assertTrue(ip.contains("org.objectweb.asm"));
 		} finally {
 			bmaker.close();
 		}
@@ -1985,7 +1985,7 @@ public class BuilderTest extends BndTestCase {
 
 			Manifest m = jar.getManifest();
 			String ip = m.getMainAttributes().getValue("Import-Package");
-			assertTrue(ip.indexOf("whatever") >= 0);
+			assertTrue(ip.contains("whatever"));
 		} finally {
 			bmaker.close();
 		}
@@ -2071,7 +2071,7 @@ public class BuilderTest extends BndTestCase {
 			Manifest manifest = jar.getManifest();
 			String header = manifest.getMainAttributes().getValue("Export-Package");
 			System.err.println(header);
-			assertTrue(header.indexOf("resources") >= 0);
+			assertTrue(header.contains("resources"));
 		} finally {
 			bmaker.close();
 		}
@@ -2099,7 +2099,7 @@ public class BuilderTest extends BndTestCase {
 			jar.getManifest().write(System.err);
 			Manifest manifest = jar.getManifest();
 			String header = manifest.getMainAttributes().getValue("Export-Package");
-			assertTrue(header.indexOf("META-INF.xyz") >= 0);
+			assertTrue(header.contains("META-INF.xyz"));
 		} finally {
 			bmaker.close();
 		}
@@ -2345,12 +2345,12 @@ public class BuilderTest extends BndTestCase {
 			Manifest manifest = analyzer.getJar().getManifest();
 			String bcp = manifest.getMainAttributes().getValue("Bundle-Classpath");
 
-			assertTrue(bcp.indexOf("ds.jar") >= 0);
-			assertTrue(bcp.indexOf("asm.jar") >= 0);
-			assertTrue(bcp.indexOf("bcel.jar") >= 0);
-			assertTrue(bcp.indexOf("mina.jar") >= 0);
-			assertTrue(bcp.indexOf("rox.jar") >= 0);
-			assertTrue(bcp.indexOf("osgi.jar") >= 0);
+			assertTrue(bcp.contains("ds.jar"));
+			assertTrue(bcp.contains("asm.jar"));
+			assertTrue(bcp.contains("bcel.jar"));
+			assertTrue(bcp.contains("mina.jar"));
+			assertTrue(bcp.contains("rox.jar"));
+			assertTrue(bcp.contains("osgi.jar"));
 		} finally {
 			analyzer.close();
 		}
@@ -3005,7 +3005,7 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.check());
 			assertEquals(
 					"[test/activator/AbstractActivator.class, test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class, test/activator/DefaultVisibilityActivator.class, test/activator/IActivator.class, test/activator/MissingNoArgsConstructorActivator.class, test/activator/NotAnActivator.class]",
-					new SortedList<String>(jar.getDirectories().get("test/activator").keySet()).toString());
+					new SortedList<>(jar.getDirectories().get("test/activator").keySet()).toString());
 		} finally {
 			bmaker.close();
 		}

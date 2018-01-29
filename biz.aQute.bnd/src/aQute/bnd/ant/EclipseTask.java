@@ -13,7 +13,7 @@ import aQute.bnd.osgi.eclipse.EclipseClasspath;
 
 public class EclipseTask extends BaseTask {
 	private String		prefix		= "project.";
-	private List<File>	prebuild	= new ArrayList<File>();
+	private List<File>	prebuild	= new ArrayList<>();
 	private File		workspaceLocation;
 	private String		separator	= ",";
 	private File		projectLocation;
@@ -46,7 +46,7 @@ public class EclipseTask extends BaseTask {
 			 * path derived from the Eclipse project
 			 */
 
-			List<File> dependents = new ArrayList<File>();
+			List<File> dependents = new ArrayList<>();
 			addCareful(dependents, prebuild);
 			addCareful(dependents, eclipse.getDependents());
 			if (dependents.size() > 0) {

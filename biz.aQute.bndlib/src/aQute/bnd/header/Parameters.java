@@ -171,8 +171,8 @@ public class Parameters implements Map<String,Attrs> {
 		if (isEmpty())
 			return true;
 
-		SortedList<String> l = new SortedList<String>(keySet());
-		SortedList<String> lo = new SortedList<String>(other.keySet());
+		SortedList<String> l = new SortedList<>(keySet());
+		SortedList<String> lo = new SortedList<>(other.keySet());
 		if (!l.isEqual(lo))
 			return false;
 

@@ -64,7 +64,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 																				// on
 																				// mini
 																				// framework
-			Hashtable<String,String> ht = new Hashtable<String,String>();
+			Hashtable<String,String> ht = new Hashtable<>();
 			ht.put("main.thread", "true");
 			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
 			context.registerService(Runnable.class.getName(), this, ht);
@@ -189,7 +189,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	void automatic(File reportDir) throws IOException {
-		final List<Bundle> queue = new Vector<Bundle>();
+		final List<Bundle> queue = new Vector<>();
 		if (!reportDir.exists() && !reportDir.mkdirs()) {
 			throw new IOException("Could not create directory " + reportDir);
 		}
@@ -287,7 +287,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 			bundle = findHost(bundle);
 
-			List<String> names = new ArrayList<String>();
+			List<String> names = new ArrayList<>();
 			StringTokenizer st = new StringTokenizer(testnames, " ,");
 
 			//
@@ -300,7 +300,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 					names.add(token);
 			}
 
-			List<TestReporter> reporters = new ArrayList<TestReporter>();
+			List<TestReporter> reporters = new ArrayList<>();
 			final TestResult result = new TestResult();
 
 			Tee systemOut = new Tee(System.err);
@@ -333,7 +333,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				TestSuite suite = createSuite(bundle, names, result);
 				try {
 					trace("created suite %s #%s", suite.getName(), suite.countTestCases());
-					List<Test> flattened = new ArrayList<Test>();
+					List<Test> flattened = new ArrayList<>();
 					int realcount = flatten(flattened, suite);
 
 					for (TestReporter tr : reporters) {
@@ -626,7 +626,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	static public String replace(String source, String symbol, String replace) {
-		StringBuffer sb = new StringBuffer(source);
+		StringBuilder sb = new StringBuilder(source);
 		int n = sb.indexOf(symbol, 0);
 		while (n > 0) {
 			sb.replace(n, n + symbol.length(), replace);

@@ -76,7 +76,7 @@ public class VersionRange implements Comparable<VersionRange> {
 		if (high == low)
 			return high.toString();
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(start);
 		sb.append(low);
 		sb.append(',');

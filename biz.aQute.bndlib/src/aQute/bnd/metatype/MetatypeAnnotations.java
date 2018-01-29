@@ -92,10 +92,10 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 			}
 		}
 
-		Map<TypeRef,OCDDef> classToOCDMap = new HashMap<TypeRef,OCDDef>();
+		Map<TypeRef,OCDDef> classToOCDMap = new HashMap<>();
 
-		Set<String> ocdIds = new HashSet<String>();
-		Set<String> pids = new HashSet<String>();
+		Set<String> ocdIds = new HashSet<>();
+		Set<String> pids = new HashSet<>();
 
 		Instructions instructions = new Instructions(header);
 

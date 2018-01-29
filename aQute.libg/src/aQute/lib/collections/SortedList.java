@@ -29,7 +29,7 @@ import java.util.Spliterator;
  */
 @SuppressWarnings("unchecked")
 public class SortedList<T> implements SortedSet<T>, List<T> {
-	private static final SortedList< ? >	EMPTY	= new SortedList<Object>();
+	private static final SortedList< ? >	EMPTY	= new SortedList<>();
 
 	private final T[]						list;
 	private final int						start;
@@ -389,7 +389,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		if (toIndex == fromIndex)
 			return (SortedList<T>) EMPTY;
 
-		return new SortedList<T>(this, fromIndex, toIndex);
+		return new SortedList<>(this, fromIndex, toIndex);
 	}
 
 	@Override
@@ -453,13 +453,13 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	public static <T extends Comparable< ? super T>> SortedList<T> fromIterator(Iterator< ? extends T> it) {
-		IteratorList<T> l = new IteratorList<T>(it);
-		return new SortedList<T>(l);
+		IteratorList<T> l = new IteratorList<>(it);
+		return new SortedList<>(l);
 	}
 
 	public static <T> SortedList<T> fromIterator(Iterator< ? extends T> it, Comparator< ? super T> cmp) {
-		IteratorList<T> l = new IteratorList<T>(it);
-		return new SortedList<T>(l, cmp);
+		IteratorList<T> l = new IteratorList<>(it);
+		return new SortedList<>(l, cmp);
 	}
 
 	public static <T> SortedSet<T> empty() {

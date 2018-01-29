@@ -9,7 +9,7 @@ public class MapFormatter implements Converter<String,Map<String,String>> {
 
 	public MapFormatter(String listSeparator, Converter<String, ? super Entry<String,String>> entryFormatter,
 			String emptyOutput) {
-		entrySetFormatter = new CollectionFormatter<Entry<String,String>>(listSeparator, entryFormatter, emptyOutput);
+		entrySetFormatter = new CollectionFormatter<>(listSeparator, entryFormatter, emptyOutput);
 	}
 
 	public String convert(Map<String,String> input) throws IllegalArgumentException {

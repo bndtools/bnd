@@ -38,7 +38,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		for (Capability capability : capabilities) {
 			List<Capability> list = prepare.get(capability.getNamespace());
 			if (list == null) {
-				list = new LinkedList<Capability>();
+				list = new LinkedList<>();
 				prepare.put(capability.getNamespace(), list);
 			}
 			list.add(capability);
@@ -54,7 +54,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	public List<Capability> getCapabilities(String namespace) {
 		List<Capability> caps = (namespace != null) ? capabilityMap.get(namespace) : allCapabilities;
 
-		return (caps != null) ? caps : Collections.<Capability> emptyList();
+		return (caps != null) ? caps : Collections.emptyList();
 	}
 
 	void setRequirements(List<Requirement> requirements) {
@@ -62,7 +62,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		for (Requirement requirement : requirements) {
 			List<Requirement> list = prepare.get(requirement.getNamespace());
 			if (list == null) {
-				list = new LinkedList<Requirement>();
+				list = new LinkedList<>();
 				prepare.put(requirement.getNamespace(), list);
 			}
 			list.add(requirement);
@@ -78,7 +78,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	public List<Requirement> getRequirements(String namespace) {
 		List<Requirement> reqs = (namespace != null) ? requirementMap.get(namespace) : allRequirements;
 
-		return (reqs != null) ? reqs : Collections.<Requirement> emptyList();
+		return (reqs != null) ? reqs : Collections.emptyList();
 	}
 
 	@Override

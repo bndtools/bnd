@@ -11,7 +11,7 @@ public class SymbolicName {
 
 	public SymbolicName(String name, Map<String,String> attributes) {
 		this.name = name;
-		this.attributes = new HashMap<String,String>(attributes);
+		this.attributes = new HashMap<>(attributes);
 	}
 
 	public String getName() {

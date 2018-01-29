@@ -331,7 +331,7 @@ public class BaselineCommands {
 	 * @throws Exception
 	 */
 	public void _schema(schemaOptions opts) throws Exception {
-		MultiMap<String,PSpec> map = new MultiMap<String,PSpec>();
+		MultiMap<String,PSpec> map = new MultiMap<>();
 
 		Tag top = new Tag("jschema");
 		int n = 1000;
@@ -417,7 +417,7 @@ public class BaselineCommands {
 		// Next phase is generating the XML. Sorting the packages is
 		// important because XSLT is brain dead.
 
-		SortedList<String> names = new SortedList<String>(map.keySet());
+		SortedList<String> names = new SortedList<>(map.keySet());
 
 		Tag packagesTag = new Tag(top, "packages");
 		Tag baselineTag = new Tag(top, "baseline");
@@ -426,7 +426,7 @@ public class BaselineCommands {
 
 			// For each distinct package name
 
-			SortedList<PSpec> specs = new SortedList<PSpec>(map.get(pname));
+			SortedList<PSpec> specs = new SortedList<>(map.get(pname));
 
 			PSpec older = null;
 			Parameters olderExport = null;

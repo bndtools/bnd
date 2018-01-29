@@ -100,7 +100,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	private BundleContext									context;
 	private final ShaCache									cache;
 	private ShaSource										source;
-	private final Map<String,String>						installed			= new HashMap<String,String>();
+	private final Map<String,String>						installed			= new HashMap<>();
 	volatile boolean										quit;
 	private Redirector										redirector			= new NullRedirector();
 	private Link<Agent,Supervisor>							link;
@@ -209,20 +209,20 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			bundles = Collections.emptyMap();
 		}
 
-		Set<String> toBeDeleted = new HashSet<String>(installed.keySet());
+		Set<String> toBeDeleted = new HashSet<>(installed.keySet());
 		toBeDeleted.removeAll(bundles.keySet());
 
-		LinkedHashSet<String> toBeInstalled = new LinkedHashSet<String>(bundles.keySet());
+		LinkedHashSet<String> toBeInstalled = new LinkedHashSet<>(bundles.keySet());
 		toBeInstalled.removeAll(installed.keySet());
 
-		Map<String,String> changed = new HashMap<String,String>(bundles);
+		Map<String,String> changed = new HashMap<>(bundles);
 		changed.values().removeAll(installed.values());
 		changed.keySet().removeAll(toBeInstalled);
 
-		Set<String> affected = new HashSet<String>(toBeDeleted);
+		Set<String> affected = new HashSet<>(toBeDeleted);
 		affected.addAll(changed.keySet());
 
-		LinkedHashSet<Bundle> toBeStarted = new LinkedHashSet<Bundle>();
+		LinkedHashSet<Bundle> toBeStarted = new LinkedHashSet<>();
 
 		for (String location : affected) {
 			Bundle b = getBundle(location);
@@ -436,7 +436,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		if (refs == null)
 			return Collections.emptyList();
 
-		ArrayList<ServiceReferenceDTO> list = new ArrayList<ServiceReferenceDTO>(refs.length);
+		ArrayList<ServiceReferenceDTO> list = new ArrayList<>(refs.length);
 		for (ServiceReference< ? > r : refs) {
 			ServiceReferenceDTO ref = new ServiceReferenceDTO();
 			ref.bundle = r.getBundle().getBundleId();
@@ -457,7 +457,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	private Map<String,Object> getProperties(ServiceReference< ? > ref) {
-		Map<String,Object> map = new HashMap<String,Object>();
+		Map<String,Object> map = new HashMap<>();
 		for (String key : ref.getPropertyKeys())
 			map.put(key, ref.getProperty(key));
 		return map;
@@ -480,7 +480,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 	private List<BundleDTO> getBundles() {
 		Bundle[] bundles = context.getBundles();
-		ArrayList<BundleDTO> list = new ArrayList<BundleDTO>(bundles.length);
+		ArrayList<BundleDTO> list = new ArrayList<>(bundles.length);
 		for (Bundle b : bundles) {
 			list.add(toDTO(b));
 		}
@@ -653,7 +653,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			}
 		}
 
-		List<BundleDTO> bundleDTOs = new ArrayList<BundleDTO>(bundles.length);
+		List<BundleDTO> bundleDTOs = new ArrayList<>(bundles.length);
 
 		for (Bundle b : bundles) {
 			BundleDTO dto = toDTO(b);
@@ -679,7 +679,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			}
 		}
 
-		List<BundleRevisionDTO> revisions = new ArrayList<BundleRevisionDTO>(bundles.length);
+		List<BundleRevisionDTO> revisions = new ArrayList<>(bundles.length);
 
 		for (Bundle b : bundles) {
 			BundleRevision resource = b.adapt(BundleRevision.class);
@@ -703,13 +703,13 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		brd.type = resource.getTypes();
 		brd.version = resource.getVersion().toString();
 
-		brd.requirements = new ArrayList<RequirementDTO>();
+		brd.requirements = new ArrayList<>();
 
 		for (Requirement r : resource.getRequirements(null)) {
 			brd.requirements.add(toDTO(brd.id, r));
 		}
 
-		brd.capabilities = new ArrayList<CapabilityDTO>();
+		brd.capabilities = new ArrayList<>();
 		for (Capability c : resource.getCapabilities(null)) {
 			brd.capabilities.add(toDTO(brd.id, c));
 		}

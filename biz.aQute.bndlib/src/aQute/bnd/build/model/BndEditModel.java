@@ -115,8 +115,8 @@ public class BndEditModel {
 	public static final String										BUNDLE_VERSION_MACRO		= "${"
 			+ Constants.BUNDLE_VERSION + "}";
 
-	private final Map<String,Converter< ? extends Object,String>>	converters					= new HashMap<String,Converter< ? extends Object,String>>();
-	private final Map<String,Converter<String, ? extends Object>>	formatters					= new HashMap<String,Converter<String, ? extends Object>>();
+	private final Map<String,Converter< ? extends Object,String>>	converters					= new HashMap<>();
+	private final Map<String,Converter<String, ? extends Object>>	formatters					= new HashMap<>();
 	// private final DataModelHelper obrModelHelper = new DataModelHelperImpl();
 
 	private File													bndResource;
@@ -125,13 +125,13 @@ public class BndEditModel {
 	private final PropertyChangeSupport								propChangeSupport			= new PropertyChangeSupport(
 			this);
 	private Properties												properties					= new UTF8Properties();
-	private final Map<String,Object>								objectProperties			= new HashMap<String,Object>();
-	private final Map<String,String>								changesToSave				= new TreeMap<String,String>();
+	private final Map<String,Object>								objectProperties			= new HashMap<>();
+	private final Map<String,String>								changesToSave				= new TreeMap<>();
 	private Project													project;
 
 	// CONVERTERS
-	private Converter<List<VersionedClause>,String>					buildPathConverter			= new HeaderClauseListConverter<VersionedClause>(
-			new Converter<VersionedClause,HeaderClause>() {
+	private Converter<List<VersionedClause>,String>					buildPathConverter			= new HeaderClauseListConverter<>(
+			new Converter<VersionedClause, HeaderClause>() {
 				public VersionedClause convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
 						return null;
@@ -143,8 +143,8 @@ public class BndEditModel {
 					return null;
 				}
 			});
-	private Converter<List<VersionedClause>,String>					buildPackagesConverter		= new HeaderClauseListConverter<VersionedClause>(
-			new Converter<VersionedClause,HeaderClause>() {
+	private Converter<List<VersionedClause>,String>					buildPackagesConverter		= new HeaderClauseListConverter<>(
+			new Converter<VersionedClause, HeaderClause>() {
 				public VersionedClause convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
 						return null;
@@ -156,9 +156,9 @@ public class BndEditModel {
 					return VersionedClause.error(msg);
 				}
 			});
-	private Converter<List<VersionedClause>,String>					clauseListConverter			= new HeaderClauseListConverter<VersionedClause>(
+	private Converter<List<VersionedClause>,String>					clauseListConverter			= new HeaderClauseListConverter<>(
 			new VersionedClauseConverter());
-	private Converter<String,String>								stringConverter				= new NoopConverter<String>();
+	private Converter<String,String>								stringConverter				= new NoopConverter<>();
 	private Converter<Boolean,String>								includedSourcesConverter	= new Converter<Boolean,String>() {
 																									public Boolean convert(
 																											String string)
@@ -178,7 +178,7 @@ public class BndEditModel {
 			.create();
 
 	private Converter<List<HeaderClause>,String>					headerClauseListConverter	= new HeaderClauseListConverter<>(
-			new NoopConverter<HeaderClause>());
+			new NoopConverter<>());
 
 	private Converter<List<ExportedPackage>,String>					exportPackageConverter		= new HeaderClauseListConverter<>(
 			new Converter<ExportedPackage,HeaderClause>() {
@@ -194,8 +194,8 @@ public class BndEditModel {
 				}
 			});
 
-	private Converter<List<ServiceComponent>,String>				serviceComponentConverter	= new HeaderClauseListConverter<ServiceComponent>(
-			new Converter<ServiceComponent,HeaderClause>() {
+	private Converter<List<ServiceComponent>,String>				serviceComponentConverter	= new HeaderClauseListConverter<>(
+			new Converter<ServiceComponent, HeaderClause>() {
 				public ServiceComponent convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
 						return null;
@@ -207,8 +207,8 @@ public class BndEditModel {
 					return ServiceComponent.error(msg);
 				}
 			});
-	private Converter<List<ImportPattern>,String>					importPatternConverter		= new HeaderClauseListConverter<ImportPattern>(
-			new Converter<ImportPattern,HeaderClause>() {
+	private Converter<List<ImportPattern>,String>					importPatternConverter		= new HeaderClauseListConverter<>(
+			new Converter<ImportPattern, HeaderClause>() {
 				public ImportPattern convert(HeaderClause input) throws IllegalArgumentException {
 					if (input == null)
 						return null;
@@ -233,21 +233,21 @@ public class BndEditModel {
 	private Converter<String,String>								newlineEscapeFormatter		= new NewlineEscapedStringFormatter();
 	private Converter<String,Boolean>								defaultFalseBoolFormatter	= new DefaultBooleanFormatter(
 			false);
-	private Converter<String,Collection< ? >>						stringListFormatter			= new CollectionFormatter<Object>(
+	private Converter<String,Collection< ? >>						stringListFormatter			= new CollectionFormatter<>(
 			LIST_SEPARATOR, (String) null);
-	private Converter<String,Collection< ? extends HeaderClause>>	headerClauseListFormatter	= new CollectionFormatter<HeaderClause>(
+	private Converter<String,Collection< ? extends HeaderClause>>	headerClauseListFormatter	= new CollectionFormatter<>(
 			LIST_SEPARATOR, new HeaderClauseFormatter(), null);
 	private Converter<String,Map<String,String>>					propertiesFormatter			= new MapFormatter(
 			LIST_SEPARATOR, new PropertiesEntryFormatter(), null);
 
-	private Converter<String,Collection< ? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<Requirement>(
+	private Converter<String,Collection< ? extends Requirement>>	requirementListFormatter	= new CollectionFormatter<>(
 			LIST_SEPARATOR, new RequirementFormatter(), null);
 
 	private Converter<String,Collection< ? extends HeaderClause>>	standaloneLinkListFormatter	= new CollectionFormatter<>(
 			LIST_SEPARATOR, new HeaderClauseFormatter(), "");
 
 	private Converter<String,EE>									eeFormatter					= new EEFormatter();
-	private Converter<String,Collection< ? extends String>>			runReposFormatter			= new CollectionFormatter<String>(
+	private Converter<String,Collection< ? extends String>>			runReposFormatter			= new CollectionFormatter<>(
 			LIST_SEPARATOR, aQute.bnd.osgi.Constants.EMPTY_HEADER);
 	private Workspace												workspace;
 
@@ -486,7 +486,7 @@ public class BndEditModel {
 
 	@SuppressWarnings("unchecked")
 	public List<String> getAllPropertyNames() {
-		List<String> result = new ArrayList<String>(properties.size());
+		List<String> result = new ArrayList<>(properties.size());
 
 		Enumeration<String> names = (Enumeration<String>) properties.propertyNames();
 
@@ -511,7 +511,7 @@ public class BndEditModel {
 	public Object genericGet(String propertyName) {
 		Converter< ? extends Object,String> converter = converters.get(propertyName);
 		if (converter == null)
-			converter = new NoopConverter<String>();
+			converter = new NoopConverter<>();
 		return doGetObject(propertyName, converter);
 	}
 
@@ -664,9 +664,9 @@ public class BndEditModel {
 	public void addPrivatePackage(String packageName) {
 		List<String> packages = getPrivatePackages();
 		if (packages == null)
-			packages = new ArrayList<String>();
+			packages = new ArrayList<>();
 		else
-			packages = new ArrayList<String>(packages);
+			packages = new ArrayList<>(packages);
 		packages.add(packageName);
 		setPrivatePackages(packages);
 	}
@@ -686,7 +686,7 @@ public class BndEditModel {
 		if (exports != null) {
 			for (ExportedPackage pkg : exports) {
 				String versionString = pkg.getVersionString();
-				if (versionString != null && versionString.indexOf(BUNDLE_VERSION_MACRO) > -1) {
+				if (versionString != null && versionString.contains(BUNDLE_VERSION_MACRO)) {
 					referencesBundleVersion = true;
 				}
 			}
@@ -701,7 +701,7 @@ public class BndEditModel {
 
 	public void addExportedPackage(ExportedPackage export) {
 		List<ExportedPackage> exports = getExportedPackages();
-		exports = (exports == null) ? new ArrayList<ExportedPackage>() : new ArrayList<ExportedPackage>(exports);
+		exports = (exports == null) ? new ArrayList<>() : new ArrayList<>(exports);
 		exports.add(export);
 		setExportedPackages(exports);
 	}
@@ -838,12 +838,12 @@ public class BndEditModel {
 	@SuppressWarnings("deprecation")
 	public List<String> getTestSuites() {
 		List<String> testCases = doGetObject(aQute.bnd.osgi.Constants.TESTCASES, listConverter);
-		testCases = testCases != null ? testCases : Collections.<String> emptyList();
+		testCases = testCases != null ? testCases : Collections.emptyList();
 
 		List<String> testSuites = doGetObject(aQute.bnd.osgi.Constants.TESTSUITES, listConverter);
-		testSuites = testSuites != null ? testSuites : Collections.<String> emptyList();
+		testSuites = testSuites != null ? testSuites : Collections.emptyList();
 
-		List<String> result = new ArrayList<String>(testCases.size() + testSuites.size());
+		List<String> result = new ArrayList<>(testCases.size() + testSuites.size());
 		result.addAll(testCases);
 		result.addAll(testSuites);
 		return result;
@@ -1055,9 +1055,9 @@ public class BndEditModel {
 	public void addBundleBlueprint(String location) {
 		List<HeaderClause> bpLocations = getBundleBlueprint();
 		if (bpLocations == null)
-			bpLocations = new ArrayList<HeaderClause>();
+			bpLocations = new ArrayList<>();
 		else
-			bpLocations = new ArrayList<HeaderClause>(bpLocations);
+			bpLocations = new ArrayList<>(bpLocations);
 		bpLocations.add(new HeaderClause(location, null));
 		setBundleBlueprint(bpLocations);
 	}
@@ -1074,9 +1074,9 @@ public class BndEditModel {
 	public void addIncludeResource(String resource) {
 		List<String> includeResource = getIncludeResource();
 		if (includeResource == null)
-			includeResource = new ArrayList<String>();
+			includeResource = new ArrayList<>();
 		else
-			includeResource = new ArrayList<String>(includeResource);
+			includeResource = new ArrayList<>(includeResource);
 		includeResource.add(resource);
 		setIncludeResource(includeResource);
 	}

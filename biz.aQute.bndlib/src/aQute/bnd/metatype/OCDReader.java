@@ -35,7 +35,7 @@ class OCDReader {
 	final Analyzer				analyzer;
 	private final Clazz			clazz;
 	final EnumSet<Options>		options;
-	private final Set<TypeRef>	analyzed	= new HashSet<TypeRef>();;
+	private final Set<TypeRef>	analyzed	= new HashSet<>();;
 	private final OCDDef		ocd;
 	final XMLAttributeFinder	finder;
 
@@ -102,7 +102,7 @@ class OCDReader {
 
 	private final class OCDDataCollector extends ClassDataCollector {
 		private final OCDDef				ocd;
-		private final Map<MethodDef,ADDef>	methods			= new LinkedHashMap<MethodDef,ADDef>();
+		private final Map<MethodDef,ADDef>	methods			= new LinkedHashMap<>();
 		private Clazz						clazz;
 		private TypeRef						name;
 		private int							hasNoDefault	= 0;

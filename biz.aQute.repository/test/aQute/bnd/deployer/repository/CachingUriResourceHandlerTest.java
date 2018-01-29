@@ -22,7 +22,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	public static void testLoadFromCache() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/1"),
-				new DefaultURLConnector(), (String) null);
+				new DefaultURLConnector(), null);
 		File result = handle.request();
 
 		assertEquals(IO.getFile("testdata/httpcache/1/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar")
@@ -35,7 +35,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		URI baseUri = new URI("http://localhost:18083/bundles");
 		URI uri = new URI(baseUri + "/dummybundle.jar");
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(),
-				(String) null);
+				null);
 
 		try {
 			handle.request();
@@ -61,7 +61,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		URI baseUri = new URI("http://localhost:18083/bundles");
 		URI uri = new URI(baseUri + "/dummybundle.jar");
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(),
-				(String) null);
+				null);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
@@ -170,7 +170,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		File cached = IO.getFile("testdata/httpcache/7/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/7"),
-				new DefaultURLConnector(), (String) null);
+				new DefaultURLConnector(), null);
 
 		// whoops where's the server...
 

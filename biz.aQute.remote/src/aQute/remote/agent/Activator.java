@@ -26,7 +26,7 @@ public class Activator extends Thread implements BundleActivator {
 	private File				cache;
 	private ServerSocket		server;
 	private BundleContext		context;
-	private List<AgentServer>	agents	= new CopyOnWriteArrayList<AgentServer>();
+	private List<AgentServer>	agents	= new CopyOnWriteArrayList<>();
 
 	@Override
 	public void start(final BundleContext context) throws Exception {

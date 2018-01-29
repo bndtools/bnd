@@ -138,10 +138,7 @@ class IndexFile {
 	}
 
 	public void remove(String bsn) throws Exception {
-		for (Iterator<BundleDescriptor> bd = descriptors.values().iterator(); bd.hasNext();) {
-			if (isBsn(bsn, bd.next()))
-				bd.remove();
-		}
+		descriptors.values().removeIf(bundleDescriptor -> isBsn(bsn, bundleDescriptor));
 		saveIndexFile();
 	}
 
@@ -262,7 +259,7 @@ class IndexFile {
 
 					Domain m = Domain.domain(file);
 					if (m == null)
-						m = Domain.domain(Collections.<String, String> emptyMap());
+						m = Domain.domain(Collections.emptyMap());
 
 					Entry<String,Attrs> bsn = m.getBundleSymbolicName();
 					descriptor.bsn = bsn != null ? bsn.getKey() : null;

@@ -381,7 +381,7 @@ public class ResourceUtils {
 		if (providers == null || providers.isEmpty())
 			return Collections.emptySet();
 
-		Set<Resource> resources = new TreeSet<Resource>(RESOURCE_COMPARATOR);
+		Set<Resource> resources = new TreeSet<>(RESOURCE_COMPARATOR);
 
 		for (Capability c : providers) {
 			resources.add(c.getResource());

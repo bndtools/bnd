@@ -92,16 +92,16 @@ public class Launcher implements ServiceListener {
 	private boolean							security;
 	private SimplePermissionPolicy			policy;
 	private Callable<Integer>				mainThread;
-	private final List<BundleActivator>		embedded							= new ArrayList<BundleActivator>();
-	private final Map<Bundle,Throwable>		errors								= new HashMap<Bundle,Throwable>();
-	private final Map<File,Bundle>			installedBundles					= new LinkedHashMap<File,Bundle>();
+	private final List<BundleActivator>		embedded							= new ArrayList<>();
+	private final Map<Bundle,Throwable>		errors								= new HashMap<>();
+	private final Map<File,Bundle>			installedBundles					= new LinkedHashMap<>();
 	private File							home								= new File(
 			System.getProperty("user.home"));
 	private File							bnd									= new File(home, "bnd");
-	private List<Bundle>					wantsToBeStarted					= new ArrayList<Bundle>();
+	private List<Bundle>					wantsToBeStarted					= new ArrayList<>();
 	AtomicBoolean							active								= new AtomicBoolean();
 
-	private AtomicReference<DatagramSocket>	commsSocket							= new AtomicReference<DatagramSocket>();
+	private AtomicReference<DatagramSocket>	commsSocket							= new AtomicReference<>();
 	private PackageAdmin					padmin;
 
 	public static void main(String[] args) {
@@ -300,7 +300,7 @@ public class Launcher implements ServiceListener {
 
 				try {
 					if (LauncherAgent.instrumentation != null) {
-						Hashtable<String,Object> argprops = new Hashtable<String,Object>();
+						Hashtable<String,Object> argprops = new Hashtable<>();
 						if (LauncherAgent.agentArgs != null)
 							argprops.put("agent.arguments", LauncherAgent.agentArgs);
 						systemBundle.getBundleContext().registerService(Instrumentation.class.getName(),
@@ -311,7 +311,7 @@ public class Launcher implements ServiceListener {
 					// java.lang.instrument
 				}
 
-				Hashtable<String,Object> argprops = new Hashtable<String,Object>();
+				Hashtable<String,Object> argprops = new Hashtable<>();
 				argprops.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
 				argprops.put(LauncherConstants.LAUNCHER_READY, "true");
 				argprops.put(Constants.SERVICE_RANKING, -1000);
@@ -345,7 +345,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	private List<String> split(String value, String separator) {
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		if (value == null)
 			return list;
 
@@ -450,7 +450,7 @@ public class Launcher implements ServiceListener {
 	List<Bundle> update(long before) throws Exception {
 
 		trace("Updating framework with %s", parms.runbundles);
-		List<Bundle> tobestarted = new ArrayList<Bundle>();
+		List<Bundle> tobestarted = new ArrayList<>();
 		if (parms.embedded)
 			installEmbedded(tobestarted);
 		else
@@ -472,7 +472,7 @@ public class Launcher implements ServiceListener {
 
 		// Get the resolved status
 		if (padmin != null && padmin.resolveBundles(null) == false) {
-			List<String> failed = new ArrayList<String>();
+			List<String> failed = new ArrayList<>();
 
 			for (Bundle b : installedBundles.values()) {
 				try {
@@ -491,7 +491,7 @@ public class Launcher implements ServiceListener {
 		// (unless they're a fragment)
 
 		trace("Will start bundles: %s", tobestarted);
-		List<Bundle> all = new ArrayList<Bundle>(tobestarted);
+		List<Bundle> all = new ArrayList<>(tobestarted);
 		// Add all bundles that we've tried to start but failed
 		all.addAll(wantsToBeStarted);
 
@@ -529,7 +529,7 @@ public class Launcher implements ServiceListener {
 	 */
 	void synchronizeFiles(List<Bundle> tobestarted, long before) {
 		// Turn the bundle location paths into files
-		List<File> desired = new ArrayList<File>();
+		List<File> desired = new ArrayList<>();
 
 		for (Object o : parms.runbundles) {
 			String s = (String) o;
@@ -539,16 +539,16 @@ public class Launcher implements ServiceListener {
 		}
 
 		// deleted = old - new
-		List<File> tobedeleted = new ArrayList<File>(installedBundles.keySet());
+		List<File> tobedeleted = new ArrayList<>(installedBundles.keySet());
 
 		tobedeleted.removeAll(desired);
 
 		// updated = old /\ new
-		List<File> tobeupdated = new ArrayList<File>(installedBundles.keySet());
+		List<File> tobeupdated = new ArrayList<>(installedBundles.keySet());
 		tobeupdated.retainAll(desired);
 
 		// install = new - old
-		List<File> tobeinstalled = new ArrayList<File>(desired);
+		List<File> tobeinstalled = new ArrayList<>(desired);
 		tobeinstalled.removeAll(installedBundles.keySet());
 
 		for (File f : tobedeleted)
@@ -1012,7 +1012,7 @@ public class Launcher implements ServiceListener {
 			loader = getClass().getClassLoader();
 
 		Enumeration<URL> e = loader.getResources("META-INF/services/" + factory);
-		List<String> factories = new ArrayList<String>();
+		List<String> factories = new ArrayList<>();
 
 		while (e.hasMoreElements()) {
 			URL url = e.nextElement();
@@ -1235,7 +1235,7 @@ public class Launcher implements ServiceListener {
 
 	static class AllPermissionCollection extends PermissionCollection {
 		private static final long			serialVersionUID	= 1L;
-		private static Vector<Permission>	list				= new Vector<Permission>();
+		private static Vector<Permission>	list				= new Vector<>();
 
 		static {
 			list.add(new AllPermission());

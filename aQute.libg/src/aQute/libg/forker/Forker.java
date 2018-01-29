@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Forker<T> {
 	final Executor		executor;
-	final Map<T,Job>	waiting		= new HashMap<T,Job>();
-	final Set<Job>		executing	= new HashSet<Job>();
+	final Map<T,Job>	waiting		= new HashMap<>();
+	final Set<Job>		executing	= new HashSet<>();
 	final AtomicBoolean	canceled	= new AtomicBoolean();
 	private int			count;
 
@@ -111,7 +111,7 @@ public class Forker<T> {
 
 		System.err.println("doWhen " + dependencies + " " + target);
 		Job job = new Job();
-		job.dependencies = new HashSet<T>(dependencies);
+		job.dependencies = new HashSet<>(dependencies);
 		job.target = target;
 		job.runnable = runnable;
 		waiting.put(target, job);
@@ -127,7 +127,7 @@ public class Forker<T> {
 	}
 
 	private void check() {
-		Set<T> dependencies = new HashSet<T>();
+		Set<T> dependencies = new HashSet<>();
 		for (Job job : waiting.values())
 			dependencies.addAll(job.dependencies);
 		dependencies.removeAll(waiting.keySet());
@@ -150,7 +150,7 @@ public class Forker<T> {
 		if (canceled.get())
 			return;
 
-		List<Runnable> torun = new ArrayList<Runnable>();
+		List<Runnable> torun = new ArrayList<>();
 		synchronized (this) {
 			for (Iterator<Job> e = waiting.values().iterator(); e.hasNext();) {
 				Job job = e.next();

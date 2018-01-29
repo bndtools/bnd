@@ -16,7 +16,7 @@ public class Sieve implements Map<Selector,Props> {
 
 	public Sieve(Sieve other) {
 		if (other.map != null && !other.map.isEmpty()) {
-			map = new LinkedHashMap<Selector,Props>(other.map);
+			map = new LinkedHashMap<>(other.map);
 		}
 	}
 
@@ -109,7 +109,7 @@ public class Sieve implements Map<Selector,Props> {
 
 	public Props put(Selector key, Props value) {
 		if (map == null)
-			map = new LinkedHashMap<Selector,Props>();
+			map = new LinkedHashMap<>();
 
 		return map.put(key, value);
 	}
@@ -118,7 +118,7 @@ public class Sieve implements Map<Selector,Props> {
 		if (this.map == null) {
 			if (map.isEmpty())
 				return;
-			this.map = new LinkedHashMap<Selector,Props>();
+			this.map = new LinkedHashMap<>();
 		}
 		this.map.putAll(map);
 	}
@@ -167,11 +167,11 @@ public class Sieve implements Map<Selector,Props> {
 	}
 
 	public <T> Collection<T> select(Collection<T> set, Set<Selector> unused, boolean emptyIsAll) {
-		List<T> input = new ArrayList<T>(set);
+		List<T> input = new ArrayList<>(set);
 		if (emptyIsAll && isEmpty())
 			return input;
 
-		List<T> result = new ArrayList<T>();
+		List<T> result = new ArrayList<>();
 
 		for (Selector instruction : keySet()) {
 			boolean used = false;
@@ -192,8 +192,8 @@ public class Sieve implements Map<Selector,Props> {
 	}
 
 	public <T> Collection<T> reject(Collection<T> set) {
-		List<T> input = new ArrayList<T>(set);
-		List<T> result = new ArrayList<T>();
+		List<T> input = new ArrayList<>(set);
+		List<T> result = new ArrayList<>();
 
 		for (Selector instruction : keySet()) {
 			for (Iterator<T> o = input.iterator(); o.hasNext();) {

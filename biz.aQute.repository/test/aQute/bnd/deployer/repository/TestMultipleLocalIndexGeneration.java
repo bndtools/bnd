@@ -36,7 +36,7 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 		// Setup the repo
 		reporter = new Processor();
 		repo = new LocalIndexedRepo();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "OBR|R5");
 		repo.setProperties(config);
@@ -100,7 +100,7 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 
 	public void testReadMixedRepoTypes() throws Exception {
 		OBR repo = new OBR();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("locations",
 				IO.getFile("testdata/fullobr.xml").toURI() + "," + IO.getFile("testdata/minir5.xml").toURI());
 		repo.setProperties(config);
@@ -122,7 +122,7 @@ public class TestMultipleLocalIndexGeneration extends TestCase {
 	private AbstractIndexedRepo createRepoForIndex(File index) throws Exception {
 		OBR newRepo = new OBR();
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("locations", index.getAbsoluteFile().toURI().toString());
 		config.put("name", getName());
 		File cacheDir = new File("generated/tmp/test/cache/" + getName());

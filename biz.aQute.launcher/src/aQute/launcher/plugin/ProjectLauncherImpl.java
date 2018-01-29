@@ -234,9 +234,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		List<String> runpath = getRunpath();
 
-		Set<String> runpathShas = new LinkedHashSet<String>();
-		Set<String> runbundleShas = new LinkedHashSet<String>();
-		List<String> classpath = new ArrayList<String>();
+		Set<String> runpathShas = new LinkedHashSet<>();
+		Set<String> runbundleShas = new LinkedHashSet<>();
+		List<String> classpath = new ArrayList<>();
 
 		for (String path : runpath) {
 			logger.debug("embedding runpath {}", path);
@@ -251,7 +251,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		// Copy the bundles to the JAR
 
 		List<String> runbundles = (List<String>) getRunBundles();
-		List<String> actualPaths = new ArrayList<String>();
+		List<String> actualPaths = new ArrayList<>();
 
 		for (String path : runbundles) {
 			logger.debug("embedding run bundles {}", path);

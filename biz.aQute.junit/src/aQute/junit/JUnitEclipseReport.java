@@ -92,12 +92,8 @@ public class JUnitEclipseReport implements TestReporter {
 		this.current = test;
 		message("%TESTS  ", test);
 		try {
-			Method m = test.getClass().getMethod("setBundleContext", new Class[] {
-					BundleContext.class
-			});
-			m.invoke(test, new Object[] {
-					targetBundle.getBundleContext()
-			});
+			Method m = test.getClass().getMethod("setBundleContext", BundleContext.class);
+			m.invoke(test, targetBundle.getBundleContext());
 		} catch (Exception e) {
 
 		}
@@ -123,7 +119,7 @@ public class JUnitEclipseReport implements TestReporter {
 
 	private void report(List<Test> flattened) {
 		for (int i = 0; i < flattened.size(); i++) {
-			StringBuffer sb = new StringBuffer();
+			StringBuilder sb = new StringBuilder();
 			sb.append(i + 1);
 			sb.append(",");
 			Test test = flattened.get(i);

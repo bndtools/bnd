@@ -41,7 +41,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 		Resource resource = jar.getResource("OSGI-INF/permissions.perm");
 		BufferedReader r = new BufferedReader(new InputStreamReader(resource.openInputStream()));
 
-		Set<String> permissions = new TreeSet<String>();
+		Set<String> permissions = new TreeSet<>();
 		String line = null;
 		while ((line = r.readLine()) != null) {
 			if (!line.isEmpty()) {
@@ -214,7 +214,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(|(objectClass=test.*)(objectClass=test2.*))\"");
 		services = PermissionGenerator.getReferencedServices(b);
-		assertEquals(new HashSet<String>(Arrays.asList("test.*", "test2.*")), services);
+		assertEquals(new HashSet<>(Arrays.asList("test.*", "test2.*")), services);
 
 		b.setProperty("Require-Capability", "osgi.service;filter:=\"(|(objectClass=test.*)(!(objectClass=test2.*)))\"");
 		services = PermissionGenerator.getReferencedServices(b);

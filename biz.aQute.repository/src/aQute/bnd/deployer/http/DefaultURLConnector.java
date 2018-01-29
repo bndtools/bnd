@@ -56,7 +56,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	}
 
 	public TaggedData connectTagged(URL url, String tag) throws IOException {
-		return connectTagged(url, tag, new HashSet<String>());
+		return connectTagged(url, tag, new HashSet<>());
 	}
 
 	public TaggedData connectTagged(URL url, String tag, Set<String> loopDetect) throws IOException {

@@ -80,7 +80,7 @@ class Server extends NanoHTTPD {
 
 			}
 			request.uri = new URI(session.getUri());
-			request.headers = new TreeMap<String,String>(String.CASE_INSENSITIVE_ORDER);
+			request.headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 			request.headers.putAll(session.getHeaders());
 			request.args = session.getParms();
 			request.ip = session.getHeaders().get("remote-addr");

@@ -24,7 +24,7 @@ public class TestObrCapReqParsing extends TestCase {
 
 	private static List<Resource> parseIndex(InputStream stream, URI baseUri) throws Exception {
 		ObrContentProvider parser = new ObrContentProvider(new BundleIndexerImpl());
-		final List<Resource> resources = new LinkedList<Resource>();
+		final List<Resource> resources = new LinkedList<>();
 		IRepositoryIndexProcessor processor = new IRepositoryIndexProcessor() {
 			public void processResource(Resource resource) {
 				resources.add(resource);

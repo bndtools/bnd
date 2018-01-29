@@ -16,7 +16,7 @@ import aQute.lib.converter.Converter;
  */
 @aQute.bnd.annotation.plugin.BndPlugin(name = "url.settings", parameters = ConnectionSettings.Config.class)
 public class ConnectionSettings extends DefaultURLConnectionHandler {
-	final Map<String,String>	headers	= new HashMap<String,String>();
+	final Map<String,String>	headers	= new HashMap<>();
 	Config						config;
 
 	/**

@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -74,7 +73,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * These are the namespaces that we ignore when we copy capabilities from
 	 * -runpath resources.
 	 */
-	static Set<String> IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES = new HashSet<String>();
+	static Set<String> IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES = new HashSet<>();
 
 	static {
 		// TODO BJ?
@@ -90,19 +89,19 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	protected final LogService						log;
 	private final CapabilityIndex					systemCapabilityIndex		= new CapabilityIndex();
-	private final List<Repository>					repositories				= new ArrayList<Repository>();
-	private final List<Requirement>					failed						= new ArrayList<Requirement>();
-	private final Map<CacheKey,List<Capability>>	providerCache				= new HashMap<CacheKey,List<Capability>>();
-	private final Set<Resource>						optionalRoots				= new HashSet<Resource>();
-	private final ConcurrentMap<Resource,Integer>	resourcePriorities			= new ConcurrentHashMap<Resource,Integer>();
+	private final List<Repository>					repositories				= new ArrayList<>();
+	private final List<Requirement>					failed						= new ArrayList<>();
+	private final Map<CacheKey,List<Capability>>	providerCache				= new HashMap<>();
+	private final Set<Resource>						optionalRoots				= new HashSet<>();
+	private final ConcurrentMap<Resource,Integer>	resourcePriorities			= new ConcurrentHashMap<>();
 	private final Comparator<Capability>			capabilityComparator;
-	private Map<String,Set<String>>					effectiveSet				= new HashMap<String,Set<String>>();
-	private final List<ResolverHook>				resolverHooks				= new ArrayList<ResolverHook>();
-	private final List<ResolutionCallback>			callbacks					= new LinkedList<ResolutionCallback>();
+	private Map<String,Set<String>>					effectiveSet				= new HashMap<>();
+	private final List<ResolverHook>				resolverHooks				= new ArrayList<>();
+	private final List<ResolutionCallback>			callbacks					= new LinkedList<>();
 	private boolean									initialised					= false;
 	private Resource								systemResource;
 	private Resource								inputResource;
-	private Set<Resource>							blacklistedResources		= new HashSet<Resource>();
+	private Set<Resource>							blacklistedResources		= new HashSet<>();
 	private int										level						= 0;
 	private Resource								framework;
 
@@ -200,12 +199,12 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		CacheKey cacheKey = getCacheKey(requirement);
 		List<Capability> cached = providerCache.get(cacheKey);
 		if (cached != null) {
-			result = new ArrayList<Capability>(cached);
+			result = new ArrayList<>(cached);
 		} else {
 			// First stage: framework and self-capabilities. This should never
 			// be reordered by preferences or resolver
 			// hooks
-			LinkedHashSet<Capability> firstStageResult = new LinkedHashSet<Capability>();
+			LinkedHashSet<Capability> firstStageResult = new LinkedHashSet<>();
 
 			// The selected OSGi framework always has the first chance to
 			// provide the capabilities
@@ -228,7 +227,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 					.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
 			if (optional && !optionalRoots.contains(requirement.getResource())) {
 
-				result = new ArrayList<Capability>(firstStageResult);
+				result = new ArrayList<>(firstStageResult);
 				Collections.sort(result, capabilityComparator);
 
 			} else {
@@ -238,7 +237,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 				// Concatenate both stages, eliminating duplicates between the
 				// two
 				firstStageResult.addAll(secondStageList);
-				result = new ArrayList<Capability>(firstStageResult);
+				result = new ArrayList<>(firstStageResult);
 			}
 			providerCache.put(cacheKey, result);
 		}
@@ -263,11 +262,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	protected ArrayList<Capability> findProvidersFromRepositories(Requirement requirement,
 			LinkedHashSet<Capability> existingWiredCapabilities) {
 		// Second stage results: repository contents; may be reordered.
-		ArrayList<Capability> secondStageResult = new ArrayList<Capability>();
+		ArrayList<Capability> secondStageResult = new ArrayList<>();
 
 		// Iterate over the repos
 		int order = 0;
-		ArrayList<Capability> repoCapabilities = new ArrayList<Capability>();
+		ArrayList<Capability> repoCapabilities = new ArrayList<>();
 		for (Repository repo : repositories) {
 			repoCapabilities.clear();
 			Collection<Capability> capabilities = findProviders(repo, requirement);
@@ -286,7 +285,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		Collections.sort(secondStageResult, capabilityComparator);
 
 		// Convert second-stage results to a list and post-process
-		ArrayList<Capability> secondStageList = new ArrayList<Capability>(secondStageResult);
+		ArrayList<Capability> secondStageList = new ArrayList<>(secondStageResult);
 
 		// Post-processing second stage results
 		postProcessProviders(requirement, existingWiredCapabilities, secondStageList);
@@ -310,12 +309,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 		Collection<Capability> caps = map.get(requirement);
 
-		for (Iterator<Capability> c = caps.iterator(); c.hasNext();) {
-			Capability capability = c.next();
-
-			if (blacklistedResources.contains(capability.getResource()))
-				c.remove();
-		}
+		caps.removeIf(capability -> blacklistedResources.contains(capability.getResource()));
 		return caps;
 	}
 
@@ -614,12 +608,12 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public void addEffectiveDirective(String effectiveDirective) {
-		this.effectiveSet.put(effectiveDirective, new HashSet<String>());
+		this.effectiveSet.put(effectiveDirective, new HashSet<>());
 	}
 
 	public void addEffectiveDirective(String effectiveDirective, Set<String> excludedNamespaces) {
 		this.effectiveSet.put(effectiveDirective,
-				excludedNamespaces != null ? excludedNamespaces : new HashSet<String>());
+				excludedNamespaces != null ? excludedNamespaces : new HashSet<>());
 	}
 
 	public void addEffectiveSet(Map<String,Set<String>> effectiveSet) {
@@ -690,7 +684,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	public List<Resource> getResources(List<Repository> repos, Requirement req) {
 
-		Set<Resource> resources = new HashSet<Resource>();
+		Set<Resource> resources = new HashSet<>();
 
 		for (Repository repo : repos) {
 			Collection<Capability> providers = findProviders(repo, req);

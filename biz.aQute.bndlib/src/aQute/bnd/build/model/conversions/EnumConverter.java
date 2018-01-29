@@ -6,11 +6,11 @@ public class EnumConverter<E extends Enum<E>> implements Converter<E,String> {
 	private final E			defaultValue;
 
 	public static <E extends Enum<E>> EnumConverter<E> create(Class<E> enumType) {
-		return new EnumConverter<E>(enumType, null);
+		return new EnumConverter<>(enumType, null);
 	}
 
 	public static <E extends Enum<E>> EnumConverter<E> create(Class<E> enumType, E defaultValue) {
-		return new EnumConverter<E>(enumType, defaultValue);
+		return new EnumConverter<>(enumType, defaultValue);
 	}
 
 	private EnumConverter(Class<E> enumType, E defaultValue) {

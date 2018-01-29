@@ -29,7 +29,7 @@ public class MavenEntry implements Closeable {
 	final File					dir;
 	final String				path;
 	final DirectoryLock			lock;
-	final Map<URI,CachedPom>	poms	= new HashMap<URI,CachedPom>();
+	final Map<URI,CachedPom>	poms	= new HashMap<>();
 	final File					pomFile;
 	final File					artifactFile;
 	final String				pomPath;
@@ -120,7 +120,7 @@ public class MavenEntry implements Closeable {
 
 					if (download(url, pomPath)) {
 						if (verify(url, pomPath)) {
-							artifact = new FutureTask<File>(new Callable<File>() {
+							artifact = new FutureTask<>(new Callable<File>() {
 
 								public File call() throws Exception {
 									if (download(url, artifactPath)) {

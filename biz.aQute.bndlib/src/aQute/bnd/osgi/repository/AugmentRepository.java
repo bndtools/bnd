@@ -23,7 +23,7 @@ import aQute.lib.collections.MultiMap;
 public class AugmentRepository extends BaseRepository {
 
 	private final Repository					repository;
-	private final Map<Capability,Capability>	wrapped					= new HashMap<Capability,Capability>();
+	private final Map<Capability,Capability>	wrapped					= new HashMap<>();
 	private final List<Capability>				augmentedCapabilities	= new ArrayList<>();
 	private final List<Resource>				augmentedBundles		= new ArrayList<>();
 

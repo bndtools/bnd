@@ -6,7 +6,7 @@ public class Pair<A, B> {
 	private final B	second;
 
 	public static <A, B> Pair<A,B> create(A first, B second) {
-		return new Pair<A,B>(first, second);
+		return new Pair<>(first, second);
 	}
 
 	public Pair(A first, B second) {

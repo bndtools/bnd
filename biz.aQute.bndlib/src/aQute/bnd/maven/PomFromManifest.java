@@ -24,8 +24,8 @@ import aQute.lib.tag.Tag;
 
 public class PomFromManifest extends WriteResource {
 	final Manifest			manifest;
-	private List<String>	scm			= new ArrayList<String>();
-	private List<String>	developers	= new ArrayList<String>();
+	private List<String>	scm			= new ArrayList<>();
+	private List<String>	developers	= new ArrayList<>();
 	final static Pattern	NAME_URL	= Pattern.compile("(.*)(http://.*)");
 	String					xbsn;
 	String					xversion;

@@ -24,10 +24,10 @@ public class JarResource implements Resource {
 	private final JarFile						jarFile;
 	private final String						location;
 
-	private final Dictionary<String,Object>		properties	= new Hashtable<String,Object>();
+	private final Dictionary<String,Object>		properties	= new Hashtable<>();
 
-	private final Map<String,List<JarEntry>>	prefixMap	= new HashMap<String,List<JarEntry>>();
-	private final Map<String,JarEntry>			paths		= new HashMap<String,JarEntry>();
+	private final Map<String,List<JarEntry>>	prefixMap	= new HashMap<>();
+	private final Map<String,JarEntry>			paths		= new HashMap<>();
 
 	private Manifest							manifest;
 
@@ -75,7 +75,7 @@ public class JarResource implements Resource {
 	private synchronized List<JarEntry> getOrCreatePrefix(String prefix) {
 		List<JarEntry> list = prefixMap.get(prefix);
 		if (list == null) {
-			list = new LinkedList<JarEntry>();
+			list = new LinkedList<>();
 			prefixMap.put(prefix, list);
 		}
 		return list;
@@ -118,7 +118,7 @@ public class JarResource implements Resource {
 		if (entries == null)
 			return null;
 
-		List<String> result = new ArrayList<String>(entries.size());
+		List<String> result = new ArrayList<>(entries.size());
 		for (JarEntry entry : entries) {
 			String unprefixedPath = entry.getName().substring(prefix.length());
 			result.add(unprefixedPath);

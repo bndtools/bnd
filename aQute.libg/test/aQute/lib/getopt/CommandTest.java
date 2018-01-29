@@ -80,14 +80,14 @@ public class CommandTest extends TestCase {
 	public void testHelp() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		C1 c1 = new C1();
-		getopt.execute(c1, "help", new ExtList<String>("c1"));
+		getopt.execute(c1, "help", new ExtList<>("c1"));
 
 	}
 
 	public void testSimple() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		C1 c1 = new C1();
-		String help = getopt.execute(c1, "c1", new ExtList<String>("-f", "-a", "33", "--bb", "bb", "-i", "f1.txt", "-i",
+		String help = getopt.execute(c1, "c1", new ExtList<>("-f", "-a", "33", "--bb", "bb", "-i", "f1.txt", "-i",
 				"f2.txt", "--", "-a", "--a", "a"));
 		System.err.println(help);
 	}
@@ -135,7 +135,7 @@ public class CommandTest extends TestCase {
 	public void test_SameFirstChar() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		CommandTwoOptions c = new CommandTwoOptions();
-		getopt.execute(c, "commandTwoOptions", new ExtList<String>("-t", "test", "-T", "title"));
+		getopt.execute(c, "commandTwoOptions", new ExtList<>("-t", "test", "-T", "title"));
 		assertEquals("title", c.title);
 		assertEquals("test", c.test);
 	}
@@ -144,7 +144,7 @@ public class CommandTest extends TestCase {
 		CommandLine getopt = new CommandLine(rp);
 		CommandWrongOption c = new CommandWrongOption();
 		try {
-			getopt.execute(c, "commandWrongOption", new ExtList<String>());
+			getopt.execute(c, "commandWrongOption", new ExtList<>());
 			fail();
 		} catch (Error e) {}
 	}
@@ -153,7 +153,7 @@ public class CommandTest extends TestCase {
 		CommandLine getopt = new CommandLine(rp);
 		CommandThreeOptions c = new CommandThreeOptions();
 		try {
-			getopt.execute(c, "commandThreeOptions", new ExtList<String>());
+			getopt.execute(c, "commandThreeOptions", new ExtList<>());
 			fail();
 		} catch (Error e) {}
 	}

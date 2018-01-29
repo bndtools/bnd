@@ -78,7 +78,7 @@ public class CommandLine {
 		// Find the appropriate method
 		//
 
-		List<String> arguments = new ArrayList<String>(input);
+		List<String> arguments = new ArrayList<>(input);
 		Map<String,Method> commands = getCommands(target);
 
 		Method m = commands.get(cmd);
@@ -218,7 +218,7 @@ public class CommandLine {
 	 */
 	public <T extends Options> T getOptions(Class<T> specification, List<String> arguments) throws Exception {
 		Map<String,String> properties = Create.map();
-		Map<String,Object> values = new HashMap<String,Object>();
+		Map<String,Object> values = new HashMap<>();
 		Map<String,Method> options = getOptions(specification);
 
 		argloop: while (arguments.size() > 0) {
@@ -292,7 +292,7 @@ public class CommandLine {
 	 * Answer a list of the options specified in an options interface
 	 */
 	private Map<String,Method> getOptions(Class< ? extends Options> interf) {
-		Map<String,Method> map = new TreeMap<String,Method>(String.CASE_INSENSITIVE_ORDER);
+		Map<String,Method> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 		for (Method m : interf.getMethods()) {
 			if (m.getName().startsWith("_"))
@@ -313,7 +313,7 @@ public class CommandLine {
 		// In case 3+ --------------------------------, throw an error
 		char prevChar = '\0';
 		boolean throwOnNextMatch = false;
-		Map<String,Method> toModify = new HashMap<String,Method>();
+		Map<String,Method> toModify = new HashMap<>();
 		for (String name : map.keySet()) {
 			if (Character.toLowerCase(name.charAt(0)) != name.charAt(0)) { //
 				throw new Error("Only commands with lower case first char are acceptable (" + name + ")");
@@ -380,7 +380,7 @@ public class CommandLine {
 				Collection<Object> optionValues = (Collection<Object>) options.get(m.getName());
 
 				if (optionValues == null) {
-					optionValues = new ArrayList<Object>();
+					optionValues = new ArrayList<>();
 					options.put(name, optionValues);
 				}
 
@@ -536,7 +536,7 @@ public class CommandLine {
 	 * @return command names
 	 */
 	public Map<String,Method> getCommands(Object target) {
-		Map<String,Method> map = new TreeMap<String,Method>();
+		Map<String,Method> map = new TreeMap<>();
 
 		for (Method m : target.getClass().getMethods()) {
 

@@ -37,7 +37,7 @@ public class TestLocalIndexedRepo extends TestCase {
 	public void testLocalIndexLocation() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
@@ -51,7 +51,7 @@ public class TestLocalIndexedRepo extends TestCase {
 	public void testLocalAndRemoteIndexLocations() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("locations",
 				"http://localhost:" + httpdPort + "/index1.xml,http://localhost:" + httpdPort + "/index2.xml");

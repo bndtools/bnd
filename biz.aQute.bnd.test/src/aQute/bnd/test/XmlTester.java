@@ -40,7 +40,7 @@ public class XmlTester {
 		xpath.setNamespaceContext(new NamespaceContext() {
 
 			public Iterator<String> getPrefixes(String namespaceURI) {
-				ArrayList<String> result = new ArrayList<String>(namespace.length / 2);
+				ArrayList<String> result = new ArrayList<>(namespace.length / 2);
 				for (int i = 0; i < namespace.length; i += 2) {
 					result.add(namespace[i]);
 				}

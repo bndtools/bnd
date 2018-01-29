@@ -9,6 +9,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,8 +31,8 @@ public class Command {
 
 	boolean				trace;
 	Reporter			reporter;
-	List<String>		arguments	= new ArrayList<String>();
-	Map<String,String>	variables	= new LinkedHashMap<String,String>();
+	List<String>		arguments	= new ArrayList<>();
+	Map<String,String>	variables	= new LinkedHashMap<>();
 	long				timeout		= 0;
 	File				cwd			= new File("").getAbsoluteFile();
 	static Timer		timer		= new Timer(Command.class.getName(), true);
@@ -92,7 +93,7 @@ public class Command {
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6511002
 
 			if (System.getProperty("os.name").startsWith("Windows")) {
-				List<String> adjustedStrings = new LinkedList<String>();
+				List<String> adjustedStrings = new LinkedList<>();
 				for (String a : arguments) {
 					adjustedStrings.add(windowsQuote(a));
 				}
@@ -209,8 +210,7 @@ public class Command {
 	}
 
 	public void add(String... args) {
-		for (String arg : args)
-			arguments.add(arg);
+		Collections.addAll(arguments, args);
 	}
 
 	public void addAll(Collection<String> args) {

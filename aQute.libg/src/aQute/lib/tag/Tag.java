@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.LinkedHashMap;
@@ -27,8 +28,8 @@ public class Tag {
 
 	Tag								parent;														// Parent
 	String							name;														// Name
-	final Map<String,String>		attributes	= new LinkedHashMap<String,String>();
-	final List<Object>				content		= new ArrayList<Object>();						// Content
+	final Map<String,String>		attributes	= new LinkedHashMap<>();
+	final List<Object>				content		= new ArrayList<>();						// Content
 	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 	boolean							cdata;
 
@@ -37,8 +38,7 @@ public class Tag {
 	 */
 	public Tag(String name, Object... contents) {
 		this.name = name;
-		for (Object c : contents)
-			content.add(c);
+		Collections.addAll(content, contents);
 	}
 
 	public Tag(Tag parent, String name, Object... contents) {
@@ -183,7 +183,7 @@ public class Tag {
 	 * name.
 	 */
 	public List<Object> getContents(String tag) {
-		List<Object> out = new ArrayList<Object>();
+		List<Object> out = new ArrayList<>();
 		for (Object o : content) {
 			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
 				out.add(o);
@@ -310,11 +310,11 @@ public class Tag {
 	 * root/preferences/native/os
 	 */
 	public Collection<Tag> select(String path) {
-		return select(path, (Tag) null);
+		return select(path, null);
 	}
 
 	public Collection<Tag> select(String path, Tag mapping) {
-		List<Tag> v = new ArrayList<Tag>();
+		List<Tag> v = new ArrayList<>();
 		select(path, v, mapping);
 		return v;
 	}

@@ -41,10 +41,10 @@ public class Link<L, R> extends Thread implements Closeable {
 	final DataOutputStream				out;
 	final Class<R>						remoteClass;
 	final AtomicInteger					id			= new AtomicInteger(10000);
-	final ConcurrentMap<Integer,Result>	promises	= new ConcurrentHashMap<Integer,Result>();
+	final ConcurrentMap<Integer,Result>	promises	= new ConcurrentHashMap<>();
 	final AtomicBoolean					quit		= new AtomicBoolean(false);
 	volatile boolean					transfer	= false;
-	private ThreadLocal<Integer>		msgid		= new ThreadLocal<Integer>();
+	private ThreadLocal<Integer>		msgid		= new ThreadLocal<>();
 
 	R									remote;
 	L									local;
@@ -158,7 +158,7 @@ public class Link<L, R> extends Thread implements Closeable {
 				final int id = in.readInt();
 
 				int count = in.readShort();
-				final List<byte[]> args = new ArrayList<byte[]>(count);
+				final List<byte[]> args = new ArrayList<>(count);
 				for (int i = 0; i < count; i++) {
 					int length = in.readInt();
 					byte[] data = new byte[length];

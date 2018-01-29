@@ -58,7 +58,7 @@ public class SubsystemExporter implements Exporter {
 		manifest.getMainAttributes().putValue("Manifest-Version", "1.0");
 		manifest.getMainAttributes().putValue("Subsystem-ManifestVersion", "1");
 
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 
 		for (Container c : project.getRunbundles()) {
 			switch (c.getType()) {

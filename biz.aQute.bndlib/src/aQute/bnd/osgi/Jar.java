@@ -60,8 +60,8 @@ public class Jar implements Closeable {
 			.compile(Constants.DEFAULT_DO_NOT_COPY);
 
 	public static final Object[]				EMPTY_ARRAY		= new Jar[0];
-	final TreeMap<String,Resource>				resources		= new TreeMap<String,Resource>();
-	final TreeMap<String,Map<String,Resource>>	directories		= new TreeMap<String,Map<String,Resource>>();
+	final TreeMap<String,Resource>				resources		= new TreeMap<>();
+	final TreeMap<String,Map<String,Resource>>	directories		= new TreeMap<>();
 	Manifest									manifest;
 	boolean										manifestFirst;
 	String										manifestName	= DEFAULT_MANIFEST_NAME;
@@ -234,7 +234,7 @@ public class Jar implements Closeable {
 		String dir = getDirectory(path);
 		Map<String,Resource> s = directories.get(dir);
 		if (s == null) {
-			s = new TreeMap<String,Resource>();
+			s = new TreeMap<>();
 			directories.put(dir, s);
 			int n = dir.lastIndexOf('/');
 			while (n > 0) {
@@ -374,9 +374,9 @@ public class Jar implements Closeable {
 				// default is DEFLATED
 		}
 
-		Set<String> done = new HashSet<String>();
+		Set<String> done = new HashSet<>();
 
-		Set<String> directories = new HashSet<String>();
+		Set<String> directories = new HashSet<>();
 		if (doNotTouchManifest) {
 			Resource r = getResource(manifestName);
 			if (r != null) {
@@ -407,9 +407,9 @@ public class Jar implements Closeable {
 
 		check();
 
-		Set<String> done = new HashSet<String>();
+		Set<String> done = new HashSet<>();
 
-		Set<String> directories = new HashSet<String>();
+		Set<String> directories = new HashSet<>();
 		if (doNotTouchManifest) {
 			Resource r = getResource(manifestName);
 			if (r != null) {
@@ -552,7 +552,7 @@ public class Jar implements Closeable {
 		writeEntry(out, "Manifest-Version", "1.0");
 		attributes(manifest.getMainAttributes(), out);
 
-		TreeSet<String> keys = new TreeSet<String>();
+		TreeSet<String> keys = new TreeSet<>();
 		for (Object o : manifest.getEntries().keySet())
 			keys.add(o.toString());
 
@@ -622,7 +622,7 @@ public class Jar implements Closeable {
 	 * @throws IOException when something fails
 	 */
 	private static void attributes(Attributes value, OutputStream out) throws IOException {
-		TreeMap<String,String> map = new TreeMap<String,String>(String.CASE_INSENSITIVE_ORDER);
+		TreeMap<String,String> map = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		for (Map.Entry<Object,Object> entry : value.entrySet()) {
 			map.put(entry.getKey().toString(), entry.getValue().toString());
 		}
@@ -791,7 +791,7 @@ public class Jar implements Closeable {
 
 	public List<String> getPackages() {
 		check();
-		List<String> list = new ArrayList<String>(directories.size());
+		List<String> list = new ArrayList<>(directories.size());
 
 		for (Map.Entry<String,Map<String,Resource>> i : directories.entrySet()) {
 			if (i.getValue() != null) {

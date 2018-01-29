@@ -145,7 +145,7 @@ public class JMXBundleDeployer {
 	 * @return array of bundles in framework
 	 */
 	public BundleDTO[] listBundles() {
-		final List<BundleDTO> retval = new ArrayList<BundleDTO>();
+		final List<BundleDTO> retval = new ArrayList<>();
 
 		try {
 			final ObjectName bundleState = getBundleState();

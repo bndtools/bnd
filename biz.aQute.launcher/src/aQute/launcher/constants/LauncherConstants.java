@@ -64,13 +64,13 @@ public class LauncherConstants {
 	public boolean					noreferences;
 	public File						storageDir;
 	public boolean					keep;
-	public final List<String>		runbundles					= new ArrayList<String>();
+	public final List<String>		runbundles					= new ArrayList<>();
 	public String					systemPackages;
 	public String					systemCapabilities;
 	public boolean					trace;
 	public long						timeout;
-	public final List<String>		activators					= new ArrayList<String>();
-	public Map<String,String>		runProperties				= new HashMap<String,String>();
+	public final List<String>		activators					= new ArrayList<>();
+	public Map<String,String>		runProperties				= new HashMap<>();
 	public boolean					embedded					= false;
 	public String					name;
 	public int						notificationPort			= -1;
@@ -145,7 +145,7 @@ public class LauncherConstants {
 	}
 
 	private Collection< ? extends String> split(String property, String string) {
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		StringTokenizer st = new StringTokenizer(property, string);
 		while (st.hasMoreTokens()) {
 			result.add(st.nextToken());

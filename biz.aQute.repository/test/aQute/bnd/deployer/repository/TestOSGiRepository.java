@@ -48,7 +48,7 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> props = new HashMap<String,String>();
+			Map<String,String> props = new HashMap<>();
 			props.put("name", getName());
 			props.put("locations", IO.getFile("testdata/index1.xml").toURI().toString());
 			props.put("cache", tmp.getAbsolutePath());
@@ -72,7 +72,7 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> props = new HashMap<String,String>();
+			Map<String,String> props = new HashMap<>();
 			props.put("name", getName());
 			props.put("locations", IO.getFile("testdata/index2.xml").toURI().toString());
 			props.put("cache", tmp.getAbsolutePath());
@@ -90,7 +90,7 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> props = new HashMap<String,String>();
+			Map<String,String> props = new HashMap<>();
 			props.put("name", getName());
 			props.put("locations", IO.getFile("testdata/index2.xml.gz").toURI().toString());
 			props.put("cache", tmp.getAbsolutePath());
@@ -108,7 +108,7 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> config = new HashMap<String,String>();
+			Map<String,String> config = new HashMap<>();
 			config.put("locations", IO.getFile("testdata/ambiguous.xml").toURI().toString());
 			config.put("name", getName());
 			config.put("cache", tmp.getAbsolutePath());
@@ -134,7 +134,7 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> config = new HashMap<String,String>();
+			Map<String,String> config = new HashMap<>();
 			config.put("locations", IO.getFile("testdata/with spaces .xml").getAbsoluteFile().toURI().toString());
 			config.put("name", getName());
 			config.put("cache", tmp.getAbsolutePath());

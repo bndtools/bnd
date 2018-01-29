@@ -145,7 +145,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public HttpRequest<Object> build() {
-		return new HttpRequest<Object>(this);
+		return new HttpRequest<>(this);
 	}
 
 	public Object send(final HttpRequest< ? > request) throws Exception {

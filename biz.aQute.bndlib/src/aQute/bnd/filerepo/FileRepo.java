@@ -74,7 +74,7 @@ public class FileRepo {
 
 	public List<Version> versions(String bsn) throws Exception {
 		File dir = new File(root, bsn);
-		final List<Version> versions = new ArrayList<Version>();
+		final List<Version> versions = new ArrayList<>();
 		dir.list(new FilenameFilter() {
 
 			public boolean accept(File dir, String name) {

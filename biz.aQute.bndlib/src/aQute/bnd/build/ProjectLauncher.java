@@ -41,10 +41,10 @@ public abstract class ProjectLauncher extends Processor {
 	private final static Logger					logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project						project;
 	private long								timeout				= 0;
-	private final List<String>					classpath			= new ArrayList<String>();
+	private final List<String>					classpath			= new ArrayList<>();
 	private List<String>						runbundles			= Create.list();
-	private final List<String>					runvm				= new ArrayList<String>();
-	private final List<String>					runprogramargs		= new ArrayList<String>();
+	private final List<String>					runvm				= new ArrayList<>();
+	private final List<String>					runprogramargs		= new ArrayList<>();
 	private Map<String,String>					runproperties;
 	private Command								java;
 	private Parameters							runsystempackages;
@@ -56,8 +56,8 @@ public abstract class ProjectLauncher extends Processor {
 	private boolean								keep;
 	private int									framework;
 	private File								cwd;
-	private Collection<String>					agents				= new ArrayList<String>();
-	private Map<NotificationListener,Boolean>	listeners			= new IdentityHashMap<NotificationListener,Boolean>();
+	private Collection<String>					agents				= new ArrayList<>();
+	private Map<NotificationListener,Boolean>	listeners			= new IdentityHashMap<>();
 
 	protected Appendable						out					= System.out;
 	protected Appendable						err					= System.err;
@@ -347,7 +347,7 @@ public abstract class ProjectLauncher extends Processor {
 		// i.e. the framework etc.
 		//
 
-		List<URL> cp = new ArrayList<URL>();
+		List<URL> cp = new ArrayList<>();
 		for (String path : getClasspath()) {
 			cp.add(new File(path).toURI().toURL());
 		}

@@ -95,7 +95,7 @@ import aQute.libg.tuple.Pair;
 
 public class Analyzer extends Processor {
 	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
-	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<Clazz.JAVA>();
+	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<>();
 	static Properties								bndInfo;
 
 	// Bundle parameters
@@ -107,9 +107,9 @@ public class Analyzer extends Processor {
 	private TypeRef									activator;
 
 	// Global parameters
-	private final MultiMap<PackageRef,PackageRef>	uses					= new MultiMap<PackageRef,PackageRef>(
+	private final MultiMap<PackageRef,PackageRef>	uses					= new MultiMap<>(
 			PackageRef.class, PackageRef.class, true);
-	private final MultiMap<PackageRef,PackageRef>	apiUses					= new MultiMap<PackageRef,PackageRef>(
+	private final MultiMap<PackageRef,PackageRef>	apiUses					= new MultiMap<>(
 			PackageRef.class, PackageRef.class, true);
 	private final Contracts							contracts				= new Contracts(this);
 	private final Packages							classpathExports		= new Packages();
@@ -123,7 +123,7 @@ public class Analyzer extends Processor {
 	final protected AnalyzerMessages				msgs					= ReporterMessages.base(this,
 			AnalyzerMessages.class);
 	private AnnotationHeaders						annotationHeaders;
-	private Set<PackageRef>							packagesVisited			= new HashSet<PackageRef>();
+	private Set<PackageRef>							packagesVisited			= new HashSet<>();
 	private Set<Check>								checks;
 
 	public enum Check {
@@ -284,10 +284,7 @@ public class Analyzer extends Processor {
 				removeDynamicImports(referredAndExported);
 
 				// Remove any Java references ... where are the closures???
-				for (Iterator<PackageRef> i = referredAndExported.keySet().iterator(); i.hasNext();) {
-					if (i.next().isJava())
-						i.remove();
-				}
+				referredAndExported.keySet().removeIf(PackageRef::isJava);
 
 				Set<Instruction> unused = Create.set();
 				String h = getProperty(IMPORT_PACKAGE);
@@ -343,7 +340,7 @@ public class Analyzer extends Processor {
 			for (PackageRef exported : exports.keySet()) {
 				List<PackageRef> used = uses.get(exported);
 				if (used != null) {
-					Set<PackageRef> privateReferences = new TreeSet<PackageRef>(apiUses.get(exported));
+					Set<PackageRef> privateReferences = new TreeSet<>(apiUses.get(exported));
 					privateReferences.retainAll(privatePackages);
 					if (!privateReferences.isEmpty())
 						msgs.Export_Has_PrivateReferences_(exported, privateReferences.size(), privateReferences);
@@ -651,14 +648,14 @@ public class Analyzer extends Processor {
 						break;
 					case "aQute.bnd.annotation.Export" :
 						// Check mandatory attributes
-						Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz, getReplacer());
+						Attrs attrs = doAttrbutes(a.get(Export.MANDATORY), clazz, getReplacer());
 						if (!attrs.isEmpty()) {
 							info.putAll(attrs);
 							info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
 						}
 
 						// Check optional attributes
-						attrs = doAttrbutes((Object[]) a.get(Export.OPTIONAL), clazz, getReplacer());
+						attrs = doAttrbutes(a.get(Export.OPTIONAL), clazz, getReplacer());
 						if (!attrs.isEmpty()) {
 							info.putAll(attrs);
 						}
@@ -997,16 +994,16 @@ public class Analyzer extends Processor {
 				return highest.getFilter();
 		} else {
 			Attrs t = OSGiHeader.parseProperties(ee);
-			profiles = new HashMap<String,Set<String>>();
+			profiles = new HashMap<>();
 
 			for (Map.Entry<String,String> e : t.entrySet()) {
 				String profile = e.getKey();
 				String l = e.getValue();
-				SortedList<String> sl = new SortedList<String>(l.split("\\s*,\\s*"));
+				SortedList<String> sl = new SortedList<>(l.split("\\s*,\\s*"));
 				profiles.put(profile, sl);
 			}
 		}
-		SortedSet<String> found = new TreeSet<String>();
+		SortedSet<String> found = new TreeSet<>();
 		nextPackage: for (PackageRef p : referred.keySet()) {
 			if (p.isJava()) {
 				String fqn = p.getFQN();
@@ -1080,7 +1077,7 @@ public class Analyzer extends Processor {
 
 		Parameters namesection = parseHeader(getProperties().getProperty(NAMESECTION));
 		Instructions instructions = new Instructions(namesection);
-		Set<String> resources = new HashSet<String>(dot.getResources().keySet());
+		Set<String> resources = new HashSet<>(dot.getResources().keySet());
 
 		//
 		// For each instruction, iterator over the resources and filter
@@ -1261,7 +1258,7 @@ public class Analyzer extends Processor {
 	}
 
 	public Set<PackageRef> getPrivates() {
-		HashSet<PackageRef> privates = new HashSet<PackageRef>(contained.keySet());
+		HashSet<PackageRef> privates = new HashSet<>(contained.keySet());
 		privates.removeAll(exports.keySet());
 		privates.removeAll(imports.keySet());
 		return privates;
@@ -1281,7 +1278,7 @@ public class Analyzer extends Processor {
 	 * 
 	 */
 	public Set<PackageRef> getUnreachable() {
-		Set<PackageRef> unreachable = new HashSet<PackageRef>(uses.keySet()); // all
+		Set<PackageRef> unreachable = new HashSet<>(uses.keySet()); // all
 		for (Iterator<PackageRef> r = exports.keySet().iterator(); r.hasNext();) {
 			PackageRef packageRef = r.next();
 			removeTransitive(packageRef, unreachable);
@@ -1422,7 +1419,7 @@ public class Analyzer extends Processor {
 	}
 
 	public void setClasspath(File[] classpath) throws IOException {
-		List<Jar> list = new ArrayList<Jar>();
+		List<Jar> list = new ArrayList<>();
 		for (int i = 0; i < classpath.length; i++) {
 			if (classpath[i].exists()) {
 				Jar current = new Jar(classpath[i]);
@@ -1606,7 +1603,7 @@ public class Analyzer extends Processor {
 	Packages doExportsToImports(Packages exports) {
 
 		// private packages = contained - exported.
-		Set<PackageRef> privatePackages = new HashSet<PackageRef>(contained.keySet());
+		Set<PackageRef> privatePackages = new HashSet<>(contained.keySet());
 		privatePackages.removeAll(exports.keySet());
 
 		// private references = ∀ p : contained packages | uses(p)
@@ -1618,7 +1615,7 @@ public class Analyzer extends Processor {
 		}
 
 		// Assume we are going to import all exported packages
-		Set<PackageRef> toBeImported = new HashSet<PackageRef>(exports.keySet());
+		Set<PackageRef> toBeImported = new HashSet<>(exports.keySet());
 
 		// Remove packages that are not referenced locally
 		toBeImported.retainAll(containedReferences);
@@ -2099,7 +2096,7 @@ public class Analyzer extends Processor {
 			// Only do a uses on exported or imported packages
 			// and uses should also not contain our own package
 			// name
-			Set<PackageRef> sharedPackages = new TreeSet<PackageRef>();
+			Set<PackageRef> sharedPackages = new TreeSet<>();
 			sharedPackages.addAll(imports.keySet());
 			sharedPackages.addAll(exports.keySet());
 			sharedPackages.retainAll(usedPackages);
@@ -2422,7 +2419,7 @@ public class Analyzer extends Processor {
 	 * @throws IOException
 	 */
 	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs) throws Exception {
-		Map<String,Clazz> mismatched = new HashMap<String,Clazz>();
+		Map<String,Clazz> mismatched = new HashMap<>();
 
 		next: for (String path : jar.getResources().keySet()) {
 			if (path.startsWith(prefix)) {
@@ -2643,7 +2640,7 @@ public class Analyzer extends Processor {
 
 	public Collection<Clazz> getClasses(String... args) throws Exception {
 
-		Set<Clazz> matched = new HashSet<Clazz>(classspace.values());
+		Set<Clazz> matched = new HashSet<>(classspace.values());
 		for (int i = 1; i < args.length; i++) {
 			if (args.length < i + 1)
 				throw new IllegalArgumentException(
@@ -2676,7 +2673,7 @@ public class Analyzer extends Processor {
 				}
 			}
 		}
-		return new SortedList<Clazz>(matched, Clazz.NAME_COMPARATOR);
+		return new SortedList<>(matched, Clazz.NAME_COMPARATOR);
 	}
 
 	static String _packagesHelp = "${packages;'named'|'annotated'|'any';<pattern>}, Return a list of packages contained in the bundle that match the pattern\n";
@@ -2687,7 +2684,7 @@ public class Analyzer extends Processor {
 	}
 
 	public Collection<PackageRef> getPackages(Packages scope, String... args) throws Exception {
-		List<PackageRef> pkgs = new LinkedList<PackageRef>();
+		List<PackageRef> pkgs = new LinkedList<>();
 
 		Packages.QUERY queryType;
 		Instruction instr;
@@ -2867,7 +2864,7 @@ public class Analyzer extends Processor {
 		if (require == null || require.isEmpty())
 			return;
 
-		Hashtable<String,String> map = new Hashtable<String,String>();
+		Hashtable<String,String> map = new Hashtable<>();
 		map.put(Constants.VERSION_FILTER, getBndVersion());
 
 		for (String filter : require.keySet()) {
@@ -2981,10 +2978,10 @@ public class Analyzer extends Processor {
 
 	Packages filter(Instructions instructions, Packages source, Set<Instruction> nomatch) {
 		Packages result = new Packages();
-		List<PackageRef> refs = new ArrayList<PackageRef>(source.keySet());
+		List<PackageRef> refs = new ArrayList<>(source.keySet());
 		Collections.sort(refs);
 
-		List<Instruction> filters = new ArrayList<Instruction>(instructions.keySet());
+		List<Instruction> filters = new ArrayList<>(instructions.keySet());
 		if (nomatch == null)
 			nomatch = Create.set();
 
@@ -3215,16 +3212,13 @@ public class Analyzer extends Processor {
 	 * @param removeJava
 	 */
 	public Map<PackageRef,List<PackageRef>> cleanupUses(Map<PackageRef,List<PackageRef>> apiUses, boolean removeJava) {
-		MultiMap<PackageRef,PackageRef> map = new MultiMap<PackageRef,PackageRef>(apiUses);
+		MultiMap<PackageRef,PackageRef> map = new MultiMap<>(apiUses);
 		for (Entry<PackageRef,List<PackageRef>> e : map.entrySet()) {
 			e.getValue().remove(e.getKey());
 			if (!removeJava)
 				continue;
 
-			for (Iterator<PackageRef> i = e.getValue().iterator(); i.hasNext();) {
-				if (i.next().isJava())
-					i.remove();
-			}
+			e.getValue().removeIf(PackageRef::isJava);
 		}
 		return map;
 	}
@@ -3236,7 +3230,7 @@ public class Analyzer extends Processor {
 	 * @return a set of classes for the requested package.
 	 */
 	public Set<Clazz> getClassspace(PackageRef source) {
-		Set<Clazz> result = new HashSet<Clazz>();
+		Set<Clazz> result = new HashSet<>();
 		for (Clazz c : getClassspace().values()) {
 			if (c.getClassName().getPackageRef() == source)
 				result.add(c);
@@ -3254,7 +3248,7 @@ public class Analyzer extends Processor {
 	 */
 	public Map<Clazz.Def,List<TypeRef>> getXRef(final PackageRef source, final Collection<PackageRef> dest,
 			final int sourceModifiers) throws Exception {
-		final MultiMap<Clazz.Def,TypeRef> xref = new MultiMap<Clazz.Def,TypeRef>(Clazz.Def.class, TypeRef.class, true);
+		final MultiMap<Clazz.Def,TypeRef> xref = new MultiMap<>(Clazz.Def.class, TypeRef.class, true);
 
 		for (final Clazz clazz : getClassspace().values()) {
 			if ((clazz.accessx & sourceModifiers) == 0)
@@ -3338,7 +3332,6 @@ public class Analyzer extends Processor {
 		table.put("Imported", getImports().entrySet());
 		table.put("Exported", getExports().entrySet());
 		table.put("Referred", getReferred().entrySet());
-		table.put("Referred", getReferred().entrySet());
 		table.put("Bundle Symbolic Name", getBsn());
 		table.put("Execution Environments", ees);
 	}
@@ -3379,7 +3372,7 @@ public class Analyzer extends Processor {
 	public boolean check(Check key) {
 		if (checks == null) {
 			Parameters p = new Parameters(getProperty("-check"), this);
-			checks = new HashSet<Check>();
+			checks = new HashSet<>();
 			for (String k : p.keySet())
 				try {
 					if (k.equalsIgnoreCase("all")) {

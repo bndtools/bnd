@@ -175,9 +175,9 @@ public class BndTask extends BaseTask {
 
 	// Old shit
 
-	List<File>	files		= new ArrayList<File>();
-	List<File>	classpath	= new ArrayList<File>();
-	List<File>	sourcepath	= new ArrayList<File>();
+	List<File>	files		= new ArrayList<>();
+	List<File>	classpath	= new ArrayList<>();
+	List<File>	sourcepath	= new ArrayList<>();
 	File		output		= null;
 	File		testDir		= null;
 	boolean		eclipse;

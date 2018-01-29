@@ -373,7 +373,7 @@ public class ObrContentProvider implements IRepositoryContentProvider {
 			if (indexer == null)
 				throw new IllegalStateException("Cannot index repository: no Bundle Indexer provided.");
 
-			Map<String,String> config = new HashMap<String,String>();
+			Map<String,String> config = new HashMap<>();
 
 			config.put(BundleIndexer.REPOSITORY_NAME, repoName);
 			config.put(BundleIndexer.ROOT_URL, rootUri.toString());

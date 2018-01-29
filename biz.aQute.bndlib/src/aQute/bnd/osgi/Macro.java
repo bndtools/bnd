@@ -23,7 +23,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Formatter;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -228,7 +227,7 @@ public class Macro {
 							for (int i = 0; i < 16; i++) {
 								domain.setProperty("" + i, i < parts.length ? parts[i] : "null");
 							}
-							ExtList<String> args = new ExtList<String>(parts);
+							ExtList<String> args = new ExtList<>(parts);
 							args.remove(0);
 							domain.setProperty("#", args.join());
 							try {
@@ -339,9 +338,7 @@ public class Macro {
 
 			String cname = "_" + part;
 			try {
-				Method m = target.getClass().getMethod(cname, new Class[] {
-						String[].class
-				});
+				Method m = target.getClass().getMethod(cname, String[].class);
 				Object result = m.invoke(target, new Object[] {
 						args
 				});
@@ -371,7 +368,7 @@ public class Macro {
 
 	public String _uniq(String args[]) {
 		verifyCommand(args, _uniqHelp, null, 1, Integer.MAX_VALUE);
-		Set<String> set = new LinkedHashSet<String>();
+		Set<String> set = new LinkedHashSet<>();
 		for (int i = 1; i < args.length; i++) {
 			Processor.split(args[i], set);
 		}
@@ -412,15 +409,12 @@ public class Macro {
 		Collection<String> list = toCollection(args[1]);
 		Pattern pattern = Pattern.compile(args[2]);
 
-		for (Iterator<String> i = list.iterator(); i.hasNext();) {
-			if (pattern.matcher(i.next()).matches() == include)
-				i.remove();
-		}
+		list.removeIf(s -> pattern.matcher(s).matches() == include);
 		return Processor.join(list);
 	}
 
 	ArrayList<String> toCollection(String arg) {
-		return new ArrayList<String>(Processor.split(arg));
+		return new ArrayList<>(Processor.split(arg));
 	}
 
 	static String _sortHelp = "${sort;<list>...}";
@@ -428,7 +422,7 @@ public class Macro {
 	public String _sort(String args[]) {
 		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		for (int i = 1; i < args.length; i++) {
 			Processor.split(args[i], result);
 		}
@@ -441,7 +435,7 @@ public class Macro {
 	public String _nsort(String args[]) {
 		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
 
-		ExtList<String> result = new ExtList<String>();
+		ExtList<String> result = new ExtList<>();
 		for (int i = 1; i < args.length; i++) {
 			result.addAll(ExtList.from(args[i]));
 		}
@@ -472,7 +466,7 @@ public class Macro {
 
 		verifyCommand(args, _joinHelp, null, 1, Integer.MAX_VALUE);
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		for (int i = 1; i < args.length; i++) {
 			Processor.split(args[i], result);
 		}
@@ -484,7 +478,7 @@ public class Macro {
 	public String _sjoin(String args[]) throws Exception {
 		verifyCommand(args, _sjoinHelp, null, 2, Integer.MAX_VALUE);
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		for (int i = 2; i < args.length; i++) {
 			Processor.split(args[i], result);
 		}
@@ -541,7 +535,7 @@ public class Macro {
 		verifyCommand(args, _fmodifiedHelp, null, 2, Integer.MAX_VALUE);
 
 		long time = 0;
-		Collection<String> names = new ArrayList<String>();
+		Collection<String> names = new ArrayList<>();
 		for (int i = 1; i < args.length; i++) {
 			Processor.split(args[i], names);
 		}
@@ -633,7 +627,7 @@ public class Macro {
 		verifyCommand(args, _toclassnameHelp, null, 2, 2);
 		Collection<String> paths = Processor.split(args[1]);
 
-		List<String> names = new ArrayList<String>(paths.size());
+		List<String> names = new ArrayList<>(paths.size());
 		for (String path : paths) {
 			if (path.endsWith(".class")) {
 				String name = path.substring(0, path.length() - 6).replace('/', '.');
@@ -661,7 +655,7 @@ public class Macro {
 			cl = Boolean.valueOf(args[2]);
 
 		Collection<String> names = Processor.split(args[1]);
-		Collection<String> paths = new ArrayList<String>(names.size());
+		Collection<String> paths = new ArrayList<>(names.size());
 		for (String name : names) {
 			String path = name.replace('.', '/') + (cl ? ".class" : "");
 			paths.add(path);
@@ -800,14 +794,14 @@ public class Macro {
 			throw new IllegalArgumentException(
 					"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
 
-		Collection<File> files = new ArrayList<File>(new SortedList<File>(dir.listFiles()));
+		Collection<File> files = new ArrayList<>(new SortedList<>(dir.listFiles()));
 
 		for (int i = 2; i < args.length; i++) {
 			Instructions filters = new Instructions(args[i]);
 			files = filters.select(files, true);
 		}
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		for (File file : files)
 			result.add(relative ? file.getName() : file.getAbsolutePath().replace(File.separatorChar, '/'));
 
@@ -1251,7 +1245,7 @@ public class Macro {
 	}
 
 	public String _path(String args[]) {
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		for (int i = 1; i < args.length; i++) {
 			list.addAll(Processor.split(args[i]));
 		}
@@ -1470,7 +1464,7 @@ public class Macro {
 	}
 
 	private ExtList<String> toList(String[] args, int i, int j) {
-		ExtList<String> list = new ExtList<String>();
+		ExtList<String> list = new ExtList<>();
 		for (; i < j; i++) {
 			Processor.split(args[i], list);
 		}
@@ -1653,7 +1647,7 @@ public class Macro {
 	public String _split(String args[]) throws Exception {
 		verifyCommand(args, _split, null, 2, Integer.MAX_VALUE);
 
-		List<String> collected = new ArrayList<String>();
+		List<String> collected = new ArrayList<>();
 		for (int n = 2; n < args.length; n++) {
 			String value = args[n];
 			String[] split = value.split(args[1]);
@@ -1959,7 +1953,7 @@ public class Macro {
 		verifyCommand(args, _map, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		List<String> list = toList(args, 2, args.length);
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		for (String s : list) {
 			String invoc = process("${" + macro + ";" + s + "}");
@@ -1979,7 +1973,7 @@ public class Macro {
 		verifyCommand(args, _foreach, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		List<String> list = toList(args, 2, args.length);
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		int n = 0;
 		for (String s : list) {
@@ -2000,7 +1994,7 @@ public class Macro {
 		verifyCommand(args, _apply, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		List<String> list = toList(args, 2, args.length);
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		StringBuilder sb = new StringBuilder();
 		sb.append("${").append(macro);
