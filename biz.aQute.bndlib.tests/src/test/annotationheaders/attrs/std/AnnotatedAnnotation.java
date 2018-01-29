@@ -3,6 +3,7 @@ package test.annotationheaders.attrs.std;
 import static org.osgi.annotation.bundle.Requirement.Cardinality.MULTIPLE;
 import static org.osgi.annotation.bundle.Requirement.Resolution.OPTIONAL;
 
+import org.osgi.annotation.bundle.Attribute;
 import org.osgi.annotation.bundle.Capability;
 import org.osgi.annotation.bundle.Header;
 import org.osgi.annotation.bundle.Requirement;
@@ -15,4 +16,10 @@ import org.osgi.annotation.bundle.Requirement;
 @Header(name = "Foo", value = "bar")
 @Header(name = "Fizz", value = "buzz")
 public @interface AnnotatedAnnotation {
+
+	@Attribute("open")
+	String ignoredName();
+
+	@Attribute
+	String usedName();
 }
