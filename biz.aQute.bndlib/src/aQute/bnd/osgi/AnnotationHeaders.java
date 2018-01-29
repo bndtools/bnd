@@ -119,8 +119,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	// Used to detect attributes and directives on Require-Capability and
 	// Provide-Capability
-	static final String				ATTRIBUTE			= "org.osgi.annotation.bundle.Attribute";
-	static final String				DIRECTIVE			= "org.osgi.annotation.bundle.Directive";
+	static final String				STD_ATTRIBUTE		= "org.osgi.annotation.bundle.Attribute";
+	static final String				STD_DIRECTIVE		= "org.osgi.annotation.bundle.Directive";
 
 	// Class we're currently processing
 	Clazz							current;
@@ -290,8 +290,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 					
 					@Override
 					public void annotation(Annotation a) throws Exception {
-						if (ATTRIBUTE.equals(a.getName().getFQN()) || 
-							DIRECTIVE.equals(a.getName().getFQN())) {
+						if (STD_ATTRIBUTE.equals(a.getName()
+							.getFQN()) || STD_DIRECTIVE.equals(
+								a.getName()
+									.getFQN())) {
 							handleAttributeOrDirective(a);
 						}
 
@@ -309,22 +311,23 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 					}
 
 					private void mergeAttributesAndDirectives(Annotation a) {
-						if(STD_CAPABILITIES.equals(a.getName().getFQN()) || STD_REQUIREMENTS.equals(a.getName().getFQN())) {
+						if (STD_CAPABILITIES.equals(a.getName()
+							.getFQN()) || STD_REQUIREMENTS.equals(
+								a.getName()
+									.getFQN())) {
 							Object[] annotations = a.get("value");
 							for (int i = 0; i < annotations.length; i++) {
 								mergeAttributesAndDirectives((Annotation) annotations[i]);
 							}
 						} else {
-							attributesAndDirectives.entrySet()
+							Stream<String> toAdd = attributesAndDirectives.entrySet()
 								.stream()
 								.map(e -> e.getKey() + "=" + e.getValue());
 							
 							String[] original = a.get("attribute");
 							original = original == null ? new String[0] : original;
 							
-							String[] updated = Stream.concat(Arrays.stream(original), attributesAndDirectives.entrySet()
-								.stream()
-								.map(e -> e.getKey() + "=" + e.getValue()))
+							String[] updated = Stream.concat(Arrays.stream(original), toAdd)
 								.collect(Collectors.toList())
 								.toArray(original);
 
@@ -340,7 +343,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 							if (attributeName == null) {
 								attributeName = lastMethodSeen.getName();
 							}
-							if(ATTRIBUTE.equals(a.getName().getFQN())) {
+							if (STD_ATTRIBUTE.equals(a.getName()
+								.getFQN())) {
 								attributesAndDirectives.putTyped(attributeName, o);
 							} else {
 								attributesAndDirectives.putTyped(attributeName + ":", o);
