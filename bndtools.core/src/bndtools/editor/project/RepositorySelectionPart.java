@@ -104,7 +104,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
     private final UpDownButtonBarPart upDownReposPart;
     private RepositoriesEditModel repositories;
     private AddRemoveButtonBarPart addRemove;
-    private Set<IFile> workspaceIndexFiles;
+    private Set<IFile> workspaceIndexFiles = Collections.emptySet();
 
     /**
      * Create the SectionPart.
@@ -440,7 +440,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
         repositories = new RepositoriesEditModel(model);
         boolean standalone = repositories.isStandalone();
         btnStandaloneCheckbox.setSelection(standalone);
-        workspaceIndexFiles = standalone ? getWorkspaceIndexFiles() : Collections.<IFile> emptySet();
+        workspaceIndexFiles = standalone ? getWorkspaceIndexFiles() : Collections.emptySet();
         updateButtons();
         reloadRepos();
     }
