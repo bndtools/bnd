@@ -199,4 +199,29 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		xt.assertAttribute("String", "scr:component/property[@name='array.prop']/@type");
 		xt.assertAttribute("fizz\nbuzz\nfizzbuzz", "scr:component/property[@name='array.prop']");
 	}
+
+	@ComponentPropertyType
+	@Retention(RetentionPolicy.CLASS)
+	@Target(ElementType.TYPE)
+	public static @interface MarkerProp {}
+
+	@MarkerProp
+	@Component
+	public static class MarkerPropertyAnnotated {}
+
+	public void testMarkerAnnotation() throws Exception {
+
+		Resource r = jar.getResource("OSGI-INF/" + MarkerPropertyAnnotated.class.getName() + ".xml");
+
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		// Test the defaults
+		xt.assertAttribute(MarkerPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
+		xt.assertCount(1, "scr:component/property");
+		xt.assertAttribute("true", "scr:component/property[@name='marker.prop']/@value");
+		xt.assertAttribute("Boolean", "scr:component/property[@name='marker.prop']/@type");
+	}
 }

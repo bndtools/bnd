@@ -510,6 +510,7 @@ public class AnnotationReader extends ClassDataCollector {
 		private final Map<String,String>					propertyTypes	= new HashMap<>();
 		private int											hasNoDefault	= 0;
 		private boolean										hasValue		= false;
+		private boolean										hasMethods		= false;
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
 	
@@ -552,6 +553,7 @@ public class AnnotationReader extends ClassDataCollector {
 			if (defined.isStatic()) {
 				return;
 			}
+			hasMethods = true;
 			if (defined.getName().equals("value")) {
 				hasValue = true;
 			} else {
@@ -642,6 +644,14 @@ public class AnnotationReader extends ClassDataCollector {
 							c).details(details);
 				}
 			}
+
+			if (!hasMethods) {
+				// This is a marker annotation so treat it like it is a single
+				// element annotation with a value of Boolean.TRUE
+				hasValue = true;
+				handleValue("value", Boolean.TRUE, false, Boolean.class);
+			}
+
 			String singleElementAnnotation = null;
 			if (hasValue && (hasNoDefault == 0)) {
 				StringBuilder sb = new StringBuilder(typeRef.getShorterName());
@@ -668,6 +678,7 @@ public class AnnotationReader extends ClassDataCollector {
 					component.updateVersion(V1_4);
 				}
 			}
+
 			for (Entry<String,List<String>> entry : props.entrySet()) {
 				String key = entry.getKey();
 				List<String> value = entry.getValue();
