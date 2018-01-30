@@ -50,6 +50,7 @@ public class Verifier extends Processor {
 	final static int		V1_7	= 51;
 	final static int		V1_8	= 52;
 	final static int		V9_0	= 53;
+	final static int		V10_0	= 54;
 
 	static class EE {
 		String	name;
@@ -81,6 +82,7 @@ public class Verifier extends Processor {
 			new EE("JavaSE-1.7", V1_7, V1_7),																								//
 			new EE("JavaSE-1.8", V1_8, V1_8),																								//
 			new EE("JavaSE-9", V9_0, V9_0),																									//
+		new EE("JavaSE-10", V10_0, V10_0),																									//
 			new EE("PersonalJava-1.1", V1_1, V1_1),																							//
 			new EE("PersonalJava-1.2", V1_1, V1_1),																							//
 			new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),																				//
@@ -97,6 +99,7 @@ public class Verifier extends Processor {
 					+ "|J2SE-1\\.[2-5]"																										//
 					+ "|JavaSE-1\\.[6-8]"																									//
 					+ "|JavaSE-9"																											//
+			+ "|JavaSE-10"																													//
 					+ "|PersonalJava-1\\.[12]"																								//
 					+ "|CDC-1\\.0/PersonalBasis-1\\.0"																						//
 					+ "|CDC-1\\.0/PersonalJava-1\\.0"																						//
@@ -117,6 +120,7 @@ public class Verifier extends Processor {
 			"JavaSE-1.7",																													//
 			"JavaSE-1.8",																													//
 			"JavaSE-9",																														//
+		"JavaSE-10",																														//
 			"PersonalJava-1.1",																												//
 			"PersonalJava-1.2",																												//
 			"CDC-1.0/PersonalBasis-1.0",																									//
