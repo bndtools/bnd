@@ -3066,7 +3066,7 @@ public class Project extends Processor {
 			javac.add("-deprecation");
 
 		if (test || debug == null) {
-			javac.add("-g:source,lines,vars" + debug);
+			javac.add("-g:source,lines,vars");
 		} else {
 			javac.add("-g:" + debug);
 		}
