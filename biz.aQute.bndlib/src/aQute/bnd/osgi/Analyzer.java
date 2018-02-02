@@ -3372,22 +3372,22 @@ public class Analyzer extends Processor {
 	public boolean check(Check key) {
 		if (checks == null) {
 			Parameters p = new Parameters(getProperty("-check"), this);
-			checks = new HashSet<>();
-			for (String k : p.keySet())
+			checks = EnumSet.noneOf(Check.class);
+			for (String k : p.keyList()) {
 				try {
 					if (k.equalsIgnoreCase("all")) {
 						checks = EnumSet.allOf(Check.class);
 						break;
 					}
 
-					Check c = Enum.valueOf(Check.class, k.toUpperCase().replace('-', '_'));
+					Check c = Check.valueOf(k.toUpperCase()
+						.replace('-', '_'));
 					checks.add(c);
 
 				} catch (Exception e) {
 					error("Invalid -check constant, allowed values are %s", Arrays.toString(Check.values()));
 				}
-			if (!checks.isEmpty())
-				checks = EnumSet.copyOf(checks);
+			}
 		}
 		return checks.contains(key) || checks.contains(Check.ALL);
 	}

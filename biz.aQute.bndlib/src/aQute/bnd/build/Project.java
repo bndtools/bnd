@@ -2693,12 +2693,12 @@ public class Project extends Processor {
 
 	public Collection<String> getRunVM() {
 		Parameters hdr = getMergedParameters(RUNVM);
-		return hdr.keySet();
+		return hdr.keyList();
 	}
 
 	public Collection<String> getRunProgramArgs() {
 		Parameters hdr = getMergedParameters(RUNPROGRAMARGS);
-		return hdr.keySet();
+		return hdr.keyList();
 	}
 
 	public Map<String,String> getRunProperties() {
@@ -3071,8 +3071,7 @@ public class Project extends Processor {
 			javac.add("-g:" + debug);
 		}
 
-		for (String option : options.keySet())
-			javac.add(option);
+		javac.addAll(options.keyList());
 
 		StringBuilder bootclasspath = new StringBuilder();
 		String bootclasspathDel = "-Xbootclasspath/p:";
