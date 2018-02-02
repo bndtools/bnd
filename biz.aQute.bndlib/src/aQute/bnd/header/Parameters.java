@@ -1,7 +1,10 @@
 package aQute.bnd.header;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collector;
@@ -86,6 +89,12 @@ public class Parameters implements Map<String,Attrs> {
 		return map.keySet();
 	}
 
+	public List<String> keyList() {
+		return keySet().stream()
+			.map(this::removeDuplicateMarker)
+			.collect(toList());
+	}
+
 	public Attrs put(String key, Attrs value) {
 		assert key != null;
 		assert value != null;
@@ -143,10 +152,12 @@ public class Parameters implements Map<String,Attrs> {
 		}
 	}
 
-	private Object removeDuplicateMarker(String key) {
-		while (key.endsWith("~"))
-			key = key.substring(0, key.length() - 1);
-		return key;
+	private String removeDuplicateMarker(String key) {
+		int i = key.length() - 1;
+		while (i >= 0 && key.charAt(i) == '~')
+			--i;
+
+		return key.substring(0, i + 1);
 	}
 
 	@Override

@@ -209,6 +209,10 @@ public class Command {
 		return exitValue;
 	}
 
+	public void add(String arg) {
+		arguments.add(arg);
+	}
+
 	public void add(String... args) {
 		Collections.addAll(arguments, args);
 	}
@@ -273,6 +277,11 @@ public class Command {
 
 	public Command var(String name, String value) {
 		variables.put(name, value);
+		return this;
+	}
+
+	public Command arg(String arg) {
+		add(arg);
 		return this;
 	}
 

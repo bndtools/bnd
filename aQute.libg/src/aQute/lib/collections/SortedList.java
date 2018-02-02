@@ -97,10 +97,11 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	@SafeVarargs
-	public SortedList(Comparable< ? super T>... x) {
+	public <C extends Comparable<? super T>> SortedList(C... x) {
 		this((T[]) x, 0, x.length, null);
 	}
 
+	@SafeVarargs
 	public SortedList(Comparator<? super T> cmp, T... x) {
 		this(x, 0, x.length, cmp);
 	}

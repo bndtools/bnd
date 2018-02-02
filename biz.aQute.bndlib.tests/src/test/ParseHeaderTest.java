@@ -1,6 +1,7 @@
 package test;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -11,6 +12,7 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
+import aQute.lib.strings.Strings;
 import junit.framework.TestCase;
 
 public class ParseHeaderTest extends TestCase {
@@ -243,5 +245,12 @@ public class ParseHeaderTest extends TestCase {
 		assertNotNull(a);
 		assertEquals(Attrs.Type.VERSION, a.getType("viking"));
 		assertEquals(Version.parseVersion("2.0.0"), Version.parseVersion(a.get("viking")));
+	}
+
+	public void testParametersKeyList() throws Exception {
+		String s = "--add-opens, mod1, --add-opens, mod2";
+		Parameters map = Processor.parseHeader(s, null);
+		Collection<String> keyList = map.keyList();
+		assertEquals("--add-opens mod1 --add-opens mod2", Strings.join(" ", keyList));
 	}
 }

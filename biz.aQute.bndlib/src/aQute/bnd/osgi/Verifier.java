@@ -800,10 +800,10 @@ public class Verifier extends Processor {
 	private void verifyRequirements() throws IllegalArgumentException, Exception {
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
 		for (String key : map.keySet()) {
-
+			Attrs attrs = map.get(key);
+			key = Processor.removeDuplicateMarker(key);
 			verifyNamespace(key, "Require");
 
-			Attrs attrs = map.get(key);
 			verify(attrs, "filter:", FILTERPATTERN, false, "Requirement %s filter not correct", key);
 
 			String filter = attrs.get("filter:");
@@ -864,8 +864,9 @@ public class Verifier extends Processor {
 	private void verifyCapabilities() {
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
 		for (String key : map.keySet()) {
-			verifyNamespace(key, "Provide");
 			Attrs attrs = map.get(key);
+			key = Processor.removeDuplicateMarker(key);
+			verifyNamespace(key, "Provide");
 			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Capability %s cardinality not correct", key);
 			verify(attrs, "resolution:", RESOLUTION_PATTERN, false, "Capability %s resolution not correct", key);
 
@@ -899,7 +900,7 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyNamespace(String ns, String type) {
-		if (!isBsn(Processor.removeDuplicateMarker(ns))) {
+		if (!isBsn(ns)) {
 			error("The %s-Capability with namespace %s is not a symbolic name", type, ns);
 		}
 	}
