@@ -152,4 +152,14 @@ public class MavenVersionTest extends TestCase {
 			// expected
 		}
 	}
+
+	public void testIsInteger() throws Exception {
+		String max = String.valueOf(Integer.MAX_VALUE);
+		String v = "1." + max + ".0";
+		String c = MavenVersion.cleanupVersion(v);
+		assertEquals(v, c);
+		v = "1.0." + max;
+		c = MavenVersion.cleanupVersion(v);
+		assertEquals(v, c);
+	}
 }

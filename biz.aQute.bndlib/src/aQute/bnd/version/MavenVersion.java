@@ -246,7 +246,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	/**
-	 * TRhe cleanup version got confused when people used numeric dates like
+	 * The cleanup version got confused when people used numeric dates like
 	 * 201209091230120 as qualifiers. These are too large for Integers. This
 	 * method checks if the all digit string fits in an integer.
 	 *
@@ -259,7 +259,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	 * @return if this fits in an integer
 	 */
 	private static boolean isInteger(String minor) {
-		return minor.length() < 10 || (minor.length() == 10 && minor.compareTo("2147483647") < 0);
+		return minor.length() < 10 || (minor.length() == 10 && minor.compareTo("2147483647") <= 0);
 	}
 
 	private static String removeLeadingZeroes(String group) {
