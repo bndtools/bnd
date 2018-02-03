@@ -8,7 +8,8 @@
 	aQute.libg;version=project,\
     biz.aQute.bnd.annotation;version=project,\
     biz.aQute.bndlib;version=project;packages=*,\
-    biz.aQute.bnd.test;version=project,\
+	${replace;${lsa;../biz.aQute.bndlib/jar};^(.*)$;$1\\;version=file},\
+	biz.aQute.bnd.test;version=project,\
 	org.osgi.service.component;version=latest,\
 	org.osgi.service.component.annotations;version=latest,\
 	org.osgi.service.metatype.annotations;version=latest,\

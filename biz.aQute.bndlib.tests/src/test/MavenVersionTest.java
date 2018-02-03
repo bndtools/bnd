@@ -1,5 +1,9 @@
 package test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.MavenVersionRange;
 import aQute.bnd.version.Version;
@@ -9,10 +13,17 @@ public class MavenVersionTest extends TestCase {
 
 	public void testRange() {
 		MavenVersionRange mvr = new MavenVersionRange("[1.0.0,2.0.0)");
+		assertFalse(mvr.wasSingle());
 		assertEquals("[1.0.0,2.0.0)", mvr.toString());
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("0")));
 		assertTrue(mvr.includes(MavenVersion.parseMavenString("1")));
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("2")));
+	}
+
+	public void testNonRange() {
+		MavenVersionRange mvr = new MavenVersionRange("1.0.0");
+		assertEquals("1.0.0", mvr.toString());
+		assertTrue(mvr.wasSingle());
 	}
 
 	public void testRangeWithOr() {
@@ -127,6 +138,20 @@ public class MavenVersionTest extends TestCase {
 		mv = MavenVersion.parseString("1-4.5");
 		assertEquals(new Version(1, 0, 0, "4.5"), mv.getOSGiVersion());
 		assertFalse(mv.isSnapshot());
+	}
+
+	public void testSorting() {
+		MavenVersion mv100 = MavenVersion.parseString("1.0.0");
+		MavenVersion mv101s = MavenVersion.parseString("1.0.1-SNAPSHOT");
+		MavenVersion mv101 = MavenVersion.parseString("1.0.1");
+		List<MavenVersion> versions = new ArrayList<>();
+		versions.add(mv100);
+		versions.add(mv101s);
+		versions.add(mv101);
+		Collections.sort(versions);
+		assertEquals(mv100, versions.get(0));
+		assertEquals(mv101s, versions.get(1));
+		assertEquals(mv101, versions.get(2));
 	}
 
 	public void testNull() {

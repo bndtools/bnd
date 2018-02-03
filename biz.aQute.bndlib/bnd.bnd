@@ -42,7 +42,8 @@ Export-Package: \
 	org.osgi.service.repository,\
 	org.osgi.resource, \
 	org.osgi.util.promise;-split-package:=first, \
-	org.osgi.util.function;-split-package:=first
+	org.osgi.util.function;-split-package:=first, \
+	org.apache.maven.artifact.*
 
 Conditional-Package:	        aQute.service.*, aQute.configurable
 -includeresource: 				${workspace}/LICENSE, img/=img/, {readme.md}
@@ -58,7 +59,10 @@ Conditional-Package:	        aQute.service.*, aQute.configurable
 	osgi.cmpn;version=@6,\
 	aQute.libg;version=project, \
 	biz.aQute.bnd.annotation;version=project,\
-	slf4j.api;version=latest
+	slf4j.api;version=latest,\
+	${replace;${lsr;jar};^(.*)$;jar/$1\\;version=file}
+
+Include-Resource: ${replace;${lsr;jar};^(.*)$;@jar/$1}
 
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.resource;resolution:=optional,\
