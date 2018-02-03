@@ -7,7 +7,32 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MavenVersion implements Comparable<MavenVersion> {
+import org.apache.maven.artifact.versioning.ArtifactVersion;
+import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+
+/**
+ * Provides a model of an artifact version which can be used as a maven version.
+ * <P>
+ * The maven <a href="https://maven.apache.org/pom.html">POM reference</a> does
+ * not define a format for versions. This is presumably intentional as it allows
+ * artifacts with arbitrary versioning schemes to be referenced in a POM.
+ * <P>
+ * Maven tooling, on the other hand side, defines a rather <a href=
+ * "http://books.sonatype.com/mvnref-book/reference/pom-relationships-sect-pom-syntax.html#pom-reationships-sect-versions">restrictive
+ * version number pattern</a> for maven projects. Non-compliant version numbers
+ * are parsed as qualifier-only versions.
+ * <P>
+ * The parsing methods of this class make an attempt to interpret a version
+ * number as a
+ * &lt;major&gt;/&lt;minor&gt;/&lt;micro/incremental&gt;/&lt;qualifier&gt;
+ * pattern, even if it does not match the restrictive maven project version
+ * number pattern. The string representation of an instance of this class is
+ * always the original, unparsed (or "literal") representation because due to
+ * the permissive parsing algorithm used, the original representation cannot
+ * faithfully be reconstructed from the parsed components.
+ */
+public class MavenVersion implements ArtifactVersion {
 
 	static Pattern					fuzzyVersion		= Pattern
 			.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?", Pattern.DOTALL);
@@ -31,11 +56,23 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	public static final MavenVersion	HIGHEST		= new MavenVersion(Version.HIGHEST);
 	public static final MavenVersion	LOWEST		= new MavenVersion("0");
 
+	// Used as "container" for the components of the maven version number
 	private final Version				version;
+	// Some maven versions are too odd to be restored after parsing, keep
+	// original.
 	private final String				literal;
+	// Used for comparison, cached for efficiency.
+	private final ComparableVersion		comparable;
 
 	private final boolean				snapshot;
 
+	/**
+	 * Creates a new maven version from an osgi version. The version components
+	 * are copied, the string representation is built from the components as
+	 * "&lt;major&gt;.&lt;minor&gt;.&lt;micro&gt;.&lt;qualifier&gt;"
+	 *
+	 * @param osgiVersion the osgi version
+	 */
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;
 		String qual = "";
@@ -43,15 +80,44 @@ public class MavenVersion implements Comparable<MavenVersion> {
 			qual += "-" + this.version.qualifier;
 
 		this.literal = osgiVersion.getWithoutQualifier().toString() + qual;
+		this.comparable = new ComparableVersion(literal);
 		this.snapshot = osgiVersion.isSnapshot();
 	}
 
+	/**
+	 * Instantiates a new maven version representing the information from the
+	 * argument. In addition to allowing the formats supported by
+	 * {@link #parseString(String)}, this constructor supports formats such as
+	 * "1.2rc1", i.e. without a separator before the qualifier.
+	 *
+	 * @param maven the version
+	 */
 	public MavenVersion(String maven) {
 		this.version = new Version(cleanupVersion(maven));
 		this.literal = maven;
+		this.comparable = new ComparableVersion(literal);
 		this.snapshot = maven.endsWith("-" + SNAPSHOT);
 	}
 
+	/**
+	 * Parses the string as a maven version, but allows a dot as separator
+	 * before the qualifier.
+	 * <P>
+	 * Leading sequences of digits followed by a dot or dash are converted to
+	 * the major, minor and incremental version components. A dash or a dot that
+	 * is not followed by a digit or the third dot is interpreted as the start
+	 * of the qualifier.
+	 * <P>
+	 * In particular, version numbers such as "1.2.3.4.5" are parsed as major=1,
+	 * minor=2, incremental=3 and qualifier="4.5". This is closer to the
+	 * (assumed) semantics of such a version number than the parsing implemented
+	 * in maven tooling, which interprets the complete version as a qualifier in
+	 * such cases.
+	 *
+	 * @param versionStr the version string
+	 * @return the maven version
+	 * @throws IllegalArgumentException if the version cannot be parsed
+	 */
 	public static final MavenVersion parseString(String versionStr) {
 		if (versionStr == null) {
 			versionStr = "0";
@@ -73,12 +139,62 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		return new MavenVersion(version);
 	}
 
+	/**
+	 * Similar to {@link #parseString(String)}, but returns {@code null} if the
+	 * version cannot be parsed.
+	 * 
+	 * @param versionStr the version string
+	 * @return the maven version
+	 */
 	public static final MavenVersion parseMavenString(String versionStr) {
 		try {
 			return new MavenVersion(versionStr);
 		} catch (Exception e) {
 			return null;
 		}
+	}
+
+	/**
+	 * This method is required by the {@link ArtifactVersion} interface.
+	 * However, because instances of this class are intended to be immutable, it
+	 * is not implemented. Use one of the other {@code parse...} methods
+	 * instead.
+	 *
+	 * @param version the version to parse
+	 * @throws UnsupportedOperationException
+	 */
+	@Override
+	public void parseVersion(String version) {
+		throw new UnsupportedOperationException("Not implemented.");
+	}
+
+	@Override
+	public int getMajorVersion() {
+		return version.major;
+	}
+
+	@Override
+	public int getMinorVersion() {
+		return version.minor;
+	}
+
+	@Override
+	public int getIncrementalVersion() {
+		return version.micro;
+	}
+
+	@Override
+	public int getBuildNumber() {
+		return new DefaultArtifactVersion(literal).getBuildNumber();
+	}
+
+	@Override
+	public String getQualifier() {
+		return version.qualifier;
+	}
+
+	public ComparableVersion getComparable() {
+		return comparable;
 	}
 
 	public Version getOSGiVersion() {
@@ -89,13 +205,22 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	 * If the qualifier ends with -SNAPSHOT or for an OSGI version with a
 	 * qualifier that is SNAPSHOT
 	 */
-
 	public boolean isSnapshot() {
 		return snapshot;
 	}
 
-	public int compareTo(MavenVersion other) {
-		return this.version.compareTo(other.version);
+	/**
+	 * Compares maven version numbers according to the rules defined in the
+	 * <a href=
+	 * "https://maven.apache.org/pom.html#Version_Order_Specification">POM
+	 * reference</a>.
+	 */
+	@Override
+	public int compareTo(ArtifactVersion other) {
+		if (other instanceof MavenVersion) {
+			return comparable.compareTo(((MavenVersion) other).comparable);
+		}
+		return comparable.compareTo(new ComparableVersion(other.toString()));
 	}
 
 	@Override
@@ -259,7 +384,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	 * @return if this fits in an integer
 	 */
 	private static boolean isInteger(String minor) {
-		return minor.length() < 10 || (minor.length() == 10 && minor.compareTo("2147483647") < 0);
+		return minor.length() < 10 || (minor.length() == 10 && minor.compareTo("2147483647") <= 0);
 	}
 
 	private static String removeLeadingZeroes(String group) {
