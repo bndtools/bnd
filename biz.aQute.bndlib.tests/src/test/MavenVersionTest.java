@@ -13,6 +13,11 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("0")));
 		assertTrue(mvr.includes(MavenVersion.parseMavenString("1")));
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("2")));
+		mvr = new MavenVersionRange("(1.0.0,2.0.0]");
+		assertEquals("(1.0.0,2.0.0]", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1.1")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("2")));
 	}
 
 	public void testRangeWithOr() {
@@ -34,6 +39,72 @@ public class MavenVersionTest extends TestCase {
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("3")));
 		assertTrue(mvr.includes(MavenVersion.parseMavenString("4")));
 		assertFalse(mvr.includes(MavenVersion.parseMavenString("4.0.0.1")));
+	}
+
+	public void testRangeWithEmptyLowerBound() {
+		MavenVersionRange mvr = new MavenVersionRange("( , 1.0]");
+		assertEquals("(,1.0]", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("0")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("0.1")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.0.1")));
+		mvr = new MavenVersionRange("( , 1.0 )");
+		assertEquals("(,1.0)", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("0")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("0.1")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("0.9.9")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		mvr = new MavenVersionRange("[ , 1.0)");
+		assertEquals("[,1.0)", mvr.toString());
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("0")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("0.1")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.0.1")));
+		mvr = new MavenVersionRange("[  , 1.0]");
+		assertEquals("[,1.0]", mvr.toString());
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("0")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("0.1")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.0.1")));
+	}
+
+	public void testRangeWithEmptyUpperBound() {
+		MavenVersionRange mvr = new MavenVersionRange("( 1.0, ]");
+		assertEquals("(1.0,]", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1.1")));
+		assertTrue(mvr.includes(MavenVersion.HIGHEST));
+		mvr = new MavenVersionRange("(1.0,)");
+		assertEquals("(1.0,)", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1.1")));
+		assertTrue(mvr.includes(MavenVersion.HIGHEST));
+		mvr = new MavenVersionRange("[ 1.0, ]");
+		assertEquals("[1.0,]", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("0.9")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		assertTrue(mvr.includes(MavenVersion.HIGHEST));
+		mvr = new MavenVersionRange("[1.0,)");
+		assertEquals("[1.0,)", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("0.9")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		assertTrue(mvr.includes(MavenVersion.HIGHEST));
+	}
+
+	public void testRangeSingle() {
+		MavenVersionRange mvr = new MavenVersionRange("1.0");
+		assertEquals("1.0", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("0.9")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		assertTrue(mvr.includes(MavenVersion.HIGHEST));
+	}
+
+	public void testRangeExact() {
+		MavenVersionRange mvr = new MavenVersionRange("[1.0]");
+		assertEquals("[1.0]", mvr.toString());
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("0.9")));
+		assertTrue(mvr.includes(MavenVersion.parseMavenString("1.0")));
+		assertFalse(mvr.includes(MavenVersion.parseMavenString("1.1")));
 	}
 
 	public void testCleanupWithMajor() {

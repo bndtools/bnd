@@ -4,27 +4,31 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class MavenVersionRange {
-	static final Pattern	RESTRICTION_P	= Pattern.compile(""
+	private static final Pattern	RESTRICTION_P	= Pattern.compile(""	//
+		+ "\\s*("															//
+		+ "(?<pair>"														//
+		+ "(?<li>\\[|\\()\\s*"												//
+		+ "(?<low>[^,\\s\\]\\[()]*)\\s*"									//
+		+ ",\\s*"															//
+		+ "(?<high>[^,\\s\\[\\]()]*)\\s*"									//
+		+ "(?<hi>\\]|\\))"													//
+		+ ")"																//
+		+ "|"																//
+		+ "(?<single>[^,\\s\\]\\[()]+)"										//
+		+ "|"																//
+		+ "(\\["															//
+		+ "(?<exact>[^,\\s\\]\\[()]+)"										//
+		+ "\\])"															//
+		+ ")\\s*"															//
+		+ "(?<comma>,)?"													//
+		, Pattern.COMMENTS);
 
-			+ "\\s*("											//
-			+ "("												//
-			+ "(?<li>\\[|\\()\\s*"								//
-			+ "(?<low>[^,\\s\\]\\[()]*)\\s*"					//
-			+ ",\\s*"											//
-			+ "(?<high>[^,\\s\\[\\]()]*)\\s*"					//
-			+ "(?<hi>\\]|\\))"									//
-			+ ")"												//
-			+ "|"												//
-			+ "(?<single>[^,\\s\\]\\[()]+)"						//
-			+ ")\\s*"											//
-			+ "(?<comma>,)?\\s*", Pattern.COMMENTS);
-
-	final boolean			li;
-	final boolean			hi;
-	final MavenVersion		low;
-	final MavenVersion		high;
-
-	MavenVersionRange		nextOr;
+	private final boolean			pair;
+	private final boolean		li;
+	private final boolean		hi;
+	private final MavenVersion	low;
+	private final MavenVersion	high;
+	private final MavenVersionRange	nextOr;
 
 	public MavenVersionRange(String range) {
 		this(RESTRICTION_P.matcher(range == null ? "0" : range));
@@ -34,30 +38,52 @@ public class MavenVersionRange {
 		if (!m.lookingAt())
 			throw new IllegalArgumentException("Invalid version range " + m);
 
-		String single = m.group("single");
-		if (single != null) {
-			li = true;
-			low = new MavenVersion(single);
-			high = MavenVersion.HIGHEST;
-			hi = true;
-		} else {
-			li = m.group("li").equals("[");
-			hi = m.group("hi").equals("]");
+		pair = m.group("pair") != null;
+		if (pair) {
+			li = m.group("li")
+				.equals("[");
+			hi = m.group("hi")
+				.equals("]");
 
-			low = MavenVersion.parseMavenString(m.group("low"));
-			high = MavenVersion.parseMavenString(m.group("high"));
+			String v = m.group("low")
+				.trim();
+			if (v.isEmpty()) {
+				low = MavenVersion.RANGE_LOWEST;
+			} else {
+				low = MavenVersion.parseMavenString(v);
+			}
+
+			v = m.group("high")
+				.trim();
+			if (v.isEmpty()) {
+				high = MavenVersion.RANGE_HIGHEST;
+			} else {
+				high = MavenVersion.parseMavenString(v);
+			}
+		} else {
+			String single = m.group("single");
+			if (single != null) {
+				li = hi = true;
+				low = new MavenVersion(single);
+				high = MavenVersion.RANGE_HIGHEST;
+			} else {
+				String exact = m.group("exact");
+				li = hi = true;
+				low = high = new MavenVersion(exact);
+			}
 		}
 
 		if (m.group("comma") != null) {
 			m.region(m.end(), m.regionEnd());
 			nextOr = new MavenVersionRange(m);
-		} else
+		} else {
 			nextOr = null;
+		}
 	}
 
 	public boolean includes(MavenVersion mvr) {
 		int l = mvr.compareTo(low);
-		int h = mvr.compareTo(high);
+		int h = (high == MavenVersion.RANGE_HIGHEST) ? -1 : mvr.compareTo(high);
 
 		boolean lowOk = l > 0 || (li && l == 0);
 		boolean highOk = h < 0 || (hi && h == 0);
@@ -78,21 +104,22 @@ public class MavenVersionRange {
 	}
 
 	private void toString(StringBuilder sb) {
-		if (li)
-			sb.append("[");
-		else
-			sb.append("(");
-
-		sb.append(low);
-		sb.append(",");
-		sb.append(high);
-		if (hi)
-			sb.append("]");
-		else
-			sb.append(")");
+		if (pair) {
+			sb.append(li ? '[' : '(')
+				.append(low)
+				.append(',')
+				.append(high)
+				.append(hi ? ']' : ')');
+		} else if (low == high) { // exact
+			sb.append('[')
+				.append(low)
+				.append(']');
+		} else { // single
+			sb.append(low);
+		}
 
 		if (nextOr != null) {
-			sb.append(",");
+			sb.append(',');
 			nextOr.toString(sb);
 		}
 	}
@@ -107,7 +134,7 @@ public class MavenVersionRange {
 	}
 
 	public boolean wasSingle() {
-		return (li && !hi && high == MavenVersion.HIGHEST && nextOr == null);
+		return !pair && (high == MavenVersion.RANGE_HIGHEST) && (nextOr == null);
 	}
 
 	public static boolean isRange(String version) {
