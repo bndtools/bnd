@@ -36,25 +36,32 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	private final Version				version;
 	private final String				literal;
 	private final boolean				snapshot;
+	private final ComparableVersion		qualifier;
 
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;
-		String qual = "";
-		if (this.version.qualifier != null)
-			qual += "-" + this.version.qualifier;
+		String q = osgiVersion.qualifier;
+		this.qualifier = ComparableVersion.parseVersion(q);
 
-		this.literal = osgiVersion.getWithoutQualifier().toString() + qual;
+		String l = osgiVersion.getWithoutQualifier()
+			.toString();
+		if (q != null) {
+			l += "-" + q;
+		}
+		this.literal = l;
 		this.snapshot = osgiVersion.isSnapshot();
 	}
 
 	public MavenVersion(String maven) {
 		this.version = new Version(cleanupVersion(maven));
+		this.qualifier = ComparableVersion.parseVersion(version.qualifier);
 		this.literal = maven;
 		this.snapshot = maven.endsWith("-" + SNAPSHOT);
 	}
 
 	private MavenVersion(String literal, Version version, boolean snapshot) {
 		this.version = version;
+		this.qualifier = ComparableVersion.parseVersion(version.qualifier);
 		this.literal = literal;
 		this.snapshot = snapshot;
 	}
@@ -102,7 +109,23 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public int compareTo(MavenVersion other) {
-		return this.version.compareTo(other.version);
+		if (other == this)
+			return 0;
+
+		Version o = other.version;
+		int cmp = version.major - o.major;
+		if (cmp != 0)
+			return cmp;
+
+		cmp = version.minor - o.minor;
+		if (cmp != 0)
+			return cmp;
+
+		cmp = version.micro - o.micro;
+		if (cmp != 0)
+			return cmp;
+
+		return qualifier.compareTo(other.qualifier);
 	}
 
 	@Override
