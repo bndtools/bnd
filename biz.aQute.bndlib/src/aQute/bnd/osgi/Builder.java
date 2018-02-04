@@ -427,7 +427,8 @@ public class Builder extends Analyzer {
 			Matcher m = Verifier.VERSION.matcher(defaultVersion);
 			if (m.matches()) {
 				// Strip qualifier from default package version
-				defaultVersion = Version.parseVersion(defaultVersion).getWithoutQualifier().toString();
+				defaultVersion = Version.parseVersion(defaultVersion)
+					.toStringWithoutQualifier();
 			}
 		}
 		for (Map.Entry<PackageRef,Attrs> entry : packages.entrySet()) {

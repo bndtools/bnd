@@ -411,13 +411,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (!dir.isDirectory())
 				throw new IOException("Could not create directory " + dir);
 
-			String fName = bsn + "-" + version.getWithoutQualifier() + ".jar";
+			String fName = bsn + "-" + version.toStringWithoutQualifier() + ".jar";
 			File file = new File(dir, fName);
 
 			logger.debug("updating {}", file.getAbsolutePath());
 
 			if (hasIndex)
-				index.put(bsn + "-" + version.getWithoutQualifier(),
+				index.put(bsn + "-" + version.toStringWithoutQualifier(),
 						buildDescriptor(tmpFile, tmpJar, digest, bsn, version));
 
 			// An open jar on file will fail rename on windows
@@ -717,19 +717,19 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				return fjar.getAbsoluteFile();
 		}
 
-		File fjar = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".jar");
+		File fjar = new File(dir, bsn + "-" + version.toStringWithoutQualifier() + ".jar");
 		if (fjar.isFile())
 			return fjar.getAbsoluteFile();
 
-		File sfjar = new File(dir, version.getWithoutQualifier() + ".jar");
+		File sfjar = new File(dir, version.toStringWithoutQualifier() + ".jar");
 		if (sfjar.isFile())
 			return sfjar.getAbsoluteFile();
 
-		File flib = new File(dir, bsn + "-" + version.getWithoutQualifier() + ".lib");
+		File flib = new File(dir, bsn + "-" + version.toStringWithoutQualifier() + ".lib");
 		if (flib.isFile())
 			return flib.getAbsoluteFile();
 
-		File sflib = new File(dir, version.getWithoutQualifier() + ".lib");
+		File sflib = new File(dir, version.toStringWithoutQualifier() + ".lib");
 		if (sflib.isFile())
 			return sflib.getAbsoluteFile();
 

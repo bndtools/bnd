@@ -1,5 +1,16 @@
 package test;
 
+import static org.junit.Assert.assertNotEquals;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.MavenVersionRange;
 import aQute.bnd.version.Version;
@@ -232,5 +243,70 @@ public class MavenVersionTest extends TestCase {
 		v = "1.0." + max;
 		c = MavenVersion.cleanupVersion(v);
 		assertEquals(v, c);
+	}
+
+	public void testComparableAliases() throws Exception {
+		MavenVersion mv1 = MavenVersion.parseString("1.2.7");
+		MavenVersion mv2 = MavenVersion.parseString("1.2.7-FINAL");
+		MavenVersion mv3 = MavenVersion.parseString("1.2.7-final");
+		MavenVersion mv4 = MavenVersion.parseString("1.2.7-GA");
+		MavenVersion mv5 = MavenVersion.parseString("1.2.7-ga");
+		assertEquals(0, mv1.compareTo(mv1));
+		assertEquals(0, mv1.compareTo(mv2));
+		assertEquals(0, mv1.compareTo(mv3));
+		assertEquals(0, mv1.compareTo(mv4));
+		assertEquals(0, mv1.compareTo(mv5));
+
+		assertEquals(0, mv2.compareTo(mv1));
+		assertEquals(0, mv2.compareTo(mv2));
+		assertEquals(0, mv2.compareTo(mv3));
+		assertEquals(0, mv2.compareTo(mv4));
+		assertEquals(0, mv2.compareTo(mv5));
+
+		assertEquals(0, mv3.compareTo(mv1));
+		assertEquals(0, mv3.compareTo(mv2));
+		assertEquals(0, mv3.compareTo(mv3));
+		assertEquals(0, mv3.compareTo(mv4));
+		assertEquals(0, mv3.compareTo(mv5));
+
+		assertEquals(0, mv4.compareTo(mv1));
+		assertEquals(0, mv4.compareTo(mv2));
+		assertEquals(0, mv4.compareTo(mv3));
+		assertEquals(0, mv4.compareTo(mv4));
+		assertEquals(0, mv4.compareTo(mv5));
+
+		assertEquals(0, mv5.compareTo(mv1));
+		assertEquals(0, mv5.compareTo(mv2));
+		assertEquals(0, mv5.compareTo(mv3));
+		assertEquals(0, mv5.compareTo(mv4));
+		assertEquals(0, mv5.compareTo(mv5));
+	}
+
+	public void testComparableSorting() throws Exception {
+		List<String> ordered = Arrays.asList("1.2.7-ALPHA", "1.2.7-a2", "1.2.7-beta", "1.2.7-B50", "1.2.7-Milestone",
+			"1.2.7-MILESTONE-2", "1.2.7-RC", "1.2.7-rc5", "1.2.7-SNAPSHOT", "1.2.7", "1.2.7-SP");
+		List<String> shuffled = new ArrayList<>(ordered);
+		Collections.shuffle(shuffled);
+		assertNotEquals(ordered, shuffled);
+		List<MavenVersion> sorted = shuffled.stream()
+			.map(MavenVersion::new)
+			.sorted()
+			.collect(Collectors.toList());
+		assertEquals(ordered.size(), sorted.size());
+		for (int i = 0; i < ordered.size(); i++) {
+			MavenVersion expected = MavenVersion.parseString(ordered.get(i));
+			MavenVersion actual = sorted.get(i);
+			assertEquals(expected, actual);
+			assertEquals(0, expected.compareTo(actual));
+			assertEquals(0, actual.compareTo(expected));
+		}
+	}
+
+	public void testComparableMax() throws Exception {
+		Optional<MavenVersion> m = Stream.of("1.2.7", "1.2.7-SNAPSHOT")
+			.map(MavenVersion::parseString)
+			.max(Comparator.naturalOrder());
+		assertTrue(m.isPresent());
+		assertEquals(new MavenVersion("1.2.7"), m.get());
 	}
 }
