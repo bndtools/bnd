@@ -1044,7 +1044,7 @@ public class Jar implements Closeable {
 			String version = main.getValue(new Attributes.Name(Constants.BUNDLE_VERSION));
 			if (version != null && Verifier.isVersion(version)) {
 				Version v = new Version(version);
-				main.putValue(Constants.BUNDLE_VERSION, v.getWithoutQualifier().toString());
+				main.putValue(Constants.BUNDLE_VERSION, v.toStringWithoutQualifier());
 			}
 			writeManifest(m2, dout);
 

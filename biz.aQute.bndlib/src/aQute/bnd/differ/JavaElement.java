@@ -179,7 +179,7 @@ class JavaElement {
 			String version = exports.get(entry.getKey()).get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {
 				Version v = new Version(version);
-				set.add(new Element(VERSION, v.getWithoutQualifier().toString(), null, IGNORED, IGNORED, null));
+				set.add(new Element(VERSION, v.toStringWithoutQualifier(), null, IGNORED, IGNORED, null));
 			}
 			Element pd = new Element(PACKAGE, entry.getKey().getFQN(), set, MINOR, MAJOR, null);
 			result.add(pd);

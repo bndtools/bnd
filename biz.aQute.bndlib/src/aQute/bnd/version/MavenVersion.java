@@ -43,8 +43,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		String q = osgiVersion.qualifier;
 		this.qualifier = ComparableVersion.parseVersion(q);
 
-		String l = osgiVersion.getWithoutQualifier()
-			.toString();
+		String l = osgiVersion.toStringWithoutQualifier();
 		if (q != null) {
 			l += "-" + q;
 		}

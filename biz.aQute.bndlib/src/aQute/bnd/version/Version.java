@@ -134,6 +134,16 @@ public class Version implements Comparable<Version> {
 		return sb.toString();
 	}
 
+	public String toStringWithoutQualifier() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(major);
+		sb.append(".");
+		sb.append(minor);
+		sb.append(".");
+		sb.append(micro);
+		return sb.toString();
+	}
+
 	@Override
 	public boolean equals(Object ot) {
 		if (!(ot instanceof Version))

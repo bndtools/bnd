@@ -236,8 +236,8 @@ public class DiffPluginImpl implements Differ {
 
 			if (MAJOR_HEADERS.contains(header)) {
 				if (header.equalsIgnoreCase(Constants.BUNDLE_VERSION)) {
-					Version v = new Version(value).getWithoutQualifier();
-					result.add(new Element(Type.HEADER, header + ":" + v.toString(), null, CHANGED, CHANGED, null));
+					String v = new Version(value).toStringWithoutQualifier();
+					result.add(new Element(Type.HEADER, header + ":" + v, null, CHANGED, CHANGED, null));
 				} else {
 					Parameters clauses = OSGiHeader.parseHeader(value);
 					Collection<Element> clausesDef = new ArrayList<>();

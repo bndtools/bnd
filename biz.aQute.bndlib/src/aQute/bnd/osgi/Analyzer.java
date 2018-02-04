@@ -3116,7 +3116,7 @@ public class Analyzer extends Processor {
 			String bsn = name.getKey();
 			String version = getBundleVersion();
 			Version v = Version.parseVersion(version);
-			String outputName = bsn + "-" + v.getWithoutQualifier() + Constants.DEFAULT_JAR_EXTENSION;
+			String outputName = bsn + "-" + v.toStringWithoutQualifier() + Constants.DEFAULT_JAR_EXTENSION;
 			return new File(outputDir, outputName);
 		}
 
