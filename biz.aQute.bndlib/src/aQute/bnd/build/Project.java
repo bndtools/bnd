@@ -84,6 +84,7 @@ import aQute.bnd.service.Scripter;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.action.NamedAction;
+import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -2107,6 +2108,28 @@ public class Project extends Processor {
 
 	public void release() throws Exception {
 		release(false);
+	}
+
+	public Map.Entry<String, Resource> export(String type, Map<String, String> options) throws Exception {
+		Exporter exporter = getExporter(type);
+		if (exporter == null) {
+			error("No exporter for %s", type);
+			return null;
+		}
+
+		return exporter.export(type, this, options);
+	}
+
+	private Exporter getExporter(String type) {
+		List<Exporter> exporters = getPlugins(Exporter.class);
+		for (Exporter e : exporters) {
+			for (String exporterType : e.getTypes()) {
+				if (type.equals(exporterType)) {
+					return e;
+				}
+			}
+		}
+		return null;
 	}
 
 	@SuppressWarnings("resource")
