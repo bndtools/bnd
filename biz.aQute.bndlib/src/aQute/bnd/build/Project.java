@@ -2148,6 +2148,7 @@ public class Project extends Processor {
 					String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
 			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
 				run.export(ExecutableJarExporter.EXECUTABLE_JAR, configuration);
+				getInfo(run);
 			}
 		}
 	}
@@ -2169,6 +2170,7 @@ public class Project extends Processor {
 						String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
 			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
 				run.export(RunbundlesExporter.RUNBUNDLES, configuration);
+				getInfo(run);
 			}
 		}
 	}

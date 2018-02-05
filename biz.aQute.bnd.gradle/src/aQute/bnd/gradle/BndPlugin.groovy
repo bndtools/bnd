@@ -14,6 +14,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
+import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.osgi.Processor.isTrue
 
@@ -357,7 +359,8 @@ public class BndPlugin implements Plugin<Project> {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
                   try {
-                    run.export(null, false, executableJar)
+                    def options = ['keep': 'false', 'output': executableJar.absolutePath]
+                    run.export(EXECUTABLE_JAR, options)
                   } catch (Exception e) {
                     throw new GradleException("Export of ${run.getPropertiesFile()} to an executable jar failed", e)
                   }
@@ -401,7 +404,8 @@ public class BndPlugin implements Plugin<Project> {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
                   try {
-                      run.exportRunbundles(null, destinationDir)
+                    def options = ['outputDir': destinationDir.absolutePath]
+                    run.export(RUNBUNDLES, options)
                   } catch (Exception e) {
                     throw new GradleException("Creating a distribution of the runbundles in ${run.getPropertiesFile()} failed", e)
                   }

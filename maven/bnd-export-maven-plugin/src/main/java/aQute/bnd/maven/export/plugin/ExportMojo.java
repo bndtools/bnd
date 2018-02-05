@@ -1,9 +1,13 @@
 package aQute.bnd.maven.export.plugin;
 
+import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR;
+import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -135,13 +139,16 @@ public class ExportMojo extends AbstractMojo {
 				}
 			}
 			try {
+				Map<String, String> options = new HashMap<>();
 				if (bundlesOnly) {
 					File runbundlesDir = new File(targetDir, "export/" + bndrun);
-					IO.mkdirs(runbundlesDir);
-					run.exportRunbundles(null, runbundlesDir);
+					options.put("outputDir", runbundlesDir.getAbsolutePath());
+					run.export(RUNBUNDLES, options);
 				} else {
 					File executableJar = new File(targetDir, bndrun + ".jar");
-					run.export(null, false, executableJar);
+					options.put("keep", "false");
+					options.put("output", executableJar.getAbsolutePath());
+					run.export(EXECUTABLE_JAR, options);
 					attach(executableJar, bndrun);
 				}
 			} finally {
