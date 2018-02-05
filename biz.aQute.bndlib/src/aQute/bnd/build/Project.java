@@ -13,7 +13,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,6 +52,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
+import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -2155,46 +2155,22 @@ public class Project extends Processor {
 	/**
 	 * @since 2.4
 	 */
-	@SuppressWarnings("resource")
 	public void exportRunbundles(String runFilePath, File outputDir) throws Exception {
-		prepare();
+		Map<String, String> configuration = new HashMap<>();
+		configuration.put("outputDir", outputDir.getAbsolutePath());
 
-		Project packageProject;
 		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
-			packageProject = this;
+			clear();
+			export(RunbundlesExporter.RUNBUNDLES, configuration);
 		} else {
 			File runFile = IO.getFile(getBase(), runFilePath);
 			if (!runFile.isFile())
 				throw new IOException(
 						String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
-			packageProject = new Run(getWorkspace(), getBase(), runFile);
+			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
+				run.export(RunbundlesExporter.RUNBUNDLES, configuration);
+			}
 		}
-		packageProject.clear();
-
-		IO.mkdirs(outputDir);
-		Collection<Container> runbundles = packageProject.getRunbundles();
-		Path outputPath = outputDir.toPath();
-		for (Container container : runbundles) {
-			Path source = container.getFile().toPath();
-			Path target = nonCollidingPath(outputPath, source);
-			Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
-		}
-	}
-
-	Path nonCollidingPath(Path outputDir, Path source) {
-		String fileName = source.getFileName().toString();
-		Path target = outputDir.resolve(fileName);
-		String[] parts = Strings.extension(fileName);
-		if (parts == null) {
-			parts = new String[] {
-					fileName, ""
-			};
-		}
-		int i = 1;
-		while (Files.exists(target)) {
-			target = outputDir.resolve(String.format("%s[%d].%s", parts[0], i++, parts[1]));
-		}
-		return target;
 	}
 
 	/**
