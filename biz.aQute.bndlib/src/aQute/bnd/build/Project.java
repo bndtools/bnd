@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -2132,27 +2133,21 @@ public class Project extends Processor {
 		return null;
 	}
 
-	@SuppressWarnings("resource")
 	public void export(String runFilePath, boolean keep, File output) throws Exception {
-		prepare();
+		Map<String, String> configuration = new HashMap<>();
+		configuration.put("keep", Boolean.toString(keep));
+		configuration.put("output", output.getAbsolutePath());
 
-		Project packageProject;
 		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
-			packageProject = this;
+			clear();
+			export(ExecutableJarExporter.EXECUTABLE_JAR, configuration);
 		} else {
 			File runFile = IO.getFile(getBase(), runFilePath);
 			if (!runFile.isFile())
 				throw new IOException(
-						String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
-			packageProject = new Run(getWorkspace(), getBase(), runFile);
-		}
-		packageProject.clear();
-
-		try (ProjectLauncher launcher = packageProject.getProjectLauncher()) {
-			launcher.setKeep(keep);
-			try (Jar jar = launcher.executable()) {
-				getInfo(launcher);
-				jar.write(output);
+					String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
+			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
+				run.export(ExecutableJarExporter.EXECUTABLE_JAR, configuration);
 			}
 		}
 	}

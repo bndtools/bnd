@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.exporter.subsystem.SubsystemExporter;
+import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -606,6 +607,7 @@ public class Workspace extends Processor {
 			//
 
 			list.add(new SubsystemExporter());
+			list.add(new ExecutableJarExporter());
 
 			try {
 				HttpClient client = new HttpClient(getExecutor(), getScheduledExecutor());
