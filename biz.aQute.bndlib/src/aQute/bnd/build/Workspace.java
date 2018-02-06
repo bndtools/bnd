@@ -49,7 +49,6 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.connection.settings.ConnectionSettings;
-import aQute.bnd.exporter.subsystem.SubsystemExporter;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
@@ -607,7 +606,6 @@ public class Workspace extends Processor {
 			// Exporters
 			//
 
-			list.add(new SubsystemExporter());
 			list.add(new ExecutableJarExporter());
 			list.add(new RunbundlesExporter());
 
