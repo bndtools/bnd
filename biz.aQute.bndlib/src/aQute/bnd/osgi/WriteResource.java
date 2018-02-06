@@ -1,6 +1,5 @@
 package aQute.bnd.osgi;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -45,5 +44,5 @@ public abstract class WriteResource implements Resource {
 		return getBuffer().limit();
 	}
 
-	public void close() throws IOException {}
+	public void close() {}
 }
