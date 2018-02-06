@@ -14,3 +14,5 @@ Bundle-Version: 1.0.0
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
 
 -runproperties.testlauncher2: in.bndrun=bndrun
+
+-exporttype: bnd.executablejar;foo=x, bnd.runbundles;bar=x

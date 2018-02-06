@@ -160,14 +160,18 @@ public class Export extends DefaultTask {
       try {
         if (bundlesOnly) {
           logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
-          def options = ['outputDir': destinationDir.absolutePath]
-          run.export(RUNBUNDLES, options)
+          def export = run.export(RUNBUNDLES, [:])
+          export?.value.withCloseable { jr ->
+            jr.getJar().writeFolder(destinationDir)
+          }
         } else {
           String name = bndrun.name - '.bndrun'
           File executableJar = new File(destinationDir, "${name}.jar")
           logger.info 'Creating an executable jar from {} to {}', run.getPropertiesFile(), executableJar.absolutePath
-          def options = ['keep': 'false', 'output': executableJar.absolutePath]
-          run.export(EXECUTABLE_JAR, options)
+          def export = run.export(EXECUTABLE_JAR, [:])
+          export?.value.withCloseable { jr ->
+            jr.getJar().write(executableJar)
+          }
         }
       } finally {
         logReport(run, logger)

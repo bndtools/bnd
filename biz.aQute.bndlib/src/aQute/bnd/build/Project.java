@@ -66,6 +66,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
@@ -2117,6 +2118,15 @@ public class Project extends Processor {
 			error("No exporter for %s", type);
 			return null;
 		}
+		if (options == null) {
+			options = Collections.emptyMap();
+		}
+		Parameters exportTypes = parseHeader(getProperty(Constants.EXPORTTYPE));
+		Map<String, String> attrs = exportTypes.get(type);
+		if (attrs != null) {
+			attrs.putAll(options);
+			options = attrs;
+		}
 
 		return exporter.export(type, this, options);
 	}
@@ -2134,21 +2144,25 @@ public class Project extends Processor {
 	}
 
 	public void export(String runFilePath, boolean keep, File output) throws Exception {
-		Map<String, String> configuration = new HashMap<>();
-		configuration.put("keep", Boolean.toString(keep));
-		configuration.put("output", output.getAbsolutePath());
-
+		Map<String, String> options = Collections.singletonMap("keep", Boolean.toString(keep));
+		Entry<String, Resource> export;
 		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
 			clear();
-			export(ExecutableJarExporter.EXECUTABLE_JAR, configuration);
+			export = export(ExecutableJarExporter.EXECUTABLE_JAR, options);
 		} else {
 			File runFile = IO.getFile(getBase(), runFilePath);
 			if (!runFile.isFile())
 				throw new IOException(
 					String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
 			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
-				run.export(ExecutableJarExporter.EXECUTABLE_JAR, configuration);
+				export = run.export(ExecutableJarExporter.EXECUTABLE_JAR, options);
 				getInfo(run);
+			}
+		}
+		if (export != null) {
+			try (JarResource r = (JarResource) export.getValue()) {
+				r.getJar()
+					.write(output);
 			}
 		}
 	}
@@ -2157,20 +2171,25 @@ public class Project extends Processor {
 	 * @since 2.4
 	 */
 	public void exportRunbundles(String runFilePath, File outputDir) throws Exception {
-		Map<String, String> configuration = new HashMap<>();
-		configuration.put("outputDir", outputDir.getAbsolutePath());
-
+		Map<String, String> options = Collections.emptyMap();
+		Entry<String, Resource> export;
 		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
 			clear();
-			export(RunbundlesExporter.RUNBUNDLES, configuration);
+			export = export(RunbundlesExporter.RUNBUNDLES, options);
 		} else {
 			File runFile = IO.getFile(getBase(), runFilePath);
 			if (!runFile.isFile())
 				throw new IOException(
-						String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
+					String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
 			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
-				run.export(RunbundlesExporter.RUNBUNDLES, configuration);
+				export = run.export(RunbundlesExporter.RUNBUNDLES, options);
 				getInfo(run);
+			}
+		}
+		if (export != null) {
+			try (JarResource r = (JarResource) export.getValue()) {
+				r.getJar()
+					.writeFolder(outputDir);
 			}
 		}
 	}
