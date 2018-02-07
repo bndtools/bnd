@@ -1,6 +1,6 @@
 package aQute.bnd.exporter.executable;
 
-import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -38,7 +38,7 @@ public class ExecutableJarExporter implements Exporter {
 			launcher.setKeep(configuration.keep());
 			Jar jar = launcher.executable();
 			project.getInfo(launcher);
-			return new SimpleImmutableEntry<>(project.getName(), new JarResource(jar, true));
+			return new SimpleEntry<>(jar.getName(), new JarResource(jar, true));
 		}
 	}
 }
