@@ -32,7 +32,7 @@ public class ReleaseContext {
     private IProgressMonitor progressMonitor;
 
     private final List<Jar> releasedJars;
-    private final Map<String,Object> properties;
+    private final Map<String, Object> properties;
     private final ErrorHandler errorHandler;
     private Scope currentScope;
     private ReleaseOption releaseOption;
@@ -44,7 +44,7 @@ public class ReleaseContext {
         this.releaseOption = releaseOption;
 
         this.releasedJars = new ArrayList<Jar>();
-        this.properties = new HashMap<String,Object>();
+        this.properties = new HashMap<String, Object>();
         this.errorHandler = new ErrorHandler();
     }
 
@@ -95,7 +95,7 @@ public class ReleaseContext {
         return properties.get(name);
     }
 
-    public Map<String,Object> getPropertyMap() {
+    public Map<String, Object> getPropertyMap() {
         return properties;
     }
 
@@ -163,8 +163,7 @@ public class ReleaseContext {
 
     /**
      * @deprecated Use setReleaseOption instead
-     * @param updateOnly
-     *            true to indicate 'update only mode'
+     * @param updateOnly true to indicate 'update only mode'
      */
     @Deprecated
     public void setUpdateOnly(boolean updateOnly) {
