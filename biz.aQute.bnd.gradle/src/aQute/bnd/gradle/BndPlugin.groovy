@@ -359,8 +359,10 @@ public class BndPlugin implements Plugin<Project> {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
                   try {
-                    def options = ['keep': 'false', 'output': executableJar.absolutePath]
-                    run.export(EXECUTABLE_JAR, options)
+                    def export = run.export(EXECUTABLE_JAR, [:])
+                    export?.value.withCloseable { jr ->
+                      jr.getJar().write(executableJar)
+                    }
                   } catch (Exception e) {
                     throw new GradleException("Export of ${run.getPropertiesFile()} to an executable jar failed", e)
                   }
@@ -404,8 +406,10 @@ public class BndPlugin implements Plugin<Project> {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
                   try {
-                    def options = ['outputDir': destinationDir.absolutePath]
-                    run.export(RUNBUNDLES, options)
+                    def export = run.export(RUNBUNDLES, [:])
+                    export?.value.withCloseable { jr ->
+                      jr.getJar().writeFolder(destinationDir)
+                    }
                   } catch (Exception e) {
                     throw new GradleException("Creating a distribution of the runbundles in ${run.getPropertiesFile()} failed", e)
                   }

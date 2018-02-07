@@ -105,7 +105,7 @@ public class SubsystemExporter implements Exporter {
 
 		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new EmbeddedResource(bout.toByteArray(), 0));
 
-		final JarResource jarResource = new JarResource(jar);
+		final JarResource jarResource = new JarResource(jar, true);
 		final String name = ssn + ".esa";
 
 		return new Map.Entry<String,Resource>() {
