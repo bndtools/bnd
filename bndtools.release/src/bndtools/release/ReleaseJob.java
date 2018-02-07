@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import aQute.bnd.osgi.Jar;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseOption;
 import bndtools.release.api.ReleaseUtils;
@@ -47,7 +46,7 @@ public class ReleaseJob extends Job {
             IProject proj = ReleaseUtils.getProject(context.getProject());
             proj.refreshLocal(IResource.DEPTH_INFINITE, monitor);
 
-            boolean ok = ReleaseHelper.release(context, context.getBaselines());
+            boolean success = ReleaseHelper.release(context, context.getBaselines());
 
             ResourcesPlugin.getWorkspace()
                 .getRoot()
@@ -61,7 +60,7 @@ public class ReleaseJob extends Job {
                     Activator.refreshFile(f);
                 }
             }
-            if (ok) {
+            if (success && showMessage) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(Messages.project2);
                 sb.append(" : "); //$NON-NLS-1$
@@ -75,8 +74,9 @@ public class ReleaseJob extends Job {
                     sb.append(" :\n"); //$NON-NLS-1$
                 }
 
-                for (Jar jar : context.getReleasedJars()) {
-                    sb.append(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar) + "\n"); //$NON-NLS-1$//$NON-NLS-2$
+                for (String jarInfo : context.getReleaseSummaries()) {
+                    sb.append(jarInfo)
+                        .append('\n');
                 }
 
                 if (context.getReleaseOption() != ReleaseOption.UPDATE) {
@@ -86,9 +86,8 @@ public class ReleaseJob extends Job {
                     sb.append(context.getReleaseRepository()
                         .getName());
                 }
-                if (showMessage) {
-                    Activator.message(sb.toString());
-                }
+
+                Activator.message(sb.toString());
             }
 
         } catch (Exception e) {

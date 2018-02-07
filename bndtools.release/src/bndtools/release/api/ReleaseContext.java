@@ -32,6 +32,7 @@ public class ReleaseContext {
     private IProgressMonitor progressMonitor;
 
     private final List<Jar> releasedJars;
+    private final List<String> releasedJarSummaries;
     private final Map<String, Object> properties;
     private final ErrorHandler errorHandler;
     private Scope currentScope;
@@ -44,6 +45,7 @@ public class ReleaseContext {
         this.releaseOption = releaseOption;
 
         this.releasedJars = new ArrayList<Jar>();
+        this.releasedJarSummaries = new ArrayList<String>();
         this.properties = new HashMap<String, Object>();
         this.errorHandler = new ErrorHandler();
     }
@@ -75,13 +77,23 @@ public class ReleaseContext {
 
     public void addReleasedJar(Jar jar) {
         releasedJars.add(jar);
+
+        // Save off our summary info now, because our JARs will get
+        // closed out from underneath us later
+        releasedJarSummaries.add(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar));
     }
 
     public List<Jar> getReleasedJars() {
         return releasedJars;
     }
 
+    public List<String> getReleaseSummaries() {
+        return releasedJarSummaries;
+    }
+
     public void close() {
+        // XXX: This code doesn't do anything, these JARs were closed by
+        // ProjectBuilder
         for (Jar jar : releasedJars) {
             jar.close();
         }
