@@ -193,6 +193,9 @@ public class ReleaseHelper {
         IProject proj = ReleaseUtils.getProject(context.getProject());
         proj.refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
 
+        context.getProject()
+            .clear();
+
         return true;
     }
 
