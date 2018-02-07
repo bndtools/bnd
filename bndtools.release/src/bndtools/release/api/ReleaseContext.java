@@ -92,11 +92,7 @@ public class ReleaseContext {
     }
 
     public void close() {
-        // XXX: This code doesn't do anything, these JARs were closed by
-        // ProjectBuilder
-        for (Jar jar : releasedJars) {
-            jar.close();
-        }
+        // the released jars were closed by the project builder
     }
 
     public void setProperty(String name, Object value) {
