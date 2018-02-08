@@ -1,8 +1,6 @@
 package aQute.launcher.plugin;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -13,7 +11,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -41,6 +38,9 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.pre.EmbeddedLauncher;
+import aQute.lib.io.ByteBufferDataInput;
+import aQute.lib.io.ByteBufferOutputStream;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 
@@ -128,7 +128,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	void writeProperties() throws Exception {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
-		try (OutputStream out = Files.newOutputStream(launchPropertiesFile.toPath())) {
+		try (OutputStream out = IO.outputStream(launchPropertiesFile)) {
 			lc.getProperties(new UTF8Properties()).store(out, "Launching " + getProject());
 		}
 	}
@@ -164,8 +164,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 						while (!socket.isClosed()) {
 							try {
 								socket.receive(packet);
-								DataInputStream dai = new DataInputStream(new ByteArrayInputStream(packet.getData(),
-										packet.getOffset(), packet.getLength()));
+								DataInput dai = ByteBufferDataInput.wrap(packet.getData(), packet.getOffset(),
+									packet.getLength());
 								NotificationType type = NotificationType.values()[dai.readInt()];
 								String message = dai.readUTF();
 								for (NotificationListener listener : getNotificationListeners()) {
@@ -274,11 +274,12 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		LauncherConstants lc = getConstants(actualPaths, true);
 		lc.embedded = true;
 
-		final Properties p = lc.getProperties(new UTF8Properties());
-
-		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		p.store(bout, "");
-		jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES, new EmbeddedResource(bout.toByteArray(), 0L));
+		try (ByteBufferOutputStream bout = new ByteBufferOutputStream()) {
+			lc.getProperties(new UTF8Properties())
+				.store(bout, "");
+			jar.putResource(LauncherConstants.DEFAULT_LAUNCHER_PROPERTIES,
+				new EmbeddedResource(bout.toByteBuffer(), 0L));
+		}
 
 		Manifest m = new Manifest();
 		Attributes main = m.getMainAttributes();

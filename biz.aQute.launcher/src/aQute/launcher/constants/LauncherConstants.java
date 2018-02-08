@@ -16,7 +16,7 @@ public class LauncherConstants {
 	public final static String		LAUNCHER_ARGUMENTS			= "launcher.arguments";
 	public final static String		LAUNCHER_READY				= "launcher.ready";
 
-	// MUST BE ALIGNED WITH ProjectLauncher! Donot want to create coupling
+	// MUST BE ALIGNED WITH ProjectLauncher! Do not want to create coupling
 	// so cannot refer.
 	public final static int			OK							= 0;
 	public final static int			ERROR						= -2;
@@ -78,7 +78,7 @@ public class LauncherConstants {
 	/**
 	 * Translate a constants to properties.
 	 */
-	public Properties getProperties(Properties p) {
+	public <P extends Properties> P getProperties(P p) {
 		p.setProperty(LAUNCH_NOREFERENCES, noreferences + "");
 		p.setProperty(LAUNCH_SERVICES, services + "");
 		if (storageDir != null)
@@ -144,7 +144,7 @@ public class LauncherConstants {
 		runProperties.putAll(map);
 	}
 
-	private Collection< ? extends String> split(String property, String string) {
+	private Collection<String> split(String property, String string) {
 		List<String> result = new ArrayList<>();
 		StringTokenizer st = new StringTokenizer(property, string);
 		while (st.hasMoreTokens()) {
@@ -154,10 +154,10 @@ public class LauncherConstants {
 		return result;
 	}
 
-	private static String join(List< ? > runbundles2, String string) {
+	private static String join(List<String> runbundles2, String string) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Object r : runbundles2) {
+		for (String r : runbundles2) {
 			sb.append(del);
 			sb.append(r);
 			del = string;
