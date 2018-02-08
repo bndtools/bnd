@@ -568,15 +568,18 @@ public class Macro {
 		return domain.getProperty(args[1], args.length == 3 ? args[2] : "");
 	}
 
+	static String _replace = "${replace;<list>;<regex>;[<replace>[;delimiter]]}";
 	/**
 	 * replace ; <list> ; regex ; replace
 	 *
 	 * @param args
 	 */
 	public String _replace(String args[]) {
-		if (args.length < 4 || args.length > 5) {
-			domain.warning("Invalid nr of arguments to replace %s", Arrays.asList(args));
-			return null;
+		verifyCommand(args, _replace, null, 3, 5);
+
+		String replace = "";
+		if (args.length > 3) {
+			replace = args[3];
 		}
 
 		String middle = ", ";
@@ -590,7 +593,7 @@ public class Macro {
 			String element = list[i].trim();
 			if (!element.equals("")) {
 				sb.append(del);
-				sb.append(element.replaceAll(args[2], args[3]));
+				sb.append(element.replaceAll(args[2], replace));
 				del = middle;
 			}
 		}
