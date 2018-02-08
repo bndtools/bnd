@@ -1,6 +1,7 @@
 package bndtools.model.repo;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -67,7 +68,8 @@ public abstract class RepositoryEntry implements IAdaptable {
             return null;
 
         if (IFile.class.equals(adapter)) {
-            IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+            IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+                .getRoot();
             File file = getFile(false);
             return file != null ? root.getFileForLocation(new Path(file.getAbsolutePath())) : null;
         }
@@ -98,28 +100,29 @@ public abstract class RepositoryEntry implements IAdaptable {
     }
 
     public final File getFile(boolean forceDownload) {
-        File result;
-
         try {
             if (repo instanceof RemoteRepositoryPlugin) {
-                ResourceHandle handle = ((RemoteRepositoryPlugin) repo).getHandle(bsn, versionFinder.versionSpec, versionFinder.strategy, Collections.<String, String> emptyMap());
+                ResourceHandle handle = ((RemoteRepositoryPlugin) repo).getHandle(bsn, versionFinder.versionSpec, versionFinder.strategy, Collections.emptyMap());
 
                 switch (handle.getLocation()) {
-                case local :
-                case remote_cached :
-                    result = handle.request();
-                    break;
-                default :
-                    result = forceDownload ? handle.request() : null;
+                    case local :
+                    case remote_cached :
+                        return handle.request();
+                    default :
+                        return forceDownload ? handle.request() : null;
                 }
-            } else {
-                Version version = versionFinder.findVersion();
-                result = (version != null) ? repo.get(bsn, version, Collections.<String, String> emptyMap()) : null;
             }
-
-            return result;
+            Version version = versionFinder.findVersion();
+            if (version == null) {
+                return null;
+            }
+            return repo.get(bsn, version, Collections.emptyMap());
         } catch (Exception e) {
-            logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", repo.getName(), bsn, versionFinder), e);
+            Throwable t = e;
+            while (t instanceof InvocationTargetException) {
+                t = t.getCause(); // unwrap exception
+            }
+            logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", repo.getName(), bsn, versionFinder), t);
             return null;
         }
     }
