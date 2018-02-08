@@ -334,6 +334,8 @@ public class MacroTest extends TestCase {
 
 		assertEquals("xyz", processor.getReplacer().process("${trim; \txyz\t  }"));
 
+		assertEquals("bcdef", processor.getReplacer()
+			.process("${subst;abacdaef;a}"));
 		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF}"));
 		assertEquals("DEFbacdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;1}"));
 		assertEquals("DEFbDEFcdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;2}"));
@@ -894,9 +896,10 @@ public class MacroTest extends TestCase {
 	 */
 	public static void testReplace() {
 		Processor p = new Processor();
-		p.setProperty("specs", "a,b, c,    d");
+		p.setProperty("specs", "a0,b0, c0,    d0");
 		Macro m = new Macro(p);
-		assertEquals("xay, xby, xcy, xdy", m.process("${replace;${specs};([^\\s]+);x$1y}"));
+		assertEquals("xa0y, xb0y, xc0y, xd0y", m.process("${replace;${specs};([^\\s]+);x$1y}"));
+		assertEquals("a, b, c, d", m.process("${replace;${specs};0}"));
 	}
 
 	public static void testToClassName() {
