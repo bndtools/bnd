@@ -12,6 +12,14 @@ public class ByteBufferDataInput implements DataInput {
 		return new ByteBufferDataInput(bb);
 	}
 
+	public static DataInput wrap(byte[] b) {
+		return wrap(b, 0, b.length);
+	}
+
+	public static DataInput wrap(byte[] b, int off, int len) {
+		return wrap(ByteBuffer.wrap(b, off, len));
+	}
+
 	private ByteBufferDataInput(ByteBuffer bb) {
 		this.bb = Objects.requireNonNull(bb);
 	}

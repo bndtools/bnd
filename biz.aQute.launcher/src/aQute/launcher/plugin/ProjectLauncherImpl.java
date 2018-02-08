@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.EmbeddedResource;
@@ -219,17 +220,22 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		Jar jar = new Jar(getProject().getName());
 
-		Builder b = new Builder();
-		getProject().addClose(b);
-
-		if (!getProject().getIncludeResource().isEmpty()) {
-			b.setIncludeResource(getProject().getIncludeResource().toString());
-			b.setProperty(Constants.RESOURCEONLY, "true");
-			b.build();
-			if (b.isOk()) {
-				jar.addAll(b.getJar());
+		Parameters ir = getProject().getIncludeResource();
+		if (!ir.isEmpty()) {
+			try (Builder b = new Builder()) {
+				b.setIncludeResource(ir.toString());
+				b.setProperty(Constants.RESOURCEONLY, "true");
+				b.build();
+				if (b.isOk()) {
+					Jar resources = b.getJar();
+					jar.addAll(resources);
+					// make sure copied resources are not closed
+					// when Builder and its Jar are closed
+					resources.getResources()
+						.clear();
+				}
+				getProject().getInfo(b);
 			}
-			getProject().getInfo(b);
 		}
 
 		List<String> runpath = getRunpath();

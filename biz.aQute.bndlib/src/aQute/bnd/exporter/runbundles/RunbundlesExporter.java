@@ -1,7 +1,7 @@
 package aQute.bnd.exporter.runbundles;
 
 import java.io.File;
-import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -40,7 +40,7 @@ public class RunbundlesExporter implements Exporter {
 			String path = nonCollidingPath(jar, source.getName());
 			jar.putResource(path, new FileResource(source));
 		}
-		return new SimpleImmutableEntry<>(project.getName(), new JarResource(jar, true));
+		return new SimpleEntry<>(jar.getName(), new JarResource(jar, true));
 	}
 
 	private String nonCollidingPath(Jar jar, String fileName) {
@@ -51,7 +51,7 @@ public class RunbundlesExporter implements Exporter {
 			};
 		}
 		int i = 1;
-		while (jar.getResource(fileName) != null) {
+		while (jar.exists(fileName)) {
 			fileName = String.format("%s[%d].%s", parts[0], i++, parts[1]);
 		}
 		return fileName;
