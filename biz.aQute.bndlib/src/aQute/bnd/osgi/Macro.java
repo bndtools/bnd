@@ -1763,7 +1763,7 @@ public class Macro {
 	static String _subst = "${subst;<target>;<regex>[;<replace>[;count]]}";
 
 	public StringBuffer _subst(String args[]) throws Exception {
-		verifyCommand(args, _subst, null, 4, 5);
+		verifyCommand(args, _subst, null, 3, 5);
 
 		Pattern p = Pattern.compile(args[2]);
 		Matcher matcher = p.matcher(args[1]);

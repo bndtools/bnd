@@ -334,6 +334,8 @@ public class MacroTest extends TestCase {
 
 		assertEquals("xyz", processor.getReplacer().process("${trim; \txyz\t  }"));
 
+		assertEquals("bcdef", processor.getReplacer()
+			.process("${subst;abacdaef;a}"));
 		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF}"));
 		assertEquals("DEFbacdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;1}"));
 		assertEquals("DEFbDEFcdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;2}"));
