@@ -151,6 +151,19 @@ public class OSGiHeader {
 	/**
 	 * @param sb
 	 * @param value
+	 */
+	public static boolean quote(StringBuilder sb, String value) {
+		try {
+			return quote((Appendable) sb, value);
+		} catch (IOException e) {
+			// this wont happen
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * @param sb
+	 * @param value
 	 * @throws IOException
 	 */
 	public static boolean quote(Appendable sb, String value) throws IOException {
