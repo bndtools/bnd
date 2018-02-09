@@ -1,6 +1,5 @@
 package aQute.bnd.header;
 
-import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -373,21 +372,25 @@ public class Attrs implements Map<String,String> {
 	}
 
 	public void append(StringBuilder sb) {
-		try {
-			String del = "";
-			for (Map.Entry<String,String> e : entrySet()) {
-				sb.append(del);
-				append(sb, e);
-				del = ";";
-			}
-		} catch (Exception e) {
-			// Cannot happen
-			e.printStackTrace();
+		String del = "";
+		for (Map.Entry<String, String> e : entrySet()) {
+			sb.append(del);
+			append(sb, e);
+			del = ";";
 		}
 	}
 
-	public void append(StringBuilder sb, Map.Entry<String,String> e) throws IOException {
-		String key = e.getKey();
+	public void append(StringBuilder sb, Map.Entry<String, String> e) {
+		append(sb, e.getKey(), e.getValue());
+	}
+
+	public String toString(String key) {
+		StringBuilder sb = new StringBuilder();
+		append(sb, key, get(key));
+		return sb.toString();
+	}
+
+	private void append(StringBuilder sb, String key, String value) {
 		sb.append(key);
 		Type type = getType(key);
 		if (type != Type.STRING) {
@@ -395,7 +398,7 @@ public class Attrs implements Map<String,String> {
 				.append(type);
 		}
 		sb.append("=");
-		OSGiHeader.quote(sb, e.getValue());
+		OSGiHeader.quote(sb, value);
 	}
 
 	@Override

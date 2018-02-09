@@ -320,9 +320,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 								mergeAttributesAndDirectives((Annotation) annotations[i]);
 							}
 						} else {
-							Stream<String> toAdd = attributesAndDirectives.entrySet()
+							Stream<String> toAdd = attributesAndDirectives.keySet()
 								.stream()
-								.map(e -> e.getKey() + "=" + e.getValue());
+								.map(attributesAndDirectives::toString);
 							
 							String[] original = a.get("attribute");
 							original = original == null ? new String[0] : original;
