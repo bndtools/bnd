@@ -25,9 +25,12 @@ More examples:
 
     # Export packages containing the substring 'export'
     -exportcontents: ${packages;NAMED;*export*}
-    
+
     # Export packages that contain a version. Useful when wrapping existing bundles while keeping exports intact
     -exportcontents: ${packages;VERSIONED}
+
+    # List of packages that were included in the bundle as conditional packages
+    Added: ${packages;CONDITIONAL}
 
 The following table specifies the available query options:
 
@@ -62,5 +65,13 @@ The following table specifies the available query options:
   <td>VERSIONED</td>
   <td></td>
   <td>Packages that are versioned. Usually this means exported packages.</td>
+</tr>
+
+<tr>
+  <td>CONDITIONAL</td>
+  <td></td>
+  <td>Packages that were included in the bundle as conditional packages. That is,
+  by using <a href="../instructions/conditionalpackage.html">-conditionalpackage</a> or
+  <a href="../heads/conditional_package.html">Conditional-Package</a>.</td>
 </tr>
 </table>

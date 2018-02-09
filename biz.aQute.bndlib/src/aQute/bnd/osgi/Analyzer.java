@@ -2676,7 +2676,7 @@ public class Analyzer extends Processor {
 		return new SortedList<>(matched, Clazz.NAME_COMPARATOR);
 	}
 
-	static String _packagesHelp = "${packages;'named'|'annotated'|'any';<pattern>}, Return a list of packages contained in the bundle that match the pattern\n";
+	static String _packagesHelp = "${packages;'named'|'annotated'|'any'|'versioned'|'conditional';<pattern>}, Return a list of packages contained in the bundle that match the pattern\n";
 
 	public String _packages(String... args) throws Exception {
 		Collection<PackageRef> matched = getPackages(contained, args);
@@ -2727,6 +2727,13 @@ public class Analyzer extends Processor {
 						break;
 					case VERSIONED :
 						accept = entry.getValue().getVersion() != null;
+						break;
+					case CONDITIONAL :
+						accept = entry.getValue()
+							.get(INTERNAL_SOURCE_DIRECTIVE)
+							.startsWith(CONDITIONALPACKAGE);
+						break;
+					default :
 						break;
 				}
 			} else {

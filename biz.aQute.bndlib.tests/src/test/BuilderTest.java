@@ -57,7 +57,7 @@ public class BuilderTest extends BndTestCase {
 	 * the -buildpath, overlays the DS annotations 1.3 source. The result is a
 	 * mish-mash of DS annotations 1.2 and 1.3 source in OSGI-OPT/src.
 	 */
-	public static void testSplitSourcesFirst() throws Exception {
+	public void testSplitSourcesFirst() throws Exception {
 
 		Builder bmaker = new Builder();
 		try {
@@ -85,7 +85,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testSplitSourcesMergeLast() throws Exception {
+	public void testSplitSourcesMergeLast() throws Exception {
 
 		Builder bmaker = new Builder();
 		try {
@@ -477,7 +477,7 @@ public class BuilderTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testClassQuery() throws Exception {
+	public void testClassQuery() throws Exception {
 		Builder a = new Builder();
 		try {
 			a.addClasspath(new File("bin"));
@@ -606,7 +606,7 @@ public class BuilderTest extends BndTestCase {
 	 * checks that the last modified date of the resulting bundle changed. Then
 	 * removes A from 'a', and checks again that the last modified data changed.
 	 */
-	public static void testRemoveClassFromPackage() throws Exception {
+	public void testRemoveClassFromPackage() throws Exception {
 		try {
 			Builder b = new Builder();
 			try {
@@ -678,7 +678,7 @@ public class BuilderTest extends BndTestCase {
 	 * could have: Private-Package: Coffee I'm running 2.0.0REL with Eclipse
 	 * Juno.
 	 */
-	public static void testUpperCasePackage() throws Exception {
+	public void testUpperCasePackage() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("bin"));
@@ -707,7 +707,7 @@ public class BuilderTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testClasses() throws Exception {
+	public void testClasses() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("x", "${classes;CONCRETE;ANNOTATION;test.BuilderTest$TestAnnotation}");
@@ -732,7 +732,7 @@ public class BuilderTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testDigests() throws Exception {
+	public void testDigests() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
@@ -762,7 +762,7 @@ public class BuilderTest extends BndTestCase {
 	 * {@link test.genericinterf.a.A}, {@link test.genericinterf.b.B}, and
 	 * {@link test.genericinterf.c.C}.
 	 */
-	public static void testGenericPickup() throws Exception {
+	public void testGenericPickup() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setPrivatePackage("test.genericinterf.a");
@@ -790,7 +790,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testPrivatePackageNonExistent() throws Exception {
+	public void testPrivatePackageNonExistent() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -810,7 +810,7 @@ public class BuilderTest extends BndTestCase {
 	 * #41 Test the EE macro
 	 */
 
-	public static void testEEMacro() throws Exception {
+	public void testEEMacro() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/ifc112.jar"));
@@ -828,7 +828,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testEEMacro2() throws Exception {
+	public void testEEMacro2() throws Exception {
 		String[][] combos = {
 				{
 						"eclipse_1_1", "JRE-1.1", "1.1"
@@ -922,7 +922,7 @@ public class BuilderTest extends BndTestCase {
 	 * exist or is empty, then bnd should fail or print an error.
 	 */
 
-	public static void testReportEmptyPrivatePackage() throws Exception {
+	public void testReportEmptyPrivatePackage() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(new File("bin"));
@@ -938,7 +938,7 @@ public class BuilderTest extends BndTestCase {
 	 * Test the name section
 	 */
 
-	public static void testNamesection() throws Exception {
+	public void testNamesection() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1026,7 +1026,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testXDirectives() throws Exception {
+	public void testXDirectives() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1046,7 +1046,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testSnapshot() throws Exception {
+	public void testSnapshot() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-resourceonly", "true");
@@ -1065,7 +1065,7 @@ public class BuilderTest extends BndTestCase {
 	 * Check if do not copy works on files
 	 */
 
-	public static void testDoNotCopy() throws Exception {
+	public void testDoNotCopy() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-resourceonly", "true");
@@ -1091,7 +1091,7 @@ public class BuilderTest extends BndTestCase {
 	 * Check if do not copy works on files
 	 */
 
-	public static void testDoNotCopyDS() throws Exception {
+	public void testDoNotCopyDS() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-resourceonly", "true");
@@ -1110,7 +1110,7 @@ public class BuilderTest extends BndTestCase {
 	 * No error is generated when a file is not found.
 	 */
 
-	public static void testFileNotFound() throws Exception {
+	public void testFileNotFound() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setPedantic(true);
@@ -1131,7 +1131,7 @@ public class BuilderTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testMultiplePackageInfo() throws Exception {
+	public void testMultiplePackageInfo() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1149,7 +1149,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Test the from: directive on expanding packages.
 	 */
-	public static void testFromOSGiDirective() throws Exception {
+	public void testFromOSGiDirective() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1166,7 +1166,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testFromEclipseDirective() throws Exception {
+	public void testFromEclipseDirective() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1184,7 +1184,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Test the provide package
 	 */
-	public static void testProvidedVersion() throws Exception {
+	public void testProvidedVersion() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1201,7 +1201,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testUnProvidedVersion() throws Exception {
+	public void testUnProvidedVersion() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1222,7 +1222,7 @@ public class BuilderTest extends BndTestCase {
 	 * Complaint that exported versions were not picked up from external bundle.
 	 */
 
-	public static void testExportedVersionsNotPickedUp() throws Exception {
+	public void testExportedVersionsNotPickedUp() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/jsr311-api-1.1.1.jar"));
@@ -1242,7 +1242,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testExportVersionSource() throws Exception {
+	public void testExportVersionSource() throws Exception {
 		Manifest manifest = new Manifest();
 		manifest.getMainAttributes().putValue("Export-Package", "org.osgi.service.event;version=100");
 
@@ -1293,7 +1293,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testImportVersionSource() throws Exception {
+	public void testImportVersionSource() throws Exception {
 		Jar fromManifest = new Jar("manifestsource");
 		Jar fromPackageInfo = new Jar("packageinfosource");
 		Jar fromBoth = new Jar("both");
@@ -1356,7 +1356,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testNoImportDirective() throws Exception {
+	public void testNoImportDirective() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Export-Package", "org.osgi.util.measurement, org.osgi.service.http;-noimport:=true");
@@ -1392,7 +1392,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testNoImportDirective2() throws Exception {
+	public void testNoImportDirective2() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Export-Package", "org.osgi.util.measurement;-noimport:=true, org.osgi.service.http");
@@ -1428,7 +1428,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testAutoNoImport() throws Exception {
+	public void testAutoNoImport() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Export-Package",
@@ -1470,7 +1470,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testSimpleWab() throws Exception {
+	public void testSimpleWab() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-wab", "");
@@ -1488,7 +1488,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testWab() throws Exception {
+	public void testWab() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-wablib", "jar/asm.jar, jar/easymock.jar");
@@ -1512,7 +1512,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testRemoveHeaders() throws Exception {
+	public void testRemoveHeaders() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Private-Package", "org.osgi.framework");
@@ -1534,7 +1534,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testNoManifest() throws Exception {
+	public void testNoManifest() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-nomanifest", "true");
@@ -1555,7 +1555,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testClassesonNoBCP() throws Exception {
+	public void testClassesonNoBCP() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-resourceonly", "true");
@@ -1568,7 +1568,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testClassesonBCP() throws Exception {
+	public void testClassesonBCP() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("-resourceonly", "true");
@@ -1588,7 +1588,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testInScopeClasspathEntry() throws Exception {
+	public void testInScopeClasspathEntry() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Export-Package", "aQute.bnd.*");
@@ -1604,7 +1604,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testInScopeExport() throws Exception {
+	public void testInScopeExport() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Export-Package", "aQute.bnd.*");
@@ -1620,7 +1620,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testInScopePrivate() throws Exception {
+	public void testInScopePrivate() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Private-Package", "!aQute.bnd.build,aQute.bnd.*");
 		b.addClasspath(new File("bin"));
@@ -1632,7 +1632,7 @@ public class BuilderTest extends BndTestCase {
 		assertFalse(b.isInScope(outside));
 	}
 
-	public static void testInScopeResources() throws Exception {
+	public void testInScopeResources() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Include-Resource",
@@ -1651,7 +1651,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testExtra() throws Exception {
+	public void testExtra() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Include-Resource",
@@ -1675,7 +1675,7 @@ public class BuilderTest extends BndTestCase {
 	 * Got a split package warning during verify when private overlaps with
 	 * export
 	 */
-	public static void testSplitWhenPrivateOverlapsExport() throws Exception {
+	public void testSplitWhenPrivateOverlapsExport() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1694,7 +1694,7 @@ public class BuilderTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testMacroBasedExpansion() throws Exception {
+	public void testMacroBasedExpansion() throws Exception {
 		Processor proc = new Processor();
 
 		Builder builder = new Builder(proc);
@@ -1731,7 +1731,7 @@ public class BuilderTest extends BndTestCase {
 	 * or not
 	 */
 
-	public static void testConditionalResolution() throws Exception {
+	public void testConditionalResolution() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("res", "${if;${exporters;${@package}};mandatory;optional}");
@@ -1763,7 +1763,7 @@ public class BuilderTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testClassnames() throws Exception {
+	public void testClassnames() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1826,7 +1826,7 @@ public class BuilderTest extends BndTestCase {
 		return new TreeSet<>(Processor.split(s));
 	}
 
-	public static void testImportMicroNotTruncated() throws Exception {
+	public void testImportMicroNotTruncated() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1840,7 +1840,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testImportMicroTruncated() throws Exception {
+	public void testImportMicroTruncated() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -1856,7 +1856,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testMultipleExport2() throws Exception {
+	public void testMultipleExport2() throws Exception {
 		File cp[] = {
 				IO.getFile("jar/asm.jar")
 		};
@@ -1881,7 +1881,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testBsnAssignmentNoFile() throws Exception {
+	public void testBsnAssignmentNoFile() throws Exception {
 		Properties p = new Properties();
 		p.setProperty("Private-Package", "org.objectweb.asm");
 		Attributes m = setup(p, null).getMainAttributes();
@@ -1925,7 +1925,7 @@ public class BuilderTest extends BndTestCase {
 		return m;
 	}
 
-	public static void testDuplicateExport() throws Exception {
+	public void testDuplicateExport() throws Exception {
 		File cp[] = {
 				IO.getFile("jar/asm.jar")
 		};
@@ -1947,7 +1947,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testNoExport() throws Exception {
+	public void testNoExport() throws Exception {
 		File cp[] = {
 				IO.getFile("jar/asm.jar")
 		};
@@ -1970,7 +1970,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testHardcodedImport() throws Exception {
+	public void testHardcodedImport() throws Exception {
 		File cp[] = {
 				IO.getFile("jar/asm.jar")
 		};
@@ -1992,7 +1992,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testCopyDirectory() throws Exception {
+	public void testCopyDirectory() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2019,7 +2019,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testSplitOnExportAndPrivate() throws Exception {
+	public void testSplitOnExportAndPrivate() throws Exception {
 		File cp[] = {
 				IO.getFile("jar/asm.jar")
 		};
@@ -2037,7 +2037,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testConduit() throws Exception {
+	public void testConduit() throws Exception {
 		Properties p = new Properties();
 		p.setProperty("-conduit", "jar/asm.jar");
 		Builder b = new Builder();
@@ -2058,7 +2058,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testExportSyntheticPackage() throws Exception {
+	public void testExportSyntheticPackage() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2083,7 +2083,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testMETAINF() throws Exception {
+	public void testMETAINF() throws Exception {
 		File cp[] = {
 				new File("src"), IO.getFile("jar/asm.jar")
 		};
@@ -2112,7 +2112,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testVersionCleanup() throws Exception {
+	public void testVersionCleanup() throws Exception {
 		assertVersion("1.201209072340200", "1.0.0.201209072340200");
 		assertVersion("000001.0003.00000-SNAPSHOT", "1.3.0.SNAPSHOT");
 		assertVersion("000000.0000.00000-SNAPSHOT", "0.0.0.SNAPSHOT");
@@ -2158,7 +2158,7 @@ public class BuilderTest extends BndTestCase {
 	 * phase, it augments the Export-Package header.
 	 */
 
-	public static void testExportContents() throws Exception {
+	public void testExportContents() throws Exception {
 		Builder builder = new Builder();
 		try {
 			builder.setProperty(Analyzer.INCLUDE_RESOURCE, "test/activator/inherits=src/test/activator/inherits");
@@ -2184,7 +2184,7 @@ public class BuilderTest extends BndTestCase {
 	 * org.springframework.beans.factory.access refers to
 	 * org.springframework.beans.factory and org.springframework.beans. The
 	 */
-	public static void testConditionalBaseSuper() throws Exception {
+	public void testConditionalBaseSuper() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty(Constants.CONDITIONALPACKAGE, "test.top.*");
@@ -2209,7 +2209,7 @@ public class BuilderTest extends BndTestCase {
 	 * It looks like Conditional-Package can add the same package multiple
 	 * times. So lets test this.
 	 */
-	public static void testConditional2() throws Exception {
+	public void testConditional2() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.EXPORT_PACKAGE, "org.osgi.service.log");
 		base.put(Analyzer.CONDITIONAL_PACKAGE, "org.osgi.*");
@@ -2233,7 +2233,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Test the strategy: error
 	 */
-	public static void testStrategyError() throws Exception {
+	public void testStrategyError() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-split-package:=error");
 		Builder analyzer = new Builder();
@@ -2252,7 +2252,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Test the strategy: default
 	 */
-	public static void testStrategyDefault() throws Exception {
+	public void testStrategyDefault() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.EXPORT_PACKAGE, "*");
 		Builder analyzer = new Builder();
@@ -2272,7 +2272,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Test the strategy: merge-first
 	 */
-	public static void testStrategyMergeFirst() throws Exception {
+	public void testStrategyMergeFirst() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-split-package:=merge-first");
 		Builder analyzer = new Builder();
@@ -2291,7 +2291,7 @@ public class BuilderTest extends BndTestCase {
 	/**
 	 * Test the strategy: merge-last
 	 */
-	public static void testStrategyMergeLast() throws Exception {
+	public void testStrategyMergeLast() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.EXPORT_PACKAGE, "*;-split-package:=merge-last");
 		Builder analyzer = new Builder();
@@ -2312,7 +2312,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testResourceNotFound() throws Exception {
+	public void testResourceNotFound() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.EXPORT_PACKAGE, "*;x-test:=true");
 		base.put(Analyzer.INCLUDE_RESOURCE, "does_not_exist");
@@ -2333,7 +2333,7 @@ public class BuilderTest extends BndTestCase {
 	 * Check if we can use findpath to build the Bundle-Classpath.
 	 */
 
-	public static void testFindPathInBundleClasspath() throws Exception {
+	public void testFindPathInBundleClasspath() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.INCLUDE_RESOURCE, "jar=jar");
 		base.put(Analyzer.BUNDLE_CLASSPATH, "${findpath;jar/.{1,4}\\.jar}");
@@ -2361,7 +2361,7 @@ public class BuilderTest extends BndTestCase {
 	 * Check if we export META-INF when we export the complete classpath.
 	 */
 
-	public static void testVersionCleanupAll() throws Exception {
+	public void testVersionCleanupAll() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.EXPORT_PACKAGE, "*");
 		base.put(Analyzer.BUNDLE_VERSION, "0.9.0-incubator-SNAPSHOT");
@@ -2389,18 +2389,18 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testConditional() throws Exception {
+	public void testConditional() throws Exception {
 		File cp[] = {
 				IO.getFile("jar/osgi.jar"), IO.getFile("jar/ds.jar")
 		};
-		Builder bmaker = new Builder();
-		try {
+		try (Builder bmaker = new Builder()) {
 			Properties p = new Properties();
 			p.put("Import-Package", "*");
 			p.put("Private-Package", "org.eclipse.equinox.ds");
 			p.put("Conditional-Package", "org.eclipse.equinox.ds.*, org.osgi.service.*");
 			bmaker.setProperties(p);
 			bmaker.setClasspath(cp);
+			bmaker.setProperty("Conditional", "${packages;conditional}");
 			bmaker.build();
 			assertTrue(bmaker.check());
 
@@ -2410,8 +2410,20 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.getContained().getByFQN("org.osgi.service.cm") != null);
 			assertTrue(bmaker.getContained().getByFQN("org.osgi.service.component") != null);
 			assertFalse(bmaker.getContained().getByFQN("org.osgi.service.wireadmin") != null);
-		} finally {
-			bmaker.close();
+			Parameters conditional = new Parameters(bmaker.getProperty("Conditional"));
+			assertFalse(conditional.containsKey("org.eclipse.equinox.ds"));
+			assertTrue(conditional.containsKey("org.eclipse.equinox.ds.model"));
+			assertTrue(conditional.containsKey("org.eclipse.equinox.ds.parser"));
+			assertTrue(conditional.containsKey("org.eclipse.equinox.ds.resolver"));
+			assertTrue(conditional.containsKey("org.eclipse.equinox.ds.tracker"));
+			assertTrue(conditional.containsKey("org.eclipse.equinox.ds.workqueue"));
+			assertTrue(conditional.containsKey("org.eclipse.equinox.ds.instance"));
+			assertTrue(conditional.containsKey("org.eclipse.equinox.ds.service"));
+			assertTrue(conditional.containsKey("org.osgi.service.log"));
+			assertTrue(conditional.containsKey("org.osgi.service.packageadmin"));
+			assertTrue(conditional.containsKey("org.osgi.service.cm"));
+			assertTrue(conditional.containsKey("org.osgi.service.component"));
+			assertFalse(conditional.containsKey("org.osgi.service.wireadmin"));
 		}
 	}
 
@@ -2419,7 +2431,7 @@ public class BuilderTest extends BndTestCase {
 	 * Check if we export META-INF when we export the complete classpath.
 	 */
 
-	public static void testMetaInfExport() throws Exception {
+	public void testMetaInfExport() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.EXPORT_PACKAGE, "*");
 		Builder analyzer = new Builder();
@@ -2442,7 +2454,7 @@ public class BuilderTest extends BndTestCase {
 	 * there's an empty package in front of it in the classpath. First form.
 	 */
 
-	public static void testImportRangeCalculatedFromClasspath_1() throws Exception {
+	public void testImportRangeCalculatedFromClasspath_1() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
@@ -2472,7 +2484,7 @@ public class BuilderTest extends BndTestCase {
 	 * there's an empty package in front of it in the classpath. Second form.
 	 */
 
-	public static void testImportRangeCalculatedFromClasspath_2() throws Exception {
+	public void testImportRangeCalculatedFromClasspath_2() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
@@ -2504,7 +2516,7 @@ public class BuilderTest extends BndTestCase {
 	 * calling builds().
 	 */
 
-	public static void testImportRangeCalculatedFromClasspath_3() throws Exception {
+	public void testImportRangeCalculatedFromClasspath_3() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
@@ -2535,7 +2547,7 @@ public class BuilderTest extends BndTestCase {
 	 * calling builds().
 	 */
 
-	public static void testImportRangeCalculatedFromClasspath_4() throws Exception {
+	public void testImportRangeCalculatedFromClasspath_4() throws Exception {
 		Properties base = new Properties();
 		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
@@ -2566,7 +2578,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testFindActivator() throws Exception {
+	public void testFindActivator() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			bmaker.setProperty("Bundle-Activator", "test.activator.Activator");
@@ -2592,7 +2604,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testImportVersionRange() throws Exception {
+	public void testImportVersionRange() throws Exception {
 		assertVersionEquals("[1.1,2.0)", "[1.1,2.0)");
 		assertVersionEquals("[${@},2.0)", "[1.3,2.0)");
 		assertVersionEquals("[${@},${@}]", "[1.3,1.3]");
@@ -2620,7 +2632,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testImportExportBadVersion() throws Exception {
+	public void testImportExportBadVersion() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/ds.jar"));
@@ -2650,7 +2662,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleClasspath3() throws Exception {
+	public void testBundleClasspath3() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2681,7 +2693,7 @@ public class BuilderTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleClasspath2() throws Exception {
+	public void testBundleClasspath2() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2705,7 +2717,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testBundleClasspath() throws Exception {
+	public void testBundleClasspath() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2730,7 +2742,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testUnreferredImport() throws Exception {
+	public void testUnreferredImport() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2747,7 +2759,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testUnreferredNegatedImport() throws Exception {
+	public void testUnreferredNegatedImport() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2765,7 +2777,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testIncludeResourceResourcesOnlyJar2() throws Exception {
+	public void testIncludeResourceResourcesOnlyJar2() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2787,7 +2799,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testClasspathFileNotExist() throws Exception {
+	public void testClasspathFileNotExist() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2805,7 +2817,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testExpandWithNegate() throws Exception {
+	public void testExpandWithNegate() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2829,7 +2841,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testIncludeResourceResourcesOnlyJar() throws Exception {
+	public void testIncludeResourceResourcesOnlyJar() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2850,7 +2862,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testIncludeResourceResourcesOnly() throws Exception {
+	public void testIncludeResourceResourcesOnly() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2873,7 +2885,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testIncludeResourceFromZipDefault() throws Exception {
+	public void testIncludeResourceFromZipDefault() throws Exception {
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
 		p.put("Include-Resource", "@jar/easymock.jar");
@@ -2884,7 +2896,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testIncludeResourceFromZipDeep() throws Exception {
+	public void testIncludeResourceFromZipDeep() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2899,7 +2911,7 @@ public class BuilderTest extends BndTestCase {
 		}
 	}
 
-	public static void testIncludeResourceFromZipOneDirectory() throws Exception {
+	public void testIncludeResourceFromZipOneDirectory() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2917,7 +2929,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testIncludeResourceFromZipOneDirectoryOther() throws Exception {
+	public void testIncludeResourceFromZipOneDirectoryOther() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2938,7 +2950,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testIncludeResourceFromZipRecurseDirectory() throws Exception {
+	public void testIncludeResourceFromZipRecurseDirectory() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2954,7 +2966,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testIncludeLicenseFromZip() throws Exception {
+	public void testIncludeLicenseFromZip() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
@@ -2971,7 +2983,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testEasymock() throws Exception {
+	public void testEasymock() throws Exception {
 		File cp[] = {
 				IO.getFile("jar/easymock.jar")
 		};
@@ -2993,7 +3005,7 @@ public class BuilderTest extends BndTestCase {
 
 	}
 
-	public static void testSources() throws Exception {
+	public void testSources() throws Exception {
 		Builder bmaker = new Builder();
 		try {
 			bmaker.addClasspath(new File("bin"));

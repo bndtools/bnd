@@ -358,7 +358,7 @@ public class Builder extends Analyzer {
 			return null;
 		}
 
-		Jar jar = new Jar("conditional-import");
+		Jar jar = new Jar(CONDITIONALPACKAGE);
 		addClose(jar);
 		for (PackageRef pref : referred) {
 			for (Jar cpe : getClasspath()) {

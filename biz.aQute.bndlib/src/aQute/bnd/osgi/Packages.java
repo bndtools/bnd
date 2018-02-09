@@ -12,7 +12,11 @@ public class Packages implements Map<PackageRef,Attrs> {
 	private final Map<PackageRef, Attrs> map;
 
 	public static enum QUERY {
-		ANY, ANNOTATED, NAMED, VERSIONED
+		ANY,
+		ANNOTATED,
+		NAMED,
+		VERSIONED,
+		CONDITIONAL;
 	}
 
 	public Packages(Packages other) {

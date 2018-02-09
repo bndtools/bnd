@@ -250,7 +250,7 @@ Another option is to encode the text for the readme in the bnd file using the li
 
 	-includeresource: readme.md;literal=${unescape;#JAF\nThis is the Java Activation Framework}
 
-The `-includeresource` instruction is quite powerful, there are many more options to recurse directories, filter, etc. See [-includeresource](../macros/includeresource.html).
+The `-includeresource` instruction is quite powerful, there are many more options to recurse directories, filter, etc. See [-includeresource](../instructions/includeresource.html).
 
 ## Import Package
 
