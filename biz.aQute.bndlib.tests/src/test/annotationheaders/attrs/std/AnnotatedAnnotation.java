@@ -21,5 +21,8 @@ public @interface AnnotatedAnnotation {
 	String ignoredName();
 
 	@Attribute
-	String usedName();
+	String[] usedName();
+
+	@Attribute
+	int number();
 }

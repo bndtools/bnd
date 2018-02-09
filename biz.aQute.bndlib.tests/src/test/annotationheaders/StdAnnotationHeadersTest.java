@@ -123,8 +123,10 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(filter, filter.contains("(require=Required)"));
 			assertTrue(p.containsKey("open"));
 			assertEquals("sesame", p.get("open"));
-			assertTrue(p.containsKey("usedName"));
-			assertEquals("sunflower", p.get("usedName"));
+			assertTrue(p.containsKey("usedName:List<String>"));
+			assertEquals("sunflower,marigold", p.get("usedName:List<String>"));
+			assertTrue(p.containsKey("number:Long"));
+			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
 
 			p = req.get("require" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
@@ -136,8 +138,10 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(filter, filter.contains("(require=Required2)"));
 			assertTrue(p.containsKey("open"));
 			assertEquals("sesame", p.get("open"));
-			assertTrue(p.containsKey("usedName"));
-			assertEquals("sunflower", p.get("usedName"));
+			assertTrue(p.containsKey("usedName:List<String>"));
+			assertEquals("sunflower,marigold", p.get("usedName:List<String>"));
+			assertTrue(p.containsKey("number:Long"));
+			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
 
 			p = req.get("maybe");
@@ -148,8 +152,10 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("multiple", p.get("cardinality:"));
 			assertTrue(p.containsKey("open"));
 			assertEquals("sesame", p.get("open"));
-			assertTrue(p.containsKey("usedName"));
-			assertEquals("sunflower", p.get("usedName"));
+			assertTrue(p.containsKey("usedName:List<String>"));
+			assertEquals("sunflower,marigold", p.get("usedName:List<String>"));
+			assertTrue(p.containsKey("number:Long"));
+			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
 
 			// These two values are out of order with respect to the annotations
@@ -162,8 +168,10 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("2", p.get("version:Version"));
 			assertTrue(p.containsKey("open"));
 			assertEquals("sesame", p.get("open"));
-			assertTrue(p.containsKey("usedName"));
-			assertEquals("sunflower", p.get("usedName"));
+			assertTrue(p.containsKey("usedName:List<String>"));
+			assertEquals("sunflower,marigold", p.get("usedName:List<String>"));
+			assertTrue(p.containsKey("number:Long"));
+			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
 
 			p = cap.get("provide" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
@@ -172,8 +180,10 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("Provided", p.get("provide"));
 			assertTrue(p.containsKey("open"));
 			assertEquals("sesame", p.get("open"));
-			assertTrue(p.containsKey("usedName"));
-			assertEquals("sunflower", p.get("usedName"));
+			assertTrue(p.containsKey("usedName:List<String>"));
+			assertEquals("sunflower,marigold", p.get("usedName:List<String>"));
+			assertTrue(p.containsKey("number:Long"));
+			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
 
 			assertEquals("Indirectly-bar", mainAttributes.getValue("Foo2"));
