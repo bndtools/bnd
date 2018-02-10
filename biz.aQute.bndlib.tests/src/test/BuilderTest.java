@@ -2391,13 +2391,14 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testConditional() throws Exception {
 		File cp[] = {
-				IO.getFile("jar/osgi.jar"), IO.getFile("jar/ds.jar")
+			IO.getFile("jar/osgi.jar"), IO.getFile("jar/ds.jar"), IO.getFile("bin")
 		};
 		try (Builder bmaker = new Builder()) {
 			Properties p = new Properties();
 			p.put("Import-Package", "*");
-			p.put("Private-Package", "org.eclipse.equinox.ds");
+			p.put("Private-Package", "org.eclipse.equinox.ds,test.api");
 			p.put("Conditional-Package", "org.eclipse.equinox.ds.*, org.osgi.service.*");
+			p.put("-exportcontents", "${removeall;${packages;versioned};${packages;conditional}}");
 			bmaker.setProperties(p);
 			bmaker.setClasspath(cp);
 			bmaker.setProperty("Conditional", "${packages;conditional}");
@@ -2410,6 +2411,12 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.getContained().getByFQN("org.osgi.service.cm") != null);
 			assertTrue(bmaker.getContained().getByFQN("org.osgi.service.component") != null);
 			assertFalse(bmaker.getContained().getByFQN("org.osgi.service.wireadmin") != null);
+			Parameters exported = new Parameters(bmaker.getJar()
+				.getManifest()
+				.getMainAttributes()
+				.getValue("Export-Package"));
+			assertTrue(exported.containsKey("test.api"));
+			assertEquals(1, exported.size());
 			Parameters conditional = new Parameters(bmaker.getProperty("Conditional"));
 			assertFalse(conditional.containsKey("org.eclipse.equinox.ds"));
 			assertTrue(conditional.containsKey("org.eclipse.equinox.ds.model"));
