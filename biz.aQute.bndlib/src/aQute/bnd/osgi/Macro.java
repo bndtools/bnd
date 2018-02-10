@@ -375,6 +375,21 @@ public class Macro {
 		return Processor.join(set, ",");
 	}
 
+	/**
+	 * Return a unique list where the duplicates are removed.
+	 */
+	static String _removeall = "${removeall;<list>;<list>}";
+
+	public String _removeall(String args[]) {
+		verifyCommand(args, _removeall, null, 3, 3);
+		List<String> result = new ArrayList<>();
+		Processor.split(args[1], result);
+		List<String> remove = new ArrayList<>();
+		Processor.split(args[2], remove);
+		result.removeAll(remove);
+		return Processor.join(result, ",");
+	}
+
 	public String _pathseparator(String args[]) {
 		return File.pathSeparator;
 	}

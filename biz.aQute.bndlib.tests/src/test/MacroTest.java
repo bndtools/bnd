@@ -16,6 +16,15 @@ import junit.framework.TestCase;
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
 
+	public void testRemoveall() throws Exception {
+		try (Builder b = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("a", "${removeall;A,B,C,D,E,F;B,D,F}");
+			b.setProperties(p);
+			assertEquals("A,C,E", b.getProperty("a"));
+		}
+	}
+
 	public void testFilterExpression() throws Exception {
 		Processor p = new Processor();
 		p.setProperty("a", "A");
