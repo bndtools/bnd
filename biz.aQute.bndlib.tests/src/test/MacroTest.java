@@ -19,9 +19,18 @@ public class MacroTest extends TestCase {
 	public void testRemoveall() throws Exception {
 		try (Builder b = new Builder()) {
 			Properties p = new Properties();
-			p.setProperty("a", "${removeall;A,B,C,D,E,F;B,D,F}");
+			p.setProperty("a", "${removeall;A,B,C,D,E,F;B,D,F,G}");
 			b.setProperties(p);
 			assertEquals("A,C,E", b.getProperty("a"));
+		}
+	}
+
+	public void testRetainall() throws Exception {
+		try (Builder b = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("a", "${retainall;A,B,C,D,E,F;B,D,F,G}");
+			b.setProperties(p);
+			assertEquals("B,D,F", b.getProperty("a"));
 		}
 	}
 
