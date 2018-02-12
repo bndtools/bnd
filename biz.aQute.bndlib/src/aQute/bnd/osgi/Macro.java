@@ -376,7 +376,7 @@ public class Macro {
 	}
 
 	/**
-	 * Return a unique list where the duplicates are removed.
+	 * Return the first list where items from the second list are removed.
 	 */
 	static String _removeall = "${removeall;<list>;<list>}";
 
@@ -387,6 +387,21 @@ public class Macro {
 		List<String> remove = new ArrayList<>();
 		Processor.split(args[2], remove);
 		result.removeAll(remove);
+		return Processor.join(result, ",");
+	}
+
+	/**
+	 * Return the first list where items not in the second list are removed.
+	 */
+	static String _retainall = "${retainall;<list>;<list>}";
+
+	public String _retainall(String args[]) {
+		verifyCommand(args, _retainall, null, 3, 3);
+		List<String> result = new ArrayList<>();
+		Processor.split(args[1], result);
+		List<String> retain = new ArrayList<>();
+		Processor.split(args[2], retain);
+		result.retainAll(retain);
 		return Processor.join(result, ",");
 	}
 
