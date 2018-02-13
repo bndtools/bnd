@@ -8,7 +8,6 @@ import static aQute.launcher.constants.LauncherConstants.WARNING;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +24,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.security.AllPermission;
 import java.security.CodeSource;
 import java.security.Permission;
@@ -70,6 +70,7 @@ import aQute.launcher.agent.LauncherAgent;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.minifw.MiniFramework;
 import aQute.launcher.pre.EmbeddedLauncher;
+import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
@@ -1371,14 +1372,13 @@ public class Launcher implements ServiceListener {
 				return;
 			}
 
-			ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(outputStream);
-			try {
+			try (ByteBufferOutputStream outputStream = new ByteBufferOutputStream();
+				DataOutputStream dos = new DataOutputStream(outputStream)) {
 				dos.writeInt(severity);
 				dos.writeUTF(message.substring(2));
 
-				byte[] byteArray = outputStream.toByteArray();
-				socket.send(new DatagramPacket(byteArray, byteArray.length));
+				ByteBuffer bb = outputStream.toByteBuffer();
+				socket.send(new DatagramPacket(bb.array(), bb.arrayOffset(), bb.remaining()));
 			} catch (IOException ioe) {
 				out.println("! Unable to send notification to " + socket.getRemoteSocketAddress());
 				if (parms.trace)
@@ -1386,7 +1386,6 @@ public class Launcher implements ServiceListener {
 				out.flush();
 			}
 		}
-
 	}
 
 	public void error(String msg, Object... objects) {
