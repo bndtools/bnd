@@ -61,7 +61,7 @@ public class Utils {
 
 	public static List<ResolveTrace> parseException(String message) {
 		Matcher m = RESOLVE_MESSAGE_P.matcher(message);
-		List<ResolveTrace> result = new ArrayList<Utils.ResolveTrace>();
+		List<ResolveTrace> result = new ArrayList<>();
 		while (m.lookingAt()) {
 			ResolveTrace rt = new ResolveTrace();
 			rt.bsn = m.group("bsn");

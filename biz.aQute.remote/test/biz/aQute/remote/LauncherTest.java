@@ -65,7 +65,7 @@ public class LauncherTest extends TestCase {
 		File storage = IO.getFile("generated/storage-1");
 		storage.mkdirs();
 
-		configuration = new HashMap<String,Object>();
+		configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		configuration.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
 

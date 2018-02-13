@@ -11,11 +11,11 @@ public class SimpleListConverter<R> implements Converter<List<R>,String> {
 	private Converter< ? extends R, ? super String> itemConverter;
 
 	public static <R> Converter<List<R>,String> create(Converter<R, ? super String> itemConverter) {
-		return new SimpleListConverter<R>(itemConverter);
+		return new SimpleListConverter<>(itemConverter);
 	}
 
 	public static Converter<List<String>,String> create() {
-		return new SimpleListConverter<String>(new NoopConverter<String>());
+		return new SimpleListConverter<>(new NoopConverter<>());
 	}
 
 	private SimpleListConverter(Converter< ? extends R, ? super String> itemConverter) {
@@ -26,7 +26,7 @@ public class SimpleListConverter<R> implements Converter<List<R>,String> {
 		if (input == null)
 			return null;
 
-		List<R> result = new ArrayList<R>();
+		List<R> result = new ArrayList<>();
 
 		if (input == null || Constants.EMPTY_HEADER.equalsIgnoreCase(input.trim()))
 			return result;
@@ -44,7 +44,7 @@ public class SimpleListConverter<R> implements Converter<List<R>,String> {
 
 	@Override
 	public List<R> error(String msg) {
-		List<R> l = new ArrayList<R>();
+		List<R> l = new ArrayList<>();
 		l.add(itemConverter.error(msg));
 		return l;
 	}

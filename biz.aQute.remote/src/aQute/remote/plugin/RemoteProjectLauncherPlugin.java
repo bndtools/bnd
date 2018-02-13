@@ -40,7 +40,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	}
 
 	private Parameters				runremote;
-	private List<RunSessionImpl>	sessions	= new ArrayList<RunSessionImpl>();
+	private List<RunSessionImpl>	sessions	= new ArrayList<>();
 	private boolean					prepared;
 
 	/**
@@ -94,7 +94,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
 		updateFromProject();
 
-		Map<String,Object> properties = new HashMap<String,Object>(getRunProperties());
+		Map<String,Object> properties = new HashMap<>(getRunProperties());
 
 		calculatedProperties(properties);
 
@@ -107,7 +107,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			RunRemoteDTO dto = converter.convert(RunRemoteDTO.class, entry.getValue());
 			dto.name = entry.getKey();
 
-			Map<String,Object> sessionProperties = new HashMap<String,Object>(properties);
+			Map<String,Object> sessionProperties = new HashMap<>(properties);
 			sessionProperties.putAll(entry.getValue());
 			sessionProperties.put("session.name", dto.name);
 

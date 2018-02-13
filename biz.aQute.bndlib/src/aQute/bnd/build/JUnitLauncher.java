@@ -22,7 +22,7 @@ public class JUnitLauncher extends ProjectLauncher {
 	private Command			java;
 	private long			timeout;
 	// private boolean trace;
-	private List<String>	fqns	= new ArrayList<String>();
+	private List<String>	fqns	= new ArrayList<>();
 
 	public JUnitLauncher(Project project) throws Exception {
 		super(project);

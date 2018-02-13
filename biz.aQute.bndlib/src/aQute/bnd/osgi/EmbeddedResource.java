@@ -14,7 +14,15 @@ public class EmbeddedResource implements Resource {
 	private String				extra;
 
 	public EmbeddedResource(byte data[], long lastModified) {
-		this.buffer = ByteBuffer.wrap(data);
+		this(data, 0, data.length, lastModified);
+	}
+
+	public EmbeddedResource(byte data[], int off, int len, long lastModified) {
+		this(ByteBuffer.wrap(data, off, len), lastModified);
+	}
+
+	public EmbeddedResource(ByteBuffer buffer, long lastModified) {
+		this.buffer = buffer;
 		this.lastModified = lastModified;
 	}
 

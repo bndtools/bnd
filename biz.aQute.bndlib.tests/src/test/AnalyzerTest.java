@@ -429,9 +429,9 @@ public class AnalyzerTest extends BndTestCase {
 			a.analyze();
 
 			String result = a._classes("cmd", "named", "org.osgi.service.http.*", "abstract");
-			TreeSet<String> r = new TreeSet<String>(Processor.split(result));
+			TreeSet<String> r = new TreeSet<>(Processor.split(result));
 			assertEquals(
-					new TreeSet<String>(
+					new TreeSet<>(
 							Arrays.asList("org.osgi.service.http.HttpContext", "org.osgi.service.http.HttpService")),
 					r);
 		}
@@ -513,8 +513,8 @@ public class AnalyzerTest extends BndTestCase {
 
 			String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
 			System.err.println(imports);
-			assertTrue(imports.indexOf("x=1") >= 0);
-			assertTrue(imports.indexOf("y=2") >= 0);
+			assertTrue(imports.contains("x=1"));
+			assertTrue(imports.contains("y=2"));
 		} finally {
 			a.close();
 		}
@@ -541,11 +541,11 @@ public class AnalyzerTest extends BndTestCase {
 			String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
 			String dynamicImports = jar.getManifest().getMainAttributes().getValue("DynamicImport-Package");
 
-			assertTrue(imports.indexOf("org.osgi.framework;version=\"[1.3,2)\"") >= 0);
-			assertTrue(imports.indexOf("org.osgi.service.cm;version=\"[1.2,2)\"") < 0);
-			assertTrue(imports.indexOf("org.osgi.service.event;version=\"[1.0,2)\"") < 0);
-			assertTrue(dynamicImports.indexOf("org.osgi.service.cm;version=\"[1.2,2)\"") >= 0);
-			assertTrue(dynamicImports.indexOf("org.osgi.service.event;version=\"[1.0,2)\"") >= 0);
+			assertTrue(imports.contains("org.osgi.framework;version=\"[1.3,2)\""));
+			assertFalse(imports.contains("org.osgi.service.cm;version=\"[1.2,2)\""));
+			assertFalse(imports.contains("org.osgi.service.event;version=\"[1.0,2)\""));
+			assertTrue(dynamicImports.contains("org.osgi.service.cm;version=\"[1.2,2)\""));
+			assertTrue(dynamicImports.contains("org.osgi.service.event;version=\"[1.0,2)\""));
 
 		} finally {
 			a.close();
@@ -574,12 +574,12 @@ public class AnalyzerTest extends BndTestCase {
 			String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
 			String dynamicImports = jar.getManifest().getMainAttributes().getValue("DynamicImport-Package");
 
-			assertTrue(imports.indexOf("org.osgi.framework;version=\"[1.3,2)\"") >= 0);
-			assertTrue(imports.indexOf("org.osgi.service.cm;version=\"[1.2,2)\"") < 0);
-			assertTrue(imports.indexOf("org.osgi.service.event;version=\"[1.0,2)\"") < 0);
-			assertTrue(dynamicImports.indexOf("org.osgi.service.cm;version=\"[1.2,2)\"") >= 0);
-			assertTrue(dynamicImports.indexOf("org.osgi.service.event;version=\"[1.0,2)\"") >= 0);
-			assertTrue(dynamicImports.indexOf("javax.servlet.*") >= 0);
+			assertTrue(imports.contains("org.osgi.framework;version=\"[1.3,2)\""));
+			assertFalse(imports.contains("org.osgi.service.cm;version=\"[1.2,2)\""));
+			assertFalse(imports.contains("org.osgi.service.event;version=\"[1.0,2)\""));
+			assertTrue(dynamicImports.contains("org.osgi.service.cm;version=\"[1.2,2)\""));
+			assertTrue(dynamicImports.contains("org.osgi.service.event;version=\"[1.0,2)\""));
+			assertTrue(dynamicImports.contains("javax.servlet.*"));
 
 		} finally {
 			a.close();
@@ -666,7 +666,7 @@ public class AnalyzerTest extends BndTestCase {
 
 			String imports = manifest.getMainAttributes().getValue("Import-Package");
 			assertNotNull(imports);
-			assertTrue(imports.indexOf("org.osgi.framework") >= 0);
+			assertTrue(imports.contains("org.osgi.framework"));
 		} finally {
 			a.close();
 		}
@@ -1118,7 +1118,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	static void assertNotPresent(Collection< ? > map, String string) {
-		Collection<String> ss = new HashSet<String>();
+		Collection<String> ss = new HashSet<>();
 		for (Object o : map)
 			ss.add(o + "");
 
@@ -1130,7 +1130,7 @@ public class AnalyzerTest extends BndTestCase {
 	}
 
 	static void assertPresent(Collection< ? > map, String string) {
-		Collection<String> ss = new HashSet<String>();
+		Collection<String> ss = new HashSet<>();
 		for (Object o : map)
 			ss.add(o + "");
 

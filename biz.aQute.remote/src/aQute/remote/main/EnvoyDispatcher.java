@@ -40,8 +40,8 @@ public class EnvoyDispatcher implements Closeable {
 	private File						storage;
 	private String						network;
 	private int							port;
-	private Map<String,DispatcherInfo>	frameworks	= new HashMap<String,EnvoyDispatcher.DispatcherInfo>();
-	private Set<EnvoyImpl>				envoys		= new HashSet<EnvoyImpl>();
+	private Map<String,DispatcherInfo>	frameworks	= new HashMap<>();
+	private Set<EnvoyImpl>				envoys		= new HashSet<>();
 
 	class DispatcherInfo {
 		String				name;
@@ -76,7 +76,7 @@ public class EnvoyDispatcher implements Closeable {
 		EnvoyImpl(Socket socket) throws IOException {
 			envoys.add(this);
 			socket.setSoTimeout(500);
-			this.link = new Link<Envoy,EnvoySupervisor>(EnvoySupervisor.class, this, socket.getInputStream(),
+			this.link = new Link<>(EnvoySupervisor.class, this, socket.getInputStream(),
 					socket.getOutputStream());
 			setRemote(this.link.getRemote());
 		}
@@ -140,7 +140,7 @@ public class EnvoyDispatcher implements Closeable {
 		@SuppressWarnings("deprecation")
 		private DispatcherInfo create(String name, Collection<String> runpath, Map<String,Object> properties)
 				throws Exception {
-			List<URL> files = new ArrayList<URL>();
+			List<URL> files = new ArrayList<>();
 
 			for (String sha : runpath) {
 				files.add(cache.getFile(sha, source).toURI().toURL());
@@ -151,7 +151,7 @@ public class EnvoyDispatcher implements Closeable {
 			DispatcherInfo info = new DispatcherInfo();
 			info.name = name;
 			info.cl = new URLClassLoader(files.toArray(new URL[0]));
-			info.properties = new HashMap<String,Object>(properties);
+			info.properties = new HashMap<>(properties);
 			info.runpath = runpath;
 			info.storage = new File(storage, name);
 			info.dispatcher = info.cl.loadClass("aQute.remote.agent.AgentDispatcher");

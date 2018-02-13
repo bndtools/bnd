@@ -166,9 +166,9 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 
 			String localNameLowerCase = localName.toLowerCase();
 			if (ELEMENT_COMPONENT.equals(localNameLowerCase)) {
-				provides = new LinkedList<String>();
-				properties = new LinkedHashMap<String,Object>();
-				references = new LinkedList<Requirement>();
+				provides = new LinkedList<>();
+				properties = new LinkedHashMap<>();
+				references = new LinkedList<>();
 
 				if (uri == null || "".equals(uri)) {
 					setVersion(new Version(1, 0, 0));
@@ -231,7 +231,7 @@ public class SCRAnalyzer implements ResourceAnalyzer {
 					properties.put(currentPropertyName, new TypedValue(currentPropertyType, value));
 				} else if (currentPropertyText != null) {
 					String[] lines = currentPropertyText.toString().split("\n");
-					List<Object> values = new ArrayList<Object>(lines.length);
+					List<Object> values = new ArrayList<>(lines.length);
 					for (int i = 0; i < lines.length; i++) {
 						String line = lines[i].trim();
 						if (line.length() > 0) {

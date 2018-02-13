@@ -288,7 +288,7 @@ public class UTF8PropertiesTest extends TestCase {
 		String s = new String(bout.toByteArray(), "UTF-8");
 		assertFalse(s.startsWith("#"));
 
-		assertTrue("Foo should be in there", s.indexOf("Foo") >= 0);
+		assertTrue("Foo should be in there", s.contains("Foo"));
 	}
 
 	public void testWrite() throws IOException {

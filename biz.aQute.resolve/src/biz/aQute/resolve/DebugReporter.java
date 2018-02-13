@@ -150,7 +150,7 @@ public class DebugReporter {
 	}
 
 	private void requirement(String prefix, Requirement c) {
-		Map<String,String> directives = new HashMap<String,String>(c.getDirectives());
+		Map<String,String> directives = new HashMap<>(c.getDirectives());
 		String namespace = c.getNamespace();
 		String filter = directives.remove("filter");
 		if (filter != null) {

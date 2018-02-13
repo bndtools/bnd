@@ -107,12 +107,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace().values();
 		String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT);
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		if (sc != null && sc.trim().length() > 0)
 			names.add(sc);
 
-		TreeSet<String> provides = new TreeSet<String>();
-		TreeSet<String> requires = new TreeSet<String>();
+		TreeSet<String> provides = new TreeSet<>();
+		TreeSet<String> requires = new TreeSet<>();
 		Version maxVersion = AnnotationReader.V1_0;
 
 		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);

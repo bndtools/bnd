@@ -16,7 +16,7 @@ import aQute.lib.io.IO;
  */
 public class Maven {
 
-	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<String,MavenEntry>();
+	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<>();
 	final static String[]			ALGORITHMS	= {
 														"md5", "sha1"
 													};

@@ -62,7 +62,7 @@ public class Plugins {
 			return;
 		} else {
 
-			Map<String,String> parameters = new HashMap<String,String>();
+			Map<String,String> parameters = new HashMap<>();
 
 			for (String parameter : args) {
 				if (parameter.indexOf('=') < 1)
@@ -142,7 +142,7 @@ public class Plugins {
 
 	private Map<String,Class< ? >> getAnnotatedPlugins() throws IOException {
 		if (annotatedPlugins == null) {
-			annotatedPlugins = new TreeMap<String,Class< ? >>();
+			annotatedPlugins = new TreeMap<>();
 
 			try (InputStream in = bnd.class.getResourceAsStream("bnd.info")) {
 				Properties p = new UTF8Properties();

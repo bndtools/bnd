@@ -9,7 +9,7 @@ public class Logic {
 
 	@SafeVarargs
 	public static <T> Collection<T> retain(Collection< ? extends T> first, Collection< ? extends T>... sets) {
-		Set<T> result = new HashSet<T>(first);
+		Set<T> result = new HashSet<>(first);
 		for (Collection< ? extends T> set : sets) {
 			result.retainAll(set);
 		}
@@ -18,7 +18,7 @@ public class Logic {
 
 	@SafeVarargs
 	public static <T> Collection<T> remove(Collection< ? extends T> first, Collection< ? extends T>... sets) {
-		Set<T> result = new HashSet<T>(first);
+		Set<T> result = new HashSet<>(first);
 		for (Collection< ? extends T> set : sets) {
 			result.removeAll(set);
 		}

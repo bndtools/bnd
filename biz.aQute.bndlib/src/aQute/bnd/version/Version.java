@@ -91,22 +91,24 @@ public class Version implements Comparable<Version> {
 			return 0;
 
 		Version o = other;
-		if (major != o.major)
-			return major - o.major;
+		int cmp = major - o.major;
+		if (cmp != 0)
+			return cmp;
 
-		if (minor != o.minor)
-			return minor - o.minor;
+		cmp = minor - o.minor;
+		if (cmp != 0)
+			return cmp;
 
-		if (micro != o.micro)
-			return micro - o.micro;
+		cmp = micro - o.micro;
+		if (cmp != 0)
+			return cmp;
 
-		int c = 0;
 		if (qualifier != null)
-			c = 1;
+			cmp = 1;
 		if (o.qualifier != null)
-			c += 2;
+			cmp += 2;
 
-		switch (c) {
+		switch (cmp) {
 			case 0 :
 				return 0;
 			case 1 :
@@ -129,6 +131,16 @@ public class Version implements Comparable<Version> {
 			sb.append(".");
 			sb.append(qualifier);
 		}
+		return sb.toString();
+	}
+
+	public String toStringWithoutQualifier() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(major);
+		sb.append(".");
+		sb.append(minor);
+		sb.append(".");
+		sb.append(micro);
 		return sb.toString();
 	}
 

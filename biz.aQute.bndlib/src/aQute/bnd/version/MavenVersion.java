@@ -9,15 +9,15 @@ import java.util.regex.Pattern;
 
 public class MavenVersion implements Comparable<MavenVersion> {
 
-	static Pattern					fuzzyVersion		= Pattern
+	private static final Pattern			fuzzyVersion		= Pattern
 			.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?", Pattern.DOTALL);
-	static Pattern					fuzzyVersionRange	= Pattern
+	private static final Pattern			fuzzyVersionRange	= Pattern
 			.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
-	static Pattern					fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
-	public static final String		VERSION_STRING		= "(\\d{1,15})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
-	final static SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
-	public final static Pattern		VERSIONRANGE		= Pattern.compile("((\\(|\\[)"
-
+	private static final Pattern			fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
+	private static final String				VERSION_STRING		= "(\\d{1,15})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
+	private static final SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
+	private static final Pattern			VERSIONRANGE		= Pattern
+		.compile("((\\(|\\[)"
 			+ VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
 
 	static {
@@ -25,31 +25,44 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	private static final Pattern		VERSION		= Pattern.compile(VERSION_STRING);
-	public static MavenVersion			UNRESOLVED	= new MavenVersion("0-UNRESOLVED");
+	public static final MavenVersion	UNRESOLVED		= new MavenVersion("0-UNRESOLVED");
 
-	static final String					SNAPSHOT	= "SNAPSHOT";
+	private static final String			SNAPSHOT		= "SNAPSHOT";
 	public static final MavenVersion	HIGHEST		= new MavenVersion(Version.HIGHEST);
-	public static final MavenVersion	LOWEST		= new MavenVersion("0");
+	public static final MavenVersion	LOWEST			= new MavenVersion("0-SNAPSHOT", Version.LOWEST, true);
+	static final MavenVersion			RANGE_HIGHEST	= new MavenVersion("", Version.HIGHEST, false);
+	static final MavenVersion			RANGE_LOWEST	= new MavenVersion("", Version.LOWEST, true);
 
 	private final Version				version;
 	private final String				literal;
-
 	private final boolean				snapshot;
+	private final ComparableVersion		qualifier;
 
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;
-		String qual = "";
-		if (this.version.qualifier != null)
-			qual += "-" + this.version.qualifier;
+		String q = osgiVersion.qualifier;
+		this.qualifier = ComparableVersion.parseVersion(q);
 
-		this.literal = osgiVersion.getWithoutQualifier().toString() + qual;
+		String l = osgiVersion.toStringWithoutQualifier();
+		if (q != null) {
+			l += "-" + q;
+		}
+		this.literal = l;
 		this.snapshot = osgiVersion.isSnapshot();
 	}
 
 	public MavenVersion(String maven) {
 		this.version = new Version(cleanupVersion(maven));
+		this.qualifier = ComparableVersion.parseVersion(version.qualifier);
 		this.literal = maven;
 		this.snapshot = maven.endsWith("-" + SNAPSHOT);
+	}
+
+	private MavenVersion(String literal, Version version, boolean snapshot) {
+		this.version = version;
+		this.qualifier = ComparableVersion.parseVersion(version.qualifier);
+		this.literal = literal;
+		this.snapshot = snapshot;
 	}
 
 	public static final MavenVersion parseString(String versionStr) {
@@ -95,7 +108,23 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public int compareTo(MavenVersion other) {
-		return this.version.compareTo(other.version);
+		if (other == this)
+			return 0;
+
+		Version o = other.version;
+		int cmp = version.major - o.major;
+		if (cmp != 0)
+			return cmp;
+
+		cmp = version.minor - o.minor;
+		if (cmp != 0)
+			return cmp;
+
+		cmp = version.micro - o.micro;
+		if (cmp != 0)
+			return cmp;
+
+		return qualifier.compareTo(other.qualifier);
 	}
 
 	@Override
@@ -246,7 +275,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	/**
-	 * TRhe cleanup version got confused when people used numeric dates like
+	 * The cleanup version got confused when people used numeric dates like
 	 * 201209091230120 as qualifiers. These are too large for Integers. This
 	 * method checks if the all digit string fits in an integer.
 	 *
@@ -259,7 +288,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	 * @return if this fits in an integer
 	 */
 	private static boolean isInteger(String minor) {
-		return minor.length() < 10 || (minor.length() == 10 && minor.compareTo("2147483647") < 0);
+		return minor.length() < 10 || (minor.length() == 10 && minor.compareTo("2147483647") <= 0);
 	}
 
 	private static String removeLeadingZeroes(String group) {

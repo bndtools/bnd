@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
@@ -114,7 +115,11 @@ public class ProjectBuilder extends Builder {
 	}
 
 	public void addClasspath(Container c) throws IOException {
-		Jar jar = new Jar(c.getFile());
+		File file = c.getFile();
+		if ((c.getType() == TYPE.PROJECT) && !file.exists()) {
+			return;
+		}
+		Jar jar = new Jar(file);
 		super.addClasspath(jar);
 		project.unreferencedClasspathEntries.put(jar.getName(), c);
 	}
@@ -434,7 +439,7 @@ public class ProjectBuilder extends Builder {
 	 */
 	private SortedSet<Version> removeStagedAndFilter(SortedSet<Version> versions, RepositoryPlugin repo, String bsn)
 			throws Exception {
-		List<Version> filtered = new ArrayList<Version>(versions);
+		List<Version> filtered = new ArrayList<>(versions);
 		Collections.reverse(filtered);
 
 		InfoRepository ir = (repo instanceof InfoRepository) ? (InfoRepository) repo : null;
@@ -464,7 +469,7 @@ public class ProjectBuilder extends Builder {
 
 			last = current;
 		}
-		SortedList<Version> set = new SortedList<Version>(filtered);
+		SortedList<Version> set = new SortedList<>(filtered);
 		logger.debug("filtered for only latest staged: {} from {} in range ", set, versions);
 		return set;
 	}
@@ -546,7 +551,7 @@ public class ProjectBuilder extends Builder {
 	 */
 	public List<Run> getExportedRuns() throws Exception {
 		Instructions runspec = new Instructions(getProperty(EXPORT));
-		List<Run> runs = new ArrayList<Run>();
+		List<Run> runs = new ArrayList<>();
 
 		Map<File,Attrs> files = runspec.select(getBase());
 

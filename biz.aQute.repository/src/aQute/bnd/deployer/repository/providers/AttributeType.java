@@ -53,7 +53,7 @@ public class AttributeType {
 
 	public Object parseString(String input) {
 		if (list) {
-			LinkedList<Object> list = new LinkedList<Object>();
+			LinkedList<Object> list = new LinkedList<>();
 			StringTokenizer tokenizer = new StringTokenizer(input, ",");
 			while (tokenizer.hasMoreTokens())
 				list.add(baseType.parseString(tokenizer.nextToken()));

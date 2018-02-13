@@ -72,7 +72,7 @@ public class JarSignerTest extends TestCase {
 		signer.setProperties(properties);
 
 		Jar jar = new Jar(IO.getFile("testresources/test.jar"));
-		Set<String> names = new HashSet<String>(jar.getResources().keySet());
+		Set<String> names = new HashSet<>(jar.getResources().keySet());
 		names.remove("META-INF/MANIFEST.MF");
 		try (Builder b = new Builder()) {
 			b.setJar(jar);

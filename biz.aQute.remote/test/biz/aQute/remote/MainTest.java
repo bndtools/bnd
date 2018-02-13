@@ -60,7 +60,7 @@ public class MainTest extends TestCase {
 
 		assertEquals("not talking to an envoy", true, supervisor.getAgent().isEnvoy());
 
-		HashMap<String,Object> configuration = new HashMap<String,Object>();
+		HashMap<String,Object> configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		configuration.put(Constants.FRAMEWORK_STORAGE, "generated/storage");
 		List<String> emptyList = Collections.emptyList();

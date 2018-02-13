@@ -27,8 +27,8 @@ import aQute.libg.cryptography.SHA1;
  * @param <Agent> The agent type
  */
 public class AgentSupervisor<Supervisor, Agent> {
-	private static final Map<File,Info>				fileInfo	= new ConcurrentHashMap<File,AgentSupervisor.Info>();
-	private static final MultiMap<String,String>	shaInfo		= new MultiMap<String,String>();
+	private static final Map<File,Info>				fileInfo	= new ConcurrentHashMap<>();
+	private static final MultiMap<String,String>	shaInfo		= new MultiMap<>();
 	private static final int						connectWait	= 200;
 	private static byte[]							EMPTY		= new byte[0];
 	private Agent									agent;
@@ -58,7 +58,7 @@ public class AgentSupervisor<Supervisor, Agent> {
 			try {
 				Socket socket = new Socket();
 				socket.connect(new InetSocketAddress(host, port), Math.max(timeout, 0));
-				link = new Link<Supervisor,Agent>(agent, supervisor, socket);
+				link = new Link<>(agent, supervisor, socket);
 				this.setAgent(link);
 				link.open();
 				return;
@@ -81,7 +81,7 @@ public class AgentSupervisor<Supervisor, Agent> {
 			if (list == null)
 				return EMPTY;
 
-			copy = new ArrayList<String>(list);
+			copy = new ArrayList<>(list);
 		}
 		for (String path : copy) {
 			File f = new File(path);

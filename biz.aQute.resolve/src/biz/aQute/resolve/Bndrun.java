@@ -33,9 +33,9 @@ public class Bndrun extends Run {
 	private static final Logger													logger						= LoggerFactory
 			.getLogger(Bndrun.class);
 
-	private static final Converter<String,Collection< ? extends HeaderClause>>	runbundlesListFormatter		= new CollectionFormatter<HeaderClause>(
+	private static final Converter<String,Collection< ? extends HeaderClause>>	runbundlesListFormatter		= new CollectionFormatter<>(
 			",", new HeaderClauseFormatter(), null, "", "");
-	private static final Converter<String,Collection< ? extends HeaderClause>> runbundlesWrappedFormatter = new CollectionFormatter<HeaderClause>(
+	private static final Converter<String,Collection< ? extends HeaderClause>> runbundlesWrappedFormatter = new CollectionFormatter<>(
 			",\\\n\t", new HeaderClauseFormatter(), null);
 
 	/**

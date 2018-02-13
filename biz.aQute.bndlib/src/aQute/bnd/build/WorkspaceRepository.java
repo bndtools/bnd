@@ -31,7 +31,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	private File[] get(String bsn, String range) throws Exception {
 		Collection<Project> projects = workspace.getAllProjects();
-		SortedMap<Version,File> foundVersion = new TreeMap<Version,File>();
+		SortedMap<Version,File> foundVersion = new TreeMap<>();
 		for (Project project : projects) {
 			Map<String,Version> versions = project.getVersions();
 			if (!versions.containsKey(bsn)) {
@@ -111,7 +111,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 	}
 
 	public List<String> list(String pattern) throws Exception {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
 			for (String bsn : project.getBsns()) {
@@ -135,7 +135,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 	}
 
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		List<Version> versions = new ArrayList<Version>();
+		List<Version> versions = new ArrayList<>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
 			Map<String,Version> projectVersions = project.getVersions();
@@ -148,7 +148,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		if (versions.isEmpty())
 			return SortedList.empty();
 
-		return new SortedList<Version>(versions);
+		return new SortedList<>(versions);
 	}
 
 	public String getName() {

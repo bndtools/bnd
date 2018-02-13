@@ -223,11 +223,9 @@ public class MavenTest extends TestCase {
 		me = maven.getEntry("org.apache.commons", "com.springsource.org.apache.commons.logging", "1.0.4");
 		me.remove();
 
-		mr.setRepositories(new URI[] {
-				IO.getFile(new File("").getAbsoluteFile(), "testresources/ws/maven1/m2").toURI()
-		});
+		mr.setRepositories(IO.getFile(new File("").getAbsoluteFile(), "testresources/ws/maven1/m2").toURI());
 
-		Map<String,String> map = new HashMap<String,String>();
+		Map<String,String> map = new HashMap<>();
 		map.put("scope", "compile");
 		File file = mr.get("org.apache.commons+com.springsource.org.apache.commons.beanutils", "1.6.1", Strategy.LOWEST,
 				map);

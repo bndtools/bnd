@@ -19,7 +19,7 @@ public class Sed {
 	File						output;
 	boolean						backup			= true;
 
-	final Map<Pattern,String>	replacements	= new LinkedHashMap<Pattern,String>();
+	final Map<Pattern,String>	replacements	= new LinkedHashMap<>();
 
 	public Sed(Replacer macro, File file) {
 		assert file.isFile();

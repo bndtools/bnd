@@ -18,7 +18,7 @@ public class Classpath {
 		boolean visit(Clazz clazz) throws Exception;
 	}
 
-	List<File>			entries	= new ArrayList<File>();
+	List<File>			entries	= new ArrayList<>();
 	private Reporter	project;
 	private String		name;
 

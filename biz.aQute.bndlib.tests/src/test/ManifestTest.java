@@ -205,8 +205,8 @@ public class ManifestTest extends TestCase {
 	}
 
 	public static void testQuotes() throws IOException {
-		Map<String,Map<String,String>> map = new HashMap<String,Map<String,String>>();
-		Map<String,String> clause = new HashMap<String,String>();
+		Map<String,Map<String,String>> map = new HashMap<>();
+		Map<String,String> clause = new HashMap<>();
 		clause.put("version1", "0");
 		clause.put("version2", "0.0");
 		clause.put("version3", "\"0.0\"");
@@ -214,10 +214,10 @@ public class ManifestTest extends TestCase {
 		clause.put("version5", "   0.0    ");
 		map.put("alpha", clause);
 		String s = Processor.printClauses(map);
-		assertTrue(s.indexOf("version1=0") >= 0);
-		assertTrue(s.indexOf("version2=\"0.0\"") >= 0);
-		assertTrue(s.indexOf("version3=\"0.0\"") >= 0);
-		assertTrue(s.indexOf("version4=\"0.0\"") >= 0);
-		assertTrue(s.indexOf("version5=\"0.0\"") >= 0);
+		assertTrue(s.contains("version1=0"));
+		assertTrue(s.contains("version2=\"0.0\""));
+		assertTrue(s.contains("version3=\"0.0\""));
+		assertTrue(s.contains("version4=\"0.0\""));
+		assertTrue(s.contains("version5=\"0.0\""));
 	}
 }

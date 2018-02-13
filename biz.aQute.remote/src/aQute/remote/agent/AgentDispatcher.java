@@ -35,17 +35,17 @@ public class AgentDispatcher {
 	//
 	// We keep a descriptor for each created framework by its name.
 	//
-	static List<Descriptor> descriptors = new CopyOnWriteArrayList<Descriptor>();
+	static List<Descriptor> descriptors = new CopyOnWriteArrayList<>();
 
 	static class Descriptor implements Closeable {
 		AtomicBoolean					closed		= new AtomicBoolean(false);
-		List<AgentServer>				servers		= new CopyOnWriteArrayList<AgentServer>();
+		List<AgentServer>				servers		= new CopyOnWriteArrayList<>();
 		Framework						framework;
 		Map<String,Object>				configuration;
 		File							storage;
 		File							shaCache;
 		String							name;
-		public List<BundleActivator>	activators	= new ArrayList<BundleActivator>();
+		public List<BundleActivator>	activators	= new ArrayList<>();
 
 		@Override
 		public void close() throws IOException {
@@ -181,7 +181,7 @@ public class AgentDispatcher {
 		//
 		// Link up
 		//
-		Link<Agent,Supervisor> link = new Link<Agent,Supervisor>(Supervisor.class, as, in, out);
+		Link<Agent,Supervisor> link = new Link<>(Supervisor.class, as, in, out);
 		as.setLink(link);
 		link.open();
 	}

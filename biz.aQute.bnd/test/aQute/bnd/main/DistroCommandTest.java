@@ -32,7 +32,6 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.BndResolver;
-import biz.aQute.resolve.ResolutionCallback;
 import biz.aQute.resolve.ResolveProcess;
 import biz.aQute.resolve.ResolverLogger;
 import junit.framework.TestCase;
@@ -52,7 +51,7 @@ public class DistroCommandTest extends TestCase {
 				this.getClass().getClassLoader());
 
 		FrameworkFactory ff = sl.iterator().next();
-		Map<String,String> configuration = new HashMap<String,String>();
+		Map<String,String> configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
 		framework = ff.newFramework(configuration);
@@ -182,7 +181,7 @@ public class DistroCommandTest extends TestCase {
 					"osgi.wiring.package;filter:='(osgi.wiring.package=com.liferay.dynamic.data.mapping.taglib.servlet.taglib)'");
 
 			Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
-					new BndResolver(logger), Collections.<ResolutionCallback> emptyList(), logger);
+					new BndResolver(logger), Collections.emptyList(), logger);
 
 			assertEquals(1, requiredResources.size());
 		}

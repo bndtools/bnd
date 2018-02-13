@@ -35,18 +35,18 @@ public class EclipseClasspath {
 	DocumentBuilder					db;
 	File							project;
 	File							workspace;
-	Set<File>						sources					= new LinkedHashSet<File>();
-	Set<File>						allSources				= new LinkedHashSet<File>();
+	Set<File>						sources					= new LinkedHashSet<>();
+	Set<File>						allSources				= new LinkedHashSet<>();
 
-	Set<File>						classpath				= new LinkedHashSet<File>();
-	List<File>						dependents				= new ArrayList<File>();
+	Set<File>						classpath				= new LinkedHashSet<>();
+	List<File>						dependents				= new ArrayList<>();
 	File							output;
 	boolean							recurse					= true;
-	Set<File>						exports					= new LinkedHashSet<File>();
-	Map<String,String>				properties				= new HashMap<String,String>();
+	Set<File>						exports					= new LinkedHashSet<>();
+	Map<String,String>				properties				= new HashMap<>();
 	Reporter						reporter;
 	int								options;
-	Set<File>						bootclasspath			= new LinkedHashSet<File>();
+	Set<File>						bootclasspath			= new LinkedHashSet<>();
 
 	public final static int			DO_VARIABLES			= 1;
 

@@ -13,9 +13,9 @@ import aQute.lib.tag.Tag;
 
 public class OCDDef extends ExtensionDef {
 
-	final List<ADDef>			attributes	= new ArrayList<ADDef>();
-	final List<IconDef>			icons		= new ArrayList<IconDef>();
-	final List<DesignateDef>	designates	= new ArrayList<DesignateDef>();
+	final List<ADDef>			attributes	= new ArrayList<>();
+	final List<IconDef>			icons		= new ArrayList<>();
+	final List<DesignateDef>	designates	= new ArrayList<>();
 
 	String						id;
 	String						name;
@@ -32,7 +32,7 @@ public class OCDDef extends ExtensionDef {
 		if (attributes.isEmpty()) {
 			updateVersion(MetatypeVersion.VERSION_1_3);
 		}
-		Set<String> adIds = new HashSet<String>();
+		Set<String> adIds = new HashSet<>();
 		for (ADDef ad : attributes) {
 			ad.prepare(this);
 			if (!adIds.add(ad.id)) {

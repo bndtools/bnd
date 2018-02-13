@@ -26,7 +26,7 @@ public class RemoteSink implements Sink {
 	final static JSONCodec		codec	= new JSONCodec();
 	final File					root;
 	Source[]					sources;
-	final Map<String,AreaImpl>	areas	= new ConcurrentHashMap<String,AreaImpl>();
+	final Map<String,AreaImpl>	areas	= new ConcurrentHashMap<>();
 
 	final File					areasDir;
 	final SinkFS				sinkfs;

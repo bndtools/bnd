@@ -35,7 +35,7 @@ public class OBRTest extends TestCase {
 		Sed.file2File(obrSrc, "__httpdPort__", Integer.toString(httpdPort), obrDst);
 
 		obr = new OBR();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("location", new File(obrDst).getAbsoluteFile().toURI().toString());
 
 		File tmpFile = File.createTempFile("cache", ".tmp");
@@ -67,7 +67,7 @@ public class OBRTest extends TestCase {
 	public static void testSetProperties() throws Exception {
 		OBR obr2 = new OBR();
 
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put("location", IO.getFile("testdata/fullobr.xml").toURI().toString());
 		obr2.setProperties(props);
 		obr2.setCacheDirectory(obr.getCacheDirectory());
@@ -82,7 +82,7 @@ public class OBRTest extends TestCase {
 	public static void testCacheDirectoryNotSpecified() {
 		OBR obr2 = new OBR();
 
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put("location", IO.getFile("testdata/fullobr.xml").toURI().toString());
 		obr2.setProperties(props);
 	}
@@ -184,7 +184,7 @@ public class OBRTest extends TestCase {
 		assertEquals(new File(obrDst).getAbsoluteFile().toURI().toString(), obr.getName());
 
 		OBR obr2 = new OBR();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("location", "http://www.example.com/bundles/dummybundle.jar,file:/Users/neil/bundles/dummy.jar");
 		obr2.setProperties(config);
 

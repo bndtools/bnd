@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Macro
-title: subst STRING ';' REGEX ( ';' STRING (';' NUMBER )? )?
+title: subst ';' STRING ';' REGEX (';' STRING (';' NUMBER )? )?
 summary: Substitute all the regex matches in the target for the given value; if a count is specified, limit the number of replacements to that count.
 ---
 

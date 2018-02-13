@@ -12,7 +12,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +51,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Container.TYPE;
+import aQute.bnd.exporter.executable.ExecutableJarExporter;
+import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -64,6 +66,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
@@ -83,6 +86,7 @@ import aQute.bnd.service.Scripter;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.action.NamedAction;
+import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
@@ -113,25 +117,26 @@ public class Project extends Processor {
 
 	final static String				DEFAULT_ACTIONS					= "build; label='Build', test; label='Test', run; label='Run', clean; label='Clean', release; label='Release', refreshAll; label=Refresh, deploy;label=Deploy";
 	public final static String		BNDFILE							= "bnd.bnd";
+	final static Path				BNDPATH							= Paths.get(BNDFILE);
 	public final static String		BNDCNF							= "cnf";
 	public final static String		SHA_256							= "SHA-256";
 	final Workspace					workspace;
 	private final AtomicBoolean		preparedPaths					= new AtomicBoolean();
-	private final Set<Project>		dependenciesFull				= new LinkedHashSet<Project>();
-	private final Set<Project>		dependenciesBuild				= new LinkedHashSet<Project>();
-	private final Set<Project>		dependenciesTest				= new LinkedHashSet<Project>();
-	private final Set<Project>		dependents						= new LinkedHashSet<Project>();
-	final Collection<Container>		classpath						= new LinkedHashSet<Container>();
-	final Collection<Container>		buildpath						= new LinkedHashSet<Container>();
-	final Collection<Container>		testpath						= new LinkedHashSet<Container>();
-	final Collection<Container>		runpath							= new LinkedHashSet<Container>();
-	final Collection<Container>		runbundles						= new LinkedHashSet<Container>();
-	final Collection<Container>		runfw							= new LinkedHashSet<Container>();
+	private final Set<Project>		dependenciesFull				= new LinkedHashSet<>();
+	private final Set<Project>		dependenciesBuild				= new LinkedHashSet<>();
+	private final Set<Project>		dependenciesTest				= new LinkedHashSet<>();
+	private final Set<Project>		dependents						= new LinkedHashSet<>();
+	final Collection<Container>		classpath						= new LinkedHashSet<>();
+	final Collection<Container>		buildpath						= new LinkedHashSet<>();
+	final Collection<Container>		testpath						= new LinkedHashSet<>();
+	final Collection<Container>		runpath							= new LinkedHashSet<>();
+	final Collection<Container>		runbundles						= new LinkedHashSet<>();
+	final Collection<Container>		runfw							= new LinkedHashSet<>();
 	File							runstorage;
-	final Map<File,Attrs>			sourcepath						= new LinkedHashMap<File,Attrs>();
-	final Collection<File>			allsourcepath					= new LinkedHashSet<File>();
-	final Collection<Container>		bootclasspath					= new LinkedHashSet<Container>();
-	final Map<String,Version>		versionMap						= new LinkedHashMap<String,Version>();
+	final Map<File,Attrs>			sourcepath						= new LinkedHashMap<>();
+	final Collection<File>			allsourcepath					= new LinkedHashSet<>();
+	final Collection<Container>		bootclasspath					= new LinkedHashSet<>();
+	final Map<String,Version>		versionMap						= new LinkedHashMap<>();
 	File							output;
 	File							target;
 	private final AtomicInteger		revision						= new AtomicInteger();
@@ -148,7 +153,7 @@ public class Project extends Processor {
 	private volatile RefreshData	data							= new RefreshData();
 	public Map<String,Container>	unreferencedClasspathEntries	= new HashMap<>();
 
-	public Project(Workspace workspace, File unused, File buildFile) throws Exception {
+	public Project(Workspace workspace, File unused, File buildFile) {
 		super(workspace);
 		this.workspace = workspace;
 		setFileMustExist(false);
@@ -159,11 +164,11 @@ public class Project extends Processor {
 		readBuildProperties();
 	}
 
-	public Project(Workspace workspace, File buildDir) throws Exception {
+	public Project(Workspace workspace, File buildDir) {
 		this(workspace, buildDir, new File(buildDir, BNDFILE));
 	}
 
-	private void readBuildProperties() throws Exception {
+	private void readBuildProperties() {
 		try {
 			File f = getFile("build.properties");
 			if (f.isFile()) {
@@ -551,7 +556,7 @@ public class Project extends Processor {
 	 */
 
 	public List<Container> getBundles(Strategy strategyx, String spec, String source) throws Exception {
-		List<Container> result = new ArrayList<Container>();
+		List<Container> result = new ArrayList<>();
 		Parameters bundles = new Parameters(spec, this);
 
 		try {
@@ -687,7 +692,7 @@ public class Project extends Processor {
 				bsnPattern = null;
 		}
 
-		SortedMap<String,Pair<Version,RepositoryPlugin>> providerMap = new TreeMap<String,Pair<Version,RepositoryPlugin>>();
+		SortedMap<String,Pair<Version,RepositoryPlugin>> providerMap = new TreeMap<>();
 
 		List<RepositoryPlugin> plugins = workspace.getRepositories();
 		for (RepositoryPlugin plugin : plugins) {
@@ -707,14 +712,14 @@ public class Project extends Processor {
 							case HIGHEST :
 								candidate = versions.last();
 								if (currentProvider == null || candidate.compareTo(currentProvider.getFirst()) > 0) {
-									providerMap.put(bsn, new Pair<Version,RepositoryPlugin>(candidate, plugin));
+									providerMap.put(bsn, new Pair<>(candidate, plugin));
 								}
 								break;
 
 							case LOWEST :
 								candidate = versions.first();
 								if (currentProvider == null || candidate.compareTo(currentProvider.getFirst()) < 0) {
-									providerMap.put(bsn, new Pair<Version,RepositoryPlugin>(candidate, plugin));
+									providerMap.put(bsn, new Pair<>(candidate, plugin));
 								}
 								break;
 							default :
@@ -727,7 +732,7 @@ public class Project extends Processor {
 
 		}
 
-		List<Container> containers = new ArrayList<Container>(providerMap.size());
+		List<Container> containers = new ArrayList<>(providerMap.size());
 
 		for (Entry<String,Pair<Version,RepositoryPlugin>> entry : providerMap.entrySet()) {
 			String bsn = entry.getKey();
@@ -764,7 +769,7 @@ public class Project extends Processor {
 	}
 
 	static void addToPackageList(Container container, String newPackageNames) {
-		Set<String> merged = new HashSet<String>();
+		Set<String> merged = new HashSet<>();
 
 		String packageListStr = container.getAttributes().get("packages");
 		if (packageListStr != null)
@@ -962,7 +967,7 @@ public class Project extends Processor {
 	}
 
 	private Collection< ? > toFiles(Collection<Project> projects) {
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 		for (Project p : projects) {
 			files.add(p.getBase());
 		}
@@ -1200,7 +1205,7 @@ public class Project extends Processor {
 			// in
 			// multiple repos we take the first
 
-			SortedMap<Version,RepositoryPlugin> versions = new TreeMap<Version,RepositoryPlugin>();
+			SortedMap<Version,RepositoryPlugin> versions = new TreeMap<>();
 			for (RepositoryPlugin plugin : plugins) {
 
 				if (repoFilter != null && !repoFilter.match(plugin))
@@ -1555,7 +1560,7 @@ public class Project extends Processor {
 		}
 
 		Collection<String> parts = split(bsns);
-		List<String> paths = new ArrayList<String>();
+		List<String> paths = new ArrayList<>();
 
 		for (String bsn : parts) {
 			Container container = getBundle(bsn, version, strategy, null);
@@ -1665,7 +1670,7 @@ public class Project extends Processor {
 	 * Check if this project needs building. This is defined as:
 	 */
 	public boolean isStale() throws Exception {
-		Set<Project> visited = new HashSet<Project>();
+		Set<Project> visited = new HashSet<>();
 		return isStale(visited);
 	}
 
@@ -2107,27 +2112,57 @@ public class Project extends Processor {
 		release(false);
 	}
 
-	@SuppressWarnings("resource")
-	public void export(String runFilePath, boolean keep, File output) throws Exception {
-		prepare();
+	public Map.Entry<String, Resource> export(String type, Map<String, String> options) throws Exception {
+		Exporter exporter = getExporter(type);
+		if (exporter == null) {
+			error("No exporter for %s", type);
+			return null;
+		}
+		if (options == null) {
+			options = Collections.emptyMap();
+		}
+		Parameters exportTypes = parseHeader(getProperty(Constants.EXPORTTYPE));
+		Map<String, String> attrs = exportTypes.get(type);
+		if (attrs != null) {
+			attrs.putAll(options);
+			options = attrs;
+		}
 
-		Project packageProject;
+		return exporter.export(type, this, options);
+	}
+
+	private Exporter getExporter(String type) {
+		List<Exporter> exporters = getPlugins(Exporter.class);
+		for (Exporter e : exporters) {
+			for (String exporterType : e.getTypes()) {
+				if (type.equals(exporterType)) {
+					return e;
+				}
+			}
+		}
+		return null;
+	}
+
+	public void export(String runFilePath, boolean keep, File output) throws Exception {
+		Map<String, String> options = Collections.singletonMap("keep", Boolean.toString(keep));
+		Entry<String, Resource> export;
 		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
-			packageProject = this;
+			clear();
+			export = export(ExecutableJarExporter.EXECUTABLE_JAR, options);
 		} else {
 			File runFile = IO.getFile(getBase(), runFilePath);
 			if (!runFile.isFile())
 				throw new IOException(
-						String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
-			packageProject = new Run(getWorkspace(), getBase(), runFile);
+					String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
+			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
+				export = run.export(ExecutableJarExporter.EXECUTABLE_JAR, options);
+				getInfo(run);
+			}
 		}
-		packageProject.clear();
-
-		try (ProjectLauncher launcher = packageProject.getProjectLauncher()) {
-			launcher.setKeep(keep);
-			try (Jar jar = launcher.executable()) {
-				getInfo(launcher);
-				jar.write(output);
+		if (export != null) {
+			try (JarResource r = (JarResource) export.getValue()) {
+				r.getJar()
+					.write(output);
 			}
 		}
 	}
@@ -2135,46 +2170,28 @@ public class Project extends Processor {
 	/**
 	 * @since 2.4
 	 */
-	@SuppressWarnings("resource")
 	public void exportRunbundles(String runFilePath, File outputDir) throws Exception {
-		prepare();
-
-		Project packageProject;
+		Map<String, String> options = Collections.emptyMap();
+		Entry<String, Resource> export;
 		if (runFilePath == null || runFilePath.length() == 0 || ".".equals(runFilePath)) {
-			packageProject = this;
+			clear();
+			export = export(RunbundlesExporter.RUNBUNDLES, options);
 		} else {
 			File runFile = IO.getFile(getBase(), runFilePath);
 			if (!runFile.isFile())
 				throw new IOException(
-						String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
-			packageProject = new Run(getWorkspace(), getBase(), runFile);
+					String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
+			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
+				export = run.export(RunbundlesExporter.RUNBUNDLES, options);
+				getInfo(run);
+			}
 		}
-		packageProject.clear();
-
-		IO.mkdirs(outputDir);
-		Collection<Container> runbundles = packageProject.getRunbundles();
-		Path outputPath = outputDir.toPath();
-		for (Container container : runbundles) {
-			Path source = container.getFile().toPath();
-			Path target = nonCollidingPath(outputPath, source);
-			Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES);
+		if (export != null) {
+			try (JarResource r = (JarResource) export.getValue()) {
+				r.getJar()
+					.writeFolder(outputDir);
+			}
 		}
-	}
-
-	Path nonCollidingPath(Path outputDir, Path source) {
-		String fileName = source.getFileName().toString();
-		Path target = outputDir.resolve(fileName);
-		String[] parts = Strings.extension(fileName);
-		if (parts == null) {
-			parts = new String[] {
-					fileName, ""
-			};
-		}
-		int i = 1;
-		while (Files.exists(target)) {
-			target = outputDir.resolve(String.format("%s[%d].%s", parts[0], i++, parts[1]));
-		}
-		return target;
 	}
 
 	/**
@@ -2494,7 +2511,7 @@ public class Project extends Processor {
 
 	public String _repos(@SuppressWarnings("unused") String args[]) throws Exception {
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		for (RepositoryPlugin rp : repos)
 			names.add(rp.getName());
 		return join(names, ", ");
@@ -2533,7 +2550,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public Collection<Container> getDeliverables() throws Exception {
-		List<Container> result = new ArrayList<Container>();
+		List<Container> result = new ArrayList<>();
 		try (ProjectBuilder pb = getBuilder(null)) {
 			for (Builder builder : pb.getSubBuilders()) {
 				Container c = new Container(this, builder.getBsn(), builder.getVersion(), Container.TYPE.PROJECT,
@@ -2682,7 +2699,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	Collection<File> toFile(Collection<Container> containers) throws Exception {
-		ArrayList<File> files = new ArrayList<File>();
+		ArrayList<File> files = new ArrayList<>();
 		for (Container container : containers) {
 			container.contributeFiles(files, this);
 		}
@@ -2691,12 +2708,12 @@ public class Project extends Processor {
 
 	public Collection<String> getRunVM() {
 		Parameters hdr = getMergedParameters(RUNVM);
-		return hdr.keySet();
+		return hdr.keyList();
 	}
 
 	public Collection<String> getRunProgramArgs() {
 		Parameters hdr = getMergedParameters(RUNPROGRAMARGS);
-		return hdr.keySet();
+		return hdr.keyList();
 	}
 
 	public Map<String,String> getRunProperties() {
@@ -2798,7 +2815,7 @@ public class Project extends Processor {
 	 * Pack the project (could be a bndrun file) and save it on disk. Report
 	 * errors if they happen.
 	 */
-	static List<String> ignore = new ExtList<String>(BUNDLE_SPECIFIC_HEADERS);
+	static List<String> ignore = new ExtList<>(BUNDLE_SPECIFIC_HEADERS);
 
 	/**
 	 * Caller must close this JAR
@@ -2830,7 +2847,7 @@ public class Project extends Processor {
 				Jar jar = launcher.executable();
 				Manifest m = jar.getManifest();
 				Attributes main = m.getMainAttributes();
-				for (String key : getPropertyKeys(true)) {
+				for (String key : this) {
 					if (Character.isUpperCase(key.charAt(0)) && !ignore.contains(key)) {
 						String value = getProperty(key);
 						if (value == null)
@@ -2899,8 +2916,8 @@ public class Project extends Processor {
 	}
 
 	private void verifyDependencies(String title, Collection<Container> path) throws Exception {
-		List<String> msgs = new ArrayList<String>();
-		for (Container c : new ArrayList<Container>(path)) {
+		List<String> msgs = new ArrayList<>();
+		for (Container c : new ArrayList<>(path)) {
 			for (Container cc : c.getMembers()) {
 				if (cc.getError() != null)
 					msgs.add(cc + " - " + cc.getError());
@@ -2972,7 +2989,7 @@ public class Project extends Processor {
 			javac.add("-classpath", buildpath.toString());
 		}
 
-		List<File> sp = new ArrayList<File>(getAllsourcepath());
+		List<File> sp = new ArrayList<>(getAllsourcepath());
 		StringBuilder sourcepath = new StringBuilder();
 		String sourcepathDel = "";
 
@@ -3064,13 +3081,12 @@ public class Project extends Processor {
 			javac.add("-deprecation");
 
 		if (test || debug == null) {
-			javac.add("-g:source,lines,vars" + debug);
+			javac.add("-g:source,lines,vars");
 		} else {
 			javac.add("-g:" + debug);
 		}
 
-		for (String option : options.keySet())
-			javac.add(option);
+		javac.addAll(options.keyList());
 
 		StringBuilder bootclasspath = new StringBuilder();
 		String bootclasspathDel = "-Xbootclasspath/p:";
@@ -3132,11 +3148,11 @@ public class Project extends Processor {
 				}
 			}
 		}
-		return new LinkedHashMap<String,Version>(versionMap);
+		return new LinkedHashMap<>(versionMap);
 	}
 
 	public Collection<String> getBsns() throws Exception {
-		return new ArrayList<String>(getVersions().keySet());
+		return new ArrayList<>(getVersions().keySet());
 	}
 
 	public Version getVersion(String bsn) throws Exception {

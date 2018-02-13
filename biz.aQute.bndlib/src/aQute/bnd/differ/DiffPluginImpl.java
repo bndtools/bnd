@@ -50,17 +50,17 @@ public class DiffPluginImpl implements Differ {
 	 * Headers that are considered major enough to parse according to spec and
 	 * compare their constituents
 	 */
-	final static Set<String> MAJOR_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String> MAJOR_HEADERS = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
 	/**
 	 * Headers that are considered not major enough to be considered
 	 */
-	final static Set<String> IGNORE_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String> IGNORE_HEADERS = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
 	/**
 	 * Headers that have values that should be sorted
 	 */
-	final static Set<String> ORDERED_HEADERS = new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
+	final static Set<String> ORDERED_HEADERS = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
 
 	static {
 		MAJOR_HEADERS.add(Constants.EXPORT_PACKAGE);
@@ -115,7 +115,7 @@ public class DiffPluginImpl implements Differ {
 	 * @throws Exception
 	 */
 	private Element bundleElement(Analyzer analyzer) throws Exception {
-		List<Element> result = new ArrayList<Element>();
+		List<Element> result = new ArrayList<>();
 
 		Manifest manifest = analyzer.getJar().getManifest();
 
@@ -136,7 +136,7 @@ public class DiffPluginImpl implements Differ {
 	private Element resourcesElement(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
 
-		List<Element> resources = new ArrayList<Element>();
+		List<Element> resources = new ArrayList<>();
 
 		for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
 
@@ -221,7 +221,7 @@ public class DiffPluginImpl implements Differ {
 	 */
 
 	private Element manifestElement(Manifest manifest) {
-		List<Element> result = new ArrayList<Element>();
+		List<Element> result = new ArrayList<>();
 
 		for (Object key : manifest.getMainAttributes().keySet()) {
 			String header = key.toString();
@@ -236,13 +236,13 @@ public class DiffPluginImpl implements Differ {
 
 			if (MAJOR_HEADERS.contains(header)) {
 				if (header.equalsIgnoreCase(Constants.BUNDLE_VERSION)) {
-					Version v = new Version(value).getWithoutQualifier();
-					result.add(new Element(Type.HEADER, header + ":" + v.toString(), null, CHANGED, CHANGED, null));
+					String v = new Version(value).toStringWithoutQualifier();
+					result.add(new Element(Type.HEADER, header + ":" + v, null, CHANGED, CHANGED, null));
 				} else {
 					Parameters clauses = OSGiHeader.parseHeader(value);
-					Collection<Element> clausesDef = new ArrayList<Element>();
+					Collection<Element> clausesDef = new ArrayList<>();
 					for (Map.Entry<String,Attrs> clause : clauses.entrySet()) {
-						Collection<Element> parameterDef = new ArrayList<Element>();
+						Collection<Element> parameterDef = new ArrayList<>();
 						for (Map.Entry<String,String> parameter : clause.getValue().entrySet()) {
 							String paramValue = parameter.getValue();
 							if (Constants.EXPORT_PACKAGE.equals(header)

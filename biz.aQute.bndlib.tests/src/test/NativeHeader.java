@@ -61,7 +61,7 @@ public class NativeHeader extends TestCase {
 
 	private static void assertEmptyAfterRemove(List<String> errors, String ok) {
 		for (String s : errors) {
-			if (s.indexOf(ok) < 0)
+			if (!s.contains(ok))
 				fail("Found error/warning that can not be removed: " + s + " : " + ok);
 		}
 	}

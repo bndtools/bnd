@@ -1,7 +1,6 @@
 package aQute.lib.io;
 
 import java.io.FilterInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
@@ -11,7 +10,7 @@ public class NonClosingInputStream extends FilterInputStream {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		// leave the underlying InputStream open
 	}
 }

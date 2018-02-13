@@ -1,6 +1,5 @@
 package aQute.lib.io;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.nio.CharBuffer;
 
@@ -13,7 +12,7 @@ public class CharBufferReader extends Reader {
 	}
 
 	@Override
-	public int read(char[] cbuf, int off, int len) throws IOException {
+	public int read(char[] cbuf, int off, int len) {
 		int remaining = cb.remaining();
 		if (remaining <= 0) {
 			return -1;
@@ -24,12 +23,12 @@ public class CharBufferReader extends Reader {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		cb.position(cb.limit());
 	}
 
 	@Override
-	public int read() throws IOException {
+	public int read() {
 		if (!cb.hasRemaining()) {
 			return -1;
 		}
@@ -37,7 +36,7 @@ public class CharBufferReader extends Reader {
 	}
 
 	@Override
-	public long skip(long n) throws IOException {
+	public long skip(long n) {
 		if (n < 0L) {
 			return 0L;
 		}
@@ -47,7 +46,7 @@ public class CharBufferReader extends Reader {
 	}
 
 	@Override
-	public boolean ready() throws IOException {
+	public boolean ready() {
 		return true;
 	}
 
@@ -57,12 +56,12 @@ public class CharBufferReader extends Reader {
 	}
 
 	@Override
-	public void mark(int readAheadLimit) throws IOException {
+	public void mark(int readAheadLimit) {
 		cb.mark();
 	}
 
 	@Override
-	public void reset() throws IOException {
+	public void reset() {
 		cb.reset();
 	}
 }

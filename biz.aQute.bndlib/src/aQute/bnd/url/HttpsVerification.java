@@ -12,6 +12,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -137,7 +138,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 
 	List<X509Certificate> createCertificates(String paths)
 			throws FileNotFoundException, CertificateException, IOException {
-		List<X509Certificate> certificates = new ArrayList<X509Certificate>();
+		List<X509Certificate> certificates = new ArrayList<>();
 		if (paths != null) {
 			for (String path : paths.split("\\s*,\\s*")) {
 				File file = new File(path); // This is a system specific path!
@@ -150,9 +151,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 				}
 			}
 		} else if (certificateChain != null) {
-			for (X509Certificate cert : certificateChain) {
-				certificates.add(cert);
-			}
+			Collections.addAll(certificates, certificateChain);
 		}
 		return certificates;
 	}

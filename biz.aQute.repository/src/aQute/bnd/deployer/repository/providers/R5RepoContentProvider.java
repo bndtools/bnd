@@ -280,7 +280,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		for (File file : files)
 			modified = Math.max(modified, file.lastModified());
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put(ResourceIndexer.REPOSITORY_NAME, repoName);
 		config.put(ResourceIndexer.ROOT_URL, baseUri.toString());
 		config.put(ResourceIndexer.PRETTY, Boolean.toString(pretty));

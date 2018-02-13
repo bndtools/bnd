@@ -1,5 +1,7 @@
 package aQute.bnd.build;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +10,8 @@ import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,11 +19,14 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -33,6 +40,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.naming.TimeLimitExceededException;
 
@@ -41,7 +49,8 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.connection.settings.ConnectionSettings;
-import aQute.bnd.exporter.subsystem.SubsystemExporter;
+import aQute.bnd.exporter.executable.ExecutableJarExporter;
+import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -97,8 +106,8 @@ public class Workspace extends Processor {
 
 	private final static Map<File,WeakReference<Workspace>>	cache					= newHashMap();
 	static Processor							defaults				= null;
-	final Map<String,Project>					models					= newHashMap();
-	private final Set<String>					modelsUnderConstruction	= newSet();
+	private final Map<String, Project>							models					= new HashMap<>();
+	private final Set<String>									modelsUnderConstruction	= new HashSet<>();
 	final Map<String,Action>					commands				= newMap();
 	final Maven									maven					= new Maven(Processor.getExecutor());
 	private final AtomicBoolean								offline					= new AtomicBoolean();
@@ -109,7 +118,7 @@ public class Workspace extends Processor {
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>					signalBusy				= new ThreadLocal<Reporter>();
+	final ThreadLocal<Reporter>					signalBusy				= new ThreadLocal<>();
 	ResourceRepositoryImpl						resourceRepositoryImpl;
 	private Parameters							gestalt;
 	private String								driver;
@@ -212,7 +221,7 @@ public class Workspace extends Processor {
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir, bndDir);
-				cache.put(workspaceDir, new WeakReference<Workspace>(ws));
+				cache.put(workspaceDir, new WeakReference<>(ws));
 			}
 			return ws;
 		}
@@ -276,7 +285,7 @@ public class Workspace extends Processor {
 		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
 	}
 
-	public Project getProjectFromFile(File projectDir) throws Exception {
+	public Project getProjectFromFile(File projectDir) {
 		projectDir = projectDir.getAbsoluteFile();
 		assert projectDir.isDirectory();
 
@@ -286,25 +295,30 @@ public class Workspace extends Processor {
 		return null;
 	}
 
-	public Project getProject(String bsn) throws Exception {
+	public Project getProject(String bsn) {
 		synchronized (models) {
 			Project project = models.get(bsn);
-			if (project != null)
+			if (project != null) {
 				return project;
-
-			if (modelsUnderConstruction.add(bsn)) {
-				try {
-					File projectDir = getFile(bsn);
-					project = new Project(this, projectDir);
-					if (!project.isValid())
-						return null;
-
-					models.put(bsn, project);
-				} finally {
-					modelsUnderConstruction.remove(bsn);
-				}
 			}
-			return project;
+			if (!modelsUnderConstruction.add(bsn)) {
+				return null;
+			}
+			try {
+				File projectDir = getFile(bsn);
+				File bnd = getFile(projectDir, Project.BNDFILE);
+				if (!bnd.isFile()) {
+					return null;
+				}
+				project = new Project(this, projectDir);
+				if (!project.isValid()) {
+					return null;
+				}
+				models.put(bsn, project);
+				return project;
+			} finally {
+				modelsUnderConstruction.remove(bsn);
+			}
 		}
 	}
 
@@ -378,16 +392,15 @@ public class Workspace extends Processor {
 	}
 
 	public Collection<Project> getAllProjects() throws Exception {
-		List<Project> projects = new ArrayList<Project>();
-		for (File file : getBase().listFiles()) {
-			if (new File(file, Project.BNDFILE).isFile()) {
-				Project p = getProject(file.getAbsoluteFile().getName());
-				if (p != null) {
-					projects.add(p);
-				}
-			}
+		try (Stream<Path> paths = Files.list(getBase().toPath())) {
+			List<Project> projects = paths
+				.filter(p -> Files.isDirectory(p) && Files.isRegularFile(p.resolve(Project.BNDPATH)))
+				.map(p -> getProject(p.getFileName()
+					.toString()))
+				.filter(Objects::nonNull)
+				.collect(toList());
+			return projects;
 		}
-		return projects;
 	}
 
 	/**
@@ -540,28 +553,22 @@ public class Workspace extends Processor {
 	}
 
 	public Collection<Project> getBuildOrder() throws Exception {
-		List<Project> result = new ArrayList<Project>();
+		Set<Project> result = new LinkedHashSet<>();
 		for (Project project : getAllProjects()) {
 			Collection<Project> dependsOn = project.getDependson();
 			getBuildOrder(dependsOn, result);
-			if (!result.contains(project)) {
-				result.add(project);
-			}
+			result.add(project);
 		}
 		return result;
 	}
 
-	private void getBuildOrder(Collection<Project> dependsOn, List<Project> result) throws Exception {
+	private void getBuildOrder(Collection<Project> dependsOn, Set<Project> result) throws Exception {
 		for (Project project : dependsOn) {
 			Collection<Project> subProjects = project.getDependson();
 			for (Project subProject : subProjects) {
-				if (!result.contains(subProject)) {
-					result.add(subProject);
-				}
+				result.add(subProject);
 			}
-			if (!result.contains(project)) {
-				result.add(project);
-			}
+			result.add(project);
 		}
 	}
 
@@ -599,7 +606,8 @@ public class Workspace extends Processor {
 			// Exporters
 			//
 
-			list.add(new SubsystemExporter());
+			list.add(new ExecutableJarExporter());
+			list.add(new RunbundlesExporter());
 
 			try {
 				HttpClient client = new HttpClient(getExecutor(), getScheduledExecutor());
@@ -632,7 +640,7 @@ public class Workspace extends Processor {
 		// <bsn>; version=<range>
 		//
 		Parameters extensions = getMergedParameters(EXTENSION);
-		Map<DownloadBlocker,Attrs> blockers = new HashMap<DownloadBlocker,Attrs>();
+		Map<DownloadBlocker,Attrs> blockers = new HashMap<>();
 
 		for (Entry<String,Attrs> i : extensions.entrySet()) {
 			String bsn = removeDuplicateMarker(i.getKey());
@@ -769,7 +777,7 @@ public class Workspace extends Processor {
 				it.remove();
 			}
 		}
-		List<String> digests = new ArrayList<String>();
+		List<String> digests = new ArrayList<>();
 		for (RepositoryPlugin repo : repos) {
 			try {
 				if (repo instanceof RepositoryDigest) {
@@ -1169,17 +1177,7 @@ public class Workspace extends Processor {
 	public static Workspace createStandaloneWorkspace(Processor run, URI base) throws Exception {
 		Workspace ws = new Workspace(WorkspaceLayout.STANDALONE);
 
-		//
-		// Copy all properties except the type we will add
-		//
-		for (Entry<Object,Object> entry : run.getProperties().entrySet()) {
-			String key = (String) entry.getKey();
-			if (!key.startsWith(PLUGIN_STANDALONE)) {
-				ws.getProperties().put(key, entry.getValue());
-			}
-		}
-
-		Parameters standalone = new Parameters(ws.getProperty(STANDALONE), ws);
+		Parameters standalone = new Parameters(run.getProperty(STANDALONE), ws);
 		StringBuilder sb = new StringBuilder();
 		try (Formatter f = new Formatter(sb, Locale.US)) {
 			int counter = 1;

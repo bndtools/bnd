@@ -33,7 +33,7 @@ public class Descriptors {
 	}
 
 	public class Signature {
-		public Map<String,Signature>	typevariables	= new HashMap<String,Signature>();
+		public Map<String,Signature>	typevariables	= new HashMap<>();
 		public Signature				type;
 		public List<Signature>			parameters;
 

@@ -78,8 +78,6 @@ public abstract class Domain implements Iterable<String> {
 
 	public abstract void set(String key, String value);
 
-	public abstract Iterator<String> iterator();
-
 	public static Domain domain(final Manifest manifest) {
 		Attributes attrs = manifest.getMainAttributes();
 		return domain(attrs);
@@ -150,23 +148,7 @@ public abstract class Domain implements Iterable<String> {
 
 			@Override
 			public Iterator<String> iterator() {
-				final Iterator<String> it = processor.getPropertyKeys(true).iterator();
-
-				return new Iterator<String>() {
-					String current;
-
-					public boolean hasNext() {
-						return it.hasNext();
-					}
-
-					public String next() {
-						return current = it.next();
-					}
-
-					public void remove() {
-						processor.getProperties().remove(current);
-					}
-				};
+				return processor.iterator();
 			}
 		};
 	}

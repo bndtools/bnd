@@ -29,11 +29,11 @@ class Contracts {
 			.getLogger(Contracts.class);
 
 	private Analyzer									analyzer;
-	private final MultiMap<PackageRef,Contract>			contracted				= new MultiMap<PackageRef,Contract>(
+	private final MultiMap<PackageRef,Contract>			contracted				= new MultiMap<>(
 			PackageRef.class, Contract.class, true);
-	private MultiMap<Collection<Contract>,PackageRef>	overlappingContracts	= new MultiMap<Collection<Contract>,PackageRef>();
+	private MultiMap<Collection<Contract>,PackageRef>	overlappingContracts	= new MultiMap<>();
 	private Instructions								instructions;
-	private final Set<Contract>							contracts				= new HashSet<Contract>();
+	private final Set<Contract>							contracts				= new HashSet<>();
 
 	public class Contract {
 		public String				name;

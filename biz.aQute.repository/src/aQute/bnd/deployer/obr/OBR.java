@@ -124,7 +124,7 @@ public class OBR extends AbstractIndexedRepo implements Actionable {
 
 	@Override
 	public Map<String,Runnable> actions(Object... target) throws Exception {
-		Map<String,Runnable> map = new HashMap<String,Runnable>();
+		Map<String,Runnable> map = new HashMap<>();
 		map.put("Refresh", new Runnable() {
 
 			@Override

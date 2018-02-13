@@ -284,7 +284,7 @@ public class BaselineTest extends TestCase {
 
 		when(repo.canWrite()).thenReturn(true);
 		when(repo.getName()).thenReturn("Baseline");
-		when(repo.versions("p3")).thenReturn(new SortedList<Version>(new Version("1.1.0.a"), new Version("1.1.0.b"),
+		when(repo.versions("p3")).thenReturn(new SortedList<>(new Version("1.1.0.a"), new Version("1.1.0.b"),
 				new Version("1.2.0.a"), new Version("1.2.0.b")));
 
 		Project p3 = getWorkspace().getProject("p3");
@@ -354,7 +354,7 @@ public class BaselineTest extends TestCase {
 			RepositoryPlugin repo = mock(RepositoryPlugin.class);
 			when(repo.canWrite()).thenReturn(true);
 			when(repo.getName()).thenReturn("Baseline");
-			when(repo.versions("p3")).thenReturn(new TreeSet<Version>());
+			when(repo.versions("p3")).thenReturn(new TreeSet<>());
 			getWorkspace().addBasicPlugin(repo);
 			Project p3 = getWorkspace().getProject("p3");
 			p3.setProperty(Constants.BASELINE, "*");

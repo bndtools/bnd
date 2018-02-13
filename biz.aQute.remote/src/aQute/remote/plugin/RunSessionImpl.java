@@ -126,7 +126,7 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	private boolean installFramework(Agent agent, RunRemoteDTO dto, Map<String,Object> properties) throws Exception {
-		List<String> onpath = new ArrayList<String>(launcher.getRunpath());
+		List<String> onpath = new ArrayList<>(launcher.getRunpath());
 
 		Map<String,String> runpath = getBundles(onpath, Constants.RUNPATH);
 
@@ -146,7 +146,7 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	Map<String,String> getBundles(Collection<String> collection, String header) throws Exception {
-		Map<String,String> newer = new LinkedHashMap<String,String>();
+		Map<String,String> newer = new LinkedHashMap<>();
 
 		for (String c : collection) {
 			File f = new File(c);

@@ -33,7 +33,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 	final File							dir;
 	final File							data;
 	final RandomAccessFile				lockFile;
-	final Map<String,SoftReference<V>>	cache	= new HashMap<String,SoftReference<V>>();
+	final Map<String,SoftReference<V>>	cache	= new HashMap<>();
 	boolean								inited	= false;
 	boolean								closed	= false;
 
@@ -135,7 +135,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 							if (value == null) {
 								File file = new File(data, entry.getKey());
 								value = (V) codec.dec().from(file).get(type);
-								entry.setValue(new SoftReference<V>(value));
+								entry.setValue(new SoftReference<>(value));
 							}
 
 							final V v = value;
@@ -180,7 +180,7 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 			try {
 				File file = new File(data, key);
 				codec.enc().to(file).put(value);
-				cache.put(key, new SoftReference<V>(value));
+				cache.put(key, new SoftReference<>(value));
 				return old;
 			} finally {
 				unlock(lock);

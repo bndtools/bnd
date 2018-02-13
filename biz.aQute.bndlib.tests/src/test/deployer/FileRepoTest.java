@@ -81,7 +81,7 @@ public class FileRepoTest extends TestCase {
 	}
 
 	private FileRepo createRepo(File root) {
-		return createRepo(root, new HashMap<String,String>());
+		return createRepo(root, new HashMap<>());
 	}
 
 	private FileRepo createRepo(File root, Map<String,String> props) {
@@ -239,7 +239,7 @@ public class FileRepoTest extends TestCase {
 
 	public void testDeployToNonexistentRepoFails() throws Exception {
 
-		if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+		if (System.getProperty("os.name").toLowerCase().contains("win")) {
 			// File#setReadonly() is broken on windows
 			return;
 		}
@@ -259,7 +259,7 @@ public class FileRepoTest extends TestCase {
 		delete(root);
 
 		try {
-			Map<String,String> props = new HashMap<String,String>();
+			Map<String,String> props = new HashMap<>();
 			props.put(FileRepo.LOCATION, root.getAbsolutePath());
 			props.put(FileRepo.CMD_INIT, "echo init $0 $1 $2 $3 >>report");
 			props.put(FileRepo.CMD_OPEN, "echo open $0 $1 $2 $3 >>report");

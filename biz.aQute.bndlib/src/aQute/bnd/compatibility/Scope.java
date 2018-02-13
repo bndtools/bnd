@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Scope {
-	final Map<String,Scope>	children	= new LinkedHashMap<String,Scope>();
+	final Map<String,Scope>	children	= new LinkedHashMap<>();
 
 	// class: slashed name
 	// field: name ":" typed
@@ -144,12 +144,7 @@ public class Scope {
 	}
 
 	public void cleanRoot() {
-		Iterator<Map.Entry<String,Scope>> i = children.entrySet().iterator();
-		while (i.hasNext()) {
-			Map.Entry<String,Scope> entry = i.next();
-			if (!entry.getValue().isTop())
-				i.remove();
-		}
+		children.entrySet().removeIf(entry -> !entry.getValue().isTop());
 	}
 
 	public void prune(EnumSet<Access> level) {

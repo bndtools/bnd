@@ -215,7 +215,7 @@ public class TestIndexer extends TestCase {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		Set<File> files = Collections.emptySet();
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
 		config.put(ResourceIndexer.REPOSITORY_NAME, "empty");
 		config.put(ResourceIndexer.PRETTY, "true");
@@ -237,11 +237,11 @@ public class TestIndexer extends TestCase {
 
 	private String index(RepoIndex indexer) throws Exception, IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		Set<File> files = new LinkedHashSet<File>();
+		Set<File> files = new LinkedHashSet<>();
 		files.add(new File("testdata/03-export.jar"));
 		files.add(new File("testdata/06-requirebundle.jar"));
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put(RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, "0");
 		config.put(ResourceIndexer.REPOSITORY_NAME, "full-c+f");
 		indexer.index(files, out, config);
@@ -271,11 +271,11 @@ public class TestIndexer extends TestCase {
 		RepoIndex indexer = new RepoIndex();
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 
-		Set<File> files = new LinkedHashSet<File>();
+		Set<File> files = new LinkedHashSet<>();
 		files.add(new File("testdata/03-export.jar"));
 		files.add(new File("testdata/06-requirebundle.jar"));
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 
 		int outIndex = 0;
 		for (Boolean pretty : pretties) {
@@ -310,7 +310,7 @@ public class TestIndexer extends TestCase {
 		indexer.addAnalyzer(new WibbleAnalyzer(), null);
 
 		StringWriter writer = new StringWriter();
-		LinkedHashSet<File> files = new LinkedHashSet<File>();
+		LinkedHashSet<File> files = new LinkedHashSet<>();
 		files.add(new File("testdata/01-bsn+version.jar"));
 		files.add(new File("testdata/02-localization.jar"));
 
@@ -325,7 +325,7 @@ public class TestIndexer extends TestCase {
 		indexer.addAnalyzer(new WibbleAnalyzer(), FrameworkUtil.createFilter("(location=*sion.jar)"));
 
 		StringWriter writer = new StringWriter();
-		LinkedHashSet<File> files = new LinkedHashSet<File>();
+		LinkedHashSet<File> files = new LinkedHashSet<>();
 		files.add(new File("testdata/01-bsn+version.jar"));
 		files.add(new File("testdata/02-localization.jar"));
 
@@ -340,7 +340,7 @@ public class TestIndexer extends TestCase {
 		indexer.addAnalyzer(new BadAnalyzer(), null);
 
 		StringWriter writer = new StringWriter();
-		LinkedHashSet<File> files = new LinkedHashSet<File>();
+		LinkedHashSet<File> files = new LinkedHashSet<>();
 		files.add(new File("testdata/01-bsn+version.jar"));
 		files.add(new File("testdata/02-localization.jar"));
 
@@ -357,7 +357,7 @@ public class TestIndexer extends TestCase {
 	public void testRootInSubdirectory() throws Exception {
 		RepoIndex indexer = new RepoIndex();
 
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
 
 		StringWriter writer = new StringWriter();
@@ -370,7 +370,7 @@ public class TestIndexer extends TestCase {
 	public void testRootInSubSubdirectory() throws Exception {
 		RepoIndex indexer = new RepoIndex();
 
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
 
 		StringWriter writer = new StringWriter();
@@ -395,7 +395,7 @@ public class TestIndexer extends TestCase {
 		indexer.addAnalyzer(goodAnalyzer, null);
 
 		// Run the indexer
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
 		StringWriter writer = new StringWriter();
 		indexer.indexFragment(Collections.singleton(new File("testdata/subdir/01-bsn+version.jar")), writer, props);
@@ -414,7 +414,7 @@ public class TestIndexer extends TestCase {
 		LogService log = mock(LogService.class);
 		RepoIndex indexer = new RepoIndex(log);
 
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata/subdir").getAbsoluteFile().toURI().toURL().toString());
 
 		StringWriter writer = new StringWriter();
@@ -428,7 +428,7 @@ public class TestIndexer extends TestCase {
 		RepoIndex indexer = new RepoIndex(log);
 		indexer.addAnalyzer(new NaughtyAnalyzer(), null);
 
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put(ResourceIndexer.ROOT_URL, new File("testdata").getAbsoluteFile().toURI().toURL().toString());
 
 		StringWriter writer = new StringWriter();

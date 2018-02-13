@@ -83,9 +83,9 @@ public class CalltreeResource extends WriteResource {
 	 */
 	public static void writeCalltree(PrintWriter out, Collection<Clazz> classes) throws Exception {
 
-		final Map<Clazz.MethodDef,Set<Clazz.MethodDef>> using = new TreeMap<Clazz.MethodDef,Set<Clazz.MethodDef>>(
+		final Map<Clazz.MethodDef,Set<Clazz.MethodDef>> using = new TreeMap<>(
 				COMPARATOR);
-		final Map<Clazz.MethodDef,Set<Clazz.MethodDef>> usedby = new TreeMap<Clazz.MethodDef,Set<Clazz.MethodDef>>(
+		final Map<Clazz.MethodDef,Set<Clazz.MethodDef>> usedby = new TreeMap<>(
 				COMPARATOR);
 
 		ClassDataCollector cd = new ClassDataCollector() {
@@ -130,7 +130,7 @@ public class CalltreeResource extends WriteResource {
 			Clazz.MethodDef reference) {
 		Set<Clazz.MethodDef> set = references.get(source);
 		if (set == null)
-			references.put(source, set = new TreeSet<Clazz.MethodDef>(COMPARATOR));
+			references.put(source, set = new TreeSet<>(COMPARATOR));
 		if (reference != null)
 			set.add(reference);
 	}

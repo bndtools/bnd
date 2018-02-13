@@ -77,7 +77,7 @@ public class Plugin extends BaseRepository
 			// Get the list if repos registered, repos that we can handle
 			//
 
-			List<InfoRepository> irs = new ArrayList<InfoRepository>();
+			List<InfoRepository> irs = new ArrayList<>();
 			for (InfoRepository ir : registry.getPlugins(InfoRepository.class)) {
 				irs.add(ir);
 			}
@@ -143,7 +143,7 @@ public class Plugin extends BaseRepository
 	})
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
 		init();
-		MultiMap<Requirement,Capability> result = new MultiMap<Requirement,Capability>();
+		MultiMap<Requirement,Capability> result = new MultiMap<>();
 		try {
 			wrapper.findProviders(result, requirements);
 		} catch (Exception e) {

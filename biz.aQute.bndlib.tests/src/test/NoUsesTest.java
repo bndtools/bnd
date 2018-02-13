@@ -35,8 +35,8 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"not.used,<<USES>>\"");
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
-		assertTrue("not.used", uses.indexOf("not.used") >= 0);
-		assertTrue("org.osgi.framework", uses.indexOf("org.osgi.framework") >= 0);
+		assertTrue("not.used", uses.contains("not.used"));
+		assertTrue("org.osgi.framework", uses.contains("org.osgi.framework"));
 	}
 
 	/*
@@ -59,8 +59,8 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "org.osgi.util.tracker;uses:=\"<<USES>>,not.used\"");
 		String uses = findUses(bmaker, "org.osgi.util.tracker");
-		assertTrue("not.used", uses.indexOf("not.used") >= 0);
-		assertTrue("org.osgi.framework", uses.indexOf("org.osgi.framework") >= 0);
+		assertTrue("not.used", uses.contains("not.used"));
+		assertTrue("org.osgi.framework", uses.contains("org.osgi.framework"));
 	}
 
 	/*
@@ -92,7 +92,7 @@ public class NoUsesTest extends TestCase {
 		Builder bmaker = new Builder();
 		bmaker.setProperty("Export-Package", "test.activator");
 		String uses = findUses(bmaker, "test.activator");
-		Set<String> usesSet = new HashSet<String>(Arrays.asList(uses.split(",")));
+		Set<String> usesSet = new HashSet<>(Arrays.asList(uses.split(",")));
 		assertTrue(usesSet.contains("org.osgi.service.component"));
 		assertTrue(usesSet.contains("org.osgi.framework"));
 	}

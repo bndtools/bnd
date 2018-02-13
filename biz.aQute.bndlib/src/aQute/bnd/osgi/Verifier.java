@@ -50,6 +50,7 @@ public class Verifier extends Processor {
 	final static int		V1_7	= 51;
 	final static int		V1_8	= 52;
 	final static int		V9_0	= 53;
+	final static int		V10_0	= 54;
 
 	static class EE {
 		String	name;
@@ -81,6 +82,7 @@ public class Verifier extends Processor {
 			new EE("JavaSE-1.7", V1_7, V1_7),																								//
 			new EE("JavaSE-1.8", V1_8, V1_8),																								//
 			new EE("JavaSE-9", V9_0, V9_0),																									//
+		new EE("JavaSE-10", V10_0, V10_0),																									//
 			new EE("PersonalJava-1.1", V1_1, V1_1),																							//
 			new EE("PersonalJava-1.2", V1_1, V1_1),																							//
 			new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),																				//
@@ -97,6 +99,7 @@ public class Verifier extends Processor {
 					+ "|J2SE-1\\.[2-5]"																										//
 					+ "|JavaSE-1\\.[6-8]"																									//
 					+ "|JavaSE-9"																											//
+			+ "|JavaSE-10"																													//
 					+ "|PersonalJava-1\\.[12]"																								//
 					+ "|CDC-1\\.0/PersonalBasis-1\\.0"																						//
 					+ "|CDC-1\\.0/PersonalJava-1\\.0"																						//
@@ -117,6 +120,7 @@ public class Verifier extends Processor {
 			"JavaSE-1.7",																													//
 			"JavaSE-1.8",																													//
 			"JavaSE-9",																														//
+		"JavaSE-10",																														//
 			"PersonalJava-1.1",																												//
 			"PersonalJava-1.2",																												//
 			"CDC-1.0/PersonalBasis-1.0",																									//
@@ -498,7 +502,7 @@ public class Verifier extends Processor {
 
 		Domain domain = Domain.domain(m);
 
-		Set<PackageRef> unresolvedReferences = new TreeSet<PackageRef>(analyzer.getReferred().keySet());
+		Set<PackageRef> unresolvedReferences = new TreeSet<>(analyzer.getReferred().keySet());
 		unresolvedReferences.removeAll(analyzer.getContained().keySet());
 		for (String pname : domain.getImportPackage().keySet()) {
 			PackageRef pref = analyzer.getPackageRef(pname);
@@ -528,7 +532,7 @@ public class Verifier extends Processor {
 			if (!unresolvedReferences.isEmpty()) {
 				// Now we want to know the
 				// classes that are the culprits
-				Set<String> culprits = new HashSet<String>();
+				Set<String> culprits = new HashSet<>();
 				for (Clazz clazz : analyzer.getClassspace().values()) {
 					if (hasOverlap(unresolvedReferences, clazz.getReferred()))
 						culprits.add(clazz.getAbsolutePath());
@@ -636,7 +640,7 @@ public class Verifier extends Processor {
 		if (!since(About._2_3))
 			return;
 
-		Set<String> invalidPaths = new HashSet<String>();
+		Set<String> invalidPaths = new HashSet<>();
 		Pattern pattern = ReservedFileNames;
 		setProperty("@", ReservedFileNames.pattern());
 		String p = getProperty(INVALIDFILENAMES);
@@ -651,7 +655,7 @@ public class Verifier extends Processor {
 			}
 		}
 
-		Set<String> segments = new HashSet<String>();
+		Set<String> segments = new HashSet<>();
 		for (String path : dot.getResources().keySet()) {
 			String parts[] = path.split("/");
 			for (String part : parts) {
@@ -674,8 +678,8 @@ public class Verifier extends Processor {
 	private void verifyImports() {
 		if (isStrict()) {
 			Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.IMPORT_PACKAGE));
-			Set<String> noimports = new HashSet<String>();
-			Set<String> toobroadimports = new HashSet<String>();
+			Set<String> noimports = new HashSet<>();
+			Set<String> toobroadimports = new HashSet<>();
 
 			for (Entry<String,Attrs> e : map.entrySet()) {
 				String version = e.getValue().get(Constants.VERSION_ATTRIBUTE);
@@ -735,7 +739,7 @@ public class Verifier extends Processor {
 	private void verifyExports() {
 		if (isStrict()) {
 			Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-			Set<String> noexports = new HashSet<String>();
+			Set<String> noexports = new HashSet<>();
 
 			for (Entry<String,Attrs> e : map.entrySet()) {
 
@@ -775,7 +779,7 @@ public class Verifier extends Processor {
 
 				String mandatory = e.getValue().get(Constants.MANDATORY_DIRECTIVE);
 				if (mandatory != null) {
-					Set<String> missing = new HashSet<String>(split(mandatory));
+					Set<String> missing = new HashSet<>(split(mandatory));
 					missing.removeAll(e.getValue().keySet());
 					if (!missing.isEmpty()) {
 						Location location = error("Export Package %s misses mandatory attribute: %s", e.getKey(),
@@ -796,10 +800,10 @@ public class Verifier extends Processor {
 	private void verifyRequirements() throws IllegalArgumentException, Exception {
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
 		for (String key : map.keySet()) {
-
+			Attrs attrs = map.get(key);
+			key = Processor.removeDuplicateMarker(key);
 			verifyNamespace(key, "Require");
 
-			Attrs attrs = map.get(key);
 			verify(attrs, "filter:", FILTERPATTERN, false, "Requirement %s filter not correct", key);
 
 			String filter = attrs.get("filter:");
@@ -860,8 +864,9 @@ public class Verifier extends Processor {
 	private void verifyCapabilities() {
 		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
 		for (String key : map.keySet()) {
-			verifyNamespace(key, "Provide");
 			Attrs attrs = map.get(key);
+			key = Processor.removeDuplicateMarker(key);
+			verifyNamespace(key, "Provide");
 			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Capability %s cardinality not correct", key);
 			verify(attrs, "resolution:", RESOLUTION_PATTERN, false, "Capability %s resolution not correct", key);
 
@@ -895,7 +900,7 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyNamespace(String ns, String type) {
-		if (!isBsn(Processor.removeDuplicateMarker(ns))) {
+		if (!isBsn(ns)) {
 			error("The %s-Capability with namespace %s is not a symbolic name", type, ns);
 		}
 	}
@@ -1308,7 +1313,7 @@ public class Verifier extends Processor {
 			return;
 		}
 
-		List<String> missingDigest = new ArrayList<String>();
+		List<String> missingDigest = new ArrayList<>();
 
 		for (String path : dot.getResources().keySet()) {
 			if (path.equals("META-INF/MANIFEST.MF"))
@@ -1391,7 +1396,7 @@ public class Verifier extends Processor {
 	 */
 
 	public void verifyMetaPersistence() throws Exception {
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		String mp = dot.getManifest().getMainAttributes().getValue(META_PERSISTENCE);
 		for (String location : OSGiHeader.parseHeader(mp).keySet()) {
 			String[] parts = location.split("!/");

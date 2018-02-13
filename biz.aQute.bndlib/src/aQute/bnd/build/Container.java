@@ -189,7 +189,7 @@ public class Container {
 
 	public synchronized void putAttribute(String name, String value) {
 		if (attributes == Collections.<String, String> emptyMap())
-			attributes = new HashMap<String,String>(1);
+			attributes = new HashMap<>(1);
 		attributes.put(name, value);
 	}
 
@@ -245,7 +245,7 @@ public class Container {
 	 * @return a list of containers guaranteed to contain no libraries
 	 */
 	public static List<Container> flatten(Collection<Container> containers) throws Exception {
-		List<Container> list = new ArrayList<Container>();
+		List<Container> list = new ArrayList<>();
 		flatten(containers, list);
 		return list;
 	}

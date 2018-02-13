@@ -84,7 +84,7 @@ public class FileSet {
 	}
 
 	public Set<File> getFiles() {
-		Set<File> files = new HashSet<File>();
+		Set<File> files = new HashSet<>();
 		for (File sub : base.listFiles()) {
 			dfa.match(files, sub);
 		}

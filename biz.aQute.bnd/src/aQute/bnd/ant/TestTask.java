@@ -30,7 +30,7 @@ public class TestTask extends BaseTask {
 				projects = Collections.singletonList(baseProject);
 			} else {
 				StringTokenizer tokenizer = new StringTokenizer(runFiles, ",");
-				projects = new LinkedList<Project>();
+				projects = new LinkedList<>();
 				while (tokenizer.hasMoreTokens()) {
 					String runFilePath = tokenizer.nextToken().trim();
 					Project runProject;

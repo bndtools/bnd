@@ -1,7 +1,6 @@
 package aQute.bnd.osgi.repository;
 
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 import java.util.ArrayList;
@@ -32,16 +31,18 @@ public class ResourcesRepository extends BaseRepository {
 	public ResourcesRepository() {}
 
 	@Override
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		return requirements.stream().collect(toMap(identity(), this::findProvider, (u, v) -> v));
+	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
+		return requirements.stream()
+			.collect(toMap(identity(), this::findProvider, ResourcesRepository::merger));
 	}
 
 	public List<Capability> findProvider(Requirement requirement) {
 		String namespace = requirement.getNamespace();
 		return resources.stream()
-				.flatMap(resource -> resource.getCapabilities(namespace).stream())
-				.filter(capability -> ResourceUtils.matches(requirement, capability))
-				.collect(toList());
+			.flatMap(resource -> resource.getCapabilities(namespace)
+				.stream())
+			.filter(capability -> ResourceUtils.matches(requirement, capability))
+			.collect(toCapabilities());
 	}
 
 	public void add(Resource resource) {
@@ -63,7 +64,23 @@ public class ResourcesRepository extends BaseRepository {
 		return new ArrayList<>(resources);
 	}
 
-	public static Collector<Resource,ResourcesRepository,ResourcesRepository> toResourcesRepository() {
+	public static Collector<Capability, List<Capability>, List<Capability>> toCapabilities() {
+		return Collector.of(ArrayList::new, ResourcesRepository::accumulator, ResourcesRepository::merger);
+	}
+
+	private static <E, C extends Collection<E>> void accumulator(C c, E e) {
+		if (!c.contains(e)) {
+			c.add(e);
+		}
+	}
+
+	private static <E, C extends Collection<E>> C merger(C t, C u) {
+		u.removeAll(t);
+		t.addAll(u);
+		return t;
+	}
+
+	public static Collector<Resource, ResourcesRepository, ResourcesRepository> toResourcesRepository() {
 		return Collector.of(ResourcesRepository::new, ResourcesRepository::add, ResourcesRepository::combiner);
 	}
 

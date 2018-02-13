@@ -41,7 +41,7 @@ public class Configurable<T> {
 	}
 
 	public static <T> T createConfigurable(Class<T> c, Dictionary< ? , ? > properties) {
-		Map<Object,Object> alt = new HashMap<Object,Object>();
+		Map<Object,Object> alt = new HashMap<>();
 		for (Enumeration< ? > e = properties.keys(); e.hasMoreElements();) {
 			Object key = e.nextElement();
 			alt.put(key, properties.get(key));
@@ -300,7 +300,7 @@ public class Configurable<T> {
 			if (o.getClass().isArray()) {
 				if (o.getClass().getComponentType().isPrimitive()) {
 					int length = Array.getLength(o);
-					List<Object> result = new ArrayList<Object>(length);
+					List<Object> result = new ArrayList<>(length);
 					for (int i = 0; i < length; i++) {
 						result.add(Array.get(o, i));
 					}
@@ -347,7 +347,7 @@ public class Configurable<T> {
 
 	public static List<String> unescape(String s) {
 		// do it the OSGi way
-		List<String> tokens = new ArrayList<String>();
+		List<String> tokens = new ArrayList<>();
 
 		String[] parts = s.split("(?<!\\\\),");
 

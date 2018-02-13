@@ -61,14 +61,16 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 
 | Property         | Type  | Default | Description |
 |------------------|-------|---------|-------------|
-| `releaseUrl`     | `URI` |       |The URL to the repositories of released artifacts.| 
-| `snapshotUrl`    | `URI` |       |The URL to the repositories of snapshot artifacts.|
-| `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository. This is by  |
-|                  |       |                    | default the `~/.m2/repository` defined by maven. If specified, it should use forward 
-|                  |       |                    | slashes. If the directory does not exist, the plugin will attempt to create it.|
-| `readOnly`       |`true|false` | If set to _truthy_ then this repository is read only.|
-| `name`           | `NAME`|                    | The name of the repository is 'Maven'|
-| `index`          | `PATH`|                    | The path to the _index_ file. The index file is a list if Maven _coordinates_.| 
+| `releaseUrl`     | `URI` |         | Comma separated list of URLs to the repositories of released artifacts.| 
+| `snapshotUrl`    | `URI` |         | Comma separated list of URLs to the repositories of snapshot artifacts.|
+| `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository.  |
+|                  |       |                    | If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.|
+|                  |       |         | The default can be overridden with the `maven.repo.local` System property.|
+| `readOnly`       | `true|false` | `false` | If set to _truthy_ then this repository is read only.|
+| `name`           | `NAME`| `Maven` | The name of the repository.|
+| `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_.| 
+| `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
+| `poll.time`      | `integer` | 5 seconds | Number of seconds between checks for changes to the `index` file. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
 
 If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _local only_. For finding archives, both URLs are used, first `releaseUrl`.
 

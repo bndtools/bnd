@@ -53,7 +53,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	// Filename suffix for JAR files
 	private static final String					SUFFIX_JAR					= ".jar";
 
-	private final ThreadLocal<GeneratorState>	state						= new ThreadLocal<GeneratorState>();
+	private final ThreadLocal<GeneratorState>	state						= new ThreadLocal<>();
 	@SuppressWarnings("unused")
 	private final LogService					log;
 
@@ -242,8 +242,8 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			String urlTemplate = state.getUrlTemplate();
 
 			if (urlTemplate != null) {
-				String bsn = (urlTemplate.indexOf("%s") == -1) ? "" : Util.getSymbolicName(resource).getName();
-				Version version = (urlTemplate.indexOf("%v") == -1) ? Version.emptyVersion : Util.getVersion(resource);
+				String bsn = urlTemplate.contains("%s") ? Util.getSymbolicName(resource).getName() : "";
+				Version version = urlTemplate.contains("%v") ? Util.getVersion(resource) : Version.emptyVersion;
 				urlTemplate = urlTemplate.replaceAll("%s", "%1\\$s")
 						.replaceAll("%f", "%2\\$s")
 						.replaceAll("%p", "%3\\$s")
@@ -356,7 +356,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	}
 
 	private void copyAttribsAndDirectives(Map<String,String> input, Builder output, String... ignores) {
-		Set<String> ignoreSet = new HashSet<String>(Arrays.asList(ignores));
+		Set<String> ignoreSet = new HashSet<>(Arrays.asList(ignores));
 
 		for (Entry<String,String> entry : input.entrySet()) {
 			String key = entry.getKey();
@@ -524,7 +524,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 			return;
 
 		boolean optional = false;
-		List<String> options = new LinkedList<String>();
+		List<String> options = new LinkedList<>();
 
 		Map<String,Map<String,String>> nativeHeader = OSGiHeader.parseHeader(nativeHeaderStr);
 		for (Entry<String,Map<String,String>> entry : nativeHeader.entrySet()) {
@@ -592,7 +592,7 @@ public class BundleAnalyzer implements ResourceAnalyzer {
 	 * have trailing tildes as duplicate markers, these will be removed.
 	 */
 	private String buildFilter(Map<String,String> attribs, String match, String filterKey) {
-		List<String> options = new LinkedList<String>();
+		List<String> options = new LinkedList<>();
 		for (Entry<String,String> entry : attribs.entrySet()) {
 			String key = OSGiHeader.removeDuplicateMarker(entry.getKey());
 			if (match.equals(key)) {

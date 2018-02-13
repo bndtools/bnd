@@ -25,7 +25,7 @@ public class RemoteJMXTest extends TestCase {
 		tmp = IO.getFile("generated/tmp");
 		tmp.mkdirs();
 
-		configuration = new HashMap<String,Object>();
+		configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
 		configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.4");

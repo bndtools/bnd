@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.annotation.bundle.Capabilities;
@@ -33,6 +34,7 @@ import aQute.bnd.annotation.headers.ProvideCapability;
 import aQute.bnd.annotation.headers.RequireCapability;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.version.Version;
@@ -114,6 +116,11 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	static final String				STD_CAPABILITIES		= "org.osgi.annotation.bundle.Capabilities";
 	static final String				STD_HEADER				= "org.osgi.annotation.bundle.Header";
 	static final String				STD_HEADERS				= "org.osgi.annotation.bundle.Headers";
+
+	// Used to detect attributes and directives on Require-Capability and
+	// Provide-Capability
+	static final String				STD_ATTRIBUTE		= "org.osgi.annotation.bundle.Attribute";
+	static final String				STD_DIRECTIVE		= "org.osgi.annotation.bundle.Directive";
 
 	// Class we're currently processing
 	Clazz							current;
@@ -277,19 +284,78 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			}
 			if (scanThisType) {
 				c.parseClassFileWithCollector(new ClassDataCollector() {
+					private MethodDef			lastMethodSeen;
+
+					private Attrs	attributesAndDirectives	= new Attrs();
+					
 					@Override
 					public void annotation(Annotation a) throws Exception {
+						if (STD_ATTRIBUTE.equals(a.getName()
+							.getFQN()) || STD_DIRECTIVE.equals(
+								a.getName()
+									.getFQN())) {
+							handleAttributeOrDirective(a);
+						}
+
 						if (interesting.contains(a.getName().getFQN())) {
 							// Bnd annotations support merging of child properties,
 							// but this is not in the specification as far as I can tell
 							if(isBndAnnotation(a)) {
 								a.merge(annotation);
 								a.addDefaults(c);
+							} else if (isRequirementOrCapability(a)) {
+								mergeAttributesAndDirectives(a);
 							}
 							AnnotationHeaders.this.annotation(a);
 						}
 					}
 
+					private void mergeAttributesAndDirectives(Annotation a) {
+						if (STD_CAPABILITIES.equals(a.getName()
+							.getFQN()) || STD_REQUIREMENTS.equals(
+								a.getName()
+									.getFQN())) {
+							Object[] annotations = a.get("value");
+							for (int i = 0; i < annotations.length; i++) {
+								mergeAttributesAndDirectives((Annotation) annotations[i]);
+							}
+						} else {
+							Stream<String> toAdd = attributesAndDirectives.keySet()
+								.stream()
+								.map(attributesAndDirectives::toString);
+							
+							String[] original = a.get("attribute");
+							original = original == null ? new String[0] : original;
+							
+							String[] updated = Stream.concat(Arrays.stream(original), toAdd)
+								.collect(Collectors.toList())
+								.toArray(original);
+
+							a.put("attribute", updated);
+						}
+					}
+
+					private void handleAttributeOrDirective(Annotation a) {
+						Object o = annotation.get(lastMethodSeen.getName());
+
+						if (o != null) {
+							String attributeName = a.get("value");
+							if (attributeName == null) {
+								attributeName = lastMethodSeen.getName();
+							}
+							if (STD_ATTRIBUTE.equals(a.getName()
+								.getFQN())) {
+								attributesAndDirectives.putTyped(attributeName, o);
+							} else {
+								attributesAndDirectives.putTyped(attributeName + ":", o);
+							}
+						}
+					}
+
+					@Override
+					public void method(MethodDef defined) {
+						lastMethodSeen = defined;
+					}
 				});
 			}
 		} else if (c == null) {
@@ -311,6 +377,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	private boolean isBndAnnotation(Annotation a) {
 		return a.getName().getFQN().startsWith("aQute.bnd.annotation.headers");
+	}
+
+	private boolean isRequirementOrCapability(Annotation a) {
+		String name = a.getName()
+			.getFQN();
+		return STD_CAPABILITIES.equals(name) || STD_CAPABILITY.equals(name) || STD_REQUIREMENTS.equals(name)
+			|| STD_REQUIREMENT.equals(name);
 	}
 
 	/*
@@ -518,11 +591,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		if (a.keySet().contains("resolution")) {
-			req.append(";resolution:=").append(annotation.resolution());
+			req.append(";resolution:=")
+				.append(annotation.resolution());
 		}
 
 		if (a.keySet().contains("cardinality")) {
-			req.append(";cardinality:=").append(annotation.cardinality());
+			req.append(";cardinality:=")
+				.append(annotation.cardinality());
 		}
 
 		if (a.keySet().contains("effective")) {
@@ -673,6 +748,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		try {
 			value = macro.process(value);
 			headers.add(name, value);
+			if (!analyzer.keySet()
+				.contains(name)) {
+				// The header isn't in the bnd configuration, so we need to add
+				// it lest bnd completely ignores the header added by the
+				// annotation
+				analyzer.set(name, value);
+			}
 			next.close();
 		} finally {
 			macro.setNosystem(prev);
@@ -691,12 +773,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			//
 			// Remove duplicates and sort
 			//
-			Set<String> set = new TreeSet<String>(headers.get(name));
-			String header = Strings.join(set);
-			if (value == null)
-				return header;
-			else
-				return value + "," + header;
+			Set<String> set = new TreeSet<>(headers.get(name));
+			if (value != null)
+				set.add(value);
+			return Strings.join(set);
 		}
 		return value;
 	}

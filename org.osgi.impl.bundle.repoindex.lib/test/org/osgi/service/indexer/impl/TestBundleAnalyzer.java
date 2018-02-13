@@ -17,8 +17,8 @@ public class TestBundleAnalyzer extends TestCase {
 
 	public void testContentAndIdentity() throws Exception {
 		BundleAnalyzer a = new BundleAnalyzer(new XNullLogSvc());
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		a.analyzeResource(new JarResource(new File("testdata/01-bsn+version.jar")), caps, reqs);
 
@@ -41,8 +41,8 @@ public class TestBundleAnalyzer extends TestCase {
 
 	public void testPackageExports() throws Exception {
 		BundleAnalyzer a = new BundleAnalyzer(new XNullLogSvc());
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		a.analyzeResource(new JarResource(new File("testdata/03-export.jar")), caps, reqs);
 
@@ -53,8 +53,8 @@ public class TestBundleAnalyzer extends TestCase {
 
 	public void testPackageExportUses() throws Exception {
 		BundleAnalyzer a = new BundleAnalyzer(new XNullLogSvc());
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		a.analyzeResource(new JarResource(new File("testdata/04-export+uses.jar")), caps, reqs);
 
@@ -71,8 +71,8 @@ public class TestBundleAnalyzer extends TestCase {
 	// who add this to their imports...
 	public void testPackageExportBundleSymbolicNameAndVersion() throws Exception {
 		BundleAnalyzer a = new BundleAnalyzer(new XNullLogSvc());
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		a.analyzeResource(new JarResource(new File("testdata/04-export+uses.jar")), caps, reqs);
 
@@ -90,8 +90,8 @@ public class TestBundleAnalyzer extends TestCase {
 
 	public void testPackageImports() throws Exception {
 		BundleAnalyzer a = new BundleAnalyzer(new XNullLogSvc());
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		a.analyzeResource(new JarResource(new File("testdata/05-import.jar")), caps, reqs);
 
@@ -102,8 +102,8 @@ public class TestBundleAnalyzer extends TestCase {
 
 	public void testRequireBundle() throws Exception {
 		BundleAnalyzer a = new BundleAnalyzer(new XNullLogSvc());
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		a.analyzeResource(new JarResource(new File("testdata/06-requirebundle.jar")), caps, reqs);
 
@@ -115,8 +115,8 @@ public class TestBundleAnalyzer extends TestCase {
 
 	public void testPackageImportOptional() throws Exception {
 		BundleAnalyzer a = new BundleAnalyzer(new XNullLogSvc());
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		a.analyzeResource(new JarResource(new File("testdata/07-optionalimport.jar")), caps, reqs);
 
@@ -128,8 +128,8 @@ public class TestBundleAnalyzer extends TestCase {
 
 	public void testFragmentHost() throws Exception {
 		BundleAnalyzer a = new BundleAnalyzer(new XNullLogSvc());
-		LinkedList<Capability> caps = new LinkedList<Capability>();
-		LinkedList<Requirement> reqs = new LinkedList<Requirement>();
+		LinkedList<Capability> caps = new LinkedList<>();
+		LinkedList<Requirement> reqs = new LinkedList<>();
 
 		a.analyzeResource(new JarResource(new File("testdata/08-fragmenthost.jar")), caps, reqs);
 

@@ -16,6 +16,24 @@ import junit.framework.TestCase;
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
 
+	public void testRemoveall() throws Exception {
+		try (Builder b = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("a", "${removeall;A,B,C,D,E,F;B,D,F,G}");
+			b.setProperties(p);
+			assertEquals("A,C,E", b.getProperty("a"));
+		}
+	}
+
+	public void testRetainall() throws Exception {
+		try (Builder b = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("a", "${retainall;A,B,C,D,E,F;B,D,F,G}");
+			b.setProperties(p);
+			assertEquals("B,D,F", b.getProperty("a"));
+		}
+	}
+
 	public void testFilterExpression() throws Exception {
 		Processor p = new Processor();
 		p.setProperty("a", "A");
@@ -334,6 +352,8 @@ public class MacroTest extends TestCase {
 
 		assertEquals("xyz", processor.getReplacer().process("${trim; \txyz\t  }"));
 
+		assertEquals("bcdef", processor.getReplacer()
+			.process("${subst;abacdaef;a}"));
 		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF}"));
 		assertEquals("DEFbacdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;1}"));
 		assertEquals("DEFbDEFcdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;2}"));
@@ -894,9 +914,10 @@ public class MacroTest extends TestCase {
 	 */
 	public static void testReplace() {
 		Processor p = new Processor();
-		p.setProperty("specs", "a,b, c,    d");
+		p.setProperty("specs", "a0,b0, c0,    d0");
 		Macro m = new Macro(p);
-		assertEquals("xay, xby, xcy, xdy", m.process("${replace;${specs};([^\\s]+);x$1y}"));
+		assertEquals("xa0y, xb0y, xc0y, xd0y", m.process("${replace;${specs};([^\\s]+);x$1y}"));
+		assertEquals("a, b, c, d", m.process("${replace;${specs};0}"));
 	}
 
 	public static void testToClassName() {
@@ -916,12 +937,11 @@ public class MacroTest extends TestCase {
 			analyzer.setJar(IO.getFile("jar/asm.jar"));
 			Macro m = new Macro(analyzer);
 
-			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("FieldVisitor.xyz,") >= 0);
-			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("MethodVisitor.xyz,") >= 0);
+			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").contains("FieldVisitor.xyz,"));
+			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").contains("MethodVisitor.xyz,"));
 			assertTrue(
-					m.process("${findpath;(.*)\\.class}").indexOf("org/objectweb/asm/AnnotationVisitor.class,") >= 0);
-			assertTrue(m.process("${findpath;(.*)\\.class}")
-					.indexOf("org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,") >= 0);
+					m.process("${findpath;(.*)\\.class}").contains("org/objectweb/asm/AnnotationVisitor.class,"));
+			assertTrue(m.process("${findpath;(.*)\\.class}").contains("org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,"));
 			assertEquals("META-INF/MANIFEST.MF", m.process("${findpath;META-INF/MANIFEST.MF}"));
 			assertEquals("Label.class", m.process("${findname;Label\\..*}"));
 			assertEquals("Adapter, Visitor, Writer", m.process("${findname;Method(.*)\\.class;$1}"));
@@ -1054,10 +1074,10 @@ public class MacroTest extends TestCase {
 		String fwusers = b.getProperty("fwusers");
 		String foo = b.getProperty("foo");
 		assertTrue(fwusers.length() > foo.length());
-		assertTrue(fwusers.indexOf("org.osgi.framework.ServicePermission") >= 0);
-		assertTrue(fwusers.indexOf("org.eclipse.equinox.ds.instance.BuildDispose") >= 0);
-		assertFalse(foo.indexOf("org.osgi.framework.ServicePermission") >= 0);
-		assertTrue(foo.indexOf("org.eclipse.equinox.ds.instance.BuildDispose") >= 0);
+		assertTrue(fwusers.contains("org.osgi.framework.ServicePermission"));
+		assertTrue(fwusers.contains("org.eclipse.equinox.ds.instance.BuildDispose"));
+		assertFalse(foo.contains("org.osgi.framework.ServicePermission"));
+		assertTrue(foo.contains("org.eclipse.equinox.ds.instance.BuildDispose"));
 		System.err.println(b.getProperty("fwusers"));
 		System.err.println(b.getProperty("foo"));
 

@@ -354,7 +354,7 @@ public class Signatures {
 
 	public String normalize(String signature) {
 		StringBuilder sb = new StringBuilder();
-		Map<String,String> map = new HashMap<String,String>();
+		Map<String,String> map = new HashMap<>();
 		Rover rover = new Rover(signature);
 		declare(sb, map, rover);
 

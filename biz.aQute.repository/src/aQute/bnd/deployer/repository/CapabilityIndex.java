@@ -21,7 +21,7 @@ import org.osgi.resource.Resource;
  */
 public class CapabilityIndex {
 
-	private final Map<String,List<Capability>> capabilityMap = new HashMap<String,List<Capability>>();
+	private final Map<String,List<Capability>> capabilityMap = new HashMap<>();
 
 	public synchronized void clear() {
 		capabilityMap.clear();
@@ -39,7 +39,7 @@ public class CapabilityIndex {
 		for (Capability cap : capabilities) {
 			List<Capability> list = capabilityMap.get(cap.getNamespace());
 			if (list == null) {
-				list = new LinkedList<Capability>();
+				list = new LinkedList<>();
 				capabilityMap.put(cap.getNamespace(), list);
 			}
 			list.add(cap);

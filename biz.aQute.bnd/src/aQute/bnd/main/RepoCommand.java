@@ -94,7 +94,7 @@ public class RepoCommand {
 	final bnd						bnd;
 	final repoOptions				opts;
 	final RepositoryPlugin			writable;
-	final List<RepositoryPlugin>	repos	= new ArrayList<RepositoryPlugin>();
+	final List<RepositoryPlugin>	repos	= new ArrayList<>();
 	final Workspace					workspace;
 
 	/**
@@ -224,7 +224,7 @@ public class RepoCommand {
 	@Description("List all artifacts from the current repositories with their versions")
 	public void _list(listOptions opts) throws Exception {
 		logger.debug("list");
-		Set<String> bsns = new HashSet<String>();
+		Set<String> bsns = new HashSet<>();
 		Instruction from = opts.from();
 		if (from == null)
 			from = new Instruction("*");
@@ -235,9 +235,9 @@ public class RepoCommand {
 		}
 		logger.debug("list {}", bsns);
 
-		for (String bsn : new SortedList<String>(bsns)) {
+		for (String bsn : new SortedList<>(bsns)) {
 			if (!opts.noversions()) {
-				Set<Version> versions = new TreeSet<Version>();
+				Set<Version> versions = new TreeSet<>();
 				for (RepositoryPlugin repo : repos) {
 					logger.debug("get {} from {}", bsn, repo);
 					if (from.matches(repo.getName())) {
@@ -295,7 +295,7 @@ public class RepoCommand {
 		}
 
 		VersionRange r = new VersionRange(range == null ? "0" : range);
-		Map<Version,RepositoryPlugin> index = new HashMap<Version,RepositoryPlugin>();
+		Map<Version,RepositoryPlugin> index = new HashMap<>();
 
 		for (RepositoryPlugin repo : repos) {
 			if (from.matches(repo.getName())) {
@@ -308,7 +308,7 @@ public class RepoCommand {
 			}
 		}
 
-		SortedList<Version> l = new SortedList<Version>(index.keySet());
+		SortedList<Version> l = new SortedList<>(index.keySet());
 		if (l.isEmpty()) {
 			bnd.out.printf("No versions found for %s%n", bsn);
 			return;
@@ -466,7 +466,7 @@ public class RepoCommand {
 		} else {
 			Tree tOlder = RepositoryElement.getTree(rolder);
 			Diff diff = new DiffImpl(tNewer, tOlder);
-			MultiMap<String,String> map = new MultiMap<String,String>();
+			MultiMap<String,String> map = new MultiMap<>();
 			for (Diff bsn : diff.getChildren()) {
 
 				for (Diff version : bsn.getChildren()) {
@@ -525,7 +525,7 @@ public class RepoCommand {
 
 	@Description("Displays a list of versions for a given bsn that can be found in the current repositories.")
 	public void _versions(VersionsOptions opts) throws Exception {
-		TreeSet<Version> versions = new TreeSet<Version>();
+		TreeSet<Version> versions = new TreeSet<>();
 		String bsn = opts._arguments().remove(0);
 		for (RepositoryPlugin repo : repos) {
 			versions.addAll(repo.versions(bsn));
@@ -582,7 +582,7 @@ public class RepoCommand {
 			public byte[]	digest;
 		}
 
-		List<Spec> sources = new ArrayList<Spec>();
+		List<Spec> sources = new ArrayList<>();
 
 		//
 		// Get the repo contents, using background downloads

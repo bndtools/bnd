@@ -560,7 +560,7 @@ public class NanoHTTPD {
 				int boundarycount = 1;
 				String mpline = in.readLine();
 				while (mpline != null) {
-					if (mpline.indexOf(boundary) == -1)
+					if (!mpline.contains(boundary))
 						sendError(HTTP_BADREQUEST,
 								"BAD REQUEST: Content type is multipart/form-data but next chunk does not start with boundary. Usage: GET /example/file.html");
 					boundarycount++;
@@ -592,7 +592,7 @@ public class NanoHTTPD {
 
 						String value = "";
 						if (item.getProperty("content-type") == null) {
-							while (mpline != null && mpline.indexOf(boundary) == -1) {
+							while (mpline != null && !mpline.contains(boundary)) {
 								mpline = in.readLine();
 								if (mpline != null) {
 									int d = mpline.indexOf(boundary);
@@ -612,7 +612,7 @@ public class NanoHTTPD {
 							value = value.substring(1, value.length() - 1);
 							do {
 								mpline = in.readLine();
-							} while (mpline != null && mpline.indexOf(boundary) == -1);
+							} while (mpline != null && !mpline.contains(boundary));
 						}
 						parms.put(pname, value);
 					}
@@ -628,7 +628,7 @@ public class NanoHTTPD {
 		public int[] getBoundaryPositions(byte[] b, byte[] boundary) {
 			int matchcount = 0;
 			int matchbyte = -1;
-			Vector<Object> matchbytes = new Vector<Object>();
+			Vector<Object> matchbytes = new Vector<>();
 			for (int i = 0; i < b.length; i++) {
 				if (b[i] == boundary[matchcount]) {
 					if (matchcount == 0)
@@ -692,7 +692,7 @@ public class NanoHTTPD {
 		 */
 		private String decodePercent(String str) throws InterruptedException {
 			try {
-				StringBuffer sb = new StringBuffer();
+				StringBuilder sb = new StringBuilder();
 				for (int i = 0; i < str.length(); i++) {
 					char c = str.charAt(i);
 					switch (c) {
@@ -858,7 +858,7 @@ public class NanoHTTPD {
 				uri = uri.substring(0, uri.indexOf('?'));
 
 			// Prohibit getting out of current directory
-			if (uri.startsWith("..") || uri.endsWith("..") || uri.indexOf("../") >= 0)
+			if (uri.startsWith("..") || uri.endsWith("..") || uri.contains("../"))
 				res = new Response(HTTP_FORBIDDEN, MIME_PLAINTEXT, "FORBIDDEN: Won't serve ../ for security reasons.");
 		}
 
@@ -1013,7 +1013,7 @@ public class NanoHTTPD {
 	/**
 	 * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
 	 */
-	private static Hashtable<String,String> theMimeTypes = new Hashtable<String,String>();
+	private static Hashtable<String,String> theMimeTypes = new Hashtable<>();
 
 	static {
 		StringTokenizer st = new StringTokenizer("css		text/css " + "htm		text/html " + "html		text/html "

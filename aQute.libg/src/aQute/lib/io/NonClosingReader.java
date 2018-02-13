@@ -1,7 +1,6 @@
 package aQute.lib.io;
 
 import java.io.FilterReader;
-import java.io.IOException;
 import java.io.Reader;
 
 public class NonClosingReader extends FilterReader {
@@ -10,7 +9,7 @@ public class NonClosingReader extends FilterReader {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		// leave the underlying Reader open
 	}
 }

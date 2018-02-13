@@ -51,6 +51,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.StringJoiner;
 import java.util.TimeZone;
 import java.util.TreeSet;
 import java.util.jar.Attributes;
@@ -94,7 +95,7 @@ import aQute.libg.tuple.Pair;
 
 public class Analyzer extends Processor {
 	private final static Logger						logger					= LoggerFactory.getLogger(Analyzer.class);
-	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<Clazz.JAVA>();
+	private final SortedSet<Clazz.JAVA>				ees						= new TreeSet<>();
 	static Properties								bndInfo;
 
 	// Bundle parameters
@@ -106,9 +107,9 @@ public class Analyzer extends Processor {
 	private TypeRef									activator;
 
 	// Global parameters
-	private final MultiMap<PackageRef,PackageRef>	uses					= new MultiMap<PackageRef,PackageRef>(
+	private final MultiMap<PackageRef,PackageRef>	uses					= new MultiMap<>(
 			PackageRef.class, PackageRef.class, true);
-	private final MultiMap<PackageRef,PackageRef>	apiUses					= new MultiMap<PackageRef,PackageRef>(
+	private final MultiMap<PackageRef,PackageRef>	apiUses					= new MultiMap<>(
 			PackageRef.class, PackageRef.class, true);
 	private final Contracts							contracts				= new Contracts(this);
 	private final Packages							classpathExports		= new Packages();
@@ -122,7 +123,7 @@ public class Analyzer extends Processor {
 	final protected AnalyzerMessages				msgs					= ReporterMessages.base(this,
 			AnalyzerMessages.class);
 	private AnnotationHeaders						annotationHeaders;
-	private Set<PackageRef>							packagesVisited			= new HashSet<PackageRef>();
+	private Set<PackageRef>							packagesVisited			= new HashSet<>();
 	private Set<Check>								checks;
 
 	public enum Check {
@@ -254,12 +255,14 @@ public class Analyzer extends Processor {
 
 				Instructions filter = new Instructions(getExportPackage());
 				filter.append(getExportContents());
+				filter.append(getExportedByAnnotation());
 
 				exports = filter(filter, contained, unused);
 
 				if (!unused.isEmpty()) {
 					warning("Unused " + Constants.EXPORT_PACKAGE + " instructions: %s ", unused)
-							.header(Constants.EXPORT_PACKAGE).context(unused.iterator().next().input);
+							.header(Constants.EXPORT_PACKAGE)
+							.context(unused.iterator().next().input);
 				}
 
 				// See what information we can find to augment the
@@ -281,10 +284,7 @@ public class Analyzer extends Processor {
 				removeDynamicImports(referredAndExported);
 
 				// Remove any Java references ... where are the closures???
-				for (Iterator<PackageRef> i = referredAndExported.keySet().iterator(); i.hasNext();) {
-					if (i.next().isJava())
-						i.remove();
-				}
+				referredAndExported.keySet().removeIf(PackageRef::isJava);
 
 				Set<Instruction> unused = Create.set();
 				String h = getProperty(IMPORT_PACKAGE);
@@ -300,7 +300,8 @@ public class Analyzer extends Processor {
 					// We ignore the end wildcard catch
 					if (!(unused.size() == 1 && unused.iterator().next().toString().equals("*")))
 						warning("Unused " + Constants.IMPORT_PACKAGE + " instructions: %s ", unused)
-								.header(Constants.IMPORT_PACKAGE).context(unused.iterator().next().input);
+								.header(Constants.IMPORT_PACKAGE)
+								.context(unused.iterator().next().input);
 				}
 
 				// See what information we can find to augment the
@@ -339,7 +340,7 @@ public class Analyzer extends Processor {
 			for (PackageRef exported : exports.keySet()) {
 				List<PackageRef> used = uses.get(exported);
 				if (used != null) {
-					Set<PackageRef> privateReferences = new TreeSet<PackageRef>(apiUses.get(exported));
+					Set<PackageRef> privateReferences = new TreeSet<>(apiUses.get(exported));
 					privateReferences.retainAll(privatePackages);
 					if (!privateReferences.isEmpty())
 						msgs.Export_Has_PrivateReferences_(exported, privateReferences.size(), privateReferences);
@@ -357,6 +358,45 @@ public class Analyzer extends Processor {
 						uses.transpose().get(Descriptors.DEFAULT_PACKAGE));
 			}
 
+			// Check for use of the deprecated bnd @Export annotation
+
+			TypeRef bndAnnotation = descriptors.getTypeRefFromFQN(aQute.bnd.annotation.Export.class.getName());
+			contained.keySet()
+					.stream()
+					.map(this::getPackageInfoClazz)
+					.filter(clz -> clz != null)
+					.filter(clz -> clz.annotations != null)
+					.filter(clz -> clz.annotations.contains(bndAnnotation))
+					.map(Clazz::getClassName)
+					.map(TypeRef::getPackageRef)
+					.map(PackageRef::getFQN)
+					.forEach(fqn -> warning(
+							"The annotation aQute.bnd.annotation.Export applied to package %s is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead",
+							fqn));
+		}
+	}
+
+	private Parameters getExportedByAnnotation() {
+		TypeRef exportAnnotation = descriptors.getTypeRefFromFQN("org.osgi.annotation.bundle.Export");
+		return contained.keySet()
+				.stream()
+				.map(this::getPackageInfoClazz)
+				.filter(clz -> clz != null)
+				.filter(clz -> clz.annotations != null)
+				.filter(clz -> clz.annotations.contains(exportAnnotation))
+				.map(Clazz::getClassName)
+				.map(TypeRef::getPackageRef)
+				.map(PackageRef::getFQN)
+				.collect(Parameters.toParameters());
+	}
+
+	private Clazz getPackageInfoClazz(PackageRef pr) {
+		String bin = pr.getBinary() + "/package-info";
+		TypeRef tr = descriptors.getTypeRef(bin);
+		try {
+			return findClass(tr);
+		} catch (Exception e) {
+			return null;
 		}
 	}
 
@@ -564,16 +604,58 @@ public class Analyzer extends Processor {
 							}
 						}
 						break;
+					case "org.osgi.annotation.bundle.Export" :
+						Object[] usesClauses = a.get("uses");
+						if (usesClauses != null) {
+							StringJoiner sj = new StringJoiner(",");
+							String old = info.get(USES_DIRECTIVE);
+							if (old != null)
+								sj.add(old);
+							for (Object usesClause : usesClauses) {
+								sj.add(usesClause.toString());
+							}
+							info.put(USES_DIRECTIVE, sj.toString());
+						}
+
+						Object substitution = a.get("substitution");
+						if (substitution != null) {
+							switch (substitution.toString()) {
+								case "CONSUMER" :
+									info.put(PROVIDE_DIRECTIVE, "false");
+									break;
+								case "PROVIDER" :
+									info.put(PROVIDE_DIRECTIVE, "true");
+									break;
+								case "NOIMPORT" :
+									info.put(NO_IMPORT_DIRECTIVE, "true");
+									break;
+								case "CALCULATED" :
+									// nothing to do; this is the normal case
+									break;
+								default :
+									error("Export annotation in %s has invalid substitution value: %s", clazz,
+										substitution);
+									break;
+							}
+						}
+
+						Object[] attributes = a.get("attribute");
+						if (attributes != null) {
+							for (Object attribute : attributes) {
+								info.mergeWith(OSGiHeader.parseProperties(attribute.toString(), Analyzer.this), false);
+							}
+						}
+						break;
 					case "aQute.bnd.annotation.Export" :
 						// Check mandatory attributes
-						Attrs attrs = doAttrbutes((Object[]) a.get(Export.MANDATORY), clazz, getReplacer());
+						Attrs attrs = doAttrbutes(a.get(Export.MANDATORY), clazz, getReplacer());
 						if (!attrs.isEmpty()) {
 							info.putAll(attrs);
 							info.put(MANDATORY_DIRECTIVE, Processor.join(attrs.keySet()));
 						}
 
 						// Check optional attributes
-						attrs = doAttrbutes((Object[]) a.get(Export.OPTIONAL), clazz, getReplacer());
+						attrs = doAttrbutes(a.get(Export.OPTIONAL), clazz, getReplacer());
 						if (!attrs.isEmpty()) {
 							info.putAll(attrs);
 						}
@@ -845,19 +927,6 @@ public class Analyzer extends Processor {
 				}
 			}
 
-			//
-			// Ensure we pick up any headers only set by the
-			// annotations (see AnnotationHeaders)
-			//
-
-			doHeader(main, BUNDLE_LICENSE);
-			doHeader(main, BUNDLE_DEVELOPERS);
-			doHeader(main, BUNDLE_CONTRIBUTORS);
-			doHeader(main, BUNDLE_COPYRIGHT);
-			doHeader(main, BUNDLE_DOCURL);
-			doHeader(main, BUNDLE_LICENSE);
-			doHeader(main, BUNDLE_CATEGORY);
-
 			// Copy old values into new manifest, when they
 			// exist in the old one, but not in the new one
 			merge(manifest, dot.getManifest());
@@ -925,16 +994,16 @@ public class Analyzer extends Processor {
 				return highest.getFilter();
 		} else {
 			Attrs t = OSGiHeader.parseProperties(ee);
-			profiles = new HashMap<String,Set<String>>();
+			profiles = new HashMap<>();
 
 			for (Map.Entry<String,String> e : t.entrySet()) {
 				String profile = e.getKey();
 				String l = e.getValue();
-				SortedList<String> sl = new SortedList<String>(l.split("\\s*,\\s*"));
+				SortedList<String> sl = new SortedList<>(l.split("\\s*,\\s*"));
 				profiles.put(profile, sl);
 			}
 		}
-		SortedSet<String> found = new TreeSet<String>();
+		SortedSet<String> found = new TreeSet<>();
 		nextPackage: for (PackageRef p : referred.keySet()) {
 			if (p.isJava()) {
 				String fqn = p.getFQN();
@@ -1008,7 +1077,7 @@ public class Analyzer extends Processor {
 
 		Parameters namesection = parseHeader(getProperties().getProperty(NAMESECTION));
 		Instructions instructions = new Instructions(namesection);
-		Set<String> resources = new HashSet<String>(dot.getResources().keySet());
+		Set<String> resources = new HashSet<>(dot.getResources().keySet());
 
 		//
 		// For each instruction, iterator over the resources and filter
@@ -1189,7 +1258,7 @@ public class Analyzer extends Processor {
 	}
 
 	public Set<PackageRef> getPrivates() {
-		HashSet<PackageRef> privates = new HashSet<PackageRef>(contained.keySet());
+		HashSet<PackageRef> privates = new HashSet<>(contained.keySet());
 		privates.removeAll(exports.keySet());
 		privates.removeAll(imports.keySet());
 		return privates;
@@ -1209,7 +1278,7 @@ public class Analyzer extends Processor {
 	 * 
 	 */
 	public Set<PackageRef> getUnreachable() {
-		Set<PackageRef> unreachable = new HashSet<PackageRef>(uses.keySet()); // all
+		Set<PackageRef> unreachable = new HashSet<>(uses.keySet()); // all
 		for (Iterator<PackageRef> r = exports.keySet().iterator(); r.hasNext();) {
 			PackageRef packageRef = r.next();
 			removeTransitive(packageRef, unreachable);
@@ -1350,7 +1419,7 @@ public class Analyzer extends Processor {
 	}
 
 	public void setClasspath(File[] classpath) throws IOException {
-		List<Jar> list = new ArrayList<Jar>();
+		List<Jar> list = new ArrayList<>();
 		for (int i = 0; i < classpath.length; i++) {
 			if (classpath[i].exists()) {
 				Jar current = new Jar(classpath[i]);
@@ -1534,7 +1603,7 @@ public class Analyzer extends Processor {
 	Packages doExportsToImports(Packages exports) {
 
 		// private packages = contained - exported.
-		Set<PackageRef> privatePackages = new HashSet<PackageRef>(contained.keySet());
+		Set<PackageRef> privatePackages = new HashSet<>(contained.keySet());
 		privatePackages.removeAll(exports.keySet());
 
 		// private references = ∀ p : contained packages | uses(p)
@@ -1546,7 +1615,7 @@ public class Analyzer extends Processor {
 		}
 
 		// Assume we are going to import all exported packages
-		Set<PackageRef> toBeImported = new HashSet<PackageRef>(exports.keySet());
+		Set<PackageRef> toBeImported = new HashSet<>(exports.keySet());
 
 		// Remove packages that are not referenced locally
 		toBeImported.retainAll(containedReferences);
@@ -1603,7 +1672,6 @@ public class Analyzer extends Processor {
 			// }
 
 			parameters = new Attrs();
-			parameters.remove(VERSION_ATTRIBUTE);
 			result.put(ep, parameters);
 		}
 		return result;
@@ -1727,9 +1795,14 @@ public class Analyzer extends Processor {
 					// be defined externally or locally
 					//
 
-					boolean provider = isTrue(importAttributes.get(PROVIDE_DIRECTIVE))
-							|| isTrue(exportAttributes.get(PROVIDE_DIRECTIVE)) || provided.contains(packageRef);
-
+					boolean provider;
+					if (importAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+						provider = isTrue(importAttributes.get(PROVIDE_DIRECTIVE));
+					} else if (exportAttributes.containsKey(PROVIDE_DIRECTIVE)) {
+						provider = isTrue(exportAttributes.get(PROVIDE_DIRECTIVE));
+					} else {
+						provider = provided.contains(packageRef);
+					}
 					exportVersion = cleanupVersion(exportVersion);
 
 					importRange = applyVersionPolicy(exportVersion, importRange, provider);
@@ -2013,9 +2086,7 @@ public class Analyzer extends Processor {
 		Attrs clause = exports.get(packageRef);
 
 		// Check if someone already set the uses: directive
-		String override = clause.get(USES_DIRECTIVE);
-		if (override == null)
-			override = USES_USES;
+		String override = clause.get(USES_DIRECTIVE, USES_USES);
 
 		// Get the used packages
 		Collection<PackageRef> usedPackages = uses.get(packageRef);
@@ -2025,7 +2096,7 @@ public class Analyzer extends Processor {
 			// Only do a uses on exported or imported packages
 			// and uses should also not contain our own package
 			// name
-			Set<PackageRef> sharedPackages = new TreeSet<PackageRef>();
+			Set<PackageRef> sharedPackages = new TreeSet<>();
 			sharedPackages.addAll(imports.keySet());
 			sharedPackages.addAll(exports.keySet());
 			sharedPackages.retainAll(usedPackages);
@@ -2054,10 +2125,17 @@ public class Analyzer extends Processor {
 				override = override.substring(0, override.length() - 1);
 			if (override.startsWith(","))
 				override = override.substring(1);
-			if (override.length() > 0) {
+			if (override.isEmpty()) {
+				clause.remove(USES_DIRECTIVE);
+			} else {
 				clause.put(USES_DIRECTIVE, override);
 			}
+		} else {
+			if (override.equals(USES_USES)) {
+				clause.remove(USES_DIRECTIVE);
+			}
 		}
+
 	}
 
 	/**
@@ -2341,7 +2419,7 @@ public class Analyzer extends Processor {
 	 * @throws IOException
 	 */
 	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs) throws Exception {
-		Map<String,Clazz> mismatched = new HashMap<String,Clazz>();
+		Map<String,Clazz> mismatched = new HashMap<>();
 
 		next: for (String path : jar.getResources().keySet()) {
 			if (path.startsWith(prefix)) {
@@ -2562,7 +2640,7 @@ public class Analyzer extends Processor {
 
 	public Collection<Clazz> getClasses(String... args) throws Exception {
 
-		Set<Clazz> matched = new HashSet<Clazz>(classspace.values());
+		Set<Clazz> matched = new HashSet<>(classspace.values());
 		for (int i = 1; i < args.length; i++) {
 			if (args.length < i + 1)
 				throw new IllegalArgumentException(
@@ -2595,10 +2673,10 @@ public class Analyzer extends Processor {
 				}
 			}
 		}
-		return new SortedList<Clazz>(matched, Clazz.NAME_COMPARATOR);
+		return new SortedList<>(matched, Clazz.NAME_COMPARATOR);
 	}
 
-	static String _packagesHelp = "${packages;'named'|'annotated'|'any';<pattern>}, Return a list of packages contained in the bundle that match the pattern\n";
+	static String _packagesHelp = "${packages;'named'|'annotated'|'any'|'versioned'|'conditional';<pattern>}, Return a list of packages contained in the bundle that match the pattern\n";
 
 	public String _packages(String... args) throws Exception {
 		Collection<PackageRef> matched = getPackages(contained, args);
@@ -2606,7 +2684,7 @@ public class Analyzer extends Processor {
 	}
 
 	public Collection<PackageRef> getPackages(Packages scope, String... args) throws Exception {
-		List<PackageRef> pkgs = new LinkedList<PackageRef>();
+		List<PackageRef> pkgs = new LinkedList<>();
 
 		Packages.QUERY queryType;
 		Instruction instr;
@@ -2649,6 +2727,13 @@ public class Analyzer extends Processor {
 						break;
 					case VERSIONED :
 						accept = entry.getValue().getVersion() != null;
+						break;
+					case CONDITIONAL :
+						accept = entry.getValue()
+							.get(INTERNAL_SOURCE_DIRECTIVE)
+							.startsWith(CONDITIONALPACKAGE);
+						break;
+					default :
 						break;
 				}
 			} else {
@@ -2786,7 +2871,7 @@ public class Analyzer extends Processor {
 		if (require == null || require.isEmpty())
 			return;
 
-		Hashtable<String,String> map = new Hashtable<String,String>();
+		Hashtable<String,String> map = new Hashtable<>();
 		map.put(Constants.VERSION_FILTER, getBndVersion());
 
 		for (String filter : require.keySet()) {
@@ -2900,10 +2985,10 @@ public class Analyzer extends Processor {
 
 	Packages filter(Instructions instructions, Packages source, Set<Instruction> nomatch) {
 		Packages result = new Packages();
-		List<PackageRef> refs = new ArrayList<PackageRef>(source.keySet());
+		List<PackageRef> refs = new ArrayList<>(source.keySet());
 		Collections.sort(refs);
 
-		List<Instruction> filters = new ArrayList<Instruction>(instructions.keySet());
+		List<Instruction> filters = new ArrayList<>(instructions.keySet());
 		if (nomatch == null)
 			nomatch = Create.set();
 
@@ -3038,7 +3123,7 @@ public class Analyzer extends Processor {
 			String bsn = name.getKey();
 			String version = getBundleVersion();
 			Version v = Version.parseVersion(version);
-			String outputName = bsn + "-" + v.getWithoutQualifier() + Constants.DEFAULT_JAR_EXTENSION;
+			String outputName = bsn + "-" + v.toStringWithoutQualifier() + Constants.DEFAULT_JAR_EXTENSION;
 			return new File(outputDir, outputName);
 		}
 
@@ -3134,16 +3219,13 @@ public class Analyzer extends Processor {
 	 * @param removeJava
 	 */
 	public Map<PackageRef,List<PackageRef>> cleanupUses(Map<PackageRef,List<PackageRef>> apiUses, boolean removeJava) {
-		MultiMap<PackageRef,PackageRef> map = new MultiMap<PackageRef,PackageRef>(apiUses);
+		MultiMap<PackageRef,PackageRef> map = new MultiMap<>(apiUses);
 		for (Entry<PackageRef,List<PackageRef>> e : map.entrySet()) {
 			e.getValue().remove(e.getKey());
 			if (!removeJava)
 				continue;
 
-			for (Iterator<PackageRef> i = e.getValue().iterator(); i.hasNext();) {
-				if (i.next().isJava())
-					i.remove();
-			}
+			e.getValue().removeIf(PackageRef::isJava);
 		}
 		return map;
 	}
@@ -3155,7 +3237,7 @@ public class Analyzer extends Processor {
 	 * @return a set of classes for the requested package.
 	 */
 	public Set<Clazz> getClassspace(PackageRef source) {
-		Set<Clazz> result = new HashSet<Clazz>();
+		Set<Clazz> result = new HashSet<>();
 		for (Clazz c : getClassspace().values()) {
 			if (c.getClassName().getPackageRef() == source)
 				result.add(c);
@@ -3173,7 +3255,7 @@ public class Analyzer extends Processor {
 	 */
 	public Map<Clazz.Def,List<TypeRef>> getXRef(final PackageRef source, final Collection<PackageRef> dest,
 			final int sourceModifiers) throws Exception {
-		final MultiMap<Clazz.Def,TypeRef> xref = new MultiMap<Clazz.Def,TypeRef>(Clazz.Def.class, TypeRef.class, true);
+		final MultiMap<Clazz.Def,TypeRef> xref = new MultiMap<>(Clazz.Def.class, TypeRef.class, true);
 
 		for (final Clazz clazz : getClassspace().values()) {
 			if ((clazz.accessx & sourceModifiers) == 0)
@@ -3257,7 +3339,6 @@ public class Analyzer extends Processor {
 		table.put("Imported", getImports().entrySet());
 		table.put("Exported", getExports().entrySet());
 		table.put("Referred", getReferred().entrySet());
-		table.put("Referred", getReferred().entrySet());
 		table.put("Bundle Symbolic Name", getBsn());
 		table.put("Execution Environments", ees);
 	}
@@ -3298,22 +3379,22 @@ public class Analyzer extends Processor {
 	public boolean check(Check key) {
 		if (checks == null) {
 			Parameters p = new Parameters(getProperty("-check"), this);
-			checks = new HashSet<Check>();
-			for (String k : p.keySet())
+			checks = EnumSet.noneOf(Check.class);
+			for (String k : p.keyList()) {
 				try {
 					if (k.equalsIgnoreCase("all")) {
 						checks = EnumSet.allOf(Check.class);
 						break;
 					}
 
-					Check c = Enum.valueOf(Check.class, k.toUpperCase().replace('-', '_'));
+					Check c = Check.valueOf(k.toUpperCase()
+						.replace('-', '_'));
 					checks.add(c);
 
 				} catch (Exception e) {
 					error("Invalid -check constant, allowed values are %s", Arrays.toString(Check.values()));
 				}
-			if (!checks.isEmpty())
-				checks = EnumSet.copyOf(checks);
+			}
 		}
 		return checks.contains(key) || checks.contains(Check.ALL);
 	}

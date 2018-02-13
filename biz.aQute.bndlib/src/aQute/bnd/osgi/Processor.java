@@ -2,6 +2,7 @@ package aQute.bnd.osgi;
 
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.joining;
 
 import java.io.Closeable;
 import java.io.File;
@@ -36,6 +37,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
+import java.util.Spliterator;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -54,6 +56,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +72,7 @@ import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
-import aQute.lib.collections.SortedList;
+import aQute.lib.collections.Iterables;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -97,12 +101,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	static Pattern									PACKAGES_IGNORED	= Pattern
 			.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
-	static ThreadLocal<Processor>					current				= new ThreadLocal<Processor>();
+	static ThreadLocal<Processor>					current				= new ThreadLocal<>();
 	private final static ScheduledExecutorService	sheduledExecutor;
 	private final static ExecutorService			executor;
 	static {
 		ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), threadFactory,
+		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactory,
 				new RejectedExecutionHandler() {
 					/*
 					 * We are stealing another's thread because we have hit max
@@ -132,10 +136,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	// TODO handle include files out of date
 	// TODO make splitter skip eagerly whitespace so trim is not necessary
 	public final static String		LIST_SPLITTER	= "\\s*,\\s*";
-	final List<String>				errors			= new ArrayList<String>();
-	final List<String>				warnings		= new ArrayList<String>();
-	final Set<Object>				basicPlugins	= new HashSet<Object>();
-	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
+	final List<String>				errors			= new ArrayList<>();
+	final List<String>				warnings		= new ArrayList<>();
+	final Set<Object>				basicPlugins	= new HashSet<>();
+	private final Set<Closeable>	toBeClosed		= new HashSet<>();
 	private Set<Object>				plugins;
 
 	boolean							pedantic;
@@ -436,7 +440,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return A list of plugins
 	 */
 	public <T> List<T> getPlugins(Class<T> clazz) {
-		List<T> l = new ArrayList<T>();
+		List<T> l = new ArrayList<>();
 		Set<Object> all = getPlugins();
 		for (Object plugin : all) {
 			if (clazz.isInstance(plugin))
@@ -474,7 +478,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return p;
 
 			plugins = p = new CopyOnWriteArraySet<>();
-			missingCommand = new HashSet<String>();
+			missingCommand = new HashSet<>();
 		}
 		// We only use plugins now when they are defined on our level
 		// and not if it is in our parent. We inherit from our parent
@@ -567,7 +571,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		// model.
 		//
 
-		Set<String> loaded = new HashSet<String>();
+		Set<String> loaded = new HashSet<>();
 		for (Entry<String,Attrs> entry : plugins.entrySet()) {
 			String className = removeDuplicateMarker(entry.getKey());
 			Attrs attrs = entry.getValue();
@@ -822,31 +826,31 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public <T> List<T> newList() {
-		return new ArrayList<T>();
+		return new ArrayList<>();
 	}
 
 	public <T> Set<T> newSet() {
-		return new TreeSet<T>();
+		return new TreeSet<>();
 	}
 
 	public static <K, V> Map<K,V> newMap() {
-		return new LinkedHashMap<K,V>();
+		return new LinkedHashMap<>();
 	}
 
 	public static <K, V> Map<K,V> newHashMap() {
-		return new LinkedHashMap<K,V>();
+		return new LinkedHashMap<>();
 	}
 
 	public <T> List<T> newList(Collection<T> t) {
-		return new ArrayList<T>(t);
+		return new ArrayList<>(t);
 	}
 
 	public <T> Set<T> newSet(Collection<T> t) {
-		return new TreeSet<T>(t);
+		return new TreeSet<>(t);
 	}
 
 	public <K, V> Map<K,V> newMap(Map<K,V> t) {
-		return new LinkedHashMap<K,V>(t);
+		return new LinkedHashMap<>(t);
 	}
 
 	public void close() throws IOException {
@@ -1180,10 +1184,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * setProperties(Properties) which will handle the includes.
 	 *
 	 * @param propertiesFile
-	 * @throws FileNotFoundException
-	 * @throws IOException
 	 */
-	public void setProperties(File propertiesFile) throws IOException {
+	public void setProperties(File propertiesFile) {
 		propertiesFile = propertiesFile.getAbsoluteFile();
 		setProperties(propertiesFile, propertiesFile.getParentFile());
 	}
@@ -1254,6 +1256,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 
 	public String getUnprocessedProperty(String key, String deflt) {
+		if (filter != null && filter.contains(key)) {
+			return (String) getProperties().getOrDefault(key, deflt);
+		}
 		return getProperties().getProperty(key, deflt);
 	}
 
@@ -1279,32 +1284,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return getWildcardProperty(deflt, separator, inherit, ins);
 		}
 
-		@SuppressWarnings("resource")
-		Processor source = this;
-
-		return getLiteralProperty(key, deflt, source, inherit);
+		return getLiteralProperty(key, deflt, this, inherit);
 	}
 
 	private String getWildcardProperty(String deflt, String separator, boolean inherit, Instruction ins) {
 		// Handle a wildcard key, make sure they're sorted
 		// for consistency
-		SortedList<String> sortedList = SortedList.fromIterator(iterator(inherit));
-		StringBuilder sb = new StringBuilder();
-		String del = "";
-		for (String k : sortedList) {
-			if (ins.matches(k)) {
-				String v = getLiteralProperty(k, null, this, inherit);
-				if ((v != null) && !v.isEmpty()) {
-					sb.append(del);
-					del = separator;
-					sb.append(v);
-				}
-			}
-		}
-		if (sb.length() == 0)
-			return deflt;
-
-		return sb.toString();
+		String result = stream(inherit).filter(ins::matches)
+			.sorted()
+			.map(k -> getLiteralProperty(k, null, this, inherit))
+			.filter(v -> (v != null) && !v.isEmpty())
+			.collect(joining(separator));
+		return result.isEmpty() ? deflt : result;
 	}
 
 	private String getLiteralProperty(String key, String deflt, Processor source, boolean inherit) {
@@ -1322,21 +1313,24 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				}
 			}
 		} else {
-			while (source != null) {
-				Object raw = source.getProperties().get(key);
+			for (Processor proc = source; proc != null; proc = proc.getParent()) {
+				Object raw = proc.getProperties()
+					.get(key);
 				if (raw != null) {
 					if (raw instanceof String) {
 						value = (String) raw;
 					} else {
 						warning("Key '%s' has a non-String value: %s:%s", key,
-								raw == null ? "" : raw.getClass().getName(), raw);
+							raw == null ? ""
+								: raw.getClass()
+									.getName(),
+							raw);
 					}
+					source = proc;
 					break;
 				}
 
-				if (inherit)
-					source = source.getParent();
-				else
+				if (!inherit)
 					break;
 			}
 			//
@@ -1446,21 +1440,45 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static void printClause(Map< ? , ? > map, StringBuilder sb) throws IOException {
+		if (map instanceof Attrs) {
+			Attrs attrs = (Attrs) map;
+			for (Entry<String, String> entry : attrs.entrySet()) {
+				String key = entry.getKey();
+				// Skip directives we do not recognize
+				if (skipPrint(key))
+					continue;
 
-		for (Entry< ? , ? > entry : map.entrySet()) {
-			Object key = entry.getKey();
-			// Skip directives we do not recognize
-			if (key.equals(INTERNAL_SOURCE_DIRECTIVE) || key.equals(INTERNAL_EXPORTED_DIRECTIVE)
-					|| key.equals(NO_IMPORT_DIRECTIVE) || key.equals(PROVIDE_DIRECTIVE)
-					|| key.equals(SPLIT_PACKAGE_DIRECTIVE) || key.equals(FROM_DIRECTIVE))
-				continue;
+				sb.append(";");
+				attrs.append(sb, entry);
+			}
+		} else {
+			for (Entry<?, ?> entry : map.entrySet()) {
+				String key = entry.getKey()
+					.toString();
+				// Skip directives we do not recognize
+				if (skipPrint(key))
+					continue;
 
-			String value = ((String) entry.getValue()).trim();
-			sb.append(";");
-			sb.append(key);
-			sb.append("=");
+				sb.append(";");
+				sb.append(key);
+				sb.append("=");
+				String value = ((String) entry.getValue()).trim();
+				quote(sb, value);
+			}
+		}
+	}
 
-			quote(sb, value);
+	private static boolean skipPrint(String key) {
+		switch (key) {
+			case INTERNAL_SOURCE_DIRECTIVE :
+			case INTERNAL_EXPORTED_DIRECTIVE :
+			case NO_IMPORT_DIRECTIVE :
+			case PROVIDE_DIRECTIVE :
+			case SPLIT_PACKAGE_DIRECTIVE :
+			case FROM_DIRECTIVE :
+				return true;
+			default :
+				return false;
 		}
 	}
 
@@ -1505,18 +1523,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Return all inherited property keys
+	 * Return all inherited property keys. The keys are sorted for consistent
+	 * ordering.
 	 */
 	public Set<String> getPropertyKeys(boolean inherit) {
 		Set<String> result;
 		if (parent == null || !inherit) {
-			result = Create.set();
+			result = new TreeSet<>();
 		} else {
 			result = parent.getPropertyKeys(inherit);
 		}
-		for (Object o : getProperties0().keySet())
+		for (Object o : getProperties0().keySet()) {
 			result.add(o.toString());
-
+		}
 		return result;
 	}
 
@@ -1643,7 +1662,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static String merge(String... strings) {
-		ArrayList<String> result = new ArrayList<String>();
+		ArrayList<String> result = new ArrayList<>();
 		for (String s : strings) {
 			if (s != null)
 				split(s, result);
@@ -2190,29 +2209,36 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		getProperties().setProperty(key, value);
 	}
 
-	@Override
-	public Iterator<String> iterator() {
-		return iterator(true);
+	Stream<String> stream() {
+		return stream(true);
 	}
 
-	private Iterator<String> iterator(boolean inherit) {
-		Set<String> keys = getPropertyKeys(inherit);
-		final Iterator<String> it = keys.iterator();
-		return new Iterator<String>() {
-			String current;
+	private Stream<String> stream(boolean inherit) {
+		return StreamSupport.stream(iterable(inherit).spliterator(), false);
+	}
 
-			public boolean hasNext() {
-				return it.hasNext();
-			}
+	@Override
+	public Iterator<String> iterator() {
+		return iterable(true).iterator();
+	}
 
-			public String next() {
-				return current = it.next();
-			}
+	@Override
+	public Spliterator<String> spliterator() {
+		return iterable(true).spliterator();
+	}
 
-			public void remove() {
-				getProperties().remove(current);
-			}
-		};
+	private Iterable<String> iterable(boolean inherit) {
+		Set<Object> first = getProperties0().keySet();
+		Iterable<? extends Object> second;
+		if (parent == null || !inherit) {
+			second = Collections.emptyList();
+		} else {
+			second = parent.iterable(inherit);
+		}
+
+		Iterable<String> iterable = Iterables.distinct(first, second,
+			o -> (o instanceof String) ? (String) o : null);
+		return iterable;
 	}
 
 	public Set<String> keySet() {
@@ -2251,7 +2277,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Create a location object and add it to the locations
 	 */
-	List<Location> locations = new ArrayList<Location>();
+	List<Location> locations = new ArrayList<>();
 
 	static class SetLocationImpl extends Location implements SetLocation {
 		public SetLocationImpl(String s) {
@@ -2536,7 +2562,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	private String makeWildcard(String key) {
-		return key + "|" + key + ".*";
+		return key + ".*";
 	}
 
 	/**
@@ -2670,7 +2696,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public String _findfile(String args[]) {
 		File f = getFile(args[1]);
-		List<String> files = new ArrayList<String>();
+		List<String> files = new ArrayList<>();
 		tree(files, f, "", new Instruction(args[2]));
 		return join(files);
 	}

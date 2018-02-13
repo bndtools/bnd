@@ -6,7 +6,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -174,7 +173,7 @@ public class Diagnostics {
 					"-a", "--all" }, absentValue = "false", presentValue = "true") boolean all,
 			@Descriptor("Check exports against private packages") @Parameter(names = { "-p",
 					"--private" }, absentValue = "false", presentValue = "true") boolean privatePackages) {
-		Map<String, Export> map = new HashMap<String, Export>();
+		Map<String, Export> map = new HashMap<>();
 
 		List<Capability> caps = caps(-1, PackageNamespace.PACKAGE_NAMESPACE);
 
@@ -215,12 +214,7 @@ public class Diagnostics {
 		}
 
 		Set<Export> s = new HashSet<>(map.values());
-		for (Iterator<Export> i = s.iterator(); i.hasNext();) {
-			Export e = i.next();
-			if (e.exporters.size() == 1 && e.privates.isEmpty()) {
-				i.remove();
-			}
-		}
+		s.removeIf(e -> e.exporters.size() == 1 && e.privates.isEmpty());
 		return s;
 	}
 

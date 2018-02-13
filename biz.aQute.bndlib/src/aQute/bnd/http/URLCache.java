@@ -128,22 +128,27 @@ public class URLCache {
 	}
 
 	public Info get(File file, URI uri) throws Exception {
-		synchronized (this) {
-			if (file == null)
-				file = getCacheFileFor(uri);
-			Info info = infos.get(file);
+		if (file == null)
+			file = getCacheFileFor(uri);
+
+		// Unfortunately, the Info constructor throws Exception, making
+		// ConcurrentMap.computeIfAbsent() impossible. So we do it the
+		// hard(er) way
+		Info info = infos.get(file);
+		if (info == null) {
+			Info candidate = new Info(file, uri);
+			info = infos.putIfAbsent(file, candidate);
 			if (info == null) {
-				info = new Info(file, uri);
-				infos.put(file, info);
+				info = candidate;
 			}
-
-			if (info.lock.tryLock(5, TimeUnit.MINUTES)) {
-			} else {
-				logger.debug("Could not locked url cache {} - {}", uri, info);
-			}
-
-			return info;
 		}
+
+		// FIXME: 5 minutes is a bit excessive, no?
+		if (!info.lock.tryLock(5, TimeUnit.MINUTES)) {
+			logger.debug("Could not lock URL cache for {} - {}", uri, info);
+		}
+
+		return info;
 	}
 
 	public static String toName(URI uri) throws Exception {

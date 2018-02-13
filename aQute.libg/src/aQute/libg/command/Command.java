@@ -9,6 +9,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,8 +31,8 @@ public class Command {
 
 	boolean				trace;
 	Reporter			reporter;
-	List<String>		arguments	= new ArrayList<String>();
-	Map<String,String>	variables	= new LinkedHashMap<String,String>();
+	List<String>		arguments	= new ArrayList<>();
+	Map<String,String>	variables	= new LinkedHashMap<>();
 	long				timeout		= 0;
 	File				cwd			= new File("").getAbsoluteFile();
 	static Timer		timer		= new Timer(Command.class.getName(), true);
@@ -92,7 +93,7 @@ public class Command {
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6511002
 
 			if (System.getProperty("os.name").startsWith("Windows")) {
-				List<String> adjustedStrings = new LinkedList<String>();
+				List<String> adjustedStrings = new LinkedList<>();
 				for (String a : arguments) {
 					adjustedStrings.add(windowsQuote(a));
 				}
@@ -108,6 +109,8 @@ public class Command {
 		}
 
 		p.directory(cwd);
+		if (in == System.in)
+			p.redirectInput(ProcessBuilder.Redirect.INHERIT);
 		process = p.start();
 
 		// Make sure the command will not linger when we go
@@ -174,7 +177,6 @@ public class Command {
 					rdInThread.setDaemon(true);
 					rdInThread.start();
 				} else {
-
 					IO.copy(in, stdin);
 					stdin.close();
 				}
@@ -193,7 +195,8 @@ public class Command {
 		byte exitValue = (byte) process.waitFor();
 		finished.set(true);
 		if (rdInThread != null) {
-			IO.close(in);
+			if (in != System.in)
+				IO.close(in);
 			rdInThread.interrupt();
 		}
 
@@ -206,9 +209,12 @@ public class Command {
 		return exitValue;
 	}
 
+	public void add(String arg) {
+		arguments.add(arg);
+	}
+
 	public void add(String... args) {
-		for (String arg : args)
-			arguments.add(arg);
+		Collections.addAll(arguments, args);
 	}
 
 	public void addAll(Collection<String> args) {
@@ -271,6 +277,11 @@ public class Command {
 
 	public Command var(String name, String value) {
 		variables.put(name, value);
+		return this;
+	}
+
+	public Command arg(String arg) {
+		add(arg);
 		return this;
 	}
 

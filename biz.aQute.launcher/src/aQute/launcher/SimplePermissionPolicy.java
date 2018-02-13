@@ -50,7 +50,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 	SimplePermissionPolicy(Launcher launcher, BundleContext context) throws Exception {
 		this.launcher = launcher;
 		this.context = context;
-		bundles = new ArrayList<Bundle>();
+		bundles = new ArrayList<>();
 		context.addBundleListener(this);
 		PermissionAdmin permissionAdmin = getPermissionAdmin();
 		if (permissionAdmin == null) /* no permission admin service */ {
@@ -121,7 +121,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 	public PermissionInfo[] parse(InputStream in) throws IOException {
 		PermissionInfo[] info = null;
 		if (in != null) {
-			List<PermissionInfo> permissions = new ArrayList<PermissionInfo>();
+			List<PermissionInfo> permissions = new ArrayList<>();
 			try (BufferedReader reader = IO.reader(in, UTF_8)) {
 				String line;
 				while ((line = reader.readLine()) != null) {

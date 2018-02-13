@@ -116,7 +116,7 @@ public class ResolveCommand extends Processor {
 			if (!capabilities.isEmpty()) {
 				bnd.out.println("Capabilities:");
 				for (Capability cap : capabilities) {
-					Map<String,Object> attrs = new HashMap<String,Object>(cap.getAttributes());
+					Map<String,Object> attrs = new HashMap<>(cap.getAttributes());
 					Object id = attrs.remove(cap.getNamespace());
 					Object vv = attrs.remove("version");
 					if (vv == null)

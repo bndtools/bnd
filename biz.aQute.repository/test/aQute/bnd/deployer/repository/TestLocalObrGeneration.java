@@ -32,7 +32,7 @@ public class TestLocalObrGeneration extends TestCase {
 		// Setup the repo
 		reporter = new Processor();
 		repo = new LocalIndexedRepo();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String,String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "OBR");
 		repo.setProperties(config);

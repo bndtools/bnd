@@ -158,7 +158,7 @@ public final class RepoResourceUtils {
 			if (range != null && range.getLow() != null)
 				versionMap = versionMap.tailMap(range.getLow());
 
-			result = new ArrayList<Resource>(versionMap.size());
+			result = new ArrayList<>(versionMap.size());
 			for (Entry<Version,Resource> entry : versionMap.entrySet()) {
 				Version version = entry.getKey();
 				if (range == null || range.includes(version))

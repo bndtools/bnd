@@ -108,7 +108,7 @@ public class PermissionGenerator {
 	static final class FindReferencedServices extends ExpressionVisitor<Set<String>> {
 
 		public FindReferencedServices() {
-			super(Collections.<String> emptySet());
+			super(Collections.emptySet());
 		}
 
 		@Override

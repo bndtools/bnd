@@ -145,7 +145,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public HttpRequest<Object> build() {
-		return new HttpRequest<Object>(this);
+		return new HttpRequest<>(this);
 	}
 
 	public Object send(final HttpRequest< ? > request) throws Exception {
@@ -458,7 +458,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private synchronized Collection< ? extends ProxyHandler> getProxyHandlers() throws Exception {
 		if (proxyHandlers.isEmpty() && registry != null) {
 			List<ProxyHandler> proxyHandlers = registry.getPlugins(ProxyHandler.class);
-			proxyHandlers.addAll(proxyHandlers);
+			this.proxyHandlers.addAll(proxyHandlers);
 			logger.debug("Proxy handlers {}", proxyHandlers);
 		}
 		return proxyHandlers;
@@ -517,7 +517,7 @@ public class HttpClient implements Closeable, URLConnector {
 					|| code == HTTP_TEMPORARY_REDIRECT || code == HTTP_PERMANENT_REDIRECT) {
 				if (request.redirects-- > 0) {
 					String location = hcon.getHeaderField("Location");
-					request.url = new URL(location);
+					request.url = new URL(request.url, location);
 					task.done("Redirected " + code + " " + location, null);
 					return send0(request);
 				}

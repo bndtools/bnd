@@ -3,7 +3,10 @@ package aQute.bnd.maven.export.plugin;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -24,8 +27,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exporter.executable.ExecutableJarExporter;
+import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
@@ -135,14 +142,26 @@ public class ExportMojo extends AbstractMojo {
 				}
 			}
 			try {
+				Map<String, String> options = Collections.emptyMap();
 				if (bundlesOnly) {
-					File runbundlesDir = new File(targetDir, "export/" + bndrun);
-					IO.mkdirs(runbundlesDir);
-					run.exportRunbundles(null, runbundlesDir);
+					Entry<String, Resource> export = run.export(RunbundlesExporter.RUNBUNDLES, options);
+					if (export != null) {
+						try (JarResource r = (JarResource) export.getValue()) {
+							File runbundlesDir = new File(targetDir, "export/" + bndrun);
+							r.getJar()
+								.writeFolder(runbundlesDir);
+						}
+					}
 				} else {
-					File executableJar = new File(targetDir, bndrun + ".jar");
-					run.export(null, false, executableJar);
-					attach(executableJar, bndrun);
+					Entry<String, Resource> export = run.export(ExecutableJarExporter.EXECUTABLE_JAR, options);
+					if (export != null) {
+						try (JarResource r = (JarResource) export.getValue()) {
+							File executableJar = new File(targetDir, bndrun + ".jar");
+							r.getJar()
+								.write(executableJar);
+							attach(executableJar, bndrun);
+						}
+					}
 				}
 			} finally {
 				report(run);

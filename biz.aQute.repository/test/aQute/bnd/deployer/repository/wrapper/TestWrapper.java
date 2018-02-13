@@ -108,7 +108,8 @@ public class TestWrapper extends TestCase {
 
 		Map<Requirement,Collection<Capability>> result = iw.findProviders(Arrays.asList(req));
 		assertNotNull(result);
-		assertEquals(count, result.size());
+		assertEquals(count, result.get(req)
+			.size());
 
 		iw.close();
 
@@ -116,7 +117,8 @@ public class TestWrapper extends TestCase {
 
 		result = iw.findProviders(Arrays.asList(req));
 		assertNotNull(result);
-		assertEquals(count, result.size());
+		assertEquals(count, result.get(req)
+			.size());
 
 		iw.close();
 		for (InfoRepository r : repos) {

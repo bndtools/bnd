@@ -38,6 +38,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
+import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
@@ -158,12 +160,18 @@ public class Export extends DefaultTask {
       try {
         if (bundlesOnly) {
           logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
-          run.exportRunbundles(null, destinationDir)
+          def export = run.export(RUNBUNDLES, [:])
+          export?.value.withCloseable { jr ->
+            jr.getJar().writeFolder(destinationDir)
+          }
         } else {
           String name = bndrun.name - '.bndrun'
           File executableJar = new File(destinationDir, "${name}.jar")
           logger.info 'Creating an executable jar from {} to {}', run.getPropertiesFile(), executableJar.absolutePath
-          run.export(null, false, executableJar)
+          def export = run.export(EXECUTABLE_JAR, [:])
+          export?.value.withCloseable { jr ->
+            jr.getJar().write(executableJar)
+          }
         }
       } finally {
         logReport(run, logger)

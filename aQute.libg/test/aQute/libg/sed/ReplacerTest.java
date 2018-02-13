@@ -10,7 +10,7 @@ import junit.framework.TestCase;
 public class ReplacerTest extends TestCase {
 
 	static class Processor extends ReporterAdapter implements Domain {
-		final Map<String,String>	map	= new HashMap<String,String>();
+		final Map<String,String>	map	= new HashMap<>();
 		final Domain				parent;
 		final ReplacerAdapter		replacer;
 

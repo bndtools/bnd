@@ -45,13 +45,9 @@ public class ResolverLogger implements LogService, AutoCloseable {
 	}
 
 	public ResolverLogger(int level, PrintStream out) {
-		try {
-			this.level = level;
-			file = null;
-			printer = IO.writer(out, UTF_8);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		this.level = level;
+		file = null;
+		printer = IO.writer(out, UTF_8);
 	}
 
 	public void log(int level, String msg, Throwable throwable) {

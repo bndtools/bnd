@@ -26,7 +26,7 @@ public class FindProvidersTest extends TestCase {
 			Processor p = new Processor();
 			p.addBasicPlugin(httpClient);
 			repo.setRegistry(p);
-			Map<String,String> props = new HashMap<String,String>();
+			Map<String,String> props = new HashMap<>();
 			props.put("locations", IO.getFile("testdata/minir5.xml").toURI().toString());
 			props.put("name", getName());
 			props.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
@@ -51,7 +51,7 @@ public class FindProvidersTest extends TestCase {
 			Processor p = new Processor();
 			p.addBasicPlugin(httpClient);
 			repo.setRegistry(p);
-			Map<String,String> props = new HashMap<String,String>();
+			Map<String,String> props = new HashMap<>();
 			props.put("locations", IO.getFile("testdata/minir5.xml").toURI().toString());
 			props.put("name", getName());
 			props.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
@@ -70,7 +70,7 @@ public class FindProvidersTest extends TestCase {
 			Processor p = new Processor();
 			p.addBasicPlugin(httpClient);
 			repo.setRegistry(p);
-			Map<String,String> props = new HashMap<String,String>();
+			Map<String,String> props = new HashMap<>();
 			props.put("locations", IO.getFile("testdata/big_index.xml.gz").toURI().toString());
 			props.put("name", getName());
 			props.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
@@ -102,7 +102,7 @@ public class FindProvidersTest extends TestCase {
 			Processor p = new Processor();
 			p.addBasicPlugin(httpClient);
 			repo.setRegistry(p);
-			Map<String,String> props = new HashMap<String,String>();
+			Map<String,String> props = new HashMap<>();
 			props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
 			props.put("name", getName());
 			props.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
@@ -127,7 +127,7 @@ public class FindProvidersTest extends TestCase {
 
 	public void testResolveByHash() throws Exception {
 		OBR repo = new OBR();
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
 		repo.setProperties(props);
 
@@ -143,7 +143,7 @@ public class FindProvidersTest extends TestCase {
 
 	public void testResolveByHashWithAlgorithm() throws Exception {
 		OBR repo = new OBR();
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
 		repo.setProperties(props);
 
@@ -158,7 +158,7 @@ public class FindProvidersTest extends TestCase {
 
 	public void testResolveByHashWithWrongAlgorithm() throws Exception {
 		OBR repo = new OBR();
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
 		repo.setProperties(props);
 
@@ -171,7 +171,7 @@ public class FindProvidersTest extends TestCase {
 
 	public void testResolveByHashWithIdCheck() throws Exception {
 		OBR repo = new OBR();
-		Map<String,String> props = new HashMap<String,String>();
+		Map<String,String> props = new HashMap<>();
 		props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
 		repo.setProperties(props);
 

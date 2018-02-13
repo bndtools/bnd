@@ -7,6 +7,7 @@ import static org.example.tests.utils.Utils.deleteWithException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -57,7 +58,7 @@ public class TestCommandLine extends TestCase {
 	}
 
 	private void execute(String[] args, boolean runInTempDir) throws Exception {
-		List<String> cmdLine = new LinkedList<String>();
+		List<String> cmdLine = new LinkedList<>();
 		cmdLine.add("java");
 		// cmdLine.add("-Xdebug
 		// -Xrunjdwp:transport=dt_socket,server=y,address=9001,suspend=y");
@@ -70,9 +71,7 @@ public class TestCommandLine extends TestCase {
 			cmdLine.add(tempDir.getAbsolutePath());
 		}
 
-		for (String arg : args) {
-			cmdLine.add(arg);
-		}
+		Collections.addAll(cmdLine, args);
 
 		File runDir = runInTempDir ? tempDir : new File("generated").getAbsoluteFile();
 		System.out.println("Executing: " + cmdLine + " in directory " + runDir);

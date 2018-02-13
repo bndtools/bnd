@@ -26,7 +26,7 @@ public class Nexus {
 
 	public List<URI> files() throws Exception {
 		URI uri = new URI(this.uri + "/content/");
-		List<URI> uris = new ArrayList<URI>();
+		List<URI> uris = new ArrayList<>();
 
 		files(uris, uri);
 		return uris;

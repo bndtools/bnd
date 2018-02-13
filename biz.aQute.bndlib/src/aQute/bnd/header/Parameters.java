@@ -1,35 +1,36 @@
 package aQute.bnd.header;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collector;
 
 import aQute.lib.collections.SortedList;
 import aQute.service.reporter.Reporter;
 
 public class Parameters implements Map<String,Attrs> {
-	private LinkedHashMap<String,Attrs>	map;
-	static Map<String,Attrs>			EMPTY	= Collections.emptyMap();
-	String								error;
+	private final Map<String, Attrs>	map;
 	private final boolean				allowDuplicateAttributes;
 
 	public Parameters(boolean allowDuplicateAttributes) {
 		this.allowDuplicateAttributes = allowDuplicateAttributes;
+		map = new LinkedHashMap<>();
 	}
 
 	public Parameters() {
-		allowDuplicateAttributes = false;
+		this(false);
 	}
 
 	public Parameters(String header) {
-		allowDuplicateAttributes = false;
-		OSGiHeader.parseHeader(header, null, this);
+		this(header, null);
 	}
 
 	public Parameters(String header, Reporter reporter) {
-		allowDuplicateAttributes = false;
+		this(false);
 		OSGiHeader.parseHeader(header, reporter, this);
 	}
 
@@ -43,10 +44,7 @@ public class Parameters implements Map<String,Attrs> {
 		put(key, attrs);
 	}
 
-	public boolean containsKey(final String name) {
-		if (map == null)
-			return false;
-
+	public boolean containsKey(String name) {
 		return map.containsKey(name);
 	}
 
@@ -54,16 +52,10 @@ public class Parameters implements Map<String,Attrs> {
 	@Deprecated
 	public boolean containsKey(Object name) {
 		assert name instanceof String;
-		if (map == null)
-			return false;
-
 		return map.containsKey(name);
 	}
 
 	public boolean containsValue(Attrs value) {
-		if (map == null)
-			return false;
-
 		return map.containsValue(value);
 	}
 
@@ -71,16 +63,10 @@ public class Parameters implements Map<String,Attrs> {
 	@Deprecated
 	public boolean containsValue(Object value) {
 		assert value instanceof Attrs;
-		if (map == null)
-			return false;
-
 		return map.containsValue(value);
 	}
 
 	public Set<java.util.Map.Entry<String,Attrs>> entrySet() {
-		if (map == null)
-			return EMPTY.entrySet();
-
 		return map.entrySet();
 	}
 
@@ -88,46 +74,34 @@ public class Parameters implements Map<String,Attrs> {
 	@Deprecated
 	public Attrs get(Object key) {
 		assert key instanceof String;
-		if (map == null)
-			return null;
-
 		return map.get(key);
 	}
 
 	public Attrs get(String key) {
-		if (map == null)
-			return null;
-
 		return map.get(key);
 	}
 
 	public boolean isEmpty() {
-		return map == null || map.isEmpty();
+		return map.isEmpty();
 	}
 
 	public Set<String> keySet() {
-		if (map == null)
-			return EMPTY.keySet();
-
 		return map.keySet();
+	}
+
+	public List<String> keyList() {
+		return keySet().stream()
+			.map(this::removeDuplicateMarker)
+			.collect(toList());
 	}
 
 	public Attrs put(String key, Attrs value) {
 		assert key != null;
 		assert value != null;
-
-		if (map == null)
-			map = new LinkedHashMap<String,Attrs>();
-
 		return map.put(key, value);
 	}
 
 	public void putAll(Map< ? extends String, ? extends Attrs> map) {
-		if (this.map == null) {
-			if (map.isEmpty())
-				return;
-			this.map = new LinkedHashMap<String,Attrs>();
-		}
 		this.map.putAll(map);
 	}
 
@@ -142,28 +116,18 @@ public class Parameters implements Map<String,Attrs> {
 	@Deprecated
 	public Attrs remove(Object var0) {
 		assert var0 instanceof String;
-		if (map == null)
-			return null;
-
 		return map.remove(var0);
 	}
 
 	public Attrs remove(String var0) {
-		if (map == null)
-			return null;
 		return map.remove(var0);
 	}
 
 	public int size() {
-		if (map == null)
-			return 0;
 		return map.size();
 	}
 
 	public Collection<Attrs> values() {
-		if (map == null)
-			return EMPTY.values();
-
 		return map.values();
 	}
 
@@ -188,10 +152,12 @@ public class Parameters implements Map<String,Attrs> {
 		}
 	}
 
-	private Object removeDuplicateMarker(String key) {
-		while (key.endsWith("~"))
-			key = key.substring(0, key.length() - 1);
-		return key;
+	private String removeDuplicateMarker(String key) {
+		int i = key.length() - 1;
+		while (i >= 0 && key.charAt(i) == '~')
+			--i;
+
+		return key.substring(0, i + 1);
 	}
 
 	@Override
@@ -216,8 +182,8 @@ public class Parameters implements Map<String,Attrs> {
 		if (isEmpty())
 			return true;
 
-		SortedList<String> l = new SortedList<String>(keySet());
-		SortedList<String> lo = new SortedList<String>(other.keySet());
+		SortedList<String> l = new SortedList<>(keySet());
+		SortedList<String> lo = new SortedList<>(other.keySet());
 		if (!l.isEqual(lo))
 			return false;
 
@@ -249,5 +215,16 @@ public class Parameters implements Map<String,Attrs> {
 
 	public boolean allowDuplicateAttributes() {
 		return allowDuplicateAttributes;
+	}
+
+	public static Collector<String, Parameters, Parameters> toParameters() {
+		return Collector.of(Parameters::new, Parameters::accumulator, Parameters::combiner);
+	}
+	private static void accumulator(Parameters p, String s) {
+		OSGiHeader.parseHeader(s, null, p);
+	}
+	private static Parameters combiner(Parameters t, Parameters u) {
+		t.mergeWith(u, true);
+		return t;
 	}
 }

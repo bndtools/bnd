@@ -31,7 +31,7 @@ public class Clauses extends LinkedHashMap<String,Map<String,String>> {
 		do {
 			boolean hadAttribute = false;
 			Clause clause = new Clause();
-			List<String> aliases = new ArrayList<String>();
+			List<String> aliases = new ArrayList<>();
 			aliases.add(qt.nextToken());
 			del = qt.getSeparator();
 			while (del == ';') {

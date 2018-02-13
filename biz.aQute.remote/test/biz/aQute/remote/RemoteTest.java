@@ -37,7 +37,7 @@ public class RemoteTest extends TestCase {
 	protected void setUp() throws Exception {
 		try {
 			tmp = IO.getFile("generated/tmp");
-			configuration = new HashMap<String,Object>();
+			configuration = new HashMap<>();
 			configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 			configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
 			configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.osgi.framework.launch;version=1.2");
@@ -123,7 +123,7 @@ public class RemoteTest extends TestCase {
 		String sha1 = supervisor.addFile(t1);
 		String sha2 = supervisor.addFile(t2);
 
-		Map<String,String> update = new HashMap<String,String>();
+		Map<String,String> update = new HashMap<>();
 		update.put(t1.getAbsolutePath(), sha1);
 
 		String errors = supervisor.getAgent().update(update);
@@ -142,7 +142,7 @@ public class RemoteTest extends TestCase {
 		// Now add a new one
 		//
 
-		update = new HashMap<String,String>();
+		update = new HashMap<>();
 		update.put(t1.getAbsolutePath(), sha1);
 		update.put(t2.getAbsolutePath(), sha2);
 		errors = supervisor.getAgent().update(update);
@@ -156,7 +156,7 @@ public class RemoteTest extends TestCase {
 
 		t1 = create("bsn-1", new Version(2, 0, 0));
 		sha1 = supervisor.addFile(t1);
-		update = new HashMap<String,String>();
+		update = new HashMap<>();
 		update.put(t1.getAbsolutePath(), sha1);
 		update.put(t2.getAbsolutePath(), sha2);
 		errors = supervisor.getAgent().update(update);
@@ -174,7 +174,7 @@ public class RemoteTest extends TestCase {
 		// Now delete t1
 		//
 
-		update = new HashMap<String,String>();
+		update = new HashMap<>();
 		update.put(t2.getAbsolutePath(), sha2);
 		errors = supervisor.getAgent().update(update);
 		assertNull(errors);
@@ -193,8 +193,8 @@ public class RemoteTest extends TestCase {
 		LauncherSupervisor supervisor = new LauncherSupervisor();
 		supervisor.connect("localhost", Agent.DEFAULT_PORT);
 
-		List<String> bundles = new ArrayList<String>();
-		LinkedHashMap<String,String> update = new LinkedHashMap<String,String>();
+		List<String> bundles = new ArrayList<>();
+		LinkedHashMap<String,String> update = new LinkedHashMap<>();
 
 		for (int i = 0; i < 50; i++) {
 			String name = UUID.randomUUID().toString();

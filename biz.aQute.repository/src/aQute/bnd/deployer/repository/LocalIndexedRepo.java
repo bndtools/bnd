@@ -65,7 +65,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	private String				onlydirs				= null;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI>		newFilesInCoordination	= new LinkedList<URI>();
+	private final List<URI>		newFilesInCoordination	= new LinkedList<>();
 	private static final String	EMPTY_LOCATION			= "";
 
 	public static final String	PROP_LOCATIONS			= "locations";
@@ -129,7 +129,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 					String.format("Invalid location, unable to parse as URL list: %s", locations), e);
 		}
 
-		List<URI> indexes = new ArrayList<URI>(remotes.size() + generatingProviders.size());
+		List<URI> indexes = new ArrayList<>(remotes.size() + generatingProviders.size());
 
 		for (IRepositoryContentProvider contentProvider : generatingProviders) {
 			File indexFile = getIndexFile(contentProvider);
@@ -206,7 +206,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 			throw new IllegalArgumentException(String.format(
 					"Cannot create file: '%s' already exists but is not a plain file.", indexFile.getAbsoluteFile()));
 
-		Set<File> allFiles = new HashSet<File>();
+		Set<File> allFiles = new HashSet<>();
 		gatherFiles(allFiles);
 
 		IO.mkdirs(storageDir);
@@ -228,7 +228,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		if (!storageDir.isDirectory())
 			return;
 
-		LinkedList<File> files = new LinkedList<File>();
+		LinkedList<File> files = new LinkedList<>();
 		String[] onlydirsFiles = null;
 		if (onlydirs != null) {
 			String[] onlydirs2 = onlydirs.split(",");
@@ -245,7 +245,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 
 	private void listRecurse(final Pattern pattern, final String[] onlydirsFiles, File root, File dir,
 			LinkedList<File> files) {
-		final LinkedList<File> dirs = new LinkedList<File>();
+		final LinkedList<File> dirs = new LinkedList<>();
 		File[] moreFiles = dir.listFiles(new FileFilter() {
 
 			public boolean accept(File f) {
@@ -289,7 +289,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		reset();
 		regenerateAllIndexes();
 
-		List<URI> clone = new ArrayList<URI>(newFilesInCoordination);
+		List<URI> clone = new ArrayList<>(newFilesInCoordination);
 		synchronized (newFilesInCoordination) {
 			newFilesInCoordination.clear();
 		}
@@ -306,7 +306,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	public void failed(Coordination coordination) throws Exception {
 		ArrayList<URI> clone;
 		synchronized (newFilesInCoordination) {
-			clone = new ArrayList<URI>(newFilesInCoordination);
+			clone = new ArrayList<>(newFilesInCoordination);
 			newFilesInCoordination.clear();
 		}
 		for (URI entry : clone) {
@@ -470,7 +470,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	}
 
 	public Map<String,Runnable> actions(Object... target) throws Exception {
-		Map<String,Runnable> map = new HashMap<String,Runnable>();
+		Map<String,Runnable> map = new HashMap<>();
 		map.put("Refresh", new Runnable() {
 
 			public void run() {

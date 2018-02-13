@@ -19,10 +19,10 @@ public class AnnotationsTest extends TestCase {
 	public static void testNestedAnnotations() throws Exception {
 		try (Analyzer analyzer = new Analyzer();) {
 			TypeRef typeref = analyzer.getTypeRefFromFQN(ActualAnnotation.class.getName());
-			Map<String,Object> annMap = (Map) Collections.singletonMap("a", 5);
+			Map<String,Object> annMap = Collections.singletonMap("a", 5);
 			Annotation annotation = new Annotation(typeref, annMap, ElementType.FIELD, RetentionPolicy.RUNTIME);
 
-			Map<String,Object> properties = (Map) Collections.singletonMap("ann", annotation);
+			Map<String,Object> properties = Collections.singletonMap("ann", annotation);
 			ConfigurableInterface a = Configurable.createConfigurable(ConfigurableInterface.class, properties);
 
 			assertNotNull(a);

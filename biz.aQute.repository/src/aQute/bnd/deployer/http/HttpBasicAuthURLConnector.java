@@ -63,7 +63,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	}
 
 	private final AtomicBoolean	inited				= new AtomicBoolean(false);
-	private final List<Mapping>	mappings			= new LinkedList<Mapping>();
+	private final List<Mapping>	mappings			= new LinkedList<>();
 
 	private Reporter			reporter;
 	private String				configFileList;

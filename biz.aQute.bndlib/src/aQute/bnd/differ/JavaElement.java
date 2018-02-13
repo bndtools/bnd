@@ -29,7 +29,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -146,7 +145,7 @@ class JavaElement {
 		// creating the packages yet because we do not yet know
 		// which classes are accessible
 
-		packages = new MultiMap<PackageRef,Element>();
+		packages = new MultiMap<>();
 
 		for (Clazz c : analyzer.getClassspace().values()) {
 
@@ -172,20 +171,15 @@ class JavaElement {
 	}
 
 	private Element getLocalAPI() throws Exception {
-		Set<Element> result = new HashSet<Element>();
+		Set<Element> result = new HashSet<>();
 
 		for (Map.Entry<PackageRef,List<Element>> entry : packages.entrySet()) {
 			List<Element> set = entry.getValue();
-			for (Iterator<Element> i = set.iterator(); i.hasNext();) {
-
-				if (notAccessible.contains(analyzer.getTypeRefFromFQN(i.next().getName())))
-					i.remove();
-
-			}
+			set.removeIf(element -> notAccessible.contains(analyzer.getTypeRefFromFQN(element.getName())));
 			String version = exports.get(entry.getKey()).get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {
 				Version v = new Version(version);
-				set.add(new Element(VERSION, v.getWithoutQualifier().toString(), null, IGNORED, IGNORED, null));
+				set.add(new Element(VERSION, v.toStringWithoutQualifier(), null, IGNORED, IGNORED, null));
 			}
 			Element pd = new Element(PACKAGE, entry.getKey().getFQN(), set, MINOR, MAJOR, null);
 			result.add(pd);
@@ -217,7 +211,7 @@ class JavaElement {
 		final Set<Element> members = Create.set();
 		final Set<MethodDef> methods = Create.set();
 		final Set<Clazz.FieldDef> fields = Create.set();
-		final MultiMap<Clazz.Def,Element> annotations = new MultiMap<Clazz.Def,Element>();
+		final MultiMap<Clazz.Def,Element> annotations = new MultiMap<>();
 
 		final TypeRef name = clazz.getClassName();
 
@@ -527,7 +521,7 @@ class JavaElement {
 			}
 			Collection<Element> children = annotations.get(m);
 			if (children == null)
-				children = new HashSet<Element>();
+				children = new HashSet<>();
 
 			access(children, m.getAccess(), m.isDeprecated(), provider.get());
 
@@ -575,7 +569,7 @@ class JavaElement {
 			}
 			Collection<Element> children = annotations.get(f);
 			if (children == null)
-				children = new HashSet<Element>();
+				children = new HashSet<>();
 
 			// Fields can have a constant value, this is a new element
 			if (f.getConstant() != null) {

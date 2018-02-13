@@ -19,7 +19,7 @@ import aQute.lib.collections.SortedList;
 
 public class VersionedResourceIndex {
 
-	private final Map<String,SortedMap<Version,Resource>> map = new HashMap<String,SortedMap<Version,Resource>>();
+	private final Map<String,SortedMap<Version,Resource>> map = new HashMap<>();
 
 	public synchronized void clear() {
 		map.clear();
@@ -33,7 +33,7 @@ public class VersionedResourceIndex {
 		SortedMap<Version,Resource> versionMap = map.get(bsn);
 		if (versionMap == null || versionMap.isEmpty())
 			return SortedList.empty();
-		return new SortedList<Version>(versionMap.keySet());
+		return new SortedList<>(versionMap.keySet());
 	}
 
 	public synchronized List<Resource> getRange(String bsn, String range) {
@@ -51,7 +51,7 @@ public class VersionedResourceIndex {
 		Version version = getResourceVersion(resource);
 		SortedMap<Version,Resource> versionMap = map.get(id);
 		if (versionMap == null) {
-			versionMap = new TreeMap<Version,Resource>();
+			versionMap = new TreeMap<>();
 			map.put(id, versionMap);
 		}
 		versionMap.put(version, resource);

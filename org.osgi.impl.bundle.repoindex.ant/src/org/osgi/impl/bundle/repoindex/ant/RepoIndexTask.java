@@ -33,8 +33,8 @@ import de.kalpatec.pojosr.framework.launch.PojoServiceRegistryFactory;
 @SuppressWarnings("restriction")
 public class RepoIndexTask extends Task {
 
-	private final List<FileSet>			fileSets			= new LinkedList<FileSet>();
-	private final Map<String,String>	config				= new HashMap<String,String>();
+	private final List<FileSet>			fileSets			= new LinkedList<>();
+	private final Map<String,String>	config				= new HashMap<>();
 
 	private File						repositoryFile		= null;
 	private boolean						knownBundles;
@@ -90,7 +90,7 @@ public class RepoIndexTask extends Task {
 
 		try {
 			// Configure PojoSR
-			Map<String,Object> pojoSrConfig = new HashMap<String,Object>();
+			Map<String,Object> pojoSrConfig = new HashMap<>();
 			pojoSrConfig.put(PojoServiceRegistryFactory.BUNDLE_DESCRIPTORS, new ClasspathScanner());
 
 			// Start PojoSR 'framework'
@@ -103,7 +103,7 @@ public class RepoIndexTask extends Task {
 			}
 
 			// Look for indexer and run index generation
-			ServiceTracker<ResourceIndexer,ResourceIndexer> tracker = new ServiceTracker<ResourceIndexer,ResourceIndexer>(
+			ServiceTracker<ResourceIndexer,ResourceIndexer> tracker = new ServiceTracker<>(
 					framework.getBundleContext(), ResourceIndexer.class, null);
 			tracker.open();
 			ResourceIndexer index = tracker.waitForService(1000);
@@ -111,7 +111,7 @@ public class RepoIndexTask extends Task {
 				throw new IllegalStateException("Timed out waiting for ResourceIndexer service.");
 
 			// Flatten the file sets into a single list
-			Set<File> fileList = new LinkedHashSet<File>();
+			Set<File> fileList = new LinkedHashSet<>();
 			for (FileSet fileSet : fileSets) {
 				DirectoryScanner ds = fileSet.getDirectoryScanner(getProject());
 				File basedir = ds.getBasedir();

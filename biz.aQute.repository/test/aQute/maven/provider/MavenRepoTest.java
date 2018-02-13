@@ -44,8 +44,8 @@ public class MavenRepoTest extends TestCase {
 		local.mkdirs();
 		HttpClient client = new HttpClient();
 		repo = MavenBackingRepository.create(fnx.getBaseURI() + "/repo/", reporter, local, client);
-		storage = new MavenRepository(local, "fnexus", this.repo, this.repo, client.promiseFactory().executor(), null,
-				null);
+		storage = new MavenRepository(local, "fnexus", this.repo, this.repo, client.promiseFactory()
+			.executor(), null);
 	}
 
 	@Override

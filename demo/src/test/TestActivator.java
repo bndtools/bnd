@@ -73,7 +73,7 @@ public class TestActivator implements BundleActivator {
 				System.exit(15);
 
 		} else if ("agent".equals(p)) {
-			Hashtable<String,Object> ht = new Hashtable<String,Object>();
+			Hashtable<String,Object> ht = new Hashtable<>();
 			ht.put("main.thread", true);
 			context.registerService(Callable.class.getName(), new Callable<Integer>() {
 

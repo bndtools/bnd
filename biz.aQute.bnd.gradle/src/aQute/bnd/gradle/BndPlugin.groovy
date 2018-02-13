@@ -14,6 +14,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
+import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.osgi.Processor.isTrue
 
@@ -51,12 +53,12 @@ public class BndPlugin implements Plugin<Project> {
       if (plugins.hasPlugin(BndBuilderPlugin.PLUGINID)) {
           throw new GradleException("Project already has '${BndBuilderPlugin.PLUGINID}' plugin applied.")
       }
-      if (!rootProject.hasProperty('bndWorkspace')) {
-        rootProject.ext.bndWorkspace = new Workspace(rootDir).setOffline(rootProject.gradle.startParameter.offline)
+      if (!parent.hasProperty('bndWorkspace')) {
+        parent.ext.bndWorkspace = new Workspace(parent.projectDir).setOffline(gradle.startParameter.offline)
       }
       this.bndProject = bndWorkspace.getProject(name)
       if (bndProject == null) {
-        throw new GradleException("Unable to load bnd project ${name} from workspace ${rootDir}")
+        throw new GradleException("Unable to load bnd project ${name} from workspace ${parent.projectDir}")
       }
       bndProject.prepare()
       if (!bndProject.isValid()) {
@@ -151,7 +153,7 @@ public class BndPlugin implements Plugin<Project> {
           }
           if (!javacBootclasspath.empty) {
             fork = true
-            if (hasProperty('bootstrapClasspath')) { // gradle 4.3
+            if (delegate.hasProperty('bootstrapClasspath')) { // gradle 4.3
               bootstrapClasspath = javacBootclasspath
             } else {
               bootClasspath = javacBootclasspath.asPath
@@ -358,7 +360,10 @@ public class BndPlugin implements Plugin<Project> {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
                   try {
-                    run.export(null, false, executableJar)
+                    def export = run.export(EXECUTABLE_JAR, [:])
+                    export?.value.withCloseable { jr ->
+                      jr.getJar().write(executableJar)
+                    }
                   } catch (Exception e) {
                     throw new GradleException("Export of ${run.getPropertiesFile()} to an executable jar failed", e)
                   }
@@ -402,7 +407,10 @@ public class BndPlugin implements Plugin<Project> {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
                   try {
-                      run.exportRunbundles(null, destinationDir)
+                    def export = run.export(RUNBUNDLES, [:])
+                    export?.value.withCloseable { jr ->
+                      jr.getJar().writeFolder(destinationDir)
+                    }
                   } catch (Exception e) {
                     throw new GradleException("Creating a distribution of the runbundles in ${run.getPropertiesFile()} failed", e)
                   }
@@ -541,7 +549,7 @@ public class BndPlugin implements Plugin<Project> {
 Project ${project.name}
 ------------------------------------------------------------
 
-project.workspace:      ${rootDir}
+project.workspace:      ${parent.projectDir}
 project.name:           ${project.name}
 project.dir:            ${projectDir}
 target:                 ${buildDir}
@@ -553,9 +561,9 @@ project.allsourcepath:  ${bnd.allSrcDirs.asPath}
 project.testsrc:        ${sourceSets.test.java.sourceDirectories.asPath}
 project.testoutput:     ${compileTestJava.destinationDir}
 project.testpath:       ${compileTestJava.classpath.asPath}
-project.bootclasspath:  ${compileJava.options.bootClasspath}
+project.bootclasspath:  ${compileJava.options.hasProperty('bootstrapClasspath')?compileJava.options.bootstrapClasspath?.asPath?:'':compileJava.options.bootClasspath?:''}
 project.deliverables:   ${configurations.archives.artifacts.files*.path}
-javac:                  ${compileJava.options.forkOptions.executable}
+javac:                  ${compileJava.options.forkOptions.executable?:'javac'}
 javac.source:           ${compileJava.sourceCompatibility}
 javac.target:           ${compileJava.targetCompatibility}
 javac.profile:          ${javacProfile}
@@ -588,7 +596,7 @@ Project ${project.name}
       builtBy path.findAll { Container c ->
         c.getType() == TYPE.PROJECT
       }.collect { Container c ->
-        ":${c.getProject().getName()}:jar"
+        "${project.parent.absoluteProjectPath(c.getProject().getName())}:jar"
       }
     }
   }
@@ -596,7 +604,7 @@ Project ${project.name}
   private Closure buildDependencies(String taskName, Closure transformer = { it }) {
     return {
       bndProject.getBuildDependencies()*.getName().collect { String dependency ->
-        transformer(":${dependency}:${taskName}")
+        transformer("${project.parent.absoluteProjectPath(dependency)}:${taskName}")
       }
     }
   }
@@ -604,7 +612,7 @@ Project ${project.name}
   private Closure testDependencies(String taskName, Closure transformer = { it }) {
     return {
       bndProject.getTestDependencies()*.getName().collect { String dependency ->
-        transformer(":${dependency}:${taskName}")
+        transformer("${project.parent.absoluteProjectPath(dependency)}:${taskName}")
       }
     }
   }
@@ -612,7 +620,7 @@ Project ${project.name}
   private Closure dependents(String taskName, Closure transformer = { it }) {
     return {
       bndProject.getDependents()*.getName().collect { String dependency ->
-        transformer(":${dependency}:${taskName}")
+        transformer("${project.parent.absoluteProjectPath(dependency)}:${taskName}")
       }
     }
   }
@@ -621,13 +629,13 @@ Project ${project.name}
     checkProjectErrors(bndProject, logger, ignoreFailures)
   }
 
-  private void checkProjectErrors(aQute.bnd.build.Project project, Logger logger, boolean ignoreFailures = false) {
-    project.getInfo(project.getWorkspace(), "${project.getWorkspace().getBase().name} :")
-    boolean failed = !ignoreFailures && !project.isOk()
-    int errorCount = project.getErrors().size()
-    logReport(project, logger)
-    project.getWarnings().clear()
-    project.getErrors().clear()
+  private void checkProjectErrors(aQute.bnd.build.Project p, Logger logger, boolean ignoreFailures = false) {
+    p.getInfo(p.getWorkspace(), "${p.getWorkspace().getBase().name} :")
+    boolean failed = !ignoreFailures && !p.isOk()
+    int errorCount = p.getErrors().size()
+    logReport(p, logger)
+    p.getWarnings().clear()
+    p.getErrors().clear()
     if (failed) {
       String str = ' even though no errors were reported'
       if (errorCount == 1) {
@@ -635,7 +643,7 @@ Project ${project.name}
       } else if (errorCount > 1) {
         str = ", ${errorCount} errors were reported"
       }
-      throw new GradleException("${project.getName()} has errors${str}")
+      throw new GradleException("${p.getName()} has errors${str}")
     }
   }
 }

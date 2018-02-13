@@ -52,7 +52,7 @@ public class InfoRepositoryWrapper extends BaseRepository {
 
 		this.repoIndexer.addAnalyzer(knownBundleAnalyzer, FrameworkUtil.createFilter("(name=*)"));
 		this.repos = repos;
-		this.persistent = new PersistentMap<PersistentResource>(dir, PersistentResource.class);
+		this.persistent = new PersistentMap<>(dir, PersistentResource.class);
 	}
 
 	boolean init() {
@@ -63,15 +63,15 @@ public class InfoRepositoryWrapper extends BaseRepository {
 			lastTime = System.currentTimeMillis();
 		}
 
-		Set<String> errors = new LinkedHashSet<String>();
+		Set<String> errors = new LinkedHashSet<>();
 
 		try {
 			//
 			// Get the current repo contents
 			//
 
-			Set<String> toBeDeleted = new HashSet<String>(persistent.keySet());
-			Map<String,DownloadBlocker> blockers = new HashMap<String,DownloadBlocker>();
+			Set<String> toBeDeleted = new HashSet<>(persistent.keySet());
+			Map<String,DownloadBlocker> blockers = new HashMap<>();
 
 			for (InfoRepository repo : repos) {
 				Map<String,ResourceDescriptor> map = collectKeys(repo);
@@ -168,10 +168,12 @@ public class InfoRepositoryWrapper extends BaseRepository {
 			throws Exception {
 		init();
 
-		nextReq: for (Requirement req : requirements) {
+		for (Requirement req : requirements) {
+			result.putIfAbsent(req, new ArrayList<>(1));
+
 			String f = req.getDirectives().get("filter");
 			if (f == null)
-				continue nextReq;
+				continue;
 
 			Filter filter = new Filter(f);
 
@@ -179,10 +181,8 @@ public class InfoRepositoryWrapper extends BaseRepository {
 				Resource resource = presource.getResource();
 				for (Capability cap : resource.getCapabilities(req.getNamespace())) {
 					if (filter.matchMap(cap.getAttributes())) {
-						List<Capability> l = result.get(req);
-						if (l == null)
-							result.put(req, l = new ArrayList<Capability>());
-						l.add(cap);
+						result.get(req)
+							.add(cap);
 					}
 				}
 			}
@@ -193,7 +193,7 @@ public class InfoRepositoryWrapper extends BaseRepository {
 			"unchecked", "rawtypes"
 	})
 	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		MultiMap<Requirement,Capability> result = new MultiMap<Requirement,Capability>();
+		MultiMap<Requirement,Capability> result = new MultiMap<>();
 		try {
 			findProviders(result, requirements);
 			return (Map) result;
@@ -206,7 +206,7 @@ public class InfoRepositoryWrapper extends BaseRepository {
 	 * Get all the shas from the repo
 	 */
 	private Map<String,ResourceDescriptor> collectKeys(InfoRepository repo) throws Exception {
-		Map<String,ResourceDescriptor> map = new HashMap<String,ResourceDescriptor>();
+		Map<String,ResourceDescriptor> map = new HashMap<>();
 
 		for (String bsn : repo.list(null)) {
 			for (Version version : repo.versions(bsn)) {
