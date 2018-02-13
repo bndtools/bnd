@@ -119,8 +119,8 @@ public abstract class RepositoryEntry implements IAdaptable {
             return repo.get(bsn, version, Collections.emptyMap());
         } catch (Exception e) {
             Throwable t = e;
-            while (t instanceof InvocationTargetException) {
-                t = t.getCause(); // unwrap exception
+            for (Throwable cause; (t instanceof InvocationTargetException) && ((cause = t.getCause()) != null);) {
+                t = cause; // unwrap exception
             }
             logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", repo.getName(), bsn, versionFinder), t);
             return null;
