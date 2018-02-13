@@ -33,8 +33,10 @@ import java.security.Policy;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Enumeration;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.IllegalFormatException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -228,8 +230,8 @@ public class Launcher implements ServiceListener {
 
 		setupComms();
 
-		trace("properties " + properties);
-		trace("inited runbundles=%s activators=%s timeout=%s properties=%s", parms.runbundles, parms.activators,
+		trace("properties %s", properties);
+		trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators,
 				parms.timeout);
 
 		if (propertiesFile != null && parms.embedded == false) {
@@ -293,7 +295,7 @@ public class Launcher implements ServiceListener {
 				System.exit(status);
 			}
 
-			trace("framework=" + systemBundle);
+			trace("framework=%s", systemBundle);
 
 			// Register the command line with ourselves as the
 			// service.
@@ -333,7 +335,7 @@ public class Launcher implements ServiceListener {
 			}
 			trace("will call main");
 			Integer exitCode = mainThread.call();
-			trace("main return, code " + exitCode);
+			trace("main return, code %s", exitCode);
 			return exitCode == null ? 0 : exitCode;
 		} catch (Throwable e) {
 			error("Unexpected error in the run body: %s", e);
@@ -484,7 +486,7 @@ public class Launcher implements ServiceListener {
 					failed.add(b.getSymbolicName() + "-" + b.getVersion() + " " + e + "\n");
 				}
 			}
-			error("could not resolve the bundles: " + failed);
+			error("could not resolve the bundles: %s", failed);
 			// return LauncherConstants.RESOLVE_ERROR;
 		}
 
@@ -803,7 +805,7 @@ public class Launcher implements ServiceListener {
 						return;
 					}
 
-					trace("framework event " + result + " " + result.getType());
+					trace("framework event %s %s", result, result.getType());
 					switch (result.getType()) {
 						case FrameworkEvent.STOPPED :
 							trace("framework event stopped");
@@ -873,7 +875,7 @@ public class Launcher implements ServiceListener {
 			{
 				for (Thread t : threads) {
 					if (t != null && !t.isDaemon() && t.isAlive()) {
-						trace("alive thread " + t);
+						trace("alive thread %s", t);
 					}
 				}
 			}
@@ -1022,7 +1024,7 @@ public class Launcher implements ServiceListener {
 			try (BufferedReader rdr = IO.reader(url.openStream(), UTF_8)) {
 				String line;
 				while ((line = rdr.readLine()) != null) {
-					trace(line);
+					trace("%s", line);
 					line = line.trim();
 					if (!line.startsWith("#") && line.length() > 0) {
 						factories.add(line);
@@ -1271,7 +1273,7 @@ public class Launcher implements ServiceListener {
 	@SuppressWarnings("unchecked")
 	public synchronized void serviceChanged(ServiceEvent event) {
 		if (event.getType() == ServiceEvent.REGISTERED) {
-			trace("service event " + event);
+			trace("service event %s", event);
 			final Object service = systemBundle.getBundleContext().getService(event.getServiceReference());
 			String[] objectclasses = (String[]) event.getServiceReference().getProperty(Constants.OBJECTCLASS);
 
@@ -1314,46 +1316,29 @@ public class Launcher implements ServiceListener {
 
 	private void message(String prefix, String string, Object[] objects) {
 		Throwable e = null;
-
-		StringBuilder sb = new StringBuilder();
-		int n = 0;
-		sb.append(prefix);
-		for (int i = 0; i < string.length(); i++) {
-			char c = string.charAt(i);
-			if (c == '%') {
-				c = string.charAt(++i);
-				switch (c) {
-					case 's' :
-						if (n < objects.length) {
-							Object o = objects[n++];
-							if (o instanceof Throwable) {
-								Throwable t = e = (Throwable) o;
-								if (t instanceof BundleException) {
-									sb.append(translateToMessage((BundleException) t));
-								} else {
-									while (t instanceof InvocationTargetException) {
-										Throwable cause = t.getCause();
-										if (cause == null) {
-											break;
-										}
-										t = cause;
-									}
-									sb.append(t.getMessage());
-								}
-							} else {
-								sb.append(o);
-							}
-						} else
-							sb.append("<no more arguments>");
-						break;
-
-					default :
-						sb.append(c);
+		for (int n = 0; n < objects.length; n++) {
+			Object o = objects[n];
+			if (o instanceof Throwable) {
+				Throwable t = e = (Throwable) o;
+				if (t instanceof BundleException) {
+					objects[n] = translateToMessage((BundleException) t);
+				} else {
+					for (Throwable cause; (t instanceof InvocationTargetException)
+						&& ((cause = t.getCause()) != null);) {
+						t = cause; // unwrap exception
+					}
+					objects[n] = t.getMessage();
 				}
-			} else {
-				sb.append(c);
 			}
 		}
+
+		StringBuilder sb = new StringBuilder(prefix);
+		try (Formatter f = new Formatter(sb)) {
+			f.format(string, objects);
+		} catch (IllegalFormatException fe) {
+			sb.append(fe);
+		}
+
 		String message = sb.toString();
 		out.println(message);
 		if (e != null)
