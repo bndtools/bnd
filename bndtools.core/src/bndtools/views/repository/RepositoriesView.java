@@ -10,6 +10,8 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +24,6 @@ import java.util.regex.Pattern;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.core.ui.icons.Icons;
-import org.bndtools.utils.collections.IdentityHashSet;
 import org.bndtools.utils.swt.FilterPanelPart;
 import org.bndtools.utils.swt.SWTUtil;
 import org.eclipse.core.filesystem.EFS;
@@ -677,10 +678,11 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
 
                 // The set of Repos included in the selection; they will be completely downloaded.
-                Set<RemoteRepositoryPlugin> repos = new IdentityHashSet<>(selectionByType(selection, RemoteRepositoryPlugin.class));
+                Set<RemoteRepositoryPlugin> repos = Collections.newSetFromMap(new IdentityHashMap<>());
+                repos.addAll(selectionByType(selection, RemoteRepositoryPlugin.class));
 
                 // The set of Bundles included in the selection.
-                Set<RepositoryBundle> bundles = new IdentityHashSet<RepositoryBundle>();
+                Set<RepositoryBundle> bundles = Collections.newSetFromMap(new IdentityHashMap<>());
                 for (RepositoryBundle bundle : selectionByType(selection, RepositoryBundle.class)) {
                     // filter out bundles that come from already-selected repos.
                     if (!repos.contains(bundle.getRepo()))
@@ -688,7 +690,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 }
 
                 // The set of Bundle Versions included in the selection
-                Set<RepositoryBundleVersion> bundleVersions = new IdentityHashSet<RepositoryBundleVersion>();
+                Set<RepositoryBundleVersion> bundleVersions = Collections.newSetFromMap(new IdentityHashMap<>());
                 for (RepositoryBundleVersion bundleVersion : selectionByType(selection, RepositoryBundleVersion.class)) {
                     // filter out bundles that come from already-selected repos.
                     if (!repos.contains(bundleVersion.getRepo()))
