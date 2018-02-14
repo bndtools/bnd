@@ -215,7 +215,7 @@ public class DiffTest extends TestCase {
 	}
 
 	public void testAwtGeom() throws Exception {
-		Tree newer = differ.tree(IO.getFile("../cnf/repo/ee.j2se/ee.j2se-1.6.0.jar"));
+		Tree newer = differ.tree(IO.getFile("jar/ee.j2se-1.6.0.jar"));
 		Tree gp = newer.get("<api>").get("java.awt.geom").get("java.awt.geom.GeneralPath");
 		assertNotNull(gp);
 		show(gp, 0);
