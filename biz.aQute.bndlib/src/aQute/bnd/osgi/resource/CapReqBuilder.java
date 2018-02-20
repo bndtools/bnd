@@ -668,4 +668,15 @@ public class CapReqBuilder {
 		req.and(sb.toString());
 		return req;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append('[')
+			.append(namespace)
+			.append('[');
+		sb.append(attributes);
+		sb.append(directives);
+		return sb.toString();
+	}
 }

@@ -74,35 +74,35 @@ class CapReq {
 	}
 
 	private boolean equalsCap(Capability other) {
-		if (!namespace.equals(other.getNamespace()))
+		if (!Objects.equals(namespace, other.getNamespace()))
 			return false;
-		if (!attributes.equals(other.getAttributes()))
+		if (!Objects.equals(attributes, other.getAttributes()))
 			return false;
-		if (!directives.equals(other.getDirectives()))
+		if (!Objects.equals(directives, other.getDirectives()))
 			return false;
-		return (resource == null) ? (other.getResource() == null) : resource.equals(other.getResource());
+		return Objects.equals(resource, other.getResource());
 	}
 
 	private boolean equalsNative(CapReq other) {
 		if (mode != other.mode)
 			return false;
-		if (!namespace.equals(other.namespace))
+		if (!Objects.equals(namespace, other.getNamespace()))
 			return false;
-		if (!attributes.equals(other.attributes))
+		if (!Objects.equals(attributes, other.getAttributes()))
 			return false;
-		if (!directives.equals(other.directives))
+		if (!Objects.equals(directives, other.getDirectives()))
 			return false;
-		return (resource == null) ? (other.resource == null) : resource.equals(other.resource);
+		return Objects.equals(resource, other.getResource());
 	}
 
 	private boolean equalsReq(Requirement other) {
-		if (!namespace.equals(other.getNamespace()))
+		if (!Objects.equals(namespace, other.getNamespace()))
 			return false;
-		if (!attributes.equals(other.getAttributes()))
+		if (!Objects.equals(attributes, other.getAttributes()))
 			return false;
-		if (!directives.equals(other.getDirectives()))
+		if (!Objects.equals(directives, other.getDirectives()))
 			return false;
-		return (resource == null) ? (other.getResource() == null) : resource.equals(other.getResource());
+		return Objects.equals(resource, other.getResource());
 	}
 
 	@Override

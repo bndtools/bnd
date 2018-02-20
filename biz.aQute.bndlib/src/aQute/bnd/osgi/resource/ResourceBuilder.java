@@ -63,6 +63,9 @@ public class ResourceBuilder {
 	}
 
 	public ResourceBuilder addCapability(CapReqBuilder builder) {
+		if (builder == null)
+			return this;
+
 		if (built)
 			throw new IllegalStateException("Resource already built");
 
@@ -71,8 +74,12 @@ public class ResourceBuilder {
 		return this;
 	}
 
-	public Capability addCapability0(CapReqBuilder builder) {
+	private Capability addCapability0(CapReqBuilder builder) {
 		Capability cap = builder.setResource(resource).buildCapability();
+		int i = capabilities.indexOf(cap);
+		if (i >= 0) {
+			return capabilities.get(i);
+		}
 		capabilities.add(cap);
 		return cap;
 	}
@@ -92,10 +99,19 @@ public class ResourceBuilder {
 		if (built)
 			throw new IllegalStateException("Resource already built");
 
-		Requirement req = builder.setResource(resource).buildRequirement();
-		requirements.add(req);
+		addRequirement0(builder);
 
 		return this;
+	}
+
+	private Requirement addRequirement0(CapReqBuilder builder) {
+		Requirement req = builder.setResource(resource).buildRequirement();
+		int i = requirements.indexOf(req);
+		if (i >= 0) {
+			return requirements.get(i);
+		}
+		requirements.add(req);
+		return req;
 	}
 
 	public Resource build() {
