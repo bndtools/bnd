@@ -133,8 +133,8 @@ public class BaselineMojo extends AbstractMojo {
 			RemoteRepository releaseDistroRepo;
 			if (artifact.isSnapshot()) {
 				MavenProject tmpClone = project.clone();
-				org.apache.maven.artifact.Artifact tmpArtifact = project.getArtifact();
-				tmpClone.setArtifact(tmpArtifact);
+				tmpClone.getArtifact()
+					.setVersion("1.0.0");
 				releaseDistroRepo = RepositoryUtils.toRepo(tmpClone.getDistributionManagementArtifactRepository());
 			} else {
 				releaseDistroRepo = RepositoryUtils.toRepo(project.getDistributionManagementArtifactRepository());
