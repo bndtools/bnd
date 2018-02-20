@@ -54,7 +54,17 @@ public class Base {
 
 	@Override
 	public String toString() {
-		return "Base [groupId=" + groupId + ", artifactId=" + artifactId + ", version=" + version + ", classifier="
-				+ classifier + ", extension=" + extension + "]";
+		StringBuilder result = new StringBuilder().append(groupId)
+			.append(':')
+			.append(artifactId)
+			.append(':')
+			.append(extension);
+		if ((classifier != null) && !classifier.isEmpty()) {
+			result.append(':')
+				.append(classifier);
+		}
+		return result.append(':')
+			.append(version)
+			.toString();
 	}
 }
