@@ -5,6 +5,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.VERIFY;
 import java.io.IOException;
 import java.util.Formatter;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 
 import org.apache.maven.RepositoryUtils;
@@ -27,6 +28,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResolutionException;
 import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.version.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -133,8 +135,8 @@ public class BaselineMojo extends AbstractMojo {
 			RemoteRepository releaseDistroRepo;
 			if (artifact.isSnapshot()) {
 				MavenProject tmpClone = project.clone();
-				org.apache.maven.artifact.Artifact tmpArtifact = project.getArtifact();
-				tmpClone.setArtifact(tmpArtifact);
+				tmpClone.getArtifact()
+					.setVersion("1.0.0");
 				releaseDistroRepo = RepositoryUtils.toRepo(tmpClone.getDistributionManagementArtifactRepository());
 			} else {
 				releaseDistroRepo = RepositoryUtils.toRepo(project.getDistributionManagementArtifactRepository());
@@ -186,9 +188,19 @@ public class BaselineMojo extends AbstractMojo {
 
 		VersionRangeResult versions = system.resolveVersionRange(session, request);
 
-		logger.debug("Found versions {}", versions.getVersions());
+		List<Version> found = versions.getVersions();
+		logger.debug("Found versions {}", found);
 
-		base.setVersion(versions.getHighestVersion() != null ? versions.getHighestVersion().toString() : null);
+		base.setVersion(null);
+		for (ListIterator<Version> li = found.listIterator(found.size()); li.hasPrevious();) {
+			String highest = li.previous()
+				.toString();
+			if (!toFind.setVersion(highest)
+				.isSnapshot()) {
+				base.setVersion(highest);
+				break;
+			}
+		}
 
 		logger.info("The baseline version was found to be {}", base.getVersion());
 	}
