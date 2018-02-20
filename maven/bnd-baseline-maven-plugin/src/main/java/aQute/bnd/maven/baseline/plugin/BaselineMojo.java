@@ -85,10 +85,7 @@ public class BaselineMojo extends AbstractMojo {
 		setupBase(artifact);
 
 		try {
-			if (base.getVersion() == null || base.getVersion().isEmpty()) {
-				searchForBaseVersion(artifact, aetherRepos);
-			}
-
+			searchForBaseVersion(aetherRepos);
 			if (base.getVersion() != null && !base.getVersion().isEmpty()) {
 
 				ArtifactResult artifactResult = locateBaseJar(aetherRepos);
@@ -169,21 +166,23 @@ public class BaselineMojo extends AbstractMojo {
 		if (base.getExtension() == null || base.getExtension().isEmpty()) {
 			base.setExtension(artifact.getExtension());
 		}
+		if (base.getVersion() == null || base.getVersion()
+			.isEmpty()) {
+			base.setVersion("(," + artifact.getVersion() + ")");
+		}
 
 		logger.debug("Baselining against {}, fail on missing: {}", base, failOnMissing);
 	}
 
-	private void searchForBaseVersion(Artifact artifact, List<RemoteRepository> aetherRepos)
+	private void searchForBaseVersion(List<RemoteRepository> aetherRepos)
 			throws VersionRangeResolutionException {
-		logger.info("Automatically determining the baseline version for {} using repositories {}", artifact,
+		logger.info("Determining the baseline version for {} using repositories {}", base,
 				aetherRepos);
 
 		Artifact toFind = new DefaultArtifact(base.getGroupId(), base.getArtifactId(), base.getClassifier(),
 				base.getExtension(), base.getVersion());
 
-		Artifact toCheck = toFind.setVersion("(," + artifact.getVersion() + ")");
-
-		VersionRangeRequest request = new VersionRangeRequest(toCheck, aetherRepos, "baseline");
+		VersionRangeRequest request = new VersionRangeRequest(toFind, aetherRepos, "baseline");
 
 		VersionRangeResult versions = system.resolveVersionRange(session, request);
 
