@@ -296,6 +296,10 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return new POM(this, pomFile, true);
 	}
 
+	private POM getPom(File pomFile) throws Exception {
+		return new POM(this, pomFile, true);
+	}
+
 	@Override
 	public POM getPom(Revision revision) throws Exception {
 		if (revision == null) {
@@ -319,8 +323,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 			if (pomFile == null) {
 				return null;
 			}
-			try (InputStream fin = IO.stream(pomFile)) {
-				return getPom(fin);
+			try {
+				return getPom(pomFile);
 			} catch (Exception e) {
 				logger.error("Failed to parse pom {} from file {}", revision, pomFile, e);
 				return null;

@@ -29,7 +29,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
@@ -75,12 +74,11 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, InputStream in) throws Exception {
-		this(repo, getDocBuilder().parse(processEntities(in)), false);
+		this(repo, in, false);
 	}
 
-	public POM(MavenRepository mavenRepository, InputStream pomFile, boolean ignoreParentIfAbsent)
-			throws SAXException, IOException, ParserConfigurationException, Exception {
-		this(mavenRepository, getDocBuilder().parse(processEntities(pomFile)), ignoreParentIfAbsent);
+	public POM(MavenRepository repo, InputStream in, boolean ignoreParentIfAbsent) throws Exception {
+		this(repo, IO.work, getDocBuilder().parse(processEntities(in)), ignoreParentIfAbsent);
 	}
 
 	private static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
@@ -127,7 +125,11 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, File file) throws Exception {
-		this(repo, IO.stream(file));
+		this(repo, file, false);
+	}
+
+	public POM(MavenRepository repo, File file, boolean ignoreIfParentAbsent) throws Exception {
+		this(repo, file.getParentFile(), getDocBuilder().parse(processEntities(IO.stream(file))), ignoreIfParentAbsent);
 	}
 
 	public POM(MavenRepository repo, Document doc) throws Exception {
@@ -135,6 +137,10 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, Document doc, boolean ignoreIfParentAbsent) throws Exception {
+		this(repo, IO.work, doc, ignoreIfParentAbsent);
+	}
+
+	private POM(MavenRepository repo, File base, Document doc, boolean ignoreIfParentAbsent) throws Exception {
 		this.repo = repo;
 		this.ignoreParentIfAbsent = ignoreIfParentAbsent;
 		xp = xpf.newXPath();
@@ -154,7 +160,7 @@ public class POM implements IPom {
 				throw new IllegalArgumentException("Invalid version for parent pom " + program + ":" + v);
 
 			File fp;
-			if (relativePath != null && !relativePath.isEmpty() && (fp = IO.getFile(relativePath)).isFile()) {
+			if (relativePath != null && !relativePath.isEmpty() && (fp = IO.getFile(base, relativePath)).isFile()) {
 				this.parent = new POM(repo, fp);
 			} else {
 				Revision revision = program.version(v);
