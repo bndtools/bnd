@@ -1,9 +1,11 @@
 package aQute.maven.provider;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -29,9 +31,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import aQute.bnd.version.MavenVersion;
+import aQute.lib.io.ByteBufferInputStream;
+import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
@@ -75,12 +78,11 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, InputStream in) throws Exception {
-		this(repo, getDocBuilder().parse(processEntities(in)), false);
+		this(repo, in, false);
 	}
 
-	public POM(MavenRepository mavenRepository, InputStream pomFile, boolean ignoreParentIfAbsent)
-			throws SAXException, IOException, ParserConfigurationException, Exception {
-		this(mavenRepository, getDocBuilder().parse(processEntities(pomFile)), ignoreParentIfAbsent);
+	public POM(MavenRepository repo, InputStream in, boolean ignoreParentIfAbsent) throws Exception {
+		this(repo, IO.work, getDocBuilder().parse(processEntities(in)), ignoreParentIfAbsent);
 	}
 
 	private static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
@@ -88,46 +90,62 @@ public class POM implements IPom {
 		return db;
 	}
 
-	final static Pattern ENTITY_CLEAN_UP = Pattern.compile("&([-a-z0-9_]+);");
-
 	private static InputStream processEntities(InputStream in) throws IOException {
-		byte[] read = IO.read(in);
-		int l = read.length;
-		outer: for (int i = 0; i < read.length; i++) {
-			if (read[i] == '&') {
+		ByteBuffer bb = IO.copy(in, new ByteBufferOutputStream(in.available() + 1))
+			.toByteBuffer();
+		return processEntities(bb);
+	}
 
-				StringBuilder sb = new StringBuilder();
-
-				for (int j = i + 1; j < read.length && read[j] != ';'; j++) {
-
-					if (j > i + 10)
-						continue outer;
-
-					char c = (char) read[j];
-					if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
-						sb.append(c);
-					else
-						continue outer;
-				}
-
-				switch (sb.toString()) {
-					case "lt" :
-					case "gt" :
-					case "amp" :
-					case "quote" :
-					case "apos" :
+	private static InputStream processEntities(ByteBuffer bb) {
+		final byte[] array = bb.array();
+		final int offset = bb.arrayOffset();
+		final int limit = offset + bb.limit();
+		for (int i = offset; i < limit; i++) {
+			char c = (char) array[i];
+			if (c == '&') {
+				final int jlimit = Math.min(limit, i + 11);
+				for (int j = i + 1; j < jlimit; j++) {
+					c = (char) array[j];
+					if (c == ';') {
+						String entity = new String(array, i + 1, j - (i + 1), StandardCharsets.US_ASCII).toLowerCase();
+						switch (entity) {
+							case "lt" :
+							case "gt" :
+							case "amp" :
+							case "quot" :
+							case "apos" :
+								break;
+							default :
+								array[i] = '?';
+								break;
+						}
+						i = j;
 						break;
-					default :
-						read[i] = '?';
+					}
+					if (!(c >= 'A' && c <= 'Z') && !(c >= 'a' && c <= 'z')) {
 						break;
+					}
 				}
 			}
 		}
-		return new ByteArrayInputStream(read);
+		return new ByteBufferInputStream(bb);
 	}
 
 	public POM(MavenRepository repo, File file) throws Exception {
-		this(repo, IO.stream(file));
+		this(repo, file, false);
+	}
+
+	public POM(MavenRepository repo, File file, boolean ignoreIfParentAbsent) throws Exception {
+		this(repo, file.getParentFile(), getDocBuilder().parse(processEntities(file)), ignoreIfParentAbsent);
+	}
+
+	private static InputStream processEntities(File file) throws IOException {
+		try (FileChannel in = IO.readChannel(file.toPath())) {
+			ByteBuffer bb = ByteBuffer.allocate((int) in.size());
+			while (in.read(bb) > 0) {}
+			bb.flip();
+			return processEntities(bb);
+		}
 	}
 
 	public POM(MavenRepository repo, Document doc) throws Exception {
@@ -135,6 +153,10 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, Document doc, boolean ignoreIfParentAbsent) throws Exception {
+		this(repo, IO.work, doc, ignoreIfParentAbsent);
+	}
+
+	private POM(MavenRepository repo, File base, Document doc, boolean ignoreIfParentAbsent) throws Exception {
 		this.repo = repo;
 		this.ignoreParentIfAbsent = ignoreIfParentAbsent;
 		xp = xpf.newXPath();
@@ -154,7 +176,7 @@ public class POM implements IPom {
 				throw new IllegalArgumentException("Invalid version for parent pom " + program + ":" + v);
 
 			File fp;
-			if (relativePath != null && !relativePath.isEmpty() && (fp = IO.getFile(relativePath)).isFile()) {
+			if (relativePath != null && !relativePath.isEmpty() && (fp = IO.getFile(base, relativePath)).isFile()) {
 				this.parent = new POM(repo, fp);
 			} else {
 				Revision revision = program.version(v);
