@@ -239,6 +239,7 @@ class BundleTaskConvention {
         }
         File archiveCopyFile = new File(temporaryDir, archiveName)
         Jar bundleJar = new Jar(archiveName, archiveCopyFile)
+        bundleJar.setReproducible(!task.preserveFileTimestamps)
         bundleJar.updateModified(archiveCopyFile.lastModified(), 'time of Jar task generated jar')
         bundleJar.setManifest(new Manifest())
         builder.setJar(bundleJar)
