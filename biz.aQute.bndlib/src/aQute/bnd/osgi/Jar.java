@@ -20,8 +20,10 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +52,23 @@ import aQute.lib.io.IOConstants;
 import aQute.lib.zip.ZipUtil;
 public class Jar implements Closeable {
 	private static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 16;
+	/**
+	 * Note that setting the January 1st 1980 (or even worse, "0", as time)
+	 * won't work due to Java 8 doing some interesting time processing: It
+	 * checks if this date is before January 1st 1980 and if it is it starts
+	 * setting some extra fields in the zip. Java 7 does not do that - but in
+	 * the zip not the milliseconds are saved but values for each of the date
+	 * fields - but no time zone. And 1980 is the first year which can be saved.
+	 * If you use January 1st 1980 then it is treated as a special flag in Java
+	 * 8. Moreover, only even seconds can be stored in the zip file. Java 8 uses
+	 * the upper half of some other long to store the remaining millis while
+	 * Java 7 doesn't do that. So make sure that your seconds are even.
+	 * Moreover, parsing happens via `new Date(millis)` in
+	 * {@link java.util.zip.ZipUtils}#javaToDosTime() so we must use default
+	 * timezone and locale. The date is 1980 February 1st CET.
+	 */
+	private static final long	ZIP_ENTRY_CONSTANT_TIME	= new GregorianCalendar(1980, Calendar.FEBRUARY, 1, 0,
+		0, 0).getTimeInMillis();
 
 	public enum Compression {
 		DEFLATE, STORE
@@ -72,6 +91,7 @@ public class Jar implements Closeable {
 	private String												lastModifiedReason;
 	private boolean												doNotTouchManifest;
 	private boolean												nomanifest;
+	private boolean												reproducible;
 	private Compression											compression				= Compression.DEFLATE;
 	private boolean												closed;
 	private String[]											algorithms;
@@ -470,7 +490,11 @@ public class Jar implements Closeable {
 			return;
 
 		JarEntry ze = new JarEntry(manifestName);
-		ZipUtil.setModifiedTime(ze, lastModified);
+		if (isReproducible()) {
+			ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
+		} else {
+			ZipUtil.setModifiedTime(ze, lastModified);
+		}
 		jout.putNextEntry(ze);
 		writeManifest(jout);
 		jout.closeEntry();
@@ -676,11 +700,15 @@ public class Jar implements Closeable {
 				return;
 			ZipEntry ze = new ZipEntry(path);
 			ze.setMethod(ZipEntry.DEFLATED);
-			long lastModified = resource.lastModified();
-			if (lastModified == 0L) {
-				lastModified = System.currentTimeMillis();
+			if (isReproducible()) {
+				ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
+			} else {
+				long lastModified = resource.lastModified();
+				if (lastModified == 0L) {
+					lastModified = System.currentTimeMillis();
+				}
+				ZipUtil.setModifiedTime(ze, lastModified);
 			}
-			ZipUtil.setModifiedTime(ze, lastModified);
 			if (resource.getExtra() != null)
 				ze.setExtra(resource.getExtra().getBytes(UTF_8));
 			jout.putNextEntry(ze);
@@ -699,6 +727,9 @@ public class Jar implements Closeable {
 				return;
 			createDirectories(directories, zip, path);
 			ZipEntry ze = new ZipEntry(path + '/');
+			if (isReproducible()) {
+				ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
+			}
 			zip.putNextEntry(ze);
 			zip.closeEntry();
 			directories.add(path);
@@ -957,6 +988,14 @@ public class Jar implements Closeable {
 
 	public boolean isManifestFirst() {
 		return manifestFirst;
+	}
+
+	public boolean isReproducible() {
+		return reproducible;
+	}
+
+	public void setReproducible(boolean reproducible) {
+		this.reproducible = reproducible;
 	}
 
 	public void copy(Jar srce, String path, boolean overwrite) {

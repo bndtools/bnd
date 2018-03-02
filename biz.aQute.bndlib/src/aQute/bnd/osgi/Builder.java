@@ -87,6 +87,7 @@ public class Builder extends Analyzer {
 		Jar dot = getJar();
 		if (dot == null) {
 			dot = new Jar("dot");
+			dot.setReproducible(is(REPRODUCIBLE));
 			setJar(dot);
 		}
 		try {

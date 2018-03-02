@@ -767,18 +767,34 @@ public class Macro {
 	}
 
 	public String _tstamp(String args[]) {
-		String format = "yyyyMMddHHmm";
-		long now = System.currentTimeMillis();
-		TimeZone tz = TimeZone.getTimeZone("UTC");
+		String format;
+		long now;
+		TimeZone tz;
 
 		if (args.length > 1) {
 			format = args[1];
+		} else {
+			format = "yyyyMMddHHmm";
 		}
 		if (args.length > 2) {
 			tz = TimeZone.getTimeZone(args[2]);
+		} else {
+			tz = TimeZone.getTimeZone("UTC");
 		}
 		if (args.length > 3) {
 			now = Long.parseLong(args[3]);
+		} else {
+			String tstamp = domain.getProperty(Constants.TSTAMP);
+			if (tstamp != null) {
+				try {
+					now = Long.parseLong(tstamp);
+				} catch (NumberFormatException e) {
+					// ignore, just use current time
+					now = System.currentTimeMillis();
+				}
+			} else {
+				now = System.currentTimeMillis();
+			}
 		}
 		if (args.length > 4) {
 			domain.warning("Too many arguments for tstamp: %s", Arrays.toString(args));
@@ -786,13 +802,6 @@ public class Macro {
 
 		SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.US);
 		sdf.setTimeZone(tz);
-		String tstamp = domain.getProperty(Constants.TSTAMP);
-		if (tstamp != null)
-			try {
-				now = Long.parseLong(tstamp);
-			} catch (NumberFormatException e) {
-				// ignore, just use current time
-			}
 		return sdf.format(new Date(now));
 	}
 
