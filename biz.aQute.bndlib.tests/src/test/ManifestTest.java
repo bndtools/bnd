@@ -170,7 +170,13 @@ public class ManifestTest extends TestCase {
 
 		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
 		ZipInputStream zin = new ZipInputStream(bin);
-		assertEquals("META-INF/FESTYMAN.MF", zin.getNextEntry().getName());
+		ZipEntry firstEntry = zin.getNextEntry();
+		if (firstEntry.getName()
+			.equalsIgnoreCase("META-INF/")) {
+			firstEntry = zin.getNextEntry();
+		}
+
+		assertEquals("META-INF/FESTYMAN.MF", firstEntry.getName());
 		Manifest manifest = new Manifest(zin);
 		assertEquals("hullo", manifest.getMainAttributes().getValue("Subsystem-Wibble"));
 		zin.close();
