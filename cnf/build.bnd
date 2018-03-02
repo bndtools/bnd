@@ -51,7 +51,7 @@ Bundle-Developers: \
         timezone=1
 
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
-
+-reproducible: true
 -removeheaders:         Include-Resource
 
 # Used in unit testing
