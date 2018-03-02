@@ -71,4 +71,5 @@ Bundle-SCM:               url=https://github.com/bndtools/bndtools, \
 -dsannotations-options.version: version;minimum=1.0.0
 
 -diffignore: Git-Descriptor,Git-SHA
+-reproducible: true
 -removeheaders: Include-Resource, Private-Package
