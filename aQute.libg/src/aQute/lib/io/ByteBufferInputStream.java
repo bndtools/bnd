@@ -16,7 +16,7 @@ public class ByteBufferInputStream extends InputStream {
 		if (!bb.hasRemaining()) {
 			return -1;
 		}
-		return 0xFF & bb.get();
+		return Byte.toUnsignedInt(bb.get());
 	}
 
 	@Override

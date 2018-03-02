@@ -388,8 +388,10 @@ public class Jar implements Closeable {
 				writeResource(jout, directories, manifestName, r);
 				done.add(manifestName);
 			}
-		} else
-			doManifest(done, jout);
+		} else if (!nomanifest) {
+			doManifest(jout, directories, manifestName);
+			done.add(manifestName);
+		}
 
 		for (Map.Entry<String,Resource> entry : getResources().entrySet()) {
 			// Skip metainf contents
@@ -484,11 +486,9 @@ public class Jar implements Closeable {
 		return new String(cs);
 	}
 
-	private void doManifest(Set<String> done, ZipOutputStream jout) throws Exception {
+	private void doManifest(ZipOutputStream jout, Set<String> directories, String manifestName) throws Exception {
 		check();
-		if (nomanifest)
-			return;
-
+		createDirectories(directories, jout, manifestName);
 		JarEntry ze = new JarEntry(manifestName);
 		if (isReproducible()) {
 			ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
@@ -498,7 +498,6 @@ public class Jar implements Closeable {
 		jout.putNextEntry(ze);
 		writeManifest(jout);
 		jout.closeEntry();
-		done.add(ze.getName());
 	}
 
 	/**
@@ -729,6 +728,8 @@ public class Jar implements Closeable {
 			ZipEntry ze = new ZipEntry(path + '/');
 			if (isReproducible()) {
 				ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
+			} else {
+				ZipUtil.setModifiedTime(ze, lastModified);
 			}
 			zip.putNextEntry(ze);
 			zip.closeEntry();
