@@ -624,6 +624,10 @@ public class Syntax implements Constants {
 																					REMOVEHEADERS
 																							+ "=FOO_.*,Proprietary",
 																					null, null),
+
+		new Syntax(REPRODUCIBLE, "Use a fixed timestamp for all jar entries.", REPRODUCIBLE + "=true", "true,false",
+			Verifier.TRUEORFALSEPATTERN),
+
 																			new Syntax(RESOURCEONLY,
 																					"Normally bnd warns when the JAR does not contain any classes, this option suppresses this warning.",
 																					RESOURCEONLY + "=true",
