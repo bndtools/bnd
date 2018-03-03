@@ -1,6 +1,6 @@
 #
 # -bnd command line-
-# 
+#
 # This is not a bundle ...
 #
 
@@ -44,7 +44,6 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	org.apache.ant:ant;version=latest,\
 	osgi.core;version=6.0,\
 	osgi.cmpn;version=6.0,\
-	org.osgi.impl.bundle.bindex;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\
 	slf4j.api;version=latest
@@ -55,7 +54,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	biz.aQute.bnd.embedded-repo; version=snapshot,\
 	org.apache.felix.framework;version=latest,\
     slf4j.simple
-	
+
 # About the aQute.library.bndrepo dep. Needed to add them here
 # by hand even though they are in bndlib. However, they are added
 # and we can unfortunately not see those packages ...

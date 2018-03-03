@@ -30,11 +30,9 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.bindex.BundleIndexer;
 import org.osgi.service.log.LogService;
 import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
@@ -43,7 +41,6 @@ import aQute.bnd.deployer.http.DefaultURLConnector;
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.bnd.deployer.repository.api.Referral;
-import aQute.bnd.deployer.repository.providers.ObrContentProvider;
 import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.repository.BaseRepository;
@@ -74,7 +71,7 @@ import aQute.service.reporter.Reporter;
  * The repository implementation is read-only by default. To implement a
  * writable repository, subclasses should override {@link #canWrite()} and
  * {@link #put(InputStream, aQute.bnd.service.RepositoryPlugin.PutOptions)}.
- * 
+ *
  * @author Neil Bartlett
  */
 @SuppressWarnings("synthetic-access")
@@ -89,7 +86,6 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	public static final String								PROP_RESOLUTION_PHASE_ANY		= "any";
 
 	public static final String								REPO_TYPE_R5					= R5RepoContentProvider.NAME;
-	public static final String								REPO_TYPE_OBR					= ObrContentProvider.NAME;
 	public static final String								REPO_INDEX_SHA_EXTENSION		= ".sha";
 	public static final String								PROP_CACHE_TIMEOUT				= "timeout";
 	public static final String								PROP_ONLINE						= "online";
@@ -98,8 +94,6 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	public static final String								PROP_CHECK_BSN					= "bsn";
 
 	private final static int								DEFAULT_CACHE_TIMEOUT			= 5;
-
-	private final BundleIndexer								obrIndexer						= new BundleIndexerImpl();
 
 	/**
 	 * Make sure the content providers are always processed in the same order.
@@ -128,7 +122,6 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 
 	protected AbstractIndexedRepo() {
 		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
-		allContentProviders.put(REPO_TYPE_OBR, new ObrContentProvider(obrIndexer));
 
 		generatingProviders.add(allContentProviders.get(REPO_TYPE_R5));
 	}
@@ -576,7 +569,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 
 	/**
 	 * Utility function for parsing lists of URLs.
-	 * 
+	 *
 	 * @param locationsStr Comma-separated list of URLs
 	 * @return a list of URIs
 	 * @throws MalformedURLException
