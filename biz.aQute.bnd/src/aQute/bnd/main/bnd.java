@@ -4270,4 +4270,18 @@ public class bnd extends Processor {
 			System.exit(code);
 		}
 	}
+
+	/**
+	 * Index command
+	 *
+	 * @throws Exception
+	 */
+
+	@Description("Index bundles from the local file system")
+	public void _index(IndexCommand.indexOptions options) throws Exception {
+		IndexCommand ic = new IndexCommand(this);
+		ic.use(this);
+		ic._index(options);
+		ic.close();
+	}
 }
