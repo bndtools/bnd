@@ -2,10 +2,8 @@ package org.bndtools.core.ui.wizards.index;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.bndtools.core.jobs.GenerateIndexJob;
@@ -14,7 +12,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
-import org.osgi.service.indexer.ResourceIndexer;
 
 public class NewIndexWizard extends Wizard implements INewWizard {
 
@@ -44,15 +41,10 @@ public class NewIndexWizard extends Wizard implements INewWizard {
             inputFiles.add(basePath.resolve(path).toFile());
 
         // Setup index config
-        Map<String,String> config = new HashMap<>();
-        Boolean pretty = Boolean.valueOf(indexPage.getOutputStyle() == IndexFormatStyle.PRETTY_UNCOMPRESSED);
         Boolean compressed = Boolean.valueOf(indexPage.getOutputStyle() == IndexFormatStyle.COMPRESSED);
-        config.put(ResourceIndexer.PRETTY, pretty.toString());
-        config.put(ResourceIndexer.COMPRESSED, compressed.toString());
-        config.put(ResourceIndexer.ROOT_URL, baseDir.toURI().toASCIIString());
 
         // Create the job
-        GenerateIndexJob job = new GenerateIndexJob(inputFiles, indexPage.getOutputFile(), config);
+        GenerateIndexJob job = new GenerateIndexJob(inputFiles, indexPage.getOutputFile(), baseDir.toURI(), compressed, null);
         job.setUser(true);
         job.schedule();
 

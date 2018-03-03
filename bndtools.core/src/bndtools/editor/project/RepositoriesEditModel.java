@@ -127,11 +127,6 @@ class RepositoriesEditModel {
     }
 
     private String toName(Repository repo) {
-        if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
-            aQute.bnd.deployer.repository.wrapper.Plugin wrapper = (aQute.bnd.deployer.repository.wrapper.Plugin) repo;
-            wrapper.init();
-            return wrapper.toString();
-        }
         if (repo instanceof RepositoryPlugin) {
             return ((RepositoryPlugin) repo).getName();
         }

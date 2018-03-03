@@ -5,31 +5,23 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.text.MessageFormat;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.AbstractBuildListener;
-import org.bndtools.utils.log.LogServiceAdapter;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.osgi.service.indexer.Builder;
-import org.osgi.service.indexer.Capability;
-import org.osgi.service.indexer.Requirement;
-import org.osgi.service.indexer.Resource;
-import org.osgi.service.indexer.ResourceAnalyzer;
-import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.RepoIndex;
+import org.osgi.resource.Capability;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.repository.SimpleIndexer;
+import aQute.bnd.osgi.resource.CapabilityBuilder;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;
@@ -39,11 +31,6 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
     private static final String INDEX_FILENAME = ".index";
 
     private final ILogger logger = Logger.getLogger(BuiltBundleIndexer.class);
-    private final LogServiceAdapter logAdapter;
-
-    public BuiltBundleIndexer() {
-        logAdapter = new LogServiceAdapter(logger);
-    }
 
     @Override
     public void builtBundles(final IProject project, IPath[] paths) {
@@ -72,29 +59,16 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
 
             IFile indexPath = wsroot.getFile(Central.toPath(indexFile));
 
-            // Create the indexer and add ResourceAnalyzers from plugins
-            RepoIndex indexer = new RepoIndex(logAdapter);
-            List<ResourceAnalyzer> analyzers = Central.getWorkspace().getPlugins(ResourceAnalyzer.class);
-            for (ResourceAnalyzer analyzer : analyzers) {
-                indexer.addAnalyzer(analyzer, null);
-            }
-
-            // Use an analyzer to add a marker capability to workspace resources
-            indexer.addAnalyzer(new ResourceAnalyzer() {
-                @Override
-                public void analyzeResource(Resource resource, List<Capability> capabilities, List<Requirement> requirements) throws Exception {
-                    Capability cap = new Builder().setNamespace("bndtools.workspace").addAttribute("bndtools.workspace", workspaceRootUri.toString()).addAttribute("project.path", project.getFullPath().toString()).buildCapability();
-                    capabilities.add(cap);
-                }
-            }, null);
-
-            Map<String,String> config = new HashMap<String,String>();
-            config.put(ResourceIndexer.REPOSITORY_NAME, project.getName());
-            config.put(ResourceIndexer.ROOT_URL, project.getLocation().toFile().toURI().toString());
-            config.put(ResourceIndexer.PRETTY, "true");
-
             try (OutputStream output = IO.outputStream(indexFile)) {
-                indexer.index(files, output, config);
+                SimpleIndexer.index(files, output, project.getLocation()
+                    .toFile()
+                    .toURI(), false, project.getName(), (f, rb) -> {
+                        Capability cap = new CapabilityBuilder("bndtools.workspace").addAttribute("bndtools.workspace", workspaceRootUri.toString())
+                            .addAttribute("project.path", project.getFullPath()
+                                .toString())
+                            .buildSyntheticCapability();
+                        rb.addCapability(cap);
+                    });
             }
             indexPath.refreshLocal(IResource.DEPTH_ZERO, null);
             if (indexPath.exists())

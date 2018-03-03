@@ -99,6 +99,8 @@ eclipse.deps: \
 	org.bndtools.headless.build.manager;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
 	org.bndtools.templating; version=latest,\
+	org.apache.servicemix.bundles.kxml2;version=latest,\
+	org.apache.servicemix.bundles.xmlpull;version=latest,\
 	bndtools.utils;version=project;packages=*
 
 -testpath: \
