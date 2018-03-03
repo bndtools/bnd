@@ -262,6 +262,8 @@ public abstract class BaseRepository implements Repository {
 
 			@Override
 			public Requirement build() {
+				if (rb.getResource() == null)
+					return rb.buildSyntheticRequirement();
 				return rb.build();
 			}
 
