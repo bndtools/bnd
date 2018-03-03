@@ -12,8 +12,8 @@ javac.debug:            on
 #
 # Custom Settings
 #
-Git-Descriptor:         ${system-allow-fail;git describe --dirty --always}
-Git-SHA:                ${system-allow-fail;git rev-list -1 HEAD}
+Git-Descriptor:         ${system-allow-fail;git describe --dirty --always --abbrev=9}
+Git-SHA:                ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
 
 copyright:              Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 copyright.html:         Copyright &copy; aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
@@ -52,6 +52,7 @@ Bundle-Developers: \
 
 -make:                  (*).(jar);type=bnd; recipe="bnd/$1.bnd"
 -reproducible: true
+-noextraheaders: true
 -removeheaders:         Include-Resource
 
 # Used in unit testing
