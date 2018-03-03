@@ -210,7 +210,7 @@ task index {
   group 'release'
 
   /* indexer */
-  def repoindexJar = bnd.project.getBundle('org.osgi.impl.bundle.repoindex.cli', 'latest', null, ['strategy':'highest']).getFile()
+  def bndJar = bnd.project.getBundle('biz.aQute.bnd', 'latest', null, ['strategy':'highest']).getFile()
 
   /* Bundles to index. */
   def p2_index_bundles = fileTree("${buildDir}/p2/plugins") {
@@ -229,7 +229,9 @@ task index {
     def bundlesToIndex = p2_index_bundles*.absolutePath
     javaexec {
       main = '-jar' // first arg must be the jar
-      args repoindexJar
+      args bndJar
+      args 'bnd'
+      args 'index'
       args '-r', p2_index
       args '-d', "${buildDir}/p2"
       args '-n', 'Bndtools'
