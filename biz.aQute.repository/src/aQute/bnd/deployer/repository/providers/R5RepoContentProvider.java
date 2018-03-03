@@ -12,21 +12,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 
-import org.osgi.framework.FrameworkUtil;
 import org.osgi.resource.Resource;
-import org.osgi.service.indexer.ResourceAnalyzer;
-import org.osgi.service.indexer.ResourceIndexer;
-import org.osgi.service.indexer.impl.KnownBundleAnalyzer;
-import org.osgi.service.indexer.impl.RepoIndex;
 import org.osgi.service.log.LogService;
 import org.osgi.service.repository.ContentNamespace;
 
@@ -34,6 +26,7 @@ import aQute.bnd.deployer.repository.api.CheckResult;
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.bnd.deployer.repository.api.Referral;
+import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.service.Registry;
@@ -261,32 +254,12 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 
 	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI baseUri, boolean pretty,
 			Registry registry, LogService log) throws Exception {
-		RepoIndex indexer;
-		if (log != null)
-			indexer = new RepoIndex(log);
-		else
-			indexer = new RepoIndex();
-		indexer.addAnalyzer(new KnownBundleAnalyzer(), FrameworkUtil.createFilter("(name=*)"));
 
-		if (registry != null) {
-			List<ResourceAnalyzer> analyzers = registry.getPlugins(ResourceAnalyzer.class);
-			for (ResourceAnalyzer analyzer : analyzers) {
-				// TODO: where to get the filter property??
-				indexer.addAnalyzer(analyzer, null);
-			}
-		}
+		long modified = files.stream()
+			.mapToLong(File::lastModified)
+			.max()
+			.orElse(-1L);
 
-		long modified = 0;
-		for (File file : files)
-			modified = Math.max(modified, file.lastModified());
-
-		Map<String,String> config = new HashMap<>();
-		config.put(ResourceIndexer.REPOSITORY_NAME, repoName);
-		config.put(ResourceIndexer.ROOT_URL, baseUri.toString());
-		config.put(ResourceIndexer.PRETTY, Boolean.toString(pretty));
-		config.put(ResourceIndexer.COMPRESSED, Boolean.toString(!pretty));
-		config.put(org.osgi.service.indexer.impl.RepoIndex.REPOSITORY_INCREMENT_OVERRIDE, Long.toString(modified));
-
-		indexer.index(files, output, config);
+		SimpleIndexer.index(files, output, baseUri, !pretty, repoName, modified, null);
 	}
 }
