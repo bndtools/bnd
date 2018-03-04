@@ -128,6 +128,10 @@ public class ResourceBuilder {
 		return capabilities;
 	}
 
+	public List<Requirement> getRequirements() {
+		return requirements;
+	}
+
 	/**
 	 * Parse the manifest and turn them into requirements & capabilities
 	 * 
