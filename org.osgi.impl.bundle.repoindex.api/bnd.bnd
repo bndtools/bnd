@@ -1,8 +1,0 @@
-# Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
-
-Export-Package: org.osgi.service.indexer
--buildpath: \
-	osgi.annotation;version=6.0.1
-
--baseline: *

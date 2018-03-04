@@ -15,10 +15,5 @@
              biz.aQute.launcher, \
              biz.aQute.remote, \
              biz.aQute.repository, \
-             biz.aQute.resolve, \
-             org.osgi.impl.bundle.repoindex.api, \
-             org.osgi.impl.bundle.repoindex.lib, \
-             org.osgi.impl.bundle.repoindex.ant, \
-             org.osgi.impl.bundle.repoindex.cli, \
-             org.osgi.impl.bundle.repoindex.test
+             biz.aQute.resolve
 -nobundles = true

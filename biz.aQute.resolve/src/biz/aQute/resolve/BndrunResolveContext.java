@@ -369,12 +369,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			Map<String,Repository> repoNameMap = new HashMap<>(allRepos.size());
 			for (Repository repo : allRepos) {
 				String name;
-				if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
-					@SuppressWarnings("resource")
-					aQute.bnd.deployer.repository.wrapper.Plugin wrapper = (aQute.bnd.deployer.repository.wrapper.Plugin) repo;
-					wrapper.init();
-					name = wrapper.toString();
-				} else if (repo instanceof RepositoryPlugin) {
+				if (repo instanceof RepositoryPlugin) {
 					name = ((RepositoryPlugin) repo).getName();
 				} else {
 					name = repo.toString();

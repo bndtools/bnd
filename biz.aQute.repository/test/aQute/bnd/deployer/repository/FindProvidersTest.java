@@ -11,7 +11,6 @@ import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
-import aQute.bnd.deployer.obr.OBR;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -125,6 +124,7 @@ public class FindProvidersTest extends TestCase {
 		}
 	}
 
+/*
 	public void testResolveByHash() throws Exception {
 		OBR repo = new OBR();
 		Map<String,String> props = new HashMap<>();
@@ -185,5 +185,5 @@ public class FindProvidersTest extends TestCase {
 			// expected
 		}
 	}
-
+*/
 }
