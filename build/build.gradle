@@ -230,7 +230,6 @@ task index {
     javaexec {
       main = '-jar' // first arg must be the jar
       args bndJar
-      args 'bnd'
       args 'index'
       args '-r', p2_index
       args '-d', "${buildDir}/p2"
