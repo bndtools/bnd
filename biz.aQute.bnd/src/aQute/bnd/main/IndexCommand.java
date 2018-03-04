@@ -1,13 +1,16 @@
 package aQute.bnd.main;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.repository.ResourcesRepository;
-import aQute.bnd.osgi.repository.XMLResourceGenerator;
-import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
@@ -43,9 +46,15 @@ public class IndexCommand extends Processor {
 		if (outputDir == null) {
 			outputDir = IO.work;
 		}
-		File repositoryFile = opts.repositoryIndex();
+		File repositoryFile = opts.repositoryIndex()
+			.getAbsoluteFile();
 		if (repositoryFile == null) {
 			repositoryFile = new File(outputDir, "").getAbsoluteFile();
+		}
+		boolean compress = false;
+		if (repositoryFile.getName()
+			.endsWith(".gz")) {
+			compress = true;
 		}
 		URI base = opts.base();
 		if (base == null) {
@@ -58,36 +67,21 @@ public class IndexCommand extends Processor {
 				.getName();
 		}
 
-		ResourcesRepository resourcesRepository = new ResourcesRepository();
-		XMLResourceGenerator xmlResourceGenerator = new XMLResourceGenerator();
+		List<File> files = opts._arguments()
+			.stream()
+			.map(arg -> getFile(arg).getAbsoluteFile())
+			.collect(Collectors.toList());
 
-		List<String> args = opts._arguments();
-
-		boolean anyBundlesFound = false;
-
-		for (String arg : args) {
-			File bundle = getFile(arg).getAbsoluteFile();
-			if (bundle.isDirectory() || !bundle.canRead() || bundle.isHidden() || !bundle.exists()) {
-				continue;
-			}
-
-			ResourceBuilder resourceBuilder = new ResourceBuilder();
-			URI relative = base.relativize(bundle.toURI());
-			if (resourceBuilder.addFile(bundle, relative)) {
-				resourcesRepository.add(resourceBuilder.build());
-				anyBundlesFound = true;
-			}
-		}
-
-		if (!anyBundlesFound) {
+		if (files.isEmpty()) {
 			bnd.out.println("argument <bundles..> did not contain any bundle files");
 			return;
 		}
 
-		IO.mkdirs(repositoryFile.getParentFile());
-		xmlResourceGenerator.name(name)
-			.repository(resourcesRepository)
-			.save(repositoryFile);
+		Map<String, String> config = new HashMap<>();
+
+		try (OutputStream out = new FileOutputStream(repositoryFile)) {
+			SimpleIndexer.index(files, out, base, compress, name);
+		}
 	}
 
 }
