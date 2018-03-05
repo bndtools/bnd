@@ -108,25 +108,23 @@ public class SimpleIndexer {
 		Objects.requireNonNull(outputStream, "'outputStream' argument cannot be null");
 		Objects.requireNonNull(base, "'base' argument cannot be null");
 
-		ResourcesRepository resourcesRepository = new ResourcesRepository();
-
-		files.stream()
+		ResourcesRepository resourcesRepository = files.stream()
 			.filter(f -> f.exists() && !f.isDirectory() && !f.isHidden() && f.canRead())
-			.forEach(f -> {
-				URI uri = base.relativize(f.toURI());
-
+			.map(f -> {
 				try {
 					ResourceBuilder resourceBuilder = new ResourceBuilder();
-					if (resourceBuilder.addFile(f, uri)) {
+					if (resourceBuilder.addFile(f, base.relativize(f.toURI()))) {
 						if (analyzer != null) {
 							analyzer.analyzeFile(f, resourceBuilder.safeResourceBuilder());
 						}
-						resourcesRepository.add(resourceBuilder.build());
+						return resourceBuilder.build();
 					}
 				} catch (Exception e) {
 					logger.error("Could not index file {}", f, e);
 				}
-			});
+				return null;
+			})
+			.collect(ResourcesRepository.toResourcesRepository());
 
 		XMLResourceGenerator xmlResourceGenerator = new XMLResourceGenerator();
 		XMLResourceGenerator repository = xmlResourceGenerator.repository(resourcesRepository);
