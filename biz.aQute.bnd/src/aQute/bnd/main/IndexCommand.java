@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +47,12 @@ public class IndexCommand extends Processor {
 		if (outputDir == null) {
 			outputDir = IO.work;
 		}
-		File repositoryFile = opts.repositoryIndex()
-			.getAbsoluteFile();
+		File repositoryFile = opts.repositoryIndex();
 		if (repositoryFile == null) {
-			repositoryFile = new File(outputDir, "").getAbsoluteFile();
+			repositoryFile = new File(outputDir, "index.xml").getAbsoluteFile();
+		}
+		else {
+			repositoryFile = repositoryFile.getAbsoluteFile();
 		}
 		boolean compress = false;
 		if (repositoryFile.getName()
@@ -70,10 +73,14 @@ public class IndexCommand extends Processor {
 		List<File> files = opts._arguments()
 			.stream()
 			.map(arg -> getFile(arg).getAbsoluteFile())
+			.filter(f -> f.exists() && !f.isDirectory() && !f.isHidden() && f.canRead())
 			.collect(Collectors.toList());
 
 		if (files.isEmpty()) {
 			bnd.out.println("argument <bundles..> did not contain any bundle files");
+			bnd.out.println(opts._command()
+				.execute(bnd, "help", Collections.singletonList("index")));
+
 			return;
 		}
 
