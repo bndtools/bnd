@@ -4,15 +4,13 @@ import java.io.File;
 import java.io.OutputStream;
 import java.net.URI;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.ConsumerType;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 
 /**
@@ -31,27 +29,30 @@ public class SimpleIndexer {
 		/**
 		 * <p>
 		 * This method is invoked for each file being indexed. Implementations
-		 * add zero or more capabilities and/or requirements to the supplied
-		 * lists.
+		 * may inspect the requirements and capabilities already assembled from
+		 * the file. They may add zero or more capabilities and/or requirements
+		 * to the supplied resource builder possibly extracted as additional
+		 * metadata from the file.
 		 * </p>
 		 * <p>
-		 * The method <b>may</b> examine the lists of already-discovered
-		 * requirements and capabilities; for example they may wish to add a
-		 * certain capability if (and only if) it has not already been added.
-		 * </p>
-		 * <p>
-		 * The method <b>MUST NOT</b> attempt to remove or replace any
-		 * capability or requirement from the supplied list. Clients of this
-		 * method may enforce this by passing List implementations that throw
-		 * {@link UnsupportedOperationException} upon any attempt to call
-		 * {@link List#remove(int)}, etc.
-		 * </p>
+		 * The following operations on {@link ResourceBuilder resourceBuilder}
+		 * are reduced to a no-op:
+		 * <ul>
+		 * <li>{@link ResourceBuilder#build()} does nothing, returns null</li>
+		 * <li>{@link ResourceBuilder#addFile(File, URI)} does nothing, returns
+		 * false</li>
+		 * <li>{@link ResourceBuilder#addManifest(Domain)} does nothing, returns
+		 * false</li>
+		 * <li>{@link ResourceBuilder#getCapabilities()} returns immutable
+		 * list</li>
+		 * <li>{@link ResourceBuilder#getRequirements()} returns immutable
+		 * list</li>
+		 * </ul>
 		 *
-		 * @param file The current file.
-		 * @param capabilities The list of capabilities.
-		 * @param requirements The list of requirements.
+		 * @param file The current file
+		 * @param resourceBuilder the resource builder used to process the file
 		 */
-		void analyzeFile(File file, List<Capability> capabilities, List<Requirement> requirements) throws Exception;
+		void analyzeFile(File file, ResourceBuilder resourceBuilder) throws Exception;
 	}
 
 	private static final Logger				logger		= LoggerFactory.getLogger(SimpleIndexer.class);
@@ -107,26 +108,23 @@ public class SimpleIndexer {
 		Objects.requireNonNull(outputStream, "'outputStream' argument cannot be null");
 		Objects.requireNonNull(base, "'base' argument cannot be null");
 
-		ResourcesRepository resourcesRepository = new ResourcesRepository();
-
-		files.stream()
+		ResourcesRepository resourcesRepository = files.stream()
 			.filter(f -> f.exists() && !f.isDirectory() && !f.isHidden() && f.canRead())
-			.forEach(f -> {
-				URI uri = base.relativize(f.toURI());
-
+			.map(f -> {
 				try {
 					ResourceBuilder resourceBuilder = new ResourceBuilder();
-					if (resourceBuilder.addFile(f, uri)) {
+					if (resourceBuilder.addFile(f, base.relativize(f.toURI()))) {
 						if (analyzer != null) {
-							analyzer.analyzeFile(f, resourceBuilder.getCapabilities(),
-								resourceBuilder.getRequirements());
+							analyzer.analyzeFile(f, resourceBuilder.safeResourceBuilder());
 						}
-						resourcesRepository.add(resourceBuilder.build());
+						return resourceBuilder.build();
 					}
 				} catch (Exception e) {
 					logger.error("Could not index file {}", f, e);
 				}
-			});
+				return null;
+			})
+			.collect(ResourcesRepository.toResourcesRepository());
 
 		XMLResourceGenerator xmlResourceGenerator = new XMLResourceGenerator();
 		XMLResourceGenerator repository = xmlResourceGenerator.repository(resourcesRepository);

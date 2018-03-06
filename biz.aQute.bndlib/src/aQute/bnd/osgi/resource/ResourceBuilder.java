@@ -710,4 +710,170 @@ public class ResourceBuilder {
 		addContentCapability(uri, sha256, file.length(), mime);
 		return hasIdentity;
 	}
+
+	public ResourceBuilder safeResourceBuilder() {
+		return new SafeResourceBuilder();
+	}
+
+	private class SafeResourceBuilder extends ResourceBuilder {
+
+		@Override
+		public Resource build() {
+			return null;
+		}
+
+		public ResourceBuilder addCapability(Capability capability) throws Exception {
+			return ResourceBuilder.this.addCapability(capability);
+		}
+
+		public ResourceBuilder addCapability(CapReqBuilder builder) {
+			return ResourceBuilder.this.addCapability(builder);
+		}
+
+		public int hashCode() {
+			return ResourceBuilder.this.hashCode();
+		}
+
+		public ResourceBuilder addRequirement(Requirement requirement) throws Exception {
+			return ResourceBuilder.this.addRequirement(requirement);
+		}
+
+		public ResourceBuilder addRequirement(CapReqBuilder builder) {
+			return ResourceBuilder.this.addRequirement(builder);
+		}
+
+		public List<Capability> getCapabilities() {
+			return Collections.unmodifiableList(ResourceBuilder.this.getCapabilities());
+		}
+
+		public List<Requirement> getRequirements() {
+			return Collections.unmodifiableList(ResourceBuilder.this.getRequirements());
+		}
+
+		public boolean addManifest(Domain manifest) throws Exception {
+			return false;
+		}
+
+		public boolean equals(Object obj) {
+			return ResourceBuilder.this.equals(obj);
+		}
+
+		public void addExportServices(Parameters exportServices) throws Exception {
+			ResourceBuilder.this.addExportServices(exportServices);
+		}
+
+		public void addImportServices(Parameters importServices) {
+			ResourceBuilder.this.addImportServices(importServices);
+		}
+
+		public RequirementBuilder getNativeCode(String header) throws Exception {
+			return ResourceBuilder.this.getNativeCode(header);
+		}
+
+		public String toString() {
+			return ResourceBuilder.this.toString();
+		}
+
+		public void addRequireBundles(Parameters requireBundle) throws Exception {
+			ResourceBuilder.this.addRequireBundles(requireBundle);
+		}
+
+		public void addRequireBundle(String bsn, VersionRange range) throws Exception {
+			ResourceBuilder.this.addRequireBundle(bsn, range);
+		}
+
+		public void addRequireBundle(String bsn, Attrs attrs) throws Exception {
+			ResourceBuilder.this.addRequireBundle(bsn, attrs);
+		}
+
+		public void addFragmentHost(String bsn, Attrs attrs) throws Exception {
+			ResourceBuilder.this.addFragmentHost(bsn, attrs);
+		}
+
+		public void addRequireCapabilities(Parameters required) throws Exception {
+			ResourceBuilder.this.addRequireCapabilities(required);
+		}
+
+		public void addRequireCapability(String namespace, String name, Attrs attrs) throws Exception {
+			ResourceBuilder.this.addRequireCapability(namespace, name, attrs);
+		}
+
+		public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
+			return ResourceBuilder.this.addProvideCapabilities(capabilities);
+		}
+
+		public List<Capability> addProvideCapabilities(String clauses) throws Exception {
+			return ResourceBuilder.this.addProvideCapabilities(clauses);
+		}
+
+		public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {
+			return ResourceBuilder.this.addProvideCapability(namespace, attrs);
+		}
+
+		public void addExportPackages(Parameters exports) throws Exception {
+			ResourceBuilder.this.addExportPackages(exports);
+		}
+
+		public void addEE(EE ee) throws Exception {
+			ResourceBuilder.this.addEE(ee);
+		}
+
+		public void addExportPackage(String packageName, Attrs attrs) throws Exception {
+			ResourceBuilder.this.addExportPackage(packageName, attrs);
+		}
+
+		public void addImportPackages(Parameters imports) throws Exception {
+			ResourceBuilder.this.addImportPackages(imports);
+		}
+
+		public Requirement addImportPackage(String pname, Attrs attrs) throws Exception {
+			return ResourceBuilder.this.addImportPackage(pname, attrs);
+		}
+
+		public void addExecutionEnvironment(EE ee) throws Exception {
+			ResourceBuilder.this.addExecutionEnvironment(ee);
+		}
+
+		public void addAllExecutionEnvironments(EE ee) throws Exception {
+			ResourceBuilder.this.addAllExecutionEnvironments(ee);
+		}
+
+		public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) throws Exception {
+			ResourceBuilder.this.copyCapabilities(ignoreNamespaces, r);
+		}
+
+		public void addCapabilities(List<Capability> capabilities) throws Exception {
+			ResourceBuilder.this.addCapabilities(capabilities);
+		}
+
+		public void addRequirement(List<Requirement> requirements) throws Exception {
+			ResourceBuilder.this.addRequirement(requirements);
+		}
+
+		public void addRequirements(List<Requirement> requires) throws Exception {
+			ResourceBuilder.this.addRequirements(requires);
+		}
+
+		public List<Capability> findCapabilities(String ns, String filter) throws Exception {
+			return ResourceBuilder.this.findCapabilities(ns, filter);
+		}
+
+		public Map<Capability, Capability> from(Resource bundle) throws Exception {
+			return ResourceBuilder.this.from(bundle);
+		}
+
+		public Reporter getReporter() {
+			return ResourceBuilder.this.getReporter();
+		}
+
+		public void addContentCapability(URI uri, String sha256, long length, String mime) throws Exception {
+			ResourceBuilder.this.addContentCapability(uri, sha256, length, mime);
+		}
+
+		public boolean addFile(File file, URI uri) throws Exception {
+			return false;
+		}
+
+	}
+
 }
