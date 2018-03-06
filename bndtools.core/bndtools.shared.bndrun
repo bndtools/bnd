@@ -159,7 +159,6 @@ crossplatform.bundles: \
 	${aQute-repository},\
 	${aQute-resolve},\
 	${bndlib},\
-	org.osgi.impl.bundle.repoindex.lib,\
 	${help.bundles},\
 	${p2.bundles},\
 	${pde.bundles},\
@@ -283,7 +282,6 @@ crossplatform.bundles: \
 	com.jcraft.jsch,\
 	org.hamcrest.core,\
 	org.junit,\
-	org.osgi.impl.bundle.bindex;version=latest,\
 	org.w3c.css.sac,\
 	org.w3c.dom.events,\
 	org.w3c.dom.smil,\

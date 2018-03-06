@@ -8,7 +8,7 @@
 
 -runvm: ${crossplatform.vmargs}
 
--runproperties:
+-runproperties: \
 	${crossplatform.runprops},\
 	osgi.ws=gtk,\
 	osgi.arch=x86,\

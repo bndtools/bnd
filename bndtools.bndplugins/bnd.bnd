@@ -5,9 +5,8 @@
 	${bndlib},\
 	${aQute-repository},\
 	com.jcraft.jsch,\
-	org.eclipse.jgit,\
-	org.osgi.impl.bundle.bindex;packages=org.osgi.impl.bundle.bindex
-	
+	org.eclipse.jgit
+
 -testpath: \
 	slf4j.api,\
 	slf4j.simple,\

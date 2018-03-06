@@ -264,12 +264,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
                 Styler styler = null;
 
                 Repository repo = (Repository) element;
-                if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
-                    @SuppressWarnings("resource")
-                    aQute.bnd.deployer.repository.wrapper.Plugin wrapper = (aQute.bnd.deployer.repository.wrapper.Plugin) repo;
-                    wrapper.init();
-                    label = wrapper.toString();
-                } else if (repo instanceof RepositoryPlugin) {
+                if (repo instanceof RepositoryPlugin) {
                     label = ((RepositoryPlugin) repo).getName();
                 } else {
                     label = repo.toString();

@@ -35,7 +35,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.indexer.ResourceIndexer;
 import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
 import org.osgi.util.tracker.ServiceTracker;
@@ -65,7 +64,6 @@ public class Plugin extends AbstractUIPlugin {
 
     private volatile ServiceTracker<IWorkspace,IWorkspace> workspaceTracker;
     private volatile ServiceRegistration<URLStreamHandlerService> urlHandlerReg;
-    private volatile ResourceIndexerTracker resourceIndexerTracker;
     private volatile HeadlessBuildManagerTracker headlessBuildManager;
     private volatile VersionControlIgnoresManagerTracker versionControlIgnoresManager;
 
@@ -82,9 +80,6 @@ public class Plugin extends AbstractUIPlugin {
 
         bndActivator = new Activator();
         bndActivator.start(context);
-
-        resourceIndexerTracker = new ResourceIndexerTracker(context, 1000);
-        resourceIndexerTracker.open();
 
         versionControlIgnoresManager = new VersionControlIgnoresManagerTracker(context);
         versionControlIgnoresManager.open();
@@ -157,7 +152,6 @@ public class Plugin extends AbstractUIPlugin {
         bndActivator.stop(context);
         headlessBuildManager.close();
         versionControlIgnoresManager.close();
-        resourceIndexerTracker.close();
         this.bundleContext = null;
         plugin = null;
         super.stop(context);
@@ -274,10 +268,6 @@ public class Plugin extends AbstractUIPlugin {
 
     public static ImageDescriptor imageDescriptorFromPlugin(String imageFilePath) {
         return AbstractUIPlugin.imageDescriptorFromPlugin(PLUGIN_ID, imageFilePath);
-    }
-
-    public ResourceIndexer getResourceIndexer() {
-        return resourceIndexerTracker;
     }
 
     public HeadlessBuildManager getHeadlessBuildManager() {

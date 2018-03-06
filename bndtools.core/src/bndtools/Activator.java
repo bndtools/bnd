@@ -4,17 +4,13 @@ import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
 
-import org.bndtools.utils.osgi.BundleUtils;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.url.URLConstants;
 import org.osgi.service.url.URLStreamHandlerService;
@@ -22,7 +18,6 @@ import org.osgi.service.url.URLStreamHandlerService;
 import aQute.bnd.build.ReflectAction;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.action.Action;
-import aQute.bnd.version.VersionRange;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -51,19 +46,6 @@ public class Activator extends AbstractUIPlugin {
         // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d",
         // "a:d:e"});
         context.registerService(Action.class.getName(), new ReflectAction(""), p);
-
-        // We want the repoindex bundle to start so it registers its service.
-        // (sigh... Eclipse)
-        Bundle repoindex = BundleUtils.findBundle(context, "org.osgi.impl.bundle.repoindex.lib", new VersionRange("0"));
-        if (repoindex != null) {
-            try {
-                repoindex.start();
-            } catch (BundleException e) {
-                getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to start repository indexer plugin.", e));
-            }
-        } else {
-            getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Repository indexer plugin is not available.", null));
-        }
 
         Hashtable<String,Object> dataUrlHandlerProps = new Hashtable<>();
         dataUrlHandlerProps.put(URLConstants.URL_HANDLER_PROTOCOL, DataURLStreamHandler.PROTOCOL);

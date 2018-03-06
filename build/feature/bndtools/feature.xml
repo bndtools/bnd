@@ -5,7 +5,7 @@
   are made available under the terms of the Eclipse Public License v1.0
   which accompanies this distribution, and is available at
   http://www.eclipse.org/legal/epl-v10.html
-  
+
   Contributors:
       Neil Bartlett - initial API and implementation
 
@@ -169,13 +169,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
          download-size="0"
          install-size="0"
          version="@org.bndtools.embeddedrepo-version@"
-         unpack="false"/>
-
-   <plugin
-         id="org.osgi.impl.bundle.repoindex.lib"
-         download-size="0"
-         install-size="0"
-         version="@org.osgi.impl.bundle.repoindex.lib-version@"
          unpack="false"/>
 
    <plugin

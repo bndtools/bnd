@@ -2,7 +2,7 @@ package org.bndtools.core.jobs;
 
 import java.io.File;
 import java.io.OutputStream;
-import java.util.Map;
+import java.net.URI;
 import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
@@ -16,8 +16,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.osgi.service.indexer.ResourceIndexer;
 
+import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 
@@ -25,13 +25,17 @@ public class GenerateIndexJob extends Job {
 
     private final Set<File> files;
     private final File outputFile;
-    private final Map<String,String> config;
+    private final URI base;
+    private final boolean compress;
+    private final String name;
 
-    public GenerateIndexJob(Set<File> files, File outputFile, Map<String,String> config) {
+    public GenerateIndexJob(Set<File> files, File outputFile, URI base, boolean compress, String name) {
         super("Generating index");
         this.files = files;
         this.outputFile = outputFile;
-        this.config = config;
+        this.base = base;
+        this.compress = compress;
+        this.name = name;
     }
 
     @Override
@@ -40,8 +44,7 @@ public class GenerateIndexJob extends Job {
 
         // Generate index
         try (OutputStream outputStream = IO.outputStream(outputFile)) {
-            ResourceIndexer indexer = Plugin.getDefault().getResourceIndexer();
-            indexer.index(files, outputStream, config);
+            SimpleIndexer.index(files, outputStream, base, compress, name);
         } catch (Exception e) {
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error indexing files.", e);
         }

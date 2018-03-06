@@ -78,7 +78,6 @@ public class TestGitOBRRepo extends TestCase {
         repo.setProperties(properties);
 
         Properties props = new Properties();
-        props.put(Processor.PLUGIN, org.osgi.impl.bundle.bindex.BundleIndexerImpl.class.getName());
         Processor processor = new Processor();
         processor.setProperties(props);
         repo.setReporter(processor);
