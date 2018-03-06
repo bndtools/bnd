@@ -134,8 +134,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 	static Random					random			= new Random();
 	// TODO handle include files out of date
-	// TODO make splitter skip eagerly whitespace so trim is not necessary
 	public final static String		LIST_SPLITTER	= "\\s*,\\s*";
+	private final static Pattern				LIST_SPLITTER_PATTERN	= Pattern.compile(LIST_SPLITTER);
 	final List<String>				errors			= new ArrayList<>();
 	final List<String>				warnings		= new ArrayList<>();
 	final Set<Object>				basicPlugins	= new HashSet<>();
@@ -1599,27 +1599,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Join a list.
 	 */
-	public static String join(Collection< ? > list, String delimeter) {
-		return join(delimeter, list);
+	public static String join(Collection<?> list) {
+		return join(list, ",");
 	}
 
-	public static String join(String delimeter, Collection< ? >... list) {
-		StringBuilder sb = new StringBuilder();
-		String del = "";
-		if (list != null) {
-			for (Collection< ? > l : list) {
-				for (Object item : l) {
-					sb.append(del);
-					sb.append(item);
-					del = delimeter;
-				}
-			}
-		}
-		return sb.toString();
-	}
-
-	public static String join(Object[] list, String delimeter) {
-		if (list == null)
+	public static String join(Collection<?> list, String delimeter) {
+		if (list == null || list.isEmpty())
 			return "";
 		StringBuilder sb = new StringBuilder();
 		String del = "";
@@ -1631,34 +1616,61 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return sb.toString();
 	}
 
-	public static String join(Collection< ? >... list) {
-		return join(",", list);
+	public static String join(Collection<?>... lists) {
+		return join(",", lists);
 	}
 
-	public static <T> String join(T list[]) {
+	public static String join(String delimeter, Collection<?>... lists) {
+		if (lists == null || lists.length == 0)
+			return "";
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+		for (Collection<?> list : lists) {
+			for (Object item : list) {
+				sb.append(del);
+				sb.append(item);
+				del = delimeter;
+			}
+		}
+		return sb.toString();
+	}
+
+	public static String join(Object[] list, String delimeter) {
+		if (list == null || list.length == 0)
+			return "";
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+		for (Object item : list) {
+			sb.append(del);
+			sb.append(item);
+			del = delimeter;
+		}
+		return sb.toString();
+	}
+
+	public static <T> String join(T[] list) {
 		return join(list, ",");
 	}
 
 	public static void split(String s, Collection<String> set) {
-
-		String elements[] = s.trim().split(LIST_SPLITTER);
-		for (String element : elements) {
-			if (element.length() > 0)
+		if (s == null || (s = s.trim()).isEmpty())
+			return;
+		for (String element : LIST_SPLITTER_PATTERN.split(s, 0)) {
+			if (!element.isEmpty())
 				set.add(element);
 		}
 	}
 
 	public static Collection<String> split(String s) {
-		return split(s, LIST_SPLITTER);
+		if (s == null || (s = s.trim()).isEmpty())
+			return Collections.emptyList();
+		return Arrays.asList(LIST_SPLITTER_PATTERN.split(s, 0));
 	}
 
 	public static Collection<String> split(String s, String splitter) {
-		if (s != null)
-			s = s.trim();
-		if (s == null || s.trim().length() == 0)
+		if (s == null || (s = s.trim()).isEmpty())
 			return Collections.emptyList();
-
-		return Arrays.asList(s.split(splitter));
+		return Arrays.asList(s.split(splitter, 0));
 	}
 
 	public static String merge(String... strings) {
