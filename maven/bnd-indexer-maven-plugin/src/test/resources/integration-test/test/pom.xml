@@ -18,6 +18,7 @@
 		<module>local-repo-dependency</module>
 		<module>rename-output</module>
 		<module>index-folder</module>
+		<module>index-folder-includes-excludes</module>
 		<module>include-jar</module>
 		<module>test-deploy</module>
 		<module>index-deployment-repo</module>
