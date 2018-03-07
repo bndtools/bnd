@@ -512,7 +512,7 @@ public class Macro {
 		for (int i = 2; i < args.length; i++) {
 			Processor.split(args[i], result);
 		}
-		return Processor.join(args[1], result);
+		return Processor.join(result, args[1]);
 	}
 
 	static String _ifHelp = "${if;<condition>;<iftrue> [;<iffalse>] } condition is either a filter expression or truthy";

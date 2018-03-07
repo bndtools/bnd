@@ -55,7 +55,7 @@ public class JarSignerTest extends TestCase {
 			Jar jar = new Jar(IO.getFile("testresources/test.jar"));
 			b.setJar(jar);
 			signer.sign(b, "test");
-			System.err.printf(Processor.join(b.getErrors(), "%n") + "%n");
+			System.err.println(Processor.join(b.getErrors(), "\n"));
 			assertEquals(1, b.getErrors().size());
 			assertEquals(0, b.getWarnings().size());
 		}
@@ -77,8 +77,8 @@ public class JarSignerTest extends TestCase {
 		try (Builder b = new Builder()) {
 			b.setJar(jar);
 			signer.sign(b, "test");
-			System.err.printf(Processor.join(b.getErrors(), "%n") + "%n");
-			System.err.printf(Processor.join(b.getWarnings(), "%n") + "%n");
+			System.err.println(Processor.join(b.getErrors(), "\n"));
+			System.err.println(Processor.join(b.getWarnings(), "\n"));
 			assertEquals(0, b.getErrors().size());
 			assertEquals(0, b.getWarnings().size());
 			assertNotNull(jar.getResource("META-INF/TEST.SF"));
