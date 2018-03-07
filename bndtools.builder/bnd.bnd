@@ -41,12 +41,9 @@ Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 # Content
 repoindex-packages: \
-	org.osgi.service.indexer.impl.types,\
-	org.osgi.service.indexer.impl,\
-	org.osgi.service.indexer.impl.util,\
 	org.kxml2.io;-split-package:=merge-first,\
 	org.xmlpull.v1;-split-package:=merge-first
-	
+
 Private-Package: \
 	org.bndtools.builder.*, \
 	${repoindex-packages}
