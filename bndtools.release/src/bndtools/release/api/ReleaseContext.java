@@ -32,7 +32,8 @@ public class ReleaseContext {
     private IProgressMonitor progressMonitor;
 
     private final List<Jar> releasedJars;
-    private final Map<String,Object> properties;
+    private final List<String> releasedJarSummaries;
+    private final Map<String, Object> properties;
     private final ErrorHandler errorHandler;
     private Scope currentScope;
     private ReleaseOption releaseOption;
@@ -44,7 +45,8 @@ public class ReleaseContext {
         this.releaseOption = releaseOption;
 
         this.releasedJars = new ArrayList<Jar>();
-        this.properties = new HashMap<String,Object>();
+        this.releasedJarSummaries = new ArrayList<String>();
+        this.properties = new HashMap<String, Object>();
         this.errorHandler = new ErrorHandler();
     }
 
@@ -75,16 +77,22 @@ public class ReleaseContext {
 
     public void addReleasedJar(Jar jar) {
         releasedJars.add(jar);
+
+        // Save off our summary info now, because our JARs will get
+        // closed out from underneath us later
+        releasedJarSummaries.add(ReleaseUtils.getBundleSymbolicName(jar) + "-" + ReleaseUtils.getBundleVersion(jar));
     }
 
     public List<Jar> getReleasedJars() {
         return releasedJars;
     }
 
+    public List<String> getReleaseSummaries() {
+        return releasedJarSummaries;
+    }
+
     public void close() {
-        for (Jar jar : releasedJars) {
-            jar.close();
-        }
+        // the released jars were closed by the project builder
     }
 
     public void setProperty(String name, Object value) {
@@ -95,7 +103,7 @@ public class ReleaseContext {
         return properties.get(name);
     }
 
-    public Map<String,Object> getPropertyMap() {
+    public Map<String, Object> getPropertyMap() {
         return properties;
     }
 
@@ -163,8 +171,7 @@ public class ReleaseContext {
 
     /**
      * @deprecated Use setReleaseOption instead
-     * @param updateOnly
-     *            true to indicate 'update only mode'
+     * @param updateOnly true to indicate 'update only mode'
      */
     @Deprecated
     public void setUpdateOnly(boolean updateOnly) {

@@ -61,7 +61,8 @@ public class ReleaseHelper {
     public final static Pattern VERSION_WITH_MACRO = Pattern.compile(VERSION_WITH_MACRO_STRING);
 
     public static void updateProject(ReleaseContext context) throws Exception {
-        try (ProjectBuilder pb = context.getProject().getBuilder(null)) {
+        try (ProjectBuilder pb = context.getProject()
+            .getBuilder(null)) {
             for (Builder builder : pb.getSubBuilders()) {
 
                 Baseline current = getBaselineForBuilder(builder, context);
@@ -69,7 +70,8 @@ public class ReleaseHelper {
                     continue;
                 }
                 for (Info info : current.getPackageInfos()) {
-                    context.getProject().setPackageInfo(info.packageName, info.suggestedVersion);
+                    context.getProject()
+                        .setPackageInfo(info.packageName, info.suggestedVersion);
                 }
 
                 updateBundleVersion(context, current, builder);
@@ -85,8 +87,10 @@ public class ReleaseHelper {
             File file = builder.getPropertiesFile();
             Properties properties = builder.getProperties();
             if (file == null) {
-                file = context.getProject().getPropertiesFile();
-                properties = context.getProject().getProperties();
+                file = context.getProject()
+                    .getPropertiesFile();
+                properties = context.getProject()
+                    .getProperties();
             }
             final IFile resource = (IFile) ReleaseUtils.toResource(file);
 
@@ -129,7 +133,8 @@ public class ReleaseHelper {
                 }
             };
             if (Display.getCurrent() == null) {
-                Display.getDefault().syncExec(run);
+                Display.getDefault()
+                    .syncExec(run);
             } else
                 run.run();
         }
@@ -138,7 +143,8 @@ public class ReleaseHelper {
     private static Baseline getBaselineForBuilder(Builder builder, ReleaseContext context) {
         Baseline current = null;
         for (Baseline jd : context.getBaselines()) {
-            if (jd.getBsn().equals(builder.getBsn())) {
+            if (jd.getBsn()
+                .equals(builder.getBsn())) {
                 current = jd;
                 break;
             }
@@ -153,21 +159,21 @@ public class ReleaseHelper {
         List<IReleaseParticipant> participants = Activator.getReleaseParticipants();
 
         switch (context.getReleaseOption()) {
-        case UPDATE :
-        default :
-            if (!doUpdateVersions(context, participants)) {
-                return false;
-            }
-            break;
-        case RELEASE :
-            ret = doRelease(context, diffs, participants);
-            break;
-        case UPDATE_RELEASE :
-            if (!doUpdateVersions(context, participants)) {
-                return false;
-            }
-            ret = doRelease(context, diffs, participants);
-            break;
+            case UPDATE :
+            default :
+                if (!doUpdateVersions(context, participants)) {
+                    return false;
+                }
+                break;
+            case RELEASE :
+                ret = doRelease(context, diffs, participants);
+                break;
+            case UPDATE_RELEASE :
+                if (!doUpdateVersions(context, participants)) {
+                    return false;
+                }
+                ret = doRelease(context, diffs, participants);
+                break;
         }
 
         postRelease(context, participants, ret);
@@ -187,6 +193,9 @@ public class ReleaseHelper {
         IProject proj = ReleaseUtils.getProject(context.getProject());
         proj.refreshLocal(IResource.DEPTH_INFINITE, context.getProgressMonitor());
 
+        context.getProject()
+            .clear();
+
         return true;
     }
 
@@ -198,13 +207,15 @@ public class ReleaseHelper {
             return false;
         }
 
-        try (ProjectBuilder pb = context.getProject().getBuilder(null)) {
+        try (ProjectBuilder pb = context.getProject()
+            .getBuilder(null)) {
             List<Builder> builders = pb.getSubBuilders();
 
             for (Baseline diff : diffs) {
                 Builder builder = null;
                 for (Builder b : builders) {
-                    if (b.getBsn().equals(diff.getBsn())) {
+                    if (b.getBsn()
+                        .equals(diff.getBsn())) {
                         builder = b;
                         break;
                     }
@@ -227,33 +238,41 @@ public class ReleaseHelper {
             version = ReleaseUtils.getBundleVersion(jar);
         }
         for (String message : reporter.getErrors()) {
-            context.getErrorHandler().error(symbName, version, message);
+            context.getErrorHandler()
+                .error(symbName, version, message);
         }
     }
 
     private static void handleReleaseErrors(ReleaseContext context, Reporter reporter, String symbolicName, String version) {
         for (String message : reporter.getErrors()) {
-            context.getErrorHandler().error(symbolicName, version, message);
+            context.getErrorHandler()
+                .error(symbolicName, version, message);
         }
     }
 
     private static void displayErrors(ReleaseContext context) {
 
-        final String name = context.getProject().getName();
-        final List<Error> errors = new ArrayList<>(context.getErrorHandler().getErrors());
-        context.getErrorHandler().clear();
+        final String name = context.getProject()
+            .getName();
+        final List<Error> errors = new ArrayList<>(context.getErrorHandler()
+            .getErrors());
+        context.getErrorHandler()
+            .clear();
         if (errors.size() > 0) {
             Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    Shell shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+                    Shell shell = PlatformUI.getWorkbench()
+                        .getDisplay()
+                        .getActiveShell();
                     ErrorDialog error = new ErrorDialog(shell, name, errors);
                     error.open();
                 }
             };
 
             if (Display.getCurrent() == null) {
-                Display.getDefault().asyncExec(runnable);
+                Display.getDefault()
+                    .asyncExec(runnable);
             } else {
                 runnable.run();
             }
@@ -270,7 +289,8 @@ public class ReleaseHelper {
                 jar = builder.build();
             } else {
                 // No need to rebuild if release only
-                File jarFile = new File(context.getProject().getTarget(), builder.getBsn() + ".jar");
+                File jarFile = new File(context.getProject()
+                    .getTarget(), builder.getBsn() + ".jar");
                 if (jarFile.isFile()) {
                     jar = new Jar(jarFile);
                 } else {
@@ -291,17 +311,22 @@ public class ReleaseHelper {
             }
 
             try (JarResource jr = new JarResource(jar); InputStream is = new BufferedInputStream(jr.openInputStream())) {
-                context.getProject().release(context.getReleaseRepository().getName(), jar.getName(), is);
+                context.getProject()
+                    .release(context.getReleaseRepository()
+                        .getName(), jar.getName(), is);
 
-                if (!context.getProject().isOk()) {
+                if (!context.getProject()
+                    .isOk()) {
                     handleBuildErrors(context, context.getProject(), jar);
                     displayErrors(context);
-                    context.getProject().clear();
+                    context.getProject()
+                        .clear();
                     return false;
                 }
             }
 
-            File file = context.getReleaseRepository().get(symbName, Version.parseVersion(version), null);
+            File file = context.getReleaseRepository()
+                .get(symbName, Version.parseVersion(version), null);
             Jar releasedJar = null;
             if (file != null && file.exists()) {
                 IResource resource = ReleaseUtils.toResource(file);
@@ -399,7 +424,8 @@ public class ReleaseHelper {
         List<RepositoryPlugin> repos = project.getPlugins(RepositoryPlugin.class);
         for (RepositoryPlugin r : repos) {
             if (r.canWrite()) {
-                if (repoName == null || r.getName().equals(repoName)) {
+                if (repoName == null || r.getName()
+                    .equals(repoName)) {
                     repo = r;
                     break;
                 }
@@ -434,7 +460,8 @@ public class ReleaseHelper {
                 if (ReleaseUtils.needsRelease(baseline)) {
                     projectDiff.setRelease(true);
                     projectDiff.setReleaseRequired(true);
-                    if (!baseline.getNewerVersion().equals(baseline.getSuggestedVersion())) {
+                    if (!baseline.getNewerVersion()
+                        .equals(baseline.getSuggestedVersion())) {
                         projectDiff.setVersionUpdateRequired(true);
                         continue;
                     }
@@ -468,7 +495,8 @@ public class ReleaseHelper {
             if (createIfAbsent)
                 file.create(inputStream, false, null);
             else
-                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, String.format(Messages.fileDoesNotExist, file.getFullPath().toString()), null));
+                throw new CoreException(new Status(IStatus.ERROR, Activator.PLUGIN_ID, 0, String.format(Messages.fileDoesNotExist, file.getFullPath()
+                    .toString()), null));
         }
     }
 
@@ -494,7 +522,8 @@ public class ReleaseHelper {
             if (diff.isRelease()) {
                 for (Baseline baseline : diff.getBaselines()) {
                     try {
-                        Builder builder = diff.getProject().getSubBuilder(baseline.getBsn());
+                        Builder builder = diff.getProject()
+                            .getSubBuilder(baseline.getBsn());
                         String bundleVersion = builder.getUnprocessedProperty(Constants.BUNDLE_VERSION, "");
                         if (bundleVersion.startsWith("${")) {
                             MacroInfo info = new MacroInfo();
