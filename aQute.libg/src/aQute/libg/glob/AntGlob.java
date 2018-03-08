@@ -14,13 +14,13 @@ public class AntGlob extends Glob {
 		super(globString, Pattern.compile(convertAntGlobToRegEx(globString), flags));
 	}
 
+	// match forward slash or back slash (windows)
 	private static final String	SLASHY		= "[/\\\\]";
 	private static final String	NOT_SLASHY	= "[^/\\\\]";
 	private static String convertAntGlobToRegEx(String line) {
 		line = line.trim();
 		int strLen = line.length();
-		StringBuilder sb = new StringBuilder(strLen);
-		int inCurlies = 0;
+		StringBuilder sb = new StringBuilder(strLen << 2);
 		char previousChar = 0;
 		for (int i = 0; i < strLen; i++) {
 			char currentChar = line.charAt(i);
@@ -48,18 +48,6 @@ public class AntGlob extends Glob {
 				case '?' :
 					sb.append(NOT_SLASHY);
 					break;
-				case '.' :
-				case '(' :
-				case ')' :
-				case '[' :
-				case ']' :
-				case '+' :
-				case '|' :
-				case '^' :
-				case '$' :
-					sb.append('\\');
-					sb.append(currentChar);
-					break;
 				case '/' :
 					if (i + 1 == strLen) {
 						// ending with "/" is shorthand for ending with "/**"
@@ -70,32 +58,27 @@ public class AntGlob extends Glob {
 					break;
 				case '\\' :
 					if (i + 1 < strLen) {
-						sb.append("\\x{");
-						sb.append(Integer.toHexString(line.charAt(++i)));
-						sb.append('}');
+						sb.append("\\Q")
+							.append(line.charAt(++i))
+							.append("\\E");
 					}
 					break;
+				case '.' :
+				case '(' :
+				case ')' :
+				case '[' :
+				case ']' :
 				case '{' :
-					sb.append("(?:");
-					inCurlies++;
-					break;
 				case '}' :
-					if (inCurlies > 0) {
-						sb.append(')');
-						inCurlies--;
-					} else {
-						sb.append('}');
-					}
-					break;
-				case ',' :
-					if (inCurlies > 0) {
-						sb.append('|');
-					} else {
-						sb.append(',');
-					}
-					break;
+				case '+' :
+				case '|' :
+				case '^' :
+				case '$' :
+					sb.append('\\');
+					// FALL THROUGH
 				default :
 					sb.append(currentChar);
+					break;
 			}
 			previousChar = currentChar;
 		}
