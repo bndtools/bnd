@@ -275,6 +275,12 @@ public class AntGlobTest extends TestCase {
 		assertTrue(glob.matcher("[abc]")
 			.matches());
 
+		glob = new AntGlob("abc{2}");
+		assertFalse(glob.matcher("abcc")
+			.matches());
+		assertTrue(glob.matcher("abc{2}")
+			.matches());
+
 		glob = new AntGlob("abc\\{2\\}");
 		assertFalse(glob.matcher("abcc")
 			.matches());
@@ -323,24 +329,16 @@ public class AntGlobTest extends TestCase {
 		assertTrue(glob.matcher("abcx")
 			.matches());
 
+		glob = new AntGlob("abc\\x\\\\\\E\\z");
+		assertFalse(glob.matcher("abc\\x\\\\\\E\\z")
+			.matches());
+		assertTrue(glob.matcher("abcx\\Ez")
+			.matches());
+
 		glob = new AntGlob("abc\\");
 		assertFalse(glob.matcher("abc\\")
 			.matches());
 		assertTrue(glob.matcher("abc")
-			.matches());
-	}
-
-	public void testEither() {
-		Glob glob;
-
-		glob = new AntGlob("abc{2,3}");
-		assertFalse(glob.matcher("abc{2,3}")
-			.matches());
-		assertFalse(glob.matcher("abc")
-			.matches());
-		assertTrue(glob.matcher("abc2")
-			.matches());
-		assertTrue(glob.matcher("abc3")
 			.matches());
 	}
 }
