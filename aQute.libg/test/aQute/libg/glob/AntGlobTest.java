@@ -45,6 +45,10 @@ public class AntGlobTest extends TestCase {
 		glob = new AntGlob("/?abc/*/*.java");
 		assertTrue(glob.matcher("/xabc/foobar/test.java")
 			.matches());
+		assertFalse(glob.matcher("xabc/foobar/test.java")
+			.matches());
+		assertFalse(glob.matcher("/xabc/foobar/test_java")
+			.matches());
 
 		glob = new AntGlob("**/CVS/*");
 		assertTrue(glob.matcher("CVS/Repositories")
@@ -179,6 +183,24 @@ public class AntGlobTest extends TestCase {
 			.matches());
 		assertFalse(glob.matcher("/xyz.xml")
 			.matches());
+
+		glob = new AntGlob("**/**");
+		assertTrue(glob.matcher("/test/x.java")
+			.matches());
+		assertTrue(glob.matcher("/test/foo/bar/xyz.html")
+			.matches());
+		assertTrue(glob.matcher("test/foo/bar/xyz.html")
+			.matches());
+		assertTrue(glob.matcher("test/xyz.xml")
+			.matches());
+		assertTrue(glob.matcher("/xyz.xml")
+			.matches());
+		assertTrue(glob.matcher("/xyz.xml/")
+			.matches());
+		assertTrue(glob.matcher("xyz.xml/")
+			.matches());
+		assertTrue(glob.matcher("xyz.xml")
+			.matches());
 	}
 
 	public void testEscape() {
@@ -219,6 +241,106 @@ public class AntGlobTest extends TestCase {
 		assertFalse(glob.matcher("org\\apache\\test\\")
 			.matches());
 		assertFalse(glob.matcher("org/apache/jakarta")
+			.matches());
+
+		glob = new AntGlob("\\/**");
+		assertTrue(glob.matcher("/CVS")
+			.matches());
+		assertFalse(glob.matcher("/CVS/Foo")
+			.matches());
+		assertFalse(glob.matcher("\\CVS")
+			.matches());
+		assertFalse(glob.matcher("CVS")
+			.matches());
+
+		glob = new AntGlob("\\/**/");
+		assertTrue(glob.matcher("/CVS")
+			.matches());
+		assertTrue(glob.matcher("/CVS/Foo")
+			.matches());
+		assertFalse(glob.matcher("\\CVS")
+			.matches());
+		assertFalse(glob.matcher("CVS")
+			.matches());
+
+		glob = new AntGlob("[abc]");
+		assertFalse(glob.matcher("a")
+			.matches());
+		assertTrue(glob.matcher("[abc]")
+			.matches());
+
+		glob = new AntGlob("\\[abc\\]");
+		assertFalse(glob.matcher("a")
+			.matches());
+		assertTrue(glob.matcher("[abc]")
+			.matches());
+
+		glob = new AntGlob("abc\\{2\\}");
+		assertFalse(glob.matcher("abcc")
+			.matches());
+		assertTrue(glob.matcher("abc{2}")
+			.matches());
+
+		glob = new AntGlob("abc|def");
+		assertFalse(glob.matcher("abc")
+			.matches());
+		assertFalse(glob.matcher("def")
+			.matches());
+		assertTrue(glob.matcher("abc|def")
+			.matches());
+
+		glob = new AntGlob("abc,def");
+		assertFalse(glob.matcher("abc")
+			.matches());
+		assertFalse(glob.matcher("def")
+			.matches());
+		assertTrue(glob.matcher("abc,def")
+			.matches());
+
+		glob = new AntGlob("^abc");
+		assertFalse(glob.matcher("abc")
+			.matches());
+		assertTrue(glob.matcher("^abc")
+			.matches());
+
+		glob = new AntGlob("abc$");
+		assertFalse(glob.matcher("abc")
+			.matches());
+		assertTrue(glob.matcher("abc$")
+			.matches());
+
+		glob = new AntGlob("abc+");
+		assertFalse(glob.matcher("abc")
+			.matches());
+		assertFalse(glob.matcher("abcc")
+			.matches());
+		assertTrue(glob.matcher("abc+")
+			.matches());
+
+		glob = new AntGlob("abc\\x");
+		assertFalse(glob.matcher("abc\\x")
+			.matches());
+		assertTrue(glob.matcher("abcx")
+			.matches());
+
+		glob = new AntGlob("abc\\");
+		assertFalse(glob.matcher("abc\\")
+			.matches());
+		assertTrue(glob.matcher("abc")
+			.matches());
+	}
+
+	public void testEither() {
+		Glob glob;
+
+		glob = new AntGlob("abc{2,3}");
+		assertFalse(glob.matcher("abc{2,3}")
+			.matches());
+		assertFalse(glob.matcher("abc")
+			.matches());
+		assertTrue(glob.matcher("abc2")
+			.matches());
+		assertTrue(glob.matcher("abc3")
 			.matches());
 	}
 }

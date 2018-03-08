@@ -21,12 +21,13 @@ public class AntGlob extends Glob {
 		int strLen = line.length();
 		StringBuilder sb = new StringBuilder(strLen);
 		int inCurlies = 0;
+		char previousChar = 0;
 		for (int i = 0; i < strLen; i++) {
 			char currentChar = line.charAt(i);
 			switch (currentChar) {
 				case '*' :
 					int j, k;
-					if ((i == 0 || line.charAt(i - 1) == '/') && //
+					if ((i == 0 || previousChar == '/') && //
 						((j = i + 1) < strLen && line.charAt(j) == '*') && //
 						((k = j + 1) == strLen || line.charAt(k) == '/')) {
 						if (i == 0 && k < strLen) { // line starts with "**/"
@@ -50,12 +51,12 @@ public class AntGlob extends Glob {
 				case '.' :
 				case '(' :
 				case ')' :
+				case '[' :
+				case ']' :
 				case '+' :
 				case '|' :
 				case '^' :
 				case '$' :
-				case '@' :
-				case '%' :
 					sb.append('\\');
 					sb.append(currentChar);
 					break;
@@ -68,9 +69,10 @@ public class AntGlob extends Glob {
 					}
 					break;
 				case '\\' :
-					sb.append('\\');
 					if (i + 1 < strLen) {
-						sb.append(line.charAt(++i));
+						sb.append("\\x{");
+						sb.append(Integer.toHexString(line.charAt(++i)));
+						sb.append('}');
 					}
 					break;
 				case '{' :
@@ -95,6 +97,7 @@ public class AntGlob extends Glob {
 				default :
 					sb.append(currentChar);
 			}
+			previousChar = currentChar;
 		}
 		return sb.toString();
 	}
