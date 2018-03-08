@@ -72,7 +72,6 @@ public class TestGitOBRRepo extends TestCase {
         properties.put(GitOBRRepo.PROP_GIT_BRANCH, "master");
         properties.put(GitOBRRepo.PROP_LOCAL_DIR, checkoutDir.getAbsolutePath());
         properties.put(GitOBRRepo.PROP_LOCAL_SUB_DIR, "jars");
-        properties.put(GitOBRRepo.PROP_REPO_TYPE, GitOBRRepo.REPO_TYPE_OBR);
 
         GitOBRRepo repo = new GitOBRRepo();
         repo.setProperties(properties);
