@@ -14,40 +14,38 @@ public class AntGlob extends Glob {
 		super(globString, Pattern.compile(convertAntGlobToRegEx(globString), flags));
 	}
 
+	private static final String	SLASHY		= "[/\\\\]";
+	private static final String	NOT_SLASHY	= "[^/\\\\]";
 	private static String convertAntGlobToRegEx(String line) {
 		line = line.trim();
 		int strLen = line.length();
-		boolean ending;
-		if (line.endsWith("/**")) {
-			ending = true;
-			strLen -= 3;
-		} else if (line.endsWith("/")) {
-			// ending with "/" is shorthand for ending with "/**"
-			ending = true;
-			strLen--;
-		} else {
-			ending = false;
-		}
 		StringBuilder sb = new StringBuilder(strLen);
 		int inCurlies = 0;
 		for (int i = 0; i < strLen; i++) {
 			char currentChar = line.charAt(i);
 			switch (currentChar) {
 				case '*' :
-					if (i + 1 < strLen && line.charAt(i + 1) == '*') {
-						i++;
-						if (i + 1 < strLen && line.charAt(i + 1) == '/') {
-							i++;
-							sb.append("(?:.*[/\\\\]|)");
+					int j, k;
+					if ((i == 0 || line.charAt(i - 1) == '/') && //
+						((j = i + 1) < strLen && line.charAt(j) == '*') && //
+						((k = j + 1) == strLen || line.charAt(k) == '/')) {
+						if (i == 0 && k < strLen) { // line starts with "**/"
+							sb.append("(?:.*" + SLASHY + "|)");
+							i = k;
+						} else if (i > 1) { // after "x/"
+							sb.setLength(sb.length() - SLASHY.length());
+							sb.append("(?:" + SLASHY + ".*|)");
+							i = j;
 						} else {
 							sb.append(".*");
+							i = j;
 						}
 					} else {
-						sb.append("[^/\\\\]*");
+						sb.append(NOT_SLASHY + "*");
 					}
 					break;
 				case '?' :
-					sb.append("[^/\\\\]");
+					sb.append(NOT_SLASHY);
 					break;
 				case '.' :
 				case '(' :
@@ -62,7 +60,12 @@ public class AntGlob extends Glob {
 					sb.append(currentChar);
 					break;
 				case '/' :
-					sb.append("[/\\\\]");
+					if (i + 1 == strLen) {
+						// ending with "/" is shorthand for ending with "/**"
+						sb.append("(?:" + SLASHY + ".*|)");
+					} else {
+						sb.append(SLASHY);
+					}
 					break;
 				case '\\' :
 					sb.append('\\');
@@ -92,9 +95,6 @@ public class AntGlob extends Glob {
 				default :
 					sb.append(currentChar);
 			}
-		}
-		if (ending) {
-			sb.append("(?:[/\\\\].*|)");
 		}
 		return sb.toString();
 	}
