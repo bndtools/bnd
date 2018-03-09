@@ -424,11 +424,12 @@ task export(type: Export) {
 ```
 There are three properties which can be configured for an Export task:
 
-### bundlesOnly
+### exporter
 
-If `true` the task will export the `-runbundles` files to the configured
-`destinationDir`. If `false` the task will export an exectuable jar to
-the configured `destinationDir`.The default is `false`.
+Bnd has two built-in exporter plugins. `bnd.executablejar` exports an
+executable jar and `bnd.runbundles` exports the `-runbundles` files.
+The exporter plugin with the specified name must be an installed exporter
+plugin. The default is `bnd.executablejar`.
 
 ### bndrun
 
@@ -438,10 +439,11 @@ file since this is not a Workspace Build.
 
 ### destinationDir
 
-The directory for the output. The default is
-_${project.distsDir}_/executable if `bundlesOnly` is `false`, and
+The directory for the output. The default for destinationDir is
+_${project.distsDir}_/executable if the exporter is `bnd.executablejar`,
 _${project.distsDir}_/runbundles/_${bndrun.name - '.bndrun'}_ if
-`bundlesOnly` is `true`.
+the exporter is `bnd.runbundles`, and _${project.distsDir}_/_${task.name}_
+for all other exporters.
 
 ### bundles
 

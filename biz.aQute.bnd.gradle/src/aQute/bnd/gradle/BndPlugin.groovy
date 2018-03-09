@@ -337,31 +337,35 @@ public class BndPlugin implements Plugin<Project> {
         group 'build'
       }
 
-      tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file to an executable jar.') { taskName ->
+      tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('export.')) {
           String bndrun = taskName - 'export.'
           File runFile = file("${bndrun}.bndrun")
           if (runFile.isFile()) {
             task(taskName) {
-              description "Export the ${bndrun}.bndrun file to an executable jar."
+              description "Export the ${bndrun}.bndrun file."
               dependsOn assemble
               group 'export'
               ext.destinationDir = new File(distsDir, 'executable')
-              outputs.file({ new File(destinationDir, "${bndrun}.jar") }).withPropertyName('bndrunJar')
+              ext.exporter = EXECUTABLE_JAR
+              outputs.dir({ destinationDir }).withPropertyName('destinationDir')
               doFirst {
                 project.mkdir(destinationDir)
               }
               doLast {
-                File executableJar = new File(destinationDir, "${bndrun}.jar")
                 Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  logger.info 'Exporting {} to {}', run.getPropertiesFile(), executableJar.absolutePath
                   if (run.isStandalone()) {
                     run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
                   }
                   try {
-                    def export = run.export(EXECUTABLE_JAR, [:])
-                    export?.value.withCloseable { jr ->
-                      jr.getJar().write(executableJar)
+                    logger.info 'Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDir, exporter
+                    def export = run.export(exporter, [:])
+                    export?.value.withCloseable { r ->
+                      File exported = new File(destinationDir, export.key)
+                      exported.withOutputStream { out ->
+                        r.write(out)
+                      }
+                      exported.setLastModified(r.lastModified())
                     }
                   } catch (Exception e) {
                     throw new GradleException("Export of ${run.getPropertiesFile()} to an executable jar failed", e)
@@ -375,7 +379,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('export') {
-        description 'Export all the bndrun files to runnable jars.'
+        description 'Export all the bndrun files.'
         group 'export'
         fileTree(projectDir) {
             include '*.bndrun'

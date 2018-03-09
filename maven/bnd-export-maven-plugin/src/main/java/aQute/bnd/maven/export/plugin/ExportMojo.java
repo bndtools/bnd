@@ -3,9 +3,9 @@ package aQute.bnd.maven.export.plugin;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.maven.artifact.DefaultArtifact;
@@ -70,6 +70,9 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(defaultValue = "false")
 	private boolean				bundlesOnly;
 
+	@Parameter(required = false)
+	private String						exporter;
+
 	@Parameter(defaultValue = "true")
 	private boolean						attach;
 
@@ -92,6 +95,9 @@ public class ExportMojo extends AbstractMojo {
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
 					useMavenDependencies);
 
+			if (exporter == null) {
+				exporter = bundlesOnly ? RunbundlesExporter.RUNBUNDLES : ExecutableJarExporter.EXECUTABLE_JAR;
+			}
 			for (File runFile : bndruns) {
 				export(runFile, fileSetRepository);
 			}
@@ -142,24 +148,22 @@ public class ExportMojo extends AbstractMojo {
 				}
 			}
 			try {
-				Map<String, String> options = Collections.emptyMap();
-				if (bundlesOnly) {
-					Entry<String, Resource> export = run.export(RunbundlesExporter.RUNBUNDLES, options);
-					if (export != null) {
+				Entry<String, Resource> export = run.export(exporter, Collections.emptyMap());
+				if (export != null) {
+					if (exporter.equals(RunbundlesExporter.RUNBUNDLES)) {
 						try (JarResource r = (JarResource) export.getValue()) {
 							File runbundlesDir = new File(targetDir, "export/" + bndrun);
 							r.getJar()
 								.writeFolder(runbundlesDir);
 						}
-					}
-				} else {
-					Entry<String, Resource> export = run.export(ExecutableJarExporter.EXECUTABLE_JAR, options);
-					if (export != null) {
-						try (JarResource r = (JarResource) export.getValue()) {
-							File executableJar = new File(targetDir, bndrun + ".jar");
-							r.getJar()
-								.write(executableJar);
-							attach(executableJar, bndrun);
+					} else {
+						try (Resource r = export.getValue()) {
+							File exported = new File(targetDir, export.getKey());
+							try (OutputStream out = IO.outputStream(exported)) {
+								r.write(out);
+							}
+							exported.setLastModified(r.lastModified());
+							attach(exported, bndrun);
 						}
 					}
 				}
@@ -190,8 +194,9 @@ public class ExportMojo extends AbstractMojo {
 			logger.debug(
 					"The export plugin has been configured not to attach the generated application to the project.");
 			return;
-		} else if (bundlesOnly) {
-			logger.debug("The export plugin will not attach a bundles-only output to the project.");
+		} else if (!file.getName()
+			.endsWith(Constants.DEFAULT_JAR_EXTENSION)) {
+			logger.debug("The export plugin will not attach a non-jar output to the project.");
 			return;
 		}
 
