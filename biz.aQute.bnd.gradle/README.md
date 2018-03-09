@@ -391,7 +391,7 @@ task resolve(type: Resolve) {
   bndrun 'my.bndrun'
 }
 ```
-There are two properties which can be configured for a Resolve task:
+There are four properties which can be configured for a Resolve task:
 
 ### failOnChanges
 
@@ -409,6 +409,11 @@ file since this is not a Workspace Build.
 The collection of files to use for locating bundles during the
 bndrun resolution. The default is _${project.sourceSets.main.runtimeClasspath}_
 plus _${project.configurations.archives.artifacts.files}_.
+
+### reportOptional
+
+If `true` failure reports will include optional requirements. The default is
+`true`.
 
 ## Create a task of the `Export` type
 

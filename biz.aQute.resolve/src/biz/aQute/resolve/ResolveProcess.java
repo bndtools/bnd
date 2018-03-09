@@ -19,7 +19,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
+import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
+import org.apache.felix.resolver.reason.ReasonException;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -213,6 +216,92 @@ public class ResolveProcess {
 		return augment(re.getUnresolvedRequirements(), context, re);
 	}
 
+	/**
+	 * Produce a 'chain of responsibility' for the resolution failure, including
+	 * optional requirements.
+	 *
+	 * @param re the resolution exception
+	 * @return the report
+	 */
+	public static String format(ResolutionException re) {
+		return format(re, true);
+	}
+
+	/**
+	 * Produce a 'chain of responsibility' for the resolution failure.
+	 *
+	 * @param re the resolution exception
+	 * @param reportOptional if true, optional requirements are listed in the
+	 *            output
+	 * @return the report
+	 */
+	public static String format(ResolutionException re, boolean reportOptional) {
+		List<Requirement> chain = new ArrayList<>();
+
+		Throwable cause = re;
+		while (cause != null) {
+			if (cause instanceof ReasonException) {
+				ReasonException mre = (ReasonException) cause;
+
+				// there will only be one entry here
+				chain.addAll(mre.getUnresolvedRequirements());
+			}
+
+			cause = cause.getCause();
+		}
+
+		Map<Boolean, List<Requirement>> requirements = re.getUnresolvedRequirements()
+			.stream()
+			.filter(req -> !chain.contains(req))
+			.collect(Collectors.partitioningBy(ResolveProcess::isOptional));
+
+		try (Formatter f = new Formatter()) {
+			f.format("Resolution failed. Capabilities satisfying the following requirements could not be found:");
+			String prefix = "    ";
+			for (Requirement req : chain) {
+				f.format("%n%s[%s]", prefix, req.getResource());
+				if ("    ".equals(prefix))
+					prefix = "      ⮡ "; // arrow = \u2ba1
+				else
+					prefix = "    " + prefix;
+				format(f, prefix, req);
+				prefix = "    " + prefix;
+			}
+
+			requirements.get(Boolean.FALSE)
+				.stream()
+				.collect(Collectors.groupingBy(Requirement::getResource))
+				.forEach(formatGroup(f));
+
+			List<Requirement> optional = requirements.get(Boolean.TRUE);
+
+			if (!optional.isEmpty() && reportOptional) {
+				f.format("%nThe following requirements are optional:");
+				optional.stream()
+					.collect(Collectors.groupingBy(Requirement::getResource))
+					.forEach(formatGroup(f));
+			}
+
+			return f.toString();
+		}
+	}
+
+	static BiConsumer<? super Resource, ? super List<Requirement>> formatGroup(Formatter f) {
+		return (resource, list) -> {
+			f.format("%n    [%s]", resource);
+			list.forEach(req -> {
+				format(f, "      ⮡ ", req);
+			});
+		};
+	}
+
+	static void format(Formatter f, String prefix, Requirement req) {
+		String filter = req.getDirectives()
+			.get("filter");
+
+		f.format("%n%s%s: %s", prefix, req.getNamespace(), filter);
+	}
+
 	public static String format(Collection<Requirement> requirements) {
 		Set<Requirement> mandatory = new HashSet<>();
 		Set<Requirement> optional = new HashSet<>();
@@ -262,7 +351,7 @@ public class ResolveProcess {
 				}
 			}
 		} catch (TimeoutException toe) {}
-		return new ResolutionException(re.getMessage(), re.getCause(), list);
+		return new ResolutionException(re.getMessage(), re, list);
 	}
 
 	/*

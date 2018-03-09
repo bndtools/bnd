@@ -123,7 +123,7 @@ class TestBndPlugin extends Specification {
           bndrun.isFile()
           props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
           props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper/
-          result.output =~ '(?s)Unresolved requirements:(.*)test.simple'
+          result.output =~ '(?s)Resolution failed. Capabilities satisfying the following requirements could not be found:(.*)test.simple'
 
         when:
           bndrun = new File(testProjectDir, 'test.simple/resolvechange.bndrun')

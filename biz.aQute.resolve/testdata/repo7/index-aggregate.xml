@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<repository increment="1439898091623" name="aggregate-repo" xmlns="http://www.osgi.org/xmlns/repository/v1.0.0">
+	<referral url="index.xml" />
+	<referral url="index-aries.xml" />
+	<referral url="index-gemini.xml" />
+	<referral url="index-local.xml" />
+</repository>

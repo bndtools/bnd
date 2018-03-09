@@ -26,6 +26,8 @@
  * bundles during the bndrun execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
  * 'configurations.archives.artifacts.files'</li>
+ * <li>reportOptional - If true failure reports will include
+ * optional requirements. The default is true.</li>
  * </ul>
  */
 
@@ -58,6 +60,17 @@ public class Resolve extends DefaultTask {
    */
   @Input
   boolean failOnChanges
+
+  /**
+   * Whether to report optional requirements.
+   *
+   * <p>
+   * If <code>true</code>, optional requirements will be reported. The
+   * default is <code>true</code>.
+   *
+   */
+  @Input
+  boolean reportOptional = true
 
   private File bndrun
   private final Workspace bndWorkspace
@@ -128,7 +141,7 @@ public class Resolve extends DefaultTask {
         def result = run.resolve(failOnChanges, true)
         logger.info '{}: {}', Constants.RUNBUNDLES, result
       } catch (ResolutionException e) {
-        logger.error 'Unresolved requirements: {}', ResolveProcess.format(e.getUnresolvedRequirements())
+        logger.error ResolveProcess.format(e, reportOptional)
         throw new GradleException("${run.getPropertiesFile()} resolution exception", e)
       } finally {
         logReport(run, logger)

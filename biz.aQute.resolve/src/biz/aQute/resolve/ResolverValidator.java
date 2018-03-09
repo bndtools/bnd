@@ -200,7 +200,7 @@ public class ResolverValidator extends Processor {
 				}
 			}
 
-			error("resolving %s failed with %s", resource, resolution.message);
+			error(ResolveProcess.format(e, false));
 		} catch (Exception e) {
 			e.printStackTrace();
 			error("resolving %s failed with %s", context.getInputResource()
