@@ -23,6 +23,7 @@ public class OSGiIndexTest extends TestCase {
 		super.setUp();
 		IO.delete(tmp);
 	}
+
 	public void testIndex() throws Exception {
 		HttpClient client = new HttpClient();
 		client.setCache(tmp);
@@ -50,6 +51,26 @@ public class OSGiIndexTest extends TestCase {
 		assertEquals(value, f);
 		promise = oi.get("osgi.enroute.rest.simple.provider", new Version("2.0.2.201509211431"), f);
 		assertNotNull(promise);
+	}
+
+	public void testAggregateIndex() throws Exception {
+		HttpClient client = new HttpClient();
+		client.setCache(tmp);
+		OSGiIndex oi = new OSGiIndex("name", client, cache,
+			Collections.singletonList(IO.getFile("testdata/repo7/index-aggregate.xml")
+				.toURI()),
+			0, false);
+
+		List<String> list = oi.getBridge()
+			.list("org.eclipse.*");
+		assertNotNull(list);
+		assertEquals(9, list.size());
+
+		System.out.println(list);
+
+		SortedSet<Version> versions = oi.getBridge()
+			.versions("org.apache.geronimo.components.geronimo-transaction");
+		assertEquals(1, versions.size());
 	}
 
 	public OSGiIndex getIndex(HttpClient client) throws Exception, URISyntaxException {
