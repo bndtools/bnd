@@ -49,7 +49,7 @@ Here's an example setting the `bundles` used for resolution.
 |`targetDir`            | The director into which to export the result. _Defaults to `${project.build.directory}`._|
 |`resolve`              | Whether to resolve the `-runbundles` required for a valid runtime. _Defaults to `false`._|
 |`failOnChanges`        | Whether to fail the build if any change in the resolved `-runbundles` is discovered. _Defaults to `true`._|
-|`bundlesOnly`          | Instead of creating an executable jar place runbundles into `targetDir`. _Defaults to `false`._|
+|`exporter`          | The name of the exporter plugin to use. Bnd has two built-in exporter plugins. `bnd.executablejar` exports an executable jar and `bnd.runbundles` exports the -runbundles files. _Default to `bnd.executablejar`._|
 |`bundles`              | This is the collection of files to use for locating bundles during the bndrun resolution. Paths are relative to `${project.basedir}` by default. Absolute paths are allowed. _Defaults to dependencies in the `compile` and `runtime`, plus the current artifact (if any)._|
 |`useMavenDependencies` | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._|
-|`attach` | If `true` then the generated runnable jar file will be attached as an output of the current artifact. `bundlesOnly` outputs will not be attached even if `attach` is set to `true`. _Defaults to `true`._|
+|`attach` | If `true` then if the exported generates a jar file, the jar file will be attached as an output of the current artifact. _Defaults to `true`._|
