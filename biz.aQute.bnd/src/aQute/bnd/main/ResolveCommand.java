@@ -151,19 +151,26 @@ public class ResolveCommand extends Processor {
 			"index-path"
 	})
 	interface ValidateOptions extends Options {
+		@Description("Specify the execution environment used as part of the base, default is JavaSE_1_8")
 		EE ee(EE ee);
 
+		@Description("Specify the framework version used as part of the base, [R4_0_1 R4_2_1 R4_3_0 R4_3_1 R5_0_0 R6_0_0]")
 		OSGI_CORE core();
 
+		@Description("Specify a system file used as the base (more commonly referred to as a 'distro')")
 		String system();
 
+		@Description("Specify a set of packages provided by the base")
 		Parameters packages();
 
+		@Description("Specify a set of capabilities provided by the base")
 		Parameters capabilities();
 
+		@Description("Include all output details")
 		boolean all();
 	}
 
+	@Description("Resolve a repository index against a base to determine if the index is 'complete'")
 	public void _validate(ValidateOptions options) throws Exception {
 
 		ResourceBuilder system = new ResourceBuilder();
