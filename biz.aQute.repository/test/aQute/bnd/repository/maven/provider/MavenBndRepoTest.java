@@ -207,6 +207,24 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals(1, resources.size());
 	}
 
+	public void testPutDefaultLocal() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", null);
+		map.put("snapshotUrl", null);
+		config(map);
+
+		File jar = IO.getFile("testresources/release.jar");
+
+		PutResult put = repo.put(new FileInputStream(jar), null);
+
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar");
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.pom");
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/maven-metadata-local.xml");
+
+		String s = IO.collect(index);
+		assertTrue(s.contains("biz.aQute.bnd.maven"));
+	}
+
 	public void testPutDefaultLocalSnapshot() throws Exception {
 		Map<String,String> map = new HashMap<>();
 		map.put("releaseUrl", null);
@@ -219,6 +237,7 @@ public class MavenBndRepoTest extends TestCase {
 
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.jar");
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/biz.aQute.bnd.maven-3.2.0-SNAPSHOT.pom");
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0-SNAPSHOT/maven-metadata-local.xml");
 
 		String s = IO.collect(index);
 		assertFalse(s.contains("biz.aQute.bnd.maven"));
