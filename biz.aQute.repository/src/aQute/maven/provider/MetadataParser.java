@@ -108,11 +108,13 @@ public class MetadataParser {
 			Tag versioning = new Tag(top, "versioning");
 
 			Tag snapshot = new Tag(versioning, "snapshot");
-			new Tag(snapshot, "timestamp", this.snapshot.timestamp);
 
-			new Tag(snapshot, "buildNumber", this.snapshot.buildNumber);
-			if (this.snapshot.localCopy)
+			if (this.snapshot.localCopy) {
 				new Tag(snapshot, "localCopy", this.snapshot.localCopy);
+			} else {
+				new Tag(snapshot, "buildNumber", this.snapshot.buildNumber);
+				new Tag(snapshot, "timestamp", this.snapshot.timestamp);
+			}
 
 			new Tag(versioning, "lastUpdated", timestamp.format(new Date(lastUpdated)));
 
@@ -132,7 +134,7 @@ public class MetadataParser {
 
 	/**
 	 * Will return a Program Metadata
-	 * 
+	 *
 	 * @param in The inputstream that must point to XML or null of could not be
 	 *            parsed
 	 * @return A description of the XML
@@ -147,7 +149,7 @@ public class MetadataParser {
 
 	/**
 	 * Will return a Revision Metadata
-	 * 
+	 *
 	 * @param in the input stream
 	 * @return the representation
 	 */
