@@ -7,11 +7,13 @@ import java.util.Map.Entry;
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.export.Exporter;
 import aQute.lib.converter.Converter;
+import aQute.lib.strings.Strings;
 
 @BndPlugin(name = "exporter.executablejar")
 public class ExecutableJarExporter implements Exporter {
@@ -38,7 +40,14 @@ public class ExecutableJarExporter implements Exporter {
 			launcher.setKeep(configuration.keep());
 			Jar jar = launcher.executable();
 			project.getInfo(launcher);
-			return new SimpleEntry<>(jar.getName(), new JarResource(jar, true));
+
+			String name = jar.getName();
+			String[] baseext = Strings.extension(name);
+			if (baseext != null && ("bnd".equals(baseext[1]) || "bndrun".equals(baseext[1]))) {
+				name = baseext[0];
+			}
+			name = name + Constants.DEFAULT_JAR_EXTENSION;
+			return new SimpleEntry<>(name, new JarResource(jar, true));
 		}
 	}
 }
