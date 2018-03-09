@@ -85,7 +85,7 @@ public class ValidatorTest extends TestCase {
 			assertFalse(validator.check());
 			assertEquals(1, resolutions.size());
 			String message = resolutions.get(0).message;
-			String expectedToContain = "missing requirement org.apache.felix.gogo.api";
+			String expectedToContain = "missing requirement osgi.wiring.package;filter:='(osgi.wiring.package=org.apache.felix.gogo.api)'";
 			assertTrue(String.format("expected to contain <%s> but was <%s>", expectedToContain, message),
 					message.contains(expectedToContain));
 		}
@@ -104,7 +104,7 @@ public class ValidatorTest extends TestCase {
 			assertFalse(validator.check());
 			assertEquals(1, resolutions.size());
 			String message = resolutions.get(0).message;
-			String expectedToContain = "missing requirement org.apache.felix.gogo.api";
+			String expectedToContain = "missing requirement osgi.wiring.package;filter:='(osgi.wiring.package=org.apache.felix.gogo.api)'";
 			assertTrue(String.format("expected to contain <%s> but was <%s>", expectedToContain, message),
 					message.contains(expectedToContain));
 		}
