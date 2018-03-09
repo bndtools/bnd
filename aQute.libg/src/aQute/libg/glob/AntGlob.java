@@ -27,9 +27,9 @@ public class AntGlob extends Glob {
 			switch (currentChar) {
 				case '*' :
 					int j, k;
-					if ((i == 0 || previousChar == '/') && //
+					if ((i == 0 || isSlashy(previousChar)) && //
 						((j = i + 1) < strLen && line.charAt(j) == '*') && //
-						((k = j + 1) == strLen || line.charAt(k) == '/')) {
+						((k = j + 1) == strLen || isSlashy(line.charAt(k)))) {
 						if (i == 0 && k < strLen) { // line starts with "**/"
 							sb.append("(?:.*" + SLASHY + "|)");
 							i = k;
@@ -49,18 +49,12 @@ public class AntGlob extends Glob {
 					sb.append(NOT_SLASHY);
 					break;
 				case '/' :
+				case '\\' :
 					if (i + 1 == strLen) {
 						// ending with "/" is shorthand for ending with "/**"
 						sb.append("(?:" + SLASHY + ".*|)");
 					} else {
 						sb.append(SLASHY);
-					}
-					break;
-				case '\\' :
-					if (i + 1 < strLen) {
-						sb.append("\\Q")
-							.append(line.charAt(++i))
-							.append("\\E");
 					}
 					break;
 				case '.' :
@@ -83,6 +77,10 @@ public class AntGlob extends Glob {
 			previousChar = currentChar;
 		}
 		return sb.toString();
+	}
+
+	private static boolean isSlashy(char c) {
+		return c == '/' || c == '\\';
 	}
 
 	public static Pattern toPattern(String s) {
