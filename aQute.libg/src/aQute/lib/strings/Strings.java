@@ -98,18 +98,25 @@ public class Strings {
 		return s.substring(start, end);
 	}
 
+	private final static Pattern LIST_SPLITTER_PATTERN = Pattern.compile("\\s*,\\s*");
+
 	public static List<String> split(String s) {
-		return split("\\s*,\\s*", s);
+		if (s == null || (s = s.trim()).isEmpty())
+			return new ArrayList<>();
+		return toList(LIST_SPLITTER_PATTERN.split(s, 0));
 	}
 
 	public static List<String> split(String regex, String s) {
-		if (s == null)
-			return Collections.emptyList();
+		if (s == null || (s = s.trim()).isEmpty())
+			return new ArrayList<>();
+		return toList(s.split(regex, 0));
+	}
 
-		String[] split = s.split(regex);
-		List<String> l = new ArrayList<>(split.length);
-		Collections.addAll(l, split);
-		return l;
+	@SafeVarargs
+	private static <T> List<T> toList(T... array) {
+		List<T> list = new ArrayList<>(array.length);
+		Collections.addAll(list, array);
+		return list;
 	}
 
 	public static boolean in(String[] skip, String key) {
