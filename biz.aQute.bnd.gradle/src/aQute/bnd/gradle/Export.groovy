@@ -75,6 +75,7 @@ public class Export extends DefaultTask {
   private File bndrun
   private File destinationDir
   private String exporter
+  private final Workspace bndWorkspace
 
   /**
    * Create a Export task.
@@ -82,8 +83,11 @@ public class Export extends DefaultTask {
    */
   public Export() {
     super()
+    bndWorkspace = project.hasProperty('bndWorkspace') ? project.bndWorkspace : null
     bundlesOnly = false
-    convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    if (bndWorkspace == null) {
+      convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    }
   }
 
   /**
@@ -182,22 +186,26 @@ public class Export extends DefaultTask {
    */
   @TaskAction
   void export() {
-    File cnf = new File(temporaryDir, Workspace.CNFDIR)
-    project.mkdir(cnf)
-    Run.createRun(null, bndrun).withCloseable { Run run ->
+    Workspace workspace = bndWorkspace
+    Run.createRun(workspace, bndrun).withCloseable { Run run ->
+      Workspace runWorkspace = run.getWorkspace()
       run.setBase(temporaryDir)
-      Workspace workspace = run.getWorkspace()
-      workspace.setBuildDir(cnf)
-      workspace.setOffline(project.gradle.startParameter.offline)
-      workspace.addBasicPlugin(getFileSetRepository(name))
-      logger.info 'Exporting {} to {}', run.getPropertiesFile(), destinationDir.absolutePath
-      for (RepositoryPlugin repo : workspace.getRepositories()) {
-        repo.list(null)
+      if (run.isStandalone()) {
+        runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
+        File cnf = new File(temporaryDir, Workspace.CNFDIR)
+        project.mkdir(cnf)
+        runWorkspace.setBuildDir(cnf)
+        if (convention.findPlugin(FileSetRepositoryConvention)) {
+          runWorkspace.addBasicPlugin(getFileSetRepository(name))
+          for (RepositoryPlugin repo : runWorkspace.getRepositories()) {
+            repo.list(null)
+          }
+        }
       }
-      run.getInfo(workspace)
+      run.getInfo(runWorkspace)
       logReport(run, logger)
       if (!run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} standalone workspace errors")
+        throw new GradleException("${run.getPropertiesFile()} workspace errors")
       }
 
       try {
