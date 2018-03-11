@@ -35,7 +35,7 @@ In a bndrun file in the same directory we can now use this `pom.xml` file as our
     -plugin.enroute-distro = \
         aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
             snapshotUrls=https://oss.sonatype.org/content/repositories/osgi/; \
-            releaseUrls=https://repo1.maven.org/maven2/; \
+            releaseUrls=https://repo.maven.apache.org/maven2/; \
             pom=${.}/pom.xml; \
             name=enRouteDistroPom
 
@@ -48,7 +48,7 @@ Maven Central supports a [searching facility](http://blog.sonatype.com/2011/06/y
     -standalone: true
     -plugin.query = \
         aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
-            releaseUrls=https://repo1.maven.org/maven2; \
+            releaseUrls=https://repo.maven.apache.org/maven2; \
             query='q=g:%22biz.aQute.bnd%22'; \
             name=Query
 

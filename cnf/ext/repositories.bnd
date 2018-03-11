@@ -4,7 +4,7 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
 
 -plugin:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        releaseUrl="https://repo1.maven.org/maven2";\
+        releaseUrl="https://repo.maven.apache.org/maven2";\
         index=${.}/central.mvn;\
         name='Maven Central';\
         readOnly=true,\
