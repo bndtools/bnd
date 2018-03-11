@@ -339,40 +339,15 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('export.')) {
-          String bndrun = taskName - 'export.'
-          File runFile = file("${bndrun}.bndrun")
+          String bndrunName = taskName - 'export.'
+          File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName) {
-              description "Export the ${bndrun}.bndrun file."
+            task(taskName, type: Export) {
+              description "Export the ${bndrunName}.bndrun file."
               dependsOn assemble
               group 'export'
-              ext.destinationDir = new File(distsDir, 'executable')
-              ext.exporter = EXECUTABLE_JAR
-              outputs.dir({ destinationDir }).withPropertyName('destinationDir')
-              doFirst {
-                project.mkdir(destinationDir)
-              }
-              doLast {
-                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  if (run.isStandalone()) {
-                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
-                  }
-                  try {
-                    logger.info 'Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDir, exporter
-                    def export = run.export(exporter, [:])
-                    export?.value.withCloseable { r ->
-                      File exported = new File(destinationDir, export.key)
-                      exported.withOutputStream { out ->
-                        r.write(out)
-                      }
-                      exported.setLastModified(r.lastModified())
-                    }
-                  } catch (Exception e) {
-                    throw new GradleException("Export of ${run.getPropertiesFile()} to an executable jar failed", e)
-                  }
-                  checkErrors(logger)
-                }
-              }
+              bndrun = runFile
+              exporter = EXECUTABLE_JAR
             }
           }
         }
@@ -390,36 +365,15 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: runbundles.<name>: Create a distribution of the runbundles in <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('runbundles.')) {
-          String bndrun = taskName - 'runbundles.'
-          File runFile = file("${bndrun}.bndrun")
+          String bndrunName = taskName - 'runbundles.'
+          File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName) {
-              description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
+            task(taskName, type: Export) {
+              description "Create a distribution of the runbundles in the ${bndrunName}.bndrun file."
               dependsOn assemble
               group 'export'
-              ext.destinationDir = new File(distsDir, "runbundles/${bndrun}")
-              outputs.dir({ destinationDir }).withPropertyName('destinationDir')
-              doFirst {
-                project.delete(destinationDir)
-                project.mkdir(destinationDir)
-              }
-              doLast {
-                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
-                  if (run.isStandalone()) {
-                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
-                  }
-                  try {
-                    def export = run.export(RUNBUNDLES, [:])
-                    export?.value.withCloseable { jr ->
-                      jr.getJar().writeFolder(destinationDir)
-                    }
-                  } catch (Exception e) {
-                    throw new GradleException("Creating a distribution of the runbundles in ${run.getPropertiesFile()} failed", e)
-                  }
-                  checkErrors(logger)
-                }
-              }
+              bndrun = runFile
+              exporter = RUNBUNDLES
             }
           }
         }
