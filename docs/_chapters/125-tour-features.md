@@ -25,7 +25,7 @@ The OSGi metadata is stored in the _manifest_ of the JAR file. The manifest is a
 So let's use bnd to wrap the [javax.activation.jar][2] file even though it is already wrapped for us in the [Enterprise Bundle Repository][3]. Let's download it:
 
 	$ mkdir jar
-	$ bnd copy http://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar \
+	$ bnd copy https://repo.maven.apache.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar \
 		jar/javax.activation-1.1.1.jar
 	
 bnd provides a convenience function to print out the contents of a JAR. The --uses option shows the packages and what other packages they use. 
@@ -256,7 +256,7 @@ The `-includeresource` instruction is quite powerful, there are many more option
 
 So far, we've ignored the imported packages because the javax.activation JAR only depends on java.*; java.* packages are not imported, the OSGi Framework will always provide access to them. Let's add another JAR, the javax.mail jar that uses javax.activation. This JAR is already a bundle, which is really good. Except for this exercise, so we copy and strip the OSGi metadata 
 
-	$ bnd copy --strip http://repo1.maven.org/maven2/com/sun/mail/javax.mail/1.5.2/javax.mail-1.5.2.jar \
+	$ bnd copy --strip https://repo.maven.apache.org/maven2/com/sun/mail/javax.mail/1.5.2/javax.mail-1.5.2.jar \
 	   > jar/javax.mail-1.5.2.jar
 	$ bnd print --uses jar/javax.mail-1.5.2.jar 
 	[USES]
@@ -506,7 +506,7 @@ There are some common pitfalls that can be prevented by following the tips:
 
 
 [1]: http://www.bndtools.org
-[2]: http://repo1.maven.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
+[2]: https://repo.maven.apache.org/maven2/javax/activation/activation/1.1.1/activation-1.1.1.jar
 [3]: http://ebr.springsource.com/repository/app/
 [4]: http://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#JARManifest
 [5]: 170-versioning.html

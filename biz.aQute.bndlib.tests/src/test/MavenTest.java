@@ -56,7 +56,7 @@ public class MavenTest extends TestCase {
 	 * @throws URISyntaxException
 	 */
 	public void testRemote() throws URISyntaxException, Exception {
-		URI repo = new URI("http://repo1.maven.org/maven2");
+		URI repo = new URI("https://repo.maven.apache.org/maven2");
 		MavenEntry entry = maven.getEntry("org.springframework", "spring-aspects", "3.0.5.RELEASE");
 		entry.remove();
 		CachedPom pom = maven.getPom("org.springframework", "spring-aspects", "3.0.5.RELEASE", repo);
@@ -298,7 +298,7 @@ public class MavenTest extends TestCase {
 	// if ( m2Repo.isDirectory())
 	// graph.addRepository( m2Repo.toURI().toURL());
 	//
-	// graph.addRepository( new URL("http://repo1.maven.org/maven2/"));
+	// graph.addRepository( new URL("https://repo.maven.apache.org/maven2/"));
 	// graph.addRepository( new
 	// URL("http://repository.springsource.com/maven/bundles/external"));
 	// // graph.root.add(

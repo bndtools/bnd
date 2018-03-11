@@ -13,7 +13,7 @@ import aQute.maven.api.Revision;
 import junit.framework.TestCase;
 
 public class CentralTest extends TestCase {
-	private static final String	REPO_URL	= "https://repo1.maven.org/maven2/";
+	private static final String	REPO_URL	= "https://repo.maven.apache.org/maven2/";
 	String						tmpName;
 	File						local;
 

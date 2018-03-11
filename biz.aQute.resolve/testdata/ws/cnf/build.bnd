@@ -1,7 +1,7 @@
 -plugin: \
 \
 		 aQute.bnd.repository.maven.provider.MavenBndRepository;\
-            releaseUrl="https://repo1.maven.org/maven2";\
+            releaseUrl="https://repo.maven.apache.org/maven2";\
             index=${build}/central.mvn;\
             name='Maven Central';\
             local=${build}/cache;\
