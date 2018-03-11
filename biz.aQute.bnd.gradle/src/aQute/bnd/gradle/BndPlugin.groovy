@@ -391,32 +391,14 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: resolve.<name>: Resolve the required runbundles in the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('resolve.')) {
-          String bndrun = taskName - 'resolve.'
-          File runFile = file("${bndrun}.bndrun")
+          String bndrunName = taskName - 'resolve.'
+          File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName) {
-              description "Resolve the runbundles required for ${bndrun}.bndrun file."
+            task(taskName, type: Resolve) {
+              description "Resolve the runbundles required for ${bndrunName}.bndrun file."
               dependsOn assemble
               group 'export'
-              ext.failOnChanges = false
-              outputs.file(runFile).withPropertyName('runFile')
-              doLast {
-                Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
-                  if (run.isStandalone()) {
-                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
-                  }
-                  try {
-                    def result = run.resolve(failOnChanges, true)
-                    logger.info '{}: {}', Constants.RUNBUNDLES, result
-                  } catch (ResolutionException e) {
-                    logger.error 'Unresolved requirements: {}', ResolveProcess.format(e.getUnresolvedRequirements())
-                    throw new GradleException("${run.getPropertiesFile()} resolution failure", e)
-                  } finally {
-                    checkProjectErrors(run, logger)
-                  }
-                }
-              }
+              bndrun = runFile
             }
           }
         }

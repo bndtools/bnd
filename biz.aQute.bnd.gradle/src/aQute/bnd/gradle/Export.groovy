@@ -83,7 +83,7 @@ public class Export extends DefaultTask {
    */
   public Export() {
     super()
-    bndWorkspace = project.hasProperty('bndWorkspace') ? project.bndWorkspace : null
+    bndWorkspace = project.findProperty('bndWorkspace')
     bundlesOnly = false
     if (bndWorkspace == null) {
       convention.plugins.bundles = new FileSetRepositoryConvention(this)
