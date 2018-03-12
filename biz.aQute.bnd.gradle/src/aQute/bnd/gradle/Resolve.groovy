@@ -60,6 +60,7 @@ public class Resolve extends DefaultTask {
   boolean failOnChanges
 
   private File bndrun
+  private final Workspace bndWorkspace
 
   /**
    * Create a Resolve task.
@@ -67,8 +68,11 @@ public class Resolve extends DefaultTask {
    */
   public Resolve() {
     super()
+    bndWorkspace = project.findProperty('bndWorkspace')
     failOnChanges = false
-    convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    if (bndWorkspace == null) {
+      convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    }
   }
 
   /**
@@ -97,25 +101,30 @@ public class Resolve extends DefaultTask {
    */
   @TaskAction
   void resolve() {
-    File cnf = new File(temporaryDir, Workspace.CNFDIR)
-    project.mkdir(cnf)
-    Bndrun.createBndrun(null, bndrun).withCloseable { Bndrun run ->
+    Workspace workspace = bndWorkspace
+    Bndrun.createBndrun(workspace, bndrun).withCloseable { Bndrun run ->
+      Workspace runWorkspace = run.getWorkspace()
       run.setBase(temporaryDir)
-      Workspace workspace = run.getWorkspace()
-      workspace.setBuildDir(cnf)
-      workspace.setOffline(project.gradle.startParameter.offline)
-      workspace.addBasicPlugin(getFileSetRepository(name))
-      logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
-      for (RepositoryPlugin repo : workspace.getRepositories()) {
-        repo.list(null)
+      if (run.isStandalone()) {
+        runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
+        File cnf = new File(temporaryDir, Workspace.CNFDIR)
+        project.mkdir(cnf)
+        runWorkspace.setBuildDir(cnf)
+        if (convention.findPlugin(FileSetRepositoryConvention)) {
+          runWorkspace.addBasicPlugin(getFileSetRepository(name))
+          for (RepositoryPlugin repo : runWorkspace.getRepositories()) {
+            repo.list(null)
+          }
+        }
       }
-      run.getInfo(workspace)
+      run.getInfo(runWorkspace)
       logReport(run, logger)
       if (!run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} standalone workspace errors")
+        throw new GradleException("${run.getPropertiesFile()} workspace errors")
       }
 
       try {
+        logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
         def result = run.resolve(failOnChanges, true)
         logger.info '{}: {}', Constants.RUNBUNDLES, result
       } catch (ResolutionException e) {

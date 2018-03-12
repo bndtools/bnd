@@ -17,14 +17,12 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
     org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	org.osgi.impl.bundle.bindex;version=latest;packages=org.osgi.*.bindex.*,\
-	org.osgi.impl.bundle.repoindex.lib;version=latest,\
 	osgi.cmpn;version=@6,\
 	javax.xml.stream;version=latest,\
 	slf4j.api;version=latest,\
 	org.tukaani.xz;version=latest,\
 	biz.aQute.bnd.annotation;version=latest
-	
+
 -testpath: \
 	${junit},\
 	${mockito},\
@@ -32,18 +30,7 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 	biz.aQute.http.testservers;version=latest,\
 	slf4j.simple;version=latest
 
-bindex-pkgs: \
-	org.osgi.service.obr,\
-	org.osgi.service.bindex,\
-	org.osgi.impl.bundle.bindex,\
-	org.osgi.impl.bundle.obr.resource,\
-	org.kxml2.io,\
-	org.xmlpull.v1
-
 repoindex-pkgs: \
-	org.osgi.service.indexer.impl,\
-	org.osgi.service.indexer.impl.types,\
-	org.osgi.service.indexer.impl.util,\
 	aQute.bnd.osgi.resource,\
 	org.osgi.resource;-split-package:=first
 
@@ -63,11 +50,10 @@ Export-Package: \
 	aQute.bnd.repository.osgi;bnd-plugins=true,  \
 	aQute.bnd.repository.fileset;bnd-plugins=true,  \
 	aQute.maven.*, \
-	
+
 
 # NB: `org.osgi.*` API is included in Private-Package for running outside of OSGi.
 Private-Package: \
-	${bindex-pkgs},\
 	aQute.p2.provider,\
 	${repoindex-pkgs},\
 	org.osgi.service.log;-split-package:=first,\
@@ -88,7 +74,7 @@ Import-Package:\
 	aQute.bnd.osgi.resource,\
 	org.osgi.service.coordinator; resolution:=optional,\
 	*
-	
+
 -fixupmessages: "private references"
 
 -baseline: *

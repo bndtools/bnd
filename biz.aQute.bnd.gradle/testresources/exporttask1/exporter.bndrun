@@ -1,0 +1,4 @@
+-runfw: org.apache.felix.framework;version='[5.4.0,5.4.0]'
+-runee: JavaSE-1.8
+-runrequires: osgi.identity;filter:='(osgi.identity=org.apache.felix.eventadmin)'
+-runbundles: org.apache.felix.eventadmin;version='[1.4.6,1.4.7)'

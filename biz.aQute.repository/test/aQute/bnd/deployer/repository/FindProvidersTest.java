@@ -11,7 +11,6 @@ import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
-import aQute.bnd.deployer.obr.OBR;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -124,66 +123,4 @@ public class FindProvidersTest extends TestCase {
 			}
 		}
 	}
-
-	public void testResolveByHash() throws Exception {
-		OBR repo = new OBR();
-		Map<String,String> props = new HashMap<>();
-		props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
-		repo.setProperties(props);
-
-		Map<String,String> searchProps = new HashMap<>();
-		searchProps.put("version", "hash");
-		searchProps.put("hash", "292ecca5d8fdb881f0273c1166b9c20925be063d3baf3824515983f76b73fffb");
-
-		File bundle = repo.get("biz.aQute.bnd", null, searchProps);
-		assertNotNull(bundle);
-		// the bundle doesn't actually exist... just check the filename
-		assertEquals("biz.aQute.bnd-1.45.0.jar", bundle.getName());
-	}
-
-	public void testResolveByHashWithAlgorithm() throws Exception {
-		OBR repo = new OBR();
-		Map<String,String> props = new HashMap<>();
-		props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
-		repo.setProperties(props);
-
-		Map<String,String> searchProps = new HashMap<>();
-		searchProps.put("version", "hash");
-		searchProps.put("hash", "SHA-256:292ecca5d8fdb881f0273c1166b9c20925be063d3baf3824515983f76b73fffb");
-		File bundle = repo.get("biz.aQute.bnd", null, searchProps);
-		assertNotNull(bundle);
-		// the bundle doesn't actually exist... just check the filename
-		assertEquals("biz.aQute.bnd-1.45.0.jar", bundle.getName());
-	}
-
-	public void testResolveByHashWithWrongAlgorithm() throws Exception {
-		OBR repo = new OBR();
-		Map<String,String> props = new HashMap<>();
-		props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
-		repo.setProperties(props);
-
-		Map<String,String> searchProps = new HashMap<>();
-		searchProps.put("version", "hash");
-		searchProps.put("hash", "SHA-1:292ecca5d8fdb881f0273c1166b9c20925be063d3baf3824515983f76b73fffb");
-		File bundle = repo.get("biz.aQute.bnd", null, searchProps);
-		assertNull(bundle);
-	}
-
-	public void testResolveByHashWithIdCheck() throws Exception {
-		OBR repo = new OBR();
-		Map<String,String> props = new HashMap<>();
-		props.put("locations", IO.getFile("testdata/big_index.xml").toURI().toString());
-		repo.setProperties(props);
-
-		Map<String,String> searchProps = new HashMap<>();
-		searchProps.put("version", "hash");
-		searchProps.put("hash", "SHA-256:292ecca5d8fdb881f0273c1166b9c20925be063d3baf3824515983f76b73fffb");
-		try {
-			File bundle = repo.get("wrong.bsn", null, searchProps);
-			fail("Expected IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-			// expected
-		}
-	}
-
 }

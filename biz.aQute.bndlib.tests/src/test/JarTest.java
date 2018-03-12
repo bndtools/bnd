@@ -110,6 +110,10 @@ public class JarTest extends TestCase {
 
 		ZipInputStream zin = new ZipInputStream(new ByteArrayInputStream(bout.toByteArray()));
 		ZipEntry firstEntry = zin.getNextEntry();
+		if (firstEntry.getName()
+			.equalsIgnoreCase("META-INF/")) {
+			firstEntry = zin.getNextEntry();
+		}
 		assertEquals("META-INF/FESTYMAN.MF", firstEntry.getName());
 		manifest = new Manifest(zin);
 

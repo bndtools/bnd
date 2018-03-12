@@ -57,7 +57,7 @@ public abstract class ProjectLauncher extends Processor {
 	private int									framework;
 	private File								cwd;
 	private Collection<String>					agents				= new ArrayList<>();
-	private Map<NotificationListener,Boolean>	listeners			= new IdentityHashMap<>();
+	private Set<NotificationListener>	listeners			= Collections.newSetFromMap(new IdentityHashMap<>());
 
 	protected Appendable						out					= System.out;
 	protected Appendable						err					= System.err;
@@ -521,11 +521,11 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public void registerForNotifications(NotificationListener listener) {
-		listeners.put(listener, Boolean.TRUE);
+		listeners.add(listener);
 	}
 
 	public Set<NotificationListener> getNotificationListeners() {
-		return Collections.unmodifiableSet(listeners.keySet());
+		return Collections.unmodifiableSet(listeners);
 	}
 
 	/**

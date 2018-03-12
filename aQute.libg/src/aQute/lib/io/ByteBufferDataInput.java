@@ -56,7 +56,7 @@ public class ByteBufferDataInput implements DataInput {
 
 	@Override
 	public int readUnsignedByte() {
-		return 0xFF & bb.get();
+		return Byte.toUnsignedInt(bb.get());
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class ByteBufferDataInput implements DataInput {
 
 	@Override
 	public int readUnsignedShort() {
-		return 0xFFFF & bb.getShort();
+		return Short.toUnsignedInt(bb.getShort());
 	}
 
 	@Override

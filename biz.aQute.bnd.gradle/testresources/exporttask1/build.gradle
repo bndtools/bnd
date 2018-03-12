@@ -28,6 +28,14 @@ task export(type: Export) {
    bundles = configurations.bundles
 }
 
+task exporter(type: Export) {
+   description "Exporter for ${name}.bndrun"
+   group 'export'
+   bndrun "${name}.bndrun"
+   bundles = configurations.bundles
+   exporter = 'bnd.runbundles'
+}
+
 task runbundles(type: Export) {
    description "Export ${name}.bndrun"
    group 'export'

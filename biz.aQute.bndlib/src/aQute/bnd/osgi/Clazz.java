@@ -8,7 +8,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -977,7 +976,7 @@ public class Clazz {
 	private void doAttribute(DataInput in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		final int attribute_name_index = in.readUnsignedShort();
 		final String attributeName = (String) pool[attribute_name_index];
-		final long attribute_length = 0xFFFFFFFFL & in.readInt();
+		final long attribute_length = Integer.toUnsignedLong(in.readInt());
 		switch (attributeName) {
 			case "Deprecated" :
 				if (cd != null)
@@ -1192,7 +1191,7 @@ public class Clazz {
 		/* int max_locals = */in.readUnsignedShort();
 		int code_length = in.readInt();
 		byte code[] = new byte[code_length];
-		in.readFully(code);
+		in.readFully(code, 0, code_length);
 		if (crawl)
 			crawl(code);
 		int exception_table_length = in.readUnsignedShort();
@@ -1213,19 +1212,18 @@ public class Clazz {
 	 */
 	private void crawl(byte[] code) {
 		ByteBuffer bb = ByteBuffer.wrap(code);
-		bb.order(ByteOrder.BIG_ENDIAN);
 		int lastReference = -1;
 
 		while (bb.remaining() > 0) {
-			int instruction = 0xFF & bb.get();
+			int instruction = Byte.toUnsignedInt(bb.get());
 			switch (instruction) {
 				case OpCodes.ldc :
-					lastReference = 0xFF & bb.get();
+					lastReference = Byte.toUnsignedInt(bb.get());
 					classConstRef(lastReference);
 					break;
 
 				case OpCodes.ldc_w :
-					lastReference = 0xFFFF & bb.getShort();
+					lastReference = Short.toUnsignedInt(bb.getShort());
 					classConstRef(lastReference);
 					break;
 
@@ -1233,14 +1231,14 @@ public class Clazz {
 				case OpCodes.checkcast :
 				case OpCodes.instanceof_ :
 				case OpCodes.new_ : {
-					int cref = 0xFFFF & bb.getShort();
+					int cref = Short.toUnsignedInt(bb.getShort());
 					classConstRef(cref);
 					lastReference = -1;
 					break;
 				}
 
 				case OpCodes.multianewarray : {
-					int cref = 0xFFFF & bb.getShort();
+					int cref = Short.toUnsignedInt(bb.getShort());
 					classConstRef(cref);
 					bb.get();
 					lastReference = -1;
@@ -1248,21 +1246,21 @@ public class Clazz {
 				}
 
 				case OpCodes.invokespecial : {
-					int mref = 0xFFFF & bb.getShort();
+					int mref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
 						getMethodDef(0, mref);
 					break;
 				}
 
 				case OpCodes.invokevirtual : {
-					int mref = 0xFFFF & bb.getShort();
+					int mref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
 						getMethodDef(0, mref);
 					break;
 				}
 
 				case OpCodes.invokeinterface : {
-					int mref = 0xFFFF & bb.getShort();
+					int mref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
 						getMethodDef(0, mref);
 					bb.get(); // read past the 'count' operand
@@ -1271,7 +1269,7 @@ public class Clazz {
 				}
 
 				case OpCodes.invokestatic : {
-					int methodref = 0xFFFF & bb.getShort();
+					int methodref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
 						getMethodDef(0, methodref);
 
@@ -1292,7 +1290,7 @@ public class Clazz {
 					 * indexbyte2, countbyte1, countbyte2
 					 */
 				case OpCodes.wide :
-					int opcode = 0xFF & bb.get();
+					int opcode = Byte.toUnsignedInt(bb.get());
 					bb.getShort(); // at least 3 bytes
 					if (opcode == OpCodes.iinc)
 						bb.getShort();
@@ -1306,12 +1304,7 @@ public class Clazz {
 					bb.getInt();
 					int low = bb.getInt();
 					int high = bb.getInt();
-					try {
-						bb.position(bb.position() + (high - low + 1) * 4);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					bb.position(bb.position() + (high - low + 1) * 4);
 					lastReference = -1;
 					break;
 

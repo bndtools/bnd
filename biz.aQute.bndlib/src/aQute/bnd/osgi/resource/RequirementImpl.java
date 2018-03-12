@@ -5,8 +5,10 @@ import java.util.Map;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
+import aQute.bnd.build.model.conversions.RequirementFormatter;
+
 public class RequirementImpl extends CapReq implements Requirement {
-	static FilterParser	fp	= new FilterParser();
+	private static final RequirementFormatter	rf	= new RequirementFormatter();
 	private String		msg	= null;
 
 	RequirementImpl(String namespace, Resource resource, Map<String,String> directives, Map<String,Object> attributes) {
@@ -18,10 +20,6 @@ public class RequirementImpl extends CapReq implements Requirement {
 		if (m != null) {
 			return m;
 		}
-		try {
-			return msg = fp.parse(this).toString();
-		} catch (Exception e) {
-			return e.toString();
-		}
+		return msg = rf.convert(this);
 	}
 }

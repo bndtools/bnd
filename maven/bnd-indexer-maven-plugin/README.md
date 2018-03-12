@@ -279,6 +279,23 @@ of this folder is passed as configuration.
         <inputDir>${project.build.directory}/bundles</inputDir>
     </configuration>
 
+#### Including and Excluding paths to be indexed
+
+The `local-index` goal may be configured with ant-style glob expressions
+indicating what should be included and what should be excluded from the
+index. The default includes is `**/*.jar`.
+
+    <configuration>
+        <inputDir>${project.build.directory}/bundles</inputDir>
+        <includes>
+            <include>**/org.osgi.*.jar</include>
+        </includes>
+        <excludes>
+            <exclude>**/*-JAVADOC.jar</exclude>
+            <exclude>**/*-SOURCES.jar</exclude>
+        </excludes>
+    </configuration>
+
 #### Changing relative directory
 
 All of the index URIs stored in the index use relative paths to 
@@ -306,6 +323,8 @@ different base directory can be supplied if needed
 |Configuration Properties for `local-index` goal | Description |
 | ---               | ---         |
 |`inputDir`         | A directory contain the bundles to index. Override with property `bnd.indexer.input.dir`.|
+|`includes`         | A set of ant-style globs matching paths within the `inputDir` which should be included in the index. _Defaults to `**/*.jar`.Override with property `bnd.indexer.input.dir.includes`.|
+|`excludes`         | A set of ant-style globs matching paths within the `inputDir` which should be excluded from the index. _Defaults to an empty set.Override with property `bnd.indexer.input.dir.excludes`.|
 |`outputFile`       | The name and location of the resulting index file. _Defaults to `${project.build.directory}/index.xml`._ Override with property `bnd.indexer.output.file`.|
 |`baseFile`         | See [Changing relative directory](#changing-relative-directory). Override with property `bnd.indexer.base.file`.|
 |`includeGzip`      | Include a GZIP'd version of the index file adjacent to the non-GZIP'd one. _Defaults to `true`._ Override with property `bnd.indexer.include.gzip`.|

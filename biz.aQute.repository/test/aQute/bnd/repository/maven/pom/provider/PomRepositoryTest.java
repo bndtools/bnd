@@ -97,8 +97,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("revision", "com.mchange:mchange-commons-java:0.2.10");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -142,8 +142,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/simple.xml");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -161,8 +161,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/existing-parent.xml");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -180,8 +180,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/missing-parent.xml");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -202,8 +202,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/entity.xml");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -221,8 +221,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/simple-nodeps.xml");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -240,9 +240,9 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("pom",
-					"https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+					"https://repo.maven.apache.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -266,8 +266,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("pom", "testdata/pomrepo/simple.xml");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			bpr.setProperties(config);
 
@@ -304,8 +304,8 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("query", "q=g:biz.aQute.bnd+a:biz.aQute.bnd+AND+v:3.2.0");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			mcsr.setProperties(config);
 
@@ -459,8 +459,8 @@ public class PomRepositoryTest extends TestCase {
 			Map<String,String> config = new HashMap<>();
 			config.put("name", "pmd");
 			config.put("revision", "net.sourceforge.pmd:pmd-java:5.2.3");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("local", local.getAbsolutePath());
 			mcsr.setProperties(config);
 
@@ -502,8 +502,8 @@ public class PomRepositoryTest extends TestCase {
 			});
 
 			config.put("revision", revisions);
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("local", local.getAbsolutePath());
 			config.put("transitive", "true");
 			mcsr.setProperties(config);
@@ -534,12 +534,12 @@ public class PomRepositoryTest extends TestCase {
 
 			String pomFiles = Strings.join(new String[] {
 					"testdata/pomrepo/simple.xml",
-					"https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom"
+					"https://repo.maven.apache.org/maven2/org/apache/felix/org.apache.felix.gogo.shell/0.12.0/org.apache.felix.gogo.shell-0.12.0.pom"
 			});
 
 			config.put("pom", pomFiles);
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("local", local.getAbsolutePath());
 			mcsr.setProperties(config);
 
@@ -583,9 +583,9 @@ public class PomRepositoryTest extends TestCase {
 
 			Map<String,String> config = new HashMap<>();
 			config.put("pom",
-					path.toString() + ",https://repo1.maven.org/maven2/javax/enterprise/cdi-api/2.0/cdi-api-2.0.pom");
-			config.put("snapshotUrls", "https://repo1.maven.org/maven2/");
-			config.put("releaseUrls", "https://repo1.maven.org/maven2/");
+					path.toString() + ",https://repo.maven.apache.org/maven2/javax/enterprise/cdi-api/2.0/cdi-api-2.0.pom");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
 			config.put("name", "test");
 			config.put("poll.time", "1");
 			bpr.setProperties(config);
@@ -622,7 +622,7 @@ public class PomRepositoryTest extends TestCase {
 	}
 
 	MavenRepository getRepo() throws Exception {
-		List<MavenBackingRepository> central = MavenBackingRepository.create("https://repo1.maven.org/maven2/",
+		List<MavenBackingRepository> central = MavenBackingRepository.create("https://repo.maven.apache.org/maven2/",
 				reporter, localRepo, client);
 		List<MavenBackingRepository> apache = MavenBackingRepository
 				.create("https://repository.apache.org/content/groups/snapshots/", reporter, localRepo, client);

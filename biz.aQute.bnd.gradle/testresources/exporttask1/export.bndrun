@@ -2,3 +2,4 @@
 -runee: JavaSE-1.8
 -runrequires: osgi.identity;filter:='(osgi.identity=org.apache.felix.eventadmin)'
 -runbundles: org.apache.felix.eventadmin;version='[1.4.6,1.4.7)'
+-exporttype: bnd.executablejar;keep=true

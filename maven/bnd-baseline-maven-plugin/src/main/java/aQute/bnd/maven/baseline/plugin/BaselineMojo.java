@@ -5,6 +5,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.VERIFY;
 import java.io.IOException;
 import java.util.Formatter;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Locale;
 
 import org.apache.maven.RepositoryUtils;
@@ -27,6 +28,7 @@ import org.eclipse.aether.resolution.ArtifactResult;
 import org.eclipse.aether.resolution.VersionRangeRequest;
 import org.eclipse.aether.resolution.VersionRangeResolutionException;
 import org.eclipse.aether.resolution.VersionRangeResult;
+import org.eclipse.aether.version.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,10 +87,7 @@ public class BaselineMojo extends AbstractMojo {
 		setupBase(artifact);
 
 		try {
-			if (base.getVersion() == null || base.getVersion().isEmpty()) {
-				searchForBaseVersion(artifact, aetherRepos);
-			}
-
+			searchForBaseVersion(aetherRepos);
 			if (base.getVersion() != null && !base.getVersion().isEmpty()) {
 
 				ArtifactResult artifactResult = locateBaseJar(aetherRepos);
@@ -136,8 +135,8 @@ public class BaselineMojo extends AbstractMojo {
 			RemoteRepository releaseDistroRepo;
 			if (artifact.isSnapshot()) {
 				MavenProject tmpClone = project.clone();
-				org.apache.maven.artifact.Artifact tmpArtifact = project.getArtifact();
-				tmpClone.setArtifact(tmpArtifact);
+				tmpClone.getArtifact()
+					.setVersion("1.0.0");
 				releaseDistroRepo = RepositoryUtils.toRepo(tmpClone.getDistributionManagementArtifactRepository());
 			} else {
 				releaseDistroRepo = RepositoryUtils.toRepo(project.getDistributionManagementArtifactRepository());
@@ -169,27 +168,39 @@ public class BaselineMojo extends AbstractMojo {
 		if (base.getExtension() == null || base.getExtension().isEmpty()) {
 			base.setExtension(artifact.getExtension());
 		}
+		if (base.getVersion() == null || base.getVersion()
+			.isEmpty()) {
+			base.setVersion("(," + artifact.getVersion() + ")");
+		}
 
 		logger.debug("Baselining against {}, fail on missing: {}", base, failOnMissing);
 	}
 
-	private void searchForBaseVersion(Artifact artifact, List<RemoteRepository> aetherRepos)
+	private void searchForBaseVersion(List<RemoteRepository> aetherRepos)
 			throws VersionRangeResolutionException {
-		logger.info("Automatically determining the baseline version for {} using repositories {}", artifact,
+		logger.info("Determining the baseline version for {} using repositories {}", base,
 				aetherRepos);
 
 		Artifact toFind = new DefaultArtifact(base.getGroupId(), base.getArtifactId(), base.getClassifier(),
 				base.getExtension(), base.getVersion());
 
-		Artifact toCheck = toFind.setVersion("(," + artifact.getVersion() + ")");
-
-		VersionRangeRequest request = new VersionRangeRequest(toCheck, aetherRepos, "baseline");
+		VersionRangeRequest request = new VersionRangeRequest(toFind, aetherRepos, "baseline");
 
 		VersionRangeResult versions = system.resolveVersionRange(session, request);
 
-		logger.debug("Found versions {}", versions.getVersions());
+		List<Version> found = versions.getVersions();
+		logger.debug("Found versions {}", found);
 
-		base.setVersion(versions.getHighestVersion() != null ? versions.getHighestVersion().toString() : null);
+		base.setVersion(null);
+		for (ListIterator<Version> li = found.listIterator(found.size()); li.hasPrevious();) {
+			String highest = li.previous()
+				.toString();
+			if (!toFind.setVersion(highest)
+				.isSnapshot()) {
+				base.setVersion(highest);
+				break;
+			}
+		}
 
 		logger.info("The baseline version was found to be {}", base.getVersion());
 	}

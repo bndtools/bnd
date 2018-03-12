@@ -18,8 +18,12 @@ public class Glob {
 	}
 
 	public Glob(String globString, int flags) {
+		this(globString, Pattern.compile(convertGlobToRegEx(globString), flags));
+	}
+
+	Glob(String globString, Pattern pattern) {
 		this.glob = globString;
-		this.pattern = Pattern.compile(convertGlobToRegEx(globString), flags);
+		this.pattern = pattern;
 	}
 
 	public Matcher matcher(CharSequence input) {
@@ -35,23 +39,15 @@ public class Glob {
 		line = line.trim();
 		int strLen = line.length();
 		StringBuilder sb = new StringBuilder(strLen);
-		boolean escaping = false;
 		int inCurlies = 0;
-		for (char currentChar : line.toCharArray()) {
+		for (int i = 0; i < strLen; i++) {
+			char currentChar = line.charAt(i);
 			switch (currentChar) {
 				case '*' :
-					if (escaping)
-						sb.append("\\*");
-					else
-						sb.append(".*");
-					escaping = false;
+					sb.append(".*");
 					break;
 				case '?' :
-					if (escaping)
-						sb.append("\\?");
-					else
-						sb.append('.');
-					escaping = false;
+					sb.append('.');
 					break;
 				case '.' :
 				case '(' :
@@ -64,44 +60,33 @@ public class Glob {
 				case '%' :
 					sb.append('\\');
 					sb.append(currentChar);
-					escaping = false;
 					break;
 				case '\\' :
-					if (escaping) {
-						sb.append("\\\\");
-						escaping = false;
-					} else
-						escaping = true;
+					sb.append('\\');
+					if (i + 1 < strLen) {
+						sb.append(line.charAt(++i));
+					}
 					break;
 				case '{' :
-					if (escaping) {
-						sb.append("\\{");
-					} else {
-						sb.append("(?:");
-						inCurlies++;
-					}
-					escaping = false;
+					sb.append("(?:");
+					inCurlies++;
 					break;
 				case '}' :
-					if (inCurlies > 0 && !escaping) {
+					if (inCurlies > 0) {
 						sb.append(')');
 						inCurlies--;
-					} else if (escaping)
-						sb.append("\\}");
-					else
-						sb.append("}");
-					escaping = false;
+					} else {
+						sb.append('}');
+					}
 					break;
 				case ',' :
-					if (inCurlies > 0 && !escaping) {
+					if (inCurlies > 0) {
 						sb.append('|');
-					} else if (escaping)
-						sb.append("\\,");
-					else
-						sb.append(",");
+					} else {
+						sb.append(',');
+					}
 					break;
 				default :
-					escaping = false;
 					sb.append(currentChar);
 			}
 		}

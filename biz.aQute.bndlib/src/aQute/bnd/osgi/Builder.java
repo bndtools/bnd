@@ -88,6 +88,7 @@ public class Builder extends Analyzer {
 		Jar dot = getJar();
 		if (dot == null) {
 			dot = new Jar("dot");
+			dot.setReproducible(is(REPRODUCIBLE));
 			setJar(dot);
 		}
 		try {
@@ -271,7 +272,7 @@ public class Builder extends Analyzer {
 			if (m != null) {
 				String cp = m.getMainAttributes().getValue("Class-Path");
 				if (cp != null) {
-					Collection<String> parts = split(cp, ",");
+					Collection<String> parts = split(cp);
 					for (String part : parts) {
 						File sub = getFile(f.getParentFile(), part);
 						if (!sub.exists() || !sub.getParentFile().equals(f.getParentFile())) {

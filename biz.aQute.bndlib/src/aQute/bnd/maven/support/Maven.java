@@ -33,7 +33,7 @@ public class Maven {
 			this.executor = executor;
 	}
 
-	// http://repo1.maven.org/maven2/junit/junit/maven-metadata.xml
+	// https://repo.maven.apache.org/maven2/junit/junit/maven-metadata.xml
 
 	static Pattern MAVEN_RANGE = Pattern.compile("(\\[|\\()(.+)(,(.+))(\\]|\\))");
 
