@@ -1,6 +1,6 @@
 #
 #  A Test project that includes all subsystems of bnd
-# 
+#
 # This is not a bundle ...
 #
 
@@ -17,7 +17,6 @@
 	osgi.core;version=6.0,\
 	osgi.cmpn;version=6.0,\
     biz.aQute.bnd.annotation;version=project,\
-	org.osgi.impl.bundle.bindex;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	${junit},\
 	biz.aQute.bnd.embedded-repo; version=snapshot,\

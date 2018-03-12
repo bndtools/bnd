@@ -71,9 +71,32 @@ public class XMLResourceGenerator {
 		}
 	}
 
+	/**
+	 * Note that calling {@link #name(String)} sets increment to
+	 * {@link System#currentTimeMillis()}. In order to retain backward
+	 * compatibility that is not change. Therefore, in order to specify a value
+	 * {@link #increment(long)} should be called after.
+	 *
+	 * @param name
+	 * @return this
+	 */
 	public XMLResourceGenerator name(String name) {
 		repository.addAttribute("name", name);
 		repository.addAttribute("increment", System.currentTimeMillis());
+		return this;
+	}
+
+	/**
+	 * Note that calling {@link #name(String)} sets increment to
+	 * {@link System#currentTimeMillis()}. In order to retain backward
+	 * compatibility that is not change. Therefore, in order to specify a value
+	 * {@link #increment(long)} should be called after.
+	 *
+	 * @param increment
+	 * @return this
+	 */
+	public XMLResourceGenerator increment(long increment) {
+		repository.addAttribute("increment", increment);
 		return this;
 	}
 

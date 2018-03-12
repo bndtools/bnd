@@ -64,7 +64,7 @@ public class SimpleIndexer {
 	 * @throws Exception if the file cannot be indexed
 	 */
 	public static void index(Collection<File> files, OutputStream out, URI base) throws Exception {
-		index(files, out, base, false, null, null);
+		index(files, out, base, false, null, -1, null);
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class SimpleIndexer {
 	 * @throws Exception if the file cannot be indexed
 	 */
 	public static void index(Collection<File> files, OutputStream out, URI base, boolean compress) throws Exception {
-		index(files, out, base, compress, null, null);
+		index(files, out, base, compress, null, -1, null);
 	}
 
 	/**
@@ -88,7 +88,7 @@ public class SimpleIndexer {
 	 */
 	public static void index(Collection<File> files, OutputStream out, URI base, boolean compress, String name)
 		throws Exception {
-		index(files, out, base, compress, name, null);
+		index(files, out, base, compress, name, -1, null);
 	}
 
 	/**
@@ -103,6 +103,22 @@ public class SimpleIndexer {
 	public static void index(Collection<File> files, OutputStream outputStream, URI base, boolean compress, String name,
 		FileAnalyzer analyzer)
 		throws Exception {
+
+		index(files, outputStream, base, compress, name, -1, analyzer);
+	}
+
+	/**
+	 * @param files the files to include in the index
+	 * @param outputStream the output stream to write the index file
+	 * @param base the base URI from which the index urls are relative
+	 * @param compress compress with GZIP when true
+	 * @param name an optional name for the index
+	 * @param increment the timestamp of the index
+	 * @param analyzer a resource analyzer
+	 * @throws Exception if the file cannot be indexed
+	 */
+	public static void index(Collection<File> files, OutputStream outputStream, URI base, boolean compress, String name,
+		long increment, FileAnalyzer analyzer) throws Exception {
 
 		Objects.requireNonNull(files, "'files' argument cannot be null");
 		Objects.requireNonNull(outputStream, "'outputStream' argument cannot be null");
@@ -131,6 +147,10 @@ public class SimpleIndexer {
 
 		if (name != null) {
 			repository.name(name);
+		}
+
+		if (increment > -1) {
+			repository.increment(increment);
 		}
 
 		if (compress) {

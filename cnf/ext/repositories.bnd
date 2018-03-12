@@ -1,4 +1,3 @@
-mainrepo:               ${workspace}/cnf/repo
 releaserepo:            ${workspace}/dist/bundles
 baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
 
@@ -17,7 +16,6 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name='Local';\
         noupdateOnRelease=true,\
-    aQute.lib.deployer.FileRepo;name='Main'   ;location=${mainrepo}; latest=false,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name='Release';\
         releaseUrl="${fileuri;${releaserepo}}";\
