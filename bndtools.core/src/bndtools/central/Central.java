@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
@@ -53,6 +55,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.central.RepositoriesViewRefresher.RefreshModel;
 import bndtools.preferences.BndPreferences;
 
@@ -397,33 +400,33 @@ public class Central implements IStartupParticipant {
     }
 
     public static IPath toPath(File file) throws Exception {
-        IPath result = null;
-
         File absolute = file.getCanonicalFile();
-
-        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-        IFile[] candidates = wsroot.findFilesForLocationURI(absolute.toURI());
-        if (candidates != null && candidates.length > 0) {
-            result = candidates[0].getFullPath();
-        } else {
-            String workspacePath = getWorkspace().getBase().getAbsolutePath();
-            String absolutePath = absolute.getPath();
-            if (absolutePath.startsWith(workspacePath))
-                result = new Path(absolutePath.substring(workspacePath.length()));
-        }
-
-        return result;
+        return toFullPath(absolute).orElseGet(() -> {
+            try {
+                String workspacePath = getWorkspace().getBase()
+                    .getAbsolutePath();
+                String absolutePath = absolute.getPath();
+                if (absolutePath.startsWith(workspacePath))
+                    return new Path(absolutePath.substring(workspacePath.length()));
+                return null;
+            } catch (Exception e) {
+                throw Exceptions.duck(e);
+            }
+        });
     }
 
     public static IPath toPathMustBeInEclipseWorkspace(File file) throws Exception {
-        IPath result = null;
         File absolute = file.getCanonicalFile();
-        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
-        IFile[] candidates = wsroot.findFilesForLocationURI(absolute.toURI());
-        if (candidates != null && candidates.length > 0) {
-            result = candidates[0].getFullPath();
-        }
-        return result;
+        return toFullPath(absolute).orElse(null);
+    }
+
+    private static Optional<IPath> toFullPath(File file) {
+        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+            .getRoot();
+        IFile[] candidates = wsroot.findFilesForLocationURI(file.toURI());
+        return Stream.of(candidates)
+            .map(IFile::getFullPath)
+            .min((a, b) -> Integer.compare(a.segmentCount(), b.segmentCount()));
     }
 
     public static void refresh(IPath path) {
@@ -559,13 +562,10 @@ public class Central implements IStartupParticipant {
      */
 
     public static IResource toResource(File file) {
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        IFile[] ifiles = root.findFilesForLocationURI(file.getAbsoluteFile().toURI());
-        if ((ifiles == null) || (ifiles.length == 0)) {
-            return null;
-        }
-        IResource resource = file.isDirectory() ? root.getFolder(ifiles[0].getFullPath()) : ifiles[0];
-        return resource;
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+            .getRoot();
+        return toFullPath(file).map(p -> file.isDirectory() ? root.getFolder(p) : root.getFile(p))
+            .orElse(null);
     }
 
     /**

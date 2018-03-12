@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-
+import java.util.Arrays;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -128,8 +128,14 @@ public class FileUtils {
     }
 
     public static IFile[] getWorkspaceFiles(File javaFile) {
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-        return root.findFilesForLocationURI(javaFile.toURI());
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+            .getRoot();
+        IFile[] candidates = root.findFilesForLocationURI(javaFile.toURI());
+        Arrays.sort(candidates, (a, b) -> Integer.compare(a.getFullPath()
+            .segmentCount(),
+            b.getFullPath()
+                .segmentCount()));
+        return candidates;
     }
 
     public static File toFile(IWorkspaceRoot root, IPath path) {
