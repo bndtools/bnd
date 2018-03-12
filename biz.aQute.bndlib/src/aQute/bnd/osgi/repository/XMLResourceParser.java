@@ -190,8 +190,8 @@ public class XMLResourceParser extends Processor {
 		if (--depth < 0)
 			error("Too deep, traversed %s", traversed);
 		else {
-			String depthString = reader.getAttributeValue(NS_URI, ATTR_REFERRAL_DEPTH);
-			String urlString = reader.getAttributeValue(NS_URI, ATTR_REFERRAL_URL);
+			String depthString = reader.getAttributeValue(null, ATTR_REFERRAL_DEPTH);
+			String urlString = reader.getAttributeValue(null, ATTR_REFERRAL_URL);
 
 			if (check(urlString != null, "Expected URL in referral")) {
 				// TODO resolve url
