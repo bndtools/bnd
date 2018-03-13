@@ -56,7 +56,7 @@ class ArtifactRepository extends XML {
 			this.output = output;
 		}
 
-		public boolean matches(Map<String,String> map) throws Exception {
+		public boolean matches(Map<String, String> map) throws Exception {
 			return filter.matchMap(map);
 		}
 
@@ -87,12 +87,13 @@ class ArtifactRepository extends XML {
 
 	void parse() throws Exception {
 
-		final Map<String,String> properties = getProperties("repository/properties/property");
-		properties.put("repoUrl", base.resolve("").toString());
+		final Map<String, String> properties = getProperties("repository/properties/property");
+		properties.put("repoUrl", base.resolve("")
+			.toString());
 		final Domain parent = new Domain() {
 
 			@Override
-			public Map<String,String> getMap() {
+			public Map<String, String> getMap() {
 				return properties;
 			}
 
@@ -107,15 +108,16 @@ class ArtifactRepository extends XML {
 
 		NodeList artifactNodes = getNodes("repository/artifacts/artifact");
 		for (int i = 0; i < artifactNodes.getLength(); i++) {
-			final Node artifactNode = artifactNodes.item(i).cloneNode(true);
+			final Node artifactNode = artifactNodes.item(i)
+				.cloneNode(true);
 			final XMLArtifact xmlArtifact = getFromType(artifactNode, XMLArtifact.class);
-			final Map<String,String> map = Converter.cnv(new TypeReference<Map<String,String>>() {}, xmlArtifact);
+			final Map<String, String> map = Converter.cnv(new TypeReference<Map<String, String>>() {}, xmlArtifact);
 
 			if ("osgi.bundle".equals(xmlArtifact.classifier)) {
 				Domain domain = new Domain() {
 
 					@Override
-					public Map<String,String> getMap() {
+					public Map<String, String> getMap() {
 						return map;
 					}
 
@@ -146,9 +148,9 @@ class ArtifactRepository extends XML {
 	}
 
 	/**
-	 * * <artifact classifier='osgi.bundle'
-	 * id='org.bndtools.versioncontrol.ignores.plugin.git'
-	 * version='3.3.0.201605202157'>
+	 * * <artifact classifier='osgi.bundle' id=
+	 * 'org.bndtools.versioncontrol.ignores.plugin.git' version=
+	 * '3.3.0.201605202157'>
 	 * 
 	 * @param item
 	 * @return

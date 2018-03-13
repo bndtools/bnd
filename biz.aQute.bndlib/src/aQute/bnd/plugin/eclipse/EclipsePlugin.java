@@ -29,7 +29,8 @@ public class EclipsePlugin extends LifeCyclePlugin {
 			return;
 		}
 
-		File f = p.getWorkspace().getFile("eclipse/" + source + ".tmpl");
+		File f = p.getWorkspace()
+			.getFile("eclipse/" + source + ".tmpl");
 		String s;
 		if (f.isFile()) {
 			s = IO.collect(f);
@@ -42,7 +43,8 @@ public class EclipsePlugin extends LifeCyclePlugin {
 			s = IO.collect(in);
 		}
 
-		String process = p.getReplacer().process(s);
+		String process = p.getReplacer()
+			.process(s);
 
 		IO.mkdirs(d.getParentFile());
 		IO.store(process, d);

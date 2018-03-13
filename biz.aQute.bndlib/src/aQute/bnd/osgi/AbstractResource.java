@@ -16,14 +16,17 @@ public abstract class AbstractResource implements Resource {
 		lastModified = modified;
 	}
 
+	@Override
 	public String getExtra() {
 		return extra;
 	}
 
+	@Override
 	public long lastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public InputStream openInputStream() throws Exception {
 		return IO.stream(buffer());
 	}
@@ -40,19 +43,23 @@ public abstract class AbstractResource implements Resource {
 		return getBuffer().duplicate();
 	}
 
+	@Override
 	public void setExtra(String extra) {
 		this.extra = extra;
 	}
 
+	@Override
 	public void write(OutputStream out) throws Exception {
 		IO.copy(buffer(), out);
 	}
 
 	abstract protected byte[] getBytes() throws Exception;
 
+	@Override
 	public long size() throws Exception {
 		return getBuffer().limit();
 	}
 
+	@Override
 	public void close() throws IOException {}
 }

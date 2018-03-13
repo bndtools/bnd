@@ -14,10 +14,10 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class XMLAttributeFinder extends ClassDataCollector {
 
-	private final Analyzer			analyzer;
+	private final Analyzer				analyzer;
 
-	Map<TypeRef,XMLAttribute>		annoCache		= new HashMap<>();
-	Map<TypeRef,Map<String,String>>	defaultsCache	= new HashMap<>();
+	Map<TypeRef, XMLAttribute>			annoCache		= new HashMap<>();
+	Map<TypeRef, Map<String, String>>	defaultsCache	= new HashMap<>();
 
 	public XMLAttributeFinder(Analyzer analyzer) {
 		this.analyzer = analyzer;
@@ -46,9 +46,9 @@ public class XMLAttributeFinder extends ClassDataCollector {
 			xmlAttr = (XMLAttribute) a;
 	}
 
-	public Map<String,String> getDefaults(Annotation a) {
+	public Map<String, String> getDefaults(Annotation a) {
 		TypeRef name = a.getName();
-		Map<String,String> defaults = defaultsCache.get(name);
+		Map<String, String> defaults = defaultsCache.get(name);
 		if (defaults == null)
 			defaults = extractDefaults(name, analyzer);
 		if (defaults == null)
@@ -56,10 +56,10 @@ public class XMLAttributeFinder extends ClassDataCollector {
 		return new LinkedHashMap<>(defaults);
 	}
 
-	private Map<String,String> extractDefaults(TypeRef name, final Analyzer analyzer) {
+	private Map<String, String> extractDefaults(TypeRef name, final Analyzer analyzer) {
 		try {
 			Clazz clazz = analyzer.findClass(name);
-			final Map<String,String> props = new LinkedHashMap<>();
+			final Map<String, String> props = new LinkedHashMap<>();
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 
 				@Override
@@ -68,16 +68,18 @@ public class XMLAttributeFinder extends ClassDataCollector {
 					// check type, exit with warning if annotation or annotation
 					// array
 					boolean isClass = false;
-					TypeRef type = defined.getType().getClassRef();
+					TypeRef type = defined.getType()
+						.getClassRef();
 					if (!type.isPrimitive()) {
-						if (Class.class.getName().equals(type.getFQN())) {
+						if (Class.class.getName()
+							.equals(type.getFQN())) {
 							isClass = true;
 						} else {
 							try {
 								Clazz r = analyzer.findClass(type);
 								if (r.isAnnotation()) {
 									analyzer.warning("Nested annotation type found in field %s, %s", defined.getName(),
-											type.getFQN());
+										type.getFQN());
 									return;
 								}
 							} catch (Exception e) {
@@ -88,13 +90,15 @@ public class XMLAttributeFinder extends ClassDataCollector {
 					}
 					if (value != null) {
 						String name = defined.getName();
-						if (value.getClass().isArray()) {
+						if (value.getClass()
+							.isArray()) {
 							StringBuilder sb = new StringBuilder();
 							String sep = "";
 							// add element individually
 							for (int i = 0; i < Array.getLength(value); i++) {
 								Object element = Array.get(value, i);
-								sb.append(sep).append(convert(element, isClass));
+								sb.append(sep)
+									.append(convert(element, isClass));
 								sep = " ";
 							}
 							props.put(name, sb.toString());

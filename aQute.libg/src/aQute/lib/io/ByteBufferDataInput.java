@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Objects;
+
 public class ByteBufferDataInput implements DataInput {
 	private final ByteBuffer bb;
 

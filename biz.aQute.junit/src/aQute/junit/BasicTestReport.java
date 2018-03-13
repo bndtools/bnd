@@ -14,12 +14,12 @@ import junit.framework.TestListener;
 import junit.framework.TestResult;
 
 public class BasicTestReport implements TestListener, TestReporter {
-	private int				errors;
-	private final Tee		systemOut;
-	private final Tee		systemErr;
-	private int				fails;
-	private Bundle			targetBundle;
-	private final Activator	activator;
+	private int					errors;
+	private final Tee			systemOut;
+	private final Tee			systemErr;
+	private int					fails;
+	private Bundle				targetBundle;
+	private final Activator		activator;
 	private final TestResult	result;
 
 	public BasicTestReport(Activator activator, Tee systemOut, Tee systemErr, TestResult result) {
@@ -29,14 +29,17 @@ public class BasicTestReport implements TestListener, TestReporter {
 		this.result = result;
 	}
 
+	@Override
 	public void setup(Bundle fw, Bundle targetBundle) {
 		this.targetBundle = targetBundle;
 	}
 
+	@Override
 	public void begin(List<Test> tests, int realcount) {
 		activator.trace(">>>> %s, tests %s", targetBundle, tests);
 	}
 
+	@Override
 	public void addError(Test test, Throwable t) {
 		if (activator.isTrace()) {
 			activator.trace("  add error to %s : %s", test, t);
@@ -51,6 +54,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 		check();
 	}
 
+	@Override
 	public void addFailure(Test test, AssertionFailedError t) {
 		if (activator.isTrace()) {
 			activator.trace("  add failure to %s : %s", test, t);
@@ -65,6 +69,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 		check();
 	}
 
+	@Override
 	public void startTest(Test test) {
 		activator.trace("  >> %s", test);
 		check();
@@ -77,14 +82,16 @@ public class BasicTestReport implements TestListener, TestReporter {
 			activator.trace("got bundle context %s from %s in state %s", context, b, b.getState());
 			assert context != null;
 			try {
-				Method m = test.getClass().getMethod("setBundleContext", BundleContext.class);
+				Method m = test.getClass()
+					.getMethod("setBundleContext", BundleContext.class);
 				m.setAccessible(true);
 				m.invoke(test, context);
 				activator.trace("set context through setter");
 			} catch (Exception e) {
 				Field f;
 				try {
-					f = test.getClass().getField("context");
+					f = test.getClass()
+						.getField("context");
 					f.setAccessible(true);
 					f.set(test, context);
 					activator.trace("set context in field");
@@ -95,10 +102,15 @@ public class BasicTestReport implements TestListener, TestReporter {
 		}
 		fails = result.failureCount();
 		errors = result.errorCount();
-		systemOut.clear().capture(true).echo(true);
-		systemErr.clear().capture(true).echo(true);
+		systemOut.clear()
+			.capture(true)
+			.echo(true);
+		systemErr.clear()
+			.capture(true)
+			.echo(true);
 	}
 
+	@Override
 	public void endTest(Test test) {
 		activator.trace("  << %s, fails=%s, errors=%s", test, result.failureCount(), result.errorCount());
 		systemOut.capture(false);
@@ -115,10 +127,12 @@ public class BasicTestReport implements TestListener, TestReporter {
 		check();
 	}
 
+	@Override
 	public void end() {
 		activator.trace("<<<<");
 	}
 
+	@Override
 	public void aborted() {
 		activator.trace("ABORTED");
 	}
@@ -131,7 +145,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 
 	String[] getCaptured() {
 		return new String[] {
-				systemOut.getContent(), systemErr.getContent()
+			systemOut.getContent(), systemErr.getContent()
 		};
 	}
 

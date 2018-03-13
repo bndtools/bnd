@@ -22,11 +22,11 @@ import aQute.libg.cryptography.SHA256;
 
 public class URLCache {
 	private final static Logger			logger	= LoggerFactory.getLogger(URLCache.class);
-	private final static JSONCodec		codec		= new JSONCodec();
+	private final static JSONCodec		codec	= new JSONCodec();
 
 	private final File					root;
 
-	private ConcurrentMap<File,Info>	infos		= new ConcurrentHashMap<>();
+	private ConcurrentMap<File, Info>	infos	= new ConcurrentHashMap<>();
 
 	public static class InfoDTO {
 		public String	etag;
@@ -54,7 +54,9 @@ public class URLCache {
 			this.jsonFile = new File(content.getParentFile(), content.getName() + ".json");
 			if (this.jsonFile.isFile()) {
 				try {
-					this.dto = codec.dec().from(jsonFile).get(InfoDTO.class);
+					this.dto = codec.dec()
+						.from(jsonFile)
+						.get(InfoDTO.class);
 				} catch (Exception e) {
 					this.dto = new InfoDTO();
 					logger.error("URLCache Failed to load data for {} from {}", content, jsonFile);
@@ -81,11 +83,15 @@ public class URLCache {
 		}
 
 		public void update(String etag) throws Exception {
-			this.dto.sha_1 = SHA1.digest(file).asHex();
-			this.dto.sha_256 = SHA256.digest(file).asHex();
+			this.dto.sha_1 = SHA1.digest(file)
+				.asHex();
+			this.dto.sha_256 = SHA256.digest(file)
+				.asHex();
 			this.dto.etag = etag;
 			this.dto.modified = file.lastModified();
-			codec.enc().to(jsonFile).put(this.dto);
+			codec.enc()
+				.to(jsonFile)
+				.put(this.dto);
 		}
 
 		public boolean isPresent() {
@@ -152,7 +158,9 @@ public class URLCache {
 	}
 
 	public static String toName(URI uri) throws Exception {
-		return SHA1.digest(uri.toASCIIString().getBytes(StandardCharsets.UTF_8)).asHex();
+		return SHA1.digest(uri.toASCIIString()
+			.getBytes(StandardCharsets.UTF_8))
+			.asHex();
 	}
 
 	public static void update(File file, String tag) {

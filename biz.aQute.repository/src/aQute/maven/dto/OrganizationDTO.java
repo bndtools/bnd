@@ -12,10 +12,10 @@ public class OrganizationDTO extends DTO {
 	/**
 	 * The full name of the organization.
 	 */
-	public String name;
-	
+	public String	name;
+
 	/**
 	 * The URL to the organization's home page.
 	 */
-	public URI url;
+	public URI		url;
 }

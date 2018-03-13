@@ -13,7 +13,8 @@ public class OptionDef {
 	}
 
 	Tag getTag() {
-		Tag option = new Tag("Option").addAttribute("label", label).addAttribute("value", value);
+		Tag option = new Tag("Option").addAttribute("label", label)
+			.addAttribute("value", value);
 		return option;
 	}
 

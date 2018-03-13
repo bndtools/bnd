@@ -51,21 +51,24 @@ public class FakeNexus extends Httpbin {
 
 					if (rq.headers.containsKey("if-none-match")) {
 						String etag = rq.headers.get("if-none-match");
-						if (etag.equals(SHA1.digest(f).asHex())) {
+						if (etag.equals(SHA1.digest(f)
+							.asHex())) {
 							rsp.code = HttpURLConnection.HTTP_NOT_MODIFIED;
 							return null;
 						}
 					}
 
 					rsp.headers.put("Last-Modified", totHttpDate(f.lastModified()));
-					rsp.headers.put("ETag", SHA1.digest(f).asHex());
+					rsp.headers.put("ETag", SHA1.digest(f)
+						.asHex());
 					return f;
 
 				case "PUT" :
 					if (rq.headers.containsKey("if-match") && f.isFile()) {
 						System.out.println("if-match" + rq.headers.get("if-match"));
 						String etag = rq.headers.get("if-match");
-						if (!etag.equals(SHA1.digest(f).asHex())) {
+						if (!etag.equals(SHA1.digest(f)
+							.asHex())) {
 							rsp.code = HttpURLConnection.HTTP_PRECON_FAILED;
 							return null;
 						}
@@ -79,10 +82,12 @@ public class FakeNexus extends Httpbin {
 							return null;
 						}
 					}
-					f.getParentFile().mkdirs();
+					f.getParentFile()
+						.mkdirs();
 					IO.copy(rq.content, f);
 					rsp.headers.put("Last-Modified", totHttpDate(f.lastModified()));
-					rsp.headers.put("ETag", SHA1.digest(f).asHex());
+					rsp.headers.put("ETag", SHA1.digest(f)
+						.asHex());
 					rsp.code = 201;
 					return f;
 
@@ -113,7 +118,8 @@ public class FakeNexus extends Httpbin {
 	}
 
 	private long fromHttpDate(String string) throws ParseException {
-		return HttpClient.sdf.parse(string).getTime();
+		return HttpClient.sdf.parse(string)
+			.getTime();
 	}
 
 }

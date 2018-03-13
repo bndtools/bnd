@@ -7,11 +7,11 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({
-		ElementType.TYPE
+	ElementType.TYPE
 })
 public @interface BndPlugin {
 
 	String name();
 
-	Class< ? > parameters() default Object.class;
+	Class<?> parameters() default Object.class;
 }

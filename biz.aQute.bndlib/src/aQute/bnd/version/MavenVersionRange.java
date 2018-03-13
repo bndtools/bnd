@@ -24,10 +24,10 @@ public class MavenVersionRange {
 		, Pattern.COMMENTS);
 
 	private final boolean			pair;
-	private final boolean		li;
-	private final boolean		hi;
-	private final MavenVersion	low;
-	private final MavenVersion	high;
+	private final boolean			li;
+	private final boolean			hi;
+	private final MavenVersion		low;
+	private final MavenVersion		high;
 	private final MavenVersionRange	nextOr;
 
 	public MavenVersionRange(String range) {
@@ -97,6 +97,7 @@ public class MavenVersionRange {
 		return false;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		toString(sb);

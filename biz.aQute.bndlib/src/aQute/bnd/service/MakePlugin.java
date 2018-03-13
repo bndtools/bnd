@@ -17,6 +17,6 @@ public interface MakePlugin {
 	 * @return A resource or null if no resource could be made
 	 * @throws Exception
 	 */
-	Resource make(Builder builder, String source, Map<String,String> arguments) throws Exception;
+	Resource make(Builder builder, String source, Map<String, String> arguments) throws Exception;
 
 }

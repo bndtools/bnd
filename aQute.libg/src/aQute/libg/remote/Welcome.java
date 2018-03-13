@@ -5,5 +5,5 @@ import java.util.Map;
 public class Welcome {
 	public int					version;
 	public char					separatorChar;
-	public Map<String,String>	properties;
+	public Map<String, String>	properties;
 }

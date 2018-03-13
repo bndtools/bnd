@@ -71,7 +71,8 @@ public class IndexedReposWithComms extends TestCase {
 
 			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/indexed"));
 			assertNotNull(ws);
-			ws.setProperty("repo", ht.getBaseURI().toASCIIString() + "/index");
+			ws.setProperty("repo", ht.getBaseURI()
+				.toASCIIString() + "/index");
 			OSGiRepository plugin = ws.getPlugin(OSGiRepository.class);
 			assertTrue(ws.check());
 			assertNotNull(plugin);
@@ -94,7 +95,8 @@ public class IndexedReposWithComms extends TestCase {
 			Workspace ws = Workspace.getWorkspace(aQute.lib.io.IO.getFile("workspaces/indexed"));
 			assertNotNull(ws);
 			ws.setProperty("-connection-settings", "${build}/settings-withpassword.xml");
-			ws.setProperty("repo", ht.getBaseURI().toASCIIString() + "/index-auth/user/good");
+			ws.setProperty("repo", ht.getBaseURI()
+				.toASCIIString() + "/index-auth/user/good");
 			OSGiRepository plugin = ws.getPlugin(OSGiRepository.class);
 			assertTrue(ws.check());
 			assertNotNull(plugin);
@@ -122,37 +124,40 @@ public class IndexedReposWithComms extends TestCase {
 		}));
 		socks5Proxy = builder.build();
 
-		socks5Proxy.getSessionManager().addSessionListener("abc", new SessionListener() {
+		socks5Proxy.getSessionManager()
+			.addSessionListener("abc", new SessionListener() {
 
-			@Override
-			public void onException(Session arg0, Exception arg1) {
-				System.err.println("Exception " + arg0 + " " + arg1);
-				arg1.printStackTrace();
-			}
+				@Override
+				public void onException(Session arg0, Exception arg1) {
+					System.err.println("Exception " + arg0 + " " + arg1);
+					arg1.printStackTrace();
+				}
 
-			@Override
-			public void onCommand(Session arg0, CommandMessage arg1) throws CloseSessionException {
-				System.err.println("Command " + arg0 + " " + arg1);
-			}
+				@Override
+				public void onCommand(Session arg0, CommandMessage arg1) throws CloseSessionException {
+					System.err.println("Command " + arg0 + " " + arg1);
+				}
 
-			@Override
-			public void onClose(Session arg0) {
-				System.err.println("Close " + arg0);
-			}
+				@Override
+				public void onClose(Session arg0) {
+					System.err.println("Close " + arg0);
+				}
 
-			@Override
-			public void onCreate(Session arg0) throws CloseSessionException {
-				System.err.println("Create " + arg0);
-			}
-		});
+				@Override
+				public void onCreate(Session arg0) throws CloseSessionException {
+					System.err.println("Create " + arg0);
+				}
+			});
 
 		socks5Proxy.start();
 	}
 
+	@Override
 	public void setUp() {
 		IO.delete(tmp);
 	}
 
+	@Override
 	public void tearDown() {
 		if (socks5Proxy != null)
 			socks5Proxy.shutdown();

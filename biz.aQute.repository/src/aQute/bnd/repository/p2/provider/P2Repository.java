@@ -32,17 +32,18 @@ import aQute.service.reporter.Reporter;
  * A p2 repository
  */
 @BndPlugin(name = "p2", parameters = P2Config.class)
-public class P2Repository extends BaseRepository implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable {
+public class P2Repository extends BaseRepository
+	implements Plugin, RegistryPlugin, RepositoryPlugin, Refreshable, Closeable {
 	private P2Config	config;
 	private Registry	registry;
 	private Workspace	workspace;
-	private P2Indexer		p2Index;
+	private P2Indexer	p2Index;
 	private Reporter	reporter;
 	private String		name;
 
 	@Override
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		return getP2Index().get(bsn, version, properties, listeners);
 
 	}
@@ -100,7 +101,7 @@ public class P2Repository extends BaseRepository implements Plugin, RegistryPlug
 	}
 
 	@Override
-	public void setProperties(Map<String,String> map) throws Exception {
+	public void setProperties(Map<String, String> map) throws Exception {
 		this.config = Converter.cnv(P2Config.class, map);
 		this.name = this.config.name("p2-" + config.url());
 	}
@@ -115,17 +116,17 @@ public class P2Repository extends BaseRepository implements Plugin, RegistryPlug
 		this.registry = registry;
 	}
 
-
 	@Override
 	public boolean refresh() throws Exception {
 		getP2Index().refresh();
 		return true;
 	}
 
-
 	@Override
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		return getP2Index().getBridge().getRepository().findProviders(requirements);
+	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
+		return getP2Index().getBridge()
+			.getRepository()
+			.findProviders(requirements);
 	}
 
 	@Override

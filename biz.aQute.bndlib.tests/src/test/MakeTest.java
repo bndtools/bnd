@@ -143,12 +143,18 @@ public class MakeTest extends TestCase {
 
 	static void report(Processor processor) {
 		System.err.println();
-		for (int i = 0; i < processor.getErrors().size(); i++)
-			System.err.println(processor.getErrors().get(i));
-		for (int i = 0; i < processor.getWarnings().size(); i++)
-			System.err.println(processor.getWarnings().get(i));
-		assertEquals(0, processor.getErrors().size());
-		assertEquals(0, processor.getWarnings().size());
+		for (int i = 0; i < processor.getErrors()
+			.size(); i++)
+			System.err.println(processor.getErrors()
+				.get(i));
+		for (int i = 0; i < processor.getWarnings()
+			.size(); i++)
+			System.err.println(processor.getWarnings()
+				.get(i));
+		assertEquals(0, processor.getErrors()
+			.size());
+		assertEquals(0, processor.getWarnings()
+			.size());
 	}
 
 }

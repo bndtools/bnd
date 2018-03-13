@@ -31,12 +31,12 @@ class ComponentDef extends ExtensionDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
 	final static String				MARKER			= new String("|marker");
 	final List<String>				properties		= new ArrayList<>();
-	final MultiMap<String,String>	property		= new MultiMap<>();			// key
-																								// is
-																								// property
-																								// name
-	final Map<String,String>		propertyType	= new HashMap<>();
-	final Map<String,ReferenceDef>	references		= new LinkedHashMap<>();
+	final MultiMap<String, String>	property		= new MultiMap<>();					// key
+																						// is
+																						// property
+																						// name
+	final Map<String, String>		propertyType	= new HashMap<>();
+	final Map<String, ReferenceDef>	references		= new LinkedHashMap<>();
 	Version							version;
 	String							name;
 	String							factory;
@@ -93,7 +93,7 @@ class ComponentDef extends ExtensionDef {
 		} else if (scope != null && scope != ServiceScope.BUNDLE)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 
-		for (Map.Entry<String,List<String>> kvs : property.entrySet()) {
+		for (Map.Entry<String, List<String>> kvs : property.entrySet()) {
 			Tag property = new Tag("property");
 			String name = kvs.getKey();
 			String type = propertyType.get(name);
@@ -102,8 +102,10 @@ class ComponentDef extends ExtensionDef {
 			if (type != null) {
 				property.addAttribute("type", type);
 			}
-			if (kvs.getValue().size() == 1) {
-				String value = kvs.getValue().get(0);
+			if (kvs.getValue()
+				.size() == 1) {
+				String value = kvs.getValue()
+					.get(0);
 				value = check(type, value, analyzer);
 				property.addAttribute("value", value);
 			} else {
@@ -141,7 +143,7 @@ class ComponentDef extends ExtensionDef {
 	}
 
 	void sortReferences() {
-		Map<String,ReferenceDef> temp = new TreeMap<>(references);
+		Map<String, ReferenceDef> temp = new TreeMap<>(references);
 		references.clear();
 		references.putAll(temp);
 	}
@@ -171,7 +173,8 @@ class ComponentDef extends ExtensionDef {
 		component.addAttribute("name", name);
 
 		if (configurationPolicy != null)
-			component.addAttribute("configuration-policy", configurationPolicy.toString().toLowerCase());
+			component.addAttribute("configuration-policy", configurationPolicy.toString()
+				.toLowerCase());
 
 		if (enabled != null)
 			component.addAttribute("enabled", enabled);
@@ -197,7 +200,8 @@ class ComponentDef extends ExtensionDef {
 			for (String pid : configurationPid) {
 				if ("$".equals(pid))
 					pid = name;
-				b.append(space).append(pid);
+				b.append(space)
+					.append(pid);
 				space = " ";
 			}
 			component.addAttribute("configuration-pid", b.toString());
@@ -217,7 +221,8 @@ class ComponentDef extends ExtensionDef {
 					}
 					s.addAttribute("servicefactory", scope == ServiceScope.BUNDLE);
 				} else {
-					s.addAttribute("scope", scope.toString().toLowerCase());
+					s.addAttribute("scope", scope.toString()
+						.toLowerCase());
 				}
 			}
 
@@ -250,7 +255,7 @@ class ComponentDef extends ExtensionDef {
 			if (type.equals("Char"))
 				type = "Character";
 
-			Class< ? > c = Class.forName("java.lang." + type);
+			Class<?> c = Class.forName("java.lang." + type);
 			if (c == String.class)
 				return v;
 

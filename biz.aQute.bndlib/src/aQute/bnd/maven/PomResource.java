@@ -26,7 +26,7 @@ public class PomResource extends WriteResource {
 	private static final String	GROUPID		= "groupid";
 	private static final String	WHERE		= "where";
 	final Manifest				manifest;
-	private Map<String,String>	scm;
+	private Map<String, String>	scm;
 	final Processor				processor;
 	final static Pattern		NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
 	private String				where;
@@ -39,11 +39,11 @@ public class PomResource extends WriteResource {
 		this(new Processor(), manifest);
 	}
 
-	public PomResource(Map<String,String> b, Manifest manifest) {
+	public PomResource(Map<String, String> b, Manifest manifest) {
 		this(asProcessor(b), manifest);
 	}
 
-	private static Processor asProcessor(Map<String,String> b) {
+	private static Processor asProcessor(Map<String, String> b) {
 		Processor p = new Processor();
 		p.addProperties(b);
 		return p;
@@ -54,7 +54,8 @@ public class PomResource extends WriteResource {
 		this.processor = b;
 
 		Domain domain = Domain.domain(manifest);
-		String bsn = domain.getBundleSymbolicName().getKey();
+		String bsn = domain.getBundleSymbolicName()
+			.getKey();
 		if (bsn == null) {
 			throw new RuntimeException("Cannot create POM unless bsn is set");
 		}
@@ -82,7 +83,7 @@ public class PomResource extends WriteResource {
 			int n = bsn.lastIndexOf('.');
 			if (n <= 0)
 				throw new RuntimeException("\"" + GROUPID + "\" not set and" + Constants.BUNDLE_SYMBOLICNAME
-						+ " does not contain a '.' to separate into a groupid and artifactid.");
+					+ " does not contain a '.' to separate into a groupid and artifactid.");
 
 			artifactId = processor.get(ARTIFACTID);
 			if (artifactId == null)
@@ -102,19 +103,19 @@ public class PomResource extends WriteResource {
 		if (version == null)
 			version = "0";
 
-
 	}
 
 	public String augmentManifest(Domain domain, String bsn) {
 		String groupid = null;
 		Parameters augments = new Parameters(processor.mergeProperties("-pomaugment"), processor);
 
-		for (Entry<String,Attrs> augment : augments.entrySet()) {
+		for (Entry<String, Attrs> augment : augments.entrySet()) {
 			Glob g = new Glob(augment.getKey());
 
-			if (g.matcher(bsn).matches()) {
+			if (g.matcher(bsn)
+				.matches()) {
 				Attrs attrs = augment.getValue();
-				for (Entry<String,String> attr : attrs.entrySet()) {
+				for (Entry<String, String> attr : attrs.entrySet()) {
 					String key = attr.getKey();
 					boolean mandatory = false;
 					if (key.startsWith("+")) {
@@ -162,16 +163,20 @@ public class PomResource extends WriteResource {
 
 	@Override
 	public void write(OutputStream out) throws IOException {
-		String description = manifest.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
-		String docUrl = manifest.getMainAttributes().getValue(Constants.BUNDLE_DOCURL);
-		String bundleVendor = manifest.getMainAttributes().getValue(Constants.BUNDLE_VENDOR);
-		String bundleLicense = manifest.getMainAttributes().getValue(Constants.BUNDLE_LICENSE);
+		String description = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_DESCRIPTION);
+		String docUrl = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_DOCURL);
+		String bundleVendor = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_VENDOR);
+		String bundleLicense = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_LICENSE);
 
 		Tag project = new Tag("project");
 		project.addAttribute("xmlns", "http://maven.apache.org/POM/4.0.0");
 		project.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		project.addAttribute("xsi:schemaLocation",
-				"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd");
+			"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd");
 
 		project.addContent(new Tag("modelVersion").addContent("4.0.0"));
 		project.addContent(new Tag("groupId").addContent(getGroupId()));
@@ -190,7 +195,7 @@ public class PomResource extends WriteResource {
 
 		if (scm != null) {
 			Tag scm = new Tag(project, "scm");
-			for (Map.Entry<String,String> e : this.scm.entrySet()) {
+			for (Map.Entry<String, String> e : this.scm.entrySet()) {
 				new Tag(scm, e.getKey()).addContent(e.getValue());
 			}
 		}
@@ -211,7 +216,7 @@ public class PomResource extends WriteResource {
 		}
 		Tag ls = null;
 		Parameters licenses = new Parameters(bundleLicense, processor);
-		for (Entry<String,Attrs> license : licenses.entrySet()) {
+		for (Entry<String, Attrs> license : licenses.entrySet()) {
 			// Bundle-License: identifier;description="description";link="URL"
 			//
 			// <licenses>
@@ -232,14 +237,15 @@ public class PomResource extends WriteResource {
 			if (ls == null)
 				ls = new Tag(project, "licenses");
 			Tag l = new Tag(ls, "license");
-			Map<String,String> attrs = license.getValue();
+			Map<String, String> attrs = license.getValue();
 			tagFromMap(l, attrs, "name", "name", identifier);
 			tagFromMap(l, attrs, "link", "url", identifier);
 			tagFromMap(l, attrs, "distribution", "distribution", "repo");
 			tagFromMap(l, attrs, "description", "comments", null);
 		}
 
-		String scm = manifest.getMainAttributes().getValue(Constants.BUNDLE_SCM);
+		String scm = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_SCM);
 		if (scm != null && scm.length() > 0) {
 			Attrs pscm = OSGiHeader.parseProperties(scm);
 
@@ -249,8 +255,8 @@ public class PomResource extends WriteResource {
 			}
 		}
 
-		Parameters developers = new Parameters(manifest.getMainAttributes().getValue(Constants.BUNDLE_DEVELOPERS),
-				processor);
+		Parameters developers = new Parameters(manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_DEVELOPERS), processor);
 
 		if (developers.size() > 0) {
 
@@ -270,7 +276,9 @@ public class PomResource extends WriteResource {
 					if (s.equals("roles")) {
 						Tag troles = new Tag(tdeveloper, "roles");
 
-						String[] roles = i.get(s).trim().split("\\s*,\\s*");
+						String[] roles = i.get(s)
+							.trim()
+							.split("\\s*,\\s*");
 						for (String role : roles) {
 							new Tag(troles, "role", role);
 						}
@@ -298,7 +306,7 @@ public class PomResource extends WriteResource {
 	 * @param tag
 	 * @param defaultValue
 	 */
-	private Tag tagFromMap(Tag parent, Map<String,String> attrs, String key, String tag, String defaultValue) {
+	private Tag tagFromMap(Tag parent, Map<String, String> attrs, String key, String tag, String defaultValue) {
 		String value = attrs.get(key);
 		if (value == null)
 			value = attrs.get(tag);
@@ -310,7 +318,7 @@ public class PomResource extends WriteResource {
 		return parent;
 	}
 
-	public void setProperties(Map<String,String> scm) {
+	public void setProperties(Map<String, String> scm) {
 		this.scm = scm;
 	}
 

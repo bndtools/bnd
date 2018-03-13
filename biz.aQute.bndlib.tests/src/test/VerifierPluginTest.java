@@ -38,7 +38,8 @@ public class VerifierPluginTest extends TestCase {
 			b.setProperty("Bundle-Version", "1.2.3");
 			b.setExportPackage("test.activator");
 			b.addClasspath(new File("bin"));
-			b.getPlugins().add(analyzerPlugin);
+			b.getPlugins()
+				.add(analyzerPlugin);
 
 			Jar jar = b.build();
 		}
@@ -70,7 +71,8 @@ public class VerifierPluginTest extends TestCase {
 			b.setProperty("Bundle-Version", "1.2.3");
 			b.setExportPackage("test.activator");
 			b.addClasspath(new File("bin"));
-			b.getPlugins().add(verifier);
+			b.getPlugins()
+				.add(verifier);
 
 			Jar jar = b.build();
 		}

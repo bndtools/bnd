@@ -32,13 +32,13 @@ import aQute.service.reporter.Reporter;
  * This class maintains
  */
 public class Baseline {
-	private final static Logger	logger	= LoggerFactory.getLogger(Baseline.class);
+	private final static Logger logger = LoggerFactory.getLogger(Baseline.class);
 
 	public static class Info {
 		public String				packageName;
 		public Diff					packageDiff;
 		public Collection<String>	providers;
-		public Map<String,String>	attributes;
+		public Map<String, String>	attributes;
 		public Version				newerVersion;
 		public Version				olderVersion;
 		public Version				suggestedVersion;
@@ -100,7 +100,7 @@ public class Baseline {
 	}
 
 	public Set<Info> baseline(Tree n, Parameters nExports, Tree o, Parameters oExports, Instructions packageFilters)
-			throws Exception {
+		throws Exception {
 		diff = n.diff(o);
 		Diff apiDiff = diff.get("<api>");
 		infos = Create.set();
@@ -122,7 +122,8 @@ public class Baseline {
 			if (pdiff.getType() != Type.PACKAGE) // Just packages
 				continue;
 
-			if (pdiff.getName().startsWith("java."))
+			if (pdiff.getName()
+				.startsWith("java."))
 				continue;
 
 			if (!packageFilters.matches(pdiff.getName()))
@@ -167,12 +168,14 @@ public class Baseline {
 
 						info.providers = Create.set();
 						if (info.attributes != null)
-							info.providers.addAll(Processor.split(info.attributes.get(Constants.PROVIDER_TYPE_DIRECTIVE)));
+							info.providers
+								.addAll(Processor.split(info.attributes.get(Constants.PROVIDER_TYPE_DIRECTIVE)));
 
 						// Calculate the new delta assuming we fix all the major
 						// interfaces
 						// by making them providers
 						Delta tryDelta = pdiff.getDelta(new Ignore() {
+							@Override
 							public boolean contains(Diff diff) {
 								if (diff.getType() == Type.INTERFACE && diff.getDelta() == Delta.MAJOR) {
 									info.providers.add(Descriptors.getShortName(diff.getName()));
@@ -240,7 +243,8 @@ public class Baseline {
 		binfo.version = binfo.olderVersion = olderVersion;
 		binfo.newerVersion = newerVersion;
 
-		if (newerVersion.getWithoutQualifier().equals(olderVersion.getWithoutQualifier())) {
+		if (newerVersion.getWithoutQualifier()
+			.equals(olderVersion.getWithoutQualifier())) {
 			// We have a special case, the current and repository revisions
 			// have the same version, this happens after a release, only want
 			// to generate an error when they really differ.
@@ -250,7 +254,8 @@ public class Baseline {
 		}
 
 		// Ok, now our bundle version must be >= the suggestedVersion
-		if (newerVersion.getWithoutQualifier().compareTo(getSuggestedVersion()) < 0) {
+		if (newerVersion.getWithoutQualifier()
+			.compareTo(getSuggestedVersion()) < 0) {
 			binfo.mismatch = true;
 			binfo.reason = getRootCauses(apiDiff);
 		}
@@ -343,7 +348,7 @@ public class Baseline {
 		}
 	}
 
-	private Version getVersion(Map<String,String> map) {
+	private Version getVersion(Map<String, String> map) {
 		if (map == null)
 			return Version.LOWEST;
 
@@ -355,7 +360,8 @@ public class Baseline {
 		if (m == null)
 			return new Parameters();
 
-		return OSGiHeader.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+		return OSGiHeader.parseHeader(m.getMainAttributes()
+			.getValue(Constants.EXPORT_PACKAGE));
 	}
 
 	private Version getVersion(Tree top) {
@@ -364,8 +370,10 @@ public class Baseline {
 			return Version.emptyVersion;
 		}
 		for (Tree tree : manifest.getChildren()) {
-			if (tree.getName().startsWith(Constants.BUNDLE_VERSION)) {
-				return Version.parseVersion(tree.getName().substring(15));
+			if (tree.getName()
+				.startsWith(Constants.BUNDLE_VERSION)) {
+				return Version.parseVersion(tree.getName()
+					.substring(15));
 			}
 		}
 		return Version.emptyVersion;
@@ -377,7 +385,8 @@ public class Baseline {
 			return "";
 		}
 		for (Tree tree : manifest.getChildren()) {
-			if (tree.getName().startsWith(Constants.BUNDLE_SYMBOLICNAME) && tree.getChildren().length > 0) {
+			if (tree.getName()
+				.startsWith(Constants.BUNDLE_SYMBOLICNAME) && tree.getChildren().length > 0) {
 				return tree.getChildren()[0].getName();
 			}
 		}

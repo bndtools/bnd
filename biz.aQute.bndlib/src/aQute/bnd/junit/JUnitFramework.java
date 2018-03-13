@@ -68,15 +68,15 @@ import aQute.lib.io.IO;
  * JUnit code runs. This is normally a separately started VM.
  */
 public class JUnitFramework implements AutoCloseable {
-	final ExecutorService						executor		= Executors.newCachedThreadPool();
-	final PromiseFactory						promiseFactory	= new PromiseFactory(executor);
-	public final List<ServiceTracker< ? , ? >>	trackers	= new ArrayList<>();
-	public final Jar							bin_test;
-	public final Framework						framework;
-	public final BundleContext					context;
-	public final File							projectDir;
-	public Workspace							workspace;
-	public Project								project;
+	final ExecutorService					executor		= Executors.newCachedThreadPool();
+	final PromiseFactory					promiseFactory	= new PromiseFactory(executor);
+	public final List<ServiceTracker<?, ?>>	trackers		= new ArrayList<>();
+	public final Jar						bin_test;
+	public final Framework					framework;
+	public final BundleContext				context;
+	public final File						projectDir;
+	public Workspace						workspace;
+	public Project							project;
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -101,7 +101,7 @@ public class JUnitFramework implements AutoCloseable {
 
 			String extra = getExtra();
 
-			Map<String,String> props = new HashMap<>();
+			Map<String, String> props = new HashMap<>();
 			props.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extra);
 
 			File storage = IO.getFile(p.getTarget(), "fw");
@@ -143,23 +143,31 @@ public class JUnitFramework implements AutoCloseable {
 			a.calcManifest();
 			StringBuilder extra = new StringBuilder();
 			String del = "";
-			for (Entry<PackageRef,Attrs> e : a.getImports().entrySet()) {
+			for (Entry<PackageRef, Attrs> e : a.getImports()
+				.entrySet()) {
 				extra.append(del);
-				extra.append(e.getKey().getFQN());
-				String v = e.getValue().getVersion();
+				extra.append(e.getKey()
+					.getFQN());
+				String v = e.getValue()
+					.getVersion();
 				if (v != null) {
 					VersionRange vr = VersionRange.parseOSGiVersionRange(v);
-					extra.append(";version=").append(vr.getLow());
+					extra.append(";version=")
+						.append(vr.getLow());
 				}
 				del = ",";
 			}
-			for (Entry<PackageRef,Attrs> e : a.getContained().entrySet()) {
+			for (Entry<PackageRef, Attrs> e : a.getContained()
+				.entrySet()) {
 				extra.append(del);
-				extra.append(e.getKey().getFQN());
-				String v = e.getValue().getVersion();
+				extra.append(e.getKey()
+					.getFQN());
+				String v = e.getValue()
+					.getVersion();
 				if (v != null) {
 					VersionRange vr = VersionRange.parseOSGiVersionRange(v);
-					extra.append(";version=").append(vr.getLow());
+					extra.append(";version=")
+						.append(vr.getLow());
 				}
 				del = ",";
 			}
@@ -170,8 +178,9 @@ public class JUnitFramework implements AutoCloseable {
 	/**
 	 * Close this framework
 	 */
+	@Override
 	public void close() throws Exception {
-		for (ServiceTracker< ? , ? > st : trackers) {
+		for (ServiceTracker<?, ?> st : trackers) {
 			st.close();
 		}
 		framework.stop();
@@ -203,7 +212,7 @@ public class JUnitFramework implements AutoCloseable {
 
 	public <T> Promise<T> waitForService(final Class<T> class1, final long timeoutInMs) throws Exception {
 		return promiseFactory.submit(() -> {
-			ServiceTracker<T,T> tracker = new ServiceTracker<>(context, class1, null);
+			ServiceTracker<T, T> tracker = new ServiceTracker<>(context, class1, null);
 			tracker.open();
 			T s = tracker.waitForService(timeoutInMs);
 			if (s == null) {
@@ -217,7 +226,7 @@ public class JUnitFramework implements AutoCloseable {
 	static AtomicInteger n = new AtomicInteger();
 
 	public class BundleBuilder extends Builder {
-		Map<String,Resource> additionalResources = new HashMap<>();
+		Map<String, Resource> additionalResources = new HashMap<>();
 
 		BundleBuilder() {
 			setBundleSymbolicName("test-" + n.incrementAndGet());
@@ -235,7 +244,7 @@ public class JUnitFramework implements AutoCloseable {
 		public Bundle install() throws Exception {
 			try {
 				Jar jar = new Jar("x");
-				for (Entry<String,Resource> e : additionalResources.entrySet()) {
+				for (Entry<String, Resource> e : additionalResources.entrySet()) {
 					jar.putResource(e.getKey(), e.getValue());
 				}
 				setJar(jar);
@@ -255,7 +264,7 @@ public class JUnitFramework implements AutoCloseable {
 			super.close();
 		}
 
-		public BundleBuilder addResource(Class< ? > class1) throws IOException {
+		public BundleBuilder addResource(Class<?> class1) throws IOException {
 			String name = class1.getName();
 			name = name.replace('.', '/') + ".class";
 			addResource(name, class1.getResource("/" + name));
@@ -280,7 +289,9 @@ public class JUnitFramework implements AutoCloseable {
 		List<Bundle> bundles = new ArrayList<>();
 		for (Container c : run.getRunbundles()) {
 			assert c.getError() == null;
-			Bundle bundle = context.installBundle(c.getFile().toURI().toString());
+			Bundle bundle = context.installBundle(c.getFile()
+				.toURI()
+				.toString());
 			bundles.add(bundle);
 		}
 		startAll(bundles);
@@ -313,13 +324,15 @@ public class JUnitFramework implements AutoCloseable {
 	public List<Bundle> addBundle(String spec) throws Exception {
 		Parameters p = new Parameters(spec);
 		List<Bundle> bundles = new ArrayList<>();
-		for (Map.Entry<String,Attrs> e : p.entrySet()) {
-			Container c = getProject().getBundle(e.getKey(), e.getValue().get("version"), Strategy.HIGHEST,
-					e.getValue());
+		for (Map.Entry<String, Attrs> e : p.entrySet()) {
+			Container c = getProject().getBundle(e.getKey(), e.getValue()
+				.get("version"), Strategy.HIGHEST, e.getValue());
 			if (c.getError() != null) {
 				throw new RuntimeException(c.getError());
 			}
-			Bundle bundle = context.installBundle(c.getFile().toURI().toString());
+			Bundle bundle = context.installBundle(c.getFile()
+				.toURI()
+				.toString());
 			bundles.add(bundle);
 		}
 		startAll(bundles);

@@ -19,7 +19,7 @@ import aQute.lib.collections.SortedList;
 
 public class VersionedResourceIndex {
 
-	private final Map<String,SortedMap<Version,Resource>> map = new HashMap<>();
+	private final Map<String, SortedMap<Version, Resource>> map = new HashMap<>();
 
 	public synchronized void clear() {
 		map.clear();
@@ -30,14 +30,14 @@ public class VersionedResourceIndex {
 	}
 
 	public synchronized SortedSet<Version> getVersions(String bsn) {
-		SortedMap<Version,Resource> versionMap = map.get(bsn);
+		SortedMap<Version, Resource> versionMap = map.get(bsn);
 		if (versionMap == null || versionMap.isEmpty())
 			return SortedList.empty();
 		return new SortedList<>(versionMap.keySet());
 	}
 
 	public synchronized List<Resource> getRange(String bsn, String range) {
-		SortedMap<Version,Resource> versionMap = map.get(bsn);
+		SortedMap<Version, Resource> versionMap = map.get(bsn);
 		if (versionMap == null || versionMap.isEmpty())
 			return null;
 		return narrowVersionsByVersionRange(versionMap, range);
@@ -49,7 +49,7 @@ public class VersionedResourceIndex {
 			throw new IllegalArgumentException("Missing identity capability on resource");
 
 		Version version = getResourceVersion(resource);
-		SortedMap<Version,Resource> versionMap = map.get(id);
+		SortedMap<Version, Resource> versionMap = map.get(id);
 		if (versionMap == null) {
 			versionMap = new TreeMap<>();
 			map.put(id, versionMap);
@@ -58,22 +58,27 @@ public class VersionedResourceIndex {
 	}
 
 	public synchronized Resource getExact(String identity, Version version) {
-		SortedMap<Version,Resource> versions = map.get(identity);
+		SortedMap<Version, Resource> versions = map.get(identity);
 		if (versions == null)
 			return null;
 
 		return findVersion(version, versions);
 	}
 
-	private static Resource findVersion(Version version, SortedMap<Version,Resource> versions) {
-		if (version.getQualifier() != null && version.getQualifier().length() > 0) {
+	private static Resource findVersion(Version version, SortedMap<Version, Resource> versions) {
+		if (version.getQualifier() != null && version.getQualifier()
+			.length() > 0) {
 			return versions.get(version);
 		}
 
 		Resource latest = null;
-		for (Map.Entry<Version,Resource> entry : versions.entrySet()) {
-			if (version.getMicro() == entry.getKey().getMicro() && version.getMinor() == entry.getKey().getMinor()
-					&& version.getMajor() == entry.getKey().getMajor()) {
+		for (Map.Entry<Version, Resource> entry : versions.entrySet()) {
+			if (version.getMicro() == entry.getKey()
+				.getMicro()
+				&& version.getMinor() == entry.getKey()
+					.getMinor()
+				&& version.getMajor() == entry.getKey()
+					.getMajor()) {
 				latest = entry.getValue();
 				continue;
 			}

@@ -4,10 +4,12 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 
 public class RDImpl extends ResourceDescriptor implements Cloneable, Comparable<RDImpl> {
 
+	@Override
 	public RDImpl clone() throws CloneNotSupportedException {
 		return (RDImpl) super.clone();
 	}
 
+	@Override
 	public int compareTo(RDImpl o) {
 		if (this == o)
 			return 0;

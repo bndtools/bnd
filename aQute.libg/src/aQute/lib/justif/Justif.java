@@ -24,7 +24,7 @@ public class Justif {
 
 	public Justif(int width, int... tabs) {
 		this.tabs = tabs == null || tabs.length == 0 ? new int[] {
-				30, 40, 50, 60, 70
+			30, 40, 50, 60, 70
 		} : tabs;
 		this.width = width == 0 ? 73 : width;
 	}
@@ -171,6 +171,7 @@ public class Justif {
 		return f;
 	}
 
+	@Override
 	public String toString() {
 		wrap(sb);
 		return sb.toString();
@@ -199,11 +200,12 @@ public class Justif {
 		sb.append(separator);
 		sb.append("\t2");
 		if (value instanceof Iterable) {
-			Iterator< ? > it = ((Iterable< ? >) value).iterator();
+			Iterator<?> it = ((Iterable<?>) value).iterator();
 			boolean hadone = false;
 			String del = "";
 			while (it.hasNext()) {
-				sb.append(del).append(it.next() + "");
+				sb.append(del)
+					.append(it.next() + "");
 				sb.append("\r");
 				hadone = true;
 				del = "\t2";
@@ -216,8 +218,8 @@ public class Justif {
 		}
 	}
 
-	public void table(Map<String,Object> table, String separator) {
-		for (Entry<String,Object> e : table.entrySet()) {
+	public void table(Map<String, Object> table, String separator) {
+		for (Entry<String, Object> e : table.entrySet()) {
 			entry(e.getKey(), separator, e.getValue());
 		}
 	}

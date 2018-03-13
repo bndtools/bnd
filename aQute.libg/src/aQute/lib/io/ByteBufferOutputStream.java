@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 public class ByteBufferOutputStream extends OutputStream {
-	private ByteBuffer	bb;
+	private ByteBuffer bb;
 
 	public ByteBufferOutputStream() {
 		this(IOConstants.PAGE_SIZE);

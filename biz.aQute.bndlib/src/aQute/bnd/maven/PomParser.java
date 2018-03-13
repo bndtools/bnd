@@ -83,10 +83,10 @@ public class PomParser extends Processor {
 		traverse("pom", e, p);
 
 		String scopes[] = {
-				"provided", "runtime", "test", "system"
+			"provided", "runtime", "test", "system"
 		};
 		NodeList set = (NodeList) xpath.evaluate("//dependency[not(scope) or scope='compile']", doc,
-				XPathConstants.NODESET);
+			XPathConstants.NODESET);
 		if (set.getLength() != 0)
 			p.put("pom.scope.compile", toBsn(set));
 
@@ -110,7 +110,8 @@ public class PomParser extends Processor {
 			sb.append(xpath.evaluate("groupId", child));
 			sb.append(".");
 			sb.append(xpath.evaluate("artifactId", child));
-			if (version != null && version.trim().length() != 0) {
+			if (version != null && version.trim()
+				.length() != 0) {
 				sb.append(";version=");
 				sb.append(Analyzer.cleanupVersion(version));
 			}
@@ -145,7 +146,8 @@ public class PomParser extends Processor {
 			for (int i = 0; i < children.getLength(); i++) {
 				Node child = children.item(i);
 				if (child instanceof Text) {
-					String value = child.getNodeValue().trim();
+					String value = child.getNodeValue()
+						.trim();
 					if (value.length() != 0) {
 						p.put(name, value);
 					}

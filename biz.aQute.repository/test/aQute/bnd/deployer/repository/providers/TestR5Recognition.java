@@ -15,22 +15,24 @@ public class TestR5Recognition extends TestCase {
 
 	public static void testRejectNamespace() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>"
-				+ "<repository increment='0' name='index1' xmlns='http://www2.osgi.org/www/obr2html.xsl'>"
-				+ "<resource>";
+			+ "<repository increment='0' name='index1' xmlns='http://www2.osgi.org/www/obr2html.xsl'>" + "<resource>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
-		assertEquals(reject, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
+		assertEquals(reject, new R5RepoContentProvider().checkStream("xxx", stream)
+			.getDecision());
 	}
 
 	public static void testAcceptNamespace() throws Exception {
 		String testdata = "<?xml version='1.0'?>" + "<repository xmlns='http://www.osgi.org/xmlns/repository/v1.0.0'>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
-		assertEquals(accept, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
+		assertEquals(accept, new R5RepoContentProvider().checkStream("xxx", stream)
+			.getDecision());
 	}
 
 	public static void testRejectRootElementName() throws Exception {
 		String testdata = "<?xml version='1.0' encoding='utf-8'?>" + "<repo name='index1'/>";
 		ByteArrayInputStream stream = new ByteArrayInputStream(testdata.getBytes());
-		assertEquals(reject, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
+		assertEquals(reject, new R5RepoContentProvider().checkStream("xxx", stream)
+			.getDecision());
 	}
 
 	public static void testUndecidable() throws Exception {
@@ -40,7 +42,8 @@ public class TestR5Recognition extends TestCase {
 
 		testdata = "<?xml version='1.0' encoding='utf-8'?><repository name='index1'/>";
 		stream = new ByteArrayInputStream(testdata.getBytes());
-		assertEquals(undecided, new R5RepoContentProvider().checkStream("xxx", stream).getDecision());
+		assertEquals(undecided, new R5RepoContentProvider().checkStream("xxx", stream)
+			.getDecision());
 
 		testdata = "<repository><resource/></repository>";
 		stream = new ByteArrayInputStream(testdata.getBytes());

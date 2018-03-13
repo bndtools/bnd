@@ -17,8 +17,9 @@ public class MD5 implements MakePlugin {
 	static final int BUFFER_SIZE = IOConstants.PAGE_SIZE * 1;
 
 	@Override
-	public Resource make(Builder builder, String source, Map<String,String> arguments) throws Exception {
-		if (!arguments.get("type").equals("md5"))
+	public Resource make(Builder builder, String source, Map<String, String> arguments) throws Exception {
+		if (!arguments.get("type")
+			.equals("md5"))
 			return null;
 		source = source.substring(0, source.length() - 4);
 		final File f = builder.getFile(source);

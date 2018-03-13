@@ -211,29 +211,36 @@ public class Filter {
 				} else if (numClass == Character.class) {
 					return compareString(obj.toString(), op, s);
 				} else if (numClass == Long.class) {
-					return compareSign(op, Long.valueOf(s).compareTo((Long) obj));
+					return compareSign(op, Long.valueOf(s)
+						.compareTo((Long) obj));
 				} else if (numClass == Integer.class) {
-					return compareSign(op, Integer.valueOf(s).compareTo((Integer) obj));
+					return compareSign(op, Integer.valueOf(s)
+						.compareTo((Integer) obj));
 				} else if (numClass == Short.class) {
-					return compareSign(op, Short.valueOf(s).compareTo((Short) obj));
+					return compareSign(op, Short.valueOf(s)
+						.compareTo((Short) obj));
 				} else if (numClass == Byte.class) {
-					return compareSign(op, Byte.valueOf(s).compareTo((Byte) obj));
+					return compareSign(op, Byte.valueOf(s)
+						.compareTo((Byte) obj));
 				} else if (numClass == Double.class) {
-					return compareSign(op, Double.valueOf(s).compareTo((Double) obj));
+					return compareSign(op, Double.valueOf(s)
+						.compareTo((Double) obj));
 				} else if (numClass == Float.class) {
-					return compareSign(op, Float.valueOf(s).compareTo((Float) obj));
+					return compareSign(op, Float.valueOf(s)
+						.compareTo((Float) obj));
 				} else if (numClass == Boolean.class) {
 					if (op != EQ)
 						return false;
-					int a = Boolean.valueOf(s).booleanValue() ? 1 : 0;
+					int a = Boolean.valueOf(s)
+						.booleanValue() ? 1 : 0;
 					int b = ((Boolean) obj).booleanValue() ? 1 : 0;
 					return compareSign(op, a - b);
 				} else if (numClass == BigInteger.class) {
 					return compareSign(op, new BigInteger(s).compareTo((BigInteger) obj));
 				} else if (numClass == BigDecimal.class) {
 					return compareSign(op, new BigDecimal(s).compareTo((BigDecimal) obj));
-				} else if (obj instanceof Collection< ? >) {
-					for (Object x : (Collection< ? >) obj)
+				} else if (obj instanceof Collection<?>) {
+					for (Object x : (Collection<?>) obj)
 						if (compare(x, op, s))
 							return true;
 				} else if (numClass.isArray()) {
@@ -256,9 +263,9 @@ public class Filter {
 	}
 
 	class DictQuery extends Query {
-		private Dictionary< ? , ? > dict;
+		private Dictionary<?, ?> dict;
 
-		DictQuery(Dictionary< ? , ? > dict) {
+		DictQuery(Dictionary<?, ?> dict) {
 			this.dict = dict;
 		}
 
@@ -269,9 +276,9 @@ public class Filter {
 	}
 
 	class MapQuery extends Query {
-		private Map< ? , ? > map;
+		private Map<?, ?> map;
 
-		MapQuery(Map< ? , ? > dict) {
+		MapQuery(Map<?, ?> dict) {
 			this.map = dict;
 		}
 
@@ -305,7 +312,7 @@ public class Filter {
 		this(filter, false);
 	}
 
-	public boolean match(Dictionary< ? , ? > dict) throws Exception {
+	public boolean match(Dictionary<?, ?> dict) throws Exception {
 		try {
 			return new DictQuery(dict).match();
 		} catch (IllegalArgumentException e) {
@@ -313,7 +320,7 @@ public class Filter {
 		}
 	}
 
-	public boolean matchMap(Map< ? , ? > dict) throws Exception {
+	public boolean matchMap(Map<?, ?> dict) throws Exception {
 		try {
 			return new MapQuery(dict).match();
 		} catch (IllegalArgumentException e) {

@@ -9,10 +9,11 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.repository.ResourcesRepository;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.libg.cryptography.SHA256;
+
 public class WorkspaceResourcesRepository extends ResourcesRepository {
 
 	public static final String WORKSPACE_NAMESPACE = ResourceUtils.WORKSPACE_NAMESPACE;
@@ -27,18 +28,20 @@ public class WorkspaceResourcesRepository extends ResourcesRepository {
 					rb.addManifest(manifest);
 
 					Attrs attrs = new Attrs();
-					attrs.put(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI().toString());
+					attrs.put(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI()
+						.toString());
 					attrs.putTyped(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
-					attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file).asHex());
+					attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file)
+						.asHex());
 
-					rb.addCapability(CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
+					rb.addCapability(CapReqBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
 
 					// Add a capability specific to the workspace so that we can
 					// identify this fact later during resource processing.
 					attrs = new Attrs();
 					attrs.put(WORKSPACE_NAMESPACE, p.getName());
 
-					rb.addCapability(CapabilityBuilder.createCapReqBuilder(WORKSPACE_NAMESPACE, attrs));
+					rb.addCapability(CapReqBuilder.createCapReqBuilder(WORKSPACE_NAMESPACE, attrs));
 
 					add(rb.build());
 				}
@@ -46,6 +49,7 @@ public class WorkspaceResourcesRepository extends ResourcesRepository {
 		}
 	}
 
+	@Override
 	public String toString() {
 		return "Workspace";
 	}

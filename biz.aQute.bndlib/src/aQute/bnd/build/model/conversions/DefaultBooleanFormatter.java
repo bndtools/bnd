@@ -6,7 +6,7 @@ package aQute.bnd.build.model.conversions;
  * 
  * @author Neil Bartlett
  */
-public class DefaultBooleanFormatter implements Converter<String,Boolean> {
+public class DefaultBooleanFormatter implements Converter<String, Boolean> {
 
 	private final boolean defaultValue;
 
@@ -14,6 +14,7 @@ public class DefaultBooleanFormatter implements Converter<String,Boolean> {
 		this.defaultValue = defaultValue;
 	}
 
+	@Override
 	public String convert(Boolean input) throws IllegalArgumentException {
 		String result = null;
 

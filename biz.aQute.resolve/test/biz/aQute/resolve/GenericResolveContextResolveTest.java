@@ -44,7 +44,8 @@ public class GenericResolveContextResolveTest extends TestCase {
 		try (ResolverLogger logger = new ResolverLogger(4)) {
 			Resolver resolver = new BndResolver(new ResolverLogger(4));
 
-			Set<Resource> resources = resolver.resolve(grc).keySet();
+			Set<Resource> resources = resolver.resolve(grc)
+				.keySet();
 			assertNotNull(getResource(resources, "org.apache.felix.gogo.runtime", "0.10"));
 		}
 	}
@@ -61,7 +62,8 @@ public class GenericResolveContextResolveTest extends TestCase {
 		grc.addRepository(repository);
 
 		Requirement logservice = new CapReqBuilder("osgi.service")
-				.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)").buildSyntheticRequirement();
+			.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)")
+			.buildSyntheticRequirement();
 		List<Capability> providers = grc.findProviders(logservice);
 
 		assertEquals(2, providers.size());
@@ -80,9 +82,9 @@ public class GenericResolveContextResolveTest extends TestCase {
 		GenericResolveContext grc = new GenericResolveContext(logger);
 		grc.addRepository(repository);
 		Requirement logservice = new CapReqBuilder("osgi.service")
-				.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)")
-				.addDirective("effective", "resolve")
-				.buildSyntheticRequirement();
+			.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)")
+			.addDirective("effective", "resolve")
+			.buildSyntheticRequirement();
 		List<Capability> providers = grc.findProviders(logservice);
 
 		assertEquals(2, providers.size());
@@ -96,9 +98,9 @@ public class GenericResolveContextResolveTest extends TestCase {
 		grc.addRepository(repository);
 
 		Requirement logservice = new CapReqBuilder("osgi.service")
-				.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)")
-				.addDirective("effective", "active")
-				.buildSyntheticRequirement();
+			.addDirective("filter", "(objectClass=org.osgi.service.log.LogService)")
+			.addDirective("effective", "active")
+			.buildSyntheticRequirement();
 		List<Capability> providers = grc.findProviders(logservice);
 
 		assertEquals(3, providers.size());
@@ -111,8 +113,10 @@ public class GenericResolveContextResolveTest extends TestCase {
 			List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 			if (identities != null && identities.size() == 1) {
 				Capability idCap = identities.get(0);
-				Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-				Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+				Object id = idCap.getAttributes()
+					.get(IdentityNamespace.IDENTITY_NAMESPACE);
+				Object version = idCap.getAttributes()
+					.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 				if (bsn.equals(id)) {
 					if (versionString == null) {
 						return resource;
@@ -137,11 +141,11 @@ public class GenericResolveContextResolveTest extends TestCase {
 		Set<String> resourceNames = new HashSet<>();
 		for (Capability cap : providers) {
 			resourceNames.add(cap.getResource()
-					.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE)
-					.get(0)
-					.getAttributes()
-					.get(IdentityNamespace.IDENTITY_NAMESPACE)
-					.toString());
+				.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE)
+				.get(0)
+				.getAttributes()
+				.get(IdentityNamespace.IDENTITY_NAMESPACE)
+				.toString());
 		}
 
 		Set<String> expectedResourceNames = new HashSet<>(Arrays.asList(ids));

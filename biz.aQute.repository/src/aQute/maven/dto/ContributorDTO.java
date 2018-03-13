@@ -15,34 +15,33 @@ public class ContributorDTO extends DTO {
 	/**
 	 * The full name of the contributor.
 	 */
-	public String name;
+	public String				name;
 
 	/**
 	 * The email address of the contributor.
 	 */
-	public String email;
+	public String				email;
 
 	/**
 	 * The URL for the homepage of the contributor.
 	 */
-	public URI url;
+	public URI					url;
 
 	/**
 	 * The organization to which the contributor belongs.
 	 */
-	public String	organization;
+	public String				organization;
 	/**
 	 * The URL of the organization.
 	 */
-	public URI		organizationUrl;
+	public URI					organizationUrl;
 
 	/**
 	 * The roles the contributor plays in the project. Each role is described by
 	 * a <code>role</code> element, the body of which is a role name. This can
 	 * also be used to describe the contribution.
-	 * 
 	 */
-	public String[] roles;
+	public String[]				roles;
 
 	/**
 	 * The timezone the contributor is in. Typically, this is a number in the
@@ -51,11 +50,11 @@ public class ContributorDTO extends DTO {
 	 * time zone id like "America/Montreal" (UTC-05:00) or "Europe/Paris"
 	 * (UTC+01:00).
 	 */
-	public String timezone;
+	public String				timezone;
 
 	/**
 	 * Properties about the contributor, such as an instant messenger handle.
 	 */
-	public Map<String, String> properties = new HashMap<>();
+	public Map<String, String>	properties	= new HashMap<>();
 
 }

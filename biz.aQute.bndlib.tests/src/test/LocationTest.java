@@ -16,6 +16,7 @@ public class LocationTest extends TestCase {
 	Workspace		ws;
 	private File	tmp;
 
+	@Override
 	protected void setUp() throws Exception {
 		tmp = IO.getFile("generated/tmp");
 		IO.copy(IO.getFile("testresources/ws-location"), tmp);
@@ -23,6 +24,7 @@ public class LocationTest extends TestCase {
 
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		ws.close();
 		IO.delete(tmp);
@@ -32,7 +34,8 @@ public class LocationTest extends TestCase {
 		try (Project project = ws.getProject("locationtest")) {
 			FileLine fl = project.getHeader("-merged", "BAZ");
 			assertNotNull(fl);
-			assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
+			assertEquals(project.getPropertiesFile()
+				.getAbsolutePath(), fl.file.getAbsolutePath());
 			assertEquals(18, fl.line);
 			assertEquals(167, fl.start);
 			assertEquals(170, fl.end);
@@ -45,14 +48,16 @@ public class LocationTest extends TestCase {
 
 			FileLine fl = project.getHeader("-inprojectsep", "BAZ");
 			assertNotNull(fl);
-			assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
+			assertEquals(project.getPropertiesFile()
+				.getAbsolutePath(), fl.file.getAbsolutePath());
 			assertEquals(10, fl.line);
 			assertEquals(104, fl.start);
 			assertEquals(107, fl.end);
 
 			fl = project.getHeader("-inproject", "BAZ");
 			assertNotNull(fl);
-			assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
+			assertEquals(project.getPropertiesFile()
+				.getAbsolutePath(), fl.file.getAbsolutePath());
 			assertEquals(3, fl.line);
 			assertEquals(23, fl.start);
 			assertEquals(26, fl.end);
@@ -61,12 +66,14 @@ public class LocationTest extends TestCase {
 
 	public void testHeaderInSub() throws Exception {
 		try (Project project = ws.getProject("locationtest"); ProjectBuilder pb = project.getBuilder(null)) {
-			Builder builder = pb.getSubBuilders().get(0);
+			Builder builder = pb.getSubBuilders()
+				.get(0);
 			assertNotNull(builder);
 
 			FileLine fl = builder.getHeader("-inprojectsep", "BAZ");
 			assertNotNull(fl);
-			assertEquals(project.getPropertiesFile().getAbsolutePath(), fl.file.getAbsolutePath());
+			assertEquals(project.getPropertiesFile()
+				.getAbsolutePath(), fl.file.getAbsolutePath());
 			assertEquals(10, fl.line);
 			assertEquals(104, fl.start);
 			assertEquals(107, fl.end);
@@ -103,7 +110,9 @@ public class LocationTest extends TestCase {
 		Pattern pattern = Pattern.compile("^" + what, Pattern.MULTILINE);
 		Processor.FileLine fl = p.getHeader(pattern);
 		assertNotNull(fl);
-		assertTrue(fl.file.getAbsolutePath().replace(File.separatorChar, '/').endsWith(file));
+		assertTrue(fl.file.getAbsolutePath()
+			.replace(File.separatorChar, '/')
+			.endsWith(file));
 		assertEquals(line, fl.line);
 		return true;
 	}

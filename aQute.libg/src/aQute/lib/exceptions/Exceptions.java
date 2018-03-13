@@ -5,6 +5,7 @@ import java.io.StringWriter;
 
 public class Exceptions {
 	private Exceptions() {}
+
 	public static RuntimeException duck(Throwable t) {
 		Exceptions.throwsUnchecked(t);
 		throw new AssertionError("unreachable");

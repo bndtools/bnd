@@ -33,7 +33,7 @@ public class LauncherTest extends TestCase {
 	private int						random;
 	private File					tmp;
 	private Workspace				workspace;
-	private HashMap<String,Object>	configuration;
+	private HashMap<String, Object>	configuration;
 	private Framework				framework;
 	private String					location;
 	private BundleContext			context;
@@ -60,7 +60,8 @@ public class LauncherTest extends TestCase {
 		t2 = repo.get("bsn-2", new Version(1, 0, 0), null);
 		repo.put(new FileInputStream(IO.getFile("generated/biz.aQute.remote.launcher.jar")), null);
 
-		workspace.getPlugins().add(repo);
+		workspace.getPlugins()
+			.add(repo);
 
 		File storage = IO.getFile("generated/storage-1");
 		storage.mkdirs();
@@ -75,7 +76,9 @@ public class LauncherTest extends TestCase {
 		framework.init();
 		framework.start();
 		context = framework.getBundleContext();
-		location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent.jar").toURI().toString();
+		location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent.jar")
+			.toURI()
+			.toString();
 		agent = context.installBundle(location);
 		agent.start();
 
@@ -84,7 +87,7 @@ public class LauncherTest extends TestCase {
 			public void run() {
 				try {
 					Main.main(new String[] {
-							"-s", "generated/storage", "-c", "generated/cache", "-p", "1090", "-et"
+						"-s", "generated/storage", "-c", "generated/cache", "-p", "1090", "-et"
 					});
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -124,12 +127,13 @@ public class LauncherTest extends TestCase {
 		final CountDownLatch latch = new CountDownLatch(1);
 		final AtomicInteger exitCode = new AtomicInteger(-1);
 
-		List< ? extends RunSession> sessions = pl.getRunSessions();
+		List<? extends RunSession> sessions = pl.getRunSessions();
 		assertEquals(1, sessions.size());
 
 		final RunSession session = sessions.get(0);
 
 		Thread t = new Thread("test-launch") {
+			@Override
 			public void run() {
 				try {
 					exitCode.set(session.launch());
@@ -177,7 +181,7 @@ public class LauncherTest extends TestCase {
 		final RemoteProjectLauncherPlugin pl = (RemoteProjectLauncherPlugin) bndrun.getProjectLauncher();
 		pl.prepare();
 
-		List< ? extends RunSession> sessions = pl.getRunSessions();
+		List<? extends RunSession> sessions = pl.getRunSessions();
 		assertEquals(1, sessions.size());
 
 		RunSessionImpl main = (RunSessionImpl) sessions.get(0);
@@ -210,7 +214,7 @@ public class LauncherTest extends TestCase {
 		final RemoteProjectLauncherPlugin pl = (RemoteProjectLauncherPlugin) bndrun.getProjectLauncher();
 		pl.prepare();
 
-		List< ? extends RunSession> sessions = pl.getRunSessions();
+		List<? extends RunSession> sessions = pl.getRunSessions();
 		assertEquals(2, sessions.size());
 
 		RunSession agent = sessions.get(0);
@@ -238,6 +242,7 @@ public class LauncherTest extends TestCase {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		Thread t = new Thread("test-launch") {
+			@Override
 			public void run() {
 				try {
 					session.launch();
@@ -264,7 +269,8 @@ public class LauncherTest extends TestCase {
 		assertTrue(b.check());
 
 		File file = IO.getFile(tmp, name + ".jar");
-		file.getParentFile().mkdirs();
+		file.getParentFile()
+			.mkdirs();
 		jar.updateModified(System.currentTimeMillis(), "Force it to now");
 		jar.write(file);
 		b.close();

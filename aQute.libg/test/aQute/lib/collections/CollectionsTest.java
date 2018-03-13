@@ -71,9 +71,12 @@ public class CollectionsTest extends TestCase {
 
 		SortedSet<String> head2 = sl.headSet("c ");
 		assertEquals("[a, b, c, c]", head2.toString());
-		assertEquals("[c, c]", sl.headSet("c ").tailSet("b ").toString());
+		assertEquals("[c, c]", sl.headSet("c ")
+			.tailSet("b ")
+			.toString());
 
-		Iterable<String> it = sl.headSet("c ").tailSet("b ");
+		Iterable<String> it = sl.headSet("c ")
+			.tailSet("b ");
 		ExtList<String> l = new ExtList<>(it);
 		assertEquals("[c, c]", l.toString());
 

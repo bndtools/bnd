@@ -5,22 +5,25 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 
-public class MapToDictionaryAdapter extends Dictionary<String,Object> {
+public class MapToDictionaryAdapter extends Dictionary<String, Object> {
 
-	private final Map<String,Object> map;
+	private final Map<String, Object> map;
 
-	public MapToDictionaryAdapter(Map<String,Object> map) {
+	public MapToDictionaryAdapter(Map<String, Object> map) {
 		this.map = map;
 	}
 
 	@Override
 	public Enumeration<Object> elements() {
-		final Iterator<Object> iter = map.values().iterator();
+		final Iterator<Object> iter = map.values()
+			.iterator();
 		return new Enumeration<Object>() {
+			@Override
 			public boolean hasMoreElements() {
 				return iter.hasNext();
 			}
 
+			@Override
 			public Object nextElement() {
 				return iter.next();
 			}
@@ -39,12 +42,15 @@ public class MapToDictionaryAdapter extends Dictionary<String,Object> {
 
 	@Override
 	public Enumeration<String> keys() {
-		final Iterator<String> iter = map.keySet().iterator();
+		final Iterator<String> iter = map.keySet()
+			.iterator();
 		return new Enumeration<String>() {
+			@Override
 			public boolean hasMoreElements() {
 				return iter.hasNext();
 			}
 
+			@Override
 			public String nextElement() {
 				return iter.next();
 			}

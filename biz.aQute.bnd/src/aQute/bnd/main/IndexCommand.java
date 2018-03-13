@@ -50,8 +50,7 @@ public class IndexCommand extends Processor {
 		File repositoryFile = opts.repositoryIndex();
 		if (repositoryFile == null) {
 			repositoryFile = new File(outputDir, "index.xml").getAbsoluteFile();
-		}
-		else {
+		} else {
 			repositoryFile = repositoryFile.getAbsoluteFile();
 		}
 		boolean compress = false;

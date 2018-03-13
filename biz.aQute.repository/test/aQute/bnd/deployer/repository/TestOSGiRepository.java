@@ -19,12 +19,14 @@ public class TestOSGiRepository extends TestCase {
 
 	private File tmp;
 
+	@Override
 	public void setUp() {
 		tmp = IO.getFile("generated/tmp/test/" + getName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
 
+	@Override
 	public void tearDown() {
 		IO.delete(tmp);
 	}
@@ -48,9 +50,11 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> props = new HashMap<>();
+			Map<String, String> props = new HashMap<>();
 			props.put("name", getName());
-			props.put("locations", IO.getFile("testdata/index1.xml").toURI().toString());
+			props.put("locations", IO.getFile("testdata/index1.xml")
+				.toURI()
+				.toString());
 			props.put("cache", tmp.getAbsolutePath());
 
 			repo.setProperties(props);
@@ -62,8 +66,10 @@ public class TestOSGiRepository extends TestCase {
 			assertEquals("org.example.c", bsns.get(0));
 			assertEquals("org.example.f", bsns.get(1));
 
-			assertEquals(0, reporter.getErrors().size());
-			assertEquals(0, reporter.getWarnings().size());
+			assertEquals(0, reporter.getErrors()
+				.size());
+			assertEquals(0, reporter.getWarnings()
+				.size());
 		}
 	}
 
@@ -72,16 +78,20 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> props = new HashMap<>();
+			Map<String, String> props = new HashMap<>();
 			props.put("name", getName());
-			props.put("locations", IO.getFile("testdata/index2.xml").toURI().toString());
+			props.put("locations", IO.getFile("testdata/index2.xml")
+				.toURI()
+				.toString());
 			props.put("cache", tmp.getAbsolutePath());
 			repo.setProperties(props);
 			repo.setReporter(reporter);
 
 			assertEquals(56, countBundles(repo));
-			assertEquals(0, reporter.getErrors().size());
-			assertEquals(0, reporter.getWarnings().size());
+			assertEquals(0, reporter.getErrors()
+				.size());
+			assertEquals(0, reporter.getWarnings()
+				.size());
 		}
 	}
 
@@ -90,16 +100,20 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> props = new HashMap<>();
+			Map<String, String> props = new HashMap<>();
 			props.put("name", getName());
-			props.put("locations", IO.getFile("testdata/index2.xml.gz").toURI().toString());
+			props.put("locations", IO.getFile("testdata/index2.xml.gz")
+				.toURI()
+				.toString());
 			props.put("cache", tmp.getAbsolutePath());
 			repo.setProperties(props);
 			repo.setReporter(reporter);
 
 			assertEquals(56, countBundles(repo));
-			assertEquals(0, reporter.getErrors().size());
-			assertEquals(0, reporter.getWarnings().size());
+			assertEquals(0, reporter.getErrors()
+				.size());
+			assertEquals(0, reporter.getWarnings()
+				.size());
 		}
 	}
 
@@ -108,8 +122,10 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> config = new HashMap<>();
-			config.put("locations", IO.getFile("testdata/ambiguous.xml").toURI().toString());
+			Map<String, String> config = new HashMap<>();
+			config.put("locations", IO.getFile("testdata/ambiguous.xml")
+				.toURI()
+				.toString());
 			config.put("name", getName());
 			config.put("cache", tmp.getAbsolutePath());
 			repo.setProperties(config);
@@ -134,8 +150,11 @@ public class TestOSGiRepository extends TestCase {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
 			reporter.addBasicPlugin(httpClient);
 			repo.setRegistry(reporter);
-			Map<String,String> config = new HashMap<>();
-			config.put("locations", IO.getFile("testdata/with spaces .xml").getAbsoluteFile().toURI().toString());
+			Map<String, String> config = new HashMap<>();
+			config.put("locations", IO.getFile("testdata/with spaces .xml")
+				.getAbsoluteFile()
+				.toURI()
+				.toString());
 			config.put("name", getName());
 			config.put("cache", tmp.getAbsolutePath());
 			repo.setProperties(config);

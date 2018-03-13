@@ -59,18 +59,18 @@ import junit.framework.AssertionFailedError;
  * Test for use of DS components specified using spec DS annotations.
  */
 @SuppressWarnings({
-		"resource", "restriction", "serial"
+	"resource", "restriction", "serial"
 })
 public class DSAnnotationTest extends BndTestCase {
 
 	public static final String	FELIX_1_2				= "http://felix.apache.org/xmlns/scr/v1.2.0-felix";
 
 	private static String[]		SERIALIZABLE_RUNNABLE	= {
-																Serializable.class.getName(), Runnable.class.getName()
-															};
+		Serializable.class.getName(), Runnable.class.getName()
+	};
 	private static String[]		OBJECT					= {
-																Object.class.getName()
-															};
+		Object.class.getName()
+	};
 
 	/**
 	 * Property test
@@ -96,7 +96,8 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, null);
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ValidNSVersion.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 	}
@@ -106,9 +107,9 @@ public class DSAnnotationTest extends BndTestCase {
 	 */
 
 	@Component(xmlns = "http://www.osgi.org/xmlns/scr/v1.1.0", property = {
-			"x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1", "char:Character=1",
-			"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7",
-			"string:String=%", "wrongInteger:Integer=blabla", "\n\r\t \u0343\u0344\u0345\u0346\n:Integer=3"
+		"x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1", "char:Character=1",
+		"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7", "string:String=%",
+		"wrongInteger:Integer=blabla", "\n\r\t \u0343\u0344\u0345\u0346\n:Integer=3"
 	})
 	public static class PropertiesTestx {
 
@@ -132,7 +133,8 @@ public class DSAnnotationTest extends BndTestCase {
 		//
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$PropertiesTestx.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0");
@@ -344,7 +346,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Reference
 		void xsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings({
-				"unused", "rawtypes"
+			"unused", "rawtypes"
 		}) Map map) {
 
 		}
@@ -378,8 +380,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		void unxsetLogService(@SuppressWarnings("unused") LogService log,
-				@SuppressWarnings("unused") Map< ? , ? > map) {
+		void unxsetLogService(@SuppressWarnings("unused") LogService log, @SuppressWarnings("unused") Map<?, ?> map) {
 
 		}
 
@@ -430,7 +431,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(service = Object.class, configurationPolicy = ConfigurationPolicy.IGNORE, enabled = false, factory = "factory", immediate = false, name = "name", property = {
-			"a=1", "a=2", "b=3"
+		"a=1", "a=2", "b=3"
 	}, properties = "resource.props", servicefactory = false, configurationPid = "configuration-pid", xmlns = "xmlns")
 	public static class Explicit_basic implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
@@ -488,7 +489,8 @@ public class DSAnnotationTest extends BndTestCase {
 			//
 
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS10_basic.xml");
-			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			System.err.println(Processor.join(jar.getResources()
+				.keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream());
@@ -542,7 +544,8 @@ public class DSAnnotationTest extends BndTestCase {
 			//
 
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_basic.xml");
-			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			System.err.println(Processor.join(jar.getResources()
+				.keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
@@ -585,7 +588,8 @@ public class DSAnnotationTest extends BndTestCase {
 			//
 
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_ref1_basic.xml");
-			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			System.err.println(Processor.join(jar.getResources()
+				.keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
@@ -594,7 +598,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 			// Test the defaults
 			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic",
-					"scr:component/implementation/@class");
+				"scr:component/implementation/@class");
 
 			// Default must be the implementation class
 			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref1_basic", "scr:component/@name");
@@ -629,7 +633,8 @@ public class DSAnnotationTest extends BndTestCase {
 			//
 
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$DS11_ref2_basic.xml");
-			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			System.err.println(Processor.join(jar.getResources()
+				.keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
@@ -638,7 +643,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 			// Test the defaults
 			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic",
-					"scr:component/implementation/@class");
+				"scr:component/implementation/@class");
 
 			// Default must be the implementation class
 			xt.assertAttribute("test.component.DSAnnotationTest$DS11_ref2_basic", "scr:component/@name");
@@ -673,7 +678,8 @@ public class DSAnnotationTest extends BndTestCase {
 			//
 
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$Defaults_basic.xml");
-			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			System.err.println(Processor.join(jar.getResources()
+				.keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
@@ -762,11 +768,12 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, "1.3.0", LogService.class.getName(), LogService.class.getName());
 	}
 
-	private void verifyDS11VeryBasic(Jar jar, Class< ? > clazz) throws Exception, XPathExpressionException {
+	private void verifyDS11VeryBasic(Jar jar, Class<?> clazz) throws Exception, XPathExpressionException {
 		String className = clazz.getName();
 
 		Resource r = jar.getResource("OSGI-INF/" + className + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0"); // #136
@@ -811,8 +818,8 @@ public class DSAnnotationTest extends BndTestCase {
 		private static final long serialVersionUID = 1L;
 
 		@Activate
-		Map<String,Object> activate(@SuppressWarnings("unused") ComponentContext cc,
-				@SuppressWarnings("unused") BundleContext ctx) {
+		Map<String, Object> activate(@SuppressWarnings("unused") ComponentContext cc,
+			@SuppressWarnings("unused") BundleContext ctx) {
 			return null;
 		}
 
@@ -844,8 +851,8 @@ public class DSAnnotationTest extends BndTestCase {
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") BundleContext ctx) {}
 
 		@Deactivate
-		Map<String,Object> deactivate(@SuppressWarnings("unused") ComponentContext cc,
-				@SuppressWarnings("unused") int cause) {
+		Map<String, Object> deactivate(@SuppressWarnings("unused") ComponentContext cc,
+			@SuppressWarnings("unused") int cause) {
 			return null;
 		}
 
@@ -877,7 +884,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") int cause) {}
 
 		@Modified
-		Map<String,Object> modified(@SuppressWarnings("unused") ComponentContext cc) {
+		Map<String, Object> modified(@SuppressWarnings("unused") ComponentContext cc) {
 			return null;
 		}
 
@@ -909,7 +916,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference
-		Map<String,Object> setLogService(@SuppressWarnings("unused") LogService log) {
+		Map<String, Object> setLogService(@SuppressWarnings("unused") LogService log) {
 			return null;
 		}
 
@@ -940,7 +947,7 @@ public class DSAnnotationTest extends BndTestCase {
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService log) {}
 
-		Map<String,Object> unsetLogService(@SuppressWarnings("unused") LogService log) {
+		Map<String, Object> unsetLogService(@SuppressWarnings("unused") LogService log) {
 			return null;
 		}
 
@@ -971,7 +978,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		void unsetLogService(@SuppressWarnings("unused") LogService log) {}
 
-		Map<String,Object> updatedLogService(@SuppressWarnings("unused") LogService log) {
+		Map<String, Object> updatedLogService(@SuppressWarnings("unused") LogService log) {
 			return null;
 		}
 
@@ -1011,7 +1018,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 	private void checkDSFelix12(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", FELIX_1_2);
@@ -1206,7 +1214,7 @@ public class DSAnnotationTest extends BndTestCase {
 		@Reference
 		void setLogService(@SuppressWarnings("unused") LogService l) {}
 
-		void updatedLogService(@SuppressWarnings("unused") ServiceReference< ? > ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
 
 		}
 
@@ -1216,7 +1224,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 
 		@SuppressWarnings("unused")
-		private void updatedPrivateLogService(ServiceReference< ? > ref) {
+		private void updatedPrivateLogService(ServiceReference<?> ref) {
 
 		}
 	}
@@ -1224,11 +1232,11 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component(name = "bottom")
 	public static class Bottom extends Top {
 		void unsetLogService(@SuppressWarnings("unused") LogService l,
-				@SuppressWarnings("unused") Map<Object,Object> map) {
+			@SuppressWarnings("unused") Map<Object, Object> map) {
 
 		}
 
-		void unsetPrivateLogService(@SuppressWarnings("unused") ServiceReference< ? > ref) {
+		void unsetPrivateLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
 
 		}
 	}
@@ -1284,8 +1292,10 @@ public class DSAnnotationTest extends BndTestCase {
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
-		assertEquals(1, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(1, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 	}
 
 	/**
@@ -1315,11 +1325,11 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 
 		protected void unsetLogService(@SuppressWarnings("unused") LogService l,
-				@SuppressWarnings("unused") Map<Object,Object> map) {
+			@SuppressWarnings("unused") Map<Object, Object> map) {
 
 		}
 
-		void updatedLogService(@SuppressWarnings("unused") ServiceReference< ? > ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
 
 		}
 
@@ -1377,11 +1387,11 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 
 		protected void unbindLogService(@SuppressWarnings("unused") LogService l,
-				@SuppressWarnings("unused") Map<Object,Object> map) {
+			@SuppressWarnings("unused") Map<Object, Object> map) {
 
 		}
 
-		void updatedLogService(@SuppressWarnings("unused") ServiceReference< ? > ref) {
+		void updatedLogService(@SuppressWarnings("unused") ServiceReference<?> ref) {
 
 		}
 
@@ -1440,11 +1450,11 @@ public class DSAnnotationTest extends BndTestCase {
 		void updatedSR(ServiceReference<LogService> l) {}
 
 		@Reference(service = LogService.class)
-		private void bindProps(Map<String,Object> l) {}
+		private void bindProps(Map<String, Object> l) {}
 
-		protected void unbindProps(Map<String,Object> l) {}
+		protected void unbindProps(Map<String, Object> l) {}
 
-		void updatedProps(Map<String,Object> l) {}
+		void updatedProps(Map<String, Object> l) {}
 
 		@Reference
 		private void bindSO(ComponentServiceObjects<LogService> l) {}
@@ -1454,11 +1464,11 @@ public class DSAnnotationTest extends BndTestCase {
 		void updatedSO(ComponentServiceObjects<LogService> l) {}
 
 		@Reference
-		private void bindTuple(Map.Entry<Map<String,Object>,LogService> l) {}
+		private void bindTuple(Map.Entry<Map<String, Object>, LogService> l) {}
 
-		protected void unbindTuple(Map.Entry<Map<String,Object>,LogService> l) {}
+		protected void unbindTuple(Map.Entry<Map<String, Object>, LogService> l) {}
 
-		void updatedTuple(Map.Entry<Map<String,Object>,LogService> l) {}
+		void updatedTuple(Map.Entry<Map<String, Object>, LogService> l) {}
 
 		@Reference
 		private void bindServiceSR(LogService l, ServiceReference<LogService> l2) {}
@@ -1468,18 +1478,18 @@ public class DSAnnotationTest extends BndTestCase {
 		void updatedServiceSR(LogService l, ServiceReference<LogService> l2) {}
 
 		@Reference
-		private void bindPropsSR(Map<String,Object> l, ServiceReference<LogService> l2) {}
+		private void bindPropsSR(Map<String, Object> l, ServiceReference<LogService> l2) {}
 
-		protected void unbindPropsSR(Map<String,Object> l, ServiceReference<LogService> l2) {}
+		protected void unbindPropsSR(Map<String, Object> l, ServiceReference<LogService> l2) {}
 
-		void updatedPropsSR(Map<String,Object> l, ServiceReference<LogService> l2) {}
+		void updatedPropsSR(Map<String, Object> l, ServiceReference<LogService> l2) {}
 
 		@Reference
-		private void bindPropsTuple(Map<String,Object> l, Map.Entry<Map<String,Object>,LogService> l2) {}
+		private void bindPropsTuple(Map<String, Object> l, Map.Entry<Map<String, Object>, LogService> l2) {}
 
-		protected void unbindPropsTuple(Map<String,Object> l, Map.Entry<Map<String,Object>,LogService> l2) {}
+		protected void unbindPropsTuple(Map<String, Object> l, Map.Entry<Map<String, Object>, LogService> l2) {}
 
-		void updatedPropsTuple(Map<String,Object> l, Map.Entry<Map<String,Object>,LogService> l2) {}
+		void updatedPropsTuple(Map<String, Object> l, Map.Entry<Map<String, Object>, LogService> l2) {}
 
 	}
 
@@ -1519,8 +1529,11 @@ public class DSAnnotationTest extends BndTestCase {
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
-		assertEquals(1, b.getErrors().size());
-		assertTrue(b.getErrors().get(0).endsWith("dynamic but has no unbind method."));
+		assertEquals(1, b.getErrors()
+			.size());
+		assertTrue(b.getErrors()
+			.get(0)
+			.endsWith("dynamic but has no unbind method."));
 	}
 
 	@Component(name = "testConfigPolicy", configurationPolicy = ConfigurationPolicy.IGNORE)
@@ -1588,7 +1601,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 		{
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$issue347.xml");
-			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			System.err.println(Processor.join(jar.getResources()
+				.keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.2.0");
@@ -1606,9 +1620,9 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(reference = {
-			@Reference(name = "log", service = LogService.class, cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)"),
-			@Reference(name = "logField", service = LogService.class, cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)", field = "logField", fieldOption = FieldOption.REPLACE),
-			@Reference(name = "logMethod", service = LogService.class, cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)", bind = "setLogMethod", unbind = "unsetLogMethod", updated = "updatedLogMethod"),
+		@Reference(name = "log", service = LogService.class, cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)"),
+		@Reference(name = "logField", service = LogService.class, cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)", field = "logField", fieldOption = FieldOption.REPLACE),
+		@Reference(name = "logMethod", service = LogService.class, cardinality = ReferenceCardinality.MANDATORY, policy = ReferencePolicy.DYNAMIC, policyOption = ReferencePolicyOption.GREEDY, target = "(service.id=1)", bind = "setLogMethod", unbind = "unsetLogMethod", updated = "updatedLogMethod"),
 	})
 	public static class ref_on_comp implements Serializable, Runnable {
 		private static final long	serialVersionUID	= 1L;
@@ -1645,7 +1659,8 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, "1.3.0", LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ref_on_comp.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -1800,7 +1815,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Reference(service = LogService.class)
-		void setLogService(@SuppressWarnings("unused") Map<String,Object> map) {
+		void setLogService(@SuppressWarnings("unused") Map<String, Object> map) {
 
 		}
 
@@ -1840,7 +1855,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		void unsetLogService(@SuppressWarnings("unused") Map<String,Object> map) {
+		void unsetLogService(@SuppressWarnings("unused") Map<String, Object> map) {
 
 		}
 
@@ -1880,7 +1895,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		}
 
-		void updatedLogService(@SuppressWarnings("unused") Map<String,Object> map) {
+		void updatedLogService(@SuppressWarnings("unused") Map<String, Object> map) {
 
 		}
 
@@ -1931,7 +1946,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * Check that multiple configuration pids causes a DS 1.3 namespace
 	 */
 	@Component(configurationPid = {
-			"pid1", "pid2"
+		"pid1", "pid2"
 	})
 	public static class DS13_pids_basic implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
@@ -1970,7 +1985,7 @@ public class DSAnnotationTest extends BndTestCase {
 	 * DS 1.3 namespace
 	 */
 	@Component(configurationPid = {
-			"$", "pid2"
+		"$", "pid2"
 	})
 	public static class DS13_dollar_pids_basic implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
@@ -2017,7 +2032,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_scope_basic", "", "prototype");
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_pids_basic", "pid1 pid2", "");
 		checkDS13(jar, "test.component.DSAnnotationTest$DS13_dollar_pids_basic",
-				"test.component.DSAnnotationTest$DS13_dollar_pids_basic pid2", "");
+			"test.component.DSAnnotationTest$DS13_dollar_pids_basic pid2", "");
 		// suppress cap/req
 		setupBasic13("nocapabilities", LogService.class.getName());
 		setupBasic13("norequirements", null, SERIALIZABLE_RUNNABLE);
@@ -2052,7 +2067,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 	private void checkDS13(Jar jar, String name, String pids, String scope) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -2093,9 +2109,9 @@ public class DSAnnotationTest extends BndTestCase {
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13_*");
 		b.setProperty("Private-Package", "test.component");
 		b.setProperty("Provide-Capability",
-				"osgi.service;objectClass:List<String>=\"java.io.Serializable,java.lang.Runnable\"");
+			"osgi.service;objectClass:List<String>=\"java.io.Serializable,java.lang.Runnable\"");
 		b.setProperty("Require-Capability",
-				"osgi.service;filter:=\"(objectClass=org.osgi.service.log.LogService)\";effective:=active");
+			"osgi.service;filter:=\"(objectClass=org.osgi.service.log.LogService)\";effective:=active");
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
@@ -2106,14 +2122,15 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	public enum Foo {
-		A, B
+		A,
+		B
 	}
 
 	public @interface ConfigTypes {
 		String myString() default "foo";
 
 		String[] myStringArray() default {
-				"foo", "bar"
+			"foo", "bar"
 		};
 
 		String[] mySingleStringArray() default "baz";
@@ -2121,23 +2138,23 @@ public class DSAnnotationTest extends BndTestCase {
 		int myInt() default 1;
 
 		int[] myIntArray() default {
-				2, 3
+			2, 3
 		};
 
 		int[] mySingleIntArray() default 4;
 
-		Class< ? > myClass() default ConfigTypes.class;
+		Class<?> myClass() default ConfigTypes.class;
 
-		Class< ? >[] myClassArray() default {
-				ConfigTypes.class, ConfigTypes.class
+		Class<?>[] myClassArray() default {
+			ConfigTypes.class, ConfigTypes.class
 		};
 
-		Class< ? >[] mySingleClassArray() default ConfigTypes.class;
+		Class<?>[] mySingleClassArray() default ConfigTypes.class;
 
 		Foo myEnum() default Foo.A;
 
 		Foo[] myEnumArray() default {
-				Foo.A, Foo.B
+			Foo.A, Foo.B
 		};
 
 		Foo[] mySingleEnumArray() default Foo.B;
@@ -2161,7 +2178,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc,
-				@SuppressWarnings("unused") ConfigTypes config1) {}
+			@SuppressWarnings("unused") ConfigTypes config1) {}
 
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
@@ -2188,7 +2205,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Modified
 		void modified(@SuppressWarnings("unused") ComponentContext cc,
-				@SuppressWarnings("unused") ConfigTypes config1) {}
+			@SuppressWarnings("unused") ConfigTypes config1) {}
 
 		@Override
 		public void run() {
@@ -2206,7 +2223,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc,
-				@SuppressWarnings("unused") ConfigTypes config1) {}
+			@SuppressWarnings("unused") ConfigTypes config1) {}
 
 		@Modified
 		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
@@ -2238,7 +2255,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 	private void checkDS13Anno(Jar jar, String name, String pids) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -2282,16 +2300,16 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("Integer", "scr:component/property[@name='mySingleIntArray']/@type");
 
 		xt.assertAttribute("test.component.DSAnnotationTest$ConfigTypes",
-				"scr:component/property[@name='myClass']/@value");
+			"scr:component/property[@name='myClass']/@value");
 		xt.assertAttribute("String", "scr:component/property[@name='myClass']/@type");
 
 		xt.assertTrimmedAttribute(
-				"test.component.DSAnnotationTest$ConfigTypes\\ntest.component.DSAnnotationTest$ConfigTypes",
-				"scr:component/property[@name='myClassArray']");
+			"test.component.DSAnnotationTest$ConfigTypes\\ntest.component.DSAnnotationTest$ConfigTypes",
+			"scr:component/property[@name='myClassArray']");
 		xt.assertAttribute("String", "scr:component/property[@name='myClassArray']/@type");
 
 		xt.assertTrimmedAttribute("test.component.DSAnnotationTest$ConfigTypes",
-				"scr:component/property[@name='mySingleClassArray']");
+			"scr:component/property[@name='mySingleClassArray']");
 		xt.assertAttribute("String", "scr:component/property[@name='mySingleClassArray']/@type");
 
 		xt.assertAttribute("A", "scr:component/property[@name='myEnum']/@value");
@@ -2343,7 +2361,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc,
-				@SuppressWarnings("unused") ConfigNames configNames) {}
+			@SuppressWarnings("unused") ConfigNames configNames) {}
 
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
@@ -2372,7 +2390,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 	private void checkDS13AnnoConfigNames(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -2417,26 +2436,26 @@ public class DSAnnotationTest extends BndTestCase {
 
 	public @interface ConfigNames14 {
 		String PREFIX_ = "test.";
-	
+
 		String my$_$String7() default "foo";
-	
+
 		String value() default "foo";
 	}
 
 	@Component()
 	public static class DS14annoNames_config implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
-	
+
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc,
-				@SuppressWarnings("unused") ConfigNames14 configNames) {}
-	
+			@SuppressWarnings("unused") ConfigNames14 configNames) {}
+
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
-	
+
 		@Modified
 		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
-	
+
 		@Override
 		public void run() {}
 	}
@@ -2458,7 +2477,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 	private void checkDS14AnnoConfigNames(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
@@ -2505,14 +2525,14 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(property = {
-			"two:String=c"
+		"two:String=c"
 	})
 	public static class DS13annoOverride_a_a implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
 
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
-				@SuppressWarnings("unused") ConfigB b) {}
+			@SuppressWarnings("unused") ConfigB b) {}
 
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
@@ -2525,7 +2545,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(property = {
-			"two:String=c"
+		"two:String=c"
 	})
 	public static class DS13annoOverride_a_d implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
@@ -2544,7 +2564,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(property = {
-			"two:String=c"
+		"two:String=c"
 	})
 	public static class DS13annoOverride_a_m implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
@@ -2563,7 +2583,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component(property = {
-			"two:String=c"
+		"two:String=c"
 	})
 	public static class DS13annoOverride_d_m implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
@@ -2601,7 +2621,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 	private void checkDS13AnnoOverride(Jar jar, String name) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -2641,25 +2662,25 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	public static class TestFieldInjection {
 		@Reference
-		private LogService									serviceField;
+		private LogService												serviceField;
 
 		@Reference
-		private ServiceReference<LogService>				srField;
+		private ServiceReference<LogService>							srField;
 
 		@Reference
-		private ComponentServiceObjects<LogService>			soField;
+		private ComponentServiceObjects<LogService>						soField;
 
 		@Reference(service = LogService.class)
-		private Map<String,Object>							propsField;
+		private Map<String, Object>										propsField;
 
 		@Reference
-		private Map.Entry<Map<String,Object>,LogService>	tupleField;
+		private Map.Entry<Map<String, Object>, LogService>				tupleField;
 
 		@Reference
-		private Map.Entry<Map<String, ? >,LogService>				tupleField2;
+		private Map.Entry<Map<String, ?>, LogService>					tupleField2;
 
 		@Reference
-		private Map.Entry<Map<String, ? extends Object>,LogService>	tupleField3;
+		private Map.Entry<Map<String, ? extends Object>, LogService>	tupleField3;
 
 	}
 
@@ -2723,7 +2744,7 @@ public class DSAnnotationTest extends BndTestCase {
 		private Collection<ComponentServiceObjects<LogService>>			soField;
 
 		@Reference(service = LogService.class)
-		private Collection<Map<String,Object>>							propsField;
+		private Collection<Map<String, Object>>							propsField;
 
 		@Reference
 		// (service=LogService.class)
@@ -2731,8 +2752,9 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Reference
 		// (service = LogService.class)
-		private Collection<Map.Entry<Map<String,Object>,LogService>>	tupleField;
+		private Collection<Map.Entry<Map<String, Object>, LogService>>	tupleField;
 
+		@Override
 		public void run() {}
 	}
 
@@ -2789,7 +2811,8 @@ public class DSAnnotationTest extends BndTestCase {
 		for (String[] o : objectClass) {
 			boolean found = false;
 			for (Attrs at : attrs) {
-				if (Arrays.asList(o).equals(at.getTyped("objectClass"))) {
+				if (Arrays.asList(o)
+					.equals(at.getTyped("objectClass"))) {
 					assertEquals(1, at.size());
 					found = true;
 				}
@@ -2819,7 +2842,7 @@ public class DSAnnotationTest extends BndTestCase {
 			Attrs attr = header.get("osgi.extender");
 			assertNotNull(attr);
 			assertEquals("(&(osgi.extender=osgi.component)(version>=" + extender + ")(!(version>=2.0.0)))",
-					attr.get("filter:"));
+				attr.get("filter:"));
 		}
 	}
 
@@ -2839,7 +2862,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	public static class DesignateNone {
 		@Activate
-		void activate(Map<String,Object> props) {}
+		void activate(Map<String, Object> props) {}
 	}
 
 	@ObjectClassDefinition
@@ -2849,34 +2872,34 @@ public class DSAnnotationTest extends BndTestCase {
 	@Designate(ocd = config.class)
 	public static class DesignateSingleton {
 		@Activate
-		void activate(Map<String,Object> props) {}
+		void activate(Map<String, Object> props) {}
 	}
 
 	@Component
 	@Designate(ocd = config.class, factory = true)
 	public static class DesignateFactory {
 		@Activate
-		void activate(Map<String,Object> props) {}
+		void activate(Map<String, Object> props) {}
 	}
 
 	@Component(configurationPolicy = ConfigurationPolicy.REQUIRE)
 	public static class DesignateNoneRequire {
 		@Activate
-		void activate(Map<String,Object> props) {}
+		void activate(Map<String, Object> props) {}
 	}
 
 	@Component(configurationPolicy = ConfigurationPolicy.REQUIRE)
 	@Designate(ocd = config.class)
 	public static class DesignateSingletonRequire {
 		@Activate
-		void activate(Map<String,Object> props) {}
+		void activate(Map<String, Object> props) {}
 	}
 
 	@Component(configurationPolicy = ConfigurationPolicy.OPTIONAL)
 	@Designate(ocd = config.class, factory = true)
 	public static class DesignateFactoryOptional {
 		@Activate
-		void activate(Map<String,Object> props) {}
+		void activate(Map<String, Object> props) {}
 	}
 
 	public void testDesignate() throws Exception {
@@ -2897,7 +2920,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkConfigurationPolicy(jar, DesignateFactoryOptional.class, "optional");
 	}
 
-	void checkConfigurationPolicy(Jar jar, Class< ? > clazz, String option) throws Exception, XPathExpressionException {
+	void checkConfigurationPolicy(Jar jar, Class<?> clazz, String option) throws Exception, XPathExpressionException {
 		Resource r = jar.getResource("OSGI-INF/" + clazz.getName() + ".xml");
 		assertNotNull(r);
 		r.write(System.err);
@@ -2910,7 +2933,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*")
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-			ElementType.TYPE
+		ElementType.TYPE
 	})
 	@interface TestExtensions {
 		boolean booleanAttr() default true;
@@ -2923,7 +2946,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "http://www.osgi.org/xmlns/scr/*")
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-			ElementType.FIELD, ElementType.METHOD
+		ElementType.FIELD, ElementType.METHOD
 	})
 	@interface TestRefExtensions {
 		boolean booleanAttr2() default true;
@@ -2940,7 +2963,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
-				@SuppressWarnings("unused") ConfigB b) {}
+			@SuppressWarnings("unused") ConfigB b) {}
 
 		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
 		@Deactivate
@@ -2976,11 +2999,12 @@ public class DSAnnotationTest extends BndTestCase {
 
 		String name = ExtraAttributes.class.getName();
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0", "foo",
-				"org.foo.extensions.v1");
+			"org.foo.extensions.v1");
 		// Test the defaults
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 
@@ -3035,11 +3059,12 @@ public class DSAnnotationTest extends BndTestCase {
 
 		String name = ExtraAttributes10.class.getName();
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.1.0", "foo",
-				"org.foo.extensions.v1");
+			"org.foo.extensions.v1");
 		// This wll check that the spec namespace is 1.1
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 
@@ -3048,7 +3073,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@XMLAttribute(namespace = "org.foo.extensions.v2", prefix = "foo")
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-			ElementType.TYPE
+		ElementType.TYPE
 	})
 	@interface TestExtensions3 {
 		boolean booleanAttr3() default false;
@@ -3066,7 +3091,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
-				@SuppressWarnings("unused") ConfigB b) {}
+			@SuppressWarnings("unused") ConfigB b) {}
 
 		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
 		@Deactivate
@@ -3102,11 +3127,12 @@ public class DSAnnotationTest extends BndTestCase {
 
 		String name = PrefixCollisionExtraAttributes.class.getName();
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0", "foo",
-				"org.foo.extensions.v1", "foo1", "org.foo.extensions.v2");
+			"org.foo.extensions.v1", "foo1", "org.foo.extensions.v2");
 		// Test the defaults
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 
@@ -3137,7 +3163,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@XMLAttribute(namespace = "org.foo.extensions.v4")
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-			ElementType.TYPE
+		ElementType.TYPE
 	})
 	@interface TestExtensions4 {
 		boolean booleanAttr4() default true;
@@ -3150,7 +3176,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@XMLAttribute(namespace = "org.foo.extensions.v5")
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-			ElementType.TYPE
+		ElementType.TYPE
 	})
 	@interface TestExtensions5 {
 		boolean booleanAttr5() default true;
@@ -3168,7 +3194,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a,
-				@SuppressWarnings("unused") ConfigB b) {}
+			@SuppressWarnings("unused") ConfigB b) {}
 
 		@TestRefExtensions(stringAttr2 = "ignore", fooAttr2 = Foo.A)
 		@Deactivate
@@ -3184,7 +3210,7 @@ public class DSAnnotationTest extends BndTestCase {
 	public void testPrefixCollisionExtraAttributesDefaultPrefix() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS,
-				"test.component.DSAnnotationTest$DefaultPrefixCollisionExtraAttributes*");
+			"test.component.DSAnnotationTest$DefaultPrefixCollisionExtraAttributes*");
 		b.setProperty("Private-Package", "test.component");
 		b.addClasspath(new File("bin"));
 
@@ -3193,11 +3219,12 @@ public class DSAnnotationTest extends BndTestCase {
 
 		String name = DefaultPrefixCollisionExtraAttributes.class.getName();
 		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0", "ns",
-				"org.foo.extensions.v4", "ns1", "org.foo.extensions.v5");
+			"org.foo.extensions.v4", "ns1", "org.foo.extensions.v5");
 		// Test the defaults
 		xt.assertAttribute(name, "scr:component/implementation/@class");
 
@@ -3224,7 +3251,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void start() {}
 
 		@aQute.bnd.annotation.component.Modified
-		void update(Map<String,Object> map) {}
+		void update(Map<String, Object> map) {}
 
 		@aQute.bnd.annotation.component.Deactivate
 		void stop() {}
@@ -3238,22 +3265,24 @@ public class DSAnnotationTest extends BndTestCase {
 		Jar build = b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
-		assertEquals(4, b.getErrors().size());
+		assertEquals(4, b.getErrors()
+			.size());
 		List<String> errors = new ArrayList<>(b.getErrors());
 		Collections.sort(errors);
 		assertEquals(
-				"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Activate on method start with signature ()V. It is an error to mix these two types of annotations",
-				errors.get(0));
+			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Activate on method start with signature ()V. It is an error to mix these two types of annotations",
+			errors.get(0));
 		assertEquals(
-				"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Deactivate on method stop with signature ()V. It is an error to mix these two types of annotations",
-				errors.get(1));
+			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Deactivate on method stop with signature ()V. It is an error to mix these two types of annotations",
+			errors.get(1));
 		assertEquals(
-				"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Modified on method update with signature (Ljava/util/Map;)V. It is an error to mix these two types of annotations",
-				errors.get(2));
+			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Modified on method update with signature (Ljava/util/Map;)V. It is an error to mix these two types of annotations",
+			errors.get(2));
 		assertEquals(
-				"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Reference on method setLog with signature (Lorg/osgi/service/log/LogService;)V. It is an error to mix these two types of annotations",
-				errors.get(3));
-		assertEquals(0, b.getWarnings().size());
+			"The DS component mixed-std-bnd uses standard annotations to declare it as a component, but also uses the bnd DS annotation: aQute.bnd.annotation.component.Reference on method setLog with signature (Lorg/osgi/service/log/LogService;)V. It is an error to mix these two types of annotations",
+			errors.get(3));
+		assertEquals(0, b.getWarnings()
+			.size());
 	}
 
 	@Component
@@ -3276,7 +3305,8 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, "1.3.0", LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$VolatileField.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -3315,13 +3345,14 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, "1.3.0", LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FinalDynamicCollectionField.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		// Test the defaults
 		xt.assertAttribute("test.component.DSAnnotationTest$FinalDynamicCollectionField",
-				"scr:component/implementation/@class");
+			"scr:component/implementation/@class");
 
 		xt.assertAttribute("logs1", "scr:component/reference[1]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
@@ -3361,7 +3392,8 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, "1.3.0", LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FieldCardinality.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -3409,14 +3441,14 @@ public class DSAnnotationTest extends BndTestCase {
 		void unsetLogService10(FinalDynamicCollectionField notLs) {}
 
 		@Reference
-		void setLogService11(LogService ls, Map<String,Object> props) {}
+		void setLogService11(LogService ls, Map<String, Object> props) {}
 
-		void unsetLogService11(FinalDynamicCollectionField notLs, Map<String,Object> props) {}
+		void unsetLogService11(FinalDynamicCollectionField notLs, Map<String, Object> props) {}
 
 		@Reference
-		void setLogService13(Map<String,Object> props, LogService ls) {}
+		void setLogService13(Map<String, Object> props, LogService ls) {}
 
-		void unsetLogService13(Map<String,Object> props, FinalDynamicCollectionField notLs) {}
+		void unsetLogService13(Map<String, Object> props, FinalDynamicCollectionField notLs) {}
 	}
 
 	public void testMismatchedUnbind() throws Exception {
@@ -3432,7 +3464,8 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, null, LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$MismatchedUnbind.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -3463,7 +3496,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class NotAMap3 extends TreeMap<String,String> {}
+	static class NotAMap3 extends TreeMap<String, String> {}
 
 	public void testNotImplementedService() throws Exception {
 		checkClass(NotAMap1.class, 1);
@@ -3473,32 +3506,32 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap1 extends HashMap<String,String> {}
+	static class IsAMap1 extends HashMap<String, String> {}
 
 	@SuppressWarnings("serial")
-	static class MyHashMap1<K, V> extends HashMap<K,V> {}
+	static class MyHashMap1<K, V> extends HashMap<K, V> {}
 
 	@SuppressWarnings("serial")
 	@Component(service = HashMap.class)
-	static class IsAMap2 extends MyHashMap1<String,String> {}
+	static class IsAMap2 extends MyHashMap1<String, String> {}
 
-	static interface MyMap<K, V> extends Map<K,V> {};
+	static interface MyMap<K, V> extends Map<K, V> {};
 
 	@SuppressWarnings("serial")
-	static class MyHashMap2<K, V> extends HashMap<K,V> implements MyMap<K,V> {}
+	static class MyHashMap2<K, V> extends HashMap<K, V> implements MyMap<K, V> {}
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3 extends MyHashMap2<String,String> {}
+	static class IsAMap3 extends MyHashMap2<String, String> {}
 
 	static interface Marker {}
 
 	@SuppressWarnings("serial")
 	@Component(service = Map.class)
-	static class IsAMap3a extends MyHashMap2<String,String> implements Marker {}
+	static class IsAMap3a extends MyHashMap2<String, String> implements Marker {}
 
 	@Component(service = Map.class)
-	static class IsAMap4 implements MyMap<String,String> {
+	static class IsAMap4 implements MyMap<String, String> {
 
 		@Override
 		public int size() {
@@ -3536,7 +3569,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 
 		@Override
-		public void putAll(Map< ? extends String, ? extends String> m) {}
+		public void putAll(Map<? extends String, ? extends String> m) {}
 
 		@Override
 		public void clear() {}
@@ -3552,7 +3585,7 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 
 		@Override
-		public Set<java.util.Map.Entry<String,String>> entrySet() {
+		public Set<java.util.Map.Entry<String, String>> entrySet() {
 			return null;
 		}
 	}
@@ -3565,7 +3598,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkClass(IsAMap4.class, 0);
 	}
 
-	private void checkClass(Class< ? > c, int i) throws IOException, Exception, AssertionFailedError {
+	private void checkClass(Class<?> c, int i) throws IOException, Exception, AssertionFailedError {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, c.getName());
 		b.setProperty("Private-Package", "test.component");
@@ -3581,10 +3614,10 @@ public class DSAnnotationTest extends BndTestCase {
 	public static class RefType {
 
 		@Reference(service = Marker.class)
-		void setMarker1(ServiceReference< ? > ref) {}
+		void setMarker1(ServiceReference<?> ref) {}
 
 		@Reference(service = Marker.class)
-		void setMarker2(ComponentServiceObjects< ? > ref) {}
+		void setMarker2(ComponentServiceObjects<?> ref) {}
 
 		@Reference
 		void setMarker3(ServiceReference<Marker> ref) {}
@@ -3599,10 +3632,10 @@ public class DSAnnotationTest extends BndTestCase {
 		void setMarker6(ComponentServiceObjects<Marker> ref) {}
 
 		@Reference
-		void setMarker7(ServiceReference<GenericMarker< ? >> ref) {}
+		void setMarker7(ServiceReference<GenericMarker<?>> ref) {}
 
 		@Reference
-		void setMarker8(ComponentServiceObjects<GenericMarker< ? >> ref) {}
+		void setMarker8(ComponentServiceObjects<GenericMarker<?>> ref) {}
 
 		@Reference
 		void setMarker9(ServiceReference<GenericMarker<Marker>> ref) {}
@@ -3611,19 +3644,19 @@ public class DSAnnotationTest extends BndTestCase {
 		void setMarker10(ComponentServiceObjects<GenericMarker<Marker>> ref) {}
 
 		@Reference
-		void setMarker11(ServiceReference<GenericMarker< ? extends Marker>> ref) {}
+		void setMarker11(ServiceReference<GenericMarker<? extends Marker>> ref) {}
 
 		@Reference
-		void setMarker12(ComponentServiceObjects<GenericMarker< ? super Marker>> ref) {}
+		void setMarker12(ComponentServiceObjects<GenericMarker<? super Marker>> ref) {}
 
 		@Reference
-		void setMarker13(ServiceReference< ? extends GenericMarker< ? extends Marker>> ref) {}
+		void setMarker13(ServiceReference<? extends GenericMarker<? extends Marker>> ref) {}
 
 		@Reference
-		void setMarker14(ComponentServiceObjects< ? super GenericMarker< ? super Marker>> ref) {}
+		void setMarker14(ComponentServiceObjects<? super GenericMarker<? super Marker>> ref) {}
 
 		@Reference(service = Marker.class)
-		void setMarker15(ComponentServiceObjects< ? super GenericMarker< ? super Marker>> ref) {}
+		void setMarker15(ComponentServiceObjects<? super GenericMarker<? super Marker>> ref) {}
 
 	}
 
@@ -3642,7 +3675,8 @@ public class DSAnnotationTest extends BndTestCase {
 		checkRequires(a, null, Marker.class.getName(), GenericMarker.class.getName(), Object.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$RefType.xml");
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -3670,7 +3704,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
-	private void checkMarkerReference(XmlTester xt, int count, Class< ? > cl) throws XPathExpressionException {
+	private void checkMarkerReference(XmlTester xt, int count, Class<?> cl) throws XPathExpressionException {
 		String index = Integer.toString(indices.indexOf(Integer.toString(count)) + 1);
 		xt.assertAttribute("Marker" + count, "scr:component/reference[" + index + "]/@name");
 		xt.assertAttribute(cl.getName(), "scr:component/reference[" + index + "]/@interface");
@@ -3679,10 +3713,10 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertNoAttribute("scr:component/reference[" + index + "]/@updated");
 	}
 
-	@Component(reference = @Reference(name = "LogService", service = LogService.class) )
+	@Component(reference = @Reference(name = "LogService", service = LogService.class))
 	public static class ComponentReferenceGood {}
 
-	@Component(reference = @Reference(service = LogService.class) )
+	@Component(reference = @Reference(service = LogService.class))
 	public static class ComponentReferenceBad {}
 
 	public void testComponentReference() throws Exception {
@@ -3698,7 +3732,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 		{
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ComponentReferenceGood.xml");
-			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			System.err.println(Processor.join(jar.getResources()
+				.keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream());
@@ -3706,7 +3741,8 @@ public class DSAnnotationTest extends BndTestCase {
 		}
 		{
 			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ComponentReferenceBad.xml");
-			System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+			System.err.println(Processor.join(jar.getResources()
+				.keySet(), "\n"));
 			assertNotNull(r);
 			r.write(System.err);
 			XmlTester xt = new XmlTester(r.openInputStream());
@@ -3720,6 +3756,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component(service = {})
 	public static class ActivatableComponent implements Activatable<ConfigA> {
+		@Override
 		@Activate
 		public void activator(ConfigA config) {
 			String a = config.a();

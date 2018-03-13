@@ -14,10 +14,8 @@ import aQute.lib.tag.Tag;
 import aQute.maven.api.Archive;
 import aQute.maven.api.Revision;
 
-
 /**
  * Generate a POM with the contents of the repository as dependencies
- * 
  */
 public class PomGenerator {
 
@@ -60,7 +58,7 @@ public class PomGenerator {
 		project.addAttribute("xmlns", "http://maven.apache.org/POM/4.0.0");
 		project.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		project.addAttribute("xsi:schemaLocation",
-				"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd");
+			"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd");
 
 		new Tag(project, "modelVersion", "4.0.0");
 
@@ -97,15 +95,14 @@ public class PomGenerator {
 	private void prune() {
 		TreeSet<Archive> s = new TreeSet<>(dependencies);
 		Archive prev = null;
-		
-		for ( Iterator<Archive> i = s.iterator(); i.hasNext(); ) {
+
+		for (Iterator<Archive> i = s.iterator(); i.hasNext();) {
 			Archive a = i.next();
 			boolean sameProgram = prev != null && prev.revision.program.equals(a.revision.program);
 			if (sameProgram) {
 				System.out.println("Skipping " + a);
 				i.remove();
-			}
-			else
+			} else
 				prev = a;
 		}
 		dependencies = s;

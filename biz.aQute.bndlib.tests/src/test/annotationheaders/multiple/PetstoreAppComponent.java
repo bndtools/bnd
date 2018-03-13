@@ -13,4 +13,3 @@ import aQute.bnd.annotation.headers.RequireCapability;
 public class PetstoreAppComponent {
 	// ..
 }
-

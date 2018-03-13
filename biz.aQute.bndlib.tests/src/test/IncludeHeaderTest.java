@@ -125,7 +125,8 @@ public class IncludeHeaderTest extends TestCase {
 		p.put("-include", "-iamnotthere.txt");
 		analyzer.setProperties(p);
 		System.err.println(analyzer.getErrors());
-		assertEquals(0, analyzer.getErrors().size());
+		assertEquals(0, analyzer.getErrors()
+			.size());
 	}
 
 	public static void testIncludeWithProperty() throws IOException {
@@ -147,7 +148,8 @@ public class IncludeHeaderTest extends TestCase {
 			assertEquals("yes", value);
 			assertEquals("2", analyzer.getProperty("a"));
 			assertEquals("2", analyzer.getProperty("b"));
-			assertEquals(0, analyzer.getErrors().size());
+			assertEquals(0, analyzer.getErrors()
+				.size());
 		} finally {
 			include.delete();
 		}

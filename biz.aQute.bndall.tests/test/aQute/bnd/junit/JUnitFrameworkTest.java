@@ -38,10 +38,11 @@ public class JUnitFrameworkTest extends Assert {
 
 		assertNotNull("The framework has a bundle context", framework.context);
 
-		assertEquals("This context is from the framework itself", 0L, framework.context.getBundle().getBundleId());
+		assertEquals("This context is from the framework itself", 0L, framework.context.getBundle()
+			.getBundleId());
 
 		assertTrue("There are only the basic services from the framework",
-				2 <= framework.context.getServiceReferences((String) null, null).length);
+			2 <= framework.context.getServiceReferences((String) null, null).length);
 		assertNotNull("Package Admin", framework.getService(org.osgi.service.packageadmin.PackageAdmin.class));
 		assertNotNull("StartLevel Service Admin", framework.getService(org.osgi.service.startlevel.StartLevel.class));
 	}
@@ -67,7 +68,8 @@ public class JUnitFrameworkTest extends Assert {
 		BundleBuilder bundle = framework.bundle();
 
 		bundle.setBundleActivator(Activator.class.getName());
-		bundle.setPrivatePackage(Activator.class.getPackage().getName());
+		bundle.setPrivatePackage(Activator.class.getPackage()
+			.getName());
 
 		Bundle b = bundle.install();
 		assertEquals("Not started yet", Bundle.INSTALLED, b.getState());
@@ -141,7 +143,8 @@ public class JUnitFrameworkTest extends Assert {
 
 	@Test
 	public void demoAddBundle() throws Exception {
-		Bundle bundle = framework.addBundle("org.apache.felix.configadmin").get(0);
+		Bundle bundle = framework.addBundle("org.apache.felix.configadmin")
+			.get(0);
 		assertNotNull(bundle);
 		assertEquals("Expect log & reader service", 2, bundle.getRegisteredServices().length);
 		bundle.start();

@@ -13,6 +13,7 @@ public class EcjTest extends TestCase {
 	}
 
 	public static class B extends A {
+		@Override
 		public B foo() {
 			System.out.println("In B");
 			return null;
@@ -21,6 +22,7 @@ public class EcjTest extends TestCase {
 	}
 
 	public static class C extends B {
+		@Override
 		public C foo() {
 			System.out.println("In C");
 			return null;

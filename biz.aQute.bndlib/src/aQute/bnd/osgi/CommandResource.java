@@ -12,12 +12,13 @@ import org.slf4j.LoggerFactory;
 
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
+
 public class CommandResource extends WriteResource {
 	private final static Logger	logger	= LoggerFactory.getLogger(CommandResource.class);
-	final long		lastModified;
-	final Builder	domain;
-	final String	command;
-	final File		wd;
+	final long					lastModified;
+	final Builder				domain;
+	final String				command;
+	final File					wd;
 
 	public CommandResource(String command, Builder domain, long lastModified, File wd) {
 		this.lastModified = lastModified;

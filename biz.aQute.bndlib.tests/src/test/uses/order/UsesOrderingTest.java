@@ -23,14 +23,18 @@ public class UsesOrderingTest extends TestCase {
 		builder.setProperty(Constants.EXPORT_PACKAGE, "test.diff;uses:=\"d,c,a,b\"");
 		Jar a = builder.build();
 
-		String exa = a.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+		String exa = a.getManifest()
+			.getMainAttributes()
+			.getValue(Constants.EXPORT_PACKAGE);
 
 		builder = new Builder();
 		builder.addClasspath(new File("bin"));
 		builder.setProperty(Constants.EXPORT_PACKAGE, "test.diff;uses:=\"d,b,a,c\"");
 		Jar b = builder.build();
 
-		String exb = b.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+		String exb = b.getManifest()
+			.getMainAttributes()
+			.getValue(Constants.EXPORT_PACKAGE);
 
 		Tree newer = differ.tree(b);
 		Tree older = differ.tree(a);

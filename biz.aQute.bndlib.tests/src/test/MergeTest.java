@@ -17,31 +17,31 @@ public class MergeTest extends TestCase {
 
 	public static void testFirst() throws Exception {
 		testMerge("first", new String[] {
-				"A", "C"
+			"A", "C"
 		}, new String[] {
-				"B"
+			"B"
 		}, "first", 0, 0);
 	}
 
 	public static void testMergeFirst() throws Exception {
 		testMerge("merge-first", new String[] {
-				"A", "B", "C"
+			"A", "B", "C"
 		}, new String[] {
-				""
+			""
 		}, "first", 0, 0);
 	}
 
 	public static void testDefault() throws Exception {
 		testMerge(null, new String[] {
-				"A", "B", "C"
+			"A", "B", "C"
 		}, new String[] {}, "first", 0, 1);
 	}
 
 	public static void testMergeLast() throws Exception {
 		testMerge("merge-last", new String[] {
-				"A", "B", "C"
+			"A", "B", "C"
 		}, new String[] {
-				""
+			""
 		}, "last", 0, 0);
 	}
 
@@ -53,7 +53,7 @@ public class MergeTest extends TestCase {
 		Builder b = new Builder();
 		try {
 			b.setClasspath(new File[] {
-					IO.getFile("src/test/split/split-a.jar"), IO.getFile("src/test/split/split-b.jar")
+				IO.getFile("src/test/split/split-a.jar"), IO.getFile("src/test/split/split-b.jar")
 			});
 			Properties p = new Properties();
 			if (type != null)
@@ -66,8 +66,10 @@ public class MergeTest extends TestCase {
 
 			System.err.println("Errors     :" + b.getErrors());
 			System.err.println("Warnings   :" + b.getWarnings());
-			assertEquals(errors, b.getErrors().size());
-			assertEquals(warnings, b.getWarnings().size());
+			assertEquals(errors, b.getErrors()
+				.size());
+			assertEquals(warnings, b.getWarnings()
+				.size());
 			if (errors != 0)
 				return;
 

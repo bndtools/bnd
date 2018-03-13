@@ -29,7 +29,7 @@ public class EmbeddedActivator implements BundleActivator {
 	public final static String	VERSION_S		= "(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:[-_\\da-zA-Z]+))?)?)?";
 
 	final static Pattern		BSN_VERSION_P	= Pattern
-			.compile("\\s*(" + SYMBOLICNAME_S + ")\\s*=\\s*(" + VERSION_S + ")\\s*");
+		.compile("\\s*(" + SYMBOLICNAME_S + ")\\s*=\\s*(" + VERSION_S + ")\\s*");
 
 	/**
 	 * The activator start will install any bundles that are not already
@@ -43,18 +43,19 @@ public class EmbeddedActivator implements BundleActivator {
 			String bsn = ours.getSymbolicName();
 			Version version = ours.getVersion();
 
-			String embedded = ours.getHeaders().get("Bnd-Embedded");
+			String embedded = ours.getHeaders()
+				.get("Bnd-Embedded");
 			if (embedded == null)
 				throw new IllegalArgumentException("Requires a Bnd-Embedded header");
 
-			Map<String,Version> index = new HashMap<>();
+			Map<String, Version> index = new HashMap<>();
 
 			String[] clauses = embedded.split("\\s*,\\s*");
 			for (String clause : clauses) {
 				Matcher m = BSN_VERSION_P.matcher(clause);
 				if (!m.matches())
 					throw new IllegalArgumentException(
-							"Funny clause in Bnd-Embedded header " + clause + ", expecting <bsn>=<version>");
+						"Funny clause in Bnd-Embedded header " + clause + ", expecting <bsn>=<version>");
 
 				String tbsn = m.group(1);
 				String tversion = m.group(2);
@@ -98,7 +99,8 @@ public class EmbeddedActivator implements BundleActivator {
 							// update it when we have a better version
 							//
 
-							if (b.getVersion().compareTo(expected) > 0)
+							if (b.getVersion()
+								.compareTo(expected) > 0)
 								continue;
 						}
 

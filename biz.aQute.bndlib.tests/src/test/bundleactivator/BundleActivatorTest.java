@@ -61,7 +61,7 @@ public class BundleActivatorTest extends TestCase {
 		assertBundleActivator(IndirectImplementViaInterface.class, null);
 	}
 
-	void assertBundleActivator(Class< ? extends BundleActivator> c, String filter) throws Exception {
+	void assertBundleActivator(Class<? extends BundleActivator> c, String filter) throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin"));
 			b.setPrivatePackage("test.bundleactivator");
@@ -71,7 +71,9 @@ public class BundleActivatorTest extends TestCase {
 				assertTrue(b.check(filter));
 			else
 				assertTrue(b.check());
-			b.getJar().getManifest().write(System.out);
+			b.getJar()
+				.getManifest()
+				.write(System.out);
 		}
 	}
 

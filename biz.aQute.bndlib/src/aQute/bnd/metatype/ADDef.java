@@ -43,7 +43,8 @@ public class ADDef extends ExtensionDef {
 	}
 
 	Tag getTag(Namespaces namespaces) {
-		Tag ad = new Tag("AD").addAttribute("id", id).addAttribute("type", typeString);
+		Tag ad = new Tag("AD").addAttribute("id", id)
+			.addAttribute("type", typeString);
 
 		if (cardinality != 0) {
 			ad.addAttribute("cardinality", cardinality);

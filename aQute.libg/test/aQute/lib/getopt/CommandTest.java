@@ -15,7 +15,7 @@ public class CommandTest extends TestCase {
 	public static void testWrap() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Abc \t3Def ghi asoudg gd ais gdiasgd asgd auysgd asyudga8sdga8sydga 8sdg\fSame column\nbegin\n"
-				+ "\t3abc\t5def\nabc");
+			+ "\t3abc\t5def\nabc");
 		Justif justif = new Justif(30);
 		justif.wrap(sb);
 		System.err.println(sb);
@@ -37,7 +37,9 @@ public class CommandTest extends TestCase {
 
 	public void testCommand() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
-		assertEquals("[cmda, cmdb]", getopt.getCommands(new X()).keySet().toString());
+		assertEquals("[cmda, cmdb]", getopt.getCommands(new X())
+			.keySet()
+			.toString());
 
 		getopt.execute(new X(), "cmda", Arrays.asList("-e", "help"));
 
@@ -87,8 +89,8 @@ public class CommandTest extends TestCase {
 	public void testSimple() throws Exception {
 		CommandLine getopt = new CommandLine(rp);
 		C1 c1 = new C1();
-		String help = getopt.execute(c1, "c1", new ExtList<>("-f", "-a", "33", "--bb", "bb", "-i", "f1.txt", "-i",
-				"f2.txt", "--", "-a", "--a", "a"));
+		String help = getopt.execute(c1, "c1",
+			new ExtList<>("-f", "-a", "33", "--bb", "bb", "-i", "f1.txt", "-i", "f2.txt", "--", "-a", "--a", "a"));
 		System.err.println(help);
 	}
 
@@ -109,7 +111,7 @@ public class CommandTest extends TestCase {
 	}
 
 	@Arguments(arg = {
-			"..."
+		"..."
 	})
 	interface TwoOptions extends Opt1, Opt2, Options {}
 

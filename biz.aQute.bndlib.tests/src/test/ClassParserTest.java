@@ -19,6 +19,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
@@ -43,23 +44,23 @@ class ConstantValues {
 }
 
 interface WithGenerics<VERYLONGTYPE, X extends Jar> {
-	List< ? super VERYLONGTYPE> baz2();
+	List<? super VERYLONGTYPE> baz2();
 
-	List< ? extends Jar>	field	= null;
+	List<? extends Jar>		field	= null;
 
-	WithGenerics<URL,Jar>	x		= null;
+	WithGenerics<URL, Jar>	x		= null;
 }
 
 class Generics {
-	static Map<ClassParserTest, ? > baz() {
+	static Map<ClassParserTest, ?> baz() {
 		return null;
 	}
 
-	static Map<ClassParserTest, ? > baz1() {
+	static Map<ClassParserTest, ?> baz1() {
 		return null;
 	}
 
-	static Map< ? extends String, ? > baz2() {
+	static Map<? extends String, ?> baz2() {
 		return null;
 	}
 
@@ -67,18 +68,18 @@ class Generics {
 		return null;
 	}
 
-	static Map<ClassParserTest,Clazz> bar() {
+	static Map<ClassParserTest, Clazz> bar() {
 		return null;
 	}
 
-	static WithGenerics<List<Jar>,Jar> xyz() {
+	static WithGenerics<List<Jar>, Jar> xyz() {
 		return null;
 	}
 }
 
 class Implemented implements Plugin {
 	@Override
-	public void setProperties(Map<String,String> map) {}
+	public void setProperties(Map<String, String> map) {}
 
 	@Override
 	public void setReporter(Reporter processor) {}
@@ -100,22 +101,26 @@ public class ClassParserTest extends TestCase {
 		b.setExportPackage("reference.*");
 		Jar build = b.build();
 		assertTrue(b.check());
-		assertTrue(b.getImports().containsFQN("runtime.annotations"));
-		assertTrue(b.getImports().containsFQN("runtime.annotations.repeated"));
-		assertFalse(b.getImports().containsFQN("invisible.annotations"));
-		assertFalse(b.getImports().containsFQN("invisible.annotations.repeated"));
-		assertEquals("reference.runtime.annotations.Foo,reference.runtime.annotations.ReferenceRuntime",
-				b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeTypeAnnotation}}"));
+		assertTrue(b.getImports()
+			.containsFQN("runtime.annotations"));
+		assertTrue(b.getImports()
+			.containsFQN("runtime.annotations.repeated"));
+		assertFalse(b.getImports()
+			.containsFQN("invisible.annotations"));
+		assertFalse(b.getImports()
+			.containsFQN("invisible.annotations.repeated"));
+		assertEquals("reference.runtime.annotations.Foo,reference.runtime.annotations.ReferenceRuntime", b.getReplacer()
+			.process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeTypeAnnotation}}"));
 		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer()
-				.process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleParameterAnnotation}}"));
+			.process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleParameterAnnotation}}"));
 		assertEquals("reference.runtime.annotations.ReferenceRuntime", b.getReplacer()
-				.process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeParameterAnnotation}}"));
-		assertEquals("reference.invisible.annotations.ReferenceInvisible",
-				b.getReplacer().process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleTypeAnnotation}}"));
+			.process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeParameterAnnotation}}"));
 		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer()
-				.process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleRepeatedAnnotation}}"));
-		assertEquals("reference.runtime.annotations.ReferenceRuntime",
-				b.getReplacer().process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeRepeatedAnnotation}}"));
+			.process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleTypeAnnotation}}"));
+		assertEquals("reference.invisible.annotations.ReferenceInvisible", b.getReplacer()
+			.process("${sort;${classes;ANNOTATION;invisible.annotations.InvisibleRepeatedAnnotation}}"));
+		assertEquals("reference.runtime.annotations.ReferenceRuntime", b.getReplacer()
+			.process("${sort;${classes;ANNOTATION;runtime.annotations.RuntimeRepeatedAnnotation}}"));
 		b.close();
 	}
 
@@ -136,7 +141,8 @@ public class ClassParserTest extends TestCase {
 	public static void testCodehauseGROOVY_6169() throws Exception {
 		Clazz c = new Clazz(a, "foo", new FileResource(IO.getFile("jar/BugReproLoggerGroovy189.jclass")));
 		c.parseClassFile();
-		assertTrue(c.getReferred().contains(a.getPackageRef("org.slf4j")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("org.slf4j")));
 	}
 
 	/**
@@ -146,9 +152,9 @@ public class ClassParserTest extends TestCase {
 	 */
 
 	public void testConstantValues() throws Exception {
-		final Map<String,Object> values = new HashMap<>();
+		final Map<String, Object> values = new HashMap<>();
 		Clazz c = new Clazz(a, "ConstantValues",
-				new FileResource(IO.getFile(new File("").getAbsoluteFile(), "bin/test/ConstantValues.class")));
+			new FileResource(IO.getFile(new File("").getAbsoluteFile(), "bin/test/ConstantValues.class")));
 		c.parseClassFileWithCollector(new ClassDataCollector() {
 			Clazz.FieldDef last;
 
@@ -181,7 +187,8 @@ public class ClassParserTest extends TestCase {
 	}
 
 	public static void testGeneric() throws Exception {
-		print(System.err, WithGenerics.class.getField("field").getGenericType());
+		print(System.err, WithGenerics.class.getField("field")
+			.getGenericType());
 		System.err.println();
 		print(System.err, Class.class);
 		System.err.println();
@@ -192,9 +199,10 @@ public class ClassParserTest extends TestCase {
 	public static void print(Appendable sb, Type t) throws Exception {
 		if (t instanceof ParameterizedType) {
 			ParameterizedType pt = (ParameterizedType) t;
-			Class< ? > c = (Class< ? >) pt.getRawType();
+			Class<?> c = (Class<?>) pt.getRawType();
 			sb.append("L");
-			sb.append(c.getCanonicalName().replace('.', '/'));
+			sb.append(c.getCanonicalName()
+				.replace('.', '/'));
 			sb.append("<");
 			for (Type arg : pt.getActualTypeArguments()) {
 				print(sb, arg);
@@ -207,7 +215,7 @@ public class ClassParserTest extends TestCase {
 		} else if (t instanceof GenericArrayType) {
 			sb.append("[" + ((GenericArrayType) t).getGenericComponentType());
 		} else if (t instanceof TypeVariable) {
-			TypeVariable< ? > tv = (TypeVariable< ? >) t;
+			TypeVariable<?> tv = (TypeVariable<?>) t;
 			sb.append("T");
 			sb.append(tv.getName());
 			for (Type upper : tv.getBounds()) {
@@ -218,9 +226,10 @@ public class ClassParserTest extends TestCase {
 			}
 			sb.append(";");
 		} else {
-			Class< ? > c = (Class< ? >) t;
+			Class<?> c = (Class<?>) t;
 			sb.append("L");
-			sb.append(c.getCanonicalName().replace('.', '/'));
+			sb.append(c.getCanonicalName()
+				.replace('.', '/'));
 			if (c instanceof GenericDeclaration) {
 				GenericDeclaration gd = c;
 				if (gd.getTypeParameters().length != 0) {
@@ -244,7 +253,8 @@ public class ClassParserTest extends TestCase {
 		b.addClasspath(IO.getFile("jar/spring.jar"));
 		b.setProperty("Export-Package", "nl.fuji.log");
 		b.build();
-		assertFalse(b.getImports().getByFQN("org.aopalliance.aop") != null);
+		assertFalse(b.getImports()
+			.getByFQN("org.aopalliance.aop") != null);
 	}
 
 	// public void testImplemented() throws Exception {
@@ -263,32 +273,43 @@ public class ClassParserTest extends TestCase {
 		Clazz c = new Clazz(a, "genericstest", null);
 		c.parseClassFile(getClass().getResourceAsStream("WithGenerics.class"));
 		System.err.println(c.getReferred());
-		assertEquals("size ", 5, c.getReferred().size());
-		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/bnd/osgi")));
-		assertTrue(c.getReferred().contains(a.getPackageRef("java/util")));
-		assertTrue(c.getReferred().contains(a.getPackageRef("java/net")));
-		assertTrue(c.getReferred().contains(a.getPackageRef("java/lang")));
+		assertEquals("size ", 5, c.getReferred()
+			.size());
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("aQute/bnd/osgi")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("java/util")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("java/net")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("java/lang")));
 	}
 
 	public void testGenericsSignature3() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", null);
 		c.parseClassFile(getClass().getResourceAsStream("Generics.class"));
-		assertTrue(c.getReferred().contains(a.getPackageRef("test")));
-		assertTrue(c.getReferred().contains(a.getPackageRef("aQute/bnd/osgi")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("test")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("aQute/bnd/osgi")));
 	}
 
 	public static void testGenericsSignature2() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("src/test/generics.clazz")));
 		c.parseClassFile();
-		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
-		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("javax/swing/table")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("javax/swing")));
 	}
 
 	public static void testGenericsSignature() throws Exception {
 		Clazz c = new Clazz(a, "genericstest", new FileResource(IO.getFile("src/test/generics.clazz")));
 		c.parseClassFile();
-		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing/table")));
-		assertTrue(c.getReferred().contains(a.getPackageRef("javax/swing")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("javax/swing/table")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("javax/swing")));
 	}
 
 	/**
@@ -323,7 +344,8 @@ public class ClassParserTest extends TestCase {
 		assertNotNull(in);
 		Clazz clazz = new Clazz(a, "test", null);
 		clazz.parseClassFile(in);
-		assertTrue(clazz.getReferred().contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
+		assertTrue(clazz.getReferred()
+			.contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
 	}
 
 	public void testMissingPackage1() throws Exception {
@@ -334,9 +356,10 @@ public class ClassParserTest extends TestCase {
 
 		System.err.println(clazz.getReferred());
 		clazz.parseDescriptor(
-				"(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;",
-				0);
-		assertTrue(clazz.getReferred().contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
+			"(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;",
+			0);
+		assertTrue(clazz.getReferred()
+			.contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
 	}
 
 	public void testGeneratedClass() throws Exception {
@@ -377,13 +400,15 @@ public class ClassParserTest extends TestCase {
 		Builder builder = new Builder();
 		try {
 			builder.setClasspath(new File[] {
-					IO.getFile("jar/ecj_3.2.2.jar")
+				IO.getFile("jar/ecj_3.2.2.jar")
 			});
-			builder.setProperty(Analyzer.EXPORT_PACKAGE, "org.eclipse.*");
+			builder.setProperty(Constants.EXPORT_PACKAGE, "org.eclipse.*");
 			builder.build();
 			System.err.println(builder.getErrors());
-			assertEquals(0, builder.getErrors().size());
-			assertEquals(0, builder.getWarnings().size());
+			assertEquals(0, builder.getErrors()
+				.size());
+			assertEquals(0, builder.getWarnings()
+				.size());
 			System.err.println(builder.getErrors());
 			System.err.println(builder.getWarnings());
 		} finally {
@@ -427,8 +452,10 @@ public class ClassParserTest extends TestCase {
 	public void testStackMapTable() throws Exception {
 		Clazz c = new Clazz(a, "test/stackmaptable", null);
 		c.parseClassFile(getClass().getResourceAsStream("stackmaptable/ClassRefInStackMapTable.class"));
-		assertTrue(c.getReferred().contains(a.getPackageRef("javax/crypto/spec")));
-		assertTrue(c.getReferred().contains(a.getPackageRef("javax/crypto")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("javax/crypto/spec")));
+		assertTrue(c.getReferred()
+			.contains(a.getPackageRef("javax/crypto")));
 	}
 
 }

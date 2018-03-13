@@ -13,7 +13,7 @@ public class ClassRefInStackMapTable {
 		 * super-type is in a different package from the concrete type.
 		 */
 		SecretKey key = new SecretKeySpec(new byte[] {
-				0
+			0
 		}, "NULL");
 
 		/*

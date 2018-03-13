@@ -28,18 +28,20 @@ public class PermissionGenerator {
 		CAPABILITIES {
 			@Override
 			public void generate(StringBuilder sb, Builder builder) {
-				for (String namespace : builder.getProvideCapability().keySet()) {
+				for (String namespace : builder.getProvideCapability()
+					.keySet()) {
 					if (!Processor.isDuplicate(namespace)) {
 						sb.append("(org.osgi.framework.CapabilityPermission \"")
-								.append(namespace)
-								.append("\" \"provide\")\n");
+							.append(namespace)
+							.append("\" \"provide\")\n");
 					}
 				}
-				for (String namespace : builder.getRequireCapability().keySet()) {
+				for (String namespace : builder.getRequireCapability()
+					.keySet()) {
 					if (!Processor.isDuplicate(namespace)) {
 						sb.append("(org.osgi.framework.CapabilityPermission \"")
-								.append(namespace)
-								.append("\" \"require\")\n");
+							.append(namespace)
+							.append("\" \"require\")\n");
 					}
 				}
 			}
@@ -48,7 +50,8 @@ public class PermissionGenerator {
 			@Override
 			public void generate(StringBuilder sb, Builder builder) {
 				if (builder.getImports() != null) {
-					for (PackageRef imp : builder.getImports().keySet()) {
+					for (PackageRef imp : builder.getImports()
+						.keySet()) {
 						if (!imp.isJava()) {
 							sb.append("(org.osgi.framework.PackagePermission \"");
 							sb.append(imp);
@@ -57,7 +60,8 @@ public class PermissionGenerator {
 					}
 				}
 				if (builder.getExports() != null) {
-					for (PackageRef exp : builder.getExports().keySet()) {
+					for (PackageRef exp : builder.getExports()
+						.keySet()) {
 						sb.append("(org.osgi.framework.PackagePermission \"");
 						sb.append(exp);
 						sb.append("\" \"export\")\n");
@@ -70,13 +74,13 @@ public class PermissionGenerator {
 			public void generate(StringBuilder sb, Builder builder) {
 				for (String declaredService : getDeclaredServices(builder)) {
 					sb.append("(org.osgi.framework.ServicePermission \"")
-							.append(declaredService)
-							.append("\" \"register\")\n");
+						.append(declaredService)
+						.append("\" \"register\")\n");
 				}
 				for (String referencedService : getReferencedServices(builder)) {
 					sb.append("(org.osgi.framework.ServicePermission \"")
-							.append(referencedService)
-							.append("\" \"get\")\n");
+						.append(referencedService)
+						.append("\" \"get\")\n");
 				}
 			}
 		};
@@ -88,8 +92,10 @@ public class PermissionGenerator {
 
 	public static Set<String> getDeclaredServices(Builder builder) {
 		Set<String> declaredServices = new TreeSet<>();
-		for (Entry<String,Attrs> entry : builder.getProvideCapability().entrySet()) {
-			if (Processor.removeDuplicateMarker(entry.getKey()).equals("osgi.service")) {
+		for (Entry<String, Attrs> entry : builder.getProvideCapability()
+			.entrySet()) {
+			if (Processor.removeDuplicateMarker(entry.getKey())
+				.equals("osgi.service")) {
 				Attrs attrs = entry.getValue();
 				String ifaces = attrs.get("objectClass");
 				if (ifaces != null) {
@@ -119,7 +125,8 @@ public class PermissionGenerator {
 
 					if (!v.contains(MATCH_ALL) || v.equals(MATCH_ALL)) {
 						return Collections.singleton(v);
-					} else if (v.endsWith(VALID_WILDCARD) && !v.substring(0, v.length() - 2).contains(MATCH_ALL)) {
+					} else if (v.endsWith(VALID_WILDCARD) && !v.substring(0, v.length() - 2)
+						.contains(MATCH_ALL)) {
 						return Collections.singleton(v);
 					} else {
 						// All other matchings have no meaning to us, the user
@@ -158,8 +165,10 @@ public class PermissionGenerator {
 
 	public static Set<String> getReferencedServices(Builder builder) {
 		Set<String> referencedServices = new TreeSet<>();
-		for (Entry<String,Attrs> entry : builder.getRequireCapability().entrySet()) {
-			if (Processor.removeDuplicateMarker(entry.getKey()).equals("osgi.service")) {
+		for (Entry<String, Attrs> entry : builder.getRequireCapability()
+			.entrySet()) {
+			if (Processor.removeDuplicateMarker(entry.getKey())
+				.equals("osgi.service")) {
 				Attrs attrs = entry.getValue();
 				String filter = attrs.get("filter:");
 				if (filter != null && !filter.isEmpty()) {

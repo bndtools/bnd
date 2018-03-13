@@ -69,11 +69,13 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	private String				configFileList;
 	private boolean				disableSslVerify	= false;
 
+	@Override
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
 
-	public void setProperties(Map<String,String> map) {
+	@Override
+	public void setProperties(Map<String, String> map) {
 		configFileList = map.get("configs");
 		if (configFileList == null)
 			throw new IllegalArgumentException("'configs' must be specified on HttpBasicAuthURLConnector");
@@ -86,7 +88,8 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 
 			StringTokenizer tokenizer = new StringTokenizer(configFileList, ",");
 			while (tokenizer.hasMoreTokens()) {
-				String configFileName = tokenizer.nextToken().trim();
+				String configFileName = tokenizer.nextToken()
+					.trim();
 
 				File file = new File(configFileName);
 				if (file.exists()) {
@@ -117,6 +120,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		}
 	}
 
+	@Override
 	public InputStream connect(URL url) throws Exception {
 		TaggedData data = connectTagged(url, null);
 		if (data == null)
@@ -125,10 +129,12 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		return data.getInputStream();
 	}
 
+	@Override
 	public TaggedData connectTagged(URL url) throws Exception {
 		return connectTagged(url, null);
 	}
 
+	@Override
 	public TaggedData connectTagged(URL url, String tag) throws Exception {
 		init();
 
@@ -136,7 +142,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 			Matcher matcher = mapping.urlPattern.matcher(url.toString());
 			if (matcher.find()) {
 				logger.debug("Found username {}, password ***** for URL '{}'. Matched on pattern {}={}", mapping.user,
-						url, mapping.name, mapping.urlPattern);
+					url, mapping.name, mapping.urlPattern);
 				return connectTagged(url, tag, mapping.user, mapping.pass);
 			}
 		}

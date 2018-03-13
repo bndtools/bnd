@@ -28,16 +28,19 @@ public interface Resource extends Closeable {
 	ByteBuffer buffer() throws Exception;
 
 	static Resource fromURL(URL url) throws IOException {
-		if (url.getProtocol().equalsIgnoreCase("file")) {
+		if (url.getProtocol()
+			.equalsIgnoreCase("file")) {
 			URI uri = URI.create(url.toExternalForm());
 			Path path = new File(uri.getSchemeSpecificPart()).toPath()
 				.toAbsolutePath();
 			return new FileResource(path);
 		}
-		if (url.getProtocol().equals("jar")) {
+		if (url.getProtocol()
+			.equals("jar")) {
 			JarURLUtil util = new JarURLUtil(url);
 			URL jarFileURL = util.getJarFileURL();
-			if (jarFileURL.getProtocol().equalsIgnoreCase("file")) {
+			if (jarFileURL.getProtocol()
+				.equalsIgnoreCase("file")) {
 				URI uri = URI.create(jarFileURL.toExternalForm());
 				Path path = new File(uri.getSchemeSpecificPart()).toPath()
 					.toAbsolutePath();

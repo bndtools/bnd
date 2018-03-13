@@ -25,7 +25,7 @@ public class HttpRequest<T> {
 	String				verb		= "GET";
 	Object				upload;
 	Type				download;
-	Map<String,String>	headers		= new HashMap<>();
+	Map<String, String>	headers		= new HashMap<>();
 	long				timeout		= -1;
 	HttpClient			client;
 	String				ifNoneMatch;
@@ -143,7 +143,7 @@ public class HttpRequest<T> {
 	/**
 	 * Add headers to request
 	 */
-	public HttpRequest<T> headers(Map<String,String> map) {
+	public HttpRequest<T> headers(Map<String, String> map) {
 		headers.putAll(map);
 		return this;
 	}
@@ -195,20 +195,23 @@ public class HttpRequest<T> {
 
 	public Promise<T> async(URL url) {
 		this.url = url;
-		return client.promiseFactory().submit(() -> (T) client.send(this));
+		return client.promiseFactory()
+			.submit(() -> (T) client.send(this));
 	}
 
 	public Promise<T> async(URI uri) {
 		try {
 			return async(uri.toURL());
 		} catch (MalformedURLException e) {
-			return client.promiseFactory().failed(e);
+			return client.promiseFactory()
+				.failed(e);
 		}
 	}
+
 	@Override
 	public String toString() {
 		return "HttpRequest [verb=" + verb + ", upload=" + upload + ", download=" + download + ", headers=" + headers
-				+ ", timeout=" + timeout + ", client=" + client + ", url=" + url + "]";
+			+ ", timeout=" + timeout + ", client=" + client + ", url=" + url + "]";
 	}
 
 	public HttpRequest<T> ifUnmodifiedSince(long ifNotModifiedSince) {

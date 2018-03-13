@@ -21,9 +21,9 @@ public class UTF8PropertiesTest extends TestCase {
 
 	public void testMissingDelimeterAfterQuotedString() throws IOException {
 		assertError("-foo: bar='abc' ' '    ;", "-foo", 0,
-				"Found a quote ''' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes:");
+			"Found a quote ''' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes:");
 		assertError("-foo: bar='abc', baz='def' goo='hji'", "-foo", 0,
-				"Expected a delimeter, like comma or semicolon, after a quoted string but found 'g':");
+			"Expected a delimeter, like comma or semicolon, after a quoted string but found 'g':");
 		assertError("-foo: bar='abc'                ,   baz='def'", "-foo", 0);
 		assertError("-foo: bar='abc'     ;", "-foo", 0);
 		assertError("-foo: bar='\\'abc\\' foo'     ;", "-foo", 0);
@@ -33,11 +33,11 @@ public class UTF8PropertiesTest extends TestCase {
 	}
 
 	String trickypart = "\u00A0\u00A1\u00A2\u00A3\u00A4\u00A5\u00A6\u00A7\u00A8\u00A9\u00AA\u00AB\u00AC\u00AD\u00AE\u00AF"
-			+ "\u00B0\u00B1\u00B2\u00B3\u00B4\u00B5\u00B6\u00B7\u00B8\u00B9\u00BA\u00BB\u00BC\u00BD\u00BE\u00BF"
-			+ "\u00C0\u00C1\u00C2\u00C3\u00C4\u00C5\u00C6\u00C7\u00C8\u00C9\u00CA\u00CB\u00CC\u00CD\u00CE\u00CF"
-			+ "\u00D0\u00D1\u00D2\u00D3\u00D4\u00D5\u00D6\u00D7\u00D8\u00D9\u00DA\u00DB\u00DC\u00DD\u00DE\u00DF"
-			+ "\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EC\u00ED\u00EE\u00EF"
-			+ "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6\u00F7\u00F8\u00F9\u00FA\u00FB\u00FC\u00FD\u00FE\u00FF";
+		+ "\u00B0\u00B1\u00B2\u00B3\u00B4\u00B5\u00B6\u00B7\u00B8\u00B9\u00BA\u00BB\u00BC\u00BD\u00BE\u00BF"
+		+ "\u00C0\u00C1\u00C2\u00C3\u00C4\u00C5\u00C6\u00C7\u00C8\u00C9\u00CA\u00CB\u00CC\u00CD\u00CE\u00CF"
+		+ "\u00D0\u00D1\u00D2\u00D3\u00D4\u00D5\u00D6\u00D7\u00D8\u00D9\u00DA\u00DB\u00DC\u00DD\u00DE\u00DF"
+		+ "\u00E0\u00E1\u00E2\u00E3\u00E4\u00E5\u00E6\u00E7\u00E8\u00E9\u00EA\u00EB\u00EC\u00ED\u00EE\u00EF"
+		+ "\u00F0\u00F1\u00F2\u00F3\u00F4\u00F5\u00F6\u00F7\u00F8\u00F9\u00FA\u00FB\u00FC\u00FD\u00FE\u00FF";
 
 	/*
 	 * Entries are generally expected to be a single line of the form, one of
@@ -113,9 +113,9 @@ public class UTF8PropertiesTest extends TestCase {
 	 */
 	public void testSpecificationContinutation() throws IOException {
 		testProperty("targetCities=\\\n" //
-				+ "        Detroit,\\\n" //
-				+ "        Chicago,\\\n" //
-				+ "        Los Angeles\n", "targetCities", "Detroit,Chicago,Los Angeles");
+			+ "        Detroit,\\\n" //
+			+ "        Chicago,\\\n" //
+			+ "        Los Angeles\n", "targetCities", "Detroit,Chicago,Los Angeles");
 
 	}
 
@@ -164,7 +164,7 @@ public class UTF8PropertiesTest extends TestCase {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
 		p.load("	-runvm: \n" //
-				+ "#\"-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044\"", null, ra);
+			+ "#\"-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=1044\"", null, ra);
 		assertEquals("", p.get("-runvm"));
 		assertEquals(1, p.size());
 
@@ -218,15 +218,15 @@ public class UTF8PropertiesTest extends TestCase {
 
 	public void testErrorsInParsing() throws IOException {
 		assertError("\n\n\n\n\n\n\n" //
-				+ "a;b=9", "a;b", 7, "Invalid property key: `a;b`:");
+			+ "a;b=9", "a;b", 7, "Invalid property key: `a;b`:");
 		assertError("\n" //
-				+ "a=\\ \n     a;v=4", "a", 1, "Found \\\\<whitespace>", "Invalid property key: `a;v`");
+			+ "a=\\ \n     a;v=4", "a", 1, "Found \\\\<whitespace>", "Invalid property key: `a;v`");
 		assertError("\n\n\n\n\n\n\n" //
-				+ "a", "a", 7, "No value specified for key");
+			+ "a", "a", 7, "No value specified for key");
 		assertError("\npropertyName=property\0Value\n", "propertyName", 1,
-				"Invalid character in properties: 0 at pos 21:");
+			"Invalid character in properties: 0 at pos 21:");
 		assertError("\nproperty\0Name=propertyValue\n", "property?Name", 1,
-				"Invalid character in properties: 0 at pos 8:");
+			"Invalid character in properties: 0 at pos 8:");
 	}
 
 	private void assertError(String string, String key, int line, String... check) throws IOException {
@@ -235,10 +235,13 @@ public class UTF8PropertiesTest extends TestCase {
 		up.load(string, IO.getFile("foo"), ra);
 		assertNotNull("No '" + key + "' property found", up.getProperty(key));
 		if (check.length == 0)
-			assertEquals(0, ra.getErrors().size());
+			assertEquals(0, ra.getErrors()
+				.size());
 		else {
-			assertTrue(ra.getErrors().size() > 0);
-			Location location = ra.getLocation(ra.getErrors().get(0));
+			assertTrue(ra.getErrors()
+				.size() > 0);
+			Location location = ra.getLocation(ra.getErrors()
+				.get(0));
 			assertEquals("Faulty line number", line, location.line);
 		}
 		assertTrue(ra.check(check));

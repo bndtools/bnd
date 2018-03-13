@@ -193,11 +193,14 @@ public class ResourcesTest extends TestCase {
 		p.setProperty("Include-Resource", "/=src/test/activator");
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
-		for (String s : jar.getResources().keySet())
+		for (String s : jar.getResources()
+			.keySet())
 			System.err.println(s);
 		assertNotNull(jar.getResource("Activator.java"));
-		assertEquals(0, bmaker.getErrors().size());
-		assertEquals(0, bmaker.getWarnings().size());
+		assertEquals(0, bmaker.getErrors()
+			.size());
+		assertEquals(0, bmaker.getWarnings()
+			.size());
 	}
 
 	public static void testIncludeResourceDirectivesDefault() throws Exception {
@@ -338,7 +341,7 @@ public class ResourcesTest extends TestCase {
 	public static void testIncludeResourceDirectivesFilterNonRecursive() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource",
-				"TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;recursive:=false");
+			"TargetFolder=testresources/ws/p2/Resources;filter:=re*.txt;recursive:=false");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		Resource r = jar.getResource("TargetFolder/resource3.txt");
@@ -377,7 +380,8 @@ public class ResourcesTest extends TestCase {
 		p.setProperty("Include-Resource", "  ");
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
-		assertEquals(0, jar.getResources().size());
+		assertEquals(0, jar.getResources()
+			.size());
 		assertTrue(bmaker.check("The JAR is empty"));
 	}
 
@@ -388,13 +392,14 @@ public class ResourcesTest extends TestCase {
 		p.setProperty("Include-Resource", "text;literal=TEXT;extra='hello/world;charset=UTF-8'");
 		bmaker.setProperties(p);
 		bmaker.setClasspath(new String[] {
-				"src"
+			"src"
 		});
 		Jar jar = bmaker.build();
 		Resource resource = jar.getResource("text");
 		assertNotNull(resource);
 		byte buffer[] = new byte[BUFFER_SIZE];
-		int size = resource.openInputStream().read(buffer);
+		int size = resource.openInputStream()
+			.read(buffer);
 		String s = new String(buffer, 0, size);
 		assertEquals("TEXT", s);
 		assertEquals("hello/world;charset=UTF-8", resource.getExtra());
@@ -416,7 +421,7 @@ public class ResourcesTest extends TestCase {
 		p.setProperty("Include-Resource", "ondemand.jar");
 		bmaker.setProperties(p);
 		bmaker.setClasspath(new String[] {
-				"bin"
+			"bin"
 		});
 		Jar jar = bmaker.build();
 		Resource resource = jar.getResource("ondemand.jar");
@@ -432,7 +437,7 @@ public class ResourcesTest extends TestCase {
 		b.setProperty("-resourceonly", "true");
 		b.setProperty("Include-Resource", "hello/world/<<EMPTY>>;literal=''");
 		Jar jar = b.build();
-		Map<String,Map<String,Resource>> directories = jar.getDirectories();
+		Map<String, Map<String, Resource>> directories = jar.getDirectories();
 		assertTrue(directories.containsKey("hello/world"));
 		// report(b); //error due to empty literal
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -444,9 +449,13 @@ public class ResourcesTest extends TestCase {
 		boolean hasContent = false;
 		ZipEntry ze = zis.getNextEntry();
 		while (null != ze) {
-			if (ze.getName().equals("hello/world/") && ze.isDirectory())
+			if (ze.getName()
+				.equals("hello/world/") && ze.isDirectory())
 				hasDir = true;
-			if (ze.getName().startsWith("hello/world/") && ze.getName().length() > "hello/world/".length())
+			if (ze.getName()
+				.startsWith("hello/world/")
+				&& ze.getName()
+					.length() > "hello/world/".length())
 				hasContent = true;
 			ze = zis.getNextEntry();
 		}
@@ -472,10 +481,13 @@ public class ResourcesTest extends TestCase {
 		boolean hasContent = false;
 		ZipEntry ze = zis.getNextEntry();
 		while (null != ze) {
-			if (ze.getName().equals("TargetFolder/empty/") && ze.isDirectory())
+			if (ze.getName()
+				.equals("TargetFolder/empty/") && ze.isDirectory())
 				hasDir = true;
-			if (ze.getName().startsWith("TargetFolder/empty/")
-					&& ze.getName().length() > "TargetFolder/empty/".length())
+			if (ze.getName()
+				.startsWith("TargetFolder/empty/")
+				&& ze.getName()
+					.length() > "TargetFolder/empty/".length())
 				hasContent = true;
 			ze = zis.getNextEntry();
 		}
@@ -491,7 +503,8 @@ public class ResourcesTest extends TestCase {
 			b.setProperty("-resourceonly", "true");
 			Jar jar = b.build();
 
-			f.getParentFile().mkdirs();
+			f.getParentFile()
+				.mkdirs();
 			jar.write(f);
 		}
 		URL url = new URL("jar:" + f.toURI() + "!/TargetFolder/resource3.txt");
@@ -505,12 +518,18 @@ public class ResourcesTest extends TestCase {
 
 	static void report(Processor processor) {
 		System.err.println();
-		for (int i = 0; i < processor.getErrors().size(); i++)
-			System.err.println(processor.getErrors().get(i));
-		for (int i = 0; i < processor.getWarnings().size(); i++)
-			System.err.println(processor.getWarnings().get(i));
-		assertEquals(0, processor.getErrors().size());
-		assertEquals(0, processor.getWarnings().size());
+		for (int i = 0; i < processor.getErrors()
+			.size(); i++)
+			System.err.println(processor.getErrors()
+				.get(i));
+		for (int i = 0; i < processor.getWarnings()
+			.size(); i++)
+			System.err.println(processor.getWarnings()
+				.get(i));
+		assertEquals(0, processor.getErrors()
+			.size());
+		assertEquals(0, processor.getWarnings()
+			.size());
 	}
 
 	private static boolean onWindows() {

@@ -76,8 +76,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	private static final Logger	LOGGER					= LoggerFactory.getLogger(AnnotationHeaders.class);
 
-	static final Pattern			SIMPLE_PARAM_PATTERN	= Pattern
-			.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
+	static final Pattern		SIMPLE_PARAM_PATTERN	= Pattern
+		.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
 
 	// Annotations to ignore scanning further because they are known to be
 	// uninteresting
@@ -89,33 +89,34 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	static final Set<String>	DO_NOT_SCAN;
 
 	static {
-		DO_NOT_SCAN = Stream.of("org.osgi.annotation.versioning.ProviderType",
-				"org.osgi.annotation.versioning.ConsumerType", "org.osgi.annotation.versioning.Version")
-				.collect(toSet());
+		DO_NOT_SCAN = Stream
+			.of("org.osgi.annotation.versioning.ProviderType", "org.osgi.annotation.versioning.ConsumerType",
+				"org.osgi.annotation.versioning.Version")
+			.collect(toSet());
 	}
 
 	final Analyzer					analyzer;
-	final Set<String>				interesting				= new HashSet<>();
-	final MultiMap<String,String>	headers					= new MultiMap<>();
+	final Set<String>				interesting			= new HashSet<>();
+	final MultiMap<String, String>	headers				= new MultiMap<>();
 
 	//
 	// Constant Strings for a fast switch statement
 	//
 
-	static final String				BUNDLE_LICENSE			= "aQute.bnd.annotation.headers.BundleLicense";
-	static final String				REQUIRE_CAPABILITY		= "aQute.bnd.annotation.headers.RequireCapability";
-	static final String				PROVIDE_CAPABILITY		= "aQute.bnd.annotation.headers.ProvideCapability";
-	static final String				BUNDLE_CATEGORY			= "aQute.bnd.annotation.headers.BundleCategory";
-	static final String				BUNDLE_DOC_URL			= "aQute.bnd.annotation.headers.BundleDocURL";
-	static final String				BUNDLE_DEVELOPERS		= "aQute.bnd.annotation.headers.BundleDevelopers";
-	static final String				BUNDLE_CONTRIBUTORS		= "aQute.bnd.annotation.headers.BundleContributors";
-	static final String				BUNDLE_COPYRIGHT		= "aQute.bnd.annotation.headers.BundleCopyright";
-	static final String				STD_REQUIREMENT			= "org.osgi.annotation.bundle.Requirement";
-	static final String				STD_REQUIREMENTS		= "org.osgi.annotation.bundle.Requirements";
-	static final String				STD_CAPABILITY			= "org.osgi.annotation.bundle.Capability";
-	static final String				STD_CAPABILITIES		= "org.osgi.annotation.bundle.Capabilities";
-	static final String				STD_HEADER				= "org.osgi.annotation.bundle.Header";
-	static final String				STD_HEADERS				= "org.osgi.annotation.bundle.Headers";
+	static final String				BUNDLE_LICENSE		= "aQute.bnd.annotation.headers.BundleLicense";
+	static final String				REQUIRE_CAPABILITY	= "aQute.bnd.annotation.headers.RequireCapability";
+	static final String				PROVIDE_CAPABILITY	= "aQute.bnd.annotation.headers.ProvideCapability";
+	static final String				BUNDLE_CATEGORY		= "aQute.bnd.annotation.headers.BundleCategory";
+	static final String				BUNDLE_DOC_URL		= "aQute.bnd.annotation.headers.BundleDocURL";
+	static final String				BUNDLE_DEVELOPERS	= "aQute.bnd.annotation.headers.BundleDevelopers";
+	static final String				BUNDLE_CONTRIBUTORS	= "aQute.bnd.annotation.headers.BundleContributors";
+	static final String				BUNDLE_COPYRIGHT	= "aQute.bnd.annotation.headers.BundleCopyright";
+	static final String				STD_REQUIREMENT		= "org.osgi.annotation.bundle.Requirement";
+	static final String				STD_REQUIREMENTS	= "org.osgi.annotation.bundle.Requirements";
+	static final String				STD_CAPABILITY		= "org.osgi.annotation.bundle.Capability";
+	static final String				STD_CAPABILITIES	= "org.osgi.annotation.bundle.Capabilities";
+	static final String				STD_HEADER			= "org.osgi.annotation.bundle.Header";
+	static final String				STD_HEADERS			= "org.osgi.annotation.bundle.Headers";
 
 	// Used to detect attributes and directives on Require-Capability and
 	// Provide-Capability
@@ -127,7 +128,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	// The meta annotations we have processed, used to avoid infinite loops
 	// This Set must be cleared for each #classStart(Clazz)
-	final Set<String>				processed				= new HashSet<>();
+	final Set<String>				processed			= new HashSet<>();
 
 	// The annotations we could not load. used to avoid repeatedly logging the
 	// same missing annotation for the same project. Note that this should not
@@ -182,6 +183,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	/*
 	 * Called when an annotation is found. Dispatch on the known types.
 	 */
+	@Override
 	public void annotation(Annotation annotation) throws Exception {
 		TypeRef name = annotation.getName();
 		String fqn = name.getFQN();
@@ -218,18 +220,19 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				doRequirement(annotation, annotation.getAnnotation(Requirement.class));
 				break;
 			case STD_REQUIREMENTS :
-				Requirement[] requirements = annotation.getAnnotation(Requirements.class).value();
+				Requirement[] requirements = annotation.getAnnotation(Requirements.class)
+					.value();
 				Object[] reqAnnotations = annotation.get("value");
 				for (int i = 0; i < requirements.length; i++) {
 					doRequirement((Annotation) reqAnnotations[i], requirements[i]);
 				}
 				break;
 			case STD_CAPABILITY :
-				doCapability(annotation,
-						annotation.getAnnotation(Capability.class));
+				doCapability(annotation, annotation.getAnnotation(Capability.class));
 				break;
 			case STD_CAPABILITIES :
-				Capability[] capabilities = annotation.getAnnotation(Capabilities.class).value();
+				Capability[] capabilities = annotation.getAnnotation(Capabilities.class)
+					.value();
 				Object[] capAnnotations = annotation.get("value");
 				for (int i = 0; i < capabilities.length; i++) {
 					doCapability((Annotation) capAnnotations[i], capabilities[i]);
@@ -240,7 +243,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				add(header.name(), header.value());
 				break;
 			case STD_HEADERS :
-				for (Header h : annotation.getAnnotation(Headers.class).value()) {
+				for (Header h : annotation.getAnnotation(Headers.class)
+					.value()) {
 					add(h.name(), h.value());
 				}
 				break;
@@ -261,7 +265,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	void doAnnotatedAnnotation(final Annotation annotation, TypeRef name) throws Exception {
 		final String fqn = name.getFQN();
 		if (processed.contains(fqn)) {
-			analyzer.getLogger().debug("Detected an annotation cycle when processing %s. The cycled annotation was %s",
+			analyzer.getLogger()
+				.debug("Detected an annotation cycle when processing %s. The cycled annotation was %s",
 					current.getFQN(), fqn);
 			return;
 		}
@@ -284,10 +289,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			}
 			if (scanThisType) {
 				c.parseClassFileWithCollector(new ClassDataCollector() {
-					private MethodDef			lastMethodSeen;
+					private MethodDef	lastMethodSeen;
 
-					private Attrs	attributesAndDirectives	= new Attrs();
-					
+					private Attrs		attributesAndDirectives	= new Attrs();
+
 					@Override
 					public void annotation(Annotation a) throws Exception {
 						if (STD_ATTRIBUTE.equals(a.getName()
@@ -297,10 +302,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 							handleAttributeOrDirective(a);
 						}
 
-						if (interesting.contains(a.getName().getFQN())) {
-							// Bnd annotations support merging of child properties,
-							// but this is not in the specification as far as I can tell
-							if(isBndAnnotation(a)) {
+						if (interesting.contains(a.getName()
+							.getFQN())) {
+							// Bnd annotations support merging of child
+							// properties,
+							// but this is not in the specification as far as I
+							// can tell
+							if (isBndAnnotation(a)) {
 								a.merge(annotation);
 								a.addDefaults(c);
 							} else if (isRequirementOrCapability(a)) {
@@ -323,10 +331,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 							Stream<String> toAdd = attributesAndDirectives.keySet()
 								.stream()
 								.map(attributesAndDirectives::toString);
-							
+
 							String[] original = a.get("attribute");
 							original = original == null ? new String[0] : original;
-							
+
 							String[] updated = Stream.concat(Arrays.stream(original), toAdd)
 								.collect(Collectors.toList())
 								.toArray(original);
@@ -364,19 +372,21 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				// Only issue a warning if pedantic
 				if (analyzer.isPedantic()) {
 					analyzer.warning(
-							"Unable to determine whether the meta annotation %s applied to type %s provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
-							fqn, current.getFQN());
+						"Unable to determine whether the meta annotation %s applied to type %s provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
+						fqn, current.getFQN());
 				} else {
 					LOGGER.info(
-							"Unable to determine whether the meta annotation {} applied to type {} provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
-							fqn, current.getFQN());
+						"Unable to determine whether the meta annotation {} applied to type {} provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
+						fqn, current.getFQN());
 				}
 			}
 		}
 	}
 
 	private boolean isBndAnnotation(Annotation a) {
-		return a.getName().getFQN().startsWith("aQute.bnd.annotation.headers");
+		return a.getName()
+			.getFQN()
+			.startsWith("aQute.bnd.annotation.headers");
 	}
 
 	private boolean isRequirementOrCapability(Annotation a) {
@@ -390,6 +400,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * Called after the class space has been parsed. We then continue to parse
 	 * the used annotations.
 	 */
+	@Override
 	public void close() throws IOException {}
 
 	/*
@@ -418,7 +429,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			sb.append("'");
 		}
 		if (annotation.timezone() != 0)
-			sb.append(";timezone=").append(annotation.timezone());
+			sb.append(";timezone=")
+				.append(annotation.timezone());
 
 		add(Constants.BUNDLE_DEVELOPERS, sb.toString());
 	}
@@ -450,7 +462,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			sb.append("'");
 		}
 		if (annotation.timezone() != 0)
-			sb.append(";timezone=").append(annotation.timezone());
+			sb.append(";timezone=")
+				.append(annotation.timezone());
 		add(Constants.BUNDLE_CONTRIBUTORS, sb.toString());
 	}
 
@@ -535,7 +548,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	}
 
 	private void replaceParameters(Attrs attrs) throws IllegalArgumentException {
-		for (Entry<String,String> entry : attrs.entrySet()) {
+		for (Entry<String, String> entry : attrs.entrySet()) {
 			boolean modified = false;
 			StringBuffer sb = new StringBuffer();
 
@@ -547,7 +560,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				if (substitution == null) {
 					matcher.appendReplacement(sb, "");
 					sb.append(matcher.group(0));
-				} else if (SIMPLE_PARAM_PATTERN.matcher(substitution).find())
+				} else if (SIMPLE_PARAM_PATTERN.matcher(substitution)
+					.find())
 					throw new IllegalArgumentException("nested substitutions not permitted");
 				else
 					matcher.appendReplacement(sb, substitution);
@@ -583,30 +597,36 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		if (filter.isEmpty()) {
 			analyzer.error(
-					"The Requirement annotation with namespace %s applied to class %s did not define any filter information.",
-					annotation.namespace(), current.getFQN());
+				"The Requirement annotation with namespace %s applied to class %s did not define any filter information.",
+				annotation.namespace(), current.getFQN());
 			return;
 		} else {
-			req.append(";filter:='").append(filter).append('\'');
+			req.append(";filter:='")
+				.append(filter)
+				.append('\'');
 		}
 
-		if (a.keySet().contains("resolution")) {
+		if (a.keySet()
+			.contains("resolution")) {
 			req.append(";resolution:=")
 				.append(annotation.resolution());
 		}
 
-		if (a.keySet().contains("cardinality")) {
+		if (a.keySet()
+			.contains("cardinality")) {
 			req.append(";cardinality:=")
 				.append(annotation.cardinality());
 		}
 
-		if (a.keySet().contains("effective")) {
+		if (a.keySet()
+			.contains("effective")) {
 			req.append(";effective:=");
 			escape(req, annotation.effective());
 		}
 
 		for (String attr : annotation.attribute()) {
-			req.append(';').append(attr);
+			req.append(';')
+				.append(attr);
 		}
 
 		add(Constants.REQUIRE_CAPABILITY, req.toString());
@@ -616,33 +636,47 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		StringBuilder filter = new StringBuilder();
 
 		boolean addAnd = false;
-		if (a.keySet().contains("filter")) {
+		if (a.keySet()
+			.contains("filter")) {
 			filter.append(annotation.filter());
 			addAnd = true;
 		}
 
 		boolean andAdded = false;
-		if (a.keySet().contains("name")) {
-			filter.append('(').append(annotation.namespace()).append('=').append(annotation.name()).append(')');
+		if (a.keySet()
+			.contains("name")) {
+			filter.append('(')
+				.append(annotation.namespace())
+				.append('=')
+				.append(annotation.name())
+				.append(')');
 			if (addAnd) {
-				filter.insert(0, "(&").append(')');
+				filter.insert(0, "(&")
+					.append(')');
 				andAdded = true;
 			}
 			addAnd = true;
 		}
 
-		if (a.keySet().contains("version")) {
+		if (a.keySet()
+			.contains("version")) {
 			Version floor = Version.parseVersion(annotation.version());
 			Version max = new Version(floor.getMajor() + 1);
 
 			int current = filter.lastIndexOf(")");
 
-			filter.append("(&(version>=").append(floor).append(")(!(version>=").append(max).append(")))");
+			filter.append("(&(version>=")
+				.append(floor)
+				.append(")(!(version>=")
+				.append(max)
+				.append(")))");
 
 			if (andAdded) {
-				filter.deleteCharAt(current).append(')');
+				filter.deleteCharAt(current)
+					.append(')');
 			} else if (addAnd) {
-				filter.insert(0, "(&").append(')');
+				filter.insert(0, "(&")
+					.append(')');
 			}
 		}
 		return filter.toString();
@@ -657,32 +691,41 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		cap.append(annotation.namespace());
 
-		if (a.keySet().contains("name")) {
-			cap.append(';').append(annotation.namespace()).append('=').append(annotation.name());
+		if (a.keySet()
+			.contains("name")) {
+			cap.append(';')
+				.append(annotation.namespace())
+				.append('=')
+				.append(annotation.name());
 		}
 
-		if (a.keySet().contains("version")) {
+		if (a.keySet()
+			.contains("version")) {
 			try {
 				Version.parseVersion(annotation.version());
-				cap.append(";version:Version=").append(annotation.version());
+				cap.append(";version:Version=")
+					.append(annotation.version());
 			} catch (Exception e) {
 				analyzer.error("The version declared by the Capability annotation attached to type %s is invalid",
-						current.getFQN());
+					current.getFQN());
 			}
 		}
 
 		for (String attr : annotation.attribute()) {
-			cap.append(';').append(attr);
+			cap.append(';')
+				.append(attr);
 		}
 
 		Arrays.stream(annotation.uses())
-				.map(Class::getPackage)
-				.map(Package::getName)
-				.distinct()
-				.reduce((x, y) -> x + "," + y)
-				.ifPresent(s -> cap.append(";uses:=").append(s));
+			.map(Class::getPackage)
+			.map(Package::getName)
+			.distinct()
+			.reduce((x, y) -> x + "," + y)
+			.ifPresent(s -> cap.append(";uses:=")
+				.append(s));
 
-		if (a.keySet().contains("effective")) {
+		if (a.keySet()
+			.contains("effective")) {
 			cap.append(";effective:=");
 			escape(cap, annotation.effective());
 		}
@@ -727,12 +770,16 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		Processor next = new Processor(analyzer);
 		next.setProperty("@class", current.getFQN());
-		next.setProperty("@class-short", current.getClassName().getShortName());
-		PackageRef pref = current.getClassName().getPackageRef();
+		next.setProperty("@class-short", current.getClassName()
+			.getShortName());
+		PackageRef pref = current.getClassName()
+			.getPackageRef();
 		next.setProperty("@package", pref.getFQN());
-		Attrs info = analyzer.getClasspathExports().get(pref);
+		Attrs info = analyzer.getClasspathExports()
+			.get(pref);
 		if (info == null)
-			info = analyzer.getContained().get(pref);
+			info = analyzer.getContained()
+				.get(pref);
 
 		if (info != null && info.containsKey("version")) {
 			next.setProperty("@version", info.get("version"));

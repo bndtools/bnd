@@ -16,24 +16,26 @@ import aQute.libg.command.Command;
 
 public class JUnitLauncher extends ProjectLauncher {
 	private final static Logger	logger	= LoggerFactory.getLogger(JUnitLauncher.class);
-	boolean					junit4Main;
-	final Project			project;
-	private Classpath		cp;
-	private Command			java;
-	private long			timeout;
+	boolean						junit4Main;
+	final Project				project;
+	private Classpath			cp;
+	private Command				java;
+	private long				timeout;
 	// private boolean trace;
-	private List<String>	fqns	= new ArrayList<>();
+	private List<String>		fqns	= new ArrayList<>();
 
 	public JUnitLauncher(Project project) throws Exception {
 		super(project);
 		this.project = project;
 	}
 
+	@Override
 	public void prepare() throws Exception {
 		Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, "(.*).java"));
 
 		String testDirName = project.getProperty("testsrc", "test");
-		File testSrc = project.getFile(testDirName).getAbsoluteFile();
+		File testSrc = project.getFile(testDirName)
+			.getAbsoluteFile();
 		if (!testSrc.isDirectory()) {
 			logger.debug("no test src directory");
 			return;
@@ -55,6 +57,7 @@ public class JUnitLauncher extends ProjectLauncher {
 		addClasspath(project.getBuildpath());
 	}
 
+	@Override
 	public int launch() throws Exception {
 		java = new Command();
 		java.add(project.getProperty("java", "java"));

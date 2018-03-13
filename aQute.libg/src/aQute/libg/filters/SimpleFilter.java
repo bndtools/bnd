@@ -26,7 +26,9 @@ public final class SimpleFilter extends Filter {
 	@Override
 	public void append(StringBuilder builder) {
 		builder.append('(');
-		builder.append(name).append(operator.getSymbol()).append(value);
+		builder.append(name)
+			.append(operator.getSymbol())
+			.append(value);
 		builder.append(')');
 	}
 

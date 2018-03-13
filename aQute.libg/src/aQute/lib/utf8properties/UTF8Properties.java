@@ -39,7 +39,7 @@ import aQute.service.reporter.Reporter;
  * used.
  */
 public class UTF8Properties extends Properties {
-	private static final long	serialVersionUID	= 1L;
+	private static final long								serialVersionUID	= 1L;
 	private static final List<ThreadLocal<CharsetDecoder>>	decoders			= Collections.unmodifiableList(
 		Arrays.asList(ThreadLocal.withInitial(UTF_8::newDecoder), ThreadLocal.withInitial(ISO_8859_1::newDecoder)));
 
@@ -56,7 +56,7 @@ public class UTF8Properties extends Properties {
 
 	public void load(String source, File file, Reporter reporter) throws IOException {
 		PropertiesParser parser = new PropertiesParser(source, file == null ? null : file.getAbsolutePath(), reporter,
-				this);
+			this);
 		parser.parse();
 	}
 
@@ -81,13 +81,15 @@ public class UTF8Properties extends Properties {
 		CharBuffer cb = CharBuffer.allocate(buffer.length * 4);
 		for (ThreadLocal<CharsetDecoder> tl : decoders) {
 			CharsetDecoder decoder = tl.get();
-			boolean success = !decoder.decode(bb, cb, true).isError();
+			boolean success = !decoder.decode(bb, cb, true)
+				.isError();
 			if (success) {
 				decoder.flush(cb);
 			}
 			decoder.reset();
 			if (success) {
-				return cb.flip().toString();
+				return cb.flip()
+					.toString();
 			}
 			bb.rewind();
 			cb.clear();
@@ -100,7 +102,8 @@ public class UTF8Properties extends Properties {
 		StringWriter sw = new StringWriter();
 		super.store(sw, null);
 
-		String[] lines = sw.toString().split("\n\r?");
+		String[] lines = sw.toString()
+			.split("\n\r?");
 
 		for (String line : lines) {
 			if (line.startsWith("#"))
@@ -116,7 +119,8 @@ public class UTF8Properties extends Properties {
 		StringWriter sw = new StringWriter();
 		super.store(sw, null);
 
-		String[] lines = sw.toString().split("\n\r?");
+		String[] lines = sw.toString()
+			.split("\n\r?");
 
 		for (String line : lines) {
 			if (line.startsWith("#"))
@@ -141,10 +145,11 @@ public class UTF8Properties extends Properties {
 	public UTF8Properties replaceAll(String pattern, String replacement) {
 		UTF8Properties result = new UTF8Properties(defaults);
 		Pattern regex = Pattern.compile(pattern);
-		for (Map.Entry<Object,Object> entry : entrySet()) {
+		for (Map.Entry<Object, Object> entry : entrySet()) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
-			value = regex.matcher(value).replaceAll(replacement);
+			value = regex.matcher(value)
+				.replaceAll(replacement);
 			result.put(key, value);
 		}
 		return result;

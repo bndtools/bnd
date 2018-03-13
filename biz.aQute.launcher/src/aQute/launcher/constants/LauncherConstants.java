@@ -49,9 +49,9 @@ public class LauncherConstants {
 	final static String				LAUNCH_NOTIFICATION_PORT	= "launch.notificationPort";
 
 	public final static String[]	LAUNCHER_PROPERTY_KEYS		= {
-			LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES,
-			LAUNCH_SYSTEMPACKAGES, LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, LAUNCH_TRACE, LAUNCH_TIMEOUT,
-			LAUNCH_ACTIVATORS, LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT
+		LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES, LAUNCH_SYSTEMPACKAGES,
+		LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, LAUNCH_TRACE, LAUNCH_TIMEOUT, LAUNCH_ACTIVATORS,
+		LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT
 	};
 	/**
 	 * The command line arguments of the launcher. Launcher are not supposed to
@@ -70,7 +70,7 @@ public class LauncherConstants {
 	public boolean					trace;
 	public long						timeout;
 	public final List<String>		activators					= new ArrayList<>();
-	public Map<String,String>		runProperties				= new HashMap<>();
+	public Map<String, String>		runProperties				= new HashMap<>();
 	public boolean					embedded					= false;
 	public String					name;
 	public int						notificationPort			= -1;
@@ -98,7 +98,7 @@ public class LauncherConstants {
 
 		p.setProperty(LAUNCH_NOTIFICATION_PORT, String.valueOf(notificationPort));
 
-		for (Map.Entry<String,String> entry : runProperties.entrySet()) {
+		for (Map.Entry<String, String> entry : runProperties.entrySet()) {
 			if (entry.getValue() == null) {
 				if (entry.getKey() != null)
 					p.remove(entry.getKey());
@@ -138,9 +138,9 @@ public class LauncherConstants {
 		name = p.getProperty(LAUNCH_NAME);
 		notificationPort = Integer.valueOf(p.getProperty(LAUNCH_NOTIFICATION_PORT, "-1"));
 		@SuppressWarnings({
-				"unchecked", "rawtypes"
+			"unchecked", "rawtypes"
 		})
-		Map<String,String> map = (Map) p;
+		Map<String, String> map = (Map) p;
 		runProperties.putAll(map);
 	}
 

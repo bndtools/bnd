@@ -14,7 +14,7 @@ import aQute.lib.base64.Base64;
 
 public class MavenPasswordObfuscator {
 	private static final Pattern		DECORATED_PASSWORD_P	= Pattern.compile(
-			"\\{\\s*(?<expr>(?:[a-z0-9+/]{4})*(?:[a-z0-9+/]{2}==|[a-z0-9+/]{3}=)?)\\s*\\}", Pattern.CASE_INSENSITIVE);
+		"\\{\\s*(?<expr>(?:[a-z0-9+/]{4})*(?:[a-z0-9+/]{2}==|[a-z0-9+/]{3}=)?)\\s*\\}", Pattern.CASE_INSENSITIVE);
 
 	private static final int			SALT_SIZE				= 8;
 	private static final int			CHUNK_SIZE				= 16;
@@ -85,7 +85,8 @@ public class MavenPasswordObfuscator {
 	}
 
 	public static boolean isObfuscatedPassword(String passphrase) {
-		return passphrase != null && DECORATED_PASSWORD_P.matcher(passphrase).matches();
+		return passphrase != null && DECORATED_PASSWORD_P.matcher(passphrase)
+			.matches();
 	}
 
 }

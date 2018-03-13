@@ -27,8 +27,10 @@ public class Instruction {
 			return recursive;
 		}
 
+		@Override
 		public boolean accept(File pathname) {
-			if (doNotCopy != null && doNotCopy.matcher(pathname.getName()).matches()) {
+			if (doNotCopy != null && doNotCopy.matcher(pathname.getName())
+				.matches()) {
 				return false;
 			}
 
@@ -87,7 +89,6 @@ public class Instruction {
 		} else {
 			matchFlags = 0;
 		}
-
 
 		if (s.charAt(start) == '=') {
 			match = s.substring(start + 1, end);

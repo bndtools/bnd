@@ -21,6 +21,7 @@ public class TestForker extends TestCase {
 			this.n = n;
 		}
 
+		@Override
 		public void run() {
 			result.add(n);
 		}
@@ -72,6 +73,7 @@ public class TestForker extends TestCase {
 
 		forker.doWhen(EMPTY, 4, new Runnable() {
 
+			@Override
 			public void run() {
 				synchronized (result) {
 					try {

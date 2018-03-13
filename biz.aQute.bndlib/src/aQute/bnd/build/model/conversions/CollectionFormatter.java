@@ -2,7 +2,7 @@ package aQute.bnd.build.model.conversions;
 
 import java.util.Collection;
 
-public class CollectionFormatter<T> implements Converter<String,Collection< ? extends T>> {
+public class CollectionFormatter<T> implements Converter<String, Collection<? extends T>> {
 
 	private final String						separator;
 	private final Converter<String, ? super T>	itemFormatter;
@@ -28,7 +28,7 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 	}
 
 	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput,
-			String prefix, String suffix) {
+		String prefix, String suffix) {
 		this(separator, itemFormatter, emptyOutput, false, prefix, suffix);
 	}
 
@@ -42,7 +42,7 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 	 * @param suffix Suffix to add at the end of the list
 	 */
 	public CollectionFormatter(String separator, Converter<String, ? super T> itemFormatter, String emptyOutput,
-			boolean leadingSpace, String prefix, String suffix) {
+		boolean leadingSpace, String prefix, String suffix) {
 		this.separator = separator;
 		this.itemFormatter = itemFormatter;
 		this.emptyOutput = emptyOutput;
@@ -51,7 +51,8 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 		this.suffix = suffix;
 	}
 
-	public String convert(Collection< ? extends T> input) throws IllegalArgumentException {
+	@Override
+	public String convert(Collection<? extends T> input) throws IllegalArgumentException {
 		String result = null;
 		if (input != null) {
 			if (input.isEmpty()) {
@@ -62,7 +63,8 @@ public class CollectionFormatter<T> implements Converter<String,Collection< ? ex
 					buffer.append(' ');
 
 				if (input.size() == 1) {
-					T item = input.iterator().next();
+					T item = input.iterator()
+						.next();
 					buffer.append(itemFormatter.convert(item));
 				} else {
 					String del = initial == null ? "" : initial;

@@ -2,8 +2,9 @@ package aQute.p2.api;
 
 import java.net.URI;
 
-import aQute.bnd.util.dto.DTO;
 import org.osgi.framework.Version;
+
+import aQute.bnd.util.dto.DTO;
 
 /**
  * <pre>
@@ -123,7 +124,8 @@ import org.osgi.framework.Version;
  * name='artifact.size'value='1986239'/><property
  * name='download.size'value='1986239'/><property
  * name='download.md5'value='050920369714
- * ab621019f10b321c615a'/></properties></artifact></artifacts></repository></pre>
+ * ab621019f10b321c615a'/></properties></artifact></artifacts></repository>
+ * </pre>
  */
 public class Artifact extends DTO {
 	public String	type	= "osgi.bundle";

@@ -32,7 +32,8 @@ public class Classpath {
 			if (c.getError() != null) {
 				project.error("Adding %s to %s, got error: %s", c, name, c.getError());
 			} else {
-				entries.add(c.getFile().getAbsoluteFile());
+				entries.add(c.getFile()
+					.getAbsoluteFile());
 			}
 		}
 	}
@@ -50,7 +51,8 @@ public class Classpath {
 		try (Analyzer analyzer = new Analyzer()) {
 			for (File f : entries) {
 				try (Jar jar = new Jar(f)) {
-					for (String path : jar.getResources().keySet()) {
+					for (String path : jar.getResources()
+						.keySet()) {
 						if (path.endsWith(".class")) {
 							Resource r = jar.getResource(path);
 							Clazz c = new Clazz(analyzer, path, r);
@@ -63,6 +65,7 @@ public class Classpath {
 		}
 	}
 
+	@Override
 	public String toString() {
 		return Strings.join(File.pathSeparator, entries);
 	}

@@ -54,7 +54,8 @@ public class ProgressWrappingStream extends InputStream {
 				}
 			};
 		} else if (progressPlugins != null && progressPlugins.size() == 1) {
-			task = progressPlugins.get(0).startTask(name, size);
+			task = progressPlugins.get(0)
+				.startTask(name, size);
 		} else {
 			task = new ProgressPlugin.Task() {
 				@Override
@@ -65,7 +66,8 @@ public class ProgressWrappingStream extends InputStream {
 
 				@Override
 				public boolean isCanceled() {
-					return Thread.currentThread().isInterrupted();
+					return Thread.currentThread()
+						.isInterrupted();
 				}
 			};
 		}

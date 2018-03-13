@@ -46,7 +46,7 @@ import biz.aQute.resolve.ResolverValidator.Resolution;
 public class ResolveCommand extends Processor {
 	private final static Logger	logger	= LoggerFactory.getLogger(ResolveCommand.class);
 
-	private bnd bnd;
+	private bnd					bnd;
 
 	public ResolveCommand(bnd bnd) {
 		super(bnd);
@@ -76,7 +76,7 @@ public class ResolveCommand extends Processor {
 			bnd.out.println("Resolved " + run);
 			for (Container c : pr.getRunBundles()) {
 				bnd.out.printf("%-30s %-20s %-6s %s\n", c.getBundleSymbolicName(), c.getVersion(), c.getType(),
-						c.getFile());
+					c.getFile());
 			}
 
 		}
@@ -104,7 +104,8 @@ public class ResolveCommand extends Processor {
 		FilterParser p = new FilterParser();
 
 		if (r != null) {
-			List<Requirement> requirements = resource.getResource().getRequirements(null);
+			List<Requirement> requirements = resource.getResource()
+				.getRequirements(null);
 			if (!requirements.isEmpty()) {
 				bnd.out.println("Requirements:");
 				for (Requirement req : requirements) {
@@ -112,17 +113,18 @@ public class ResolveCommand extends Processor {
 					bnd.out.printf("  %-20s %s\n", req.getNamespace(), parse);
 				}
 			}
-			List<Capability> capabilities = resource.getResource().getCapabilities(null);
+			List<Capability> capabilities = resource.getResource()
+				.getCapabilities(null);
 			if (!capabilities.isEmpty()) {
 				bnd.out.println("Capabilities:");
 				for (Capability cap : capabilities) {
-					Map<String,Object> attrs = new HashMap<>(cap.getAttributes());
+					Map<String, Object> attrs = new HashMap<>(cap.getAttributes());
 					Object id = attrs.remove(cap.getNamespace());
 					Object vv = attrs.remove("version");
 					if (vv == null)
 						vv = attrs.remove("bundle-version");
 					bnd.out.printf("  %-20s %-40s %-20s attrs=%s dirs=%s\n", cap.getNamespace(), id, vv, attrs,
-							cap.getDirectives());
+						cap.getDirectives());
 				}
 			}
 		}
@@ -148,7 +150,7 @@ public class ResolveCommand extends Processor {
 	 */
 
 	@Arguments(arg = {
-			"index-path"
+		"index-path"
 	})
 	interface ValidateOptions extends Options {
 		@Description("Specify the execution environment used as part of the base, default is JavaSE_1_8")
@@ -177,7 +179,8 @@ public class ResolveCommand extends Processor {
 
 		system.addEE(options.ee(EE.JavaSE_1_8));
 		if (options.core() != null)
-			system.addManifest(options.core().getManifest());
+			system.addManifest(options.core()
+				.getManifest());
 
 		if (options.packages() != null)
 			system.addExportPackages(options.packages());
@@ -210,7 +213,7 @@ public class ResolveCommand extends Processor {
 		for (Resolution res : result) {
 			if (options.all()) {
 				bnd.out.format("%s %-60s%n", res.succeeded ? "OK" : "**", res.resource,
-						res.message == null ? "" : res.message);
+					res.message == null ? "" : res.message);
 			}
 			if (!res.succeeded) {
 				for (Requirement req : res.missing) {
@@ -238,8 +241,8 @@ public class ResolveCommand extends Processor {
 
 	}
 
-	private static final Converter<String,Collection< ? extends HeaderClause>> runbundlesFormatter = new CollectionFormatter<>(
-			"\n  ", new HeaderClauseFormatter(), "", "  ", "");
+	private static final Converter<String, Collection<? extends HeaderClause>> runbundlesFormatter = new CollectionFormatter<>(
+		"\n  ", new HeaderClauseFormatter(), "", "  ", "");
 
 	@Arguments(arg = "<path>...")
 	interface ResolveOptions extends Options {

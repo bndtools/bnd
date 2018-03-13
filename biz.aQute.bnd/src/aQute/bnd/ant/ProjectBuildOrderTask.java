@@ -68,7 +68,8 @@ public class ProjectBuildOrderTask extends BaseTask {
 			for (Project project : projects) {
 				sb.append(sep);
 				if (fullpath) {
-					sb.append(project.getBase().getAbsolutePath());
+					sb.append(project.getBase()
+						.getAbsolutePath());
 				} else {
 					sb.append(project.getName());
 				}

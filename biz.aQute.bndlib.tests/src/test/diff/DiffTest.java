@@ -28,8 +28,10 @@ public class DiffTest extends TestCase {
 		show(diff, 2);
 
 		assertEquals(Delta.UNCHANGED, diff.getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("<init>()").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("putAll(java.util.List)").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("<init>()")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("putAll(java.util.List)")
+			.getDelta());
 	}
 
 	private Tree make(File file) throws Exception {
@@ -38,7 +40,10 @@ public class DiffTest extends TestCase {
 		b.setProperty("Export-Package", "*");
 		b.build();
 		assertTrue(b.check());
-		return differ.tree(b).get("<api>").get("a").get("a.clazzA");
+		return differ.tree(b)
+			.get("<api>")
+			.get("a")
+			.get("a.clazzA");
 	}
 
 	/**
@@ -55,8 +60,12 @@ public class DiffTest extends TestCase {
 		assertTrue(b.check());
 
 		Jar newer = b.getJar();
-		Tree newerTree = differ.tree(newer).get("<api>").get("test.api");
-		Tree olderTree = differ.tree(older).get("<api>").get("test.api");
+		Tree newerTree = differ.tree(newer)
+			.get("<api>")
+			.get("test.api");
+		Tree olderTree = differ.tree(older)
+			.get("<api>")
+			.get("test.api");
 		Diff treeDiff = newerTree.diff(olderTree);
 
 		show(treeDiff, 2);
@@ -65,32 +74,64 @@ public class DiffTest extends TestCase {
 
 		Diff diff = treeDiff.get("test.api.Interf");
 		assertEquals(Delta.MAJOR, diff.getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("abstract").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("foo()").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("foo()").get("abstract").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("foo()").get("java.util.Collection").getDelta());
-		assertEquals(Delta.MAJOR, diff.get("foo(java.lang.Object)").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("foo(java.lang.Object)").get("abstract").getDelta());
-		assertEquals(Delta.REMOVED, diff.get("foo(java.lang.Object)").get("java.lang.Object").getDelta());
-		assertEquals(Delta.ADDED, diff.get("foo(java.lang.Object)").get("java.util.List").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("fooInt()").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("fooInt()").get("int").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("fooString()").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("fooString()").get("java.lang.String").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("foo(java.util.List)").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("foo(java.util.List)").get("void").getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("abstract")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo()")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo()")
+			.get("abstract")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo()")
+			.get("java.util.Collection")
+			.getDelta());
+		assertEquals(Delta.MAJOR, diff.get("foo(java.lang.Object)")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo(java.lang.Object)")
+			.get("abstract")
+			.getDelta());
+		assertEquals(Delta.REMOVED, diff.get("foo(java.lang.Object)")
+			.get("java.lang.Object")
+			.getDelta());
+		assertEquals(Delta.ADDED, diff.get("foo(java.lang.Object)")
+			.get("java.util.List")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("fooInt()")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("fooInt()")
+			.get("int")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("fooString()")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("fooString()")
+			.get("java.lang.String")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo(java.util.List)")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("foo(java.util.List)")
+			.get("void")
+			.getDelta());
 
 		diff = treeDiff.get("test.api.A");
 		assertEquals(Delta.MINOR, diff.getDelta());
-		assertEquals(Delta.ADDED, diff.get("n").getDelta());
-		assertEquals(Delta.ADDED, diff.get("n").get("static").getDelta());
-		assertEquals(Delta.ADDED, diff.get("n").get("int").getDelta());
+		assertEquals(Delta.ADDED, diff.get("n")
+			.getDelta());
+		assertEquals(Delta.ADDED, diff.get("n")
+			.get("static")
+			.getDelta());
+		assertEquals(Delta.ADDED, diff.get("n")
+			.get("int")
+			.getDelta());
 
 		diff = treeDiff.get("test.api.C");
 		assertEquals(Delta.MAJOR, diff.getDelta());
-		assertEquals(Delta.MAJOR, diff.get("s").getDelta());
-		assertEquals(Delta.ADDED, diff.get("s").get("int").getDelta());
-		assertEquals(Delta.REMOVED, diff.get("s").get("java.lang.String").getDelta());
+		assertEquals(Delta.MAJOR, diff.get("s")
+			.getDelta());
+		assertEquals(Delta.ADDED, diff.get("s")
+			.get("int")
+			.getDelta());
+		assertEquals(Delta.REMOVED, diff.get("s")
+			.get("java.lang.String")
+			.getDelta());
 
 		b.close();
 	}
@@ -109,7 +150,9 @@ public class DiffTest extends TestCase {
 		DiffPluginImpl differ = new DiffPluginImpl();
 		Baseline baseline = new Baseline(processor, differ);
 
-		Info info = baseline.baseline(newer, older, null).iterator().next();
+		Info info = baseline.baseline(newer, older, null)
+			.iterator()
+			.next();
 
 		Diff field = info.packageDiff.get("test.api.B");
 		show(field, 2);
@@ -126,7 +169,8 @@ public class DiffTest extends TestCase {
 		Tree newer = differ.tree(b);
 		System.out.println(newer.get("<api>"));
 		Tree older = differ.tree(b);
-		assertTrue(newer.diff(older).getDelta() == Delta.UNCHANGED);
+		assertTrue(newer.diff(older)
+			.getDelta() == Delta.UNCHANGED);
 	}
 
 	/**
@@ -216,7 +260,9 @@ public class DiffTest extends TestCase {
 
 	public void testAwtGeom() throws Exception {
 		Tree newer = differ.tree(IO.getFile("jar/ee.j2se-1.6.0.jar"));
-		Tree gp = newer.get("<api>").get("java.awt.geom").get("java.awt.geom.GeneralPath");
+		Tree gp = newer.get("<api>")
+			.get("java.awt.geom")
+			.get("java.awt.geom.GeneralPath");
 		assertNotNull(gp);
 		show(gp, 0);
 	}
@@ -257,7 +303,8 @@ public class DiffTest extends TestCase {
 		System.out.println(older);
 
 		Diff diff = newer.diff(older);
-		Diff p = diff.get("<api>").get("test.diff");
+		Diff p = diff.get("<api>")
+			.get("test.diff");
 		assertTrue(p.getDelta() == Delta.UNCHANGED);
 		show(p, 0);
 		Diff c = p.get("test.diff.DiffTest$I");
@@ -288,10 +335,11 @@ public class DiffTest extends TestCase {
 
 		DiffPluginImpl differ = new DiffPluginImpl();
 		differ.setIgnore(
-				"Bundle-Copyright,Bundle-Description,Bundle-License,Bundle-Name,bundle-manifestversion,Export-Package,Import-Package,Bundle-Vendor,Bundle-Version");
+			"Bundle-Copyright,Bundle-Description,Bundle-License,Bundle-Name,bundle-manifestversion,Export-Package,Import-Package,Bundle-Vendor,Bundle-Version");
 		Tree newer = differ.tree(new Jar(IO.getFile("jar/osgi.core-4.3.0.jar")));
 		Tree older = differ.tree(new Jar(IO.getFile("jar/osgi.core.jar"))); // 4.2
-		Diff diff = newer.get("<manifest>").diff(older.get("<manifest>"));
+		Diff diff = newer.get("<manifest>")
+			.diff(older.get("<manifest>"));
 
 		show(diff, 0);
 		assertEquals(Delta.UNCHANGED, diff.getDelta());

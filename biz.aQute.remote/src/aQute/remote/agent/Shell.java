@@ -39,10 +39,12 @@ public class Shell extends RedirectInput {
 		this.out.flush();
 	}
 
+	@Override
 	public void close() {
 
 	}
 
+	@Override
 	public synchronized void add(String s) throws IOException {
 		if (running)
 			super.add(s);

@@ -84,9 +84,9 @@ import aQute.libg.generics.Create;
 class JavaElement {
 	final static EnumSet<Type>			INHERITED			= EnumSet.of(FIELD, METHOD, EXTENDS, IMPLEMENTS);
 	private static final Element		PROTECTED			= new Element(ACCESS, "protected", null, MAJOR, MINOR,
-			null);
+		null);
 	private static final Element		PROTECTED_PROVIDER	= new Element(ACCESS, "protected", null, MINOR, MINOR,
-			null);
+		null);
 	private static final Element		STATIC				= new Element(ACCESS, "static", null, MAJOR, MAJOR, null);
 	private static final Element		ABSTRACT			= new Element(ACCESS, "abstract", null, MAJOR, MINOR, null);
 	private static final Element		FINAL				= new Element(ACCESS, "final", null, MAJOR, MINOR, null);
@@ -103,11 +103,11 @@ class JavaElement {
 	static final Element				OBJECT_R			= new Element(RETURN, "java.lang.Object");
 
 	final Analyzer						analyzer;
-	final Map<PackageRef,Instructions>	providerMatcher	= Create.map();
-	final Set<TypeRef>					notAccessible	= Create.set();
-	final Map<Object,Element>			cache			= Create.map();
-	final MultiMap<PackageRef,Element>	packages;
-	final Set<JAVA>						javas			= Create.set();
+	final Map<PackageRef, Instructions>	providerMatcher		= Create.map();
+	final Set<TypeRef>					notAccessible		= Create.set();
+	final Map<Object, Element>			cache				= Create.map();
+	final MultiMap<PackageRef, Element>	packages;
+	final Set<JAVA>						javas				= Create.set();
 	final Packages						exports;
 
 	/**
@@ -120,11 +120,14 @@ class JavaElement {
 	JavaElement(Analyzer analyzer) throws Exception {
 		this.analyzer = analyzer;
 
-		Manifest manifest = analyzer.getJar().getManifest();
-		if (manifest != null && manifest.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION) != null) {
+		Manifest manifest = analyzer.getJar()
+			.getManifest();
+		if (manifest != null && manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_MANIFESTVERSION) != null) {
 			exports = new Packages();
-			for (Map.Entry<String,Attrs> entry : OSGiHeader
-					.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE)).entrySet())
+			for (Map.Entry<String, Attrs> entry : OSGiHeader.parseHeader(manifest.getMainAttributes()
+				.getValue(Constants.EXPORT_PACKAGE))
+				.entrySet())
 				exports.put(analyzer.getPackageRef(entry.getKey()), entry.getValue());
 		} else
 			exports = analyzer.getContained();
@@ -134,8 +137,9 @@ class JavaElement {
 		// out who the providers and consumers are
 		//
 
-		for (Entry<PackageRef,Attrs> entry : exports.entrySet()) {
-			String value = entry.getValue().get(Constants.PROVIDER_TYPE_DIRECTIVE);
+		for (Entry<PackageRef, Attrs> entry : exports.entrySet()) {
+			String value = entry.getValue()
+				.get(Constants.PROVIDER_TYPE_DIRECTIVE);
 			if (value != null) {
 				providerMatcher.put(entry.getKey(), new Instructions(value));
 			}
@@ -147,13 +151,15 @@ class JavaElement {
 
 		packages = new MultiMap<>();
 
-		for (Clazz c : analyzer.getClassspace().values()) {
+		for (Clazz c : analyzer.getClassspace()
+			.values()) {
 
 			if (c.isSynthetic())
 				continue;
 
 			if (c.isPublic() || c.isProtected()) {
-				PackageRef packageName = c.getClassName().getPackageRef();
+				PackageRef packageName = c.getClassName()
+					.getPackageRef();
 
 				if (exports.containsKey(packageName)) {
 					Element cdef = classElement(c);
@@ -173,15 +179,17 @@ class JavaElement {
 	private Element getLocalAPI() throws Exception {
 		Set<Element> result = new HashSet<>();
 
-		for (Map.Entry<PackageRef,List<Element>> entry : packages.entrySet()) {
+		for (Map.Entry<PackageRef, List<Element>> entry : packages.entrySet()) {
 			List<Element> set = entry.getValue();
 			set.removeIf(element -> notAccessible.contains(analyzer.getTypeRefFromFQN(element.getName())));
-			String version = exports.get(entry.getKey()).get(Constants.VERSION_ATTRIBUTE);
+			String version = exports.get(entry.getKey())
+				.get(Constants.VERSION_ATTRIBUTE);
 			if (version != null) {
 				Version v = new Version(version);
 				set.add(new Element(VERSION, v.toStringWithoutQualifier(), null, IGNORED, IGNORED, null));
 			}
-			Element pd = new Element(PACKAGE, entry.getKey().getFQN(), set, MINOR, MAJOR, null);
+			Element pd = new Element(PACKAGE, entry.getKey()
+				.getFQN(), set, MINOR, MAJOR, null);
 			result.add(pd);
 		}
 
@@ -211,7 +219,7 @@ class JavaElement {
 		final Set<Element> members = Create.set();
 		final Set<MethodDef> methods = Create.set();
 		final Set<Clazz.FieldDef> fields = Create.set();
-		final MultiMap<Clazz.Def,Element> annotations = new MultiMap<>();
+		final MultiMap<Clazz.Def, Element> annotations = new MultiMap<>();
 
 		final TypeRef name = clazz.getClassName();
 
@@ -320,8 +328,8 @@ class JavaElement {
 								String n = child.getName();
 								if (child.type == METHOD) {
 									if (n.startsWith("<init>") || "getClass()".equals(child.getName())
-											|| n.startsWith("wait(") || n.startsWith("notify(")
-											|| n.startsWith("notifyAll("))
+										|| n.startsWith("wait(") || n.startsWith("notify(")
+										|| n.startsWith("notifyAll("))
 										continue;
 								}
 								if (isStatic(child))
@@ -374,7 +382,9 @@ class JavaElement {
 			 */
 			@Override
 			public void annotation(Annotation annotation) {
-				if (Deprecated.class.getName().equals(annotation.getName().getFQN())) {
+				if (Deprecated.class.getName()
+					.equals(annotation.getName()
+						.getFQN())) {
 					if (memberEnd)
 						clazz.setDeprecated(true);
 					else if (last != null)
@@ -391,12 +401,13 @@ class JavaElement {
 					// these are not officially
 					// released yet
 					//
-					String name = annotation.getName().getFQN();
+					String name = annotation.getName()
+						.getFQN();
 					if ("aQute.bnd.annotation.ProviderType".equals(name)
-							|| "org.osgi.annotation.versioning.ProviderType".equals(name)) {
+						|| "org.osgi.annotation.versioning.ProviderType".equals(name)) {
 						provider.set(true);
 					} else if ("aQute.bnd.annotation.ConsumerType".equals(name)
-							|| "org.osgi.annotation.versioning.ConsumerType".equals(name)) {
+						|| "org.osgi.annotation.versioning.ConsumerType".equals(name)) {
 						provider.set(false);
 					}
 				} else if (last != null)
@@ -412,7 +423,8 @@ class JavaElement {
 				for (String key : annotation.keySet()) {
 					addAnnotationMember(properties, key, annotation.get(key));
 				}
-				return new Element(ANNOTATED, annotation.getName().getFQN(), properties, CHANGED, CHANGED, null);
+				return new Element(ANNOTATED, annotation.getName()
+					.getFQN(), properties, CHANGED, CHANGED, null);
 			}
 
 			/*
@@ -424,7 +436,8 @@ class JavaElement {
 			private void addAnnotationMember(Collection<Element> properties, String key, Object member) {
 				if (member instanceof Annotation) {
 					properties.add(annotatedToElement((Annotation) member));
-				} else if (member.getClass().isArray()) {
+				} else if (member.getClass()
+					.isArray()) {
 					int l = Array.getLength(member);
 					for (int i = 0; i < l; i++) {
 						addAnnotationMember(properties, key + "." + i, Array.get(member, i));
@@ -446,7 +459,7 @@ class JavaElement {
 
 			@Override
 			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags)
-					throws Exception {
+				throws Exception {
 				Clazz clazz = analyzer.findClass(innerClass);
 				if (clazz != null)
 					clazz.setInnerAccess(innerClassAccessFlags);
@@ -555,7 +568,7 @@ class JavaElement {
 
 			String signature = m.getName() + toString(m.getPrototype());
 			Element member = new Element(METHOD, signature, children, add,
-					provider.get() && !m.isPublic() ? MINOR : remove, null);
+				provider.get() && !m.isPublic() ? MINOR : remove, null);
 
 			if (!members.add(member)) {
 				members.remove(member);
@@ -573,13 +586,14 @@ class JavaElement {
 
 			// Fields can have a constant value, this is a new element
 			if (f.getConstant() != null) {
-				children.add(new Element(CONSTANT, f.getConstant().toString(), null, CHANGED, CHANGED, null));
+				children.add(new Element(CONSTANT, f.getConstant()
+					.toString(), null, CHANGED, CHANGED, null));
 			}
 
 			access(children, f.getAccess(), f.isDeprecated(), provider.get());
 			children.add(getReturn(f.getType()));
 			Element member = new Element(FIELD, f.getName(), children, MINOR,
-					provider.get() && !f.isPublic() ? MINOR : MAJOR, null);
+				provider.get() && !f.isPublic() ? MINOR : MAJOR, null);
 
 			if (!members.add(member)) {
 				members.remove(member);
@@ -612,7 +626,8 @@ class JavaElement {
 		if (!type.isPrimitive()) {
 			return type.isObject() ? OBJECT_R : new Element(RETURN, type.getFQN());
 		}
-		switch (type.getBinary().charAt(0)) {
+		switch (type.getBinary()
+			.charAt(0)) {
 			case 'V' :
 				return VOID_R;
 			case 'Z' :
@@ -637,7 +652,7 @@ class JavaElement {
 	}
 
 	private static void access(Collection<Element> children, int access, @SuppressWarnings("unused") boolean deprecated,
-			boolean provider) {
+		boolean provider) {
 		if (!Modifier.isPublic(access))
 			children.add(provider ? PROTECTED_PROVIDER : PROTECTED);
 		if (Modifier.isAbstract(access))

@@ -23,8 +23,12 @@ public class Referral {
 		StringBuilder builder = new StringBuilder();
 		builder.append("Referral [");
 		if (url != null)
-			builder.append("url=").append(url).append(", ");
-		builder.append("depth=").append(depth).append(", ");
+			builder.append("url=")
+				.append(url)
+				.append(", ");
+		builder.append("depth=")
+			.append(depth)
+			.append(", ");
 		return builder.toString();
 	}
 

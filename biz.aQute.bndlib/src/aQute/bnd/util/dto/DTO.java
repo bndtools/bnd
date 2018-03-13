@@ -65,11 +65,12 @@ public abstract class DTO {
 	 * @param dto The DTO whose string representation is to be appended.
 	 * @return The specified StringBuilder.
 	 */
-	private static StringBuilder appendDTO(final StringBuilder result, final Map<Object,String> objectRefs,
-			final String refpath, final DTO dto) {
+	private static StringBuilder appendDTO(final StringBuilder result, final Map<Object, String> objectRefs,
+		final String refpath, final DTO dto) {
 		result.append("{");
 		String delim = "";
-		for (Field field : dto.getClass().getFields()) {
+		for (Field field : dto.getClass()
+			.getFields()) {
 			if (Modifier.isStatic(field.getModifiers())) {
 				continue;
 			}
@@ -105,8 +106,8 @@ public abstract class DTO {
 	 * @param value The object whose string representation is to be appended.
 	 * @return The specified StringBuilder.
 	 */
-	private static StringBuilder appendValue(final StringBuilder result, final Map<Object,String> objectRefs,
-			final String refpath, final Object value) {
+	private static StringBuilder appendValue(final StringBuilder result, final Map<Object, String> objectRefs,
+		final String refpath, final Object value) {
 		if (value == null) {
 			return result.append("null");
 		}
@@ -132,12 +133,13 @@ public abstract class DTO {
 			return appendDTO(result, objectRefs, refpath, (DTO) value);
 		}
 		if (value instanceof Map) {
-			return appendMap(result, objectRefs, refpath, (Map< ? , ? >) value);
+			return appendMap(result, objectRefs, refpath, (Map<?, ?>) value);
 		}
 		if (value instanceof List || value instanceof Set) {
-			return appendIterable(result, objectRefs, refpath, (Iterable< ? >) value);
+			return appendIterable(result, objectRefs, refpath, (Iterable<?>) value);
 		}
-		if (value.getClass().isArray()) {
+		if (value.getClass()
+			.isArray()) {
 			return appendArray(result, objectRefs, refpath, value);
 		}
 		return appendString(result, compress(value.toString()));
@@ -154,8 +156,8 @@ public abstract class DTO {
 	 * @param array The array whose string representation is to be appended.
 	 * @return The specified StringBuilder.
 	 */
-	private static StringBuilder appendArray(final StringBuilder result, final Map<Object,String> objectRefs,
-			final String refpath, final Object array) {
+	private static StringBuilder appendArray(final StringBuilder result, final Map<Object, String> objectRefs,
+		final String refpath, final Object array) {
 		result.append("[");
 		final int length = Array.getLength(array);
 		for (int i = 0; i < length; i++) {
@@ -180,8 +182,8 @@ public abstract class DTO {
 	 *            appended.
 	 * @return The specified StringBuilder.
 	 */
-	private static StringBuilder appendIterable(final StringBuilder result, final Map<Object,String> objectRefs,
-			final String refpath, final Iterable< ? > iterable) {
+	private static StringBuilder appendIterable(final StringBuilder result, final Map<Object, String> objectRefs,
+		final String refpath, final Iterable<?> iterable) {
 		result.append("[");
 		int i = 0;
 		for (Object item : iterable) {
@@ -206,11 +208,11 @@ public abstract class DTO {
 	 * @param map The map whose string representation is to be appended.
 	 * @return The specified StringBuilder.
 	 */
-	private static StringBuilder appendMap(final StringBuilder result, final Map<Object,String> objectRefs,
-			final String refpath, final Map< ? , ? > map) {
+	private static StringBuilder appendMap(final StringBuilder result, final Map<Object, String> objectRefs,
+		final String refpath, final Map<?, ?> map) {
 		result.append("{");
 		String delim = "";
-		for (Map.Entry< ? , ? > entry : map.entrySet()) {
+		for (Map.Entry<?, ?> entry : map.entrySet()) {
 			result.append(delim);
 			final String name = String.valueOf(entry.getKey());
 			appendString(result, name);

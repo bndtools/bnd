@@ -12,9 +12,11 @@ import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.MakePlugin;
+
 public class MakeCopy implements MakePlugin {
 
-	public Resource make(Builder builder, String destination, Map<String,String> argumentsOnMake) throws Exception {
+	@Override
+	public Resource make(Builder builder, String destination, Map<String, String> argumentsOnMake) throws Exception {
 		String type = argumentsOnMake.get("type");
 		if (!type.equals("copy"))
 			return null;

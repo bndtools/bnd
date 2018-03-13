@@ -16,7 +16,7 @@ public class AggregateRepository extends BaseRepository {
 
 	private final Repository repositories[];
 
-	public AggregateRepository(Collection< ? extends Repository> repositories) {
+	public AggregateRepository(Collection<? extends Repository> repositories) {
 		this(repositories.toArray(new Repository[0]));
 	}
 
@@ -26,14 +26,14 @@ public class AggregateRepository extends BaseRepository {
 	}
 
 	@SuppressWarnings({
-			"unchecked", "rawtypes"
+		"unchecked", "rawtypes"
 	})
 	@Override
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		MultiMap<Requirement,Capability> result = new MultiMap<>();
+	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
+		MultiMap<Requirement, Capability> result = new MultiMap<>();
 
 		for (Repository repository : repositories) {
-			Map<Requirement,Collection<Capability>> capabilities = repository.findProviders(requirements);
+			Map<Requirement, Collection<Capability>> capabilities = repository.findProviders(requirements);
 			result.addAll(capabilities);
 		}
 

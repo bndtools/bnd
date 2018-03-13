@@ -19,11 +19,11 @@ public class ExtList<T> extends ArrayList<T> {
 		super(size);
 	}
 
-	public ExtList(Collection< ? extends T> col) {
+	public ExtList(Collection<? extends T> col) {
 		super(col);
 	}
 
-	public ExtList(Iterable< ? extends T> col) {
+	public ExtList(Iterable<? extends T> col) {
 		for (T t : col)
 			add(t);
 	}

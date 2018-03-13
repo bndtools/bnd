@@ -12,11 +12,11 @@ import java.util.Set;
 
 public class Create {
 
-	public static <K, V> Map<K,V> map() {
+	public static <K, V> Map<K, V> map() {
 		return new LinkedHashMap<>();
 	}
 
-	public static <K, V> Map<K,V> map(Class<K> key, Class<V> value) {
+	public static <K, V> Map<K, V> map(Class<K> key, Class<V> value) {
 		return Collections.checkedMap(new LinkedHashMap<>(), key, value);
 	}
 
@@ -46,7 +46,7 @@ public class Create {
 		return new LinkedHashSet<>(Arrays.asList(source));
 	}
 
-	public static <K, V> Map<K,V> copy(Map<K,V> source) {
+	public static <K, V> Map<K, V> copy(Map<K, V> source) {
 		return new LinkedHashMap<>(source);
 	}
 

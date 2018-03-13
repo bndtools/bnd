@@ -51,6 +51,7 @@ public class HttpClientCacheTest extends TestCase {
 		}
 	}
 
+	@Override
 	public void setUp() throws Exception {
 		IO.delete(tmp);
 		tmp.mkdirs();
@@ -60,6 +61,7 @@ public class HttpClientCacheTest extends TestCase {
 		httpServer.start();
 	}
 
+	@Override
 	public void tearDown() {
 		IO.delete(tmp);
 	}
@@ -72,7 +74,9 @@ public class HttpClientCacheTest extends TestCase {
 			// Set a tag, but it must always fetch the file
 
 			etag = "1234";
-			File go1 = client.build().useCache().go(new URI(httpServer.getBaseURI() + "/testetag"));
+			File go1 = client.build()
+				.useCache()
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertTrue(go1.isFile());
 			assertEquals("1234", IO.collect(go1));
 
@@ -80,7 +84,9 @@ public class HttpClientCacheTest extends TestCase {
 
 			go1.setLastModified(1000);
 
-			File go2 = client.build().useCache().go(new URI(httpServer.getBaseURI() + "/testetag"));
+			File go2 = client.build()
+				.useCache()
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertEquals(go1, go2);
 			assertEquals("1234", IO.collect(go1));
 			assertEquals(1000, go2.lastModified());
@@ -91,13 +97,17 @@ public class HttpClientCacheTest extends TestCase {
 			etag = "5678";
 			go1.setLastModified(System.currentTimeMillis());
 
-			File go3 = client.build().useCache(10000).go(new URI(httpServer.getBaseURI() + "/testetag"));
+			File go3 = client.build()
+				.useCache(10000)
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertEquals(go1, go3);
 			assertEquals("1234", IO.collect(go3));
 
 			// We have a stale copy, see if we fetch a new copy
 
-			File go4 = client.build().useCache().go(new URI(httpServer.getBaseURI() + "/testetag"));
+			File go4 = client.build()
+				.useCache()
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertEquals(go1, go4);
 			assertEquals("5678", IO.collect(go3));
 		}
@@ -120,30 +130,51 @@ public class HttpClientCacheTest extends TestCase {
 			//
 
 			assertFalse("File should not exist", t1.isFile());
-			TaggedData tag = client.build().useCache(t1).asTag().go(new URI(httpServer.getBaseURI() + "/testetag"));
+			TaggedData tag = client.build()
+				.useCache(t1)
+				.asTag()
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertTrue("Expected the file to be created (not unmodified)", tag.isOk());
 			assertTrue("Just created the file", t1.isFile());
 			assertEquals("Should be the tag we set", "1234", tag.getTag());
 
-			tag = client.build().useCache(t1, 100000).asTag().go(new URI(httpServer.getBaseURI() + "/testetag"));
+			tag = client.build()
+				.useCache(t1, 100000)
+				.asTag()
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertEquals("Expected file to be 'fresh'", State.UNMODIFIED, tag.getState());
 
-			tag = client.build().useCache(t1).asTag().go(new URI(httpServer.getBaseURI() + "/testetag"));
+			tag = client.build()
+				.useCache(t1)
+				.asTag()
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertTrue("Should have checked so we should have unmodified", tag.isNotModified());
 
 			etag = "5678";
 
-			tag = client.build().useCache(t1, 100000).asTag().go(new URI(httpServer.getBaseURI() + "/testetag"));
+			tag = client.build()
+				.useCache(t1, 100000)
+				.asTag()
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertEquals("Since it is still fresh, we expect no new fetch", State.UNMODIFIED, tag.getState());
 
-			tag = client.build().useCache(t1).asTag().go(new URI(httpServer.getBaseURI() + "/testetag"));
+			tag = client.build()
+				.useCache(t1)
+				.asTag()
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertEquals("We should have fetched it with the new etag", "5678", tag.getTag());
 			assertTrue("And it should have been modified", tag.isOk());
 
-			String s = client.build().useCache(t1).get(String.class).go(new URI(httpServer.getBaseURI() + "/testetag"));
+			String s = client.build()
+				.useCache(t1)
+				.get(String.class)
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertEquals("Content check", "5678", s);
 
-			byte[] b = client.build().useCache(t1).get(byte[].class).go(new URI(httpServer.getBaseURI() + "/testetag"));
+			byte[] b = client.build()
+				.useCache(t1)
+				.get(byte[].class)
+				.go(new URI(httpServer.getBaseURI() + "/testetag"));
 			assertTrue("Content check", Arrays.equals("5678".getBytes(), b));
 		}
 	}

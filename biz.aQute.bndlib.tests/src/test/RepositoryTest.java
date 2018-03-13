@@ -31,20 +31,30 @@ public class RepositoryTest extends TestCase {
 			assertEquals(61, resources.size());
 
 			Requirement requirement = new RequirementBuilder("osgi.extender")
-					.addDirective("filter", "(osgi.extender=osgi.component)").buildSyntheticRequirement();
+				.addDirective("filter", "(osgi.extender=osgi.component)")
+				.buildSyntheticRequirement();
 
-			Map<Requirement,Collection<Capability>> caps = getResourcesRepository(resources)
-					.findProviders(Collections.singleton(requirement));
+			Map<Requirement, Collection<Capability>> caps = getResourcesRepository(resources)
+				.findProviders(Collections.singleton(requirement));
 
-			assertEquals(1, caps.get(requirement).size());
+			assertEquals(1, caps.get(requirement)
+				.size());
 
-			Resource res = caps.get(requirement).iterator().next().getResource();
+			Resource res = caps.get(requirement)
+				.iterator()
+				.next()
+				.getResource();
 
-			assertEquals("org.apache.felix.scr",
-					ResourceUtils.getIdentityCapability(res).getAttributes().get("osgi.identity"));
+			assertEquals("org.apache.felix.scr", ResourceUtils.getIdentityCapability(res)
+				.getAttributes()
+				.get("osgi.identity"));
 
-			String location = ResourceUtils.getContentCapability(res).getAttributes().get("url").toString();
-			String base = url.toURI().toString();
+			String location = ResourceUtils.getContentCapability(res)
+				.getAttributes()
+				.get("url")
+				.toString();
+			String base = url.toURI()
+				.toString();
 			assertFalse(location, location.startsWith(base));
 		}
 	}
@@ -59,19 +69,28 @@ public class RepositoryTest extends TestCase {
 			assertEquals(21, resources.size());
 
 			Requirement requirement = new RequirementBuilder("osgi.extender")
-					.addDirective("filter", "(osgi.extender=osgi.component)").buildSyntheticRequirement();
+				.addDirective("filter", "(osgi.extender=osgi.component)")
+				.buildSyntheticRequirement();
 
-			Map<Requirement,Collection<Capability>> caps = getResourcesRepository(resources)
-					.findProviders(Collections.singleton(requirement));
+			Map<Requirement, Collection<Capability>> caps = getResourcesRepository(resources)
+				.findProviders(Collections.singleton(requirement));
 
-			assertEquals(1, caps.get(requirement).size());
+			assertEquals(1, caps.get(requirement)
+				.size());
 
-			Resource res = caps.get(requirement).iterator().next().getResource();
+			Resource res = caps.get(requirement)
+				.iterator()
+				.next()
+				.getResource();
 
-			assertEquals("org.apache.felix.scr",
-					ResourceUtils.getIdentityCapability(res).getAttributes().get("osgi.identity"));
+			assertEquals("org.apache.felix.scr", ResourceUtils.getIdentityCapability(res)
+				.getAttributes()
+				.get("osgi.identity"));
 
-			String location = ResourceUtils.getContentCapability(res).getAttributes().get("url").toString();
+			String location = ResourceUtils.getContentCapability(res)
+				.getAttributes()
+				.get("url")
+				.toString();
 			assertFalse(location, location.contains("file:"));
 		}
 	}

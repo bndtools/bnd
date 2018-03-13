@@ -47,10 +47,10 @@ import aQute.service.reporter.Reporter;
 
 @BndPlugin(name = "OSGiRepository", parameters = Config.class)
 public class OSGiRepository extends BaseRepository
-		implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin, Prepare, Closeable {
+	implements Plugin, RepositoryPlugin, Actionable, Refreshable, RegistryPlugin, Prepare, Closeable {
 	private final static Logger	logger				= LoggerFactory.getLogger(OSGiRepository.class);
-	final static int	YEAR		= 365 * 24 * 60 * 60;
-	static int			DEFAULT_POLL_TIME	= (int) TimeUnit.MINUTES.toSeconds(5);
+	final static int			YEAR				= 365 * 24 * 60 * 60;
+	static int					DEFAULT_POLL_TIME	= (int) TimeUnit.MINUTES.toSeconds(5);
 
 	interface Config {
 		/**
@@ -67,13 +67,13 @@ public class OSGiRepository extends BaseRepository
 		int poll_time(int pollTimeInSecs);
 	}
 
-	private Config					config;
-	private OSGiIndex				index;
-	private Reporter				reporter;
-	private Registry				registry;
-	private ScheduledFuture< ? >	poller;
-	private volatile boolean		stale		= false;
-	private final AtomicBoolean		inPoll		= new AtomicBoolean();
+	private Config				config;
+	private OSGiIndex			index;
+	private Reporter			reporter;
+	private Registry			registry;
+	private ScheduledFuture<?>	poller;
+	private volatile boolean	stale	= false;
+	private final AtomicBoolean	inPoll	= new AtomicBoolean();
 
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
@@ -81,8 +81,8 @@ public class OSGiRepository extends BaseRepository
 	}
 
 	@Override
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		File target = IO.getFile(getIndex().getCache(), bsn + "-" + version + ".jar");
 
 		Promise<File> promise = getIndex().get(bsn, version, target);
@@ -94,7 +94,7 @@ public class OSGiRepository extends BaseRepository
 		}
 
 		new DownloadListenerPromise(reporter, "Download " + bsn + "-" + version + " into " + config.name(), promise,
-				listeners);
+			listeners);
 
 		return target;
 	}
@@ -127,24 +127,28 @@ public class OSGiRepository extends BaseRepository
 		}
 
 		if (poller == null) {
-			if (!(ws.getGestalt().containsKey(Constants.GESTALT_BATCH)
-					|| ws.getGestalt().containsKey(Constants.GESTALT_CI)
-					|| ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE))) {
+			if (!(ws.getGestalt()
+				.containsKey(Constants.GESTALT_BATCH)
+				|| ws.getGestalt()
+					.containsKey(Constants.GESTALT_CI)
+				|| ws.getGestalt()
+					.containsKey(Constants.GESTALT_OFFLINE))) {
 
 				int polltime = config.poll_time(DEFAULT_POLL_TIME);
 				if (polltime > 0) {
 
-					poller = Processor.getScheduledExecutor().scheduleAtFixedRate(() -> {
-						if (inPoll.getAndSet(true))
-							return;
-						try {
-							poll();
-						} catch (Exception e) {
-							logger.debug("During polling", e);
-						} finally {
-							inPoll.set(false);
-						}
-					}, polltime, polltime, TimeUnit.SECONDS);
+					poller = Processor.getScheduledExecutor()
+						.scheduleAtFixedRate(() -> {
+							if (inPoll.getAndSet(true))
+								return;
+							try {
+								poll();
+							} catch (Exception e) {
+								logger.debug("During polling", e);
+							} finally {
+								inPoll.set(false);
+							}
+						}, polltime, polltime, TimeUnit.SECONDS);
 				}
 			}
 		}
@@ -178,12 +182,14 @@ public class OSGiRepository extends BaseRepository
 
 	@Override
 	public List<String> list(String pattern) throws Exception {
-		return getIndex().getBridge().list(pattern);
+		return getIndex().getBridge()
+			.list(pattern);
 	}
 
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		return getIndex().getBridge().versions(bsn);
+		return getIndex().getBridge()
+			.versions(bsn);
 	}
 
 	@Override
@@ -201,8 +207,8 @@ public class OSGiRepository extends BaseRepository
 	}
 
 	@Override
-	public Map<String,Runnable> actions(final Object... target) throws Exception {
-		Map<String,Runnable> menu = new LinkedHashMap<>();
+	public Map<String, Runnable> actions(final Object... target) throws Exception {
+		Map<String, Runnable> menu = new LinkedHashMap<>();
 		switch (target.length) {
 			case 0 :
 				menu.put("Reload Index & Bundles", () -> {
@@ -247,7 +253,8 @@ public class OSGiRepository extends BaseRepository
 				return f.toString();
 			}
 		}
-		return getIndex().getBridge().tooltip(target);
+		return getIndex().getBridge()
+			.tooltip(target);
 	}
 
 	@Override
@@ -255,7 +262,8 @@ public class OSGiRepository extends BaseRepository
 		if (target.length == 0 && stale) {
 			return getName() + " [stale]";
 		}
-		return getIndex().getBridge().title(target);
+		return getIndex().getBridge()
+			.title(target);
 	}
 
 	@Override
@@ -270,7 +278,7 @@ public class OSGiRepository extends BaseRepository
 	}
 
 	@Override
-	public void setProperties(Map<String,String> map) throws Exception {
+	public void setProperties(Map<String, String> map) throws Exception {
 		config = Converter.cnv(Config.class, map);
 	}
 
@@ -302,7 +310,7 @@ public class OSGiRepository extends BaseRepository
 
 	@Override
 	public void close() throws IOException {
-		ScheduledFuture< ? > p;
+		ScheduledFuture<?> p;
 		synchronized (this) {
 			p = poller;
 		}
@@ -311,7 +319,7 @@ public class OSGiRepository extends BaseRepository
 	}
 
 	@Override
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		try {
 			return getIndex().findProviders(requirements);
 		} catch (Exception e) {

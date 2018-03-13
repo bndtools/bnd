@@ -12,23 +12,20 @@ public class DependencyDTO extends DTO {
 	/**
 	 * The project group that produced the dependency, e.g.
 	 * <code>org.apache.maven</code>.
-	 * 
 	 */
-	public String groupId;
+	public String		groupId;
 
 	/**
 	 * The unique id for an artifact produced by the project group, e.g.
 	 * <code>maven-artifact</code>.
-	 * 
 	 */
-	public String artifactId;
+	public String		artifactId;
 
 	/**
 	 * The version of the dependency, e.g. <code>3.2.1</code>. In Maven 2, this
 	 * can also be specified as a range of versions.
-	 * 
 	 */
-	public MavenVersion version;
+	public MavenVersion	version;
 
 	/**
 	 * The type of dependency. While it usually represents the extension on the
@@ -41,9 +38,8 @@ public class DependencyDTO extends DTO {
 	 * handlers</a> for a list. New types can be defined by plugins that set
 	 * <code>extensions</code> to <code>true</code>, so this is not a complete
 	 * list.
-	 * 
 	 */
-	public String type = "jar";
+	public String		type	= "jar";
 
 	/**
 	 * The classifier of the dependency. It is appended to the filename after
@@ -57,9 +53,8 @@ public class DependencyDTO extends DTO {
 	 * built differently. For example, <code>jdk14</code> and <code>jdk15</code>
 	 * .</li>
 	 * </ul>
-	 * 
 	 */
-	public String classifier;
+	public String		classifier;
 
 	/**
 	 * The scope of the dependency - <code>compile</code>, <code>runtime</code>,
@@ -69,14 +64,17 @@ public class DependencyDTO extends DTO {
 	 * distribution of this project. For more information, see <a href=
 	 * "http://maven.apache.org/guides/introduction/introduction-to-dependency-mechanism.html">
 	 * the dependency mechanism</a>.
-	 * 
 	 */
 
 	public enum Scope {
-		compile, runtime, test, system, provided;
+		compile,
+		runtime,
+		test,
+		system,
+		provided;
 	}
 
-	public Scope scope;
+	public Scope			scope;
 
 	/**
 	 * FOR SYSTEM SCOPE ONLY. Note that use of this property is
@@ -85,14 +83,13 @@ public class DependencyDTO extends DTO {
 	 * for the value, not relative. Use a property that gives the machine
 	 * specific absolute path, e.g. <code>${java.home}</code>.
 	 */
-	public String systemPath;
+	public String			systemPath;
 
 	/**
 	 * Lists a set of artifacts that should be excluded from this dependency's
 	 * artifact list when it comes to calculating transitive dependencies.
-	 * 
 	 */
-	public ExclusionDTO[] exclusions;
+	public ExclusionDTO[]	exclusions;
 
 	/**
 	 * Indicates the dependency is optional for use of this library. While the
@@ -101,8 +98,7 @@ public class DependencyDTO extends DTO {
 	 * transitively. Note: While the type of this field is <code>String</code>
 	 * for technical reasons, the semantic type is actually <code>Boolean</code>
 	 * . Default value is <code>false</code>.
-	 * 
 	 */
-	public String optional;
+	public String			optional;
 
 }

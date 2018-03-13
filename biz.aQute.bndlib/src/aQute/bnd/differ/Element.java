@@ -43,7 +43,7 @@ class Element implements Tree {
 		this(type, name, Arrays.asList(children), Delta.MINOR, Delta.MAJOR, null);
 	}
 
-	Element(Type type, String name, Collection< ? extends Element> children, Delta add, Delta remove, String comment) {
+	Element(Type type, String name, Collection<? extends Element> children, Delta add, Delta remove, String comment) {
 		this.type = type;
 		this.name = name;
 		this.add = add;
@@ -72,6 +72,7 @@ class Element implements Tree {
 		}
 	}
 
+	@Override
 	public Data serialize() {
 		Data data = new Data();
 		data.type = this.type;
@@ -88,10 +89,12 @@ class Element implements Tree {
 		return data;
 	}
 
+	@Override
 	public Type getType() {
 		return type;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
@@ -100,6 +103,7 @@ class Element implements Tree {
 		return comment;
 	}
 
+	@Override
 	public int compareTo(Tree other) {
 		if (type == other.getType())
 			return name.compareTo(other.getName());
@@ -119,22 +123,27 @@ class Element implements Tree {
 		return Objects.hash(type, name);
 	}
 
+	@Override
 	public Tree[] getChildren() {
 		return children;
 	}
 
+	@Override
 	public Delta ifAdded() {
 		return add;
 	}
 
+	@Override
 	public Delta ifRemoved() {
 		return remove;
 	}
 
+	@Override
 	public Diff diff(Tree older) {
 		return new DiffImpl(this, older);
 	}
 
+	@Override
 	public Element get(String name) {
 		for (Element e : children) {
 			if (e.name.equals(name))
@@ -152,15 +161,15 @@ class Element implements Tree {
 
 	private void toString(StringBuilder sb, String indent) {
 		sb.append(indent)
-				.append(type)
-				.append(" ")
-				.append(name)
-				.append(" (")
-				.append(add)
-				.append("/")
-				.append(remove)
-				.append(")")
-				.append("\n");
+			.append(type)
+			.append(" ")
+			.append(name)
+			.append(" (")
+			.append(add)
+			.append("/")
+			.append(remove)
+			.append(")")
+			.append("\n");
 		for (Element e : children)
 			e.toString(sb, indent + " ");
 	}

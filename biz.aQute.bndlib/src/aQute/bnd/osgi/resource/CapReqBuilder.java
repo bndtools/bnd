@@ -51,8 +51,8 @@ public class CapReqBuilder {
 
 	private final String				namespace;
 	private Resource					resource;
-	private final Map<String,Object>	attributes	= new HashMap<>();
-	private final Map<String,String>	directives	= new HashMap<>();
+	private final Map<String, Object>	attributes							= new HashMap<>();
+	private final Map<String, String>	directives							= new HashMap<>();
 
 	public CapReqBuilder(String namespace) {
 		this.namespace = namespace;
@@ -60,7 +60,7 @@ public class CapReqBuilder {
 
 	public CapReqBuilder(String ns, Attrs attrs) throws Exception {
 		this.namespace = ns;
-		for (Entry<String,String> entry : attrs.entrySet()) {
+		for (Entry<String, String> entry : attrs.entrySet()) {
 			String key = entry.getKey();
 			if (key.endsWith(":"))
 				addDirective(key.substring(0, key.length() - 1), entry.getValue());
@@ -105,7 +105,8 @@ public class CapReqBuilder {
 		if (value == null)
 			return this;
 
-		if (value.getClass().isArray()) {
+		if (value.getClass()
+			.isArray()) {
 			value = Converter.cnv(List.class, value);
 		}
 
@@ -122,12 +123,14 @@ public class CapReqBuilder {
 			return true;
 
 		if (value instanceof Collection) {
-			if (((Collection< ? >) value).isEmpty())
+			if (((Collection<?>) value).isEmpty())
 				return true;
 
-			return isVersion(((Collection< ? >) value).iterator().next());
+			return isVersion(((Collection<?>) value).iterator()
+				.next());
 		}
-		if (value.getClass().isArray()) {
+		if (value.getClass()
+			.isArray()) {
 			if (Array.getLength(value) == 0)
 				return true;
 
@@ -136,8 +139,8 @@ public class CapReqBuilder {
 		return false;
 	}
 
-	public CapReqBuilder addAttributes(Map< ? extends String, ? extends Object> attributes) throws Exception {
-		for (Entry< ? extends String, ? extends Object> e : attributes.entrySet()) {
+	public CapReqBuilder addAttributes(Map<? extends String, ? extends Object> attributes) throws Exception {
+		for (Entry<? extends String, ? extends Object> e : attributes.entrySet()) {
 			addAttribute(e.getKey(), e.getValue());
 		}
 		return this;
@@ -152,7 +155,7 @@ public class CapReqBuilder {
 	}
 
 	public CapReqBuilder addDirectives(Attrs directives) {
-		for (Entry<String,String> e : directives.entrySet()) {
+		for (Entry<String, String> e : directives.entrySet()) {
 			String key = Attrs.toDirective(e.getKey());
 			if (key != null)
 				addDirective(key, e.getValue());
@@ -160,8 +163,8 @@ public class CapReqBuilder {
 		return this;
 	}
 
-	public CapReqBuilder addDirectives(Map<String,String> directives) {
-		for (Entry<String,String> e : directives.entrySet()) {
+	public CapReqBuilder addDirectives(Map<String, String> directives) {
+		for (Entry<String, String> e : directives.entrySet()) {
 			addDirective(e.getKey(), e.getValue());
 		}
 		return this;
@@ -180,7 +183,7 @@ public class CapReqBuilder {
 	public Requirement buildRequirement() {
 		if (resource == null)
 			throw new IllegalStateException(
-					"Cannot build Requirement with null Resource. use buildSyntheticRequirement");
+				"Cannot build Requirement with null Resource. use buildSyntheticRequirement");
 		return new RequirementImpl(namespace, resource, directives, attributes);
 	}
 
@@ -193,24 +196,25 @@ public class CapReqBuilder {
 		SimpleFilter pkgNameFilter = new SimpleFilter(PackageNamespace.PACKAGE_NAMESPACE, pkgName);
 		if (range != null)
 			filter = new AndFilter().addChild(pkgNameFilter)
-					.addChild(new LiteralFilter(Filters.fromVersionRange(range)));
+				.addChild(new LiteralFilter(Filters.fromVersionRange(range)));
 		else
 			filter = pkgNameFilter;
 
 		return new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE)
-				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 	}
 
 	public static CapReqBuilder createBundleRequirement(String bsn, String range) {
 		Filter filter;
 		SimpleFilter bsnFilter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
 		if (range != null)
-			filter = new AndFilter().addChild(bsnFilter).addChild(new LiteralFilter(Filters.fromVersionRange(range)));
+			filter = new AndFilter().addChild(bsnFilter)
+				.addChild(new LiteralFilter(Filters.fromVersionRange(range)));
 		else
 			filter = bsnFilter;
 
 		return new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
+			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
 
 	}
 
@@ -218,7 +222,8 @@ public class CapReqBuilder {
 		Filter filter;
 		SimpleFilter bsnFilter = new SimpleFilter(ns, name);
 		if (range != null)
-			filter = new AndFilter().addChild(bsnFilter).addChild(new LiteralFilter(Filters.fromVersionRange(range)));
+			filter = new AndFilter().addChild(bsnFilter)
+				.addChild(new LiteralFilter(Filters.fromVersionRange(range)));
 		else
 			filter = bsnFilter;
 
@@ -230,7 +235,9 @@ public class CapReqBuilder {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(&");
 		for (Object expr : exprs) {
-			sb.append("(").append(toFilter(expr)).append(")");
+			sb.append("(")
+				.append(toFilter(expr))
+				.append(")");
 		}
 		sb.append(")");
 		return sb;
@@ -240,7 +247,9 @@ public class CapReqBuilder {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(|");
 		for (Object expr : exprs) {
-			sb.append("(").append(toFilter(expr)).append(")");
+			sb.append("(")
+				.append(toFilter(expr))
+				.append(")");
 		}
 		sb.append(")");
 		return sb;
@@ -248,7 +257,9 @@ public class CapReqBuilder {
 
 	public CharSequence not(Object expr) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("(!(").append(toFilter(expr)).append(")");
+		sb.append("(!(")
+			.append(toFilter(expr))
+			.append(")");
 		return sb;
 	}
 
@@ -293,7 +304,7 @@ public class CapReqBuilder {
 	 */
 	public static List<Requirement> getRequirementsFrom(Parameters rr, boolean unalias) throws Exception {
 		List<Requirement> requirements = new ArrayList<>();
-		for (Entry<String,Attrs> e : rr.entrySet()) {
+		for (Entry<String, Attrs> e : rr.entrySet()) {
 			Requirement req = getRequirementFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue(), unalias);
 			requirements.add(req);
 		}
@@ -303,7 +314,7 @@ public class CapReqBuilder {
 	public static Requirement getRequirementFrom(String namespace, Attrs attrs) throws Exception {
 		return getRequirementFrom(namespace, attrs, true);
 	}
-	
+
 	public static Requirement getRequirementFrom(String namespace, Attrs attrs, boolean unalias) throws Exception {
 		CapReqBuilder builder = createCapReqBuilder(namespace, attrs);
 		Requirement requirement = builder.buildSyntheticRequirement();
@@ -332,7 +343,8 @@ public class CapReqBuilder {
 	 * "<code>bnd.identity; id=org.example; version='[1.0,2.0)'</code>" will be
 	 * converted to
 	 * "<code>osgi.identity; filter:='(&(osgi.identity=org.example)(version>=1.0)(!(version>=2.0)))'</code>"
-	 * Requirements that are not recognized as aliases will be returned unchanged.
+	 * Requirements that are not recognized as aliases will be returned
+	 * unchanged.
 	 */
 	public static Requirement unalias(Requirement requirement) throws Exception {
 		if (requirement == null)
@@ -344,12 +356,13 @@ public class CapReqBuilder {
 		final Set<String> consumedDirectives = new HashSet<>();
 
 		if (REQ_ALIAS_LITERAL.equals(ns)) {
-			final String literalNs = Objects.toString(requirement.getAttributes().get(REQ_ALIAS_LITERAL_ATTRIB), null);
+			final String literalNs = Objects.toString(requirement.getAttributes()
+				.get(REQ_ALIAS_LITERAL_ATTRIB), null);
 			consumedAttribs.add(REQ_ALIAS_LITERAL_ATTRIB);
 			if (literalNs == null) {
 				throw new IllegalArgumentException(
-						String.format("Requirement alias %s is missing mandatory attribute '%s' of type String",
-								REQ_ALIAS_LITERAL, REQ_ALIAS_LITERAL_ATTRIB));
+					String.format("Requirement alias %s is missing mandatory attribute '%s' of type String",
+						REQ_ALIAS_LITERAL, REQ_ALIAS_LITERAL_ATTRIB));
 			}
 
 			CapReqBuilder builder = new CapReqBuilder(literalNs);
@@ -357,15 +370,17 @@ public class CapReqBuilder {
 			copyDirectives(requirement, builder, Collections.emptySet());
 			requirement = builder.buildSyntheticRequirement();
 		} else if (REQ_ALIAS_IDENTITY.equals(ns)) {
-			final String bsn = Objects.toString(requirement.getAttributes().get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);
+			final String bsn = Objects.toString(requirement.getAttributes()
+				.get(REQ_ALIAS_IDENTITY_NAME_ATTRIB), null);
 			consumedAttribs.add(REQ_ALIAS_IDENTITY_NAME_ATTRIB);
 			if (bsn == null) {
 				throw new IllegalArgumentException(
-						String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
-								REQ_ALIAS_IDENTITY, REQ_ALIAS_IDENTITY_NAME_ATTRIB));
+					String.format("Requirement alias '%s' is missing mandatory attribute '%s' of type String",
+						REQ_ALIAS_IDENTITY, REQ_ALIAS_IDENTITY_NAME_ATTRIB));
 			}
 
-			final VersionRange range = toRange(requirement.getAttributes().get(REQ_ALIAS_IDENTITY_VERSION_ATTRIB));
+			final VersionRange range = toRange(requirement.getAttributes()
+				.get(REQ_ALIAS_IDENTITY_VERSION_ATTRIB));
 			consumedAttribs.add(REQ_ALIAS_IDENTITY_VERSION_ATTRIB);
 			CapReqBuilder b = CapReqBuilder.createBundleRequirement(bsn, Objects.toString(range, null));
 			copyAttribs(requirement, b, consumedAttribs);
@@ -377,15 +392,16 @@ public class CapReqBuilder {
 	}
 
 	private static void copyAttribs(Requirement req, CapReqBuilder builder, Set<String> excludes) throws Exception {
-		for (Entry<String,Object> entry : req.getAttributes().entrySet()) {
+		for (Entry<String, Object> entry : req.getAttributes()
+			.entrySet()) {
 			if (!excludes.contains(entry.getKey()))
 				builder.addAttribute(entry.getKey(), entry.getValue());
 		}
 	}
 
-	private static void copyDirectives(Requirement req, CapReqBuilder builder, Set<String> excludes)
-			throws Exception {
-		for (Entry<String,String> entry : req.getDirectives().entrySet()) {
+	private static void copyDirectives(Requirement req, CapReqBuilder builder, Set<String> excludes) throws Exception {
+		for (Entry<String, String> entry : req.getDirectives()
+			.entrySet()) {
 			if (!excludes.contains(entry.getKey()))
 				builder.addDirective(entry.getKey(), entry.getValue());
 		}
@@ -406,7 +422,7 @@ public class CapReqBuilder {
 
 	public static List<Capability> getCapabilitiesFrom(Parameters rr) throws Exception {
 		List<Capability> capabilities = new ArrayList<>();
-		for (Entry<String,Attrs> e : rr.entrySet()) {
+		for (Entry<String, Attrs> e : rr.entrySet()) {
 			capabilities.add(getCapabilityFrom(Processor.removeDuplicateMarker(e.getKey()), e.getValue()));
 		}
 		return capabilities;
@@ -434,7 +450,8 @@ public class CapReqBuilder {
 		if (r == null)
 			return from.buildSyntheticCapability();
 		else
-			return from.setResource(r).buildCapability();
+			return from.setResource(r)
+				.buildCapability();
 	}
 
 	public static Requirement copy(Requirement c, Resource r) throws Exception {
@@ -442,7 +459,8 @@ public class CapReqBuilder {
 		if (r == null)
 			return from.buildSyntheticRequirement();
 		else
-			return from.setResource(r).buildRequirement();
+			return from.setResource(r)
+				.buildRequirement();
 	}
 
 	/**
@@ -453,7 +471,7 @@ public class CapReqBuilder {
 	 * @throws Exception
 	 */
 	public void addAttributesOrDirectives(Attrs attrs) throws Exception {
-		for (Entry<String,String> e : attrs.entrySet()) {
+		for (Entry<String, String> e : attrs.entrySet()) {
 			String directive = Attrs.toDirective(e.getKey());
 			if (directive != null) {
 				addDirective(directive, e.getValue());
@@ -506,13 +524,13 @@ public class CapReqBuilder {
 	 * (')' \u0029), then these characters should be preceded with the reverse
 	 * solidus ('\' \u005C) character. Spaces are significant in value. Space
 	 * characters are defined by Character.isWhiteSpace().
-	 * 
 	 */
 
 	static Pattern ESCAPE_FILTER_VALUE_P = Pattern.compile("[\\\\()*]");
 
 	public static String escapeFilterValue(String value) {
-		return ESCAPE_FILTER_VALUE_P.matcher(value).replaceAll("\\\\$0");
+		return ESCAPE_FILTER_VALUE_P.matcher(value)
+			.replaceAll("\\\\$0");
 	}
 
 	public void and(String... s) {
@@ -520,7 +538,8 @@ public class CapReqBuilder {
 		StringBuilder filter = new StringBuilder();
 
 		if (previous != null) {
-			filter.append("(&").append(previous);
+			filter.append("(&")
+				.append(previous);
 		}
 		for (String subexpr : s)
 			filter.append(subexpr);
@@ -571,10 +590,11 @@ public class CapReqBuilder {
 		Attrs attrs = new Attrs();
 
 		if (attributes != null) {
-			for (Entry<String,Object> e : attributes.entrySet()) {
+			for (Entry<String, Object> e : attributes.entrySet()) {
 				Object value = e.getValue();
 
-				if (e.getKey().equals("version") || value instanceof Version)
+				if (e.getKey()
+					.equals("version") || value instanceof Version)
 					value = toBndVersions(value);
 
 				attrs.putTyped(e.getKey(), value);
@@ -582,7 +602,7 @@ public class CapReqBuilder {
 		}
 
 		if (directives != null)
-			for (Entry<String,String> e : directives.entrySet()) {
+			for (Entry<String, String> e : directives.entrySet()) {
 				attrs.put(e.getKey() + ":", e.getValue());
 			}
 
@@ -601,7 +621,7 @@ public class CapReqBuilder {
 
 		if (value instanceof Collection) {
 			List<aQute.bnd.version.Version> bnds = new ArrayList<>();
-			for (Object m : (Collection< ? >) value) {
+			for (Object m : (Collection<?>) value) {
 				bnds.add((aQute.bnd.version.Version) toBndVersions(m));
 			}
 			return bnds;
@@ -632,36 +652,43 @@ public class CapReqBuilder {
 			}
 
 		if (value instanceof Collection) {
-			Collection< ? > v = (Collection< ? >) value;
+			Collection<?> v = (Collection<?>) value;
 			if (v.isEmpty())
 				return value;
 
-			if (v.iterator().next() instanceof Version)
+			if (v.iterator()
+				.next() instanceof Version)
 				return value;
 
 			List<Version> osgis = new ArrayList<>();
-			for (Object m : (Collection< ? >) value) {
+			for (Object m : (Collection<?>) value) {
 				osgis.add((Version) toVersions(m));
 			}
 			return osgis;
 		}
 
 		throw new IllegalArgumentException(
-				"cannot convert " + value + " to a org.osgi.framework Version(s) object as requested");
+			"cannot convert " + value + " to a org.osgi.framework Version(s) object as requested");
 	}
 
 	public static RequirementBuilder createRequirementFromCapability(Capability cap) {
 		RequirementBuilder req = new RequirementBuilder(cap.getNamespace());
 		StringBuilder sb = new StringBuilder("(&");
-		for (Entry<String,Object> e : cap.getAttributes().entrySet()) {
+		for (Entry<String, Object> e : cap.getAttributes()
+			.entrySet()) {
 			Object v = e.getValue();
-			if (v instanceof Version || e.getKey().equals("version")) {
+			if (v instanceof Version || e.getKey()
+				.equals("version")) {
 				VersionRange r = new VersionRange(v.toString());
 				String filter = r.toFilter();
 				sb.append(filter);
 
 			} else
-				sb.append("(").append(e.getKey()).append("=").append(escapeFilterValue((String) v)).append(")");
+				sb.append("(")
+					.append(e.getKey())
+					.append("=")
+					.append(escapeFilterValue((String) v))
+					.append(")");
 		}
 		sb.append(")");
 

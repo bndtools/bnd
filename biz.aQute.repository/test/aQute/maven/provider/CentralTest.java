@@ -13,13 +13,13 @@ import aQute.maven.api.Revision;
 import junit.framework.TestCase;
 
 public class CentralTest extends TestCase {
-	private static final String	REPO_URL	= "https://repo.maven.apache.org/maven2/";
-	String						tmpName;
-	File						local;
+	private static final String		REPO_URL	= "https://repo.maven.apache.org/maven2/";
+	String							tmpName;
+	File							local;
 
 	List<MavenBackingRepository>	repo;
-	MavenRepository				storage;
-	ReporterAdapter				reporter	= new ReporterAdapter(System.err);
+	MavenRepository					storage;
+	ReporterAdapter					reporter	= new ReporterAdapter(System.err);
 
 	@Override
 	protected void setUp() throws Exception {
@@ -31,9 +31,9 @@ public class CentralTest extends TestCase {
 		IO.delete(local);
 		local.mkdirs();
 		HttpClient client = new HttpClient();
-		repo = MavenRemoteRepository.create(REPO_URL, reporter, local, client);
-		storage = new MavenRepository(local, "central", this.repo, null, client.promiseFactory().executor(),
-			null);
+		repo = MavenBackingRepository.create(REPO_URL, reporter, local, client);
+		storage = new MavenRepository(local, "central", this.repo, null, client.promiseFactory()
+			.executor(), null);
 	}
 
 	@Override
@@ -43,11 +43,11 @@ public class CentralTest extends TestCase {
 	}
 
 	public void testBasic() throws Exception {
-		Revision r = Program.valueOf("org.lunarray.model.extensions.descriptor", "spring").version("1.0");
+		Revision r = Program.valueOf("org.lunarray.model.extensions.descriptor", "spring")
+			.version("1.0");
 		POM pom = storage.getPom(r);
 		assertNotNull(pom);
 		System.out.println(pom.getDependencies(MavenScope.compile, true));
 	}
-
 
 }

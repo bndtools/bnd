@@ -40,7 +40,8 @@ public class ValidatorTest extends TestCase {
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
-			validator.addRepository(IO.getFile("testdata/repo1.index.xml").toURI());
+			validator.addRepository(IO.getFile("testdata/repo1.index.xml")
+				.toURI());
 			validator.validate();
 			assertTrue(validator.check());
 		}
@@ -53,8 +54,10 @@ public class ValidatorTest extends TestCase {
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
-			validator.addRepository(IO.getFile("testdata/repo1.index.xml").toURI());
-			List<Resource> resources = XMLResourceParser.getResources(IO.getFile("testdata/repo1.index.xml").toURI());
+			validator.addRepository(IO.getFile("testdata/repo1.index.xml")
+				.toURI());
+			List<Resource> resources = XMLResourceParser.getResources(IO.getFile("testdata/repo1.index.xml")
+				.toURI());
 			validator.validate(resources);
 			assertTrue(validator.check());
 		}
@@ -67,7 +70,8 @@ public class ValidatorTest extends TestCase {
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
-			validator.addRepository(IO.getFile("testdata/repo1.index.xml").toURI());
+			validator.addRepository(IO.getFile("testdata/repo1.index.xml")
+				.toURI());
 			validator.validate();
 			assertTrue(validator.check());
 		}
@@ -80,14 +84,15 @@ public class ValidatorTest extends TestCase {
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
-			validator.addRepository(IO.getFile("testdata/repo5-broken.index.xml").toURI());
+			validator.addRepository(IO.getFile("testdata/repo5-broken.index.xml")
+				.toURI());
 			List<Resolution> resolutions = validator.validate();
 			assertFalse(validator.check());
 			assertEquals(1, resolutions.size());
 			String message = resolutions.get(0).message;
 			String expectedToContain = "missing requirement osgi.wiring.package;filter:='(osgi.wiring.package=org.apache.felix.gogo.api)'";
 			assertTrue(String.format("expected to contain <%s> but was <%s>", expectedToContain, message),
-					message.contains(expectedToContain));
+				message.contains(expectedToContain));
 		}
 	}
 
@@ -98,15 +103,15 @@ public class ValidatorTest extends TestCase {
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
-			List<Resource> resources = XMLResourceParser
-					.getResources(IO.getFile("testdata/repo5-broken.index.xml").toURI());
+			List<Resource> resources = XMLResourceParser.getResources(IO.getFile("testdata/repo5-broken.index.xml")
+				.toURI());
 			List<Resolution> resolutions = validator.validate(resources);
 			assertFalse(validator.check());
 			assertEquals(1, resolutions.size());
 			String message = resolutions.get(0).message;
 			String expectedToContain = "missing requirement osgi.wiring.package;filter:='(osgi.wiring.package=org.apache.felix.gogo.api)'";
 			assertTrue(String.format("expected to contain <%s> but was <%s>", expectedToContain, message),
-					message.contains(expectedToContain));
+				message.contains(expectedToContain));
 		}
 	}
 
@@ -141,7 +146,8 @@ public class ValidatorTest extends TestCase {
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
-			validator.addRepository(IO.getFile("testdata/larger-repo.xml").toURI());
+			validator.addRepository(IO.getFile("testdata/larger-repo.xml")
+				.toURI());
 			validator.validate();
 			assertTrue(validator.check());
 		}

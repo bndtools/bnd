@@ -25,15 +25,15 @@ import aQute.maven.provider.MavenRepository;
 
 class PomRepository extends InnerRepository {
 	private final static Logger		logger							= LoggerFactory.getLogger(PomRepository.class);
-	static final String		BND_MAVEN						= "bnd.maven";
-	static final String		BND_MAVEN_EXCEPTION_ATTRIBUTE	= "exception";
-	static final String		BND_MAVEN_ARCHIVE_ATTRIBUTE		= "archive";
-	static final String		BND_MAVEN_REVISION_ATTRIBUTE	= "revision";
-	final List<Revision>	revisions;
-	final List<URI>			uris;
+	static final String				BND_MAVEN						= "bnd.maven";
+	static final String				BND_MAVEN_EXCEPTION_ATTRIBUTE	= "exception";
+	static final String				BND_MAVEN_ARCHIVE_ATTRIBUTE		= "archive";
+	static final String				BND_MAVEN_REVISION_ATTRIBUTE	= "revision";
+	final List<Revision>			revisions;
+	final List<URI>					uris;
 	private final HttpClient		client;
 	private final PromiseFactory	promiseFactory;
-	final boolean			transitive;
+	final boolean					transitive;
 
 	PomRepository(MavenRepository repo, HttpClient client, File location, boolean transitive) {
 		super(repo, location);
@@ -60,6 +60,7 @@ class PomRepository extends InnerRepository {
 		return this;
 	}
 
+	@Override
 	void refresh() throws Exception {
 		if (!uris.isEmpty())
 			readUris();
@@ -76,13 +77,14 @@ class PomRepository extends InnerRepository {
 	}
 
 	void save(Traverser traverser) throws Exception {
-		Promise<Map<Archive,Resource>> p = traverser.getResources();
-		Collection<Resource> resources = p.getValue().values();
+		Promise<Map<Archive, Resource>> p = traverser.getResources();
+		Collection<Resource> resources = p.getValue()
+			.values();
 		set(resources);
 		save(getMavenRepository().getName(), resources, getLocation());
 	}
 
-	void save(String name, Collection< ? extends Resource> resources, File location) throws Exception, IOException {
+	void save(String name, Collection<? extends Resource> resources, File location) throws Exception, IOException {
 		XMLResourceGenerator generator = new XMLResourceGenerator();
 		generator.resources(resources);
 		generator.name(name);
@@ -100,6 +102,7 @@ class PomRepository extends InnerRepository {
 		}
 	}
 
+	@Override
 	boolean isStale() throws Exception {
 		if (!getLocation().isFile()) {
 			return true;
@@ -110,7 +113,8 @@ class PomRepository extends InnerRepository {
 		List<Promise<Void>> promises = new ArrayList<>();
 		if (!uris.isEmpty()) {
 			for (URI uri : uris) {
-				if (freshness.getPromise().isDone()) {
+				if (freshness.getPromise()
+					.isDone()) {
 					break; // early exit if staleness already detected
 				}
 				try {
@@ -121,9 +125,13 @@ class PomRepository extends InnerRepository {
 						}
 					} else {
 						// check for staleness of non-file-URI
-						Promise<TaggedData> async = client.build().useCache().asTag().async(uri);
+						Promise<TaggedData> async = client.build()
+							.useCache()
+							.asTag()
+							.async(uri);
 						promises.add(async.then(resolved -> {
-							switch (resolved.getValue().getState()) {
+							switch (resolved.getValue()
+								.getState()) {
 								case OTHER :
 									// in the offline case
 									// ignore might be best here
@@ -151,7 +159,8 @@ class PomRepository extends InnerRepository {
 			}
 		} else {
 			for (Revision revision : revisions) {
-				if (freshness.getPromise().isDone()) {
+				if (freshness.getPromise()
+					.isDone()) {
 					break; // early exit if staleness already detected
 				}
 				Promise<File> file = getMavenRepository().get(revision.getPomArchive());
@@ -170,12 +179,14 @@ class PomRepository extends InnerRepository {
 		}
 
 		// Resolve when all promises checked
-		if (!freshness.getPromise().isDone()) {
+		if (!freshness.getPromise()
+			.isDone()) {
 			Promise<List<Void>> all = promiseFactory.all(promises);
 			freshness.resolveWith(all);
 		}
 
 		// Block until freshness is resolved
-		return freshness.getPromise().getFailure() != null;
+		return freshness.getPromise()
+			.getFailure() != null;
 	}
 }

@@ -1,13 +1,5 @@
 package aQute.bnd.maven.resolver.plugin;
 
-import aQute.bnd.build.Workspace;
-import aQute.bnd.maven.lib.resolve.DependencyResolver;
-import aQute.bnd.repository.fileset.FileSetRepository;
-import aQute.bnd.service.RepositoryPlugin;
-
-import biz.aQute.resolve.Bndrun;
-import biz.aQute.resolve.ResolveProcess;
-
 import java.io.File;
 import java.util.List;
 
@@ -27,14 +19,20 @@ import org.osgi.service.resolver.ResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Workspace;
+import aQute.bnd.maven.lib.resolve.DependencyResolver;
+import aQute.bnd.repository.fileset.FileSetRepository;
+import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
+import biz.aQute.resolve.Bndrun;
+import biz.aQute.resolve.ResolveProcess;
 
 /**
  * Resolves the <code>-runbundles</code> for the given bndrun file.
  */
 @Mojo(name = "resolve", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class ResolverMojo extends AbstractMojo {
-	private static final Logger	logger			= LoggerFactory.getLogger(ResolverMojo.class);
+	private static final Logger			logger	= LoggerFactory.getLogger(ResolverMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject				project;
@@ -43,24 +41,24 @@ public class ResolverMojo extends AbstractMojo {
 	private RepositorySystemSession		repositorySession;
 
 	@Parameter(readonly = true, required = true)
-	private List<File>	bndruns;
+	private List<File>					bndruns;
 
 	@Parameter(readonly = true, required = false)
-	private List<File>	bundles;
+	private List<File>					bundles;
 
 	@Parameter(defaultValue = "true")
 	private boolean						useMavenDependencies;
 
 	@Parameter(defaultValue = "true")
-	private boolean				failOnChanges;
+	private boolean						failOnChanges;
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	private File targetDir;
+	private File						targetDir;
 
 	@Parameter(defaultValue = "${session}", readonly = true)
-	private MavenSession session;
+	private MavenSession				session;
 
-	private int					errors	= 0;
+	private int							errors	= 0;
 
 	@Component
 	private RepositorySystem			system;
@@ -71,10 +69,11 @@ public class ResolverMojo extends AbstractMojo {
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
-			DependencyResolver dependencyResolver = new DependencyResolver(
-					project, repositorySession, resolver, system);
+			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
+				system);
 
-			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles, useMavenDependencies);
+			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
+				useMavenDependencies);
 
 			for (File runFile : bndruns) {
 				resolve(runFile, fileSetRepository);
@@ -101,7 +100,8 @@ public class ResolverMojo extends AbstractMojo {
 			run.setBase(temporaryDir);
 			Workspace workspace = run.getWorkspace();
 			workspace.setBuildDir(cnf);
-			workspace.setOffline(session.getSettings().isOffline());
+			workspace.setOffline(session.getSettings()
+				.isOffline());
 			workspace.addBasicPlugin(fileSetRepository);
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);

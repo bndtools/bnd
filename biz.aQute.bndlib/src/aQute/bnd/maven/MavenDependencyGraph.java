@@ -24,11 +24,16 @@ public class MavenDependencyGraph {
 	final List<Artifact>				dependencies	= new ArrayList<>();
 	final List<URL>						repositories	= new ArrayList<>();
 	final XPath							xpath			= xpathFactory.newXPath();
-	final Map<URI,Artifact>				cache			= new HashMap<>();
+	final Map<URI, Artifact>			cache			= new HashMap<>();
 	Artifact							root;
 
 	enum Scope {
-		COMPILE, RUNTIME, TEST, PROVIDED, SYSTEM, IMPORT,
+		COMPILE,
+		RUNTIME,
+		TEST,
+		PROVIDED,
+		SYSTEM,
+		IMPORT,
 	}
 
 	public class Artifact {
@@ -63,7 +68,7 @@ public class MavenDependencyGraph {
 				for (int i = 0; i < evaluate.getLength(); i++) {
 					Node childNode = evaluate.item(i);
 					Artifact artifact = getArtifact(xpath.evaluate("groupId", childNode),
-							xpath.evaluate("artifactId", childNode), xpath.evaluate("version", childNode));
+						xpath.evaluate("artifactId", childNode), xpath.evaluate("version", childNode));
 					add(artifact);
 				}
 			}

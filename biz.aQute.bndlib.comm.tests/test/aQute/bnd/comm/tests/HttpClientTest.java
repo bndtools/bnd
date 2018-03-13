@@ -76,7 +76,10 @@ public class HttpClientTest extends TestCase {
 	public void testTimeout() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			try {
-				TaggedData tag = hc.build().asTag().timeout(1000).go(httpServer.getBaseURI("timeout/10"));
+				TaggedData tag = hc.build()
+					.asTag()
+					.timeout(1000)
+					.go(httpServer.getBaseURI("timeout/10"));
 				assertNotNull(tag);
 				assertEquals(200, tag.getResponseCode());
 				IO.collect(tag.getInputStream());
@@ -119,7 +122,9 @@ public class HttpClientTest extends TestCase {
 			});
 			hc.setRegistry(p);
 
-			TaggedData tag = hc.build().asTag().go(httpServer.getBaseURI("timeout/50"));
+			TaggedData tag = hc.build()
+				.asTag()
+				.go(httpServer.getBaseURI("timeout/50"));
 			assertNotNull(tag);
 			assertEquals(200, tag.getResponseCode());
 			try {
@@ -137,17 +142,17 @@ public class HttpClientTest extends TestCase {
 			hc.setCache(tmp);
 
 			Promise<TaggedData> a = hc.build()
-					.useCache()
-					.age(1, TimeUnit.DAYS)
-					.asTag()
-					.async(httpServer.getBaseURI("mftch"));
+				.useCache()
+				.age(1, TimeUnit.DAYS)
+				.asTag()
+				.async(httpServer.getBaseURI("mftch"));
 			Thread.sleep(100);
 
 			Promise<TaggedData> b = hc.build()
-					.useCache()
-					.age(1, TimeUnit.DAYS)
-					.asTag()
-					.async(httpServer.getBaseURI("mftch"));
+				.useCache()
+				.age(1, TimeUnit.DAYS)
+				.asTag()
+				.async(httpServer.getBaseURI("mftch"));
 
 			TaggedData ta = a.getValue();
 			assertEquals("FOO", ta.getTag());
@@ -169,7 +174,9 @@ public class HttpClientTest extends TestCase {
 
 	public void testFetch() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			String text = hc.build().get(String.class).go(httpServer.getBaseURI("get"));
+			String text = hc.build()
+				.get(String.class)
+				.go(httpServer.getBaseURI("get"));
 			assertNotNull(text);
 			assertTrue(text.startsWith("{"));
 		}
@@ -177,7 +184,9 @@ public class HttpClientTest extends TestCase {
 
 	public void testRedirect() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData tag = hc.build().get(TaggedData.class).go(httpServer.getBaseURI("redirect/3/200"));
+			TaggedData tag = hc.build()
+				.get(TaggedData.class)
+				.go(httpServer.getBaseURI("redirect/3/200"));
 			assertNotNull(tag);
 			assertEquals(200, tag.getResponseCode());
 		}
@@ -185,7 +194,9 @@ public class HttpClientTest extends TestCase {
 
 	public void testRedirectRelative() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData tag = hc.build().get(TaggedData.class).go(httpServer.getBaseURI("redirect/3/200?relative=true"));
+			TaggedData tag = hc.build()
+				.get(TaggedData.class)
+				.go(httpServer.getBaseURI("redirect/3/200?relative=true"));
 			assertNotNull(tag);
 			assertEquals(200, tag.getResponseCode());
 		}
@@ -194,9 +205,9 @@ public class HttpClientTest extends TestCase {
 	public void testRedirectTooMany() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData tag = hc.build()
-					.maxRedirects(3)
-					.get(TaggedData.class)
-					.go(httpServer.getBaseURI("redirect/200/200"));
+				.maxRedirects(3)
+				.get(TaggedData.class)
+				.go(httpServer.getBaseURI("redirect/200/200"));
 			assertEquals(3, tag.getResponseCode() / 100);
 		}
 	}
@@ -204,16 +215,17 @@ public class HttpClientTest extends TestCase {
 	public void testRedirectURL() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			HttpsVerification httpsVerification = new HttpsVerification(httpsServer.getCertificateChain(), false,
-					hc.getReporter());
+				hc.getReporter());
 			hc.addURLConnectionHandler(httpsVerification);
 			URI uri = httpsServer.getBaseURI("get");
-			URL go = httpServer.getBaseURI("xlocation").toURL();
+			URL go = httpServer.getBaseURI("xlocation")
+				.toURL();
 
 			TaggedData tag = hc.build()
-					.maxRedirects(3)
-					.get(TaggedData.class)
-					.headers("XLocation", uri.toString())
-					.go(go);
+				.maxRedirects(3)
+				.get(TaggedData.class)
+				.headers("XLocation", uri.toString())
+				.go(go);
 			assertNotNull(tag);
 			assertEquals(200, tag.getResponseCode());
 		}
@@ -221,7 +233,9 @@ public class HttpClientTest extends TestCase {
 
 	public void testETag() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData data = hc.build().get(TaggedData.class).go(httpServer.getBaseURI("etag/1234/0"));
+			TaggedData data = hc.build()
+				.get(TaggedData.class)
+				.go(httpServer.getBaseURI("etag/1234/0"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 		}
@@ -230,9 +244,9 @@ public class HttpClientTest extends TestCase {
 	public void testNotModifiedEtag() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
-					.get(TaggedData.class)
-					.ifNoneMatch("1234")
-					.go(httpServer.getBaseURI("etag/1234/0"));
+				.get(TaggedData.class)
+				.ifNoneMatch("1234")
+				.go(httpServer.getBaseURI("etag/1234/0"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(HttpURLConnection.HTTP_NOT_MODIFIED, data.getResponseCode());
@@ -242,9 +256,9 @@ public class HttpClientTest extends TestCase {
 	public void testModifiedWithEtag() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
-					.get(TaggedData.class)
-					.ifNoneMatch("0000")
-					.go(httpServer.getBaseURI("etag/1234/0"));
+				.get(TaggedData.class)
+				.ifNoneMatch("0000")
+				.go(httpServer.getBaseURI("etag/1234/0"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(200, data.getResponseCode());
@@ -253,8 +267,11 @@ public class HttpClientTest extends TestCase {
 
 	public void testNotModifiedSince() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData data = hc.build().get(TaggedData.class).ifNoneMatch("*").ifModifiedSince(20000).go(
-					httpServer.getBaseURI("etag/1234/10000"));
+			TaggedData data = hc.build()
+				.get(TaggedData.class)
+				.ifNoneMatch("*")
+				.ifModifiedSince(20000)
+				.go(httpServer.getBaseURI("etag/1234/10000"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(HttpURLConnection.HTTP_NOT_MODIFIED, data.getResponseCode());
@@ -263,8 +280,11 @@ public class HttpClientTest extends TestCase {
 
 	public void testNotModifiedSinceAtSameTime() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
-			TaggedData data = hc.build().get(TaggedData.class).ifNoneMatch("*").ifModifiedSince(20000).go(
-					httpServer.getBaseURI("etag/1234/20000"));
+			TaggedData data = hc.build()
+				.get(TaggedData.class)
+				.ifNoneMatch("*")
+				.ifModifiedSince(20000)
+				.go(httpServer.getBaseURI("etag/1234/20000"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(HttpURLConnection.HTTP_NOT_MODIFIED, data.getResponseCode());
@@ -274,18 +294,18 @@ public class HttpClientTest extends TestCase {
 	public void testModifiedSince() throws Exception {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
-					.get(TaggedData.class)
-					.ifModifiedSince(10000)
-					.go(httpServer.getBaseURI("etag/1234/20000"));
+				.get(TaggedData.class)
+				.ifModifiedSince(10000)
+				.go(httpServer.getBaseURI("etag/1234/20000"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(200, data.getResponseCode());
 		}
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData data = hc.build()
-					.get(TaggedData.class)
-					.ifModifiedSince(20000)
-					.go(httpServer.getBaseURI("etag/1234/10000"));
+				.get(TaggedData.class)
+				.ifModifiedSince(20000)
+				.go(httpServer.getBaseURI("etag/1234/10000"));
 			assertNotNull(data);
 			assertEquals("1234", data.getTag());
 			assertEquals(304, data.getResponseCode());
@@ -345,7 +365,9 @@ public class HttpClientTest extends TestCase {
 			});
 			hc.setRegistry(p);
 
-			String text = hc.build().get(String.class).go(httpServer.getBaseURI("get"));
+			String text = hc.build()
+				.get(String.class)
+				.go(httpServer.getBaseURI("get"));
 			assertNotNull(text);
 			assertTrue(counts[0] > 0);
 			assertEquals(counts[0], counts[1]);
@@ -382,8 +404,13 @@ public class HttpClientTest extends TestCase {
 			});
 			try (HttpClient c = new HttpClient();) {
 				c.setRegistry(p);
-				TaggedData go = c.build().verb("PUT").upload("hello").asTag().go(httpServer.getBaseURI("put"));
-				go.getInputStream().close();
+				TaggedData go = c.build()
+					.verb("PUT")
+					.upload("hello")
+					.asTag()
+					.go(httpServer.getBaseURI("put"));
+				go.getInputStream()
+					.close();
 				assertEquals(200, go.getResponseCode());
 				assertTrue(done.get());
 			}

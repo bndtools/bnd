@@ -18,10 +18,10 @@ import javax.xml.transform.stream.StreamSource;
 public class Transform {
 	static TransformerFactory	transformerFactory	= TransformerFactory.newInstance();
 
-	static Map<URI,Templates>	cache				= new ConcurrentHashMap<>();
+	static Map<URI, Templates>	cache				= new ConcurrentHashMap<>();
 
 	public static void transform(TransformerFactory transformerFactory, URL xslt, InputStream in, OutputStream out)
-			throws Exception {
+		throws Exception {
 		if (xslt == null)
 			throw new IllegalArgumentException("No source template specified");
 

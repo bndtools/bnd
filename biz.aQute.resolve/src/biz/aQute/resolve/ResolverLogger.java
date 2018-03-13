@@ -50,6 +50,7 @@ public class ResolverLogger implements LogService, AutoCloseable {
 		printer = IO.writer(out, UTF_8);
 	}
 
+	@Override
 	public void log(int level, String msg, Throwable throwable) {
 		switch (level) {
 			case LOG_DEBUG :
@@ -104,10 +105,10 @@ public class ResolverLogger implements LogService, AutoCloseable {
 					StringBuilder sb = new StringBuilder(10000);
 
 					sb.append("Log too large. Split from ")
-							.append(file.getAbsolutePath())
-							.append("\nsize ")
-							.append((file.length() + 512) / 1024)
-							.append(" Kb\n===================\n");
+						.append(file.getAbsolutePath())
+						.append("\nsize ")
+						.append((file.length() + 512) / 1024)
+						.append(" Kb\n===================\n");
 
 					byte[] buffer = new byte[4000];
 					try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {

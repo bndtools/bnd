@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Forker<T> {
 	final Executor		executor;
-	final Map<T,Job>	waiting		= new HashMap<>();
+	final Map<T, Job>	waiting		= new HashMap<>();
 	final Set<Job>		executing	= new HashSet<>();
 	final AtomicBoolean	canceled	= new AtomicBoolean();
 	private int			count;
@@ -43,6 +43,7 @@ public class Forker<T> {
 		/**
 		 * Run when the job's dependencies are done.
 		 */
+		@Override
 		public void run() {
 			Thread.interrupted(); // clear the interrupt flag
 
@@ -105,7 +106,7 @@ public class Forker<T> {
 	 *            ran
 	 * @param runnable the runnable to run
 	 */
-	public synchronized void doWhen(Collection< ? extends T> dependencies, T target, Runnable runnable) {
+	public synchronized void doWhen(Collection<? extends T> dependencies, T target, Runnable runnable) {
 		if (waiting.containsKey(target))
 			throw new IllegalArgumentException("You can only add a target once to the forker");
 
@@ -133,7 +134,7 @@ public class Forker<T> {
 		dependencies.removeAll(waiting.keySet());
 		if (dependencies.size() > 0)
 			throw new IllegalArgumentException(
-					"There are dependencies in the jobs that are not present in the targets: " + dependencies);
+				"There are dependencies in the jobs that are not present in the targets: " + dependencies);
 
 	}
 
@@ -152,7 +153,8 @@ public class Forker<T> {
 
 		List<Runnable> torun = new ArrayList<>();
 		synchronized (this) {
-			for (Iterator<Job> e = waiting.values().iterator(); e.hasNext();) {
+			for (Iterator<Job> e = waiting.values()
+				.iterator(); e.hasNext();) {
 				Job job = e.next();
 				if (job.dependencies.isEmpty()) {
 					torun.add(job);

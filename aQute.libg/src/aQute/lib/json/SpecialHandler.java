@@ -11,16 +11,16 @@ public class SpecialHandler extends Handler {
 	@SuppressWarnings("rawtypes")
 	final Class				type;
 	final Method			valueOf;
-	final Constructor< ? >	constructor;
+	final Constructor<?>	constructor;
 
-	public SpecialHandler(Class< ? > type, Constructor< ? > constructor, Method valueOf) {
+	public SpecialHandler(Class<?> type, Constructor<?> constructor, Method valueOf) {
 		this.type = type;
 		this.constructor = constructor;
 		this.valueOf = valueOf;
 	}
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
 		StringHandler.string(app, object.toString());
 	}
 

@@ -3,14 +3,10 @@ package aQute.bnd.connection.settings;
 import aQute.bnd.util.dto.DTO;
 
 public class ServerDTO extends DTO {
-	public String	id	= "default";
+	public String	id		= "default";
 	public String	username;
 	public String	password;
-	
-	
-	
-	
-	
+
 	/**
 	 * The private key location used to authenticate.
 	 */
@@ -20,8 +16,7 @@ public class ServerDTO extends DTO {
 	 */
 	public String	passphrase;
 
-
-	public String   match;
-	public boolean verify=true;
-	public String trust;
+	public String	match;
+	public boolean	verify	= true;
+	public String	trust;
 }

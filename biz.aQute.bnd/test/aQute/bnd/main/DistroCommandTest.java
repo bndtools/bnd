@@ -47,11 +47,12 @@ public class DistroCommandTest extends TestCase {
 		tmp = IO.getFile("generated/tmp");
 		tmp.mkdirs();
 
-		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class,
-				this.getClass().getClassLoader());
+		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class, this.getClass()
+			.getClassLoader());
 
-		FrameworkFactory ff = sl.iterator().next();
-		Map<String,String> configuration = new HashMap<>();
+		FrameworkFactory ff = sl.iterator()
+			.next();
+		Map<String, String> configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
 		framework = ff.newFramework(configuration);
@@ -60,13 +61,15 @@ public class DistroCommandTest extends TestCase {
 		BundleContext context = framework.getBundleContext();
 
 		String[] bundles = {
-				"../biz.aQute.remote/generated/biz.aQute.remote.agent.jar",
-				"testdata/bundles/com.liferay.dynamic.data.mapping.taglib.jar",
-				"testdata/bundles/com.liferay.item.selector.taglib.jar"
+			"../biz.aQute.remote/generated/biz.aQute.remote.agent.jar",
+			"testdata/bundles/com.liferay.dynamic.data.mapping.taglib.jar",
+			"testdata/bundles/com.liferay.item.selector.taglib.jar"
 		};
 
 		for (String bundle : bundles) {
-			String location = "reference:" + IO.getFile(bundle).toURI().toString();
+			String location = "reference:" + IO.getFile(bundle)
+				.toURI()
+				.toString();
 			Bundle b = context.installBundle(location);
 			b.start();
 		}
@@ -117,7 +120,7 @@ public class DistroCommandTest extends TestCase {
 
 		int jspTaglibCapabilityCount = 0;
 		for (Capability capability : extenderCaps) {
-			Map<String,Object> attributes = capability.getAttributes();
+			Map<String, Object> attributes = capability.getAttributes();
 			if ("jsp.taglib".equals(attributes.get(ExtenderNamespace.EXTENDER_NAMESPACE))) {
 				jspTaglibCapabilityCount++;
 			}
@@ -125,20 +128,20 @@ public class DistroCommandTest extends TestCase {
 		assertEquals(2, jspTaglibCapabilityCount);
 
 		List<Capability> eeCaps = resource
-				.getCapabilities(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+			.getCapabilities(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 
 		assertTrue(eeCaps.size() > 0);
 
 		Capability javaSECap = null;
 		for (Capability capability : eeCaps) {
-			Map<String,Object> attributes = capability.getAttributes();
+			Map<String, Object> attributes = capability.getAttributes();
 			if ("JavaSE".equals(attributes.get(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE))) {
 				javaSECap = capability;
 			}
 		}
 		assertNotNull(javaSECap);
 		@SuppressWarnings("null")
-		Map<String,Object> attributes = javaSECap.getAttributes();
+		Map<String, Object> attributes = javaSECap.getAttributes();
 		assertTrue(attributes.containsKey("version"));
 		@SuppressWarnings("unchecked")
 		List<Version> versions = (List<Version>) attributes.get("version");
@@ -178,10 +181,10 @@ public class DistroCommandTest extends TestCase {
 			model.setProperty("-distro", distro.getAbsolutePath() + ";version=file");
 			model.setProperty("-runfw", "org.eclipse.osgi");
 			model.setProperty("-runrequires",
-					"osgi.wiring.package;filter:='(osgi.wiring.package=com.liferay.dynamic.data.mapping.taglib.servlet.taglib)'");
+				"osgi.wiring.package;filter:='(osgi.wiring.package=com.liferay.dynamic.data.mapping.taglib.servlet.taglib)'");
 
-			Map<Resource,List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
-					new BndResolver(logger), Collections.emptyList(), logger);
+			Map<Resource, List<Wire>> requiredResources = process.resolveRequired(model, null, registry,
+				new BndResolver(logger), Collections.emptyList(), logger);
 
 			assertEquals(1, requiredResources.size());
 		}

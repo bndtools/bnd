@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {
-		ElementType.FIELD
+	ElementType.FIELD
 })
 public @interface Validator {
 	String value();

@@ -27,8 +27,8 @@ import aQute.service.reporter.Reporter;
 public class MavenRemoteRepository extends MavenBackingRepository {
 	private final static Logger				logger				= LoggerFactory.getLogger(MavenRemoteRepository.class);
 	final HttpClient						client;
-	final Map<Revision,RevisionMetadata>	revisions			= new ConcurrentHashMap<>();
-	final Map<Program,ProgramMetadata>		programs			= new ConcurrentHashMap<>();
+	final Map<Revision, RevisionMetadata>	revisions			= new ConcurrentHashMap<>();
+	final Map<Program, ProgramMetadata>		programs			= new ConcurrentHashMap<>();
 	final String							base;
 	final static long						DEFAULT_MAX_STALE	= TimeUnit.HOURS.toMillis(1);
 
@@ -38,6 +38,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		this.base = base;
 	}
 
+	@Override
 	public TaggedData fetch(String path, File file) throws Exception {
 		URL url = new URL(base + path);
 		int n = 0;
@@ -46,10 +47,10 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 				logger.debug("Fetching {}", path);
 
 				TaggedData tag = client.build()
-						.headers("User-Agent", "Bnd")
-						.useCache(file, DEFAULT_MAX_STALE)
-						.asTag()
-						.go(url);
+					.headers("User-Agent", "Bnd")
+					.useCache(file, DEFAULT_MAX_STALE)
+					.asTag()
+					.go(url);
 				logger.debug("Fetched {}", tag);
 				if (tag.getState() == State.UPDATED) {
 
@@ -58,14 +59,22 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 					if (!path.endsWith("/maven-metadata.xml")) {
 						URL shaUrl = new URL(base + path + ".sha1");
 						URL md5Url = new URL(base + path + ".md5");
-						String sha = client.build().asString().timeout(15000).go(shaUrl);
+						String sha = client.build()
+							.asString()
+							.timeout(15000)
+							.go(shaUrl);
 						if (sha != null) {
-							String fileSha = SHA1.digest(file).asHex();
+							String fileSha = SHA1.digest(file)
+								.asHex();
 							checkDigest(fileSha, sha, file);
 						} else {
-							String md5 = client.build().asString().timeout(15000).go(md5Url);
+							String md5 = client.build()
+								.asString()
+								.timeout(15000)
+								.go(md5Url);
 							if (md5 != null) {
-								String fileMD5 = MD5.digest(file).asHex();
+								String fileMD5 = MD5.digest(file)
+									.asHex();
 								checkDigest(fileMD5, md5, file);
 							}
 						}
@@ -80,6 +89,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 			}
 	}
 
+	@Override
 	public void store(File file, String path) throws Exception {
 
 		int n = 0;
@@ -87,7 +97,12 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		SHA1 sha1 = SHA1.digest(file);
 		MD5 md5 = MD5.digest(file);
 
-		try (TaggedData go = client.build().put().upload(file).updateTag().asTag().go(url);) {
+		try (TaggedData go = client.build()
+			.put()
+			.upload(file)
+			.updateTag()
+			.asTag()
+			.go(url);) {
 
 			switch (go.getState()) {
 				case NOT_FOUND :
@@ -100,27 +115,45 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 					break;
 			}
 		}
-		try (TaggedData tag = client.build().put().upload(sha1.asHex()).asTag().go(new URL(base + path + ".sha1"))) {}
-		try (TaggedData tag = client.build().put().upload(md5.asHex()).asTag().go(new URL(base + path + ".md5"))) {}
+		try (TaggedData tag = client.build()
+			.put()
+			.upload(sha1.asHex())
+			.asTag()
+			.go(new URL(base + path + ".sha1"))) {}
+		try (TaggedData tag = client.build()
+			.put()
+			.upload(md5.asHex())
+			.asTag()
+			.go(new URL(base + path + ".md5"))) {}
 
 	}
 
+	@Override
 	public boolean delete(String path) throws Exception {
 		URL url = new URL(base + path);
-		TaggedData go = client.build().put().delete().get(TaggedData.class).go(url);
+		TaggedData go = client.build()
+			.put()
+			.delete()
+			.get(TaggedData.class)
+			.go(url);
 		if (go == null)
 			return false;
 
 		if (go.getResponseCode() == HttpURLConnection.HTTP_OK
-				|| go.getResponseCode() == HttpURLConnection.HTTP_NO_CONTENT) {
-			client.build().delete().async(new URL(base + path + ".sha1"));
-			client.build().delete().async(new URL(base + path + ".md5"));
+			|| go.getResponseCode() == HttpURLConnection.HTTP_NO_CONTENT) {
+			client.build()
+				.delete()
+				.async(new URL(base + path + ".sha1"));
+			client.build()
+				.delete()
+				.async(new URL(base + path + ".md5"));
 			return true;
 		}
 
 		throw new HttpRequestException(go);
 	}
 
+	@Override
 	public void close() {
 
 	}
@@ -130,6 +163,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		return "RemoteRepo [base=" + base + ", id=" + id + "]";
 	}
 
+	@Override
 	public String getUser() throws Exception {
 		return client.getUserFor(base);
 	}
@@ -139,6 +173,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		return new URI(base + remotePath);
 	}
 
+	@Override
 	public boolean isFile() {
 		return false;
 	}

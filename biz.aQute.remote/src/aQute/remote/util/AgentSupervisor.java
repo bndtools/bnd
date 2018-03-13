@@ -27,14 +27,14 @@ import aQute.libg.cryptography.SHA1;
  * @param <Agent> The agent type
  */
 public class AgentSupervisor<Supervisor, Agent> {
-	private static final Map<File,Info>				fileInfo	= new ConcurrentHashMap<>();
-	private static final MultiMap<String,String>	shaInfo		= new MultiMap<>();
+	private static final Map<File, Info>			fileInfo	= new ConcurrentHashMap<>();
+	private static final MultiMap<String, String>	shaInfo		= new MultiMap<>();
 	private static final int						connectWait	= 200;
 	private static byte[]							EMPTY		= new byte[0];
 	private Agent									agent;
 	private CountDownLatch							latch		= new CountDownLatch(1);
 	protected volatile int							exitCode;
-	private Link<Supervisor,Agent>					link;
+	private Link<Supervisor, Agent>					link;
 	private AtomicBoolean							quit		= new AtomicBoolean(false);
 
 	static class Info extends DTO {
@@ -47,7 +47,7 @@ public class AgentSupervisor<Supervisor, Agent> {
 	}
 
 	protected void connect(Class<Agent> agent, Supervisor supervisor, String host, int port, final int timeout)
-			throws Exception {
+		throws Exception {
 		if (timeout < -1) {
 			throw new IllegalArgumentException("timeout can not be less than -1");
 		}
@@ -93,7 +93,7 @@ public class AgentSupervisor<Supervisor, Agent> {
 		return EMPTY;
 	}
 
-	public void setAgent(Link<Supervisor,Agent> link) {
+	public void setAgent(Link<Supervisor, Agent> link) {
 		this.agent = link.getRemote();
 		this.link = link;
 	}
@@ -137,7 +137,8 @@ public class AgentSupervisor<Supervisor, Agent> {
 
 		synchronized (shaInfo) {
 			if (info.lastModified != file.lastModified()) {
-				String sha = SHA1.digest(file).asHex();
+				String sha = SHA1.digest(file)
+					.asHex();
 				if (info.sha != null && !sha.equals(info.sha))
 					shaInfo.removeValue(info.sha, file.getAbsolutePath());
 				info.sha = sha;

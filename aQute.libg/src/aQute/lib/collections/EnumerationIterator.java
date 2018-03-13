@@ -11,17 +11,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class EnumerationIterator<T> implements Iterable<T>, Iterator<T> {
 
-	public static <T> EnumerationIterator<T> iterator(Enumeration< ? extends T> e) {
+	public static <T> EnumerationIterator<T> iterator(Enumeration<? extends T> e) {
 		return new EnumerationIterator<>(e);
 	}
 
-	private final Enumeration< ? extends T>	enumerator;
+	private final Enumeration<? extends T>	enumerator;
 	private final AtomicBoolean				done	= new AtomicBoolean();
 
-	public EnumerationIterator(Enumeration< ? extends T> e) {
+	public EnumerationIterator(Enumeration<? extends T> e) {
 		enumerator = e;
 	}
 
+	@Override
 	public Iterator<T> iterator() {
 		if (!done.compareAndSet(false, true))
 			throw new IllegalStateException("Can only be used once");
@@ -29,14 +30,17 @@ public class EnumerationIterator<T> implements Iterable<T>, Iterator<T> {
 
 	}
 
+	@Override
 	public boolean hasNext() {
 		return enumerator.hasMoreElements();
 	}
 
+	@Override
 	public T next() {
 		return enumerator.nextElement();
 	}
 
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException("Does not support removes");
 	}

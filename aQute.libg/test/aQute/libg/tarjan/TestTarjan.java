@@ -11,10 +11,10 @@ import junit.framework.TestCase;
 public class TestTarjan extends TestCase {
 
 	public void testTarjan() throws Exception {
-		MultiMap<String,String> g = mkGraph("A{BC}B{A}C{DE}D{C}E{D}");
+		MultiMap<String, String> g = mkGraph("A{BC}B{A}C{DE}D{C}E{D}");
 		System.err.println(g);
 
-		Collection< ? extends Collection<String>> scc = Tarjan.tarjan(g);
+		Collection<? extends Collection<String>> scc = Tarjan.tarjan(g);
 
 		assertEquals(2, scc.size());
 		for (Collection<String> set : scc) {
@@ -27,8 +27,8 @@ public class TestTarjan extends TestCase {
 		}
 	}
 
-	private MultiMap<String,String> mkGraph(String string) {
-		MultiMap<String,String> map = new MultiMap<>();
+	private MultiMap<String, String> mkGraph(String string) {
+		MultiMap<String, String> map = new MultiMap<>();
 
 		String key = null;
 

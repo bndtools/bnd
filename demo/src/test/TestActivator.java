@@ -17,8 +17,9 @@ import org.osgi.framework.ServiceReference;
 
 public class TestActivator implements BundleActivator {
 
+	@Override
 	@SuppressWarnings({
-			"rawtypes", "unchecked"
+		"rawtypes", "unchecked"
 	})
 	public void start(final BundleContext context) throws Exception {
 		System.err.println("Hello world");
@@ -65,7 +66,8 @@ public class TestActivator implements BundleActivator {
 				System.exit(-1);
 			}
 		} else if ("noreference".equals(p)) {
-			String location = context.getBundle().getLocation();
+			String location = context.getBundle()
+				.getLocation();
 
 			if (location.startsWith("reference:"))
 				System.exit(-1);
@@ -73,10 +75,11 @@ public class TestActivator implements BundleActivator {
 				System.exit(15);
 
 		} else if ("agent".equals(p)) {
-			Hashtable<String,Object> ht = new Hashtable<>();
+			Hashtable<String, Object> ht = new Hashtable<>();
 			ht.put("main.thread", true);
 			context.registerService(Callable.class.getName(), new Callable<Integer>() {
 
+				@Override
 				public Integer call() throws Exception {
 					ServiceReference ref = context.getServiceReference(Instrumentation.class.getName());
 					if (ref == null)
@@ -92,6 +95,7 @@ public class TestActivator implements BundleActivator {
 		} else if ("quit.no.exit".equals(p)) {
 			Callable r = new Callable() {
 
+				@Override
 				public Integer call() {
 					System.err.println("Quit but not exit()");
 					return 197;
@@ -104,6 +108,7 @@ public class TestActivator implements BundleActivator {
 		} else if ("main.thread".equals(p)) {
 			Runnable r = new Runnable() {
 
+				@Override
 				public void run() {
 					System.err.println("Running in main");
 				}
@@ -119,13 +124,16 @@ public class TestActivator implements BundleActivator {
 
 			Runnable r = new Runnable() {
 
+				@Override
 				public void run() {
 					System.err.println("Running in main");
 					Thread t = new Thread() {
+						@Override
 						public void run() {
 							System.err.println("Stopping framework");
 							try {
-								context.getBundle(0).stop();
+								context.getBundle(0)
+									.stop();
 								System.err.println("After stopping framework, sleeping");
 								Thread.sleep(10000);
 								System.err.println("After sleeping");
@@ -151,6 +159,7 @@ public class TestActivator implements BundleActivator {
 		} else if ("main.thread.callable".equals(p)) {
 			Callable<Integer> r = new Callable<Integer>() {
 
+				@Override
 				public Integer call() throws Exception {
 					System.err.println("Running in main");
 					return 42;
@@ -163,10 +172,12 @@ public class TestActivator implements BundleActivator {
 		} else if ("main.thread.both".equals(p)) {
 			class Both implements Callable<Integer>, Runnable {
 
+				@Override
 				public void run() {
 					throw new RuntimeException("Wrong, really wrong. The callable has preference");
 				}
 
+				@Override
 				public Integer call() throws Exception {
 					return 43;
 				}
@@ -176,11 +187,12 @@ public class TestActivator implements BundleActivator {
 			Properties props = new Properties();
 			props.setProperty("main.thread", "true");
 			context.registerService(new String[] {
-					Runnable.class.getName(), Callable.class.getName()
+				Runnable.class.getName(), Callable.class.getName()
 			}, r, (Dictionary) props);
 		} else if ("main.thread.callableinvalidtype".equals(p)) {
 			Callable<Double> r = new Callable<Double>() {
 
+				@Override
 				public Double call() throws Exception {
 					System.exit(44); // really wrong
 					return 44D;
@@ -198,6 +210,7 @@ public class TestActivator implements BundleActivator {
 		} else if ("main.thread.callablenull".equals(p)) {
 			Callable<Integer> r = new Callable<Integer>() {
 
+				@Override
 				public Integer call() throws Exception {
 					System.err.println("In main, return null");
 					return null;
@@ -214,6 +227,7 @@ public class TestActivator implements BundleActivator {
 
 	}
 
+	@Override
 	public void stop(BundleContext arg0) throws Exception {
 		System.err.println("Goodbye world");
 	}

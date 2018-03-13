@@ -22,7 +22,7 @@ public class DownloadListenerPromise {
 	final DownloadListener		dls[];
 	final Promise<File>			promise;
 	private final String		task;
-	private File		linked;
+	private File				linked;
 
 	/**
 	 * Use the promise to signal the Download Listeners
@@ -33,7 +33,7 @@ public class DownloadListenerPromise {
 	 * @param downloadListeners
 	 */
 	public DownloadListenerPromise(Reporter r, String task, Promise<File> promise,
-			DownloadListener... downloadListeners) {
+		DownloadListener... downloadListeners) {
 		Reporter reporter = Slf4jReporter.getAlternative(DownloadListenerPromise.class, r);
 		this.task = task;
 		this.promise = promise;
@@ -56,17 +56,18 @@ public class DownloadListenerPromise {
 					reporter.warning("%s: Success callback failed to %s: %s", this, dl, e);
 				}
 			}
-		}).onFailure(failure -> {
-			logger.debug("{}: failure", this, failure);
-			String reason = Exceptions.toString(failure);
-			for (DownloadListener dl : dls) {
-				try {
-					dl.failure(null, reason);
-				} catch (Throwable e) {
-					reporter.warning("%s: Fail callback failed to %s: %s", this, dl, e);
+		})
+			.onFailure(failure -> {
+				logger.debug("{}: failure", this, failure);
+				String reason = Exceptions.toString(failure);
+				for (DownloadListener dl : dls) {
+					try {
+						dl.failure(null, reason);
+					} catch (Throwable e) {
+						reporter.warning("%s: Fail callback failed to %s: %s", this, dl, e);
+					}
 				}
-			}
-		});
+			});
 	}
 
 	@Override

@@ -103,7 +103,8 @@ public class HttpClientProxyTest extends TestCase {
 				@Override
 				public HttpResponse clientToProxyRequest(HttpObject obj) {
 
-					String scheme = URI.create(originalRequest.uri()).getScheme();
+					String scheme = URI.create(originalRequest.uri())
+						.getScheme();
 
 					if (!secure && "http".equalsIgnoreCase(scheme)) {
 						// Insecure using HTTP
@@ -239,101 +240,100 @@ public class HttpClientProxyTest extends TestCase {
 
 	void createAuthenticationHttpProxy() {
 		HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-				.withPort(++httpProxyPort)
-				.withProxyAuthenticator(new ProxyAuthenticator() {
+			.withPort(++httpProxyPort)
+			.withProxyAuthenticator(new ProxyAuthenticator() {
 
-					@Override
-					public boolean authenticate(String user, String password) {
-						System.out.println("Authenticating " + user + " : " + password);
-						authenticationCalled.set(true);
-						return "proxyuser".equals(user) && "good".equals(password);
+				@Override
+				public boolean authenticate(String user, String password) {
+					System.out.println("Authenticating " + user + " : " + password);
+					authenticationCalled.set(true);
+					return "proxyuser".equals(user) && "good".equals(password);
 
-					}
+				}
 
-					@Override
-					public String getRealm() {
-						return null;
-					}
-				})
-				.withFiltersSource(new ProxyCheckingFilter(false));
+				@Override
+				public String getRealm() {
+					return null;
+				}
+			})
+			.withFiltersSource(new ProxyCheckingFilter(false));
 		httpProxy = bootstrap.start();
 	}
 
 	void createPromiscuousHttpProxy() {
 		HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-				.withPort(++httpProxyPort)
-				.withFiltersSource(new ProxyCheckingFilter(false));
+			.withPort(++httpProxyPort)
+			.withFiltersSource(new ProxyCheckingFilter(false));
 		httpProxy = bootstrap.start();
 	}
 
 	void createSecurePromiscuousHttpProxy() {
 		HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
-				.withPort(++httpProxyPort)
-				.withManInTheMiddle(new MitmManager() {
+			.withPort(++httpProxyPort)
+			.withManInTheMiddle(new MitmManager() {
 
-					SecureRandom random = new SecureRandom();
+				SecureRandom random = new SecureRandom();
 
-					@Override
-					public SSLEngine serverSslEngine(String arg0, int arg1) {
-						return serverSslEngine();
+				@Override
+				public SSLEngine serverSslEngine(String arg0, int arg1) {
+					return serverSslEngine();
+				}
+
+				@Override
+				public SSLEngine serverSslEngine() {
+					try {
+						return SslContextBuilder.forClient()
+							.trustManager(httpTestServer.getCertificateChain())
+							.build()
+							.newEngine(UnpooledByteBufAllocator.DEFAULT);
+					} catch (SSLException e) {
+						throw new RuntimeException(e);
 					}
+				}
 
-					@Override
-					public SSLEngine serverSslEngine() {
-						try {
-							return SslContextBuilder.forClient()
-									.trustManager(httpTestServer.getCertificateChain())
-									.build()
-									.newEngine(UnpooledByteBufAllocator.DEFAULT);
-						} catch (SSLException e) {
-							throw new RuntimeException(e);
-						}
+				@SuppressWarnings("restriction")
+				private X509Certificate[] createSelfSignedCertifcate(KeyPair keyPair) throws Exception {
+					X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
+					nameBuilder.addRDN(BCStyle.CN, "localhost");
+
+					Date notBefore = new Date();
+					Date notAfter = new Date(System.currentTimeMillis() + 24 * 3 * 60 * 60 * 1000);
+
+					BigInteger serialNumber = new BigInteger(128, random);
+
+					X509v3CertificateBuilder certificateBuilder = new JcaX509v3CertificateBuilder(nameBuilder.build(),
+						serialNumber, notBefore, notAfter, nameBuilder.build(), keyPair.getPublic());
+					ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256WithRSAEncryption")
+						.build(keyPair.getPrivate());
+					X509Certificate certificate = new JcaX509CertificateConverter()
+						.getCertificate(certificateBuilder.build(contentSigner));
+					return new X509Certificate[] {
+						certificate
+					};
+				}
+
+				private KeyPair createKey() throws NoSuchAlgorithmException {
+					KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+					keyGen.initialize(2048, random);
+					KeyPair pair = keyGen.generateKeyPair();
+					return pair;
+				}
+
+				@Override
+				public SSLEngine clientSslEngineFor(HttpRequest arg0, SSLSession arg1) {
+					try {
+						KeyPair keyPair = createKey();
+						X509Certificate[] selfSignedCertifcate = createSelfSignedCertifcate(keyPair);
+
+						return SslContextBuilder.forServer(keyPair.getPrivate(), selfSignedCertifcate)
+							.build()
+							.newEngine(UnpooledByteBufAllocator.DEFAULT);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
 					}
-
-					@SuppressWarnings("restriction")
-					private X509Certificate[] createSelfSignedCertifcate(KeyPair keyPair) throws Exception {
-						X500NameBuilder nameBuilder = new X500NameBuilder(BCStyle.INSTANCE);
-						nameBuilder.addRDN(BCStyle.CN, "localhost");
-
-						Date notBefore = new Date();
-						Date notAfter = new Date(System.currentTimeMillis() + 24 * 3 * 60 * 60 * 1000);
-
-						BigInteger serialNumber = new BigInteger(128, random);
-
-						X509v3CertificateBuilder certificateBuilder = new JcaX509v3CertificateBuilder(
-								nameBuilder.build(), serialNumber, notBefore, notAfter, nameBuilder.build(),
-								keyPair.getPublic());
-						ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256WithRSAEncryption")
-								.build(keyPair.getPrivate());
-						X509Certificate certificate = new JcaX509CertificateConverter()
-								.getCertificate(certificateBuilder.build(contentSigner));
-						return new X509Certificate[] {
-								certificate
-						};
-					}
-
-					private KeyPair createKey() throws NoSuchAlgorithmException {
-						KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-						keyGen.initialize(2048, random);
-						KeyPair pair = keyGen.generateKeyPair();
-						return pair;
-					}
-
-					@Override
-					public SSLEngine clientSslEngineFor(HttpRequest arg0, SSLSession arg1) {
-						try {
-							KeyPair keyPair = createKey();
-							X509Certificate[] selfSignedCertifcate = createSelfSignedCertifcate(keyPair);
-
-							return SslContextBuilder.forServer(keyPair.getPrivate(), selfSignedCertifcate)
-									.build()
-									.newEngine(UnpooledByteBufAllocator.DEFAULT);
-						} catch (Exception e) {
-							throw new RuntimeException(e);
-						}
-					}
-				})
-				.withFiltersSource(new ProxyCheckingFilter(true));
+				}
+			})
+			.withFiltersSource(new ProxyCheckingFilter(true));
 		httpProxy = bootstrap.start();
 	}
 
@@ -355,45 +355,46 @@ public class HttpClientProxyTest extends TestCase {
 		UserManager userManager = new MemoryBasedUserManager();
 		userManager.create(new User("proxyuser", "good"));
 		SocksServerBuilder builder = SocksServerBuilder.newSocks5ServerBuilder()
-				.setBindPort(++socksProxyPort)
-				.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator(userManager) {
-					@Override
-					public void doAuthenticate(Credentials arg0, Session arg1) throws AuthenticationException {
-						System.out.println("Authenticating"); // does not get
-																// called?
-						super.doAuthenticate(arg0, arg1);
-						authenticationCalled.set(true);
+			.setBindPort(++socksProxyPort)
+			.addSocksMethods(new UsernamePasswordMethod(new UsernamePasswordAuthenticator(userManager) {
+				@Override
+				public void doAuthenticate(Credentials arg0, Session arg1) throws AuthenticationException {
+					System.out.println("Authenticating"); // does not get
+															// called?
+					super.doAuthenticate(arg0, arg1);
+					authenticationCalled.set(true);
 
-					}
-				}));
+				}
+			}));
 		socks5Proxy = builder.build();
 
-		socks5Proxy.getSessionManager().addSessionListener("abc", new SessionListener() {
+		socks5Proxy.getSessionManager()
+			.addSessionListener("abc", new SessionListener() {
 
-			@Override
-			public void onException(Session arg0, Exception arg1) {
-				System.err.println("Exception " + arg0 + " " + arg1);
-				arg1.printStackTrace();
-				exception.set(arg1);
-			}
+				@Override
+				public void onException(Session arg0, Exception arg1) {
+					System.err.println("Exception " + arg0 + " " + arg1);
+					arg1.printStackTrace();
+					exception.set(arg1);
+				}
 
-			@Override
-			public void onCommand(Session arg0, CommandMessage arg1) throws CloseSessionException {
-				proxyCalled.set(true);
-				System.err.println("Command " + arg0 + " " + arg1);
-			}
+				@Override
+				public void onCommand(Session arg0, CommandMessage arg1) throws CloseSessionException {
+					proxyCalled.set(true);
+					System.err.println("Command " + arg0 + " " + arg1);
+				}
 
-			@Override
-			public void onClose(Session arg0) {
-				System.err.println("Close " + arg0);
-			}
+				@Override
+				public void onClose(Session arg0) {
+					System.err.println("Close " + arg0);
+				}
 
-			@Override
-			public void onCreate(Session arg0) throws CloseSessionException {
-				System.err.println("Create " + arg0);
-				created.incrementAndGet();
-			}
-		});
+				@Override
+				public void onCreate(Session arg0) throws CloseSessionException {
+					System.err.println("Create " + arg0);
+					created.incrementAndGet();
+				}
+			});
 
 		socks5Proxy.start();
 	}
@@ -421,7 +422,7 @@ public class HttpClientProxyTest extends TestCase {
 
 	@SuppressWarnings("resource")
 	void assertHttpProxy(String password, String protocol, boolean proxyCalled, boolean authenticationCalled)
-			throws MalformedURLException, Exception {
+		throws MalformedURLException, Exception {
 		Processor p = new Processor();
 		p.setProperty("-connectionsettings", "" + false);
 		HttpClient hc = new HttpClient();
@@ -445,7 +446,8 @@ public class HttpClientProxyTest extends TestCase {
 		}
 
 		ServerDTO server = new ServerDTO();
-		server.id = httpTestServer.getBaseURI().toString();
+		server.id = httpTestServer.getBaseURI()
+			.toString();
 		server.verify = false;
 		server.trust = Strings.join(httpTestServer.getTrustedCertificateFiles(IO.getFile("generated")));
 		cs.add(server);
@@ -457,7 +459,8 @@ public class HttpClientProxyTest extends TestCase {
 			assertEquals("ABCDEFGH", tag.getTag());
 		String s = IO.collect(tag.getInputStream());
 		assertNotNull(s);
-		assertTrue(s.trim().startsWith("{"));
+		assertTrue(s.trim()
+			.startsWith("{"));
 		assertEquals(proxyCalled, this.proxyCalled.get());
 		assertEquals(authenticationCalled, this.authenticationCalled.get());
 
@@ -469,7 +472,6 @@ public class HttpClientProxyTest extends TestCase {
 		p.setProperty("-connectionsettings", "" + false);
 		HttpClient hc = new HttpClient();
 		ConnectionSettings cs = new ConnectionSettings(p, hc);
-
 
 		if (socks5Proxy != null) {
 			ProxyDTO proxy = new ProxyDTO();
@@ -485,7 +487,8 @@ public class HttpClientProxyTest extends TestCase {
 		}
 
 		ServerDTO server = new ServerDTO();
-		server.id = httpTestServer.getBaseURI().toString();
+		server.id = httpTestServer.getBaseURI()
+			.toString();
 		server.verify = false;
 		server.trust = Strings.join(httpTestServer.getTrustedCertificateFiles(IO.getFile("generated")));
 		cs.add(server);
@@ -496,7 +499,8 @@ public class HttpClientProxyTest extends TestCase {
 		assertEquals("ABCDEFGH", tag.getTag());
 		String s = IO.collect(tag.getInputStream());
 		assertNotNull(s);
-		assertTrue(s.trim().startsWith("{"));
+		assertTrue(s.trim()
+			.startsWith("{"));
 		assertTrue(proxyCalled.get());
 		// assertTrue(this.authenticationCalled.get() == authenticationCalled);
 

@@ -23,25 +23,29 @@ import aQute.lib.io.IO;
 
 public class Container {
 	public enum TYPE {
-		REPO, PROJECT, EXTERNAL, LIBRARY, ERROR
+		REPO,
+		PROJECT,
+		EXTERNAL,
+		LIBRARY,
+		ERROR
 	}
 
-	private volatile File				file;
-	private final String		path;
-	private final TYPE					type;
-	private final String				bsn;
-	private final String				version;
-	private volatile String				error;
-	private final Project				project;
-	private volatile DownloadBlocker	db;
-	private volatile Map<String,String>	attributes;
-	private long				manifestTime;
-	private Manifest			manifest;
-	private volatile File[]				bundleClasspathExpansion;
-	public String						warning	= "";
+	private volatile File					file;
+	private final String					path;
+	private final TYPE						type;
+	private final String					bsn;
+	private final String					version;
+	private volatile String					error;
+	private final Project					project;
+	private volatile DownloadBlocker		db;
+	private volatile Map<String, String>	attributes;
+	private long							manifestTime;
+	private Manifest						manifest;
+	private volatile File[]					bundleClasspathExpansion;
+	public String							warning	= "";
 
 	Container(Project project, String bsn, String version, TYPE type, File source, String error,
-			Map<String,String> attributes, DownloadBlocker db) {
+		Map<String, String> attributes, DownloadBlocker db) {
 		this.bsn = bsn;
 		this.version = version;
 		this.type = type;
@@ -61,7 +65,7 @@ public class Container {
 
 	}
 
-	public Container(Project project, File file, Map<String,String> attributes) {
+	public Container(Project project, File file, Map<String, String> attributes) {
 		this(project, file.getName(), "project", TYPE.PROJECT, file, null, attributes, null);
 	}
 
@@ -174,16 +178,16 @@ public class Container {
 
 	/**
 	 * Must show the file name or the error formatted as a file name
-	 * 
 	 */
 	@Override
 	public String toString() {
 		if (getError() != null)
 			return "/error/" + getError();
-		return getFile().getAbsolutePath().replace(File.separatorChar, '/');
+		return getFile().getAbsolutePath()
+			.replace(File.separatorChar, '/');
 	}
 
-	public Map<String,String> getAttributes() {
+	public Map<String, String> getAttributes() {
 		return attributes;
 	}
 
@@ -293,7 +297,7 @@ public class Container {
 		File[] bce = bundleClasspathExpansion;
 		if (bce == null) {
 			return bundleClasspathExpansion = new File[] {
-					getFile()
+				getFile()
 			};
 		}
 		if (bce.length != 0) {
@@ -303,9 +307,10 @@ public class Container {
 		File file = getFile();
 		Manifest m = getManifest();
 		String bundleClassPath;
-		if (m == null || (bundleClassPath = m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH)) == null) {
+		if (m == null || (bundleClassPath = m.getMainAttributes()
+			.getValue(Constants.BUNDLE_CLASSPATH)) == null) {
 			return bundleClasspathExpansion = new File[] {
-					file
+				file
 			};
 		}
 
@@ -317,7 +322,7 @@ public class Container {
 		int n = 0;
 		Jar jar = null;
 		try {
-			for (Map.Entry<String,Attrs> entry : header.entrySet()) {
+			for (Map.Entry<String, Attrs> entry : header.entrySet()) {
 				if (".".equals(entry.getKey())) {
 					files.add(file);
 				} else {

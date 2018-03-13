@@ -23,7 +23,7 @@ public interface Envoy {
 	 * @param properties the fw properties
 	 * @return true if a new fw was created, false if an existing fw
 	 */
-	boolean createFramework(String name, Collection<String> runpath, Map<String,Object> properties) throws Exception;
+	boolean createFramework(String name, Collection<String> runpath, Map<String, Object> properties) throws Exception;
 
 	boolean ping();
 }

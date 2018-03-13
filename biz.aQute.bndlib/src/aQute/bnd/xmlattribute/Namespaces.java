@@ -8,7 +8,7 @@ import aQute.lib.tag.Tag;
 public class Namespaces {
 
 	// namespace >> prefix
-	final Map<String,String> namespaces = new LinkedHashMap<>();
+	final Map<String, String> namespaces = new LinkedHashMap<>();
 
 	public void registerNamespace(String prefix, String namespace) {
 		if (namespaces.containsKey(namespace))
@@ -31,7 +31,7 @@ public class Namespaces {
 	}
 
 	public void addNamespaces(Tag tag) {
-		for (Map.Entry<String,String> entry : namespaces.entrySet())
+		for (Map.Entry<String, String> entry : namespaces.entrySet())
 			tag.addAttribute("xmlns:" + entry.getValue(), entry.getKey());
 	}
 

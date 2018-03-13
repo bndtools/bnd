@@ -58,13 +58,15 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		this.domain = domain;
 	}
 
-	public ReplacerAdapter(final Map<String,String> domain) {
+	public ReplacerAdapter(final Map<String, String> domain) {
 		this(new Domain() {
 
-			public Map<String,String> getMap() {
+			@Override
+			public Map<String, String> getMap() {
 				return domain;
 			}
 
+			@Override
 			public Domain getParent() {
 				return null;
 			}
@@ -218,12 +220,14 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 				Domain source = domain;
 				String value = null;
 				if (key.indexOf(';') < 0) {
-					if (WILDCARD.matcher(key).find()) {
+					if (WILDCARD.matcher(key)
+						.find()) {
 						Glob ins = new Glob(key);
 						StringBuilder sb = new StringBuilder();
 						String del = "";
 						for (String k : getAllKeys()) {
-							if (ins.matcher(k).find()) {
+							if (ins.matcher(k)
+								.find()) {
 								String v = replace(k, new Link(source, link, key));
 								if (v != null) {
 									sb.append(del);
@@ -236,7 +240,8 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 					}
 
 					while (value == null && source != null) {
-						value = source.getMap().get(key);
+						value = source.getMap()
+							.get(key);
 						if (value != null)
 							return process(value, new Link(source, link, key));
 
@@ -247,7 +252,8 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 				if (value != null)
 					return process(value, new Link(source, link, key));
 
-				if (key != null && key.trim().length() > 0) {
+				if (key != null && key.trim()
+					.length() > 0) {
 					value = System.getProperty(key);
 					if (value != null)
 						return value;
@@ -259,20 +265,23 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 							error("too many arguments for template: %s, max is 16", key);
 						}
 
-						String template = domain.getMap().get(parts[0]);
+						String template = domain.getMap()
+							.get(parts[0]);
 						if (template != null) {
 							final Domain old = domain;
 							try {
-								final Map<String,String> args = new HashMap<>();
+								final Map<String, String> args = new HashMap<>();
 								for (int i = 0; i < 16; i++) {
 									args.put("" + i, i < parts.length ? parts[i] : "null");
 								}
 								domain = new Domain() {
 
-									public Map<String,String> getMap() {
+									@Override
+									public Map<String, String> getMap() {
 										return args;
 									}
 
+									@Override
 									public Domain getParent() {
 										return old;
 									}
@@ -306,7 +315,8 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		List<String> l = new ArrayList<>();
 		Domain source = domain;
 		do {
-			l.addAll(source.getMap().keySet());
+			l.addAll(source.getMap()
+				.keySet());
 			source = source.getParent();
 		} while (source != null);
 
@@ -330,11 +340,13 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 				args[i] = args[i].replaceAll("\\\\;", ";");
 
 		if (args[0].startsWith("^")) {
-			String varname = args[0].substring(1).trim();
+			String varname = args[0].substring(1)
+				.trim();
 
 			Domain parent = source.start.getParent();
 			if (parent != null)
-				return parent.getMap().get(varname);
+				return parent.getMap()
+					.get(varname);
 			return null;
 		}
 
@@ -363,19 +375,20 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		else {
 			String cname = "_" + method.replaceAll("-", "_");
 			try {
-				Method m = target.getClass().getMethod(cname, String[].class);
+				Method m = target.getClass()
+					.getMethod(cname, String[].class);
 				return "" + m.invoke(target, new Object[] {
-						args
+					args
 				});
 			} catch (NoSuchMethodException e) {
 				// Ignore
 			} catch (InvocationTargetException e) {
 				if (e.getCause() instanceof IllegalArgumentException) {
-					reporter.error("%s, for cmd: %s, arguments; %s", e.getCause(), method,
-							Arrays.toString(args));
+					reporter.error("%s, for cmd: %s, arguments; %s", e.getCause(), method, Arrays.toString(args));
 				} else {
 					reporter.warning("Exception in replace: %s", e.getCause());
-					e.getCause().printStackTrace();
+					e.getCause()
+						.printStackTrace();
 				}
 			} catch (Exception e) {
 				reporter.warning("Exception in replace: %s method=%s", e, method);
@@ -426,7 +439,8 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		ExtList<String> list = ExtList.from(args[1]);
 		Pattern pattern = Pattern.compile(args[2]);
 
-		list.removeIf(s -> pattern.matcher(s).matches() == include);
+		list.removeIf(s -> pattern.matcher(s)
+			.matches() == include);
 		return list.join();
 	}
 
@@ -454,6 +468,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		}
 		Collections.sort(result, new Comparator<String>() {
 
+			@Override
 			public int compare(String a, String b) {
 				while (a.startsWith("0"))
 					a = a.substring(1);
@@ -541,7 +556,8 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (args.length != 2)
 			throw new RuntimeException("Need a value for the ${def;<value>} macro");
 
-		String value = domain.getMap().get(args[1]);
+		String value = domain.getMap()
+			.get(args[1]);
 		if (value == null)
 			return "";
 
@@ -601,10 +617,12 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		ExtList<String> names = new ExtList<>(paths.size());
 		for (String path : paths) {
 			if (path.endsWith(".class")) {
-				String name = path.substring(0, path.length() - 6).replace('/', '.');
+				String name = path.substring(0, path.length() - 6)
+					.replace('/', '.');
 				names.add(name);
 			} else if (path.endsWith(".java")) {
-				String name = path.substring(0, path.length() - 5).replace('/', '.');
+				String name = path.substring(0, path.length() - 5)
+					.replace('/', '.');
 				names.add(name);
 			} else {
 				reporter.warning("in toclassname, %s, is not a class path because it does not end in .class", args[1]);
@@ -643,9 +661,11 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 1; i < args.length; i++) {
 			File f = IO.getFile(base, args[i]);
-			if (f.exists() && f.getParentFile().exists()) {
+			if (f.exists() && f.getParentFile()
+				.exists()) {
 				sb.append(del);
-				sb.append(f.getParentFile().getAbsolutePath());
+				sb.append(f.getParentFile()
+					.getAbsolutePath());
 				del = ",";
 			}
 		}
@@ -662,7 +682,8 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 1; i < args.length; i++) {
 			File f = IO.getFile(base, args[i]);
-			if (f.exists() && f.getParentFile().exists()) {
+			if (f.exists() && f.getParentFile()
+				.exists()) {
 				sb.append(del);
 				sb.append(f.getName());
 				del = ",";
@@ -758,7 +779,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		if (!dir.isDirectory())
 			throw new IllegalArgumentException(
-					"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
+				"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
 
 		List<File> files = new ArrayList<>(new SortedList<>(dir.listFiles()));
 
@@ -769,7 +790,9 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		ExtList<String> result = new ExtList<>();
 		for (File file : files)
-			result.add(relative ? file.getName() : file.getAbsolutePath().replace(File.separatorChar, '/'));
+			result.add(relative ? file.getName()
+				: file.getAbsolutePath()
+					.replace(File.separatorChar, '/'));
 
 		return result.join(",");
 	}
@@ -783,8 +806,8 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 */
 	public String system_internal(boolean allowFail, String args[]) throws Exception {
 		verifyCommand(args,
-				"${" + (allowFail ? "system-allow-fail" : "system") + ";<command>[;<in>]}, execute a system command",
-				null, 2, 3);
+			"${" + (allowFail ? "system-allow-fail" : "system") + ";<command>[;<in>]}, execute a system command", null,
+			2, 3);
 		String command = args[1];
 		String input = null;
 
@@ -792,11 +815,14 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			input = args[2];
 		}
 
-		Process process = Runtime.getRuntime().exec(command, null, base);
+		Process process = Runtime.getRuntime()
+			.exec(command, null, base);
 		if (input != null) {
-			process.getOutputStream().write(input.getBytes(UTF_8));
+			process.getOutputStream()
+				.write(input.getBytes(UTF_8));
 		}
-		process.getOutputStream().close();
+		process.getOutputStream()
+			.close();
 
 		String s = IO.collect(process.getInputStream(), UTF_8);
 		s += IO.collect(process.getErrorStream(), UTF_8);
@@ -877,7 +903,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 					Matcher m = patterns[i].matcher(args[i]);
 					if (!m.matches())
 						message += String.format("Argument %s (%s) does not match %s%n", i, args[i],
-								patterns[i].pattern());
+							patterns[i].pattern());
 				}
 			}
 		}
@@ -943,13 +969,13 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * 
 	 * @return A new Properties with the flattened values
 	 */
-	public Map<String,String> getFlattenedProperties() {
+	public Map<String, String> getFlattenedProperties() {
 		// Some macros only work in a lower Domain, so we
 		// do not report unknown macros while flattening
 		flattening = true;
 		try {
-			Map<String,String> flattened = new HashMap<>();
-			Map<String,String> source = domain.getMap();
+			Map<String, String> flattened = new HashMap<>();
+			Map<String, String> source = domain.getMap();
 			for (String key : source.keySet()) {
 				if (!key.startsWith("_"))
 					if (key.startsWith("-"))
@@ -992,6 +1018,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		}
 	}
 
+	@Override
 	public String process(String line) {
 		return process(line, domain);
 	}
@@ -1037,15 +1064,18 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		if (args.length > 1)
 			multiplier = Float.parseFloat(args[1]);
 
-		return (int) (Runtime.getRuntime().availableProcessors() * multiplier);
+		return (int) (Runtime.getRuntime()
+			.availableProcessors() * multiplier);
 	}
 
 	public long _maxMemory(String args[]) {
-		return Runtime.getRuntime().maxMemory();
+		return Runtime.getRuntime()
+			.maxMemory();
 	}
 
 	public long _freeMemory(String args[]) {
-		return Runtime.getRuntime().freeMemory();
+		return Runtime.getRuntime()
+			.freeMemory();
 	}
 
 	public long _nanoTime(String args[]) {
@@ -1108,7 +1138,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		for (int i = 0; i < args.length; i++) {
 			long l = Long.parseLong(args[1]);
 			bytes(sb, l, 0, new String[] {
-					"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"
+				"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"
 			});
 		}
 		return sb.toString();

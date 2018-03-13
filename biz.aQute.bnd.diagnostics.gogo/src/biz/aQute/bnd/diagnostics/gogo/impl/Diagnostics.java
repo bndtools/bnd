@@ -42,31 +42,31 @@ public class Diagnostics {
 	}
 
 	@Descriptor("Show all requirements. Iterates over all (or one) bundles and gathers their requirements.")
-	public List<Requirement> reqs(
-			@Descriptor("Only show the requirements of the given bundle") @Parameter(names = { "-b",
-					"--bundle" }, absentValue = "*") Glob bundle,
-			@Descriptor("Only show the requirements when the given namespace matches. You can use wildcards. A number of namespaces are shortcutted:\n"
-					+ "  p = osgi.wiring.package\n"
-					+ "  i = osgi.wiring.identity\n"
-					+ "  h = osgi.wiring.host\n"
-					+ "  b = osgi.wiring.bundle\n"
-					+ "  e = osgi.extender\n"
-					+ "  s = osgi.service\n"
-					+ "  c = osgi.contract") @Parameter(names = { "-n", "--namespace" }, absentValue = "*") String ns) {
+	public List<Requirement> reqs(@Descriptor("Only show the requirements of the given bundle") @Parameter(names = {
+		"-b", "--bundle"
+	}, absentValue = "*") Glob bundle,
+		@Descriptor("Only show the requirements when the given namespace matches. You can use wildcards. A number of namespaces are shortcutted:\n"
+			+ "  p = osgi.wiring.package\n" + "  i = osgi.wiring.identity\n" + "  h = osgi.wiring.host\n"
+			+ "  b = osgi.wiring.bundle\n" + "  e = osgi.extender\n" + "  s = osgi.service\n"
+			+ "  c = osgi.contract") @Parameter(names = {
+				"-n", "--namespace"
+		}, absentValue = "*") String ns) {
 
 		Glob nsg = shortcuts(ns);
 
 		List<Requirement> reqs = new ArrayList<>();
 
 		for (Bundle b : context.getBundles()) {
-			if (!bundle.matcher(b.getSymbolicName()).matches())
+			if (!bundle.matcher(b.getSymbolicName())
+				.matches())
 				continue;
 
 			BundleWiring wiring = b.adapt(BundleWiring.class);
 
 			List<BundleRequirement> requirements = wiring.getRequirements(null);
 			for (Requirement r : requirements) {
-				if (nsg.matcher(r.getNamespace()).matches()) {
+				if (nsg.matcher(r.getNamespace())
+					.matches()) {
 					reqs.add(r);
 				}
 			}
@@ -75,17 +75,15 @@ public class Diagnostics {
 	}
 
 	@Descriptor("Show all capabilities of all bundles. It is possible to list by bundle and/or by a specific namespace.")
-	public List<Capability> caps(
-			@Descriptor("Only show the capabilities of the given bundle") @Parameter(names = { "-b",
-					"--bundle" }, absentValue = "-1") long bundle,
-			@Descriptor("Only show the capabilities when the given namespace matches. You can use wildcards. A number of namespaces are shortcutted:\n"
-					+ "  p = osgi.wiring.package\n"
-					+ "  i = osgi.wiring.identity\n"
-					+ "  h = osgi.wiring.host\n"
-					+ "  b = osgi.wiring.bundle\n"
-					+ "  e = osgi.extender\n"
-					+ "  s = osgi.service\n"
-					+ "  c = osgi.contract") @Parameter(names = { "-n", "--namespace" }, absentValue = "*") String ns) {
+	public List<Capability> caps(@Descriptor("Only show the capabilities of the given bundle") @Parameter(names = {
+		"-b", "--bundle"
+	}, absentValue = "-1") long bundle,
+		@Descriptor("Only show the capabilities when the given namespace matches. You can use wildcards. A number of namespaces are shortcutted:\n"
+			+ "  p = osgi.wiring.package\n" + "  i = osgi.wiring.identity\n" + "  h = osgi.wiring.host\n"
+			+ "  b = osgi.wiring.bundle\n" + "  e = osgi.extender\n" + "  s = osgi.service\n"
+			+ "  c = osgi.contract") @Parameter(names = {
+				"-n", "--namespace"
+		}, absentValue = "*") String ns) {
 
 		Glob nsg = shortcuts(ns);
 
@@ -99,7 +97,8 @@ public class Diagnostics {
 
 			List<BundleCapability> capabilities = wiring.getCapabilities(null);
 			for (Capability r : capabilities) {
-				if (nsg.matcher(r.getNamespace()).matches()) {
+				if (nsg.matcher(r.getNamespace())
+					.matches()) {
 					result.add(r);
 				}
 			}
@@ -108,33 +107,36 @@ public class Diagnostics {
 	}
 
 	@Descriptor("Show bundles that are listening for certain services. This will check for the following fishy cases: \n"
-			+ "* ? – No matching registered service found\n"
-			+ "* ! – Matching registered service found in another classpace\n"
-			+ "The first set show is the set of bundle that register such a service in the proper class space. The second "
-			+ "set (only shown when not empty) shows the bundles that have a registered service for this but are not "
-			+ "compatible because they are registsred in another class space")
-	public List<Search> wanted(
-			@Descriptor("If specified will only show for the given bundle") @Parameter(names = { "-b",
-					"--bundle" }, absentValue = "-1") long exporter,
-			@Descriptor("If specified, this glob expression must match the name of the service class/interface name") @Parameter(names = {
-					"-n", "--name" }, absentValue = "*") Glob name)
-			throws InvalidSyntaxException {
+		+ "* ? – No matching registered service found\n"
+		+ "* ! – Matching registered service found in another classpace\n"
+		+ "The first set show is the set of bundle that register such a service in the proper class space. The second "
+		+ "set (only shown when not empty) shows the bundles that have a registered service for this but are not "
+		+ "compatible because they are registsred in another class space")
+	public List<Search> wanted(@Descriptor("If specified will only show for the given bundle") @Parameter(names = {
+		"-b", "--bundle"
+	}, absentValue = "-1") long exporter,
+		@Descriptor("If specified, this glob expression must match the name of the service class/interface name") @Parameter(names = {
+			"-n", "--name"
+		}, absentValue = "*") Glob name) throws InvalidSyntaxException {
 		List<Search> searches = new ArrayList<>();
 		synchronized (fl) {
 			for (Map.Entry<String, List<BundleContext>> e : fl.listenerContexts.entrySet()) {
 
 				String serviceName = e.getKey();
 
-				if (!name.matcher(serviceName).matches())
+				if (!name.matcher(serviceName)
+					.matches())
 					continue;
 
 				ServiceReference<?> refs[] = context.getAllServiceReferences(serviceName, null);
 				for (BundleContext bc : e.getValue()) {
 
-					if (exporter != -1 && exporter != bc.getBundle().getBundleId())
+					if (exporter != -1 && exporter != bc.getBundle()
+						.getBundleId())
 						continue;
 
-					BundleWiring wiring = bc.getBundle().adapt(BundleWiring.class);
+					BundleWiring wiring = bc.getBundle()
+						.adapt(BundleWiring.class);
 
 					Search s = new Search();
 					s.serviceName = serviceName;
@@ -165,21 +167,27 @@ public class Diagnostics {
 
 	@Descriptor("Show exported packages of all bundles that look fishy. Options are provided to filter for a specific bundle and/or the package name (glob). You can also specify -a for all packages")
 	public Collection<Export> exports(
-			@Descriptor("If specified will only show for the given bundle") @Parameter(names = { "-b",
-					"--bundle" }, absentValue = "-1") long exporter,
-			@Descriptor("If specified, this glob expression must match the name of the service class/interface name") @Parameter(names = {
-					"-n", "--name" }, absentValue = "*") Glob name,
-			@Descriptor("Show all packages, not just the ones that look fishy") @Parameter(names = {
-					"-a", "--all" }, absentValue = "false", presentValue = "true") boolean all,
-			@Descriptor("Check exports against private packages") @Parameter(names = { "-p",
-					"--private" }, absentValue = "false", presentValue = "true") boolean privatePackages) {
+		@Descriptor("If specified will only show for the given bundle") @Parameter(names = {
+			"-b", "--bundle"
+		}, absentValue = "-1") long exporter,
+		@Descriptor("If specified, this glob expression must match the name of the service class/interface name") @Parameter(names = {
+			"-n", "--name"
+		}, absentValue = "*") Glob name,
+		@Descriptor("Show all packages, not just the ones that look fishy") @Parameter(names = {
+			"-a", "--all"
+		}, absentValue = "false", presentValue = "true") boolean all,
+		@Descriptor("Check exports against private packages") @Parameter(names = {
+			"-p", "--private"
+		}, absentValue = "false", presentValue = "true") boolean privatePackages) {
 		Map<String, Export> map = new HashMap<>();
 
 		List<Capability> caps = caps(-1, PackageNamespace.PACKAGE_NAMESPACE);
 
 		for (Capability c : caps) {
-			String packageName = (String) c.getAttributes().get(PackageNamespace.PACKAGE_NAMESPACE);
-			if (!name.matcher(packageName).matches())
+			String packageName = (String) c.getAttributes()
+				.get(PackageNamespace.PACKAGE_NAMESPACE);
+			if (!name.matcher(packageName)
+				.matches())
 				continue;
 
 			Resource resource = c.getResource();
@@ -199,10 +207,10 @@ public class Diagnostics {
 
 		for (Export e : map.values()) {
 			for (Bundle b : context.getBundles()) {
-				
-				if ( e.exporters.contains(b.getBundleId()))
+
+				if (e.exporters.contains(b.getBundleId()))
 					continue;
-				
+
 				if (hasPackage(b, e.pack)) {
 					e.privates.add(b.getBundleId());
 				}
@@ -224,7 +232,8 @@ public class Diagnostics {
 	}
 
 	private Class<?> load(Bundle bundle, String name) {
-		return load(bundle.adapt(BundleWiring.class).getClassLoader(), name);
+		return load(bundle.adapt(BundleWiring.class)
+			.getClassLoader(), name);
 	}
 
 	private Class<?> load(ClassLoader classLoader, String name) {
@@ -237,28 +246,28 @@ public class Diagnostics {
 
 	private Glob shortcuts(String ns) {
 		switch (ns) {
-		case "p":
-			ns = "osgi.wiring.package";
-			break;
+			case "p" :
+				ns = "osgi.wiring.package";
+				break;
 
-		case "i":
-			ns = "osgi.wiring.identity";
-			break;
-		case "h":
-			ns = "osgi.wiring.host";
-			break;
-		case "b":
-			ns = "osgi.wiring.bundle";
-			break;
-		case "e":
-			ns = "osgi.extender";
-			break;
-		case "s":
-			ns = "osgi.service";
-			break;
-		case "c":
-			ns = "osgi.contract";
-			break;
+			case "i" :
+				ns = "osgi.wiring.identity";
+				break;
+			case "h" :
+				ns = "osgi.wiring.host";
+				break;
+			case "b" :
+				ns = "osgi.wiring.bundle";
+				break;
+			case "e" :
+				ns = "osgi.extender";
+				break;
+			case "s" :
+				ns = "osgi.service";
+				break;
+			case "c" :
+				ns = "osgi.contract";
+				break;
 		}
 		Glob nsg = new Glob(ns);
 		return nsg;

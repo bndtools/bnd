@@ -14,8 +14,9 @@ public class DateHandler extends Handler {
 	static {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
+
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
 		String s;
 		synchronized (sdf) {
 			s = sdf.format((Date) object);

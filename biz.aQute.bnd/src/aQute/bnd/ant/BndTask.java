@@ -94,17 +94,17 @@ import aQute.libg.qtokens.QuotedTokenizer;
  */
 public class BndTask extends BaseTask {
 	private final static Logger	logger	= LoggerFactory.getLogger(BndTask.class);
-	String			command;
-	File			basedir;
-	boolean			test;
-	boolean			failok;
-	boolean			exceptions;
-	boolean			print;
+	String						command;
+	File						basedir;
+	boolean						test;
+	boolean						failok;
+	boolean						exceptions;
+	boolean						print;
 
 	// flags aiming to know how classpath & bnd descriptors were set
-	private boolean	classpathDirectlySet;
-	private Path	classpathReference;
-	private Path	bndfilePath;
+	private boolean				classpathDirectlySet;
+	private Path				classpathReference;
+	private Path				bndfilePath;
 
 	@Override
 	public void execute() throws BuildException {
@@ -220,7 +220,7 @@ public class BndTask extends BaseTask {
 				if (inherit) {
 					Properties projectProperties = new UTF8Properties();
 					@SuppressWarnings("unchecked")
-					Hashtable<Object,Object> antProps = getProject().getProperties();
+					Hashtable<Object, Object> antProps = getProject().getProperties();
 					projectProperties.putAll(antProps);
 					projectProperties.putAll(builder.getProperties());
 					builder.setProperties(projectProperties);
@@ -271,7 +271,8 @@ public class BndTask extends BaseTask {
 					} else {
 						msg = "(not modified)";
 					}
-					logger.debug("{} ({}) {} {}", jar.getName(), output.getName(), jar.getResources().size(), msg);
+					logger.debug("{} ({}) {} {}", jar.getName(), output.getName(), jar.getResources()
+						.size(), msg);
 					report();
 					jar.close();
 				}

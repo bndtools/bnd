@@ -5,7 +5,6 @@ import aQute.bnd.util.dto.DTO;
 /**
  * Section for management of default dependency information for use in a group
  * of POMs.
- *
  */
 public class DependencyManagementDTO extends DTO {
 

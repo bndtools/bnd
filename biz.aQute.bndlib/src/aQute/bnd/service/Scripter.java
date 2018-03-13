@@ -5,6 +5,6 @@ import java.util.Map;
 
 public interface Scripter {
 
-	void eval(Map<String,Object> x, StringReader stringReader);
+	void eval(Map<String, Object> x, StringReader stringReader);
 
 }

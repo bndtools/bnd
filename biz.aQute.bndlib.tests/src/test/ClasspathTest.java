@@ -39,7 +39,7 @@ public class ClasspathTest extends TestCase {
 
 		Builder b = new Builder();
 		b.setClasspath(new String[] {
-				"src", "src/test/test.jar", "src/test/tb1.jar"
+			"src", "src/test/test.jar", "src/test/tb1.jar"
 		});
 		b.setProperties(p);
 		Jar jar = b.build();
@@ -55,18 +55,22 @@ public class ClasspathTest extends TestCase {
 	 */
 	public static void testSimple() throws Exception {
 		Properties p = new Properties();
-		p.put("-classpath", IO.getFile("jar/osgi.jar").toURI().toURL().toString());
+		p.put("-classpath", IO.getFile("jar/osgi.jar")
+			.toURI()
+			.toURL()
+			.toString());
 		p.put("Export-Package", "org.osgi.service.event");
 		p.put("Private-Package", "test.refer");
 
 		Builder b = new Builder();
 		b.setClasspath(new String[] {
-				"bin"
+			"bin"
 		});
 		b.setProperties(p);
 		Jar jar = b.build();
 		Manifest m = jar.getManifest();
-		String importPackage = m.getMainAttributes().getValue("Import-Package");
+		String importPackage = m.getMainAttributes()
+			.getValue("Import-Package");
 		assertTrue(importPackage.contains("org.osgi.framework;version=\"[1.3,2)\""));
 		assertTrue(importPackage.contains("org.osgi.service.event;version=\"[1.0,2)\""));
 	}

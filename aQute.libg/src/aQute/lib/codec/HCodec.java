@@ -20,6 +20,7 @@ public class HCodec implements Codec {
 		this.codec = codec;
 	}
 
+	@Override
 	public Object decode(Reader in, Type type) throws Exception {
 		return codec.decode(in, type);
 	}
@@ -37,6 +38,7 @@ public class HCodec implements Codec {
 		return codec.decode(r, t);
 	}
 
+	@Override
 	public void encode(Type t, Object o, Appendable out) throws Exception {
 		codec.encode(t, o, out);
 	}
@@ -51,8 +53,7 @@ public class HCodec implements Codec {
 	}
 
 	public <T> T decode(File in, Class<T> t) throws Exception {
-		try (InputStream fin = IO.stream(in);
-				InputStreamReader rdr = new InputStreamReader(fin, UTF_8)) {
+		try (InputStream fin = IO.stream(in); InputStreamReader rdr = new InputStreamReader(fin, UTF_8)) {
 			return t.cast(decode(rdr, t));
 		}
 
