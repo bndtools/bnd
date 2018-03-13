@@ -74,7 +74,8 @@ public class PDU implements Types, Iterable<PDU> {
 	}
 
 	public Iterator<PDU> iterator() {
-		return Arrays.asList((PDU[]) payload).iterator();
+		return Arrays.asList((PDU[]) payload)
+			.iterator();
 	}
 
 	public int[] getOID() {

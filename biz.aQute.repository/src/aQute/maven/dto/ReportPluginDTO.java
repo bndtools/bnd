@@ -8,42 +8,39 @@ import aQute.bnd.version.MavenVersion;
 /**
  * The <code>&lt;plugin&gt;</code> element contains informations required for a
  * report plugin.
- *
  */
 public class ReportPluginDTO extends DTO {
 	/**
 	 * The group ID of the reporting plugin in the repository.
 	 */
-	public String groupId = "org.apache.maven.plugins";
+	public String				groupId		= "org.apache.maven.plugins";
 
 	/**
 	 * The artifact ID of the reporting plugin in the repository.
 	 */
-	public String artifactId;
+	public String				artifactId;
 
 	/**
 	 * The version of the reporting plugin to be used.
 	 */
 
-	public MavenVersion version;
+	public MavenVersion			version;
 
 	/**
 	 * Multiple specifications of a set of reports, each having (possibly)
 	 * different configuration. This is the reporting parallel to an
 	 * <code>execution</code> in the build.
-	 * 
 	 */
-	public ReportSetDTO[] reportSets;
+	public ReportSetDTO[]		reportSets;
 
 	/**
 	 * Whether any configuration should be propagated to child POMs. Note: While
 	 * the type of this field is <code>String</code> for technical reasons, the
 	 * semantic type is actually <code>Boolean</code>. Default value is
 	 * <code>true</code>.
-	 * 
 	 */
 
-	public boolean inherited = true;
+	public boolean				inherited	= true;
 
 	/**
 	 * <p>
@@ -71,8 +68,7 @@ public class ReportPluginDTO extends DTO {
 	 * "http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/xml/Xpp3DomUtils.html">
 	 * Xpp3DomUtils</a> for more information.
 	 * </p>
-	 * 
 	 */
 
-	public Map<String, Object> configuration;
+	public Map<String, Object>	configuration;
 }

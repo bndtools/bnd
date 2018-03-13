@@ -64,9 +64,10 @@ public class PrepareTask extends BaseTask {
 		// Only run junit when we have a test src directory
 		//
 
-		boolean junit = project.getTestSrc().isDirectory() && !Processor.isTrue(project.getProperty(Constants.NOJUNIT));
-		boolean junitOsgi = project.getProperties().getProperty(Constants.TESTCASES) != null
-				&& !Processor.isTrue(project.getProperty(Constants.NOJUNITOSGI));
+		boolean junit = project.getTestSrc()
+			.isDirectory() && !Processor.isTrue(project.getProperty(Constants.NOJUNIT));
+		boolean junitOsgi = project.getProperties()
+			.getProperty(Constants.TESTCASES) != null && !Processor.isTrue(project.getProperty(Constants.NOJUNITOSGI));
 
 		if (junit)
 			properties.setProperty("project.junit", "true");
@@ -75,7 +76,7 @@ public class PrepareTask extends BaseTask {
 	}
 
 	private void copyProperties(Properties flattened) {
-		for (Enumeration< ? > k = flattened.propertyNames(); k.hasMoreElements();) {
+		for (Enumeration<?> k = flattened.propertyNames(); k.hasMoreElements();) {
 			String key = (String) k.nextElement();
 			String value = flattened.getProperty(key);
 			if (isPrint())

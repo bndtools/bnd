@@ -5,7 +5,7 @@ import java.io.File;
 import aQute.lib.xpath.XPathParser;
 
 public class SettingsParser extends XPathParser {
-	final SettingsDTO					settings	= new SettingsDTO();
+	final SettingsDTO settings = new SettingsDTO();
 
 	/*
 	 * <proxies> <proxy> <id>example-proxy</id> <active>true</active>

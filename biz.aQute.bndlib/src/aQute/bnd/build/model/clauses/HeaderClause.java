@@ -48,13 +48,14 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		List<String> result = new ArrayList<>();
 		StringTokenizer tokenizer = new StringTokenizer(string, ",");
 		while (tokenizer.hasMoreTokens()) {
-			result.add(tokenizer.nextToken().trim());
+			result.add(tokenizer.nextToken()
+				.trim());
 		}
 
 		return result;
 	}
 
-	public void setListAttrib(String attrib, Collection< ? extends String> value) {
+	public void setListAttrib(String attrib, Collection<? extends String> value) {
 		if (value == null || value.isEmpty())
 			attribs.remove(attrib);
 		else {
@@ -74,7 +75,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		formatTo(buffer, null);
 	}
 
-	public void formatTo(StringBuilder buffer, Comparator<Entry<String,String>> sorter) {
+	public void formatTo(StringBuilder buffer, Comparator<Entry<String, String>> sorter) {
 		String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
 		// If the name contains a comma, then quote the whole thing
 		String tmpName = name;
@@ -83,7 +84,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		buffer.append(tmpName);
 
 		if (attribs != null) {
-			Set<Entry<String,String>> set;
+			Set<Entry<String, String>> set;
 			if (sorter != null) {
 				set = new TreeSet<>(sorter);
 				set.addAll(attribs.entrySet());
@@ -91,8 +92,8 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 				set = attribs.entrySet();
 			}
 
-			for (Iterator<Entry<String,String>> iter = set.iterator(); iter.hasNext();) {
-				Entry<String,String> entry = iter.next();
+			for (Iterator<Entry<String, String>> iter = set.iterator(); iter.hasNext();) {
+				Entry<String, String> entry = iter.next();
 				String name = entry.getKey();
 				String value = entry.getValue();
 
@@ -104,7 +105,9 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 					if (value.indexOf(',') > -1 || value.indexOf('=') > -1)
 						value = "'" + value + "'";
 
-					buffer.append(name).append('=').append(value);
+					buffer.append(name)
+						.append('=')
+						.append(value);
 				}
 			}
 		}

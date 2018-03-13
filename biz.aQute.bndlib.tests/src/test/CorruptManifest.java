@@ -25,7 +25,7 @@ public class CorruptManifest extends TestCase {
 		b.setProperty("NL5", ltext);
 		b.setProperty("Export-Package", "*");
 		b.setClasspath(new File[] {
-				IO.getFile("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		});
 		Jar jar = b.build();
 		Manifest manifest = jar.getManifest();

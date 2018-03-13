@@ -15,9 +15,9 @@ import java.lang.annotation.Target;
  * </p>
  * <h2>Elaborate and Simple Explanation</h2>
  * <p>
- * There is a distinction between "provider implemented" and
- * "consumer implemented" interfaces, which is reflected in the
- * {@link ProviderType} and {@link ConsumerType} annotations respectively.
+ * There is a distinction between "provider implemented" and "consumer
+ * implemented" interfaces, which is reflected in the {@link ProviderType} and
+ * {@link ConsumerType} annotations respectively.
  * </p>
  * <p>
  * These annotations can be placed on an interface to enable the tooling to

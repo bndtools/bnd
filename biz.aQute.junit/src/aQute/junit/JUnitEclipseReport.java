@@ -92,7 +92,8 @@ public class JUnitEclipseReport implements TestReporter {
 		this.current = test;
 		message("%TESTS  ", test);
 		try {
-			Method m = test.getClass().getMethod("setBundleContext", BundleContext.class);
+			Method m = test.getClass()
+				.getMethod("setBundleContext", BundleContext.class);
 			m.invoke(test, targetBundle.getBundleContext());
 		} catch (Exception e) {
 

@@ -32,7 +32,12 @@ public abstract class Pom {
 	}
 
 	public enum Scope {
-		compile, runtime, system, import_, provided, test,;
+		compile,
+		runtime,
+		system,
+		import_,
+		provided,
+		test,;
 
 		// private boolean includes(Scope other) {
 		// if (other == this) return true;
@@ -106,18 +111,31 @@ public abstract class Pom {
 			StringBuilder builder = new StringBuilder();
 			builder.append("Dependency [");
 			if (groupId != null)
-				builder.append("groupId=").append(groupId).append(", ");
+				builder.append("groupId=")
+					.append(groupId)
+					.append(", ");
 			if (artifactId != null)
-				builder.append("artifactId=").append(artifactId).append(", ");
+				builder.append("artifactId=")
+					.append(artifactId)
+					.append(", ");
 			if (version != null)
-				builder.append("version=").append(version).append(", ");
+				builder.append("version=")
+					.append(version)
+					.append(", ");
 			if (type != null)
-				builder.append("type=").append(type).append(", ");
+				builder.append("type=")
+					.append(type)
+					.append(", ");
 			if (scope != null)
-				builder.append("scope=").append(scope).append(", ");
-			builder.append("optional=").append(optional).append(", ");
+				builder.append("scope=")
+					.append(scope)
+					.append(", ");
+			builder.append("optional=")
+				.append(optional)
+				.append(", ");
 			if (exclusions != null)
-				builder.append("exclusions=").append(exclusions);
+				builder.append("exclusions=")
+					.append(exclusions);
 			builder.append("]");
 			return builder.toString();
 		}
@@ -139,41 +157,53 @@ public abstract class Pom {
 
 	protected void parse(Document doc, XPath xp) throws XPathExpressionException, Exception {
 
-		this.artifactId = replace(xp.evaluate("project/artifactId", doc).trim(), this.artifactId);
-		this.groupId = replace(xp.evaluate("project/groupId", doc).trim(), this.groupId);
-		this.version = replace(xp.evaluate("project/version", doc).trim(), this.version);
+		this.artifactId = replace(xp.evaluate("project/artifactId", doc)
+			.trim(), this.artifactId);
+		this.groupId = replace(xp.evaluate("project/groupId", doc)
+			.trim(), this.groupId);
+		this.version = replace(xp.evaluate("project/version", doc)
+			.trim(), this.version);
 
-		String nextDescription = xp.evaluate("project/description", doc).trim();
+		String nextDescription = xp.evaluate("project/description", doc)
+			.trim();
 		if (this.description.length() != 0 && nextDescription.length() != 0)
 			this.description += "\n";
 		this.description += replace(nextDescription);
 
-		this.name = replace(xp.evaluate("project/name", doc).trim(), this.name);
+		this.name = replace(xp.evaluate("project/name", doc)
+			.trim(), this.name);
 
 		NodeList list = (NodeList) xp.evaluate("project/dependencies/dependency", doc, XPathConstants.NODESET);
 		for (int i = 0; i < list.getLength(); i++) {
 			Node node = list.item(i);
 			Dependency dep = new Dependency();
-			String scope = xp.evaluate("scope", node).trim();
+			String scope = xp.evaluate("scope", node)
+				.trim();
 			if (scope.length() == 0)
 				dep.scope = Scope.compile;
 			else
 				dep.scope = Scope.valueOf(scope);
-			dep.type = xp.evaluate("type", node).trim();
+			dep.type = xp.evaluate("type", node)
+				.trim();
 
-			String opt = xp.evaluate("optional", node).trim();
+			String opt = xp.evaluate("optional", node)
+				.trim();
 			dep.optional = opt != null && opt.equalsIgnoreCase("true");
 			dep.groupId = replace(xp.evaluate("groupId", node));
-			dep.artifactId = replace(xp.evaluate("artifactId", node).trim());
+			dep.artifactId = replace(xp.evaluate("artifactId", node)
+				.trim());
 
-			dep.version = replace(xp.evaluate("version", node).trim());
+			dep.version = replace(xp.evaluate("version", node)
+				.trim());
 			dependencies.add(dep);
 
 			NodeList exclusions = (NodeList) xp.evaluate("exclusions", node, XPathConstants.NODESET);
 			for (int e = 0; e < exclusions.getLength(); e++) {
 				Node exc = exclusions.item(e);
-				String exclGroupId = xp.evaluate("groupId", exc).trim();
-				String exclArtifactId = xp.evaluate("artifactId", exc).trim();
+				String exclGroupId = xp.evaluate("groupId", exc)
+					.trim();
+				String exclArtifactId = xp.evaluate("artifactId", exc)
+					.trim();
 				dep.exclusions.add(exclGroupId + "+" + exclArtifactId);
 			}
 		}
@@ -294,7 +324,8 @@ public abstract class Pom {
 			return version;
 
 		if ("${basedir}".equals(in))
-			return pomFile.getParentFile().getAbsolutePath();
+			return pomFile.getParentFile()
+				.getAbsolutePath();
 
 		if ("${pom.name}".equals(in) || "${project.name}".equals(in))
 			return name;

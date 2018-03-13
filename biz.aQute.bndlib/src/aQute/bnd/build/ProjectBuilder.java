@@ -69,7 +69,7 @@ public class ProjectBuilder extends Builder {
 	@Override
 	protected Object[] getMacroDomains() {
 		return new Object[] {
-				project, project.getWorkspace()
+			project, project.getWorkspace()
 		};
 	}
 
@@ -132,7 +132,8 @@ public class ProjectBuilder extends Builder {
 
 	@Override
 	protected void changedFile(File f) {
-		project.getWorkspace().changedFile(f);
+		project.getWorkspace()
+			.changedFile(f);
 	}
 
 	/**
@@ -153,32 +154,35 @@ public class ProjectBuilder extends Builder {
 				logger.debug("No baseline jar {}", getProperty(Constants.BASELINE));
 				return;
 			}
-			
+
 			Version newer = new Version(getVersion());
 			Version older = new Version(fromRepo.getVersion());
-			
+
 			if (!getBsn().equals(fromRepo.getBsn())) {
 				error("The symbolic name of this project (%s) is not the same as the baseline: %s", getBsn(),
-						fromRepo.getBsn());
+					fromRepo.getBsn());
 				return;
 			}
-			
+
 			//
-			// Check if we want to overwrite an equal version that is not staging
+			// Check if we want to overwrite an equal version that is not
+			// staging
 			//
-			
-			if (newer.getWithoutQualifier().equals(older.getWithoutQualifier())) {
+
+			if (newer.getWithoutQualifier()
+				.equals(older.getWithoutQualifier())) {
 				RepositoryPlugin rr = getBaselineRepo();
 				if (rr instanceof InfoRepository) {
 					ResourceDescriptor descriptor = ((InfoRepository) rr).getDescriptor(getBsn(), older);
 					if (descriptor != null && descriptor.phase != Phase.STAGING) {
-						error("Baselining %s against same version %s but the repository says the older repository version is not the required %s but is instead %s",
-								getBsn(), getVersion(), Phase.STAGING, descriptor.phase);
+						error(
+							"Baselining %s against same version %s but the repository says the older repository version is not the required %s but is instead %s",
+							getBsn(), getVersion(), Phase.STAGING, descriptor.phase);
 						return;
 					}
 				}
 			}
-			
+
 			logger.debug("baseline {}-{} against: {}", getBsn(), getVersion(), fromRepo.getName());
 			Baseline baseliner = new Baseline(this, differ);
 
@@ -195,13 +199,14 @@ public class ProjectBuilder extends Builder {
 					sb.setLength(0);
 					Diff packageDiff = info.packageDiff;
 					f.format(
-							"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s%n%#S",
-							packageDiff.getName(), packageDiff.getDelta(), info.newerVersion,
-							((info.olderVersion != null) && info.olderVersion.equals(Version.LOWEST)) ? '-'
-									: info.olderVersion,
-							((info.suggestedVersion != null) && info.suggestedVersion.compareTo(info.newerVersion) <= 0)
-									? "ok" : info.suggestedVersion,
-							(info.suggestedIfProviders == null) ? "-" : info.suggestedIfProviders, packageDiff);
+						"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s%n%#S",
+						packageDiff.getName(), packageDiff.getDelta(), info.newerVersion,
+						((info.olderVersion != null) && info.olderVersion.equals(Version.LOWEST)) ? '-'
+							: info.olderVersion,
+						((info.suggestedVersion != null) && info.suggestedVersion.compareTo(info.newerVersion) <= 0)
+							? "ok"
+							: info.suggestedVersion,
+						(info.suggestedIfProviders == null) ? "-" : info.suggestedIfProviders, packageDiff);
 					SetLocation l = error("%s", f.toString());
 					l.header(Constants.BASELINE);
 					fillInLocationForPackageInfo(l.location(), packageDiff.getName());
@@ -214,7 +219,7 @@ public class ProjectBuilder extends Builder {
 				if (binfo.mismatch) {
 					sb.setLength(0);
 					f.format("The bundle version (%s/%s) is too low, must be at least %s%n%#S", binfo.olderVersion,
-							binfo.newerVersion, binfo.suggestedVersion, baseliner.getDiff());
+						binfo.newerVersion, binfo.suggestedVersion, baseliner.getDiff());
 					SetLocation error = error("%s", f.toString());
 					error.context("Baselining");
 					error.header(Constants.BUNDLE_VERSION);
@@ -232,11 +237,11 @@ public class ProjectBuilder extends Builder {
 
 	// *
 	private static final Pattern	PATTERN_EXPORT_PACKAGE		= Pattern
-			.compile(Pattern.quote(Constants.EXPORT_PACKAGE), Pattern.CASE_INSENSITIVE);
+		.compile(Pattern.quote(Constants.EXPORT_PACKAGE), Pattern.CASE_INSENSITIVE);
 	private static final Pattern	PATTERN_EXPORT_CONTENTS		= Pattern
-			.compile(Pattern.quote(Constants.EXPORT_CONTENTS), Pattern.CASE_INSENSITIVE);
+		.compile(Pattern.quote(Constants.EXPORT_CONTENTS), Pattern.CASE_INSENSITIVE);
 	private static final Pattern	PATTERN_VERSION_ANNOTATION	= Pattern
-			.compile("@(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*Version\\s*([^)]+)");
+		.compile("@(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*Version\\s*([^)]+)");
 	private static final Pattern	PATTERN_VERSION_PACKAGEINFO	= Pattern.compile("^\\s*version\\s.*$");
 
 	public void fillInLocationForPackageInfo(Location location, String packageName) throws Exception {
@@ -344,10 +349,12 @@ public class ProjectBuilder extends Builder {
 
 		if (versions.isEmpty()) {
 			// We have a repo
-			Version v = Version.parseVersion(getVersion()).getWithoutQualifier();
+			Version v = Version.parseVersion(getVersion())
+				.getWithoutQualifier();
 			if (v.compareTo(Version.ONE) > 0) {
-				warning("There is no baseline for %s in the baseline repo %s. The build is for version %s, which is higher than 1.0.0 which suggests that there should be a prior version.",
-						getBsn(), repo, v);
+				warning(
+					"There is no baseline for %s in the baseline repo %s. The build is for version %s, which is higher than 1.0.0 which suggests that there should be a prior version.",
+					getBsn(), repo, v);
 			}
 			return null;
 		}
@@ -356,8 +363,9 @@ public class ProjectBuilder extends Builder {
 		// Loop over the instructions, first match commits.
 		//
 
-		for (Entry<Instruction,Attrs> e : baselines.entrySet()) {
-			if (e.getKey().matches(bsn)) {
+		for (Entry<Instruction, Attrs> e : baselines.entrySet()) {
+			if (e.getKey()
+				.matches(bsn)) {
 				Attrs attrs = e.getValue();
 				Version target;
 
@@ -405,12 +413,14 @@ public class ProjectBuilder extends Builder {
 
 				// Fetch the revision
 
-				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) > 0) {
+				if (target.getWithoutQualifier()
+					.compareTo(version.getWithoutQualifier()) > 0) {
 					error("The baseline version %s is higher than the current version %s for %s in %s", target, version,
-							bsn, repo);
+						bsn, repo);
 					return null;
 				}
-				if (target.getWithoutQualifier().compareTo(version.getWithoutQualifier()) == 0) {
+				if (target.getWithoutQualifier()
+					.compareTo(version.getWithoutQualifier()) == 0) {
 					if (isPedantic()) {
 						warning("Baselining against jar");
 					}
@@ -438,7 +448,7 @@ public class ProjectBuilder extends Builder {
 	 * @throws Exception
 	 */
 	private SortedSet<Version> removeStagedAndFilter(SortedSet<Version> versions, RepositoryPlugin repo, String bsn)
-			throws Exception {
+		throws Exception {
 		List<Version> filtered = new ArrayList<>(versions);
 		Collections.reverse(filtered);
 
@@ -501,7 +511,8 @@ public class ProjectBuilder extends Builder {
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 		for (RepositoryPlugin r : repos) {
 			if (r.canWrite()) {
-				if (repoName == null || r.getName().equals(repoName)) {
+				if (repoName == null || r.getName()
+					.equals(repoName)) {
 					return r;
 				}
 			}
@@ -521,7 +532,8 @@ public class ProjectBuilder extends Builder {
 
 		List<RepositoryPlugin> repos = getPlugins(RepositoryPlugin.class);
 		for (RepositoryPlugin r : repos) {
-			if (r.getName().equals(repoName))
+			if (r.getName()
+				.equals(repoName))
 				return r;
 		}
 		error("Could not find -baselinerepo %s", repoName);
@@ -534,7 +546,7 @@ public class ProjectBuilder extends Builder {
 	 * @throws Exception
 	 */
 
-	public void report(Map<String,Object> table) throws Exception {
+	public void report(Map<String, Object> table) throws Exception {
 		super.report(table);
 		table.put("Baseline repo", getBaselineRepo());
 		table.put("Release repo", getReleaseRepo());
@@ -553,11 +565,12 @@ public class ProjectBuilder extends Builder {
 		Instructions runspec = new Instructions(getProperty(EXPORT));
 		List<Run> runs = new ArrayList<>();
 
-		Map<File,Attrs> files = runspec.select(getBase());
+		Map<File, Attrs> files = runspec.select(getBase());
 
-		for (Entry<File,Attrs> e : files.entrySet()) {
+		for (Entry<File, Attrs> e : files.entrySet()) {
 			Run run = new Run(project.getWorkspace(), getBase(), e.getKey());
-			for (Entry<String,String> ee : e.getValue().entrySet()) {
+			for (Entry<String, String> ee : e.getValue()
+				.entrySet()) {
 				run.setProperty(ee.getKey(), ee.getValue());
 			}
 			runs.add(run);
@@ -622,11 +635,12 @@ public class ProjectBuilder extends Builder {
 		 * bundle.
 		 */
 		if (!project.isNoBundles() && (builder.getJar() == null)
-				&& (builder.getProperty(Constants.RESOURCEONLY) == null)
-				&& (builder.getProperty(Constants.PRIVATE_PACKAGE) == null)
-				&& (builder.getProperty(Constants.EXPORT_PACKAGE) == null)
-				&& (builder.getProperty(Constants.INCLUDE_RESOURCE) == null)
-				&& (builder.getProperty(Constants.INCLUDERESOURCE) == null) && project.getOutput().isDirectory()) {
+			&& (builder.getProperty(Constants.RESOURCEONLY) == null)
+			&& (builder.getProperty(Constants.PRIVATE_PACKAGE) == null)
+			&& (builder.getProperty(Constants.EXPORT_PACKAGE) == null)
+			&& (builder.getProperty(Constants.INCLUDE_RESOURCE) == null)
+			&& (builder.getProperty(Constants.INCLUDERESOURCE) == null) && project.getOutput()
+				.isDirectory()) {
 			Jar outputDirJar = new Jar(project.getName(), project.getOutput());
 			outputDirJar.setReproducible(is(REPRODUCIBLE));
 			outputDirJar.setManifest(new Manifest());
@@ -659,7 +673,7 @@ public class ProjectBuilder extends Builder {
 		super.doneBuild(builder);
 	}
 
-	private void xrefClasspath(Map<String,Container> unreferencedClasspathEntries, Packages packages) {
+	private void xrefClasspath(Map<String, Container> unreferencedClasspathEntries, Packages packages) {
 		for (Attrs attrs : packages.values()) {
 			String from = attrs.get(Constants.FROM_DIRECTIVE);
 			if (from != null) {

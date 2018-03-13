@@ -43,12 +43,12 @@ import aQute.service.reporter.Reporter;
 public class ResourceBuilder {
 	private final static String		BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
 	private final static String		JAR_MIME_TYPE		= "application/java-archive";
-	private final ResourceImpl		resource		= new ResourceImpl();
-	private final List<Capability>	capabilities	= new LinkedList<>();
-	private final List<Requirement>	requirements	= new LinkedList<>();
-	private ReporterAdapter			reporter		= new ReporterAdapter();
+	private final ResourceImpl		resource			= new ResourceImpl();
+	private final List<Capability>	capabilities		= new LinkedList<>();
+	private final List<Requirement>	requirements		= new LinkedList<>();
+	private ReporterAdapter			reporter			= new ReporterAdapter();
 
-	private boolean built = false;
+	private boolean					built				= false;
 
 	public ResourceBuilder(Resource source) throws Exception {
 		addCapabilities(source.getCapabilities(null));
@@ -75,7 +75,8 @@ public class ResourceBuilder {
 	}
 
 	private Capability addCapability0(CapReqBuilder builder) {
-		Capability cap = builder.setResource(resource).buildCapability();
+		Capability cap = builder.setResource(resource)
+			.buildCapability();
 		int i = capabilities.indexOf(cap);
 		if (i >= 0) {
 			return capabilities.get(i);
@@ -105,7 +106,8 @@ public class ResourceBuilder {
 	}
 
 	private Requirement addRequirement0(CapReqBuilder builder) {
-		Requirement req = builder.setResource(resource).buildRequirement();
+		Requirement req = builder.setResource(resource)
+			.buildRequirement();
 		int i = requirements.indexOf(req);
 		if (i >= 0) {
 			return requirements.get(i);
@@ -146,14 +148,15 @@ public class ResourceBuilder {
 
 		int bundleManifestVersion = Integer.parseInt(manifest.get(Constants.BUNDLE_MANIFESTVERSION, "1"));
 
-		Entry<String,Attrs> bsn = manifest.getBundleSymbolicName();
+		Entry<String, Attrs> bsn = manifest.getBundleSymbolicName();
 
 		if (bsn == null) {
 			reporter.warning("No BSN set, not a bundle");
 			return false;
 		}
 
-		boolean singleton = "true".equals(bsn.getValue().get(Constants.SINGLETON_DIRECTIVE + ":"));
+		boolean singleton = "true".equals(bsn.getValue()
+			.get(Constants.SINGLETON_DIRECTIVE + ":"));
 		boolean fragment = manifest.getFragmentHost() != null;
 
 		String versionString = manifest.getBundleVersion();
@@ -170,7 +173,7 @@ public class ResourceBuilder {
 		CapReqBuilder identity = new CapReqBuilder(resource, IdentityNamespace.IDENTITY_NAMESPACE);
 		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn.getKey());
 		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
-				fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
+			fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
 		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 
 		if (singleton) {
@@ -219,7 +222,6 @@ public class ResourceBuilder {
 		Parameters importServices = OSGiHeader.parseHeader(manifest.get(Constants.IMPORT_SERVICE));
 		addImportServices(importServices);
 
-
 		@SuppressWarnings("deprecation")
 		Parameters exportServices = OSGiHeader.parseHeader(manifest.get(Constants.EXPORT_SERVICE));
 		addExportServices(exportServices);
@@ -236,10 +238,9 @@ public class ResourceBuilder {
 		//
 
 		if (fragment) {
-			Entry<String,Attrs> fragmentHost = manifest.getFragmentHost();
+			Entry<String, Attrs> fragmentHost = manifest.getFragmentHost();
 			addFragmentHost(fragmentHost.getKey(), fragmentHost.getValue());
-		}
-		else {
+		} else {
 			addFragmentHostCap(bsn.getKey(), version);
 		}
 
@@ -279,7 +280,7 @@ public class ResourceBuilder {
 	}
 
 	public void addExportServices(Parameters exportServices) throws Exception {
-		for (Map.Entry<String,Attrs> e : exportServices.entrySet()) {
+		for (Map.Entry<String, Attrs> e : exportServices.entrySet()) {
 			String service = Processor.removeDuplicateMarker(e.getKey());
 			CapabilityBuilder cb = new CapabilityBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 
@@ -290,13 +291,19 @@ public class ResourceBuilder {
 	}
 
 	public void addImportServices(Parameters importServices) {
-		for (Map.Entry<String,Attrs> e : importServices.entrySet()) {
+		for (Map.Entry<String, Attrs> e : importServices.entrySet()) {
 			String service = Processor.removeDuplicateMarker(e.getKey());
-			boolean optional = Constants.RESOLUTION_OPTIONAL.equals(e.getValue().get("availability:"));
-			boolean multiple = "true".equalsIgnoreCase(e.getValue().get("multiple:"));
+			boolean optional = Constants.RESOLUTION_OPTIONAL.equals(e.getValue()
+				.get("availability:"));
+			boolean multiple = "true".equalsIgnoreCase(e.getValue()
+				.get("multiple:"));
 
 			StringBuilder filter = new StringBuilder();
-			filter.append('(').append(Constants.OBJECTCLASS).append('=').append(service).append(')');
+			filter.append('(')
+				.append(Constants.OBJECTCLASS)
+				.append('=')
+				.append(service)
+				.append(')');
 			RequirementBuilder rb = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 			rb.addFilter(filter.toString());
 			rb.addDirective("effective", "active");
@@ -304,7 +311,7 @@ public class ResourceBuilder {
 				rb.addDirective(ServiceNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
 
 			rb.addDirective(ServiceNamespace.REQUIREMENT_CARDINALITY_DIRECTIVE,
-					multiple ? ServiceNamespace.CARDINALITY_MULTIPLE : ServiceNamespace.CARDINALITY_SINGLE);
+				multiple ? ServiceNamespace.CARDINALITY_MULTIPLE : ServiceNamespace.CARDINALITY_SINGLE);
 
 			addRequirement(rb);
 		}
@@ -332,7 +339,7 @@ public class ResourceBuilder {
 		FilterBuilder sb = new FilterBuilder();
 		sb.or();
 
-		for (Entry<String,Attrs> entry : bundleNative.entrySet()) {
+		for (Entry<String, Attrs> entry : bundleNative.entrySet()) {
 
 			String name = Processor.removeDuplicateMarker(entry.getKey());
 			if ("*".equals(name)) {
@@ -362,8 +369,10 @@ public class ResourceBuilder {
 			 */
 			doOr(sb, "language", NativeNamespace.CAPABILITY_LANGUAGE_ATTRIBUTE, entry.getValue());
 
-			for (String key : entry.getValue().keySet()) {
-				Object value = entry.getValue().getTyped(key);
+			for (String key : entry.getValue()
+				.keySet()) {
+				Object value = entry.getValue()
+					.getTyped(key);
 				key = Processor.removeDuplicateMarker(key);
 
 				switch (key) {
@@ -432,7 +441,7 @@ public class ResourceBuilder {
 	 */
 
 	public void addRequireBundles(Parameters requireBundle) throws Exception {
-		for (Entry<String,Attrs> clause : requireBundle.entrySet()) {
+		for (Entry<String, Attrs> clause : requireBundle.entrySet()) {
 			addRequireBundle(Processor.removeDuplicateMarker(clause.getKey()), clause.getValue());
 		}
 	}
@@ -448,7 +457,11 @@ public class ResourceBuilder {
 		rbb.addDirectives(attrs);
 
 		StringBuilder filter = new StringBuilder();
-		filter.append("(").append(BundleNamespace.BUNDLE_NAMESPACE).append("=").append(bsn).append(")");
+		filter.append("(")
+			.append(BundleNamespace.BUNDLE_NAMESPACE)
+			.append("=")
+			.append(bsn)
+			.append(")");
 
 		String v = attrs.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 		if (v != null && VersionRange.isOSGiVersionRange(v)) {
@@ -464,7 +477,8 @@ public class ResourceBuilder {
 	}
 
 	Object toBundleVersionFilter(VersionRange range) {
-		return range.toFilter().replaceAll(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE,
+		return range.toFilter()
+			.replaceAll(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE,
 				HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 	}
 
@@ -480,7 +494,11 @@ public class ResourceBuilder {
 		rbb.addDirectives(attrs);
 
 		StringBuilder filter = new StringBuilder();
-		filter.append("(").append(HostNamespace.HOST_NAMESPACE).append("=").append(bsn).append(")");
+		filter.append("(")
+			.append(HostNamespace.HOST_NAMESPACE)
+			.append("=")
+			.append(bsn)
+			.append(")");
 
 		String v = attrs.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 		if (v != null && VersionRange.isOSGiVersionRange(v)) {
@@ -495,7 +513,7 @@ public class ResourceBuilder {
 	}
 
 	public void addRequireCapabilities(Parameters required) throws Exception {
-		for (Entry<String,Attrs> clause : required.entrySet()) {
+		for (Entry<String, Attrs> clause : required.entrySet()) {
 			String namespace = Processor.removeDuplicateMarker(clause.getKey());
 			addRequireCapability(namespace, Processor.removeDuplicateMarker(clause.getKey()), clause.getValue());
 		}
@@ -509,7 +527,7 @@ public class ResourceBuilder {
 
 	public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
 		List<Capability> added = new ArrayList<>();
-		for (Entry<String,Attrs> clause : capabilities.entrySet()) {
+		for (Entry<String, Attrs> clause : capabilities.entrySet()) {
 			String namespace = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
 
@@ -535,7 +553,7 @@ public class ResourceBuilder {
 	 * @throws Exception
 	 */
 	public void addExportPackages(Parameters exports) throws Exception {
-		for (Entry<String,Attrs> clause : exports.entrySet()) {
+		for (Entry<String, Attrs> clause : exports.entrySet()) {
 			String pname = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
 
@@ -568,7 +586,7 @@ public class ResourceBuilder {
 	 * @throws Exception
 	 */
 	public void addImportPackages(Parameters imports) throws Exception {
-		for (Entry<String,Attrs> clause : imports.entrySet()) {
+		for (Entry<String, Attrs> clause : imports.entrySet()) {
 			String pname = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
 
@@ -591,7 +609,7 @@ public class ResourceBuilder {
 	public void addExecutionEnvironment(EE ee) throws Exception {
 
 		CapReqBuilder builder = new CapReqBuilder(resource,
-				ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+			ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 		builder.addAttribute(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, ee.getCapabilityName());
 		builder.addAttribute(ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE, ee.getCapabilityVersion());
 		addCapability(builder);
@@ -654,7 +672,7 @@ public class ResourceBuilder {
 			if (ns != null && !ns.equals(c.getNamespace()))
 				continue;
 
-			Map<String,Object> attributes = c.getAttributes();
+			Map<String, Object> attributes = c.getAttributes();
 			if (attributes != null) {
 				if (f.matchMap(attributes))
 					capabilities.add(c);
@@ -663,8 +681,8 @@ public class ResourceBuilder {
 		return capabilities;
 	}
 
-	public Map<Capability,Capability> from(Resource bundle) throws Exception {
-		Map<Capability,Capability> mapping = new HashMap<>();
+	public Map<Capability, Capability> from(Resource bundle) throws Exception {
+		Map<Capability, Capability> mapping = new HashMap<>();
 
 		addRequirements(bundle.getRequirements(null));
 
@@ -706,7 +724,8 @@ public class ResourceBuilder {
 		else
 			mime = JAR_MIME_TYPE;
 
-		String sha256 = SHA256.digest(file).asHex();
+		String sha256 = SHA256.digest(file)
+			.asHex();
 		addContentCapability(uri, sha256, file.length(), mime);
 		return hasIdentity;
 	}

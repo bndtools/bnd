@@ -14,11 +14,11 @@ public class Junit4TestCase {
 	@Parameters
 	public static Collection<Object[]> data() {
 		return Arrays.asList(new Object[][] {
-				{
-						10, 1
-				}, {
-						10, 1
-				}
+			{
+				10, 1
+			}, {
+				10, 1
+			}
 		});
 	}
 

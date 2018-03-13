@@ -4,7 +4,9 @@ import aQute.bnd.version.Version;
 
 public enum MetatypeVersion {
 
-	VERSION_1_2(new Version("1.2.0")), VERSION_1_3(new Version("1.3.0")), VERSION_1_4(new Version("1.4.0"));
+	VERSION_1_2(new Version("1.2.0")),
+	VERSION_1_3(new Version("1.3.0")),
+	VERSION_1_4(new Version("1.4.0"));
 
 	private final static String	NAMESPACE_STEM	= "http://www.osgi.org/xmlns/metatype/v";
 	private final Version		value;

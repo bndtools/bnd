@@ -91,11 +91,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private final CapabilityIndex					systemCapabilityIndex		= new CapabilityIndex();
 	private final List<Repository>					repositories				= new ArrayList<>();
 	private final List<Requirement>					failed						= new ArrayList<>();
-	private final Map<CacheKey,List<Capability>>	providerCache				= new HashMap<>();
+	private final Map<CacheKey, List<Capability>>	providerCache				= new HashMap<>();
 	private final Set<Resource>						optionalRoots				= new HashSet<>();
-	private final ConcurrentMap<Resource,Integer>	resourcePriorities			= new ConcurrentHashMap<>();
+	private final ConcurrentMap<Resource, Integer>	resourcePriorities			= new ConcurrentHashMap<>();
 	private final Comparator<Capability>			capabilityComparator;
-	private Map<String,Set<String>>					effectiveSet				= new HashMap<>();
+	private Map<String, Set<String>>				effectiveSet				= new HashMap<>();
 	private final List<ResolverHook>				resolverHooks				= new ArrayList<>();
 	private final List<ResolutionCallback>			callbacks					= new LinkedList<>();
 	private boolean									initialised					= false;
@@ -174,19 +174,20 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	@Override
 	public boolean isEffective(Requirement requirement) {
 		init();
-		String effective = requirement.getDirectives().get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
+		String effective = requirement.getDirectives()
+			.get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
 		if (effective == null || Namespace.EFFECTIVE_RESOLVE.equals(effective))
 			return true;
 
-		if (effectiveSet != null && effectiveSet.containsKey(effective)
-				&& !effectiveSet.get(effective).contains(requirement.getNamespace()))
+		if (effectiveSet != null && effectiveSet.containsKey(effective) && !effectiveSet.get(effective)
+			.contains(requirement.getNamespace()))
 			return true;
 
 		return false;
 	}
 
 	@Override
-	public Map<Resource,Wiring> getWirings() {
+	public Map<Resource, Wiring> getWirings() {
 		init();
 		return Collections.emptyMap();
 	}
@@ -223,8 +224,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			// root resource,
 			// then we are done already, no need to look for providers from the
 			// repos.
-			boolean optional = Namespace.RESOLUTION_OPTIONAL
-					.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
+			boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
+				.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
 			if (optional && !optionalRoots.contains(requirement.getResource())) {
 
 				result = new ArrayList<>(firstStageResult);
@@ -247,7 +248,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	protected void processMandatoryResource(Requirement requirement, LinkedHashSet<Capability> firstStageResult,
-			Resource resource) {
+		Resource resource) {
 		if (resource != null) {
 			List<Capability> selfCaps = resource.getCapabilities(requirement.getNamespace());
 			if (selfCaps != null) {
@@ -260,7 +261,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	protected ArrayList<Capability> findProvidersFromRepositories(Requirement requirement,
-			LinkedHashSet<Capability> existingWiredCapabilities) {
+		LinkedHashSet<Capability> existingWiredCapabilities) {
 		// Second stage results: repository contents; may be reordered.
 		ArrayList<Capability> secondStageResult = new ArrayList<>();
 
@@ -302,7 +303,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 *         that are skipped.
 	 */
 	protected Collection<Capability> findProviders(Repository repo, Requirement requirement) {
-		Map<Requirement,Collection<Capability>> map = repo.findProviders(Collections.singleton(requirement));
+		Map<Requirement, Collection<Capability>> map = repo.findProviders(Collections.singleton(requirement));
 
 		if (map.isEmpty())
 			return Collections.emptySet();
@@ -318,16 +319,19 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public static Requirement createBundleRequirement(String bsn, String versionStr) {
-		return CapReqBuilder.createBundleRequirement(bsn, versionStr).buildSyntheticRequirement();
+		return CapReqBuilder.createBundleRequirement(bsn, versionStr)
+			.buildSyntheticRequirement();
 	}
 
 	private boolean matches(Requirement requirement, Capability selfCap) {
 		boolean match = false;
 		if (isCorrectEffectiveness(requirement, selfCap)) {
 			try {
-				String filterStr = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+				String filterStr = requirement.getDirectives()
+					.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 				org.osgi.framework.Filter filter = filterStr != null
-						? org.osgi.framework.FrameworkUtil.createFilter(filterStr) : null;
+					? org.osgi.framework.FrameworkUtil.createFilter(filterStr)
+					: null;
 
 				if (filter == null)
 					match = true;
@@ -343,13 +347,15 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	private boolean isCorrectEffectiveness(Requirement requirement, Capability cap) {
 		boolean result = false;
 
-		String reqEffective = requirement.getDirectives().get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
+		String reqEffective = requirement.getDirectives()
+			.get(Namespace.REQUIREMENT_EFFECTIVE_DIRECTIVE);
 
 		if (reqEffective == null || Namespace.EFFECTIVE_RESOLVE.equals(reqEffective)) {
 			// Resolve time effective requirements will be used by the runtime
 			// resolver in the OSGi framework, and will only be matched by
 			// resolve time capabilities!
-			String capEffective = cap.getDirectives().get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
+			String capEffective = cap.getDirectives()
+				.get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
 			result = capEffective == null || Namespace.EFFECTIVE_RESOLVE.equals(capEffective);
 		} else {
 			// If we're not a resolve time requirement then any capability
@@ -394,7 +400,9 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			log.log(LogService.LOG_ERROR, "Resource has more than one identity capability (osgi.identity).");
 			return false;
 		}
-		String identity = (String) idCaps.get(0).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+		String identity = (String) idCaps.get(0)
+			.getAttributes()
+			.get(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identity == null) {
 			log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");
 			return false;
@@ -413,7 +421,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		List<Capability> contractCaps = resource.getCapabilities(ContractNamespace.CONTRACT_NAMESPACE);
 		if (contractCaps != null)
 			for (Capability cap : contractCaps) {
-				if (CONTRACT_OSGI_FRAMEWORK.equals(cap.getAttributes().get(ContractNamespace.CONTRACT_NAMESPACE)))
+				if (CONTRACT_OSGI_FRAMEWORK.equals(cap.getAttributes()
+					.get(ContractNamespace.CONTRACT_NAMESPACE)))
 					return cap;
 			}
 		return null;
@@ -421,17 +430,17 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	private static CacheKey getCacheKey(Requirement requirement) {
 		return new CacheKey(requirement.getNamespace(), requirement.getDirectives(), requirement.getAttributes(),
-				requirement.getResource());
+			requirement.getResource());
 	}
 
 	private static class CacheKey {
 		final String				namespace;
-		final Map<String,String>	directives;
-		final Map<String,Object>	attributes;
+		final Map<String, String>	directives;
+		final Map<String, Object>	attributes;
 		final Resource				resource;
 		final int					hashcode;
 
-		CacheKey(String namespace, Map<String,String> directives, Map<String,Object> attributes, Resource resource) {
+		CacheKey(String namespace, Map<String, String> directives, Map<String, Object> attributes, Resource resource) {
 			this.namespace = namespace;
 			this.directives = directives;
 			this.attributes = attributes;
@@ -439,8 +448,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			this.hashcode = calculateHashCode(namespace, directives, attributes, resource);
 		}
 
-		private static int calculateHashCode(String namespace, Map<String,String> directives,
-				Map<String,Object> attributes, Resource resource) {
+		private static int calculateHashCode(String namespace, Map<String, String> directives,
+			Map<String, Object> attributes, Resource resource) {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + ((attributes == null) ? 0 : attributes.hashCode());
@@ -490,7 +499,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	static Version getVersion(Capability cap, String attr) {
-		Object versionatt = cap.getAttributes().get(attr);
+		Object versionatt = cap.getAttributes()
+			.get(attr);
 		if (versionatt instanceof Version)
 			return (Version) versionatt;
 		else if (versionatt instanceof String)
@@ -519,7 +529,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 				return +1;
 
 			// 2. Wired
-			Map<Resource,Wiring> wirings = getWirings();
+			Map<Resource, Wiring> wirings = getWirings();
 			Wiring w1 = wirings.get(res1);
 			Wiring w2 = wirings.get(res2);
 
@@ -551,7 +561,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 						return v2.compareTo(v1);
 				} catch (Exception e) {
 					log.log(LogService.LOG_INFO,
-							"Unable to determine the versions of the capabilities " + o1 + " and " + o2, e);
+						"Unable to determine the versions of the capabilities " + o1 + " and " + o2, e);
 				}
 			}
 
@@ -562,7 +572,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 				if (!v1.equals(v2))
 					return v2.compareTo(v1);
 			} else if (IdentityNamespace.IDENTITY_NAMESPACE.equals(ns1)
-					&& IdentityNamespace.IDENTITY_NAMESPACE.equals(ns2)) {
+				&& IdentityNamespace.IDENTITY_NAMESPACE.equals(ns2)) {
 				Version v1 = getVersion(o1, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 				Version v2 = getVersion(o2, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 				if (!v1.equals(v2))
@@ -571,8 +581,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 			// 6. Same package version, higher bundle version
 			if (PACKAGE_NAMESPACE.equals(ns1) && PACKAGE_NAMESPACE.equals(ns2)) {
-				String bsn1 = (String) o1.getAttributes().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
-				String bsn2 = (String) o2.getAttributes().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
+				String bsn1 = (String) o1.getAttributes()
+					.get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
+				String bsn2 = (String) o2.getAttributes()
+					.get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
 				if (bsn1 != null && bsn1.equals(bsn2)) {
 					Version v1 = getVersion(o1, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 					Version v2 = getVersion(o2, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
@@ -582,12 +594,18 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			}
 
 			// 7. The resource with the fewest requirements
-			int diff = res1.getRequirements(null).size() - res2.getRequirements(null).size();
+			int diff = res1.getRequirements(null)
+				.size()
+				- res2.getRequirements(null)
+					.size();
 			if (diff != 0)
 				return diff;
 
 			// 8. The resource with most capabilities
-			return res2.getCapabilities(null).size() - res1.getCapabilities(null).size();
+			return res2.getCapabilities(null)
+				.size()
+				- res1.getCapabilities(null)
+					.size();
 		}
 	}
 
@@ -612,11 +630,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public void addEffectiveDirective(String effectiveDirective, Set<String> excludedNamespaces) {
-		this.effectiveSet.put(effectiveDirective,
-				excludedNamespaces != null ? excludedNamespaces : new HashSet<>());
+		this.effectiveSet.put(effectiveDirective, excludedNamespaces != null ? excludedNamespaces : new HashSet<>());
 	}
 
-	public void addEffectiveSet(Map<String,Set<String>> effectiveSet) {
+	public void addEffectiveSet(Map<String, Set<String>> effectiveSet) {
 		this.effectiveSet.putAll(effectiveSet);
 	}
 
@@ -648,9 +665,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, identity);
 		if (versionRange != null)
 			filter = new AndFilter().addChild(filter)
-					.addChild(new LiteralFilter(Filters.fromVersionRange(versionRange)));
+				.addChild(new LiteralFilter(Filters.fromVersionRange(versionRange)));
 		Requirement frameworkReq = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
+			.buildSyntheticRequirement();
 		return frameworkReq;
 	}
 
@@ -678,7 +696,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 * @param bsn
 	 */
 	public List<Resource> getResources(List<Repository> repos, String bsn, String range) {
-		Requirement bundle = CapReqBuilder.createBundleRequirement(bsn, range).buildSyntheticRequirement();
+		Requirement bundle = CapReqBuilder.createBundleRequirement(bsn, range)
+			.buildSyntheticRequirement();
 		return getResources(repos, bundle);
 	}
 
@@ -761,8 +780,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		if (object instanceof String)
 			return Version.parseVersion((String) object);
 
-		throw new IllegalArgumentException(
-				MessageFormat.format("Cannot convert type {0} to Version.", object.getClass().getName()));
+		throw new IllegalArgumentException(MessageFormat.format("Cannot convert type {0} to Version.", object.getClass()
+			.getName()));
 	}
 
 	public static Repository createRepository(final List<Resource> resources) {
@@ -798,7 +817,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		if (identityCaps == null || identityCaps.isEmpty()) {
 			return null;
 		}
-		return identityCaps.iterator().next();
+		return identityCaps.iterator()
+			.next();
 	}
 
 	public static String getResourceIdentity(Resource resource) {
@@ -806,7 +826,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		if (cap == null) {
 			return null;
 		}
-		return (String) cap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+		return (String) cap.getAttributes()
+			.get(IdentityNamespace.IDENTITY_NAMESPACE);
 	}
 
 	public static Version getResourceVersion(Resource resource) {
@@ -824,8 +845,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 */
 	protected void setBlackList(Collection<Requirement> reject) {
 		for (Repository repo : repositories) {
-			Map<Requirement,Collection<Capability>> caps = repo.findProviders(reject);
-			for (Entry<Requirement,Collection<Capability>> entry : caps.entrySet()) {
+			Map<Requirement, Collection<Capability>> caps = repo.findProviders(reject);
+			for (Entry<Requirement, Collection<Capability>> entry : caps.entrySet()) {
 				for (Capability cap : entry.getValue()) {
 					blacklistedResources.add(cap.getResource());
 				}
@@ -868,9 +889,10 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		if (p.isEmpty())
 			return;
 
-		for (Entry<String,Attrs> e : p.entrySet()) {
+		for (Entry<String, Attrs> e : p.entrySet()) {
 			String bsn = Processor.removeDuplicateMarker(e.getKey());
-			String version = e.getValue().getVersion();
+			String version = e.getValue()
+				.getVersion();
 
 			Resource resource;
 
@@ -883,7 +905,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 					try (InputStream fin = IO.stream(f)) {
 						Manifest m;
 
-						if (f.getName().endsWith(".mf"))
+						if (f.getName()
+							.endsWith(".mf"))
 							m = new Manifest(fin);
 						else {
 							try (JarInputStream jin = new JarInputStream(fin)) {
@@ -900,7 +923,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 					}
 				} else {
 					log.log(LogService.LOG_ERROR,
-							"Found fileresource " + bsn + ";" + version + " but file does not exist");
+						"Found fileresource " + bsn + ";" + version + " but file does not exist");
 					continue;
 				}
 			} else if (version == null || VersionRange.isVersionRange(version)) {
@@ -926,7 +949,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		setInputResource(rb.build());
 	}
 
-	public Map<String,Set<String>> getEffectiveSet() {
+	public Map<String, Set<String>> getEffectiveSet() {
 		return effectiveSet;
 	}
 }

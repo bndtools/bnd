@@ -76,26 +76,32 @@ public class SpringComponent implements AnalyzerPlugin {
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
-		Map<String,Resource> dir = jar.getDirectories().get("META-INF/spring");
+		Map<String, Resource> dir = jar.getDirectories()
+			.get("META-INF/spring");
 		if (dir == null || dir.isEmpty())
 			return false;
 
-		for (Iterator<Entry<String,Resource>> i = dir.entrySet().iterator(); i.hasNext();) {
-			Entry<String,Resource> entry = i.next();
+		for (Iterator<Entry<String, Resource>> i = dir.entrySet()
+			.iterator(); i.hasNext();) {
+			Entry<String, Resource> entry = i.next();
 			String path = entry.getKey();
 			Resource resource = entry.getValue();
-			if (SPRING_SOURCE.matcher(path).matches()) {
+			if (SPRING_SOURCE.matcher(path)
+				.matches()) {
 				try {
 					Set<CharSequence> set;
-					try(InputStream in = resource.openInputStream()) {
+					try (InputStream in = resource.openInputStream()) {
 						set = analyze(in);
 					}
 					for (Iterator<CharSequence> r = set.iterator(); r.hasNext();) {
 						PackageRef pack = analyzer.getPackageRef((String) r.next());
-						if (!QN.matcher(pack.getFQN()).matches())
+						if (!QN.matcher(pack.getFQN())
+							.matches())
 							analyzer.warning("Package does not seem a package in spring resource (%s): %s", path, pack);
-						if (!analyzer.getReferred().containsKey(pack))
-							analyzer.getReferred().put(pack, new Attrs());
+						if (!analyzer.getReferred()
+							.containsKey(pack))
+							analyzer.getReferred()
+								.put(pack, new Attrs());
 					}
 				} catch (Exception e) {
 					analyzer.error("Unexpected exception in processing spring resources(%s): %s", path, e);

@@ -138,7 +138,8 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 		trace("ERROR: %s", e);
 		if (isExceptions() || isTrace())
 			if (t instanceof InvocationTargetException)
-				t.getCause().printStackTrace(System.err);
+				t.getCause()
+					.printStackTrace(System.err);
 			else
 				t.printStackTrace(System.err);
 		return location(e);
@@ -222,13 +223,15 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 				boolean match = false;
 				Pattern pat = Pattern.compile(p);
 				for (Iterator<String> i = errors.iterator(); i.hasNext();) {
-					if (pat.matcher(i.next()).find()) {
+					if (pat.matcher(i.next())
+						.find()) {
 						i.remove();
 						match = true;
 					}
 				}
 				for (Iterator<String> i = warnings.iterator(); i.hasNext();) {
-					if (pat.matcher(i.next()).find()) {
+					if (pat.matcher(i.next())
+						.find()) {
 						i.remove();
 						match = true;
 					}

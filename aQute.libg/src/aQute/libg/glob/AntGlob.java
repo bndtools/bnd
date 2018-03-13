@@ -17,6 +17,7 @@ public class AntGlob extends Glob {
 	// match forward slash or back slash (windows)
 	private static final String	SLASHY		= "[/\\\\]";
 	private static final String	NOT_SLASHY	= "[^/\\\\]";
+
 	private static String convertAntGlobToRegEx(String line) {
 		line = line.trim();
 		int strLen = line.length();

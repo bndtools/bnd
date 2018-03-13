@@ -38,7 +38,7 @@ public class CoverageResource extends WriteResource {
 	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
-			Map<MethodDef,List<MethodDef>> table = getCrossRef(testsuite, service);
+			Map<MethodDef, List<MethodDef>> table = getCrossRef(testsuite, service);
 			Tag coverage = toTag(table);
 			PrintWriter pw = new PrintWriter(new OutputStreamWriter(out, Constants.DEFAULT_CHARSET));
 			try {
@@ -51,13 +51,15 @@ public class CoverageResource extends WriteResource {
 		}
 	}
 
-	public static Tag toTag(Map<MethodDef,List<MethodDef>> catalog) {
+	public static Tag toTag(Map<MethodDef, List<MethodDef>> catalog) {
 		Tag coverage = new Tag("coverage");
 		String currentClass = null;
 		Tag classTag = null;
 
-		for (Map.Entry<MethodDef,List<MethodDef>> m : catalog.entrySet()) {
-			String className = m.getKey().getContainingClass().getFQN();
+		for (Map.Entry<MethodDef, List<MethodDef>> m : catalog.entrySet()) {
+			String className = m.getKey()
+				.getContainingClass()
+				.getFQN();
 			if (!className.equals(currentClass)) {
 				classTag = new Tag("class");
 				classTag.addAttribute("name", className);

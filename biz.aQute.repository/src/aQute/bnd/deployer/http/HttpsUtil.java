@@ -24,17 +24,15 @@ public class HttpsUtil {
 
 		HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
 		TrustManager[] trustAllCerts = new TrustManager[] {
-				new X509TrustManager() {
-					public X509Certificate[] getAcceptedIssuers() {
-						return null;
-					}
-
-					public void checkServerTrusted(X509Certificate[] certs, String authType)
-							throws CertificateException {}
-
-					public void checkClientTrusted(X509Certificate[] certs, String authType)
-							throws CertificateException {}
+			new X509TrustManager() {
+				public X509Certificate[] getAcceptedIssuers() {
+					return null;
 				}
+
+				public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
+
+				public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
+			}
 		};
 
 		SSLContext sslContext = SSLContext.getInstance("TLS");

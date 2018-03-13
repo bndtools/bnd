@@ -27,15 +27,15 @@ public class Coverage {
 	 * @return A mapping of source methods to destination methods.
 	 * @throws Exception
 	 */
-	public static Map<MethodDef,List<MethodDef>> getCrossRef(Collection<Clazz> source, Collection<Clazz> dest)
-			throws Exception {
-		final Map<MethodDef,List<MethodDef>> catalog = buildCatalog(dest);
+	public static Map<MethodDef, List<MethodDef>> getCrossRef(Collection<Clazz> source, Collection<Clazz> dest)
+		throws Exception {
+		final Map<MethodDef, List<MethodDef>> catalog = buildCatalog(dest);
 		crossRef(source, catalog);
 		return catalog;
 	}
 
-	private static void crossRef(Collection<Clazz> source, final Map<MethodDef,List<MethodDef>> catalog)
-			throws Exception {
+	private static void crossRef(Collection<Clazz> source, final Map<MethodDef, List<MethodDef>> catalog)
+		throws Exception {
 		for (final Clazz clazz : source) {
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 				// MethodDef source;
@@ -45,8 +45,10 @@ public class Coverage {
 					MethodDef def = clazz.getMethodDef(0, "<implements>", "()V");
 					// TODO
 					for (TypeRef interfaceName : names) {
-						for (Map.Entry<MethodDef,List<MethodDef>> entry : catalog.entrySet()) {
-							String catalogClass = entry.getKey().getContainingClass().getFQN();
+						for (Map.Entry<MethodDef, List<MethodDef>> entry : catalog.entrySet()) {
+							String catalogClass = entry.getKey()
+								.getContainingClass()
+								.getFQN();
 							List<MethodDef> references = entry.getValue();
 
 							if (catalogClass.equals(interfaceName.getFQN())) {
@@ -73,13 +75,13 @@ public class Coverage {
 		}
 	}
 
-	private static Map<MethodDef,List<MethodDef>> buildCatalog(Collection<Clazz> sources) throws Exception {
-		final Map<MethodDef,List<MethodDef>> catalog = new TreeMap<>(
-				new Comparator<MethodDef>() {
-					public int compare(MethodDef a, MethodDef b) {
-						return a.getName().compareTo(b.getName());
-					}
-				});
+	private static Map<MethodDef, List<MethodDef>> buildCatalog(Collection<Clazz> sources) throws Exception {
+		final Map<MethodDef, List<MethodDef>> catalog = new TreeMap<>(new Comparator<MethodDef>() {
+			public int compare(MethodDef a, MethodDef b) {
+				return a.getName()
+					.compareTo(b.getName());
+			}
+		});
 		for (final Clazz clazz : sources) {
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 

@@ -34,9 +34,12 @@ public class PluginTest extends TestCase {
 		top.setProperty("-plugin.top", Foo.class.getName() + ";l=top");
 		middle.setProperty("-plugin.middle", Foo.class.getName() + ";l=middle");
 
-		assertEquals(1, top.getPlugins(Foo.class).size());
-		assertEquals(2, middle.getPlugins(Foo.class).size());
-		assertEquals(2, bottom.getPlugins(Foo.class).size());
+		assertEquals(1, top.getPlugins(Foo.class)
+			.size());
+		assertEquals(2, middle.getPlugins(Foo.class)
+			.size());
+		assertEquals(2, bottom.getPlugins(Foo.class)
+			.size());
 		assertEquals(top.getPlugin(Foo.class), bottom.getPlugin(Foo.class));
 		assertTrue(top.check());
 		assertTrue(middle.check());
@@ -53,16 +56,19 @@ public class PluginTest extends TestCase {
 		p.setProperty("-resourceonly", "true");
 		p.setProperty("Include-Resource", "jar/osgi.jar");
 		p.build();
-		assertEquals(1, p.getErrors().size());
-		assertTrue(p.getErrors().get(0).contains("Missing plugin"));
+		assertEquals(1, p.getErrors()
+			.size());
+		assertTrue(p.getErrors()
+			.get(0)
+			.contains("Missing plugin"));
 	}
 
 	static class TPlugin implements Plugin {
-		Map<String,String> properties;
+		Map<String, String>	properties;
 		Reporter			reporter;
 
 		@Override
-		public void setProperties(Map<String,String> map) {
+		public void setProperties(Map<String, String> map) {
 			properties = map;
 		}
 
@@ -87,7 +93,8 @@ public class PluginTest extends TestCase {
 	public void testLoadPlugin() {
 		main.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
 		for (java.applet.Applet applet : main.getPlugins(java.applet.Applet.class)) {
-			assertEquals("thinlet.Thinlet", applet.getClass().getName());
+			assertEquals("thinlet.Thinlet", applet.getClass()
+				.getName());
 		}
 	}
 
@@ -105,9 +112,12 @@ public class PluginTest extends TestCase {
 		p.setProperty(Constants.PLUGIN, "thinlet.Thinlet;path:=jar/thinlet.jar");
 
 		List<MenuContainer> plugins = p.getPlugins(MenuContainer.class);
-		assertEquals(0, p.getErrors().size());
+		assertEquals(0, p.getErrors()
+			.size());
 		assertEquals(1, plugins.size());
-		assertEquals("thinlet.Thinlet", plugins.get(0).getClass().getName());
+		assertEquals("thinlet.Thinlet", plugins.get(0)
+			.getClass()
+			.getName());
 	}
 
 	public void testLoadPluginWithGlobalPluginPath() {
@@ -116,8 +126,11 @@ public class PluginTest extends TestCase {
 		p.setProperty(Constants.PLUGINPATH, "jar/thinlet.jar");
 
 		List<MenuContainer> plugins = p.getPlugins(MenuContainer.class);
-		assertEquals(0, p.getErrors().size());
+		assertEquals(0, p.getErrors()
+			.size());
 		assertEquals(1, plugins.size());
-		assertEquals("thinlet.Thinlet", plugins.get(0).getClass().getName());
+		assertEquals("thinlet.Thinlet", plugins.get(0)
+			.getClass()
+			.getName());
 	}
 }

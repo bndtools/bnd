@@ -26,15 +26,14 @@ import org.slf4j.LoggerFactory;
 
 public class RemotePostProcessor implements PostProcessor {
 
-	private static final Logger logger = LoggerFactory.getLogger(RemotePostProcessor.class);
+	private static final Logger				logger	= LoggerFactory.getLogger(RemotePostProcessor.class);
 
-	private final LocalURLs			localURLs;
-	private final MetadataReader	metadataReader;
+	private final LocalURLs					localURLs;
+	private final MetadataReader			metadataReader;
 	private final RepositorySystemSession	session;
 	private final RepositorySystem			system;
 
-	public RemotePostProcessor(
-		RepositorySystemSession session, RepositorySystem system, MetadataReader metadataReader,
+	public RemotePostProcessor(RepositorySystemSession session, RepositorySystem system, MetadataReader metadataReader,
 		LocalURLs localURLs) {
 
 		this.session = session;
@@ -51,7 +50,8 @@ public class RemotePostProcessor implements PostProcessor {
 			return resolvedArtifact;
 		}
 
-		String repoId = resolvedArtifact.getRepository().getId();
+		String repoId = resolvedArtifact.getRepository()
+			.getId();
 		Artifact artifact = resolvedArtifact.getArtifact();
 		if ("workspace".equals(repoId) || "local".equals(repoId)) {
 			logger.debug("Post processing {} to determine a remote source", artifact);
@@ -69,10 +69,11 @@ public class RemotePostProcessor implements PostProcessor {
 	}
 
 	private ArtifactResult postProcessSnapshot(ArtifactRequest request, Artifact artifact)
-			throws MojoExecutionException {
+		throws MojoExecutionException {
 
 		for (RemoteRepository repository : request.getRepositories()) {
-			if (!repository.getPolicy(true).isEnabled()) {
+			if (!repository.getPolicy(true)
+				.isEnabled()) {
 				// Skip the repo if it isn't enabled for snapshots
 				continue;
 			}
@@ -83,42 +84,49 @@ public class RemotePostProcessor implements PostProcessor {
 
 			// Find the snapshot metadata for the module
 			MetadataRequest mr = new MetadataRequest().setRepository(repository)
-					.setMetadata(new DefaultMetadata(artifact.getGroupId(), artifact.getArtifactId(),
-							artifact.getVersion(), "maven-metadata.xml", SNAPSHOT));
+				.setMetadata(new DefaultMetadata(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(),
+					"maven-metadata.xml", SNAPSHOT));
 
 			for (MetadataResult metadataResult : system.resolveMetadata(newSession, singletonList(mr))) {
 				if (metadataResult.isResolved()) {
 					String version;
 					try {
-						Metadata read = metadataReader.read(metadataResult.getMetadata().getFile(), null);
+						Metadata read = metadataReader.read(metadataResult.getMetadata()
+							.getFile(), null);
 						Versioning versioning = read.getVersioning();
 						if (versioning == null || versioning.getSnapshotVersions() == null
-								|| versioning.getSnapshotVersions().isEmpty()) {
+							|| versioning.getSnapshotVersions()
+								.isEmpty()) {
 							continue;
 						} else {
-							version = versioning.getSnapshotVersions().get(0).getVersion();
+							version = versioning.getSnapshotVersions()
+								.get(0)
+								.getVersion();
 						}
 					} catch (Exception e) {
 						throw new MojoExecutionException("Unable to read project metadata for " + artifact, e);
 					}
 					Artifact fullVersionArtifact = new org.eclipse.aether.artifact.DefaultArtifact(
-							artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(),
-							artifact.getExtension(), version);
+						artifact.getGroupId(), artifact.getArtifactId(), artifact.getClassifier(),
+						artifact.getExtension(), version);
 					try {
 						ArtifactResult result = system.resolveArtifact(newSession,
-								new ArtifactRequest().setArtifact(fullVersionArtifact).addRepository(repository));
+							new ArtifactRequest().setArtifact(fullVersionArtifact)
+								.addRepository(repository));
 						if (result.isResolved()) {
-							File toUse = new File(session.getLocalRepository().getBasedir(),
-									session.getLocalRepositoryManager().getPathForRemoteArtifact(fullVersionArtifact,
-											repository, artifact.toString()));
+							File toUse = new File(session.getLocalRepository()
+								.getBasedir(),
+								session.getLocalRepositoryManager()
+									.getPathForRemoteArtifact(fullVersionArtifact, repository, artifact.toString()));
 							if (!toUse.exists()) {
 								logger.warn("The resolved artifact {} does not exist at {}", fullVersionArtifact,
-										toUse);
+									toUse);
 								continue;
 							} else {
 								logger.debug("Located snapshot file {} for artifact {}", toUse, artifact);
 							}
-							result.getArtifact().setFile(toUse);
+							result.getArtifact()
+								.setFile(toUse);
 							return result;
 						}
 					} catch (ArtifactResolutionException e) {
@@ -134,10 +142,11 @@ public class RemotePostProcessor implements PostProcessor {
 	}
 
 	private ArtifactResult postProcessRelease(ArtifactRequest request, Artifact artifact)
-			throws MojoExecutionException {
+		throws MojoExecutionException {
 
 		for (RemoteRepository repository : request.getRepositories()) {
-			if (!repository.getPolicy(false).isEnabled()) {
+			if (!repository.getPolicy(false)
+				.isEnabled()) {
 				// Skip the repo if it isn't enabled for releases
 				continue;
 			}
@@ -147,31 +156,38 @@ public class RemotePostProcessor implements PostProcessor {
 			newSession.setWorkspaceReader(null);
 
 			// Find the snapshot metadata for the module
-			MetadataRequest mr = new MetadataRequest().setRepository(repository).setMetadata(new DefaultMetadata(
-					artifact.getGroupId(), artifact.getArtifactId(), null, "maven-metadata.xml", RELEASE));
+			MetadataRequest mr = new MetadataRequest().setRepository(repository)
+				.setMetadata(new DefaultMetadata(artifact.getGroupId(), artifact.getArtifactId(), null,
+					"maven-metadata.xml", RELEASE));
 
 			for (MetadataResult metadataResult : system.resolveMetadata(newSession, singletonList(mr))) {
 				if (metadataResult.isResolved()) {
 					try {
-						Metadata read = metadataReader.read(metadataResult.getMetadata().getFile(), null);
+						Metadata read = metadataReader.read(metadataResult.getMetadata()
+							.getFile(), null);
 						Versioning versioning = read.getVersioning();
-						if (versioning == null || versioning.getVersions() == null
-								|| versioning.getVersions().isEmpty()) {
+						if (versioning == null || versioning.getVersions() == null || versioning.getVersions()
+							.isEmpty()) {
 							continue;
-						} else if (versioning.getVersions().contains(artifact.getVersion())) {
+						} else if (versioning.getVersions()
+							.contains(artifact.getVersion())) {
 
 							ArtifactResult result = system.resolveArtifact(newSession,
-									new ArtifactRequest().setArtifact(artifact).addRepository(repository));
+								new ArtifactRequest().setArtifact(artifact)
+									.addRepository(repository));
 							if (result.isResolved()) {
-								File toUse = new File(session.getLocalRepository().getBasedir(),
-										session.getLocalRepositoryManager().getPathForLocalArtifact(artifact));
+								File toUse = new File(session.getLocalRepository()
+									.getBasedir(),
+									session.getLocalRepositoryManager()
+										.getPathForLocalArtifact(artifact));
 								if (!toUse.exists()) {
 									logger.warn("The resolved artifact {} does not exist at {}", artifact, toUse);
 									continue;
 								} else {
 									logger.debug("Located snapshot file {} for artifact {}", toUse, artifact);
 								}
-								result.getArtifact().setFile(toUse);
+								result.getArtifact()
+									.setFile(toUse);
 								result.setRepository(repository);
 								return result;
 							}

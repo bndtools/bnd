@@ -27,7 +27,8 @@ public class SimpleContext implements NamespaceContext {
 	}
 
 	public Iterator<String> getPrefixes(String namespaceURI) {
-		return Arrays.asList(prefix).iterator();
+		return Arrays.asList(prefix)
+			.iterator();
 	}
 
 }

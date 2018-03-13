@@ -23,7 +23,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 	Registry	registry;
 	Maven		maven;
 
-	public File get(String bsn, String version, Strategy strategy, Map<String,String> properties) throws Exception {
+	public File get(String bsn, String version, Strategy strategy, Map<String, String> properties) throws Exception {
 		String groupId = null;
 
 		if (properties != null)
@@ -94,7 +94,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		repositories = urls;
 	}
 
-	public void setProperties(Map<String,String> map) {
+	public void setProperties(Map<String, String> map) {
 		String repoString = map.get("repositories");
 		if (repoString != null) {
 			String[] repos = repoString.split("\\s*,\\s*");
@@ -104,7 +104,8 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 				try {
 					URI uri = new URI(repo);
 					if (!uri.isAbsolute())
-						uri = IO.getFile(new File(""), repo).toURI();
+						uri = IO.getFile(new File(""), repo)
+							.toURI();
 					repositories[n++] = uri;
 				} catch (Exception e) {
 					if (reporter != null)
@@ -133,8 +134,8 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		return Arrays.toString(repositories);
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		File f = get(bsn, version.toString(), Strategy.EXACT, properties);
 		if (f == null)
 			return null;

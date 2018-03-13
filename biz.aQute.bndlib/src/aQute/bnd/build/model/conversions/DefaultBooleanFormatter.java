@@ -6,7 +6,7 @@ package aQute.bnd.build.model.conversions;
  * 
  * @author Neil Bartlett
  */
-public class DefaultBooleanFormatter implements Converter<String,Boolean> {
+public class DefaultBooleanFormatter implements Converter<String, Boolean> {
 
 	private final boolean defaultValue;
 

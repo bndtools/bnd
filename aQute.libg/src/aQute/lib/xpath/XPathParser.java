@@ -42,7 +42,8 @@ public class XPathParser {
 		NodeList proxies = (NodeList) xp.evaluate(what, doc, XPathConstants.NODESET);
 		for (int i = 0; i < proxies.getLength(); i++) {
 			Node node = proxies.item(i);
-			X dto = type.getConstructor().newInstance();
+			X dto = type.getConstructor()
+				.newInstance();
 			parse(node, dto);
 			map.add(dto);
 		}
@@ -50,7 +51,8 @@ public class XPathParser {
 
 	public <X> void parse(Node node, X dto) throws Exception {
 
-		for (Field f : dto.getClass().getFields()) {
+		for (Field f : dto.getClass()
+			.getFields()) {
 			if (Modifier.isStatic(f.getModifiers()))
 				continue;
 
@@ -58,7 +60,8 @@ public class XPathParser {
 			if (value == null || value.isEmpty())
 				continue;
 
-			if (f.getType().isAnnotation())
+			if (f.getType()
+				.isAnnotation())
 				value = value.toUpperCase();
 
 			Object o = Converter.cnv(f.getGenericType(), value);

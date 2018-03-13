@@ -23,12 +23,17 @@ public class HugeRepositoryTest extends TestCase {
 			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
-			validator.addRepository(IO.getFile("testdata/collaboration-1.0-index.xml.gz").toURI());
-			validator.addRepository(IO.getFile("testdata/forms-and-workflow-1.0-index.xml.gz").toURI());
-			validator.addRepository(IO.getFile("testdata/foundation-1.0-index.xml.gz").toURI());
-			validator.addRepository(IO.getFile("testdata/target.platform.index.xml.gz").toURI());
+			validator.addRepository(IO.getFile("testdata/collaboration-1.0-index.xml.gz")
+				.toURI());
+			validator.addRepository(IO.getFile("testdata/forms-and-workflow-1.0-index.xml.gz")
+				.toURI());
+			validator.addRepository(IO.getFile("testdata/foundation-1.0-index.xml.gz")
+				.toURI());
+			validator.addRepository(IO.getFile("testdata/target.platform.index.xml.gz")
+				.toURI());
 			List<Resource> resources = XMLResourceParser
-					.getResources(IO.getFile("testdata/web-experience-1.0-index.xml.gz").toURI());
+				.getResources(IO.getFile("testdata/web-experience-1.0-index.xml.gz")
+					.toURI());
 			List<Resolution> resolutions = validator.validate(resources);
 			assertTrue(validator.check());
 			assertEquals(resources.size(), resolutions.size());
@@ -43,13 +48,18 @@ public class HugeRepositoryTest extends TestCase {
 			resourceBuilder.addManifest(OSGI_CORE.R6_0_0.getManifest());
 			validator.setSystem(resourceBuilder.build());
 			validator.setTrace(true);
-			validator.addRepository(IO.getFile("testdata/collaboration-1.0-index.xml.gz").toURI());
-			validator.addRepository(IO.getFile("testdata/forms-and-workflow-1.0-index.xml.gz").toURI());
-			validator.addRepository(IO.getFile("testdata/foundation-1.0-index.xml.gz").toURI());
-			validator.addRepository(IO.getFile("testdata/target.platform.index.xml.gz").toURI());
-			validator.addRepository(IO.getFile("testdata/web-experience-1.0-index.xml.gz").toURI());
-			List<Resource> resources = XMLResourceParser
-					.getResources(IO.getFile("testdata/foundation-1.0-index.xml.gz").toURI());
+			validator.addRepository(IO.getFile("testdata/collaboration-1.0-index.xml.gz")
+				.toURI());
+			validator.addRepository(IO.getFile("testdata/forms-and-workflow-1.0-index.xml.gz")
+				.toURI());
+			validator.addRepository(IO.getFile("testdata/foundation-1.0-index.xml.gz")
+				.toURI());
+			validator.addRepository(IO.getFile("testdata/target.platform.index.xml.gz")
+				.toURI());
+			validator.addRepository(IO.getFile("testdata/web-experience-1.0-index.xml.gz")
+				.toURI());
+			List<Resource> resources = XMLResourceParser.getResources(IO.getFile("testdata/foundation-1.0-index.xml.gz")
+				.toURI());
 			List<Resolution> resolutions = validator.validate(resources);
 			assertTrue(validator.check());
 			assertEquals(resources.size(), resolutions.size());

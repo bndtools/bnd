@@ -29,7 +29,8 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		super.setUp();
 
 		Builder b = new Builder();
-		b.setProperty("Private-Package", DSPropertyAnnotationsTest.class.getPackage().getName());
+		b.setProperty("Private-Package", DSPropertyAnnotationsTest.class.getPackage()
+			.getName());
 		b.addClasspath(new File("bin"));
 
 		jar = b.build();
@@ -51,7 +52,8 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 
 		Resource r = jar.getResource("OSGI-INF/" + SimpleDSPropertyAnnotated.class.getName() + ".xml");
 
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -77,7 +79,8 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 
 		Resource r = jar.getResource("OSGI-INF/" + DefaultDSPropertyAnnotated.class.getName() + ".xml");
 
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -103,7 +106,8 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 
 		Resource r = jar.getResource("OSGI-INF/" + IntDSPropertyAnnotated.class.getName() + ".xml");
 
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -119,19 +123,20 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 	@Target(ElementType.TYPE)
 	public static @interface MyMultiProp {
 		String a_string_prop();
-		
+
 		long a_long_prop();
 	}
-	
+
 	@MyMultiProp(a_string_prop = "foo", a_long_prop = 1234)
 	@Component
 	public static class MultiDSPropertyAnnotated {}
-	
+
 	public void testMultiPropertyAnnotation() throws Exception {
-		
+
 		Resource r = jar.getResource("OSGI-INF/" + MultiDSPropertyAnnotated.class.getName() + ".xml");
-		
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -161,7 +166,8 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 
 		Resource r = jar.getResource("OSGI-INF/" + PrefixPropertyAnnotated.class.getName() + ".xml");
 
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
@@ -177,7 +183,7 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 	@Target(ElementType.TYPE)
 	public static @interface ArrayProp {
 		String[] value() default {
-				"fizz", "buzz", "fizzbuzz"
+			"fizz", "buzz", "fizzbuzz"
 		};
 	}
 
@@ -189,7 +195,8 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 
 		Resource r = jar.getResource("OSGI-INF/" + ArrayPropertyAnnotated.class.getName() + ".xml");
 
-		System.err.println(Processor.join(jar.getResources().keySet(), "\n"));
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
 		assertNotNull(r);
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");

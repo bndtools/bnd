@@ -31,7 +31,7 @@ import aQute.lib.json.JSONCodec;
  * store a private key when you have a certificate, but you cannot create a
  * certificate without using com.sun classes) and preferences are not editable.
  */
-public class Settings implements Map<String,String> {
+public class Settings implements Map<String, String> {
 	static JSONCodec	codec	= new JSONCodec();
 	private final File	where;
 	private PublicKey	publicKey;
@@ -43,7 +43,7 @@ public class Settings implements Map<String,String> {
 		public int					version	= 1;
 		public byte[]				secret;
 		public byte[]				id;
-		public Map<String,String>	map		= new HashMap<>();
+		public Map<String, String>	map		= new HashMap<>();
 	}
 
 	Data			data	= new Data();
@@ -74,14 +74,17 @@ public class Settings implements Map<String,String> {
 						PasswordCryptor cryptor = new PasswordCryptor();
 						in = cryptor.decrypt(password, in);
 					} else {
-						String secret = System.getenv().get("BND_SETTINGS_PASSWORD");
+						String secret = System.getenv()
+							.get("BND_SETTINGS_PASSWORD");
 						if (secret != null && secret.length() > 0) {
 							PasswordCryptor cryptor = new PasswordCryptor();
 							in = cryptor.decrypt(secret.toCharArray(), in);
 						}
 					}
 
-					data = codec.dec().from(in).get(Data.class);
+					data = codec.dec()
+						.from(in)
+						.get(Data.class);
 					loaded = true;
 					return true;
 				} finally {
@@ -123,13 +126,17 @@ public class Settings implements Map<String,String> {
 					PasswordCryptor cryptor = new PasswordCryptor();
 					out = cryptor.encrypt(password, out);
 				} else {
-					String secret = System.getenv().get("BND-SETTINGS-PASSWORD");
+					String secret = System.getenv()
+						.get("BND-SETTINGS-PASSWORD");
 					if (secret != null) {
 						PasswordCryptor cryptor = new PasswordCryptor();
 						out = cryptor.encrypt(secret.toCharArray(), out);
 					}
 				}
-				codec.enc().to(out).put(data).flush();
+				codec.enc()
+					.to(out)
+					.put(data)
+					.flush();
 			} finally {
 				out.close();
 			}
@@ -267,7 +274,7 @@ public class Settings implements Map<String,String> {
 		return data.map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<String,String>> entrySet() {
+	public Set<java.util.Map.Entry<String, String>> entrySet() {
 		check();
 		return data.map.entrySet();
 	}
@@ -294,7 +301,7 @@ public class Settings implements Map<String,String> {
 		return data.map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends String, ? extends String> v) {
+	public void putAll(Map<? extends String, ? extends String> v) {
 		check();
 		dirty = true;
 		data.map.putAll(v);

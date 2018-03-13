@@ -9,7 +9,7 @@ import junit.framework.TestCase;
 
 public class ProjectLaunchImplTest extends TestCase {
 
-	private Workspace ws;
+	private Workspace	ws;
 	private File		tmp;
 
 	protected void setUp() throws Exception {
@@ -40,8 +40,8 @@ public class ProjectLaunchImplTest extends TestCase {
 			ws.close();
 		}
 		assertEquals(
-				"osgi.native;osgi.native.osname:List<String>=\"Win7,Windows7,Windows 7\";osgi.native.osversion:Version=\"6.1\"",
-				systemCaps);
+			"osgi.native;osgi.native.osname:List<String>=\"Win7,Windows7,Windows 7\";osgi.native.osversion:Version=\"6.1\"",
+			systemCaps);
 	}
 
 	public void testCwdIsProjectBase() throws Exception {

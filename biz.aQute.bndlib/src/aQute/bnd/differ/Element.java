@@ -43,7 +43,7 @@ class Element implements Tree {
 		this(type, name, Arrays.asList(children), Delta.MINOR, Delta.MAJOR, null);
 	}
 
-	Element(Type type, String name, Collection< ? extends Element> children, Delta add, Delta remove, String comment) {
+	Element(Type type, String name, Collection<? extends Element> children, Delta add, Delta remove, String comment) {
 		this.type = type;
 		this.name = name;
 		this.add = add;
@@ -152,15 +152,15 @@ class Element implements Tree {
 
 	private void toString(StringBuilder sb, String indent) {
 		sb.append(indent)
-				.append(type)
-				.append(" ")
-				.append(name)
-				.append(" (")
-				.append(add)
-				.append("/")
-				.append(remove)
-				.append(")")
-				.append("\n");
+			.append(type)
+			.append(" ")
+			.append(name)
+			.append(" (")
+			.append(add)
+			.append("/")
+			.append(remove)
+			.append(")")
+			.append("\n");
 		for (Element e : children)
 			e.toString(sb, indent + " ");
 	}

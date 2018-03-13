@@ -14,10 +14,10 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class CollectionHandler extends Handler {
-	Class< ? >	rawClass;
+	Class<?>	rawClass;
 	Type		componentType;
 
-	CollectionHandler(Class< ? > rawClass, Type componentType) {
+	CollectionHandler(Class<?> rawClass, Type componentType) {
 		this.componentType = componentType;
 		if (rawClass.isInterface()) {
 			if (rawClass.isAssignableFrom(ArrayList.class))
@@ -43,8 +43,8 @@ public class CollectionHandler extends Handler {
 	}
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
-		Iterable< ? > collection = (Iterable< ? >) object;
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
+		Iterable<?> collection = (Iterable<?>) object;
 
 		app.append("[");
 		String del = "";
@@ -64,7 +64,8 @@ public class CollectionHandler extends Handler {
 	@Override
 	public Object decodeArray(Decoder r) throws Exception {
 		@SuppressWarnings("unchecked")
-		Collection<Object> c = (Collection<Object>) rawClass.getConstructor().newInstance();
+		Collection<Object> c = (Collection<Object>) rawClass.getConstructor()
+			.newInstance();
 		r.codec.parseArray(c, componentType, r);
 		return c;
 	}

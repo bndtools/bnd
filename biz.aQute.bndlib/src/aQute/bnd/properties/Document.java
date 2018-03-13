@@ -3,8 +3,8 @@ package aQute.bnd.properties;
 public class Document implements IDocument {
 
 	public final static String[]	DELIMITERS	= {
-														"\r", "\n", "\r\n"
-													};
+		"\r", "\n", "\r\n"
+	};
 
 	private LineTracker				lineTracker	= new LineTracker();
 	private ITextStore				textStore	= new CopyOnWriteTextStore(new GapTextStore());

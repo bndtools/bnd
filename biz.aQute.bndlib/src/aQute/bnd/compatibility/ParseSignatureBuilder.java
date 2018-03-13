@@ -17,7 +17,8 @@ public class ParseSignatureBuilder {
 	}
 
 	public void add(Jar jar) throws Exception {
-		for (Resource r : jar.getResources().values()) {
+		for (Resource r : jar.getResources()
+			.values()) {
 			try (InputStream in = r.openInputStream()) {
 				parse(in);
 			}
@@ -109,8 +110,9 @@ public class ParseSignatureBuilder {
 
 				@Override
 				public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName,
-						int innerClassAccessFlags) {
-					if (outerClass != null && innerClass != null && innerClass.getBinary().equals(s.name))
+					int innerClassAccessFlags) {
+					if (outerClass != null && innerClass != null && innerClass.getBinary()
+						.equals(s.name))
 						declaring = root.getScope(outerClass.getBinary());
 				}
 			});

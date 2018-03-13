@@ -4,7 +4,6 @@ import junit.framework.TestCase;
 
 public class NexusTest extends TestCase {
 
-
 	public void testTravers() throws Exception {
 		// HttpClient client = new HttpClient();
 		// client.readSettings(new Processor());

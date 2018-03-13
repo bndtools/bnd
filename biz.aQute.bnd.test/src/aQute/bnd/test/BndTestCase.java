@@ -14,8 +14,10 @@ public abstract class BndTestCase extends TestCase {
 
 	protected static void assertOk(Reporter reporter, int errors, int warnings) throws AssertionFailedError {
 		try {
-			assertEquals(errors, reporter.getErrors().size());
-			assertEquals(warnings, reporter.getWarnings().size());
+			assertEquals(errors, reporter.getErrors()
+				.size());
+			assertEquals(warnings, reporter.getWarnings()
+				.size());
 		} catch (AssertionFailedError t) {
 			print("Errors", reporter.getErrors());
 			print("Warnings", reporter.getWarnings());
@@ -23,7 +25,7 @@ public abstract class BndTestCase extends TestCase {
 		}
 	}
 
-	private static void print(String title, List< ? > strings) {
+	private static void print(String title, List<?> strings) {
 		System.err.println("-------------------------------------------------------------------------");
 		System.err.println(title + " " + strings.size());
 		System.err.println("-------------------------------------------------------------------------");

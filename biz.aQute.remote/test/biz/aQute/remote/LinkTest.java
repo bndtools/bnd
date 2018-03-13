@@ -50,7 +50,7 @@ public class LinkTest extends TestCase {
 	}
 
 	public class LocalImpl implements Local, Closeable {
-		Link<Local,Remote> link;
+		Link<Local, Remote> link;
 
 		public LocalImpl(Class<Remote> type, InputStream in, OutputStream out) {
 			link = new Link<>(type, this, in, out);
@@ -75,7 +75,7 @@ public class LinkTest extends TestCase {
 	}
 
 	public class RemoteImpl implements Remote, Closeable {
-		Link<Remote,Local> link;
+		Link<Remote, Local> link;
 
 		public RemoteImpl(Class<Local> type, InputStream in, OutputStream out) {
 			link = new Link<>(type, this, in, out);
@@ -94,7 +94,8 @@ public class LinkTest extends TestCase {
 
 		@Override
 		public void abort() throws IOException {
-			link.getRemote().aborted();
+			link.getRemote()
+				.aborted();
 		}
 	}
 
@@ -108,12 +109,14 @@ public class LinkTest extends TestCase {
 		localImpl.link.open();
 		remoteImpl.link.open();
 
-		assertEquals(-42, localImpl.link.getRemote().foo());
+		assertEquals(-42, localImpl.link.getRemote()
+			.foo());
 		localImpl.link.transfer(null);
 
 		LocalImpl newer = new LocalImpl(Remote.class, localImpl.link.getInput(), localImpl.link.getOutput());
 		newer.link.open();
-		assertEquals(-42, newer.link.getRemote().foo());
+		assertEquals(-42, newer.link.getRemote()
+			.foo());
 		newer.link.close();
 
 		Thread.sleep(100);
@@ -133,11 +136,13 @@ public class LinkTest extends TestCase {
 		localImpl.link.open();
 		remoteImpl.link.open();
 
-		assertEquals(-42, localImpl.link.getRemote().foo());
+		assertEquals(-42, localImpl.link.getRemote()
+			.foo());
 
 		assertTrue(localImpl.link.isOpen());
 		assertTrue(remoteImpl.link.isOpen());
-		localSocket.getInputStream().close();
+		localSocket.getInputStream()
+			.close();
 
 		normalClose();
 	}
@@ -163,8 +168,10 @@ public class LinkTest extends TestCase {
 
 		assertTrue(localImpl.link.isOpen());
 		assertTrue(remoteImpl.link.isOpen());
-		assertEquals(-42, localImpl.link.getRemote().foo());
-		localSocket.getOutputStream().close();
+		assertEquals(-42, localImpl.link.getRemote()
+			.foo());
+		localSocket.getOutputStream()
+			.close();
 		normalClose();
 	}
 
@@ -174,8 +181,10 @@ public class LinkTest extends TestCase {
 
 		assertTrue(localImpl.link.isOpen());
 		assertTrue(remoteImpl.link.isOpen());
-		assertEquals(-42, localImpl.link.getRemote().foo());
-		remoteSocket.getInputStream().close();
+		assertEquals(-42, localImpl.link.getRemote()
+			.foo());
+		remoteSocket.getInputStream()
+			.close();
 		normalClose();
 	}
 
@@ -185,8 +194,10 @@ public class LinkTest extends TestCase {
 
 		assertTrue(localImpl.link.isOpen());
 		assertTrue(remoteImpl.link.isOpen());
-		assertEquals(-42, localImpl.link.getRemote().foo());
-		remoteSocket.getOutputStream().close();
+		assertEquals(-42, localImpl.link.getRemote()
+			.foo());
+		remoteSocket.getOutputStream()
+			.close();
 
 		normalClose();
 	}
@@ -197,7 +208,8 @@ public class LinkTest extends TestCase {
 
 		assertTrue(localImpl.link.isOpen());
 		assertTrue(remoteImpl.link.isOpen());
-		assertEquals(-42, localImpl.link.getRemote().foo());
+		assertEquals(-42, localImpl.link.getRemote()
+			.foo());
 		localSocket.close();
 
 		normalClose();
@@ -209,7 +221,8 @@ public class LinkTest extends TestCase {
 
 		assertTrue(localImpl.link.isOpen());
 		assertTrue(remoteImpl.link.isOpen());
-		assertEquals(-42, localImpl.link.getRemote().foo());
+		assertEquals(-42, localImpl.link.getRemote()
+			.foo());
 		remoteSocket.close();
 
 		normalClose();
@@ -218,9 +231,11 @@ public class LinkTest extends TestCase {
 	public void testAbort() throws IOException, InterruptedException {
 		localImpl.link.open();
 		remoteImpl.link.open();
-		assertEquals(-42, localImpl.link.getRemote().foo());
+		assertEquals(-42, localImpl.link.getRemote()
+			.foo());
 
-		localImpl.link.getRemote().abort();
+		localImpl.link.getRemote()
+			.abort();
 		normalClose();
 	}
 }

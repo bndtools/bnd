@@ -69,13 +69,13 @@ public class BaselineMojo extends AbstractMojo {
 	private Base					base;
 
 	@Parameter(property = "bnd.baseline.skip", defaultValue = "false")
-    private boolean				skip;
-    
+	private boolean					skip;
+
 	@Component
 	private RepositorySystem		system;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
-        if ( skip ) {
+		if (skip) {
 			logger.debug("skip project as configured");
 			return;
 		}
@@ -88,7 +88,8 @@ public class BaselineMojo extends AbstractMojo {
 
 		try {
 			searchForBaseVersion(aetherRepos);
-			if (base.getVersion() != null && !base.getVersion().isEmpty()) {
+			if (base.getVersion() != null && !base.getVersion()
+				.isEmpty()) {
 
 				ArtifactResult artifactResult = locateBaseJar(aetherRepos);
 
@@ -105,14 +106,14 @@ public class BaselineMojo extends AbstractMojo {
 				if (checkFailures(artifact, artifactResult, baseline)) {
 					if (continueOnError) {
 						logger.warn(
-								"The baselining check failed when checking {} against {} but the bnd-baseline-maven-plugin is configured not to fail the build.",
-								artifact, artifactResult.getArtifact());
+							"The baselining check failed when checking {} against {} but the bnd-baseline-maven-plugin is configured not to fail the build.",
+							artifact, artifactResult.getArtifact());
 					} else {
 						throw new MojoExecutionException("The baselining plugin detected versioning errors");
 					}
 				} else {
 					logger.info("Baselining check succeeded checking {} against {}", artifact,
-							artifactResult.getArtifact());
+						artifactResult.getArtifact());
 				}
 			} else {
 				if (failOnMissing) {
@@ -156,16 +157,20 @@ public class BaselineMojo extends AbstractMojo {
 		if (base == null) {
 			base = new Base();
 		}
-		if (base.getGroupId() == null || base.getGroupId().isEmpty()) {
+		if (base.getGroupId() == null || base.getGroupId()
+			.isEmpty()) {
 			base.setGroupId(project.getGroupId());
 		}
-		if (base.getArtifactId() == null || base.getArtifactId().isEmpty()) {
+		if (base.getArtifactId() == null || base.getArtifactId()
+			.isEmpty()) {
 			base.setArtifactId(project.getArtifactId());
 		}
-		if (base.getClassifier() == null || base.getClassifier().isEmpty()) {
+		if (base.getClassifier() == null || base.getClassifier()
+			.isEmpty()) {
 			base.setClassifier(artifact.getClassifier());
 		}
-		if (base.getExtension() == null || base.getExtension().isEmpty()) {
+		if (base.getExtension() == null || base.getExtension()
+			.isEmpty()) {
 			base.setExtension(artifact.getExtension());
 		}
 		if (base.getVersion() == null || base.getVersion()
@@ -176,13 +181,11 @@ public class BaselineMojo extends AbstractMojo {
 		logger.debug("Baselining against {}, fail on missing: {}", base, failOnMissing);
 	}
 
-	private void searchForBaseVersion(List<RemoteRepository> aetherRepos)
-			throws VersionRangeResolutionException {
-		logger.info("Determining the baseline version for {} using repositories {}", base,
-				aetherRepos);
+	private void searchForBaseVersion(List<RemoteRepository> aetherRepos) throws VersionRangeResolutionException {
+		logger.info("Determining the baseline version for {} using repositories {}", base, aetherRepos);
 
 		Artifact toFind = new DefaultArtifact(base.getGroupId(), base.getArtifactId(), base.getClassifier(),
-				base.getExtension(), base.getVersion());
+			base.getExtension(), base.getVersion());
 
 		VersionRangeRequest request = new VersionRangeRequest(toFind, aetherRepos, "baseline");
 
@@ -207,17 +210,18 @@ public class BaselineMojo extends AbstractMojo {
 
 	private ArtifactResult locateBaseJar(List<RemoteRepository> aetherRepos) throws ArtifactResolutionException {
 		Artifact toFind = new DefaultArtifact(base.getGroupId(), base.getArtifactId(), base.getClassifier(),
-				base.getExtension(), base.getVersion());
+			base.getExtension(), base.getVersion());
 
 		return system.resolveArtifact(session, new ArtifactRequest(toFind, aetherRepos, "baseline"));
 	}
 
 	private boolean checkFailures(Artifact artifact, ArtifactResult artifactResult, Baseline baseline)
-			throws Exception, IOException {
+		throws Exception, IOException {
 		StringBuffer sb = new StringBuffer();
 		try (Formatter f = new Formatter(sb, Locale.US);
-				Jar newer = new Jar(artifact.getFile());
-				Jar older = new Jar(artifactResult.getArtifact().getFile())) {
+			Jar newer = new Jar(artifact.getFile());
+			Jar older = new Jar(artifactResult.getArtifact()
+				.getFile())) {
 			boolean failed = false;
 
 			for (Info info : baseline.baseline(newer, older, null)) {
@@ -226,10 +230,9 @@ public class BaselineMojo extends AbstractMojo {
 					if (logger.isErrorEnabled()) {
 						sb.setLength(0);
 						f.format(
-								"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s",
-								info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
-								info.suggestedVersion,
-								info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+							"Baseline mismatch for package %s, %s change. Current is %s, repo is %s, suggest %s or %s",
+							info.packageName, info.packageDiff.getDelta(), info.newerVersion, info.olderVersion,
+							info.suggestedVersion, info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 						if (fullReport) {
 							f.format("%n%#S", info.packageDiff);
 						}

@@ -35,7 +35,8 @@ public class PomFromManifest extends WriteResource {
 
 	public String getBsn() {
 		if (xbsn == null)
-			xbsn = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+			xbsn = manifest.getMainAttributes()
+				.getValue(Constants.BUNDLE_SYMBOLICNAME);
 		if (xbsn == null)
 			throw new RuntimeException("Cannot create POM unless bsn is set");
 
@@ -52,7 +53,8 @@ public class PomFromManifest extends WriteResource {
 			xartifactId = xbsn.substring(n + 1);
 			n = xartifactId.indexOf(';');
 			if (n > 0)
-				xartifactId = xartifactId.substring(0, n).trim();
+				xartifactId = xartifactId.substring(0, n)
+					.trim();
 		}
 
 		return xbsn;
@@ -71,7 +73,8 @@ public class PomFromManifest extends WriteResource {
 	public Version getVersion() {
 		if (xversion != null)
 			return new Version(xversion);
-		String version = manifest.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
+		String version = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_VERSION);
 		Version v = new Version(version);
 		return new Version(v.getMajor(), v.getMinor(), v.getMicro());
 	}
@@ -89,19 +92,24 @@ public class PomFromManifest extends WriteResource {
 	public void write(OutputStream out) throws IOException {
 		PrintWriter ps = IO.writer(out);
 
-		String name = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_NAME);
+		String name = manifest.getMainAttributes()
+			.getValue(Analyzer.BUNDLE_NAME);
 
-		String description = manifest.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
-		String docUrl = manifest.getMainAttributes().getValue(Constants.BUNDLE_DOCURL);
-		String bundleVendor = manifest.getMainAttributes().getValue(Constants.BUNDLE_VENDOR);
+		String description = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_DESCRIPTION);
+		String docUrl = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_DOCURL);
+		String bundleVendor = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_VENDOR);
 
-		String licenses = manifest.getMainAttributes().getValue(Constants.BUNDLE_LICENSE);
+		String licenses = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_LICENSE);
 
 		Tag project = new Tag("project");
 		project.addAttribute("xmlns", "http://maven.apache.org/POM/4.0.0");
 		project.addAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		project.addAttribute("xsi:schemaLocation",
-				"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd");
+			"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd");
 
 		project.addContent(new Tag("modelVersion").addContent("4.0.0"));
 		project.addContent(new Tag("groupId").addContent(getGroupId()));
@@ -122,7 +130,8 @@ public class PomFromManifest extends WriteResource {
 		} else
 			new Tag(project, "url").addContent("http://no-url");
 
-		String scmheader = manifest.getMainAttributes().getValue("Bundle-SCM");
+		String scmheader = manifest.getMainAttributes()
+			.getValue("Bundle-SCM");
 		if (scmheader != null)
 			scm.add(scmheader);
 
@@ -160,7 +169,8 @@ public class PomFromManifest extends WriteResource {
 				String xname = email;
 				String organization = null;
 
-				Matcher m = Pattern.compile("([^@]+)@([\\d\\w\\-_\\.]+)\\.([\\d\\w\\-_\\.]+)").matcher(email);
+				Matcher m = Pattern.compile("([^@]+)@([\\d\\w\\-_\\.]+)\\.([\\d\\w\\-_\\.]+)")
+					.matcher(email);
 				if (m.matches()) {
 					xname = m.group(1);
 					organization = m.group(2);
@@ -178,7 +188,8 @@ public class PomFromManifest extends WriteResource {
 			Tag ls = new Tag(project, "licenses");
 
 			Parameters map = Processor.parseHeader(licenses, null);
-			for (Iterator<Entry<String,Attrs>> e = map.entrySet().iterator(); e.hasNext();) {
+			for (Iterator<Entry<String, Attrs>> e = map.entrySet()
+				.iterator(); e.hasNext();) {
 
 				// Bundle-License:
 				// http://www.opensource.org/licenses/apache2.0.php; \
@@ -192,9 +203,9 @@ public class PomFromManifest extends WriteResource {
 				//    <distribution>repo</distribution>
 				//    </license>
 
-				Entry<String,Attrs> entry = e.next();
+				Entry<String, Attrs> entry = e.next();
 				Tag l = new Tag(ls, "license");
-				Map<String,String> values = entry.getValue();
+				Map<String, String> values = entry.getValue();
 				String url = entry.getKey();
 
 				if (values.containsKey("description"))
@@ -219,7 +230,7 @@ public class PomFromManifest extends WriteResource {
 	 * @param tag
 	 * @param object
 	 */
-	private Tag tagFromMap(Tag parent, Map<String,String> values, String string, String tag, String object) {
+	private Tag tagFromMap(Tag parent, Map<String, String> values, String string, String tag, String object) {
 		String value = values.get(string);
 		if (value == null)
 			value = object;

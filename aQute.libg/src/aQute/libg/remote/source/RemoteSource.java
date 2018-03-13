@@ -111,13 +111,13 @@ public class RemoteSource implements Source {
 		return sink;
 	}
 
-	public void launch(Map<String,String> env, List<String> args, final InputStream stdin, Appendable stdout,
-			Appendable stderr) throws Exception {
+	public void launch(Map<String, String> env, List<String> args, final InputStream stdin, Appendable stdout,
+		Appendable stderr) throws Exception {
 		if (!running.getAndSet(true)) {
 			for (int i = 0; i < args.size(); i++) {
 				args.set(i, fsync.transform(args.get(i)));
 			}
-			for (Map.Entry<String,String> e : env.entrySet()) {
+			for (Map.Entry<String, String> e : env.entrySet()) {
 				e.setValue(fsync.transform(e.getValue()));
 			}
 
@@ -128,7 +128,8 @@ public class RemoteSource implements Source {
 			this.thread = new Thread("source::" + areaId) {
 				public void run() {
 					byte[] data = new byte[10000];
-					while (!Thread.currentThread().isInterrupted() && running.get())
+					while (!Thread.currentThread()
+						.isInterrupted() && running.get())
 						try {
 							int length = stdin.read(data);
 							if (length < 0)

@@ -25,7 +25,7 @@ public class BndResolver implements Resolver {
 		resolver = new ResolverImpl(logger, Processor.getExecutor());
 	}
 
-	public Map<Resource,List<Wire>> resolve(ResolveContext resolveContext) throws ResolutionException {
+	public Map<Resource, List<Wire>> resolve(ResolveContext resolveContext) throws ResolutionException {
 		return resolver.resolve(resolveContext);
 	}
 }

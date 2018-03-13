@@ -17,8 +17,7 @@ public class Iterables {
 		private final Iterable<? extends T>				second;
 		private final Function<? super T, ? extends R>	mapper;
 
-		Distinct(Set<? extends T> first, Iterable<? extends T> second,
-			Function<? super T, ? extends R> mapper) {
+		Distinct(Set<? extends T> first, Iterable<? extends T> second, Function<? super T, ? extends R> mapper) {
 			this.first = requireNonNull(first);
 			this.second = requireNonNull(second);
 			this.mapper = requireNonNull(mapper);

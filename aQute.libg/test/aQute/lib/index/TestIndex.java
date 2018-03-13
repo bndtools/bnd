@@ -10,26 +10,27 @@ public class TestIndex extends TestCase {
 	public void testPersistence() throws Exception {
 		File test = IO.getFile("tmp/" + getName() + ".tmp");
 		test.delete();
-		test.getParentFile().mkdirs();
+		test.getParentFile()
+			.mkdirs();
 		Index index = new Index(test, 2000);
 		try {
 			index.insert(new byte[] {
-					1
+				1
 			}, 2);
 			index.insert(new byte[] {
-					2
+				2
 			}, 4);
 			index.insert(new byte[] {
-					3
+				3
 			}, 6);
 			assertEquals(2, index.search(new byte[] {
-					1
+				1
 			}));
 			assertEquals(4, index.search(new byte[] {
-					2
+				2
 			}));
 			assertEquals(6, index.search(new byte[] {
-					3
+				3
 			}));
 			System.err.println(index.toString());
 		} finally {
@@ -40,13 +41,13 @@ public class TestIndex extends TestCase {
 		try {
 			System.err.println(index.toString());
 			assertEquals(2, index.search(new byte[] {
-					1
+				1
 			}));
 			assertEquals(4, index.search(new byte[] {
-					2
+				2
 			}));
 			assertEquals(6, index.search(new byte[] {
-					3
+				3
 			}));
 
 			index.close();
@@ -60,33 +61,34 @@ public class TestIndex extends TestCase {
 	public void testBasic() throws Exception {
 		File test = IO.getFile("tmp/" + getName() + ".tmp");
 		test.delete();
-		test.getParentFile().mkdirs();
+		test.getParentFile()
+			.mkdirs();
 		Index index = new Index(test, 2000);
 		try {
 			index.insert(new byte[] {
-					12
+				12
 			}, 24);
 			index.insert(new byte[] {
-					13
+				13
 			}, 26);
 			index.insert(new byte[] {
-					6
+				6
 			}, 12);
 			index.insert(new byte[] {
-					16
+				16
 			}, 32);
 			index.insert(new byte[] {
-					1
+				1
 			}, 2);
 
 			assertEquals(24, index.search(new byte[] {
-					12
+				12
 			}));
 			assertEquals(26, index.search(new byte[] {
-					13
+				13
 			}), 26);
 			assertEquals(12, index.search(new byte[] {
-					6
+				6
 			}), 12);
 		} finally {
 			index.close();

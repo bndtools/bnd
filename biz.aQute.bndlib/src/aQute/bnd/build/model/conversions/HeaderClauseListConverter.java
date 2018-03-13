@@ -9,11 +9,11 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
 
-public class HeaderClauseListConverter<R> implements Converter<List<R>,String> {
+public class HeaderClauseListConverter<R> implements Converter<List<R>, String> {
 
-	private final Converter< ? extends R, ? super HeaderClause> itemConverter;
+	private final Converter<? extends R, ? super HeaderClause> itemConverter;
 
-	public HeaderClauseListConverter(Converter< ? extends R, ? super HeaderClause> itemConverter) {
+	public HeaderClauseListConverter(Converter<? extends R, ? super HeaderClause> itemConverter) {
 		this.itemConverter = itemConverter;
 	}
 
@@ -24,7 +24,7 @@ public class HeaderClauseListConverter<R> implements Converter<List<R>,String> {
 		List<R> result = new ArrayList<>();
 
 		Parameters header = new Parameters(input);
-		for (Entry<String,Attrs> entry : header.entrySet()) {
+		for (Entry<String, Attrs> entry : header.entrySet()) {
 			String key = Processor.removeDuplicateMarker(entry.getKey());
 			HeaderClause clause = new HeaderClause(key, entry.getValue());
 			result.add(itemConverter.convert(clause));

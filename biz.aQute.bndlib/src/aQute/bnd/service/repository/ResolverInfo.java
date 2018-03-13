@@ -8,7 +8,10 @@ import aQute.bnd.util.dto.DTO;
 public interface ResolverInfo {
 
 	enum State {
-		Pending, Missing, Unresolveable, Resolveable;
+		Pending,
+		Missing,
+		Unresolveable,
+		Resolveable;
 	}
 
 	class ResolveStatus extends DTO {

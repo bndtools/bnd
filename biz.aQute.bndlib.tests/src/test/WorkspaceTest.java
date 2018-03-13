@@ -26,21 +26,30 @@ public class WorkspaceTest extends TestCase {
 	public void testDriver() throws Exception {
 		try (Workspace w = new Workspace(tmp)) {
 			assertEquals("unset", w.getDriver());
-			assertEquals("unset", w.getReplacer().process("${driver}"));
-			assertEquals("unset", w.getReplacer().process("${driver;unset}"));
-			assertEquals("", w.getReplacer().process("${driver;set}"));
+			assertEquals("unset", w.getReplacer()
+				.process("${driver}"));
+			assertEquals("unset", w.getReplacer()
+				.process("${driver;unset}"));
+			assertEquals("", w.getReplacer()
+				.process("${driver;set}"));
 
 			Workspace.setDriver("test");
 			assertEquals("test", w.getDriver());
-			assertEquals("test", w.getReplacer().process("${driver}"));
-			assertEquals("test", w.getReplacer().process("${driver;test}"));
-			assertEquals("", w.getReplacer().process("${driver;nottest}"));
+			assertEquals("test", w.getReplacer()
+				.process("${driver}"));
+			assertEquals("test", w.getReplacer()
+				.process("${driver;test}"));
+			assertEquals("", w.getReplacer()
+				.process("${driver;nottest}"));
 
 			w.setProperty("-bnd-driver", "test2");
 			assertEquals("test2", w.getDriver());
-			assertEquals("test2", w.getReplacer().process("${driver}"));
-			assertEquals("test2", w.getReplacer().process("${driver;test2}"));
-			assertEquals("", w.getReplacer().process("${driver;nottest}"));
+			assertEquals("test2", w.getReplacer()
+				.process("${driver}"));
+			assertEquals("test2", w.getReplacer()
+				.process("${driver;test2}"));
+			assertEquals("", w.getReplacer()
+				.process("${driver;nottest}"));
 		}
 	}
 
@@ -49,29 +58,48 @@ public class WorkspaceTest extends TestCase {
 		attrs.put("x", "10");
 		Workspace.addGestalt("peter", attrs);
 		try (Workspace w = new Workspace(tmp)) {
-			assertEquals("peter", w.getReplacer().process("${gestalt;peter}"));
-			assertEquals("10", w.getReplacer().process("${gestalt;peter;x}"));
-			assertEquals("10", w.getReplacer().process("${gestalt;peter;x;10}"));
-			assertEquals("", w.getReplacer().process("${gestalt;peter;x;11}"));
-			assertEquals("", w.getReplacer().process("${gestalt;peter;y}"));
-			assertEquals("", w.getReplacer().process("${gestalt;john}"));
-			assertEquals("", w.getReplacer().process("${gestalt;john;x}"));
-			assertEquals("", w.getReplacer().process("${gestalt;john;x;10}"));
+			assertEquals("peter", w.getReplacer()
+				.process("${gestalt;peter}"));
+			assertEquals("10", w.getReplacer()
+				.process("${gestalt;peter;x}"));
+			assertEquals("10", w.getReplacer()
+				.process("${gestalt;peter;x;10}"));
+			assertEquals("", w.getReplacer()
+				.process("${gestalt;peter;x;11}"));
+			assertEquals("", w.getReplacer()
+				.process("${gestalt;peter;y}"));
+			assertEquals("", w.getReplacer()
+				.process("${gestalt;john}"));
+			assertEquals("", w.getReplacer()
+				.process("${gestalt;john;x}"));
+			assertEquals("", w.getReplacer()
+				.process("${gestalt;john;x;10}"));
 		}
 
 		try (Workspace w = new Workspace(tmp)) {
 			w.setProperty("-gestalt", "john;z=100, mieke;a=1000, ci");
-			assertEquals("peter", w.getReplacer().process("${gestalt;peter}"));
-			assertEquals("10", w.getReplacer().process("${gestalt;peter;x}"));
-			assertEquals("10", w.getReplacer().process("${gestalt;peter;x;10}"));
-			assertEquals("", w.getReplacer().process("${gestalt;peter;x;11}"));
-			assertEquals("", w.getReplacer().process("${gestalt;peter;y}"));
-			assertEquals("john", w.getReplacer().process("${gestalt;john}"));
-			assertEquals("100", w.getReplacer().process("${gestalt;john;z}"));
-			assertEquals("100", w.getReplacer().process("${gestalt;john;z;100}"));
-			assertEquals("", w.getReplacer().process("${gestalt;john;z;101}"));
-			assertEquals("mieke", w.getReplacer().process("${gestalt;mieke}"));
-			assertEquals("", w.getReplacer().process("${gestalt;mieke;x}"));
+			assertEquals("peter", w.getReplacer()
+				.process("${gestalt;peter}"));
+			assertEquals("10", w.getReplacer()
+				.process("${gestalt;peter;x}"));
+			assertEquals("10", w.getReplacer()
+				.process("${gestalt;peter;x;10}"));
+			assertEquals("", w.getReplacer()
+				.process("${gestalt;peter;x;11}"));
+			assertEquals("", w.getReplacer()
+				.process("${gestalt;peter;y}"));
+			assertEquals("john", w.getReplacer()
+				.process("${gestalt;john}"));
+			assertEquals("100", w.getReplacer()
+				.process("${gestalt;john;z}"));
+			assertEquals("100", w.getReplacer()
+				.process("${gestalt;john;z;100}"));
+			assertEquals("", w.getReplacer()
+				.process("${gestalt;john;z;101}"));
+			assertEquals("mieke", w.getReplacer()
+				.process("${gestalt;mieke}"));
+			assertEquals("", w.getReplacer()
+				.process("${gestalt;mieke;x}"));
 		}
 	}
 

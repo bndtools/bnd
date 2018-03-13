@@ -32,16 +32,16 @@ import aQute.libg.glob.AntGlob;
  */
 @Mojo(name = "local-index", defaultPhase = PROCESS_RESOURCES)
 public class LocalIndexerMojo extends AbstractMojo {
-	private static final Logger	logger	= LoggerFactory.getLogger(LocalIndexerMojo.class);
+	private static final Logger	logger		= LoggerFactory.getLogger(LocalIndexerMojo.class);
 
-	@Parameter(property = "bnd.indexer.input.dir", required=true)
-	private File						inputDir;
+	@Parameter(property = "bnd.indexer.input.dir", required = true)
+	private File				inputDir;
 
 	@Parameter(property = "bnd.indexer.output.file", defaultValue = "${project.build.directory}/index.xml")
-	private File						outputFile;
+	private File				outputFile;
 
 	@Parameter(property = "bnd.indexer.base.file")
-	private File						baseFile;
+	private File				baseFile;
 
 	@Parameter(property = "bnd.indexer.input.dir.includes")
 	private Set<String>			includes	= new HashSet<String>();
@@ -50,30 +50,30 @@ public class LocalIndexerMojo extends AbstractMojo {
 	private Set<String>			excludes	= new HashSet<String>();
 
 	@Parameter(property = "bnd.indexer.include.gzip", defaultValue = "true")
-	private boolean						includeGzip;
+	private boolean				includeGzip;
 
 	@Parameter(property = "bnd.indexer.skip", defaultValue = "false")
-	private boolean						skip;
+	private boolean				skip;
 
 	/**
-	 * This configuration parameter is used to set the name of the repository in the
-	 * generated index
+	 * This configuration parameter is used to set the name of the repository in
+	 * the generated index
 	 */
 	@Parameter(property = "bnd.indexer.name", defaultValue = "${project.artifactId}")
 	private String				indexName;
 
-	private boolean						fail;
+	private boolean				fail;
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
-        if ( skip ) {
+		if (skip) {
 			logger.debug("skip project as configured");
 			return;
 		}
 
-        if(baseFile == null) {
+		if (baseFile == null) {
 			baseFile = outputFile.getParentFile();
-        }
+		}
 
 		if (!inputDir.isDirectory()) {
 			throw new MojoExecutionException("inputDir does not refer to a directory");
@@ -134,7 +134,9 @@ public class LocalIndexerMojo extends AbstractMojo {
 
 		try {
 			IO.mkdirs(outputFile.getParentFile());
-			xmlResourceGenerator.name(indexName).repository(resourcesRepository).save(outputFile);
+			xmlResourceGenerator.name(indexName)
+				.repository(resourcesRepository)
+				.save(outputFile);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
@@ -157,11 +159,15 @@ public class LocalIndexerMojo extends AbstractMojo {
 		public URI resolver(File file) throws Exception {
 			try {
 				logger.debug("Resolving {} relative to {}", file.getAbsolutePath(), baseFile.getAbsolutePath());
-				Path relativePath = baseFile.getAbsoluteFile().toPath().relativize(file.getAbsoluteFile().toPath());
+				Path relativePath = baseFile.getAbsoluteFile()
+					.toPath()
+					.relativize(file.getAbsoluteFile()
+						.toPath());
 				logger.debug("Relative Path is: {}", relativePath);
 				// Note that relativePath.toURI() gives the wrong answer for us!
 				// We have to do some Windows related mashing here too :(
-				URI relativeURI = URI.create(relativePath.toString().replace(File.separatorChar, '/'));
+				URI relativeURI = URI.create(relativePath.toString()
+					.replace(File.separatorChar, '/'));
 				logger.debug("Relative URI is: {}", relativeURI);
 				return relativeURI;
 			} catch (Exception e) {

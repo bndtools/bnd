@@ -19,7 +19,7 @@ public class Sed {
 	File						output;
 	boolean						backup			= true;
 
-	final Map<Pattern,String>	replacements	= new LinkedHashMap<>();
+	final Map<Pattern, String>	replacements	= new LinkedHashMap<>();
 
 	public Sed(Replacer macro, File file) {
 		assert file.isFile();
@@ -49,7 +49,7 @@ public class Sed {
 		else
 			out = new File(file.getAbsolutePath() + ".tmp");
 		try (BufferedReader brdr = IO.reader(file, UTF_8); //
-				PrintWriter pw = IO.writer(out, UTF_8)) {
+			PrintWriter pw = IO.writer(out, UTF_8)) {
 			String line;
 			while ((line = brdr.readLine()) != null) {
 				for (Pattern p : replacements.keySet()) {

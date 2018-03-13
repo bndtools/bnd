@@ -29,7 +29,7 @@ class DesignateDef extends ExtensionDef {
 
 	Tag getOuterTag() {
 		Tag metadata = new Tag("metatype:MetaData").addAttribute("xmlns:metatype",
-				MetatypeVersion.VERSION_1_3.getNamespace());
+			MetatypeVersion.VERSION_1_3.getNamespace());
 		Namespaces namespaces = new Namespaces();
 		String xmlns = MetatypeVersion.VERSION_1_3.getNamespace();
 		namespaces.registerNamespace("metatype", xmlns);

@@ -12,7 +12,12 @@ public enum Delta {
 	 * 
 	 */
 	IGNORED, // for all
-	UNCHANGED, CHANGED, MICRO, MINOR, MAJOR, // content
-	REMOVED, ADDED; // structural
+	UNCHANGED,
+	CHANGED,
+	MICRO,
+	MINOR,
+	MAJOR, // content
+	REMOVED,
+	ADDED; // structural
 
 }

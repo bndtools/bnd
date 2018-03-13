@@ -49,13 +49,15 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		/**
 		 * Always use the cached file, if it exists.
 		 */
-		@Deprecated PreferCache,
+		@Deprecated
+		PreferCache,
 
 		/**
 		 * Download the remote resource if possible, falling back to the cached
 		 * file if remote fails. Subsequently the cached resource will be used.
 		 */
-		@Deprecated PreferRemote;
+		@Deprecated
+		PreferRemote;
 	}
 
 	static final String	FILE_SCHEME	= "file";
@@ -85,7 +87,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 	Reporter			reporter;
 
 	public CachingUriResourceHandle(URI uri, final File cacheDir, URLConnector connector, String sha)
-			throws IOException {
+		throws IOException {
 		this.cacheDir = cacheDir;
 		this.connector = connector;
 		this.mode = CachingMode.PreferRemote;
@@ -121,7 +123,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			resolved = new File(baseFile.getParentFile(), fileName);
 		else
 			throw new IllegalArgumentException(
-					"Cannot resolve relative to non-existant base file path: " + baseFileName);
+				"Cannot resolve relative to non-existant base file path: " + baseFileName);
 
 		return resolved;
 	}
@@ -179,7 +181,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			return localFile;
 		if (cachedFile == null)
 			throw new IllegalStateException(
-					"Invalid URLResourceHandle: both local file and cache file location are uninitialised.");
+				"Invalid URLResourceHandle: both local file and cache file location are uninitialised.");
 
 		// Check whether the cached copy exist and has the right SHA.
 		boolean cacheExists = cachedFile.isFile();
@@ -192,7 +194,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		if (cacheValidated)
 			return cachedFile;
 
-		try (InputStream data = connector.connect(url)){
+		try (InputStream data = connector.connect(url)) {
 
 			// Save the data to the cache
 			ensureCacheDirExists();
@@ -218,21 +220,21 @@ public class CachingUriResourceHandle implements ResourceHandle {
 				} else {
 					if (reporter != null)
 						reporter.error("Downloading %s failed (%s) and cache file %s is not available. Trace: %s", url,
-								e, cachedFile, collectStackTrace(e));
-					throw new IOException(String.format(
-							"Downloading %s failed and cache file %s is not available, see log for details.", url,
-							cachedFile));
+							e, cachedFile, collectStackTrace(e));
+					throw new IOException(
+						String.format("Downloading %s failed and cache file %s is not available, see log for details.",
+							url, cachedFile));
 				}
 			} else {
 				// Can only get here if the cache was missing or didn't match
 				// the SHA, and remote access failed.
 				if (reporter != null)
 					reporter.error(
-							"Downloading %s failed (%s) and cache file %s is not available or doesn't match the expected checksum. Trace: %s",
-							url, e, cachedFile, collectStackTrace(e));
+						"Downloading %s failed (%s) and cache file %s is not available or doesn't match the expected checksum. Trace: %s",
+						url, e, cachedFile, collectStackTrace(e));
 				throw new IOException(String.format(
-						"Downloading %s failed and cache file %s is not available or doesn't match the expected checksum, see log for details.",
-						url, cachedFile));
+					"Downloading %s failed and cache file %s is not available or doesn't match the expected checksum, see log for details.",
+					url, cachedFile));
 			}
 		}
 	}
@@ -258,8 +260,8 @@ public class CachingUriResourceHandle implements ResourceHandle {
 
 		if (cacheDir.exists()) {
 			String message = String.format(
-					"Cannot create cache directory in path %s: the path exists but is not a directory",
-					cacheDir.getCanonicalPath());
+				"Cannot create cache directory in path %s: the path exists but is not a directory",
+				cacheDir.getCanonicalPath());
 			if (reporter != null)
 				reporter.error(message);
 			throw new IOException(message);
@@ -270,7 +272,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		} catch (IOException e) {
 			if (reporter != null) {
 				String message = String.format("Failed to create cache directory in path %s",
-						cacheDir.getCanonicalPath());
+					cacheDir.getCanonicalPath());
 				reporter.exception(e, message);
 			}
 			throw e;

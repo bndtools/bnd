@@ -9,11 +9,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>> {
+public class MultiMap<K, V> extends HashMap<K, List<V>> implements Map<K, List<V>> {
 	private static final long	serialVersionUID	= 1L;
 	private final boolean		noduplicates;
-	private final Class< ? >	keyClass;
-	private final Class< ? >	valueClass;
+	private final Class<?>		keyClass;
+	private final Class<?>		valueClass;
 
 	public MultiMap() {
 		this(false);
@@ -38,11 +38,11 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		}
 	}
 
-	public <S extends K, T extends V> MultiMap(MultiMap<S,T> other) {
+	public <S extends K, T extends V> MultiMap(MultiMap<S, T> other) {
 		keyClass = other.keyClass;
 		valueClass = other.valueClass;
 		noduplicates = other.noduplicates;
-		for (java.util.Map.Entry<S,List<T>> e : other.entrySet()) {
+		for (java.util.Map.Entry<S, List<T>> e : other.entrySet()) {
 			addAll(e.getKey(), e.getValue());
 		}
 	}
@@ -69,7 +69,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 	}
 
 	@SuppressWarnings("unchecked")
-	public boolean addAll(K key, Collection< ? extends V> value) {
+	public boolean addAll(K key, Collection<? extends V> value) {
 
 		if (value == null)
 			return false;
@@ -94,9 +94,9 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		return set.addAll(value);
 	}
 
-	public boolean addAll(Map<K, ? extends Collection< ? extends V>> map) {
+	public boolean addAll(Map<K, ? extends Collection<? extends V>> map) {
 		boolean added = false;
-		for (java.util.Map.Entry<K, ? extends Collection< ? extends V>> e : map.entrySet()) {
+		for (java.util.Map.Entry<K, ? extends Collection<? extends V>> e : map.entrySet()) {
 			added |= addAll(e.getKey(), e.getValue());
 		}
 		return added;
@@ -116,7 +116,7 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		return result;
 	}
 
-	public boolean removeAll(K key, Collection< ? extends V> value) {
+	public boolean removeAll(K key, Collection<? extends V> value) {
 		assert keyClass.isInstance(key);
 		List<V> set = get(key);
 		if (set == null) {
@@ -132,7 +132,8 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		assert keyClass.isInstance(key);
 		List<V> set = get(key);
 		if (set == null)
-			return Collections.<V> emptyList().iterator();
+			return Collections.<V> emptyList()
+				.iterator();
 		return set.iterator();
 	}
 
@@ -144,7 +145,8 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 			public boolean hasNext() {
 				if (current == null || !current.hasNext()) {
 					if (master.hasNext()) {
-						current = master.next().iterator();
+						current = master.next()
+							.iterator();
 						return current.hasNext();
 					}
 					return false;
@@ -163,9 +165,9 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		};
 	}
 
-	public Map<K,V> flatten() {
-		Map<K,V> map = new LinkedHashMap<>();
-		for (Map.Entry<K,List<V>> entry : entrySet()) {
+	public Map<K, V> flatten() {
+		Map<K, V> map = new LinkedHashMap<>();
+		for (Map.Entry<K, List<V>> entry : entrySet()) {
 			List<V> v = entry.getValue();
 			if (v == null || v.isEmpty())
 				continue;
@@ -175,9 +177,9 @@ public class MultiMap<K, V> extends HashMap<K,List<V>> implements Map<K,List<V>>
 		return map;
 	}
 
-	public MultiMap<V,K> transpose() {
-		MultiMap<V,K> inverted = new MultiMap<>();
-		for (Map.Entry<K,List<V>> entry : entrySet()) {
+	public MultiMap<V, K> transpose() {
+		MultiMap<V, K> inverted = new MultiMap<>();
+		for (Map.Entry<K, List<V>> entry : entrySet()) {
 			K key = entry.getKey();
 
 			List<V> value = entry.getValue();

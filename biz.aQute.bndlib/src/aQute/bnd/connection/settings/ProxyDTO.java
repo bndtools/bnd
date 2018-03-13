@@ -17,5 +17,5 @@ public class ProxyDTO extends DTO {
 	public String	nonProxyHosts;
 	public String	host;
 
-	List<Glob> globs;
+	List<Glob>		globs;
 }

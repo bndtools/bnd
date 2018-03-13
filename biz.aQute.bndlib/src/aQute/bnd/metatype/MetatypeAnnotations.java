@@ -27,7 +27,8 @@ import aQute.libg.generics.Create;
 public class MetatypeAnnotations implements AnalyzerPlugin {
 
 	enum Options {
-		nested, version {
+		nested,
+		version {
 			@Override
 			void process(MetatypeAnnotations anno, Attrs attrs) {
 				String v = attrs.get("minimum");
@@ -50,7 +51,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 
 		}
 
-		static void parseOption(Map.Entry<String,Attrs> entry, EnumSet<Options> options, MetatypeAnnotations state) {
+		static void parseOption(Map.Entry<String, Attrs> entry, EnumSet<Options> options, MetatypeAnnotations state) {
 			String s = entry.getKey();
 			boolean negation = false;
 			if (s.startsWith("!")) {
@@ -82,17 +83,17 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS));
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
-		for (Map.Entry<String,Attrs> entry : optionsHeader.entrySet()) {
+		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
 			try {
 				Options.parseOption(entry, options, this);
 			} catch (IllegalArgumentException e) {
 				analyzer.error("Unrecognized %s value %s with attributes %s, expected values are %s",
-						Constants.METATYPE_ANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(),
-						EnumSet.allOf(Options.class));
+					Constants.METATYPE_ANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(),
+					EnumSet.allOf(Options.class));
 			}
 		}
 
-		Map<TypeRef,OCDDef> classToOCDMap = new HashMap<>();
+		Map<TypeRef, OCDDef> classToOCDMap = new HashMap<>();
 
 		Set<String> ocdIds = new HashSet<>();
 		Set<String> pids = new HashSet<>();
@@ -102,7 +103,8 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
 
 		List<Clazz> list = Create.list();
-		for (Clazz c : analyzer.getClassspace().values()) {
+		for (Clazz c : analyzer.getClassspace()
+			.values()) {
 			for (Instruction instruction : instructions.keySet()) {
 				if (instruction.matches(c.getFQN())) {
 					if (!instruction.isNegated()) {
@@ -122,7 +124,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 			DesignateReader.getDesignate(c, analyzer, classToOCDMap, finder);
 		}
 
-		for (Map.Entry<TypeRef,OCDDef> entry : classToOCDMap.entrySet()) {
+		for (Map.Entry<TypeRef, OCDDef> entry : classToOCDMap.entrySet()) {
 			TypeRef c = entry.getKey();
 			OCDDef definition = entry.getValue();
 			definition.prepare(analyzer);
@@ -135,8 +137,9 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 				}
 			}
 			String name = "OSGI-INF/metatype/" + analyzer.validResourcePath(definition.id, "Invalid resource name")
-					+ ".xml";
-			analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
+				+ ".xml";
+			analyzer.getJar()
+				.putResource(name, new TagResource(definition.getTag()));
 		}
 		return false;
 	}

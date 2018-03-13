@@ -7,7 +7,7 @@ package aQute.bnd.build.model.conversions;
  * @param <E>
  * @author Neil Bartlett
  */
-public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
+public class EnumFormatter<E extends Enum<E>> implements Converter<String, E> {
 
 	private final E defaultValue;
 

@@ -21,10 +21,13 @@ public class MergeContentFilter extends ContentFilterImpl {
 		if (elementDepth++ == 0) {
 			if (rootElements.isEmpty())
 				super.startElement(uri, localName, qName, atts);
-			else if (!rootElements.get(0).getqName().equals(qName))
-				throw new SAXException(
-						String.format("Documents have inconsistent root element names: first was %s, current is %s.",
-								rootElements.get(0).getqName(), qName));
+			else if (!rootElements.get(0)
+				.getqName()
+				.equals(qName))
+				throw new SAXException(String.format(
+					"Documents have inconsistent root element names: first was %s, current is %s.", rootElements.get(0)
+						.getqName(),
+					qName));
 			rootElements.add(new SAXElement(uri, localName, qName, atts));
 		} else {
 			super.startElement(uri, localName, qName, atts);

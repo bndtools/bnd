@@ -26,6 +26,7 @@ import aQute.lib.base64.Base64;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+
 /**
  * This class is used with the aQute.bnd.osgi package, it signs jars with DSA
  * signature. -sign: md5, sha1
@@ -35,8 +36,8 @@ public class Signer extends Processor {
 
 	static Pattern		METAINFDIR		= Pattern.compile("META-INF/[^/]*");
 	String				digestNames[]	= new String[] {
-												"MD5"
-											};
+		"MD5"
+	};
 	File				keystoreFile	= new File("keystore");
 	String				password;
 	String				alias;
@@ -45,7 +46,8 @@ public class Signer extends Processor {
 		if (digestNames == null || digestNames.length == 0)
 			error("Need at least one digest algorithm name, none are specified");
 
-		if (keystoreFile == null || !keystoreFile.getAbsoluteFile().exists()) {
+		if (keystoreFile == null || !keystoreFile.getAbsoluteFile()
+			.exists()) {
 			error("No such keystore file: %s", keystoreFile);
 			return;
 		}
@@ -61,7 +63,8 @@ public class Signer extends Processor {
 
 		try (ByteBufferOutputStream o = new ByteBufferOutputStream()) {
 			Manifest manifest = jar.getManifest();
-			manifest.getMainAttributes().putValue("Signed-By", "Bnd");
+			manifest.getMainAttributes()
+				.putValue("Signed-By", "Bnd");
 
 			// Create a new manifest that contains the
 			// Name parts with the specified digests
@@ -93,7 +96,7 @@ public class Signer extends Processor {
 				privateKeyEntry = (PrivateKeyEntry) keystore.getEntry(alias, new KeyStore.PasswordProtection(pw));
 			} catch (Exception e) {
 				exception(e, "Not able to load the private key from the given keystore(%s) with alias %s",
-						keystoreFile.getAbsolutePath(), alias);
+					keystoreFile.getAbsolutePath(), alias);
 				return;
 			}
 			PrivateKey privateKey = privateKeyEntry.getPrivateKey();
@@ -119,7 +122,7 @@ public class Signer extends Processor {
 	}
 
 	private byte[] doSignatureFile(String[] digestNames, MessageDigest[] algorithms, byte[] manbytes)
-			throws IOException {
+		throws IOException {
 		try (ByteBufferOutputStream out = new ByteBufferOutputStream(); PrintWriter ps = IO.writer(out)) {
 			ps.print("Signature-Version: 1.0\r\n");
 
@@ -137,12 +140,14 @@ public class Signer extends Processor {
 	}
 
 	private void doManifest(Jar jar, String[] digestNames, MessageDigest[] algorithms, OutputStream out)
-			throws Exception {
+		throws Exception {
 		Writer w = IO.writer(out, UTF_8);
 		try {
-			for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
+			for (Map.Entry<String, Resource> entry : jar.getResources()
+				.entrySet()) {
 				String name = entry.getKey();
-				if (!METAINFDIR.matcher(name).matches()) {
+				if (!METAINFDIR.matcher(name)
+					.matches()) {
 					w.write("\r\n");
 					w.write("Name: ");
 					w.write(name);

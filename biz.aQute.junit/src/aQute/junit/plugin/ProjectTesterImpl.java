@@ -26,22 +26,28 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 			super.prepare();
 			ProjectLauncher launcher = getProjectLauncher();
 			if (port > 0) {
-				launcher.getRunProperties().put(TESTER_PORT, "" + port);
+				launcher.getRunProperties()
+					.put(TESTER_PORT, "" + port);
 				if (host != null)
-					launcher.getRunProperties().put(TESTER_HOST, "" + host);
+					launcher.getRunProperties()
+						.put(TESTER_HOST, "" + host);
 
 			}
-			launcher.getRunProperties().put(TESTER_UNRESOLVED,
-					getProject().getProperty(Constants.TESTUNRESOLVED, "true"));
+			launcher.getRunProperties()
+				.put(TESTER_UNRESOLVED, getProject().getProperty(Constants.TESTUNRESOLVED, "true"));
 
-			launcher.getRunProperties().put(TESTER_DIR, getReportDir().getAbsolutePath());
-			launcher.getRunProperties().put(TESTER_CONTINUOUS, "" + getContinuous());
+			launcher.getRunProperties()
+				.put(TESTER_DIR, getReportDir().getAbsolutePath());
+			launcher.getRunProperties()
+				.put(TESTER_CONTINUOUS, "" + getContinuous());
 			if (getProject().is(Constants.RUNTRACE))
-				launcher.getRunProperties().put(TESTER_TRACE, "true");
+				launcher.getRunProperties()
+					.put(TESTER_TRACE, "true");
 
 			Collection<String> testnames = getTests();
 			if (testnames.size() > 0) {
-				launcher.getRunProperties().put(TESTER_NAMES, Processor.join(testnames));
+				launcher.getRunProperties()
+					.put(TESTER_NAMES, Processor.join(testnames));
 			}
 			// This is only necessary because we might be picked
 			// as default and that implies we're not on the -testpath

@@ -79,7 +79,8 @@ public class AnalyzerTest extends BndTestCase {
 		b.build();
 		assertTrue(b.check());
 
-		assertNotNull(b.getImports().containsFQN("org.osgi.framework"));
+		assertNotNull(b.getImports()
+			.containsFQN("org.osgi.framework"));
 
 	}
 
@@ -94,9 +95,13 @@ public class AnalyzerTest extends BndTestCase {
 			b.setExportPackage("test.version.annotations.*");
 			b.build();
 			assertTrue(b.check());
-			b.getJar().getManifest().write(System.out);
-			Attrs bnd = b.getExports().getByFQN("test.version.annotations.bnd");
-			Attrs osgi = b.getExports().getByFQN("test.version.annotations.osgi");
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			Attrs bnd = b.getExports()
+				.getByFQN("test.version.annotations.bnd");
+			Attrs osgi = b.getExports()
+				.getByFQN("test.version.annotations.osgi");
 			assertEquals("1.2.3.bnd", bnd.getVersion());
 			assertEquals("1.2.3.osgi", osgi.getVersion());
 		} finally {
@@ -146,9 +151,12 @@ public class AnalyzerTest extends BndTestCase {
 			b.setExportPackage("test.annotation");
 			b.build();
 			assertTrue(b.check());
-			assertTrue(b.getExports().containsKey(b.getPackageRef("test/annotation")));
-			assertFalse(b.getContained().containsKey(b.getPackageRef("test/annotation/any")));
-			assertTrue(b.getImports().containsKey(b.getPackageRef("test/annotation/any")));
+			assertTrue(b.getExports()
+				.containsKey(b.getPackageRef("test/annotation")));
+			assertFalse(b.getContained()
+				.containsKey(b.getPackageRef("test/annotation/any")));
+			assertTrue(b.getImports()
+				.containsKey(b.getPackageRef("test/annotation/any")));
 		} finally {
 			b.close();
 		}
@@ -173,15 +181,23 @@ public class AnalyzerTest extends BndTestCase {
 			b.set(Constants.REMOVEHEADERS, "!Bundle-*,!*-Package,!Service-Component,*");
 			b.build();
 			assertTrue(b.check());
-			Manifest m = b.getJar().getManifest();
+			Manifest m = b.getJar()
+				.getManifest();
 
-			assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_MANIFESTVERSION));
-			assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_NAME));
-			assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME));
-			assertNotNull(m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE));
-			assertNotNull(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-			assertNull(m.getMainAttributes().getValue("Foo"));
-			assertNull(m.getMainAttributes().getValue("Bar"));
+			assertNotNull(m.getMainAttributes()
+				.getValue(Constants.BUNDLE_MANIFESTVERSION));
+			assertNotNull(m.getMainAttributes()
+				.getValue(Constants.BUNDLE_NAME));
+			assertNotNull(m.getMainAttributes()
+				.getValue(Constants.BUNDLE_SYMBOLICNAME));
+			assertNotNull(m.getMainAttributes()
+				.getValue(Constants.IMPORT_PACKAGE));
+			assertNotNull(m.getMainAttributes()
+				.getValue(Constants.EXPORT_PACKAGE));
+			assertNull(m.getMainAttributes()
+				.getValue("Foo"));
+			assertNull(m.getMainAttributes()
+				.getValue("Bar"));
 		} finally {
 			b.close();
 		}
@@ -200,7 +216,7 @@ public class AnalyzerTest extends BndTestCase {
 			b.setConditionalPackage("org.osgi.service.*");
 			Jar jar = b.build();
 			assertTrue(b.check(
-					"((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
+				"((, )?(org.osgi.service.event|org.osgi.service.component|org.osgi.service.http|org.osgi.service.log|org.osgi.service.condpermadmin|org.osgi.service.wireadmin|org.osgi.service.device)){7,7}"));
 		} finally {
 			b.close();
 		}
@@ -236,7 +252,8 @@ public class AnalyzerTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			assertTrue(b.check());
 			Packages exports = b.getExports();
-			String version = exports.getByFQN("test.refer_versioned").getVersion();
+			String version = exports.getByFQN("test.refer_versioned")
+				.getVersion();
 			assertEquals("3.5.7", version);
 			m.write(System.err);
 		} finally {
@@ -256,9 +273,15 @@ public class AnalyzerTest extends BndTestCase {
 			b.addClasspath(IO.getFile("jar/thinlet.jar"));
 			b.build();
 			assertTrue(b.check());
-			assertEquals("1.0", b.getExports().getByFQN("thinlet").getVersion());
-			assertTrue(b.getJar().getDirectories().containsKey("thinlet"));
-			assertTrue(b.getJar().getResources().containsKey("thinlet/Thinlet.class"));
+			assertEquals("1.0", b.getExports()
+				.getByFQN("thinlet")
+				.getVersion());
+			assertTrue(b.getJar()
+				.getDirectories()
+				.containsKey("thinlet"));
+			assertTrue(b.getJar()
+				.getResources()
+				.containsKey("thinlet/Thinlet.class"));
 		} finally {
 			b.close();
 		}
@@ -287,9 +310,10 @@ public class AnalyzerTest extends BndTestCase {
 			Domain main = Domain.domain(manifest);
 			Parameters export = main.getExportPackage();
 			Parameters expected = new Parameters(
-					"org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"");
+				"org.osgi.framework;version=\"1.3\",org.osgi.service.event;uses:=\"org.osgi.framework\";version=\"1.0.1\"");
 			assertTrue(expected.isEqual(export));
-			assertEquals("1.0.0.x", manifest.getMainAttributes().getValue("Bundle-Version"));
+			assertEquals("1.0.0.x", manifest.getMainAttributes()
+				.getValue("Bundle-Version"));
 		} finally {
 			analyzer.close();
 		}
@@ -304,14 +328,18 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testExportContentsDirectory() throws Exception {
 		Builder b = new Builder();
 		try {
-			File embedded = IO.getFile("bin/test/refer").getCanonicalFile();
+			File embedded = IO.getFile("bin/test/refer")
+				.getCanonicalFile();
 			assertTrue(embedded.isDirectory()); // sanity check
 			b.setProperty("Bundle-ClassPath", ".,jars/some.jar");
 			b.setProperty("-includeresource", "jars/some.jar/test/refer=" + embedded.getAbsolutePath());
 			b.setProperty("-exportcontents", "test.refer");
 			b.build();
 			assertTrue(b.check("Bundle-ClassPath uses a directory 'jars/some.jar'"));
-			assertTrue(b.getImports().toString(), b.getImports().getByFQN("org.osgi.service.event") != null);
+			assertTrue(b.getImports()
+				.toString(),
+				b.getImports()
+					.getByFQN("org.osgi.service.event") != null);
 		} finally {
 			b.close();
 		}
@@ -334,7 +362,9 @@ public class AnalyzerTest extends BndTestCase {
 
 			assertNotNull(jar.getResource("org/osgi/service/event/EventAdmin.class"));
 
-			String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
+			String exports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Export-Package");
 			System.err.println(exports);
 			assertTrue(exports.contains("uses:=\"org.osgi.framework\""));
 
@@ -344,10 +374,14 @@ public class AnalyzerTest extends BndTestCase {
 			b.setProperty("Export-Package", "org.osgi.service.event");
 			b.setPedantic(true);
 			jar = b.build();
-			exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
+			exports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Export-Package");
 			System.err.println(exports);
 			assertTrue(b.check("Empty Import-Package header"));
-			exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
+			exports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Export-Package");
 			assertFalse(exports.contains("uses:=\"org.osgi.framework\""));
 		} finally {
 			b.close();
@@ -370,8 +404,10 @@ public class AnalyzerTest extends BndTestCase {
 			b.build();
 			System.err.println(b.getErrors());
 			System.err.println(b.getWarnings());
-			assertEquals(1, b.getErrors().size());
-			assertEquals(0, b.getWarnings().size());
+			assertEquals(1, b.getErrors()
+				.size());
+			assertEquals(0, b.getWarnings()
+				.size());
 		} finally {
 			b.close();
 		}
@@ -387,8 +423,10 @@ public class AnalyzerTest extends BndTestCase {
 			b.build();
 			System.err.println(b.getErrors());
 			System.err.println(b.getWarnings());
-			assertEquals(0, b.getErrors().size());
-			assertEquals(0, b.getWarnings().size());
+			assertEquals(0, b.getErrors()
+				.size());
+			assertEquals(0, b.getWarnings()
+				.size());
 		} finally {
 			b.close();
 		}
@@ -431,9 +469,8 @@ public class AnalyzerTest extends BndTestCase {
 			String result = a._classes("cmd", "named", "org.osgi.service.http.*", "abstract");
 			TreeSet<String> r = new TreeSet<>(Processor.split(result));
 			assertEquals(
-					new TreeSet<>(
-							Arrays.asList("org.osgi.service.http.HttpContext", "org.osgi.service.http.HttpService")),
-					r);
+				new TreeSet<>(Arrays.asList("org.osgi.service.http.HttpContext", "org.osgi.service.http.HttpService")),
+				r);
 		}
 	}
 
@@ -448,12 +485,16 @@ public class AnalyzerTest extends BndTestCase {
 			a.setProperty("Export-Package", "org.osgi.framework");
 			a.addClasspath(IO.getFile("jar/osgi.jar"));
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
+			Manifest manifest = a.getJar()
+				.getManifest();
 			System.err.println(a.getErrors());
 			System.err.println(a.getWarnings());
-			assertEquals(0, a.getErrors().size());
-			assertEquals(0, a.getWarnings().size());
-			String bb = manifest.getMainAttributes().getValue("Bundle-Blueprint");
+			assertEquals(0, a.getErrors()
+				.size());
+			assertEquals(0, a.getWarnings()
+				.size());
+			String bb = manifest.getMainAttributes()
+				.getValue("Bundle-Blueprint");
 			System.err.println(bb);
 			assertNotNull(bb);
 			assertEquals("", bb);
@@ -505,13 +546,15 @@ public class AnalyzerTest extends BndTestCase {
 			p.put("Import-Package", "*");
 			p.put("Private-Package", "org.apache.mina.management.*");
 			a.setClasspath(new Jar[] {
-					new Jar(IO.getFile("jar/mandatorynoversion.jar"))
+				new Jar(IO.getFile("jar/mandatorynoversion.jar"))
 			});
 			a.setProperties(p);
 			Jar jar = a.build();
 			assertTrue(a.check());
 
-			String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
+			String imports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Import-Package");
 			System.err.println(imports);
 			assertTrue(imports.contains("x=1"));
 			assertTrue(imports.contains("y=2"));
@@ -519,7 +562,7 @@ public class AnalyzerTest extends BndTestCase {
 			a.close();
 		}
 	}
-	
+
 	/**
 	 * Test Import-Packages marked with resolution:=dynamic are expanded, moved
 	 * to DynamicImport-Packages with no original DIP instruction.
@@ -538,8 +581,12 @@ public class AnalyzerTest extends BndTestCase {
 			Jar jar = a.build();
 			assertTrue(a.check());
 
-			String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
-			String dynamicImports = jar.getManifest().getMainAttributes().getValue("DynamicImport-Package");
+			String imports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Import-Package");
+			String dynamicImports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("DynamicImport-Package");
 
 			assertTrue(imports.contains("org.osgi.framework;version=\"[1.3,2)\""));
 			assertFalse(imports.contains("org.osgi.service.cm;version=\"[1.2,2)\""));
@@ -571,8 +618,12 @@ public class AnalyzerTest extends BndTestCase {
 			Jar jar = a.build();
 			assertTrue(a.check());
 
-			String imports = jar.getManifest().getMainAttributes().getValue("Import-Package");
-			String dynamicImports = jar.getManifest().getMainAttributes().getValue("DynamicImport-Package");
+			String imports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("Import-Package");
+			String dynamicImports = jar.getManifest()
+				.getMainAttributes()
+				.getValue("DynamicImport-Package");
 
 			assertTrue(imports.contains("org.osgi.framework;version=\"[1.3,2)\""));
 			assertFalse(imports.contains("org.osgi.service.cm;version=\"[1.2,2)\""));
@@ -601,11 +652,13 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
+			Manifest manifest = a.getJar()
+				.getManifest();
 
 			assertTrue(a.check());
 
-			String imports = manifest.getMainAttributes().getValue("Import-Package");
+			String imports = manifest.getMainAttributes()
+				.getValue("Import-Package");
 			System.err.println(imports);
 			assertEquals("org.osgi.framework", imports);
 		} finally {
@@ -627,13 +680,15 @@ public class AnalyzerTest extends BndTestCase {
 			p.put("Private-Package", "org.objectweb.*");
 			p.put("Bundle-Activator", "org.osgi.framework.BundleActivator");
 			a.setClasspath(new Jar[] {
-					new Jar(IO.getFile("jar/asm.jar")), new Jar(IO.getFile("jar/osgi.jar"))
+				new Jar(IO.getFile("jar/asm.jar")), new Jar(IO.getFile("jar/osgi.jar"))
 			});
 			a.setProperties(p);
 			a.build();
 			assertTrue(a.check("Bundle-Activator not found"));
-			Manifest manifest = a.getJar().getManifest();
-			String imports = manifest.getMainAttributes().getValue("Import-Package");
+			Manifest manifest = a.getJar()
+				.getManifest();
+			String imports = manifest.getMainAttributes()
+				.getValue("Import-Package");
 			assertNull(imports);
 		} finally {
 			a.close();
@@ -653,18 +708,22 @@ public class AnalyzerTest extends BndTestCase {
 			p.put("Private-Package", "org.objectweb.*");
 			p.put("Bundle-Activator", "org.osgi.framework.BundleActivator");
 			a.setClasspath(new Jar[] {
-					new Jar(IO.getFile("jar/asm.jar")), new Jar(IO.getFile("jar/osgi.jar"))
+				new Jar(IO.getFile("jar/asm.jar")), new Jar(IO.getFile("jar/osgi.jar"))
 			});
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
+			Manifest manifest = a.getJar()
+				.getManifest();
 
-			assertEquals(0, a.getErrors().size());
-			assertEquals(1, a.getWarnings().size());
+			assertEquals(0, a.getErrors()
+				.size());
+			assertEquals(1, a.getWarnings()
+				.size());
 			assertTrue(
-					a.check("Bundle-Activator org.osgi.framework.BundleActivator is being imported into the bundle"));
+				a.check("Bundle-Activator org.osgi.framework.BundleActivator is being imported into the bundle"));
 
-			String imports = manifest.getMainAttributes().getValue("Import-Package");
+			String imports = manifest.getMainAttributes()
+				.getValue("Import-Package");
 			assertNotNull(imports);
 			assertTrue(imports.contains("org.osgi.framework"));
 		} finally {
@@ -686,10 +745,13 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
+			Manifest manifest = a.getJar()
+				.getManifest();
 
-			assertEquals(1, a.getErrors().size());
-			assertEquals(0, a.getWarnings().size());
+			assertEquals(1, a.getErrors()
+				.size());
+			assertEquals(0, a.getWarnings()
+				.size());
 			assertTrue(a.check("The Bundle Activator test.activator.AbstractActivator is abstract"));
 		} finally {
 			a.close();
@@ -710,10 +772,13 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
+			Manifest manifest = a.getJar()
+				.getManifest();
 
-			assertEquals(1, a.getErrors().size());
-			assertEquals(0, a.getWarnings().size());
+			assertEquals(1, a.getErrors()
+				.size());
+			assertEquals(0, a.getWarnings()
+				.size());
 			assertTrue(a.check("The Bundle Activator test.activator.IActivator is an interface"));
 		} finally {
 			a.close();
@@ -735,12 +800,15 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
+			Manifest manifest = a.getJar()
+				.getManifest();
 
-			assertEquals(1, a.getErrors().size());
-			assertEquals(0, a.getWarnings().size());
+			assertEquals(1, a.getErrors()
+				.size());
+			assertEquals(0, a.getWarnings()
+				.size());
 			assertTrue(a.check(
-					"Bundle Activator classes must have a public zero-argument constructor and test.activator.MissingNoArgsConstructorActivator does not"));
+				"Bundle Activator classes must have a public zero-argument constructor and test.activator.MissingNoArgsConstructorActivator does not"));
 		} finally {
 			a.close();
 		}
@@ -760,13 +828,16 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
+			Manifest manifest = a.getJar()
+				.getManifest();
 
-			assertEquals(2, a.getErrors().size());
-			assertEquals(0, a.getWarnings().size());
+			assertEquals(2, a.getErrors()
+				.size());
+			assertEquals(0, a.getWarnings()
+				.size());
 			assertTrue(a.check(
-					"Bundle Activator classes must be public, and test.activator.DefaultVisibilityActivator is not",
-					"Bundle Activator classes must have a public zero-argument constructor and test.activator.DefaultVisibilityActivator does not"));
+				"Bundle Activator classes must be public, and test.activator.DefaultVisibilityActivator is not",
+				"Bundle Activator classes must have a public zero-argument constructor and test.activator.DefaultVisibilityActivator does not"));
 		} finally {
 			a.close();
 		}
@@ -787,12 +858,15 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
+			Manifest manifest = a.getJar()
+				.getManifest();
 
-			assertEquals(1, a.getErrors().size());
-			assertEquals(0, a.getWarnings().size());
+			assertEquals(1, a.getErrors()
+				.size());
+			assertEquals(0, a.getWarnings()
+				.size());
 			assertTrue(
-					a.check("The Bundle Activator test.activator.NotAnActivator does not implement BundleActivator"));
+				a.check("The Bundle Activator test.activator.NotAnActivator does not implement BundleActivator"));
 		} finally {
 			a.close();
 		}
@@ -812,12 +886,18 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
-	
-			assertEquals(a.getErrors().toString(), 0, a.getErrors().size());
-			assertEquals(a.getWarnings().toString(), 1, a.getWarnings().size());
-			assertTrue(
-					a.check("A Bundle-Activator header was present but no activator class was defined"));
+			Manifest manifest = a.getJar()
+				.getManifest();
+
+			assertEquals(a.getErrors()
+				.toString(), 0,
+				a.getErrors()
+					.size());
+			assertEquals(a.getWarnings()
+				.toString(), 1,
+				a.getWarnings()
+					.size());
+			assertTrue(a.check("A Bundle-Activator header was present but no activator class was defined"));
 		} finally {
 			a.close();
 		}
@@ -837,12 +917,19 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
-	
-			assertEquals(a.getErrors().toString(), 2, a.getErrors().size());
-			assertEquals(a.getWarnings().toString(), 0, a.getWarnings().size());
+			Manifest manifest = a.getJar()
+				.getManifest();
+
+			assertEquals(a.getErrors()
+				.toString(), 2,
+				a.getErrors()
+					.size());
+			assertEquals(a.getWarnings()
+				.toString(), 0,
+				a.getWarnings()
+					.size());
 			assertTrue(a.check("A Bundle-Activator header is present and its value is not a valid type name 123",
-					"The default package '.' is not permitted by the Import-Package syntax."));
+				"The default package '.' is not permitted by the Import-Package syntax."));
 		} finally {
 			a.close();
 		}
@@ -862,12 +949,19 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
-	
-			assertEquals(a.getErrors().toString(), 1, a.getErrors().size());
-			assertEquals(a.getWarnings().toString(), 0, a.getWarnings().size());
-			assertTrue(
-					a.check("A Bundle-Activator header is present but no activator class was found using the macro \\$\\{classes;IMPLEMENTS;org\\.osgi\\.framework\\.BundleActivator\\}"));
+			Manifest manifest = a.getJar()
+				.getManifest();
+
+			assertEquals(a.getErrors()
+				.toString(), 1,
+				a.getErrors()
+					.size());
+			assertEquals(a.getWarnings()
+				.toString(), 0,
+				a.getWarnings()
+					.size());
+			assertTrue(a.check(
+				"A Bundle-Activator header is present but no activator class was found using the macro \\$\\{classes;IMPLEMENTS;org\\.osgi\\.framework\\.BundleActivator\\}"));
 		} finally {
 			a.close();
 		}
@@ -887,14 +981,21 @@ public class AnalyzerTest extends BndTestCase {
 			a.addClasspath(new File("bin"));
 			a.setProperties(p);
 			a.build();
-			Manifest manifest = a.getJar().getManifest();
+			Manifest manifest = a.getJar()
+				.getManifest();
 
-			assertEquals(a.getErrors().toString(), 1, a.getErrors().size());
-			assertEquals(a.getWarnings().toString(), 0, a.getWarnings().size());
+			assertEquals(a.getErrors()
+				.toString(), 1,
+				a.getErrors()
+					.size());
+			assertEquals(a.getWarnings()
+				.toString(), 0,
+				a.getWarnings()
+					.size());
 			assertTrue(
-					a.check("The Bundle-Activator header only supports a single type. The following types were found: "
-							+ "test.activator.AbstractActivator,test.activator.Activator,test.activator.Activator11,test.activator.Activator2,test.activator.Activator3,test.activator.ActivatorPackage,test.activator.ActivatorPrivate,test.activator.DefaultVisibilityActivator,test.activator.IActivator,test.activator.MissingNoArgsConstructorActivator"
-							+ ". This usually happens when a macro resolves to multiple types"));
+				a.check("The Bundle-Activator header only supports a single type. The following types were found: "
+					+ "test.activator.AbstractActivator,test.activator.Activator,test.activator.Activator11,test.activator.Activator2,test.activator.Activator3,test.activator.ActivatorPackage,test.activator.ActivatorPrivate,test.activator.DefaultVisibilityActivator,test.activator.IActivator,test.activator.MissingNoArgsConstructorActivator"
+					+ ". This usually happens when a macro resolves to multiple types"));
 		} finally {
 			a.close();
 		}
@@ -909,13 +1010,15 @@ public class AnalyzerTest extends BndTestCase {
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/asm.jar"));
 			Manifest m = a.calcManifest();
-			assertNotNull(m.getMainAttributes().getValue("Implementation-Title"));
+			assertNotNull(m.getMainAttributes()
+				.getValue("Implementation-Title"));
 		}
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/asm.jar"));
 			a.setProperty("-removeheaders", "Implementation-Title");
 			Manifest m = a.calcManifest();
-			assertNull(m.getMainAttributes().getValue("Implementation-Title"));
+			assertNull(m.getMainAttributes()
+				.getValue("Implementation-Title"));
 		}
 
 	}
@@ -933,10 +1036,13 @@ public class AnalyzerTest extends BndTestCase {
 			an.setProperty("Export-Package", "target");
 			Manifest manifest = an.calcManifest();
 			assertTrue(an.check());
-			String exports = manifest.getMainAttributes().getValue(Analyzer.EXPORT_PACKAGE);
+			String exports = manifest.getMainAttributes()
+				.getValue(Analyzer.EXPORT_PACKAGE);
 			Parameters map = Analyzer.parseHeader(exports, null);
 			assertEquals(1, map.size());
-			assertEquals("target", map.keySet().iterator().next());
+			assertEquals("target", map.keySet()
+				.iterator()
+				.next());
 		}
 
 	}
@@ -965,15 +1071,21 @@ public class AnalyzerTest extends BndTestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(IO.getFile("jar/asm.jar"));
 			analyzer.setProperties(base);
-			analyzer.calcManifest().write(System.err);
+			analyzer.calcManifest()
+				.write(System.err);
 			assertTrue(analyzer.check());
 
-			assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm.signature") != null);
-			assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm") != null);
-			assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm.signature") != null);
-			assertFalse(analyzer.getImports().getByFQN("org.objectweb.asm") != null);
+			assertTrue(analyzer.getExports()
+				.getByFQN("org.objectweb.asm.signature") != null);
+			assertTrue(analyzer.getExports()
+				.getByFQN("org.objectweb.asm") != null);
+			assertFalse(analyzer.getImports()
+				.getByFQN("org.objectweb.asm.signature") != null);
+			assertFalse(analyzer.getImports()
+				.getByFQN("org.objectweb.asm") != null);
 
-			assertEquals("Expected size", 2, analyzer.getExports().size());
+			assertEquals("Expected size", 2, analyzer.getExports()
+				.size());
 		}
 
 	}
@@ -990,7 +1102,8 @@ public class AnalyzerTest extends BndTestCase {
 		try (Analyzer h = new Analyzer()) {
 			h.setJar(IO.getFile("jar/asm.jar"));
 			h.setProperties(base);
-			h.calcManifest().write(System.err);
+			h.calcManifest()
+				.write(System.err);
 			assertTrue(h.check());
 			Packages exports = h.getExports();
 			assertTrue(exports.getByFQN("org.objectweb.asm.signature") != null);
@@ -1012,16 +1125,19 @@ public class AnalyzerTest extends BndTestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(tmp);
 			analyzer.setProperties(base);
-			analyzer.calcManifest().write(System.err);
+			analyzer.calcManifest()
+				.write(System.err);
 			assertTrue(analyzer.check());
-			assertPresent(analyzer.getImports().keySet(),
-					"org.osgi.service.packageadmin, " + "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
-							+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
-							+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
-			assertPresent(analyzer.getExports().keySet(),
-					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
-							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
-							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
+			assertPresent(analyzer.getImports()
+				.keySet(),
+				"org.osgi.service.packageadmin, " + "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
+					+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
+					+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
+			assertPresent(analyzer.getExports()
+				.keySet(),
+				"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
+					+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
+					+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 		}
 	}
 
@@ -1033,18 +1149,22 @@ public class AnalyzerTest extends BndTestCase {
 		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);
 			h.setProperties(base);
-			h.calcManifest().write(System.err);
-			assertPresent(h.getImports().keySet(),
-					"org.xml.sax, " + " javax.xml.parsers," + " org.xml.sax.helpers," + " org.eclipse.osgi.util");
+			h.calcManifest()
+				.write(System.err);
+			assertPresent(h.getImports()
+				.keySet(),
+				"org.xml.sax, " + " javax.xml.parsers," + " org.xml.sax.helpers," + " org.eclipse.osgi.util");
 
 			System.err.println("IMports " + h.getImports());
-			assertNotPresent(h.getImports().keySet(),
-					"org.osgi.service.packageadmin, " + "org.osgi.service.log," + " org.osgi.framework,"
-							+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
-			assertPresent(h.getExports().keySet(),
-					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
-							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
-							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
+			assertNotPresent(h.getImports()
+				.keySet(),
+				"org.osgi.service.packageadmin, " + "org.osgi.service.log," + " org.osgi.framework,"
+					+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
+			assertPresent(h.getExports()
+				.keySet(),
+				"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
+					+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
+					+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 		}
 	}
 
@@ -1056,15 +1176,18 @@ public class AnalyzerTest extends BndTestCase {
 		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);
 			h.setProperties(base);
-			h.calcManifest().write(System.err);
-			assertPresent(h.getImports().keySet(),
-					"org.osgi.service.packageadmin, " + "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
-							+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
-							+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
-			assertNotPresent(h.getExports().keySet(),
-					"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
-							+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
-							+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
+			h.calcManifest()
+				.write(System.err);
+			assertPresent(h.getImports()
+				.keySet(),
+				"org.osgi.service.packageadmin, " + "org.xml.sax, org.osgi.service.log," + " javax.xml.parsers,"
+					+ " org.xml.sax.helpers," + " org.osgi.framework," + " org.eclipse.osgi.util,"
+					+ " org.osgi.util.tracker, " + "org.osgi.service.component, " + "org.osgi.service.cm");
+			assertNotPresent(h.getExports()
+				.keySet(),
+				"org.eclipse.equinox.ds.parser, " + "org.eclipse.equinox.ds.tracker, " + "org.eclipse.equinox.ds, "
+					+ "org.eclipse.equinox.ds.instance, " + "org.eclipse.equinox.ds.model, "
+					+ "org.eclipse.equinox.ds.resolver, " + "org.eclipse.equinox.ds.workqueue");
 			System.err.println(h.getUnreachable());
 		}
 	}
@@ -1079,13 +1202,14 @@ public class AnalyzerTest extends BndTestCase {
 			h.setJar(tmp);
 			h.setProperties(base);
 			h.setClasspath(new File[] {
-					osgi
+				osgi
 			});
-			h.calcManifest().write(System.err);
+			h.calcManifest()
+				.write(System.err);
 			assertEquals("Version from osgi.jar", "[1.2,2)",
-					get(h.getImports(), h.getPackageRef("org.osgi.service.packageadmin"), "version"));
+				get(h.getImports(), h.getPackageRef("org.osgi.service.packageadmin"), "version"));
 			assertEquals("Version from osgi.jar", "[1.3,2)",
-					get(h.getImports(), h.getPackageRef("org.osgi.util.tracker"), "version"));
+				get(h.getImports(), h.getPackageRef("org.osgi.util.tracker"), "version"));
 			assertEquals("Version from osgi.jar", null, get(h.getImports(), h.getPackageRef("org.xml.sax"), "version"));
 		}
 	}
@@ -1110,14 +1234,16 @@ public class AnalyzerTest extends BndTestCase {
 			Manifest m = h.calcManifest();
 			m.write(System.err);
 			assertTrue(h.check( //
-					"Unused Export-Package instructions: \\[baz.*\\]", //
-					"Unused Import-Package instructions: \\[com.foo.bar.*\\]"));
-			assertTrue(h.getImports().getByFQN("com.foo") != null);
-			assertTrue(h.getExports().getByFQN("com.bar") != null);
+				"Unused Export-Package instructions: \\[baz.*\\]", //
+				"Unused Import-Package instructions: \\[com.foo.bar.*\\]"));
+			assertTrue(h.getImports()
+				.getByFQN("com.foo") != null);
+			assertTrue(h.getExports()
+				.getByFQN("com.bar") != null);
 		}
 	}
 
-	static void assertNotPresent(Collection< ? > map, String string) {
+	static void assertNotPresent(Collection<?> map, String string) {
 		Collection<String> ss = new HashSet<>();
 		for (Object o : map)
 			ss.add(o + "");
@@ -1129,7 +1255,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	static void assertPresent(Collection< ? > map, String string) {
+	static void assertPresent(Collection<?> map, String string) {
 		Collection<String> ss = new HashSet<>();
 		for (Object o : map)
 			ss.add(o + "");
@@ -1141,8 +1267,8 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	static <K, V> V get(Map<K, ? extends Map<String,V>> headers, K key, String attr) {
-		Map<String,V> clauses = headers.get(key);
+	static <K, V> V get(Map<K, ? extends Map<String, V>> headers, K key, String attr) {
+		Map<String, V> clauses = headers.get(key);
 		if (clauses == null)
 			return null;
 		return clauses.get(attr);

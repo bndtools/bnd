@@ -23,7 +23,7 @@ import aQute.lib.collections.MultiMap;
 public class AugmentRepository extends BaseRepository {
 
 	private final Repository					repository;
-	private final Map<Capability,Capability>	wrapped					= new HashMap<>();
+	private final Map<Capability, Capability>	wrapped					= new HashMap<>();
 	private final List<Capability>				augmentedCapabilities	= new ArrayList<>();
 	private final List<Resource>				augmentedBundles		= new ArrayList<>();
 
@@ -33,8 +33,8 @@ public class AugmentRepository extends BaseRepository {
 	}
 
 	@Override
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		Map<Requirement,Collection<Capability>> fromRepos = repository.findProviders(requirements);
+	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
+		Map<Requirement, Collection<Capability>> fromRepos = repository.findProviders(requirements);
 
 		for (Requirement requirement : requirements) {
 
@@ -72,25 +72,26 @@ public class AugmentRepository extends BaseRepository {
 	}
 
 	private void init(Parameters augments) throws Exception {
-		MultiMap<Requirement,Augment> operations = new MultiMap<>();
+		MultiMap<Requirement, Augment> operations = new MultiMap<>();
 
-		for (Map.Entry<String,Attrs> e : augments.entrySet()) {
+		for (Map.Entry<String, Attrs> e : augments.entrySet()) {
 			String bsn = e.getKey();
 			Attrs attrs = e.getValue();
 			createAugmentOperation(operations, bsn, attrs);
 		}
 
-		Map<Requirement,Collection<Capability>> allBundles = repository.findProviders(operations.keySet());
+		Map<Requirement, Collection<Capability>> allBundles = repository.findProviders(operations.keySet());
 
-		for (Entry<Requirement,List<Augment>> e : operations.entrySet()) {
+		for (Entry<Requirement, List<Augment>> e : operations.entrySet()) {
 			executeAugmentOperations(allBundles, e.getKey(), e.getValue());
 		}
 	}
 
-	private void createAugmentOperation(MultiMap<Requirement,Augment> operations, String bsn, Attrs attrs) {
+	private void createAugmentOperation(MultiMap<Requirement, Augment> operations, String bsn, Attrs attrs) {
 		String range = attrs.getVersion();
 
-		Requirement bundleRequirement = CapReqBuilder.createBundleRequirement(bsn, range).buildSyntheticRequirement();
+		Requirement bundleRequirement = CapReqBuilder.createBundleRequirement(bsn, range)
+			.buildSyntheticRequirement();
 
 		Augment augment = new Augment();
 		augment.additionalCapabilities = new Parameters(attrs.get(Constants.AUGMENT_CAPABILITY_DIRECTIVE));
@@ -99,8 +100,8 @@ public class AugmentRepository extends BaseRepository {
 		operations.add(bundleRequirement, augment);
 	}
 
-	private void executeAugmentOperations(Map<Requirement,Collection<Capability>> allBundles,
-			Requirement bundleRequirement, List<Augment> augments) throws Exception {
+	private void executeAugmentOperations(Map<Requirement, Collection<Capability>> allBundles,
+		Requirement bundleRequirement, List<Augment> augments) throws Exception {
 
 		Collection<Capability> matchedBundleCapabilities = allBundles.get(bundleRequirement);
 		Collection<Resource> bundles = ResourceUtils.getResources(matchedBundleCapabilities);
@@ -108,7 +109,7 @@ public class AugmentRepository extends BaseRepository {
 		for (Resource bundle : bundles) {
 
 			ResourceBuilder wrappedBundleBuilder = new ResourceBuilder();
-			Map<Capability,Capability> originalToWrapper = wrappedBundleBuilder.from(bundle);
+			Map<Capability, Capability> originalToWrapper = wrappedBundleBuilder.from(bundle);
 			wrapped.putAll(originalToWrapper);
 
 			List<Augment> bundleAugments = augments;

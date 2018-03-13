@@ -73,7 +73,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		this.reporter = reporter;
 	}
 
-	public void setProperties(Map<String,String> map) {
+	public void setProperties(Map<String, String> map) {
 		configFileList = map.get("configs");
 		if (configFileList == null)
 			throw new IllegalArgumentException("'configs' must be specified on HttpBasicAuthURLConnector");
@@ -86,7 +86,8 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 
 			StringTokenizer tokenizer = new StringTokenizer(configFileList, ",");
 			while (tokenizer.hasMoreTokens()) {
-				String configFileName = tokenizer.nextToken().trim();
+				String configFileName = tokenizer.nextToken()
+					.trim();
 
 				File file = new File(configFileName);
 				if (file.exists()) {
@@ -136,7 +137,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 			Matcher matcher = mapping.urlPattern.matcher(url.toString());
 			if (matcher.find()) {
 				logger.debug("Found username {}, password ***** for URL '{}'. Matched on pattern {}={}", mapping.user,
-						url, mapping.name, mapping.urlPattern);
+					url, mapping.name, mapping.urlPattern);
 				return connectTagged(url, tag, mapping.user, mapping.pass);
 			}
 		}

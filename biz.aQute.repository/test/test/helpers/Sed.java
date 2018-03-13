@@ -11,7 +11,7 @@ import java.util.zip.GZIPOutputStream;
 
 public class Sed {
 	private static void processObrFileInternal(BufferedReader reader, String searchPattern, String replacementPattern,
-			OutputStream out) throws Exception {
+		OutputStream out) throws Exception {
 		try {
 			String line;
 			while ((line = reader.readLine()) != null) {
@@ -26,7 +26,7 @@ public class Sed {
 	}
 
 	public static void file2File(String filenameIn, String searchPattern, String replacementPattern, String filenameOut)
-			throws Exception {
+		throws Exception {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filenameIn)));
 		BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(filenameOut));
 
@@ -35,7 +35,7 @@ public class Sed {
 	}
 
 	public static void file2GzFile(String filenameIn, String searchPattern, String replacementPattern,
-			String filenameOut) throws Exception {
+		String filenameOut) throws Exception {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filenameIn)));
 		BufferedOutputStream out = new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(filenameOut)));
 
@@ -43,9 +43,9 @@ public class Sed {
 	}
 
 	public static void gzFile2GzFile(String filenameIn, String searchPattern, String replacementPattern,
-			String filenameOut) throws Exception {
+		String filenameOut) throws Exception {
 		BufferedReader reader = new BufferedReader(
-				new InputStreamReader(new GZIPInputStream(new FileInputStream(filenameIn))));
+			new InputStreamReader(new GZIPInputStream(new FileInputStream(filenameIn))));
 		BufferedOutputStream out = new BufferedOutputStream(new GZIPOutputStream(new FileOutputStream(filenameOut)));
 
 		processObrFileInternal(reader, searchPattern, replacementPattern, out);

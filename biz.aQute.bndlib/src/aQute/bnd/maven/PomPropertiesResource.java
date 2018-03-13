@@ -15,7 +15,8 @@ public class PomPropertiesResource extends WriteResource {
 		pomProperties.setProperty("groupId", pomResource.getGroupId());
 		pomProperties.setProperty("artifactId", pomResource.getArtifactId());
 		pomProperties.setProperty("version", pomResource.getVersion());
-		where = pomResource.getWhere().replaceFirst("(?<=^|/)pom\\.xml$", "pom\\.properties");
+		where = pomResource.getWhere()
+			.replaceFirst("(?<=^|/)pom\\.xml$", "pom\\.properties");
 	}
 
 	public String getWhere() {

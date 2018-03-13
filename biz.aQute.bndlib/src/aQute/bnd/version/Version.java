@@ -4,18 +4,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Version implements Comparable<Version> {
-	private static final String	HIGHESTCHAR	= "\uFFFF";
+	private static final String	HIGHESTCHAR		= "\uFFFF";
 	final int					major;
 	final int					minor;
 	final int					micro;
 	final String				qualifier;
-	final boolean	snapshot;
+	final boolean				snapshot;
 
 	public final static String	VERSION_STRING	= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9})(\\.([-_\\da-zA-Z]+))?)?)?";
 	public final static Pattern	VERSION			= Pattern.compile(VERSION_STRING);
 	public final static Version	LOWEST			= new Version();
 	public final static Version	HIGHEST			= new Version(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE,
-			HIGHESTCHAR);
+		HIGHESTCHAR);
 
 	public static final Version	emptyVersion	= LOWEST;
 	public static final Version	ONE				= new Version(1, 0, 0);
@@ -67,7 +67,8 @@ public class Version implements Comparable<Version> {
 	}
 
 	private boolean isSnapshot(String qualifier) {
-		return qualifier != null && qualifier != HIGHESTCHAR && SNAPSHOT_P.matcher(qualifier).matches();
+		return qualifier != null && qualifier != HIGHESTCHAR && SNAPSHOT_P.matcher(qualifier)
+			.matches();
 	}
 
 	public int getMajor() {
@@ -192,7 +193,8 @@ public class Version implements Comparable<Version> {
 	}
 
 	public static boolean isVersion(String version) {
-		return version != null && VERSION.matcher(version).matches();
+		return version != null && VERSION.matcher(version)
+			.matches();
 	}
 
 	public boolean isSnapshot() {

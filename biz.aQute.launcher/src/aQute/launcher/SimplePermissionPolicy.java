@@ -126,7 +126,8 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 				String line;
 				while ((line = reader.readLine()) != null) {
 					line = line.trim();
-					if ((line.length() == 0) || line.startsWith("#") || line.startsWith("//")) /* comments */
+					if ((line.length() == 0) || line.startsWith("#")
+						|| line.startsWith("//")) /* comments */
 						continue;
 					try {
 						permissions.add(new PermissionInfo(line));

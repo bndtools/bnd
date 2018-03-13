@@ -36,10 +36,12 @@ public class EclipseTask extends BaseTask {
 
 			addProperty(prefix + "bootclasspath", join(eclipse.getBootclasspath(), separator));
 
-			if (!eclipse.getSourcepath().isEmpty())
+			if (!eclipse.getSourcepath()
+				.isEmpty())
 				addProperty(prefix + "sourcepath", join(eclipse.getSourcepath(), separator));
 
-			addProperty(prefix + "output", eclipse.getOutput().getAbsolutePath());
+			addProperty(prefix + "output", eclipse.getOutput()
+				.getAbsolutePath());
 
 			/**
 			 * The prebuild is an attribute that is prepended to the dependency
@@ -77,7 +79,8 @@ public class EclipseTask extends BaseTask {
 	public void setPrebuild(String prebuild) {
 		StringTokenizer st = new StringTokenizer(prebuild, " ,");
 		while (st.hasMoreTokens()) {
-			this.prebuild.add(getFile(getProject().getBaseDir().getParentFile(), st.nextToken()));
+			this.prebuild.add(getFile(getProject().getBaseDir()
+				.getParentFile(), st.nextToken()));
 		}
 	}
 

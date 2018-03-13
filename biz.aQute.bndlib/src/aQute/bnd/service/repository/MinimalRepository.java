@@ -10,7 +10,8 @@ import aQute.service.reporter.Report;
 
 public interface MinimalRepository {
 	public enum Gestalt {
-		ADD, REMOTE
+		ADD,
+		REMOTE
 	}
 
 	Report add(File f) throws Exception;
@@ -19,7 +20,7 @@ public interface MinimalRepository {
 
 	List<Version> versions(String bsn);
 
-	Future<File> get(String bsn, Version version, Map<String,String> attrs);
+	Future<File> get(String bsn, Version version, Map<String, String> attrs);
 
 	boolean is(Gestalt gestalt);
 }

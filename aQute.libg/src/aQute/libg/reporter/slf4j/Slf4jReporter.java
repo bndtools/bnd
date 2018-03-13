@@ -8,10 +8,11 @@ import org.slf4j.LoggerFactory;
 import aQute.lib.strings.Strings;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
+
 public class Slf4jReporter extends ReporterAdapter {
 	final Logger logger;
 
-	public Slf4jReporter(Class< ? > loggingClass) {
+	public Slf4jReporter(Class<?> loggingClass) {
 		logger = LoggerFactory.getLogger(loggingClass);
 	}
 
@@ -73,7 +74,7 @@ public class Slf4jReporter extends ReporterAdapter {
 		return location;
 	}
 
-	public static Reporter getAlternative(Class< ? > class1, Reporter reporter) {
+	public static Reporter getAlternative(Class<?> class1, Reporter reporter) {
 		if (reporter == null)
 			return new Slf4jReporter(class1);
 		else

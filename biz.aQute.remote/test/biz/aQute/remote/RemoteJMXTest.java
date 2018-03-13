@@ -16,7 +16,7 @@ import junit.framework.TestCase;
 
 public class RemoteJMXTest extends TestCase {
 
-	private Map<String,Object>	configuration;
+	private Map<String, Object>	configuration;
 	private Framework			framework;
 	private File				tmp;
 
@@ -35,13 +35,15 @@ public class RemoteJMXTest extends TestCase {
 		BundleContext context = framework.getBundleContext();
 
 		String[] bundles = {
-				"testdata/osgi.cmpn-4.3.1.jar", "testdata/slf4j-simple-1.7.12.jar",
-				"testdata/slf4j-api-1.7.12.jar", "testdata/org.apache.aries.util-1.1.0.jar",
-				"testdata/org.apache.aries.jmx-1.1.1.jar", "generated/biz.aQute.remote.test.jmx.jar"
+			"testdata/osgi.cmpn-4.3.1.jar", "testdata/slf4j-simple-1.7.12.jar", "testdata/slf4j-api-1.7.12.jar",
+			"testdata/org.apache.aries.util-1.1.0.jar", "testdata/org.apache.aries.jmx-1.1.1.jar",
+			"generated/biz.aQute.remote.test.jmx.jar"
 		};
 
 		for (String bundle : bundles) {
-			String location = "reference:" + IO.getFile(bundle).toURI().toString();
+			String location = "reference:" + IO.getFile(bundle)
+				.toURI()
+				.toString();
 			Bundle b = context.installBundle(location);
 			if (!bundle.contains("slf4j-simple")) {
 				b.start();
@@ -63,7 +65,7 @@ public class RemoteJMXTest extends TestCase {
 		JMXBundleDeployer jmxBundleDeployer = new JMXBundleDeployer();
 
 		long bundleId = jmxBundleDeployer.deploy("biz.aQute.remote.agent",
-				IO.getFile("generated/biz.aQute.remote.agent.jar"));
+			IO.getFile("generated/biz.aQute.remote.agent.jar"));
 
 		assertTrue(bundleId > 0);
 

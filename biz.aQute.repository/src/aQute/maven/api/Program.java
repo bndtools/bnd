@@ -14,12 +14,12 @@ import aQute.lib.strings.Strings;
  * unclear what the character set and syntax is :-(
  */
 public class Program implements Comparable<Program> {
-	public final String	group;
-	public final String	artifact;
-	public final String	path;
+	public final String							group;
+	public final String							artifact;
+	public final String							path;
 
-	final private static Map<String,Program>	programCache	= new WeakHashMap<>();
-	final private Map<MavenVersion,Revision>	revisionCache	= new WeakHashMap<>();
+	final private static Map<String, Program>	programCache	= new WeakHashMap<>();
+	final private Map<MavenVersion, Revision>	revisionCache	= new WeakHashMap<>();
 
 	Program(String group, String artifact) {
 		this.group = group;
@@ -151,9 +151,9 @@ public class Program implements Comparable<Program> {
 		return path + "/maven-metadata-" + id + ".xml";
 	}
 
-
 	public static Program valueOf(String bsn) {
-		String parts[] = Strings.trim(bsn).split(":");
+		String parts[] = Strings.trim(bsn)
+			.split(":");
 		if (parts.length != 2)
 			return null;
 

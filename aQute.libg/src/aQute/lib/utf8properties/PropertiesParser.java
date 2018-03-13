@@ -210,8 +210,9 @@ final class PropertiesParser {
 					case '"' :
 						if (quote == 0) {
 							if (expectDelimeter) {
-								error("Found a quote '%s' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes",
-										tmp);
+								error(
+									"Found a quote '%s' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes",
+									tmp);
 								expectDelimeter = false;
 							}
 							quote = tmp;
@@ -236,7 +237,7 @@ final class PropertiesParser {
 					default :
 						if (expectDelimeter) {
 							error("Expected a delimeter, like comma or semicolon, after a quoted string but found '%s'",
-									tmp);
+								tmp);
 							expectDelimeter = false;
 						}
 						break;

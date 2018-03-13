@@ -42,7 +42,8 @@ public class ResourceRepoTest extends TestCase {
 
 	public void testRepositoryId() throws Exception {
 		// Just basic check
-		assertEquals(0, repoImpl.filter(null, null).size());
+		assertEquals(0, repoImpl.filter(null, null)
+			.size());
 
 		SearchableRepository.ResourceDescriptor osgi = create("jar/osgi.jar");
 		assertNull(repoImpl.getResource(osgi.id));
@@ -50,33 +51,47 @@ public class ResourceRepoTest extends TestCase {
 		// Add it
 		boolean add = repoImpl.add("x", osgi);
 		assertNotNull(repoImpl.getResource(osgi.id));
-		assertEquals(1, repoImpl.filter(null, null).size());
-		assertEquals(1, repoImpl.filter("x", null).size());
-		assertEquals(0, repoImpl.filter("y", null).size());
+		assertEquals(1, repoImpl.filter(null, null)
+			.size());
+		assertEquals(1, repoImpl.filter("x", null)
+			.size());
+		assertEquals(0, repoImpl.filter("y", null)
+			.size());
 
 		repoImpl.delete("y", osgi.id);
-		assertEquals(1, repoImpl.filter("x", null).size());
+		assertEquals(1, repoImpl.filter("x", null)
+			.size());
 
 		repoImpl.add("y", osgi);
-		assertEquals(1, repoImpl.filter("x", null).size());
-		assertEquals(1, repoImpl.filter("y", null).size());
-		assertEquals(1, repoImpl.filter(null, null).size());
+		assertEquals(1, repoImpl.filter("x", null)
+			.size());
+		assertEquals(1, repoImpl.filter("y", null)
+			.size());
+		assertEquals(1, repoImpl.filter(null, null)
+			.size());
 
 		repoImpl.delete("y", osgi.id);
-		assertEquals(1, repoImpl.filter("x", null).size());
-		assertEquals(0, repoImpl.filter("y", null).size());
-		assertEquals(1, repoImpl.filter(null, null).size());
+		assertEquals(1, repoImpl.filter("x", null)
+			.size());
+		assertEquals(0, repoImpl.filter("y", null)
+			.size());
+		assertEquals(1, repoImpl.filter(null, null)
+			.size());
 
 		repoImpl.delete("x", osgi.id);
-		assertEquals(0, repoImpl.filter("x", null).size());
-		assertEquals(0, repoImpl.filter("y", null).size());
-		assertEquals(0, repoImpl.filter(null, null).size());
+		assertEquals(0, repoImpl.filter("x", null)
+			.size());
+		assertEquals(0, repoImpl.filter("y", null)
+			.size());
+		assertEquals(0, repoImpl.filter(null, null)
+			.size());
 
 	}
 
 	public void testBasic() throws Exception {
 		// Just basic check
-		assertEquals(0, repoImpl.filter(null, null).size());
+		assertEquals(0, repoImpl.filter(null, null)
+			.size());
 
 		SearchableRepository.ResourceDescriptor osgi = create("jar/osgi.jar");
 		assertNull(repoImpl.getResource(osgi.id));
@@ -94,7 +109,7 @@ public class ResourceRepoTest extends TestCase {
 		//
 		// Should also be in the list
 		//
-		List< ? extends ResourceDescriptor> list = repoImpl.filter("x", null);
+		List<? extends ResourceDescriptor> list = repoImpl.filter("x", null);
 		assertNotNull(list);
 		assertEquals(1, list.size());
 
@@ -149,7 +164,8 @@ public class ResourceRepoTest extends TestCase {
 		assertTrue(success.get());
 
 		repoImpl.delete(null, t.id);
-		assertEquals(0, repoImpl.filter(null, null).size());
+		assertEquals(0, repoImpl.filter(null, null)
+			.size());
 
 	}
 
@@ -266,20 +282,24 @@ public class ResourceRepoTest extends TestCase {
 	}
 
 	public void testStore() throws Exception {
-		assertEquals(0, repoImpl.filter(null, null).size());
+		assertEquals(0, repoImpl.filter(null, null)
+			.size());
 		repoImpl.add("x", create("jar/osgi.jar"));
-		assertEquals(1, repoImpl.filter(null, null).size());
+		assertEquals(1, repoImpl.filter(null, null)
+			.size());
 		repoImpl = new ResourceRepositoryImpl();
 		repoImpl.setCache(new File(tmp, "cache"));
 		repoImpl.setExecutor(Executors.newCachedThreadPool());
 		repoImpl.setIndexFile(new File(tmp, "index.json"));
-		assertEquals(1, repoImpl.filter(null, null).size());
+		assertEquals(1, repoImpl.filter(null, null)
+			.size());
 	}
 
 	private SearchableRepository.ResourceDescriptor create(String path) throws NoSuchAlgorithmException, Exception {
 		SearchableRepository.ResourceDescriptor rd = new SearchableRepository.ResourceDescriptor();
 		File f = IO.getFile(path);
-		rd.id = SHA1.digest(f).digest();
+		rd.id = SHA1.digest(f)
+			.digest();
 		rd.url = f.toURI();
 		rd.description = "bla bla";
 		rd.bsn = "osgi.core";

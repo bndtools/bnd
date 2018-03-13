@@ -49,7 +49,10 @@ public class PersistentResource extends DTO implements Resource {
 	}
 
 	public enum DataType {
-		STRING, LONG, DOUBLE, VERSION;
+		STRING,
+		LONG,
+		DOUBLE,
+		VERSION;
 	}
 
 	public static class Attr extends DTO implements Comparable<Attr> {
@@ -69,7 +72,7 @@ public class PersistentResource extends DTO implements Resource {
 			if (converted == null && value != null) {
 				DataType t = DataType.values()[type];
 				if (value instanceof Collection) {
-					Object[] cnv = ((Collection< ? >) value).toArray();
+					Object[] cnv = ((Collection<?>) value).toArray();
 					for (int i = 0; i < cnv.length; i++) {
 						cnv[i] = convert(t, cnv[i]);
 					}
@@ -113,11 +116,11 @@ public class PersistentResource extends DTO implements Resource {
 
 	public PersistentResource(Resource resource) {
 
-		MultiMap<String,Capability> capMap = new MultiMap<>();
+		MultiMap<String, Capability> capMap = new MultiMap<>();
 		for (Capability cap : resource.getCapabilities(null))
 			capMap.add(cap.getNamespace(), cap);
 
-		MultiMap<String,Requirement> reqMap = new MultiMap<>();
+		MultiMap<String, Requirement> reqMap = new MultiMap<>();
 		for (Requirement req : resource.getRequirements(null))
 			reqMap.add(req.getNamespace(), req);
 
@@ -222,8 +225,9 @@ public class PersistentResource extends DTO implements Resource {
 		attr.value = value;
 
 		if (value instanceof Collection) {
-			if (((Collection< ? >) value).size() > 0) {
-				Object member = ((Collection< ? >) value).iterator().next();
+			if (((Collection<?>) value).size() > 0) {
+				Object member = ((Collection<?>) value).iterator()
+					.next();
 				attr.type = getType(member);
 			} else {
 				attr.type = DataType.STRING.ordinal();
@@ -231,7 +235,8 @@ public class PersistentResource extends DTO implements Resource {
 			return attr;
 		}
 
-		if (value.getClass().isArray()) {
+		if (value.getClass()
+			.isArray()) {
 			int length = Array.getLength(value);
 			if (length > 0) {
 				Object member = Array.get(value, 0);
@@ -247,15 +252,15 @@ public class PersistentResource extends DTO implements Resource {
 		return attr;
 	}
 
-	private static RCData getData(boolean require, Map<String,Object> attributes, Map<String,String> directives) {
+	private static RCData getData(boolean require, Map<String, Object> attributes, Map<String, String> directives) {
 		RCData data = new RCData();
 		data.require = require;
 		List<Attr> props = new ArrayList<>(attributes.size() + directives.size());
 
-		for (Entry<String,Object> entry : attributes.entrySet()) {
+		for (Entry<String, Object> entry : attributes.entrySet()) {
 			props.add(getAttr(entry.getKey(), entry.getValue(), false));
 		}
-		for (Entry<String,String> entry : directives.entrySet()) {
+		for (Entry<String, String> entry : directives.entrySet()) {
 			props.add(getAttr(entry.getKey(), entry.getValue(), true));
 			data.directives++;
 		}
@@ -284,7 +289,7 @@ public class PersistentResource extends DTO implements Resource {
 	}
 
 	@Deprecated
-	public static RCData getData(Map<String,Object> attributes, Map<String,String> directives) {
+	public static RCData getData(Map<String, Object> attributes, Map<String, String> directives) {
 		return null;
 	}
 
@@ -303,11 +308,11 @@ public class PersistentResource extends DTO implements Resource {
 			return null;
 		}
 
-		public Map<String,Object> getAttributes() {
+		public Map<String, Object> getAttributes() {
 			return null;
 		}
 
-		public Map<String,String> getDirectives() {
+		public Map<String, String> getDirectives() {
 			return null;
 		}
 

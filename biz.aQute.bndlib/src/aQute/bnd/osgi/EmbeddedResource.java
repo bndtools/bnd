@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 import aQute.lib.io.IO;
+
 public class EmbeddedResource implements Resource {
 	private final ByteBuffer	buffer;
 	private final long			lastModified;

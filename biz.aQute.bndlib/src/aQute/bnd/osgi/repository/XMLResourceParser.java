@@ -28,7 +28,7 @@ import aQute.libg.gzip.GZipUtils;
 
 public class XMLResourceParser extends Processor {
 	private final static Logger		logger			= LoggerFactory.getLogger(XMLResourceParser.class);
-	final static XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+	final static XMLInputFactory	inputFactory	= XMLInputFactory.newInstance();
 
 	static {
 		inputFactory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
@@ -36,27 +36,27 @@ public class XMLResourceParser extends Processor {
 		inputFactory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
 	}
 
-	private static final String		NS_URI				= "http://www.osgi.org/xmlns/repository/v1.0.0";
-	private static final String		TAG_REPOSITORY		= "repository";
-	private static final String		TAG_REFERRAL		= "referral";
-	private static final String		TAG_RESOURCE		= "resource";
-	private static final String		TAG_CAPABILITY		= "capability";
-	private static final String		TAG_REQUIREMENT		= "requirement";
-	private static final String		TAG_ATTRIBUTE		= "attribute";
-	private static final String		TAG_DIRECTIVE		= "directive";
+	private static final String		NS_URI						= "http://www.osgi.org/xmlns/repository/v1.0.0";
+	private static final String		TAG_REPOSITORY				= "repository";
+	private static final String		TAG_REFERRAL				= "referral";
+	private static final String		TAG_RESOURCE				= "resource";
+	private static final String		TAG_CAPABILITY				= "capability";
+	private static final String		TAG_REQUIREMENT				= "requirement";
+	private static final String		TAG_ATTRIBUTE				= "attribute";
+	private static final String		TAG_DIRECTIVE				= "directive";
 
-	private static final String		ATTR_REFERRAL_URL	= "url";
-	private static final String		ATTR_REFERRAL_DEPTH	= "depth";
+	private static final String		ATTR_REFERRAL_URL			= "url";
+	private static final String		ATTR_REFERRAL_DEPTH			= "depth";
 
-	private static final String		ATTR_NAMESPACE		= "namespace";
+	private static final String		ATTR_NAMESPACE				= "namespace";
 
 	private static final String		ATTR_REPOSITORY_NAME		= "name";
 	private static final String		ATTR_REPOSITORY_INCREMENT	= "increment";
-	private static final String		ATTR_NAME			= "name";
-	private static final String		ATTR_VALUE			= "value";
-	private static final String		ATTR_TYPE			= "type";
+	private static final String		ATTR_NAME					= "name";
+	private static final String		ATTR_VALUE					= "value";
+	private static final String		ATTR_TYPE					= "type";
 
-	final private List<Resource>	resources			= new ArrayList<>();
+	final private List<Resource>	resources					= new ArrayList<>();
 	final private XMLStreamReader	reader;
 	final private Set<URI>			traversed;
 	final private String			what;
@@ -73,7 +73,8 @@ public class XMLResourceParser extends Processor {
 	}
 
 	public XMLResourceParser(URI url) throws Exception {
-		this(url.toURL().openStream(), url.toString(), url);
+		this(url.toURL()
+			.openStream(), url.toString(), url);
 	}
 
 	public XMLResourceParser(InputStream in, String what, URI uri) throws Exception {
@@ -135,7 +136,7 @@ public class XMLResourceParser extends Processor {
 
 		String localName = reader.getLocalName();
 		if (!check(TAG_REPOSITORY.equals(localName), "Invalid tag name of top element, expected %s, got %s",
-				TAG_REPOSITORY, localName))
+			TAG_REPOSITORY, localName))
 			return null;
 
 		String nsUri = reader.getNamespaceURI();
@@ -163,8 +164,8 @@ public class XMLResourceParser extends Processor {
 			}
 		}
 
-		check(reader.isEndElement() && reader.getLocalName().equals(TAG_REPOSITORY),
-				"Expected to be at the end but are on %s", reader.getLocalName());
+		check(reader.isEndElement() && reader.getLocalName()
+			.equals(TAG_REPOSITORY), "Expected to be at the end but are on %s", reader.getLocalName());
 		return getResources();
 	}
 
@@ -202,7 +203,8 @@ public class XMLResourceParser extends Processor {
 				if (depthString != null) {
 					depth = Integer.parseInt(depthString);
 				}
-				InputStream in = url.toURL().openStream();
+				InputStream in = url.toURL()
+					.openStream();
 				try (XMLResourceParser referralParser = new XMLResourceParser(in, urlString, depth, traversed, url)) {
 					referralParser.parse();
 					resources.addAll(referralParser.resources);
@@ -216,7 +218,7 @@ public class XMLResourceParser extends Processor {
 
 	private void tagEnd(String tag) throws XMLStreamException {
 		if (!check(reader.isEndElement(), "Expected end element, got %s for %s (%s)", reader.getEventType(), tag,
-				reader.getLocalName())) {
+			reader.getLocalName())) {
 			logger.debug("oops, invalid end {}", tag);
 		}
 		next();
@@ -237,7 +239,7 @@ public class XMLResourceParser extends Processor {
 	private void parseCapabilityOrRequirement(ResourceBuilder resourceBuilder) throws Exception {
 		String name = reader.getLocalName();
 		check(TAG_REQUIREMENT.equals(name) || TAG_CAPABILITY.equals(name), "Expected <%s> or <%s> tag, got <%s>",
-				TAG_REQUIREMENT, TAG_CAPABILITY, name);
+			TAG_REQUIREMENT, TAG_CAPABILITY, name);
 
 		String namespace = reader.getAttributeValue(null, ATTR_NAMESPACE);
 
@@ -292,7 +294,8 @@ public class XMLResourceParser extends Processor {
 		String attributeType = reader.getAttributeValue(null, ATTR_TYPE);
 
 		if (isContent(capReqBuilder) && attributeName.equals("url")) {
-			attributeValue = url.resolve(attributeValue).toString();
+			attributeValue = url.resolve(attributeValue)
+				.toString();
 		}
 
 		Object value = Attrs.convert(attributeType, attributeValue);
@@ -309,7 +312,7 @@ public class XMLResourceParser extends Processor {
 		String attributeType = reader.getAttributeValue(null, ATTR_TYPE);
 
 		check(attributeType == null, "Expected a directive to have no type: %s:%s=%s", attributeName, attributeType,
-				attributeValue);
+			attributeValue);
 
 		capReqBuilder.addDirective(attributeName, attributeValue);
 	}

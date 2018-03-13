@@ -27,14 +27,14 @@ import aQute.bnd.version.Version;
 class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
 
 	private volatile List<Capability>				allCapabilities;
-	private volatile Map<String,List<Capability>>	capabilityMap;
+	private volatile Map<String, List<Capability>>	capabilityMap;
 	private volatile List<Requirement>				allRequirements;
-	private volatile Map<String,List<Requirement>>	requirementMap;
+	private volatile Map<String, List<Requirement>>	requirementMap;
 
-	private transient Map<URI,String>				locations;
+	private transient Map<URI, String>				locations;
 
 	void setCapabilities(List<Capability> capabilities) {
-		Map<String,List<Capability>> prepare = new HashMap<>();
+		Map<String, List<Capability>> prepare = new HashMap<>();
 		for (Capability capability : capabilities) {
 			List<Capability> list = prepare.get(capability.getNamespace());
 			if (list == null) {
@@ -43,7 +43,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 			}
 			list.add(capability);
 		}
-		for (Map.Entry<String,List<Capability>> entry : prepare.entrySet()) {
+		for (Map.Entry<String, List<Capability>> entry : prepare.entrySet()) {
 			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
 		}
 
@@ -58,7 +58,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	}
 
 	void setRequirements(List<Requirement> requirements) {
-		Map<String,List<Requirement>> prepare = new HashMap<>();
+		Map<String, List<Requirement>> prepare = new HashMap<>();
 		for (Requirement requirement : requirements) {
 			List<Requirement> list = prepare.get(requirement.getNamespace());
 			if (list == null) {
@@ -67,7 +67,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 			}
 			list.add(requirement);
 		}
-		for (Map.Entry<String,List<Requirement>> entry : prepare.entrySet()) {
+		for (Map.Entry<String, List<Requirement>> entry : prepare.entrySet()) {
 			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
 		}
 
@@ -87,10 +87,12 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		List<Capability> identities = getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identities.size() == 1) {
 			Capability idCap = identities.get(0);
-			Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+			Object id = idCap.getAttributes()
+				.get(IdentityNamespace.IDENTITY_NAMESPACE);
 			builder.append(id);
 
-			Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			Object version = idCap.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 			if (version != null) {
 				builder.append(" version=")
 					.append(version);
@@ -150,8 +152,8 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		if (other == null || !(other instanceof Resource))
 			return false;
 
-		Map<URI,String> thisLocations = getContentURIs();
-		Map<URI,String> otherLocations;
+		Map<URI, String> thisLocations = getContentURIs();
+		Map<URI, String> otherLocations;
 
 		if (other instanceof ResourceImpl) {
 			otherLocations = ((ResourceImpl) other).getContentURIs();
@@ -176,7 +178,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		return false;
 	}
 
-	public Map<URI,String> getContentURIs() {
+	public Map<URI, String> getContentURIs() {
 		if (locations == null) {
 			locations = ResourceUtils.getLocations(this);
 		}
@@ -193,7 +195,8 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		try {
 			ContentCapability c = ResourceUtils.getContentCapability(this);
 			URI url = c.url();
-			return url.toURL().openStream();
+			return url.toURL()
+				.openStream();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

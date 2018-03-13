@@ -8,14 +8,14 @@ import java.util.Set;
 
 import aQute.lib.collections.SortedList;
 
-public class Props implements Map<String,String> {
+public class Props implements Map<String, String> {
 
 	/**
 	 */
 	static String				EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
 
-	private Map<String,String>	map;
-	static Map<String,String>	EMPTY		= Collections.emptyMap();
+	private Map<String, String>	map;
+	static Map<String, String>	EMPTY		= Collections.emptyMap();
 	public static Props			EMPTY_ATTRS	= new Props();
 
 	static {
@@ -68,7 +68,7 @@ public class Props implements Map<String,String> {
 		return map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<String,String>> entrySet() {
+	public Set<java.util.Map.Entry<String, String>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
 
@@ -120,8 +120,8 @@ public class Props implements Map<String,String> {
 		return map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends String, ? extends String> map) {
-		for (Map.Entry< ? extends String, ? extends String> e : map.entrySet())
+	public void putAll(Map<? extends String, ? extends String> map) {
+		for (Map.Entry<? extends String, ? extends String> e : map.entrySet())
 			put(e.getKey(), e.getValue());
 	}
 
@@ -168,7 +168,7 @@ public class Props implements Map<String,String> {
 	public void append(StringBuilder sb) {
 		try {
 			String del = "";
-			for (Map.Entry<String,String> e : entrySet()) {
+			for (Map.Entry<String, String> e : entrySet()) {
 				sb.append(del);
 				sb.append(e.getKey());
 

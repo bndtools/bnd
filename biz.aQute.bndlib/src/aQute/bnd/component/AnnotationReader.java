@@ -50,49 +50,49 @@ import aQute.lib.collections.MultiMap;
 public class AnnotationReader extends ClassDataCollector {
 	final static TypeRef[]				EMPTY						= new TypeRef[0];
 	final static Pattern				PROPERTY_PATTERN			= Pattern.compile(
-			"\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
+		"\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
 
-	public static final Version			V1_0						= new Version("1.0.0");																											// "1.0.0"
-	public static final Version			V1_1						= new Version("1.1.0");																											// "1.1.0"
-	public static final Version			V1_2						= new Version("1.2.0");																											// "1.2.0"
-	public static final Version			V1_3						= new Version("1.3.0");																											// "1.3.0"
-	public static final Version			V1_4						= new Version("1.4.0");																											// "1.3.0"
+	public static final Version			V1_0						= new Version("1.0.0");																										// "1.0.0"
+	public static final Version			V1_1						= new Version("1.1.0");																										// "1.1.0"
+	public static final Version			V1_2						= new Version("1.2.0");																										// "1.2.0"
+	public static final Version			V1_3						= new Version("1.3.0");																										// "1.3.0"
+	public static final Version			V1_4						= new Version("1.4.0");																										// "1.3.0"
 
 	static final Pattern				BINDNAME					= Pattern.compile("(set|add|bind)?(.*)");
 
 	static final Pattern				BINDDESCRIPTORDS10			= Pattern.compile(
-			"\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/service/component/ComponentServiceObjects)|(java/util/Map\\$Entry)|(java/util/Map))|([^;]+));\\)(V|(Ljava/util/Map;))");
+		"\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/service/component/ComponentServiceObjects)|(java/util/Map\\$Entry)|(java/util/Map))|([^;]+));\\)(V|(Ljava/util/Map;))");
 	static final Pattern				BINDDESCRIPTORDS11			= Pattern
-			.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)(V|(Ljava/util/Map;))");
+		.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)(V|(Ljava/util/Map;))");
 
 	// includes support for felix extensions
 	static final Pattern				BINDDESCRIPTORDS13			= Pattern.compile(
-			"\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/service/component/ComponentServiceObjects;)|(Ljava/util/Map;)|(Ljava/util/Map\\$Entry;)|(L([^;]+);))+\\)(V|(Ljava/util/Map;))");
+		"\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/service/component/ComponentServiceObjects;)|(Ljava/util/Map;)|(Ljava/util/Map\\$Entry;)|(L([^;]+);))+\\)(V|(Ljava/util/Map;))");
 
 	static final Pattern				LIFECYCLEDESCRIPTORDS10		= Pattern
-			.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)(V|(Ljava/util/Map;))");
+		.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)(V|(Ljava/util/Map;))");
 	static final Pattern				LIFECYCLEDESCRIPTORDS11		= Pattern.compile(
-			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)(V|(Ljava/util/Map;))");
+		"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)(V|(Ljava/util/Map;))");
 	static final Pattern				LIFECYCLEDESCRIPTORDS13		= Pattern
-			.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
+		.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
 	static final Pattern				LIFECYCLEARGUMENT			= Pattern.compile(
-			"((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))");
+		"((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))");
 
 	static final Pattern				IDENTIFIERTOPROPERTY		= Pattern
-			.compile("(__)|(_)|(\\$_\\$)|(\\$\\$)|(\\$)");
+		.compile("(__)|(_)|(\\$_\\$)|(\\$\\$)|(\\$)");
 
 	static final Pattern				DEACTIVATEDESCRIPTORDS11	= Pattern.compile(
-			"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
+		"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
 	static final Pattern				DEACTIVATEDESCRIPTORDS13	= Pattern
-			.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
+		.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
 
 	static final Instruction			COMPONENT_INSTR;
 	static final Instruction			COMPONENT_PROPERTY_INSTR;
 
-	final static Map<String,Class< ? >>	wrappers;
+	final static Map<String, Class<?>>	wrappers;
 
 	static {
-		Map<String,Class< ? >> map = new HashMap<>();
+		Map<String, Class<?>> map = new HashMap<>();
 		map.put("boolean", Boolean.class);
 		map.put("byte", Byte.class);
 		map.put("short", Short.class);
@@ -117,18 +117,19 @@ public class AnnotationReader extends ClassDataCollector {
 	FieldDef												member;
 	TypeRef													className;
 	Analyzer												analyzer;
-	MultiMap<String,Clazz.MethodDef>						methods					= new MultiMap<>();
+	MultiMap<String, Clazz.MethodDef>						methods					= new MultiMap<>();
 	TypeRef													extendsClass;
 	boolean													baseclass				= true;
 	final EnumSet<Options>									options;
 
-	final Map<FieldDef,ReferenceDef>						referencesByMember		= new HashMap<>();
+	final Map<FieldDef, ReferenceDef>						referencesByMember		= new HashMap<>();
 
 	final XMLAttributeFinder								finder;
 
-	Map<String,List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<>();
+	Map<String, List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<>();
 
-	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder, Version minVersion) {
+	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder,
+		Version minVersion) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.options = options;
@@ -137,7 +138,7 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options,
-			XMLAttributeFinder finder, Version minVersion) throws Exception {
+		XMLAttributeFinder finder, Version minVersion) throws Exception {
 		AnnotationReader r = new AnnotationReader(analyzer, c, options, finder, minVersion);
 		return r.getDef();
 	}
@@ -147,12 +148,13 @@ public class AnnotationReader extends ClassDataCollector {
 			// These types cannot be components so don't bother scanning them
 
 			if (clazz.is(ANNOTATED, COMPONENT_INSTR, analyzer)) {
-				analyzer.error("The type %s is not a class and therfore not suitable for the @Component annotation",
+				analyzer
+					.error("The type %s is not a class and therfore not suitable for the @Component annotation",
 						clazz.getFQN())
-						.details(new DeclarativeServicesAnnotationError(clazz.getFQN(), null,
-								ErrorType.INVALID_COMPONENT_TYPE));
+					.details(
+						new DeclarativeServicesAnnotationError(clazz.getFQN(), null, ErrorType.INVALID_COMPONENT_TYPE));
 			}
-				return null;
+			return null;
 		}
 
 		if (!clazz.is(ANNOTATED, COMPONENT_INSTR, analyzer)) {
@@ -173,10 +175,10 @@ public class AnnotationReader extends ClassDataCollector {
 
 				Clazz ec = analyzer.findClass(extendsClass);
 				if (ec == null) {
-					analyzer.error("Missing super class for DS annotations: %s from %s", extendsClass,
-							clazz.getClassName())
-							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-									ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS));
+					analyzer
+						.error("Missing super class for DS annotations: %s from %s", extendsClass, clazz.getClassName())
+						.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+							ErrorType.UNABLE_TO_LOCATE_SUPER_CLASS));
 					break;
 				} else {
 					ec.parseClassFileWithCollector(this);
@@ -187,12 +189,13 @@ public class AnnotationReader extends ClassDataCollector {
 			if (rdef.bind != null) {
 				rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1", "(.*)", "un$1");
 				rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set|bind)(.*)", "updated$2", "(.*)",
-						"updated$1");
+					"updated$1");
 
 				if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
-					analyzer.error("In component class %s, reference %s is dynamic but has no unbind method.",
+					analyzer
+						.error("In component class %s, reference %s is dynamic but has no unbind method.",
 							className.getFQN(), rdef.name)
-							.details(getDetails(rdef, ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
+						.details(getDetails(rdef, ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 			}
 		}
 		return component;
@@ -206,7 +209,8 @@ public class AnnotationReader extends ClassDataCollector {
 		if (value == null) {
 			String bind = rdef.bind;
 			for (int i = 0; i < matches.length; i += 2) {
-				Matcher m = Pattern.compile(matches[i]).matcher(bind);
+				Matcher m = Pattern.compile(matches[i])
+					.matcher(bind);
 				if (m.matches()) {
 					value = m.replaceFirst(matches[i + 1]);
 					break;
@@ -217,7 +221,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 		if (methods.containsKey(value)) {
 			for (Clazz.MethodDef method : methods.get(value)) {
-				String service = determineReferenceType(method.getDescriptor().toString(), rdef, rdef.service, null);
+				String service = determineReferenceType(method.getDescriptor()
+					.toString(), rdef, rdef.service, null);
 				if (service != null) {
 					if (!method.isProtected())
 						component.updateVersion(V1_1);
@@ -225,15 +230,16 @@ public class AnnotationReader extends ClassDataCollector {
 				}
 			}
 			analyzer.warning(
-					"None of the methods related to '%s' in the class '%s' named '%s' for service type '%s' have an acceptable signature. The descriptors found are:",
-					rdef.bind, component.implementation, value, rdef.service);
+				"None of the methods related to '%s' in the class '%s' named '%s' for service type '%s' have an acceptable signature. The descriptors found are:",
+				rdef.bind, component.implementation, value, rdef.service);
 			// We make this a separate loop because we shouldn't add warnings
 			// until we know that there was no match
 			// We need to include the method name in the warning or it may be
 			// ignored as duplicate (from another non-match)
 			for (Clazz.MethodDef method : methods.get(value)) {
-				analyzer.warning("  methodname: %s descriptor: %s", value, method.getDescriptor().toString())
-						.details(getDetails(rdef, ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
+				analyzer.warning("  methodname: %s descriptor: %s", value, method.getDescriptor()
+					.toString())
+					.details(getDetails(rdef, ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
 			}
 		}
 		return null;
@@ -265,7 +271,9 @@ public class AnnotationReader extends ClassDataCollector {
 				doReference((Reference) a, annotation);
 			else if (a instanceof Designate)
 				doDesignate((Designate) a);
-			else if (annotation.getName().getFQN().startsWith("aQute.bnd.annotation.component"))
+			else if (annotation.getName()
+				.getFQN()
+				.startsWith("aQute.bnd.annotation.component"))
 				handleMixedUsageError(annotation);
 			else {
 				handlePossibleComponentPropertyAnnotation(annotation);
@@ -283,20 +291,23 @@ public class AnnotationReader extends ClassDataCollector {
 	private void handleMixedUsageError(Annotation annotation) throws Exception {
 		DeclarativeServicesAnnotationError errorDetails;
 
-		String fqn = annotation.getName().getFQN();
+		String fqn = annotation.getName()
+			.getFQN();
 
 		switch (annotation.getElementType()) {
 			case METHOD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-						member.getDescriptor().toString(), ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+					member.getDescriptor()
+						.toString(),
+					ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
 				break;
 			case FIELD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
-						ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+					ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
 				break;
 			default :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), null,
-						ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
+					ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
 		}
 		List<DeclarativeServicesAnnotationError> errors = mismatchedAnnotations.get(fqn);
 		if (errors == null) {
@@ -308,29 +319,37 @@ public class AnnotationReader extends ClassDataCollector {
 
 	private void handlePossibleComponentPropertyAnnotation(Annotation annotation) throws Exception {
 		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(), null,
-				null, ErrorType.COMPONENT_PROPERTY_ANNOTATION_PROBLEM);
+			null, ErrorType.COMPONENT_PROPERTY_ANNOTATION_PROBLEM);
 
 		try {
 			Clazz clazz = analyzer.findClass(annotation.getName());
 
 			if (clazz == null) {
 				analyzer.warning(
-						"Unable to determine whether the annotation %s applied to type %s is a component property type as it is not on the project build path. If this annotation is a component property type then it must be present on the build path in order to be processed",
-						annotation.getName().getFQN(), className.getFQN()).details(details);
+					"Unable to determine whether the annotation %s applied to type %s is a component property type as it is not on the project build path. If this annotation is a component property type then it must be present on the build path in order to be processed",
+					annotation.getName()
+						.getFQN(),
+					className.getFQN())
+					.details(details);
 				return;
 			}
 
 			if (clazz.is(ANNOTATED, COMPONENT_PROPERTY_INSTR, analyzer)) {
 				clazz.parseClassFileWithCollector(new ComponentPropertyTypeDataCollector(annotation, details));
 			} else {
-				analyzer.getLogger().debug(
+				analyzer.getLogger()
+					.debug(
 						"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
 						clazz.getFQN(), className.getFQN());
 				return;
 			}
 		} catch (Exception e) {
-			analyzer.exception(e, "An error occurred when attempting to process annotation %s, applied to component %s",
-					annotation.getName().getFQN(), className.getFQN()).details(details);
+			analyzer
+				.exception(e, "An error occurred when attempting to process annotation %s, applied to component %s",
+					annotation.getName()
+						.getFQN(),
+					className.getFQN())
+				.details(details);
 		}
 	}
 
@@ -359,11 +378,13 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doActivate() {
-		String methodDescriptor = member.getDescriptor().toString();
+		String methodDescriptor = member.getDescriptor()
+			.toString();
 		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), methodDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
+			member.getName(), methodDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
 		if (!(member instanceof MethodDef)) {
-			analyzer.error("Activate annotation on a field %s.%s", clazz, member.getDescriptor()).details(details);
+			analyzer.error("Activate annotation on a field %s.%s", clazz, member.getDescriptor())
+				.details(details);
 			return;
 		}
 		boolean hasMapReturnType = false;
@@ -387,8 +408,9 @@ public class AnnotationReader extends ClassDataCollector {
 					hasMapReturnType = m.group(4) != null;
 					processAnnotationArguments(methodDescriptor, details);
 				} else
-					analyzer.error("Activate method for %s descriptor %s is not acceptable.", clazz,
-							member.getDescriptor()).details(details);
+					analyzer
+						.error("Activate method for %s descriptor %s is not acceptable.", clazz, member.getDescriptor())
+						.details(details);
 			}
 		}
 		checkMapReturnType(hasMapReturnType, details);
@@ -399,12 +421,14 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doDeactivate() {
-		String methodDescriptor = member.getDescriptor().toString();
+		String methodDescriptor = member.getDescriptor()
+			.toString();
 		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), methodDescriptor, ErrorType.DEACTIVATE_SIGNATURE_ERROR);
+			member.getName(), methodDescriptor, ErrorType.DEACTIVATE_SIGNATURE_ERROR);
 
 		if (!(member instanceof MethodDef)) {
-			analyzer.error("Deactivate annotation on a field %s.%s", clazz, member.getDescriptor()).details(details);
+			analyzer.error("Deactivate annotation on a field %s.%s", clazz, member.getDescriptor())
+				.details(details);
 			return;
 		}
 		boolean hasMapReturnType = false;
@@ -428,8 +452,10 @@ public class AnnotationReader extends ClassDataCollector {
 					hasMapReturnType = m.group(6) != null;
 					processAnnotationArguments(methodDescriptor, details);
 				} else
-					analyzer.error("Deactivate method for %s descriptor %s is not acceptable.", clazz,
-							member.getDescriptor()).details(details);
+					analyzer
+						.error("Deactivate method for %s descriptor %s is not acceptable.", clazz,
+							member.getDescriptor())
+						.details(details);
 			}
 		}
 		checkMapReturnType(hasMapReturnType, details);
@@ -439,12 +465,14 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doModified() {
-		String methodDescriptor = member.getDescriptor().toString();
+		String methodDescriptor = member.getDescriptor()
+			.toString();
 		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), methodDescriptor, ErrorType.MODIFIED_SIGNATURE_ERROR);
+			member.getName(), methodDescriptor, ErrorType.MODIFIED_SIGNATURE_ERROR);
 
 		if (!(member instanceof MethodDef)) {
-			analyzer.error("Modified annotation on a field %s.%s", clazz, member.getDescriptor()).details(details);
+			analyzer.error("Modified annotation on a field %s.%s", clazz, member.getDescriptor())
+				.details(details);
 			return;
 		}
 		boolean hasMapReturnType = false;
@@ -463,7 +491,7 @@ public class AnnotationReader extends ClassDataCollector {
 			} else
 
 				analyzer.error("Modified method for %s descriptor %s is not acceptable.", clazz, member.getDescriptor())
-						.details(details);
+					.details(details);
 		}
 		checkMapReturnType(hasMapReturnType, details);
 	}
@@ -477,7 +505,7 @@ public class AnnotationReader extends ClassDataCollector {
 	 * @param descriptor TODO
 	 */
 	private void processAnnotationArguments(final String methodDescriptor,
-			final DeclarativeServicesAnnotationError details) {
+		final DeclarativeServicesAnnotationError details) {
 		Matcher m = LIFECYCLEARGUMENT.matcher(methodDescriptor);
 
 		while (m.find()) {
@@ -487,17 +515,22 @@ public class AnnotationReader extends ClassDataCollector {
 				try {
 					Clazz clazz = analyzer.findClass(typeRef);
 					if (clazz.isAnnotation()) {
-						clazz.parseClassFileWithCollector(new ComponentPropertyTypeDataCollector(methodDescriptor, details));
+						clazz.parseClassFileWithCollector(
+							new ComponentPropertyTypeDataCollector(methodDescriptor, details));
 					} else if (clazz.isInterface() && options.contains(Options.felixExtensions)) {
 						// ok
 					} else {
-						analyzer.error("Non annotation argument to lifecycle method with descriptor %s,  type %s",
-								methodDescriptor, type).details(details);
+						analyzer
+							.error("Non annotation argument to lifecycle method with descriptor %s,  type %s",
+								methodDescriptor, type)
+							.details(details);
 					}
 				} catch (Exception e) {
-					analyzer.exception(e,
+					analyzer
+						.exception(e,
 							"Exception looking at annotation argument to lifecycle method with descriptor %s,  type %s",
-							methodDescriptor, type).details(details);
+							methodDescriptor, type)
+						.details(details);
 				}
 			}
 		}
@@ -506,22 +539,22 @@ public class AnnotationReader extends ClassDataCollector {
 	private final class ComponentPropertyTypeDataCollector extends ClassDataCollector {
 		private final String								methodDescriptor;
 		private final DeclarativeServicesAnnotationError	details;
-		private final MultiMap<String,String>				props			= new MultiMap<>();
-		private final Map<String,String>					propertyTypes	= new HashMap<>();
+		private final MultiMap<String, String>				props			= new MultiMap<>();
+		private final Map<String, String>					propertyTypes	= new HashMap<>();
 		private int											hasNoDefault	= 0;
 		private boolean										hasValue		= false;
 		private boolean										hasMethods		= false;
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
-	
+
 		private ComponentPropertyTypeDataCollector(String methodDescriptor,
-				DeclarativeServicesAnnotationError details) {
+			DeclarativeServicesAnnotationError details) {
 			this.methodDescriptor = methodDescriptor;
 			this.details = details;
 		}
 
 		private ComponentPropertyTypeDataCollector(Annotation componentPropertyAnnotation,
-				DeclarativeServicesAnnotationError details) {
+			DeclarativeServicesAnnotationError details) {
 			// Component Property annotations added in 1.4, but they just map to
 			// normal DS properties, so there's not really a need to require DS
 			// 1.4. Therefore we just leave the required version as is
@@ -535,7 +568,7 @@ public class AnnotationReader extends ClassDataCollector {
 				handleValue(key, value, value instanceof TypeRef, null);
 			}
 		}
-	
+
 		@Override
 		public void classBegin(int access, TypeRef name) {
 			typeRef = name;
@@ -543,34 +576,38 @@ public class AnnotationReader extends ClassDataCollector {
 
 		@Override
 		public void field(FieldDef defined) {
-			if (defined.isStatic() && defined.getName().equals("PREFIX_")) {
+			if (defined.isStatic() && defined.getName()
+				.equals("PREFIX_")) {
 				prefixField = defined;
 			}
 		}
-	
+
 		@Override
 		public void method(MethodDef defined) {
 			if (defined.isStatic()) {
 				return;
 			}
 			hasMethods = true;
-			if (defined.getName().equals("value")) {
+			if (defined.getName()
+				.equals("value")) {
 				hasValue = true;
 			} else {
 				hasNoDefault++;
 			}
 		}
-	
+
 		@Override
 		public void annotationDefault(MethodDef defined, Object value) {
-			if (!defined.getName().equals("value")) {
+			if (!defined.getName()
+				.equals("value")) {
 				hasNoDefault--;
 			}
 			// check type, exit with warning if annotation
 			// or annotation array
 			boolean isClass = false;
-			Class< ? > typeClass = null;
-			TypeRef type = defined.getType().getClassRef();
+			Class<?> typeClass = null;
+			TypeRef type = defined.getType()
+				.getClassRef();
 			if (!type.isPrimitive()) {
 				if (type == analyzer.getTypeRef("java/lang/Class")) {
 					isClass = true;
@@ -578,18 +615,23 @@ public class AnnotationReader extends ClassDataCollector {
 					try {
 						Clazz r = analyzer.findClass(type);
 						if (r.isAnnotation()) {
-							analyzer.warning("Nested annotation type found in member %s, %s",
-									defined.getName(), type.getFQN()).details(details);
+							analyzer
+								.warning("Nested annotation type found in member %s, %s", defined.getName(),
+									type.getFQN())
+								.details(details);
 							return;
 						}
 					} catch (Exception e) {
 						if (methodDescriptor != null) {
 							analyzer.exception(e,
-									"Exception looking at annotation type to lifecycle method with descriptor %s,  type %s",
-									methodDescriptor, type).details(details);
+								"Exception looking at annotation type to lifecycle method with descriptor %s,  type %s",
+								methodDescriptor, type)
+								.details(details);
 						} else {
-							analyzer.exception(e, "Exception looking at annotation %s applied to type %s",
-									typeRef.getFQN(), className.getFQN()).details(details);
+							analyzer
+								.exception(e, "Exception looking at annotation %s applied to type %s", typeRef.getFQN(),
+									className.getFQN())
+								.details(details);
 						}
 					}
 				}
@@ -602,8 +644,9 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		}
 
-		private void handleValue(String name, Object value, boolean isClass, Class< ? > typeClass) {
-			if (value.getClass().isArray()) {
+		private void handleValue(String name, Object value, boolean isClass, Class<?> typeClass) {
+			if (value.getClass()
+				.isArray()) {
 				// add element individually
 				int len = Array.getLength(value);
 				for (int i = 0; i < len; i++) {
@@ -619,14 +662,14 @@ public class AnnotationReader extends ClassDataCollector {
 				valueToProperty(name, value, isClass, typeClass);
 			}
 		}
-	
+
 		@Override
 		public void classEnd() throws Exception {
 			String prefix = null;
 			if (prefixField != null) {
 				Object c = prefixField.getConstant();
 				if (prefixField.isFinal() && (prefixField.getType() == analyzer.getTypeRef("java/lang/String"))
-						&& (c instanceof String)) {
+					&& (c instanceof String)) {
 					prefix = (String) c;
 
 					// If we have a method descriptor then this is an injected
@@ -639,9 +682,9 @@ public class AnnotationReader extends ClassDataCollector {
 					}
 				} else {
 					analyzer.warning(
-							"Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
-							typeRef.getFQN(),
-							c).details(details);
+						"Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
+						typeRef.getFQN(), c)
+						.details(details);
 				}
 			}
 
@@ -679,7 +722,7 @@ public class AnnotationReader extends ClassDataCollector {
 				}
 			}
 
-			for (Entry<String,List<String>> entry : props.entrySet()) {
+			for (Entry<String, List<String>> entry : props.entrySet()) {
 				String key = entry.getKey();
 				List<String> value = entry.getValue();
 				String type = propertyTypes.get(key);
@@ -696,8 +739,7 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		}
 
-		private void valueToProperty(String name, Object value, boolean isClass,
-				Class< ? > typeClass) {
+		private void valueToProperty(String name, Object value, boolean isClass, Class<?> typeClass) {
 			if (isClass)
 				value = ((TypeRef) value).getFQN();
 			if (typeClass == null)
@@ -708,7 +750,7 @@ public class AnnotationReader extends ClassDataCollector {
 			propertyTypes.put(name, type);
 			props.add(name, value.toString());
 		}
-	
+
 		private String identifierToPropertyName(String name) {
 			Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
 			StringBuffer b = new StringBuffer();
@@ -721,8 +763,7 @@ public class AnnotationReader extends ClassDataCollector {
 				else if (m.group(3) != null) { // $_$ to -
 					replace = "-";
 					component.updateVersion(V1_4);
-				}
-				else if (m.group(4) != null) // $$ to $
+				} else if (m.group(4) != null) // $$ to $
 					replace = "\\$";
 				else // $ removed.
 					replace = "";
@@ -780,7 +821,7 @@ public class AnnotationReader extends ClassDataCollector {
 			String error = Verifier.validateFilter(def.target);
 			if (error != null)
 				analyzer.error("Invalid target filter %s for %s: %s", def.target, def.name, error)
-						.details(getDetails(def, ErrorType.INVALID_TARGET_FILTER));
+					.details(getDetails(def, ErrorType.INVALID_TARGET_FILTER));
 		}
 
 		String annoService = null;
@@ -790,7 +831,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 		if (member != null) {
 			if (member instanceof MethodDef) {
-				def.bindDescriptor = member.getDescriptor().toString();
+				def.bindDescriptor = member.getDescriptor()
+					.toString();
 				if (!member.isProtected())
 					def.updateVersion(V1_1);
 				def.bind = member.getName();
@@ -800,14 +842,14 @@ public class AnnotationReader extends ClassDataCollector {
 						def.name = m.group(2);
 					else
 						analyzer.error("Invalid name for bind method %s", member.getName())
-								.details(getDetails(def, ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
+							.details(getDetails(def, ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
 				}
 
 				def.service = determineReferenceType(def.bindDescriptor, def, annoService, member.getSignature());
 
 				if (def.service == null)
 					analyzer.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
-							component.effectiveName(), def.name, member.getDescriptor());
+						component.effectiveName(), def.name, member.getDescriptor());
 
 			} else if (member instanceof FieldDef) {
 				def.updateVersion(V1_3);
@@ -820,7 +862,8 @@ public class AnnotationReader extends ClassDataCollector {
 				String sig = member.getSignature();
 				if (sig == null)
 					// no generics, the descriptor will be the class name.
-					sig = member.getDescriptor().toString();
+					sig = member.getDescriptor()
+						.toString();
 				String[] sigs = sig.split("[<;>]");
 				int sigLength = sigs.length;
 				int index = 0;
@@ -846,7 +889,7 @@ public class AnnotationReader extends ClassDataCollector {
 							fieldCollectionType = FieldCollectionType.properties;
 						}
 					} else if ("Ljava/util/Map$Entry".equals(sigs[index])
-							&& sufficientGenerics(index++ + 5, sigLength, def, sig)) {
+						&& sufficientGenerics(index++ + 5, sigLength, def, sig)) {
 						if ("Ljava/util/Map".equals(sigs[index++]) && "Ljava/lang/String".equals(sigs[index++])) {
 							if ("Ljava/lang/Object".equals(sigs[index]) || "+Ljava/lang/Object".equals(sigs[index])) {
 								fieldCollectionType = FieldCollectionType.tuple;
@@ -869,38 +912,42 @@ public class AnnotationReader extends ClassDataCollector {
 					def.fieldCollectionType = fieldCollectionType;
 				}
 				if (def.policy == ReferencePolicy.DYNAMIC && (def.cardinality == ReferenceCardinality.MULTIPLE
-						|| def.cardinality == ReferenceCardinality.AT_LEAST_ONE) && member.isFinal()) {
+					|| def.cardinality == ReferenceCardinality.AT_LEAST_ONE) && member.isFinal()) {
 					if (def.fieldOption == FieldOption.REPLACE)
 						analyzer.error(
-								"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
-								className, def.field)
-								.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
+							"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
+							className, def.field)
+							.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
 					def.fieldOption = FieldOption.UPDATE;
 				}
 				if (annoService == null && index < sigs.length) {
-					annoService = sigs[index].substring(1).replace('/', '.');
+					annoService = sigs[index].substring(1)
+						.replace('/', '.');
 				}
 				def.service = annoService;
 				if (def.service == null)
-					analyzer.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
-							component.effectiveName(), def.name, member.getDescriptor()).details(details);
+					analyzer
+						.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
+							component.effectiveName(), def.name, member.getDescriptor())
+						.details(details);
 
 			} // end field
 		} else {// not a member
 			def.service = annoService;
 			if (def.name == null) {
-				analyzer.error(
-						"Name must be supplied for a @Reference specified in the @Component annotation. Service: %s",
-						def.service).details(getDetails(def, ErrorType.MISSING_REFERENCE_NAME));
+				analyzer
+					.error("Name must be supplied for a @Reference specified in the @Component annotation. Service: %s",
+						def.service)
+					.details(getDetails(def, ErrorType.MISSING_REFERENCE_NAME));
 				return;
 			}
 		}
 
 		if (component.references.containsKey(def.name))
-			analyzer.error(
-					"In component %s, multiple references with the same name: %s. Previous def: %s, this def: %s",
+			analyzer
+				.error("In component %s, multiple references with the same name: %s. Previous def: %s, this def: %s",
 					className, component.references.get(def.name), def.service, "")
-					.details(getDetails(def, ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
+				.details(getDetails(def, ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
 		else
 			component.references.put(def.name, def);
 
@@ -916,15 +963,15 @@ public class AnnotationReader extends ClassDataCollector {
 	private boolean sufficientGenerics(int index, int sigLength, ReferenceDef def, String sig) {
 		if (index + 1 > sigLength) {
 			analyzer.error(
-					"In component %s, method %s,  signature: %s does not have sufficient generic type information",
-					component.effectiveName(), def.name, sig);
+				"In component %s, method %s,  signature: %s does not have sufficient generic type information",
+				component.effectiveName(), def.name, sig);
 			return false;
 		}
 		return true;
 	}
 
 	private String determineReferenceType(String methodDescriptor, ReferenceDef def, String annoService,
-			String signature) {
+		String signature) {
 		String inferredService = null;
 		String plainType = null;
 		boolean hasMapReturnType;
@@ -973,8 +1020,10 @@ public class AnnotationReader extends ClassDataCollector {
 						inferredService = Descriptors.binaryToFQN(inferredService);
 					minVersion = V1_3;
 					if (ReferenceScope.PROTOTYPE != def.scope && m.group(3) != null) {
-						analyzer.error("In component %s, to use ComponentServiceObjects the scope must be 'prototype'",
-								component.implementation, "").details(details);
+						analyzer
+							.error("In component %s, to use ComponentServiceObjects the scope must be 'prototype'",
+								component.implementation, "")
+							.details(details);
 					}
 					if (annoService == null)
 						if (m.group(2) != null)
@@ -996,14 +1045,16 @@ public class AnnotationReader extends ClassDataCollector {
 			int start = signature.indexOf(plainType);
 			if (start > -1) {
 				start += plainType.length();
-				String[] sigs = signature.substring(start).split("[<;>]");
+				String[] sigs = signature.substring(start)
+					.split("[<;>]");
 				if (sigs.length > 0) {
 					String sig = sigs[0];
 					if (sig.startsWith("-")) {
 						inferredService = Object.class.getName();
 					} else {
 						int index = sig.startsWith("+") ? 2 : 1;
-						inferredService = sig.substring(index).replace('/', '.');
+						inferredService = sig.substring(index)
+							.replace('/', '.');
 					}
 				}
 			}
@@ -1025,9 +1076,10 @@ public class AnnotationReader extends ClassDataCollector {
 		if (hasMapReturnType) {
 			if (!options.contains(Options.felixExtensions)) {
 				analyzer.error(
-						"In component %s, to use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
-								+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
-						component.implementation, "").details(details);
+					"In component %s, to use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
+						+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
+					component.implementation, "")
+					.details(details);
 			}
 		}
 	}
@@ -1051,24 +1103,27 @@ public class AnnotationReader extends ClassDataCollector {
 	@SuppressWarnings("deprecation")
 	protected void doComponent(Component comp, Annotation annotation) throws Exception {
 
-		String componentName = (annotation.keySet().contains("name")) ? comp.name() : className.getFQN();
+		String componentName = (annotation.keySet()
+			.contains("name")) ? comp.name() : className.getFQN();
 
 		if (!mismatchedAnnotations.isEmpty()) {
-			for (Entry<String,List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {
+			for (Entry<String, List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {
 				for (DeclarativeServicesAnnotationError errorDetails : e.getValue()) {
 					if (errorDetails.fieldName != null) {
 						analyzer.error(
-								"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on field %s. It is an error to mix these two types of annotations",
-								componentName, e.getKey(), errorDetails.fieldName).details(errorDetails);
+							"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on field %s. It is an error to mix these two types of annotations",
+							componentName, e.getKey(), errorDetails.fieldName)
+							.details(errorDetails);
 					} else if (errorDetails.methodName != null) {
 						analyzer.error(
-								"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on method %s with signature %s. It is an error to mix these two types of annotations",
-								componentName, e.getKey(), errorDetails.methodName, errorDetails.methodSignature)
-								.details(errorDetails);
+							"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s on method %s with signature %s. It is an error to mix these two types of annotations",
+							componentName, e.getKey(), errorDetails.methodName, errorDetails.methodSignature)
+							.details(errorDetails);
 					} else {
 						analyzer.error(
-								"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s. It is an error to mix these two types of annotations",
-								componentName, e.getKey()).details(errorDetails);
+							"The DS component %s uses standard annotations to declare it as a component, but also uses the bnd DS annotation: %s. It is an error to mix these two types of annotations",
+							componentName, e.getKey())
+							.details(errorDetails);
 					}
 				}
 			}
@@ -1114,13 +1169,12 @@ public class AnnotationReader extends ClassDataCollector {
 
 		for (String entry : comp.properties()) {
 			if (entry.contains("=")) {
-				analyzer.error(
-						"Found an = sign in an OSGi DS Component annotation on %s. In the bnd annotation "
-								+ "this is an actual property but in the OSGi, this element must refer to a path with Java properties. "
-								+ "However, found a path with an '=' sign which looks like a mixup (%s) with the 'property' element.",
-						clazz, entry)
-						.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-								ErrorType.COMPONENT_PROPERTIES_ERROR));
+				analyzer.error("Found an = sign in an OSGi DS Component annotation on %s. In the bnd annotation "
+					+ "this is an actual property but in the OSGi, this element must refer to a path with Java properties. "
+					+ "However, found a path with an '=' sign which looks like a mixup (%s) with the 'property' element.",
+					clazz, entry)
+					.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+						ErrorType.COMPONENT_PROPERTIES_ERROR));
 			}
 			component.properties.add(entry);
 		}
@@ -1146,10 +1200,10 @@ public class AnnotationReader extends ClassDataCollector {
 				TypeRef typeRef = (TypeRef) x[i];
 				Clazz service = analyzer.findClass(typeRef);
 				if (!analyzer.assignable(clazz, service)) {
-					analyzer.error("Class %s is not assignable to specified service %s", clazz.getFQN(),
-							typeRef.getFQN())
-							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-									ErrorType.INCOMPATIBLE_SERVICE));
+					analyzer
+						.error("Class %s is not assignable to specified service %s", clazz.getFQN(), typeRef.getFQN())
+						.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+							ErrorType.INCOMPATIBLE_SERVICE));
 				}
 				component.service[i] = typeRef;
 			}
@@ -1174,7 +1228,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 	private void doProperty(String[] properties) {
 		if (properties != null && properties.length > 0) {
-			MultiMap<String,String> props = new MultiMap<>();
+			MultiMap<String, String> props = new MultiMap<>();
 			for (String p : properties) {
 				Matcher m = PROPERTY_PATTERN.matcher(p);
 

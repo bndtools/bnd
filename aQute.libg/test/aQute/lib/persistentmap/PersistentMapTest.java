@@ -26,7 +26,7 @@ public class PersistentMapTest extends TestCase {
 
 			assertEquals(Arrays.asList("abc"), new ArrayList<>(pm2.keySet()));
 
-			for (Map.Entry<String,String> e : pm2.entrySet()) {
+			for (Map.Entry<String, String> e : pm2.entrySet()) {
 				e.setValue("XXX");
 			}
 			assertEquals("XXX", pm2.get("abc"));

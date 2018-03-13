@@ -10,25 +10,24 @@ import java.util.regex.Pattern;
 public class MavenVersion implements Comparable<MavenVersion> {
 
 	private static final Pattern			fuzzyVersion		= Pattern
-			.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?", Pattern.DOTALL);
+		.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?", Pattern.DOTALL);
 	private static final Pattern			fuzzyVersionRange	= Pattern
-			.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
+		.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
 	private static final Pattern			fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
 	private static final String				VERSION_STRING		= "(\\d{1,15})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
 	private static final SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
 	private static final Pattern			VERSIONRANGE		= Pattern
-		.compile("((\\(|\\[)"
-			+ VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
+		.compile("((\\(|\\[)" + VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
 
 	static {
 		snapshotTimestamp.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 
-	private static final Pattern		VERSION		= Pattern.compile(VERSION_STRING);
+	private static final Pattern		VERSION			= Pattern.compile(VERSION_STRING);
 	public static final MavenVersion	UNRESOLVED		= new MavenVersion("0-UNRESOLVED");
 
 	private static final String			SNAPSHOT		= "SNAPSHOT";
-	public static final MavenVersion	HIGHEST		= new MavenVersion(Version.HIGHEST);
+	public static final MavenVersion	HIGHEST			= new MavenVersion(Version.HIGHEST);
 	public static final MavenVersion	LOWEST			= new MavenVersion("0-SNAPSHOT", Version.LOWEST, true);
 	static final MavenVersion			RANGE_HIGHEST	= new MavenVersion("", Version.HIGHEST, false);
 	static final MavenVersion			RANGE_LOWEST	= new MavenVersion("", Version.LOWEST, true);
@@ -161,7 +160,8 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		if (v == null)
 			return "Version is null";
 
-		if (!VERSION.matcher(v).matches())
+		if (!VERSION.matcher(v)
+			.matches())
 			return "Not a version";
 
 		return null;
@@ -204,7 +204,8 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	static public String cleanupVersion(String version) {
 
-		if (version == null || version.trim().isEmpty())
+		if (version == null || version.trim()
+			.isEmpty())
 			return "0";
 
 		Matcher m = VERSIONRANGE.matcher(version);

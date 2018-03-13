@@ -6,7 +6,7 @@ import java.util.Map;
 public class CharacterHandler extends Handler {
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws Exception {
 		Character c = (Character) object;
 		int v = c.charValue();
 		app.append(v + "");

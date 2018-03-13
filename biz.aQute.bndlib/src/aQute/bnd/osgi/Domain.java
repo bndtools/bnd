@@ -70,7 +70,8 @@ public abstract class Domain implements Iterable<String> {
 			return deflt;
 
 		if (value.indexOf('%') >= 0) {
-			value = value.trim().substring(1);
+			value = value.trim()
+				.substring(1);
 			return translation.getProperty(value, value);
 		}
 		return null;
@@ -98,7 +99,8 @@ public abstract class Domain implements Iterable<String> {
 
 			@Override
 			public Iterator<String> iterator() {
-				final Iterator<Object> it = attrs.keySet().iterator();
+				final Iterator<Object> it = attrs.keySet()
+					.iterator();
 
 				return new Iterator<String>() {
 
@@ -107,7 +109,8 @@ public abstract class Domain implements Iterable<String> {
 					}
 
 					public String next() {
-						return it.next().toString();
+						return it.next()
+							.toString();
 					}
 
 					public void remove() {
@@ -153,7 +156,7 @@ public abstract class Domain implements Iterable<String> {
 		};
 	}
 
-	public static Domain domain(final Map<String,String> map) {
+	public static Domain domain(final Map<String, String> map) {
 		return new Domain() {
 
 			@Override
@@ -168,7 +171,8 @@ public abstract class Domain implements Iterable<String> {
 
 			@Override
 			public Iterator<String> iterator() {
-				return map.keySet().iterator();
+				return map.keySet()
+					.iterator();
 			}
 		};
 	}
@@ -284,18 +288,22 @@ public abstract class Domain implements Iterable<String> {
 		return Processor.isTrue(get(SOURCES));
 	}
 
-	public Map.Entry<String,Attrs> getBundleSymbolicName() {
+	public Map.Entry<String, Attrs> getBundleSymbolicName() {
 		Parameters p = getParameters(BUNDLE_SYMBOLICNAME);
 		if (p.isEmpty())
 			return null;
-		return p.entrySet().iterator().next();
+		return p.entrySet()
+			.iterator()
+			.next();
 	}
 
-	public Map.Entry<String,Attrs> getFragmentHost() {
+	public Map.Entry<String, Attrs> getFragmentHost() {
 		Parameters p = getParameters(FRAGMENT_HOST);
 		if (p.isEmpty())
 			return null;
-		return p.entrySet().iterator().next();
+		return p.entrySet()
+			.iterator()
+			.next();
 	}
 
 	public void setBundleSymbolicName(String s) {
@@ -355,12 +363,13 @@ public abstract class Domain implements Iterable<String> {
 		int dist = Integer.MAX_VALUE;
 		String selected = null;
 
-		for (Entry<String,Attrs> e : p.entrySet()) {
+		for (Entry<String, Attrs> e : p.entrySet()) {
 			String url = e.getKey();
 			if (selected == null)
 				selected = url;
 			if (e.getValue() != null) {
-				String s = e.getValue().get("size");
+				String s = e.getValue()
+					.get("size");
 				if (s != null) {
 					int size = Converter.cnv(Integer.class, s);
 					if (size != 0 && Math.abs(requestedSize - size) < dist) {
@@ -400,7 +409,8 @@ public abstract class Domain implements Iterable<String> {
 		if (m == null)
 			return;
 
-		String path = m.getMainAttributes().getValue(Constants.BUNDLE_LOCALIZATION);
+		String path = m.getMainAttributes()
+			.getValue(Constants.BUNDLE_LOCALIZATION);
 		if (path == null)
 			path = org.osgi.framework.Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME;
 
@@ -423,20 +433,25 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public static Domain domain(File file) throws IOException {
-		if (file.getName().endsWith(".mf")) {
+		if (file.getName()
+			.endsWith(".mf")) {
 			try (InputStream in = IO.stream(file)) {
 				Manifest m = new Manifest(in);
 				return domain(m);
 			}
 		}
 
-		if (file.getName().endsWith(".properties") || file.getName().endsWith(".bnd")) {
+		if (file.getName()
+			.endsWith(".properties")
+			|| file.getName()
+				.endsWith(".bnd")) {
 			Processor p = new Processor();
 			p.setProperties(file);
 			return domain(p);
 		}
 
-		if (file.getName().endsWith(".pom")) {
+		if (file.getName()
+			.endsWith(".pom")) {
 			try {
 				PomParser p = new PomParser();
 				p.setProperties(p.getProperties(file));

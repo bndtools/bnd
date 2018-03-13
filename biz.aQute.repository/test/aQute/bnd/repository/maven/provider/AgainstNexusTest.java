@@ -27,9 +27,9 @@ public class AgainstNexusTest extends TestCase {
 	File						local;
 	File						remote;
 	File						index;
-	boolean	skip	= false;
+	boolean						skip				= false;
 
-	private MavenBndRepository repo;
+	private MavenBndRepository	repo;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -60,8 +60,10 @@ public class AgainstNexusTest extends TestCase {
 			return;
 
 		config(null);
-		assertEquals("[group:artifact]", repo.list(null).toString());
-		assertEquals("[1.0.0.SNAPSHOT]", repo.versions("group:artifact").toString());
+		assertEquals("[group:artifact]", repo.list(null)
+			.toString());
+		assertEquals("[1.0.0.SNAPSHOT]", repo.versions("group:artifact")
+			.toString());
 		File f = repo.get("group:artifact", new Version("1.0.0.SNAPSHOT"), null);
 		assertEquals(1497, f.length());
 		System.out.println(f);
@@ -77,10 +79,10 @@ public class AgainstNexusTest extends TestCase {
 		p.context = new Processor();
 		p.context.setProperty("-maven-release", "remote");
 		PutResult put = repo.put(new FileInputStream(s), p);
-		
+
 	}
 
-	void config(Map<String,String> config) throws Exception {
+	void config(Map<String, String> config) throws Exception {
 		if (config == null)
 			config = new HashMap<>();
 		config.put("local", tmpName + "/local");

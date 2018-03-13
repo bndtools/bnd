@@ -37,33 +37,43 @@ public class TestLocalIndexedRepo extends TestCase {
 	public void testLocalIndexLocation() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
-		Map<String,String> config = new HashMap<>();
+		Map<String, String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 
-		assertEquals(1, repo.getIndexLocations().size());
-		assertEquals(new File(outputDir, "index.xml.gz").toURI(), repo.getIndexLocations().get(0));
-		assertEquals(0, reporter.getErrors().size());
-		assertEquals(0, reporter.getWarnings().size());
+		assertEquals(1, repo.getIndexLocations()
+			.size());
+		assertEquals(new File(outputDir, "index.xml.gz").toURI(), repo.getIndexLocations()
+			.get(0));
+		assertEquals(0, reporter.getErrors()
+			.size());
+		assertEquals(0, reporter.getWarnings()
+			.size());
 	}
 
 	public void testLocalAndRemoteIndexLocations() throws Exception {
 		Processor reporter = new Processor();
 		LocalIndexedRepo repo = new LocalIndexedRepo();
-		Map<String,String> config = new HashMap<>();
+		Map<String, String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("locations",
-				"http://localhost:" + httpdPort + "/index1.xml,http://localhost:" + httpdPort + "/index2.xml");
+			"http://localhost:" + httpdPort + "/index1.xml,http://localhost:" + httpdPort + "/index2.xml");
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 
-		assertEquals(3, repo.getIndexLocations().size());
-		assertEquals(new File(outputDir, "index.xml.gz").toURI(), repo.getIndexLocations().get(0));
-		assertEquals(new URI("http://localhost:" + httpdPort + "/index1.xml"), repo.getIndexLocations().get(1));
-		assertEquals(new URI("http://localhost:" + httpdPort + "/index2.xml"), repo.getIndexLocations().get(2));
+		assertEquals(3, repo.getIndexLocations()
+			.size());
+		assertEquals(new File(outputDir, "index.xml.gz").toURI(), repo.getIndexLocations()
+			.get(0));
+		assertEquals(new URI("http://localhost:" + httpdPort + "/index1.xml"), repo.getIndexLocations()
+			.get(1));
+		assertEquals(new URI("http://localhost:" + httpdPort + "/index2.xml"), repo.getIndexLocations()
+			.get(2));
 
-		assertEquals(0, reporter.getErrors().size());
-		assertEquals(0, reporter.getWarnings().size());
+		assertEquals(0, reporter.getErrors()
+			.size());
+		assertEquals(0, reporter.getWarnings()
+			.size());
 	}
 }

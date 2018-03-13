@@ -22,13 +22,15 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	private final static Logger logger = LoggerFactory.getLogger(DownloadBlocker.class);
 
 	public enum Stage {
-		INIT, SUCCESS, FAILURE
+		INIT,
+		SUCCESS,
+		FAILURE
 	};
 
-	private volatile Stage	stage	= Stage.INIT;
+	private volatile Stage			stage	= Stage.INIT;
 	private String					failure;
 	private File					file;
-	private final Reporter	reporter;
+	private final Reporter			reporter;
 	private final CountDownLatch	resolved;
 
 	public DownloadBlocker(Reporter reporter) {

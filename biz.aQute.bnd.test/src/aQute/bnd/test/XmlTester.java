@@ -85,7 +85,8 @@ public class XmlTester {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
 		assertNotNull(o);
-		assertEquals(value, o.trim().replaceAll("\n", "\\\\n"));
+		assertEquals(value, o.trim()
+			.replaceAll("\n", "\\\\n"));
 	}
 
 	public void assertNoAttribute(String expr) throws XPathExpressionException {

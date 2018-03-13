@@ -7,5 +7,5 @@ import test.annotation.any.Any;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AnnotationWithRefToAny {
-	Class< ? > c() default Any.class;
+	Class<?> c() default Any.class;
 }

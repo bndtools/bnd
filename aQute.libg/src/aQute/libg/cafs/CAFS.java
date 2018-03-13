@@ -46,12 +46,12 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	final static String	ALGORITHM		= "SHA-1";
 	final static int	KEYLENGTH		= 20;
 	final static int	HEADERLENGTH	= 4				// CAFS
-			+ 4											// flags
-			+ 4											// compressed length
-			+ 4											// uncompressed length
-			+ KEYLENGTH									// key
-			+ 2											// header checksum
-			;
+		+ 4												// flags
+		+ 4												// compressed length
+		+ 4												// uncompressed length
+		+ KEYLENGTH										// key
+		+ 2												// header checksum
+	;
 
 	final File			home;
 	Index				index;
@@ -315,12 +315,12 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 				if (count != total)
 					throw new IOException(
-							"Counts do not match. Expected to read: " + total + " Actually read: " + count);
+						"Counts do not match. Expected to read: " + total + " Actually read: " + count);
 
 				SHA1 calculatedSha1 = new SHA1(digestx.digest());
 				if (!sha1.equals(calculatedSha1))
 					throw (new IOException(
-							"SHA1 caclulated and asked mismatch, asked: " + sha1 + ", \nfound: " + calculatedSha1));
+						"SHA1 caclulated and asked mismatch, asked: " + sha1 + ", \nfound: " + calculatedSha1));
 			}
 
 			@Override

@@ -28,7 +28,8 @@ public class Selector {
 		}
 
 		public boolean accept(File pathname) {
-			if (doNotCopy != null && doNotCopy.matcher(pathname.getName()).matches()) {
+			if (doNotCopy != null && doNotCopy.matcher(pathname.getName())
+				.matches()) {
 				return false;
 			}
 

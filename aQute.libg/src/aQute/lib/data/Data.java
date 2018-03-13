@@ -14,7 +14,8 @@ public class Data {
 	public static String validate(Object o) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		try (Formatter formatter = new Formatter(sb)) {
-			Field fields[] = o.getClass().getFields();
+			Field fields[] = o.getClass()
+				.getFields();
 			for (Field f : fields) {
 				Validator patternValidator = f.getAnnotation(Validator.class);
 				Numeric numericValidator = f.getAnnotation(Numeric.class);
@@ -32,7 +33,7 @@ public class Data {
 							String reason = patternValidator.reason();
 							if (reason.length() == 0)
 								formatter.format("Value for %s=%s does not match pattern %s%n", f.getName(), value,
-										patternValidator.value());
+									patternValidator.value());
 							else
 								formatter.format("Value for %s=%s %s%n", f.getName(), value, reason);
 						}
@@ -52,11 +53,11 @@ public class Data {
 							long number = n.longValue();
 							if (number >= numericValidator.min() && number < numericValidator.max()) {
 								formatter.format("Value for %s=%s not in valid range (%s,%s]%n", f.getName(), value,
-										numericValidator.min(), numericValidator.max());
+									numericValidator.min(), numericValidator.max());
 							}
 						} catch (ClassCastException e) {
 							formatter.format("Value for %s=%s [%s,%s) is not a number%n", f.getName(), value,
-									numericValidator.min(), numericValidator.max());
+								numericValidator.min(), numericValidator.max());
 						}
 					}
 				}
@@ -71,7 +72,8 @@ public class Data {
 	}
 
 	public static void details(Object data, Appendable out) throws Exception {
-		Field fields[] = data.getClass().getFields();
+		Field fields[] = data.getClass()
+			.getFields();
 		try (Formatter formatter = new Formatter(out)) {
 			for (Field f : fields) {
 				String name = f.getName();
@@ -79,7 +81,8 @@ public class Data {
 				Object object = f.get(data);
 				if (object != null && object.getClass() == byte[].class)
 					object = Hex.toHexString((byte[]) object);
-				else if (object != null && object.getClass().isArray())
+				else if (object != null && object.getClass()
+					.isArray())
 					object = Converter.cnv(List.class, object);
 
 				formatter.format("%-40s %s%n", name, object);

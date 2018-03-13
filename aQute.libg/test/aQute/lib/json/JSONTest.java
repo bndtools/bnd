@@ -87,7 +87,7 @@ public class JSONTest extends TestCase {
 		c.addHandler(Version.class, new Handler() {
 
 			@Override
-			public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+			public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
 				app.encode(object.toString(), String.class, visited);
 			}
 
@@ -97,15 +97,25 @@ public class JSONTest extends TestCase {
 
 		});
 
-		assertEquals("\"1.2.3.bla\"", c.enc().put(new Version("1.2.3.bla")).toString());
-		assertEquals(new Version("1.2.3.bla"), c.dec().from("\"1.2.3.bla\"").get(Version.class));
+		assertEquals("\"1.2.3.bla\"", c.enc()
+			.put(new Version("1.2.3.bla"))
+			.toString());
+		assertEquals(new Version("1.2.3.bla"), c.dec()
+			.from("\"1.2.3.bla\"")
+			.get(Version.class));
 
 		VX vx = new VX();
-		String s = c.enc().put(vx).toString();
-		VX vxx = c.dec().from(s).get(VX.class);
+		String s = c.enc()
+			.put(vx)
+			.toString();
+		VX vxx = c.dec()
+			.from(s)
+			.get(VX.class);
 		assertEquals(vx.v, vxx.v);
 
-		assertEquals(new Version("1.2.3.bla"), c.dec().from("\"1.2.3.bla\"").get(Version.class));
+		assertEquals(new Version("1.2.3.bla"), c.dec()
+			.from("\"1.2.3.bla\"")
+			.get(Version.class));
 
 	}
 
@@ -116,8 +126,9 @@ public class JSONTest extends TestCase {
 		ParameterizedType list = (ParameterizedType) Base.class.getGenericInterfaces()[0];
 		System.out.println(list);
 
-		TypeVariable< ? > tv = (TypeVariable< ? >) list.getActualTypeArguments()[0];
-		System.out.println(tv.getGenericDeclaration().getTypeParameters()[0] == tv);
+		TypeVariable<?> tv = (TypeVariable<?>) list.getActualTypeArguments()[0];
+		System.out.println(tv.getGenericDeclaration()
+			.getTypeParameters()[0] == tv);
 		System.out.println(type.getRawType());
 	}
 
@@ -133,15 +144,19 @@ public class JSONTest extends TestCase {
 		Generics<String> s = new Generics<>();
 		s.field = "abc";
 
-		String string = codec.enc().put(s).toString();
+		String string = codec.enc()
+			.put(s)
+			.toString();
 
-		Generics<String> b = codec.dec().from(string).get(new TypeReference<Generics<String>>() {});
+		Generics<String> b = codec.dec()
+			.from(string)
+			.get(new TypeReference<Generics<String>>() {});
 
 		assertEquals(s.field, b.field);
 	}
 
 	static class A {
-		public MultiMap<String,B> mmap = new MultiMap<>();
+		public MultiMap<String, B> mmap = new MultiMap<>();
 	}
 
 	static class B {
@@ -171,24 +186,30 @@ public class JSONTest extends TestCase {
 
 	public void testListOfByteArray() throws Exception {
 		final List<byte[]> l = Arrays.asList(new byte[] {
-				1
+			1
 		}, new byte[] {
-				2
+			2
 		}, new byte[] {
-				3
+			3
 		}, new byte[] {
-				4
+			4
 		});
-		String s = codec.enc().put(l).toString();
+		String s = codec.enc()
+			.put(l)
+			.toString();
 		assertEquals("[\"01\",\"02\",\"03\",\"04\"]", s);
 
 		ListByteArray x = new ListByteArray();
 		x.set = l;
-		s = codec.enc().put(x).toString();
+		s = codec.enc()
+			.put(x)
+			.toString();
 		assertEquals("{\"set\":[\"01\",\"02\",\"03\",\"04\"]}", s);
 
 		String json = "{\"_id\":\"04DA\",\"content\":[\"AA\"]}";
-		AnotherOne result = codec.dec().from(json).get(AnotherOne.class);
+		AnotherOne result = codec.dec()
+			.from(json)
+			.get(AnotherOne.class);
 
 	}
 
@@ -200,10 +221,18 @@ public class JSONTest extends TestCase {
 	public void testBase64AndHex() throws Exception {
 		byte[] b = "abc".getBytes("UTF-8");
 
-		assertTrue(Arrays.equals(b, codec.dec().from("\" 616263\"").get(byte[].class)));
-		assertTrue(Arrays.equals(b, codec.dec().from("\"61 62 63\"").get(byte[].class)));
-		assertTrue(Arrays.equals(b, codec.dec().from("\"YWJj\"").get(byte[].class)));
-		assertTrue(Arrays.equals(b, codec.dec().from("\" Y W J j\"").get(byte[].class)));
+		assertTrue(Arrays.equals(b, codec.dec()
+			.from("\" 616263\"")
+			.get(byte[].class)));
+		assertTrue(Arrays.equals(b, codec.dec()
+			.from("\"61 62 63\"")
+			.get(byte[].class)));
+		assertTrue(Arrays.equals(b, codec.dec()
+			.from("\"YWJj\"")
+			.get(byte[].class)));
+		assertTrue(Arrays.equals(b, codec.dec()
+			.from("\" Y W J j\"")
+			.get(byte[].class)));
 	}
 
 	/**
@@ -223,10 +252,17 @@ public class JSONTest extends TestCase {
 		x.list = Arrays.asList("1", "2");
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		codec.enc().deflate().to(bout).put(x).close();
+		codec.enc()
+			.deflate()
+			.to(bout)
+			.put(x)
+			.close();
 		byte[] data = bout.toByteArray();
 
-		X xx = codec.dec().inflate().from(new ByteArrayInputStream(data)).get(X.class);
+		X xx = codec.dec()
+			.inflate()
+			.from(new ByteArrayInputStream(data))
+			.get(X.class);
 		assertNotNull(xx);
 		assertEquals("hello", xx.hello);
 		assertEquals(42, xx.value);
@@ -235,9 +271,9 @@ public class JSONTest extends TestCase {
 	}
 
 	public void testToDictionary() throws Exception {
-		Dictionary<String,String> dictionary = codec.dec()
-				.from("{\"x\":3, \"y\":\"\"}")
-				.get(new TypeReference<Dictionary<String,String>>() {});
+		Dictionary<String, String> dictionary = codec.dec()
+			.from("{\"x\":3, \"y\":\"\"}")
+			.get(new TypeReference<Dictionary<String, String>>() {});
 		assertEquals("3", dictionary.get("x"));
 		assertEquals("", dictionary.get("y"));
 	}
@@ -258,7 +294,10 @@ public class JSONTest extends TestCase {
 			}
 		};
 
-		String s = codec.enc().to().put(i).toString();
+		String s = codec.enc()
+			.to()
+			.put(i)
+			.toString();
 		assertEquals("[\"a\",\"b\",\"c\"]", s);
 	}
 
@@ -272,12 +311,16 @@ public class JSONTest extends TestCase {
 
 	public void testMissingField() throws Exception {
 		Decoder dec = codec.dec();
-		dec.from("{\"field\":3}").get(MissingField.class);
-		assertEquals(3, dec.getExtra().get(MissingField.class.getName() + ".field"));
+		dec.from("{\"field\":3}")
+			.get(MissingField.class);
+		assertEquals(3, dec.getExtra()
+			.get(MissingField.class.getName() + ".field"));
 
 		try {
 			dec = codec.dec();
-			dec.from("{\"field\":3}").strict().get(MissingField.class);
+			dec.from("{\"field\":3}")
+				.strict()
+				.get(MissingField.class);
 			fail("Should have thrown an exception due to a missing field");
 		} catch (Exception e) {
 			// ok
@@ -292,10 +335,12 @@ public class JSONTest extends TestCase {
 
 	public void testEscape() throws Exception {
 
-		assertEquals("{\"message\":\"Hello world\"}",
-				codec.dec().from("\"{\\\"message\\\":\\\"Hello world\\\"}\"").get(String.class));
-		assertEquals("\"{\\\"message\\\":\\\"Hello world\\\"}\"",
-				codec.enc().put("{\"message\":\"Hello world\"}").toString());
+		assertEquals("{\"message\":\"Hello world\"}", codec.dec()
+			.from("\"{\\\"message\\\":\\\"Hello world\\\"}\"")
+			.get(String.class));
+		assertEquals("\"{\\\"message\\\":\\\"Hello world\\\"}\"", codec.enc()
+			.put("{\"message\":\"Hello world\"}")
+			.toString());
 	}
 
 	/**
@@ -307,7 +352,9 @@ public class JSONTest extends TestCase {
 	public void testStream() throws Exception {
 		Encoder enc = codec.enc();
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		enc.to(bout).put("Hello").flush();
+		enc.to(bout)
+			.put("Hello")
+			.flush();
 		assertEquals("\"Hello\"", new String(bout.toByteArray()));
 	}
 
@@ -319,11 +366,12 @@ public class JSONTest extends TestCase {
 
 	public void testMaps() throws Exception {
 		Encoder enc = codec.enc();
-		Map<String,Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
 		map.put("a", new int[] {
-				1, 2
+			1, 2
 		});
-		String string = enc.put(map).toString();
+		String string = enc.put(map)
+			.toString();
 		assertEquals("{\"a\":[1,2]}", string);
 	}
 
@@ -336,92 +384,134 @@ public class JSONTest extends TestCase {
 		Decoder dec = new JSONCodec().dec();
 
 		assertTrue(Arrays.equals(new Boolean[] {
-				true, false
-		}, dec.from(" [ true , false ] ").get(Boolean[].class)));
+			true, false
+		}, dec.from(" [ true , false ] ")
+			.get(Boolean[].class)));
 		assertTrue(Arrays.equals(new boolean[] {
-				true, false
-		}, dec.from(" [ true , false ] ").get(boolean[].class)));
+			true, false
+		}, dec.from(" [ true , false ] ")
+			.get(boolean[].class)));
 
 		assertTrue(Arrays.equals(new Character[] {
-				'A', 'B'
-		}, dec.from(" [ 65,66 ] ").get(Character[].class)));
+			'A', 'B'
+		}, dec.from(" [ 65,66 ] ")
+			.get(Character[].class)));
 		assertTrue(Arrays.equals(new char[] {
-				'A', 'B'
-		}, dec.from(" [ 65,66 ] ").get(char[].class)));
+			'A', 'B'
+		}, dec.from(" [ 65,66 ] ")
+			.get(char[].class)));
 		assertTrue(Arrays.equals(new Short[] {
-				-1, -2
-		}, dec.from("[ -1 , -2 ]").get(Short[].class)));
+			-1, -2
+		}, dec.from("[ -1 , -2 ]")
+			.get(Short[].class)));
 		assertTrue(Arrays.equals(new short[] {
-				-1, -2
-		}, dec.from("[ -1 , -2 ]").get(short[].class)));
+			-1, -2
+		}, dec.from("[ -1 , -2 ]")
+			.get(short[].class)));
 		assertTrue(Arrays.equals(new Integer[] {
-				-1, -2
-		}, dec.from("[ -1 , -2 ]").get(Integer[].class)));
+			-1, -2
+		}, dec.from("[ -1 , -2 ]")
+			.get(Integer[].class)));
 		assertTrue(Arrays.equals(new int[] {
-				-1, -2
-		}, dec.from("[ -1 , -2 ]").get(int[].class)));
+			-1, -2
+		}, dec.from("[ -1 , -2 ]")
+			.get(int[].class)));
 		assertTrue(Arrays.equals(new Long[] {
-				-1L, -2L
-		}, dec.from("[ -1 , -2 ]").get(Long[].class)));
+			-1L, -2L
+		}, dec.from("[ -1 , -2 ]")
+			.get(Long[].class)));
 		assertTrue(Arrays.equals(new long[] {
-				-1, -2
-		}, dec.from("[ -1 , -2 ]").get(long[].class)));
+			-1, -2
+		}, dec.from("[ -1 , -2 ]")
+			.get(long[].class)));
 		assertTrue(Arrays.equals(new Float[] {
-				-1f, -2f
-		}, dec.from("[ -1 ,-2 ]").get(Float[].class)));
+			-1f, -2f
+		}, dec.from("[ -1 ,-2 ]")
+			.get(Float[].class)));
 		assertTrue(Arrays.equals(new float[] {
-				-1f, -2f
-		}, dec.from("[ -1, -2 ]").get(float[].class)));
+			-1f, -2f
+		}, dec.from("[ -1, -2 ]")
+			.get(float[].class)));
 		assertTrue(Arrays.equals(new Double[] {
-				-1d, -2d
-		}, dec.from("[-1 , -2 ]").get(Double[].class)));
+			-1d, -2d
+		}, dec.from("[-1 , -2 ]")
+			.get(Double[].class)));
 		assertTrue(Arrays.equals(new double[] {
-				-1d, -2d
-		}, dec.from("[-1, -2]").get(double[].class)));
+			-1d, -2d
+		}, dec.from("[-1, -2]")
+			.get(double[].class)));
 
 		Encoder enc = new JSONCodec().enc();
-		assertEquals("[false,true]", enc.to().put(new Boolean[] {
+		assertEquals("[false,true]", enc.to()
+			.put(new Boolean[] {
 				false, true
-		}).toString());
-		assertEquals("[false,true]", enc.to().put(new boolean[] {
+			})
+			.toString());
+		assertEquals("[false,true]", enc.to()
+			.put(new boolean[] {
 				false, true
-		}).toString());
-		assertEquals("[65,66]", enc.to().put(new Character[] {
+			})
+			.toString());
+		assertEquals("[65,66]", enc.to()
+			.put(new Character[] {
 				'A', 'B'
-		}).toString());
-		assertEquals("[65,66]", enc.to().put(new char[] {
+			})
+			.toString());
+		assertEquals("[65,66]", enc.to()
+			.put(new char[] {
 				'A', 'B'
-		}).toString());
-		assertEquals("[1,2]", enc.to().put(new short[] {
+			})
+			.toString());
+		assertEquals("[1,2]", enc.to()
+			.put(new short[] {
 				1, 2
-		}).toString());
-		assertEquals("[1,2]", enc.to().put(new Short[] {
+			})
+			.toString());
+		assertEquals("[1,2]", enc.to()
+			.put(new Short[] {
 				1, 2
-		}).toString());
-		assertEquals("[1,2]", enc.to().put(new int[] {
+			})
+			.toString());
+		assertEquals("[1,2]", enc.to()
+			.put(new int[] {
 				1, 2
-		}).toString());
-		assertEquals("[1,2]", enc.to().put(new Integer[] {
+			})
+			.toString());
+		assertEquals("[1,2]", enc.to()
+			.put(new Integer[] {
 				1, 2
-		}).toString());
-		assertEquals("[1,2]", enc.to().put(new long[] {
+			})
+			.toString());
+		assertEquals("[1,2]", enc.to()
+			.put(new long[] {
 				1, 2
-		}).toString());
-		assertEquals("[1,2]", enc.to().put(new Long[] {
+			})
+			.toString());
+		assertEquals("[1,2]", enc.to()
+			.put(new Long[] {
 				1L, 2L
-		}).toString());
-		assertEquals("[-1,-2]", enc.to().put(new float[] {
+			})
+			.toString());
+		assertEquals("[-1,-2]", enc.to()
+			.put(new float[] {
 				-1, -2
-		}).toString());
-		assertEquals("[1,-2]", enc.to().put(new Float[] {
+			})
+			.toString());
+		assertEquals("[1,-2]", enc.to()
+			.put(new Float[] {
 				1f, -2f
-		}).toString());
-		assertEquals("[-1,2]", enc.to().put(new double[] {
+			})
+			.toString());
+		assertEquals("[-1,2]", enc.to()
+			.put(new double[] {
 				-1d, 2d
-		}).toString());
-		assertEquals("[1,2]", enc.to().put(new Double[] {
+			})
+			.toString());
+		assertEquals("[1,2]", enc.to()
+			.put(new Double[] {
 				1d, 2d
-		}).toString());
+			})
+			.toString());
 
 	}
 
@@ -432,23 +522,30 @@ public class JSONTest extends TestCase {
 	 */
 	public static void testByteArrays() throws Exception {
 		Encoder enc = new JSONCodec().enc();
-		assertEquals("[43,41]", enc.to().put(new Byte[] {
+		assertEquals("[43,41]", enc.to()
+			.put(new Byte[] {
 				43, 41
-		}).toString());
-		assertEquals("\"2B29\"", enc.to().put(new byte[] {
+			})
+			.toString());
+		assertEquals("\"2B29\"", enc.to()
+			.put(new byte[] {
 				43, 41
-		}).toString());
+			})
+			.toString());
 
 		Decoder dec = new JSONCodec().dec();
 		assertTrue(Arrays.equals(new byte[] {
-				43, 41
-		}, dec.faq("'2B29'").get(byte[].class)));
+			43, 41
+		}, dec.faq("'2B29'")
+			.get(byte[].class)));
 		assertTrue(Arrays.equals(new Byte[] {
-				43, 41
-		}, dec.from("[43,41]").get(Byte[].class)));
+			43, 41
+		}, dec.from("[43,41]")
+			.get(Byte[].class)));
 		assertTrue(Arrays.equals(new byte[] {
-				43, 41
-		}, dec.from("[43,41]").get(byte[].class)));
+			43, 41
+		}, dec.from("[43,41]")
+			.get(byte[].class)));
 	}
 
 	/**
@@ -458,22 +555,51 @@ public class JSONTest extends TestCase {
 	 */
 	public static void testEncodeBasic() throws Exception {
 		Encoder enc = new JSONCodec().enc();
-		assertEquals("49", enc.to().put((byte) 49).toString());
-		assertEquals("49", enc.to().put('1').toString());
-		assertEquals("\"abc\"", enc.to().put("abc").toString());
-		assertEquals("123", enc.to().put(123).toString());
-		assertEquals("-123", enc.to().put(-123).toString());
-		assertEquals("-123", enc.to().put(-123.0).toString());
-		assertEquals("true", enc.to().put(true).toString());
-		assertEquals("false", enc.to().put(false).toString());
-		assertEquals("null", enc.to().put(null).toString());
-		assertEquals("[1,2,3]", enc.to().put(Arrays.asList(1, 2, 3)).toString());
-		assertEquals("{\"1\":1,\"2\":2,\"3\":3}", enc.to().put(MAP.$(1, 1).$(2, 2).$(3, 3)).toString());
-		assertEquals("{\"1\":1,\"2\":2,\"3\":3}", enc.to().put(MAP.$("1", 1).$("2", 2).$("3", 3)).toString());
+		assertEquals("49", enc.to()
+			.put((byte) 49)
+			.toString());
+		assertEquals("49", enc.to()
+			.put('1')
+			.toString());
+		assertEquals("\"abc\"", enc.to()
+			.put("abc")
+			.toString());
+		assertEquals("123", enc.to()
+			.put(123)
+			.toString());
+		assertEquals("-123", enc.to()
+			.put(-123)
+			.toString());
+		assertEquals("-123", enc.to()
+			.put(-123.0)
+			.toString());
+		assertEquals("true", enc.to()
+			.put(true)
+			.toString());
+		assertEquals("false", enc.to()
+			.put(false)
+			.toString());
+		assertEquals("null", enc.to()
+			.put(null)
+			.toString());
+		assertEquals("[1,2,3]", enc.to()
+			.put(Arrays.asList(1, 2, 3))
+			.toString());
+		assertEquals("{\"1\":1,\"2\":2,\"3\":3}", enc.to()
+			.put(MAP.$(1, 1)
+				.$(2, 2)
+				.$(3, 3))
+			.toString());
+		assertEquals("{\"1\":1,\"2\":2,\"3\":3}", enc.to()
+			.put(MAP.$("1", 1)
+				.$("2", 2)
+				.$("3", 3))
+			.toString());
 	}
 
 	enum E {
-		A, B;
+		A,
+		B;
 	}
 
 	public static void testDecodeBasic() throws Exception {
@@ -484,37 +610,59 @@ public class JSONTest extends TestCase {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 		Date d = sdf.parse("2012-03-01T10:23:00");
 		System.out.println(d.getTime());
-		assertEquals(d, dec.from("\"2012-03-01T10:23:00\"").get(Date.class));
+		assertEquals(d, dec.from("\"2012-03-01T10:23:00\"")
+			.get(Date.class));
 
 		// Numbers
-		assertEquals(49, dec.from("49").get());
-		assertEquals((Integer) 49, dec.from("49").get(Integer.class));
-		assertEquals((Long) 49L, dec.from("49").get(Long.class));
-		assertEquals(49d, dec.from("49").get(Double.class));
-		assertEquals(49.3d, dec.from("49.3").get(Double.class));
-		assertEquals((Byte) (byte) 49, dec.from("49.3").get(Byte.class));
-		assertEquals((Byte) (byte) 49, dec.from("49.9999").get(Byte.class));
-		assertEquals((Short) (short) 49, dec.from("49.9999").get(Short.class));
-		assertEquals(49.9999f, dec.from("49.9999").get(Float.class));
-		assertEquals((Character) '0', dec.from("48").get(Character.class));
-		assertEquals((Boolean) true, dec.from("48").get(Boolean.class));
-		assertEquals((Boolean) false, dec.from("0").get(Boolean.class));
-		assertEquals((Boolean) true, dec.from("48").get(boolean.class));
-		assertEquals((Boolean) false, dec.from("0").get(boolean.class));
+		assertEquals(49, dec.from("49")
+			.get());
+		assertEquals((Integer) 49, dec.from("49")
+			.get(Integer.class));
+		assertEquals((Long) 49L, dec.from("49")
+			.get(Long.class));
+		assertEquals(49d, dec.from("49")
+			.get(Double.class));
+		assertEquals(49.3d, dec.from("49.3")
+			.get(Double.class));
+		assertEquals((Byte) (byte) 49, dec.from("49.3")
+			.get(Byte.class));
+		assertEquals((Byte) (byte) 49, dec.from("49.9999")
+			.get(Byte.class));
+		assertEquals((Short) (short) 49, dec.from("49.9999")
+			.get(Short.class));
+		assertEquals(49.9999f, dec.from("49.9999")
+			.get(Float.class));
+		assertEquals((Character) '0', dec.from("48")
+			.get(Character.class));
+		assertEquals((Boolean) true, dec.from("48")
+			.get(Boolean.class));
+		assertEquals((Boolean) false, dec.from("0")
+			.get(Boolean.class));
+		assertEquals((Boolean) true, dec.from("48")
+			.get(boolean.class));
+		assertEquals((Boolean) false, dec.from("0")
+			.get(boolean.class));
 
 		// String based
-		assertEquals("abc", dec.from("\"abc\"").get());
+		assertEquals("abc", dec.from("\"abc\"")
+			.get());
 
 		// Patterns
-		assertTrue(Pattern.class == dec.from("\"abc\"").get(Pattern.class).getClass());
-		assertEquals(Pattern.compile("abc") + "", dec.from("\"abc\"").get(Pattern.class) + "");
+		assertTrue(Pattern.class == dec.from("\"abc\"")
+			.get(Pattern.class)
+			.getClass());
+		assertEquals(Pattern.compile("abc") + "", dec.from("\"abc\"")
+			.get(Pattern.class) + "");
 
 		// Check the file system
 		File f = File.createTempFile("tmp", ".tmp");
 		try {
 			IO.store("Hello", f);
-			String encoded = new JSONCodec().enc().put(f).toString();
-			File otherTempFile = dec.from(encoded).get(File.class);
+			String encoded = new JSONCodec().enc()
+				.put(f)
+				.toString();
+			File otherTempFile = dec.from(encoded)
+				.get(File.class);
 			String hello = IO.collect(otherTempFile);
 			assertEquals("Hello", hello);
 			assertNotSame(f, otherTempFile);
@@ -523,14 +671,18 @@ public class JSONTest extends TestCase {
 		}
 
 		// Enums
-		assertEquals(E.A, dec.from("\"A\"").get(E.class));
+		assertEquals(E.A, dec.from("\"A\"")
+			.get(E.class));
 
 		// Arrays as strings
-		assertEquals("[1,2,3]", dec.from("[1,2,3]").get(String.class));
+		assertEquals("[1,2,3]", dec.from("[1,2,3]")
+			.get(String.class));
 
 		// Objects as strings
-		assertEquals("{\"a\":1, \"b\":\"abc\"}", dec.from("{\"a\":1, \"b\":\"abc\"}").get(String.class));
-		assertEquals("{\"a\":1, \"b\":\"}{}\"}", dec.from("{\"a\":1, \"b\":\"}{}\"}").get(String.class));
+		assertEquals("{\"a\":1, \"b\":\"abc\"}", dec.from("{\"a\":1, \"b\":\"abc\"}")
+			.get(String.class));
+		assertEquals("{\"a\":1, \"b\":\"}{}\"}", dec.from("{\"a\":1, \"b\":\"}{}\"}")
+			.get(String.class));
 	}
 
 	/**
@@ -540,8 +692,8 @@ public class JSONTest extends TestCase {
 																	// generic
 																	// types
 	public int[]			array		= {
-												1, 2, 3
-											};						// Provides
+		1, 2, 3
+	};																// Provides
 																	// generic
 																	// types
 
@@ -549,37 +701,54 @@ public class JSONTest extends TestCase {
 		Decoder dec = new JSONCodec().dec();
 
 		// Default is double
-		assertEquals(Arrays.asList(1, 2, 3), dec.from(" [ 1 , 2 , 3 ] ").get());
+		assertEquals(Arrays.asList(1, 2, 3), dec.from(" [ 1 , 2 , 3 ] ")
+			.get());
 
 		// Now use the integers list for the generic type
 
 		Field field = getClass().getField("integers");
-		assertEquals(integers, dec.from(" [ 1 , 2 , 3 ] ").get(field.getGenericType()));
+		assertEquals(integers, dec.from(" [ 1 , 2 , 3 ] ")
+			.get(field.getGenericType()));
 
 		// And now use the array of primitives
 		field = getClass().getField("array");
-		assertTrue(Arrays.equals(array, (int[]) dec.from(" [ 1 , 2 , 3 ] ").get(field.getGenericType())));
+		assertTrue(Arrays.equals(array, (int[]) dec.from(" [ 1 , 2 , 3 ] ")
+			.get(field.getGenericType())));
 	}
 
 	/**
 	 * Test the map functionality
 	 */
-	public Map<String,Integer>	map;
-	public Map<Integer,Integer>	mapIntegerKeys;
+	public Map<String, Integer>		map;
+	public Map<Integer, Integer>	mapIntegerKeys;
 
 	public void testObject() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 
-		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3), dec.from("{\"1\":1,\"2\":2,\"3\":3}").get());
-		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3),
-				dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}").get());
+		assertEquals(MAP.$("1", 1)
+			.$("2", 2)
+			.$("3", 3),
+			dec.from("{\"1\":1,\"2\":2,\"3\":3}")
+				.get());
+		assertEquals(MAP.$("1", 1)
+			.$("2", 2)
+			.$("3", 3),
+			dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}")
+				.get());
 
 		Field field = getClass().getField("map");
-		assertEquals(MAP.$("1", 1).$("2", 2).$("3", 3),
-				dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}").get(field.getGenericType()));
+		assertEquals(MAP.$("1", 1)
+			.$("2", 2)
+			.$("3", 3),
+			dec.from("\t\n\r {    \"1\"  :  1,  \"2\" :2 ,\"3\" : 3 \n}")
+				.get(field.getGenericType()));
 
 		field = getClass().getField("mapIntegerKeys");
-		assertEquals(MAP.$(1, 1).$(2, 2).$(3, 3), dec.from("{\"1\":1,\"2\":2,\"3\":3}").get(field.getGenericType()));
+		assertEquals(MAP.$(1, 1)
+			.$(2, 2)
+			.$(3, 3),
+			dec.from("{\"1\":1,\"2\":2,\"3\":3}")
+				.get(field.getGenericType()));
 	}
 
 	/**
@@ -595,7 +764,7 @@ public class JSONTest extends TestCase {
 		public long					l;
 		public String				s;
 		public short				sh;
-		public Map<String,Object>	map;
+		public Map<String, Object>	map;
 	}
 
 	public static class Data1A {
@@ -624,7 +793,9 @@ public class JSONTest extends TestCase {
 		data1.sh = -10;
 
 		assertEquals("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3,\"f\":3,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}",
-				enc.to().put(data1).toString());
+			enc.to()
+				.put(data1)
+				.toString());
 	}
 
 	public static void testEncodeType() throws Exception {
@@ -641,17 +812,19 @@ public class JSONTest extends TestCase {
 		data1.sh = -10;
 		data1.map = new HashMap<>();
 		data1.map.put("a", Arrays.asList(1, 2, 3));
-		String s = enc.to().put(data1).toString();
+		String s = enc.to()
+			.put(data1)
+			.toString();
 		assertEquals(
-				"{\"b\":true,\"by\":-1,\"ch\":49,\"d\":3,\"f\":3,\"i\":1,\"l\":2,\"map\":{\"a\":[1,2,3]},\"s\":\"abc\",\"sh\":-10}",
-				s);
+			"{\"b\":true,\"by\":-1,\"ch\":49,\"d\":3,\"f\":3,\"i\":1,\"l\":2,\"map\":{\"a\":[1,2,3]},\"s\":\"abc\",\"sh\":-10}",
+			s);
 	}
 
 	public static void testDecodeType() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data1 d = dec
-				.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
-				.get(Data1.class);
+			.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
+			.get(Data1.class);
 		assertEquals(false, d.b);
 		assertEquals(-1, d.by);
 		assertEquals('1', d.ch);
@@ -666,8 +839,8 @@ public class JSONTest extends TestCase {
 	public static void testDecodeTypeA() throws Exception {
 		Decoder dec = new JSONCodec().dec();
 		Data1A d = dec
-				.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
-				.get(Data1A.class);
+			.from("{\"b\":false,\"by\":-1,\"ch\":49,\"d\":3.0,\"f\":3.0,\"i\":1,\"l\":2,\"s\":\"abc\",\"sh\":-10}")
+			.get(Data1A.class);
 		assertEquals((Boolean) false, d.b);
 		assertEquals((Byte) (byte) (-1), d.by);
 		assertEquals((Character) '1', d.ch);
@@ -685,13 +858,14 @@ public class JSONTest extends TestCase {
 	 */
 
 	public static class Data2 {
-		public Map<String,Integer>						integers;
-		public Map<String,List<Map<Integer,String>>>	map;
+		public Map<String, Integer>						integers;
+		public Map<String, List<Map<Integer, String>>>	map;
 	}
 
 	public static void testComplexMaps() throws Exception {
 		Decoder dec = new JSONCodec().dec();
-		Data2 d = dec.from("{\"map\": {\"a\":[ {\"1\":1}, {\"2\":2} ]},\"integers\":{\"c\":1}}").get(Data2.class);
+		Data2 d = dec.from("{\"map\": {\"a\":[ {\"1\":1}, {\"2\":2} ]},\"integers\":{\"c\":1}}")
+			.get(Data2.class);
 
 		// Check integers
 		assertEquals(1, d.integers.size());
@@ -699,11 +873,11 @@ public class JSONTest extends TestCase {
 
 		// Check map
 		assertEquals(1, d.map.size());
-		List<Map<Integer,String>> sub = d.map.get("a");
-		Map<Integer,String> subsub1 = sub.get(0);
+		List<Map<Integer, String>> sub = d.map.get("a");
+		Map<Integer, String> subsub1 = sub.get(0);
 		String subsubsub1 = subsub1.get(1);
 
-		Map<Integer,String> subsub2 = sub.get(1);
+		Map<Integer, String> subsub2 = sub.get(1);
 		String subsubsub2 = subsub2.get(2);
 
 		assertEquals("1", subsubsub1);
@@ -714,16 +888,17 @@ public class JSONTest extends TestCase {
 	 * Test extra field
 	 */
 	public static class Data3 {
-		public Map<String,Object> __extra;
+		public Map<String, Object> __extra;
 	}
 
 	public static void testExtra() throws Exception {
 		Decoder dec = new JSONCodec().dec();
-		Data3 d = dec.from("{\"a\": 1, \"b\": [1], \"c\": {}}").get(Data3.class);
+		Data3 d = dec.from("{\"a\": 1, \"b\": [1], \"c\": {}}")
+			.get(Data3.class);
 
 		assertEquals(1, d.__extra.get("a"));
 		assertEquals(Arrays.asList(1), d.__extra.get("b"));
-		assertEquals(new HashMap<String,Object>(), d.__extra.get("c"));
+		assertEquals(new HashMap<String, Object>(), d.__extra.get("c"));
 	}
 
 	/**
@@ -731,10 +906,12 @@ public class JSONTest extends TestCase {
 	 */
 
 	public static void testRepeat() throws Exception {
-		Decoder dec = new JSONCodec().dec().keepOpen();
+		Decoder dec = new JSONCodec().dec()
+			.keepOpen();
 		try {
 			StringReader r = new StringReader("1\t2\r3\n 4      5   \n\r");
-			assertEquals((Integer) 1, dec.from(r).get(Integer.class));
+			assertEquals((Integer) 1, dec.from(r)
+				.get(Integer.class));
 			assertEquals((Integer) 2, dec.get(Integer.class));
 			assertEquals((Integer) 3, dec.get(Integer.class));
 			assertEquals((Integer) 4, dec.get(Integer.class));
@@ -766,37 +943,38 @@ public class JSONTest extends TestCase {
 		Encoder enc = new JSONCodec().enc();
 		Data4 d = new Data4();
 		d.booleans = new boolean[] {
-				false, false
+			false, false
 		};
 		d.bytes = new byte[] {
-				1, 2
+			1, 2
 		};
 		d.shorts = new short[] {
-				3, 4
+			3, 4
 		};
 		d.chars = new char[] {
-				'A', 'B'
+			'A', 'B'
 		};
 		d.ints = new int[] {
-				5, 6
+			5, 6
 		};
 		d.longs = new long[] {
-				7, 8
+			7, 8
 		};
 		d.floats = new float[] {
-				7, 8
+			7, 8
 		};
 		d.doubles = new double[] {
-				7, 8
+			7, 8
 		};
 
 		assertEquals(
-				"{\"booleans\":[false,false],\"bytes\":\"0102\",\"chars\":[65,66],\"doubles\":[7,8],\"floats\":[7,8],\"ints\":[5,6],\"longs\":[7,8],\"shorts\":[3,4]}",
-				enc.put(d).toString());
+			"{\"booleans\":[false,false],\"bytes\":\"0102\",\"chars\":[65,66],\"doubles\":[7,8],\"floats\":[7,8],\"ints\":[5,6],\"longs\":[7,8],\"shorts\":[3,4]}",
+			enc.put(d)
+				.toString());
 		Decoder dec = new JSONCodec().dec();
-		Data4 dd = dec
-				.from("{\"booleans\":[false,false],\"bytes\":\"0102\",\"chars\":[65,66],\"doubles\":[7,8],\"floats\":[7,8],\"ints\":[5,6],\"longs\":[7,8],\"shorts\":[3,4]}")
-				.get(Data4.class);
+		Data4 dd = dec.from(
+			"{\"booleans\":[false,false],\"bytes\":\"0102\",\"chars\":[65,66],\"doubles\":[7,8],\"floats\":[7,8],\"ints\":[5,6],\"longs\":[7,8],\"shorts\":[3,4]}")
+			.get(Data4.class);
 		assertTrue(Arrays.equals(d.booleans, dd.booleans));
 		assertTrue(Arrays.equals(d.bytes, dd.bytes));
 		assertTrue(Arrays.equals(d.shorts, dd.shorts));
@@ -819,13 +997,20 @@ public class JSONTest extends TestCase {
 		Encoder enc = new JSONCodec().enc();
 		DataDefaults d = new DataDefaults();
 		// We're not writing out fields with defaults.
-		assertEquals("{}", enc.to().put(d).toString());
-		assertEquals("{\"a\":3}", enc.to().writeDefaults().put(d).toString());
+		assertEquals("{}", enc.to()
+			.put(d)
+			.toString());
+		assertEquals("{\"a\":3}", enc.to()
+			.writeDefaults()
+			.put(d)
+			.toString());
 
 		Decoder dec = new JSONCodec().dec();
-		DataDefaults dd = dec.from("{}").get(DataDefaults.class);
+		DataDefaults dd = dec.from("{}")
+			.get(DataDefaults.class);
 		assertEquals(d.a, dd.a);
-		DataDefaults ddd = dec.from("{\"a\":4}").get(DataDefaults.class);
+		DataDefaults ddd = dec.from("{\"a\":4}")
+			.get(DataDefaults.class);
 		assertEquals(4, ddd.a);
 	}
 
@@ -834,13 +1019,19 @@ public class JSONTest extends TestCase {
 	 */
 	public static void testDigest() throws Exception {
 		Encoder enc = new JSONCodec().enc();
-		enc.mark().put("Hello World");
+		enc.mark()
+			.put("Hello World");
 		byte[] original = enc.digest();
-		String string = enc.put(original).append("\n").toString();
+		String string = enc.put(original)
+			.append("\n")
+			.toString();
 
-		Decoder dec = new JSONCodec().dec().keepOpen();
+		Decoder dec = new JSONCodec().dec()
+			.keepOpen();
 		try {
-			String x = dec.mark().from(string).get(String.class);
+			String x = dec.mark()
+				.from(string)
+				.get(String.class);
 			assertEquals("Hello World", x);
 			byte read[] = dec.digest();
 			byte read2[] = dec.get(byte[].class);
@@ -855,7 +1046,8 @@ public class JSONTest extends TestCase {
 	 * Test for the blog
 	 */
 	public enum Sex {
-		MALE, FEMALE;
+		MALE,
+		FEMALE;
 	}
 
 	public static class Person {
@@ -878,7 +1070,10 @@ public class JSONTest extends TestCase {
 		u3.sex = Sex.MALE;
 		u1.offspring.add(u3);
 
-		String s = codec.enc().indent("  ").put(u1).toString();
+		String s = codec.enc()
+			.indent("  ")
+			.put(u1)
+			.toString();
 		System.out.println(s);
 		// Person u4 = codec.dec().from(s).get( Person.class );
 
@@ -886,14 +1081,16 @@ public class JSONTest extends TestCase {
 
 	public static interface C {}
 
-	public static class D extends LinkedHashMap<Object,Object> implements C {
+	public static class D extends LinkedHashMap<Object, Object> implements C {
 		private static final long serialVersionUID = 1L;
 	}
 
 	public void testMapInheritance() throws Exception {
 		D d = new D();
 		d.put("foo", "bar");
-		String s = new JSONCodec().enc().put(d).toString();
+		String s = new JSONCodec().enc()
+			.put(d)
+			.toString();
 		assertEquals("{'foo':'bar'}".replace('\'', '"'), s);
 	}
 }

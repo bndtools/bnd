@@ -1,5 +1,5 @@
 @Export(attribute = {
-		"fizz=buzz", "foobar:=fizzbuzz"
+	"fizz=buzz", "foobar:=fizzbuzz"
 }, substitution = Substitution.NOIMPORT)
 @Version("1.0.0")
 package test.export.annotation.testNoimport;

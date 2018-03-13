@@ -42,7 +42,7 @@ public class MetadataParser {
 		public String	modelVersion	= "1.1.0";
 		public String	group;
 		public String	artifact;
-		public long		lastUpdated	= System.currentTimeMillis();
+		public long		lastUpdated		= System.currentTimeMillis();
 
 		public Tag toTag() {
 			Tag top = new Tag("metadata");
@@ -421,7 +421,8 @@ public class MetadataParser {
 
 	private static MavenVersion getVersion(XMLStreamReader sr) throws Exception {
 		String version = getText(sr);
-		if (version == null || version.trim().isEmpty())
+		if (version == null || version.trim()
+			.isEmpty())
 			return null;
 
 		return new MavenVersion(version);
@@ -431,7 +432,8 @@ public class MetadataParser {
 		for (int i = 0; i < sr.getAttributeCount(); i++) {
 			String name = sr.getAttributeLocalName(i);
 			if (name.equals("modelVersion")) {
-				return sr.getAttributeValue(i).trim();
+				return sr.getAttributeValue(i)
+					.trim();
 			}
 		}
 		return null;

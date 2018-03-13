@@ -13,12 +13,12 @@ import java.util.TimerTask;
  * recursive calls that can happen when there is shit happening deep down below.
  */
 public class RedirectOutput extends PrintStream {
-	static Timer						timer	= new Timer();
+	static Timer						timer		= new Timer();
 	private final List<AgentServer>		agents;
 	private final PrintStream			out;
-	private StringBuilder				sb		= new StringBuilder();
+	private StringBuilder				sb			= new StringBuilder();
 	private boolean						err;
-	private static ThreadLocal<Boolean>	onStack	= new ThreadLocal<>();
+	private static ThreadLocal<Boolean>	onStack		= new ThreadLocal<>();
 	private TimerTask					active;
 	private String						lastOutput	= "";
 
@@ -44,7 +44,7 @@ public class RedirectOutput extends PrintStream {
 
 	public void write(int b) {
 		this.write(new byte[] {
-				(byte) b
+			(byte) b
 		}, 0, 1);
 	}
 
@@ -110,9 +110,11 @@ public class RedirectOutput extends PrintStream {
 
 			try {
 				if (err)
-					agent.getSupervisor().stderr(output);
+					agent.getSupervisor()
+						.stderr(output);
 				else
-					agent.getSupervisor().stdout(output);
+					agent.getSupervisor()
+						.stdout(output);
 			} catch (InterruptedException ie) {
 				return;
 			} catch (Exception ie) {

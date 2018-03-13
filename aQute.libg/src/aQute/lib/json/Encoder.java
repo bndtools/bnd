@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
 
 import aQute.lib.io.IO;
+
 public class Encoder implements Appendable, Closeable, Flushable {
 	final JSONCodec	codec;
 	Appendable		app;
@@ -126,7 +127,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		}
 	}
 
-	void encode(Object object, Type type, Map<Object,Type> visited) throws Exception {
+	void encode(Object object, Type type, Map<Object, Type> visited) throws Exception {
 		codec.encode(this, object, type, visited);
 	}
 

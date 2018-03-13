@@ -69,7 +69,7 @@ public class Macro {
 	final static String		LITERALVALUE	= "017a3ddbfc0fcd27bcdb2590cdb713a379ae59ef";
 	final static Pattern	NUMERIC_P		= Pattern.compile("[-+]?(\\d*\\.?\\d+|\\d+\\.)(e[-+]?[0-9]+)?");
 	final static Pattern	PRINTF_P		= Pattern.compile(
-			"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|%)");
+		"%(?:(\\d+)\\$)?(-|\\+|0|\\(|,|\\^|#| )*(\\d*)?(?:\\.(\\d+))?(a|A|b|B|h|H|d|f|c|s|x|X|u|o|z|Z|e|E|g|G|p|n|b|B|%)");
 	Processor				domain;
 	Object					targets[];
 	boolean					flattening;
@@ -138,7 +138,8 @@ public class Macro {
 				if (index == 1 || Character.isWhitespace(line.charAt(index - 2))) {
 					// make sure it is preceded by whitespace or starts at begin
 					index++;
-					variable.append(domain.getBase().getAbsolutePath());
+					variable.append(domain.getBase()
+						.getAbsolutePath());
 					variable.append('/');
 					continue outer;
 				}
@@ -208,7 +209,8 @@ public class Macro {
 					return process(value, new Link(domain, link, key));
 				}
 
-				if (key != null && key.trim().length() > 0) {
+				if (key != null && key.trim()
+					.length() > 0) {
 					value = System.getProperty(key);
 					if (value != null)
 						return value;
@@ -221,7 +223,8 @@ public class Macro {
 							domain.error("too many arguments for template: %s, max is 16", key);
 						}
 
-						String template = domain.getProperties().getProperty(parts[0]);
+						String template = domain.getProperties()
+							.getProperty(parts[0]);
 						if (template != null) {
 							domain = new Processor(domain);
 							for (int i = 0; i < 16; i++) {
@@ -292,7 +295,8 @@ public class Macro {
 				args[i] = args[i].replaceAll("\\\\;", ";");
 
 		if (args[0].startsWith("^")) {
-			String varname = args[0].substring(1).trim();
+			String varname = args[0].substring(1)
+				.trim();
 
 			if (source != null) {
 				Processor parent = source.start.getParent();
@@ -338,17 +342,18 @@ public class Macro {
 
 			String cname = "_" + part;
 			try {
-				Method m = target.getClass().getMethod(cname, String[].class);
+				Method m = target.getClass()
+					.getMethod(cname, String[].class);
 				Object result = m.invoke(target, new Object[] {
-						args
+					args
 				});
 				return result == null ? NULLVALUE : result.toString();
 			} catch (NoSuchMethodException e) {
 				return null;
 			} catch (InvocationTargetException e) {
 				if (e.getCause() instanceof IllegalArgumentException) {
-					domain.error("%s, for cmd: %s, arguments; %s", e.getCause().getMessage(), method,
-							Arrays.toString(args));
+					domain.error("%s, for cmd: %s, arguments; %s", e.getCause()
+						.getMessage(), method, Arrays.toString(args));
 				} else {
 					domain.warning("Exception in replace: %s", e.getCause());
 				}
@@ -439,7 +444,8 @@ public class Macro {
 		Collection<String> list = toCollection(args[1]);
 		Pattern pattern = Pattern.compile(args[2]);
 
-		list.removeIf(s -> pattern.matcher(s).matches() == include);
+		list.removeIf(s -> pattern.matcher(s)
+			.matches() == include);
 		return Processor.join(list);
 	}
 
@@ -539,7 +545,7 @@ public class Macro {
 		}
 
 		return !condition.equalsIgnoreCase("false") && !condition.equals("0") && !condition.equals("0.0")
-				&& condition.length() != 0;
+			&& condition.length() != 0;
 	}
 
 	public final static String _nowHelp = "${now;pattern|'long'}, returns current time";
@@ -599,6 +605,7 @@ public class Macro {
 	}
 
 	static String _replace = "${replace;<list>;<regex>;[<replace>[;delimiter]]}";
+
 	/**
 	 * replace ; <list> ; regex ; replace
 	 *
@@ -663,10 +670,12 @@ public class Macro {
 		List<String> names = new ArrayList<>(paths.size());
 		for (String path : paths) {
 			if (path.endsWith(".class")) {
-				String name = path.substring(0, path.length() - 6).replace('/', '.');
+				String name = path.substring(0, path.length() - 6)
+					.replace('/', '.');
 				names.add(name);
 			} else if (path.endsWith(".java")) {
-				String name = path.substring(0, path.length() - 5).replace('/', '.');
+				String name = path.substring(0, path.length() - 5)
+					.replace('/', '.');
 				names.add(name);
 			} else {
 				domain.warning("in toclassname, %s is not a class path because it does not end in .class", args[1]);
@@ -705,9 +714,11 @@ public class Macro {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 1; i < args.length; i++) {
 			File f = domain.getFile(args[i]);
-			if (f.exists() && f.getParentFile().exists()) {
+			if (f.exists() && f.getParentFile()
+				.exists()) {
 				sb.append(del);
-				sb.append(f.getParentFile().getAbsolutePath());
+				sb.append(f.getParentFile()
+					.getAbsolutePath());
 				del = ",";
 			}
 		}
@@ -724,7 +735,8 @@ public class Macro {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 1; i < args.length; i++) {
 			File f = domain.getFile(args[i]);
-			if (f.exists() && f.getParentFile().exists()) {
+			if (f.exists() && f.getParentFile()
+				.exists()) {
 				sb.append(del);
 				sb.append(f.getName());
 				del = ",";
@@ -834,7 +846,7 @@ public class Macro {
 
 		if (!dir.isDirectory())
 			throw new IllegalArgumentException(
-					"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
+				"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
 
 		Collection<File> files = new ArrayList<>(new SortedList<>(dir.listFiles()));
 
@@ -845,7 +857,9 @@ public class Macro {
 
 		List<String> result = new ArrayList<>();
 		for (File file : files)
-			result.add(relative ? file.getName() : file.getAbsolutePath().replace(File.separatorChar, '/'));
+			result.add(relative ? file.getName()
+				: file.getAbsolutePath()
+					.replace(File.separatorChar, '/'));
 
 		return Processor.join(result, ",");
 	}
@@ -870,9 +884,9 @@ public class Macro {
 	final static String		MASK_STRING			= "[\\-+=~0123456789]{0,3}[=~]?";
 	final static Pattern	MASK				= Pattern.compile(MASK_STRING);
 	final static String		_versionHelp		= "${version;<mask>;<version>}, modify a version\n"
-			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
+		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	final static Pattern	_versionPattern[]	= new Pattern[] {
-			null, null, MASK, Verifier.VERSION
+		null, null, MASK, Verifier.VERSION
 	};
 
 	public String _versionmask(String args[]) {
@@ -917,11 +931,13 @@ public class Macro {
 					if (c == 'S') {
 						// we have a request for a Maven snapshot
 						if (mv.isSnapshot())
-							return sb.append("-SNAPSHOT").toString();
+							return sb.append("-SNAPSHOT")
+								.toString();
 					} else if (c == 's') {
 						// we have a request for a Maven snapshot
 						if (mv.isSnapshot())
-							return sb.append("-SNAPSHOT").toString();
+							return sb.append("-SNAPSHOT")
+								.toString();
 						else
 							return sb.toString();
 					}
@@ -963,9 +979,9 @@ public class Macro {
 
 	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
 	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
-			+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
+		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	static Pattern	_rangePattern[]	= new Pattern[] {
-			null, RANGE_MASK
+		null, RANGE_MASK
 	};
 
 	public String _range(String args[]) {
@@ -1022,8 +1038,8 @@ public class Macro {
 			throw new RuntimeException("Macros in this mode cannot excute system commands");
 
 		verifyCommand(args,
-				"${" + (allowFail ? "system-allow-fail" : "system") + ";<command>[;<in>]}, execute a system command",
-				null, 2, 3);
+			"${" + (allowFail ? "system-allow-fail" : "system") + ";<command>[;<in>]}, execute a system command", null,
+			2, 3);
 		String command = args[1];
 		String input = null;
 
@@ -1034,11 +1050,14 @@ public class Macro {
 		if (File.separatorChar == '\\')
 			command = "cmd /c \"" + command + "\"";
 
-		Process process = Runtime.getRuntime().exec(command, null, domain.getBase());
+		Process process = Runtime.getRuntime()
+			.exec(command, null, domain.getBase());
 		if (input != null) {
-			process.getOutputStream().write(input.getBytes(UTF_8));
+			process.getOutputStream()
+				.write(input.getBytes(UTF_8));
 		}
-		process.getOutputStream().close();
+		process.getOutputStream()
+			.close();
 
 		String s = IO.collect(process.getInputStream(), UTF_8);
 		int exitValue = process.waitFor();
@@ -1098,7 +1117,8 @@ public class Macro {
 		verifyCommand(args, "${cat;<in>}, get the content of a file", null, 2, 2);
 		File f = domain.getFile(args[1]);
 		if (f.isFile()) {
-			return IO.collect(f).replaceAll("\\\\", "\\\\\\\\");
+			return IO.collect(f)
+				.replaceAll("\\\\", "\\\\\\\\");
 		} else if (f.isDirectory()) {
 			return Arrays.toString(f.list());
 		} else {
@@ -1127,7 +1147,7 @@ public class Macro {
 
 		if (file.length() > maxLength)
 			throw new IllegalArgumentException(
-					"Maximum file size (" + maxLength + ") for base64 macro exceeded for file " + file);
+				"Maximum file size (" + maxLength + ") for base64 macro exceeded for file " + file);
 
 		return Base64.encodeBase64(file);
 	}
@@ -1160,7 +1180,7 @@ public class Macro {
 					Matcher m = patterns[i].matcher(args[i]);
 					if (!m.matches())
 						message += String.format("Argument %s (%s) does not match %s%n", i, args[i],
-								patterns[i].pattern());
+							patterns[i].pattern());
 				}
 			}
 		}
@@ -1255,14 +1275,16 @@ public class Macro {
 		try {
 			Properties flattened = new UTF8Properties();
 			Properties source = domain.getProperties();
-			for (Enumeration< ? > e = source.propertyNames(); e.hasMoreElements();) {
+			for (Enumeration<?> e = source.propertyNames(); e.hasMoreElements();) {
 				String key = (String) e.nextElement();
 				if (!key.startsWith("_")) {
 					String value = source.getProperty(key);
 					if (value == null) {
 						Object raw = source.get(key);
-						domain.warning("Key '%s' has a non-String value: %s:%s", key,
-								raw == null ? "" : raw.getClass().getName(), raw);
+						domain.warning("Key '%s' has a non-String value: %s:%s", key, raw == null ? ""
+							: raw.getClass()
+								.getName(),
+							raw);
 					} else {
 						if (ignoreInstructions && key.startsWith("-"))
 							flattened.put(key, value);
@@ -1708,7 +1730,8 @@ public class Macro {
 		StringBuilder sb = new StringBuilder();
 
 		for (int i = 1; i < args.length; i++)
-			sb.append(args[i]).append(';');
+			sb.append(args[i])
+				.append(';');
 
 		if (context == null) {
 			synchronized (this) {
@@ -1737,7 +1760,8 @@ public class Macro {
 		}
 
 		String out = stdout.toString();
-		stdout.getBuffer().setLength(0);
+		stdout.getBuffer()
+			.setLength(0);
 		return out;
 	}
 
@@ -1850,7 +1874,8 @@ public class Macro {
 		Matcher m = PRINTF_P.matcher(args[1]);
 		int n = 2;
 		while (n < args.length && m.find()) {
-			char conversion = m.group(5).charAt(0);
+			char conversion = m.group(5)
+				.charAt(0);
 			switch (conversion) {
 				// d|f|c|s|h|n|x|X|u|o|z|Z|e|E|g|G|p|\n|%)");
 				case 'd' :
@@ -1884,8 +1909,8 @@ public class Macro {
 
 				case 'b' :
 					String v = args[n].toLowerCase();
-					if (v == null || v.equals("false") || v.isEmpty()
-							|| (NUMERIC_P.matcher(v).matches() && Double.parseDouble(v) == 0.0D))
+					if (v == null || v.equals("false") || v.isEmpty() || (NUMERIC_P.matcher(v)
+						.matches() && Double.parseDouble(v) == 0.0D))
 						args2[n - 2] = false;
 					else
 						args2[n - 2] = false;
@@ -1904,7 +1929,8 @@ public class Macro {
 				case 'T' :
 					String dt = args[n];
 
-					if (NUMERIC_P.matcher(dt).matches()) {
+					if (NUMERIC_P.matcher(dt)
+						.matches()) {
 						args2[n - 2] = Long.parseLong(dt);
 					} else {
 						DateFormat df;
@@ -1954,7 +1980,8 @@ public class Macro {
 		verifyCommand(args, _isempty, null, 1, Integer.MAX_VALUE);
 
 		for (int i = 1; i < args.length; i++)
-			if (!args[i].trim().isEmpty())
+			if (!args[i].trim()
+				.isEmpty())
 				return false;
 
 		return true;
@@ -1966,7 +1993,8 @@ public class Macro {
 		verifyCommand(args, _isnumber, null, 2, Integer.MAX_VALUE);
 
 		for (int i = 1; i < args.length; i++)
-			if (!NUMERIC_P.matcher(args[i]).matches())
+			if (!NUMERIC_P.matcher(args[i])
+				.matches())
 				return false;
 
 		return true;
@@ -2039,9 +2067,11 @@ public class Macro {
 		List<String> result = new ArrayList<>();
 
 		StringBuilder sb = new StringBuilder();
-		sb.append("${").append(macro);
+		sb.append("${")
+			.append(macro);
 		for (String s : list) {
-			sb.append(";").append(s);
+			sb.append(";")
+				.append(s);
 		}
 		sb.append("}");
 
@@ -2056,7 +2086,7 @@ public class Macro {
 			for (int i = 0; i < args.length; i++) {
 				long l = Long.parseLong(args[1]);
 				bytes(sb, l, 0, new String[] {
-						"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"
+					"b", "Kb", "Mb", "Gb", "Tb", "Pb", "Eb", "Zb", "Yb", "Bb", "Geopbyte"
 				});
 			}
 			return sb.toString();

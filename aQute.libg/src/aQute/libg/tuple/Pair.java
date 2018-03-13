@@ -15,7 +15,7 @@ public class Pair<A, B> implements Serializable, Cloneable {
 		this.second = second;
 	}
 
-	public static <A, B> Pair<A,B> newInstance(A first, B second) {
+	public static <A, B> Pair<A, B> newInstance(A first, B second) {
 		return new Pair<>(first, second);
 	}
 
@@ -50,7 +50,7 @@ public class Pair<A, B> implements Serializable, Cloneable {
 		if (getClass() != obj.getClass())
 			return false;
 		@SuppressWarnings("unchecked")
-		Pair<A,B> other = (Pair<A,B>) obj;
+		Pair<A, B> other = (Pair<A, B>) obj;
 		if (first == null) {
 			if (other.first != null)
 				return false;
@@ -65,7 +65,7 @@ public class Pair<A, B> implements Serializable, Cloneable {
 	}
 
 	@Override
-	public Pair<A,B> clone() {
+	public Pair<A, B> clone() {
 		return new Pair<>(first, second);
 	}
 }

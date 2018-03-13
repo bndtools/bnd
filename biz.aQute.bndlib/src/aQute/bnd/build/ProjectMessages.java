@@ -26,7 +26,7 @@ public interface ProjectMessages extends Messages {
 
 	ERROR MissingPom();
 
-	ERROR FoundVersions_ForStrategy_ButNoProvider(SortedMap<Version,RepositoryPlugin> versions, Strategy useStrategy);
+	ERROR FoundVersions_ForStrategy_ButNoProvider(SortedMap<Version, RepositoryPlugin> versions, Strategy useStrategy);
 
 	ERROR NoSuchProject(String bsn, String spec);
 

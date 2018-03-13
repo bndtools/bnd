@@ -22,7 +22,7 @@ public interface Sink {
 	/**
 	 * Return a list of areas
 	 */
-	Collection< ? extends Area> getAreas() throws Exception;
+	Collection<? extends Area> getAreas() throws Exception;
 
 	/**
 	 * Get a specific area
@@ -45,7 +45,7 @@ public interface Sink {
 	 * Launch
 	 */
 
-	boolean launch(String areaId, Map<String,String> env, List<String> args) throws Exception;
+	boolean launch(String areaId, Map<String, String> env, List<String> args) throws Exception;
 
 	int exit(String area) throws Exception;
 

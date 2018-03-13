@@ -26,7 +26,7 @@ public class RemoteSink implements Sink {
 	final static JSONCodec		codec	= new JSONCodec();
 	final File					root;
 	Source[]					sources;
-	final Map<String,AreaImpl>	areas	= new ConcurrentHashMap<>();
+	final Map<String, AreaImpl>	areas	= new ConcurrentHashMap<>();
 
 	final File					areasDir;
 	final SinkFS				sinkfs;
@@ -70,7 +70,7 @@ public class RemoteSink implements Sink {
 	}
 
 	@Override
-	public boolean launch(String areaId, Map<String,String> env, List<String> args) throws Exception {
+	public boolean launch(String areaId, Map<String, String> env, List<String> args) throws Exception {
 		final AreaImpl area = getArea(areaId);
 		if (area == null)
 			throw new IllegalArgumentException("No such area");
@@ -82,7 +82,7 @@ public class RemoteSink implements Sink {
 		area.command.addAll(args);
 		area.command.setCwd(area.cwd);
 		if (env != null) {
-			for (Map.Entry<String,String> e : env.entrySet()) {
+			for (Map.Entry<String, String> e : env.entrySet()) {
 				area.command.var(e.getKey(), e.getValue());
 			}
 		}
@@ -173,9 +173,11 @@ public class RemoteSink implements Sink {
 		if (f.isDirectory()) {
 			StringBuilder sb = new StringBuilder();
 			for (String s : f.list()) {
-				sb.append(s).append("\n");
+				sb.append(s)
+					.append("\n");
 			}
-			return sb.toString().getBytes(UTF_8);
+			return sb.toString()
+				.getBytes(UTF_8);
 		} else if (f.isFile()) {
 			return IO.read(f);
 		}
@@ -189,7 +191,7 @@ public class RemoteSink implements Sink {
 	}
 
 	@SuppressWarnings({
-			"unchecked", "rawtypes"
+		"unchecked", "rawtypes"
 	})
 	@Override
 	public Welcome getWelcome(int highest) {
@@ -216,7 +218,7 @@ public class RemoteSink implements Sink {
 		return read(dir);
 	}
 
-	public Collection< ? extends Area> getAreas() {
+	public Collection<? extends Area> getAreas() {
 		return areas.values();
 	}
 

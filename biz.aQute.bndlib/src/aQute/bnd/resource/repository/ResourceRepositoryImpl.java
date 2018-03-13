@@ -45,6 +45,7 @@ import aQute.lib.json.JSONCodec;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
+
 /**
  * This class implements a hidden repository. This repo is kept in a text file
  * that is under scm control. Files are fetched on demand. The idea is that bnd
@@ -53,40 +54,40 @@ import aQute.service.reporter.Reporter;
  */
 public class ResourceRepositoryImpl implements ResourceRepository {
 	private final static Logger						logger							= LoggerFactory
-			.getLogger(ResourceRepositoryImpl.class);
+		.getLogger(ResourceRepositoryImpl.class);
 	private static Comparator<ResourceDescriptor>	RESOURCE_DESCRIPTOR_COMPARATOR	= new Comparator<ResourceDescriptor>() {
 
 																						public int compare(
-																								ResourceDescriptor o1,
-																								ResourceDescriptor o2) {
+																							ResourceDescriptor o1,
+																							ResourceDescriptor o2) {
 																							if (o1 == o2)
 																								return 0;
 
 																							int r = o1.bsn
-																									.compareTo(o2.bsn);
+																								.compareTo(o2.bsn);
 																							if (r > 0)
 																								return 1;
 																							else if (r < 0)
 																								return -1;
 
-																							return o1.version.compareTo(
-																									o2.version);
+																							return o1.version
+																								.compareTo(o2.version);
 																						}
 																					};
-	private static final long						THRESHOLD						= 4 * 3600 * 1000;											// 4
+	private static final long						THRESHOLD						= 4 * 3600 * 1000;						// 4
 	protected static final DownloadListener[]		EMPTY_LISTENER					= new DownloadListener[0];
 	static JSONCodec								codec							= new JSONCodec();
 	private final List<Listener>					listeners						= new CopyOnWriteArrayList<>();
 	private boolean									dirty;
 	private FileLayout								index;
-	private Map<URI,Long>							failures						= new HashMap<>();
+	private Map<URI, Long>							failures						= new HashMap<>();
 	private File									cache;
 	private File									hosting;
 	private Reporter								reporter						= new ReporterAdapter(System.out);
 	private Executor								executor;
 	private File									indexFile;
 	private URLConnectionHandler					connector						= new DefaultURLConnectionHandler();
-	final MultiMap<File,DownloadListener>			queues							= new MultiMap<>();
+	final MultiMap<File, DownloadListener>			queues							= new MultiMap<>();
 	final Semaphore									limitDownloads					= new Semaphore(5);
 
 	{
@@ -111,15 +112,18 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			date = System.currentTimeMillis();
 
 			format.format(//
-					"{\n\"version\"      :%s,\n" //
-							+ "\"descriptors\"   : [\n",
-					version);
+				"{\n\"version\"      :%s,\n" //
+					+ "\"descriptors\"   : [\n",
+				version);
 			String del = "";
 
 			for (ResourceDescriptorImpl rd : descriptors) {
 				format.format(del);
 				format.flush();
-				codec.enc().to(format.out()).keepOpen().put(rd);
+				codec.enc()
+					.to(format.out())
+					.keepOpen()
+					.put(rd);
 				del = ",\n";
 			}
 			format.format("\n]}\n");
@@ -288,11 +292,13 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 				try {
 					download(rds, path);
 					synchronized (queues) {
-						ok(queues.get(path).toArray(EMPTY_LISTENER), path);
+						ok(queues.get(path)
+							.toArray(EMPTY_LISTENER), path);
 					}
 				} catch (Exception e) {
 					synchronized (queues) {
-						fail(e, queues.get(path).toArray(EMPTY_LISTENER), path);
+						fail(e, queues.get(path)
+							.toArray(EMPTY_LISTENER), path);
 					}
 				} finally {
 					synchronized (queues) {
@@ -423,7 +429,8 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 			String deflate = http.getHeaderField("Content-Encoding");
 			in = http.getInputStream();
-			if (deflate != null && deflate.toLowerCase().contains("deflate")) {
+			if (deflate != null && deflate.toLowerCase()
+				.contains("deflate")) {
 				in = new InflaterInputStream(in);
 				logger.debug("inflate");
 			}
@@ -434,7 +441,8 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 		IO.copy(in, tmp);
 
-		byte[] digest = SHA1.digest(tmp).digest();
+		byte[] digest = SHA1.digest(tmp)
+			.digest();
 		if (Arrays.equals(digest, sha)) {
 			IO.rename(tmp, path);
 		} else {
@@ -506,7 +514,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		if (!indexFile.isFile()) {
 			return index = new FileLayout();
 		} else
-			return index = codec.dec().from(indexFile).get(FileLayout.class);
+			return index = codec.dec()
+				.from(indexFile)
+				.get(FileLayout.class);
 	}
 
 	public void setReporter(Reporter processor) {
@@ -558,7 +568,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	@Override
 	public String toString() {
 		return "ResourceRepositoryImpl [" + (cache != null ? "cache=" + cache + ", " : "")
-				+ (indexFile != null ? "indexFile=" + indexFile + ", " : "") + "]";
+			+ (indexFile != null ? "indexFile=" + indexFile + ", " : "") + "]";
 	}
 
 }

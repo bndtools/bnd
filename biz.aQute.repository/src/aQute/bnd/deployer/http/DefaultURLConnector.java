@@ -32,9 +32,9 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	private static final String	HEADER_LOCATION			= "Location";
 	private static final int	RESPONSE_NOT_MODIFIED	= 304;
 
-	private boolean		disableServerVerify	= false;
-	private Reporter	reporter			= null;
-	private Registry	registry			= null;
+	private boolean				disableServerVerify		= false;
+	private Reporter			reporter				= null;
+	private Registry			registry				= null;
 
 	public InputStream connect(URL url) throws IOException {
 		if (url == null)
@@ -43,7 +43,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 		return data.getInputStream();
 	}
 
-	public void setProperties(Map<String,String> map) {
+	public void setProperties(Map<String, String> map) {
 		disableServerVerify = "true".equalsIgnoreCase(map.get(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY));
 	}
 
@@ -94,27 +94,29 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 						throw new IOException("HTTP server returned redirect status but Location header was missing.");
 
 					try {
-						URL resolved = url.toURI().resolve(location).toURL();
+						URL resolved = url.toURI()
+							.resolve(location)
+							.toURL();
 						if (reporter != null)
 							reporter.warning("HTTP address redirected from %s to %s", url.toString(),
-									resolved.toString());
+								resolved.toString());
 						if (loopDetect.contains(resolved.toString()))
 							throw new IOException(
-									String.format("Detected loop in HTTP redirect from '%s' to '%s'.", url, resolved));
-						if (Thread.currentThread().isInterrupted())
+								String.format("Detected loop in HTTP redirect from '%s' to '%s'.", url, resolved));
+						if (Thread.currentThread()
+							.isInterrupted())
 							throw new IOException("Interrupted");
 						result = connectTagged(resolved, tag, loopDetect);
 					} catch (URISyntaxException e) {
 						throw new IOException(
-								String.format("Failed to resolve location '%s' against origin URL: %s", location, url),
-								e);
+							String.format("Failed to resolve location '%s' against origin URL: %s", location, url), e);
 					}
 				} else {
 					String responseTag = httpConnection.getHeaderField(HEADER_ETAG);
 					// TODO: get content-size from the http header
 
 					InputStream stream = createProgressWrappedStream(connection.getInputStream(), "Downloading " + url,
-							-1);
+						-1);
 					result = new TaggedData(connection, stream);
 				}
 			} else {

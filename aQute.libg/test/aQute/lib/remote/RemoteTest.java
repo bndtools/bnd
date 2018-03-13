@@ -60,36 +60,52 @@ public class RemoteTest extends TestCase {
 	public void testTransform() throws Exception {
 		File file = new File(sourceDir, "list");
 		Formatter f = new Formatter();
-		f.format("%s\n", IO.getFile(sourceDir, "a.txt").getAbsolutePath());
-		f.format("%s\n", IO.getFile(sourceDir, "b.txt").getAbsolutePath());
-		f.format("%s\n", IO.getFile("bnd.bnd").getAbsolutePath());
+		f.format("%s\n", IO.getFile(sourceDir, "a.txt")
+			.getAbsolutePath());
+		f.format("%s\n", IO.getFile(sourceDir, "b.txt")
+			.getAbsolutePath());
+		f.format("%s\n", IO.getFile("bnd.bnd")
+			.getAbsolutePath());
 		IO.store(f.toString(), file);
 		f.close();
 		source.update(file);
 		source.sync();
-		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/a.txt").isFile());
-		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/b.txt").isFile());
-		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/list").isFile());
-		assertTrue(IO.getFile(sinkDir, "shacache/9124D0084FC1DECD361E82332F535E6371496CEB").isFile());
-		assertTrue(IO.getFile(sinkDir, "shacache/A6A4DB850D85C513F549A51A3315A67B50EA86F2").isFile());
-		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/_ABS").isDirectory());
+		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/a.txt")
+			.isFile());
+		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/b.txt")
+			.isFile());
+		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/list")
+			.isFile());
+		assertTrue(IO.getFile(sinkDir, "shacache/9124D0084FC1DECD361E82332F535E6371496CEB")
+			.isFile());
+		assertTrue(IO.getFile(sinkDir, "shacache/A6A4DB850D85C513F549A51A3315A67B50EA86F2")
+			.isFile());
+		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/_ABS")
+			.isDirectory());
 	}
 
 	public void testSimple() throws Exception {
 		source.add(sourceDir);
 		source.sync();
 
-		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/a.txt").isFile());
-		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/b.txt").isFile());
-		assertTrue(IO.getFile(sinkDir, "shacache/9124D0084FC1DECD361E82332F535E6371496CEB").isFile());
-		assertTrue(IO.getFile(sinkDir, "shacache/A6A4DB850D85C513F549A51A3315A67B50EA86F2").isFile());
+		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/a.txt")
+			.isFile());
+		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/b.txt")
+			.isFile());
+		assertTrue(IO.getFile(sinkDir, "shacache/9124D0084FC1DECD361E82332F535E6371496CEB")
+			.isFile());
+		assertTrue(IO.getFile(sinkDir, "shacache/A6A4DB850D85C513F549A51A3315A67B50EA86F2")
+			.isFile());
 		assertEquals(2, sinkDir.list().length);
-		assertFalse(IO.getFile(sinkDir, "areas/test/cwd/_ABS").isDirectory());
+		assertFalse(IO.getFile(sinkDir, "areas/test/cwd/_ABS")
+			.isDirectory());
 
 		source.add(new File("testresources/remote"));
 		source.sync();
-		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/_ABS").isDirectory());
-		assertEquals(2, IO.getFile(sinkDir, "shacache").list().length);
+		assertTrue(IO.getFile(sinkDir, "areas/test/cwd/_ABS")
+			.isDirectory());
+		assertEquals(2, IO.getFile(sinkDir, "shacache")
+			.list().length);
 	}
 
 }

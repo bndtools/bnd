@@ -15,10 +15,10 @@ import aQute.lib.hex.Hex;
  */
 public class ByteArrayHandler extends Handler {
 	Pattern ENCODING = Pattern.compile(
-			"((:?[\\dA-Za-z][\\dA-Za-z])*)|((:?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/)+={1,3})");
+		"((:?[\\dA-Za-z][\\dA-Za-z])*)|((:?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/)+={1,3})");
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
 		StringHandler.string(app, Hex.toHexString((byte[]) object));
 	}
 

@@ -24,10 +24,10 @@ public class MavenVersionRange {
 		, Pattern.COMMENTS);
 
 	private final boolean			pair;
-	private final boolean		li;
-	private final boolean		hi;
-	private final MavenVersion	low;
-	private final MavenVersion	high;
+	private final boolean			li;
+	private final boolean			hi;
+	private final MavenVersion		low;
+	private final MavenVersion		high;
 	private final MavenVersionRange	nextOr;
 
 	public MavenVersionRange(String range) {

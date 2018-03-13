@@ -13,8 +13,8 @@ import aQute.libg.remote.Delta;
 import aQute.libg.remote.Source;
 
 public class SinkFS {
-	final Map<File,String>	shas	= new ConcurrentHashMap<>();
-	final Map<String,File>	files	= new ConcurrentHashMap<>();
+	final Map<File, String>	shas	= new ConcurrentHashMap<>();
+	final Map<String, File>	files	= new ConcurrentHashMap<>();
 	private Source[]		sources;
 	private File			shacache;
 
@@ -59,7 +59,8 @@ public class SinkFS {
 				}
 			} else if (delta.content != null) {
 				byte[] bytes = delta.content.getBytes(UTF_8);
-				String sha = SHA1.digest(bytes).asHex();
+				String sha = SHA1.digest(bytes)
+					.asHex();
 				copy(bytes, file, sha);
 			}
 		}

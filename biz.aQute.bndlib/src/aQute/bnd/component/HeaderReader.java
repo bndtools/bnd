@@ -33,9 +33,9 @@ import aQute.lib.tag.Tag;
 
 public class HeaderReader extends Processor {
 	final static Pattern				PROPERTY_PATTERN	= Pattern
-			.compile("(([^=:@]+)([:@](Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
+		.compile("(([^=:@]+)([:@](Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
 	private final static Set<String>	LIFECYCLE_METHODS	= new HashSet<>(
-			Arrays.asList("activate", "deactivate", "modified"));
+		Arrays.asList("activate", "deactivate", "modified"));
 
 	private final Analyzer				analyzer;
 
@@ -44,9 +44,9 @@ public class HeaderReader extends Processor {
 	private final static String			MapTR				= Map.class.getName();
 	private final static String			IntTR				= int.class.getName();
 	final static Set<String>			allowed				= new HashSet<>(
-			Arrays.asList(ComponentContextTR, BundleContextTR, MapTR));
+		Arrays.asList(ComponentContextTR, BundleContextTR, MapTR));
 	final static Set<String>			allowedDeactivate	= new HashSet<>(
-			Arrays.asList(ComponentContextTR, BundleContextTR, MapTR, IntTR));
+		Arrays.asList(ComponentContextTR, BundleContextTR, MapTR, IntTR));
 
 	private final static String			ServiceReferenceTR	= "org.osgi.framework.ServiceReference";
 
@@ -54,7 +54,7 @@ public class HeaderReader extends Processor {
 		this.analyzer = analyzer;
 	}
 
-	public Tag createComponentTag(String name, String impl, Map<String,String> info) throws Exception {
+	public Tag createComponentTag(String name, String impl, Map<String, String> info) throws Exception {
 		final ComponentDef cd = new ComponentDef(null, AnnotationReader.V1_0);
 		cd.name = name;
 		if (info.get(COMPONENT_ENABLED) != null)
@@ -63,8 +63,8 @@ public class HeaderReader extends Processor {
 		if (info.get(COMPONENT_IMMEDIATE) != null)
 			cd.immediate = Boolean.valueOf(info.get(COMPONENT_IMMEDIATE));
 		if (info.get(COMPONENT_CONFIGURATION_POLICY) != null)
-			cd.configurationPolicy = ConfigurationPolicy
-					.valueOf(info.get(COMPONENT_CONFIGURATION_POLICY).toUpperCase());
+			cd.configurationPolicy = ConfigurationPolicy.valueOf(info.get(COMPONENT_CONFIGURATION_POLICY)
+				.toUpperCase());
 		cd.activate = checkIdentifier(COMPONENT_ACTIVATE, info.get(COMPONENT_ACTIVATE));
 		cd.deactivate = checkIdentifier(COMPONENT_DEACTIVATE, info.get(COMPONENT_DEACTIVATE));
 		cd.modified = checkIdentifier(COMPONENT_MODIFIED, info.get(COMPONENT_MODIFIED));
@@ -75,30 +75,32 @@ public class HeaderReader extends Processor {
 		if (info.get(COMPONENT_SERVICEFACTORY) != null) {
 			if (provides != null)
 				cd.scope = Boolean.valueOf(info.get(COMPONENT_SERVICEFACTORY)) ? ServiceScope.BUNDLE
-						: ServiceScope.SINGLETON;
+					: ServiceScope.SINGLETON;
 			else
 				warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 		}
 
 		if (cd.scope == ServiceScope.BUNDLE && cd.immediate != null && cd.immediate) {
 			// TODO can become error() if it is up to me
-			warning("For a Service Component, the immediate option and the servicefactory option are mutually exclusive for %s(%s)",
-					name, impl);
+			warning(
+				"For a Service Component, the immediate option and the servicefactory option are mutually exclusive for %s(%s)",
+				name, impl);
 		}
 
 		// analyze the class for suitable methods.
-		final Map<String,MethodDef> lifecycleMethods = new HashMap<>();
-		final Map<String,MethodDef> bindmethods = new HashMap<>();
+		final Map<String, MethodDef> lifecycleMethods = new HashMap<>();
+		final Map<String, MethodDef> bindmethods = new HashMap<>();
 		TypeRef typeRef = analyzer.getTypeRefFromFQN(impl);
 		Clazz clazz = analyzer.findClass(typeRef);
 		boolean privateAllowed = true;
 		boolean defaultAllowed = true;
-		String topPackage = typeRef.getPackageRef().getFQN();
+		String topPackage = typeRef.getPackageRef()
+			.getFQN();
 		while (clazz != null) {
 			final boolean pa = privateAllowed;
 			final boolean da = defaultAllowed;
-			final Map<String,MethodDef> classLifecyclemethods = new HashMap<>();
-			final Map<String,MethodDef> classBindmethods = new HashMap<>();
+			final Map<String, MethodDef> classLifecyclemethods = new HashMap<>();
+			final Map<String, MethodDef> classBindmethods = new HashMap<>();
 
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 
@@ -108,19 +110,20 @@ public class HeaderReader extends Processor {
 					String lifecycleName = null;
 
 					boolean isLifecycle = (cd.activate == null ? "activate" : cd.activate).equals(md.getName())
-							|| md.getName().equals(cd.modified);
+						|| md.getName()
+							.equals(cd.modified);
 					if (!isLifecycle && (cd.deactivate == null ? "deactivate" : cd.deactivate).equals(md.getName())) {
 						isLifecycle = true;
 						allowedParams = allowedDeactivate;
 					}
 					if (isLifecycle && !lifecycleMethods.containsKey(md.getName())
-							&& (md.isPublic() || md.isProtected() || (md.isPrivate() && pa) || (!md.isPrivate()) && da)
-							&& isBetter(md, classLifecyclemethods.get(md.getName()), allowedParams)) {
+						&& (md.isPublic() || md.isProtected() || (md.isPrivate() && pa) || (!md.isPrivate()) && da)
+						&& isBetter(md, classLifecyclemethods.get(md.getName()), allowedParams)) {
 						classLifecyclemethods.put(md.getName(), md);
 					}
 					if (!bindmethods.containsKey(md.getName())
-							&& (md.isPublic() || md.isProtected() || (md.isPrivate() && pa) || (!md.isPrivate()) && da)
-							&& isBetterBind(md, classBindmethods.get(md.getName()))) {
+						&& (md.isPublic() || md.isProtected() || (md.isPrivate() && pa) || (!md.isPrivate()) && da)
+						&& isBetterBind(md, classBindmethods.get(md.getName()))) {
 						classBindmethods.put(md.getName(), md);
 					}
 				}
@@ -153,22 +156,23 @@ public class HeaderReader extends Processor {
 				break;
 			clazz = analyzer.findClass(typeRef);
 			privateAllowed = false;
-			defaultAllowed = defaultAllowed && topPackage.equals(typeRef.getPackageRef().getFQN());
+			defaultAllowed = defaultAllowed && topPackage.equals(typeRef.getPackageRef()
+				.getFQN());
 		}
 
 		if (cd.activate != null && !lifecycleMethods.containsKey(cd.activate)) {
 			error("in component %s, activate method %s specified but not found", cd.implementation.getFQN(),
-					cd.activate);
+				cd.activate);
 			cd.activate = null;
 		}
 		if (cd.deactivate != null && !lifecycleMethods.containsKey(cd.deactivate)) {
 			error("in component %s, deactivate method %s specified but not found", cd.implementation.getFQN(),
-					cd.deactivate);
+				cd.deactivate);
 			cd.activate = null;
 		}
 		if (cd.modified != null && !lifecycleMethods.containsKey(cd.modified)) {
 			error("in component %s, modified method %s specified but not found", cd.implementation.getFQN(),
-					cd.modified);
+				cd.modified);
 			cd.activate = null;
 		}
 
@@ -199,7 +203,7 @@ public class HeaderReader extends Processor {
 	 * @param cd TODO
 	 * @param descriptors TODO
 	 */
-	private void getNamespace(Map<String,String> info, ComponentDef cd, Map<String,MethodDef> descriptors) {
+	private void getNamespace(Map<String, String> info, ComponentDef cd, Map<String, MethodDef> descriptors) {
 		String namespace = info.get(COMPONENT_NAMESPACE);
 		if (namespace != null) {
 			cd.xmlns = namespace;
@@ -238,7 +242,7 @@ public class HeaderReader extends Processor {
 			// signatures.
 			MethodDef test = descriptors.get(lifecycle);
 			if (descriptors.containsKey(lifecycle) && (!(test.isPublic() || test.isProtected())
-					|| rateLifecycle(test, "deactivate".equals(lifecycle) ? allowedDeactivate : allowed) > 1)) {
+				|| rateLifecycle(test, "deactivate".equals(lifecycle) ? allowedDeactivate : allowed) > 1)) {
 				cd.updateVersion(AnnotationReader.V1_1);
 				return;
 			}
@@ -251,7 +255,7 @@ public class HeaderReader extends Processor {
 	 * @param cd
 	 * @param info
 	 */
-	void properties(ComponentDef cd, Map<String,String> info, String name) {
+	void properties(ComponentDef cd, Map<String, String> info, String name) {
 		Collection<String> properties = split(info.get(COMPONENT_PROPERTIES));
 		for (String p : properties) {
 			Matcher m = PROPERTY_PATTERN.matcher(p);
@@ -311,7 +315,8 @@ public class HeaderReader extends Processor {
 	 * @return rating; 6 if invalid, lower is better
 	 */
 	int rateLifecycle(MethodDef test, Set<String> allowedParams) {
-		TypeRef[] prototype = test.getDescriptor().getPrototype();
+		TypeRef[] prototype = test.getDescriptor()
+			.getPrototype();
 		if (prototype.length == 1 && ComponentContextTR.equals(prototype[0].getFQN()))
 			return 1;
 		if (prototype.length == 1 && BundleContextTR.equals(prototype[0].getFQN()))
@@ -338,7 +343,8 @@ public class HeaderReader extends Processor {
 	 * @param test
 	 */
 	int rateBind(MethodDef test) {
-		TypeRef[] prototype = test.getDescriptor().getPrototype();
+		TypeRef[] prototype = test.getDescriptor()
+			.getPrototype();
 		if (prototype.length == 1 && ServiceReferenceTR.equals(prototype[0].getFQN()))
 			return 1;
 		if (prototype.length == 1)
@@ -355,14 +361,14 @@ public class HeaderReader extends Processor {
 	 * @param pw
 	 * @throws Exception
 	 */
-	void reference(Map<String,String> info, String impl, ComponentDef cd, Map<String,MethodDef> descriptors)
-			throws Exception {
+	void reference(Map<String, String> info, String impl, ComponentDef cd, Map<String, MethodDef> descriptors)
+		throws Exception {
 		Collection<String> dynamic = new ArrayList<>(split(info.get(COMPONENT_DYNAMIC)));
 		Collection<String> optional = new ArrayList<>(split(info.get(COMPONENT_OPTIONAL)));
 		Collection<String> multiple = new ArrayList<>(split(info.get(COMPONENT_MULTIPLE)));
 		Collection<String> greedy = new ArrayList<>(split(info.get(COMPONENT_GREEDY)));
 
-		for (Map.Entry<String,String> entry : info.entrySet()) {
+		for (Map.Entry<String, String> entry : info.entrySet()) {
 
 			// Skip directives
 			String referenceName = entry.getKey();
@@ -414,7 +420,7 @@ public class HeaderReader extends Processor {
 			String interfaceName = entry.getValue();
 			if (interfaceName == null || interfaceName.length() == 0) {
 				error("Invalid Interface Name for references in Service Component: %s=%s", referenceName,
-						interfaceName);
+					interfaceName);
 				continue;
 			}
 
@@ -427,7 +433,7 @@ public class HeaderReader extends Processor {
 						bind = null;
 					else
 						error("In component %s, the bind method %s for %s not defined", cd.effectiveName(), bind,
-								referenceName);
+							referenceName);
 
 				// Check if the unbind method exists
 				if (!descriptors.containsKey(unbind)) {
@@ -436,7 +442,7 @@ public class HeaderReader extends Processor {
 						unbind = null;
 					else
 						error("In component %s, the unbind method %s for %s not defined", cd.effectiveName(), unbind,
-								referenceName);
+							referenceName);
 				}
 				if (!descriptors.containsKey(updated)) {
 					if (updatedCalculated)
@@ -444,7 +450,7 @@ public class HeaderReader extends Processor {
 						updated = null;
 					else
 						error("In component %s, the updated method %s for %s is not defined", cd.effectiveName(),
-								updated, referenceName);
+							updated, referenceName);
 				}
 			}
 			// Check the cardinality by looking at the last
@@ -500,10 +506,10 @@ public class HeaderReader extends Processor {
 			if (dynamic.contains(referenceName)) {
 				rd.policy = ReferencePolicy.DYNAMIC;
 				if (rd.unbind == null)
-					error("In component %s, reference %s is dynamic but has no unbind method.",
-							cd.effectiveName(), rd.name)
-									.details(new DeclarativeServicesAnnotationError(cd.implementation.getFQN(), null,
-											null, ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
+					error("In component %s, reference %s is dynamic but has no unbind method.", cd.effectiveName(),
+						rd.name)
+							.details(new DeclarativeServicesAnnotationError(cd.implementation.getFQN(), null, null,
+								ErrorType.DYNAMIC_REFERENCE_WITHOUT_UNBIND));
 			}
 
 			if (greedy.contains(referenceName)) {

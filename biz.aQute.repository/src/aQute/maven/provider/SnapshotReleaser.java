@@ -18,7 +18,7 @@ public class SnapshotReleaser extends Releaser {
 	private RevisionMetadata	revisionMetadata;
 
 	public SnapshotReleaser(MavenRepository home, Revision revision, MavenBackingRepository snapshot,
-			Properties context) throws Exception {
+		Properties context) throws Exception {
 		super(home, revision, snapshot, context);
 		revisionMetadata = localOnly || repo == null ? new RevisionMetadata() : repo.getMetadata(revision);
 		force();
@@ -47,7 +47,6 @@ public class SnapshotReleaser extends Releaser {
 			return "1";
 		}
 	}
-
 
 	public void updateMetadata() throws Exception {
 		revisionMetadata.group = revision.group;

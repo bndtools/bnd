@@ -29,17 +29,17 @@ import aQute.service.reporter.Reporter;
 public class Command {
 	private final static Logger	logger		= LoggerFactory.getLogger(Command.class);
 
-	boolean				trace;
-	Reporter			reporter;
-	List<String>		arguments	= new ArrayList<>();
-	Map<String,String>	variables	= new LinkedHashMap<>();
-	long				timeout		= 0;
-	File				cwd			= new File("").getAbsoluteFile();
-	static Timer		timer		= new Timer(Command.class.getName(), true);
-	Process				process;
-	volatile boolean	timedout;
-	String				fullCommand;
-	private boolean		useThreadForInput;
+	boolean						trace;
+	Reporter					reporter;
+	List<String>				arguments	= new ArrayList<>();
+	Map<String, String>			variables	= new LinkedHashMap<>();
+	long						timeout		= 0;
+	File						cwd			= new File("").getAbsoluteFile();
+	static Timer				timer		= new Timer(Command.class.getName(), true);
+	Process						process;
+	volatile boolean			timedout;
+	String						fullCommand;
+	private boolean				useThreadForInput;
 
 	public Command(String fullCommand) {
 		this.fullCommand = fullCommand;
@@ -92,7 +92,8 @@ public class Command {
 			// below junk
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6511002
 
-			if (System.getProperty("os.name").startsWith("Windows")) {
+			if (System.getProperty("os.name")
+				.startsWith("Windows")) {
 				List<String> adjustedStrings = new LinkedList<>();
 				for (String a : arguments) {
 					adjustedStrings.add(windowsQuote(a));
@@ -103,8 +104,8 @@ public class Command {
 			}
 		}
 
-		Map<String,String> env = p.environment();
-		for (Entry<String,String> s : variables.entrySet()) {
+		Map<String, String> env = p.environment();
+		for (Entry<String, String> s : variables.entrySet()) {
 			env.put(s.getKey(), s.getValue());
 		}
 
@@ -120,7 +121,8 @@ public class Command {
 			}
 		};
 		Thread hook = new Thread(r, arguments.toString());
-		Runtime.getRuntime().addShutdownHook(hook);
+		Runtime.getRuntime()
+			.addShutdownHook(hook);
 		TimerTask timer = null;
 		final OutputStream stdin = process.getOutputStream();
 		Thread rdInThread = null;
@@ -189,7 +191,8 @@ public class Command {
 		} finally {
 			if (timer != null)
 				timer.cancel();
-			Runtime.getRuntime().removeShutdownHook(hook);
+			Runtime.getRuntime()
+				.removeShutdownHook(hook);
 		}
 
 		byte exitValue = (byte) process.waitFor();
@@ -200,8 +203,8 @@ public class Command {
 			rdInThread.interrupt();
 		}
 
-		logger.debug("cmd {} executed with result={}, result: {}/{}, timedout={}", arguments, exitValue, stdout,
-					stderr, timedout);
+		logger.debug("cmd {} executed with result={}, result: {}/{}, timedout={}", arguments, exitValue, stdout, stderr,
+			timedout);
 
 		if (timedout)
 			return Integer.MIN_VALUE;
@@ -297,7 +300,8 @@ public class Command {
 
 	public void inherit() {
 		ProcessBuilder pb = new ProcessBuilder();
-		for (Entry<String,String> e : pb.environment().entrySet()) {
+		for (Entry<String, String> e : pb.environment()
+			.entrySet()) {
 			var(e.getKey(), e.getValue());
 		}
 	}
@@ -327,8 +331,8 @@ public class Command {
 		this.useThreadForInput = useThreadForInput;
 	}
 
-	public void var(Map<String,String> env) {
-		for (Map.Entry<String,String> e : env.entrySet()) {
+	public void var(Map<String, String> env) {
+		for (Map.Entry<String, String> e : env.entrySet()) {
 			var(e.getKey(), e.getValue());
 		}
 	}

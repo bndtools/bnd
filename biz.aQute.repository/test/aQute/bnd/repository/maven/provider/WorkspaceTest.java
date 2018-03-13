@@ -67,8 +67,8 @@ public class WorkspaceTest extends TestCase {
 
 	}
 
-	void config(Map<String,String> override) throws Exception {
-		Map<String,String> config = new HashMap<>();
+	void config(Map<String, String> override) throws Exception {
+		Map<String, String> config = new HashMap<>();
 		config.put("local", tmpName + "/local");
 		config.put("index", tmpName + "/index");
 		config.put("releaseUrl", fnx.getBaseURI() + "/repo/");
@@ -84,10 +84,12 @@ public class WorkspaceTest extends TestCase {
 			sb.format("  releaseUrl=%s; \\\n", config.get("releaseUrl"));
 			sb.format("  index=%s\n", config.get("index"));
 
-			build.getParentFile().mkdirs();
+			build.getParentFile()
+				.mkdirs();
 			IO.store(sb.toString(), build);
 
-			workspace = Workspace.getWorkspace(build.getParentFile().getParentFile());
+			workspace = Workspace.getWorkspace(build.getParentFile()
+				.getParentFile());
 			repo = workspace.getPlugin(MavenBndRepository.class);
 		}
 	}

@@ -64,7 +64,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 	String	tsacert;
 	String	tsapolicyid;
 
-	public void setProperties(Map<String,String> map) {
+	public void setProperties(Map<String, String> map) {
 		if (map.containsKey("keystore"))
 			this.keystore = map.get("keystore");
 		if (map.containsKey("storetype"))
@@ -165,8 +165,9 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		Jar signed = new Jar(tmp);
 		builder.addClose(signed);
 
-		Map<String,Resource> dir = signed.getDirectories().get("META-INF");
-		for (Entry<String,Resource> entry : dir.entrySet()) {
+		Map<String, Resource> dir = signed.getDirectories()
+			.get("META-INF");
+		for (Entry<String, Resource> entry : dir.entrySet()) {
 			String path = entry.getKey();
 			if (path.matches(".*\\.(DSA|RSA|SF|MF)$")) {
 				jar.putResource(path, entry.getValue());

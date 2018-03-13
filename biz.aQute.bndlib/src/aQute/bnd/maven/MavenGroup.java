@@ -15,7 +15,7 @@ public class MavenGroup implements BsnToMavenPath, Plugin {
 		return result;
 	}
 
-	public void setProperties(Map<String,String> map) {
+	public void setProperties(Map<String, String> map) {
 		if (map.containsKey("groupId")) {
 			groupId = map.get("groupId");
 		}

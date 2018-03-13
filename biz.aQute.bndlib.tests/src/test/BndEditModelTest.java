@@ -45,16 +45,17 @@ public class BndEditModelTest extends TestCase {
 		assertEquals(3, r.size());
 		assertEquals(new CapReqBuilder("${var}").buildSyntheticRequirement(), r.get(0));
 		assertEquals(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=b)").buildSyntheticRequirement(),
-				r.get(1));
+			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=b)")
+			.buildSyntheticRequirement(), r.get(1));
 		assertEquals(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=c)").buildSyntheticRequirement(),
-				r.get(2));
+			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=c)")
+			.buildSyntheticRequirement(), r.get(2));
 
 		// Test Set with variables
 		List<Requirement> rr = new LinkedList<>();
 		rr.add(new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-				.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=b)").buildSyntheticRequirement());
+			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, "(osgi.identity=b)")
+			.buildSyntheticRequirement());
 		rr.add(new CapReqBuilder("${var}").buildSyntheticRequirement());
 		model.setRunRequires(rr);
 
@@ -101,7 +102,8 @@ public class BndEditModelTest extends TestCase {
 	}
 
 	private static Requirement getReq(String n) {
-		return cp.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, n).buildSyntheticRequirement();
+		return cp.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, n)
+			.buildSyntheticRequirement();
 	}
 
 	public static void testVariableInSystemPackages() throws Exception {
@@ -114,7 +116,8 @@ public class BndEditModelTest extends TestCase {
 
 		List<ExportedPackage> ep = model.getSystemPackages();
 
-		assertEquals("com.sun.xml.internal.bind", model.getProperties().mergeProperties(Constants.RUNSYSTEMPACKAGES));
+		assertEquals("com.sun.xml.internal.bind", model.getProperties()
+			.mergeProperties(Constants.RUNSYSTEMPACKAGES));
 
 		ExportedPackage e = new ExportedPackage("testing", null);
 		ep = new LinkedList<>();
@@ -124,7 +127,8 @@ public class BndEditModelTest extends TestCase {
 
 		ep = model.getSystemPackages();
 		assertEquals(1, ep.size());
-		assertEquals("testing", ep.get(0).getName());
+		assertEquals("testing", ep.get(0)
+			.getName());
 
 		e = new ExportedPackage("${var}", null);
 		ep = new LinkedList<>();
@@ -134,7 +138,8 @@ public class BndEditModelTest extends TestCase {
 
 		ep = model.getSystemPackages();
 		assertEquals(1, ep.size());
-		assertEquals("com.sun.xml.internal.bind", model.getProperties().mergeProperties(Constants.RUNSYSTEMPACKAGES));
+		assertEquals("com.sun.xml.internal.bind", model.getProperties()
+			.mergeProperties(Constants.RUNSYSTEMPACKAGES));
 	}
 
 	public static void testRunReposShared() throws Exception {
@@ -158,15 +163,21 @@ public class BndEditModelTest extends TestCase {
 		model.setWorkspace(run.getWorkspace());
 		model.loadFrom(runFile);
 
-		assertEquals("A", model.getProperties().get("a"));
-		assertEquals("B", model.getProperties().get("b"));
-		assertEquals("C", model.getProperties().get("c"));
+		assertEquals("A", model.getProperties()
+			.get("a"));
+		assertEquals("B", model.getProperties()
+			.get("b"));
+		assertEquals("C", model.getProperties()
+			.get("c"));
 
 		String newContent = "-standalone\n" + "a: A\n" + "c: C"; // remove b
 		model.loadFrom(new ByteArrayInputStream(newContent.getBytes()));
 
-		assertEquals("A", model.getProperties().get("a"));
-		assertNull("removed property should be null", model.getProperties().get("b"));
-		assertEquals("C", model.getProperties().get("c"));
+		assertEquals("A", model.getProperties()
+			.get("a"));
+		assertNull("removed property should be null", model.getProperties()
+			.get("b"));
+		assertEquals("C", model.getProperties()
+			.get("c"));
 	}
 }

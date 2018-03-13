@@ -44,7 +44,7 @@ public class PreprocessTest extends TestCase {
 		Builder b = new Builder();
 		b.setProperty(Analyzer.PREPROCESSMATCHERS, "!*.TXT:i,*");
 		b.setProperty(Analyzer.INCLUDE_RESOURCE,
-				"{src/test/builder-preprocess.txt},{src/test/builder-preprocess.txt2}");
+			"{src/test/builder-preprocess.txt},{src/test/builder-preprocess.txt2}");
 		b.setProperty("var", "Yes!");
 		;
 		b.build();

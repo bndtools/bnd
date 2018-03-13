@@ -61,10 +61,11 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		logger.debug("launcher plugin using temp launch file {}", launchPropertiesFile.getAbsolutePath());
 		addRunVM("-D" + LauncherConstants.LAUNCHER_PROPERTIES + "=\"" + launchPropertiesFile.getAbsolutePath() + "\"");
 
-		if (project.getRunProperties().get("noframework") != null) {
+		if (project.getRunProperties()
+			.get("noframework") != null) {
 			setRunFramework(NONE);
 			project.warning(
-					"The noframework property in -runproperties is replaced by a project setting: '-runframework: none'");
+				"The noframework property in -runproperties is replaced by a project setting: '-runframework: none'");
 		}
 
 		super.addDefault(Constants.DEFAULT_LAUNCHER_BSN);
@@ -74,7 +75,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	// Initialize the main class for a local launch start
 	//
 
-	protected int invoke(Class< ? > main, String args[]) throws Exception {
+	protected int invoke(Class<?> main, String args[]) throws Exception {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
 
 		Method mainMethod = main.getMethod("main", args.getClass(), Properties.class);
@@ -129,7 +130,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	void writeProperties() throws Exception {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
 		try (OutputStream out = IO.outputStream(launchPropertiesFile)) {
-			lc.getProperties(new UTF8Properties()).store(out, "Launching " + getProject());
+			lc.getProperties(new UTF8Properties())
+				.store(out, "Launching " + getProject());
 		}
 	}
 
@@ -139,7 +141,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws IOException
 	 */
 	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported)
-			throws Exception, FileNotFoundException, IOException {
+		throws Exception, FileNotFoundException, IOException {
 		logger.debug("preparing the aQute launcher plugin");
 
 		LauncherConstants lc = new LauncherConstants();
@@ -185,7 +187,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			// If the workspace contains a newer version of biz.aQute.launcher
 			// than the version of bnd(tools) used
 			// then this could throw NoSuchMethodError. For now just ignore it.
-			Map<String, ? extends Map<String,String>> systemPkgs = getSystemPackages();
+			Map<String, ? extends Map<String, String>> systemPkgs = getSystemPackages();
 			if (systemPkgs != null && !systemPkgs.isEmpty())
 				lc.systemPackages = Processor.printClauses(systemPkgs);
 		} catch (Throwable e) {}
@@ -284,7 +286,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		Manifest m = new Manifest();
 		Attributes main = m.getMainAttributes();
 
-		for (Entry<Object,Object> e : getProject().getFlattenedProperties().entrySet()) {
+		for (Entry<Object, Object> e : getProject().getFlattenedProperties()
+			.entrySet()) {
 			String key = (String) e.getKey();
 			if (key.length() > 0 && Character.isUpperCase(key.charAt(0)))
 				main.putValue(key, (String) e.getValue());
@@ -292,19 +295,25 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		Instructions instructions = new Instructions(getProject().getProperty(Constants.REMOVEHEADERS));
 		Collection<Object> result = instructions.select(main.keySet(), false);
-		main.keySet().removeAll(result);
+		main.keySet()
+			.removeAll(result);
 
 		logger.debug("Use Embedded launcher");
-		m.getMainAttributes().putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
-		m.getMainAttributes().putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
-		Resource embeddedLauncher = Resource.fromURL(this.getClass().getResource("/" + EMBEDDED_LAUNCHER));
+		m.getMainAttributes()
+			.putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
+		m.getMainAttributes()
+			.putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
+		Resource embeddedLauncher = Resource.fromURL(this.getClass()
+			.getResource("/" + EMBEDDED_LAUNCHER));
 		jar.putResource(EMBEDDED_LAUNCHER, embeddedLauncher);
 		doStart(jar, EMBEDDED_LAUNCHER_FQN);
 		if (getProject().getProperty(Constants.DIGESTS) != null)
-			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS).trim().split("\\s*,\\s*"));
+			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS)
+				.trim()
+				.split("\\s*,\\s*"));
 		else
 			jar.setDigestAlgorithms(new String[] {
-					"SHA-1", "MD-5"
+				"SHA-1", "MD-5"
 			});
 		jar.setManifest(m);
 		cleanup();
@@ -317,7 +326,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		String[] parts = Strings.extension(fileName);
 		if (parts == null) {
 			parts = new String[] {
-					fileName, ""
+				fileName, ""
 			};
 		}
 		int i = 1;

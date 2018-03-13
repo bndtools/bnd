@@ -27,8 +27,8 @@ public abstract class LifeCyclePlugin {
 
 	public void delete(Project project) throws Exception {}
 
-	public void addedPlugin(Workspace workspace, String name, String alias, Map<String,String> parameters)
-			throws Exception {
+	public void addedPlugin(Workspace workspace, String name, String alias, Map<String, String> parameters)
+		throws Exception {
 
 	}
 
@@ -36,7 +36,7 @@ public abstract class LifeCyclePlugin {
 
 	}
 
-	public String augmentSetup(String setup, String alias, Map<String,String> parameters) throws Exception {
+	public String augmentSetup(String setup, String alias, Map<String, String> parameters) throws Exception {
 		return setup;
 	}
 }

@@ -32,7 +32,8 @@ public class PreprocessResource extends AbstractResource {
 			try (BufferedReader rdr = r) {
 				String line = rdr.readLine();
 				while (line != null) {
-					line = processor.getReplacer().process(line);
+					line = processor.getReplacer()
+						.process(line);
 					pw.println(line);
 					line = rdr.readLine();
 				}

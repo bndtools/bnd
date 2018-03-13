@@ -67,11 +67,11 @@ import java.util.Properties;
  */
 class ComparableVersion implements Comparable<ComparableVersion> {
 	private static final ComparableVersion	empty	= new ComparableVersion("");
-	private final String	value;
+	private final String					value;
 
-	private final String	canonical;
+	private final String					canonical;
 
-	private final ListItem	items;
+	private final ListItem					items;
 
 	private interface Item {
 		int	INTEGER_ITEM	= 0;

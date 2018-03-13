@@ -7,7 +7,7 @@ import java.util.Map;
 public class BooleanHandler extends Handler {
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
 		app.append(object.toString());
 	}
 

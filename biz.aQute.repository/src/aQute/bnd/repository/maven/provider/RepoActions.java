@@ -26,8 +26,8 @@ class RepoActions {
 		this.repo = mavenBndRepository;
 	}
 
-	Map<String,Runnable> getProgramActions(final String bsn) throws Exception {
-		Map<String,Runnable> map = new LinkedHashMap<>();
+	Map<String, Runnable> getProgramActions(final String bsn) throws Exception {
+		Map<String, Runnable> map = new LinkedHashMap<>();
 		map.put("Delete All from Index", new Runnable() {
 
 			@Override
@@ -44,13 +44,14 @@ class RepoActions {
 		return map;
 	}
 
-	Map<String,Runnable> getRevisionActions(final BundleDescriptor bd) throws Exception {
-		Map<String,Runnable> map = new LinkedHashMap<>();
+	Map<String, Runnable> getRevisionActions(final BundleDescriptor bd) throws Exception {
+		Map<String, Runnable> map = new LinkedHashMap<>();
 		map.put("Clear from Cache", new Runnable() {
 
 			@Override
 			public void run() {
-				File dir = repo.storage.toLocalFile(bd.archive).getParentFile();
+				File dir = repo.storage.toLocalFile(bd.archive)
+					.getParentFile();
 				IO.delete(dir);
 			}
 
@@ -112,7 +113,7 @@ class RepoActions {
 		return map;
 	}
 
-	void addSources(final BundleDescriptor bd, Map<String,Runnable> map) throws Exception {
+	void addSources(final BundleDescriptor bd, Map<String, Runnable> map) throws Exception {
 		Promise<File> pBinary = repo.storage.get(bd.archive);
 		if (pBinary.getFailure() == null) {
 			final File binary = pBinary.getValue();
@@ -130,7 +131,8 @@ class RepoActions {
 									try (Jar src = new Jar(sources)) {
 										try (Jar bin = new Jar(binary)) {
 											bin.setDoNotTouchManifest();
-											for (String path : src.getResources().keySet())
+											for (String path : src.getResources()
+												.keySet())
 												bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
 											bin.write(out);
 										}
@@ -150,7 +152,7 @@ class RepoActions {
 		map.put("-Add Sources", null);
 	}
 
-	void addUpdate(final BundleDescriptor bd, Map<String,Runnable> map) throws Exception {
+	void addUpdate(final BundleDescriptor bd, Map<String, Runnable> map) throws Exception {
 		try {
 			Revision rev = bd.archive.revision;
 			Program prog = rev.program;
@@ -184,10 +186,11 @@ class RepoActions {
 
 	private void addDependency(Archive archive, MavenScope scope) throws Exception {
 		IPom pom = repo.storage.getPom(archive.revision);
-		Map<Program,Dependency> dependencies = pom.getDependencies(scope, false);
+		Map<Program, Dependency> dependencies = pom.getDependencies(scope, false);
 		for (Dependency d : dependencies.values()) {
 
-			BundleDescriptor add = repo.index.add(d.program.version(d.version).archive("jar", null));
+			BundleDescriptor add = repo.index.add(d.program.version(d.version)
+				.archive("jar", null));
 			if (d.error != null)
 				add.error = d.error;
 		}

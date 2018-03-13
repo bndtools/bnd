@@ -65,7 +65,7 @@ public class BuilderTest extends BndTestCase {
 			bmaker.addClasspath(new File("jar/osgi.jar"));
 			bmaker.addClasspath(new File("jar/osgi-3.0.0.jar"));
 			bmaker.setSourcepath(new File[] {
-					new File("src")
+				new File("src")
 			});
 			bmaker.setProperty("-sources", "true");
 			bmaker.setProperty("Export-Package", "org.osgi.framework;-split-package:=first, a");
@@ -75,7 +75,8 @@ public class BuilderTest extends BndTestCase {
 			assertNotNull(jar.getResource("OSGI-OPT/src/a/A.java"));
 			assertNotNull(jar.getResource("OSGI-OPT/src/a/B.java"));
 
-			InputStream in = jar.getResource("OSGI-OPT/src/org/osgi/framework/Bundle.java").openInputStream();
+			InputStream in = jar.getResource("OSGI-OPT/src/org/osgi/framework/Bundle.java")
+				.openInputStream();
 			assertNotNull(in);
 			byte[] fw = IO.read(in);
 			assertEquals(39173, fw.length);
@@ -93,7 +94,7 @@ public class BuilderTest extends BndTestCase {
 			bmaker.addClasspath(new File("jar/osgi.jar"));
 			bmaker.addClasspath(new File("jar/osgi-3.0.0.jar"));
 			bmaker.setSourcepath(new File[] {
-					new File("src")
+				new File("src")
 			});
 			bmaker.setProperty("-sources", "true");
 			bmaker.setProperty("Export-Package", "org.osgi.framework;-split-package:=merge-last, a");
@@ -103,7 +104,8 @@ public class BuilderTest extends BndTestCase {
 			assertNotNull(jar.getResource("OSGI-OPT/src/a/B.java"));
 
 			assertTrue(bmaker.check("Version for package org.osgi.framework is set to different values"));
-			InputStream in = jar.getResource("OSGI-OPT/src/org/osgi/framework/Bundle.java").openInputStream();
+			InputStream in = jar.getResource("OSGI-OPT/src/org/osgi/framework/Bundle.java")
+				.openInputStream();
 			assertNotNull(in);
 			byte[] fw = IO.read(in);
 			assertEquals(25783, fw.length);
@@ -112,6 +114,7 @@ public class BuilderTest extends BndTestCase {
 		}
 
 	}
+
 	/**
 	 * #1017 Wrong import version range being generated On one project I depend
 	 * on bundle A and bundle B. Both only export packages in version 1.0. No
@@ -151,7 +154,9 @@ public class BuilderTest extends BndTestCase {
 		B_A.build();
 		assertTrue(B_A.check());
 
-		assertEquals("[1.0,2)", B_A.getImports().getByFQN("org.osgi.service.event").getVersion());
+		assertEquals("[1.0,2)", B_A.getImports()
+			.getByFQN("org.osgi.service.event")
+			.getVersion());
 		Builder A_B = new Builder();
 		A_B.addClasspath(A.getJar());
 		A_B.addClasspath(B.getJar());
@@ -161,7 +166,9 @@ public class BuilderTest extends BndTestCase {
 		A_B.build();
 		assertTrue(A_B.check());
 
-		assertEquals("[1.0,2)", A_B.getImports().getByFQN("org.osgi.service.event").getVersion());
+		assertEquals("[1.0,2)", A_B.getImports()
+			.getByFQN("org.osgi.service.event")
+			.getVersion());
 
 	}
 
@@ -212,12 +219,19 @@ public class BuilderTest extends BndTestCase {
 		b.build();
 		assertTrue(b.check());
 
-		assertTrue(b.getExports().containsFQN("test.missingimports_971.p1"));
-		assertTrue(b.getExports().containsFQN("test.missingimports_971.p2"));
-		assertTrue(b.getExports().containsFQN("test.missingimports_971.p4"));
-		assertTrue(b.getImports().containsFQN("test.missingimports_971.p1"));
-		assertTrue(b.getImports().containsFQN("test.missingimports_971.p2"));
-		b.getJar().getManifest().write(System.out);
+		assertTrue(b.getExports()
+			.containsFQN("test.missingimports_971.p1"));
+		assertTrue(b.getExports()
+			.containsFQN("test.missingimports_971.p2"));
+		assertTrue(b.getExports()
+			.containsFQN("test.missingimports_971.p4"));
+		assertTrue(b.getImports()
+			.containsFQN("test.missingimports_971.p1"));
+		assertTrue(b.getImports()
+			.containsFQN("test.missingimports_971.p2"));
+		b.getJar()
+			.getManifest()
+			.write(System.out);
 	}
 	/*
 	 * Private package header doesn't allow the use of negation (!) #840
@@ -257,7 +271,9 @@ public class BuilderTest extends BndTestCase {
 		p3.build();
 		assertTrue(p3.check("Import package org\\.osgi\\..* not found in any bundle "));
 
-		p3.getJar().getManifest().write(System.out);
+		p3.getJar()
+			.getManifest()
+			.write(System.out);
 	}
 
 	/*
@@ -271,7 +287,9 @@ public class BuilderTest extends BndTestCase {
 		p3.build();
 		assertTrue(p3.check("Import package test.activator not found in any bundle on the -buildpath."));
 
-		p3.getJar().getManifest().write(System.out);
+		p3.getJar()
+			.getManifest()
+			.write(System.out);
 	}
 
 	private Builder setupP3() throws Exception {
@@ -335,10 +353,14 @@ public class BuilderTest extends BndTestCase {
 		importer.build();
 		assertTrue(importer.check());
 
-		assertEquals("test._708.a.b;version=\"1.2.3\"",
-				exporter.getJar().getManifest().getMainAttributes().getValue("Export-Package"));
-		assertEquals("test._708.a.b;version=\"[1.2,2)\"",
-				importer.getJar().getManifest().getMainAttributes().getValue("Import-Package"));
+		assertEquals("test._708.a.b;version=\"1.2.3\"", exporter.getJar()
+			.getManifest()
+			.getMainAttributes()
+			.getValue("Export-Package"));
+		assertEquals("test._708.a.b;version=\"[1.2,2)\"", importer.getJar()
+			.getManifest()
+			.getMainAttributes()
+			.getValue("Import-Package"));
 
 	}
 
@@ -489,7 +511,8 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = a.build();
 			assertTrue(a.check());
 			Manifest m = jar.getManifest();
-			Parameters p = new Parameters(m.getMainAttributes().getValue("Test-Cases"));
+			Parameters p = new Parameters(m.getMainAttributes()
+				.getValue("Test-Cases"));
 			assertTrue(p.size() >= 4);
 		} finally {
 			a.close();
@@ -523,7 +546,8 @@ public class BuilderTest extends BndTestCase {
 	public void testGitHead() throws IOException {
 		Builder b = new Builder();
 		try {
-			String s = b.getReplacer().process("${githead}");
+			String s = b.getReplacer()
+				.process("${githead}");
 			assertTrue(Hex.isHex(s));
 		} finally {
 			b.close();
@@ -543,7 +567,8 @@ public class BuilderTest extends BndTestCase {
 			Jar build = b.build();
 			assertTrue(b.check());
 
-			Attrs imports = b.getExports().getByFQN("test.packageinfo.both_no_version");
+			Attrs imports = b.getExports()
+				.getByFQN("test.packageinfo.both_no_version");
 			assertEquals("1.2.3", imports.getVersion());
 		} finally {
 			b.close();
@@ -564,8 +589,8 @@ public class BuilderTest extends BndTestCase {
 			b.setExportPackage("org.osgi.util.measurement;version=100, org.osgi.util.tracker;version=100, *");
 			Jar build = b.build();
 			assertTrue(
-					b.check("Version for package org.osgi.util.measurement is set to different values in the source ",
-							"Version for package org.osgi.util.tracker is set to different values in the source"));
+				b.check("Version for package org.osgi.util.measurement is set to different values in the source ",
+					"Version for package org.osgi.util.tracker is set to different values in the source"));
 		} finally {
 			b.close();
 		}
@@ -584,9 +609,10 @@ public class BuilderTest extends BndTestCase {
 			b.setExportPackage("test.package_info_versioniskey");
 			b.build();
 
-			String message = b.getErrors().get(0);
+			String message = b.getErrors()
+				.get(0);
 			assertTrue("The lacking version error first",
-					message.contains("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
+				message.contains("package info for test.package_info_versioniskey attribute [1.0.0=''],"));
 			Location location = b.getLocation(message);
 			assertNotNull("Supposed to have a location", location);
 			assertNotNull("And that must have a file", location.file);
@@ -610,7 +636,8 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Builder b = new Builder();
 			try {
-				IO.getFile("bin/a1/a").mkdirs();
+				IO.getFile("bin/a1/a")
+					.mkdirs();
 				IO.copy(IO.getFile("bin/a/A.class"), IO.getFile("bin/a1/a/A.class"));
 				IO.copy(IO.getFile("bin/a/B.class"), IO.getFile("bin/a1/a/B.class"));
 				Jar classpath = new Jar(IO.getFile("bin/a1"));
@@ -625,7 +652,8 @@ public class BuilderTest extends BndTestCase {
 				// windows has a very low resolution sometimes
 				Thread.sleep(isWindows() ? 1000 : 100);
 
-				IO.getFile("bin/a1/a/B.class").delete();
+				IO.getFile("bin/a1/a/B.class")
+					.delete();
 				classpath.remove("a/B.class");
 				classpath.updateModified(System.currentTimeMillis(), "Removed file B");
 				result = b.build();
@@ -635,7 +663,8 @@ public class BuilderTest extends BndTestCase {
 				// windows has a very low resolution sometimes
 				Thread.sleep(isWindows() ? 1000 : 100);
 
-				IO.getFile("bin/a1/a/A.class").delete();
+				IO.getFile("bin/a1/a/A.class")
+					.delete();
 				classpath.remove("a/A.class");
 				classpath.updateModified(System.currentTimeMillis(), "Removed file A");
 
@@ -645,22 +674,26 @@ public class BuilderTest extends BndTestCase {
 				result = b.build();
 				long lm3 = result.lastModified();
 				assertTrue("Last modified date of bundle has increased after deleting last class from package",
-						lm3 > lm2);
+					lm3 > lm2);
 			} finally {
 				b.close();
 			}
 		} finally {
 			try {
-				IO.getFile("bin/a1/a/A.class").delete();
+				IO.getFile("bin/a1/a/A.class")
+					.delete();
 			} catch (Exception e) {}
 			try {
-				IO.getFile("bin/a1/a/B.class").delete();
+				IO.getFile("bin/a1/a/B.class")
+					.delete();
 			} catch (Exception e) {}
 			try {
-				IO.getFile("bin/a1/a").delete();
+				IO.getFile("bin/a1/a")
+					.delete();
 			} catch (Exception e) {}
 			try {
-				IO.getFile("bin/a1").delete();
+				IO.getFile("bin/a1")
+					.delete();
 			} catch (Exception e) {}
 		}
 	}
@@ -685,7 +718,8 @@ public class BuilderTest extends BndTestCase {
 			b.setExportPackage("UPPERCASEPACKAGE");
 			b.build();
 			assertTrue(b.check());
-			b.getExports().containsFQN("UPPERCASEPACKAGE");
+			b.getExports()
+				.containsFQN("UPPERCASEPACKAGE");
 		} finally {
 			b.close();
 		}
@@ -770,8 +804,10 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check());
 			System.out.println(b.getImports());
-			assertTrue(b.getImports().containsFQN("test.genericinterf.b"));
-			assertTrue(b.getImports().containsFQN("test.genericinterf.c"));
+			assertTrue(b.getImports()
+				.containsFQN("test.genericinterf.b"));
+			assertTrue(b.getImports()
+				.containsFQN("test.genericinterf.c"));
 		} finally {
 			b.close();
 		}
@@ -800,7 +836,7 @@ public class BuilderTest extends BndTestCase {
 
 			b.build();
 			assertTrue(b.check("on the class path: \\[com.example\\]",
-					"Bundle-Activator com.example.Activator is being imported"));
+				"Bundle-Activator com.example.Activator is being imported"));
 		} finally {
 			b.close();
 		}
@@ -830,45 +866,45 @@ public class BuilderTest extends BndTestCase {
 
 	public void testEEMacro2() throws Exception {
 		String[][] combos = {
-				{
-						"eclipse_1_1", "JRE-1.1", "1.1"
-				}, {
-						"eclipse_1_2", "J2SE-1.2", "1.2"
-				}, {
-						"eclipse_1_3", "J2SE-1.3", "1.3"
-				}, {
-						"eclipse_1_4", "J2SE-1.4", "1.4"
-				}, {
-						"eclipse_jsr14", "J2SE-1.4", "1.4"
-				}, {
-						"eclipse_1_5", "J2SE-1.5", "1.5"
-				}, {
-						"eclipse_1_6", "JavaSE-1.6", "1.6"
-				}, {
-						"eclipse_1_7", "JavaSE-1.7", "1.7"
-				}, {
-						"eclipse_1_8", "JavaSE-1.8", "1.8"
-				}, {
-						"eclipse_9_0", "JavaSE-9", "9.0"
-				}, {
-						"sun_1_1", "JRE-1.1", "1.1"
-				}, {
-						"sun_1_2", "J2SE-1.2", "1.2"
-				}, {
-						"sun_1_3", "J2SE-1.3", "1.3"
-				}, {
-						"sun_1_4", "J2SE-1.4", "1.4"
-				}, {
-						"sun_1_5", "J2SE-1.5", "1.5"
-				}, {
-						"sun_1_6", "JavaSE-1.6", "1.6"
-				}, {
-						"sun_1_7", "JavaSE-1.7", "1.7"
-				}, {
-						"sun_1_8", "JavaSE-1.8", "1.8"
-				}, {
-						"jdk_9_0", "JavaSE-9", "9.0"
-				}
+			{
+				"eclipse_1_1", "JRE-1.1", "1.1"
+			}, {
+				"eclipse_1_2", "J2SE-1.2", "1.2"
+			}, {
+				"eclipse_1_3", "J2SE-1.3", "1.3"
+			}, {
+				"eclipse_1_4", "J2SE-1.4", "1.4"
+			}, {
+				"eclipse_jsr14", "J2SE-1.4", "1.4"
+			}, {
+				"eclipse_1_5", "J2SE-1.5", "1.5"
+			}, {
+				"eclipse_1_6", "JavaSE-1.6", "1.6"
+			}, {
+				"eclipse_1_7", "JavaSE-1.7", "1.7"
+			}, {
+				"eclipse_1_8", "JavaSE-1.8", "1.8"
+			}, {
+				"eclipse_9_0", "JavaSE-9", "9.0"
+			}, {
+				"sun_1_1", "JRE-1.1", "1.1"
+			}, {
+				"sun_1_2", "J2SE-1.2", "1.2"
+			}, {
+				"sun_1_3", "J2SE-1.3", "1.3"
+			}, {
+				"sun_1_4", "J2SE-1.4", "1.4"
+			}, {
+				"sun_1_5", "J2SE-1.5", "1.5"
+			}, {
+				"sun_1_6", "JavaSE-1.6", "1.6"
+			}, {
+				"sun_1_7", "JavaSE-1.7", "1.7"
+			}, {
+				"sun_1_8", "JavaSE-1.8", "1.8"
+			}, {
+				"jdk_9_0", "JavaSE-9", "9.0"
+			}
 			// TODO add JavaSE-10 test info for JDK and Eclipse
 		};
 		Pattern p = Pattern.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=(" + Version.VERSION_STRING + ")\\)\\)");
@@ -943,21 +979,25 @@ public class BuilderTest extends BndTestCase {
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty(Constants.NAMESECTION,
-					"org/osgi/service/event/*;MD5='${md5;${@}}';SHA1='${sha1;${@}}';MD5H='${md5;${@};hex}'");
+				"org/osgi/service/event/*;MD5='${md5;${@}}';SHA1='${sha1;${@}}';MD5H='${md5;${@};hex}'");
 			b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.event");
 			Jar build = b.build();
 			assertOk(b);
 			build.calcChecksums(new String[] {
-					"MD5", "SHA1"
+				"MD5", "SHA1"
 			});
 			assertTrue(b.check());
 			Manifest m = build.getManifest();
 			m.write(System.err);
 
-			assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5"));
-			assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("SHA1"));
-			assertEquals(m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5-Digest"),
-					m.getAttributes("org/osgi/service/event/EventAdmin.class").getValue("MD5"));
+			assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class")
+				.getValue("MD5"));
+			assertNotNull(m.getAttributes("org/osgi/service/event/EventAdmin.class")
+				.getValue("SHA1"));
+			assertEquals(m.getAttributes("org/osgi/service/event/EventAdmin.class")
+				.getValue("MD5-Digest"),
+				m.getAttributes("org/osgi/service/event/EventAdmin.class")
+					.getValue("MD5"));
 		} finally {
 			b.close();
 		}
@@ -1034,7 +1074,8 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = b.build();
 			assertTrue(b.check("bar:"));
 			Manifest m = jar.getManifest();
-			String s = m.getMainAttributes().getValue("Export-Package");
+			String s = m.getMainAttributes()
+				.getValue("Export-Package");
 			assertTrue(s.contains("x-foo:"));
 		} finally {
 			b.close();
@@ -1055,7 +1096,8 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = b.build();
 			assertTrue(b.check("The JAR is empty"));
 			Manifest m = jar.getManifest();
-			assertEquals("1.0.0.TIMESTAMP", m.getMainAttributes().getValue("Bundle-Version"));
+			assertEquals("1.0.0.TIMESTAMP", m.getMainAttributes()
+				.getValue("Bundle-Version"));
 		} finally {
 			b.close();
 		}
@@ -1074,7 +1116,9 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check());
 
-			Set<String> names = b.getJar().getResources().keySet();
+			Set<String> names = b.getJar()
+				.getResources()
+				.keySet();
 			assertEquals(13, names.size());
 			assertTrue(names.contains("AnnotationWithJSR14.jclass"));
 			assertTrue(names.contains("mandatorynoversion.bnd"));
@@ -1099,7 +1143,9 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check());
 
-			Set<String> names = b.getJar().getResources().keySet();
+			Set<String> names = b.getJar()
+				.getResources()
+				.keySet();
 			assertFalse(names.contains(".DS_Store"));
 		} finally {
 			b.close();
@@ -1139,7 +1185,9 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.packageadmin;-split-package:=first");
 			b.build();
 			assertTrue(b.check());
-			String version = b.getImports().getByFQN("org.osgi.framework").get(Constants.VERSION_ATTRIBUTE);
+			String version = b.getImports()
+				.getByFQN("org.osgi.framework")
+				.get(Constants.VERSION_ATTRIBUTE);
 			assertEquals("[1.3,2)", version);
 		} finally {
 			b.close();
@@ -1158,8 +1206,12 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check());
 
-			assertEquals("1.3", b.getExports().getByFQN("org.osgi.framework").get("version"));
-			assertEquals("osgi", b.getExports().getByFQN("org.osgi.framework").get(Constants.FROM_DIRECTIVE));
+			assertEquals("1.3", b.getExports()
+				.getByFQN("org.osgi.framework")
+				.get("version"));
+			assertEquals("osgi", b.getExports()
+				.getByFQN("org.osgi.framework")
+				.get(Constants.FROM_DIRECTIVE));
 		} finally {
 			b.close();
 		}
@@ -1175,7 +1227,9 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check());
 
-			assertEquals("1.3", b.getExports().getByFQN("org.osgi.framework").get("version"));
+			assertEquals("1.3", b.getExports()
+				.getByFQN("org.osgi.framework")
+				.get("version"));
 		} finally {
 			b.close();
 		}
@@ -1193,9 +1247,12 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("Private-Package", "test.refer");
 			Jar jar = b.build();
 			assertTrue(b.check());
-			String ip = jar.getManifest().getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
+			String ip = jar.getManifest()
+				.getMainAttributes()
+				.getValue(Constants.IMPORT_PACKAGE);
 			Parameters map = Processor.parseHeader(ip, null);
-			assertEquals("[1.0,1.1)", map.get("org.osgi.service.event").get("version"));
+			assertEquals("[1.0,1.1)", map.get("org.osgi.service.event")
+				.get("version"));
 		} finally {
 			b.close();
 		}
@@ -1210,9 +1267,12 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("Private-Package", "test.refer");
 			Jar jar = b.build();
 			assertTrue(b.check());
-			String ip = jar.getManifest().getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
+			String ip = jar.getManifest()
+				.getMainAttributes()
+				.getValue(Constants.IMPORT_PACKAGE);
 			Parameters map = Processor.parseHeader(ip, null);
-			assertEquals("[1.0,2)", map.get("org.osgi.service.event").get("version"));
+			assertEquals("[1.0,2)", map.get("org.osgi.service.event")
+				.get("version"));
 		} finally {
 			b.close();
 		}
@@ -1229,9 +1289,12 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("Export-Package", "javax.ws.rs.core");
 			Jar jar = b.build();
 			assertTrue(b.check());
-			String ip = jar.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+			String ip = jar.getManifest()
+				.getMainAttributes()
+				.getValue(Constants.EXPORT_PACKAGE);
 			Parameters map = Processor.parseHeader(ip, null);
-			assertEquals("1.1.1", map.get("javax.ws.rs.core").get("version"));
+			assertEquals("1.1.1", map.get("javax.ws.rs.core")
+				.get("version"));
 		} finally {
 			b.close();
 		}
@@ -1244,7 +1307,8 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testExportVersionSource() throws Exception {
 		Manifest manifest = new Manifest();
-		manifest.getMainAttributes().putValue("Export-Package", "org.osgi.service.event;version=100");
+		manifest.getMainAttributes()
+			.putValue("Export-Package", "org.osgi.service.event;version=100");
 
 		// Remove packageinfo
 		Jar manifestOnly = new Jar(IO.getFile("jar/osgi.jar"));
@@ -1267,7 +1331,9 @@ public class BuilderTest extends BndTestCase {
 				bms.build();
 				assertTrue(bms.check());
 
-				String s = bms.getExports().getByFQN("org.osgi.service.event").get("version");
+				String s = bms.getExports()
+					.getByFQN("org.osgi.service.event")
+					.get("version");
 				assertEquals("100", s);
 
 				// Only version in packageinfo
@@ -1277,7 +1343,9 @@ public class BuilderTest extends BndTestCase {
 				bpinfos.build();
 				assertTrue(bpinfos.check());
 
-				s = bpinfos.getExports().getByFQN("org.osgi.service.event").get("version");
+				s = bpinfos.getExports()
+					.getByFQN("org.osgi.service.event")
+					.get("version");
 				assertEquals("1.0.1", s);
 			} finally {
 				bms.close();
@@ -1299,16 +1367,18 @@ public class BuilderTest extends BndTestCase {
 		Jar fromBoth = new Jar("both");
 		try {
 			Manifest mms = new Manifest();
-			mms.getMainAttributes().putValue("Export-Package", "org.osgi.service.event; version=100");
+			mms.getMainAttributes()
+				.putValue("Export-Package", "org.osgi.service.event; version=100");
 			fromManifest.setManifest(mms);
 
 			fromPackageInfo.putResource("org/osgi/service/event/packageinfo",
-					new EmbeddedResource("version 99".getBytes(), 0));
+				new EmbeddedResource("version 99".getBytes(), 0));
 
 			Manifest mboth = new Manifest();
-			mboth.getMainAttributes().putValue("Export-Package", "org.osgi.service.event; version=101");
+			mboth.getMainAttributes()
+				.putValue("Export-Package", "org.osgi.service.event; version=101");
 			fromBoth.putResource("org/osgi/service/event/packageinfo",
-					new EmbeddedResource("version 199".getBytes(), 0));
+				new EmbeddedResource("version 199".getBytes(), 0));
 			fromBoth.setManifest(mboth);
 
 			// Only version in manifest
@@ -1318,7 +1388,9 @@ public class BuilderTest extends BndTestCase {
 				bms.setProperty("Import-Package", "org.osgi.service.event");
 				bms.build();
 				assertTrue(bms.check("The JAR is empty"));
-				String s = bms.getImports().getByFQN("org.osgi.service.event").get("version");
+				String s = bms.getImports()
+					.getByFQN("org.osgi.service.event")
+					.get("version");
 				assertEquals("[100.0,101)", s);
 				// Only version in packageinfo
 				Builder bpinfos = new Builder();
@@ -1327,7 +1399,9 @@ public class BuilderTest extends BndTestCase {
 					bpinfos.setProperty("Import-Package", "org.osgi.service.event");
 					bpinfos.build();
 					assertTrue(bms.check());
-					s = bpinfos.getImports().getByFQN("org.osgi.service.event").get("version");
+					s = bpinfos.getImports()
+						.getByFQN("org.osgi.service.event")
+						.get("version");
 					assertEquals("[99.0,100)", s);
 
 					// Version in manifest + packageinfo
@@ -1337,7 +1411,9 @@ public class BuilderTest extends BndTestCase {
 						bboth.setProperty("Import-Package", "org.osgi.service.event");
 						bboth.build();
 						assertTrue(bms.check());
-						s = bboth.getImports().getByFQN("org.osgi.service.event").get("version");
+						s = bboth.getImports()
+							.getByFQN("org.osgi.service.event")
+							.get("version");
 						assertEquals("[101.0,102)", s);
 					} finally {
 						bboth.close();
@@ -1367,7 +1443,8 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check());
 
 			Manifest m = jar.getManifest();
-			String imports = m.getMainAttributes().getValue("Import-Package");
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
 			assertTrue(imports.contains("org.osgi.util.measurement")); // referred
 																		// to
 																		// but
@@ -1403,7 +1480,8 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check());
 
 			Manifest m = jar.getManifest();
-			String imports = m.getMainAttributes().getValue("Import-Package");
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
 			assertFalse(imports.contains("org.osgi.util.measurement")); // referred
 																		// to
 																		// but
@@ -1432,7 +1510,7 @@ public class BuilderTest extends BndTestCase {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Export-Package",
-					"org.osgi.service.event, org.osgi.service.packageadmin, org.osgi.util.measurement, org.osgi.service.http;-noimport:=true");
+				"org.osgi.service.event, org.osgi.service.packageadmin, org.osgi.util.measurement, org.osgi.service.http;-noimport:=true");
 			b.setProperty("Private-Package", "org.osgi.framework, test.refer");
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.addClasspath(new File("bin"));
@@ -1440,7 +1518,8 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check("has 1,  private references"));
 
 			Manifest m = jar.getManifest();
-			String imports = m.getMainAttributes().getValue("Import-Package");
+			String imports = m.getMainAttributes()
+				.getValue("Import-Package");
 			assertFalse(imports.contains("org.osgi.service.packageadmin")); // no
 																			// internal
 																			// references
@@ -1481,7 +1560,8 @@ public class BuilderTest extends BndTestCase {
 
 			Manifest m = jar.getManifest();
 			m.write(System.err);
-			assertNotNull(b.getImports().getByFQN("org.osgi.framework"));
+			assertNotNull(b.getImports()
+				.getByFQN("org.osgi.framework"));
 		} finally {
 			b.close();
 		}
@@ -1501,8 +1581,8 @@ public class BuilderTest extends BndTestCase {
 
 			Manifest m = jar.getManifest();
 			assertNotNull(m);
-			assertEquals("WEB-INF/classes,WEB-INF/lib/asm.jar,WEB-INF/lib/easymock.jar",
-					m.getMainAttributes().getValue("Bundle-ClassPath"));
+			assertEquals("WEB-INF/classes,WEB-INF/lib/asm.jar,WEB-INF/lib/easymock.jar", m.getMainAttributes()
+				.getValue("Bundle-ClassPath"));
 			assertNotNull(jar.getResource("WEB-INF/lib/asm.jar"));
 			assertNotNull(jar.getResource("WEB-INF/classes/org/osgi/framework/BundleContext.class"));
 			assertNotNull(jar.getResource("osgi.jar"));
@@ -1526,9 +1606,12 @@ public class BuilderTest extends BndTestCase {
 
 			Manifest m = jar.getManifest();
 			assertNotNull(m);
-			assertEquals("1", m.getMainAttributes().getValue("T2"));
-			assertEquals("1", m.getMainAttributes().getValue("T1_2"));
-			assertEquals(null, m.getMainAttributes().getValue("T1"));
+			assertEquals("1", m.getMainAttributes()
+				.getValue("T2"));
+			assertEquals("1", m.getMainAttributes()
+				.getValue("T1_2"));
+			assertEquals(null, m.getMainAttributes()
+				.getValue("T1"));
 		} finally {
 			b.close();
 		}
@@ -1636,7 +1719,7 @@ public class BuilderTest extends BndTestCase {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Include-Resource",
-					"@a.jar/!xya.txt,{@b.jar/!xya.txt}, -@c.jar/!xya.txt, dir, x=dirb, {-x=dirc}");
+				"@a.jar/!xya.txt,{@b.jar/!xya.txt}, -@c.jar/!xya.txt, dir, x=dirb, {-x=dirc}");
 			assertFalse(b.isInScope(Arrays.asList(b.getFile("x.jar"))));
 			assertTrue(b.isInScope(Arrays.asList(b.getFile("a.jar"))));
 			assertTrue(b.isInScope(Arrays.asList(b.getFile("b.jar"))));
@@ -1655,7 +1738,7 @@ public class BuilderTest extends BndTestCase {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Include-Resource",
-					"jar/osgi.jar;extra=itworks, www/xyz.jar=jar/osgi.jar;extra='italsoworks'");
+				"jar/osgi.jar;extra=itworks, www/xyz.jar=jar/osgi.jar;extra='italsoworks'");
 			b.setProperty("-resourceonly", "true");
 			Jar jar = b.build();
 			assertTrue(b.check());
@@ -1741,8 +1824,10 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check());
 
-			Map<String,String> ioimports = b.getImports().getByFQN("javax.microedition.io");
-			Map<String,String> fwimports = b.getImports().getByFQN("org.osgi.framework");
+			Map<String, String> ioimports = b.getImports()
+				.getByFQN("javax.microedition.io");
+			Map<String, String> fwimports = b.getImports()
+				.getByFQN("org.osgi.framework");
 
 			assertNotNull(ioimports);
 			assertNotNull(fwimports);
@@ -1781,26 +1866,22 @@ public class BuilderTest extends BndTestCase {
 			Manifest m = jar.getManifest();
 			m.write(System.err);
 			Attributes main = m.getMainAttributes();
-			assertList(
-					asl("org.eclipse.equinox.ds.service.ComponentContextImpl,org.eclipse.equinox.ds.service.ComponentFactoryImpl,org.eclipse.equinox.ds.service.ComponentInstanceImpl"),
-					asl(main.getValue("C1")));
 			assertList(asl(
-					"org.eclipse.equinox.ds.parser.ElementHandler, " + "org.eclipse.equinox.ds.parser.IgnoredElement,"
-							+ "org.eclipse.equinox.ds.parser.ImplementationElement,"
-							+ "org.eclipse.equinox.ds.parser.ParserHandler, "
-							+ "org.eclipse.equinox.ds.parser.PropertiesElement,"
-							+ "org.eclipse.equinox.ds.parser.PropertyElement, "
-							+ "org.eclipse.equinox.ds.parser.ProvideElement, "
-							+ "org.eclipse.equinox.ds.parser.ReferenceElement, "
-							+ "org.eclipse.equinox.ds.parser.ServiceElement,"
-							+ "org.eclipse.equinox.ds.parser.ComponentElement"),
-					asl(main.getValue("C2")));
-			assertList(
-					asl("org.eclipse.equinox.ds.parser.ComponentElement,org.eclipse.equinox.ds.parser.ElementHandler,org.eclipse.equinox.ds.parser.IgnoredElement,org.eclipse.equinox.ds.parser.ImplementationElement,org.eclipse.equinox.ds.parser.Parser,org.eclipse.equinox.ds.parser.ParserHandler,org.eclipse.equinox.ds.parser.PropertiesElement,org.eclipse.equinox.ds.parser.PropertyElement,org.eclipse.equinox.ds.parser.ProvideElement,org.eclipse.equinox.ds.parser.ReferenceElement,org.eclipse.equinox.ds.parser.ServiceElement"),
-					asl(main.getValue("C3")));
-			assertList(
-					asl("org.eclipse.equinox.ds.parser.XMLParserNotAvailableException,org.eclipse.equinox.ds.parser.Parser,org.eclipse.equinox.ds.parser.ParserHandler,netscape.application.HTMLParser,org.eclipse.equinox.ds.parser.ParserConstants,org.osgi.util.xml.XMLParserActivator"),
-					asl(main.getValue("C4")));
+				"org.eclipse.equinox.ds.service.ComponentContextImpl,org.eclipse.equinox.ds.service.ComponentFactoryImpl,org.eclipse.equinox.ds.service.ComponentInstanceImpl"),
+				asl(main.getValue("C1")));
+			assertList(asl("org.eclipse.equinox.ds.parser.ElementHandler, "
+				+ "org.eclipse.equinox.ds.parser.IgnoredElement,"
+				+ "org.eclipse.equinox.ds.parser.ImplementationElement,"
+				+ "org.eclipse.equinox.ds.parser.ParserHandler, " + "org.eclipse.equinox.ds.parser.PropertiesElement,"
+				+ "org.eclipse.equinox.ds.parser.PropertyElement, " + "org.eclipse.equinox.ds.parser.ProvideElement, "
+				+ "org.eclipse.equinox.ds.parser.ReferenceElement, " + "org.eclipse.equinox.ds.parser.ServiceElement,"
+				+ "org.eclipse.equinox.ds.parser.ComponentElement"), asl(main.getValue("C2")));
+			assertList(asl(
+				"org.eclipse.equinox.ds.parser.ComponentElement,org.eclipse.equinox.ds.parser.ElementHandler,org.eclipse.equinox.ds.parser.IgnoredElement,org.eclipse.equinox.ds.parser.ImplementationElement,org.eclipse.equinox.ds.parser.Parser,org.eclipse.equinox.ds.parser.ParserHandler,org.eclipse.equinox.ds.parser.PropertiesElement,org.eclipse.equinox.ds.parser.PropertyElement,org.eclipse.equinox.ds.parser.ProvideElement,org.eclipse.equinox.ds.parser.ReferenceElement,org.eclipse.equinox.ds.parser.ServiceElement"),
+				asl(main.getValue("C3")));
+			assertList(asl(
+				"org.eclipse.equinox.ds.parser.XMLParserNotAvailableException,org.eclipse.equinox.ds.parser.Parser,org.eclipse.equinox.ds.parser.ParserHandler,netscape.application.HTMLParser,org.eclipse.equinox.ds.parser.ParserConstants,org.osgi.util.xml.XMLParserActivator"),
+				asl(main.getValue("C4")));
 			assertEquals("netscape.application.HTMLParser", main.getValue("C5"));
 		} finally {
 			b.close();
@@ -1833,7 +1914,9 @@ public class BuilderTest extends BndTestCase {
 			b.setProperty("Import-Package", "org.osgi.service.event;version=${@}");
 			b.build();
 			assertTrue(b.check("The JAR is empty"));
-			String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+			String s = b.getImports()
+				.getByFQN("org.osgi.service.event")
+				.get("version");
 			assertEquals("1.0.1", s);
 		} finally {
 			b.close();
@@ -1848,7 +1931,9 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check("The JAR is empty"));
 
-			String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+			String s = b.getImports()
+				.getByFQN("org.osgi.service.event")
+				.get("version");
 			assertEquals("[1.0,2)", s);
 		} finally {
 			b.close();
@@ -1858,21 +1943,23 @@ public class BuilderTest extends BndTestCase {
 
 	public void testMultipleExport2() throws Exception {
 		File cp[] = {
-				IO.getFile("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
 			Properties p = new Properties();
 			p.setProperty("Export-Package",
-					"org.objectweb.asm;version=1.1, org.objectweb.asm;version=1.2, org.objectweb.asm;version=2.3");
+				"org.objectweb.asm;version=1.1, org.objectweb.asm;version=1.2, org.objectweb.asm;version=2.3");
 			bmaker.setProperties(p);
 			bmaker.setClasspath(cp);
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
-			jar.getManifest().write(System.err);
+			jar.getManifest()
+				.write(System.err);
 			Manifest m = jar.getManifest();
 			m.write(System.err);
-			String ip = m.getMainAttributes().getValue("Export-Package");
+			String ip = m.getMainAttributes()
+				.getValue("Export-Package");
 			assertTrue(ip.contains("org.objectweb.asm;version=\"1.1\""));
 			assertTrue(ip.contains("org.objectweb.asm;version=\"1.2\""));
 			assertTrue(ip.contains("org.objectweb.asm;version=\"2.3\""));
@@ -1911,7 +1998,7 @@ public class BuilderTest extends BndTestCase {
 
 	public static Manifest setup(Properties p, File f) throws Exception {
 		File cp[] = {
-				IO.getFile("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		if (f != null)
@@ -1927,7 +2014,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testDuplicateExport() throws Exception {
 		File cp[] = {
-				IO.getFile("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -1940,7 +2027,8 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.check());
 			Manifest m = jar.getManifest();
 			m.write(System.err);
-			String ip = m.getMainAttributes().getValue("Export-Package");
+			String ip = m.getMainAttributes()
+				.getValue("Export-Package");
 			assertTrue(ip.contains("org.objectweb.asm;version=\"1.2\""));
 		} finally {
 			bmaker.close();
@@ -1949,7 +2037,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testNoExport() throws Exception {
 		File cp[] = {
-				IO.getFile("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -1961,9 +2049,11 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 
-			jar.getManifest().write(System.err);
+			jar.getManifest()
+				.write(System.err);
 			Manifest m = jar.getManifest();
-			String ip = m.getMainAttributes().getValue("Export-Package");
+			String ip = m.getMainAttributes()
+				.getValue("Export-Package");
 			assertTrue(ip.contains("org.objectweb.asm"));
 		} finally {
 			bmaker.close();
@@ -1972,7 +2062,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testHardcodedImport() throws Exception {
 		File cp[] = {
-				IO.getFile("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -1985,7 +2075,8 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.check());
 
 			Manifest m = jar.getManifest();
-			String ip = m.getMainAttributes().getValue("Import-Package");
+			String ip = m.getMainAttributes()
+				.getValue("Import-Package");
 			assertTrue(ip.contains("whatever"));
 		} finally {
 			bmaker.close();
@@ -2002,7 +2093,8 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 
-			Map<String,Resource> map = jar.getDirectories().get("bnd");
+			Map<String, Resource> map = jar.getDirectories()
+				.get("bnd");
 			assertNotNull(map);
 			try (Stream<Path> paths = Files.find(Paths.get("bnd"), Integer.MAX_VALUE, (t, a) -> a.isRegularFile(),
 				FileVisitOption.FOLLOW_LINKS)) {
@@ -2021,7 +2113,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testSplitOnExportAndPrivate() throws Exception {
 		File cp[] = {
-				IO.getFile("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -2047,7 +2139,9 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check());
 			assertNotNull(jars);
 			assertEquals(1, jars.length);
-			assertEquals("ASM", jars[0].getManifest().getMainAttributes().getValue("Implementation-Title"));
+			assertEquals("ASM", jars[0].getManifest()
+				.getMainAttributes()
+				.getValue("Implementation-Title"));
 		} finally {
 			b.close();
 		}
@@ -2070,7 +2164,8 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.check());
 
 			Manifest manifest = jar.getManifest();
-			String header = manifest.getMainAttributes().getValue("Export-Package");
+			String header = manifest.getMainAttributes()
+				.getValue("Export-Package");
 			System.err.println(header);
 			assertTrue(header.contains("resources"));
 		} finally {
@@ -2085,7 +2180,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testMETAINF() throws Exception {
 		File cp[] = {
-				new File("src"), IO.getFile("jar/asm.jar")
+			new File("src"), IO.getFile("jar/asm.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -2097,9 +2192,11 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check("Invalid package name: 'META-INF"));
 
-			jar.getManifest().write(System.err);
+			jar.getManifest()
+				.write(System.err);
 			Manifest manifest = jar.getManifest();
-			String header = manifest.getMainAttributes().getValue("Export-Package");
+			String header = manifest.getMainAttributes()
+				.getValue("Export-Package");
 			assertTrue(header.contains("META-INF.xyz"));
 		} finally {
 			bmaker.close();
@@ -2168,7 +2265,7 @@ public class BuilderTest extends BndTestCase {
 			Manifest manifest = builder.calcManifest();
 			Attributes main = manifest.getMainAttributes();
 			Parameters map = OSGiHeader.parseHeader(main.getValue("Export-Package"));
-			Map<String,String> export = map.get("test.activator.inherits");
+			Map<String, String> export = map.get("test.activator.inherits");
 			assertNotNull(export);
 			assertEquals("1", export.get("version"));
 			assertEquals("true", export.get("x"));
@@ -2197,9 +2294,12 @@ public class BuilderTest extends BndTestCase {
 			assertNotNull(dot.getResource("test/top/middle/Middle.class"));
 			assertNotNull(dot.getResource("test/top/Top.class"));
 
-			assertFalse(b.getImports().getByFQN("test.top") != null);
-			assertFalse(b.getImports().getByFQN("test.top.middle") != null);
-			assertFalse(b.getImports().getByFQN("test.top.middle.bottom") != null);
+			assertFalse(b.getImports()
+				.getByFQN("test.top") != null);
+			assertFalse(b.getImports()
+				.getByFQN("test.top.middle") != null);
+			assertFalse(b.getImports()
+				.getByFQN("test.top.middle.bottom") != null);
 		} finally {
 			b.close();
 		}
@@ -2217,14 +2317,16 @@ public class BuilderTest extends BndTestCase {
 		try {
 			analyzer.setProperties(base);
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/osgi.jar")
+				IO.getFile("jar/osgi.jar")
 			});
 			analyzer.build();
 			assertTrue(analyzer.check("private references"));
 			Jar jar = analyzer.getJar();
 			assertTrue(analyzer.check());
-			assertNotNull(analyzer.getExports().getByFQN("org.osgi.service.log"));
-			assertNotNull(jar.getDirectories().get("org/osgi/framework"));
+			assertNotNull(analyzer.getExports()
+				.getByFQN("org.osgi.service.log"));
+			assertNotNull(jar.getDirectories()
+				.get("org/osgi/framework"));
 		} finally {
 			analyzer.close();
 		}
@@ -2239,7 +2341,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
+				IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2258,11 +2360,12 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
+				IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
-			assertEquals(2, analyzer.getWarnings().size());
+			assertEquals(2, analyzer.getWarnings()
+				.size());
 			assertTrue(analyzer.check("Split package"));
 		} finally {
 			analyzer.close();
@@ -2278,7 +2381,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
+				IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2297,7 +2400,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
+				IO.getFile("jar/asm.jar"), IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2319,7 +2422,7 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/asm.jar")
+				IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2343,8 +2446,10 @@ public class BuilderTest extends BndTestCase {
 			analyzer.build();
 			assertTrue(analyzer.check());
 
-			Manifest manifest = analyzer.getJar().getManifest();
-			String bcp = manifest.getMainAttributes().getValue("Bundle-Classpath");
+			Manifest manifest = analyzer.getJar()
+				.getManifest();
+			String bcp = manifest.getMainAttributes()
+				.getValue("Bundle-Classpath");
 
 			assertTrue(bcp.contains("ds.jar"));
 			assertTrue(bcp.contains("asm.jar"));
@@ -2368,14 +2473,16 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/asm.jar")
+				IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
 
 			assertTrue(analyzer.check());
-			Manifest manifest = analyzer.getJar().getManifest();
-			String version = manifest.getMainAttributes().getValue(Analyzer.BUNDLE_VERSION);
+			Manifest manifest = analyzer.getJar()
+				.getManifest();
+			String version = manifest.getMainAttributes()
+				.getValue(Analyzer.BUNDLE_VERSION);
 			assertEquals("0.9.0.incubator-SNAPSHOT", version);
 		} finally {
 			analyzer.close();
@@ -2405,12 +2512,18 @@ public class BuilderTest extends BndTestCase {
 			bmaker.build();
 			assertTrue(bmaker.check());
 
-			assertTrue(bmaker.getContained().getByFQN("org.eclipse.equinox.ds.instance") != null);
-			assertTrue(bmaker.getContained().getByFQN("org.eclipse.equinox.ds.model") != null);
-			assertTrue(bmaker.getContained().getByFQN("org.eclipse.equinox.ds.parser") != null);
-			assertTrue(bmaker.getContained().getByFQN("org.osgi.service.cm") != null);
-			assertTrue(bmaker.getContained().getByFQN("org.osgi.service.component") != null);
-			assertFalse(bmaker.getContained().getByFQN("org.osgi.service.wireadmin") != null);
+			assertTrue(bmaker.getContained()
+				.getByFQN("org.eclipse.equinox.ds.instance") != null);
+			assertTrue(bmaker.getContained()
+				.getByFQN("org.eclipse.equinox.ds.model") != null);
+			assertTrue(bmaker.getContained()
+				.getByFQN("org.eclipse.equinox.ds.parser") != null);
+			assertTrue(bmaker.getContained()
+				.getByFQN("org.osgi.service.cm") != null);
+			assertTrue(bmaker.getContained()
+				.getByFQN("org.osgi.service.component") != null);
+			assertFalse(bmaker.getContained()
+				.getByFQN("org.osgi.service.wireadmin") != null);
 			Parameters exported = new Parameters(bmaker.getJar()
 				.getManifest()
 				.getMainAttributes()
@@ -2444,13 +2557,15 @@ public class BuilderTest extends BndTestCase {
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/asm.jar")
+				IO.getFile("jar/asm.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
 			assertTrue(analyzer.check());
-			assertFalse(analyzer.getExports().getByFQN("META-INF") != null);
-			assertTrue(analyzer.getExports().getByFQN("org.objectweb.asm") != null);
+			assertFalse(analyzer.getExports()
+				.getByFQN("META-INF") != null);
+			assertTrue(analyzer.getExports()
+				.getByFQN("org.objectweb.asm") != null);
 		} finally {
 			analyzer.close();
 		}
@@ -2470,7 +2585,7 @@ public class BuilderTest extends BndTestCase {
 			analyzer.addClasspath(new File("bin"));
 			analyzer.setPrivatePackage("test");
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/jsp-api.jar"), IO.getFile("jar/servlet-api.jar")
+				IO.getFile("jar/jsp-api.jar"), IO.getFile("jar/servlet-api.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.build();
@@ -2496,7 +2611,8 @@ public class BuilderTest extends BndTestCase {
 		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
 		String pwd = System.getProperty("user.dir");
-		base.put("pwd", new File(pwd).toURI().toString());
+		base.put("pwd", new File(pwd).toURI()
+			.toString());
 		base.put("-classpath", "${pwd}/jar/jsp-api.jar,${pwd}/jar/servlet-api.jar");
 
 		Builder analyzer = new Builder();
@@ -2532,7 +2648,7 @@ public class BuilderTest extends BndTestCase {
 			analyzer.addClasspath(new File("bin"));
 			analyzer.setPrivatePackage("test");
 			analyzer.setClasspath(new File[] {
-					IO.getFile("jar/jsp-api.jar"), IO.getFile("jar/servlet-api.jar")
+				IO.getFile("jar/jsp-api.jar"), IO.getFile("jar/servlet-api.jar")
 			});
 			analyzer.setProperties(base);
 			analyzer.builds();
@@ -2559,7 +2675,8 @@ public class BuilderTest extends BndTestCase {
 		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
 		String pwd = System.getProperty("user.dir");
-		base.put("pwd", new File(pwd).toURI().toString());
+		base.put("pwd", new File(pwd).toURI()
+			.toString());
 		base.put("-classpath", "${pwd}/jar/jsp-api.jar,${pwd}/jar/servlet-api.jar");
 
 		Builder analyzer = new Builder();
@@ -2594,18 +2711,20 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setProperty("-dsannotations", "!*");
 			bmaker.setProperty("-metatypeannotations", "!*");
 			bmaker.setClasspath(new File[] {
-					new File("bin")
+				new File("bin")
 			});
 			bmaker.setProperty("-fixupmessages.export",
-					"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
+				"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
 			bmaker.setProperty("-fixupmessages.directive",
-					"Unknown directive foobar: in Export-Package, allowed directives are uses:,mandatory:,include:,exclude:,-import:, and 'x-*'");
+				"Unknown directive foobar: in Export-Package, allowed directives are uses:,mandatory:,include:,exclude:,-import:, and 'x-*'");
 
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 			report("testFindActivator", bmaker, jar);
-			assertEquals(0, bmaker.getErrors().size());
-			assertEquals(0, bmaker.getWarnings().size());
+			assertEquals(0, bmaker.getErrors()
+				.size());
+			assertEquals(0, bmaker.getWarnings()
+				.size());
 		} finally {
 			bmaker.close();
 		}
@@ -2619,7 +2738,7 @@ public class BuilderTest extends BndTestCase {
 
 	static void assertVersionEquals(String input, String output) throws Exception {
 		File cp[] = {
-				IO.getFile("jar/osgi.jar")
+			IO.getFile("jar/osgi.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -2631,7 +2750,7 @@ public class BuilderTest extends BndTestCase {
 			bmaker.build();
 			assertTrue(bmaker.check("The JAR is empty"));
 			Packages imports = bmaker.getImports();
-			Map<String,String> framework = imports.get(bmaker.getPackageRef("org.osgi.framework"));
+			Map<String, String> framework = imports.get(bmaker.getPackageRef("org.osgi.framework"));
 			assertEquals(output, framework.get("version"));
 		} finally {
 			bmaker.close();
@@ -2651,13 +2770,20 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(b.check());
 			Manifest m = jar.getManifest();
 			m.write(System.err);
-			assertEquals(m.getMainAttributes().getValue("Bundle-Version"), "0.9.5.SNAPSHOT");
+			assertEquals(m.getMainAttributes()
+				.getValue("Bundle-Version"), "0.9.5.SNAPSHOT");
 
-			assertNotNull(b.getExports().getByFQN("org.eclipse.equinox.ds.parser"));
-			assertEquals("0.9.5.SNAPSHOT", b.getExports().getByFQN("org.eclipse.equinox.ds.parser").getVersion());
+			assertNotNull(b.getExports()
+				.getByFQN("org.eclipse.equinox.ds.parser"));
+			assertEquals("0.9.5.SNAPSHOT", b.getExports()
+				.getByFQN("org.eclipse.equinox.ds.parser")
+				.getVersion());
 
-			assertNotNull(b.getImports().getByFQN("org.osgi.framework"));
-			assertEquals("0.9.5.SNAPSHOT", b.getImports().getByFQN("org.osgi.framework").getVersion());
+			assertNotNull(b.getImports()
+				.getByFQN("org.osgi.framework"));
+			assertEquals("0.9.5.SNAPSHOT", b.getImports()
+				.getByFQN("org.osgi.framework")
+				.getVersion());
 		} finally {
 			b.close();
 		}
@@ -2680,14 +2806,16 @@ public class BuilderTest extends BndTestCase {
 			p.put("Bundle-ClassPath", ".,ds.jar");
 			bmaker.setProperties(p);
 			bmaker.setClasspath(new File[] {
-					new File("bin"), new File("src")
+				new File("bin"), new File("src")
 			});
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 
 			report("testBundleClasspath3", bmaker, jar);
-			assertEquals(0, bmaker.getErrors().size());
-			assertEquals(0, bmaker.getWarnings().size());
+			assertEquals(0, bmaker.getErrors()
+				.size());
+			assertEquals(0, bmaker.getWarnings()
+				.size());
 		} finally {
 			bmaker.close();
 		}
@@ -2711,14 +2839,16 @@ public class BuilderTest extends BndTestCase {
 			p.put("Bundle-ClassPath", ".,ds.jar");
 			bmaker.setProperties(p);
 			bmaker.setClasspath(new File[] {
-					new File("bin"), new File("src")
+				new File("bin"), new File("src")
 			});
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 
 			report("testBundleClasspath2", bmaker, jar);
-			assertEquals(bmaker.getErrors().size(), 0);
-			assertEquals(bmaker.getWarnings().size(), 0);
+			assertEquals(bmaker.getErrors()
+				.size(), 0);
+			assertEquals(bmaker.getWarnings()
+				.size(), 0);
 		} finally {
 			bmaker.close();
 		}
@@ -2734,15 +2864,17 @@ public class BuilderTest extends BndTestCase {
 			p.put("Bundle-ClassPath", ".");
 			bmaker.setProperties(p);
 			bmaker.setClasspath(new File[] {
-					new File("bin"), new File("src")
+				new File("bin"), new File("src")
 			});
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 
 			report("testBundleClasspath", bmaker, jar);
 			jar.exists("testresources/activator/Activator.class");
-			assertEquals(bmaker.getErrors().size(), 0);
-			assertEquals(bmaker.getWarnings().size(), 0);
+			assertEquals(bmaker.getErrors()
+				.size(), 0);
+			assertEquals(bmaker.getWarnings()
+				.size(), 0);
 		} finally {
 			bmaker.close();
 		}
@@ -2797,10 +2929,13 @@ public class BuilderTest extends BndTestCase {
 			assertTrue(bmaker.check());
 
 			report("testIncludeResourceResourcesOnlyJar2", bmaker, jar);
-			assertTrue(bmaker.getExports().getByFQN("ro") != null);
-			assertFalse(bmaker.getExports().getByFQN("META-INF") != null);
+			assertTrue(bmaker.getExports()
+				.getByFQN("ro") != null);
+			assertFalse(bmaker.getExports()
+				.getByFQN("META-INF") != null);
 
-			assertEquals(3, jar.getResources().size());
+			assertEquals(3, jar.getResources()
+				.size());
 		} finally {
 			bmaker.close();
 		}
@@ -2811,7 +2946,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Properties p = new Properties();
 			File cp[] = new File[] {
-					IO.getFile("jar/idonotexist.jar")
+				IO.getFile("jar/idonotexist.jar")
 			};
 
 			bmaker.setProperties(p);
@@ -2829,7 +2964,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Properties p = new Properties();
 			File cp[] = new File[] {
-					IO.getFile("jar/asm.jar")
+				IO.getFile("jar/asm.jar")
 			};
 
 			p.put("Export-Package", "!org.objectweb.asm,*");
@@ -2838,11 +2973,16 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 
-			assertNull(jar.getDirectories().get("org/objectweb/asm"));
-			assertNotNull(jar.getDirectories().get("org/objectweb/asm/signature"));
-			assertEquals(0, bmaker.getWarnings().size());
-			assertEquals(0, bmaker.getErrors().size());
-			assertEquals(3, jar.getResources().size());
+			assertNull(jar.getDirectories()
+				.get("org/objectweb/asm"));
+			assertNotNull(jar.getDirectories()
+				.get("org/objectweb/asm/signature"));
+			assertEquals(0, bmaker.getWarnings()
+				.size());
+			assertEquals(0, bmaker.getErrors()
+				.size());
+			assertEquals(3, jar.getResources()
+				.size());
 		} finally {
 			bmaker.close();
 		}
@@ -2853,7 +2993,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Properties p = new Properties();
 			File cp[] = new File[] {
-					IO.getFile("jar/ro.jar")
+				IO.getFile("jar/ro.jar")
 			};
 
 			p.put("Export-Package", "*");
@@ -2861,9 +3001,12 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setProperties(p);
 			bmaker.setClasspath(cp);
 			Jar jar = bmaker.build();
-			assertEquals(0, bmaker.getWarnings().size());
-			assertEquals(0, bmaker.getErrors().size());
-			assertEquals(3, jar.getResources().size());
+			assertEquals(0, bmaker.getWarnings()
+				.size());
+			assertEquals(0, bmaker.getErrors()
+				.size());
+			assertEquals(3, jar.getResources()
+				.size());
 		} finally {
 			bmaker.close();
 		}
@@ -2874,7 +3017,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Properties p = new Properties();
 			File cp[] = new File[] {
-					new File("src")
+				new File("src")
 			};
 
 			p.put("Import-Package", "");
@@ -2883,9 +3026,12 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setClasspath(cp);
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
-			assertEquals(0, bmaker.getWarnings().size());
-			assertEquals(0, bmaker.getErrors().size());
-			assertEquals(4, jar.getResources().size());
+			assertEquals(0, bmaker.getWarnings()
+				.size());
+			assertEquals(0, bmaker.getErrors()
+				.size());
+			assertEquals(4, jar.getResources()
+				.size());
 		} finally {
 			bmaker.close();
 		}
@@ -2899,7 +3045,8 @@ public class BuilderTest extends BndTestCase {
 		bmaker.setProperties(p);
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
-		assertEquals(59, jar.getResources().size());
+		assertEquals(59, jar.getResources()
+			.size());
 
 	}
 
@@ -2912,7 +3059,8 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 
-			assertEquals(59, jar.getResources().size());
+			assertEquals(59, jar.getResources()
+				.size());
 		} finally {
 			bmaker.close();
 		}
@@ -2928,7 +3076,8 @@ public class BuilderTest extends BndTestCase {
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 
-			assertEquals(59, jar.getResources().size());
+			assertEquals(59, jar.getResources()
+				.size());
 			assertNotNull(jar.getResource("org/easymock/AbstractMatcher.class"));
 		} finally {
 			bmaker.close();
@@ -2949,7 +3098,8 @@ public class BuilderTest extends BndTestCase {
 
 			assertTrue(bmaker.check());
 
-			assertEquals(7, jar.getResources().size());
+			assertEquals(7, jar.getResources()
+				.size());
 			assertNotNull(jar.getResource("OPT-INF/test/org/osgi/service/event/EventAdmin.class"));
 		} finally {
 			bmaker.close();
@@ -2966,7 +3116,8 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setProperties(p);
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
-			assertEquals(59, jar.getResources().size());
+			assertEquals(59, jar.getResources()
+				.size());
 		} finally {
 			bmaker.close();
 		}
@@ -2982,7 +3133,8 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setProperties(p);
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
-			assertEquals(1, jar.getResources().size());
+			assertEquals(1, jar.getResources()
+				.size());
 			assertNotNull(jar.getResource("LICENSE"));
 		} finally {
 			bmaker.close();
@@ -2992,7 +3144,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testEasymock() throws Exception {
 		File cp[] = {
-				IO.getFile("jar/easymock.jar")
+			IO.getFile("jar/easymock.jar")
 		};
 		Builder bmaker = new Builder();
 		try {
@@ -3005,7 +3157,8 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setClasspath(cp);
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
-			jar.getManifest().write(System.err);
+			jar.getManifest()
+				.write(System.err);
 		} finally {
 			bmaker.close();
 		}
@@ -3017,15 +3170,17 @@ public class BuilderTest extends BndTestCase {
 		try {
 			bmaker.addClasspath(new File("bin"));
 			bmaker.setSourcepath(new File[] {
-					new File("src")
+				new File("src")
 			});
 			bmaker.setProperty("-sources", "true");
 			bmaker.setProperty("Export-Package", "test.activator");
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 			assertEquals(
-					"[test/activator/AbstractActivator.class, test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class, test/activator/DefaultVisibilityActivator.class, test/activator/IActivator.class, test/activator/MissingNoArgsConstructorActivator.class, test/activator/NotAnActivator.class]",
-					new SortedList<>(jar.getDirectories().get("test/activator").keySet()).toString());
+				"[test/activator/AbstractActivator.class, test/activator/Activator.class, test/activator/Activator11.class, test/activator/Activator2.class, test/activator/Activator3.class, test/activator/ActivatorPackage.class, test/activator/ActivatorPrivate.class, test/activator/DefaultVisibilityActivator.class, test/activator/IActivator.class, test/activator/MissingNoArgsConstructorActivator.class, test/activator/NotAnActivator.class]",
+				new SortedList<>(jar.getDirectories()
+					.get("test/activator")
+					.keySet()).toString());
 		} finally {
 			bmaker.close();
 		}
@@ -3043,7 +3198,8 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	public static void report(String title, Analyzer builder, Jar jar) {
-		System.err.println("Directories " + jar.getDirectories().keySet());
+		System.err.println("Directories " + jar.getDirectories()
+			.keySet());
 		System.err.println("Warnings    " + builder.getWarnings());
 		System.err.println("Errors      " + builder.getErrors());
 		System.err.println("Exports     " + builder.getExports());

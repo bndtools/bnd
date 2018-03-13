@@ -8,7 +8,7 @@ import java.util.Set;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 
-public class Packages implements Map<PackageRef,Attrs> {
+public class Packages implements Map<PackageRef, Attrs> {
 	private final Map<PackageRef, Attrs> map;
 
 	public static enum QUERY {
@@ -51,7 +51,7 @@ public class Packages implements Map<PackageRef,Attrs> {
 		return map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<PackageRef,Attrs>> entrySet() {
+	public Set<java.util.Map.Entry<PackageRef, Attrs>> entrySet() {
 		return map.entrySet();
 	}
 
@@ -87,7 +87,7 @@ public class Packages implements Map<PackageRef,Attrs> {
 		return map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends PackageRef, ? extends Attrs> map) {
+	public void putAll(Map<? extends PackageRef, ? extends Attrs> map) {
 		this.map.putAll(map);
 	}
 
@@ -117,16 +117,20 @@ public class Packages implements Map<PackageRef,Attrs> {
 	}
 
 	public Attrs getByFQN(String s) {
-		for (Map.Entry<PackageRef,Attrs> pr : map.entrySet()) {
-			if (pr.getKey().getFQN().equals(s))
+		for (Map.Entry<PackageRef, Attrs> pr : map.entrySet()) {
+			if (pr.getKey()
+				.getFQN()
+				.equals(s))
 				return pr.getValue();
 		}
 		return null;
 	}
 
 	public Attrs getByBinaryName(String s) {
-		for (Map.Entry<PackageRef,Attrs> pr : map.entrySet()) {
-			if (pr.getKey().getBinary().equals(s))
+		for (Map.Entry<PackageRef, Attrs> pr : map.entrySet()) {
+			if (pr.getKey()
+				.getBinary()
+				.equals(s))
 				return pr.getValue();
 		}
 		return null;
@@ -149,12 +153,14 @@ public class Packages implements Map<PackageRef,Attrs> {
 
 	public void append(StringBuilder sb) {
 		String del = "";
-		for (Map.Entry<PackageRef,Attrs> s : entrySet()) {
+		for (Map.Entry<PackageRef, Attrs> s : entrySet()) {
 			sb.append(del);
 			sb.append(s.getKey());
-			if (!s.getValue().isEmpty()) {
+			if (!s.getValue()
+				.isEmpty()) {
 				sb.append(';');
-				s.getValue().append(sb);
+				s.getValue()
+					.append(sb);
 			}
 			del = ",";
 		}

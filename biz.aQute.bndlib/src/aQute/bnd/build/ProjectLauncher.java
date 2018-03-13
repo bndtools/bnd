@@ -38,47 +38,47 @@ import aQute.libg.generics.Create;
  * project to run the code. Launchers must extend this class.
  */
 public abstract class ProjectLauncher extends Processor {
-	private final static Logger					logger				= LoggerFactory.getLogger(ProjectLauncher.class);
-	private final Project						project;
-	private long								timeout				= 0;
-	private final List<String>					classpath			= new ArrayList<>();
-	private List<String>						runbundles			= Create.list();
-	private final List<String>					runvm				= new ArrayList<>();
-	private final List<String>					runprogramargs		= new ArrayList<>();
-	private Map<String,String>					runproperties;
-	private Command								java;
-	private Parameters							runsystempackages;
-	private Parameters							runsystemcapabilities;
-	private final List<String>					activators			= Create.list();
-	private File								storageDir;
+	private final static Logger			logger				= LoggerFactory.getLogger(ProjectLauncher.class);
+	private final Project				project;
+	private long						timeout				= 0;
+	private final List<String>			classpath			= new ArrayList<>();
+	private List<String>				runbundles			= Create.list();
+	private final List<String>			runvm				= new ArrayList<>();
+	private final List<String>			runprogramargs		= new ArrayList<>();
+	private Map<String, String>			runproperties;
+	private Command						java;
+	private Parameters					runsystempackages;
+	private Parameters					runsystemcapabilities;
+	private final List<String>			activators			= Create.list();
+	private File						storageDir;
 
-	private boolean								trace;
-	private boolean								keep;
-	private int									framework;
-	private File								cwd;
-	private Collection<String>					agents				= new ArrayList<>();
+	private boolean						trace;
+	private boolean						keep;
+	private int							framework;
+	private File						cwd;
+	private Collection<String>			agents				= new ArrayList<>();
 	private Set<NotificationListener>	listeners			= Collections.newSetFromMap(new IdentityHashMap<>());
 
-	protected Appendable						out					= System.out;
-	protected Appendable						err					= System.err;
-	protected InputStream						in					= System.in;
+	protected Appendable				out					= System.out;
+	protected Appendable				err					= System.err;
+	protected InputStream				in					= System.in;
 
-	public final static int						SERVICES			= 10111;
-	public final static int						NONE				= 20123;
+	public final static int				SERVICES			= 10111;
+	public final static int				NONE				= 20123;
 
 	// MUST BE ALIGNED WITH LAUNCHER
-	public final static int						OK					= 0;
-	public final static int						WARNING				= -1;
-	public final static int						ERROR				= -2;
-	public final static int						TIMEDOUT			= -3;
-	public final static int						UPDATE_NEEDED		= -4;
-	public final static int						CANCELED			= -5;
-	public final static int						DUPLICATE_BUNDLE	= -6;
-	public final static int						RESOLVE_ERROR		= -7;
-	public final static int						ACTIVATOR_ERROR		= -8;
-	public final static int						CUSTOM_LAUNCHER		= -128;
+	public final static int				OK					= 0;
+	public final static int				WARNING				= -1;
+	public final static int				ERROR				= -2;
+	public final static int				TIMEDOUT			= -3;
+	public final static int				UPDATE_NEEDED		= -4;
+	public final static int				CANCELED			= -5;
+	public final static int				DUPLICATE_BUNDLE	= -6;
+	public final static int				RESOLVE_ERROR		= -7;
+	public final static int				ACTIVATOR_ERROR		= -8;
+	public final static int				CUSTOM_LAUNCHER		= -128;
 
-	public final static String					EMBEDDED_ACTIVATOR	= "Embedded-Activator";
+	public final static String			EMBEDDED_ACTIVATOR	= "Embedded-Activator";
 
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
@@ -154,7 +154,8 @@ public abstract class ProjectLauncher extends Processor {
 		} else {
 			Collection<Container> members = container.getMembers();
 			for (Container m : members) {
-				String path = m.getFile().getAbsolutePath();
+				String path = m.getFile()
+					.getAbsolutePath();
 				if (!classpath.contains(path)) {
 
 					Manifest manifest = m.getManifest();
@@ -163,18 +164,21 @@ public abstract class ProjectLauncher extends Processor {
 
 						// We are looking for any agents, used if
 						// -javaagent=true is set
-						String agentClassName = manifest.getMainAttributes().getValue("Premain-Class");
+						String agentClassName = manifest.getMainAttributes()
+							.getValue("Premain-Class");
 						if (agentClassName != null) {
 							String agent = path;
-							if (container.getAttributes().get("agent") != null) {
-								agent += "=" + container.getAttributes().get("agent");
+							if (container.getAttributes()
+								.get("agent") != null) {
+								agent += "=" + container.getAttributes()
+									.get("agent");
 							}
 							agents.add(path);
 						}
 
-						Parameters exports = project
-								.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-						for (Entry<String,Attrs> e : exports.entrySet()) {
+						Parameters exports = project.parseHeader(manifest.getMainAttributes()
+							.getValue(Constants.EXPORT_PACKAGE));
+						for (Entry<String, Attrs> e : exports.entrySet()) {
 							if (!runsystempackages.containsKey(e.getKey()))
 								runsystempackages.put(e.getKey(), e.getValue());
 						}
@@ -184,7 +188,8 @@ public abstract class ProjectLauncher extends Processor {
 						// the framework is completely initialized wit the
 						// system
 						// context.
-						String activator = manifest.getMainAttributes().getValue(EMBEDDED_ACTIVATOR);
+						String activator = manifest.getMainAttributes()
+							.getValue(EMBEDDED_ACTIVATOR);
 						if (activator != null)
 							activators.add(activator);
 					}
@@ -237,7 +242,7 @@ public abstract class ProjectLauncher extends Processor {
 		return runprogramargs;
 	}
 
-	public Map<String,String> getRunProperties() {
+	public Map<String, String> getRunProperties() {
 		return runproperties;
 	}
 
@@ -257,8 +262,8 @@ public abstract class ProjectLauncher extends Processor {
 		// Handle the environment
 		//
 
-		Map<String,String> env = getRunEnv();
-		for (Map.Entry<String,String> e : env.entrySet()) {
+		Map<String, String> env = getRunEnv();
+		for (Map.Entry<String, String> e : env.entrySet()) {
 			java.var(e.getKey(), e.getValue());
 		}
 
@@ -319,7 +324,6 @@ public abstract class ProjectLauncher extends Processor {
 
 	/**
 	 * launch a framework internally. I.e. do not start a separate process.
-	 * 
 	 */
 	static Pattern IGNORE = Pattern.compile("org(/|\\.)osgi(/|\\.).resource.*");
 
@@ -334,8 +338,9 @@ public abstract class ProjectLauncher extends Processor {
 		//
 
 		ClassLoader fcl = new ClassLoader(parent) {
-			protected Class< ? > loadClass(String name, boolean resolve) throws ClassNotFoundException {
-				if (IGNORE.matcher(name).matches())
+			protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+				if (IGNORE.matcher(name)
+					.matches())
 					throw new ClassNotFoundException();
 
 				return super.loadClass(name, resolve);
@@ -349,18 +354,19 @@ public abstract class ProjectLauncher extends Processor {
 
 		List<URL> cp = new ArrayList<>();
 		for (String path : getClasspath()) {
-			cp.add(new File(path).toURI().toURL());
+			cp.add(new File(path).toURI()
+				.toURL());
 		}
 		@SuppressWarnings("resource")
 		URLClassLoader cl = new URLClassLoader(cp.toArray(new URL[0]), fcl);
 
 		String[] args = getRunProgramArgs().toArray(new String[0]);
 
-		Class< ? > main = cl.loadClass(getMainTypeName());
+		Class<?> main = cl.loadClass(getMainTypeName());
 		return invoke(main, args);
 	}
 
-	protected int invoke(Class< ? > main, String args[]) throws Exception {
+	protected int invoke(Class<?> main, String args[]) throws Exception {
 		throw new UnsupportedOperationException();
 	}
 
@@ -407,7 +413,7 @@ public abstract class ProjectLauncher extends Processor {
 		java.cancel();
 	}
 
-	public Map<String, ? extends Map<String,String>> getSystemPackages() {
+	public Map<String, ? extends Map<String, String>> getSystemPackages() {
 		return runsystempackages.asMapMap();
 	}
 
@@ -460,7 +466,6 @@ public abstract class ProjectLauncher extends Processor {
 	 * means it should not use the classpath to run a framework. This likely
 	 * requires some dummy framework support. SERVICES means it should load the
 	 * framework from the claspath.
-	 * 
 	 */
 	public int getRunFramework() {
 		return framework;
@@ -504,7 +509,7 @@ public abstract class ProjectLauncher extends Processor {
 		return project.getProperty(Constants.RUNJDB);
 	}
 
-	public Map<String,String> getRunEnv() {
+	public Map<String, String> getRunEnv() {
 		String runenv = project.getProperty(Constants.RUNENV);
 		if (runenv != null) {
 			return OSGiHeader.parseProperties(runenv);
@@ -517,7 +522,9 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public static enum NotificationType {
-		ERROR, WARNING, INFO;
+		ERROR,
+		WARNING,
+		INFO;
 	}
 
 	public void registerForNotifications(NotificationListener listener) {
@@ -558,7 +565,7 @@ public abstract class ProjectLauncher extends Processor {
 	 * @throws Exception
 	 */
 
-	public List< ? extends RunSession> getRunSessions() throws Exception {
+	public List<? extends RunSession> getRunSessions() throws Exception {
 		return null;
 	}
 
@@ -571,15 +578,15 @@ public abstract class ProjectLauncher extends Processor {
 	 * @throws Exception
 	 */
 
-	public void calculatedProperties(Map<String,Object> properties) throws Exception {
+	public void calculatedProperties(Map<String, Object> properties) throws Exception {
 
 		if (!keep)
 			properties.put(org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN,
-					org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+				org.osgi.framework.Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 
 		if (!runsystemcapabilities.isEmpty())
 			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA,
-					runsystemcapabilities.toString());
+				runsystemcapabilities.toString());
 
 		if (!runsystempackages.isEmpty())
 			properties.put(org.osgi.framework.Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, runsystempackages.toString());

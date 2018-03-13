@@ -31,9 +31,9 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	private File[] get(String bsn, String range) throws Exception {
 		Collection<Project> projects = workspace.getAllProjects();
-		SortedMap<Version,File> foundVersion = new TreeMap<>();
+		SortedMap<Version, File> foundVersion = new TreeMap<>();
 		for (Project project : projects) {
-			Map<String,Version> versions = project.getVersions();
+			Map<String, Version> versions = project.getVersions();
 			if (!versions.containsKey(bsn)) {
 				continue;
 			}
@@ -55,19 +55,20 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 			}
 		}
 
-		File[] result = foundVersion.values().toArray(new File[0]);
+		File[] result = foundVersion.values()
+			.toArray(new File[0]);
 		if (!Constants.VERSION_ATTR_LATEST.equals(range)) {
 			return result;
 		}
 		if (result.length > 0) {
 			return new File[] {
-					result[0]
+				result[0]
 			};
 		}
 		return new File[0];
 	}
 
-	private File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception {
+	private File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
 		File[] files = get(bsn, range);
 
 		if (files.length == 0) {
@@ -86,7 +87,8 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 	}
 
 	private boolean matchVersion(String range, Version version, boolean exact) {
-		if (range == null || range.trim().length() == 0)
+		if (range == null || range.trim()
+			.length() == 0)
 			return true;
 		VersionRange vr = new VersionRange(range);
 
@@ -95,7 +97,8 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 			if (vr.isRange())
 				result = false;
 			else
-				result = vr.getHigh().equals(version);
+				result = vr.getHigh()
+					.equals(version);
 		} else {
 			result = vr.includes(version);
 		}
@@ -138,7 +141,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		List<Version> versions = new ArrayList<>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
-			Map<String,Version> projectVersions = project.getVersions();
+			Map<String, Version> projectVersions = project.getVersions();
 			if (!projectVersions.containsKey(bsn)) {
 				continue;
 			}
@@ -152,15 +155,17 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 	}
 
 	public String getName() {
-		return "Workspace " + workspace.getBase().getName();
+		return "Workspace " + workspace.getBase()
+			.getName();
 	}
 
 	public String getLocation() {
-		return workspace.getBase().getAbsolutePath();
+		return workspace.getBase()
+			.getAbsolutePath();
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		File file = get(bsn, version.toString(), Strategy.EXACT, properties);
 		if (file == null)
 			return null;
@@ -174,7 +179,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		return file;
 	}
 
-	public Map<String,Runnable> actions(Object... target) throws Exception {
+	public Map<String, Runnable> actions(Object... target) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}

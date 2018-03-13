@@ -9,10 +9,10 @@ public class IssueManagementDTO extends DTO {
 	/**
 	 * The name of the issue management system, e.g. Bugzilla
 	 */
-	public String system;
+	public String	system;
 
 	/**
 	 * URL for the issue management system used by the project.
 	 */
-	public URI url;
+	public URI		url;
 }

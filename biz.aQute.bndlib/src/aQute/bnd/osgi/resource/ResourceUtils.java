@@ -52,7 +52,7 @@ public class ResourceUtils {
 
 																						@Override
 																						public int compare(Resource o1,
-																								Resource o2) {
+																							Resource o2) {
 																							if (o1 == o2)
 																								return 0;
 
@@ -66,9 +66,9 @@ public class ResourceUtils {
 																								return 0;
 
 																							String v1 = getIdentityVersion(
-																									o1);
+																								o1);
 																							String v2 = getIdentityVersion(
-																									o2);
+																								o2);
 
 																							if (v1 == v2)
 																								return 0;
@@ -80,18 +80,17 @@ public class ResourceUtils {
 																								return 1;
 
 																							return new Version(v1)
-																									.compareTo(
-																											new Version(
-																													v2));
+																								.compareTo(
+																									new Version(v2));
 																						}
 
 																					};
 
-	private static final Comparator< ? super Resource>	RESOURCE_COMPARATOR			= new Comparator<Resource>() {
+	private static final Comparator<? super Resource>	RESOURCE_COMPARATOR			= new Comparator<Resource>() {
 
 																						@Override
 																						public int compare(Resource o1,
-																								Resource o2) {
+																							Resource o2) {
 																							if (o1 == o2)
 																								return 0;
 
@@ -104,14 +103,14 @@ public class ResourceUtils {
 																								return 0;
 
 																							if (o1 instanceof ResourceImpl
-																									&& o2 instanceof ResourceImpl) {
+																								&& o2 instanceof ResourceImpl) {
 																								return ((ResourceImpl) o1)
-																										.compareTo(o2);
+																									.compareTo(o2);
 																							}
 
 																							return o1.toString()
-																									.compareTo(o2
-																											.toString());
+																								.compareTo(
+																									o2.toString());
 																						}
 																					};
 
@@ -136,8 +135,9 @@ public class ResourceUtils {
 
 	public static interface IdentityCapability extends Capability {
 		public enum Type {
-			bundle(IdentityNamespace.TYPE_BUNDLE), fragment(IdentityNamespace.TYPE_FRAGMENT), unknown(
-					IdentityNamespace.TYPE_UNKNOWN),;
+			bundle(IdentityNamespace.TYPE_BUNDLE),
+			fragment(IdentityNamespace.TYPE_FRAGMENT),
+			unknown(IdentityNamespace.TYPE_UNKNOWN),;
 			private String s;
 
 			private Type(String s) {
@@ -217,7 +217,8 @@ public class ResourceUtils {
 		if (cap == null)
 			return null;
 
-		Object v = cap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+		Object v = cap.getAttributes()
+			.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 		if (v == null)
 			return null;
 
@@ -240,7 +241,7 @@ public class ResourceUtils {
 			org.osgi.framework.Version o = (org.osgi.framework.Version) v;
 			String q = o.getQualifier();
 			return q.isEmpty() ? new Version(o.getMajor(), o.getMinor(), o.getMicro())
-					: new Version(o.getMajor(), o.getMinor(), o.getMicro(), q);
+				: new Version(o.getMajor(), o.getMinor(), o.getMicro(), q);
 		}
 
 		if (v instanceof String) {
@@ -254,7 +255,8 @@ public class ResourceUtils {
 	}
 
 	public static final Version getVersion(Capability cap) {
-		Object v = cap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+		Object v = cap.getAttributes()
+			.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 		if (v == null)
 			return null;
 
@@ -271,7 +273,8 @@ public class ResourceUtils {
 	}
 
 	public static URI getURI(Capability contentCapability) {
-		Object uriObj = contentCapability.getAttributes().get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
+		Object uriObj = contentCapability.getAttributes()
+			.get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
 		if (uriObj == null)
 			return null;
 
@@ -331,8 +334,8 @@ public class ResourceUtils {
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Capability> T as(final Capability cap, Class<T> type) {
-		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class< ? >[] {
-				type
+		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
+			type
 		}, new InvocationHandler() {
 
 			@Override
@@ -347,8 +350,8 @@ public class ResourceUtils {
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Requirement> T as(final Requirement req, Class<T> type) {
-		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class< ? >[] {
-				type
+		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
+			type
 		}, new InvocationHandler() {
 
 			@Override
@@ -362,9 +365,10 @@ public class ResourceUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	static <T> T get(Method method, Map<String,Object> attrs, Map<String,String> directives, Object[] args)
-			throws Exception {
-		String name = method.getName().replace('_', '.');
+	static <T> T get(Method method, Map<String, Object> attrs, Map<String, String> directives, Object[] args)
+		throws Exception {
+		String name = method.getName()
+			.replace('_', '.');
 
 		Object value;
 		if (name.startsWith("$"))
@@ -377,7 +381,7 @@ public class ResourceUtils {
 		return (T) cnv.convert(method.getGenericReturnType(), value);
 	}
 
-	public static Set<Resource> getResources(Collection< ? extends Capability> providers) {
+	public static Set<Resource> getResources(Collection<? extends Capability> providers) {
 		if (providers == null || providers.isEmpty())
 			return Collections.emptySet();
 
@@ -392,11 +396,12 @@ public class ResourceUtils {
 
 	public static Requirement createWildcardRequirement() {
 		return CapReqBuilder.createSimpleRequirement(IdentityNamespace.IDENTITY_NAMESPACE, "*", null)
-				.buildSyntheticRequirement();
+			.buildSyntheticRequirement();
 	}
 
 	public static boolean isEffective(Requirement r, Capability c) {
-		String capabilityEffective = c.getDirectives().get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
+		String capabilityEffective = c.getDirectives()
+			.get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
 
 		//
 		// resolve on the capability will always match any
@@ -409,7 +414,8 @@ public class ResourceUtils {
 		if (capabilityEffective.equals(Namespace.EFFECTIVE_RESOLVE))
 			return true;
 
-		String requirementEffective = r.getDirectives().get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
+		String requirementEffective = r.getDirectives()
+			.get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
 
 		//
 		// If requirement is resolve but capability isn't
@@ -428,14 +434,17 @@ public class ResourceUtils {
 		}
 		return false;
 	}
+
 	public static boolean matches(Requirement r, Capability c) {
-		if (!r.getNamespace().equals(c.getNamespace()))
+		if (!r.getNamespace()
+			.equals(c.getNamespace()))
 			return false;
 
 		if (!isEffective(r, c))
 			return false;
 
-		String filter = r.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+		String filter = r.getDirectives()
+			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 		if (filter == null)
 			return true;
 
@@ -447,7 +456,7 @@ public class ResourceUtils {
 		}
 	}
 
-	public static String getEffective(Map<String,String> directives) {
+	public static String getEffective(Map<String, String> directives) {
 		String effective = directives.get(Namespace.CAPABILITY_EFFECTIVE_DIRECTIVE);
 		if (effective == null)
 			return Namespace.EFFECTIVE_RESOLVE;
@@ -456,7 +465,8 @@ public class ResourceUtils {
 	}
 
 	public static ResolutionDirective getResolution(Requirement r) {
-		String resolution = r.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE);
+		String resolution = r.getDirectives()
+			.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE);
 		if (resolution == null || resolution.equals(Namespace.RESOLUTION_MANDATORY))
 			return ResolutionDirective.mandatory;
 
@@ -474,7 +484,8 @@ public class ResourceUtils {
 		r.addAttributes(req.getAttributes());
 		r.addDirectives(req.getDirectives());
 		Attrs attrs = r.toAttrs();
-		sb.append(";").append(attrs);
+		sb.append(";")
+			.append(attrs);
 		return sb.toString();
 	}
 
@@ -486,12 +497,13 @@ public class ResourceUtils {
 		r.addAttributes(cap.getAttributes());
 		r.addDirectives(cap.getDirectives());
 		Attrs attrs = r.toAttrs();
-		sb.append(";").append(attrs);
+		sb.append(";")
+			.append(attrs);
 		return sb.toString();
 	}
 
-	public static Map<URI,String> getLocations(Resource resource) {
-		Map<URI,String> locations = new HashMap<>();
+	public static Map<URI, String> getLocations(Resource resource) {
+		Map<URI, String> locations = new HashMap<>();
 		for (ContentCapability c : getContentCapabilities(resource)) {
 			URI uri = c.url();
 			String sha = c.osgi_content();
@@ -503,7 +515,7 @@ public class ResourceUtils {
 	}
 
 	public static List<Capability> findProviders(Requirement requirement,
-			Collection< ? extends Capability> capabilities) {
+		Collection<? extends Capability> capabilities) {
 		List<Capability> result = new ArrayList<>();
 		for (Capability capability : capabilities)
 			if (matches(requirement, capability))
@@ -515,8 +527,8 @@ public class ResourceUtils {
 		IdentityCapability identity = getIdentityCapability(resource);
 		if (identity == null)
 			return false;
-		return IdentityNamespace.TYPE_FRAGMENT
-				.equals(identity.getAttributes().get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE));
+		return IdentityNamespace.TYPE_FRAGMENT.equals(identity.getAttributes()
+			.get(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE));
 	}
 
 	public static String stripDirective(String name) {
@@ -526,7 +538,8 @@ public class ResourceUtils {
 	}
 
 	public static String getIdentity(Capability identityCapability) throws IllegalArgumentException {
-		String id = (String) identityCapability.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+		String id = (String) identityCapability.getAttributes()
+			.get(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (id == null)
 			throw new IllegalArgumentException("Resource identity capability has missing identity attribute");
 		return id;
@@ -543,11 +556,12 @@ public class ResourceUtils {
 		Capability idCap = getIdentityCapability(resource);
 		String identity = getIdentity(idCap);
 		String versionString;
-		if (resource.getCapabilities(WORKSPACE_NAMESPACE).isEmpty()) {
+		if (resource.getCapabilities(WORKSPACE_NAMESPACE)
+			.isEmpty()) {
 			Macro macro = new Macro(new Processor());
 			Version version = getVersion(idCap);
 			versionString = macro._range(new String[] {
-					"range", mask, version.toString()
+				"range", mask, version.toString()
 			});
 		} else {
 			versionString = "snapshot";

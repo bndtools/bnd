@@ -103,7 +103,8 @@ public class SocketRedirector implements Redirector {
 								}
 							}
 							if (sb.length() > 0)
-								agentServer.getSupervisor().stdout(sb.toString());
+								agentServer.getSupervisor()
+									.stdout(sb.toString());
 						} catch (Exception e) {
 							break;
 						}
@@ -125,7 +126,8 @@ public class SocketRedirector implements Redirector {
 
 	Socket findSocket(AgentServer agent, int port) throws UnknownHostException {
 		try {
-			String ip = agent.getContext().getProperty(OSGI_SHELL_TELNET_IP);
+			String ip = agent.getContext()
+				.getProperty(OSGI_SHELL_TELNET_IP);
 			if (ip != null) {
 				InetAddress gogoHost = InetAddress.getByName(ip);
 				return new Socket(gogoHost, port);

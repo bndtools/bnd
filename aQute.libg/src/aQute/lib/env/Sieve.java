@@ -9,10 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Sieve implements Map<Selector,Props> {
-	private LinkedHashMap<Selector,Props>	map;
+public class Sieve implements Map<Selector, Props> {
+	private LinkedHashMap<Selector, Props>	map;
 	public static Sieve						ALWAYS	= new Sieve();
-	static Map<Selector,Props>				EMPTY	= Collections.emptyMap();
+	static Map<Selector, Props>				EMPTY	= Collections.emptyMap();
 
 	public Sieve(Sieve other) {
 		if (other.map != null && !other.map.isEmpty()) {
@@ -73,7 +73,7 @@ public class Sieve implements Map<Selector,Props> {
 		return map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<Selector,Props>> entrySet() {
+	public Set<java.util.Map.Entry<Selector, Props>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
 
@@ -114,7 +114,7 @@ public class Sieve implements Map<Selector,Props> {
 		return map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends Selector, ? extends Props> map) {
+	public void putAll(Map<? extends Selector, ? extends Props> map) {
 		if (this.map == null) {
 			if (map.isEmpty())
 				return;
@@ -157,7 +157,7 @@ public class Sieve implements Map<Selector,Props> {
 	}
 
 	public void append(Header other) {
-		for (Map.Entry<String,Props> e : other.entrySet()) {
+		for (Map.Entry<String, Props> e : other.entrySet()) {
 			put(new Selector(e.getKey()), e.getValue());
 		}
 	}

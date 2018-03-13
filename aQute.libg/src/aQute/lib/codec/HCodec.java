@@ -51,8 +51,7 @@ public class HCodec implements Codec {
 	}
 
 	public <T> T decode(File in, Class<T> t) throws Exception {
-		try (InputStream fin = IO.stream(in);
-				InputStreamReader rdr = new InputStreamReader(fin, UTF_8)) {
+		try (InputStream fin = IO.stream(in); InputStreamReader rdr = new InputStreamReader(fin, UTF_8)) {
 			return t.cast(decode(rdr, t));
 		}
 

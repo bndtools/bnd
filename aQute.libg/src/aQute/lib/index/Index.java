@@ -29,7 +29,7 @@ public class Index implements Iterable<byte[]> {
 	final int							valueSize	= 8;
 	final int							capacity;
 	public Page							root;
-	final LinkedHashMap<Integer,Page>	cache		= new LinkedHashMap<>();
+	final LinkedHashMap<Integer, Page>	cache		= new LinkedHashMap<>();
 	final MappedByteBuffer				settings;
 
 	private int							nextPage;
@@ -256,7 +256,7 @@ public class Index implements Iterable<byte[]> {
 		public void toString(StringBuilder sb, String indent) throws IOException {
 			for (int i = 0; i < n; i++) {
 				sb.append(String.format("%s %02d:%02d %20s %s %d%n", indent, number, i, hex(k(i), 0, 4),
-						leaf ? "==" : "->", c(i)));
+					leaf ? "==" : "->", c(i)));
 				if (!leaf) {
 					long c = c(i);
 					Page sub = getPage((int) c);
@@ -308,7 +308,7 @@ public class Index implements Iterable<byte[]> {
 				this.keySize = settings.getInt(KEYSIZE);
 				if (keySize != 0 && this.keySize != keySize)
 					throw new IllegalStateException("Invalid key size for Index file. The file is " + this.keySize
-							+ " and was expected to be " + this.keySize);
+						+ " and was expected to be " + this.keySize);
 
 				root = getPage(1);
 				nextPage = (int) (this.file.size() / pageSize);

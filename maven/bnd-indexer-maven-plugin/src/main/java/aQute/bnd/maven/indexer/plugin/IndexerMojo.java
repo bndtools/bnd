@@ -105,8 +105,8 @@ public class IndexerMojo extends AbstractMojo {
 	private String						altSnapshotDeploymentRepository;
 
 	/**
-	 * This configuration parameter is used to set the name of the repository in the
-	 * generated index
+	 * This configuration parameter is used to set the name of the repository in
+	 * the generated index
 	 */
 	@Parameter(property = "bnd.indexer.name", defaultValue = "${project.artifactId}")
 	private String						indexName;
@@ -134,7 +134,7 @@ public class IndexerMojo extends AbstractMojo {
 
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
-        if ( skip ) {
+		if (skip) {
 			logger.debug("skip project as configured");
 			return;
 		}
@@ -148,7 +148,7 @@ public class IndexerMojo extends AbstractMojo {
 		logger.debug("Local file URLs permitted: {}", localURLs);
 		logger.debug("Adding mvn: URLs as alternative content: {}", addMvnURLs);
 
-		Map<String,ArtifactRepository> repositories = new LinkedHashMap<>();
+		Map<String, ArtifactRepository> repositories = new LinkedHashMap<>();
 		for (ArtifactRepository artifactRepository : project.getRemoteArtifactRepositories()) {
 			logger.debug("Located an artifact repository {}", artifactRepository.getId());
 			repositories.put(artifactRepository.getId(), artifactRepository);
@@ -161,9 +161,9 @@ public class IndexerMojo extends AbstractMojo {
 		addDeploymentRepo(repositories, parseAltDistRepo(altDeploymentRepository, true, true));
 
 		DependencyResolver dependencyResolver = new DependencyResolver(project, session, resolver, system, scopes,
-				includeTransitive, new RemotePostProcessor(session, system, metadataReader, localURLs));
+			includeTransitive, new RemotePostProcessor(session, system, metadataReader, localURLs));
 
-		Map<File,ArtifactResult> dependencies = dependencyResolver.resolveAgainstRepos(repositories.values());
+		Map<File, ArtifactResult> dependencies = dependencyResolver.resolveAgainstRepos(repositories.values());
 
 		RepositoryURLResolver repositoryURLResolver = new RepositoryURLResolver(repositories);
 		MavenURLResolver mavenURLResolver = new MavenURLResolver();
@@ -174,31 +174,38 @@ public class IndexerMojo extends AbstractMojo {
 		logger.debug("Indexing artifacts: {}", dependencies.keySet());
 		try {
 			IO.mkdirs(outputFile.getParentFile());
-			for (Entry<File,ArtifactResult> entry : dependencies.entrySet()) {
+			for (Entry<File, ArtifactResult> entry : dependencies.entrySet()) {
 				File file = entry.getKey();
 				ResourceBuilder resourceBuilder = new ResourceBuilder();
 				resourceBuilder.addFile(entry.getKey(), repositoryURLResolver.resolver(file, entry.getValue()));
 
 				if (addMvnURLs) {
 					CapabilityBuilder c = new CapabilityBuilder(ContentNamespace.CONTENT_NAMESPACE);
-					c.addAttribute(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file).asHex());
+					c.addAttribute(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file)
+						.asHex());
 					c.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE,
-							mavenURLResolver.resolver(file, entry.getValue()));
+						mavenURLResolver.resolver(file, entry.getValue()));
 					c.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
 					c.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, MavenURLResolver.MIME);
 					resourceBuilder.addCapability(c);
 				}
 				resourcesRepository.add(resourceBuilder.build());
 			}
-			if (includeJar && project.getPackaging().equals("jar")) {
-				File current = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + ".jar");
+			if (includeJar && project.getPackaging()
+				.equals("jar")) {
+				File current = new File(project.getBuild()
+					.getDirectory(),
+					project.getBuild()
+						.getFinalName() + ".jar");
 				if (current.exists()) {
 					ResourceBuilder resourceBuilder = new ResourceBuilder();
 					resourceBuilder.addFile(current, current.toURI());
 					resourcesRepository.add(resourceBuilder.build());
 				}
 			}
-			xmlResourceGenerator.name(indexName).repository(resourcesRepository).save(outputFile);
+			xmlResourceGenerator.name(indexName)
+				.repository(resourcesRepository)
+				.save(outputFile);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
@@ -234,19 +241,19 @@ public class IndexerMojo extends AbstractMojo {
 		}
 
 		return new MavenArtifactRepository(tokens[0], tokens[2], new DefaultRepositoryLayout(),
-				new ArtifactRepositoryPolicy(snapshots, "always", "warn"),
-				new ArtifactRepositoryPolicy(releases, "always", "warn"));
+			new ArtifactRepositoryPolicy(snapshots, "always", "warn"),
+			new ArtifactRepositoryPolicy(releases, "always", "warn"));
 	}
 
-	protected void addDeploymentRepo(Map<String,ArtifactRepository> repositories, ArtifactRepository deploymentRepo) {
+	protected void addDeploymentRepo(Map<String, ArtifactRepository> repositories, ArtifactRepository deploymentRepo) {
 		if (deploymentRepo != null) {
 			logger.debug("Located a deployment repository {}", deploymentRepo.getId());
 			if (repositories.get(deploymentRepo.getId()) == null) {
 				repositories.put(deploymentRepo.getId(), deploymentRepo);
 			} else {
 				logger.info(
-						"The configured deployment repository {} has the same id as one of the remote artifact repositories. It is assumed that these repositories are the same.",
-						deploymentRepo.getId());
+					"The configured deployment repository {} has the same id as one of the remote artifact repositories. It is assumed that these repositories are the same.",
+					deploymentRepo.getId());
 			}
 		}
 	}
@@ -254,14 +261,14 @@ public class IndexerMojo extends AbstractMojo {
 	private void attach(File file, String type, String extension) {
 		if (!attach) {
 			logger.debug("The indexer is not attaching file {} with type {} and extension {} as attachment is disabled",
-					file, type, extension);
+				file, type, extension);
 			return;
 		}
 
 		DefaultArtifactHandler handler = new DefaultArtifactHandler(type);
 		handler.setExtension(extension);
 		DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), project.getArtifactId(),
-				project.getVersion(), null, type, null, handler);
+			project.getVersion(), null, type, null, handler);
 		artifact.setFile(file);
 		project.addAttachedArtifact(artifact);
 	}
@@ -276,7 +283,10 @@ public class IndexerMojo extends AbstractMojo {
 
 				StringBuilder sb = new StringBuilder("mvn://");
 
-				sb.append(artifact.getGroupId()).append("/").append(artifact.getArtifactId()).append("/");
+				sb.append(artifact.getGroupId())
+					.append("/")
+					.append(artifact.getArtifactId())
+					.append("/");
 
 				if (artifact.getVersion() != null) {
 					sb.append(artifact.getVersion());
@@ -295,7 +305,8 @@ public class IndexerMojo extends AbstractMojo {
 					sb.append(artifact.getClassifier());
 				}
 
-				return URI.create(sb.toString()).normalize();
+				return URI.create(sb.toString())
+					.normalize();
 			} catch (Exception e) {
 				fail = true;
 				logger.error("Failed to determine the artifact URI", e);
@@ -306,9 +317,9 @@ public class IndexerMojo extends AbstractMojo {
 
 	class RepositoryURLResolver {
 
-		private final Map<String,ArtifactRepository>	repositories;
+		private final Map<String, ArtifactRepository> repositories;
 
-		public RepositoryURLResolver(Map<String,ArtifactRepository> repositories) {
+		public RepositoryURLResolver(Map<String, ArtifactRepository> repositories) {
 			this.repositories = repositories;
 		}
 
@@ -320,24 +331,27 @@ public class IndexerMojo extends AbstractMojo {
 
 				Artifact artifact = artifactResult.getArtifact();
 
-				ArtifactRepository repo = repositories.get(artifactResult.getRepository().getId());
+				ArtifactRepository repo = repositories.get(artifactResult.getRepository()
+					.getId());
 
 				if (repo == null) {
 					if (localURLs == ALLOWED) {
 						logger.info(
-								"The Artifact {} could not be found in any repository, returning the local location",
-								artifact);
+							"The Artifact {} could not be found in any repository, returning the local location",
+							artifact);
 						return file.toURI();
 					}
-					throw new FileNotFoundException("Unable to index artifact " + artifact + ". The repository "
-							+ artifactResult.getRepository().getId()
-							+ " is not known to this resolver");
+					throw new FileNotFoundException(
+						"Unable to index artifact " + artifact + ". The repository " + artifactResult.getRepository()
+							.getId() + " is not known to this resolver");
 				}
 
 				String baseUrl = repo.getUrl();
 				if (baseUrl.startsWith("file:")) {
 					// File URLs on Windows are nasty, so send them via a file
-					baseUrl = new File(baseUrl.substring(5)).toURI().normalize().toString();
+					baseUrl = new File(baseUrl.substring(5)).toURI()
+						.normalize()
+						.toString();
 				}
 
 				// The base URL must always point to a directory
@@ -345,7 +359,8 @@ public class IndexerMojo extends AbstractMojo {
 					baseUrl = baseUrl + "/";
 				}
 
-				String artifactPath = repo.getLayout().pathOf(RepositoryUtils.toArtifact(artifact));
+				String artifactPath = repo.getLayout()
+					.pathOf(RepositoryUtils.toArtifact(artifact));
 
 				// The artifact path should never be absolute, it is always
 				// relative to the repo URL
@@ -355,7 +370,9 @@ public class IndexerMojo extends AbstractMojo {
 
 				// As we have sorted the trailing and leading / characters
 				// resolve should do the rest!
-				return URI.create(baseUrl).resolve(artifactPath).normalize();
+				return URI.create(baseUrl)
+					.resolve(artifactPath)
+					.normalize();
 			} catch (Exception e) {
 				fail = true;
 				logger.error("Failed to determine the artifact URI for artifact {}", artifactResult.getArtifact(), e);

@@ -14,12 +14,12 @@ import junit.framework.TestListener;
 import junit.framework.TestResult;
 
 public class BasicTestReport implements TestListener, TestReporter {
-	private int				errors;
-	private final Tee		systemOut;
-	private final Tee		systemErr;
-	private int				fails;
-	private Bundle			targetBundle;
-	private final Activator	activator;
+	private int					errors;
+	private final Tee			systemOut;
+	private final Tee			systemErr;
+	private int					fails;
+	private Bundle				targetBundle;
+	private final Activator		activator;
 	private final TestResult	result;
 
 	public BasicTestReport(Activator activator, Tee systemOut, Tee systemErr, TestResult result) {
@@ -77,14 +77,16 @@ public class BasicTestReport implements TestListener, TestReporter {
 			activator.trace("got bundle context %s from %s in state %s", context, b, b.getState());
 			assert context != null;
 			try {
-				Method m = test.getClass().getMethod("setBundleContext", BundleContext.class);
+				Method m = test.getClass()
+					.getMethod("setBundleContext", BundleContext.class);
 				m.setAccessible(true);
 				m.invoke(test, context);
 				activator.trace("set context through setter");
 			} catch (Exception e) {
 				Field f;
 				try {
-					f = test.getClass().getField("context");
+					f = test.getClass()
+						.getField("context");
 					f.setAccessible(true);
 					f.set(test, context);
 					activator.trace("set context in field");
@@ -95,8 +97,12 @@ public class BasicTestReport implements TestListener, TestReporter {
 		}
 		fails = result.failureCount();
 		errors = result.errorCount();
-		systemOut.clear().capture(true).echo(true);
-		systemErr.clear().capture(true).echo(true);
+		systemOut.clear()
+			.capture(true)
+			.echo(true);
+		systemErr.clear()
+			.capture(true)
+			.echo(true);
 	}
 
 	public void endTest(Test test) {
@@ -131,7 +137,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 
 	String[] getCaptured() {
 		return new String[] {
-				systemOut.getContent(), systemErr.getContent()
+			systemOut.getContent(), systemErr.getContent()
 		};
 	}
 

@@ -10,10 +10,10 @@ public class ExclusionDTO extends DTO {
 	/**
 	 * The group ID of the project to exclude.
 	 */
-	public String groupId;
+	public String	groupId;
 
 	/**
 	 * The artifact ID of the project to exclude.
 	 */
-	public String artifactId;
+	public String	artifactId;
 }

@@ -14,7 +14,8 @@ public class ResourceDescriptorImpl extends ResourceDescriptor implements Compar
 	public ResourceDescriptorImpl() {}
 
 	public ResourceDescriptorImpl(ResourceDescriptor ref) throws IllegalAccessException {
-		for (Field f : ref.getClass().getFields()) {
+		for (Field f : ref.getClass()
+			.getFields()) {
 			f.set(this, f.get(ref));
 		}
 	}

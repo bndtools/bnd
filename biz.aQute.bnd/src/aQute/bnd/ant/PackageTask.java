@@ -17,7 +17,8 @@ public class PackageTask extends BaseTask {
 			throw new BuildException("Output file must be specified");
 
 		try {
-			Workspace.getProject(getProject().getBaseDir()).export(runFilePath, keep, output);
+			Workspace.getProject(getProject().getBaseDir())
+				.export(runFilePath, keep, output);
 		} catch (Exception e) {
 			throw new BuildException(e);
 		}

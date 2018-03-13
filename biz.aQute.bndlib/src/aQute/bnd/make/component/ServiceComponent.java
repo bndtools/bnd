@@ -32,7 +32,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		ComponentMaker m = new ComponentMaker(analyzer);
 
-		Map<String,Map<String,String>> l = m.doServiceComponent();
+		Map<String, Map<String, String>> l = m.doServiceComponent();
 
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l));
 
@@ -62,14 +62,14 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * 
 		 * @throws Exception
 		 */
-		Map<String,Map<String,String>> doServiceComponent() throws Exception {
-			Map<String,Map<String,String>> serviceComponents = newMap();
+		Map<String, Map<String, String>> doServiceComponent() throws Exception {
+			Map<String, Map<String, String>> serviceComponents = newMap();
 			String header = getProperty(SERVICE_COMPONENT);
 			Parameters sc = parseHeader(header);
 
-			for (Entry<String,Attrs> entry : sc.entrySet()) {
+			for (Entry<String, Attrs> entry : sc.entrySet()) {
 				String name = entry.getKey();
-				Map<String,String> info = entry.getValue();
+				Map<String, String> info = entry.getValue();
 
 				try {
 					if (name.indexOf('/') >= 0 || name.endsWith(".xml")) {
@@ -112,21 +112,19 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @throws Exception
 		 * @throws IOException
 		 */
-		private void componentEntry(Map<String,Map<String,String>> serviceComponents, String name,
-				Map<String,String> info) throws Exception, IOException {
+		private void componentEntry(Map<String, Map<String, String>> serviceComponents, String name,
+			Map<String, String> info) throws Exception, IOException {
 
 			boolean fqn = Verifier.isFQN(name);
 			if (fqn)
 				createComponentResource(serviceComponents, name, info);
 			else
 				error(Constants.SERVICE_COMPONENT
-						+ " entry '%s' is not a FQN. Bnd no longer supports the deprecated Bnd DS annotations.", name);
+					+ " entry '%s' is not a FQN. Bnd no longer supports the deprecated Bnd DS annotations.", name);
 		}
 
-
-
-		private void createComponentResource(Map<String,Map<String,String>> components, String name,
-				Map<String,String> info) throws Exception {
+		private void createComponentResource(Map<String, Map<String, String>> components, String name,
+			Map<String, String> info) throws Exception {
 
 			// We can override the name in the parameters
 			if (info.containsKey(COMPONENT_NAME))
@@ -142,7 +140,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 			analyzer.referTo(implRef);
 
 			boolean designate = designate(name, info.get(COMPONENT_DESIGNATE), false)
-					|| designate(name, info.get(COMPONENT_DESIGNATEFACTORY), true);
+				|| designate(name, info.get(COMPONENT_DESIGNATEFACTORY), true);
 
 			// If we had a designate, we want a default configuration policy of
 			// require.
@@ -153,7 +151,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 			Resource resource = createComponentResource(name, impl, info);
 
 			String pathSegment = analyzer.validResourcePath(name, "Invalid component name");
-			analyzer.getJar().putResource("OSGI-INF/" + pathSegment + ".xml", resource);
+			analyzer.getJar()
+				.putResource("OSGI-INF/" + pathSegment + ".xml", resource);
 
 			components.put("OSGI-INF/" + pathSegment + ".xml", EMPTY);
 
@@ -180,7 +179,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 					r.setDesignate(name, factory);
 					String rname = "OSGI-INF/metatype/" + name + ".xml";
 
-					analyzer.getJar().putResource(rname, r);
+					analyzer.getJar()
+						.putResource(rname, r);
 				} else {
 					analyzer.error("Cannot find designated configuration class %s for component %s", c, name);
 				}
@@ -196,7 +196,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 		 * @param info
 		 * @throws UnsupportedEncodingException
 		 */
-		Resource createComponentResource(String name, String impl, Map<String,String> info) throws Exception {
+		Resource createComponentResource(String name, String impl, Map<String, String> info) throws Exception {
 			HeaderReader hr = new HeaderReader(analyzer);
 			Tag tag = hr.createComponentTag(name, impl, info);
 			hr.close();

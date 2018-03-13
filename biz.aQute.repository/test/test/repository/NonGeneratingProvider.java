@@ -22,7 +22,7 @@ public class NonGeneratingProvider implements IRepositoryContentProvider {
 	}
 
 	public void parseIndex(InputStream stream, URI baseUrl, IRepositoryIndexProcessor listener, LogService log)
-			throws Exception {}
+		throws Exception {}
 
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
 		return new CheckResult(Decision.accept, "I accept anything but create nothing!", null);
@@ -33,7 +33,7 @@ public class NonGeneratingProvider implements IRepositoryContentProvider {
 	}
 
 	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI rootUrl, boolean pretty,
-			Registry registry, LogService log) throws Exception {
+		Registry registry, LogService log) throws Exception {
 		throw new UnsupportedOperationException("I told you I don't support this!");
 	}
 

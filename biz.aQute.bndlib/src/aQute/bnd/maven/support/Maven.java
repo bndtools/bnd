@@ -16,11 +16,11 @@ import aQute.lib.io.IO;
  */
 public class Maven {
 
-	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<>();
-	final static String[]			ALGORITHMS	= {
-														"md5", "sha1"
-													};
-	boolean							usecache	= false;
+	final Map<String, MavenEntry>	entries				= new ConcurrentHashMap<>();
+	final static String[]			ALGORITHMS			= {
+		"md5", "sha1"
+	};
+	boolean							usecache			= false;
 	final Executor					executor;
 	static final String				MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 

@@ -37,17 +37,16 @@ import aQute.service.reporter.Reporter;
 
 public class MavenRepository implements IMavenRepo, Closeable {
 	private final static Logger					logger		= LoggerFactory.getLogger(MavenRepository.class);
-	private final File									base;
-	private final String								id;
-	private final List<MavenBackingRepository>			release		= new ArrayList<>();
-	private final List<MavenBackingRepository>			snapshot	= new ArrayList<>();
+	private final File							base;
+	private final String						id;
+	private final List<MavenBackingRepository>	release		= new ArrayList<>();
+	private final List<MavenBackingRepository>	snapshot	= new ArrayList<>();
 	private final PromiseFactory				promiseFactory;
-	private final boolean								localOnly;
-	private final Map<Revision,Promise<POM>>	poms		= new WeakHashMap<>();
+	private final boolean						localOnly;
+	private final Map<Revision, Promise<POM>>	poms		= new WeakHashMap<>();
 
 	public MavenRepository(File base, String id, List<MavenBackingRepository> release,
-		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter)
-					throws Exception {
+		List<MavenBackingRepository> snapshot, Executor executor, Reporter reporter) throws Exception {
 		this.base = base;
 		this.id = id;
 		if (release != null)
@@ -246,7 +245,9 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		String classifier = Strings.trim(matcher.group("classifier"));
 		String version = Strings.trim(matcher.group("version"));
 
-		return Program.valueOf(group, artifact).version(version).archive(extension, classifier);
+		return Program.valueOf(group, artifact)
+			.version(version)
+			.archive(extension, classifier);
 	}
 
 	@Override
@@ -261,10 +262,12 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	public URI toRemoteURI(Archive archive) throws Exception {
 		if (archive.revision.isSnapshot()) {
 			if (snapshot != null && !snapshot.isEmpty())
-				return snapshot.get(0).toURI(archive.remotePath);
+				return snapshot.get(0)
+					.toURI(archive.remotePath);
 		} else {
 			if (release != null && !release.isEmpty())
-				return release.get(0).toURI(archive.remotePath);
+				return release.get(0)
+					.toURI(archive.remotePath);
 		}
 		return toLocalFile(archive).toURI();
 	}
@@ -283,7 +286,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 	@Override
 	public String toString() {
 		return "MavenRepository [base=" + base + ", id=" + id + ", release=" + release + ", snapshot=" + snapshot
-				+ ", localOnly=" + localOnly + "]";
+			+ ", localOnly=" + localOnly + "]";
 	}
 
 	@Override

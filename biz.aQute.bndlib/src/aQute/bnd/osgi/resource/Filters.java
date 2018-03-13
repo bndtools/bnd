@@ -43,23 +43,26 @@ public class Filters {
 
 		Filter left;
 		if (parsedRange.includeLow())
-			left = new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, parsedRange.getLow().toString());
+			left = new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, parsedRange.getLow()
+				.toString());
 		else
-			left = new NotFilter(
-					new SimpleFilter(versionAttr, Operator.LessThanOrEqual, parsedRange.getLow().toString()));
+			left = new NotFilter(new SimpleFilter(versionAttr, Operator.LessThanOrEqual, parsedRange.getLow()
+				.toString()));
 
 		Filter right;
 		if (!parsedRange.isRange())
 			right = null;
 		else if (parsedRange.includeHigh())
-			right = new SimpleFilter(versionAttr, Operator.LessThanOrEqual, parsedRange.getHigh().toString());
+			right = new SimpleFilter(versionAttr, Operator.LessThanOrEqual, parsedRange.getHigh()
+				.toString());
 		else
-			right = new NotFilter(
-					new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, parsedRange.getHigh().toString()));
+			right = new NotFilter(new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, parsedRange.getHigh()
+				.toString()));
 
 		Filter result;
 		if (right != null)
-			result = new AndFilter().addChild(left).addChild(right);
+			result = new AndFilter().addChild(left)
+				.addChild(right);
 		else
 			result = left;
 

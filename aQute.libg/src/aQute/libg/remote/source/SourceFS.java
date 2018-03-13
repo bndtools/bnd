@@ -18,19 +18,20 @@ import aQute.libg.remote.Delta;
 import aQute.libg.remote.Sink;
 
 class SourceFS {
-	static Pattern							WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
-	static Pattern							WINDOWS_FILE_P	= Pattern
-			.compile("(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*");
-	static Pattern							UNIX_FILE_P		= Pattern.compile("(/[\\p{Alnum}-_+.~@$%&=]+)+");
-	static Pattern							LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P : UNIX_FILE_P;
+	static Pattern								WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
+	static Pattern								WINDOWS_FILE_P	= Pattern
+		.compile("(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*");
+	static Pattern								UNIX_FILE_P		= Pattern.compile("(/[\\p{Alnum}-_+.~@$%&=]+)+");
+	static Pattern								LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P
+		: UNIX_FILE_P;
 
-	private MultiMap<String,File>			shas			= new MultiMap<>();
-	private final Map<File,FileDescription>	files			= new HashMap<>();
-	private final boolean					pathConversion;
-	private final String					cwd;
-	private final char						separatorChar;
-	private Sink							sink;
-	private String							areaId;
+	private MultiMap<String, File>				shas			= new MultiMap<>();
+	private final Map<File, FileDescription>	files			= new HashMap<>();
+	private final boolean						pathConversion;
+	private final String						cwd;
+	private final char							separatorChar;
+	private Sink								sink;
+	private String								areaId;
 
 	/*
 	 * The information we maintain per file that we sync remotely.
@@ -187,7 +188,8 @@ class SourceFS {
 			}
 		}
 
-		files.values().removeAll(toBeDeleted);
+		files.values()
+			.removeAll(toBeDeleted);
 
 		sync(deltas);
 	}
@@ -201,7 +203,8 @@ class SourceFS {
 			shas.remove(oldSha);
 
 		if (file != null && file.isFile()) {
-			String sha = SHA1.digest(file).asHex();
+			String sha = SHA1.digest(file)
+				.asHex();
 			shas.add(sha, file);
 			return sha;
 		}
@@ -216,7 +219,8 @@ class SourceFS {
 		for (File f : files) {
 			if (f.isFile()) {
 
-				assert sha.equals(SHA1.digest(f).asHex());
+				assert sha.equals(SHA1.digest(f)
+					.asHex());
 
 				return IO.read(f);
 			}

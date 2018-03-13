@@ -10,7 +10,7 @@ import aQute.service.reporter.Reporter;
 public class ReporterLogService implements LogService {
 	private final static Logger	logger	= LoggerFactory.getLogger(ReporterLogService.class);
 
-	private final Reporter reporter;
+	private final Reporter		reporter;
 
 	public ReporterLogService(Reporter reporter) {
 		this.reporter = reporter;

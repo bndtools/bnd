@@ -21,14 +21,15 @@ public class ExpandPropertiesTask extends BaseTask {
 		try {
 			if (propertyFile.exists()) {
 				Properties properties = new UTF8Properties();
-				properties.putAll((Map< ? , ? >) getProject().getProperties());
+				properties.putAll((Map<?, ?>) getProject().getProperties());
 
 				try (Processor processor = new Processor(properties)) {
 					processor.setProperties(propertyFile);
 
 					Project project = getProject();
 					Properties flattened = processor.getFlattenedProperties();
-					for (Iterator<Object> i = flattened.keySet().iterator(); i.hasNext();) {
+					for (Iterator<Object> i = flattened.keySet()
+						.iterator(); i.hasNext();) {
 						String key = (String) i.next();
 						if (project.getProperty(key) == null) {
 							project.setProperty(key, flattened.getProperty(key));

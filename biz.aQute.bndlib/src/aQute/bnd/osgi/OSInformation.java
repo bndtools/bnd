@@ -20,69 +20,52 @@ import aQute.lib.strings.Strings;
  * osgi.native.* bundle properties.
  */
 public class OSInformation {
-	String	osnames		= null;
-	Version	osversion	= null;
+	String					osnames							= null;
+	Version					osversion						= null;
 
 	static private String	regexQualifierNotAllowedChars	= "[^\\p{Alnum}-_]";
 	static private Pattern	digitPattern					= Pattern.compile("(\\d+).*");
 
-	final static String[][]	processorFamilies	= {
-			new String[] {
-					"x86-64", "amd64", "em64t", "x86_64"
-															},
-			new String[] {
-					"x86", "pentium", "i386", "i486", "i586", "i686"
-															},
-			new String[] {
-					"68k"
-															},
-			new String[] {
-					"ARM"
-															},
-			new String[] {
-					"ARM_be"
-															},
-			new String[] {
-					"ARM_le"
-															},
-			new String[] {
-					"Alpha"
-															},
-			new String[] {
-					"ia64n"
-															},
-			new String[] {
-					"ia64w"
-															},
-			new String[] {
-					"Ignite", "psc1k"
-															},
-			new String[] {
-					"Mips"
-															},
-			new String[] {
-					"PARisc"
-															},
-			new String[] {
-					"PowerPC", "power", "ppc"
-															},
-			new String[] {
-					"Sh4"
-															},
-			new String[] {
-					"Sparc"
-															},
-			new String[] {
-					"Sparcv9"
-															},
-			new String[] {
-					"S390"
-															},
-			new String[] {
-					"V850e"
-															},
-													};
-	static String[]			osarch				= getProcessorAliases(System.getProperty("os.arch"));
+	final static String[][]	processorFamilies				= {
+		new String[] {
+			"x86-64", "amd64", "em64t", "x86_64"
+		}, new String[] {
+			"x86", "pentium", "i386", "i486", "i586", "i686"
+		}, new String[] {
+			"68k"
+		}, new String[] {
+			"ARM"
+		}, new String[] {
+			"ARM_be"
+		}, new String[] {
+			"ARM_le"
+		}, new String[] {
+			"Alpha"
+		}, new String[] {
+			"ia64n"
+		}, new String[] {
+			"ia64w"
+		}, new String[] {
+			"Ignite", "psc1k"
+		}, new String[] {
+			"Mips"
+		}, new String[] {
+			"PARisc"
+		}, new String[] {
+			"PowerPC", "power", "ppc"
+		}, new String[] {
+			"Sh4"
+		}, new String[] {
+			"Sparc"
+		}, new String[] {
+			"Sparcv9"
+		}, new String[] {
+			"S390"
+		}, new String[] {
+			"V850e"
+		},
+	};
+	static String[]			osarch							= getProcessorAliases(System.getProperty("os.arch"));
 
 	public static String[] getProcessorAliases(String osArch) {
 		for (String[] pnames : processorFamilies) {
@@ -122,7 +105,7 @@ public class OSInformation {
 				try {
 					matchedDigitNumber = Integer.parseInt(matchedDigit);
 				} catch (NumberFormatException e) {
-					assert(false);
+					assert (false);
 					break;
 				}
 
@@ -140,7 +123,7 @@ public class OSInformation {
 						break;
 
 					default :
-						assert(false);
+						assert (false);
 						break;
 				}
 
@@ -175,13 +158,13 @@ public class OSInformation {
 	public OSInformation(String sysPropOsName, String sysPropOsVersion) throws IllegalArgumentException {
 
 		if (sysPropOsName == null || sysPropOsName.length() == 0 || sysPropOsVersion == null
-				|| sysPropOsVersion.length() == 0) {
+			|| sysPropOsVersion.length() == 0) {
 			return;
 		}
 		OSNameVersion pair = getOperatingSystemAliases(sysPropOsName, sysPropOsVersion);
 		if (pair == null)
 			throw new IllegalArgumentException(
-					"Unknown OS/version combination: " + sysPropOsName + " " + sysPropOsVersion);
+				"Unknown OS/version combination: " + sysPropOsName + " " + sysPropOsVersion);
 
 		osversion = pair.osversion;
 		osnames = pair.osnames;
@@ -238,13 +221,21 @@ public class OSInformation {
 			clause.osname.addAll(Strings.split(osi.osnames));
 			clause.osversion = osi.osversion;
 			clause.processor.addAll(Arrays.asList(getProcessorAliases(System.getProperty("os.arch"))));
-			clause.language = Locale.getDefault().toString();
+			clause.language = Locale.getDefault()
+				.toString();
 
 			StringBuilder sb = new StringBuilder();
-			sb.append("osname=").append(System.getProperty("os.name"));
-			sb.append(";").append("osversion=").append(MavenVersion.cleanupVersion(System.getProperty("os.version")));
-			sb.append(";").append("processor=").append(System.getProperty("os.arch"));
-			sb.append(";").append("lang=").append(clause.language);
+			sb.append("osname=")
+				.append(System.getProperty("os.name"));
+			sb.append(";")
+				.append("osversion=")
+				.append(MavenVersion.cleanupVersion(System.getProperty("os.version")));
+			sb.append(";")
+				.append("processor=")
+				.append(System.getProperty("os.arch"));
+			sb.append(";")
+				.append("lang=")
+				.append(clause.language);
 			String advice = sb.toString();
 		} else {
 
@@ -255,7 +246,7 @@ public class OSInformation {
 				String parts[] = args[i].split("\\s*=\\s*");
 				if (parts.length != 2)
 					throw new IllegalArgumentException(
-							"Illegal property syntax in \"" + args[i] + "\", use \"key=value\"");
+						"Illegal property syntax in \"" + args[i] + "\", use \"key=value\"");
 
 				String key = Strings.trim(parts[0]);
 				String value = Strings.trim(parts[1]);
@@ -299,14 +290,14 @@ public class OSInformation {
 							clause.osversion = Version.parseVersion(value);
 						} else
 							throw new IllegalArgumentException(
-									"osversion/osgi.native.osversion can only be set once in ${native_capability}");
+								"osversion/osgi.native.osversion can only be set once in ${native_capability}");
 						break;
 
 					case "osgi.native.language" :
 					case "lang" :
 						if (clause.language != null)
 							throw new IllegalArgumentException(
-									"lang/osgi.native.lang can only be set once in ${native_capability}");
+								"lang/osgi.native.lang can only be set once in ${native_capability}");
 
 						clause.language = value;
 						break;
@@ -358,7 +349,8 @@ public class OSInformation {
 			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
 			nc.osnames = "MacOSX,Mac OS X";
 			return nc;
-		} else if (sysPropOsName.toLowerCase().startsWith("linux")) {
+		} else if (sysPropOsName.toLowerCase()
+			.startsWith("linux")) {
 			nc.osversion = convertUnixKernelVersion(sysPropOsVersion);
 			nc.osnames = "Linux";
 		} else if (sysPropOsName.startsWith("Solaris")) {

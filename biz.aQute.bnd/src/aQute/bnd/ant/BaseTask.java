@@ -24,18 +24,18 @@ import aQute.service.reporter.Reporter;
 
 public class BaseTask extends Task implements Reporter {
 	private final static Logger	logger			= LoggerFactory.getLogger(BaseTask.class);
-	ReporterAdapter			reporter		= new ReporterAdapter();
+	ReporterAdapter				reporter		= new ReporterAdapter();
 
-	List<String>			errors			= new ArrayList<>();
-	List<String>			warnings		= new ArrayList<>();
-	List<String>			progress		= new ArrayList<>();
-	boolean					pedantic;
-	boolean					trace;
-	String					onfail;
-	final List<Property>	properties		= new LinkedList<>();
-	final List<Property>	workspaceProps	= new LinkedList<>();
-	final AntMessages		messages		= ReporterMessages.base(this, AntMessages.class);
-	boolean					exceptions;
+	List<String>				errors			= new ArrayList<>();
+	List<String>				warnings		= new ArrayList<>();
+	List<String>				progress		= new ArrayList<>();
+	boolean						pedantic;
+	boolean						trace;
+	String						onfail;
+	final List<Property>		properties		= new LinkedList<>();
+	final List<Property>		workspaceProps	= new LinkedList<>();
+	final AntMessages			messages		= ReporterMessages.base(this, AntMessages.class);
+	boolean						exceptions;
 
 	static {
 		Workspace.setDriver(Constants.BNDDRIVER_ANT);
@@ -47,7 +47,8 @@ public class BaseTask extends Task implements Reporter {
 	}
 
 	protected boolean report(Reporter reporter) {
-		int errCount = reporter.getErrors().size();
+		int errCount = reporter.getErrors()
+			.size();
 		if (errCount > 0) {
 			System.err.printf("%d ERRORS%n", errCount);
 			for (String e : reporter.getErrors()) {
@@ -55,7 +56,8 @@ public class BaseTask extends Task implements Reporter {
 			}
 			return true;
 		}
-		int warnCount = reporter.getWarnings().size();
+		int warnCount = reporter.getWarnings()
+			.size();
 		if (warnCount > 0) {
 			System.err.printf("%d WARNINGS%n", warnCount);
 			for (String w : reporter.getWarnings()) {
@@ -95,7 +97,7 @@ public class BaseTask extends Task implements Reporter {
 		return Arrays.asList(string.split("\\s*" + string + "\\s*"));
 	}
 
-	protected String join(Collection< ? > classpath, String string) {
+	protected String join(Collection<?> classpath, String string) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Object name : classpath) {

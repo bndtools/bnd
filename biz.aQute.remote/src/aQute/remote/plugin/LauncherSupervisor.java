@@ -4,7 +4,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import aQute.bnd.util.dto.DTO;
-
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;
@@ -15,7 +14,7 @@ import aQute.remote.util.AgentSupervisor;
  * repository for the agent and handles the redirection. It also handles the
  * events.
  */
-public class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implements Supervisor {
+public class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent> implements Supervisor {
 	private Appendable	stdout;
 	private Appendable	stderr;
 	private Thread		stdin;

@@ -26,15 +26,15 @@ public class RunSessionImpl implements RunSession {
 	private LauncherSupervisor			supervisor;
 	private RemoteProjectLauncherPlugin	launcher;
 	private RunRemoteDTO				dto;
-	private Map<String,Object>			properties;
+	private Map<String, Object>			properties;
 	public CountDownLatch				started	= new CountDownLatch(1);
 	private Appendable					stderr;
 	private Appendable					stdout;
 	private int							shell	= -4711;
 	public static int					jdb		= 16043;
 
-	public RunSessionImpl(RemoteProjectLauncherPlugin launcher, RunRemoteDTO dto, Map<String,Object> properties)
-			throws Exception {
+	public RunSessionImpl(RemoteProjectLauncherPlugin launcher, RunRemoteDTO dto, Map<String, Object> properties)
+		throws Exception {
 		this.launcher = launcher;
 		this.properties = properties;
 		this.dto = dto;
@@ -84,7 +84,8 @@ public class RunSessionImpl implements RunSession {
 	@Override
 	public void stdin(String input) throws Exception {
 		if (supervisor != null)
-			supervisor.getAgent().stdin(input);
+			supervisor.getAgent()
+				.stdin(input);
 	}
 
 	@Override
@@ -121,20 +122,21 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	@Override
-	public Map<String,Object> getProperties() {
+	public Map<String, Object> getProperties() {
 		return properties;
 	}
 
-	private boolean installFramework(Agent agent, RunRemoteDTO dto, Map<String,Object> properties) throws Exception {
+	private boolean installFramework(Agent agent, RunRemoteDTO dto, Map<String, Object> properties) throws Exception {
 		List<String> onpath = new ArrayList<>(launcher.getRunpath());
 
-		Map<String,String> runpath = getBundles(onpath, Constants.RUNPATH);
+		Map<String, String> runpath = getBundles(onpath, Constants.RUNPATH);
 
 		return agent.createFramework(dto.name, runpath.values(), properties);
 	}
 
-	void update(Map<String,String> newer) throws Exception {
-		supervisor.getAgent().update(newer);
+	void update(Map<String, String> newer) throws Exception {
+		supervisor.getAgent()
+			.update(newer);
 	}
 
 	int join() throws InterruptedException {
@@ -145,8 +147,8 @@ public class RunSessionImpl implements RunSession {
 		supervisor.close();
 	}
 
-	Map<String,String> getBundles(Collection<String> collection, String header) throws Exception {
-		Map<String,String> newer = new LinkedHashMap<>();
+	Map<String, String> getBundles(Collection<String> collection, String header) throws Exception {
+		Map<String, String> newer = new LinkedHashMap<>();
 
 		for (String c : collection) {
 			File f = new File(c);
@@ -157,12 +159,14 @@ public class RunSessionImpl implements RunSession {
 	}
 
 	void update(RunRemoteDTO dto) throws Exception {
-		Map<String,String> newer = getBundles(launcher.getRunBundles(), Constants.RUNBUNDLES);
+		Map<String, String> newer = getBundles(launcher.getRunBundles(), Constants.RUNBUNDLES);
 		if (shell != dto.shell) {
-			supervisor.getAgent().redirect(dto.shell);
+			supervisor.getAgent()
+				.redirect(dto.shell);
 			shell = dto.shell;
 		}
-		supervisor.getAgent().update(newer);
+		supervisor.getAgent()
+			.update(newer);
 	}
 
 	@Override

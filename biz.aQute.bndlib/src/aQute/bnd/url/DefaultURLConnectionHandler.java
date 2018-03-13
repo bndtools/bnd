@@ -52,7 +52,8 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 
 		String string = url.toString();
 		for (Glob g : matchers) {
-			if (g.matcher(string).matches())
+			if (g.matcher(string)
+				.matches())
 				return true;
 		}
 		return false;
@@ -80,7 +81,7 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	 * before they handle their own properties.
 	 */
 
-	public void setProperties(Map<String,String> map) throws Exception {
+	public void setProperties(Map<String, String> map) throws Exception {
 		String matches = map.get(MATCH);
 		if (matches != null) {
 			for (String p : matches.split("\\s*,\\s*")) {

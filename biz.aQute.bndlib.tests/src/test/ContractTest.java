@@ -33,7 +33,7 @@ public class ContractTest extends TestCase {
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
 		assertTrue(
-				a.check("Contract \\[name=abc;version=0.0.0;from=biz.aQute.bndlib.tests] does not declare a version"));
+			a.check("Contract \\[name=abc;version=0.0.0;from=biz.aQute.bndlib.tests] does not declare a version"));
 
 		Domain domain = Domain.domain(ajar.getManifest());
 		Parameters p = domain.getRequireCapability();
@@ -108,7 +108,8 @@ public class ContractTest extends TestCase {
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check());
-		ajar.getManifest().write(System.out);
+		ajar.getManifest()
+			.write(System.out);
 
 		Domain domain = Domain.domain(ajar.getManifest());
 		Parameters p = domain.getRequireCapability();
@@ -139,7 +140,7 @@ public class ContractTest extends TestCase {
 		a.setProperty("Export-Package", "test.refer");
 		Jar ajar = a.build();
 		assertTrue(a.check(
-				"Contracts \\[Contract \\[name=test;version=2.5.0;from=biz.aQute.bndlib.tests\\], Contract \\[name=test;version=2.5.0"));
+			"Contracts \\[Contract \\[name=test;version=2.5.0;from=biz.aQute.bndlib.tests\\], Contract \\[name=test;version=2.5.0"));
 
 	}
 
@@ -169,7 +170,7 @@ public class ContractTest extends TestCase {
 
 	public void testMultiple() throws Exception {
 		Jar bjar = getContractExporter("abc", new String[] {
-				"2.5", "2.6", "3.0", "3.1"
+			"2.5", "2.6", "3.0", "3.1"
 		}, "${exports}");
 
 		Builder a = newBuilder();
@@ -193,7 +194,7 @@ public class ContractTest extends TestCase {
 
 	private Jar getContractExporter(String name, String version, String uses) throws IOException, Exception {
 		return getContractExporter(name, new String[] {
-				version
+			version
 		}, uses);
 	}
 
@@ -214,8 +215,7 @@ public class ContractTest extends TestCase {
 					s.setLength(s.length() - 1);
 					s.append("\"");
 					sb.format(s.toString());
-				}
-				else
+				} else
 					sb.format(";version:Version=%s", versions[0]);
 			}
 			if (uses != null)

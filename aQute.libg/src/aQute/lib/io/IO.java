@@ -50,14 +50,15 @@ import java.util.regex.Pattern;
 import aQute.libg.glob.Glob;
 
 public class IO {
-	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
+	static final int									BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	private static final int							DIRECT_MAP_THRESHOLD	= BUFFER_SIZE;
-	private static final boolean						isWindows		= File.separatorChar == '\\';
-	static final public File	work		= new File(System.getProperty("user.dir"));
-	static final public File	home;
-	private static final EnumSet<StandardOpenOption>	writeOptions	= EnumSet.of(StandardOpenOption.WRITE,
-			StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-	private static final EnumSet<StandardOpenOption>	readOptions		= EnumSet.of(StandardOpenOption.READ);
+	private static final boolean						isWindows				= File.separatorChar == '\\';
+	static final public File							work					= new File(
+		System.getProperty("user.dir"));
+	static final public File							home;
+	private static final EnumSet<StandardOpenOption>	writeOptions			= EnumSet.of(StandardOpenOption.WRITE,
+		StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+	private static final EnumSet<StandardOpenOption>	readOptions				= EnumSet.of(StandardOpenOption.READ);
 	static {
 		File tmp = null;
 		try {
@@ -90,7 +91,8 @@ public class IO {
 	}
 
 	private static void traverse(Collection<File> files, File current, Glob glob) {
-		if (current.isFile() && (glob == null || glob.matcher(current.getName()).matches())) {
+		if (current.isFile() && (glob == null || glob.matcher(current.getName())
+			.matches())) {
 			files.add(current);
 		} else if (current.isDirectory()) {
 			for (File sub : current.listFiles()) {
@@ -366,42 +368,45 @@ public class IO {
 				throw new IllegalArgumentException("target directory can not be child of source directory.");
 
 			Files.walkFileTree(source, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-					new FileVisitor<Path>() {
-						final FileTime now = FileTime.fromMillis(System.currentTimeMillis());
-						@Override
-						public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-								throws IOException {
-							Path targetdir = target.resolve(source.relativize(dir));
-							try {
-								Files.copy(dir, targetdir);
-							} catch (FileAlreadyExistsException e) {
-								if (!Files.isDirectory(targetdir))
-									throw e;
-							}
-							return FileVisitResult.CONTINUE;
+				new FileVisitor<Path>() {
+					final FileTime now = FileTime.fromMillis(System.currentTimeMillis());
+
+					@Override
+					public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+						Path targetdir = target.resolve(source.relativize(dir));
+						try {
+							Files.copy(dir, targetdir);
+						} catch (FileAlreadyExistsException e) {
+							if (!Files.isDirectory(targetdir))
+								throw e;
 						}
-						@Override
-						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-							Path targetFile = target.resolve(source.relativize(file));
-							Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING);
-							Files.setLastModifiedTime(targetFile, now);
-							return FileVisitResult.CONTINUE;
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						Path targetFile = target.resolve(source.relativize(file));
+						Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING);
+						Files.setLastModifiedTime(targetFile, now);
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+						if (exc != null) { // directory iteration failed
+							throw exc;
 						}
-						@Override
-						public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-							if (exc != null) { // directory iteration failed
-								throw exc;
-							}
-							return FileVisitResult.CONTINUE;
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+						if (exc != null) {
+							throw exc;
 						}
-						@Override
-						public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-							if (exc != null) {
-								throw exc;
-							}
-							return FileVisitResult.CONTINUE;
-						}
-					});
+						return FileVisitResult.CONTINUE;
+					}
+				});
 			return tgt;
 		}
 		throw new FileNotFoundException("During copy: " + source.toString());
@@ -581,10 +586,10 @@ public class IO {
 	 *             directory
 	 */
 	public static File createTempFile(File directory, String pattern, String suffix)
-			throws IllegalArgumentException, IOException {
+		throws IllegalArgumentException, IOException {
 		if ((pattern == null) || (pattern.length() < 3)) {
-			throw new IllegalArgumentException("Pattern must be at least 3 characters long, got "
-					+ ((pattern == null) ? "null" : pattern.length()));
+			throw new IllegalArgumentException(
+				"Pattern must be at least 3 characters long, got " + ((pattern == null) ? "null" : pattern.length()));
 		}
 
 		if ((directory != null) && !directory.isDirectory()) {
@@ -701,11 +706,13 @@ public class IO {
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 				return FileVisitResult.CONTINUE;
 			}
+
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				Files.delete(file);
 				return FileVisitResult.CONTINUE;
 			}
+
 			@Override
 			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
 				try {
@@ -715,6 +722,7 @@ public class IO {
 				}
 				return FileVisitResult.CONTINUE;
 			}
+
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 				if (exc != null) { // directory iteration failed
@@ -775,7 +783,7 @@ public class IO {
 		}
 	}
 
-	public static OutputStream copy(Collection< ? > c, OutputStream out) throws IOException {
+	public static OutputStream copy(Collection<?> c, OutputStream out) throws IOException {
 		PrintWriter pw = writer(out);
 		try {
 			for (Object o : c) {
@@ -803,7 +811,8 @@ public class IO {
 			// is url
 			return new URL(s);
 		}
-		return getFile(base, s).toURI().toURL();
+		return getFile(base, s).toURI()
+			.toURL();
 	}
 
 	public static void store(Object o, File file) throws IOException {
@@ -1048,8 +1057,8 @@ public class IO {
 				BasicFileAttributes targetAttrs = Files.readAttributes(target, BasicFileAttributes.class);
 				try {
 					BasicFileAttributes linkAttrs = Files.readAttributes(link, BasicFileAttributes.class);
-					if (targetAttrs.lastModifiedTime().equals(linkAttrs.lastModifiedTime())
-							&& targetAttrs.size() == linkAttrs.size()) {
+					if (targetAttrs.lastModifiedTime()
+						.equals(linkAttrs.lastModifiedTime()) && targetAttrs.size() == linkAttrs.size()) {
 						return true;
 					}
 				} catch (IOException e) {
@@ -1065,7 +1074,7 @@ public class IO {
 		return false;
 	}
 
-	static final public OutputStream	nullStream	=																	//
+	static final public OutputStream	nullStream	=						//
 		new OutputStream() {
 			@Override
 			public void write(int var0) {}
@@ -1083,7 +1092,7 @@ public class IO {
 			public void flush() {}
 		};
 
-	static final public Writer			nullWriter	=																	//
+	static final public Writer			nullWriter	=						//
 		new Writer() {
 			@Override
 			public Writer append(char var0) {
@@ -1155,14 +1164,14 @@ public class IO {
 				}
 			}
 		}
-		if (sb.length() == 0 || (isWindows && RESERVED_WINDOWS_P.matcher(sb).matches()))
+		if (sb.length() == 0 || (isWindows && RESERVED_WINDOWS_P.matcher(sb)
+			.matches()))
 			sb.append("_");
 
 		return sb.toString();
 	}
 
-	final static Pattern RESERVED_WINDOWS_P = Pattern.compile(
-			"CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
+	final static Pattern RESERVED_WINDOWS_P = Pattern.compile("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
 
 	public static boolean isWindows() {
 		return isWindows;

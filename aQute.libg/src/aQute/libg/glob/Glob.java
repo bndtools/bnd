@@ -10,8 +10,8 @@ import java.util.regex.Pattern;
 public class Glob {
 
 	public static final Glob	ALL	= new Glob("*");
-	private final String	glob;
-	private final Pattern	pattern;
+	private final String		glob;
+	private final Pattern		pattern;
 
 	public Glob(String globString) {
 		this(globString, 0);
@@ -93,9 +93,10 @@ public class Glob {
 		return sb.toString();
 	}
 
-	public void select(List< ? > objects) {
-		for (Iterator< ? > i = objects.iterator(); i.hasNext();) {
-			String s = i.next().toString();
+	public void select(List<?> objects) {
+		for (Iterator<?> i = objects.iterator(); i.hasNext();) {
+			String s = i.next()
+				.toString();
 			if (!matcher(s).matches())
 				i.remove();
 		}

@@ -13,14 +13,17 @@ public class ReflectAction implements Action {
 	}
 
 	public void execute(Project project, String action) throws Exception {
-		Method m = project.getClass().getMethod(what);
+		Method m = project.getClass()
+			.getMethod(what);
 		m.invoke(project);
 	}
 
 	public void execute(Project project, Object... args) throws Exception {
-		for (Method m : project.getClass().getMethods()) {
-			Class< ? >[] types = m.getParameterTypes();
-			if (m.getName().equals(what)) {
+		for (Method m : project.getClass()
+			.getMethods()) {
+			Class<?>[] types = m.getParameterTypes();
+			if (m.getName()
+				.equals(what)) {
 				if (args.length == types.length) {
 					if (args.length == 0)
 						m.invoke(project);

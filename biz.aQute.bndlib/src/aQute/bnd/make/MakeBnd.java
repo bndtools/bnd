@@ -15,7 +15,7 @@ import aQute.bnd.service.MakePlugin;
 public class MakeBnd implements MakePlugin, Constants {
 	final static Pattern JARFILE = Pattern.compile("(.+)\\.(jar|ipa)");
 
-	public Resource make(Builder builder, String destination, Map<String,String> argumentsOnMake) throws Exception {
+	public Resource make(Builder builder, String destination, Map<String, String> argumentsOnMake) throws Exception {
 		String type = argumentsOnMake.get("type");
 		if (!"bnd".equals(type))
 			return null;
@@ -42,7 +42,8 @@ public class MakeBnd implements MakePlugin, Constants {
 			Jar dot = builder.getJar();
 
 			if (builder.hasSources()) {
-				for (String key : jar.getResources().keySet()) {
+				for (String key : jar.getResources()
+					.keySet()) {
 					if (key.startsWith("OSGI-OPT/src"))
 						dot.putResource(key, jar.getResource(key));
 				}

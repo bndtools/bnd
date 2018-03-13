@@ -9,7 +9,7 @@ import java.util.Map;
 import aQute.libg.log.Logger;
 import aQute.libg.qtokens.QuotedTokenizer;
 
-public class Clauses extends LinkedHashMap<String,Map<String,String>> {
+public class Clauses extends LinkedHashMap<String, Map<String, String>> {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -22,7 +22,8 @@ public class Clauses extends LinkedHashMap<String,Map<String,String>> {
 	 * @return parsed clauses
 	 */
 	static public Clauses parse(String value, Logger logger) {
-		if (value == null || value.trim().length() == 0)
+		if (value == null || value.trim()
+			.length() == 0)
 			return new Clauses();
 
 		Clauses result = new Clauses();
@@ -38,8 +39,8 @@ public class Clauses extends LinkedHashMap<String,Map<String,String>> {
 				String adname = qt.nextToken();
 				if ((del = qt.getSeparator()) != '=') {
 					if (hadAttribute)
-						throw new IllegalArgumentException("Header contains name field after attribute or directive: "
-								+ adname + " from " + value);
+						throw new IllegalArgumentException(
+							"Header contains name field after attribute or directive: " + adname + " from " + value);
 					aliases.add(adname);
 				} else {
 					String advalue = qt.nextToken();
@@ -53,7 +54,7 @@ public class Clauses extends LinkedHashMap<String,Map<String,String>> {
 				if (result.containsKey(packageName)) {
 					if (logger != null)
 						logger.warning("Duplicate package name in header: " + packageName
-								+ ". Multiple package names in one clause not supported in Bnd.");
+							+ ". Multiple package names in one clause not supported in Bnd.");
 				} else
 					result.put(packageName, clause);
 			}

@@ -25,12 +25,13 @@ public class AttributesTest extends TestCase {
 	public static void testRemoveDirective() throws Exception {
 		Jar javax = new Jar("test");
 		Manifest m = new Manifest();
-		m.getMainAttributes().putValue("Export-Package",
+		m.getMainAttributes()
+			.putValue("Export-Package",
 				"javax.microedition.io;a1=exp-1;a2=exp-2;a3=exp-3;x1=x1;x2=x2;x3=x3;mandatory:=\"a1,a2,a3,x1,x2,x3\"");
 		javax.setManifest(m);
 
 		Jar cp[] = {
-				javax, new Jar(IO.getFile("jar/osgi.jar"))
+			javax, new Jar(IO.getFile("jar/osgi.jar"))
 		};
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
@@ -41,16 +42,20 @@ public class AttributesTest extends TestCase {
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
 		assertNotNull(bmaker.getImports());
-		assertNotNull(bmaker.getImports().getByFQN("javax.microedition.io"));
-		assertNotNull(bmaker.getImports().getByFQN("javax.microedition.io").get("a2"));
-		jar.getManifest().write(System.err);
+		assertNotNull(bmaker.getImports()
+			.getByFQN("javax.microedition.io"));
+		assertNotNull(bmaker.getImports()
+			.getByFQN("javax.microedition.io")
+			.get("a2"));
+		jar.getManifest()
+			.write(System.err);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String imprt = main.getValue("Import-Package");
 		assertNotNull("Import package header", imprt);
 		Parameters map = Processor.parseHeader(imprt, null);
 		System.err.println("** " + map);
-		Map<String,String> attrs = map.get("javax.microedition.io");
+		Map<String, String> attrs = map.get("javax.microedition.io");
 		assertNotNull(attrs);
 		assertNull(attrs.get("a1"));
 		assertNull(attrs.get("x1"));
@@ -68,12 +73,12 @@ public class AttributesTest extends TestCase {
 	public static void testRemoveAttribute() throws Exception {
 		Jar javax = new Jar("test");
 		Manifest m = new Manifest();
-		m.getMainAttributes().putValue("Export-Package",
-				"javax.microedition.io;common=split;test=abc;mandatory:=\"common,test\"");
+		m.getMainAttributes()
+			.putValue("Export-Package", "javax.microedition.io;common=split;test=abc;mandatory:=\"common,test\"");
 		javax.setManifest(m);
 
 		Jar cp[] = {
-				javax, new Jar(IO.getFile("jar/osgi.jar"))
+			javax, new Jar(IO.getFile("jar/osgi.jar"))
 		};
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
@@ -84,13 +89,14 @@ public class AttributesTest extends TestCase {
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check());
 
-		jar.getManifest().write(System.err);
+		jar.getManifest()
+			.write(System.err);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String imprt = main.getValue("Import-Package");
 		assertNotNull("Import package header", imprt);
 		Parameters map = Processor.parseHeader(imprt, null);
-		Map<String,String> attrs = map.get("javax.microedition.io");
+		Map<String, String> attrs = map.get("javax.microedition.io");
 		assertNotNull(attrs);
 		assertNull(attrs.get("common"));
 	}
@@ -102,7 +108,7 @@ public class AttributesTest extends TestCase {
 	 */
 	public static void testOverrideAttribute() throws Exception {
 		File cp[] = {
-				IO.getFile("jar/osgi.jar")
+			IO.getFile("jar/osgi.jar")
 		};
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
@@ -114,13 +120,15 @@ public class AttributesTest extends TestCase {
 		// System.err.println(bmaker.getExports());
 		System.err.println("Warnings: " + bmaker.getWarnings());
 		System.err.println("Errors  : " + bmaker.getErrors());
-		jar.getManifest().write(System.err);
+		jar.getManifest()
+			.write(System.err);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String export = main.getValue("Export-Package");
 		assertNotNull("Export package header", export);
 		Parameters map = Processor.parseHeader(export, null);
-		assertEquals("1.1", map.get("org.osgi.framework").get("version"));
+		assertEquals("1.1", map.get("org.osgi.framework")
+			.get("version"));
 	}
 
 	/**
@@ -130,7 +138,7 @@ public class AttributesTest extends TestCase {
 	 */
 	public static void testSimple() throws Exception {
 		File cp[] = {
-				IO.getFile("jar/osgi.jar")
+			IO.getFile("jar/osgi.jar")
 		};
 		Builder bmaker = new Builder();
 		Properties p = new Properties();
@@ -142,13 +150,15 @@ public class AttributesTest extends TestCase {
 		// System.err.println(bmaker.getExports());
 		System.err.println("Warnings: " + bmaker.getWarnings());
 		System.err.println("Errors  : " + bmaker.getErrors());
-		jar.getManifest().write(System.err);
+		jar.getManifest()
+			.write(System.err);
 		Manifest manifest = jar.getManifest();
 		Attributes main = manifest.getMainAttributes();
 		String export = main.getValue("Export-Package");
 		assertNotNull("Export package header", export);
 		Parameters map = Processor.parseHeader(export, null);
-		assertEquals("1.3", map.get("org.osgi.framework").get("version"));
+		assertEquals("1.3", map.get("org.osgi.framework")
+			.get("version"));
 	}
 
 }

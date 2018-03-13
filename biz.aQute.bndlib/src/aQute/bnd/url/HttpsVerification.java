@@ -34,10 +34,10 @@ import aQute.service.reporter.Reporter;
  */
 @aQute.bnd.annotation.plugin.BndPlugin(name = "url.https.verification", parameters = HttpsVerification.Config.class)
 public class HttpsVerification extends DefaultURLConnectionHandler {
-	private SSLSocketFactory			factory;
-	private HostnameVerifier			verifier;
-	private boolean						verify			= true;
-	private String						certificatesPath;
+	private SSLSocketFactory	factory;
+	private HostnameVerifier	verifier;
+	private boolean				verify	= true;
+	private String				certificatesPath;
 	private X509Certificate[]	certificateChain;
 
 	interface Config {
@@ -49,8 +49,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	}
 
 	// http://stackoverflow.com/questions/24555890/using-a-custom-truststore-in-java-as-well-as-the-default-one
-	public HttpsVerification(String certificates, boolean hostnameVerify,
-			Reporter reporter) {
+	public HttpsVerification(String certificates, boolean hostnameVerify, Reporter reporter) {
 		certificatesPath = certificates;
 		this.verify = hostnameVerify;
 		this.setReporter(reporter);
@@ -72,13 +71,13 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	 * @throws FileNotFoundException
 	 */
 	private synchronized void init() throws NoSuchAlgorithmException, KeyManagementException, FileNotFoundException,
-			CertificateException, IOException {
+		CertificateException, IOException {
 		if (factory == null) {
 			List<X509Certificate> certificates = createCertificates(certificatesPath);
 			final X509Certificate trusted[] = certificates.toArray(new X509Certificate[0]);
 
 			TrustManager[] trustAllCerts = new TrustManager[] {
-					getTrustManager(trusted)
+				getTrustManager(trusted)
 			};
 			SSLContext context = SSLContext.getInstance("TLS");
 			context.init(null, trustAllCerts, new SecureRandom());
@@ -102,13 +101,9 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 				return trusted;
 			}
 
-			public void checkServerTrusted(X509Certificate[] certs, String authType)
-					throws CertificateException {
-			}
+			public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
 
-			public void checkClientTrusted(X509Certificate[] certs, String authType)
-					throws CertificateException {
-			}
+			public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
 		};
 		return tm;
 	}
@@ -130,14 +125,14 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	 * Set the properties
 	 */
 	@Override
-	public void setProperties(Map<String,String> map) throws Exception {
+	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
 
 		certificatesPath = map.get("trusted");
 	}
 
 	List<X509Certificate> createCertificates(String paths)
-			throws FileNotFoundException, CertificateException, IOException {
+		throws FileNotFoundException, CertificateException, IOException {
 		List<X509Certificate> certificates = new ArrayList<>();
 		if (paths != null) {
 			for (String path : paths.split("\\s*,\\s*")) {

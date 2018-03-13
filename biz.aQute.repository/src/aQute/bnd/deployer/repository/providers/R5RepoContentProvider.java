@@ -66,7 +66,10 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	}
 
 	private static enum ParserState {
-		beforeRoot, inRoot, inResource, inCapability
+		beforeRoot,
+		inRoot,
+		inResource,
+		inCapability
 	}
 
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
@@ -93,7 +96,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 								String nsUri = reader.getNamespaceURI();
 								if (nsUri != null)
 									return CheckResult.fromBool(NS_URI.equals(nsUri), "Corrent namespace",
-											"Incorrect namespace: " + nsUri, null);
+										"Incorrect namespace: " + nsUri, null);
 								if (!TAG_REPOSITORY.equals(localName))
 									return new CheckResult(reject, "Incorrect root element name", null);
 								state = ParserState.inRoot;
@@ -106,7 +109,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 							case inResource :
 								if (TAG_REQUIREMENT.equals(localName))
 									return new CheckResult(accept, "Recognised element 'requirement' in 'resource'",
-											null);
+										null);
 								if (TAG_CAPABILITY.equals(localName))
 									state = ParserState.inCapability;
 								break;
@@ -141,7 +144,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	}
 
 	public void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor listener, LogService log)
-			throws Exception {
+		throws Exception {
 		XMLStreamReader reader = null;
 		try {
 			XMLInputFactory inputFactory = XMLInputFactory.newInstance();
@@ -181,7 +184,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 								// namespace then resolve it relative to the
 								// base URI.
 								if (ContentNamespace.CONTENT_NAMESPACE.equals(capReqBuilder.getNamespace())
-										&& ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(name)) {
+									&& ContentNamespace.CAPABILITY_URL_ATTRIBUTE.equals(name)) {
 									URI resolvedUri = resolveUri(valueStr, baseUri);
 									capReqBuilder.addAttribute(name, resolvedUri);
 								} else {
@@ -253,7 +256,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	}
 
 	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI baseUri, boolean pretty,
-			Registry registry, LogService log) throws Exception {
+		Registry registry, LogService log) throws Exception {
 
 		long modified = files.stream()
 			.mapToLong(File::lastModified)

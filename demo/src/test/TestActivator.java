@@ -18,7 +18,7 @@ import org.osgi.framework.ServiceReference;
 public class TestActivator implements BundleActivator {
 
 	@SuppressWarnings({
-			"rawtypes", "unchecked"
+		"rawtypes", "unchecked"
 	})
 	public void start(final BundleContext context) throws Exception {
 		System.err.println("Hello world");
@@ -65,7 +65,8 @@ public class TestActivator implements BundleActivator {
 				System.exit(-1);
 			}
 		} else if ("noreference".equals(p)) {
-			String location = context.getBundle().getLocation();
+			String location = context.getBundle()
+				.getLocation();
 
 			if (location.startsWith("reference:"))
 				System.exit(-1);
@@ -73,7 +74,7 @@ public class TestActivator implements BundleActivator {
 				System.exit(15);
 
 		} else if ("agent".equals(p)) {
-			Hashtable<String,Object> ht = new Hashtable<>();
+			Hashtable<String, Object> ht = new Hashtable<>();
 			ht.put("main.thread", true);
 			context.registerService(Callable.class.getName(), new Callable<Integer>() {
 
@@ -125,7 +126,8 @@ public class TestActivator implements BundleActivator {
 						public void run() {
 							System.err.println("Stopping framework");
 							try {
-								context.getBundle(0).stop();
+								context.getBundle(0)
+									.stop();
 								System.err.println("After stopping framework, sleeping");
 								Thread.sleep(10000);
 								System.err.println("After sleeping");
@@ -176,7 +178,7 @@ public class TestActivator implements BundleActivator {
 			Properties props = new Properties();
 			props.setProperty("main.thread", "true");
 			context.registerService(new String[] {
-					Runnable.class.getName(), Callable.class.getName()
+				Runnable.class.getName(), Callable.class.getName()
 			}, r, (Dictionary) props);
 		} else if ("main.thread.callableinvalidtype".equals(p)) {
 			Callable<Double> r = new Callable<Double>() {

@@ -9,7 +9,7 @@ import aQute.service.reporter.Reporter;
 
 public class LogReporter extends org.apache.felix.resolver.Logger implements LogService {
 	private final static Logger	logger	= LoggerFactory.getLogger(LogReporter.class);
-	private Reporter reporter;
+	private Reporter			reporter;
 
 	class Error extends Silent {
 
@@ -21,11 +21,11 @@ public class LogReporter extends org.apache.felix.resolver.Logger implements Log
 			reporter.error("%s : %s", message, exception);
 		}
 
-		public void log(ServiceReference< ? > sr, String message) {
+		public void log(ServiceReference<?> sr, String message) {
 			reporter.error("%s (%s)", message, sr);
 		}
 
-		public void log(ServiceReference< ? > sr, String message, Throwable exception) {
+		public void log(ServiceReference<?> sr, String message, Throwable exception) {
 			reporter.error("%s : %s (%s)", message, exception, sr);
 		}
 	}
@@ -40,11 +40,11 @@ public class LogReporter extends org.apache.felix.resolver.Logger implements Log
 			reporter.warning("%s : %s", message, exception);
 		}
 
-		public void log(ServiceReference< ? > sr, String message) {
+		public void log(ServiceReference<?> sr, String message) {
 			reporter.warning("%s (%s)", message, sr);
 		}
 
-		public void log(ServiceReference< ? > sr, String message, Throwable exception) {
+		public void log(ServiceReference<?> sr, String message, Throwable exception) {
 			reporter.warning("%s : %s (%s)", message, exception, sr);
 		}
 	}
@@ -59,11 +59,11 @@ public class LogReporter extends org.apache.felix.resolver.Logger implements Log
 			logger.debug("{}", message, exception);
 		}
 
-		public void log(ServiceReference< ? > sr, String message) {
+		public void log(ServiceReference<?> sr, String message) {
 			logger.debug("{} ({})", message, sr);
 		}
 
-		public void log(ServiceReference< ? > sr, String message, Throwable exception) {
+		public void log(ServiceReference<?> sr, String message, Throwable exception) {
 			logger.debug("{} ({})", message, sr, exception);
 		}
 	}
@@ -74,9 +74,9 @@ public class LogReporter extends org.apache.felix.resolver.Logger implements Log
 
 		public void log(String message, Throwable exception) {}
 
-		public void log(ServiceReference< ? > sr, String message) {}
+		public void log(ServiceReference<?> sr, String message) {}
 
-		public void log(ServiceReference< ? > sr, String message, Throwable exception) {}
+		public void log(ServiceReference<?> sr, String message, Throwable exception) {}
 	}
 
 	public LogReporter(Reporter reporter) {

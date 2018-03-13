@@ -108,7 +108,7 @@ public class FileRepo {
 		File dir = new File(root, bsn);
 		IO.mkdirs(dir);
 		File file = new File(dir,
-				bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro() + ".jar");
+			bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro() + ".jar");
 		return file;
 	}
 

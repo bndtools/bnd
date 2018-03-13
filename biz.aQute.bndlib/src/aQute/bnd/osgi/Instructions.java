@@ -15,10 +15,10 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.lib.io.IO;
 
-public class Instructions implements Map<Instruction,Attrs> {
-	private LinkedHashMap<Instruction,Attrs>	map;
+public class Instructions implements Map<Instruction, Attrs> {
+	private LinkedHashMap<Instruction, Attrs>	map;
 	public static Instructions					ALWAYS	= new Instructions();
-	static Map<Instruction,Attrs>				EMPTY	= Collections.emptyMap();
+	static Map<Instruction, Attrs>				EMPTY	= Collections.emptyMap();
 
 	public Instructions(Instructions other) {
 		if (other.map != null && !other.map.isEmpty()) {
@@ -79,7 +79,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<Instruction,Attrs>> entrySet() {
+	public Set<java.util.Map.Entry<Instruction, Attrs>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
 
@@ -120,7 +120,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends Instruction, ? extends Attrs> map) {
+	public void putAll(Map<? extends Instruction, ? extends Attrs> map) {
 		if (this.map == null) {
 			if (map.isEmpty())
 				return;
@@ -163,7 +163,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 	}
 
 	public void append(Parameters other) {
-		for (Map.Entry<String,Attrs> e : other.entrySet()) {
+		for (Map.Entry<String, Attrs> e : other.entrySet()) {
 			put(new Instruction(e.getKey()), e.getValue());
 		}
 	}
@@ -254,18 +254,22 @@ public class Instructions implements Map<Instruction,Attrs> {
 	 * @param base The directory to list files from.
 	 * @return The map that links files to attributes
 	 */
-	public Map<File,Attrs> select(File base) {
+	public Map<File, Attrs> select(File base) {
 
-		Map<File,Attrs> result = new HashMap<>();
+		Map<File, Attrs> result = new HashMap<>();
 
 		//
 		// We allow literals to be specified so that we can actually include
 		// files from anywhere in the file system
 		//
 
-		for (java.util.Map.Entry<Instruction,Attrs> instr : entrySet()) {
-			if (instr.getKey().isLiteral() && !instr.getKey().isNegated()) {
-				File f = IO.getFile(base, instr.getKey().getLiteral());
+		for (java.util.Map.Entry<Instruction, Attrs> instr : entrySet()) {
+			if (instr.getKey()
+				.isLiteral()
+				&& !instr.getKey()
+					.isNegated()) {
+				File f = IO.getFile(base, instr.getKey()
+					.getLiteral());
 				if (f.isFile())
 					result.put(f, instr.getValue());
 			}
@@ -277,10 +281,12 @@ public class Instructions implements Map<Instruction,Attrs> {
 
 		if (base != null) {
 			nextFile: for (File f : base.listFiles()) {
-				for (Entry<Instruction,Attrs> instr : entrySet()) {
+				for (Entry<Instruction, Attrs> instr : entrySet()) {
 					String name = f.getName();
-					if (instr.getKey().matches(name)) {
-						if (!instr.getKey().isNegated())
+					if (instr.getKey()
+						.matches(name)) {
+						if (!instr.getKey()
+							.isNegated())
 							result.put(f, instr.getValue());
 						continue nextFile;
 					}

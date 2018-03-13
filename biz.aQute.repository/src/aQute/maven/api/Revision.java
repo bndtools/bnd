@@ -81,17 +81,21 @@ public class Revision implements Comparable<Revision> {
 		if (l < 3)
 			return null;
 
-		String version = projectDirPath.getName(l - 1).toString();
-		String artifact = projectDirPath.getName(l - 2).toString();
+		String version = projectDirPath.getName(l - 1)
+			.toString();
+		String artifact = projectDirPath.getName(l - 2)
+			.toString();
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (int i = 0; i < l - 2; i++) {
-			sb.append(del).append(projectDirPath.getName(i));
+			sb.append(del)
+				.append(projectDirPath.getName(i));
 			del = ".";
 		}
 		String group = sb.toString();
 
-		return Program.valueOf(group, artifact).version(version);
+		return Program.valueOf(group, artifact)
+			.version(version);
 	}
 
 	public Archive getPomArchive() {
@@ -115,7 +119,8 @@ public class Revision implements Comparable<Revision> {
 		if (parts.length != 3)
 			return null;
 
-		return Program.valueOf(parts[0], parts[1]).version(parts[2]);
+		return Program.valueOf(parts[0], parts[1])
+			.version(parts[2]);
 
 	}
 

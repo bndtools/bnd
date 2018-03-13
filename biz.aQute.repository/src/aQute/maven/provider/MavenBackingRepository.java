@@ -34,10 +34,10 @@ public abstract class MavenBackingRepository implements Closeable {
 	// SHA1(xercesImpl-2.9.0.jar)= 868c0792233fc78d8c9bac29ac79ade988301318
 
 	final static Pattern					DIGEST_POLLUTED	= Pattern
-			.compile("(.+=\\s*)?(?<digest>([0-9A-F][0-9A-F])+)\\s*", Pattern.CASE_INSENSITIVE);
+		.compile("(.+=\\s*)?(?<digest>([0-9A-F][0-9A-F])+)\\s*", Pattern.CASE_INSENSITIVE);
 
-	final Map<Revision,RevisionMetadata>	revisions	= new ConcurrentHashMap<>();
-	final Map<Program,ProgramMetadata>		programs	= new ConcurrentHashMap<>();
+	final Map<Revision, RevisionMetadata>	revisions		= new ConcurrentHashMap<>();
+	final Map<Program, ProgramMetadata>		programs		= new ConcurrentHashMap<>();
 	final String							id;
 	final File								local;
 	final Reporter							reporter;
@@ -49,7 +49,8 @@ public abstract class MavenBackingRepository implements Closeable {
 	}
 
 	public static String toName(String uri) throws Exception {
-		String s = SHA1.digest(uri.getBytes(StandardCharsets.UTF_8)).asHex();
+		String s = SHA1.digest(uri.getBytes(StandardCharsets.UTF_8))
+			.asHex();
 		return s.substring(0, 8);
 	}
 
@@ -152,9 +153,9 @@ public abstract class MavenBackingRepository implements Closeable {
 
 	public List<Archive> getSnapshotArchives(Revision revision) throws Exception {
 		return getMetadata(revision).snapshotVersions.stream()
-				.map(snapshotVersion -> revision.archive(snapshotVersion.value, snapshotVersion.extension,
-						snapshotVersion.classifier))
-				.collect(toList());
+			.map(snapshotVersion -> revision.archive(snapshotVersion.value, snapshotVersion.extension,
+				snapshotVersion.classifier))
+			.collect(toList());
 	}
 
 	public MavenVersion getVersion(Revision revision) throws Exception {
@@ -178,8 +179,8 @@ public abstract class MavenBackingRepository implements Closeable {
 		return null;
 	}
 
-	static public List<MavenBackingRepository> create(String urls, Reporter reporter, File localRepo,
-			HttpClient client) throws Exception {
+	static public List<MavenBackingRepository> create(String urls, Reporter reporter, File localRepo, HttpClient client)
+		throws Exception {
 		if (urls == null)
 			return Collections.emptyList();
 
@@ -193,15 +194,15 @@ public abstract class MavenBackingRepository implements Closeable {
 	}
 
 	static public MavenBackingRepository getBackingRepository(String url, Reporter reporter, File localRepo,
-			HttpClient client)
-			throws Exception {
+		HttpClient client) throws Exception {
 		url = clean(url);
 		URI uri = new URI(url);
 		if (uri.getScheme() == null) {
 			File file = IO.getFile(uri.getPath());
 			uri = file.toURI();
 		}
-		if (uri.getScheme().equalsIgnoreCase("file")) {
+		if (uri.getScheme()
+			.equalsIgnoreCase("file")) {
 			File remote = new File(uri);
 			return new MavenFileRepository(localRepo, remote, reporter);
 		} else {

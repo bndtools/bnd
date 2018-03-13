@@ -28,15 +28,15 @@ import aQute.service.reporter.Reporter;
 public class MavenDeploy implements Deploy, Plugin {
 	private final static Logger	logger	= LoggerFactory.getLogger(MavenDeploy.class);
 
-	String		repository;
-	String		url;
-	String		homedir;
-	String		keyname;
+	String						repository;
+	String						url;
+	String						homedir;
+	String						keyname;
 
-	String		passphrase;
-	Reporter	reporter;
+	String						passphrase;
+	Reporter					reporter;
 
-	public void setProperties(Map<String,String> map) {
+	public void setProperties(Map<String, String> map) {
 		repository = map.get("repository");
 		url = map.get("url");
 		passphrase = map.get("passphrase");
@@ -58,7 +58,7 @@ public class MavenDeploy implements Deploy, Plugin {
 	public boolean deploy(Project project, String jarName, InputStream jarStream) throws Exception {
 		Parameters deploy = project.parseHeader(project.getProperty(Constants.DEPLOY));
 
-		Map<String,String> maven = deploy.get(repository);
+		Map<String, String> maven = deploy.get(repository);
 		if (maven == null)
 			return false; // we're not playing for this bundle
 
@@ -79,8 +79,8 @@ public class MavenDeploy implements Deploy, Plugin {
 
 				try (Jar main = new Jar("main"); Jar src = new Jar("src")) {
 					split(original, main, src);
-					Parameters exports = project
-							.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+					Parameters exports = project.parseHeader(manifest.getMainAttributes()
+						.getValue(Constants.EXPORT_PACKAGE));
 					File jdoc = new File(tmp, "jdoc");
 					IO.mkdirs(jdoc);
 					logger.info(LIFECYCLE, "Generating Javadoc for: {}", exports.keySet());
@@ -106,7 +106,8 @@ public class MavenDeploy implements Deploy, Plugin {
 	}
 
 	private void split(Jar original, Jar main, Jar src) {
-		for (Map.Entry<String,Resource> e : original.getResources().entrySet()) {
+		for (Map.Entry<String, Resource> e : original.getResources()
+			.entrySet()) {
 			String path = e.getKey();
 			if (path.startsWith("OSGI-OPT/src/")) {
 				src.putResource(path.substring("OSGI-OPT/src/".length()), e.getValue());
@@ -145,7 +146,7 @@ public class MavenDeploy implements Deploy, Plugin {
 		int result = command.execute(stdout, stderr);
 		if (result != 0) {
 			b.error("Maven deploy to %s failed to sign and transfer %s because %s", repository, file,
-					"" + stdout + stderr);
+				"" + stdout + stderr);
 		}
 	}
 

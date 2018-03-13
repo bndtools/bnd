@@ -46,7 +46,8 @@ public class ShaCache {
 		// system
 		//
 
-		if (!SHA_P.matcher(sha).matches())
+		if (!SHA_P.matcher(sha)
+			.matches())
 			throw new IllegalArgumentException("Not a SHA");
 
 		//
@@ -81,7 +82,8 @@ public class ShaCache {
 
 					File tmp = IO.createTempFile(root, sha.toLowerCase(), ".shacache");
 					IO.copy(in, tmp);
-					String digest = SHA1.digest(tmp).asHex();
+					String digest = SHA1.digest(tmp)
+						.asHex();
 					if (digest.equalsIgnoreCase(sha)) {
 
 						//
@@ -122,7 +124,8 @@ public class ShaCache {
 		// system
 		//
 
-		if (!SHA_P.matcher(sha).matches())
+		if (!SHA_P.matcher(sha)
+			.matches())
 			throw new IllegalArgumentException("Not a SHA");
 
 		//
@@ -139,7 +142,8 @@ public class ShaCache {
 				if (in != null) {
 					File tmp = IO.createTempFile(root, sha.toLowerCase(), ".shacache");
 					IO.copy(in, tmp);
-					String digest = SHA1.digest(tmp).asHex();
+					String digest = SHA1.digest(tmp)
+						.asHex();
 					if (digest.equalsIgnoreCase(sha)) {
 						IO.rename(tmp, f);
 						break;

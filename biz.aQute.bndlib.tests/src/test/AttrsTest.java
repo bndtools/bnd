@@ -12,7 +12,7 @@ public class AttrsTest extends TestCase {
 	public void testAttrs() {
 		Attrs attr = new Attrs();
 		attr.putTyped("xyz", new String[] {
-				"a", ",b"
+			"a", ",b"
 		});
 		assertEquals("a,\\,b", attr.get("xyz"));
 		assertEquals("xyz:List<String>=\"a,\\,b\"", attr.toString());
@@ -44,10 +44,11 @@ public class AttrsTest extends TestCase {
 		Attrs attr = new Attrs();
 		attr.putTyped("version", new Version("1.2.3"));
 		attr.putTyped("versions", new Version[] {
-				new Version("1.2.3"), new Version("2.1.0")
+			new Version("1.2.3"), new Version("2.1.0")
 		});
 
-		assertEquals("List<Version>", attr.getType("versions").toString());
+		assertEquals("List<Version>", attr.getType("versions")
+			.toString());
 		assertEquals(new Version("1.2.3"), attr.getTyped("version"));
 		Object a = attr.getTyped("versions");
 		List<Version> b = Arrays.asList(new Version("1.2.3"), new Version("2.1.0"));

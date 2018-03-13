@@ -14,15 +14,19 @@ class Export {
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(state()).append(" ").append(pack);
-		
-		if ( !exporters.isEmpty()) {
-			sb.append(" exporters=").append(exporters);
+		sb.append(state())
+			.append(" ")
+			.append(pack);
+
+		if (!exporters.isEmpty()) {
+			sb.append(" exporters=")
+				.append(exporters);
 		}
-		if ( !privates.isEmpty()) {
-			sb.append(" privates=").append(privates);
+		if (!privates.isEmpty()) {
+			sb.append(" privates=")
+				.append(privates);
 		}
-		return sb.toString(); 
+		return sb.toString();
 	}
 
 	private String state() {

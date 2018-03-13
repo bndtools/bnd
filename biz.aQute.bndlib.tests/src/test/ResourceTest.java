@@ -40,20 +40,22 @@ public class ResourceTest extends TestCase {
 
 	public void testImportPackage() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
-		Requirement importPackage = rb.addImportPackage("com.foo",
-				Attrs.create("version", "1.2.3").with("mandatory:", "a,b").with("a", "1").with("b", "2"));
-		String filter = importPackage.getDirectives().get("filter");
+		Requirement importPackage = rb.addImportPackage("com.foo", Attrs.create("version", "1.2.3")
+			.with("mandatory:", "a,b")
+			.with("a", "1")
+			.with("b", "2"));
+		String filter = importPackage.getDirectives()
+			.get("filter");
 		assertEquals("(&(osgi.wiring.package=com.foo)(version>=1.2.3)(a=1)(b=2))", filter);
 	}
 
 	public String	is	= "org.osgi.service.log.LogService;availability:=optional;multiple:=false";
 	public String	es	= "org.osgi.service.cm.ConfigurationAdmin;"
-			+ "service.description=\"Configuration Admin Service Specification 1.5 Implementation\";"
-			+ "service.pid=\"org.osgi.service.cm.ConfigurationAdmin\";"
-			+ "service.vendor=\"Apache Software Foundation\"," + "org.apache.felix.cm.PersistenceManager;"
-			+ "service.description=\"Platform Filesystem Persistence Manager\";"
-			+ "service.pid=\"org.apache.felix.cm.file.FilePersistenceManager\";"
-			+ "service.vendor=\"Apache	Software Foundation\"";
+		+ "service.description=\"Configuration Admin Service Specification 1.5 Implementation\";"
+		+ "service.pid=\"org.osgi.service.cm.ConfigurationAdmin\";" + "service.vendor=\"Apache Software Foundation\","
+		+ "org.apache.felix.cm.PersistenceManager;" + "service.description=\"Platform Filesystem Persistence Manager\";"
+		+ "service.pid=\"org.apache.felix.cm.file.FilePersistenceManager\";"
+		+ "service.vendor=\"Apache	Software Foundation\"";
 
 	public void testImportExportService() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
@@ -66,26 +68,27 @@ public class ResourceTest extends TestCase {
 	}
 
 	public void assertConfigAdminServices(Resource build) throws Exception {
-		assertEquals(2, build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE).size());
+		assertEquals(2, build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE)
+			.size());
 		List<Requirement> requireLog = build.getRequirements(ServiceNamespace.SERVICE_NAMESPACE);
 		assertEquals(1, requireLog.size());
 
 		RequirementBuilder rqb = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 		rqb.addFilter("(objectClass=org.osgi.service.cm.ConfigurationAdmin)");
 		List<Capability> findProviders = ResourceUtils.findProviders(rqb.buildSyntheticRequirement(),
-				build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE));
+			build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE));
 		assertEquals(1, findProviders.size());
 
 		rqb = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 		rqb.addFilter("(objectClass=org.apache.felix.cm.PersistenceManager)");
 		findProviders = ResourceUtils.findProviders(rqb.buildSyntheticRequirement(),
-				build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE));
+			build.getCapabilities(ServiceNamespace.SERVICE_NAMESPACE));
 		assertEquals(1, findProviders.size());
 
 		CapabilityBuilder rcb = new CapabilityBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 		rcb.addAttribute("objectClass", "org.osgi.service.log.LogService");
 		findProviders = ResourceUtils.findProviders(requireLog.get(0),
-				Collections.singleton(rcb.buildSyntheticCapability()));
+			Collections.singleton(rcb.buildSyntheticCapability()));
 		assertEquals(1, findProviders.size());
 	}
 
@@ -99,7 +102,6 @@ public class ResourceTest extends TestCase {
 		assertConfigAdminServices(rb.build());
 
 	}
-
 
 	public void testEscapeFilterValue() throws Exception {
 		assertEquals("abc", CapReqBuilder.escapeFilterValue("abc"));
@@ -162,11 +164,13 @@ public class ResourceTest extends TestCase {
 			n++;
 		}
 
-		assertEquals(expected, rba.build().equals(rbb.build()));
+		assertEquals(expected, rba.build()
+			.equals(rbb.build()));
 	}
 
 	public void testResourceEquals() throws Exception {
-		String locations = ResourceTest.class.getResource("larger-repo.xml").toString();
+		String locations = ResourceTest.class.getResource("larger-repo.xml")
+			.toString();
 		Set<Resource> a = getResources(locations);
 		Set<Resource> b = getResources(locations);
 		assertEquals(a, b);
@@ -178,23 +182,28 @@ public class ResourceTest extends TestCase {
 		Resource resource = rb.build();
 		List<Capability> capabilities = resource.getCapabilities(HostNamespace.HOST_NAMESPACE);
 		assertEquals(1, capabilities.size());
-		Map<String,Object> attributes = capabilities.get(0).getAttributes();
+		Map<String, Object> attributes = capabilities.get(0)
+			.getAttributes();
 		assertTrue(attributes.containsKey(HostNamespace.HOST_NAMESPACE));
 		assertTrue(attributes.containsKey(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
 		assertEquals("demo", attributes.get(HostNamespace.HOST_NAMESPACE));
 		assertNotNull(attributes.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
-		assertEquals(0, resource.getRequirements(HostNamespace.HOST_NAMESPACE).size());
+		assertEquals(0, resource.getRequirements(HostNamespace.HOST_NAMESPACE)
+			.size());
 	}
 
 	public void testOSGiWiringHostFragment() throws Exception {
 		ResourceBuilder rb = new ResourceBuilder();
 		rb.addManifest(Domain.domain(IO.getFile("../demo-fragment/generated/demo-fragment.jar")));
 		Resource resource = rb.build();
-		assertEquals(0, resource.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE).size());
-		assertEquals(0, resource.getCapabilities(HostNamespace.HOST_NAMESPACE).size());
+		assertEquals(0, resource.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE)
+			.size());
+		assertEquals(0, resource.getCapabilities(HostNamespace.HOST_NAMESPACE)
+			.size());
 		List<Requirement> requirements = resource.getRequirements(HostNamespace.HOST_NAMESPACE);
 		assertEquals(1, requirements.size());
-		Map<String,String> directives = requirements.get(0).getDirectives();
+		Map<String, String> directives = requirements.get(0)
+			.getDirectives();
 		assertTrue(directives.containsKey(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE));
 		String filter = directives.get(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE);
 		assertEquals("(&(osgi.wiring.host=demo)(&(bundle-version>=1.0.0)(!(bundle-version>=1.0.1))))", filter);
@@ -225,7 +234,7 @@ public class ResourceTest extends TestCase {
 
 	private Set<Resource> getResources(String locations) throws Exception {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
-			Map<String,String> map = new HashMap<>();
+			Map<String, String> map = new HashMap<>();
 			map.put("locations", locations);
 			map.put("name", getName());
 			map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
@@ -234,7 +243,8 @@ public class ResourceTest extends TestCase {
 			p.addBasicPlugin(httpClient);
 			repo.setRegistry(p);
 			Requirement wildcard = ResourceUtils.createWildcardRequirement();
-			Collection<Capability> caps = repo.findProviders(Collections.singleton(wildcard)).get(wildcard);
+			Collection<Capability> caps = repo.findProviders(Collections.singleton(wildcard))
+				.get(wildcard);
 			return ResourceUtils.getResources(caps);
 		}
 	}

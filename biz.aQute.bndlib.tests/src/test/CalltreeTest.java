@@ -25,7 +25,8 @@ public class CalltreeTest extends TestCase {
 		b.addClasspath(new File("bin"));
 		b.setProperty("Private-Package", "test");
 		b.build();
-		Collection<Clazz> clazzes = b.getClassspace().values();
+		Collection<Clazz> clazzes = b.getClassspace()
+			.values();
 		assertTrue(clazzes.size() > 10);
 
 		CalltreeResource.writeCalltree(pw, clazzes);

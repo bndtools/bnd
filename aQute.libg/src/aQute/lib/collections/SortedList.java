@@ -29,13 +29,13 @@ import java.util.Spliterator;
  */
 @SuppressWarnings("unchecked")
 public class SortedList<T> implements SortedSet<T>, List<T> {
-	private static final SortedList< ? >	EMPTY	= new SortedList<>();
+	private static final SortedList<?>	EMPTY	= new SortedList<>();
 
-	private final T[]						list;
-	private final int						start;
-	private final int						end;
-	private final Comparator< ? super T>	comparator;
-	private Class< ? >						type;
+	private final T[]					list;
+	private final int					start;
+	private final int					end;
+	private final Comparator<? super T>	comparator;
+	private Class<?>					type;
 
 	private class It implements ListIterator<T> {
 		private int n;
@@ -88,11 +88,11 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		}
 	}
 
-	public SortedList(Collection< ? extends Comparable< ? super T>> x) {
-		this((Collection< ? extends T>) x, 0, x.size(), null);
+	public SortedList(Collection<? extends Comparable<? super T>> x) {
+		this((Collection<? extends T>) x, 0, x.size(), null);
 	}
 
-	public SortedList(Collection< ? extends T> x, Comparator< ? super T> cmp) {
+	public SortedList(Collection<? extends T> x, Comparator<? super T> cmp) {
 		this(x, 0, x.size(), cmp);
 	}
 
@@ -113,7 +113,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		this.end = end;
 	}
 
-	public SortedList(T[] x, int start, int end, Comparator< ? super T> cmp) {
+	public SortedList(T[] x, int start, int end, Comparator<? super T> cmp) {
 		if (start > end) {
 			int tmp = start;
 			start = end;
@@ -132,7 +132,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		this.comparator = cmp;
 	}
 
-	public SortedList(Collection< ? extends T> x, int start, int end, Comparator< ? super T> cmp) {
+	public SortedList(Collection<? extends T> x, int start, int end, Comparator<? super T> cmp) {
 		if (start > end) {
 			int tmp = start;
 			start = end;
@@ -197,7 +197,8 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		int size = size();
 
 		if (a.length < size)
-			a = (X[]) Array.newInstance(a.getClass().getComponentType(), size);
+			a = (X[]) Array.newInstance(a.getClass()
+				.getComponentType(), size);
 
 		System.arraycopy(list, start, a, 0, size);
 		if (a.length > size)
@@ -213,7 +214,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	public boolean containsAll(Collection< ? > c) {
+	public boolean containsAll(Collection<?> c) {
 		if (c.isEmpty())
 			return true;
 
@@ -229,15 +230,15 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return true;
 	}
 
-	public boolean addAll(Collection< ? extends T> c) {
+	public boolean addAll(Collection<? extends T> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	public boolean retainAll(Collection< ? > c) {
+	public boolean retainAll(Collection<?> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	public boolean removeAll(Collection< ? > c) {
+	public boolean removeAll(Collection<?> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
@@ -245,13 +246,13 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
-	public Comparator< ? super T> comparator() {
+	public Comparator<? super T> comparator() {
 		return comparator;
 	}
 
 	private int compare(T o1, T o2) {
 		if (comparator == null) {
-			return ((Comparable< ? super T>) o1).compareTo(o2);
+			return ((Comparable<? super T>) o1).compareTo(o2);
 		}
 		return comparator.compare(o1, o2);
 	}
@@ -335,7 +336,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 	}
 
 	@Deprecated
-	public boolean addAll(int index, Collection< ? extends T> c) {
+	public boolean addAll(int index, Collection<? extends T> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
@@ -416,11 +417,11 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return true;
 	}
 
-	public Class< ? > getType() {
+	public Class<?> getType() {
 		return type;
 	}
 
-	public void setType(Class< ? > type) {
+	public void setType(Class<?> type) {
 		this.type = type;
 	}
 
@@ -453,12 +454,12 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return false;
 	}
 
-	public static <T extends Comparable< ? super T>> SortedList<T> fromIterator(Iterator< ? extends T> it) {
+	public static <T extends Comparable<? super T>> SortedList<T> fromIterator(Iterator<? extends T> it) {
 		IteratorList<T> l = new IteratorList<>(it);
 		return new SortedList<>(l);
 	}
 
-	public static <T> SortedList<T> fromIterator(Iterator< ? extends T> it, Comparator< ? super T> cmp) {
+	public static <T> SortedList<T> fromIterator(Iterator<? extends T> it, Comparator<? super T> cmp) {
 		IteratorList<T> l = new IteratorList<>(it);
 		return new SortedList<>(l, cmp);
 	}

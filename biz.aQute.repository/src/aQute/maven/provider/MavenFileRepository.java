@@ -14,7 +14,8 @@ public class MavenFileRepository extends MavenBackingRepository {
 	private File remote;
 
 	public MavenFileRepository(File local, File remote, Reporter reporter) throws Exception {
-		super(local, remote.toURI().toString(), reporter);
+		super(local, remote.toURI()
+			.toString(), reporter);
 		this.remote = remote;
 	}
 

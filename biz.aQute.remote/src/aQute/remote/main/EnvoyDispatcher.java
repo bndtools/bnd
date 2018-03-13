@@ -40,15 +40,15 @@ public class EnvoyDispatcher implements Closeable {
 	private File						storage;
 	private String						network;
 	private int							port;
-	private Map<String,DispatcherInfo>	frameworks	= new HashMap<>();
+	private Map<String, DispatcherInfo>	frameworks	= new HashMap<>();
 	private Set<EnvoyImpl>				envoys		= new HashSet<>();
 
 	class DispatcherInfo {
 		String				name;
 		int					port;
 		URLClassLoader		cl;
-		Class< ? >			dispatcher;
-		Map<String,Object>	properties;
+		Class<?>			dispatcher;
+		Map<String, Object>	properties;
 		Collection<String>	runpath;
 		Closeable			framework;
 		File				storage;
@@ -71,13 +71,12 @@ public class EnvoyDispatcher implements Closeable {
 
 	public class EnvoyImpl implements Envoy {
 
-		private Link<Envoy,EnvoySupervisor> link;
+		private Link<Envoy, EnvoySupervisor> link;
 
 		EnvoyImpl(Socket socket) throws IOException {
 			envoys.add(this);
 			socket.setSoTimeout(500);
-			this.link = new Link<>(EnvoySupervisor.class, this, socket.getInputStream(),
-					socket.getOutputStream());
+			this.link = new Link<>(EnvoySupervisor.class, this, socket.getInputStream(), socket.getOutputStream());
 			setRemote(this.link.getRemote());
 		}
 
@@ -95,8 +94,8 @@ public class EnvoyDispatcher implements Closeable {
 		 */
 		@SuppressWarnings("deprecation")
 		@Override
-		public boolean createFramework(String name, Collection<String> runpath, Map<String,Object> properties)
-				throws Exception {
+		public boolean createFramework(String name, Collection<String> runpath, Map<String, Object> properties)
+			throws Exception {
 			main.trace("create framework %s - %s --- %s", name, runpath, properties);
 
 			if (!name.matches("[a-zA-Z0-9_.$-]+"))
@@ -131,19 +130,21 @@ public class EnvoyDispatcher implements Closeable {
 			main.trace("Adding an agent for %s", info.name);
 			link.transfer(state);
 			Method toAgent = info.dispatcher.getMethod("toAgent", info.framework.getClass(), DataInputStream.class,
-					DataOutputStream.class);
+				DataOutputStream.class);
 
 			toAgent.invoke(null, info.framework, link.getInput(), link.getOutput());
 			close();
 		}
 
 		@SuppressWarnings("deprecation")
-		private DispatcherInfo create(String name, Collection<String> runpath, Map<String,Object> properties)
-				throws Exception {
+		private DispatcherInfo create(String name, Collection<String> runpath, Map<String, Object> properties)
+			throws Exception {
 			List<URL> files = new ArrayList<>();
 
 			for (String sha : runpath) {
-				files.add(cache.getFile(sha, source).toURI().toURL());
+				files.add(cache.getFile(sha, source)
+					.toURI()
+					.toURL());
 			}
 
 			main.trace("runpath %s", files);
@@ -164,7 +165,7 @@ public class EnvoyDispatcher implements Closeable {
 			properties.put(Constants.FRAMEWORK_STORAGE, info.storage.getAbsolutePath());
 
 			Method newFw = info.dispatcher.getMethod("createFramework", String.class, Map.class, File.class,
-					File.class);
+				File.class);
 
 			info.framework = (Closeable) newFw.invoke(null, name, properties, storage, cache.getRoot());
 
@@ -229,14 +230,16 @@ public class EnvoyDispatcher implements Closeable {
 
 	@SuppressWarnings("deprecation")
 	public void run() {
-		while (!Thread.currentThread().isInterrupted())
+		while (!Thread.currentThread()
+			.isInterrupted())
 			try {
 				InetAddress address = network.equals("*") ? null : InetAddress.getByName(network);
 
 				ServerSocket server = address == null ? new ServerSocket(port) : new ServerSocket(port, 3, address);
 				main.trace("Will wait  for %s:%s to finish", address, port);
 
-				while (!Thread.currentThread().isInterrupted())
+				while (!Thread.currentThread()
+					.isInterrupted())
 					try {
 						Socket socket = server.accept();
 						main.trace("Got a request on %s", socket);

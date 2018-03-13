@@ -15,7 +15,7 @@ public class NexusTest extends TestCase {
 	String					tmpName;
 	File					local;
 	MavenRemoteRepository	repo;
-	ReporterAdapter	reporter	= new ReporterAdapter(System.err);
+	ReporterAdapter			reporter	= new ReporterAdapter(System.err);
 
 	@Override
 	protected void setUp() throws Exception {
@@ -28,8 +28,8 @@ public class NexusTest extends TestCase {
 		local.mkdirs();
 		HttpClient httpClient = new HttpClient();
 		httpClient.addURLConnectionHandler(new BasicAuthentication("deployment", "deployment123", Workspace.log));
-		repo = new MavenRemoteRepository(local, httpClient, "http://localhost:8081/nexus/content/repositories/snapshots/",
-				reporter);
+		repo = new MavenRemoteRepository(local, httpClient,
+			"http://localhost:8081/nexus/content/repositories/snapshots/", reporter);
 	}
 
 	@Override

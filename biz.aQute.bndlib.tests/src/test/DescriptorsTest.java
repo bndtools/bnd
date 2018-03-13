@@ -13,7 +13,8 @@ public class DescriptorsTest extends TestCase {
 		assertNotNull(r);
 		assertEquals("byte[]", r.getFQN());
 		assertNotNull(r.getPackageRef());
-		assertEquals(".", r.getPackageRef().getFQN());
+		assertEquals(".", r.getPackageRef()
+			.getFQN());
 
 		PackageRef a = d.getPackageRef("a.b.c");
 		PackageRef b = d.getPackageRef("a/b/c");

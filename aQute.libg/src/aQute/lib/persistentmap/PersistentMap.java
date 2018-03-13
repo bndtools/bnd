@@ -27,13 +27,13 @@ import aQute.lib.json.JSONCodec;
  * non-concurrent implementation so you must ensure it is only used in a single
  * thread. It cannot of course also not share the data directory.
  */
-public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable {
+public class PersistentMap<V> extends AbstractMap<String, V> implements Closeable {
 
 	final static JSONCodec				codec	= new JSONCodec();
 	final File							dir;
 	final File							data;
 	final RandomAccessFile				lockFile;
-	final Map<String,SoftReference<V>>	cache	= new HashMap<>();
+	final Map<String, SoftReference<V>>	cache	= new HashMap<>();
 	boolean								inited	= false;
 	boolean								closed	= false;
 
@@ -71,12 +71,12 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 		this(dir, (Type) type);
 	}
 
-	public PersistentMap(File dir, Class<V> type, Map<String,V> map) throws Exception {
+	public PersistentMap(File dir, Class<V> type, Map<String, V> map) throws Exception {
 		this(dir, (Type) type);
 		putAll(map);
 	}
 
-	public PersistentMap(File dir, Type type, Map<String,V> map) throws Exception {
+	public PersistentMap(File dir, Type type, Map<String, V> map) throws Exception {
 		this(dir, type);
 		putAll(map);
 	}
@@ -105,26 +105,27 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 		}
 	}
 
-	public Set<java.util.Map.Entry<String,V>> entrySet() {
-		return new AbstractSet<Map.Entry<String,V>>() {
+	public Set<java.util.Map.Entry<String, V>> entrySet() {
+		return new AbstractSet<Map.Entry<String, V>>() {
 
 			public int size() {
 				init();
 				return cache.size();
 			}
 
-			public Iterator<java.util.Map.Entry<String,V>> iterator() {
+			public Iterator<java.util.Map.Entry<String, V>> iterator() {
 				init();
-				return new Iterator<Map.Entry<String,V>>() {
-					Iterator<java.util.Map.Entry<String,SoftReference<V>>>	it	= cache.entrySet().iterator();
-					java.util.Map.Entry<String,SoftReference<V>>			entry;
+				return new Iterator<Map.Entry<String, V>>() {
+					Iterator<java.util.Map.Entry<String, SoftReference<V>>>	it	= cache.entrySet()
+						.iterator();
+					java.util.Map.Entry<String, SoftReference<V>>			entry;
 
 					public boolean hasNext() {
 						return it.hasNext();
 					}
 
 					@SuppressWarnings("unchecked")
-					public java.util.Map.Entry<String,V> next() {
+					public java.util.Map.Entry<String, V> next() {
 						try {
 							entry = it.next();
 							SoftReference<V> ref = entry.getValue();
@@ -134,13 +135,15 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 
 							if (value == null) {
 								File file = new File(data, entry.getKey());
-								value = (V) codec.dec().from(file).get(type);
+								value = (V) codec.dec()
+									.from(file)
+									.get(type);
 								entry.setValue(new SoftReference<>(value));
 							}
 
 							final V v = value;
 
-							return new Map.Entry<String,V>() {
+							return new Map.Entry<String, V>() {
 
 								public String getKey() {
 									return entry.getKey();
@@ -179,7 +182,9 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 			FileLock lock = lock();
 			try {
 				File file = new File(data, key);
-				codec.enc().to(file).put(value);
+				codec.enc()
+					.to(file)
+					.put(value);
 				cache.put(key, new SoftReference<>(value));
 				return old;
 			} finally {
@@ -196,9 +201,11 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 		int count = 400;
 		while (true)
 			try {
-				FileLock lock = lockFile.getChannel().lock();
+				FileLock lock = lockFile.getChannel()
+					.lock();
 				if (!lock.isValid()) {
-					System.err.println("Ouch, got invalid lock " + dir + " " + Thread.currentThread().getName());
+					System.err.println("Ouch, got invalid lock " + dir + " " + Thread.currentThread()
+						.getName());
 					return null;
 				}
 				return lock;
@@ -212,7 +219,8 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 
 	private void unlock(FileLock lock) throws IOException {
 		if (lock == null || !lock.isValid()) {
-			System.err.println("Ouch, invalid lock was used " + dir + " " + Thread.currentThread().getName());
+			System.err.println("Ouch, invalid lock was used " + dir + " " + Thread.currentThread()
+				.getName());
 			return;
 		}
 		lock.release();
@@ -225,7 +233,8 @@ public class PersistentMap<V> extends AbstractMap<String,V> implements Closeable
 			try {
 				File file = new File(data, key);
 				IO.deleteWithException(file);
-				return cache.remove(key).get();
+				return cache.remove(key)
+					.get();
 			} finally {
 				unlock(lock);
 			}

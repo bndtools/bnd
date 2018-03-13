@@ -21,11 +21,13 @@ public class Annotation {
 	static {
 		CONVERTER = new Converter();
 		CONVERTER.hook(null, (t, o) -> {
-			if (t instanceof Class< ? > && ((Class< ? >) t).isAnnotation()) {
+			if (t instanceof Class<?> && ((Class<?>) t).isAnnotation()) {
 				// Suitable target
 				if (o instanceof Annotation) {
 					Annotation a = (Annotation) o;
-					return a.getName().getFQN().equals(((Class< ? >) t).getName()) ? a.getAnnotation() : null;
+					return a.getName()
+						.getFQN()
+						.equals(((Class<?>) t).getName()) ? a.getAnnotation() : null;
 				}
 			}
 
@@ -34,11 +36,11 @@ public class Annotation {
 	}
 
 	private TypeRef				name;
-	private Map<String,Object>	elements;
+	private Map<String, Object>	elements;
 	private ElementType			member;
 	private RetentionPolicy		policy;
 
-	public Annotation(TypeRef name, Map<String,Object> elements, ElementType member, RetentionPolicy policy) {
+	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy) {
 		this.name = name;
 		if (elements == null)
 			this.elements = null;
@@ -103,28 +105,28 @@ public class Annotation {
 
 	public <T extends java.lang.annotation.Annotation> T getAnnotation(Class<T> c) throws Exception {
 		String cname = name.getFQN();
-		if (!c.getName().equals(cname))
+		if (!c.getName()
+			.equals(cname))
 			return null;
-		return CONVERTER.convert(c,
-				elements == null ? elements = new LinkedHashMap<>() : elements);
+		return CONVERTER.convert(c, elements == null ? elements = new LinkedHashMap<>() : elements);
 	}
 
 	public void merge(Annotation annotation) {
 		if (annotation.elements == null)
 			return;
 
-		for (Map.Entry<String,Object> e : annotation.elements.entrySet()) {
+		for (Map.Entry<String, Object> e : annotation.elements.entrySet()) {
 			if (!elements.containsKey(e.getKey()))
 				elements.put(e.getKey(), e.getValue());
 		}
 	}
 
 	public void addDefaults(Clazz c) throws Exception {
-		Map<String,Object> defaults = c.getDefaults();
+		Map<String, Object> defaults = c.getDefaults();
 		if (defaults == null || defaults.isEmpty())
 			return;
 
-		for (Map.Entry<String,Object> e : defaults.entrySet()) {
+		for (Map.Entry<String, Object> e : defaults.entrySet()) {
 			if (elements == null || !elements.containsKey(e.getKey())) {
 				put(e.getKey(), e.getValue());
 			}

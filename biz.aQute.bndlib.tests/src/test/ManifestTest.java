@@ -45,7 +45,8 @@ public class ManifestTest extends TestCase {
 
 		Manifest m = new Manifest(r.openInputStream());
 
-		assertEquals(31, m.getEntries().size());
+		assertEquals(31, m.getEntries()
+			.size());
 
 		Attributes ba = m.getAttributes("org/osgi/framework/BundleActivator.class");
 		assertNotNull(ba);
@@ -84,19 +85,26 @@ public class ManifestTest extends TestCase {
 		jar = new Jar(f);
 		f.delete();
 
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 		Resource r = jar.getResource("META-INF/MANIFEST.MF");
 		assertNotNull(r);
 
 		Manifest m = new Manifest(r.openInputStream());
 		// String ms = IO.collect(r.openInputStream());
 
-		assertEquals(shortSentence, m.getMainAttributes().getValue("A1"));
-		assertEquals(shortSentence, m.getMainAttributes().getValue("A11"));
-		assertEquals(shortSentence, m.getMainAttributes().getValue("A111"));
-		assertEquals(shortSentence, m.getMainAttributes().getValue("A1111"));
-		assertEquals(longSentence, m.getMainAttributes().getValue("Long"));
+		assertEquals(shortSentence, m.getMainAttributes()
+			.getValue("A1"));
+		assertEquals(shortSentence, m.getMainAttributes()
+			.getValue("A11"));
+		assertEquals(shortSentence, m.getMainAttributes()
+			.getValue("A111"));
+		assertEquals(shortSentence, m.getMainAttributes()
+			.getValue("A1111"));
+		assertEquals(longSentence, m.getMainAttributes()
+			.getValue("Long"));
 
 	}
 
@@ -117,25 +125,47 @@ public class ManifestTest extends TestCase {
 		jar = new Jar(f);
 		f.delete();
 
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 		Resource r = jar.getResource("META-INF/MANIFEST.MF");
 		assertNotNull(r);
 
 		Manifest m = new Manifest(r.openInputStream());
 		String ms = IO.collect(r.openInputStream());
 
-		assertEquals(65, m.getMainAttributes().getValue("H65").length());
-		assertEquals(66, m.getMainAttributes().getValue("H66").length());
-		assertEquals(67, m.getMainAttributes().getValue("H67").length());
-		assertEquals(68, m.getMainAttributes().getValue("H68").length());
-		assertEquals(69, m.getMainAttributes().getValue("H69").length());
+		assertEquals(65, m.getMainAttributes()
+			.getValue("H65")
+			.length());
+		assertEquals(66, m.getMainAttributes()
+			.getValue("H66")
+			.length());
+		assertEquals(67, m.getMainAttributes()
+			.getValue("H67")
+			.length());
+		assertEquals(68, m.getMainAttributes()
+			.getValue("H68")
+			.length());
+		assertEquals(69, m.getMainAttributes()
+			.getValue("H69")
+			.length());
 
-		assertTrue(Pattern.compile("H65: \\d{65}\r\n").matcher(ms).find());
-		assertTrue(Pattern.compile("H66: \\d{65}\r\n \\d{1}\r\n").matcher(ms).find());
-		assertTrue(Pattern.compile("H67: \\d{65}\r\n \\d{2}\r\n").matcher(ms).find());
-		assertTrue(Pattern.compile("H68: \\d{65}\r\n \\d{3}\r\n").matcher(ms).find());
-		assertTrue(Pattern.compile("H69: \\d{65}\r\n \\d{4}\r\n").matcher(ms).find());
+		assertTrue(Pattern.compile("H65: \\d{65}\r\n")
+			.matcher(ms)
+			.find());
+		assertTrue(Pattern.compile("H66: \\d{65}\r\n \\d{1}\r\n")
+			.matcher(ms)
+			.find());
+		assertTrue(Pattern.compile("H67: \\d{65}\r\n \\d{2}\r\n")
+			.matcher(ms)
+			.find());
+		assertTrue(Pattern.compile("H68: \\d{65}\r\n \\d{3}\r\n")
+			.matcher(ms)
+			.find());
+		assertTrue(Pattern.compile("H69: \\d{65}\r\n \\d{4}\r\n")
+			.matcher(ms)
+			.find());
 	}
 
 	public static void testNoManifest() throws Exception {
@@ -178,16 +208,21 @@ public class ManifestTest extends TestCase {
 
 		assertEquals("META-INF/FESTYMAN.MF", firstEntry.getName());
 		Manifest manifest = new Manifest(zin);
-		assertEquals("hullo", manifest.getMainAttributes().getValue("Subsystem-Wibble"));
+		assertEquals("hullo", manifest.getMainAttributes()
+			.getValue("Subsystem-Wibble"));
 		zin.close();
 	}
 
 	public static void testNames() throws Exception {
 		Manifest m = new Manifest();
-		m.getMainAttributes().putValue("Manifest-Version", "1.0");
-		m.getMainAttributes().putValue("x", "Loïc Cotonéa");
-		m.getMainAttributes().putValue("y", "Loïc Cotonéa");
-		m.getMainAttributes().putValue("z", "Loïc Cotonéa");
+		m.getMainAttributes()
+			.putValue("Manifest-Version", "1.0");
+		m.getMainAttributes()
+			.putValue("x", "Loïc Cotonéa");
+		m.getMainAttributes()
+			.putValue("y", "Loïc Cotonéa");
+		m.getMainAttributes()
+			.putValue("z", "Loïc Cotonéa");
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		Jar.writeManifest(m, bout);
@@ -198,10 +233,14 @@ public class ManifestTest extends TestCase {
 
 	public static void testUTF8() throws Exception {
 		Manifest m = new Manifest();
-		m.getMainAttributes().putValue("Manifest-Version", "1.0");
-		m.getMainAttributes().putValue("x", "Loïc Cotonéa");
-		m.getMainAttributes().putValue("y", "Loïc Cotonéa");
-		m.getMainAttributes().putValue("z", "Loïc Cotonéa");
+		m.getMainAttributes()
+			.putValue("Manifest-Version", "1.0");
+		m.getMainAttributes()
+			.putValue("x", "Loïc Cotonéa");
+		m.getMainAttributes()
+			.putValue("y", "Loïc Cotonéa");
+		m.getMainAttributes()
+			.putValue("z", "Loïc Cotonéa");
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		Jar.writeManifest(m, bout);
@@ -211,8 +250,8 @@ public class ManifestTest extends TestCase {
 	}
 
 	public static void testQuotes() throws IOException {
-		Map<String,Map<String,String>> map = new HashMap<>();
-		Map<String,String> clause = new HashMap<>();
+		Map<String, Map<String, String>> map = new HashMap<>();
+		Map<String, String> clause = new HashMap<>();
 		clause.put("version1", "0");
 		clause.put("version2", "0.0");
 		clause.put("version3", "\"0.0\"");

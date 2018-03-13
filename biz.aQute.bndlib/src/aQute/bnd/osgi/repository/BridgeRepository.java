@@ -30,11 +30,11 @@ import aQute.libg.glob.Glob;
  */
 public class BridgeRepository {
 
-	private static final Requirement		allRq			= ResourceUtils.createWildcardRequirement();
-	private static final SortedSet<Version>	EMPTY_VERSIONS	= new TreeSet<>();
+	private static final Requirement						allRq			= ResourceUtils.createWildcardRequirement();
+	private static final SortedSet<Version>					EMPTY_VERSIONS	= new TreeSet<>();
 
-	private final Repository							repository;
-	private final Map<String,Map<Version,ResourceInfo>>	index	= new HashMap<>();
+	private final Repository								repository;
+	private final Map<String, Map<Version, ResourceInfo>>	index			= new HashMap<>();
 
 	public interface InfoCapability extends Capability {
 		String error();
@@ -49,10 +49,10 @@ public class BridgeRepository {
 			this.resource = resource;
 		}
 
-		boolean		inited;
-		Resource	resource;
+		boolean			inited;
+		Resource		resource;
 		boolean			error;
-		String		tooltip;
+		String			tooltip;
 		private String	title;
 
 		public String getTooltip() {
@@ -61,15 +61,15 @@ public class BridgeRepository {
 		}
 
 		private synchronized void init() {
-			if ( inited )
+			if (inited)
 				return;
 			inited = true;
-			
+
 			IdentityCapability ic = ResourceUtils.getIdentityCapability(resource);
 			ContentCapability cc = ResourceUtils.getContentCapability(resource);
 			String bsn = ic.osgi_identity();
 			Version version = ic.version();
-			
+
 			InfoCapability info = getInfo();
 
 			String sha256 = cc == null ? "<>" : cc.osgi_content();
@@ -77,35 +77,42 @@ public class BridgeRepository {
 			String error = null;
 			String name = null;
 			String from = null;
-			
-			if ( info != null) {
+
+			if (info != null) {
 				error = info.error();
 				name = info.name();
 				from = info.from();
 			}
-			
+
 			if (error != null) {
 				this.error = true;
 				this.title = version + " [" + error + "]";
-			}
-			else
+			} else
 				this.title = version.toString();
-			
+
 			StringBuilder tsb = new StringBuilder();
 			if (this.error)
-				tsb.append("ERROR: ").append(error).append("\n");
-			
-			tsb.append(bsn).append("\n");
+				tsb.append("ERROR: ")
+					.append(error)
+					.append("\n");
 
-			if ( ic.description(null) != null) {
+			tsb.append(bsn)
+				.append("\n");
+
+			if (ic.description(null) != null) {
 				tsb.append(ic.description(null));
 				tsb.append("\n");
 			}
 
-			tsb.append(bsn).append("\n");
+			tsb.append(bsn)
+				.append("\n");
 
-			tsb.append("Coordinates: ").append(name).append("\n");
-			tsb.append("SHA-256: ").append(sha256).append("\n");
+			tsb.append("Coordinates: ")
+				.append(name)
+				.append("\n");
+			tsb.append("SHA-256: ")
+				.append(sha256)
+				.append("\n");
 			if (from != null) {
 				tsb.append("From: ");
 				tsb.append(from);
@@ -141,7 +148,7 @@ public class BridgeRepository {
 	}
 
 	private void index() throws Exception {
-		Map<Requirement,Collection<Capability>> all = repository.findProviders(Collections.singleton(allRq));
+		Map<Requirement, Collection<Capability>> all = repository.findProviders(Collections.singleton(allRq));
 		for (Capability capability : all.get(allRq)) {
 			Resource r = capability.getResource();
 			index(r);
@@ -153,7 +160,7 @@ public class BridgeRepository {
 		String bsn = bc.osgi_identity();
 		Version version = bc.version();
 
-		Map<Version,ResourceInfo> map = index.get(bsn);
+		Map<Version, ResourceInfo> map = index.get(bsn);
 		if (map == null) {
 			map = new HashMap<>();
 			index.put(bsn, map);
@@ -170,7 +177,7 @@ public class BridgeRepository {
 	}
 
 	public ResourceInfo getInfo(String bsn, Version version) throws Exception {
-		Map<Version,ResourceInfo> map = index.get(bsn);
+		Map<Version, ResourceInfo> map = index.get(bsn);
 		if (map == null)
 			return null;
 
@@ -190,7 +197,8 @@ public class BridgeRepository {
 
 			outer: for (String bsn : index.keySet()) {
 				for (Glob g : globs) {
-					if (g.matcher(bsn).find()) {
+					if (g.matcher(bsn)
+						.find()) {
 						bsns.add(bsn);
 						continue outer;
 					}
@@ -201,7 +209,7 @@ public class BridgeRepository {
 	}
 
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		Map<Version,ResourceInfo> map = index.get(bsn);
+		Map<Version, ResourceInfo> map = index.get(bsn);
 		if (map == null || map.isEmpty()) {
 			return EMPTY_VERSIONS;
 		}
@@ -242,7 +250,7 @@ public class BridgeRepository {
 		}
 		if (target.length == 1) {
 			String bsn = (String) target[0];
-			Map<Version,ResourceInfo> map = index.get(bsn);
+			Map<Version, ResourceInfo> map = index.get(bsn);
 			for (ResourceInfo ri : map.values()) {
 				if (ri.isError())
 					return bsn + " [!]";

@@ -15,7 +15,7 @@ import aQute.lib.io.IO;
 import aQute.lib.zip.ZipUtil;
 
 public class ZipResource implements Resource {
-	private ByteBuffer	buffer;
+	private ByteBuffer		buffer;
 	private final ZipFile	zip;
 	private final ZipEntry	entry;
 	private final boolean	closeZipFile;

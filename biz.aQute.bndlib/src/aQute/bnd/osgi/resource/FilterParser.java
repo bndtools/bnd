@@ -19,10 +19,16 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 
 public class FilterParser {
-	final Map<String,Expression> cache = new HashMap<>();
+	final Map<String, Expression> cache = new HashMap<>();
 
 	public enum Op {
-		GREATER(">"), GREATER_OR_EQUAL(">="), LESS("<"), LESS_OR_EQUAL("<="), EQUAL("="), NOT_EQUAL("!="), RANGE("..");
+		GREATER(">"),
+		GREATER_OR_EQUAL(">="),
+		LESS("<"),
+		LESS_OR_EQUAL("<="),
+		EQUAL("="),
+		NOT_EQUAL("!="),
+		RANGE("..");
 
 		private String symbol;
 
@@ -59,7 +65,7 @@ public class FilterParser {
 		static Expression	TRUE	= new Expression() {
 
 										@Override
-										public boolean eval(Map<String, ? > map) {
+										public boolean eval(Map<String, ?> map) {
 											return true;
 										}
 
@@ -81,7 +87,7 @@ public class FilterParser {
 		static Expression	FALSE	= new Expression() {
 
 										@Override
-										public boolean eval(Map<String, ? > map) {
+										public boolean eval(Map<String, ?> map) {
 											return false;
 										}
 
@@ -100,7 +106,7 @@ public class FilterParser {
 										}
 									};
 
-		public abstract boolean eval(Map<String, ? > map);
+		public abstract boolean eval(Map<String, ?> map);
 
 		public abstract <T> T visit(ExpressionVisitor<T> visitor);
 
@@ -192,7 +198,9 @@ public class FilterParser {
 		}
 
 		public void toString(StringBuilder sb) {
-			sb.append(key).append("=").append(getRangeString());
+			sb.append(key)
+				.append("=")
+				.append(getRangeString());
 		}
 
 		public SimpleExpression getLow() {
@@ -217,15 +225,16 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String, ? > map) {
+		public boolean eval(Map<String, ?> map) {
 			Object target = map.get(key);
 			if (target instanceof Iterable) {
-				for (Object scalar : (Iterable< ? >) target) {
+				for (Object scalar : (Iterable<?>) target) {
 					if (eval(scalar))
 						return true;
 				}
 				return false;
-			} else if (target.getClass().isArray()) {
+			} else if (target.getClass()
+				.isArray()) {
 				int l = Array.getLength(target);
 				for (int i = 0; i < l; i++) {
 					if (eval(Array.get(target, i)))
@@ -244,7 +253,7 @@ public class FilterParser {
 
 		protected boolean eval(Object scalar) {
 			if (cached == null || cached.getClass() != scalar.getClass()) {
-				Class< ? > scalarClass = scalar.getClass();
+				Class<?> scalarClass = scalar.getClass();
 				if (scalarClass == String.class)
 					cached = value;
 				else if (scalarClass == Byte.class)
@@ -266,7 +275,7 @@ public class FilterParser {
 						Method factory = scalarClass.getMethod("valueOf", String.class);
 						cached = factory.invoke(null, value);
 					} catch (Exception e) {
-						Constructor< ? > constructor;
+						Constructor<?> constructor;
 						try {
 							constructor = scalarClass.getConstructor(String.class);
 							cached = constructor.newInstance(value);
@@ -281,7 +290,7 @@ public class FilterParser {
 			if (op == Op.NOT_EQUAL)
 				return !cached.equals(scalar);
 
-			if (cached instanceof Comparable< ? >) {
+			if (cached instanceof Comparable<?>) {
 				@SuppressWarnings("unchecked")
 				int result = ((Comparable<Object>) scalar).compareTo(cached);
 				switch (op) {
@@ -324,7 +333,9 @@ public class FilterParser {
 		}
 
 		public void toString(StringBuilder sb) {
-			sb.append(key).append(op.toString()).append(value);
+			sb.append(key)
+				.append(op.toString())
+				.append(value);
 		}
 
 		@Override
@@ -349,7 +360,7 @@ public class FilterParser {
 	public abstract static class WithRangeExpression extends Expression {
 		RangeExpression range;
 
-		public boolean eval(Map<String, ? > map) {
+		public boolean eval(Map<String, ?> map) {
 			return range == null || range.eval(map);
 		}
 
@@ -378,7 +389,7 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String, ? > map) {
+		public boolean eval(Map<String, ?> map) {
 			String p = (String) map.get("osgi.wiring.package");
 			if (p == null)
 				return false;
@@ -419,7 +430,7 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String, ? > map) {
+		public boolean eval(Map<String, ?> map) {
 			String p = (String) map.get("osgi.wiring.host");
 			if (p == null)
 				return false;
@@ -460,7 +471,7 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String, ? > map) {
+		public boolean eval(Map<String, ?> map) {
 			String p = (String) map.get("osgi.wiring.bundle");
 			if (p == null)
 				return false;
@@ -498,7 +509,7 @@ public class FilterParser {
 		}
 
 		@Override
-		public boolean eval(Map<String, ? > map) {
+		public boolean eval(Map<String, ?> map) {
 			String p = (String) map.get("osgi.identity");
 			if (p == null)
 				return false;
@@ -572,7 +583,7 @@ public class FilterParser {
 			this.expressions = exprs.toArray(new Expression[0]);
 		}
 
-		public boolean eval(Map<String, ? > map) {
+		public boolean eval(Map<String, ?> map) {
 			for (Expression e : expressions) {
 				if (!e.eval(map))
 					return false;
@@ -665,7 +676,7 @@ public class FilterParser {
 			this.expressions = exprs.toArray(new Expression[0]);
 		}
 
-		public boolean eval(Map<String, ? > map) {
+		public boolean eval(Map<String, ?> map) {
 			for (Expression e : expressions) {
 				if (e.eval(map))
 					return true;
@@ -710,7 +721,7 @@ public class FilterParser {
 			this.expr = expr;
 		}
 
-		public boolean eval(Map<String, ? > map) {
+		public boolean eval(Map<String, ?> map) {
 			return !expr.eval(map);
 		}
 
@@ -757,7 +768,8 @@ public class FilterParser {
 
 		protected boolean eval(Object scalar) {
 			if (scalar instanceof String)
-				return pattern.matcher((String) scalar).matches();
+				return pattern.matcher((String) scalar)
+					.matches();
 			else
 				return false;
 		}
@@ -776,7 +788,8 @@ public class FilterParser {
 
 		protected boolean eval(Object scalar) {
 			if (scalar instanceof String) {
-				return ((String) scalar).trim().equalsIgnoreCase(value);
+				return ((String) scalar).trim()
+					.equalsIgnoreCase(value);
 			} else
 				return false;
 		}
@@ -895,7 +908,8 @@ public class FilterParser {
 
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			sb.append(s).append("\n");
+			sb.append(s)
+				.append("\n");
 			for (int i = 0; i < n; i++)
 				sb.append(" ");
 			sb.append("|");
@@ -910,7 +924,8 @@ public class FilterParser {
 			int n = this.n;
 			while (!isOpChar(current()))
 				next();
-			return s.substring(n, this.n).trim();
+			return s.substring(n, this.n)
+				.trim();
 		}
 
 		String getValue() {
@@ -934,7 +949,8 @@ public class FilterParser {
 	}
 
 	public Expression parse(Requirement req) {
-		String f = req.getDirectives().get("filter");
+		String f = req.getDirectives()
+			.get("filter");
 		if (f == null)
 			return Expression.FALSE;
 		return parse(f);
@@ -1052,10 +1068,12 @@ public class FilterParser {
 			StringBuilder sb = new StringBuilder();
 			String category = namespaceToCategory(r.getNamespace());
 			if (category != null && category.length() > 0)
-				sb.append(namespaceToCategory(category)).append(": ");
+				sb.append(namespaceToCategory(category))
+					.append(": ");
 
 			FilterParser fp = new FilterParser();
-			String filter = r.getDirectives().get("filter");
+			String filter = r.getDirectives()
+				.get("filter");
 			if (filter == null)
 				sb.append("<no filter>");
 			else {
@@ -1077,8 +1095,10 @@ public class FilterParser {
 			return resource.toString();
 
 		Capability c = capabilities.get(0);
-		String bsn = (String) c.getAttributes().get("osgi.identity");
-		Object version = c.getAttributes().get("version");
+		String bsn = (String) c.getAttributes()
+			.get("osgi.identity");
+		Object version = c.getAttributes()
+			.get("version");
 		if (version == null)
 			return bsn;
 		else

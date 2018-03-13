@@ -75,9 +75,9 @@ public class PermissionGeneratorTest extends BndTestCase {
 
 	private static void assertPackageAvailable(Set<String> permissions) {
 		Set<String> importedPackages = filterAndSubtract(permissions,
-				"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"import\"\\)$");
+			"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"import\"\\)$");
 		Set<String> exportedPackages = filterAndSubtract(permissions,
-				"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"export\"\\)$");
+			"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"export\"\\)$");
 
 		/* @formatter:off */
 		assertEquals("Imported packages",
@@ -106,9 +106,9 @@ public class PermissionGeneratorTest extends BndTestCase {
 
 	private static void assertServicesAvailable(Set<String> permissions) {
 		Set<String> registeredServices = filterAndSubtract(permissions,
-				"^\\(org.osgi.framework.ServicePermission \"([^\"]+)\" \"register\"\\)$");
+			"^\\(org.osgi.framework.ServicePermission \"([^\"]+)\" \"register\"\\)$");
 		Set<String> requiredServices = filterAndSubtract(permissions,
-				"^\\(org.osgi.framework.ServicePermission \"([^\"]+)\" \"get\"\\)$");
+			"^\\(org.osgi.framework.ServicePermission \"([^\"]+)\" \"get\"\\)$");
 
 		/* @formatter:off */
 		assertEquals("Registered services",
@@ -124,9 +124,9 @@ public class PermissionGeneratorTest extends BndTestCase {
 
 	private static void assertCapabilitiesAvailable(Set<String> permissions) {
 		Set<String> requiredCapabilities = filterAndSubtract(permissions,
-				"^\\(org.osgi.framework.CapabilityPermission \"([^\"]+)\" \"require\"\\)$");
+			"^\\(org.osgi.framework.CapabilityPermission \"([^\"]+)\" \"require\"\\)$");
 		Set<String> providedCapabilities = filterAndSubtract(permissions,
-				"^\\(org.osgi.framework.CapabilityPermission \"([^\"]+)\" \"provide\"\\)$");
+			"^\\(org.osgi.framework.CapabilityPermission \"([^\"]+)\" \"provide\"\\)$");
 
 		/* @formatter:off */
 		assertEquals("Provided capabilities",
@@ -170,7 +170,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 
 	public static void testConcatenatedPermissionsNoAdmin() throws Exception {
 		Set<String> permissions = getPermissionsGeneratedFor(
-				"${permissions;packages}${permissions;services}${permissions;capabilities}");
+			"${permissions;packages}${permissions;services}${permissions;capabilities}");
 		assertPackageAvailable(permissions);
 		assertServicesAvailable(permissions);
 		assertCapabilitiesAvailable(permissions);

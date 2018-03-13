@@ -39,7 +39,7 @@ import junit.framework.TestCase;
  * Test for use of DS components specified only by Service-Component headers.
  */
 @SuppressWarnings({
-		"resource", "rawtypes"
+	"resource", "rawtypes"
 })
 public class ComponentTest extends TestCase {
 	static final int					BUFFER_SIZE	= IOConstants.PAGE_SIZE * 1;
@@ -57,7 +57,8 @@ public class ComponentTest extends TestCase {
 
 				@Override
 				public Iterator<String> getPrefixes(String namespaceURI) {
-					return Arrays.asList("md", "scr").iterator();
+					return Arrays.asList("md", "scr")
+						.iterator();
 				}
 
 				@Override
@@ -105,9 +106,9 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testHeaderReferenceOrder() throws Exception {
 		Document doc = setup(
-				ReferenceOrder.class.getName()
-						+ ";version:=1.1;z=org.osgi.service.http.HttpService?;a=org.osgi.service.http.HttpService?",
-				ReferenceOrder.class.getName());
+			ReferenceOrder.class.getName()
+				+ ";version:=1.1;z=org.osgi.service.http.HttpService?;a=org.osgi.service.http.HttpService?",
+			ReferenceOrder.class.getName());
 		assertAttribute(doc, "z", "scr:component/reference[1]/@name");
 		assertAttribute(doc, "a", "scr:component/reference[2]/@name");
 	}
@@ -126,8 +127,10 @@ public class ComponentTest extends TestCase {
 		Manifest m = jar.getManifest();
 		System.err.println(Processor.join(b.getErrors()));
 		System.err.println(Processor.join(b.getWarnings()));
-		System.err.println(m.getMainAttributes().getValue("Service-Component"));
-		IO.copy(jar.getResource("OSGI-INF/com.test.scala.Service.xml").openInputStream(), System.err);
+		System.err.println(m.getMainAttributes()
+			.getValue("Service-Component"));
+		IO.copy(jar.getResource("OSGI-INF/com.test.scala.Service.xml")
+			.openInputStream(), System.err);
 		Document doc = doc(b, "com.test.scala.Service");
 		assertEquals("com.test.scala.Service", xpath.evaluate("component/implementation/@class", doc));
 		assertEquals("", xpath.evaluate("component/service/provide/@interface", doc));
@@ -142,18 +145,22 @@ public class ComponentTest extends TestCase {
 	public void testProvideFromSuperClass() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
-				IO.getFile("bin")
+			IO.getFile("bin")
 		});
 		b.setProperty("Private-Package", "test.activator.inherits");
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 
-		Manifest m = b.getJar().getManifest();
-		String imports = m.getMainAttributes().getValue("Import-Package");
+		Manifest m = b.getJar()
+			.getManifest();
+		String imports = m.getMainAttributes()
+			.getValue("Import-Package");
 		assertTrue(imports.contains("org.osgi.framework"));
 	}
 
@@ -164,17 +171,20 @@ public class ComponentTest extends TestCase {
 	public void testNonFQN() throws Exception {
 		Builder b = new Builder();
 		b.setProperty("Include-Resource",
-				"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
+			"org/osgi/impl/service/coordinator/AnnotationWithJSR14.class=jar/AnnotationWithJSR14.jclass");
 		b.setProperty("Service-Component", "*");
 		b.setProperty("-resourceonly", "true");
 		Jar jar = b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(1, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 
 		Manifest manifest = jar.getManifest();
-		String component = manifest.getMainAttributes().getValue("Service-Component");
+		String component = manifest.getMainAttributes()
+			.getValue("Service-Component");
 		System.err.println(component);
 		assertNull(component);
 	}
@@ -200,8 +210,8 @@ public class ComponentTest extends TestCase {
 
 	public void testV1_1Directives() throws Exception {
 		Element component = setup(
-				"test.activator.Activator11;factory:=blabla;immediate:=true;enabled:=false;configuration-policy:=optional;activate:=start;deactivate:=stop;modified:=modded",
-				"test.activator.Activator11").getDocumentElement();
+			"test.activator.Activator11;factory:=blabla;immediate:=true;enabled:=false;configuration-policy:=optional;activate:=start;deactivate:=stop;modified:=modded",
+			"test.activator.Activator11").getDocumentElement();
 		assertEquals("http://www.osgi.org/xmlns/scr/v1.1.0", component.getNamespaceURI());
 		assertEquals("blabla", component.getAttribute("factory"));
 		assertEquals("false", component.getAttribute("enabled"));
@@ -253,7 +263,7 @@ public class ComponentTest extends TestCase {
 		Builder b = new Builder();
 		b.setProperty(Analyzer.SERVICE_COMPONENT, header);
 		b.setClasspath(new File[] {
-				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
+			IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperty("Private-Package", "test.activator, org.osgi.service.http.*");
 		b.build();
@@ -264,13 +274,18 @@ public class ComponentTest extends TestCase {
 		// ignore the dynamic-without-unbind error here
 		if (!errors.isEmpty()) {
 			assertEquals(1, errors.size());
-			assertTrue(errors.get(0).endsWith("dynamic but has no unbind method."));
+			assertTrue(errors.get(0)
+				.endsWith("dynamic but has no unbind method."));
 		}
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getWarnings()
+			.size());
 
 		String path = "OSGI-INF/" + className + ".xml";
-		print(b.getJar().getResource(path), System.err);
-		Document doc = db.parse(new InputSource(b.getJar().getResource(path).openInputStream()));
+		print(b.getJar()
+			.getResource(path), System.err);
+		Document doc = db.parse(new InputSource(b.getJar()
+			.getResource(path)
+			.openInputStream()));
 
 		return doc;
 	}
@@ -307,31 +322,34 @@ public class ComponentTest extends TestCase {
 	public void testImplementation() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Analyzer.SERVICE_COMPONENT,
-				"silly.name;implementation:=test.activator.Activator;provide:=java.io.Serialization;servicefactory:=true");
+			"silly.name;implementation:=test.activator.Activator;provide:=java.io.Serialization;servicefactory:=true");
 		b.setClasspath(new File[] {
-				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
+			IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperty("Private-Package", "test.activator");
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 
 		Jar jar = b.getJar();
 
-		Document doc = db.parse(new InputSource(jar.getResource("OSGI-INF/silly.name.xml").openInputStream()));
+		Document doc = db.parse(new InputSource(jar.getResource("OSGI-INF/silly.name.xml")
+			.openInputStream()));
 
 		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation")
-				.item(0)
-				.getAttributes()
-				.getNamedItem("class")
-				.getNodeValue());
+			.item(0)
+			.getAttributes()
+			.getNamedItem("class")
+			.getNodeValue());
 		assertEquals("true", doc.getElementsByTagName("service")
-				.item(0)
-				.getAttributes()
-				.getNamedItem("servicefactory")
-				.getNodeValue());
+			.item(0)
+			.getAttributes()
+			.getNamedItem("servicefactory")
+			.getNodeValue());
 	}
 
 	/**
@@ -346,12 +364,14 @@ public class ComponentTest extends TestCase {
 		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;properties:=\"a=3|4,b=1|2|3\"");
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
-				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
+			IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperties(p);
 		b.build();
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 
 		Jar jar = b.getJar();
 
@@ -370,7 +390,9 @@ public class ComponentTest extends TestCase {
 			NamedNodeMap attributes = child.getAttributes();
 			Node namedItem = attributes.getNamedItem("name");
 			String name = namedItem.getNodeValue();
-			String text = child.getFirstChild().getNodeValue().trim();
+			String text = child.getFirstChild()
+				.getNodeValue()
+				.trim();
 			if (name.equals("a")) {
 				aset = true;
 				assertEquals("3\n4", text);
@@ -383,10 +405,10 @@ public class ComponentTest extends TestCase {
 		assertTrue(aset);
 		assertTrue(bset);
 		assertEquals("test.activator.Activator", doc.getElementsByTagName("implementation")
-				.item(0)
-				.getAttributes()
-				.getNamedItem("class")
-				.getNodeValue());
+			.item(0)
+			.getAttributes()
+			.getNamedItem("class")
+			.getNodeValue());
 		// assertEquals("test.activator.Activator", xp.evaluate(
 		// "/component/implementation/@class", doc));
 		// assertEquals("org.osgi.service.http.HttpService", xp.evaluate(
@@ -411,16 +433,20 @@ public class ComponentTest extends TestCase {
 		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;provides:=true");
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
-				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
+			IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperties(p);
 		b.build();
 		doc(b, "test.activator.Activator");
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
-		assertTrue(b.getErrors().get(0).contains("Unrecognized directive"));
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(1, b.getErrors()
+			.size());
+		assertTrue(b.getErrors()
+			.get(0)
+			.contains("Unrecognized directive"));
+		assertEquals(0, b.getWarnings()
+			.size());
 	}
 
 	/**
@@ -430,12 +456,12 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testDirectives() throws Exception {
 		Document doc = setup(
-				"test.activator.Activator;http=org.osgi.service.http.HttpService;dynamic:=http;optional:=http;provide:=test.activator.Activator; multiple:=http",
-				"test.activator.Activator");
+			"test.activator.Activator;http=org.osgi.service.http.HttpService;dynamic:=http;optional:=http;provide:=test.activator.Activator; multiple:=http",
+			"test.activator.Activator");
 
 		assertEquals("test.activator.Activator", xpath.evaluate("/component/implementation/@class", doc));
 		assertEquals("org.osgi.service.http.HttpService",
-				xpath.evaluate("/component/reference[@name='http']/@interface", doc));
+			xpath.evaluate("/component/reference[@name='http']/@interface", doc));
 		// there are no bind/unbind methods...
 		assertEquals("", xpath.evaluate("/component/reference[@name='http']/@bind", doc));
 		assertEquals("", xpath.evaluate("/component/reference[@name='http']/@unbind", doc));
@@ -454,18 +480,22 @@ public class ComponentTest extends TestCase {
 		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
 		p.put(Analyzer.IMPORT_PACKAGE, "*");
 		p.put(Analyzer.SERVICE_COMPONENT,
-				"test.activator.Activator;http=\"org.osgi.service.http.HttpService(|p=1)(p=2))\"");
+			"test.activator.Activator;http=\"org.osgi.service.http.HttpService(|p=1)(p=2))\"");
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
-				IO.getFile("bin"), IO.getFile("jar/osgi.jar")
+			IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
 		b.setProperties(p);
 		b.build();
 		System.err.println(b.getErrors());
 		System.err.println(b.getWarnings());
-		assertEquals(1, b.getErrors().size());
-		assertTrue(b.getErrors().get(0).contains("Invalid target filter"));
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(1, b.getErrors()
+			.size());
+		assertTrue(b.getErrors()
+			.get(0)
+			.contains("Invalid target filter"));
+		assertEquals(0, b.getWarnings()
+			.size());
 	}
 
 	/**
@@ -475,11 +505,13 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testFilter() throws Exception {
 		Element component = setup("test.activator.Activator;http=\"org.osgi.service.http.HttpService(|(p=1)(p=2))\"");
-		Element implementation = (Element) component.getElementsByTagName("implementation").item(0);
+		Element implementation = (Element) component.getElementsByTagName("implementation")
+			.item(0);
 		assertEquals(null, implementation.getNamespaceURI());
 		assertEquals("test.activator.Activator", implementation.getAttribute("class"));
 
-		Element reference = (Element) component.getElementsByTagName("reference").item(0);
+		Element reference = (Element) component.getElementsByTagName("reference")
+			.item(0);
 		assertEquals("org.osgi.service.http.HttpService", reference.getAttribute("interface"));
 		// we actually check for the methods and don't add them blindly
 		assertEquals("", reference.getAttribute("bind"));
@@ -494,11 +526,13 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testSimple() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService?");
-		Element implementation = (Element) component.getElementsByTagName("implementation").item(0);
+		Element implementation = (Element) component.getElementsByTagName("implementation")
+			.item(0);
 		assertEquals(null, implementation.getNamespaceURI());
 		assertEquals("test.activator.Activator", implementation.getAttribute("class"));
 
-		Element reference = (Element) component.getElementsByTagName("reference").item(0);
+		Element reference = (Element) component.getElementsByTagName("reference")
+			.item(0);
 		assertEquals("org.osgi.service.http.HttpService", reference.getAttribute("interface"));
 		assertEquals("", reference.getAttribute("bind"));
 		assertEquals("", reference.getAttribute("unbind"));
@@ -514,28 +548,32 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testQuestion() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService?");
-		Element reference = (Element) component.getElementsByTagName("reference").item(0);
+		Element reference = (Element) component.getElementsByTagName("reference")
+			.item(0);
 		assertEquals("0..1", reference.getAttribute("cardinality"));
 		assertEquals("dynamic", reference.getAttribute("policy"));
 	}
 
 	public void testStar() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService*");
-		Element reference = (Element) component.getElementsByTagName("reference").item(0);
+		Element reference = (Element) component.getElementsByTagName("reference")
+			.item(0);
 		assertEquals("0..n", reference.getAttribute("cardinality"));
 		assertEquals("dynamic", reference.getAttribute("policy"));
 	}
 
 	public void testPlus() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService+");
-		Element reference = (Element) component.getElementsByTagName("reference").item(0);
+		Element reference = (Element) component.getElementsByTagName("reference")
+			.item(0);
 		assertEquals("1..n", reference.getAttribute("cardinality"));
 		assertEquals("dynamic", reference.getAttribute("policy"));
 	}
 
 	public void testTilde() throws Exception {
 		Element component = setup("test.activator.Activator;http=org.osgi.service.http.HttpService~");
-		Element reference = (Element) component.getElementsByTagName("reference").item(0);
+		Element reference = (Element) component.getElementsByTagName("reference")
+			.item(0);
 		assertEquals("0..1", reference.getAttribute("cardinality"));
 		assertEquals("", reference.getAttribute("policy"));
 	}

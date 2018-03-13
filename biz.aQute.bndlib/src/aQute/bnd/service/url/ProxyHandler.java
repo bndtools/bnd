@@ -15,7 +15,7 @@ public interface ProxyHandler {
 		@Override
 		public String toString() {
 			return "Proxy [proxy=" + proxy + ", authentication="
-					+ (authentication == null ? null : authentication.getUserName()) + "]";
+				+ (authentication == null ? null : authentication.getUserName()) + "]";
 		}
 	}
 

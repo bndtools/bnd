@@ -42,7 +42,8 @@ public class FileSet {
 	 */
 	private static DFA compile(String filesetSpec) {
 
-		String parts[] = filesetSpec.trim().split("\\s*,\\s*");
+		String parts[] = filesetSpec.trim()
+			.split("\\s*,\\s*");
 		DFA result = null;
 
 		for (String part : parts) {
@@ -98,7 +99,8 @@ public class FileSet {
 		if (relative.equals(target) || relative.equals(source))
 			return false;
 
-		String[] segments = relative.getPath().split("/");
+		String[] segments = relative.getPath()
+			.split("/");
 		if (dfa.isIncluded(segments, 0))
 			return true;
 
@@ -126,7 +128,8 @@ public class FileSet {
 
 	public File findFirst(String file) {
 		for (File f : getFiles()) {
-			if (f.getName().equals(file))
+			if (f.getName()
+				.equals(file))
 				return f;
 		}
 		return null;
@@ -182,7 +185,8 @@ public class FileSet {
 		@Override
 		void match(Collection<File> files, File input) {
 			if (input.isDirectory()) {
-				if (glob.matcher(input.getName()).matches()) {
+				if (glob.matcher(input.getName())
+					.matches()) {
 					for (File sub : input.listFiles()) {
 						next.match(files, sub);
 					}
@@ -195,7 +199,8 @@ public class FileSet {
 			if (n >= segments.length - 1)
 				return false;
 
-			if (!glob.matcher(segments[n]).matches())
+			if (!glob.matcher(segments[n])
+				.matches())
 				return false;
 
 			return next.isIncluded(segments, n + 1);
@@ -246,7 +251,8 @@ public class FileSet {
 		@Override
 		void match(Collection<File> files, File input) {
 			if (input.isFile()) {
-				if (glob.matcher(input.getName()).matches())
+				if (glob.matcher(input.getName())
+					.matches())
 					files.add(input);
 			}
 		}
@@ -256,7 +262,8 @@ public class FileSet {
 			if (n != segments.length - 1)
 				return false;
 
-			return glob.matcher(segments[n]).matches();
+			return glob.matcher(segments[n])
+				.matches();
 		}
 	}
 

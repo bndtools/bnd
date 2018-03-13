@@ -21,7 +21,7 @@ import org.osgi.resource.Resource;
  */
 public class CapabilityIndex {
 
-	private final Map<String,List<Capability>> capabilityMap = new HashMap<>();
+	private final Map<String, List<Capability>> capabilityMap = new HashMap<>();
 
 	public synchronized void clear() {
 		capabilityMap.clear();
@@ -46,7 +46,7 @@ public class CapabilityIndex {
 		}
 	}
 
-	public void appendMatchingCapabilities(Requirement requirement, Collection< ? super Capability> capabilities) {
+	public void appendMatchingCapabilities(Requirement requirement, Collection<? super Capability> capabilities) {
 		List<Capability> caps;
 
 		synchronized (this) {
@@ -60,7 +60,8 @@ public class CapabilityIndex {
 			return;
 
 		try {
-			String filterStr = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+			String filterStr = requirement.getDirectives()
+				.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 			Filter filter = filterStr != null ? FrameworkUtil.createFilter(filterStr) : null;
 
 			for (Capability cap : caps) {

@@ -25,6 +25,7 @@ import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
 import aQute.libg.generics.Create;
+
 /**
  * A DiffImpl class compares a newer Element to an older Element. The Element
  * classes hide all the low level details. A Element class is either either
@@ -47,31 +48,31 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	 * child delta for each child. This escalates deltas from below up.
 	 */
 	final static Delta[][]		TRANSITIONS	= {
-													{
-															IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
-														},													// IGNORED
-													{
-															IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
-														},													// UNCHANGED
-													{
-															IGNORED, CHANGED, CHANGED, MICRO, MINOR, MAJOR
-														},													// CHANGED
-													{
-															IGNORED, MICRO, MICRO, MICRO, MINOR, MAJOR
-														},													// MICRO
-													{
-															IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
-														},													// MINOR
-													{
-															IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
-														},													// MAJOR
-													{
-															IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
-														},													// REMOVED
-													{
-															IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
-														},													// ADDED
-												};
+		{
+			IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
+		},													// IGNORED
+		{
+			IGNORED, UNCHANGED, CHANGED, MICRO, MINOR, MAJOR
+		},													// UNCHANGED
+		{
+			IGNORED, CHANGED, CHANGED, MICRO, MINOR, MAJOR
+		},													// CHANGED
+		{
+			IGNORED, MICRO, MICRO, MICRO, MINOR, MAJOR
+		},													// MICRO
+		{
+			IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
+		},													// MINOR
+		{
+			IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
+		},													// MAJOR
+		{
+			IGNORED, MAJOR, MAJOR, MAJOR, MAJOR, MAJOR
+		},													// REMOVED
+		{
+			IGNORED, MINOR, MINOR, MINOR, MINOR, MAJOR
+		},													// ADDED
+	};
 
 	/**
 	 * Compares the newer against the older, traversing the children if
@@ -192,7 +193,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 		return (newer == null ? older : newer).getName();
 	}
 
-	public Collection< ? extends Diff> getChildren() {
+	public Collection<? extends Diff> getChildren() {
 		return children;
 	}
 
@@ -227,7 +228,8 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 
 	public Diff get(String name) {
 		for (DiffImpl child : children) {
-			if (child.getName().equals(name))
+			if (child.getName()
+				.equals(name))
 				return child;
 		}
 		return null;
@@ -288,7 +290,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	}
 
 	private static void format(final Formatter formatter, final Diff diff, final List<String> formats,
-			final Set<Delta> deltas, final int indent, final int depth) {
+		final Set<Delta> deltas, final int indent, final int depth) {
 		if (depth == formats.size()) {
 			StringBuilder sb = new StringBuilder();
 			if (depth > 0) {

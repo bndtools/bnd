@@ -10,9 +10,9 @@ import org.osgi.annotation.versioning.ProviderType;
 import aQute.libg.generics.Create;
 
 public class Descriptors {
-	Map<String,TypeRef>		typeRefCache		= Create.map();
-	Map<String,Descriptor>	descriptorCache		= Create.map();
-	Map<String,PackageRef>	packageCache		= Create.map();
+	Map<String, TypeRef>	typeRefCache		= Create.map();
+	Map<String, Descriptor>	descriptorCache		= Create.map();
+	Map<String, PackageRef>	packageCache		= Create.map();
 
 	// MUST BE BEFORE PRIMITIVES, THEY USE THE DEFAULT PACKAGE!!
 	final static PackageRef	DEFAULT_PACKAGE		= new PackageRef();
@@ -29,11 +29,13 @@ public class Descriptors {
 	final static TypeRef	FLOAT				= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
 
 	public enum SignatureType {
-		TYPEVAR, METHOD, FIELD;
+		TYPEVAR,
+		METHOD,
+		FIELD;
 	}
 
 	public class Signature {
-		public Map<String,Signature>	typevariables	= new HashMap<>();
+		public Map<String, Signature>	typevariables	= new HashMap<>();
 		public Signature				type;
 		public List<Signature>			parameters;
 
@@ -144,7 +146,6 @@ public class Descriptors {
 
 		/**
 		 * Decide if the package is a metadata package.
-		 * 
 		 */
 		public boolean isMetaData() {
 			if (isDefaultPackage())
@@ -491,7 +492,7 @@ public class Descriptors {
 
 				default :
 					throw new IllegalArgumentException(
-							"Invalid type in descriptor: " + c + " from " + descriptor + "[" + index + "]");
+						"Invalid type in descriptor: " + c + " from " + descriptor + "[" + index + "]");
 			}
 			types.add(getTypeRef(sb.toString()));
 			return index;
@@ -563,7 +564,8 @@ public class Descriptors {
 	public static String getPackage(String binaryNameOrFqn) {
 		int n = binaryNameOrFqn.lastIndexOf('/');
 		if (n >= 0)
-			return binaryNameOrFqn.substring(0, n).replace('/', '.');
+			return binaryNameOrFqn.substring(0, n)
+				.replace('/', '.');
 
 		n = binaryNameOrFqn.lastIndexOf('.');
 		if (n >= 0)

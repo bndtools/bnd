@@ -32,19 +32,19 @@ import aQute.lib.tag.Tag;
 
 public class DiffCommand {
 	private final static Logger	logger	= LoggerFactory.getLogger(DiffCommand.class);
-	bnd bnd;
+	bnd							bnd;
 
 	DiffCommand(bnd bnd) {
 		this.bnd = bnd;
 	}
 
 	@Description("Compares two jars. Without specifying the JARs (and when there is a "
-			+ "current project) the jars of this project are diffed against their "
-			+ "baseline in the baseline repository, using the sub-builder's options (these can be overridden). "
-			+ "If one JAR is given, the tree is shown. Otherwise 2 JARs must be specified and they are "
-			+ "then compared to eachother.")
+		+ "current project) the jars of this project are diffed against their "
+		+ "baseline in the baseline repository, using the sub-builder's options (these can be overridden). "
+		+ "If one JAR is given, the tree is shown. Otherwise 2 JARs must be specified and they are "
+		+ "then compared to eachother.")
 	@Arguments(arg = {
-			"[newer file]", "[older file]"
+		"[newer file]", "[older file]"
 	})
 	interface diffOptions extends Options {
 		@Config(description = "Print the API")
@@ -82,7 +82,8 @@ public class DiffCommand {
 				try (ProjectBuilder projectBuilder = project.getBuilder(null)) {
 					for (Builder b : projectBuilder.getSubBuilders()) {
 						ProjectBuilder pb = (ProjectBuilder) b;
-						Jar older = pb.getBaselineJar(); // make sure remains before
+						Jar older = pb.getBaselineJar(); // make sure remains
+															// before
 						// disabling baselining
 						pb.setProperty(Constants.BASELINE, ""); // do not do
 						// baselining in
@@ -97,13 +98,15 @@ public class DiffCommand {
 				return;
 			}
 
-		} else if (options._arguments().size() == 1) {
+		} else if (options._arguments()
+			.size() == 1) {
 			logger.debug("Show tree");
 			showTree(bnd, options);
 			return;
 		}
 
-		if (options._arguments().size() != 2) {
+		if (options._arguments()
+			.size() != 2) {
 			throw new IllegalArgumentException("Requires 2 jar files input");
 		}
 
@@ -144,7 +147,8 @@ public class DiffCommand {
 			boolean all = options.api() == false && options.resources() == false && options.manifest() == false;
 			if (!options.xml()) {
 				if (all || options.api())
-					for (Diff packageDiff : diff.get("<api>").getChildren()) {
+					for (Diff packageDiff : diff.get("<api>")
+						.getChildren()) {
 						if (packageFilters.matches(packageDiff.getName()))
 							show(pw, packageDiff, 0, !options.full());
 					}
@@ -198,14 +202,16 @@ public class DiffCommand {
 
 		Instructions packageFilters = new Instructions(options.pack());
 
-		try (Jar newer = new Jar(bnd.getFile(options._arguments().get(0)))) {
+		try (Jar newer = new Jar(bnd.getFile(options._arguments()
+			.get(0)))) {
 			Differ di = new DiffPluginImpl();
 			Tree n = di.tree(newer);
 
 			boolean all = options.api() == false && options.resources() == false && options.manifest() == false;
 
 			if (all || options.api())
-				for (Tree packageDiff : n.get("<api>").getChildren()) {
+				for (Tree packageDiff : n.get("<api>")
+					.getChildren()) {
 					if (packageFilters.matches(packageDiff.getName()))
 						show(pw, packageDiff, 0);
 				}

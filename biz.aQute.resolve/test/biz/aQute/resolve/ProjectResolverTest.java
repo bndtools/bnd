@@ -26,11 +26,11 @@ import junit.framework.TestCase;
  */
 public class ProjectResolverTest extends TestCase {
 
-	private Workspace	ws;
-	private File		tmp;
+	private Workspace			ws;
+	private File				tmp;
 	private File				local;
 	private ResourcesRepository	fr;
-	private File		home	= IO.getFile("testdata/projectresolver");
+	private File				home	= IO.getFile("testdata/projectresolver");
 
 	@Override
 	protected void setUp() throws Exception {
@@ -42,10 +42,10 @@ public class ProjectResolverTest extends TestCase {
 		IO.delete(tmp);
 		local.mkdirs();
 
-		OSGiRepository or  = new OSGiRepository();
+		OSGiRepository or = new OSGiRepository();
 		or.setRegistry(ws);
 		or.setReporter(ws);
-		Map<String,String> map = new HashMap<>();
+		Map<String, String> map = new HashMap<>();
 		map.put("locations", "https://raw.githubusercontent.com/osgi/osgi.enroute/v1.0.0/cnf/distro/index.xml");
 		map.put("name", "enroute");
 		or.setProperties(map);
@@ -116,11 +116,13 @@ public class ProjectResolverTest extends TestCase {
 				run.setTrace(true);
 				assertNotNull(ws.getRepositories());
 				System.out.println(ws.getRepositories());
-				assertNotNull(run.getWorkspace().getPlugins(Repository.class));
-				System.out.println(run.getWorkspace().getPlugins(Repository.class));
+				assertNotNull(run.getWorkspace()
+					.getPlugins(Repository.class));
+				System.out.println(run.getWorkspace()
+					.getPlugins(Repository.class));
 				ProjectResolver pr = new ProjectResolver(run);
 				pr.setTrace(true);
-				Map<Resource,List<Wire>> resolve = pr.resolve();
+				Map<Resource, List<Wire>> resolve = pr.resolve();
 				assertTrue(pr.check());
 				List<Container> runbundles = pr.getRunBundles();
 				assertEquals(1, runbundles.size());
