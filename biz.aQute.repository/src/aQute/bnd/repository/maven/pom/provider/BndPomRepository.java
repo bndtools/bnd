@@ -272,6 +272,7 @@ public class BndPomRepository extends BaseRepository
 		return configuration.location("cnf/cache/pom-" + name + ".xml");
 	}
 
+	@Override
 	public String toString() {
 		return name;
 	}

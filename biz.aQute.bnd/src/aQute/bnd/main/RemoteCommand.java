@@ -104,6 +104,7 @@ class RemoteCommand extends Processor {
 		agent = launcher.getAgent();
 	}
 
+	@Override
 	public void close() throws IOException {
 		launcher.close();
 	}

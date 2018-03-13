@@ -1537,6 +1537,7 @@ public class Analyzer extends Processor {
 	 * @param from Message identifying the caller for errors
 	 * @return null or a Jar with the contents for the name
 	 */
+	@Override
 	public Jar getJarFromName(String name, String from) {
 		Jar j = super.getJarFromName(name, from);
 		Glob g = new Glob(name);
@@ -3420,6 +3421,7 @@ public class Analyzer extends Processor {
 	 * Report the details of this analyzer
 	 */
 
+	@Override
 	public void report(Map<String, Object> table) throws Exception {
 		super.report(table);
 		analyze();

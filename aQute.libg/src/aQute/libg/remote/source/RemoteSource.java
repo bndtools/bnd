@@ -126,6 +126,7 @@ public class RemoteSource implements Source {
 			this.stdout = stdout;
 			this.stderr = stderr;
 			this.thread = new Thread("source::" + areaId) {
+				@Override
 				public void run() {
 					byte[] data = new byte[10000];
 					while (!Thread.currentThread()

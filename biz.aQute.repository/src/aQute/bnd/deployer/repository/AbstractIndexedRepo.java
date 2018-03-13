@@ -201,11 +201,13 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			final URLConnector connector = getConnector();
 			IRepositoryIndexProcessor processor = new IRepositoryIndexProcessor() {
 
+				@Override
 				public void processResource(Resource resource) {
 					identityMap.put(resource);
 					capabilityIndex.addResource(resource);
 				}
 
+				@Override
 				public void processReferral(URI parentUri, Referral referral, int maxDepth, int currentDepth) {
 					try {
 						URI indexLocation = new URI(referral.getUrl());
@@ -260,6 +262,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		}
 	}
 
+	@Override
 	public final List<URI> getIndexLocations() throws Exception {
 		init();
 		return Collections.unmodifiableList(indexLocations);
@@ -283,10 +286,12 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return connector;
 	}
 
+	@Override
 	public synchronized final void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
 
+	@Override
 	public synchronized void setProperties(Map<String, String> map) {
 		if (map.containsKey(PROP_NAME))
 			name = map.get(PROP_NAME);
@@ -356,6 +361,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return handles.toArray(new ResourceHandle[0]);
 	}
 
+	@Override
 	public synchronized void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 		this.logService = new ReporterLogService(reporter);
@@ -366,6 +372,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return handle != null ? handle.request() : null;
 	}
 
+	@Override
 	public ResourceHandle getHandle(String bsn, String range, Strategy strategy, Map<String, String> properties)
 		throws Exception {
 		init();
@@ -378,14 +385,17 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return result;
 	}
 
+	@Override
 	public boolean canWrite() {
 		return false;
 	}
 
+	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new UnsupportedOperationException("Read-only repository.");
 	}
 
+	@Override
 	public List<String> list(String pattern) throws Exception {
 		init();
 		Glob glob = pattern != null ? new Glob(pattern) : null;
@@ -400,15 +410,18 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return result;
 	}
 
+	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
 		return identityMap.getVersions(bsn);
 	}
 
+	@Override
 	public synchronized String getName() {
 		return name;
 	}
 
+	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		try {
 			init();
@@ -592,6 +605,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return urls;
 	}
 
+	@Override
 	public Set<ResolutionPhase> getSupportedPhases() {
 		return supportedPhases;
 	}
@@ -606,6 +620,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	 * Now just a quick hack to make it work. I actually think these classes
 	 * should extend FileRepo. TODO
 	 */
+	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
 		init();
@@ -647,6 +662,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			System.err.println(Strings.format(format, args));
 	}
 
+	@Override
 	public boolean refresh() throws Exception {
 		initialised = false;
 		init(true);

@@ -171,6 +171,7 @@ public class Justif {
 		return f;
 	}
 
+	@Override
 	public String toString() {
 		wrap(sb);
 		return sb.toString();

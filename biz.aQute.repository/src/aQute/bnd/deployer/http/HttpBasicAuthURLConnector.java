@@ -69,10 +69,12 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	private String				configFileList;
 	private boolean				disableSslVerify	= false;
 
+	@Override
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
 
+	@Override
 	public void setProperties(Map<String, String> map) {
 		configFileList = map.get("configs");
 		if (configFileList == null)
@@ -118,6 +120,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		}
 	}
 
+	@Override
 	public InputStream connect(URL url) throws Exception {
 		TaggedData data = connectTagged(url, null);
 		if (data == null)
@@ -126,10 +129,12 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		return data.getInputStream();
 	}
 
+	@Override
 	public TaggedData connectTagged(URL url) throws Exception {
 		return connectTagged(url, null);
 	}
 
+	@Override
 	public TaggedData connectTagged(URL url, String tag) throws Exception {
 		init();
 

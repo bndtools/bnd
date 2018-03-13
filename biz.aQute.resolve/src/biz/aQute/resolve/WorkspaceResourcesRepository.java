@@ -9,7 +9,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.repository.ResourcesRepository;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.libg.cryptography.SHA256;
@@ -34,14 +34,14 @@ public class WorkspaceResourcesRepository extends ResourcesRepository {
 					attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file)
 						.asHex());
 
-					rb.addCapability(CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
+					rb.addCapability(CapReqBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
 
 					// Add a capability specific to the workspace so that we can
 					// identify this fact later during resource processing.
 					attrs = new Attrs();
 					attrs.put(WORKSPACE_NAMESPACE, p.getName());
 
-					rb.addCapability(CapabilityBuilder.createCapReqBuilder(WORKSPACE_NAMESPACE, attrs));
+					rb.addCapability(CapReqBuilder.createCapReqBuilder(WORKSPACE_NAMESPACE, attrs));
 
 					add(rb.build());
 				}
@@ -49,6 +49,7 @@ public class WorkspaceResourcesRepository extends ResourcesRepository {
 		}
 	}
 
+	@Override
 	public String toString() {
 		return "Workspace";
 	}

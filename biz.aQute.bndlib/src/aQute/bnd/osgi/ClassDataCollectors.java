@@ -41,6 +41,7 @@ class ClassDataCollectors implements Closeable {
 		}
 	}
 
+	@Override
 	public void close() {
 		for (ClassDataCollector cd : delegates)
 			try {

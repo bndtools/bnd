@@ -158,6 +158,7 @@ public class bnd extends Processor {
 	private char[]								password;
 
 	private static final ThreadLocal<Boolean>	noExit					= new ThreadLocal<Boolean>() {
+																			@Override
 																			protected Boolean initialValue() {
 																				return false;
 																			};
@@ -860,6 +861,7 @@ public class bnd extends Processor {
 	public void _build(final buildoptions opts) throws Exception {
 
 		perProject(opts, new PerProject() {
+			@Override
 			public void doit(Project p) throws Exception {
 				p.build(opts.test());
 			}
@@ -877,6 +879,7 @@ public class bnd extends Processor {
 	@Description("Compile a project or the workspace")
 	public void _compile(final CompileOptions opts) throws Exception {
 		perProject(opts, new PerProject() {
+			@Override
 			public void doit(Project p) throws Exception {
 				p.compile(opts.test());
 			}
@@ -2701,7 +2704,7 @@ public class bnd extends Processor {
 
 		if (f.isFile()) {
 			if (f.getName()
-				.endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
+				.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 				Workspace ws = Workspace.findWorkspace(f.getParentFile());
 				Run run = Run.createRun(ws, f);
 				return run;
@@ -2735,7 +2738,7 @@ public class bnd extends Processor {
 			File f = getFile(where);
 			ws = Workspace.findWorkspace(f);
 			if (f.isFile() && f.getName()
-				.endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
+				.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 				Run run = Run.createRun(ws, f);
 				ws = run.getWorkspace();
 			}
@@ -3067,6 +3070,7 @@ public class bnd extends Processor {
 		if (args.isEmpty()) {
 			args = new ExtList<>(getBase().list(new FilenameFilter() {
 
+				@Override
 				public boolean accept(File dir, String name) {
 					return name.endsWith(".jar");
 				}
@@ -3710,6 +3714,7 @@ public class bnd extends Processor {
 			for (final Project dep : targets) {
 				forker.doWhen(dep.getDependson(), dep, new Runnable() {
 
+					@Override
 					public void run() {
 						if (!quit.get()) {
 

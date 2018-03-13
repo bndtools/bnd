@@ -105,14 +105,17 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		return result;
 	}
 
+	@Override
 	public boolean canWrite() {
 		return false;
 	}
 
+	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new UnsupportedOperationException("Read only repository");
 	}
 
+	@Override
 	public List<String> list(String pattern) throws Exception {
 		List<String> names = new ArrayList<>();
 		Collection<Project> projects = workspace.getAllProjects();
@@ -137,6 +140,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		return names;
 	}
 
+	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		List<Version> versions = new ArrayList<>();
 		Collection<Project> projects = workspace.getAllProjects();
@@ -154,16 +158,19 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		return new SortedList<>(versions);
 	}
 
+	@Override
 	public String getName() {
 		return "Workspace " + workspace.getBase()
 			.getName();
 	}
 
+	@Override
 	public String getLocation() {
 		return workspace.getBase()
 			.getAbsolutePath();
 	}
 
+	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
 		File file = get(bsn, version.toString(), Strategy.EXACT, properties);
@@ -179,16 +186,19 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		return file;
 	}
 
+	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public String tooltip(Object... target) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public String title(Object... target) throws Exception {
 		// TODO Auto-generated method stub
 		return null;

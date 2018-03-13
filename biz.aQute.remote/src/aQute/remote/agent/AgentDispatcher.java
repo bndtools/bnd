@@ -175,6 +175,7 @@ public class AgentDispatcher {
 			//
 			// Override the close se we can remote it from the list
 			//
+			@Override
 			public void close() throws IOException {
 				descriptor.servers.remove(this);
 				super.close();

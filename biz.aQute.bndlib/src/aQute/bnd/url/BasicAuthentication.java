@@ -56,6 +56,7 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 		init(null);
 	}
 
+	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
 		this.password = map.get(PASSWORD);
@@ -82,6 +83,7 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 		}
 	}
 
+	@Override
 	public void handle(URLConnection connection) {
 		if (connection instanceof HttpURLConnection && matches(connection) && password != null && user != null) {
 			if (!(connection instanceof HttpsURLConnection))

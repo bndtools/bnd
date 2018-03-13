@@ -104,15 +104,18 @@ public abstract class Domain implements Iterable<String> {
 
 				return new Iterator<String>() {
 
+					@Override
 					public boolean hasNext() {
 						return it.hasNext();
 					}
 
+					@Override
 					public String next() {
 						return it.next()
 							.toString();
 					}
 
+					@Override
 					public void remove() {
 						it.remove();
 					}

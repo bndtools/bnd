@@ -46,10 +46,12 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		this(new UTF8Properties(env.properties), env, null);
 	}
 
+	@Override
 	public String process(String line) {
 		return replacer.process(line);
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public Map<String, String> getMap() {
 		@SuppressWarnings("rawtypes")
@@ -57,6 +59,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		return map;
 	}
 
+	@Override
 	public Domain getParent() {
 		return parent;
 	}
@@ -258,6 +261,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 			front
 		}, new InvocationHandler() {
 
+			@Override
 			public Object invoke(Object target, Method method, Object[] parameters) throws Throwable {
 				String name = mangleMethodName(prefix, method.getName());
 				if (parameters == null || parameters.length == 0) {

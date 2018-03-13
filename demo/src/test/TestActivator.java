@@ -17,6 +17,7 @@ import org.osgi.framework.ServiceReference;
 
 public class TestActivator implements BundleActivator {
 
+	@Override
 	@SuppressWarnings({
 		"rawtypes", "unchecked"
 	})
@@ -78,6 +79,7 @@ public class TestActivator implements BundleActivator {
 			ht.put("main.thread", true);
 			context.registerService(Callable.class.getName(), new Callable<Integer>() {
 
+				@Override
 				public Integer call() throws Exception {
 					ServiceReference ref = context.getServiceReference(Instrumentation.class.getName());
 					if (ref == null)
@@ -93,6 +95,7 @@ public class TestActivator implements BundleActivator {
 		} else if ("quit.no.exit".equals(p)) {
 			Callable r = new Callable() {
 
+				@Override
 				public Integer call() {
 					System.err.println("Quit but not exit()");
 					return 197;
@@ -105,6 +108,7 @@ public class TestActivator implements BundleActivator {
 		} else if ("main.thread".equals(p)) {
 			Runnable r = new Runnable() {
 
+				@Override
 				public void run() {
 					System.err.println("Running in main");
 				}
@@ -120,9 +124,11 @@ public class TestActivator implements BundleActivator {
 
 			Runnable r = new Runnable() {
 
+				@Override
 				public void run() {
 					System.err.println("Running in main");
 					Thread t = new Thread() {
+						@Override
 						public void run() {
 							System.err.println("Stopping framework");
 							try {
@@ -153,6 +159,7 @@ public class TestActivator implements BundleActivator {
 		} else if ("main.thread.callable".equals(p)) {
 			Callable<Integer> r = new Callable<Integer>() {
 
+				@Override
 				public Integer call() throws Exception {
 					System.err.println("Running in main");
 					return 42;
@@ -165,10 +172,12 @@ public class TestActivator implements BundleActivator {
 		} else if ("main.thread.both".equals(p)) {
 			class Both implements Callable<Integer>, Runnable {
 
+				@Override
 				public void run() {
 					throw new RuntimeException("Wrong, really wrong. The callable has preference");
 				}
 
+				@Override
 				public Integer call() throws Exception {
 					return 43;
 				}
@@ -183,6 +192,7 @@ public class TestActivator implements BundleActivator {
 		} else if ("main.thread.callableinvalidtype".equals(p)) {
 			Callable<Double> r = new Callable<Double>() {
 
+				@Override
 				public Double call() throws Exception {
 					System.exit(44); // really wrong
 					return 44D;
@@ -200,6 +210,7 @@ public class TestActivator implements BundleActivator {
 		} else if ("main.thread.callablenull".equals(p)) {
 			Callable<Integer> r = new Callable<Integer>() {
 
+				@Override
 				public Integer call() throws Exception {
 					System.err.println("In main, return null");
 					return null;
@@ -216,6 +227,7 @@ public class TestActivator implements BundleActivator {
 
 	}
 
+	@Override
 	public void stop(BundleContext arg0) throws Exception {
 		System.err.println("Goodbye world");
 	}

@@ -32,6 +32,7 @@ public class ObjectHandler extends Handler {
 
 		// Sort the fields so the output is canonical
 		Arrays.sort(this.fields, new Comparator<Field>() {
+			@Override
 			public int compare(Field o1, Field o2) {
 				return o1.getName()
 					.compareTo(o2.getName());

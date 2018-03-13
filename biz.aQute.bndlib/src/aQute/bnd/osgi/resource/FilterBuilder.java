@@ -30,6 +30,7 @@ public class FilterBuilder {
 			this.previous = current;
 		}
 
+		@Override
 		public String toString() {
 			if (members.isEmpty())
 				return "";
@@ -160,6 +161,7 @@ public class FilterBuilder {
 		return sb.toString();
 	}
 
+	@Override
 	public String toString() {
 		return current.toString();
 	}

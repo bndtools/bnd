@@ -14,6 +14,7 @@ public class MockRegistry implements Registry {
 		plugins.add(plugin);
 	}
 
+	@Override
 	public <T> List<T> getPlugins(Class<T> clazz) {
 		List<T> l = new ArrayList<>();
 		for (Object plugin : plugins) {
@@ -23,6 +24,7 @@ public class MockRegistry implements Registry {
 		return l;
 	}
 
+	@Override
 	public <T> T getPlugin(Class<T> clazz) {
 		for (Object plugin : plugins) {
 			if (clazz.isInstance(plugin))

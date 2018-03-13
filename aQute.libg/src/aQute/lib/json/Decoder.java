@@ -184,6 +184,7 @@ public class Decoder implements Closeable {
 		return c < 0;
 	}
 
+	@Override
 	public void close() throws IOException {
 		reader.close();
 	}

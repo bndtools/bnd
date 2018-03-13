@@ -225,6 +225,7 @@ class Server extends NanoHTTPD {
 		return certificateChain;
 	}
 
+	@Override
 	protected boolean useGzipWhenAccepted(Response r) {
 		return false;
 	}

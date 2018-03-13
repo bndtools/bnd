@@ -152,10 +152,12 @@ public class IndexedReposWithComms extends TestCase {
 		socks5Proxy.start();
 	}
 
+	@Override
 	public void setUp() {
 		IO.delete(tmp);
 	}
 
+	@Override
 	public void tearDown() {
 		if (socks5Proxy != null)
 			socks5Proxy.shutdown();

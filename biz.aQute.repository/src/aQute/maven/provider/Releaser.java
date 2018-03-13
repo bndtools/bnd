@@ -208,6 +208,7 @@ class Releaser implements Release {
 		aborted = true;
 	}
 
+	@Override
 	public void force() {
 		force = true;
 	}

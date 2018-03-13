@@ -64,6 +64,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 	String	tsacert;
 	String	tsapolicyid;
 
+	@Override
 	public void setProperties(Map<String, String> map) {
 		if (map.containsKey("keystore"))
 			this.keystore = map.get("keystore");
@@ -87,8 +88,10 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 			this.tsapolicyid = map.get("tsapolicyid");
 	}
 
+	@Override
 	public void setReporter(Reporter processor) {}
 
+	@Override
 	public void sign(Builder builder, String alias) throws Exception {
 		File f = builder.getFile(keystore);
 		if (!f.isFile()) {

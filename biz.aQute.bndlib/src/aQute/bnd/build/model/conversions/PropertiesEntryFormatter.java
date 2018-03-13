@@ -3,6 +3,7 @@ package aQute.bnd.build.model.conversions;
 import java.util.Map.Entry;
 
 public class PropertiesEntryFormatter implements Converter<String, Entry<String, String>> {
+	@Override
 	public String convert(Entry<String, String> entry) {
 		StringBuilder buffer = new StringBuilder();
 

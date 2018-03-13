@@ -87,6 +87,7 @@ public class ExportMojo extends AbstractMojo {
 	@Component
 	private ProjectDependenciesResolver	resolver;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,

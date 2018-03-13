@@ -37,6 +37,7 @@ public class PersistentResource extends DTO implements Resource {
 		public RCData[]	capabilities;
 		public RCData[]	requirements;
 
+		@Override
 		public int compareTo(Namespace o) {
 			return name.compareTo(o.name);
 		}
@@ -64,6 +65,7 @@ public class PersistentResource extends DTO implements Resource {
 
 		transient Object	converted;
 
+		@Override
 		public int compareTo(Attr o) {
 			return key.compareTo(o.key);
 		}
@@ -270,6 +272,7 @@ public class PersistentResource extends DTO implements Resource {
 		return data;
 	}
 
+	@Override
 	public String toString() {
 		try {
 			return "P-" + getResource();
@@ -278,11 +281,13 @@ public class PersistentResource extends DTO implements Resource {
 		}
 	}
 
+	@Override
 	@Deprecated
 	public List<Capability> getCapabilities(String ns) {
 		return null;
 	}
 
+	@Override
 	@Deprecated
 	public List<Requirement> getRequirements(String ns) {
 		return null;
@@ -300,18 +305,22 @@ public class PersistentResource extends DTO implements Resource {
 	public class RC implements Requirement, Capability {
 		public RC(RCData data, String ns) {}
 
+		@Override
 		public String getNamespace() {
 			return null;
 		}
 
+		@Override
 		public Resource getResource() {
 			return null;
 		}
 
+		@Override
 		public Map<String, Object> getAttributes() {
 			return null;
 		}
 
+		@Override
 		public Map<String, String> getDirectives() {
 			return null;
 		}

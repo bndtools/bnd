@@ -24,10 +24,12 @@ public class ReplacerTest extends TestCase {
 			this(null);
 		}
 
+		@Override
 		public Map<String, String> getMap() {
 			return map;
 		}
 
+		@Override
 		public Domain getParent() {
 			return parent;
 		}

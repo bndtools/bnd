@@ -89,6 +89,7 @@ public abstract class MavenBackingRepository implements Closeable {
 
 	public abstract boolean delete(String path) throws Exception;
 
+	@Override
 	public void close() {
 
 	}

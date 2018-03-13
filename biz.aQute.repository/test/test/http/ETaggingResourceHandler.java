@@ -21,6 +21,7 @@ public class ETaggingResourceHandler extends ResourceHandler {
 
 	MimeTypes _mimeTypes = new MimeTypes();
 
+	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
 		throws IOException, ServletException {
 		if (baseRequest.isHandled())

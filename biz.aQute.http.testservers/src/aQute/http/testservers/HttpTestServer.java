@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -75,7 +75,7 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		this.config = config == null ? config = new Config() : config;
 
 		if (config.host == null)
-			config.host = Inet4Address.getLoopbackAddress()
+			config.host = InetAddress.getLoopbackAddress()
 				.getHostAddress();
 
 		server = new Server(config);

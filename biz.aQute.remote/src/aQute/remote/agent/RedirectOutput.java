@@ -42,16 +42,19 @@ public class RedirectOutput extends PrintStream {
 		return new PrintStream(new NullOutputStream());
 	}
 
+	@Override
 	public void write(int b) {
 		this.write(new byte[] {
 			(byte) b
 		}, 0, 1);
 	}
 
+	@Override
 	public void write(byte b[]) {
 		write(b, 0, b.length);
 	}
 
+	@Override
 	public void write(byte b[], int off, int len) {
 		if ((off | len | (b.length - (len + off)) | (off + len)) < 0)
 			throw new IndexOutOfBoundsException();
@@ -92,6 +95,7 @@ public class RedirectOutput extends PrintStream {
 		}
 	}
 
+	@Override
 	public void flush() {
 		final String output;
 		synchronized (this) {
@@ -129,6 +133,7 @@ public class RedirectOutput extends PrintStream {
 		super.flush();
 	}
 
+	@Override
 	public void close() {
 		super.close();
 	}

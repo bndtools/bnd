@@ -25,6 +25,7 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 
 	private Jar jar;
 
+	@Override
 	public void setUp() throws IOException, Exception {
 		super.setUp();
 

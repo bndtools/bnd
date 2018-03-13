@@ -87,6 +87,7 @@ public class Version implements Comparable<Version> {
 		return qualifier;
 	}
 
+	@Override
 	public int compareTo(Version other) {
 		if (other == this)
 			return 0;

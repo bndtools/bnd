@@ -6,6 +6,7 @@ import org.osgi.resource.Requirement;
 
 public class RequirementFormatter implements Converter<String, Requirement> {
 
+	@Override
 	public String convert(Requirement req) throws IllegalArgumentException {
 		StringBuilder builder = new StringBuilder();
 

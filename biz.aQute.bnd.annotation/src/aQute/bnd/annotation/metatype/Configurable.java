@@ -62,6 +62,7 @@ public class Configurable<T> {
 			this.loader = loader;
 		}
 
+		@Override
 		public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 			Meta.AD ad = method.getAnnotation(Meta.AD.class);
 			String id = Configurable.mangleMethodName(method.getName());

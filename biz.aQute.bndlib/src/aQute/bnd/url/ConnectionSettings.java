@@ -37,6 +37,7 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 	/**
 	 * Handle the connection
 	 */
+	@Override
 	public void handle(URLConnection connection) throws Exception {
 		if (matches(connection)) {
 			if (config.connectTimeout() != 0)
@@ -64,6 +65,7 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 	/**
 	 * Set the properties.
 	 */
+	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
 		for (Entry<String, String> entry : headers.entrySet()) {

@@ -57,6 +57,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		.getLogger(ResourceRepositoryImpl.class);
 	private static Comparator<ResourceDescriptor>	RESOURCE_DESCRIPTOR_COMPARATOR	= new Comparator<ResourceDescriptor>() {
 
+																						@Override
 																						public int compare(
 																							ResourceDescriptor o1,
 																							ResourceDescriptor o2) {
@@ -134,6 +135,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * List the resources. We skip the filter for now.
 	 */
+	@Override
 	public List<ResourceDescriptorImpl> filter(String repoId, String filter) throws Exception {
 		List<ResourceDescriptorImpl> result = new ArrayList<>();
 		for (ResourceDescriptorImpl rdi : getIndex().descriptors) {
@@ -160,6 +162,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		save();
 	}
 
+	@Override
 	public boolean delete(String repoId, byte[] id) throws Exception {
 		ResourceDescriptorImpl rd = getResourceDescriptor(id);
 		if (rd == null)
@@ -182,6 +185,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * Delete a cache entry
 	 */
+	@Override
 	public boolean deleteCache(byte[] id) throws Exception {
 		File dir = IO.getFile(cache, Hex.toHexString(id));
 		if (dir.isDirectory()) {
@@ -194,6 +198,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * Add a resource descriptor to the index.
 	 */
+	@Override
 	public boolean add(String repoId, ResourceDescriptor rd) throws Exception {
 		ResourceDescriptorImpl rdi = getResourceDescriptor(rd.id);
 		boolean add = false;
@@ -215,6 +220,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * Get the file belonging to a Resource Descriptor
 	 */
+	@Override
 	public File getResource(byte[] rd, final RepositoryPlugin.DownloadListener... blockers) throws Exception {
 		final ResourceDescriptorImpl rds = getResourceDescriptor(rd);
 
@@ -288,6 +294,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		limitDownloads.acquire();
 
 		executor.execute(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					download(rds, path);
@@ -314,6 +321,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * Add a new event listener
 	 */
+	@Override
 	public void addListener(Listener rrl) {
 		listeners.add(rrl);
 	}
@@ -335,6 +343,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * List the resources. We skip the filter for now.
 	 */
+	@Override
 	public ResourceDescriptorImpl getResourceDescriptor(byte[] rd) throws Exception {
 		for (ResourceDescriptorImpl d : getIndex().descriptors) {
 			if (Arrays.equals(d.id, rd))
@@ -540,6 +549,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		this.connector = connector;
 	}
 
+	@Override
 	public SortedSet<ResourceDescriptor> find(String repoId, String bsn, VersionRange range) throws Exception {
 		TreeSet<ResourceDescriptor> result = new TreeSet<>(RESOURCE_DESCRIPTOR_COMPARATOR);
 
@@ -555,6 +565,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		return result;
 	}
 
+	@Override
 	public File getCacheDir(String name) {
 		File dir = new File(hosting, name);
 		try {

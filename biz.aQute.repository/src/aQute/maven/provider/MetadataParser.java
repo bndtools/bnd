@@ -53,6 +53,7 @@ public class MetadataParser {
 			return top;
 		}
 
+		@Override
 		public String toString() {
 			Tag tag = toTag();
 			return tag.toString();
@@ -64,6 +65,7 @@ public class MetadataParser {
 		public MavenVersion			release;
 		public List<MavenVersion>	versions	= new ArrayList<>();
 
+		@Override
 		public Tag toTag() {
 			Tag top = super.toTag();
 
@@ -101,6 +103,7 @@ public class MetadataParser {
 		public Snapshot					snapshot			= new Snapshot();
 		public List<SnapshotVersion>	snapshotVersions	= new ArrayList<>();
 
+		@Override
 		public Tag toTag() {
 			Tag top = super.toTag();
 			new Tag(top, "version", version.toString());
@@ -142,7 +145,7 @@ public class MetadataParser {
 	public static ProgramMetadata parseProgramMetadata(InputStream in) throws Exception {
 		XMLStreamReader sr = inputFactory.createXMLStreamReader(in);
 		sr.nextTag();
-		sr.require(XMLStreamReader.START_ELEMENT, null, "metadata");
+		sr.require(XMLStreamConstants.START_ELEMENT, null, "metadata");
 
 		return programMetadata(sr);
 	}
@@ -156,7 +159,7 @@ public class MetadataParser {
 	public static RevisionMetadata parseRevisionMetadata(InputStream in) throws Exception {
 		XMLStreamReader sr = inputFactory.createXMLStreamReader(in);
 		sr.nextTag();
-		sr.require(XMLStreamReader.START_ELEMENT, null, "metadata");
+		sr.require(XMLStreamConstants.START_ELEMENT, null, "metadata");
 		return revisionMetadata(sr);
 	}
 

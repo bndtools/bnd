@@ -259,65 +259,77 @@ public class Settings implements Map<String, String> {
 		return hmac.verify(con);
 	}
 
+	@Override
 	public void clear() {
 		data = new Data();
 		IO.delete(where);
 	}
 
+	@Override
 	public boolean containsKey(Object key) {
 		check();
 		return data.map.containsKey(key);
 	}
 
+	@Override
 	public boolean containsValue(Object value) {
 		check();
 		return data.map.containsValue(value);
 	}
 
+	@Override
 	public Set<java.util.Map.Entry<String, String>> entrySet() {
 		check();
 		return data.map.entrySet();
 	}
 
+	@Override
 	public String get(Object key) {
 		check();
 
 		return data.map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		check();
 		return data.map.isEmpty();
 	}
 
+	@Override
 	public Set<String> keySet() {
 		check();
 		return data.map.keySet();
 	}
 
+	@Override
 	public String put(String key, String value) {
 		check();
 		dirty = true;
 		return data.map.put(key, value);
 	}
 
+	@Override
 	public void putAll(Map<? extends String, ? extends String> v) {
 		check();
 		dirty = true;
 		data.map.putAll(v);
 	}
 
+	@Override
 	public String remove(Object key) {
 		check();
 		dirty = true;
 		return data.map.remove(key);
 	}
 
+	@Override
 	public int size() {
 		check();
 		return data.map.size();
 	}
 
+	@Override
 	public Collection<String> values() {
 		check();
 		return data.map.values();
@@ -327,6 +339,7 @@ public class Settings implements Map<String, String> {
 		return dirty;
 	}
 
+	@Override
 	public String toString() {
 		return "Settings[" + where + "]";
 	}

@@ -338,6 +338,7 @@ public abstract class ProjectLauncher extends Processor {
 		//
 
 		ClassLoader fcl = new ClassLoader(parent) {
+			@Override
 			protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
 				if (IGNORE.matcher(name)
 					.matches())
@@ -433,6 +434,7 @@ public abstract class ProjectLauncher extends Processor {
 		return keep;
 	}
 
+	@Override
 	public void setTrace(boolean level) {
 		this.trace = level;
 	}

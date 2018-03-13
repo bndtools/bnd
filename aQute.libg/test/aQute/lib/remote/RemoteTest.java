@@ -15,6 +15,7 @@ public class RemoteTest extends TestCase {
 	private RemoteSource	source;
 	private RemoteSink		sink;
 
+	@Override
 	public void setUp() throws Exception {
 		sinkDir = create("generated/sink/" + getName(), null);
 		sourceDir = create("generated/source/" + getName(), "testresources/remote");

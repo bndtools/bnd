@@ -137,6 +137,7 @@ public class RunconfigToDistributionTask extends BaseTask {
 	private static class NonTestProjectFileFilter implements FileFilter {
 		public NonTestProjectFileFilter() {}
 
+		@Override
 		public boolean accept(File projectFolder) {
 			return !projectFolder.getName()
 				.endsWith(".test") && containsGeneratedFolder(projectFolder);
@@ -160,6 +161,7 @@ public class RunconfigToDistributionTask extends BaseTask {
 	private static class JarFileFilter implements FileFilter {
 		public JarFileFilter() {}
 
+		@Override
 		public boolean accept(File file) {
 			return file.getName()
 				.endsWith(".jar");

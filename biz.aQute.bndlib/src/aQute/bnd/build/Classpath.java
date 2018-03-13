@@ -65,6 +65,7 @@ public class Classpath {
 		}
 	}
 
+	@Override
 	public String toString() {
 		return Strings.join(File.pathSeparator, entries);
 	}

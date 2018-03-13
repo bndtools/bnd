@@ -19,12 +19,14 @@ public class TestOSGiRepository extends TestCase {
 
 	private File tmp;
 
+	@Override
 	public void setUp() {
 		tmp = IO.getFile("generated/tmp/test/" + getName());
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
 
+	@Override
 	public void tearDown() {
 		IO.delete(tmp);
 	}

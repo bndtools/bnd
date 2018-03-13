@@ -78,6 +78,7 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 	private PrivateKey			privateKey;
 	private PublicKey			publicKey;
 
+	@Override
 	public void handle(URLConnection connection) throws Exception {
 
 		// TODO switch to https since this signing is only secure with https

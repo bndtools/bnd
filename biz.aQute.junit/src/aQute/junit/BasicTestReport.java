@@ -29,14 +29,17 @@ public class BasicTestReport implements TestListener, TestReporter {
 		this.result = result;
 	}
 
+	@Override
 	public void setup(Bundle fw, Bundle targetBundle) {
 		this.targetBundle = targetBundle;
 	}
 
+	@Override
 	public void begin(List<Test> tests, int realcount) {
 		activator.trace(">>>> %s, tests %s", targetBundle, tests);
 	}
 
+	@Override
 	public void addError(Test test, Throwable t) {
 		if (activator.isTrace()) {
 			activator.trace("  add error to %s : %s", test, t);
@@ -51,6 +54,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 		check();
 	}
 
+	@Override
 	public void addFailure(Test test, AssertionFailedError t) {
 		if (activator.isTrace()) {
 			activator.trace("  add failure to %s : %s", test, t);
@@ -65,6 +69,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 		check();
 	}
 
+	@Override
 	public void startTest(Test test) {
 		activator.trace("  >> %s", test);
 		check();
@@ -105,6 +110,7 @@ public class BasicTestReport implements TestListener, TestReporter {
 			.echo(true);
 	}
 
+	@Override
 	public void endTest(Test test) {
 		activator.trace("  << %s, fails=%s, errors=%s", test, result.failureCount(), result.errorCount());
 		systemOut.capture(false);
@@ -121,10 +127,12 @@ public class BasicTestReport implements TestListener, TestReporter {
 		check();
 	}
 
+	@Override
 	public void end() {
 		activator.trace("<<<<");
 	}
 
+	@Override
 	public void aborted() {
 		activator.trace("ABORTED");
 	}

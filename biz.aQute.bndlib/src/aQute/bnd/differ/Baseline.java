@@ -175,6 +175,7 @@ public class Baseline {
 						// interfaces
 						// by making them providers
 						Delta tryDelta = pdiff.getDelta(new Ignore() {
+							@Override
 							public boolean contains(Diff diff) {
 								if (diff.getType() == Type.INTERFACE && diff.getDelta() == Delta.MAJOR) {
 									info.providers.add(Descriptors.getShortName(diff.getName()));

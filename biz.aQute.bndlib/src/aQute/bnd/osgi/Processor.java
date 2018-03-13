@@ -282,6 +282,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return p;
 	}
 
+	@Override
 	public SetLocation warning(String string, Object... args) {
 		fixupMessages = false;
 		Processor p = current();
@@ -292,6 +293,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return location(s);
 	}
 
+	@Override
 	public SetLocation error(String string, Object... args) {
 		fixupMessages = false;
 		Processor p = current();
@@ -312,6 +314,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
 	 *             instead.
 	 */
+	@Override
 	@Deprecated
 	public void progress(float progress, String format, Object... args) {
 		Logger l = getLogger();
@@ -384,11 +387,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void signal() {}
 
+	@Override
 	public List<String> getWarnings() {
 		fixupMessages();
 		return warnings;
 	}
 
+	@Override
 	public List<String> getErrors() {
 		fixupMessages();
 		return errors;
@@ -417,6 +422,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		toBeClosed.remove(jar);
 	}
 
+	@Override
 	public boolean isPedantic() {
 		return current().pedantic;
 	}
@@ -446,6 +452,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param clazz Each returned plugin implements this class/interface
 	 * @return A list of plugins
 	 */
+	@Override
 	public <T> List<T> getPlugins(Class<T> clazz) {
 		List<T> l = new ArrayList<>();
 		Set<Object> all = getPlugins();
@@ -462,6 +469,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param <T>
 	 * @param clazz
 	 */
+	@Override
 	public <T> T getPlugin(Class<T> clazz) {
 		Set<Object> all = getPlugins();
 		for (Object plugin : all) {
@@ -795,7 +803,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public boolean isFailOk() {
-		String v = getProperty(Analyzer.FAIL_OK, null);
+		String v = getProperty(Constants.FAIL_OK, null);
 		return v != null && v.equalsIgnoreCase("true");
 	}
 
@@ -826,6 +834,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
+	@Override
 	@Deprecated
 	public void trace(String msg, Object... parms) {
 		Processor p = current();
@@ -869,6 +878,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return new LinkedHashMap<>(t);
 	}
 
+	@Override
 	public void close() throws IOException {
 		for (Closeable c : toBeClosed) {
 			IO.close(c);
@@ -1848,6 +1858,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return base != null && base.isDirectory() && propertiesFile != null && propertiesFile.isFile();
 	}
 
+	@Override
 	public boolean isOk() {
 		return isFailOk() || (getErrors().size() == 0);
 	}
@@ -2336,45 +2347,54 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			this.message = s;
 		}
 
+		@Override
 		public SetLocation file(String file) {
 			this.file = file;
 			return this;
 		}
 
+		@Override
 		public SetLocation header(String header) {
 			this.header = header;
 			return this;
 		}
 
+		@Override
 		public SetLocation context(String context) {
 			this.context = context;
 			return this;
 		}
 
+		@Override
 		public SetLocation method(String methodName) {
 			this.methodName = methodName;
 			return this;
 		}
 
+		@Override
 		public SetLocation line(int n) {
 			this.line = n;
 			return this;
 		}
 
+		@Override
 		public SetLocation reference(String reference) {
 			this.reference = reference;
 			return this;
 		}
 
+		@Override
 		public SetLocation details(Object details) {
 			this.details = details;
 			return this;
 		}
 
+		@Override
 		public Location location() {
 			return this;
 		}
 
+		@Override
 		public SetLocation length(int length) {
 			this.length = length;
 			return this;
@@ -2388,6 +2408,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return loc;
 	}
 
+	@Override
 	public Location getLocation(String msg) {
 		for (Location l : locations)
 			if ((l.message != null) && l.message.equals(msg))

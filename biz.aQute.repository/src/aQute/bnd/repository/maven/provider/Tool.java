@@ -207,6 +207,7 @@ public class Tool extends Processor {
 		return new Jar(sources);
 	}
 
+	@Override
 	public void close() throws IOException {
 		try {
 			super.close();

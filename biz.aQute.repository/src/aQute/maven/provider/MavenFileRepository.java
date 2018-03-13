@@ -69,6 +69,7 @@ public class MavenFileRepository extends MavenBackingRepository {
 		return IO.getFile(remote, path);
 	}
 
+	@Override
 	public boolean isFile() {
 		return true;
 	}

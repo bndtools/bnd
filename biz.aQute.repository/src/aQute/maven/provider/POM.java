@@ -383,14 +383,17 @@ public class POM implements IPom {
 		}
 	}
 
+	@Override
 	public Revision getRevision() {
 		return revision;
 	}
 
+	@Override
 	public String getPackaging() {
 		return packaging;
 	}
 
+	@Override
 	public Archive binaryArchive() {
 		return revision.archive(packaging == null || packaging.isEmpty() || packaging.equals("bundle")
 			|| packaging.equals("pom") || packaging.equals("eclipse-plugin") ? "jar" : packaging, null);

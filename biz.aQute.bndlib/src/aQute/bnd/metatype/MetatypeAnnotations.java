@@ -75,6 +75,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 
 	MetatypeVersion minVersion;
 
+	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		this.minVersion = MetatypeVersion.VERSION_1_2;
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS, "*"));

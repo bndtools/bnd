@@ -139,6 +139,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	 * {@link #getDelta(aQute.bnd.service.diff.Diff.Ignore)} that allows you to
 	 * ignore Diff objects on the fly (and calculate their parents accordingly).
 	 */
+	@Override
 	public Delta getDelta() {
 		return delta;
 	}
@@ -149,6 +150,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 	 * can be useful to ignore warnings/errors.
 	 */
 
+	@Override
 	public Delta getDelta(Ignore ignore) {
 
 		// If ignored, we just return ignore.
@@ -185,14 +187,17 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 		}
 	}
 
+	@Override
 	public Type getType() {
 		return (newer == null ? older : newer).getType();
 	}
 
+	@Override
 	public String getName() {
 		return (newer == null ? older : newer).getName();
 	}
 
+	@Override
 	public Collection<? extends Diff> getChildren() {
 		return children;
 	}
@@ -216,6 +221,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 		return Objects.hash(getDelta(), getType(), getName());
 	}
 
+	@Override
 	public int compareTo(DiffImpl other) {
 		if (getDelta() == other.getDelta()) {
 			if (getType() == other.getType()) {
@@ -226,6 +232,7 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 		return getDelta().compareTo(other.getDelta());
 	}
 
+	@Override
 	public Diff get(String name) {
 		for (DiffImpl child : children) {
 			if (child.getName()
@@ -235,14 +242,17 @@ public class DiffImpl implements Diff, Comparable<DiffImpl>, Formattable {
 		return null;
 	}
 
+	@Override
 	public Tree getOlder() {
 		return older;
 	}
 
+	@Override
 	public Tree getNewer() {
 		return newer;
 	}
 
+	@Override
 	public Data serialize() {
 		Data data = new Data();
 		data.type = getType();

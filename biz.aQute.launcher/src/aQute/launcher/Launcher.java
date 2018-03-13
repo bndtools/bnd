@@ -246,6 +246,7 @@ public class Launcher implements ServiceListener {
 			TimerTask watchdog = new TimerTask() {
 				long begin = propertiesFile.lastModified();
 
+				@Override
 				public void run() {
 					long now = propertiesFile.lastModified();
 					if (begin < now) {
@@ -938,6 +939,7 @@ public class Launcher implements ServiceListener {
 			final File wd = workingdir;
 			Runtime.getRuntime()
 				.addShutdownHook(new Thread("launcher::delete temp working dir") {
+					@Override
 					public void run() {
 						deleteFiles(wd);
 					}
@@ -1010,6 +1012,7 @@ public class Launcher implements ServiceListener {
 			systemBundle.getBundleContext()
 				.addFrameworkListener(new FrameworkListener() {
 
+					@Override
 					public void frameworkEvent(FrameworkEvent event) {
 						switch (event.getType()) {
 							case FrameworkEvent.ERROR :
@@ -1302,6 +1305,7 @@ public class Launcher implements ServiceListener {
 	 * done.
 	 */
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public synchronized void serviceChanged(ServiceEvent event) {
 		if (event.getType() == ServiceEvent.REGISTERED) {
@@ -1334,6 +1338,7 @@ public class Launcher implements ServiceListener {
 			}
 			if (mainThread == null) {
 				mainThread = new Callable<Integer>() {
+					@Override
 					public Integer call() throws Exception {
 						((Runnable) service).run();
 						return 0;

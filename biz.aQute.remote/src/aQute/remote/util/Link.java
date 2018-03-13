@@ -82,6 +82,7 @@ public class Link<L, R> extends Thread implements Closeable {
 			start();
 	}
 
+	@Override
 	public void close() throws IOException {
 		if (quit.getAndSet(true) == true)
 			return; // already closed
@@ -114,6 +115,7 @@ public class Link<L, R> extends Thread implements Closeable {
 				remoteClass
 			}, new InvocationHandler() {
 
+				@Override
 				public Object invoke(Object target, Method method, Object[] args) throws Throwable {
 					Object hash = new Object();
 
@@ -150,6 +152,7 @@ public class Link<L, R> extends Thread implements Closeable {
 		return remote;
 	}
 
+	@Override
 	public void run() {
 		while (!isInterrupted() && !transfer && !quit.get())
 			try {
@@ -167,6 +170,7 @@ public class Link<L, R> extends Thread implements Closeable {
 				}
 
 				Runnable r = new Runnable() {
+					@Override
 					public void run() {
 						try {
 							msgid.set(id);

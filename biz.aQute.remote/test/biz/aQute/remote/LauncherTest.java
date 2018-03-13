@@ -133,6 +133,7 @@ public class LauncherTest extends TestCase {
 		final RunSession session = sessions.get(0);
 
 		Thread t = new Thread("test-launch") {
+			@Override
 			public void run() {
 				try {
 					exitCode.set(session.launch());
@@ -241,6 +242,7 @@ public class LauncherTest extends TestCase {
 		final CountDownLatch latch = new CountDownLatch(1);
 
 		Thread t = new Thread("test-launch") {
+			@Override
 			public void run() {
 				try {
 					session.launch();

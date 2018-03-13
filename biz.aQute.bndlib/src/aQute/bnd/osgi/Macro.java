@@ -477,6 +477,7 @@ public class Macro {
 		}
 		Collections.sort(result, new Comparator<String>() {
 
+			@Override
 			public int compare(String a, String b) {
 				while (a.startsWith("0"))
 					a = a.substring(1);

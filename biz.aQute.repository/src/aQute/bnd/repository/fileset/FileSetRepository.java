@@ -27,7 +27,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.ResourcesRepository;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
@@ -103,7 +103,7 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 			attrs.putTyped(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
 			attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file)
 				.asHex());
-			rb.addCapability(CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
+			rb.addCapability(CapReqBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
 			return rb.build();
 		});
 		if (logger.isDebugEnabled()) {

@@ -47,6 +47,7 @@ public class JunitXmlReport implements TestReporter {
 		this.progress = progress;
 	}
 
+	@Override
 	public void setup(Bundle fw, Bundle targetBundle) {
 		startTime = System.currentTimeMillis();
 
@@ -93,8 +94,10 @@ public class JunitXmlReport implements TestReporter {
 		}
 	}
 
+	@Override
 	public void begin(List<Test> classNames, int realcount) {}
 
+	@Override
 	public void end() {
 		if (!finished) {
 			finished = true;
@@ -119,6 +122,7 @@ public class JunitXmlReport implements TestReporter {
 	// time="0.045" />
 	static Pattern NAMEANDCLASS = Pattern.compile("(.*)\\((.*)\\)");
 
+	@Override
 	public void startTest(Test test) {
 		String nameAndClass = test.toString();
 		String name = nameAndClass;
@@ -161,6 +165,7 @@ public class JunitXmlReport implements TestReporter {
 	// </error>
 	// </testcase>
 
+	@Override
 	public void addError(Test test, Throwable t) {
 		Tag error = new Tag("error");
 		error.setCDATA();
@@ -197,6 +202,7 @@ public class JunitXmlReport implements TestReporter {
 	// </failure>
 	// <testcase>
 	//
+	@Override
 	public void addFailure(Test test, AssertionFailedError t) {
 		Tag failure = new Tag("failure");
 		failure.setCDATA();
@@ -211,6 +217,7 @@ public class JunitXmlReport implements TestReporter {
 		progress(" f");
 	}
 
+	@Override
 	public void endTest(Test test) {
 		String[] outs = basic.getCaptured();
 		if (outs[0] != null) {
@@ -232,6 +239,7 @@ public class JunitXmlReport implements TestReporter {
 		end();
 	}
 
+	@Override
 	public void aborted() {
 		testsuite.addAttribute("aborted", "true");
 		close();

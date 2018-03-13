@@ -9,6 +9,7 @@ import java.util.jar.Manifest;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
@@ -112,7 +113,7 @@ public class PropertiesTest extends TestCase {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setPedantic(true);
 		analyzer.setProperties(IO.getFile("src/test/badproperties.prop"));
-		String s = analyzer.getProperty(Analyzer.IMPORT_PACKAGE);
+		String s = analyzer.getProperty(Constants.IMPORT_PACKAGE);
 		Parameters map = analyzer.parseHeader(s);
 		assertEquals(2, map.size());
 		assertTrue(map.containsKey("org.osgi.service.cm"));

@@ -25,12 +25,15 @@ public class HttpsUtil {
 		HttpsURLConnection httpsConnection = (HttpsURLConnection) connection;
 		TrustManager[] trustAllCerts = new TrustManager[] {
 			new X509TrustManager() {
+				@Override
 				public X509Certificate[] getAcceptedIssuers() {
 					return null;
 				}
 
+				@Override
 				public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
 
+				@Override
 				public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
 			}
 		};
@@ -42,6 +45,7 @@ public class HttpsUtil {
 		httpsConnection.setSSLSocketFactory(sslSocketFactory);
 
 		HostnameVerifier trustAnyHost = new HostnameVerifier() {
+			@Override
 			public boolean verify(String string, SSLSession session) {
 				return true;
 			}

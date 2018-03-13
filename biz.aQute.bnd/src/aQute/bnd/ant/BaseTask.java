@@ -108,6 +108,7 @@ public class BaseTask extends Task implements Reporter {
 		return sb.toString();
 	}
 
+	@Override
 	public boolean isPedantic() {
 		return pedantic;
 	}
@@ -127,6 +128,7 @@ public class BaseTask extends Task implements Reporter {
 	/**
 	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
+	@Override
 	@Deprecated
 	public void trace(String s, Object... args) {
 		if (logger.isDebugEnabled()) {
@@ -150,26 +152,32 @@ public class BaseTask extends Task implements Reporter {
 		this.exceptions = exceptions;
 	}
 
+	@Override
 	public Location getLocation(String msg) {
 		return reporter.getLocation(msg);
 	}
 
+	@Override
 	public boolean isOk() {
 		return reporter.isOk();
 	}
 
+	@Override
 	public SetLocation exception(Throwable t, String format, Object... args) {
 		return reporter.exception(t, format, args);
 	}
 
+	@Override
 	public SetLocation error(String s, Object... args) {
 		return reporter.error(s, args);
 	}
 
+	@Override
 	public List<String> getErrors() {
 		return reporter.getErrors();
 	}
 
+	@Override
 	public List<String> getWarnings() {
 		return reporter.getWarnings();
 	}
@@ -179,6 +187,7 @@ public class BaseTask extends Task implements Reporter {
 	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
 	 *             instead.
 	 */
+	@Override
 	@Deprecated
 	public void progress(float progress, String s, Object... args) {
 		if (logger.isInfoEnabled(LIFECYCLE)) {
@@ -190,6 +199,7 @@ public class BaseTask extends Task implements Reporter {
 		}
 	}
 
+	@Override
 	public SetLocation warning(String s, Object... args) {
 		return reporter.warning(s, args);
 	}

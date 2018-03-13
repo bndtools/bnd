@@ -52,6 +52,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	public Activator() {}
 
+	@Override
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
 		this.packageAdminTracker = new ServiceTracker(context, PackageAdmin.class.getName(), null);
@@ -74,6 +75,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 	}
 
+	@Override
 	public void stop(BundleContext context) throws Exception {
 		this.packageAdminTracker.close();
 		active = false;
@@ -90,6 +92,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		return active;
 	}
 
+	@Override
 	public void run() {
 
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
@@ -198,6 +201,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 		trace("adding Bundle Listener for getting test bundle events");
 		context.addBundleListener(new SynchronousBundleListener() {
+			@Override
 			public void bundleChanged(BundleEvent event) {
 				switch (event.getType()) {
 					case BundleEvent.STARTED :

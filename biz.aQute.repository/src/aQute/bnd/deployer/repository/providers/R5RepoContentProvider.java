@@ -57,10 +57,12 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 	private static final String	ATTR_VALUE				= "value";
 	private static final String	ATTR_TYPE				= "type";
 
+	@Override
 	public String getName() {
 		return NAME;
 	}
 
+	@Override
 	public String getDefaultIndexName(boolean pretty) {
 		return pretty ? INDEX_NAME_PRETTY : INDEX_NAME_COMPRESSED;
 	}
@@ -72,6 +74,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		inCapability
 	}
 
+	@Override
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
 		XMLStreamReader reader = null;
 		try {
@@ -143,6 +146,7 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		}
 	}
 
+	@Override
 	public void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor listener, LogService log)
 		throws Exception {
 		XMLStreamReader reader = null;
@@ -251,10 +255,12 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 		return attType.parseString(value);
 	}
 
+	@Override
 	public boolean supportsGeneration() {
 		return true;
 	}
 
+	@Override
 	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI baseUri, boolean pretty,
 		Registry registry, LogService log) throws Exception {
 

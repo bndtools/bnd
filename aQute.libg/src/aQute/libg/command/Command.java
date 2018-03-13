@@ -116,6 +116,7 @@ public class Command {
 
 		// Make sure the command will not linger when we go
 		Runnable r = new Runnable() {
+			@Override
 			public void run() {
 				process.destroy();
 			}
@@ -131,6 +132,7 @@ public class Command {
 			timer = new TimerTask() {
 				// @Override TODO why did this not work? TimerTask implements
 				// Runnable
+				@Override
 				public void run() {
 					timedout = true;
 					process.destroy();

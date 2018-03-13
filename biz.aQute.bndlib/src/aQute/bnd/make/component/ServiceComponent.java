@@ -28,6 +28,7 @@ import aQute.lib.tag.Tag;
  */
 public class ServiceComponent implements AnalyzerPlugin {
 
+	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 
 		ComponentMaker m = new ComponentMaker(analyzer);

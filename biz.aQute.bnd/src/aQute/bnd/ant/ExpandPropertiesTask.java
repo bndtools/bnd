@@ -3,7 +3,6 @@ package aQute.bnd.ant;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.tools.ant.BuildException;
@@ -21,7 +20,7 @@ public class ExpandPropertiesTask extends BaseTask {
 		try {
 			if (propertyFile.exists()) {
 				Properties properties = new UTF8Properties();
-				properties.putAll((Map<?, ?>) getProject().getProperties());
+				properties.putAll(getProject().getProperties());
 
 				try (Processor processor = new Processor(properties)) {
 					processor.setProperties(propertyFile);

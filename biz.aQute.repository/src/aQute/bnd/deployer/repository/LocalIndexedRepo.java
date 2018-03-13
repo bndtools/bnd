@@ -154,6 +154,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		return indexes;
 	}
 
+	@Override
 	public synchronized File getCacheDirectory() {
 		return cacheDir;
 	}
@@ -249,6 +250,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		final LinkedList<File> dirs = new LinkedList<>();
 		File[] moreFiles = dir.listFiles(new FileFilter() {
 
+			@Override
 			public boolean accept(File f) {
 				if (f.isDirectory()) {
 					boolean addit = true;
@@ -300,10 +302,12 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		}
 	}
 
+	@Override
 	public synchronized void ended(Coordination coordination) throws Exception {
 		finishPut();
 	}
 
+	@Override
 	public void failed(Coordination coordination) throws Exception {
 		ArrayList<URI> clone;
 		synchronized (newFilesInCoordination) {
@@ -426,12 +430,14 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		}
 	}
 
+	@Override
 	public boolean refresh() {
 		reset();
 		regenerateAllIndexes();
 		return true;
 	}
 
+	@Override
 	public synchronized File getRoot() {
 		return storageDir;
 	}
@@ -472,10 +478,12 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		this.locations = locations;
 	}
 
+	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
 		Map<String, Runnable> map = new HashMap<>();
 		map.put("Refresh", new Runnable() {
 
+			@Override
 			public void run() {
 				regenerateAllIndexes();
 			}
@@ -492,6 +500,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 			if (f != null) {
 				map.put("Delete", new Runnable() {
 
+					@Override
 					public void run() {
 						deleteEntry(f);
 						regenerateAllIndexes();
@@ -517,6 +526,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		return map;
 	}
 
+	@Override
 	public String tooltip(Object... target) throws Exception {
 		if (target == null || target.length == 0)
 			return "LocalIndexedRepo @ " + getLocation();
@@ -553,6 +563,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		return h;
 	}
 
+	@Override
 	public String title(Object... target) throws Exception {
 		if (target == null)
 			return null;

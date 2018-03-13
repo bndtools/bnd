@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
@@ -93,7 +92,7 @@ public class PomFromManifest extends WriteResource {
 		PrintWriter ps = IO.writer(out);
 
 		String name = manifest.getMainAttributes()
-			.getValue(Analyzer.BUNDLE_NAME);
+			.getValue(Constants.BUNDLE_NAME);
 
 		String description = manifest.getMainAttributes()
 			.getValue(Constants.BUNDLE_DESCRIPTION);

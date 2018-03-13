@@ -51,6 +51,7 @@ public class BaselineTest extends TestCase {
 		return workspace = new Workspace(tmp);
 	}
 
+	@Override
 	public void tearDown() throws Exception {
 		IO.delete(tmp);
 		workspace = null;

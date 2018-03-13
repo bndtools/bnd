@@ -100,6 +100,7 @@ public class RemoteSink implements Sink {
 		area.stderr = new Appender(sources, area.id, true);
 
 		area.thread = new Thread(areaId + "::" + args) {
+			@Override
 			public void run() {
 				try {
 					event(Event.launching, area);
@@ -218,6 +219,7 @@ public class RemoteSink implements Sink {
 		return read(dir);
 	}
 
+	@Override
 	public Collection<? extends Area> getAreas() {
 		return areas.values();
 	}

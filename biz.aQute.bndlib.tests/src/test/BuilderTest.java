@@ -2247,7 +2247,7 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	static void assertVersion(String input, String expected) {
-		assertEquals(expected, Builder.cleanupVersion(input));
+		assertEquals(expected, Analyzer.cleanupVersion(input));
 	}
 
 	/**
@@ -2258,7 +2258,7 @@ public class BuilderTest extends BndTestCase {
 	public void testExportContents() throws Exception {
 		Builder builder = new Builder();
 		try {
-			builder.setProperty(Analyzer.INCLUDE_RESOURCE, "test/activator/inherits=src/test/activator/inherits");
+			builder.setProperty(Constants.INCLUDE_RESOURCE, "test/activator/inherits=src/test/activator/inherits");
 			builder.setProperty("-exportcontents", "*;x=true;version=1");
 			builder.build();
 			assertTrue(builder.check());
@@ -2311,8 +2311,8 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testConditional2() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.EXPORT_PACKAGE, "org.osgi.service.log");
-		base.put(Analyzer.CONDITIONAL_PACKAGE, "org.osgi.*");
+		base.put(Constants.EXPORT_PACKAGE, "org.osgi.service.log");
+		base.put(Constants.CONDITIONAL_PACKAGE, "org.osgi.*");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setProperties(base);
@@ -2337,7 +2337,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testStrategyError() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.EXPORT_PACKAGE, "*;-split-package:=error");
+		base.put(Constants.EXPORT_PACKAGE, "*;-split-package:=error");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2356,7 +2356,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testStrategyDefault() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.EXPORT_PACKAGE, "*");
+		base.put(Constants.EXPORT_PACKAGE, "*");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2377,7 +2377,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testStrategyMergeFirst() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.EXPORT_PACKAGE, "*;-split-package:=merge-first");
+		base.put(Constants.EXPORT_PACKAGE, "*;-split-package:=merge-first");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2396,7 +2396,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testStrategyMergeLast() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.EXPORT_PACKAGE, "*;-split-package:=merge-last");
+		base.put(Constants.EXPORT_PACKAGE, "*;-split-package:=merge-last");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2417,8 +2417,8 @@ public class BuilderTest extends BndTestCase {
 	 */
 	public void testResourceNotFound() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.EXPORT_PACKAGE, "*;x-test:=true");
-		base.put(Analyzer.INCLUDE_RESOURCE, "does_not_exist");
+		base.put(Constants.EXPORT_PACKAGE, "*;x-test:=true");
+		base.put(Constants.INCLUDE_RESOURCE, "does_not_exist");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2438,8 +2438,8 @@ public class BuilderTest extends BndTestCase {
 
 	public void testFindPathInBundleClasspath() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.INCLUDE_RESOURCE, "jar=jar");
-		base.put(Analyzer.BUNDLE_CLASSPATH, "${findpath;jar/.{1,4}\\.jar}");
+		base.put(Constants.INCLUDE_RESOURCE, "jar=jar");
+		base.put(Constants.BUNDLE_CLASSPATH, "${findpath;jar/.{1,4}\\.jar}");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setProperties(base);
@@ -2468,8 +2468,8 @@ public class BuilderTest extends BndTestCase {
 
 	public void testVersionCleanupAll() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.EXPORT_PACKAGE, "*");
-		base.put(Analyzer.BUNDLE_VERSION, "0.9.0-incubator-SNAPSHOT");
+		base.put(Constants.EXPORT_PACKAGE, "*");
+		base.put(Constants.BUNDLE_VERSION, "0.9.0-incubator-SNAPSHOT");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2482,7 +2482,7 @@ public class BuilderTest extends BndTestCase {
 			Manifest manifest = analyzer.getJar()
 				.getManifest();
 			String version = manifest.getMainAttributes()
-				.getValue(Analyzer.BUNDLE_VERSION);
+				.getValue(Constants.BUNDLE_VERSION);
 			assertEquals("0.9.0.incubator-SNAPSHOT", version);
 		} finally {
 			analyzer.close();
@@ -2553,7 +2553,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testMetaInfExport() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.EXPORT_PACKAGE, "*");
+		base.put(Constants.EXPORT_PACKAGE, "*");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2578,7 +2578,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testImportRangeCalculatedFromClasspath_1() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
+		base.put(Constants.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
 		Builder analyzer = new Builder();
 		try {
@@ -2608,7 +2608,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testImportRangeCalculatedFromClasspath_2() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
+		base.put(Constants.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
 		String pwd = System.getProperty("user.dir");
 		base.put("pwd", new File(pwd).toURI()
@@ -2641,7 +2641,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testImportRangeCalculatedFromClasspath_3() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
+		base.put(Constants.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
 		Builder analyzer = new Builder();
 		try {
@@ -2672,7 +2672,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testImportRangeCalculatedFromClasspath_4() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
+		base.put(Constants.IMPORT_PACKAGE, "javax.servlet,javax.servlet.http");
 
 		String pwd = System.getProperty("user.dir");
 		base.put("pwd", new File(pwd).toURI()
@@ -2744,8 +2744,8 @@ public class BuilderTest extends BndTestCase {
 		try {
 			bmaker.setClasspath(cp);
 			Properties p = new Properties();
-			p.put(Analyzer.EXPORT_PACKAGE, "test.activator");
-			p.put(Analyzer.IMPORT_PACKAGE, "org.osgi.framework;version=\"" + input + "\"");
+			p.put(Constants.EXPORT_PACKAGE, "test.activator");
+			p.put(Constants.IMPORT_PACKAGE, "org.osgi.framework;version=\"" + input + "\"");
 			bmaker.setProperties(p);
 			bmaker.build();
 			assertTrue(bmaker.check("The JAR is empty"));
@@ -2762,9 +2762,9 @@ public class BuilderTest extends BndTestCase {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/ds.jar"));
-			b.set(Analyzer.BUNDLE_VERSION, "0.9.5-@#SNAPSHOT");
-			b.set(Analyzer.EXPORT_PACKAGE, "*;version=0.9.5-@#SNAPSHOT");
-			b.set(Analyzer.IMPORT_PACKAGE, "*;version=0.9.5-@#SNAPSHOT");
+			b.set(Constants.BUNDLE_VERSION, "0.9.5-@#SNAPSHOT");
+			b.set(Constants.EXPORT_PACKAGE, "*;version=0.9.5-@#SNAPSHOT");
+			b.set(Constants.IMPORT_PACKAGE, "*;version=0.9.5-@#SNAPSHOT");
 
 			Jar jar = b.build();
 			assertTrue(b.check());

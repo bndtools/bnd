@@ -90,6 +90,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return this;
 	}
 
+	@Override
 	public Appendable append(char c) throws IOException {
 		if (digest != null) {
 			digest.update((byte) (c / 256));
@@ -99,10 +100,12 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return this;
 	}
 
+	@Override
 	public Appendable append(CharSequence sq) throws IOException {
 		return append(sq, 0, sq.length());
 	}
 
+	@Override
 	public Appendable append(CharSequence sq, int start, int length) throws IOException {
 		if (digest != null) {
 			for (int i = start; i < length; i++) {
@@ -120,6 +123,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return app.toString();
 	}
 
+	@Override
 	public void close() throws IOException {
 		if (app != null && app instanceof Closeable) {
 			((Closeable) app).close();
@@ -136,6 +140,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return this;
 	}
 
+	@Override
 	public void flush() throws IOException {
 		if (closed)
 			return;

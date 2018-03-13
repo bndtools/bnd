@@ -56,6 +56,7 @@ public class FilterParser {
 			}
 		}
 
+		@Override
 		public String toString() {
 			return symbol;
 		}
@@ -101,6 +102,7 @@ public class FilterParser {
 											return TRUE;
 										}
 
+										@Override
 										void toString(StringBuilder sb) {
 											sb.append("false");
 										}
@@ -116,6 +118,7 @@ public class FilterParser {
 
 		abstract void toString(StringBuilder sb);
 
+		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			toString(sb);
@@ -197,6 +200,7 @@ public class FilterParser {
 			return sb.toString();
 		}
 
+		@Override
 		public void toString(StringBuilder sb) {
 			sb.append(key)
 				.append("=")
@@ -324,6 +328,7 @@ public class FilterParser {
 
 		}
 
+		@Override
 		Expression not() {
 			Op alt = op.not();
 			if (alt == null)
@@ -332,6 +337,7 @@ public class FilterParser {
 			return new SimpleExpression(key, alt, value);
 		}
 
+		@Override
 		public void toString(StringBuilder sb) {
 			sb.append(key)
 				.append(op.toString())
@@ -360,6 +366,7 @@ public class FilterParser {
 	public abstract static class WithRangeExpression extends Expression {
 		RangeExpression range;
 
+		@Override
 		public boolean eval(Map<String, ?> map) {
 			return range == null || range.eval(map);
 		}
@@ -412,6 +419,7 @@ public class FilterParser {
 			return packageName;
 		}
 
+		@Override
 		public String query() {
 			return "p:" + packageName;
 		}
@@ -453,6 +461,7 @@ public class FilterParser {
 			return hostName;
 		}
 
+		@Override
 		public String query() {
 			return "bsn:" + hostName;
 		}
@@ -490,6 +499,7 @@ public class FilterParser {
 			super.toString(sb);
 		}
 
+		@Override
 		public String query() {
 			return "bsn:" + bundleName;
 		}
@@ -532,6 +542,7 @@ public class FilterParser {
 			return identity;
 		}
 
+		@Override
 		public String query() {
 			return "bsn:" + identity;
 		}
@@ -545,6 +556,7 @@ public class FilterParser {
 	public static abstract class SubExpression extends Expression {
 		Expression[] expressions;
 
+		@Override
 		void toString(StringBuilder sb) {
 			for (Expression e : expressions) {
 				sb.append("(");
@@ -583,6 +595,7 @@ public class FilterParser {
 			this.expressions = exprs.toArray(new Expression[0]);
 		}
 
+		@Override
 		public boolean eval(Map<String, ?> map) {
 			for (Expression e : expressions) {
 				if (!e.eval(map))
@@ -676,6 +689,7 @@ public class FilterParser {
 			this.expressions = exprs.toArray(new Expression[0]);
 		}
 
+		@Override
 		public boolean eval(Map<String, ?> map) {
 			for (Expression e : expressions) {
 				if (e.eval(map))
@@ -721,6 +735,7 @@ public class FilterParser {
 			this.expr = expr;
 		}
 
+		@Override
 		public boolean eval(Map<String, ?> map) {
 			return !expr.eval(map);
 		}
@@ -766,6 +781,7 @@ public class FilterParser {
 			this.pattern = Pattern.compile(value.replace("\\*", ".*"));
 		}
 
+		@Override
 		protected boolean eval(Object scalar) {
 			if (scalar instanceof String)
 				return pattern.matcher((String) scalar)
@@ -786,6 +802,7 @@ public class FilterParser {
 			super(key, Op.EQUAL, value);
 		}
 
+		@Override
 		protected boolean eval(Object scalar) {
 			if (scalar instanceof String) {
 				return ((String) scalar).trim()
@@ -906,6 +923,7 @@ public class FilterParser {
 			return "";
 		}
 
+		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
 			sb.append(s)

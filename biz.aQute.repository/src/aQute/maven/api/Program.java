@@ -112,6 +112,7 @@ public class Program implements Comparable<Program> {
 		return true;
 	}
 
+	@Override
 	public String toString() {
 		return group + ":" + artifact;
 	}
@@ -160,6 +161,7 @@ public class Program implements Comparable<Program> {
 		return valueOf(parts[0], parts[1]);
 	}
 
+	@Override
 	public int compareTo(Program o) {
 		int n = group.compareTo(o.group);
 		if (n != 0)

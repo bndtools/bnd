@@ -48,6 +48,7 @@ class SearchRepository extends InnerRepository {
 		read();
 	}
 
+	@Override
 	void refresh() throws Exception {
 		SearchResult result = query();
 		Traverser traverser = new Traverser(getMavenRepository(), client, transitive)
@@ -77,6 +78,7 @@ class SearchRepository extends InnerRepository {
 		}
 	}
 
+	@Override
 	boolean isStale() {
 		if (!getLocation().isFile())
 			return true;
@@ -187,6 +189,7 @@ class SearchRepository extends InnerRepository {
 				.version(getVersion());
 		}
 
+		@Override
 		public String toString() {
 			return String.format("%s:%s:%s", g, a, getVersion());
 		}

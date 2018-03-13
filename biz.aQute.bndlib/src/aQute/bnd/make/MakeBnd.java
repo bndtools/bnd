@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -15,6 +14,7 @@ import aQute.bnd.service.MakePlugin;
 public class MakeBnd implements MakePlugin, Constants {
 	final static Pattern JARFILE = Pattern.compile("(.+)\\.(jar|ipa)");
 
+	@Override
 	public Resource make(Builder builder, String destination, Map<String, String> argumentsOnMake) throws Exception {
 		String type = argumentsOnMake.get("type");
 		if (!"bnd".equals(type))
@@ -34,8 +34,8 @@ public class MakeBnd implements MakePlugin, Constants {
 			bchild.removeBundleSpecificHeaders();
 
 			// We must make sure that we do not include ourselves again!
-			bchild.setProperty(Analyzer.INCLUDE_RESOURCE, "");
-			bchild.setProperty(Analyzer.INCLUDERESOURCE, "");
+			bchild.setProperty(Constants.INCLUDE_RESOURCE, "");
+			bchild.setProperty(Constants.INCLUDERESOURCE, "");
 			bchild.setProperties(bndfile, builder.getBase());
 
 			Jar jar = bchild.build();

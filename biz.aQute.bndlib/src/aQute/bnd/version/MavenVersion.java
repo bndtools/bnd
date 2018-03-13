@@ -106,6 +106,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		return snapshot;
 	}
 
+	@Override
 	public int compareTo(MavenVersion other) {
 		if (other == this)
 			return 0;

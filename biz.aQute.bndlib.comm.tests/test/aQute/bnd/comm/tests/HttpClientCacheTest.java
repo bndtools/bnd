@@ -51,6 +51,7 @@ public class HttpClientCacheTest extends TestCase {
 		}
 	}
 
+	@Override
 	public void setUp() throws Exception {
 		IO.delete(tmp);
 		tmp.mkdirs();
@@ -60,6 +61,7 @@ public class HttpClientCacheTest extends TestCase {
 		httpServer.start();
 	}
 
+	@Override
 	public void tearDown() {
 		IO.delete(tmp);
 	}

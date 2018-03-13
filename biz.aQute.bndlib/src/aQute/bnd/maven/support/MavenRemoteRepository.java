@@ -70,22 +70,27 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		return maven;
 	}
 
+	@Override
 	public boolean canWrite() {
 		return false;
 	}
 
+	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new UnsupportedOperationException("cannot do put");
 	}
 
+	@Override
 	public List<String> list(String regex) throws Exception {
 		throw new UnsupportedOperationException("cannot do list");
 	}
 
+	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		throw new UnsupportedOperationException("cannot do versions");
 	}
 
+	@Override
 	public String getName() {
 		return "maven";
 	}
@@ -94,6 +99,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		repositories = urls;
 	}
 
+	@Override
 	public void setProperties(Map<String, String> map) {
 		String repoString = map.get("repositories");
 		if (repoString != null) {
@@ -115,10 +121,12 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		}
 	}
 
+	@Override
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
 
+	@Override
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
@@ -127,6 +135,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		this.maven = maven;
 	}
 
+	@Override
 	public String getLocation() {
 		if (repositories == null || repositories.length == 0)
 			return "maven central";
@@ -134,6 +143,7 @@ public class MavenRemoteRepository implements RepositoryPlugin, RegistryPlugin, 
 		return Arrays.toString(repositories);
 	}
 
+	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
 		File f = get(bsn, version.toString(), Strategy.EXACT, properties);

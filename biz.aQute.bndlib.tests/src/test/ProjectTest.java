@@ -34,12 +34,14 @@ import junit.framework.TestCase;
 public class ProjectTest extends TestCase {
 	File tmp;
 
+	@Override
 	protected void setUp() {
 		tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		IO.delete(tmp);
 	}

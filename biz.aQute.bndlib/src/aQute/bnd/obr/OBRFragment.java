@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -88,7 +89,7 @@ public class OBRFragment {
 				v = "0";
 			Version fragmentVersion = new Version(v);
 			String filter = filter(PackageNamespace.PACKAGE_NAMESPACE, fragmentHost.getKey(), fragmentHost.getValue());
-			fragment.addDirective(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+			fragment.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
 			resource.addRequirement(fragment);
 		} else {
 
@@ -162,7 +163,7 @@ public class OBRFragment {
 
 			exported.addAttribute(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE,
 				bundleSymbolicName.getKey());
-			exported.addAttribute(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+			exported.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
 
 			resource.addCapability(exported);
 		}

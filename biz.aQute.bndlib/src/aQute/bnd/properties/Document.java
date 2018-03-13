@@ -13,31 +13,38 @@ public class Document implements IDocument {
 		setText(text);
 	}
 
+	@Override
 	public int getNumberOfLines() {
 		return lineTracker.getNumberOfLines();
 	}
 
+	@Override
 	public IRegion getLineInformation(int line) throws BadLocationException {
 		return lineTracker.getLineInformation(line);
 	}
 
+	@Override
 	public String get(int offset, int length) throws BadLocationException {
 		return textStore.get(offset, length);
 	}
 
+	@Override
 	public String getLineDelimiter(int line) throws BadLocationException {
 		return lineTracker.getLineDelimiter(line);
 	}
 
+	@Override
 	public int getLength() {
 		return textStore.getLength();
 	}
 
+	@Override
 	public void replace(int offset, int length, String text) throws BadLocationException {
 		textStore.replace(offset, length, text);
 		lineTracker.set(get());
 	}
 
+	@Override
 	public char getChar(int pos) {
 		return textStore.get(pos);
 	}
@@ -47,6 +54,7 @@ public class Document implements IDocument {
 		lineTracker.set(text);
 	}
 
+	@Override
 	public String get() {
 		return textStore.get(0, textStore.getLength());
 	}

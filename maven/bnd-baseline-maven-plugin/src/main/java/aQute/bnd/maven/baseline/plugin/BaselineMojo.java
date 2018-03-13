@@ -74,6 +74,7 @@ public class BaselineMojo extends AbstractMojo {
 	@Component
 	private RepositorySystem		system;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
 			logger.debug("skip project as configured");

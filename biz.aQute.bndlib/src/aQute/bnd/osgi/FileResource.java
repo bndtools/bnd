@@ -72,6 +72,7 @@ public class FileResource implements Resource {
 		return (buffer = IO.read(file)).duplicate();
 	}
 
+	@Override
 	public InputStream openInputStream() throws Exception {
 		if (buffer != null) {
 			return IO.stream(buffer());
@@ -85,6 +86,7 @@ public class FileResource implements Resource {
 		return file.toString();
 	}
 
+	@Override
 	public void write(OutputStream out) throws Exception {
 		if (buffer != null) {
 			IO.copy(buffer(), out);
@@ -93,22 +95,27 @@ public class FileResource implements Resource {
 		}
 	}
 
+	@Override
 	public long lastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public String getExtra() {
 		return extra;
 	}
 
+	@Override
 	public void setExtra(String extra) {
 		this.extra = extra;
 	}
 
+	@Override
 	public long size() {
 		return size;
 	}
 
+	@Override
 	public void close() throws IOException {
 		/*
 		 * Allow original buffer to be garbage collected and prevent it being

@@ -20,6 +20,7 @@ public class Slf4jReporter extends ReporterAdapter {
 		logger = LoggerFactory.getLogger("default");
 	}
 
+	@Override
 	public SetLocation error(String format, Object... args) {
 		SetLocation location = super.error(format, args);
 		if (logger.isErrorEnabled()) {
@@ -28,6 +29,7 @@ public class Slf4jReporter extends ReporterAdapter {
 		return location;
 	}
 
+	@Override
 	public SetLocation warning(String format, Object... args) {
 		SetLocation location = super.warning(format, args);
 		if (logger.isWarnEnabled()) {
@@ -39,6 +41,7 @@ public class Slf4jReporter extends ReporterAdapter {
 	/**
 	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
+	@Override
 	@Deprecated
 	public void trace(String format, Object... args) {
 		super.trace(format, args);
@@ -58,6 +61,7 @@ public class Slf4jReporter extends ReporterAdapter {
 	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
 	 *             instead.
 	 */
+	@Override
 	@Deprecated
 	public void progress(float progress, String format, Object... args) {
 		super.progress(progress, format, args);
@@ -66,6 +70,7 @@ public class Slf4jReporter extends ReporterAdapter {
 		}
 	}
 
+	@Override
 	public SetLocation exception(Throwable t, String format, Object... args) {
 		SetLocation location = super.exception(t, format, args);
 		if (logger.isErrorEnabled()) {

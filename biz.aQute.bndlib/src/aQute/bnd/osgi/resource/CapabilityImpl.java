@@ -12,6 +12,7 @@ public class CapabilityImpl extends CapReq implements Capability {
 		super(MODE.Capability, namespace, resource, directives, attributes);
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Provide");

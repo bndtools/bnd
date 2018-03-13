@@ -78,6 +78,7 @@ public class Activator extends Thread implements BundleActivator {
 	/**
 	 * Main dispatcher loop
 	 */
+	@Override
 	public void run() {
 
 		try {
@@ -99,6 +100,7 @@ public class Activator extends Thread implements BundleActivator {
 					final AgentServer sa = new AgentServer("<>", context, cache);
 					agents.add(sa);
 					Link<Agent, Supervisor> link = new Link<Agent, Supervisor>(Supervisor.class, sa, socket) {
+						@Override
 						public void close() throws IOException {
 							agents.remove(sa);
 							super.close();

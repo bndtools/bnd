@@ -226,6 +226,7 @@ public class ConnectionSettings extends Processor {
 					.getProtocol());
 			}
 
+			@Override
 			public String toString() {
 				return "Server [ match=" + match + ", basic=" + basic + ", https=" + https + "]";
 			}

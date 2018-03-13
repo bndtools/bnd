@@ -35,6 +35,7 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String, E> {
 		this.defaultValue = defaultValue;
 	}
 
+	@Override
 	public String convert(E input) throws IllegalArgumentException {
 		String result;
 		if (input == defaultValue || input == null)

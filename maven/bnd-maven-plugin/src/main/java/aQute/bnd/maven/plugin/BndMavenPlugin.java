@@ -137,6 +137,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	private File									propertiesFile;
 
+	@Override
 	public void execute() throws MojoExecutionException {
 		if (skip) {
 			logger.debug("skip project as configured");
@@ -164,7 +165,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			builder.setProperty("project.output", targetDir.getCanonicalPath());
 
 			// If no bundle to be built, we have nothing to do
-			if (Builder.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
+			if (Processor.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
 				logger.debug(Constants.NOBUNDLES + ": true");
 				return;
 			}

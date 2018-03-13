@@ -20,6 +20,7 @@ public class HCodec implements Codec {
 		this.codec = codec;
 	}
 
+	@Override
 	public Object decode(Reader in, Type type) throws Exception {
 		return codec.decode(in, type);
 	}
@@ -37,6 +38,7 @@ public class HCodec implements Codec {
 		return codec.decode(r, t);
 	}
 
+	@Override
 	public void encode(Type t, Object o, Appendable out) throws Exception {
 		codec.encode(t, o, out);
 	}

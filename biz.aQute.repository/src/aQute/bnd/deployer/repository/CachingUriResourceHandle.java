@@ -159,10 +159,12 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		return new File(cachedFile.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
 	}
 
+	@Override
 	public String getName() {
 		return url.toString();
 	}
 
+	@Override
 	public Location getLocation() {
 		Location result;
 
@@ -176,6 +178,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 		return result;
 	}
 
+	@Override
 	public File request() throws Exception {
 		if (localFile != null)
 			return localFile;

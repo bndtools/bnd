@@ -19,6 +19,7 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
@@ -401,7 +402,7 @@ public class ClassParserTest extends TestCase {
 			builder.setClasspath(new File[] {
 				IO.getFile("jar/ecj_3.2.2.jar")
 			});
-			builder.setProperty(Analyzer.EXPORT_PACKAGE, "org.eclipse.*");
+			builder.setProperty(Constants.EXPORT_PACKAGE, "org.eclipse.*");
 			builder.build();
 			System.err.println(builder.getErrors());
 			assertEquals(0, builder.getErrors()

@@ -240,6 +240,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 		}
 	}
 
+	@Override
 	public void close() throws IOException {
 		synchronized (store) {
 			try {
@@ -371,11 +372,13 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 		return (short) crc.getValue();
 	}
 
+	@Override
 	public Iterator<SHA1> iterator() {
 
 		return new Iterator<SHA1>() {
 			long position = 0x100;
 
+			@Override
 			public boolean hasNext() {
 				synchronized (store) {
 					try {
@@ -386,6 +389,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				}
 			}
 
+			@Override
 			public SHA1 next() {
 				synchronized (store) {
 					try {
@@ -412,6 +416,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 				}
 			}
 
+			@Override
 			public void remove() {
 				throw new UnsupportedOperationException("Remvoe not supported, CAFS is write once");
 			}

@@ -96,12 +96,14 @@ public class DiffPluginImpl implements Differ {
 	/**
 	 * @see aQute.bnd.service.diff.Differ#tree(aQute.bnd.osgi.Jar)
 	 */
+	@Override
 	public Tree tree(Jar newer) throws Exception {
 		try (Analyzer anewer = new Analyzer(newer)) {
 			return tree(anewer);
 		}
 	}
 
+	@Override
 	public Tree tree(Analyzer newer) throws Exception {
 		return bundleElement(newer);
 	}
@@ -277,6 +279,7 @@ public class DiffPluginImpl implements Differ {
 		return new Element(Type.MANIFEST, "<manifest>", result, CHANGED, CHANGED, null);
 	}
 
+	@Override
 	public Tree deserialize(Data data) throws Exception {
 		return new Element(data);
 	}

@@ -18,6 +18,7 @@ public class EnumConverter<E extends Enum<E>> implements Converter<E, String> {
 		this.defaultValue = defaultValue;
 	}
 
+	@Override
 	public E convert(String input) throws IllegalArgumentException {
 		if (input == null)
 			return defaultValue;

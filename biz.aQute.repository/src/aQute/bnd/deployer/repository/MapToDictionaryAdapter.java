@@ -18,10 +18,12 @@ public class MapToDictionaryAdapter extends Dictionary<String, Object> {
 		final Iterator<Object> iter = map.values()
 			.iterator();
 		return new Enumeration<Object>() {
+			@Override
 			public boolean hasMoreElements() {
 				return iter.hasNext();
 			}
 
+			@Override
 			public Object nextElement() {
 				return iter.next();
 			}
@@ -43,10 +45,12 @@ public class MapToDictionaryAdapter extends Dictionary<String, Object> {
 		final Iterator<String> iter = map.keySet()
 			.iterator();
 		return new Enumeration<String>() {
+			@Override
 			public boolean hasMoreElements() {
 				return iter.hasNext();
 			}
 
+			@Override
 			public String nextElement() {
 				return iter.next();
 			}

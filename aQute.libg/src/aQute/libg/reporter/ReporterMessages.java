@@ -17,26 +17,32 @@ public class ReporterMessages {
 	static class WARNINGImpl implements WARNING {
 		Reporter.SetLocation loc;
 
+		@Override
 		public SetLocation file(String file) {
 			return loc.file(file);
 		}
 
+		@Override
 		public SetLocation header(String header) {
 			return loc.header(header);
 		}
 
+		@Override
 		public SetLocation context(String context) {
 			return loc.context(context);
 		}
 
+		@Override
 		public SetLocation method(String methodName) {
 			return loc.method(methodName);
 		}
 
+		@Override
 		public SetLocation line(int n) {
 			return loc.line(n);
 		}
 
+		@Override
 		public SetLocation reference(String reference) {
 			return loc.reference(reference);
 		}
@@ -45,14 +51,17 @@ public class ReporterMessages {
 			this.loc = loc;
 		}
 
+		@Override
 		public SetLocation details(Object details) {
 			return loc.details(details);
 		}
 
+		@Override
 		public Location location() {
 			return loc.location();
 		}
 
+		@Override
 		public SetLocation length(int length) {
 			loc.length(length);
 			return this;
@@ -71,6 +80,7 @@ public class ReporterMessages {
 			messages
 		}, new InvocationHandler() {
 
+			@Override
 			@SuppressWarnings("deprecation")
 			public Object invoke(Object target, Method method, Object[] args) throws Throwable {
 				String format;

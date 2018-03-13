@@ -304,6 +304,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * @see aQute.bnd.service.Plugin#setProperties(java.util.Map)
 	 */
+	@Override
 	public void setProperties(Map<String, String> map) {
 		String location = map.get(LOCATION);
 		if (location == null)
@@ -341,6 +342,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * Answer if this repository can write.
 	 */
+	@Override
 	public boolean canWrite() {
 		return canWrite;
 	}
@@ -441,6 +443,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @see aQute.bnd.service.RepositoryPlugin#put(java.io.InputStream,
 	 * aQute.bnd.service.RepositoryPlugin.PutOptions)
 	 */
+	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		/* determine if the put is allowed */
 		if (!canWrite) {
@@ -491,10 +494,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		root = IO.getFile(string);
 	}
 
+	@Override
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
 
+	@Override
 	public List<String> list(String regex) throws Exception {
 		init();
 		Instruction pattern = null;
@@ -524,6 +529,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return result;
 	}
 
+	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
 		File dir = new File(root, bsn);
@@ -554,10 +560,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return String.format("%s [%-40s r/w=%s]", getName(), getRoot().getAbsolutePath(), canWrite());
 	}
 
+	@Override
 	public File getRoot() {
 		return root;
 	}
 
+	@Override
 	public boolean refresh() throws Exception {
 		init();
 		exec(refresh, root);
@@ -565,6 +573,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return true;
 	}
 
+	@Override
 	public String getName() {
 		if (name == null) {
 			return getLocation();
@@ -577,6 +586,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @see aQute.bnd.service.RepositoryPlugin#get(java.lang.String,
 	 * aQute.bnd.version.Version, java.util.Map)
 	 */
+	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
 		init();
@@ -595,19 +605,23 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return null;
 	}
 
+	@Override
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
 
+	@Override
 	public String getLocation() {
 		return root.toString();
 	}
 
+	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
 		if (target == null || target.length == 0) {
 			Map<String, Runnable> actions = new LinkedHashMap<>();
 			actions.put("Rebuild Resource Index", new Runnable() {
 
+				@Override
 				public void run() {
 					try {
 						refresh();
@@ -629,6 +643,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			Map<String, Runnable> actions = new HashMap<>();
 			actions.put("Delete " + bsn + "-" + status(bsn, version), new Runnable() {
+				@Override
 				public void run() {
 					IO.delete(f);
 					if (f.getParentFile()
@@ -651,6 +666,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * (non-Javadoc)
 	 * @see aQute.bnd.service.Actionable#tooltip(java.lang.Object[])
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public String tooltip(Object... target) throws Exception {
 		if (target == null || target.length == 0)
@@ -689,6 +705,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * (non-Javadoc)
 	 * @see aQute.bnd.service.Actionable#title(java.lang.Object[])
 	 */
+	@Override
 	public String title(Object... target) throws Exception {
 		if (target == null || target.length == 0)
 			return getName();
@@ -783,6 +800,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return readable(length / 1024, n + 1);
 	}
 
+	@Override
 	public void close() throws IOException {
 		if (inited) {
 			exec(close, root.getAbsolutePath());
@@ -956,6 +974,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		if (hasIndex) {
 			TreeSet<ResourceDescriptor> resources = new TreeSet<>(new Comparator<ResourceDescriptor>() {
 
+				@Override
 				public int compare(ResourceDescriptor a, ResourceDescriptor b) {
 					if (a == b)
 						return 0;

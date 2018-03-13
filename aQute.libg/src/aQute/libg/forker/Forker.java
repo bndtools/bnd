@@ -43,6 +43,7 @@ public class Forker<T> {
 		/**
 		 * Run when the job's dependencies are done.
 		 */
+		@Override
 		public void run() {
 			Thread.interrupted(); // clear the interrupt flag
 

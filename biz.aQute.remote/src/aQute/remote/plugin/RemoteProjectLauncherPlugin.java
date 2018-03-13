@@ -167,6 +167,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	/**
 	 * Make sure all sessions are closed
 	 */
+	@Override
 	public void close() {
 		for (RunSessionImpl session : sessions)
 			try {
@@ -179,6 +180,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	/**
 	 * Kill!
 	 */
+	@Override
 	public void cancel() throws Exception {
 		for (RunSessionImpl session : sessions)
 			try {

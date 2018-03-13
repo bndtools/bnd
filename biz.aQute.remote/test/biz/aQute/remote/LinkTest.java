@@ -21,6 +21,7 @@ public class LinkTest extends TestCase {
 	private Socket			localSocket;
 	private Socket			remoteSocket;
 
+	@Override
 	public void setUp() throws IOException {
 		server = new ServerSocket(4567);
 		remoteSocket = new Socket(InetAddress.getByName(null), server.getLocalPort());
@@ -31,6 +32,7 @@ public class LinkTest extends TestCase {
 		remoteImpl = new RemoteImpl(Local.class, remoteSocket.getInputStream(), remoteSocket.getOutputStream());
 	}
 
+	@Override
 	public void tearDown() throws IOException {
 		server.close();
 		localSocket.close();
@@ -56,6 +58,7 @@ public class LinkTest extends TestCase {
 			link = new Link<>(type, this, in, out);
 		}
 
+		@Override
 		public int bar() {
 			System.out.println("bar");
 			return 42;
@@ -81,6 +84,7 @@ public class LinkTest extends TestCase {
 			link = new Link<>(type, this, in, out);
 		}
 
+		@Override
 		public int foo() {
 			System.out.println("foo");
 			return -42;

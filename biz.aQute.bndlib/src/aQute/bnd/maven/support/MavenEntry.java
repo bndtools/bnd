@@ -123,6 +123,7 @@ public class MavenEntry implements Closeable {
 						if (verify(url, pomPath)) {
 							artifact = new FutureTask<>(new Callable<File>() {
 
+								@Override
 								public File call() throws Exception {
 									if (download(url, artifactPath)) {
 										verify(url, artifactPath);
@@ -316,6 +317,7 @@ public class MavenEntry implements Closeable {
 		return pomFile;
 	}
 
+	@Override
 	public void close() throws IOException {
 
 	}

@@ -15,6 +15,7 @@ import aQute.bnd.service.MakePlugin;
 
 public class MakeCopy implements MakePlugin {
 
+	@Override
 	public Resource make(Builder builder, String destination, Map<String, String> argumentsOnMake) throws Exception {
 		String type = argumentsOnMake.get("type");
 		if (!type.equals("copy"))

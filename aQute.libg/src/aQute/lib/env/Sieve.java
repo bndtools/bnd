@@ -37,6 +37,7 @@ public class Sieve implements Map<Selector, Props> {
 		this(new Header(h));
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -48,6 +49,7 @@ public class Sieve implements Map<Selector, Props> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsKey(Object name) {
 		assert name instanceof Selector;
@@ -64,6 +66,7 @@ public class Sieve implements Map<Selector, Props> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsValue(Object value) {
 		assert value instanceof Props;
@@ -73,6 +76,7 @@ public class Sieve implements Map<Selector, Props> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	public Set<java.util.Map.Entry<Selector, Props>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
@@ -80,6 +84,7 @@ public class Sieve implements Map<Selector, Props> {
 		return map.entrySet();
 	}
 
+	@Override
 	@Deprecated
 	public Props get(Object key) {
 		assert key instanceof Selector;
@@ -96,10 +101,12 @@ public class Sieve implements Map<Selector, Props> {
 		return map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map == null || map.isEmpty();
 	}
 
+	@Override
 	public Set<Selector> keySet() {
 		if (map == null)
 			return EMPTY.keySet();
@@ -107,6 +114,7 @@ public class Sieve implements Map<Selector, Props> {
 		return map.keySet();
 	}
 
+	@Override
 	public Props put(Selector key, Props value) {
 		if (map == null)
 			map = new LinkedHashMap<>();
@@ -114,6 +122,7 @@ public class Sieve implements Map<Selector, Props> {
 		return map.put(key, value);
 	}
 
+	@Override
 	public void putAll(Map<? extends Selector, ? extends Props> map) {
 		if (this.map == null) {
 			if (map.isEmpty())
@@ -123,6 +132,7 @@ public class Sieve implements Map<Selector, Props> {
 		this.map.putAll(map);
 	}
 
+	@Override
 	@Deprecated
 	public Props remove(Object var0) {
 		assert var0 instanceof Selector;
@@ -138,12 +148,14 @@ public class Sieve implements Map<Selector, Props> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		if (map == null)
 			return 0;
 		return map.size();
 	}
 
+	@Override
 	public Collection<Props> values() {
 		if (map == null)
 			return EMPTY.values();

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -90,7 +91,7 @@ public class Make {
 			return make;
 		make = Processor.newMap();
 
-		Parameters make = builder.getMergedParameters(Builder.MAKE);
+		Parameters make = builder.getMergedParameters(Constants.MAKE);
 
 		for (Entry<String, Attrs> entry : make.entrySet()) {
 			String pattern = Processor.removeDuplicateMarker(entry.getKey());

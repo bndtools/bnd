@@ -74,6 +74,7 @@ public class SpringComponent implements AnalyzerPlugin {
 		return refers;
 	}
 
+	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
 		Map<String, Resource> dir = jar.getDirectories()

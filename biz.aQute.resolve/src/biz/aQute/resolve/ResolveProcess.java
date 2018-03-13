@@ -134,7 +134,7 @@ public class ResolveProcess {
 			@Override
 			public boolean isInputResource(Resource resource) {
 				for (Resource r : resources) {
-					if (GenericResolveContext.resourceIdentityEquals(r, resource)) {
+					if (AbstractResolveContext.resourceIdentityEquals(r, resource)) {
 						return true;
 					}
 				}

@@ -99,6 +99,7 @@ public class Archive implements Comparable<Archive> {
 			+ (this.classifier.isEmpty() ? "" : "-" + this.classifier) + "." + this.extension;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = prefix();
 		sb.append(":")

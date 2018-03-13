@@ -142,6 +142,7 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1, Map<K2, V>> implements 
 			Iterator<java.util.Map.Entry<K1, Map<K2, V>>>	master	= entrySet().iterator();
 			Iterator<Map.Entry<K2, V>>						current	= null;
 
+			@Override
 			public boolean hasNext() {
 				if (current == null || !current.hasNext()) {
 					if (master.hasNext()) {
@@ -156,11 +157,13 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1, Map<K2, V>> implements 
 				return true;
 			}
 
+			@Override
 			public V next() {
 				return current.next()
 					.getValue();
 			}
 
+			@Override
 			public void remove() {
 				current.remove();
 			}

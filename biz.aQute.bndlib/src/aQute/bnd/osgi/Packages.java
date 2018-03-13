@@ -27,6 +27,7 @@ public class Packages implements Map<PackageRef, Attrs> {
 		map = new LinkedHashMap<>();
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -35,6 +36,7 @@ public class Packages implements Map<PackageRef, Attrs> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsKey(Object name) {
 		assert name instanceof PackageRef;
@@ -45,16 +47,19 @@ public class Packages implements Map<PackageRef, Attrs> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsValue(Object value) {
 		assert value instanceof Attrs;
 		return map.containsValue(value);
 	}
 
+	@Override
 	public Set<java.util.Map.Entry<PackageRef, Attrs>> entrySet() {
 		return map.entrySet();
 	}
 
+	@Override
 	@Deprecated
 	public Attrs get(Object key) {
 		assert key instanceof PackageRef;
@@ -65,10 +70,12 @@ public class Packages implements Map<PackageRef, Attrs> {
 		return map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map.isEmpty();
 	}
 
+	@Override
 	public Set<PackageRef> keySet() {
 		return map.keySet();
 	}
@@ -83,10 +90,12 @@ public class Packages implements Map<PackageRef, Attrs> {
 		return attrs;
 	}
 
+	@Override
 	public Attrs put(PackageRef key, Attrs value) {
 		return map.put(key, value);
 	}
 
+	@Override
 	public void putAll(Map<? extends PackageRef, ? extends Attrs> map) {
 		this.map.putAll(map);
 	}
@@ -98,6 +107,7 @@ public class Packages implements Map<PackageRef, Attrs> {
 		}
 	}
 
+	@Override
 	@Deprecated
 	public Attrs remove(Object var0) {
 		assert var0 instanceof PackageRef;
@@ -108,10 +118,12 @@ public class Packages implements Map<PackageRef, Attrs> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		return map.size();
 	}
 
+	@Override
 	public Collection<Attrs> values() {
 		return map.values();
 	}

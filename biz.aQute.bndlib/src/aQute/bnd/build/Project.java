@@ -2475,6 +2475,7 @@ public class Project extends Processor {
 	boolean replace(File f, String pattern, String replacement) throws IOException {
 		final Macro macro = getReplacer();
 		Sed sed = new Sed(new Replacer() {
+			@Override
 			public String process(String line) {
 				return macro.process(line);
 			}
@@ -3005,6 +3006,7 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 
+	@Override
 	public void report(Map<String, Object> table) throws Exception {
 		super.report(table);
 		report(table, true);

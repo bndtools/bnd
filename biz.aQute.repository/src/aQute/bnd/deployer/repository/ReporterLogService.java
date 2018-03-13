@@ -16,18 +16,22 @@ public class ReporterLogService implements LogService {
 		this.reporter = reporter;
 	}
 
+	@Override
 	public void log(int level, String message) {
 		log(null, level, message, null);
 	}
 
+	@Override
 	public void log(int level, String message, Throwable t) {
 		log(null, level, message, t);
 	}
 
+	@Override
 	public void log(ServiceReference sr, int level, String message) {
 		log(sr, level, message, null);
 	}
 
+	@Override
 	public void log(ServiceReference sr, int level, String message, Throwable t) {
 		switch (level) {
 			case LOG_ERROR :

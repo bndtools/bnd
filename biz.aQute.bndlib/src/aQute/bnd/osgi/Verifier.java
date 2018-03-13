@@ -1173,7 +1173,7 @@ public class Verifier extends Processor {
 	}
 
 	private void verifySymbolicName() {
-		Parameters bsn = parseHeader(main.get(Analyzer.BUNDLE_SYMBOLICNAME));
+		Parameters bsn = parseHeader(main.get(Constants.BUNDLE_SYMBOLICNAME));
 		if (!bsn.isEmpty()) {
 			if (bsn.size() > 1)
 				error("More than one BSN specified %s", bsn);

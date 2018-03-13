@@ -61,10 +61,12 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	public ReplacerAdapter(final Map<String, String> domain) {
 		this(new Domain() {
 
+			@Override
 			public Map<String, String> getMap() {
 				return domain;
 			}
 
+			@Override
 			public Domain getParent() {
 				return null;
 			}
@@ -274,10 +276,12 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 								}
 								domain = new Domain() {
 
+									@Override
 									public Map<String, String> getMap() {
 										return args;
 									}
 
+									@Override
 									public Domain getParent() {
 										return old;
 									}
@@ -464,6 +468,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		}
 		Collections.sort(result, new Comparator<String>() {
 
+			@Override
 			public int compare(String a, String b) {
 				while (a.startsWith("0"))
 					a = a.substring(1);
@@ -1013,6 +1018,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		}
 	}
 
+	@Override
 	public String process(String line) {
 		return process(line, domain);
 	}

@@ -50,6 +50,7 @@ public class Clazz {
 			return (String) pool[cname];
 		}
 
+		@Override
 		public String toString() {
 			return "ClassConstant[" + getName() + "]";
 		}
@@ -67,6 +68,7 @@ public class Clazz {
 
 			Map<String, Set<String>> profiles;
 
+			@Override
 			public Map<String, Set<String>> getProfiles() throws IOException {
 				if (profiles == null) {
 					Properties p = new UTF8Properties();
@@ -237,6 +239,7 @@ public class Clazz {
 		int			a;
 		int			b;
 
+		@Override
 		public String toString() {
 			return "Assoc[" + tag + ", " + a + "," + b + "]";
 		}
@@ -462,6 +465,7 @@ public class Clazz {
 
 	public static final Comparator<Clazz>	NAME_COMPARATOR	= new Comparator<Clazz>() {
 
+																@Override
 																public int compare(Clazz a, Clazz b) {
 																	return a.className.compareTo(b.className);
 																}

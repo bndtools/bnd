@@ -68,6 +68,7 @@ public class ZipResource implements Resource {
 		return buffer = bb;
 	}
 
+	@Override
 	public InputStream openInputStream() throws Exception {
 		return IO.stream(buffer());
 	}
@@ -77,6 +78,7 @@ public class ZipResource implements Resource {
 		return ":" + zip.getName() + "(" + entry.getName() + "):";
 	}
 
+	@Override
 	public void write(OutputStream out) throws Exception {
 		if (buffer != null) {
 			IO.copy(buffer(), out);
@@ -85,6 +87,7 @@ public class ZipResource implements Resource {
 		}
 	}
 
+	@Override
 	public long lastModified() {
 		if (lastModified != -11L) {
 			return lastModified;
@@ -92,14 +95,17 @@ public class ZipResource implements Resource {
 		return lastModified = ZipUtil.getModifiedTime(entry);
 	}
 
+	@Override
 	public String getExtra() {
 		return extra;
 	}
 
+	@Override
 	public void setExtra(String extra) {
 		this.extra = extra;
 	}
 
+	@Override
 	public long size() throws Exception {
 		if (size >= 0) {
 			return size;
@@ -107,6 +113,7 @@ public class ZipResource implements Resource {
 		return size = getBuffer().limit();
 	}
 
+	@Override
 	public void close() throws IOException {
 		if (closeZipFile) {
 			zip.close();

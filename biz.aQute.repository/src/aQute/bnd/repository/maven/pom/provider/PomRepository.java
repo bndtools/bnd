@@ -60,6 +60,7 @@ class PomRepository extends InnerRepository {
 		return this;
 	}
 
+	@Override
 	void refresh() throws Exception {
 		if (!uris.isEmpty())
 			readUris();
@@ -101,6 +102,7 @@ class PomRepository extends InnerRepository {
 		}
 	}
 
+	@Override
 	boolean isStale() throws Exception {
 		if (!getLocation().isFile()) {
 			return true;

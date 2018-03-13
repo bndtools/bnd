@@ -2754,6 +2754,7 @@ public class DSAnnotationTest extends BndTestCase {
 		// (service = LogService.class)
 		private Collection<Map.Entry<Map<String, Object>, LogService>>	tupleField;
 
+		@Override
 		public void run() {}
 	}
 
@@ -3755,6 +3756,7 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component(service = {})
 	public static class ActivatableComponent implements Activatable<ConfigA> {
+		@Override
 		@Activate
 		public void activator(ConfigA config) {
 			String a = config.a();

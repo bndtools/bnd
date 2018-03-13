@@ -168,6 +168,7 @@ public class BaselineCommands {
 
 		Info[] sorted = infos.toArray(new Info[0]);
 		Arrays.sort(sorted, new Comparator<Info>() {
+			@Override
 			public int compare(Info o1, Info o2) {
 				return o1.packageName.compareTo(o2.packageName);
 			}
@@ -312,6 +313,7 @@ public class BaselineCommands {
 		public Tree		tree;
 		public Attrs	uses	= new Attrs();
 
+		@Override
 		public int compareTo(PSpec o) {
 			return version.compareTo(o.version);
 		}

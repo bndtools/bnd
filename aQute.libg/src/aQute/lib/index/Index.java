@@ -64,6 +64,7 @@ public class Index implements Iterable<byte[]> {
 				Iterator<byte[]>	i;
 				int					rover	= 0;
 
+				@Override
 				public byte[] next() {
 					if (leaf) {
 						return k(rover++);
@@ -72,6 +73,7 @@ public class Index implements Iterable<byte[]> {
 					return i.next();
 				}
 
+				@Override
 				public boolean hasNext() {
 					try {
 						if (leaf)
@@ -87,6 +89,7 @@ public class Index implements Iterable<byte[]> {
 
 				}
 
+				@Override
 				public void remove() {
 					throw new UnsupportedOperationException();
 				}
@@ -351,6 +354,7 @@ public class Index implements Iterable<byte[]> {
 		cache.clear();
 	}
 
+	@Override
 	public Iterator<byte[]> iterator() {
 		return root.iterator();
 	}

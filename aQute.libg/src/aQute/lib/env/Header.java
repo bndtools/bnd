@@ -33,6 +33,7 @@ public class Header implements Map<String, Props> {
 		Header.parseHeader(header, reporter, this);
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -50,6 +51,7 @@ public class Header implements Map<String, Props> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsKey(Object name) {
@@ -67,6 +69,7 @@ public class Header implements Map<String, Props> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsValue(Object value) {
@@ -77,6 +80,7 @@ public class Header implements Map<String, Props> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	public Set<java.util.Map.Entry<String, Props>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
@@ -84,6 +88,7 @@ public class Header implements Map<String, Props> {
 		return map.entrySet();
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public Props get(Object key) {
@@ -101,10 +106,12 @@ public class Header implements Map<String, Props> {
 		return map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map == null || map.isEmpty();
 	}
 
+	@Override
 	public Set<String> keySet() {
 		if (map == null)
 			return EMPTY.keySet();
@@ -112,6 +119,7 @@ public class Header implements Map<String, Props> {
 		return map.keySet();
 	}
 
+	@Override
 	public Props put(String key, Props value) {
 		assert key != null;
 		assert value != null;
@@ -122,6 +130,7 @@ public class Header implements Map<String, Props> {
 		return map.put(key, value);
 	}
 
+	@Override
 	public void putAll(Map<? extends String, ? extends Props> map) {
 		if (this.map == null) {
 			if (map.isEmpty())
@@ -138,6 +147,7 @@ public class Header implements Map<String, Props> {
 		}
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public Props remove(Object var0) {
@@ -154,12 +164,14 @@ public class Header implements Map<String, Props> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		if (map == null)
 			return 0;
 		return map.size();
 	}
 
+	@Override
 	public Collection<Props> values() {
 		if (map == null)
 			return EMPTY.values();

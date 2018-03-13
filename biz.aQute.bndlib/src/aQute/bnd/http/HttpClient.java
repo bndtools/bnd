@@ -126,6 +126,7 @@ public class HttpClient implements Closeable, URLConnector {
 		return format;
 	}
 
+	@Override
 	public void close() {
 		Authenticator.setDefault(null);
 	}

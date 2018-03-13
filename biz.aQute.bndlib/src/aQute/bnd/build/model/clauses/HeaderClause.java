@@ -129,6 +129,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		}
 	}
 
+	@Override
 	public int compareTo(HeaderClause other) {
 		return this.name.compareTo(other.name);
 	}

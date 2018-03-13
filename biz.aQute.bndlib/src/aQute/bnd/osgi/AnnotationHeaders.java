@@ -183,6 +183,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	/*
 	 * Called when an annotation is found. Dispatch on the known types.
 	 */
+	@Override
 	public void annotation(Annotation annotation) throws Exception {
 		TypeRef name = annotation.getName();
 		String fqn = name.getFQN();
@@ -399,6 +400,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * Called after the class space has been parsed. We then continue to parse
 	 * the used annotations.
 	 */
+	@Override
 	public void close() throws IOException {}
 
 	/*

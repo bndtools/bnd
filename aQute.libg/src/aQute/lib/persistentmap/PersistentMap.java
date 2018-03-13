@@ -105,14 +105,17 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 		}
 	}
 
+	@Override
 	public Set<java.util.Map.Entry<String, V>> entrySet() {
 		return new AbstractSet<Map.Entry<String, V>>() {
 
+			@Override
 			public int size() {
 				init();
 				return cache.size();
 			}
 
+			@Override
 			public Iterator<java.util.Map.Entry<String, V>> iterator() {
 				init();
 				return new Iterator<Map.Entry<String, V>>() {
@@ -120,10 +123,12 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 						.iterator();
 					java.util.Map.Entry<String, SoftReference<V>>			entry;
 
+					@Override
 					public boolean hasNext() {
 						return it.hasNext();
 					}
 
+					@Override
 					@SuppressWarnings("unchecked")
 					public java.util.Map.Entry<String, V> next() {
 						try {
@@ -145,14 +150,17 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 
 							return new Map.Entry<String, V>() {
 
+								@Override
 								public String getKey() {
 									return entry.getKey();
 								}
 
+								@Override
 								public V getValue() {
 									return v;
 								}
 
+								@Override
 								public V setValue(V value) {
 									return put(entry.getKey(), value);
 								}
@@ -163,6 +171,7 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 						}
 					}
 
+					@Override
 					public void remove() {
 						PersistentMap.this.remove(entry.getKey());
 					}
@@ -171,6 +180,7 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 		};
 	}
 
+	@Override
 	public V put(String key, V value) {
 		init();
 		try {
@@ -245,6 +255,7 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 		}
 	}
 
+	@Override
 	public void clear() {
 		init();
 		try {
@@ -263,17 +274,20 @@ public class PersistentMap<V> extends AbstractMap<String, V> implements Closeabl
 		}
 	}
 
+	@Override
 	public Set<String> keySet() {
 		init();
 		return cache.keySet();
 	}
 
+	@Override
 	public void close() throws IOException {
 		lockFile.close();
 		closed = true;
 		inited = false;
 	}
 
+	@Override
 	public String toString() {
 		return "PersistentMap[" + dir + "] " + super.toString();
 	}

@@ -13,18 +13,22 @@ public class LogReporter extends org.apache.felix.resolver.Logger implements Log
 
 	class Error extends Silent {
 
+		@Override
 		public void log(String message) {
 			reporter.error("%s", message);
 		}
 
+		@Override
 		public void log(String message, Throwable exception) {
 			reporter.error("%s : %s", message, exception);
 		}
 
+		@Override
 		public void log(ServiceReference<?> sr, String message) {
 			reporter.error("%s (%s)", message, sr);
 		}
 
+		@Override
 		public void log(ServiceReference<?> sr, String message, Throwable exception) {
 			reporter.error("%s : %s (%s)", message, exception, sr);
 		}
@@ -32,18 +36,22 @@ public class LogReporter extends org.apache.felix.resolver.Logger implements Log
 
 	class Warning extends Silent {
 
+		@Override
 		public void log(String message) {
 			reporter.warning("%s", message);
 		}
 
+		@Override
 		public void log(String message, Throwable exception) {
 			reporter.warning("%s : %s", message, exception);
 		}
 
+		@Override
 		public void log(ServiceReference<?> sr, String message) {
 			reporter.warning("%s (%s)", message, sr);
 		}
 
+		@Override
 		public void log(ServiceReference<?> sr, String message, Throwable exception) {
 			reporter.warning("%s : %s (%s)", message, exception, sr);
 		}
@@ -51,18 +59,22 @@ public class LogReporter extends org.apache.felix.resolver.Logger implements Log
 
 	class Trace extends Silent {
 
+		@Override
 		public void log(String message) {
 			logger.debug("{}", message);
 		}
 
+		@Override
 		public void log(String message, Throwable exception) {
 			logger.debug("{}", message, exception);
 		}
 
+		@Override
 		public void log(ServiceReference<?> sr, String message) {
 			logger.debug("{} ({})", message, sr);
 		}
 
+		@Override
 		public void log(ServiceReference<?> sr, String message, Throwable exception) {
 			logger.debug("{} ({})", message, sr, exception);
 		}

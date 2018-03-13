@@ -317,6 +317,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		return result;
 	}
 
+	@Override
 	public String update(long id, String sha) throws Exception {
 		InputStream in = cache.getStream(sha, source);
 		if (in == null)
@@ -336,6 +337,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		return sb.length() == 0 ? null : sb.toString();
 	}
 
+	@Override
 	public String updateFromURL(long id, String url) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		InputStream is = new URL(url).openStream();
@@ -594,6 +596,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		this.link = link;
 	}
 
+	@Override
 	public boolean ping() {
 		return true;
 	}

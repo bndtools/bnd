@@ -24,48 +24,56 @@ public class Attrs implements Map<String, String> {
 
 	public static final DataType<String>		STRING			= new DataType<String>() {
 
+																	@Override
 																	public Type type() {
 																		return Type.STRING;
 																	}
 																};
 	public static final DataType<Long>			LONG			= new DataType<Long>() {
 
+																	@Override
 																	public Type type() {
 																		return Type.LONG;
 																	}
 																};;
 	public static final DataType<Double>		DOUBLE			= new DataType<Double>() {
 
+																	@Override
 																	public Type type() {
 																		return Type.DOUBLE;
 																	}
 																};;
 	public static final DataType<Version>		VERSION			= new DataType<Version>() {
 
+																	@Override
 																	public Type type() {
 																		return Type.VERSION;
 																	}
 																};;
 	public static final DataType<List<String>>	LIST_STRING		= new DataType<List<String>>() {
 
+																	@Override
 																	public Type type() {
 																		return Type.STRINGS;
 																	}
 																};;
 	public static final DataType<List<Long>>	LIST_LONG		= new DataType<List<Long>>() {
 
+																	@Override
 																	public Type type() {
 																		return Type.LONGS;
 																	}
 																};;
 	public static final DataType<List<Double>>	LIST_DOUBLE		= new DataType<List<Double>>() {
 
+																	@Override
 																	public Type type() {
 																		return Type.DOUBLES;
 																	}
 																};;
 	public static final DataType<List<Version>>	LIST_VERSION	= new DataType<List<Version>>() {
 
+																	@Override
 																	public Type type() {
 																		return Type.VERSIONS;
 																	}
@@ -89,6 +97,7 @@ public class Attrs implements Map<String, String> {
 			this.toString = toString;
 		}
 
+		@Override
 		public String toString() {
 			return toString;
 		}
@@ -222,6 +231,7 @@ public class Attrs implements Map<String, String> {
 		return Type.STRING;
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 		types.clear();
@@ -231,6 +241,7 @@ public class Attrs implements Map<String, String> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsKey(Object name) {
@@ -242,6 +253,7 @@ public class Attrs implements Map<String, String> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsValue(Object value) {
@@ -249,10 +261,12 @@ public class Attrs implements Map<String, String> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	public Set<java.util.Map.Entry<String, String>> entrySet() {
 		return map.entrySet();
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public String get(Object key) {
@@ -271,14 +285,17 @@ public class Attrs implements Map<String, String> {
 		return s;
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map.isEmpty();
 	}
 
+	@Override
 	public Set<String> keySet() {
 		return map.keySet();
 	}
 
+	@Override
 	public String put(String key, String value) {
 		if (key == null)
 			return null;
@@ -335,6 +352,7 @@ public class Attrs implements Map<String, String> {
 		types.putAll(attrs.types);
 	}
 
+	@Override
 	public void putAll(Map<? extends String, ? extends String> other) {
 		if (other instanceof Attrs) {
 			putAll((Attrs) other);
@@ -345,6 +363,7 @@ public class Attrs implements Map<String, String> {
 		}
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public String remove(Object var0) {
@@ -358,10 +377,12 @@ public class Attrs implements Map<String, String> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		return map.size();
 	}
 
+	@Override
 	public Collection<String> values() {
 		return map.values();
 	}

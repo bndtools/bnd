@@ -39,6 +39,7 @@ public class ResourceDescriptorImpl extends ResourceDescriptor implements Compar
 		return true;
 	}
 
+	@Override
 	public int compareTo(ResourceDescriptorImpl var0) {
 		for (int i = 0; i < id.length; i++) {
 			if (i >= var0.id.length)
@@ -56,6 +57,7 @@ public class ResourceDescriptorImpl extends ResourceDescriptor implements Compar
 		return 0;
 	}
 
+	@Override
 	public String toString() {
 		return bsn + "-" + version;
 	}

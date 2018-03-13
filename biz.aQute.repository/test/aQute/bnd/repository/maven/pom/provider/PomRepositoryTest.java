@@ -50,6 +50,7 @@ public class PomRepositoryTest extends TestCase {
 	private File		location;
 	private HttpClient	client;
 
+	@Override
 	protected void setUp() {
 		tmp = IO.getFile("generated/tmp/test/" + getName());
 		localRepo = IO.getFile(MAVEN_REPO_LOCAL);
@@ -59,6 +60,7 @@ public class PomRepositoryTest extends TestCase {
 		client = new HttpClient();
 	}
 
+	@Override
 	protected void tearDown() {
 		client.close();
 	}

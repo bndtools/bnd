@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.osgi.namespace.contract.ContractNamespace;
+import org.osgi.resource.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +101,7 @@ class Contracts {
 						Contract c = new Contract();
 						c.name = name;
 
-						String list = capabilityAttrs.get(ContractNamespace.CAPABILITY_USES_DIRECTIVE + ":");
+						String list = capabilityAttrs.get(Namespace.CAPABILITY_USES_DIRECTIVE + ":");
 						if (list == null || list.length() == 0) {
 							analyzer.warning("Contract %s has no uses: directive in %s.", name, from);
 							continue contract; // next contract

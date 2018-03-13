@@ -142,6 +142,7 @@ public class MultiMap<K, V> extends HashMap<K, List<V>> implements Map<K, List<V
 			Iterator<List<V>>	master	= values().iterator();
 			Iterator<V>			current	= null;
 
+			@Override
 			public boolean hasNext() {
 				if (current == null || !current.hasNext()) {
 					if (master.hasNext()) {
@@ -154,10 +155,12 @@ public class MultiMap<K, V> extends HashMap<K, List<V>> implements Map<K, List<V
 				return true;
 			}
 
+			@Override
 			public V next() {
 				return current.next();
 			}
 
+			@Override
 			public void remove() {
 				current.remove();
 			}

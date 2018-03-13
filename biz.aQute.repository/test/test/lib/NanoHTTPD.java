@@ -253,6 +253,7 @@ public class NanoHTTPD {
 			myTcpPort = myServerSocket.getLocalPort();
 		}
 		myThread = new Thread(new Runnable() {
+			@Override
 			@SuppressWarnings("unused")
 			public void run() {
 				try {
@@ -341,6 +342,7 @@ public class NanoHTTPD {
 			t.start();
 		}
 
+		@Override
 		public void run() {
 			try {
 				InputStream is = mySocket.getInputStream();
@@ -994,6 +996,7 @@ public class NanoHTTPD {
 
 						final long dataLen = newLen;
 						FileInputStream fis = new FileInputStream(f) {
+							@Override
 							public int available() throws IOException {
 								return (int) dataLen;
 							}

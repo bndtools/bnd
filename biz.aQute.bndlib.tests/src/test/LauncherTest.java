@@ -25,6 +25,7 @@ public class LauncherTest extends TestCase {
 	private static Workspace	workspace;
 	private static Project		project;
 
+	@Override
 	public void tearDown() throws IOException {
 		if (project != null) {
 			project.close();

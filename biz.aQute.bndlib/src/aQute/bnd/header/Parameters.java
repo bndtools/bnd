@@ -34,6 +34,7 @@ public class Parameters implements Map<String, Attrs> {
 		OSGiHeader.parseHeader(header, reporter, this);
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -48,6 +49,7 @@ public class Parameters implements Map<String, Attrs> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsKey(Object name) {
@@ -59,6 +61,7 @@ public class Parameters implements Map<String, Attrs> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsValue(Object value) {
@@ -66,10 +69,12 @@ public class Parameters implements Map<String, Attrs> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	public Set<java.util.Map.Entry<String, Attrs>> entrySet() {
 		return map.entrySet();
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public Attrs get(Object key) {
@@ -81,10 +86,12 @@ public class Parameters implements Map<String, Attrs> {
 		return map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map.isEmpty();
 	}
 
+	@Override
 	public Set<String> keySet() {
 		return map.keySet();
 	}
@@ -95,12 +102,14 @@ public class Parameters implements Map<String, Attrs> {
 			.collect(toList());
 	}
 
+	@Override
 	public Attrs put(String key, Attrs value) {
 		assert key != null;
 		assert value != null;
 		return map.put(key, value);
 	}
 
+	@Override
 	public void putAll(Map<? extends String, ? extends Attrs> map) {
 		this.map.putAll(map);
 	}
@@ -112,6 +121,7 @@ public class Parameters implements Map<String, Attrs> {
 		}
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public Attrs remove(Object var0) {
@@ -123,10 +133,12 @@ public class Parameters implements Map<String, Attrs> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		return map.size();
 	}
 
+	@Override
 	public Collection<Attrs> values() {
 		return map.values();
 	}

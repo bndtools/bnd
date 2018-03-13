@@ -84,6 +84,7 @@ public class TestingMojo extends AbstractMojo {
 	@Component
 	private ProjectDependenciesResolver	resolver;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip || skipTests) {
 			return;

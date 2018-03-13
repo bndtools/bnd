@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.osgi.Analyzer;
-import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Plugin;
@@ -40,6 +39,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return "maven:" + root;
 	}
 
+	@Override
 	public boolean canWrite() {
 		return false;
 	}
@@ -99,6 +99,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return result.toArray(new File[0]);
 	}
 
+	@Override
 	public List<String> list(String regex) {
 		List<String> bsns = new ArrayList<>();
 		Pattern match = Pattern.compile(".*");
@@ -132,10 +133,12 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		}
 	}
 
+	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new UnsupportedOperationException("Maven does not support the put command");
 	}
 
+	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 
 		File files[] = get(bsn, null);
@@ -143,7 +146,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		for (File f : files) {
 			String version = f.getParentFile()
 				.getName();
-			version = Builder.cleanupVersion(version);
+			version = Analyzer.cleanupVersion(version);
 			Version v = new Version(version);
 			versions.add(v);
 		}
@@ -153,6 +156,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return new SortedList<>(versions);
 	}
 
+	@Override
 	public void setProperties(Map<String, String> map) {
 		String root = map.get("root");
 		if (root == null) {
@@ -170,10 +174,12 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 
 	}
 
+	@Override
 	public void setReporter(Reporter processor) {
 		this.reporter = processor;
 	}
 
+	@Override
 	public String[] getGroupAndArtifact(String bsn) {
 		String groupId;
 		String artifactId;
@@ -195,6 +201,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return null;
 	}
 
+	@Override
 	public String getName() {
 		if (name == null) {
 			return toString();
@@ -222,10 +229,12 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		root = f;
 	}
 
+	@Override
 	public String getLocation() {
 		return root.toString();
 	}
 
+	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
 		File file = get(bsn, version.toString(), Strategy.EXACT, properties);

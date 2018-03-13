@@ -51,6 +51,7 @@ public class CollectionFormatter<T> implements Converter<String, Collection<? ex
 		this.suffix = suffix;
 	}
 
+	@Override
 	public String convert(Collection<? extends T> input) throws IllegalArgumentException {
 		String result = null;
 		if (input != null) {

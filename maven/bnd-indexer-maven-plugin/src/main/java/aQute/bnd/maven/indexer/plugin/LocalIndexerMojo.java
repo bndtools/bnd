@@ -64,6 +64,7 @@ public class LocalIndexerMojo extends AbstractMojo {
 
 	private boolean				fail;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
 		if (skip) {

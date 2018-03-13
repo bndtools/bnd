@@ -12,6 +12,7 @@ public class MapFormatter implements Converter<String, Map<String, String>> {
 		entrySetFormatter = new CollectionFormatter<>(listSeparator, entryFormatter, emptyOutput);
 	}
 
+	@Override
 	public String convert(Map<String, String> input) throws IllegalArgumentException {
 		return entrySetFormatter.convert(input.entrySet());
 	}

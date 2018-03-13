@@ -10,6 +10,7 @@ public class NewlineEscapedStringFormatter implements Converter<String, String> 
 
 	private static final String CONTINUE_STRING = "\\\n\t";
 
+	@Override
 	public String convert(String input) throws IllegalArgumentException {
 		if (input == null)
 			return null;

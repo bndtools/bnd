@@ -49,11 +49,13 @@ public class WorkspaceRepositoryTest extends TestCase {
 
 	}
 
+	@Override
 	public void setUp() throws Exception {
 		workspace = new Workspace(IO.getFile("testresources/ws-repo-test"));
 		repo = new WorkspaceRepository(workspace);
 	}
 
+	@Override
 	public void tearDown() throws Exception {
 		IO.deleteWithException(new File("tmp-ws"));
 		reallyClean(workspace);

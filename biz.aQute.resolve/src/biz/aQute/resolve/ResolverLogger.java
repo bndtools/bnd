@@ -50,6 +50,7 @@ public class ResolverLogger implements LogService, AutoCloseable {
 		printer = IO.writer(out, UTF_8);
 	}
 
+	@Override
 	public void log(int level, String msg, Throwable throwable) {
 		switch (level) {
 			case LOG_DEBUG :

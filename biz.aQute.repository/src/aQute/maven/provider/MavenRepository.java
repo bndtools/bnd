@@ -223,6 +223,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return toLocalFile(archive.localPath);
 	}
 
+	@Override
 	public long getLastUpdated(Revision revision) throws Exception {
 		if (revision.isSnapshot()) {
 			File metafile = toLocalFile(revision.metadata(id));

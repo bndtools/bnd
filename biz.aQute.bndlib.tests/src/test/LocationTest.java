@@ -16,6 +16,7 @@ public class LocationTest extends TestCase {
 	Workspace		ws;
 	private File	tmp;
 
+	@Override
 	protected void setUp() throws Exception {
 		tmp = IO.getFile("generated/tmp");
 		IO.copy(IO.getFile("testresources/ws-location"), tmp);
@@ -23,6 +24,7 @@ public class LocationTest extends TestCase {
 
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		ws.close();
 		IO.delete(tmp);

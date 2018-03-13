@@ -75,6 +75,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	// Initialize the main class for a local launch start
 	//
 
+	@Override
 	protected int invoke(Class<?> main, String args[]) throws Exception {
 		LauncherConstants lc = getConstants(getRunBundles(), false);
 
@@ -160,6 +161,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			if (listenerComms == null) {
 				listenerComms = new DatagramSocket(new InetSocketAddress(InetAddress.getByName(null), 0));
 				new Thread(new Runnable() {
+					@Override
 					public void run() {
 						DatagramSocket socket = listenerComms;
 						DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);

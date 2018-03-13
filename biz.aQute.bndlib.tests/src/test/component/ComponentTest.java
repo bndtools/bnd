@@ -26,8 +26,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -261,7 +261,7 @@ public class ComponentTest extends TestCase {
 
 	static Document setup(String header, String className) throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Analyzer.SERVICE_COMPONENT, header);
+		b.setProperty(Constants.SERVICE_COMPONENT, header);
 		b.setClasspath(new File[] {
 			IO.getFile("bin"), IO.getFile("jar/osgi.jar")
 		});
@@ -321,7 +321,7 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testImplementation() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Analyzer.SERVICE_COMPONENT,
+		b.setProperty(Constants.SERVICE_COMPONENT,
 			"silly.name;implementation:=test.activator.Activator;provide:=java.io.Serialization;servicefactory:=true");
 		b.setClasspath(new File[] {
 			IO.getFile("bin"), IO.getFile("jar/osgi.jar")
@@ -359,9 +359,9 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testProperties() throws Exception {
 		java.util.Properties p = new Properties();
-		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
-		p.put(Analyzer.IMPORT_PACKAGE, "*");
-		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;properties:=\"a=3|4,b=1|2|3\"");
+		p.put(Constants.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
+		p.put(Constants.IMPORT_PACKAGE, "*");
+		p.put(Constants.SERVICE_COMPONENT, "test.activator.Activator;properties:=\"a=3|4,b=1|2|3\"");
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			IO.getFile("bin"), IO.getFile("jar/osgi.jar")
@@ -428,9 +428,9 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testUnknownDirective() throws Exception {
 		java.util.Properties p = new Properties();
-		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
-		p.put(Analyzer.IMPORT_PACKAGE, "*");
-		p.put(Analyzer.SERVICE_COMPONENT, "test.activator.Activator;provides:=true");
+		p.put(Constants.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
+		p.put(Constants.IMPORT_PACKAGE, "*");
+		p.put(Constants.SERVICE_COMPONENT, "test.activator.Activator;provides:=true");
 		Builder b = new Builder();
 		b.setClasspath(new File[] {
 			IO.getFile("bin"), IO.getFile("jar/osgi.jar")
@@ -477,9 +477,9 @@ public class ComponentTest extends TestCase {
 	 */
 	public void testBadFilter() throws Exception {
 		java.util.Properties p = new Properties();
-		p.put(Analyzer.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
-		p.put(Analyzer.IMPORT_PACKAGE, "*");
-		p.put(Analyzer.SERVICE_COMPONENT,
+		p.put(Constants.EXPORT_PACKAGE, "test.activator,org.osgi.service.http");
+		p.put(Constants.IMPORT_PACKAGE, "*");
+		p.put(Constants.SERVICE_COMPONENT,
 			"test.activator.Activator;http=\"org.osgi.service.http.HttpService(|p=1)(p=2))\"");
 		Builder b = new Builder();
 		b.setClasspath(new File[] {

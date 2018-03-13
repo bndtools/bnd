@@ -88,6 +88,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 			// of the URL so we can ignore that for our connections
 			//
 			verifier = new HostnameVerifier() {
+				@Override
 				public boolean verify(String string, SSLSession session) {
 					return verify;
 				}
@@ -97,12 +98,15 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 
 	X509TrustManager getTrustManager(final X509Certificate[] trusted) {
 		X509TrustManager tm = new X509TrustManager() {
+			@Override
 			public X509Certificate[] getAcceptedIssuers() {
 				return trusted;
 			}
 
+			@Override
 			public void checkServerTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
 
+			@Override
 			public void checkClientTrusted(X509Certificate[] certs, String authType) throws CertificateException {}
 		};
 		return tm;
@@ -111,6 +115,7 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	/**
 	 * Ensure Https verification is disabled or matches given certificates
 	 */
+	@Override
 	public void handle(URLConnection connection) throws Exception {
 
 		if (connection instanceof HttpsURLConnection && matches(connection)) {

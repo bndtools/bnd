@@ -63,10 +63,12 @@ public class ProjectTesterImpl extends ProjectTester implements TesterConstants,
 		return getProjectLauncher().launch();
 	}
 
+	@Override
 	public void setHost(String host) {
 		this.host = host;
 	}
 
+	@Override
 	public void setPort(int port) {
 		this.port = port;
 	}

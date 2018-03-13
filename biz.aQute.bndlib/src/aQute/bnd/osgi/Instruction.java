@@ -27,6 +27,7 @@ public class Instruction {
 			return recursive;
 		}
 
+		@Override
 		public boolean accept(File pathname) {
 			if (doNotCopy != null && doNotCopy.matcher(pathname.getName())
 				.matches()) {

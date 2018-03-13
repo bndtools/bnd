@@ -34,6 +34,7 @@ public class TestLocalIndexGeneration extends TestCase {
 	private File					outputDir;
 	private HashMap<String, String>	config;
 
+	@Override
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
 		outputDir = IO.getFile("generated/tmp/test/" + getName());

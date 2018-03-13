@@ -27,6 +27,7 @@ import java.util.jar.Manifest;
 import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -517,6 +518,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			this.log = log;
 		}
 
+		@Override
 		public int compare(Capability o1, Capability o2) {
 
 			Resource res1 = o1.getResource();
@@ -567,8 +569,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 			// 5. Higher resource version
 			if (BUNDLE_NAMESPACE.equals(ns1) && BUNDLE_NAMESPACE.equals(ns2)) {
-				Version v1 = getVersion(o1, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-				Version v2 = getVersion(o2, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+				Version v1 = getVersion(o1, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+				Version v2 = getVersion(o2, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 				if (!v1.equals(v2))
 					return v2.compareTo(v1);
 			} else if (IdentityNamespace.IDENTITY_NAMESPACE.equals(ns1)
@@ -586,8 +588,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 				String bsn2 = (String) o2.getAttributes()
 					.get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
 				if (bsn1 != null && bsn1.equals(bsn2)) {
-					Version v1 = getVersion(o1, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-					Version v2 = getVersion(o2, BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+					Version v1 = getVersion(o1, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+					Version v2 = getVersion(o2, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 					if (!v1.equals(v2))
 						return v2.compareTo(v1);
 				}
@@ -740,7 +742,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		//
 
 		String frameworkVersion = ResourceUtils.getIdentityVersion(framework);
-		cap.addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion);
+		cap.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion);
 
 		system.addCapability(cap);
 
@@ -755,7 +757,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		// TODO BJ is this right? Use the version of the provider framework?
 		//
 
-		cap.addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion);
+		cap.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion);
 		system.addCapability(cap);
 
 		this.framework = framework;

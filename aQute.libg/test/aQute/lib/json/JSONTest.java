@@ -91,6 +91,7 @@ public class JSONTest extends TestCase {
 				app.encode(object.toString(), String.class, visited);
 			}
 
+			@Override
 			public Object decode(Decoder dec, String s) throws Exception {
 				return new Version(s);
 			}
@@ -289,6 +290,7 @@ public class JSONTest extends TestCase {
 		final List<String> l = Arrays.asList("a", "b", "c");
 		Iterable<String> i = new Iterable<String>() {
 
+			@Override
 			public Iterator<String> iterator() {
 				return l.iterator();
 			}

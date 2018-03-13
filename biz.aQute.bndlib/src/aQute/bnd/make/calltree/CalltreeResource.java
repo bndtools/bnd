@@ -118,6 +118,7 @@ public class CalltreeResource extends WriteResource {
 	 */
 	static Comparator<Clazz.MethodDef> COMPARATOR = new Comparator<Clazz.MethodDef>() {
 
+		@Override
 		public int compare(MethodDef a, MethodDef b) {
 			int r = a.getName()
 				.compareTo(b.getName());

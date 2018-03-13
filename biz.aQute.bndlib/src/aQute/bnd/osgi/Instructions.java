@@ -43,6 +43,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		this(new Parameters(h));
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -54,6 +55,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsKey(Object name) {
 		assert name instanceof Instruction;
@@ -70,6 +72,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsValue(Object value) {
 		assert value instanceof Attrs;
@@ -79,6 +82,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	public Set<java.util.Map.Entry<Instruction, Attrs>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
@@ -86,6 +90,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		return map.entrySet();
 	}
 
+	@Override
 	@Deprecated
 	public Attrs get(Object key) {
 		assert key instanceof Instruction;
@@ -102,10 +107,12 @@ public class Instructions implements Map<Instruction, Attrs> {
 		return map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map == null || map.isEmpty();
 	}
 
+	@Override
 	public Set<Instruction> keySet() {
 		if (map == null)
 			return EMPTY.keySet();
@@ -113,6 +120,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		return map.keySet();
 	}
 
+	@Override
 	public Attrs put(Instruction key, Attrs value) {
 		if (map == null)
 			map = new LinkedHashMap<>();
@@ -120,6 +128,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		return map.put(key, value);
 	}
 
+	@Override
 	public void putAll(Map<? extends Instruction, ? extends Attrs> map) {
 		if (this.map == null) {
 			if (map.isEmpty())
@@ -129,6 +138,7 @@ public class Instructions implements Map<Instruction, Attrs> {
 		this.map.putAll(map);
 	}
 
+	@Override
 	@Deprecated
 	public Attrs remove(Object var0) {
 		assert var0 instanceof Instruction;
@@ -144,12 +154,14 @@ public class Instructions implements Map<Instruction, Attrs> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		if (map == null)
 			return 0;
 		return map.size();
 	}
 
+	@Override
 	public Collection<Attrs> values() {
 		if (map == null)
 			return EMPTY.values();

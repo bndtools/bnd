@@ -383,6 +383,7 @@ public class BndrunResolveContextTest extends TestCase {
 		// Add a hook that removes all capabilities from resource with id
 		// "osgi.cmpn"
 		registry.addPlugin(new ResolverHook() {
+			@Override
 			public void filterMatches(Requirement requirement, List<Capability> candidates) {
 				for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
 					Object id = iter.next()
@@ -514,6 +515,7 @@ public class BndrunResolveContextTest extends TestCase {
 		// Add a hook that tries to remove all capabilities from resource with
 		// id "org.apache.felix.framework"
 		registry.addPlugin(new ResolverHook() {
+			@Override
 			public void filterMatches(Requirement requirement, List<Capability> candidates) {
 				for (Iterator<Capability> iter = candidates.iterator(); iter.hasNext();) {
 					Object id = iter.next()

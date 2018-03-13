@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -313,9 +314,9 @@ public class ResourceUtils {
 		if (IdentityNamespace.IDENTITY_NAMESPACE.equals(ns))
 			name = IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
 		else if (BundleNamespace.BUNDLE_NAMESPACE.equals(ns))
-			name = BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+			name = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
 		else if (HostNamespace.HOST_NAMESPACE.equals(ns))
-			name = HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+			name = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
 		else if (PackageNamespace.PACKAGE_NAMESPACE.equals(ns))
 			name = PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE;
 		else if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))

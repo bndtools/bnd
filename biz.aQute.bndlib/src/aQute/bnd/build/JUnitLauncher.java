@@ -29,6 +29,7 @@ public class JUnitLauncher extends ProjectLauncher {
 		this.project = project;
 	}
 
+	@Override
 	public void prepare() throws Exception {
 		Pattern tests = Pattern.compile(project.getProperty(Constants.TESTSOURCES, "(.*).java"));
 
@@ -56,6 +57,7 @@ public class JUnitLauncher extends ProjectLauncher {
 		addClasspath(project.getBuildpath());
 	}
 
+	@Override
 	public int launch() throws Exception {
 		java = new Command();
 		java.add(project.getProperty("java", "java"));

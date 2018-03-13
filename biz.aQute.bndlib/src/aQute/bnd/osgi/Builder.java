@@ -1801,6 +1801,7 @@ public class Builder extends Analyzer {
 	 * @throws Exception
 	 */
 
+	@Override
 	public void report(Map<String, Object> table) throws Exception {
 		build();
 		super.report(table);

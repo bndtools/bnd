@@ -43,6 +43,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * @see
 	 * aQute.bnd.service.RepositoryPlugin.DownloadListener#success(java.io.File)
 	 */
+	@Override
 	public void success(File file) throws Exception {
 		synchronized (resolved) {
 			if (resolved.getCount() == 0) {
@@ -62,6 +63,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * aQute.bnd.service.RepositoryPlugin.DownloadListener#failure(java.io.File,
 	 * java.lang.String)
 	 */
+	@Override
 	public void failure(File file, String reason) throws Exception {
 		synchronized (resolved) {
 			if (resolved.getCount() == 0) {
@@ -83,6 +85,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * aQute.bnd.service.RepositoryPlugin.DownloadListener#progress(java.io.
 	 * File, int)
 	 */
+	@Override
 	public boolean progress(File file, int percentage) throws Exception {
 		assert stage == Stage.INIT;
 		return true;

@@ -132,6 +132,7 @@ public class IndexerMojo extends AbstractMojo {
 
 	private boolean						fail;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
 		if (skip) {

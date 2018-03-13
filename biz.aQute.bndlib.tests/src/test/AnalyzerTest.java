@@ -1037,8 +1037,8 @@ public class AnalyzerTest extends BndTestCase {
 			Manifest manifest = an.calcManifest();
 			assertTrue(an.check());
 			String exports = manifest.getMainAttributes()
-				.getValue(Analyzer.EXPORT_PACKAGE);
-			Parameters map = Analyzer.parseHeader(exports, null);
+				.getValue(Constants.EXPORT_PACKAGE);
+			Parameters map = Processor.parseHeader(exports, null);
 			assertEquals(1, map.size());
 			assertEquals("target", map.keySet()
 				.iterator()
@@ -1065,8 +1065,8 @@ public class AnalyzerTest extends BndTestCase {
 	 */
 	public static void testAsm() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "*");
-		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
+		base.put(Constants.IMPORT_PACKAGE, "*");
+		base.put(Constants.EXPORT_PACKAGE, "*;-noimport:=true");
 
 		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(IO.getFile("jar/asm.jar"));
@@ -1097,8 +1097,8 @@ public class AnalyzerTest extends BndTestCase {
 	 */
 	public static void testAsm2() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "*");
-		base.put(Analyzer.EXPORT_PACKAGE, "org.objectweb.asm;name=short, org.objectweb.asm.signature;name=long");
+		base.put(Constants.IMPORT_PACKAGE, "*");
+		base.put(Constants.EXPORT_PACKAGE, "org.objectweb.asm;name=short, org.objectweb.asm.signature;name=long");
 		try (Analyzer h = new Analyzer()) {
 			h.setJar(IO.getFile("jar/asm.jar"));
 			h.setProperties(base);
@@ -1119,8 +1119,8 @@ public class AnalyzerTest extends BndTestCase {
 
 	public static void testDs() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "*");
-		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
+		base.put(Constants.IMPORT_PACKAGE, "*");
+		base.put(Constants.EXPORT_PACKAGE, "*;-noimport:=true");
 		File tmp = IO.getFile("jar/ds.jar");
 		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(tmp);
@@ -1143,8 +1143,8 @@ public class AnalyzerTest extends BndTestCase {
 
 	public static void testDsSkipOsgiImport() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "!org.osgi.*, *");
-		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
+		base.put(Constants.IMPORT_PACKAGE, "!org.osgi.*, *");
+		base.put(Constants.EXPORT_PACKAGE, "*;-noimport:=true");
 		File tmp = IO.getFile("jar/ds.jar");
 		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);
@@ -1170,8 +1170,8 @@ public class AnalyzerTest extends BndTestCase {
 
 	public static void testDsNoExport() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "*");
-		base.put(Analyzer.EXPORT_PACKAGE, "!*");
+		base.put(Constants.IMPORT_PACKAGE, "*");
+		base.put(Constants.EXPORT_PACKAGE, "!*");
 		File tmp = IO.getFile("jar/ds.jar");
 		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);
@@ -1194,8 +1194,8 @@ public class AnalyzerTest extends BndTestCase {
 
 	public static void testClasspath() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "*");
-		base.put(Analyzer.EXPORT_PACKAGE, "*;-noimport:=true");
+		base.put(Constants.IMPORT_PACKAGE, "*");
+		base.put(Constants.EXPORT_PACKAGE, "*;-noimport:=true");
 		File tmp = IO.getFile("jar/ds.jar");
 		File osgi = IO.getFile("jar/osgi.jar");
 		try (Analyzer h = new Analyzer()) {
@@ -1225,8 +1225,8 @@ public class AnalyzerTest extends BndTestCase {
 	 */
 	public static void testSuperfluous() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*");
-		base.put(Analyzer.EXPORT_PACKAGE, "*, com.bar, baz.*");
+		base.put(Constants.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*");
+		base.put(Constants.EXPORT_PACKAGE, "*, com.bar, baz.*");
 		File tmp = IO.getFile("jar/ds.jar");
 		try (Analyzer h = new Analyzer()) {
 			h.setJar(tmp);

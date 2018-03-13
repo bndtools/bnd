@@ -108,6 +108,7 @@ public class BndEditModel {
 	// CONVERTERS
 	private Converter<List<VersionedClause>, String>				buildPathConverter			= new HeaderClauseListConverter<>(
 		new Converter<VersionedClause, HeaderClause>() {
+																										@Override
 																										public VersionedClause convert(
 																											HeaderClause input)
 																											throws IllegalArgumentException {
@@ -128,6 +129,7 @@ public class BndEditModel {
 																									});
 	private Converter<List<VersionedClause>, String>				buildPackagesConverter		= new HeaderClauseListConverter<>(
 		new Converter<VersionedClause, HeaderClause>() {
+																										@Override
 																										public VersionedClause convert(
 																											HeaderClause input)
 																											throws IllegalArgumentException {
@@ -152,6 +154,7 @@ public class BndEditModel {
 		new VersionedClauseConverter());
 	private Converter<String, String>								stringConverter				= new NoopConverter<>();
 	private Converter<Boolean, String>								includedSourcesConverter	= new Converter<Boolean, String>() {
+																									@Override
 																									public Boolean convert(
 																										String string)
 																										throws IllegalArgumentException {
@@ -174,6 +177,7 @@ public class BndEditModel {
 
 	private Converter<List<ExportedPackage>, String>				exportPackageConverter		= new HeaderClauseListConverter<>(
 		new Converter<ExportedPackage, HeaderClause>() {
+																										@Override
 																										public ExportedPackage convert(
 																											HeaderClause input) {
 																											if (input == null)
@@ -196,6 +200,7 @@ public class BndEditModel {
 
 	private Converter<List<ServiceComponent>, String>				serviceComponentConverter	= new HeaderClauseListConverter<>(
 		new Converter<ServiceComponent, HeaderClause>() {
+																										@Override
 																										public ServiceComponent convert(
 																											HeaderClause input)
 																											throws IllegalArgumentException {
@@ -218,6 +223,7 @@ public class BndEditModel {
 																									});
 	private Converter<List<ImportPattern>, String>					importPatternConverter		= new HeaderClauseListConverter<>(
 		new Converter<ImportPattern, HeaderClause>() {
+																										@Override
 																										public ImportPattern convert(
 																											HeaderClause input)
 																											throws IllegalArgumentException {

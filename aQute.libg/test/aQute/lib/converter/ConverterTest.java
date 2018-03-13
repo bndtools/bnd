@@ -82,6 +82,7 @@ public class ConverterTest extends TestCase {
 	public static void hookTest() throws Exception {
 		Converter converter = new Converter().hook(File.class, new Hook() {
 
+			@Override
 			public Object convert(Type dest, Object o) {
 				if (o instanceof String) {
 					return IO.getFile(new File(""), o.toString());
@@ -95,6 +96,7 @@ public class ConverterTest extends TestCase {
 
 		converter.hook(null, new Hook() {
 
+			@Override
 			public Object convert(Type dest, Object o) throws Exception {
 				if (dest instanceof Class) {
 					if (Number.class.isAssignableFrom((Class<?>) dest))

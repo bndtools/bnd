@@ -13,6 +13,7 @@ import junit.framework.TestCase;
 public class ContainerTest extends TestCase {
 	File tmp = IO.getFile("generated/tmp");
 
+	@Override
 	public void setUp() {
 		IO.delete(tmp);
 		tmp.mkdirs();

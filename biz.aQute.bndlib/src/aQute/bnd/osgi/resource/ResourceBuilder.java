@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -210,7 +211,7 @@ public class ResourceBuilder {
 			CapReqBuilder provideBundle = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
 			provideBundle.addAttributesOrDirectives(bsn.getValue());
 			provideBundle.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn.getKey());
-			provideBundle.addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+			provideBundle.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
 			addCapability(provideBundle.buildCapability());
 		}
 
@@ -308,10 +309,10 @@ public class ResourceBuilder {
 			rb.addFilter(filter.toString());
 			rb.addDirective("effective", "active");
 			if (optional)
-				rb.addDirective(ServiceNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
+				rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
 
-			rb.addDirective(ServiceNamespace.REQUIREMENT_CARDINALITY_DIRECTIVE,
-				multiple ? ServiceNamespace.CARDINALITY_MULTIPLE : ServiceNamespace.CARDINALITY_SINGLE);
+			rb.addDirective(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE,
+				multiple ? Namespace.CARDINALITY_MULTIPLE : Namespace.CARDINALITY_SINGLE);
 
 			addRequirement(rb);
 		}
@@ -463,7 +464,7 @@ public class ResourceBuilder {
 			.append(bsn)
 			.append(")");
 
-		String v = attrs.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+		String v = attrs.get(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 		if (v != null && VersionRange.isOSGiVersionRange(v)) {
 			VersionRange range = VersionRange.parseOSGiVersionRange(v);
 			filter.insert(0, "(&");
@@ -479,13 +480,13 @@ public class ResourceBuilder {
 	Object toBundleVersionFilter(VersionRange range) {
 		return range.toFilter()
 			.replaceAll(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE,
-				HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+				AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 	}
 
 	void addFragmentHostCap(String bsn, aQute.bnd.version.Version version) throws Exception {
 		CapReqBuilder rbb = new CapReqBuilder(resource, HostNamespace.HOST_NAMESPACE);
 		rbb.addAttribute(HostNamespace.HOST_NAMESPACE, bsn);
-		rbb.addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+		rbb.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
 		addCapability(rbb.buildCapability());
 	}
 
@@ -500,11 +501,11 @@ public class ResourceBuilder {
 			.append(bsn)
 			.append(")");
 
-		String v = attrs.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+		String v = attrs.get(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 		if (v != null && VersionRange.isOSGiVersionRange(v)) {
 			VersionRange range = VersionRange.parseOSGiVersionRange(v);
 			filter.insert(0, "(&");
-			filter.append(range.toFilter(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
+			filter.append(range.toFilter(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
 			filter.append(")");
 		}
 		rbb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
@@ -741,154 +742,192 @@ public class ResourceBuilder {
 			return null;
 		}
 
+		@Override
 		public ResourceBuilder addCapability(Capability capability) throws Exception {
 			return ResourceBuilder.this.addCapability(capability);
 		}
 
+		@Override
 		public ResourceBuilder addCapability(CapReqBuilder builder) {
 			return ResourceBuilder.this.addCapability(builder);
 		}
 
+		@Override
 		public int hashCode() {
 			return ResourceBuilder.this.hashCode();
 		}
 
+		@Override
 		public ResourceBuilder addRequirement(Requirement requirement) throws Exception {
 			return ResourceBuilder.this.addRequirement(requirement);
 		}
 
+		@Override
 		public ResourceBuilder addRequirement(CapReqBuilder builder) {
 			return ResourceBuilder.this.addRequirement(builder);
 		}
 
+		@Override
 		public List<Capability> getCapabilities() {
 			return Collections.unmodifiableList(ResourceBuilder.this.getCapabilities());
 		}
 
+		@Override
 		public List<Requirement> getRequirements() {
 			return Collections.unmodifiableList(ResourceBuilder.this.getRequirements());
 		}
 
+		@Override
 		public boolean addManifest(Domain manifest) throws Exception {
 			return false;
 		}
 
+		@Override
 		public boolean equals(Object obj) {
 			return ResourceBuilder.this.equals(obj);
 		}
 
+		@Override
 		public void addExportServices(Parameters exportServices) throws Exception {
 			ResourceBuilder.this.addExportServices(exportServices);
 		}
 
+		@Override
 		public void addImportServices(Parameters importServices) {
 			ResourceBuilder.this.addImportServices(importServices);
 		}
 
+		@Override
 		public RequirementBuilder getNativeCode(String header) throws Exception {
 			return ResourceBuilder.this.getNativeCode(header);
 		}
 
+		@Override
 		public String toString() {
 			return ResourceBuilder.this.toString();
 		}
 
+		@Override
 		public void addRequireBundles(Parameters requireBundle) throws Exception {
 			ResourceBuilder.this.addRequireBundles(requireBundle);
 		}
 
+		@Override
 		public void addRequireBundle(String bsn, VersionRange range) throws Exception {
 			ResourceBuilder.this.addRequireBundle(bsn, range);
 		}
 
+		@Override
 		public void addRequireBundle(String bsn, Attrs attrs) throws Exception {
 			ResourceBuilder.this.addRequireBundle(bsn, attrs);
 		}
 
+		@Override
 		public void addFragmentHost(String bsn, Attrs attrs) throws Exception {
 			ResourceBuilder.this.addFragmentHost(bsn, attrs);
 		}
 
+		@Override
 		public void addRequireCapabilities(Parameters required) throws Exception {
 			ResourceBuilder.this.addRequireCapabilities(required);
 		}
 
+		@Override
 		public void addRequireCapability(String namespace, String name, Attrs attrs) throws Exception {
 			ResourceBuilder.this.addRequireCapability(namespace, name, attrs);
 		}
 
+		@Override
 		public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
 			return ResourceBuilder.this.addProvideCapabilities(capabilities);
 		}
 
+		@Override
 		public List<Capability> addProvideCapabilities(String clauses) throws Exception {
 			return ResourceBuilder.this.addProvideCapabilities(clauses);
 		}
 
+		@Override
 		public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {
 			return ResourceBuilder.this.addProvideCapability(namespace, attrs);
 		}
 
+		@Override
 		public void addExportPackages(Parameters exports) throws Exception {
 			ResourceBuilder.this.addExportPackages(exports);
 		}
 
+		@Override
 		public void addEE(EE ee) throws Exception {
 			ResourceBuilder.this.addEE(ee);
 		}
 
+		@Override
 		public void addExportPackage(String packageName, Attrs attrs) throws Exception {
 			ResourceBuilder.this.addExportPackage(packageName, attrs);
 		}
 
+		@Override
 		public void addImportPackages(Parameters imports) throws Exception {
 			ResourceBuilder.this.addImportPackages(imports);
 		}
 
+		@Override
 		public Requirement addImportPackage(String pname, Attrs attrs) throws Exception {
 			return ResourceBuilder.this.addImportPackage(pname, attrs);
 		}
 
+		@Override
 		public void addExecutionEnvironment(EE ee) throws Exception {
 			ResourceBuilder.this.addExecutionEnvironment(ee);
 		}
 
+		@Override
 		public void addAllExecutionEnvironments(EE ee) throws Exception {
 			ResourceBuilder.this.addAllExecutionEnvironments(ee);
 		}
 
+		@Override
 		public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) throws Exception {
 			ResourceBuilder.this.copyCapabilities(ignoreNamespaces, r);
 		}
 
+		@Override
 		public void addCapabilities(List<Capability> capabilities) throws Exception {
 			ResourceBuilder.this.addCapabilities(capabilities);
 		}
 
+		@Override
 		public void addRequirement(List<Requirement> requirements) throws Exception {
 			ResourceBuilder.this.addRequirement(requirements);
 		}
 
+		@Override
 		public void addRequirements(List<Requirement> requires) throws Exception {
 			ResourceBuilder.this.addRequirements(requires);
 		}
 
+		@Override
 		public List<Capability> findCapabilities(String ns, String filter) throws Exception {
 			return ResourceBuilder.this.findCapabilities(ns, filter);
 		}
 
+		@Override
 		public Map<Capability, Capability> from(Resource bundle) throws Exception {
 			return ResourceBuilder.this.from(bundle);
 		}
 
+		@Override
 		public Reporter getReporter() {
 			return ResourceBuilder.this.getReporter();
 		}
 
+		@Override
 		public void addContentCapability(URI uri, String sha256, long length, String mime) throws Exception {
 			ResourceBuilder.this.addContentCapability(uri, sha256, length, mime);
 		}
 
+		@Override
 		public boolean addFile(File file, URI uri) throws Exception {
 			return false;
 		}

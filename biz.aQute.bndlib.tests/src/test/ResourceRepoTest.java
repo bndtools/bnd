@@ -25,6 +25,7 @@ public class ResourceRepoTest extends TestCase {
 	ResourceRepositoryImpl	repoImpl	= new ResourceRepositoryImpl();
 	File					tmp			= new File("tmp");
 
+	@Override
 	public void setUp() throws Exception {
 		IO.delete(tmp);
 		tmp.mkdirs();
@@ -36,6 +37,7 @@ public class ResourceRepoTest extends TestCase {
 
 	}
 
+	@Override
 	public void tearDown() throws Exception {
 		IO.delete(tmp);
 	}

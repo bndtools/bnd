@@ -38,6 +38,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		this.base = base;
 	}
 
+	@Override
 	public TaggedData fetch(String path, File file) throws Exception {
 		URL url = new URL(base + path);
 		int n = 0;
@@ -88,6 +89,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 			}
 	}
 
+	@Override
 	public void store(File file, String path) throws Exception {
 
 		int n = 0;
@@ -126,6 +128,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 
 	}
 
+	@Override
 	public boolean delete(String path) throws Exception {
 		URL url = new URL(base + path);
 		TaggedData go = client.build()
@@ -150,6 +153,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		throw new HttpRequestException(go);
 	}
 
+	@Override
 	public void close() {
 
 	}
@@ -159,6 +163,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		return "RemoteRepo [base=" + base + ", id=" + id + "]";
 	}
 
+	@Override
 	public String getUser() throws Exception {
 		return client.getUserFor(base);
 	}
@@ -168,6 +173,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 		return new URI(base + remotePath);
 	}
 
+	@Override
 	public boolean isFile() {
 		return false;
 	}

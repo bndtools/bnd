@@ -44,10 +44,12 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 			this.n = n;
 		}
 
+		@Override
 		public boolean hasNext() {
 			return n < end;
 		}
 
+		@Override
 		public T next() throws NoSuchElementException {
 			if (!hasNext()) {
 				throw new NoSuchElementException("");
@@ -55,33 +57,40 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 			return list[n++];
 		}
 
+		@Override
 		public boolean hasPrevious() {
 			return n > start;
 		}
 
+		@Override
 		public T previous() {
 			assert n > start;
 			return list[--n];
 		}
 
+		@Override
 		public int nextIndex() {
 			return (n - start);
 		}
 
+		@Override
 		public int previousIndex() {
 			return (n - 1) - start;
 		}
 
+		@Override
 		@Deprecated
 		public void remove() {
 			throw new UnsupportedOperationException("Immutable");
 		}
 
+		@Override
 		@Deprecated
 		public void set(T e) {
 			throw new UnsupportedOperationException("Immutable");
 		}
 
+		@Override
 		@Deprecated
 		public void add(T e) {
 			throw new UnsupportedOperationException("Immutable");
@@ -158,14 +167,17 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		comparator = null;
 	}
 
+	@Override
 	public int size() {
 		return end - start;
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return start == end;
 	}
 
+	@Override
 	public boolean contains(Object o) {
 		assert type == null || type.isInstance(o);
 		for (int i = start; i < end; i++) {
@@ -175,10 +187,12 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return false;
 	}
 
+	@Override
 	public Iterator<T> iterator() {
 		return new It(start);
 	}
 
+	@Override
 	public Object[] toArray() {
 		if (list == null) {
 			return new Object[0];
@@ -193,6 +207,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return toArray(new Object[0]);
 	}
 
+	@Override
 	public <X> X[] toArray(X[] a) {
 		int size = size();
 
@@ -206,14 +221,17 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return a;
 	}
 
+	@Override
 	public boolean add(T e) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	public boolean remove(Object o) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	public boolean containsAll(Collection<?> c) {
 		if (c.isEmpty())
 			return true;
@@ -230,22 +248,27 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return true;
 	}
 
+	@Override
 	public boolean addAll(Collection<? extends T> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	public boolean retainAll(Collection<?> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	public boolean removeAll(Collection<?> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	public void clear() {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	public Comparator<? super T> comparator() {
 		return comparator;
 	}
@@ -261,6 +284,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return start > 0 && end < list.length;
 	}
 
+	@Override
 	public SortedList<T> subSet(T fromElement, T toElement) {
 		int start = find(fromElement);
 		int end = find(toElement);
@@ -274,6 +298,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return subList(start, end);
 	}
 
+	@Override
 	public int indexOf(Object o) {
 		assert type == null || type.isInstance(o);
 
@@ -284,6 +309,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return -1;
 	}
 
+	@Override
 	public int lastIndexOf(Object o) {
 		assert type == null || type.isInstance(o);
 
@@ -313,33 +339,39 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return i;
 	}
 
+	@Override
 	public SortedSet<T> tailSet(T fromElement) {
 		int i = find(fromElement);
 		return subList(i - start, end - start);
 	}
 
+	@Override
 	public SortedList<T> headSet(T toElement) {
 		int i = find(toElement);
 		return subList(start, i - start);
 	}
 
+	@Override
 	public T first() {
 		if (isEmpty())
 			throw new NoSuchElementException("first");
 		return get(0);
 	}
 
+	@Override
 	public T last() {
 		if (isEmpty())
 			throw new NoSuchElementException("last");
 		return get(size() - 1);
 	}
 
+	@Override
 	@Deprecated
 	public boolean addAll(int index, Collection<? extends T> c) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	public T get(int index) {
 		index += start;
 		if (index >= end)
@@ -348,29 +380,35 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 		return list[index];
 	}
 
+	@Override
 	@Deprecated
 	public T set(int index, T element) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	@Deprecated
 	public void add(int index, T element) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	@Deprecated
 	public T remove(int index) {
 		throw new UnsupportedOperationException("Immutable");
 	}
 
+	@Override
 	public ListIterator<T> listIterator() {
 		return new It(start);
 	}
 
+	@Override
 	public ListIterator<T> listIterator(int index) {
 		return new It(index + start);
 	}
 
+	@Override
 	public SortedList<T> subList(int fromIndex, int toIndex) {
 		fromIndex += start;
 		toIndex += start;

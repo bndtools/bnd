@@ -170,6 +170,7 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 	 * and if so we need to set the permissions or remove it when it is
 	 * uninstalled.
 	 */
+	@Override
 	public void bundleChanged(BundleEvent event) {
 		Bundle bundle = event.getBundle();
 		if (bundle.getBundleId() == 0) /* ignore the system bundle */

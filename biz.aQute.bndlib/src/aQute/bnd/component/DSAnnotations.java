@@ -85,6 +85,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 	Version minVersion;
 
+	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS, "*"));
 		if (header.size() == 0)

@@ -68,6 +68,7 @@ public class Revision implements Comparable<Revision> {
 		return path + "/maven-metadata-" + id + ".xml";
 	}
 
+	@Override
 	public String toString() {
 		return program.toString() + ":" + version;
 	}

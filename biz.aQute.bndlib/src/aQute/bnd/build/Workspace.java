@@ -831,6 +831,7 @@ public class Workspace extends Processor {
 	 * Report details of this workspace
 	 */
 
+	@Override
 	public void report(Map<String, Object> table) throws Exception {
 		super.report(table);
 		table.put("Workspace", toString());
@@ -884,6 +885,7 @@ public class Workspace extends Processor {
 		return null;
 	}
 
+	@Override
 	public void close() {
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(getBase());

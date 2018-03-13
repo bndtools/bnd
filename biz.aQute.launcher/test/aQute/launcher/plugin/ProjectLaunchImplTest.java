@@ -12,6 +12,7 @@ public class ProjectLaunchImplTest extends TestCase {
 	private Workspace	ws;
 	private File		tmp;
 
+	@Override
 	protected void setUp() throws Exception {
 		tmp = new File("generated/tmp/test/" + getName());
 		tmp.mkdirs();
@@ -19,6 +20,7 @@ public class ProjectLaunchImplTest extends TestCase {
 		ws = new Workspace(tmp);
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		ws.close();
 		IO.delete(tmp);

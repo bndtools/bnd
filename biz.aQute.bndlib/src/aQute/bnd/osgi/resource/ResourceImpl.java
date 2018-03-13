@@ -51,6 +51,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		capabilityMap = prepare;
 	}
 
+	@Override
 	public List<Capability> getCapabilities(String namespace) {
 		List<Capability> caps = (namespace != null) ? capabilityMap.get(namespace) : allCapabilities;
 
@@ -75,6 +76,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		requirementMap = prepare;
 	}
 
+	@Override
 	public List<Requirement> getRequirements(String namespace) {
 		List<Requirement> reqs = (namespace != null) ? requirementMap.get(namespace) : allRequirements;
 

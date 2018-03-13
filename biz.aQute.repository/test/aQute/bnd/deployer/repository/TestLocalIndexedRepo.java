@@ -17,6 +17,7 @@ public class TestLocalIndexedRepo extends TestCase {
 	private NanoHTTPD	httpd;
 	private int			httpdPort;
 
+	@Override
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
 		outputDir = IO.getFile("generated/tmp/test/" + getName());

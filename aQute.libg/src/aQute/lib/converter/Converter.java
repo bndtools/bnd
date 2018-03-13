@@ -546,6 +546,7 @@ public class Converter {
 			interfc
 		}, new InvocationHandler() {
 
+			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				Object o = properties.get(method.getName());
 				if (o == null)

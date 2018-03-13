@@ -48,6 +48,7 @@ public class SnapshotReleaser extends Releaser {
 		}
 	}
 
+	@Override
 	public void updateMetadata() throws Exception {
 		revisionMetadata.group = revision.group;
 		revisionMetadata.artifact = revision.artifact;
@@ -72,14 +73,17 @@ public class SnapshotReleaser extends Releaser {
 		super.updateMetadata();
 	}
 
+	@Override
 	protected Archive resolve(Archive archive) throws Exception {
 		Archive resolved = archive.resolveSnapshot(snapshotVersion);
 		return resolved;
 	}
 
+	@Override
 	protected boolean isUpdateProgramMetadata() {
 		return true;
 	}
 
+	@Override
 	public void sign(Archive archive, File f) throws Exception {}
 }

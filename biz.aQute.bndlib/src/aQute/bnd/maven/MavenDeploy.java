@@ -36,6 +36,7 @@ public class MavenDeploy implements Deploy, Plugin {
 	String						passphrase;
 	Reporter					reporter;
 
+	@Override
 	public void setProperties(Map<String, String> map) {
 		repository = map.get("repository");
 		url = map.get("url");
@@ -49,12 +50,14 @@ public class MavenDeploy implements Deploy, Plugin {
 			throw new IllegalArgumentException("MavenDeploy plugin must get a repository name");
 	}
 
+	@Override
 	public void setReporter(Reporter processor) {
 		this.reporter = processor;
 	}
 
 	/**
 	 */
+	@Override
 	public boolean deploy(Project project, String jarName, InputStream jarStream) throws Exception {
 		Parameters deploy = project.parseHeader(project.getProperty(Constants.DEPLOY));
 

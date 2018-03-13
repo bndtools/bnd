@@ -78,6 +78,7 @@ public class CalltreeTest extends TestCase {
 			return null;
 		}
 
+		@Override
 		public void close() throws IOException {}
 	}
 

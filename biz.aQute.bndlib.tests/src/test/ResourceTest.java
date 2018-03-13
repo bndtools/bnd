@@ -10,10 +10,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
@@ -185,9 +187,9 @@ public class ResourceTest extends TestCase {
 		Map<String, Object> attributes = capabilities.get(0)
 			.getAttributes();
 		assertTrue(attributes.containsKey(HostNamespace.HOST_NAMESPACE));
-		assertTrue(attributes.containsKey(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
+		assertTrue(attributes.containsKey(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
 		assertEquals("demo", attributes.get(HostNamespace.HOST_NAMESPACE));
-		assertNotNull(attributes.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
+		assertNotNull(attributes.get(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
 		assertEquals(0, resource.getRequirements(HostNamespace.HOST_NAMESPACE)
 			.size());
 	}
@@ -204,8 +206,8 @@ public class ResourceTest extends TestCase {
 		assertEquals(1, requirements.size());
 		Map<String, String> directives = requirements.get(0)
 			.getDirectives();
-		assertTrue(directives.containsKey(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE));
-		String filter = directives.get(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE);
+		assertTrue(directives.containsKey(Namespace.REQUIREMENT_FILTER_DIRECTIVE));
+		String filter = directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 		assertEquals("(&(osgi.wiring.host=demo)(&(bundle-version>=1.0.0)(!(bundle-version>=1.0.1))))", filter);
 	}
 
@@ -224,7 +226,7 @@ public class ResourceTest extends TestCase {
 		rb.addManifest(Domain.domain(IO.getFile("../demo-fragment/generated/demo-fragment.jar")));
 		Attrs attrs = new Attrs();
 		attrs.put("bnd.workspace.project", "demo-fragment");
-		rb.addCapability(CapabilityBuilder.createCapReqBuilder("bnd.workspace.project", attrs));
+		rb.addCapability(CapReqBuilder.createCapReqBuilder("bnd.workspace.project", attrs));
 		Resource resource = rb.build();
 		VersionedClause versionClause = ResourceUtils.toVersionClause(resource, "[===,==+)");
 		StringBuilder sb = new StringBuilder();

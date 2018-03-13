@@ -546,12 +546,14 @@ public class ProjectBuilder extends Builder {
 	 * @throws Exception
 	 */
 
+	@Override
 	public void report(Map<String, Object> table) throws Exception {
 		super.report(table);
 		table.put("Baseline repo", getBaselineRepo());
 		table.put("Release repo", getReleaseRepo());
 	}
 
+	@Override
 	public String toString() {
 		return getBsn();
 	}
@@ -583,6 +585,7 @@ public class ProjectBuilder extends Builder {
 	 * Add some extra stuff to the builds() method like exporting.
 	 */
 
+	@Override
 	public Jar[] builds() throws Exception {
 		project.exportedPackages.clear();
 		project.importedPackages.clear();

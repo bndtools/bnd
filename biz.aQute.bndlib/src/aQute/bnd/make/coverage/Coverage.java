@@ -77,6 +77,7 @@ public class Coverage {
 
 	private static Map<MethodDef, List<MethodDef>> buildCatalog(Collection<Clazz> sources) throws Exception {
 		final Map<MethodDef, List<MethodDef>> catalog = new TreeMap<>(new Comparator<MethodDef>() {
+			@Override
 			public int compare(MethodDef a, MethodDef b) {
 				return a.getName()
 					.compareTo(b.getName());

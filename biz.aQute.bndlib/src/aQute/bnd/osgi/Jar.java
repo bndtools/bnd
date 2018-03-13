@@ -790,6 +790,7 @@ public class Jar implements Closeable {
 		return dupl;
 	}
 
+	@Override
 	public void close() {
 		this.closed = true;
 		IO.close(zipFile);

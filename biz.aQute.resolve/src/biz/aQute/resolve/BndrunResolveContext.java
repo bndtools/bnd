@@ -301,6 +301,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	 * -runpath and it is also used for -distro.
 	 */
 
+	@Override
 	public void loadPath(ResourceBuilder system, String path, String what) throws Exception {
 
 		if (project != null) {
@@ -504,6 +505,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES), project);
 	}
 
+	@Override
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
 		if (candidates.size() == 0)
 			return;

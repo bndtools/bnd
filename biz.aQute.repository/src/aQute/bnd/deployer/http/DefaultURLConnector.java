@@ -36,6 +36,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	private Reporter			reporter				= null;
 	private Registry			registry				= null;
 
+	@Override
 	public InputStream connect(URL url) throws IOException {
 		if (url == null)
 			throw new IOException("Can't connect to null URL");
@@ -43,18 +44,22 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 		return data.getInputStream();
 	}
 
+	@Override
 	public void setProperties(Map<String, String> map) {
 		disableServerVerify = "true".equalsIgnoreCase(map.get(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY));
 	}
 
+	@Override
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
 
+	@Override
 	public TaggedData connectTagged(URL url) throws IOException {
 		return connectTagged(url, null);
 	}
 
+	@Override
 	public TaggedData connectTagged(URL url, String tag) throws IOException {
 		return connectTagged(url, tag, new HashSet<>());
 	}
@@ -143,6 +148,7 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 		return new ProgressWrappingStream(inputStream, name, size, progressPlugins);
 	}
 
+	@Override
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}

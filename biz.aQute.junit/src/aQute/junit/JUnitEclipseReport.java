@@ -50,10 +50,12 @@ public class JUnitEclipseReport implements TestReporter {
 		out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), UTF_8));
 	}
 
+	@Override
 	public void setup(Bundle fw, Bundle targetBundle) {
 		this.targetBundle = targetBundle;
 	}
 
+	@Override
 	public void begin(List<Test> tests, int realcount) {
 		this.tests = tests;
 		message("%TESTC  ", realcount + " v2");
@@ -61,17 +63,20 @@ public class JUnitEclipseReport implements TestReporter {
 		startTime = System.currentTimeMillis();
 	}
 
+	@Override
 	public void end() {
 		message("%RUNTIME", "" + (System.currentTimeMillis() - startTime));
 		out.flush();
 		out.close();
 	}
 
+	@Override
 	public void addError(Test test, Throwable t) {
 		message("%ERROR  ", test);
 		trace(t);
 	}
 
+	@Override
 	public void addFailure(Test test, AssertionFailedError t) {
 		message("%FAILED ", test);
 		trace(t);
@@ -84,10 +89,12 @@ public class JUnitEclipseReport implements TestReporter {
 		message("%TRACEE ", "");
 	}
 
+	@Override
 	public void endTest(Test test) {
 		message("%TESTE  ", test);
 	}
 
+	@Override
 	public void startTest(Test test) {
 		this.current = test;
 		message("%TESTS  ", test);
@@ -140,6 +147,7 @@ public class JUnitEclipseReport implements TestReporter {
 		}
 	}
 
+	@Override
 	public void aborted() {
 		end();
 	}
