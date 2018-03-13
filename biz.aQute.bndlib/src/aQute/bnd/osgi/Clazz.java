@@ -8,6 +8,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -155,6 +156,7 @@ public class Clazz {
 		ABSTRACT,
 		PUBLIC,
 		ANNOTATED,
+		INDIRECTLY_ANNOTATED,
 		RUNTIMEANNOTATIONS,
 		CLASSANNOTATIONS,
 		DEFAULT_CONSTRUCTOR;
@@ -199,7 +201,7 @@ public class Clazz {
 	}
 
 	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
-		QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED);
+		QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED, QUERY.INDIRECTLY_ANNOTATED);
 
 	/**
 	 * <pre>
@@ -1958,6 +1960,26 @@ public class Clazz {
 				for (TypeRef annotation : annotations) {
 					if (instr.matches(annotation.getFQN()))
 						return !instr.isNegated();
+				}
+
+				return false;
+
+			case INDIRECTLY_ANNOTATED :
+				if (annotations == null)
+					return false;
+				Deque<TypeRef> stack = new ArrayDeque<>();
+				Set<Clazz> done = new HashSet<>();
+				done.add(this);
+				annotations.forEach(stack::push);
+				TypeRef annotation;
+				while ((annotation = stack.poll()) != null) {
+					if (instr.matches(annotation.getFQN()))
+						return !instr.isNegated();
+					Clazz annoClazz = analyzer.findClass(annotation);
+					if (annoClazz != null && done.add(annoClazz)) {
+						if (annoClazz.annotations != null)
+							annoClazz.annotations.forEach(stack::push);
+					}
 				}
 
 				return false;
