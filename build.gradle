@@ -3,23 +3,6 @@
  */
 
 import aQute.lib.io.IO
-import aQute.bnd.osgi.Constants
-
-/*
- * Compute the build time stamp. 
- * If the git workspace is clean, the build time is the time of the head commit.
- * If the git workspace is dirty, the build time is the current time.
- */
-gradle.projectsEvaluated {
-  if ('git diff --no-ext-diff --quiet'.execute().waitFor() == 0) {
-    bndWorkspace.setProperty(Constants.TSTAMP, 'git show --no-patch --format=%ct000'.execute().text.trim())
-  } else {
-    bndWorkspace.setProperty(Constants.TSTAMP, Long.toString(System.currentTimeMillis()))
-  }
-}
-gradle.buildFinished {
-  bndWorkspace.unsetProperty(Constants.TSTAMP)
-}
 
 /* Configure the subprojects */
 subprojects {

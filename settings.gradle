@@ -2,6 +2,8 @@
  * Master Gradle initialization script
  */
 
+import aQute.bnd.osgi.Constants
+
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
   repositories {
@@ -28,8 +30,8 @@ buildscript {
   }
   /* Add bnd gradle plugin to buildscript classpath of rootProject */
   def bndPlugin = files(configurations.classpath.files)
-  gradle.projectsLoaded { gradle ->
-    gradle.rootProject.buildscript {
+  gradle.rootProject {
+    buildscript {
       dependencies {
         classpath bndPlugin
       }
@@ -39,5 +41,16 @@ buildscript {
 
 gradle.ext.bndWorkspaceConfigure = { workspace ->
   workspace.setProperty('bnd_repourl', uri(bnd_repourl).toString())
+  /*
+   * Compute the build time stamp. 
+   * If the git workspace is clean, the build time is the time of the head commit.
+   * If the git workspace is dirty, the build time is the current time.
+   */
+  if ('git diff --no-ext-diff --quiet'.execute().waitFor() == 0) {
+    workspace.setProperty(Constants.TSTAMP, 'git show --no-patch --format=%ct000'.execute().text.trim())
+  } else {
+    workspace.setProperty(Constants.TSTAMP, Long.toString(System.currentTimeMillis()))
+  }
 }
+
 apply plugin: 'biz.aQute.bnd.workspace'
