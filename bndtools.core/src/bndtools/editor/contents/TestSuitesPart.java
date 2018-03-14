@@ -82,8 +82,10 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
     private TableViewer viewer;
 
-    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
-    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
+    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
+        .createImage();
+    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
+        .createImage();
 
     public TestSuitesPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -102,12 +104,18 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         section.setTextClient(toolbar);
 
         final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
-        addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        addItem.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_OBJ_ADD));
         addItem.setToolTipText(Messages.TestSuitesPart_add);
 
         final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
-        removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-        removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        removeItem.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE));
+        removeItem.setDisabledImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
         removeItem.setToolTipText(Messages.TestSuitesPart_remove);
         removeItem.setEnabled(false);
 
@@ -150,7 +158,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             }
         });
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                ResourceTransfer.getInstance()
+            ResourceTransfer.getInstance()
         }, new TestSuiteListDropAdapter());
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -234,7 +242,8 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
             }
         };
         IFormPage page = (IFormPage) getManagedForm().getContainer();
-        IWorkbenchWindow window = page.getEditorSite().getWorkbenchWindow();
+        IWorkbenchWindow window = page.getEditorSite()
+            .getWorkbenchWindow();
 
         // Prepare the package lister from the Java project
         IJavaProject javaProject = getJavaProject();
@@ -244,7 +253,7 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
         }
 
         IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
-                javaProject
+            javaProject
         });
         JavaSearchScopeTestCaseLister testCaseLister = new JavaSearchScopeTestCaseLister(searchScope, window);
 
@@ -379,7 +388,8 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 
         @Override
         public boolean validateDrop(Object target, int operation, TransferData transferType) {
-            return ResourceTransfer.getInstance().isSupportedType(transferType);
+            return ResourceTransfer.getInstance()
+                .isSupportedType(transferType);
         }
 
         @Override
@@ -404,14 +414,16 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
                             if (javaElement instanceof IType) {
                                 IType type = (IType) javaElement;
                                 if (type.isClass() && Flags.isPublic(type.getFlags())) {
-                                    String typeName = type.getPackageFragment().getElementName() + "." + type.getElementName(); //$NON-NLS-1$
+                                    String typeName = type.getPackageFragment()
+                                        .getElementName() + "." + type.getElementName(); //$NON-NLS-1$
                                     addedNames.add(typeName);
                                 }
                             } else if (javaElement instanceof ICompilationUnit) {
                                 IType[] allTypes = ((ICompilationUnit) javaElement).getAllTypes();
                                 for (IType type : allTypes) {
                                     if (type.isClass() && Flags.isPublic(type.getFlags())) {
-                                        String typeName = type.getPackageFragment().getElementName() + "." + type.getElementName(); //$NON-NLS-1$
+                                        String typeName = type.getPackageFragment()
+                                            .getElementName() + "." + type.getElementName(); //$NON-NLS-1$
                                         addedNames.add(typeName);
                                     }
                                 }
@@ -441,7 +453,8 @@ public class TestSuitesPart extends SectionPart implements PropertyChangeListene
 }
 
 class TestSuiteLabelProvider extends StyledCellLabelProvider {
-    private final Image suiteImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tsuite.gif").createImage();
+    private final Image suiteImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tsuite.gif")
+        .createImage();
 
     // private Image testImg =
     // AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID,

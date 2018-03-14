@@ -1,6 +1,7 @@
 package org.bndtools.builder;
 
 import java.io.File;
+
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
@@ -64,8 +65,10 @@ public class ComponentMarker {
                     if (pkgRootResource == null) {
                         continue;
                     }
-                    File pkgRootFile = pkgRootResource.getLocation().toFile();
-                    boolean pkgInSourcePath = model.getSourcePath().contains(pkgRootFile);
+                    File pkgRootFile = pkgRootResource.getLocation()
+                        .toFile();
+                    boolean pkgInSourcePath = model.getSourcePath()
+                        .contains(pkgRootFile);
                     if (pkgInSourcePath) {
                         for (IJavaElement child : pkgRoot.getChildren()) {
                             IPackageFragment pkg = (IPackageFragment) child;
@@ -89,14 +92,16 @@ public class ComponentMarker {
     }
 
     public static void updateComponentDecorators() {
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                IDecoratorManager idm = PlatformUI.getWorkbench().getDecoratorManager();
-                idm.update("bndtools.componentDecorator");
-                idm.update("bndtools.componentPackageDecorator");
-            }
-        });
+        Display.getDefault()
+            .asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    IDecoratorManager idm = PlatformUI.getWorkbench()
+                        .getDecoratorManager();
+                    idm.update("bndtools.componentDecorator");
+                    idm.update("bndtools.componentPackageDecorator");
+                }
+            });
     }
 
     private static void parseChildrenForComponents(IPackageFragment pkg) throws JavaModelException, CoreException {
@@ -107,7 +112,8 @@ public class ComponentMarker {
                     continue;
                 }
 
-                compUnit.getResource().deleteMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE);
+                compUnit.getResource()
+                    .deleteMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE);
                 findAndMarkComponentAnnotations(compUnit);
 
             }
@@ -124,15 +130,18 @@ public class ComponentMarker {
             for (IAnnotation annot : t.getAnnotations()) {
                 if ("Component".equals(annot.getElementName())) {
                     if (document == null)
-                        document = new Document(c.getBuffer().getContents());
+                        document = new Document(c.getBuffer()
+                            .getContents());
                     found = true;
                     key = getNameFromComponent(annot);
 
                     int lineNumber;
                     try {
-                        lineNumber = document.getLineOfOffset(t.getSourceRange().getOffset()) + 1;
+                        lineNumber = document.getLineOfOffset(t.getSourceRange()
+                            .getOffset()) + 1;
                         String message = key == null ? "OSGi Component" : key;
-                        IMarker marker = c.getResource().createMarker(BndtoolsConstants.MARKER_COMPONENT);
+                        IMarker marker = c.getResource()
+                            .createMarker(BndtoolsConstants.MARKER_COMPONENT);
                         marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
                         marker.setAttribute(IMarker.MESSAGE, message);
                         marker.setAttribute(IMarker.LINE_NUMBER, lineNumber);
@@ -148,7 +157,8 @@ public class ComponentMarker {
             }
         }
         if (!found) {
-            c.getResource().deleteMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE);
+            c.getResource()
+                .deleteMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE);
 
         }
 
@@ -168,7 +178,10 @@ public class ComponentMarker {
     private static boolean isComponentInImports(ICompilationUnit unit) throws JavaModelException {
         boolean annotationInImports = false;
         for (IImportDeclaration importDecl : unit.getImports()) {
-            annotationInImports = importDecl.getElementName().equals(ANNOTATION_COMPONENT_FQN) || importDecl.getElementName().equals(ANNOTATION_COMPONENT_PACKAGE + ".*");
+            annotationInImports = importDecl.getElementName()
+                .equals(ANNOTATION_COMPONENT_FQN)
+                || importDecl.getElementName()
+                    .equals(ANNOTATION_COMPONENT_PACKAGE + ".*");
 
             if (annotationInImports) {
                 break;

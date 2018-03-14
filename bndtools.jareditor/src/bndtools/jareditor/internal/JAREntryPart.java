@@ -59,10 +59,11 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     public JAREntryPart(IEditorPart editor, Composite composite, FormToolkit toolkit) {
         this.editor = editor;
 
-        SortedMap<String,Charset> charsetMap = Charset.availableCharsets();
+        SortedMap<String, Charset> charsetMap = Charset.availableCharsets();
         charsets = new String[charsetMap.size()];
         int i = 0;
-        for (Iterator<String> iter = charsetMap.keySet().iterator(); iter.hasNext(); i++) {
+        for (Iterator<String> iter = charsetMap.keySet()
+            .iterator(); iter.hasNext(); i++) {
             charsets[i] = iter.next();
         }
         setSelectedCharset(DEFAULT_CHARSET);
@@ -220,7 +221,7 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     }
 
     private static final String pseudo[] = {
-            "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"
+        "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"
     };
 
     private static SubMonitor createProgressMonitor(ZipEntry entry, long limit, IProgressMonitor monitor) {

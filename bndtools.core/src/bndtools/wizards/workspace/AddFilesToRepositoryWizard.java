@@ -31,7 +31,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
 
     private RepositoryPlugin repository;
     private final File[] files;
-    private List<Pair<String,String>> selectedBundles;
+    private List<Pair<String, String>> selectedBundles;
 
     private final LocalRepositorySelectionPage repoSelectionPage;
     private final AddFilesToRepositoryWizardPage fileSelectionPage;
@@ -76,7 +76,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Failed to install one or more bundles", null);
 
         List<File> files = fileSelectionPage.getFiles();
-        selectedBundles = new LinkedList<Pair<String,String>>();
+        selectedBundles = new LinkedList<Pair<String, String>>();
         monitor.beginTask("Processing files", files.size());
         for (File file : files) {
             monitor.subTask(file.getName());
@@ -84,7 +84,8 @@ public class AddFilesToRepositoryWizard extends Wizard {
             try (Jar jar = new Jar(file)) {
                 jar.setDoNotTouchManifest();
 
-                Attributes mainAttribs = jar.getManifest().getMainAttributes();
+                Attributes mainAttribs = jar.getManifest()
+                    .getMainAttributes();
                 String bsn = BundleUtils.getBundleSymbolicName(mainAttribs);
                 String version = mainAttribs.getValue(Constants.BUNDLE_VERSION);
                 if (version == null)
@@ -97,7 +98,8 @@ public class AddFilesToRepositoryWizard extends Wizard {
 
             try {
                 RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(IO.stream(file)), new RepositoryPlugin.PutOptions());
-                if (result.artifact != null && result.artifact.getScheme().equals("file")) {
+                if (result.artifact != null && result.artifact.getScheme()
+                    .equals("file")) {
                     File newFile = new File(result.artifact);
 
                     RefreshFileJob refreshJob = new RefreshFileJob(newFile, false);
@@ -113,7 +115,7 @@ public class AddFilesToRepositoryWizard extends Wizard {
         return status;
     }
 
-    public List<Pair<String,String>> getSelectedBundles() {
+    public List<Pair<String, String>> getSelectedBundles() {
         return Collections.unmodifiableList(selectedBundles);
     }
 }

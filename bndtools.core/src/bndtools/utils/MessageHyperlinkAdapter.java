@@ -48,7 +48,8 @@ public class MessageHyperlinkAdapter implements IHyperlinkListener {
         IMessage[] messages = (IMessage[]) e.data;
 
         if (messages == null || messages.length == 0) {
-            MessageDialog.openInformation(part.getSite().getShell(), part.getTitle(), "No further information available.");
+            MessageDialog.openInformation(part.getSite()
+                .getShell(), part.getTitle(), "No further information available.");
         } else {
             popupDialog = new MessagesPopupDialog(link, (IMessage[]) e.data, part);
             popupDialog.open();

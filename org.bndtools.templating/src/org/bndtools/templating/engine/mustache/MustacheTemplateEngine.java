@@ -23,11 +23,12 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.osgi.service.component.annotations.Component;
 
 import com.github.mustachejava.DefaultMustacheFactory;
+
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instructions;
 
 @Component(name = "org.bndtools.templating.engine.mustache", property = {
-        "name=mustache", "version=0.8.18"
+    "name=mustache", "version=0.8.18"
 })
 public class MustacheTemplateEngine implements TemplateEngine {
 
@@ -67,8 +68,8 @@ public class MustacheTemplateEngine implements TemplateEngine {
     }
 
     @Override
-    public Map<String,String> getTemplateParameters(ResourceMap inputs, IProgressMonitor monitor) throws Exception {
-        final Map<String,String> params = new HashMap<>();
+    public Map<String, String> getTemplateParameters(ResourceMap inputs, IProgressMonitor monitor) throws Exception {
+        final Map<String, String> params = new HashMap<>();
         final Properties defaults = readDefaults(inputs);
 
         TemplateSettings settings = readSettings(inputs);
@@ -77,14 +78,17 @@ public class MustacheTemplateEngine implements TemplateEngine {
         factory.setObjectHandler(namesAccumulator);
 
         int counter = 0;
-        for (Entry<String,Resource> entry : inputs.entries()) {
+        for (Entry<String, Resource> entry : inputs.entries()) {
             String inputPath = entry.getKey();
-            factory.compile(new StringReader(inputPath), "mapping", settings.leftDelim, settings.rightDelim).execute(new StringWriter(), Collections.emptyMap());
+            factory.compile(new StringReader(inputPath), "mapping", settings.leftDelim, settings.rightDelim)
+                .execute(new StringWriter(), Collections.emptyMap());
             Resource source = entry.getValue();
             if (settings.ignore == null || !settings.ignore.matches(inputPath)) {
                 if (source.getType() == ResourceType.File && settings.preprocessMatch.matches(inputPath)) {
                     InputStreamReader reader = new InputStreamReader(source.getContent(), source.getTextEncoding());
-                    factory.compile(reader, "temp" + (counter++), settings.leftDelim, settings.rightDelim).execute(new StringWriter(), Collections.emptyMap()).toString();
+                    factory.compile(reader, "temp" + (counter++), settings.leftDelim, settings.rightDelim)
+                        .execute(new StringWriter(), Collections.emptyMap())
+                        .toString();
                 }
             }
         }
@@ -97,45 +101,47 @@ public class MustacheTemplateEngine implements TemplateEngine {
     }
 
     @Override
-    public ResourceMap generateOutputs(ResourceMap inputs, Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
+    public ResourceMap generateOutputs(ResourceMap inputs, Map<String, List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         TemplateSettings settings = readSettings(inputs);
         Properties defaults = readDefaults(inputs);
 
         ResourceMap outputs = new ResourceMap();
-        final Map<String,Object> flattenedParams = flattenParameters(parameters);
+        final Map<String, Object> flattenedParams = flattenParameters(parameters);
         applyDefaults(defaults, flattenedParams);
 
         DefaultMustacheFactory mustacheFactory = new DefaultMustacheFactory();
         mustacheFactory.setObjectHandler(new CheckMissingObjectHandler(mustacheFactory.getObjectHandler()));
 
-        for (Entry<String,Resource> entry : inputs.entries()) {
+        for (Entry<String, Resource> entry : inputs.entries()) {
             String inputPath = entry.getKey();
             Resource source = entry.getValue();
 
             StringWriter writer = new StringWriter();
-            mustacheFactory.compile(new StringReader(inputPath), "mapping", settings.leftDelim, settings.rightDelim).execute(writer, flattenedParams);
+            mustacheFactory.compile(new StringReader(inputPath), "mapping", settings.leftDelim, settings.rightDelim)
+                .execute(writer, flattenedParams);
             String outputPath = writer.toString();
 
             if (settings.ignore == null || !settings.ignore.matches(inputPath)) {
                 Resource output;
                 switch (source.getType()) {
-                case Folder :
-                    output = source;
-                    break;
-                case File :
-                    if (settings.preprocessMatch.matches(inputPath)) {
-                        // This file should be processed with the template engine
-                        InputStreamReader reader = new InputStreamReader(source.getContent(), source.getTextEncoding());
-                        StringWriter rendered = new StringWriter();
-                        mustacheFactory.compile(reader, outputPath, settings.leftDelim, settings.rightDelim).execute(rendered, flattenedParams);
-                        output = new StringResource(rendered.toString());
-                    } else {
-                        // This file should be directly copied
+                    case Folder :
                         output = source;
-                    }
-                    break;
-                default :
-                    throw new IllegalArgumentException("Unknown resource type " + source.getType());
+                        break;
+                    case File :
+                        if (settings.preprocessMatch.matches(inputPath)) {
+                            // This file should be processed with the template engine
+                            InputStreamReader reader = new InputStreamReader(source.getContent(), source.getTextEncoding());
+                            StringWriter rendered = new StringWriter();
+                            mustacheFactory.compile(reader, outputPath, settings.leftDelim, settings.rightDelim)
+                                .execute(rendered, flattenedParams);
+                            output = new StringResource(rendered.toString());
+                        } else {
+                            // This file should be directly copied
+                            output = source;
+                        }
+                        break;
+                    default :
+                        throw new IllegalArgumentException("Unknown resource type " + source.getType());
                 }
                 outputs.put(outputPath, output);
             }
@@ -144,8 +150,8 @@ public class MustacheTemplateEngine implements TemplateEngine {
         return outputs;
     }
 
-    private static void applyDefaults(Properties defaults, Map<String,Object> params) {
-        for (Enumeration< ? > defaultsEnum = defaults.propertyNames(); defaultsEnum.hasMoreElements();) {
+    private static void applyDefaults(Properties defaults, Map<String, Object> params) {
+        for (Enumeration<?> defaultsEnum = defaults.propertyNames(); defaultsEnum.hasMoreElements();) {
             String name = (String) defaultsEnum.nextElement();
             String value = defaults.getProperty(name, null);
             if (!params.containsKey(name))
@@ -180,9 +186,9 @@ public class MustacheTemplateEngine implements TemplateEngine {
         return props;
     }
 
-    private static Map<String,Object> flattenParameters(Map<String,List<Object>> parameters) {
-        Map<String,Object> flattened = new HashMap<>(parameters.size());
-        for (Entry<String,List<Object>> entry : parameters.entrySet()) {
+    private static Map<String, Object> flattenParameters(Map<String, List<Object>> parameters) {
+        Map<String, Object> flattened = new HashMap<>(parameters.size());
+        for (Entry<String, List<Object>> entry : parameters.entrySet()) {
             List<Object> list = entry.getValue();
             if (list != null && !list.isEmpty()) {
                 if (list.size() == 1) {

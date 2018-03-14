@@ -2,6 +2,7 @@ package bndtools.editor.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -25,15 +26,16 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
+
 import aQute.bnd.build.model.EE;
 import bndtools.BndConstants;
-import bndtools.utils.ModificationLock;
 import bndtools.editor.common.BndEditorPart;
 import bndtools.model.repo.LoadingContentElement;
+import bndtools.utils.ModificationLock;
 
 public class RunFrameworkPart extends BndEditorPart implements PropertyChangeListener {
     private static final String[] PROPERTIES = new String[] {
-            BndConstants.RUNFW, BndConstants.RUNEE
+        BndConstants.RUNFW, BndConstants.RUNEE
     };
 
     private final ModificationLock lock = new ModificationLock();
@@ -58,7 +60,8 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        fwkContentProvider.onContentReady(list -> Display.getDefault().asyncExec(() -> refreshFromModel()));
+        fwkContentProvider.onContentReady(list -> Display.getDefault()
+            .asyncExec(() -> refreshFromModel()));
 
         frameworkViewer.setInput(model.getWorkspace());
     }
@@ -86,7 +89,9 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
         Label lblExecEnv = tk.createLabel(composite, "Execution Env.:");
         cmbExecEnv = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
         ControlDecoration eeDecor = new ControlDecoration(cmbExecEnv, SWT.LEFT | SWT.TOP, composite);
-        eeDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        eeDecor.setImage(FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+            .getImage());
         eeDecor.setDescriptionText("The runtime Java Virtual Machine will be required/assumed " + "\nto support this Execution Environment");
 
         eeViewer = new ComboViewer(cmbExecEnv);
@@ -190,7 +195,8 @@ public class RunFrameworkPart extends BndEditorPart implements PropertyChangeLis
     public void commitToModel(boolean onSave) {
         try {
             committing = true;
-            model.setRunFw(selectedFramework.trim().length() > 0 ? selectedFramework.trim() : null);
+            model.setRunFw(selectedFramework.trim()
+                .length() > 0 ? selectedFramework.trim() : null);
             model.setEE(selectedEE);
         } finally {
             committing = false;

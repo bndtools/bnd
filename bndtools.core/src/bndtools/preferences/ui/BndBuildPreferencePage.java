@@ -38,7 +38,7 @@ public class BndBuildPreferencePage extends PreferencePage implements IWorkbench
         new Label(composite, SWT.NONE).setText("Build Debug Logging:");
         final Combo cmbBuildLogging = new Combo(composite, SWT.READ_ONLY);
         cmbBuildLogging.setItems(new String[] {
-                Messages.BndPreferencePage_cmbBuildLogging_None, Messages.BndPreferencePage_cmbBuildLogging_Basic, Messages.BndPreferencePage_cmbBuildLogging_Full
+            Messages.BndPreferencePage_cmbBuildLogging_None, Messages.BndPreferencePage_cmbBuildLogging_Basic, Messages.BndPreferencePage_cmbBuildLogging_Full
         });
         cmbBuildLogging.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 

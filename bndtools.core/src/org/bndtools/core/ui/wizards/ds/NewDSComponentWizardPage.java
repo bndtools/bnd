@@ -36,11 +36,11 @@ import org.eclipse.ui.PlatformUI;
 public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
     static enum ActivateSignature {
-        NoActivate       (Messages.NewDSComponentWizardPage_LC_labelNoActivate),
-        NoArg            (Messages.NewDSComponentWizardPage_LC_labelNoArg),
-        ConfigMap        (Messages.NewDSComponentWizardPage_LC_labelConfigMap),
-        ComponentContext (Messages.NewDSComponentWizardPage_LC_labelComponentContext),
-        BundleContext    (Messages.NewDSComponentWizardPage_LC_labelBundleContext);
+        NoActivate(Messages.NewDSComponentWizardPage_LC_labelNoActivate),
+        NoArg(Messages.NewDSComponentWizardPage_LC_labelNoArg),
+        ConfigMap(Messages.NewDSComponentWizardPage_LC_labelConfigMap),
+        ComponentContext(Messages.NewDSComponentWizardPage_LC_labelComponentContext),
+        BundleContext(Messages.NewDSComponentWizardPage_LC_labelBundleContext);
 
         String label;
 
@@ -53,7 +53,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
     private final static String SETTINGS_CREATECONSTR = "create_constructor"; //$NON-NLS-1$
     private final static String SETTINGS_CREATEUNIMPLEMENTED = "create_unimplemented"; //$NON-NLS-1$
-    
+
     private final ComboDialogField fLifecycleMethodDialogField;
     private ComboViewer vwrActivateStub;
 
@@ -70,11 +70,11 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
         setDescription(Messages.NewDSComponentWizardPage_description);
 
         String[] buttonNames3 = new String[] {
-                NewWizardMessages.NewClassWizardPage_methods_constructors, NewWizardMessages.NewClassWizardPage_methods_inherited
+            NewWizardMessages.NewClassWizardPage_methods_constructors, NewWizardMessages.NewClassWizardPage_methods_inherited
         };
         fMethodStubsButtons = new SelectionButtonDialogFieldGroup(SWT.CHECK, buttonNames3, 1);
         fMethodStubsButtons.setLabelText(NewWizardMessages.NewClassWizardPage_methods_label);
-        
+
         fLifecycleMethodDialogField = new ComboDialogField(SWT.READ_ONLY);
         fLifecycleMethodDialogField.setLabelText(Messages.NewDSComponentWizardPage_LC_label);
     }
@@ -121,7 +121,9 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
         setControl(composite);
 
         Dialog.applyDialogFont(composite);
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(composite, IJavaHelpContextIds.NEW_CLASS_WIZARD_PAGE);
+        PlatformUI.getWorkbench()
+            .getHelpSystem()
+            .setHelp(composite, IJavaHelpContextIds.NEW_CLASS_WIZARD_PAGE);
     }
 
     public void init(IStructuredSelection selection) {
@@ -154,7 +156,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
     private void doStatusUpdate() {
         // status of all used components
         IStatus[] status = new IStatus[] {
-                fContainerStatus, isEnclosingTypeSelected() ? fEnclosingTypeStatus : fPackageStatus, fTypeNameStatus, fSuperClassStatus, fSuperInterfacesStatus, activateSignatureStatus
+            fContainerStatus, isEnclosingTypeSelected() ? fEnclosingTypeStatus : fPackageStatus, fTypeNameStatus, fSuperClassStatus, fSuperInterfacesStatus, activateSignatureStatus
         };
 
         // the mode severe status will be displayed and the OK button enabled/disabled.
@@ -171,7 +173,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
     protected void createLifecycleMethodStubControls(Composite composite, int nColumns) {
         fLifecycleMethodDialogField.doFillIntoGrid(composite, nColumns - 1);
         DialogField.createEmptySpace(composite);
-        
+
         Combo cmbActivateStub = fLifecycleMethodDialogField.getComboControl(composite);
         vwrActivateStub = new ComboViewer(cmbActivateStub);
         vwrActivateStub.setContentProvider(ArrayContentProvider.getInstance());
@@ -232,7 +234,9 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
     @Override
     protected void constructTypeAnnotationStubs(StringBuffer buf, ImportsManager imports, String lineDelimiter) {
-        buf.append("@").append(imports.addImport("org.osgi.service.component.annotations.Component")).append(lineDelimiter);
+        buf.append("@")
+            .append(imports.addImport("org.osgi.service.component.annotations.Component"))
+            .append(lineDelimiter);
     }
 
     @Override
@@ -249,27 +253,41 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
             // Generate activate method
             builder = new StringBuilder();
-            builder.append("@").append(imports.addImport("org.osgi.service.component.annotations.Activate")).append(lineDelim);
+            builder.append("@")
+                .append(imports.addImport("org.osgi.service.component.annotations.Activate"))
+                .append(lineDelim);
             builder.append("void activate(");
 
             switch (activateSignature) {
-            case NoActivate :
-            case NoArg :
-            default :
-                // Nothing to do
-                break;
-            case ConfigMap :
-                builder.append(imports.addImport("java.util.Map")).append("<").append(imports.addImport("java.lang.String")).append(",").append(imports.addImport("java.lang.Object")).append(">").append(" ").append("configProps");
-                break;
-            case ComponentContext :
-                builder.append(imports.addImport("org.osgi.service.component.ComponentContext")).append(" ").append("componentContext");
-                break;
-            case BundleContext :
-                builder.append(imports.addImport("org.osgi.framework.BundleContext")).append(" ").append("bundleContext");
-                break;
+                case NoActivate :
+                case NoArg :
+                default :
+                    // Nothing to do
+                    break;
+                case ConfigMap :
+                    builder.append(imports.addImport("java.util.Map"))
+                        .append("<")
+                        .append(imports.addImport("java.lang.String"))
+                        .append(",")
+                        .append(imports.addImport("java.lang.Object"))
+                        .append(">")
+                        .append(" ")
+                        .append("configProps");
+                    break;
+                case ComponentContext :
+                    builder.append(imports.addImport("org.osgi.service.component.ComponentContext"))
+                        .append(" ")
+                        .append("componentContext");
+                    break;
+                case BundleContext :
+                    builder.append(imports.addImport("org.osgi.framework.BundleContext"))
+                        .append(" ")
+                        .append("bundleContext");
+                    break;
             }
 
-            builder.append(") {").append(lineDelim);
+            builder.append(") {")
+                .append(lineDelim);
             content = CodeGeneration.getMethodBodyContent(newType.getCompilationUnit(), newType.getTypeQualifiedName('.'), "activate", false, "", lineDelim);
             if (content != null && content.length() > 0)
                 builder.append(content);
@@ -278,8 +296,11 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
 
             // Generate deactivate method
             builder = new StringBuilder();
-            builder.append("@").append(imports.addImport("org.osgi.service.component.annotations.Deactivate")).append(lineDelim);
-            builder.append("void deactivate() {").append(lineDelim);
+            builder.append("@")
+                .append(imports.addImport("org.osgi.service.component.annotations.Deactivate"))
+                .append(lineDelim);
+            builder.append("void deactivate() {")
+                .append(lineDelim);
             content = CodeGeneration.getMethodBodyContent(newType.getCompilationUnit(), newType.getTypeQualifiedName('.'), "activate", false, "", lineDelim);
             if (content != null && content.length() > 0)
                 builder.append(content);

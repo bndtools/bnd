@@ -62,7 +62,7 @@ public class Plugin extends AbstractUIPlugin {
     private Activator bndActivator;
     private final List<IStartupParticipant> startupParticipants = new LinkedList<IStartupParticipant>();
 
-    private volatile ServiceTracker<IWorkspace,IWorkspace> workspaceTracker;
+    private volatile ServiceTracker<IWorkspace, IWorkspace> workspaceTracker;
     private volatile ServiceRegistration<URLStreamHandlerService> urlHandlerReg;
     private volatile HeadlessBuildManagerTracker headlessBuildManager;
     private volatile VersionControlIgnoresManagerTracker versionControlIgnoresManager;
@@ -93,25 +93,26 @@ public class Plugin extends AbstractUIPlugin {
     }
 
     private static void registerWorkspaceServiceFactory(BundleContext context) {
-        Dictionary<String,Object> props = new Hashtable<String,Object>();
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("name", "bndtools");
 
         context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
     }
 
     private void registerWorkspaceURLHandler(BundleContext context) {
-        workspaceTracker = new ServiceTracker<IWorkspace,IWorkspace>(context, IWorkspace.class.getName(), null);
+        workspaceTracker = new ServiceTracker<IWorkspace, IWorkspace>(context, IWorkspace.class.getName(), null);
         workspaceTracker.open();
 
-        Dictionary<String,Object> props = new Hashtable<String,Object>();
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] {
-                WorkspaceURLStreamHandlerService.PROTOCOL
+            WorkspaceURLStreamHandlerService.PROTOCOL
         });
         urlHandlerReg = context.registerService(URLStreamHandlerService.class, new WorkspaceURLStreamHandlerService(workspaceTracker), props);
     }
 
     private void runStartupParticipants() {
-        IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
+        IConfigurationElement[] elements = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
 
         for (IConfigurationElement element : elements) {
             try {
@@ -168,10 +169,14 @@ public class Plugin extends AbstractUIPlugin {
     }
 
     public static void report(boolean warnings, @SuppressWarnings("unused") boolean acknowledge, Processor reporter, final String title, final String extra) {
-        if (reporter.getErrors().size() > 0 || (warnings && reporter.getWarnings().size() > 0)) {
+        if (reporter.getErrors()
+            .size() > 0
+            || (warnings && reporter.getWarnings()
+                .size() > 0)) {
             final StringBuffer sb = new StringBuffer();
             sb.append("\n");
-            if (reporter.getErrors().size() > 0) {
+            if (reporter.getErrors()
+                .size() > 0) {
                 sb.append("[Errors]\n");
                 for (String msg : reporter.getErrors()) {
                     sb.append(msg);
@@ -179,7 +184,8 @@ public class Plugin extends AbstractUIPlugin {
                 }
             }
             sb.append("\n");
-            if (reporter.getWarnings().size() > 0) {
+            if (reporter.getWarnings()
+                .size() > 0) {
                 sb.append("[Warnings]\n");
                 for (String msg : reporter.getWarnings()) {
                     sb.append(msg);
@@ -212,7 +218,8 @@ public class Plugin extends AbstractUIPlugin {
 
     static void async(Runnable run) {
         if (Display.getCurrent() == null) {
-            Display.getDefault().asyncExec(run);
+            Display.getDefault()
+                .asyncExec(run);
         } else
             run.run();
     }

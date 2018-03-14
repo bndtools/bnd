@@ -54,7 +54,8 @@ public class FormPartJavaSearchContext implements IJavaSearchContext {
         if (page == null)
             return null;
 
-        return page.getEditorSite().getWorkbenchWindow();
+        return page.getEditorSite()
+            .getWorkbenchWindow();
     }
 
 }

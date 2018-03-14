@@ -33,18 +33,18 @@ public class AnalyseBundleResolutionJob extends Job {
 
     private static final ILogger logger = Logger.getLogger(AnalyseBundleResolutionJob.class);
 
-    private final Set< ? extends CapReqLoader> loaders;
+    private final Set<? extends CapReqLoader> loaders;
 
-    private Map<String,List<RequirementWrapper>> requirements;
-    private Map<String,List<Capability>> capabilities;
+    private Map<String, List<RequirementWrapper>> requirements;
+    private Map<String, List<Capability>> capabilities;
 
-    public AnalyseBundleResolutionJob(String name, Set< ? extends CapReqLoader> loaders) {
+    public AnalyseBundleResolutionJob(String name, Set<? extends CapReqLoader> loaders) {
         super(name);
         this.loaders = loaders;
     }
 
-    private static <K, V> void mergeMaps(Map<K,List<V>> from, Map<K,List<V>> into) {
-        for (Entry<K,List<V>> entry : from.entrySet()) {
+    private static <K, V> void mergeMaps(Map<K, List<V>> from, Map<K, List<V>> into) {
+        for (Entry<K, List<V>> entry : from.entrySet()) {
             K key = entry.getKey();
 
             List<V> list = into.get(key);
@@ -60,15 +60,15 @@ public class AnalyseBundleResolutionJob extends Job {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
         try {
-            // Load  all the capabilities and requirements
-            Map<String,List<Capability>> allCaps = new HashMap<String,List<Capability>>();
-            Map<String,List<RequirementWrapper>> allReqs = new HashMap<String,List<RequirementWrapper>>();
+            // Load all the capabilities and requirements
+            Map<String, List<Capability>> allCaps = new HashMap<String, List<Capability>>();
+            Map<String, List<RequirementWrapper>> allReqs = new HashMap<String, List<RequirementWrapper>>();
             for (CapReqLoader loader : loaders) {
                 try {
-                    Map<String,List<Capability>> caps = loader.loadCapabilities();
+                    Map<String, List<Capability>> caps = loader.loadCapabilities();
                     mergeMaps(caps, allCaps);
 
-                    Map<String,List<RequirementWrapper>> reqs = loader.loadRequirements();
+                    Map<String, List<RequirementWrapper>> reqs = loader.loadRequirements();
                     mergeMaps(reqs, allReqs);
                 } catch (Exception e) {
                     logger.logError("Error in Bnd resolution analysis.", e);
@@ -86,7 +86,8 @@ public class AnalyseBundleResolutionJob extends Job {
                     continue;
 
                 for (RequirementWrapper rw : rws) {
-                    String filterStr = rw.requirement.getDirectives().get("filter");
+                    String filterStr = rw.requirement.getDirectives()
+                        .get("filter");
                     if (filterStr != null) {
                         aQute.lib.filter.Filter filter = new aQute.lib.filter.Filter(filterStr);
                         for (Capability cand : candidates) {
@@ -100,8 +101,8 @@ public class AnalyseBundleResolutionJob extends Job {
             }
 
             // Generate the final results
-            //        Set<File> resultFiles = builderMap.keySet();
-            //        resultFileArray = resultFiles.toArray(new File[0]);
+            // Set<File> resultFiles = builderMap.keySet();
+            // resultFileArray = resultFiles.toArray(new File[0]);
 
             this.requirements = allReqs;
             this.capabilities = allCaps;
@@ -113,11 +114,11 @@ public class AnalyseBundleResolutionJob extends Job {
         }
     }
 
-    public Map<String,List<RequirementWrapper>> getRequirements() {
+    public Map<String, List<RequirementWrapper>> getRequirements() {
         return Collections.unmodifiableMap(requirements);
     }
 
-    public Map<String,List<Capability>> getCapabilities() {
+    public Map<String, List<Capability>> getCapabilities() {
         return Collections.unmodifiableMap(capabilities);
     }
 }

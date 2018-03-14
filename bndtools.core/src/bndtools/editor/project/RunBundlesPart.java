@@ -37,7 +37,9 @@ public class RunBundlesPart extends RepositoryBundleSelectionPart {
     private static final ILogger logger = Logger.getLogger(RunBundlesPart.class);
 
     private final List<String> projectBuilders = new ArrayList<>();
-    private final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+    private final Image projectImg = PlatformUI.getWorkbench()
+        .getSharedImages()
+        .getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
 
     public RunBundlesPart(Composite parent, FormToolkit toolkit, int style) {
         super(Constants.RUNBUNDLES, DependencyPhase.Run, parent, toolkit, style);

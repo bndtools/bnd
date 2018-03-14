@@ -31,7 +31,9 @@ public class AddRemoveButtonBarPart {
         toolbar = new ToolBar(parent, style);
 
         btnAdd = new ToolItem(toolbar, SWT.PUSH);
-        btnAdd.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        btnAdd.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_OBJ_ADD));
         btnAdd.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -42,8 +44,12 @@ public class AddRemoveButtonBarPart {
         });
 
         btnRemove = new ToolItem(toolbar, SWT.PUSH);
-        btnRemove.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-        btnRemove.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        btnRemove.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE));
+        btnRemove.setDisabledImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
         btnRemove.setToolTipText("Remove");
         btnRemove.setEnabled(false);
         btnRemove.addSelectionListener(new SelectionAdapter() {

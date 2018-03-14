@@ -40,7 +40,8 @@ public class BundleUtils {
         for (Bundle bundle : bundles) {
             try {
                 String name = bundle.getSymbolicName();
-                String versionStr = bundle.getHeaders().get(Constants.BUNDLE_VERSION);
+                String versionStr = bundle.getHeaders()
+                    .get(Constants.BUNDLE_VERSION);
                 Version version = versionStr != null ? new Version(versionStr) : new Version();
                 if (range == null || range.includes(version)) {
                     if (symbolicName.equals(name)) {
@@ -75,15 +76,19 @@ public class BundleUtils {
 
         // Try install location
         if (installLocation != null) {
-            IPath installedBundlePath = new Path(installLocation.getURL().getFile()).append(bundlePath);
-            if (installedBundlePath.toFile().exists())
+            IPath installedBundlePath = new Path(installLocation.getURL()
+                .getFile()).append(bundlePath);
+            if (installedBundlePath.toFile()
+                .exists())
                 return installedBundlePath;
         }
 
         // Try config location
         if (configLocation != null) {
-            IPath configuredBundlePath = new Path(configLocation.getURL().getFile()).append(bundlePath);
-            if (configuredBundlePath.toFile().exists())
+            IPath configuredBundlePath = new Path(configLocation.getURL()
+                .getFile()).append(bundlePath);
+            if (configuredBundlePath.toFile()
+                .exists())
                 return configuredBundlePath;
         }
 
@@ -96,8 +101,7 @@ public class BundleUtils {
      * network or some other device) then use the time that the bundle was last installed or updated in the OSGi
      * framework.
      * 
-     * @param bundle
-     *            The bundle
+     * @param bundle The bundle
      * @return The last modified time of the bundle.
      */
     public static long getBundleLastModified(Bundle bundle) {
@@ -117,10 +121,12 @@ public class BundleUtils {
         if (header.size() != 1)
             return null;
 
-        return header.keySet().iterator().next();
+        return header.keySet()
+            .iterator()
+            .next();
     }
 
-    public static String getBundleSymbolicName(Class< ? > clazz) {
+    public static String getBundleSymbolicName(Class<?> clazz) {
         Bundle bundle = FrameworkUtil.getBundle(clazz);
         if (bundle == null)
             return null;

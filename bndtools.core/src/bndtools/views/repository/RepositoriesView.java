@@ -131,7 +131,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
     private static final ILogger logger = Logger.getLogger(RepositoriesView.class);
 
-    private final FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault().getScheduler());
+    private final FilterPanelPart filterPart = new FilterPanelPart(Plugin.getDefault()
+        .getScheduler());
     private SearchableRepositoryTreeContentProvider contentProvider;
     private TreeViewer viewer;
     private Control filterPanel;
@@ -251,13 +252,16 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 if (target instanceof RepositoryPlugin) {
                     if (((RepositoryPlugin) target).canWrite()) {
 
-                        if (URLTransfer.getInstance().isSupportedType(transferType))
+                        if (URLTransfer.getInstance()
+                            .isSupportedType(transferType))
                             return true;
 
-                        if (LocalSelectionTransfer.getTransfer().isSupportedType(transferType)) {
-                            ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+                        if (LocalSelectionTransfer.getTransfer()
+                            .isSupportedType(transferType)) {
+                            ISelection selection = LocalSelectionTransfer.getTransfer()
+                                .getSelection();
                             if (selection instanceof IStructuredSelection) {
-                                for (Iterator< ? > iter = ((IStructuredSelection) selection).iterator(); iter.hasNext();) {
+                                for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext();) {
                                     Object element = iter.next();
                                     if (element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion) {
                                         valid = true;
@@ -298,9 +302,11 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 }
 
                 boolean copied = false;
-                if (URLTransfer.getInstance().isSupportedType(getCurrentEvent().currentDataType)) {
+                if (URLTransfer.getInstance()
+                    .isSupportedType(getCurrentEvent().currentDataType)) {
                     try {
-                        URL url = new URL((String) URLTransfer.getInstance().nativeToJava(getCurrentEvent().currentDataType));
+                        URL url = new URL((String) URLTransfer.getInstance()
+                            .nativeToJava(getCurrentEvent().currentDataType));
 
                         File tmp = File.createTempFile("dwnl", ".jar");
                         try (HttpClient client = new HttpClient()) {
@@ -309,7 +315,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
                         if (isJarFile(tmp)) {
                             copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), new File[] {
-                                    tmp
+                                tmp
                             });
                         } else {
                             tmp.delete();
@@ -329,7 +335,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                     IResource[] resources = (IResource[]) data;
                     File[] files = new File[resources.length];
                     for (int i = 0; i < resources.length; i++) {
-                        files[i] = resources[i].getLocation().toFile();
+                        files[i] = resources[i].getLocation()
+                            .toFile();
                     }
                     copied = addFilesToRepository((RepositoryPlugin) getCurrentTarget(), files);
                 } else if (data instanceof IStructuredSelection) {
@@ -344,10 +351,10 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         dropAdapter.setExpandEnabled(false);
 
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                URLTransfer.getInstance(), FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer()
+            URLTransfer.getInstance(), FileTransfer.getInstance(), ResourceTransfer.getInstance(), LocalSelectionTransfer.getTransfer()
         }, dropAdapter);
         viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                LocalSelectionTransfer.getTransfer()
+            LocalSelectionTransfer.getTransfer()
         }, new SelectionDragAdapter(viewer));
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -369,9 +376,12 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 Object element = ((IStructuredSelection) viewer.getSelection()).getFirstElement();
                 if (element instanceof ContinueSearchElement) {
                     try {
-                        getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, showJpmOnClick ? IWorkbenchPage.VIEW_ACTIVATE : IWorkbenchPage.VIEW_CREATE);
+                        getViewSite().getPage()
+                            .showView(Plugin.JPM_BROWSER_VIEW_ID, null, showJpmOnClick ? IWorkbenchPage.VIEW_ACTIVATE : IWorkbenchPage.VIEW_CREATE);
                     } catch (PartInitException e) {
-                        Plugin.getDefault().getLog().log(e.getStatus());
+                        Plugin.getDefault()
+                            .getLog()
+                            .log(e.getStatus());
                     }
                 }
             }
@@ -379,7 +389,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         viewer.addDoubleClickListener(new IDoubleClickListener() {
             @Override
             public void doubleClick(DoubleClickEvent event) {
-                if (!event.getSelection().isEmpty()) {
+                if (!event.getSelection()
+                    .isEmpty()) {
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                     final Object element = selection.getFirstElement();
                     if (element instanceof IAdaptable) {
@@ -393,12 +404,14 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                                     protected IStatus run(IProgressMonitor monitor) {
                                         final File repoFile = entry.getFile(true);
                                         if (repoFile != null && repoFile.exists()) {
-                                            getSite().getShell().getDisplay().asyncExec(new Runnable() {
-                                                @Override
-                                                public void run() {
-                                                    openURI(repoFile.toURI());
-                                                }
-                                            });
+                                            getSite().getShell()
+                                                .getDisplay()
+                                                .asyncExec(new Runnable() {
+                                                    @Override
+                                                    public void run() {
+                                                        openURI(repoFile.toURI());
+                                                    }
+                                                });
                                         }
                                         return Status.OK_STATUS;
                                     }
@@ -415,13 +428,22 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                             JpmPreferences jpmPrefs = new JpmPreferences();
                             if (jpmPrefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_EXTERNAL) {
                                 URI browseUrl = searchElement.browse();
-                                getViewSite().getWorkbenchWindow().getWorkbench().getBrowserSupport().getExternalBrowser().openURL(browseUrl.toURL());
+                                getViewSite().getWorkbenchWindow()
+                                    .getWorkbench()
+                                    .getBrowserSupport()
+                                    .getExternalBrowser()
+                                    .openURL(browseUrl.toURL());
                             } else
-                                getViewSite().getPage().showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
+                                getViewSite().getPage()
+                                    .showView(Plugin.JPM_BROWSER_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
                         } catch (PartInitException e) {
-                            Plugin.getDefault().getLog().log(e.getStatus());
+                            Plugin.getDefault()
+                                .getLog()
+                                .log(e.getStatus());
                         } catch (Exception e) {
-                            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load repository browser view", e));
+                            Plugin.getDefault()
+                                .getLog()
+                                .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load repository browser view", e));
                         }
                     } else if (element instanceof RepositoryPlugin) {
                         viewer.setExpandedState(element, !viewer.getExpandedState(element));
@@ -446,7 +468,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
 
         // Toolbar
         createActions();
-        fillToolBar(getViewSite().getActionBars().getToolBarManager());
+        fillToolBar(getViewSite().getActionBars()
+            .getToolBarManager());
 
         prefs.addPropertyChangeListener(workspaceOfflineListener);
 
@@ -496,7 +519,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
     protected void openURI(URI uri) {
         IWorkbenchPage page = getSite().getPage();
         try {
-            IFileStore fileStore = EFS.getLocalFileSystem().getStore(uri);
+            IFileStore fileStore = EFS.getLocalFileSystem()
+                .getStore(uri);
             IDE.openEditorOnFileStore(page, fileStore);
         } catch (PartInitException e) {
             logger.logError("Error opening editor for " + uri, e);
@@ -515,15 +539,17 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         IStructuredSelection structSel = (IStructuredSelection) selection;
         List<File> files = new ArrayList<File>(structSel.size());
 
-        for (Iterator< ? > iter = structSel.iterator(); iter.hasNext();) {
+        for (Iterator<?> iter = structSel.iterator(); iter.hasNext();) {
             Object element = iter.next();
             if (element instanceof IFile)
-                files.add(((IFile) element).getLocation().toFile());
+                files.add(((IFile) element).getLocation()
+                    .toFile());
             else if (element instanceof IAdaptable) {
                 IAdaptable adaptable = (IAdaptable) element;
                 IFile ifile = (IFile) adaptable.getAdapter(IFile.class);
                 if (ifile != null) {
-                    files.add(ifile.getLocation().toFile());
+                    files.add(ifile.getLocation()
+                        .toFile());
                 } else {
                     File file = (File) adaptable.getAdapter(File.class);
                     if (file != null) {
@@ -762,7 +788,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
     void createContextMenu() {
         MenuManager mgr = new MenuManager();
         Menu menu = mgr.createContextMenu(viewer.getControl());
-        viewer.getControl().setMenu(menu);
+        viewer.getControl()
+            .setMenu(menu);
         mgr.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         getSite().registerContextMenu(mgr, viewer);
 
@@ -785,9 +812,9 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                             // from the view, but currently there are none
                             //
                             final Actionable act = (Actionable) firstElement;
-                            Map<String,Runnable> actions = act.actions();
+                            Map<String, Runnable> actions = act.actions();
                             if (actions != null) {
-                                for (final Entry<String,Runnable> e : actions.entrySet()) {
+                                for (final Entry<String, Runnable> e : actions.entrySet()) {
                                     String label = e.getKey();
                                     boolean enabled = true;
                                     boolean checked = false;
@@ -812,12 +839,15 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                                                 @Override
                                                 protected IStatus run(IProgressMonitor monitor) {
                                                     try {
-                                                        e.getValue().run();
+                                                        e.getValue()
+                                                            .run();
                                                         if (rp != null && rp instanceof Refreshable)
                                                             Central.refreshPlugin((Refreshable) rp);
                                                     } catch (final Exception e) {
                                                         IStatus status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Error executing: " + getName(), e);
-                                                        Plugin.getDefault().getLog().log(status);
+                                                        Plugin.getDefault()
+                                                            .getLog()
+                                                            .log(status);
                                                     }
                                                     monitor.done();
                                                     return Status.OK_STATUS;
@@ -827,13 +857,16 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                                             backgroundJob.addJobChangeListener(new JobChangeAdapter() {
                                                 @Override
                                                 public void done(IJobChangeEvent event) {
-                                                    if (event.getResult().isOK()) {
-                                                        viewer.getTree().getDisplay().asyncExec(new Runnable() {
-                                                            @Override
-                                                            public void run() {
-                                                                viewer.refresh();
-                                                            }
-                                                        });
+                                                    if (event.getResult()
+                                                        .isOK()) {
+                                                        viewer.getTree()
+                                                            .getDisplay()
+                                                            .asyncExec(new Runnable() {
+                                                                @Override
+                                                                public void run() {
+                                                                    viewer.refresh();
+                                                                }
+                                                            });
                                                     }
                                                 }
                                             });
@@ -875,17 +908,16 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
     /**
      * Handle the drop on targets that understand drops.
      *
-     * @param target
-     *            The current target
-     * @param data
-     *            The transfer data
+     * @param target The current target
+     * @param data The transfer data
      * @return true if the data is acceptable, otherwise false
      */
     boolean canDrop(Object target, TransferData data) {
         try {
-            Class< ? > type = toJavaType(data);
+            Class<?> type = toJavaType(data);
             if (type != null) {
-                target.getClass().getMethod(DROP_TARGET, type);
+                target.getClass()
+                    .getMethod(DROP_TARGET, type);
                 return true;
             }
         } catch (Exception e) {
@@ -898,10 +930,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
      * Try a drop on the target. A drop is allowed if the target implements a {@code dropTarget} method that returns a
      * boolean.
      *
-     * @param target
-     *            the target being dropped upon
-     * @param data
-     *            the data
+     * @param target the target being dropped upon
+     * @param data the data
      * @param data2
      * @return true if dropped and processed, false if not
      */
@@ -915,7 +945,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
             }
 
             try {
-                Method m = target.getClass().getMethod(DROP_TARGET, java.getClass());
+                Method m = target.getClass()
+                    .getMethod(DROP_TARGET, java.getClass());
                 Boolean invoke = (Boolean) m.invoke(target, java);
                 if (!invoke)
                     return false;
@@ -962,26 +993,30 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
      *    ImageTransfer           ImageData
      * </pre>
      *
-     * @param data
-     *            the dropped object
+     * @param data the dropped object
      * @return the class of the dropped object, or null when it's unknown
-     * @throws Exception
-     *             upon error
+     * @throws Exception upon error
      */
-    Class< ? > toJavaType(TransferData data) throws Exception {
-        if (URLTransfer.getInstance().isSupportedType(data))
+    Class<?> toJavaType(TransferData data) throws Exception {
+        if (URLTransfer.getInstance()
+            .isSupportedType(data))
             return URI.class;
-        if (FileTransfer.getInstance().isSupportedType(data))
+        if (FileTransfer.getInstance()
+            .isSupportedType(data))
             return File[].class;
 
-        if (TextTransfer.getInstance().isSupportedType(data))
+        if (TextTransfer.getInstance()
+            .isSupportedType(data))
             return String.class;
 
-        if (ResourceTransfer.getInstance().isSupportedType(data))
+        if (ResourceTransfer.getInstance()
+            .isSupportedType(data))
             return String.class;
 
-        if (LocalSelectionTransfer.getTransfer().isSupportedType(data)) {
-            ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+        if (LocalSelectionTransfer.getTransfer()
+            .isSupportedType(data)) {
+            ISelection selection = LocalSelectionTransfer.getTransfer()
+                .getSelection();
             if (selection instanceof IStructuredSelection) {
                 Object firstElement = ((IStructuredSelection) selection).getFirstElement();
                 if (firstElement instanceof IFile)
@@ -990,8 +1025,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
             return null;
         }
 
-        //        if (ImageTransfer.getInstance().isSupportedType(data))
-        //            return Image.class;
+        // if (ImageTransfer.getInstance().isSupportedType(data))
+        // return Image.class;
         return null;
     }
 
@@ -1005,16 +1040,15 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
      *    ImageTransfer           ImageData
      * </pre>
      *
-     * @param data
-     *            the dropped object
+     * @param data the dropped object
      * @return a native data type that represents the dropped object, or null when the data type is unknown
-     * @throws Exception
-     *             upon error
+     * @throws Exception upon error
      */
     Object toJava(TransferData data) throws Exception {
         LocalSelectionTransfer local = LocalSelectionTransfer.getTransfer();
         if (local.isSupportedType(data)) {
-            ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+            ISelection selection = LocalSelectionTransfer.getTransfer()
+                .getSelection();
             if (selection instanceof IStructuredSelection) {
                 Object firstElement = ((IStructuredSelection) selection).getFirstElement();
                 if (firstElement instanceof IFile) {
@@ -1023,17 +1057,23 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 }
             }
         }
-        if (URLTransfer.getInstance().isSupportedType(data))
-            return Converter.cnv(URI.class, URLTransfer.getInstance().nativeToJava(data));
-        else if (FileTransfer.getInstance().isSupportedType(data)) {
-            return Converter.cnv(File[].class, FileTransfer.getInstance().nativeToJava(data));
-        } else if (TextTransfer.getInstance().isSupportedType(data)) {
-            return TextTransfer.getInstance().nativeToJava(data);
+        if (URLTransfer.getInstance()
+            .isSupportedType(data))
+            return Converter.cnv(URI.class, URLTransfer.getInstance()
+                .nativeToJava(data));
+        else if (FileTransfer.getInstance()
+            .isSupportedType(data)) {
+            return Converter.cnv(File[].class, FileTransfer.getInstance()
+                .nativeToJava(data));
+        } else if (TextTransfer.getInstance()
+            .isSupportedType(data)) {
+            return TextTransfer.getInstance()
+                .nativeToJava(data);
         }
         // Need to write the transfer code since the ImageTransfer turns it into
         // something very Eclipsy
-        //        else if (ImageTransfer.getInstance().isSupportedType(data))
-        //            return ImageTransfer.getInstance().nativeToJava(data);
+        // else if (ImageTransfer.getInstance().isSupportedType(data))
+        // return ImageTransfer.getInstance().nativeToJava(data);
 
         return null;
     }
@@ -1044,7 +1084,8 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         else if (element instanceof RepositoryBundle)
             return ((RepositoryBundle) element).getRepo();
         else if (element instanceof RepositoryBundleVersion)
-            return ((RepositoryBundleVersion) element).getParentBundle().getRepo();
+            return ((RepositoryBundleVersion) element).getParentBundle()
+                .getRepo();
 
         return null;
     }

@@ -44,7 +44,8 @@ public abstract class BndTargetLocation extends AbstractBundleContainer implemen
 
     public BndTargetLocation(String type, String containerIconName) {
         this.type = Objects.requireNonNull(type);
-        this.containerIcon = AbstractUIPlugin.imageDescriptorFromPlugin("bndtools.core", "/icons/" + containerIconName).createImage();
+        this.containerIcon = AbstractUIPlugin.imageDescriptorFromPlugin("bndtools.core", "/icons/" + containerIconName)
+            .createImage();
     }
 
     @Override
@@ -117,7 +118,8 @@ public abstract class BndTargetLocation extends AbstractBundleContainer implemen
     public String serialize() {
         Document document;
         try {
-            DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
+                .newDocumentBuilder();
             document = docBuilder.newDocument();
 
             Element locationElement = document.createElement(ELEMENT_LOCATION);
@@ -127,10 +129,12 @@ public abstract class BndTargetLocation extends AbstractBundleContainer implemen
             serialize(document, locationElement);
 
             StreamResult result = new StreamResult(new StringWriter());
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            Transformer transformer = TransformerFactory.newInstance()
+                .newTransformer();
             transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
             transformer.transform(new DOMSource(document), result);
-            return result.getWriter().toString();
+            return result.getWriter()
+                .toString();
         } catch (Exception e) {
             PDECore.log(e);
             return null;

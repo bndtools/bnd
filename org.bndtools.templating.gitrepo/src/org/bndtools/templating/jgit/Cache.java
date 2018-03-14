@@ -13,12 +13,12 @@ import aQute.libg.tuple.Pair;
 
 public class Cache {
 
-    private final ConcurrentMap<URI,Pair<String,byte[]>> cache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<URI, Pair<String, byte[]>> cache = new ConcurrentHashMap<>();
 
     public byte[] download(URI uri) throws IOException {
         byte[] data;
         try (HttpClient client = new HttpClient()) {
-            Pair<String,byte[]> cachedTag = cache.get(uri);
+            Pair<String, byte[]> cachedTag = cache.get(uri);
             if (cachedTag == null) {
                 // Not previously cached
                 TaggedData td = client.connectTagged(uri.toURL());
@@ -26,7 +26,7 @@ public class Cache {
                     throw new FileNotFoundException("Not found");
                 data = IO.read(td.getInputStream());
                 if (td.getTag() != null)
-                    cache.put(uri, new Pair<String,byte[]>(td.getTag(), data));
+                    cache.put(uri, new Pair<String, byte[]>(td.getTag(), data));
             } else {
                 // Previously cached with an ETag
                 TaggedData td = client.connectTagged(uri.toURL(), cachedTag.getFirst());
@@ -43,7 +43,7 @@ public class Cache {
                         cache.remove(uri);
                     } else {
                         // replace cache entry with new tag
-                        cache.put(uri, new Pair<String,byte[]>(td.getTag(), data));
+                        cache.put(uri, new Pair<String, byte[]>(td.getTag(), data));
                     }
                 }
             }

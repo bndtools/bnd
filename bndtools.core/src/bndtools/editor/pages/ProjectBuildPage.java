@@ -61,14 +61,18 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
     private static final ILogger logger = Logger.getLogger(ProjectBuildPage.class);
 
     private final BndEditModel model;
-    private final Image imgError = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
-    private final Image imgWarning = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK);
+    private final Image imgError = PlatformUI.getWorkbench()
+        .getSharedImages()
+        .getImage(ISharedImages.IMG_OBJS_ERROR_TSK);
+    private final Image imgWarning = PlatformUI.getWorkbench()
+        .getSharedImages()
+        .getImage(ISharedImages.IMG_OBJS_WARN_TSK);
 
     private final ImageDescriptor imgErrorOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_co.gif");
     private final ImageDescriptor imgWarningOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_co.gif");
 
-    private final Map<String,Integer> messageSeverityMap = new LinkedHashMap<String,Integer>();
-    private final Map<String,IAction[]> messageFixesMap = new HashMap<String,IAction[]>();
+    private final Map<String, Integer> messageSeverityMap = new LinkedHashMap<String, Integer>();
+    private final Map<String, IAction[]> messageFixesMap = new HashMap<String, IAction[]>();
     private int problemSeverity = 0;
 
     private Image pageImage = null;
@@ -100,7 +104,8 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         ScrolledForm form = managedForm.getForm();
         form.setText("Project Build");
         tk.decorateFormHeading(form.getForm());
-        form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
+        form.getForm()
+            .addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
         GridLayout layout;
         GridData gd;
@@ -124,14 +129,16 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         SubBundlesPart subBundlesPart = new SubBundlesPart(leftPanel, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(subBundlesPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        subBundlesPart.getSection().setLayoutData(gd);
+        subBundlesPart.getSection()
+            .setLayoutData(gd);
 
         BuildPathPart buildPathPart = new BuildPathPart(leftPanel, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(buildPathPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
         gd.heightHint = 50;
-        buildPathPart.getSection().setLayoutData(gd);
+        buildPathPart.getSection()
+            .setLayoutData(gd);
 
         Composite rightPanel = tk.createComposite(sashForm);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -141,7 +148,8 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         managedForm.addPart(buildOpsPart);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        buildOpsPart.getSection().setLayoutData(gd);
+        buildOpsPart.getSection()
+            .setLayoutData(gd);
 
         layout = new GridLayout(1, false);
         rightPanel.setLayout(layout);
@@ -254,14 +262,15 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         if (mform == null)
             return;
 
-        if (mform.getForm().isDisposed())
+        if (mform.getForm()
+            .isDisposed())
             // We were called asynchronously after dialog was closed
             return;
 
         IMessageManager manager = mform.getMessageManager();
         manager.removeMessages();
 
-        for (Entry<String,Integer> entry : messageSeverityMap.entrySet()) {
+        for (Entry<String, Integer> entry : messageSeverityMap.entrySet()) {
             // severities in IMessageProvider are 1 higher than in IMarker
             int mappedSeverity = entry.getValue() + 1;
 
@@ -298,13 +307,15 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
             return;
 
         if ((delta.getKind() & IResourceDelta.CHANGED) != 0 && (delta.getFlags() & IResourceDelta.MARKERS) != 0) {
-            getEditorSite().getShell().getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    loadProblems();
-                    reportProblemsInHeader();
-                }
-            });
+            getEditorSite().getShell()
+                .getDisplay()
+                .asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        loadProblems();
+                        reportProblemsInHeader();
+                    }
+                });
         }
     }
 

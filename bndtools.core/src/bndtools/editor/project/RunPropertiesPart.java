@@ -42,7 +42,7 @@ public class RunPropertiesPart extends BndEditorPart {
 
     private final ModificationLock lock = new ModificationLock();
 
-    private Map<String,String> runProperties;
+    private Map<String, String> runProperties;
     private String programArgs = null;
     private String vmArgs = null;
 
@@ -50,13 +50,13 @@ public class RunPropertiesPart extends BndEditorPart {
 
     private Table tblRunProperties;
     private TableViewer viewRunProperties;
-    private MapEntryCellModifier<String,String> runPropertiesModifier;
+    private MapEntryCellModifier<String, String> runPropertiesModifier;
 
     private Text txtProgramArgs;
     private Text txtVmArgs;
 
     private static final String[] SUBCRIBE_PROPS = new String[] {
-            Constants.RUNPROPERTIES, Constants.RUNPROGRAMARGS, Constants.RUNVM
+        Constants.RUNPROPERTIES, Constants.RUNPROGRAMARGS, Constants.RUNVM
     };
 
     public RunPropertiesPart(Composite parent, FormToolkit toolkit, int style) {
@@ -138,7 +138,8 @@ public class RunPropertiesPart extends BndEditorPart {
         viewRunProperties.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                createRemovePropsPart.setRemoveEnabled(!viewRunProperties.getSelection().isEmpty());
+                createRemovePropsPart.setRemoveEnabled(!viewRunProperties.getSelection()
+                    .isEmpty());
             }
         });
         createRemovePropsPart.addListener(new AddRemoveListener() {
@@ -205,7 +206,8 @@ public class RunPropertiesPart extends BndEditorPart {
                 if (preferredSize.y > area.height + tblRunProperties.getHeaderHeight()) {
                     // Subtract the scrollbar width from the total column width
                     // if a vertical scrollbar will be required
-                    Point vBarSize = tblRunProperties.getVerticalBar().getSize();
+                    Point vBarSize = tblRunProperties.getVerticalBar()
+                        .getSize();
                     width -= vBarSize.x;
                 }
                 Point oldSize = tblRunProperties.getSize();
@@ -235,7 +237,7 @@ public class RunPropertiesPart extends BndEditorPart {
 
     @Override
     protected void refreshFromModel() {
-        Map<String,String> tmp = model.getRunProperties();
+        Map<String, String> tmp = model.getRunProperties();
         if (tmp == null)
             this.runProperties = new HashMap<>();
         else

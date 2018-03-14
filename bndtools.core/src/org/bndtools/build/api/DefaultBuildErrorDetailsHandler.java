@@ -5,9 +5,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Processor;
@@ -84,7 +86,7 @@ public final class DefaultBuildErrorDetailsHandler extends AbstractBuildErrorDet
             end = start = -1;
         }
 
-        Map<String,Object> attribs = new HashMap<String,Object>();
+        Map<String, Object> attribs = new HashMap<String, Object>();
         attribs.put(IMarker.MESSAGE, location.message.trim() + extra);
         attribs.put(IMarker.LINE_NUMBER, line + 1);
         if (end != -1 && start != -1) {

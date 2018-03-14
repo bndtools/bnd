@@ -25,7 +25,7 @@ public class CompositeOCD extends BaseOCD {
 
     @Override
     public AttributeDefinition[] getAttributeDefinitions(int filter) {
-        final Map<String,AttributeDefinition> ads = new LinkedHashMap<>();
+        final Map<String, AttributeDefinition> ads = new LinkedHashMap<>();
 
         for (ObjectClassDefinition delegate : delegates) {
             AttributeDefinition[] entryAds = delegate.getAttributeDefinitions(filter);
@@ -36,7 +36,8 @@ public class CompositeOCD extends BaseOCD {
                 }
             }
         }
-        return ads.values().toArray(new AttributeDefinition[ads.size()]);
+        return ads.values()
+            .toArray(new AttributeDefinition[ads.size()]);
     }
 
 }

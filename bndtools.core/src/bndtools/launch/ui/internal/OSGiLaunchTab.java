@@ -15,7 +15,7 @@ public class OSGiLaunchTab extends GenericStackedLaunchTab {
     @Override
     protected ILaunchTabPiece[] createStack() {
         return new ILaunchTabPiece[] {
-                new ProjectLaunchTabPiece(), new FrameworkLaunchTabPiece()
+            new ProjectLaunchTabPiece(), new FrameworkLaunchTabPiece()
         };
     }
 
@@ -28,7 +28,8 @@ public class OSGiLaunchTab extends GenericStackedLaunchTab {
     public Image getImage() {
         synchronized (this) {
             if (image == null) {
-                image = Icons.desc("bundle").createImage();
+                image = Icons.desc("bundle")
+                    .createImage();
             }
             return image;
         }

@@ -53,7 +53,8 @@ public class WorkspaceSetupWizardPage extends WizardPage {
         composite.setLayout(layout);
         setControl(composite);
 
-        bannerImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "banner.png").createImage(parent.getDisplay());
+        bannerImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "banner.png")
+            .createImage(parent.getDisplay());
         Label lblBanner = new Label(composite, SWT.NONE);
         lblBanner.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         lblBanner.setImage(bannerImg);
@@ -96,9 +97,12 @@ public class WorkspaceSetupWizardPage extends WizardPage {
         String warning = cleanBuild ? null : "Existing Bnd projects may not build until the workspace is cleaned.";
 
         // Check for existing workspace/cnf
-        IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Project.BNDCNF);
+        IProject cnfProject = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getProject(Project.BNDCNF);
         if (cnfProject != null && cnfProject.exists()) {
-            File cnfDir = cnfProject.getLocation().toFile();
+            File cnfDir = cnfProject.getLocation()
+                .toFile();
             warning = String.format("This Eclipse workspace is already configured as a Bnd workspace. You will not be able to create or import a Bnd workspace from elsewhere.", cnfDir);
         }
         setMessage(warning, WARNING);

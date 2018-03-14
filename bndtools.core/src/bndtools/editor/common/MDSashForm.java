@@ -23,22 +23,22 @@ public class MDSashForm extends SashForm {
     Listener listener = new Listener() {
         public void handleEvent(Event e) {
             switch (e.type) {
-            case SWT.MouseEnter :
-                e.widget.setData("hover", Boolean.TRUE); //$NON-NLS-1$
-                ((Control) e.widget).redraw();
-                break;
-            case SWT.MouseExit :
-                e.widget.setData("hover", null); //$NON-NLS-1$
-                ((Control) e.widget).redraw();
-                break;
-            case SWT.Paint :
-                onSashPaint(e);
-                break;
-            case SWT.Resize :
-                hookSashListeners();
-                break;
-            default :
-                break;
+                case SWT.MouseEnter :
+                    e.widget.setData("hover", Boolean.TRUE); //$NON-NLS-1$
+                    ((Control) e.widget).redraw();
+                    break;
+                case SWT.MouseExit :
+                    e.widget.setData("hover", null); //$NON-NLS-1$
+                    ((Control) e.widget).redraw();
+                    break;
+                case SWT.Paint :
+                    onSashPaint(e);
+                    break;
+                case SWT.Resize :
+                    hookSashListeners();
+                    break;
+                default :
+                    break;
             }
         }
     };
@@ -55,7 +55,8 @@ public class MDSashForm extends SashForm {
     public MDSashForm(Composite parent, int style, IManagedForm managedForm) {
         super(parent, style);
 
-        FormColors colors = managedForm.getToolkit().getColors();
+        FormColors colors = managedForm.getToolkit()
+            .getColors();
         bg = colors.getColor(IFormColors.TB_BG);
         fg = colors.getColor(IFormColors.TB_BORDER);
     }

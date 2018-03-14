@@ -51,7 +51,7 @@ import bndtools.Plugin;
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
 @SuppressWarnings({
-        "rawtypes"
+    "rawtypes"
 })
 public class MetaDataReader {
 
@@ -84,22 +84,22 @@ public class MetaDataReader {
 
     /** Sets of attributes belonging to XML elements. */
     private static final Set<String> AD_ATTRIBUTES = new HashSet<String>(Arrays.asList(new String[] {
-            "name", "description", "id", "type", "cardinality", "min", "max", "default", "required"
+        "name", "description", "id", "type", "cardinality", "min", "max", "default", "required"
     }));
     private static final Set<String> ATTRIBUTE_ATTRIBUTES = new HashSet<String>(Arrays.asList(new String[] {
-            "adref", "content"
+        "adref", "content"
     }));
     private static final Set<String> DESIGNATE_ATTRIBUTES = new HashSet<String>(Arrays.asList(new String[] {
-            "pid", "factoryPid", "bundle", "optional", "merge"
+        "pid", "factoryPid", "bundle", "optional", "merge"
     }));
     private static final Set<String> DESIGNATEOBJECT_ATTRIBUTES = new HashSet<String>(Arrays.asList(new String[] {
-            "ocdref"
+        "ocdref"
     }));
     private static final Set<String> METADATA_ATTRIBUTES = new HashSet<String>(Arrays.asList(new String[] {
-            "localization"
+        "localization"
     }));
     private static final Set<String> OCD_ATTRIBUTES = new HashSet<String>(Arrays.asList(new String[] {
-            "name", "description", "id"
+        "name", "description", "id"
     }));
 
     /**
@@ -109,11 +109,9 @@ public class MetaDataReader {
      * This method is almost identical to <code>return parse(url.openStream());</code> but also sets the string
      * representation of the URL as a location helper for error messages.
      *
-     * @param url
-     *            The <code>URL</code> providing access to the XML document.
+     * @param url The <code>URL</code> providing access to the XML document.
      * @return A {@link MetaData} providing access to the raw contents of the XML document.
-     * @throws IOException
-     *             If an I/O error occurs accessing the stream or parsing the XML document.
+     * @throws IOException If an I/O error occurs accessing the stream or parsing the XML document.
      */
     public MetaData parse(URL url) throws IOException {
         this.documentURL = url;
@@ -138,11 +136,9 @@ public class MetaDataReader {
      * This method starts reading at the current position of the input stream and returns immediately after completely
      * reading a single meta type document. The stream is not closed by this method.
      *
-     * @param ins
-     *            The <code>InputStream</code> providing the XML document
+     * @param ins The <code>InputStream</code> providing the XML document
      * @return A {@link MetaData} providing access to the raw contents of the XML document.
-     * @throws IOException
-     *             If an I/O error occurs accessing the stream or parsing the XML document.
+     * @throws IOException If an I/O error occurs accessing the stream or parsing the XML document.
      */
     public MetaData parse(InputStream ins) throws IOException {
         MetaData mti = null;
@@ -173,8 +169,7 @@ public class MetaDataReader {
     /**
      * Checks if this document has a meta type name space.
      *
-     * @throws IOException
-     *             when there the meta type name space is not valid
+     * @throws IOException when there the meta type name space is not valid
      */
     private void checkMetatypeNamespace() throws IOException {
         final String namespace = this.parser.getNamespace();
@@ -251,14 +246,16 @@ public class MetaDataReader {
                         Integer size = Integer.decode(sizeString);
                         ocd.addIcon(size, res);
                     } catch (NumberFormatException nfe) {
-                        // Activator.log(LogService.LOG_DEBUG, "readOCD: Icon size '" + sizeString + "' is not a valid number");
+                        // Activator.log(LogService.LOG_DEBUG, "readOCD: Icon size '" + sizeString + "' is not a valid
+                        // number");
                     }
                 } else {
                     ignoreElement();
                 }
             } else if (eventType == XmlPullParser.END_TAG) {
                 if ("OCD".equals(tagName)) {
-                    if (getNamespaceVersion() < 12 && ocd.getIcons() != null && ocd.getIcons().size() > 1) {
+                    if (getNamespaceVersion() < 12 && ocd.getIcons() != null && ocd.getIcons()
+                        .size() > 1) {
                         // Only one icon is allowed in versions 1.0 & 1.1...
                         throw unexpectedElement("Icon");
                     }
@@ -340,7 +337,7 @@ public class MetaDataReader {
 
         readOptionalAttributes(ad, AD_ATTRIBUTES);
 
-        Map<String,String> options = new LinkedHashMap<String,String>();
+        Map<String, String> options = new LinkedHashMap<String, String>();
         int eventType = this.parser.next();
         while (eventType != XmlPullParser.END_DOCUMENT) {
             String tagName = this.parser.getName();
@@ -430,7 +427,7 @@ public class MetaDataReader {
         return ah;
     }
 
-    //---------- Attribute access helper --------------------------------------
+    // ---------- Attribute access helper --------------------------------------
 
     private String getRequiredAttribute(String attrName) throws XmlPullParserException {
         String attrVal = this.parser.getAttributeValue(null, attrName);
@@ -459,9 +456,11 @@ public class MetaDataReader {
         String attrVal = this.parser.getAttributeValue(null, attrName);
         if (attrVal != null && !"".equals(attrVal)) {
             try {
-                return Integer.decode(attrVal).intValue();
+                return Integer.decode(attrVal)
+                    .intValue();
             } catch (NumberFormatException nfe) {
-                // Activator.log(LogService.LOG_DEBUG, "getOptionalAttribute: Value '" + attrVal + "' of attribute " + attrName + " is not a valid number. Using default value " + defaultValue);
+                // Activator.log(LogService.LOG_DEBUG, "getOptionalAttribute: Value '" + attrVal + "' of attribute " +
+                // attrName + " is not a valid number. Using default value " + defaultValue);
             }
         }
         // fallback to default
@@ -482,7 +481,7 @@ public class MetaDataReader {
         return Integer.MAX_VALUE;
     }
 
-    //---------- Error Handling support ---------------------------------------
+    // ---------- Error Handling support ---------------------------------------
 
     private void ignoreElement() throws IOException, XmlPullParserException {
         String ignoredElement = this.parser.getName();
@@ -517,7 +516,9 @@ public class MetaDataReader {
         if (documentURL != null) {
             message = message + " : " + this.documentURL;
         }
-        Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, null));
+        Plugin.getDefault()
+            .getLog()
+            .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, null));
     }
 
     private XmlPullParserException unexpectedElement(String elementName) {
@@ -525,7 +526,7 @@ public class MetaDataReader {
         return new XmlPullParserException(message, this.parser, null);
     }
 
-    //---------- Factory methods ----------------------------------------------
+    // ---------- Factory methods ----------------------------------------------
 
     /**
      * Creates a new {@link MetaData} object to hold the contents of the <code>MetaData</code> element.

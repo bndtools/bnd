@@ -38,7 +38,8 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
      * The parts of the test, needed to know what we missed
      */
     enum SetupTypes {
-        testsrc, bndcontainer;
+        testsrc,
+        bndcontainer;
     }
 
     /*
@@ -72,12 +73,14 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         //
         Project w;
         try {
-            w = Central.getWorkspace().getProjectFromFile(model.getBase());
+            w = Central.getWorkspace()
+                .getProjectFromFile(model.getBase());
         } catch (Exception e) {
             w = null;
         }
         if (w == null || w != model) {
-            model.error("Bndtools: Error in setup, likely the cnf folder is not ../cnf relative to the project folder '%s'. The workspace is in '%s'.", model.getBase(), model.getWorkspace().getBase());
+            model.error("Bndtools: Error in setup, likely the cnf folder is not ../cnf relative to the project folder '%s'. The workspace is in '%s'.", model.getBase(), model.getWorkspace()
+                .getBase());
             return;
         }
 
@@ -97,87 +100,96 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         for (IClasspathEntry cpe : javaProject.getRawClasspath()) {
             int kind = cpe.getEntryKind();
             switch (kind) {
-            case IClasspathEntry.CPE_VARIABLE :
-                warning(model, null, null, cpe, "Bndtools: Found a variable in the eclipse build path, this variable is not available during continuous integration", cpe).file(new File(model.getBase(), ".classpath").getAbsolutePath());
-                break;
+                case IClasspathEntry.CPE_VARIABLE :
+                    warning(model, null, null, cpe, "Bndtools: Found a variable in the eclipse build path, this variable is not available during continuous integration", cpe).file(new File(model.getBase(), ".classpath").getAbsolutePath());
+                    break;
 
-            case IClasspathEntry.CPE_LIBRARY :
-                warning(model, null, null, cpe, "Bndtools: The .classpath contains a library that will not be available during continuous integration: %s", cpe.getPath()).file(new File(model.getBase(), ".classpath").getAbsolutePath());
-                break;
+                case IClasspathEntry.CPE_LIBRARY :
+                    warning(model, null, null, cpe, "Bndtools: The .classpath contains a library that will not be available during continuous integration: %s", cpe.getPath()).file(new File(model.getBase(), ".classpath").getAbsolutePath());
+                    break;
 
-            case IClasspathEntry.CPE_CONTAINER :
-                if (BndtoolsConstants.BND_CLASSPATH_ID.segment(0).equals(cpe.getPath().segment(0)))
-                    found.remove(SetupTypes.bndcontainer);
-                else {
-                    IPath path = cpe.getPath();
-                    if (JRE_CONTAINER.segment(0).equals(path.segment(0))) {
-                        if (path.segmentCount() == 1) {
-                            // warning because default might vary <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-                            warning(model, null, path.toString(), cpe,
+                case IClasspathEntry.CPE_CONTAINER :
+                    if (BndtoolsConstants.BND_CLASSPATH_ID.segment(0)
+                        .equals(cpe.getPath()
+                            .segment(0)))
+                        found.remove(SetupTypes.bndcontainer);
+                    else {
+                        IPath path = cpe.getPath();
+                        if (JRE_CONTAINER.segment(0)
+                            .equals(path.segment(0))) {
+                            if (path.segmentCount() == 1) {
+                                // warning because default might vary <classpathentry kind="con"
+                                // path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+                                warning(model, null, path.toString(), cpe,
                                     "Bndtools: The .classpath contains a default JRE container: %s. This makes it undefined to what version you compile and this might differ between Continuous Integration and Eclipse", path)
-                                            .file(new File(model.getBase(), ".classpath").getAbsolutePath());
-                        } else {
-                            String segment = path.segment(1);
-                            if ("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType".equals(segment) && path.segmentCount() == 3) {
-                                // check javac version <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+                                        .file(new File(model.getBase(), ".classpath").getAbsolutePath());
+                            } else {
+                                String segment = path.segment(1);
+                                if ("org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType".equals(segment) && path.segmentCount() == 3) {
+                                    // check javac version <classpathentry kind="con"
+                                    // path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 
-                                String javac = model.getProperty(Constants.JAVAC_SOURCE, "1.8");
-                                if (!path.segment(2).endsWith(javac)) {
-                                    warning(model, null, path.toString(), cpe, "Bndtools: The .JRE container is set to %s but bnd is compiling against %s", path.segment(2), javac)
+                                    String javac = model.getProperty(Constants.JAVAC_SOURCE, "1.8");
+                                    if (!path.segment(2)
+                                        .endsWith(javac)) {
+                                        warning(model, null, path.toString(), cpe, "Bndtools: The .JRE container is set to %s but bnd is compiling against %s", path.segment(2), javac)
+                                            .file(new File(model.getBase(), ".classpath").getAbsolutePath());
+                                    }
+                                } else {
+                                    // warning because local/machine specific <classpathentry kind="con"
+                                    // path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java
+                                    // SE 7 [1.7.0_71]"/>
+                                    warning(model, null, path.toString(), cpe,
+                                        "Bndtools: The .classpath contains an non-portable JRE container: %s. This makes it undefined to what version you compile and this might differ between Continuous Integration and Eclipse", path)
                                             .file(new File(model.getBase(), ".classpath").getAbsolutePath());
                                 }
-                            } else {
-                                // warning because local/machine specific <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 7 [1.7.0_71]"/>
-                                warning(model, null, path.toString(), cpe,
-                                        "Bndtools: The .classpath contains an non-portable JRE container: %s. This makes it undefined to what version you compile and this might differ between Continuous Integration and Eclipse", path)
-                                                .file(new File(model.getBase(), ".classpath").getAbsolutePath());
-                            }
-                        }
-                    } else {
-                        warning(model, null, path.toString(), cpe, "Bndtools: The .classpath contains an unknown container: %s. This could make your build less portable.", path)
-                                .file(new File(model.getBase(), ".classpath").getAbsolutePath());
-                    }
-                }
-                break;
-
-            case IClasspathEntry.CPE_SOURCE :
-                File file = toFile(cpe.getPath());
-                if (file == null) {
-                    model.warning("Bndtools: Found virtual file for '%s'", cpe.getPath()).details(cpe);
-                } else {
-                    File output = toFile(cpe.getOutputLocation());
-                    if (output == null)
-                        output = toFile(javaProject.getOutputLocation());
-
-                    if (file.equals(testsrc)) {
-                        //
-                        // We're talking about the test source directory
-                        // This should be linked to testbin
-                        //
-                        found.remove(SetupTypes.testsrc);
-                        if (!testbin.equals(output)) {
-                            warning(model, DEFAULT_PROP_TESTBIN_DIR, testbin, cpe, "Bndtools: testsrc folder '%s' has output folder set to '%s', which does not match bnd's testbin folder '%s'", file, output, testbin);
-                        }
-                    } else {
-                        //
-                        // We must have a source directory. They must be linked to the bin
-                        // folder and on the bnd source path. Since the source path has
-                        // potentially multiple entries, we remove this one so we can check
-                        // later if we had all of them
-                        //
-                        if (sourcePath.remove(file)) {
-                            if (!bin.equals(output)) {
-                                warning(model, DEFAULT_PROP_BIN_DIR, bin, cpe, "Bndtools: src folder '%s' has output folder set to '%s', which does not match bnd's bin folder '%s'", file, output, bin);
                             }
                         } else {
-                            warning(model, DEFAULT_PROP_SRC_DIR, null, cpe, "Bndtools: Found source folder '%s' that is not on bnd's source path '%s'", file, model.getProperty(Constants.DEFAULT_PROP_SRC_DIR));
+                            warning(model, null, path.toString(), cpe, "Bndtools: The .classpath contains an unknown container: %s. This could make your build less portable.", path)
+                                .file(new File(model.getBase(), ".classpath").getAbsolutePath());
                         }
                     }
-                }
-                break;
+                    break;
 
-            default :
-                break;
+                case IClasspathEntry.CPE_SOURCE :
+                    File file = toFile(cpe.getPath());
+                    if (file == null) {
+                        model.warning("Bndtools: Found virtual file for '%s'", cpe.getPath())
+                            .details(cpe);
+                    } else {
+                        File output = toFile(cpe.getOutputLocation());
+                        if (output == null)
+                            output = toFile(javaProject.getOutputLocation());
+
+                        if (file.equals(testsrc)) {
+                            //
+                            // We're talking about the test source directory
+                            // This should be linked to testbin
+                            //
+                            found.remove(SetupTypes.testsrc);
+                            if (!testbin.equals(output)) {
+                                warning(model, DEFAULT_PROP_TESTBIN_DIR, testbin, cpe, "Bndtools: testsrc folder '%s' has output folder set to '%s', which does not match bnd's testbin folder '%s'", file, output, testbin);
+                            }
+                        } else {
+                            //
+                            // We must have a source directory. They must be linked to the bin
+                            // folder and on the bnd source path. Since the source path has
+                            // potentially multiple entries, we remove this one so we can check
+                            // later if we had all of them
+                            //
+                            if (sourcePath.remove(file)) {
+                                if (!bin.equals(output)) {
+                                    warning(model, DEFAULT_PROP_BIN_DIR, bin, cpe, "Bndtools: src folder '%s' has output folder set to '%s', which does not match bnd's bin folder '%s'", file, output, bin);
+                                }
+                            } else {
+                                warning(model, DEFAULT_PROP_SRC_DIR, null, cpe, "Bndtools: Found source folder '%s' that is not on bnd's source path '%s'", file, model.getProperty(Constants.DEFAULT_PROP_SRC_DIR));
+                            }
+                        }
+                    }
+                    break;
+
+                default :
+                    break;
             }
 
         }
@@ -195,23 +207,24 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         //
         for (SetupTypes t : found) {
             switch (t) {
-            case testsrc :
-                if (testsrc.isDirectory()) // if the testsrc directory does not exist, then don't warn
-                    warning(model, DEFAULT_PROP_TESTSRC_DIR, null, null, "Bndtools: bnd's testsrc folder '%s' is not in the Eclipse build path", testsrc);
-                break;
+                case testsrc :
+                    if (testsrc.isDirectory()) // if the testsrc directory does not exist, then don't warn
+                        warning(model, DEFAULT_PROP_TESTSRC_DIR, null, null, "Bndtools: bnd's testsrc folder '%s' is not in the Eclipse build path", testsrc);
+                    break;
 
-            case bndcontainer :
-                warning(model, null, null, null, "Bndtools: The build path does not refer to the bnd container '%s'", BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
-                break;
+                case bndcontainer :
+                    warning(model, null, null, null, "Bndtools: The build path does not refer to the bnd container '%s'", BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
+                    break;
 
-            default :
-                break;
+                default :
+                    break;
             }
         }
     }
 
     private SetLocation warning(Project model, String header, Object context, IClasspathEntry cpe, String format, Object... args) {
-        String prefix = model.getBase().getAbsolutePath();
+        String prefix = model.getBase()
+            .getAbsolutePath();
         for (int i = 0; i < args.length; i++) {
             args[i] = relative(prefix, args[i]);
         }
@@ -224,7 +237,8 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         if (cpe != null) {
             loc.details(cpe);
         }
-        loc.file(model.getPropertiesFile().getAbsolutePath());
+        loc.file(model.getPropertiesFile()
+            .getAbsolutePath());
         return loc;
     }
 
@@ -243,9 +257,13 @@ public class ProjectPathsValidator implements IValidator, IProjectValidator {
         if (path == null)
             return null;
 
-        IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+        IFile file = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getFile(path);
         if (file != null)
-            return file.getLocation().toFile().getAbsoluteFile();
+            return file.getLocation()
+                .toFile()
+                .getAbsoluteFile();
         return null;
     }
 }

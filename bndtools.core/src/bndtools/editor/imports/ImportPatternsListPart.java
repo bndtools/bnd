@@ -54,7 +54,8 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
             List<ImportPattern> toRemove = new LinkedList<ImportPattern>();
             for (Iterator<ImportPattern> iter = getClauses().iterator(); iter.hasNext();) {
                 ImportPattern pattern = iter.next();
-                if (pattern.getName().equals("*") && iter.hasNext()) {
+                if (pattern.getName()
+                    .equals("*") && iter.hasNext()) {
                     toRemove.add(pattern);
                 }
             }
@@ -64,7 +65,9 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 
             // Add a "*" at the end, if not already present
             List<ImportPattern> patterns = getClauses();
-            if (patterns.size() != 0 && !patterns.get(patterns.size() - 1).getName().equals("*")) {
+            if (patterns.size() != 0 && !patterns.get(patterns.size() - 1)
+                .getName()
+                .equals("*")) {
                 ImportPattern starPattern = new ImportPattern("*", new Attrs());
                 ImportPatternsListPart.super.doAddClauses(Arrays.asList(starPattern), -1, false);
             }
@@ -110,7 +113,8 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
                 if (!modifyLock.isUnderModification()) {
                     List<ImportPattern> selectedClauses = getSelection();
                     if (selectedClauses.size() == 1) {
-                        selectedClauses.get(0).setName(txtPattern.getText());
+                        selectedClauses.get(0)
+                            .setName(txtPattern.getText());
                         updateLabels(selectedClauses);
                         validate();
                         markDirty();
@@ -128,7 +132,8 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 
                     List<ImportPattern> selectedClauses = getSelection();
                     for (ImportPattern clause : selectedClauses) {
-                        clause.getAttribs().put(Constants.VERSION_ATTRIBUTE, text);
+                        clause.getAttribs()
+                            .put(Constants.VERSION_ATTRIBUTE, text);
                     }
                     updateLabels(selectedClauses);
                     validate();
@@ -154,7 +159,7 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
     }
 
     @Override
-    protected void doAddClauses(Collection< ? extends ImportPattern> clauses, int index, boolean select) {
+    protected void doAddClauses(Collection<? extends ImportPattern> clauses, int index, boolean select) {
         boolean appendStar = getClauses().isEmpty();
 
         super.doAddClauses(clauses, index, select);
@@ -176,7 +181,8 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
         if (!patterns.isEmpty()) {
             for (Iterator<ImportPattern> iter = patterns.iterator(); iter.hasNext();) {
                 ImportPattern pattern = iter.next();
-                if (pattern.getName().equals("*") && iter.hasNext()) {
+                if (pattern.getName()
+                    .equals("*") && iter.hasNext()) {
                     noStarWarning = "The catch-all pattern \"*\" should be in the last position.";
                     actionMessage = "Move \"*\" pattern to the last position.";
                     break;
@@ -185,7 +191,8 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
 
             if (noStarWarning == null) {
                 ImportPattern last = patterns.get(patterns.size() - 1);
-                if (!last.getName().equals("*")) {
+                if (!last.getName()
+                    .equals("*")) {
                     noStarWarning = "The catch-all pattern \"*\" should be present and in the last position.";
                     actionMessage = "Add missing \"*\" pattern.";
                 }
@@ -209,7 +216,7 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
     }
 
     @Override
-    protected void saveToModel(BndEditModel model, List< ? extends ImportPattern> clauses) {
+    protected void saveToModel(BndEditModel model, List<? extends ImportPattern> clauses) {
         model.setImportPatterns(clauses);
     }
 
@@ -237,7 +244,8 @@ public class ImportPatternsListPart extends PkgPatternsListPart<ImportPattern> {
                         pnlDetails.setEnabled(true);
 
                         boolean differs = false;
-                        boolean first = selectedClauses.get(0).isOptional();
+                        boolean first = selectedClauses.get(0)
+                            .isOptional();
                         for (ImportPattern pattern : selectedClauses) {
                             if (first != pattern.isOptional()) {
                                 differs = true;

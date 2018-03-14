@@ -213,10 +213,14 @@ public class PackageListWizardPage extends WizardPage {
                                 if (path.isAbsolute())
                                     jar = new Jar(path.toFile());
                                 else
-                                    jar = new Jar(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(path).toFile());
+                                    jar = new Jar(ResourcesPlugin.getWorkspace()
+                                        .getRoot()
+                                        .getLocation()
+                                        .append(path)
+                                        .toFile());
 
-                                Map<String,Map<String,Resource>> dirs = jar.getDirectories();
-                                for (Entry<String,Map<String,Resource>> entry : dirs.entrySet()) {
+                                Map<String, Map<String, Resource>> dirs = jar.getDirectories();
+                                for (Entry<String, Map<String, Resource>> entry : dirs.entrySet()) {
                                     if (entry.getValue() == null)
                                         continue;
 
@@ -251,9 +255,11 @@ public class PackageListWizardPage extends WizardPage {
     }
 
     private void updateUI() {
-        btnAdd.setEnabled(!availableViewer.getSelection().isEmpty());
+        btnAdd.setEnabled(!availableViewer.getSelection()
+            .isEmpty());
         btnAddAll.setEnabled(!availablePackages.isEmpty());
-        btnRemove.setEnabled(!selectedViewer.getSelection().isEmpty());
+        btnRemove.setEnabled(!selectedViewer.getSelection()
+            .isEmpty());
         btnRemoveAll.setEnabled(!selectedPackages.isEmpty());
 
         getContainer().updateButtons();

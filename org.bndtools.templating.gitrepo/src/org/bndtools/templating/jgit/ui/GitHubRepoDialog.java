@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
 import aQute.bnd.header.Attrs;
 import aQute.libg.tuple.Pair;
 
@@ -79,7 +80,9 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
 
         ControlDecoration branchDecor = new ControlDecoration(txtBranch, SWT.LEFT, container);
         branchDecor.setDescriptionText("Specify the branch, tag or commit ID you would like to clone from the\nrepository. We use the default branch specified in GitHub settings.");
-        branchDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        branchDecor.setImage(FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+            .getImage());
         branchDecor.setShowHover(true);
 
         final Button btnValidate = new Button(container, SWT.PUSH);
@@ -88,11 +91,15 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
         ModifyListener modifyListener = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent ev) {
-                if (!txtRepository.getText().trim().equals(repository)) {
+                if (!txtRepository.getText()
+                    .trim()
+                    .equals(repository)) {
                     isValidated = false;
-                    repository = txtRepository.getText().trim();
+                    repository = txtRepository.getText()
+                        .trim();
                 }
-                branch = txtBranch.getText().trim();
+                branch = txtBranch.getText()
+                    .trim();
                 updateButtons();
             }
         };
@@ -114,16 +121,18 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
                         @Override
                         public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                             try {
-                                final GithubRepoDetailsDTO dto = new GitHub(cache, executor).loadRepoDetails(repository).getValue();
+                                final GithubRepoDetailsDTO dto = new GitHub(cache, executor).loadRepoDetails(repository)
+                                    .getValue();
                                 final URI cloneUri = URI.create(dto.clone_url);
-                                btnValidate.getDisplay().asyncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        setMessage(String.format("Validated! Clone URL is '%s'. Default branch 'origin/%s'", cloneUri, dto.default_branch), IMessageProvider.INFORMATION);
-                                        isValidated = true;
-                                        updateButtons();
-                                    }
-                                });
+                                btnValidate.getDisplay()
+                                    .asyncExec(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            setMessage(String.format("Validated! Clone URL is '%s'. Default branch 'origin/%s'", cloneUri, dto.default_branch), IMessageProvider.INFORMATION);
+                                            isValidated = true;
+                                            updateButtons();
+                                        }
+                                    });
                             } catch (InvocationTargetException e) {
                                 throw e;
                             } catch (Exception e) {
@@ -139,11 +148,13 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
                     if (t instanceof FileNotFoundException)
                         setErrorMessage("Could not find the requested repository");
                     else
-                        setErrorMessage(t.getClass().getSimpleName() + ": " + t.getMessage());
+                        setErrorMessage(t.getClass()
+                            .getSimpleName() + ": " + t.getMessage());
                 } catch (GitHubValidationException ex) {
                     setErrorMessage(ex.getMessage());
                 } catch (Exception ex) {
-                    setErrorMessage(ex.getClass().getSimpleName() + ": " + ex.getMessage());
+                    setErrorMessage(ex.getClass()
+                        .getSimpleName() + ": " + ex.getMessage());
                 }
             }
         });
@@ -161,11 +172,12 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
     }
 
     private void updateButtons() {
-        getButton(OK).setEnabled(repository != null && !repository.trim().isEmpty() && isValidated);
+        getButton(OK).setEnabled(repository != null && !repository.trim()
+            .isEmpty() && isValidated);
     }
 
     @Override
-    public void setEntry(Pair<String,Attrs> entry) {
+    public void setEntry(Pair<String, Attrs> entry) {
         repository = entry.getFirst();
         Attrs attrs = entry.getSecond();
         branch = attrs.get("branch");
@@ -177,11 +189,12 @@ public class GitHubRepoDialog extends AbstractNewEntryDialog {
     }
 
     @Override
-    public Pair<String,Attrs> getEntry() {
+    public Pair<String, Attrs> getEntry() {
         Attrs attrs = new Attrs();
-        if (branch != null && !branch.trim().isEmpty())
+        if (branch != null && !branch.trim()
+            .isEmpty())
             attrs.put("branch", branch);
-        return repository != null ? new Pair<String,Attrs>(repository.trim(), attrs) : null;
+        return repository != null ? new Pair<String, Attrs>(repository.trim(), attrs) : null;
     }
 
     @Override

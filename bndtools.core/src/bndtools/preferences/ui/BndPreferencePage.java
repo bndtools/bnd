@@ -40,7 +40,9 @@ public class BndPreferencePage extends PreferencePage implements IWorkbenchPrefe
         btnOfflineWorkspace.setText(Messages.BndPreferencePage_btnOfflineWorkspace);
 
         ControlDecoration decoration = new ControlDecoration(btnOfflineWorkspace, SWT.RIGHT | SWT.TOP, composite);
-        decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        decoration.setImage(FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+            .getImage());
         decoration.setDescriptionText(Messages.BndPreferencePage_decorOfflineWorkspace);
 
         // Create controls

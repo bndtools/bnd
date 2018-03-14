@@ -3,6 +3,7 @@ package org.bndtools.core.views.jpm;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Iterator;
+
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
@@ -71,7 +72,7 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
                     dialog.open();
                 }
             });
-            //            linkToPrefs.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
+            // linkToPrefs.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
             stack.topControl = composite;
         } else {
             if (prefs.getBrowserSelection() == JpmPreferences.PREF_BROWSER_PLATFORM_DEFAULT) {
@@ -93,18 +94,14 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
                 public void changing(LocationEvent event) {
                     setContentDescription(event.location);
                     /*
-                     *
-                    if (event.location.startsWith(HTTPS_URL))
-                        return;
-                    if (event.location.startsWith(HTTP_URL))
-                        event.location = event.location.replaceFirst(HTTP_URL, HTTP_URL);
-                    else
-                        event.doit = false;
+                     * if (event.location.startsWith(HTTPS_URL)) return; if (event.location.startsWith(HTTP_URL))
+                     * event.location = event.location.replaceFirst(HTTP_URL, HTTP_URL); else event.doit = false;
                      */
                 }
             });
         }
-        selectionService = getViewSite().getWorkbenchWindow().getSelectionService();
+        selectionService = getViewSite().getWorkbenchWindow()
+            .getSelectionService();
         selectionService.addSelectionListener(this);
         handleWorkbenchSelection(selectionService.getSelection());
     }
@@ -130,7 +127,8 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
             }
         };
 
-        IToolBarManager tbm = getViewSite().getActionBars().getToolBarManager();
+        IToolBarManager tbm = getViewSite().getActionBars()
+            .getToolBarManager();
         tbm.add(backAction);
         tbm.add(forwardAction);
     }
@@ -155,7 +153,8 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
                     try {
                         setSearchURI(cont.browse());
                     } catch (Exception e) {
-                        Plugin.getDefault().error("Failed to get browse URL for repository", e);
+                        Plugin.getDefault()
+                            .error("Failed to get browse URL for repository", e);
                     }
                     break;
                 }
@@ -168,7 +167,11 @@ public class JPMBrowserView extends ViewPart implements ISelectionListener {
             if (external) {
                 if (!uri.equals(externalUri)) {
                     externalUri = uri;
-                    getViewSite().getWorkbenchWindow().getWorkbench().getBrowserSupport().getExternalBrowser().openURL(uri.toURL());
+                    getViewSite().getWorkbenchWindow()
+                        .getWorkbench()
+                        .getBrowserSupport()
+                        .getExternalBrowser()
+                        .openURL(uri.toURL());
                 }
             } else {
                 String current = browser.getUrl();

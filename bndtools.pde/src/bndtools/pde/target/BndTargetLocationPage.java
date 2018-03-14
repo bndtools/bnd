@@ -1,6 +1,7 @@
 package bndtools.pde.target;
 
 import java.util.Collection;
+
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -31,7 +32,8 @@ public abstract class BndTargetLocationPage extends WizardPage implements IEditB
         this.logger = Logger.getLogger(getClass());
         this.message = message;
         this.targetDefinition = targetDefinition;
-        this.bundleIcon = AbstractUIPlugin.imageDescriptorFromPlugin("bndtools.core", "/icons/bundle.png").createImage();
+        this.bundleIcon = AbstractUIPlugin.imageDescriptorFromPlugin("bndtools.core", "/icons/bundle.png")
+            .createImage();
     }
 
     public ITargetDefinition getTargetDefinition() {
@@ -54,7 +56,8 @@ public abstract class BndTargetLocationPage extends WizardPage implements IEditB
 
     protected TreeViewer createBundleListArea(Composite composite, int hSpan) {
         TreeViewer bundleList = new TreeViewer(new Tree(composite, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER));
-        bundleList.getTree().setLayoutData(fillGridData(hSpan));
+        bundleList.getTree()
+            .setLayoutData(fillGridData(hSpan));
         bundleList.setLabelProvider(new LabelProvider() {
             @Override
             public Image getImage(Object element) {
@@ -64,7 +67,7 @@ public abstract class BndTargetLocationPage extends WizardPage implements IEditB
         bundleList.setContentProvider(new TreeContentProvider() {
             @Override
             public Object[] getElements(Object element) {
-                return ((Collection< ? >) element).toArray();
+                return ((Collection<?>) element).toArray();
             }
         });
         return bundleList;

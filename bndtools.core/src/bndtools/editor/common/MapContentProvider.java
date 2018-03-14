@@ -26,8 +26,8 @@ public class MapContentProvider implements IStructuredContentProvider {
 
     @Override
     public Object[] getElements(Object inputElement) {
-        Map< ? , ? > map = (Map< ? , ? >) inputElement;
-        Set< ? > keySet = map.keySet();
+        Map<?, ?> map = (Map<?, ?>) inputElement;
+        Set<?> keySet = map.keySet();
 
         return keySet.toArray();
     }

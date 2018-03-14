@@ -17,8 +17,10 @@ import org.eclipse.swt.graphics.Image;
 
 public class JavaContentProposalLabelProvider extends LabelProvider {
 
-    private final Image classImg = Icons.desc("class").createImage();
-    private final Image interfaceImg = Icons.desc("interface").createImage();
+    private final Image classImg = Icons.desc("class")
+        .createImage();
+    private final Image interfaceImg = Icons.desc("interface")
+        .createImage();
 
     @Override
     public Image getImage(Object element) {

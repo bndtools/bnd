@@ -64,7 +64,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         } else if (size > 1) {
             // only support multiple IJavaElements
             List<IJavaElement> elements = new ArrayList<>();
-            Iterator< ? > iterator = is.iterator();
+            Iterator<?> iterator = is.iterator();
 
             while (iterator.hasNext()) {
                 Object element = iterator.next();
@@ -89,7 +89,8 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         } else if (selected instanceof IResource && Project.BNDFILE.equals(((IResource) selected).getName())) {
             IProject project = ((IResource) selected).getProject();
             launchProject(project, mode);
-        } else if (selected instanceof IFile && ((IFile) selected).getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+        } else if (selected instanceof IFile && ((IFile) selected).getName()
+            .endsWith(LaunchConstants.EXT_BNDRUN)) {
             IFile bndRunFile = (IFile) selected;
             launchBndRun(bndRunFile, mode);
         } else if (selected instanceof IAdaptable) {
@@ -112,15 +113,19 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         if (element != null) {
             IJavaProject jproject = element.getJavaProject();
             if (jproject != null) {
-                launch(jproject.getProject().getFullPath(), jproject.getProject(), mode);
+                launch(jproject.getProject()
+                    .getFullPath(), jproject.getProject(), mode);
             }
         } else {
             IFile file = ResourceUtil.getFile(input);
             if (file != null) {
-                if (file.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+                if (file.getName()
+                    .endsWith(LaunchConstants.EXT_BNDRUN)) {
                     launch(file.getFullPath(), file.getProject(), mode);
-                } else if (file.getName().equals(Project.BNDFILE)) {
-                    launch(file.getProject().getFullPath(), file.getProject(), mode);
+                } else if (file.getName()
+                    .equals(Project.BNDFILE)) {
+                    launch(file.getProject()
+                        .getFullPath(), file.getProject(), mode);
                 }
             }
         }
@@ -128,7 +133,9 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 
     @SuppressWarnings("unused")
     protected void launchJavaElements(List<IJavaElement> elements, String mode) throws CoreException {
-        IProject targetProject = elements.get(0).getJavaProject().getProject();
+        IProject targetProject = elements.get(0)
+            .getJavaProject()
+            .getProject();
         launch(targetProject.getFullPath(), targetProject, mode);
     }
 
@@ -156,7 +163,8 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
 
     protected ILaunchConfiguration findLaunchConfig(IPath targetPath) throws CoreException {
         List<ILaunchConfiguration> candidateConfigs = new ArrayList<ILaunchConfiguration>();
-        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchManager manager = DebugPlugin.getDefault()
+            .getLaunchManager();
 
         ILaunchConfigurationType configType = manager.getLaunchConfigurationType(launchId);
         ILaunchConfiguration[] configs = manager.getLaunchConfigurations(configType);
@@ -174,7 +182,8 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
     }
 
     protected ILaunchConfigurationWorkingCopy createConfiguration(IPath targetPath, IProject targetProject) throws CoreException {
-        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchManager manager = DebugPlugin.getDefault()
+            .getLaunchManager();
         ILaunchConfigurationType configType = manager.getLaunchConfigurationType(launchId);
 
         ILaunchConfigurationWorkingCopy wc;
@@ -219,7 +228,8 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
     }
 
     protected ILaunchConfiguration[] getLaunchConfigsForProject(@SuppressWarnings("unused") IProject project) {
-        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchManager manager = DebugPlugin.getDefault()
+            .getLaunchManager();
 
         ILaunchConfigurationType type = manager.getLaunchConfigurationType(launchId);
         try {

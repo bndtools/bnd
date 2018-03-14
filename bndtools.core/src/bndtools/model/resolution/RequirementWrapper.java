@@ -8,6 +8,6 @@ public class RequirementWrapper {
 
     public Requirement requirement;
     public boolean resolved;
-    public Collection< ? extends Object> requirers;
+    public Collection<? extends Object> requirers;
 
 }

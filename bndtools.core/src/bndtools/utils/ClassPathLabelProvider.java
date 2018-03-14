@@ -21,8 +21,10 @@ import bndtools.Plugin;
 
 public class ClassPathLabelProvider extends StyledCellLabelProvider {
 
-    private final Image jarImg = Icons.desc("jar").createImage();
-    private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
+    private final Image jarImg = Icons.desc("jar")
+        .createImage();
+    private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/fldr_obj.gif")
+        .createImage();
 
     @Override
     public void update(ViewerCell cell) {

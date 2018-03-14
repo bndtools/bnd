@@ -12,10 +12,10 @@ import org.bndtools.utils.copy.ResourceReplacer;
 public class RegexReplacingResource implements Resource {
 
     private final URL url;
-    private final Map<String,String> replaceRegularExpressions;
+    private final Map<String, String> replaceRegularExpressions;
     private final String encoding;
 
-    public RegexReplacingResource(URL url, Map<String,String> replaceRegularExpressions, String encoding) {
+    public RegexReplacingResource(URL url, Map<String, String> replaceRegularExpressions, String encoding) {
         this.replaceRegularExpressions = replaceRegularExpressions;
         this.url = url;
         this.encoding = encoding;

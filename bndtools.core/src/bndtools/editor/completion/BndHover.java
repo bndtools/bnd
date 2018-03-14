@@ -1,6 +1,11 @@
 package bndtools.editor.completion;
 
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.DefaultTextHover;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.source.ISourceViewer;
 
 import aQute.bnd.help.Syntax;
@@ -79,25 +84,25 @@ public class BndHover extends DefaultTextHover {
         while (r < text.length()) {
             char c = text.charAt(r++);
             switch (c) {
-            case '\r' :
-            case '\n' :
-                if (n != 0)
-                    sb.append('\n');
-                n = 0;
-                break;
-            case ' ' :
-            case '\t' :
-                if (n > width) {
-                    sb.append("\n");
+                case '\r' :
+                case '\n' :
+                    if (n != 0)
+                        sb.append('\n');
                     n = 0;
-                } else {
-                    sb.append(" ");
+                    break;
+                case ' ' :
+                case '\t' :
+                    if (n > width) {
+                        sb.append("\n");
+                        n = 0;
+                    } else {
+                        sb.append(" ");
+                        n++;
+                    }
+                    break;
+                default :
+                    sb.append(c);
                     n++;
-                }
-                break;
-            default :
-                sb.append(c);
-                n++;
             }
         }
         return sb.toString();

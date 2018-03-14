@@ -23,15 +23,15 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
     private FormToolkit toolkit;
     private Composite parent;
 
-    private final Map<Class< ? >,IDetailsPage> pageMap = new HashMap<Class< ? >,IDetailsPage>(3);
-    private final Map<Class< ? >,Control> controlCache = new HashMap<Class< ? >,Control>(3);
+    private final Map<Class<?>, IDetailsPage> pageMap = new HashMap<Class<?>, IDetailsPage>(3);
+    private final Map<Class<?>, Control> controlCache = new HashMap<Class<?>, Control>(3);
     private IDetailsPage deselectedPage = null;
 
     private IDetailsPage currentPage = null;
     private ISelection currentSelection;
     private IFormPart masterPart;
 
-    public void registerPage(Class< ? > clazz, IDetailsPage page) {
+    public void registerPage(Class<?> clazz, IDetailsPage page) {
         pageMap.put(clazz, page);
         page.initialize(managedForm);
     }
@@ -58,7 +58,7 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         masterPart = part;
         currentSelection = selection;
 
-        Class< ? > clazz = null;
+        Class<?> clazz = null;
         if (selection instanceof IStructuredSelection) {
             Object selected = ((IStructuredSelection) selection).getFirstElement();
             if (selected != null)
@@ -67,7 +67,7 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         showPage(clazz);
     }
 
-    void showPage(Class< ? > clazz) {
+    void showPage(Class<?> clazz) {
         IDetailsPage oldPage = currentPage;
 
         currentPage = clazz != null ? currentPage = pageMap.get(clazz) : null;
@@ -104,7 +104,7 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
     }
 
     public void dispose() {
-        for (Class< ? > key : pageMap.keySet()) {
+        for (Class<?> key : pageMap.keySet()) {
             controlCache.remove(key);
             IDetailsPage page = pageMap.get(key);
             page.dispose();

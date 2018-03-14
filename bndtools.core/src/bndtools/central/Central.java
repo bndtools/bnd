@@ -76,7 +76,7 @@ public class Central implements IStartupParticipant {
     static final AtomicBoolean indexValid = new AtomicBoolean(false);
 
     private final BundleContext bundleContext;
-    private final Map<IJavaProject,Project> javaProjectToModel = new HashMap<IJavaProject,Project>();
+    private final Map<IJavaProject, Project> javaProjectToModel = new HashMap<IJavaProject, Project>();
     private final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
 
     private RepositoryListenerPluginTracker repoListenerTracker;
@@ -88,7 +88,8 @@ public class Central implements IStartupParticipant {
 
     static {
         try {
-            BundleContext context = FrameworkUtil.getBundle(Central.class).getBundleContext();
+            BundleContext context = FrameworkUtil.getBundle(Central.class)
+                .getBundleContext();
             Bundle bndlib = FrameworkUtil.getBundle(Workspace.class);
             auxiliary = new Auxiliary(context, bndlib);
         } catch (Exception e) {
@@ -97,12 +98,13 @@ public class Central implements IStartupParticipant {
     }
 
     /**
-     * WARNING: Do not instantiate this class. It must be public to allow instantiation by the Eclipse registry, but it is
-     * not intended for direct creation by clients. Instead call Central.getInstance().
+     * WARNING: Do not instantiate this class. It must be public to allow instantiation by the Eclipse registry, but it
+     * is not intended for direct creation by clients. Instead call Central.getInstance().
      */
     @Deprecated
     public Central() {
-        bundleContext = FrameworkUtil.getBundle(Central.class).getBundleContext();
+        bundleContext = FrameworkUtil.getBundle(Central.class)
+            .getBundleContext();
     }
 
     @Override
@@ -163,8 +165,11 @@ public class Central implements IStartupParticipant {
     }
 
     public static IFile getWorkspaceBuildFile() throws Exception {
-        File file = Central.getWorkspace().getPropertiesFile();
-        IFile[] matches = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(file.toURI());
+        File file = Central.getWorkspace()
+            .getPropertiesFile();
+        IFile[] matches = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .findFilesForLocationURI(file.toURI());
 
         if (matches == null || matches.length != 1) {
             logger.logError("Cannot find workspace location for bnd configuration file " + file, null);
@@ -211,7 +216,8 @@ public class Central implements IStartupParticipant {
                 if (workspaceDirectory != null && ws.isDefaultWorkspace()) {
                     ws.setFileSystem(workspaceDirectory, Workspace.CNFDIR);
                     ws.refresh();
-                    resolve = !workspaceQueue.getPromise().isDone();
+                    resolve = !workspaceQueue.getPromise()
+                        .isDone();
                 } else if (workspaceDirectory == null && !ws.isDefaultWorkspace()) {
                     ws.setFileSystem(Workspace.BND_DEFAULT_WS, Workspace.CNFDIR);
                     ws.refresh();
@@ -266,7 +272,8 @@ public class Central implements IStartupParticipant {
 
     public static Promise<Workspace> onWorkspace(Consumer<Workspace> callback) {
         Promise<Workspace> p = workspaceQueue.getPromise();
-        return p.thenAccept(workspace -> callback.accept(workspace)).onFailure(failure -> logger.logError("onWorkspace callback failed", failure));
+        return p.thenAccept(workspace -> callback.accept(workspace))
+            .onFailure(failure -> logger.logError("onWorkspace callback failed", failure));
     }
 
     public static Promise<Workspace> onWorkspaceAsync(Consumer<Workspace> callback) {
@@ -274,16 +281,18 @@ public class Central implements IStartupParticipant {
         return p.then(resolved -> {
             Workspace workspace = resolved.getValue();
             Deferred<Workspace> completion = promiseFactory.deferred();
-            Display.getDefault().asyncExec(() -> {
-                try {
-                    callback.accept(workspace);
-                    completion.resolve(workspace);
-                } catch (Throwable e) {
-                    completion.fail(e);
-                }
-            });
+            Display.getDefault()
+                .asyncExec(() -> {
+                    try {
+                        callback.accept(workspace);
+                        completion.resolve(workspace);
+                    } catch (Throwable e) {
+                        completion.fail(e);
+                    }
+                });
             return completion.getPromise();
-        }).onFailure(failure -> logger.logError("onWorkspaceAsync callback failed", failure));
+        })
+            .onFailure(failure -> logger.logError("onWorkspaceAsync callback failed", failure));
     }
 
     public static PromiseFactory promiseFactory() {
@@ -295,7 +304,8 @@ public class Central implements IStartupParticipant {
     }
 
     private static File getWorkspaceDirectory() throws CoreException {
-        IWorkspaceRoot eclipseWorkspace = ResourcesPlugin.getWorkspace().getRoot();
+        IWorkspaceRoot eclipseWorkspace = ResourcesPlugin.getWorkspace()
+            .getRoot();
 
         IProject cnfProject = eclipseWorkspace.getProject(Workspace.BNDDIR);
         if (!cnfProject.exists())
@@ -304,7 +314,9 @@ public class Central implements IStartupParticipant {
         if (cnfProject.exists()) {
             if (!cnfProject.isOpen())
                 cnfProject.open(null);
-            return cnfProject.getLocation().toFile().getParentFile();
+            return cnfProject.getLocation()
+                .toFile()
+                .getParentFile();
         }
 
         return null;
@@ -319,22 +331,23 @@ public class Central implements IStartupParticipant {
     }
 
     private static void addCnfChangeListener(final Workspace workspace) {
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(new IResourceChangeListener() {
-            @Override
-            public void resourceChanged(IResourceChangeEvent event) {
-                if (Central.getInstance() == null) { // plugin is not active
-                    return;
+        ResourcesPlugin.getWorkspace()
+            .addResourceChangeListener(new IResourceChangeListener() {
+                @Override
+                public void resourceChanged(IResourceChangeEvent event) {
+                    if (Central.getInstance() == null) { // plugin is not active
+                        return;
+                    }
+                    if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
+                        return;
+                    }
+                    IResourceDelta rootDelta = event.getDelta();
+                    if (isCnfChanged(workspace, rootDelta)) {
+                        logger.logInfo("cnf changed; refreshing workspace", null);
+                        workspace.refresh();
+                    }
                 }
-                if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
-                    return;
-                }
-                IResourceDelta rootDelta = event.getDelta();
-                if (isCnfChanged(workspace, rootDelta)) {
-                    logger.logInfo("cnf changed; refreshing workspace", null);
-                    workspace.refresh();
-                }
-            }
-        });
+            });
     }
 
     private static boolean isCnfChanged(Workspace workspace, IResourceDelta rootDelta) {
@@ -387,8 +400,11 @@ public class Central implements IStartupParticipant {
     }
 
     public static IJavaProject getJavaProject(Project model) {
-        for (IProject iproj : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if (iproj.getName().equals(model.getName())) {
+        for (IProject iproj : ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getProjects()) {
+            if (iproj.getName()
+                .equals(model.getName())) {
                 IJavaProject ij = JavaCore.create(iproj);
                 if (ij != null && ij.exists()) {
                     return ij;
@@ -431,14 +447,18 @@ public class Central implements IStartupParticipant {
 
     public static void refresh(IPath path) {
         try {
-            IResource r = ResourcesPlugin.getWorkspace().getRoot().findMember(path);
+            IResource r = ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .findMember(path);
             if (r != null)
                 return;
 
             IPath p = (IPath) path.clone();
             while (p.segmentCount() > 0) {
                 p = p.removeLastSegments(1);
-                IResource resource = ResourcesPlugin.getWorkspace().getRoot().findMember(p);
+                IResource resource = ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .findMember(p);
                 if (resource != null) {
                     resource.refreshLocal(IResource.DEPTH_INFINITE, null);
                     return;
@@ -479,7 +499,8 @@ public class Central implements IStartupParticipant {
                     refreshFile(file);
                 }
 
-                for (Project p : Central.getWorkspace().getAllProjects()) {
+                for (Project p : Central.getWorkspace()
+                    .getAllProjects()) {
                     p.setChanged();
                     for (ModelListener l : getInstance().listeners)
                         l.modelChanged(p);
@@ -499,7 +520,8 @@ public class Central implements IStartupParticipant {
     public static void refreshPlugin(Refreshable plugin) throws Exception {
         if (plugin.refresh()) {
             refreshFile(plugin.getRoot());
-            for (Project p : Central.getWorkspace().getAllProjects()) {
+            for (Project p : Central.getWorkspace()
+                .getAllProjects()) {
                 p.setChanged();
                 for (ModelListener l : getInstance().listeners)
                     l.modelChanged(p);
@@ -531,7 +553,8 @@ public class Central implements IStartupParticipant {
     public static void refresh(Project p) throws Exception {
         IJavaProject jp = getJavaProject(p);
         if (jp != null)
-            jp.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
+            jp.getProject()
+                .refreshLocal(IResource.DEPTH_INFINITE, null);
     }
 
     public void close() {
@@ -551,7 +574,8 @@ public class Central implements IStartupParticipant {
     }
 
     public static Project getProject(IProject p) throws Exception {
-        return getProject(p.getLocation().toFile());
+        return getProject(p.getLocation()
+            .toFile());
     }
 
     /**
@@ -577,15 +601,11 @@ public class Central implements IStartupParticipant {
     /**
      * Used to serialize access to bnd code which is not thread safe.
      *
-     * @param callable
-     *            The code to execute while holding the central lock.
+     * @param callable The code to execute while holding the central lock.
      * @return The result of the specified callable.
-     * @throws InterruptedException
-     *             If the thread is interrupted while waiting for the lock.
-     * @throws TimeoutException
-     *             If the lock was not obtained within the timeout period.
-     * @throws Exception
-     *             If the callable throws an exception.
+     * @throws InterruptedException If the thread is interrupted while waiting for the lock.
+     * @throws TimeoutException If the lock was not obtained within the timeout period.
+     * @throws Exception If the callable throws an exception.
      */
     public static <V> V bndCall(Callable<V> callable) throws Exception {
         return bndCall(callable, null);
@@ -594,18 +614,13 @@ public class Central implements IStartupParticipant {
     /**
      * Used to serialize access to bnd code which is not thread safe.
      *
-     * @param callable
-     *            The code to execute while holding the central lock.
-     * @param monitor
-     *            If the monitor is cancelled, a TimeoutException will be thrown.
+     * @param callable The code to execute while holding the central lock.
+     * @param monitor If the monitor is cancelled, a TimeoutException will be thrown.
      * @return The result of the specified callable.
-     * @throws InterruptedException
-     *             If the thread is interrupted while waiting for the lock.
-     * @throws TimeoutException
-     *             If the lock was not obtained within the timeout period or the specified monitor is cancelled while
-     *             waiting to obtain the lock.
-     * @throws Exception
-     *             If the callable throws an exception.
+     * @throws InterruptedException If the thread is interrupted while waiting for the lock.
+     * @throws TimeoutException If the lock was not obtained within the timeout period or the specified monitor is
+     *             cancelled while waiting to obtain the lock.
+     * @throws Exception If the callable throws an exception.
      */
     public static <V> V bndCall(Callable<V> callable, IProgressMonitor monitor) throws Exception {
         boolean interrupted = Thread.interrupted();
@@ -639,7 +654,8 @@ public class Central implements IStartupParticipant {
             throw new TimeoutException("Unable to acquire bndLock; has waiters: " + bndLock.getQueueLength());
         } finally {
             if (interrupted) {
-                Thread.currentThread().interrupt();
+                Thread.currentThread()
+                    .interrupt();
             }
         }
     }
@@ -664,9 +680,9 @@ public class Central implements IStartupParticipant {
 
         IStatus[] array = statuses.toArray(new IStatus[0]);
         return new MultiStatus(//
-                BndtoolsConstants.CORE_PLUGIN_ID, //
-                severity, //
-                array, message, null);
+            BndtoolsConstants.CORE_PLUGIN_ID, //
+            severity, //
+            array, message, null);
     }
 
     /**

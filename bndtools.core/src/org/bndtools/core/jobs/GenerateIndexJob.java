@@ -54,7 +54,9 @@ public class GenerateIndexJob extends Job {
         final IWorkspaceRunnable runnable = new IWorkspaceRunnable() {
             @Override
             public void run(IProgressMonitor monitor) throws CoreException {
-                IFile[] outputResources = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(outputFile.toURI());
+                IFile[] outputResources = ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .findFilesForLocationURI(outputFile.toURI());
                 if (outputResources != null) {
                     for (IFile resource : outputResources) {
                         resource.refreshLocal(IResource.DEPTH_ZERO, monitor);

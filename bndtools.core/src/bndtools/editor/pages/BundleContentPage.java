@@ -93,7 +93,7 @@ public class BundleContentPage extends FormPage {
         createRightPanel(managedForm, rightPanel);
 
         sashForm.setWeights(new int[] {
-                1, 1
+            1, 1
         });
         sashForm.hookResizeListener();
 
@@ -121,13 +121,16 @@ public class BundleContentPage extends FormPage {
         parent.setLayout(layout);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        infoPart.getSection().setLayoutData(gd);
+        infoPart.getSection()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        privPkgsPart.getSection().setLayoutData(gd);
+        privPkgsPart.getSection()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        exportPatternListPart.getSection().setLayoutData(gd);
+        exportPatternListPart.getSection()
+            .setLayoutData(gd);
     }
 
     class NoSelectionPage extends AbstractFormPart implements IDetailsPage {
@@ -181,22 +184,27 @@ public class BundleContentPage extends FormPage {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 100;
         gd.heightHint = 200;
-        importsPart.getSection().setLayoutData(gd);
+        importsPart.getSection()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        importPatternListPart.getSection().setLayoutData(gd);
+        importPatternListPart.getSection()
+            .setLayoutData(gd);
     }
 
     public void setSelectedExport(ExportedPackage export) {
-        exportPatternListPart.getSelectionProvider().setSelection(new StructuredSelection(export));
+        exportPatternListPart.getSelectionProvider()
+            .setSelection(new StructuredSelection(export));
     }
 
     public void setSelectedPrivatePkg(String pkg) {
-        privPkgsPart.getSelectionProvider().setSelection(new StructuredSelection(pkg));
+        privPkgsPart.getSelectionProvider()
+            .setSelection(new StructuredSelection(pkg));
     }
 
     public void setSelectedImport(ImportPattern element) {
-        importPatternListPart.getSelectionProvider().setSelection(new StructuredSelection(element));
+        importPatternListPart.getSelectionProvider()
+            .setSelection(new StructuredSelection(element));
     }
 
 }

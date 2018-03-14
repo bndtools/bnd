@@ -12,7 +12,7 @@ public class BndProject implements IBndProject {
 
     private final IProject project;
 
-    private Map<String,BndProjectResource> resources;
+    private Map<String, BndProjectResource> resources;
 
     public BndProject(IProject project) {
         this.project = project;
@@ -24,12 +24,12 @@ public class BndProject implements IBndProject {
 
     public void addResource(String fullPath, BndProjectResource bndProjectResource) {
         if (resources == null) {
-            resources = new LinkedHashMap<String,BndProjectResource>();
+            resources = new LinkedHashMap<String, BndProjectResource>();
         }
         resources.put(fullPath, bndProjectResource);
     }
 
-    public Map<String,BndProjectResource> getResources() {
+    public Map<String, BndProjectResource> getResources() {
         if (resources == null) {
             return Collections.emptyMap();
         }

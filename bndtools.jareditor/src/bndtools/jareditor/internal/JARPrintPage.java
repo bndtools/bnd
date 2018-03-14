@@ -53,7 +53,9 @@ public class JARPrintPage extends FormPage {
                 text.setText(print(new File(uri)));
             }
         } catch (Exception e) {
-            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error outputing JAR content display.", e));
+            Plugin.getDefault()
+                .getLog()
+                .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error outputing JAR content display.", e));
         } finally {
             loaded = true;
         }

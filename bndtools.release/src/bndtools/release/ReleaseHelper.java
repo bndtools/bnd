@@ -48,10 +48,10 @@ import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 import bndtools.central.Central;
 import bndtools.release.api.IReleaseParticipant;
-import bndtools.release.api.ReleaseOption;
 import bndtools.release.api.IReleaseParticipant.Scope;
 import bndtools.release.api.ReleaseContext;
 import bndtools.release.api.ReleaseContext.Error;
+import bndtools.release.api.ReleaseOption;
 import bndtools.release.api.ReleaseUtils;
 import bndtools.release.nl.Messages;
 

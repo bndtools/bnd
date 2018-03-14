@@ -30,7 +30,9 @@ public class GitHub {
     public Promise<GithubRepoDetailsDTO> loadRepoDetails(String repository) {
         return promiseFactory.submit(() -> {
             byte[] detailsDtoData = cache.download(URI.create(URL_PREFIX + repository));
-            return new JSONCodec().dec().from(detailsDtoData).get(GithubRepoDetailsDTO.class);
+            return new JSONCodec().dec()
+                .from(detailsDtoData)
+                .get(GithubRepoDetailsDTO.class);
         });
     }
 }

@@ -73,7 +73,11 @@ class OSGiFramework {
         StringBuilder b = new StringBuilder();
         b.append(bsn);
         if (version != null) {
-            b.append(";version='[").append(version.toString()).append(',').append(version).append("]'");
+            b.append(";version='[")
+                .append(version.toString())
+                .append(',')
+                .append(version)
+                .append("]'");
         }
         return b.toString();
     }

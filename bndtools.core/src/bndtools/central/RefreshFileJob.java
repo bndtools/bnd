@@ -51,12 +51,18 @@ public class RefreshFileJob extends WorkspaceJob {
             int depth = IResource.DEPTH_ZERO;
             IResource target;
             if (file.isFile()) {
-                target = ResourcesPlugin.getWorkspace().getRoot().getFile(wsPath);
+                target = ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .getFile(wsPath);
             } else if (file.isDirectory()) {
-                target = ResourcesPlugin.getWorkspace().getRoot().getFolder(wsPath);
+                target = ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .getFolder(wsPath);
                 depth = IResource.DEPTH_INFINITE;
             } else {
-                target = ResourcesPlugin.getWorkspace().getRoot().getFolder(wsPath.removeLastSegments(1));
+                target = ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .getFolder(wsPath.removeLastSegments(1));
                 depth = IResource.DEPTH_INFINITE;
             }
 

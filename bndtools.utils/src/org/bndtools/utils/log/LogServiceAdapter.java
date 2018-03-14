@@ -28,18 +28,18 @@ public class LogServiceAdapter implements LogService {
     @SuppressWarnings("rawtypes")
     public void log(ServiceReference sr, int level, String message, Throwable exception) {
         switch (level) {
-        case LogService.LOG_ERROR :
-            delegate.logError(message, exception);
-            break;
-        case LogService.LOG_WARNING :
-            delegate.logWarning(message, exception);
-            break;
-        case LogService.LOG_INFO :
-            delegate.logInfo(message, exception);
-            break;
-        default :
-            delegate.logError("[Unknown level " + level + ", assumed error]" + message, exception);
-            break;
+            case LogService.LOG_ERROR :
+                delegate.logError(message, exception);
+                break;
+            case LogService.LOG_WARNING :
+                delegate.logWarning(message, exception);
+                break;
+            case LogService.LOG_INFO :
+                delegate.logInfo(message, exception);
+                break;
+            default :
+                delegate.logError("[Unknown level " + level + ", assumed error]" + message, exception);
+                break;
         }
     }
 

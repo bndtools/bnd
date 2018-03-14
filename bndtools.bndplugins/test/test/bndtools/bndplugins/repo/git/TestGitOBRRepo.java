@@ -8,12 +8,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.TestCase;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import bndtools.bndplugins.repo.git.GitOBRRepo;
+import junit.framework.TestCase;
 
 public class TestGitOBRRepo extends TestCase {
 
@@ -38,7 +38,8 @@ public class TestGitOBRRepo extends TestCase {
         GitOBRRepo repo = getOBRRepo(getCheckoutDir);
         File bundleFile = repo.get("osgi.core", new Version("4.2.0"), null);
         assertNotNull("Repository returned null", bundleFile);
-        assertEquals(IO.getFile(getCheckoutDir, "jars/osgi.core/osgi.core-4.2.0.jar").getAbsoluteFile(), bundleFile);
+        assertEquals(IO.getFile(getCheckoutDir, "jars/osgi.core/osgi.core-4.2.0.jar")
+            .getAbsoluteFile(), bundleFile);
         removeOBRRepo();
     }
 
@@ -64,9 +65,11 @@ public class TestGitOBRRepo extends TestCase {
         File dstDir = getOBRRepoDstDir();
         IO.copy(srcDir, dstDir);
 
-        String repoUri = dstDir.getAbsoluteFile().toURI().toString();
+        String repoUri = dstDir.getAbsoluteFile()
+            .toURI()
+            .toString();
 
-        Map<String,String> properties = new HashMap<String,String>();
+        Map<String, String> properties = new HashMap<String, String>();
         properties.put(GitOBRRepo.PROP_GIT_URI, repoUri);
         properties.put(GitOBRRepo.PROP_GIT_PUSH_URI, repoUri);
         properties.put(GitOBRRepo.PROP_GIT_BRANCH, "master");

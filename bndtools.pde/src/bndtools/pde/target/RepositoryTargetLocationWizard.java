@@ -39,7 +39,7 @@ public class RepositoryTargetLocationWizard extends Wizard implements ITargetLoc
     @Override
     public ITargetLocation[] getLocations() {
         return new ITargetLocation[] {
-                targetLocation
+            targetLocation
         };
     }
 }

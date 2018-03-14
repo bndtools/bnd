@@ -21,6 +21,7 @@ import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.log.LogService;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.deployer.repository.CapabilityIndex;
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
@@ -34,7 +35,7 @@ public class WorkspaceR5Repository extends BaseRepository {
 
     private static final String NAME = "Workspace";
 
-    private final Map<IProject,CapabilityIndex> projectMap = new HashMap<IProject,CapabilityIndex>();
+    private final Map<IProject, CapabilityIndex> projectMap = new HashMap<IProject, CapabilityIndex>();
     private final IRepositoryContentProvider contentProvider = new R5RepoContentProvider();
 
     private final ILogger logger = Logger.getLogger(WorkspaceR5Repository.class);
@@ -50,7 +51,9 @@ public class WorkspaceR5Repository extends BaseRepository {
     }
 
     void setupProjects() throws Exception {
-        IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+        IProject[] projects = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getProjects();
         for (IProject project : projects) {
             Project model = Central.getProject(project);
             if (model != null) {
@@ -58,7 +61,9 @@ public class WorkspaceR5Repository extends BaseRepository {
                 if (targetDir != null) {
                     File indexFile = new File(targetDir, ".index");
                     if (indexFile.isFile()) {
-                        loadProjectIndex(project, IO.stream(indexFile), project.getLocation().toFile().toURI());
+                        loadProjectIndex(project, IO.stream(indexFile), project.getLocation()
+                            .toFile()
+                            .toURI());
                     }
                 }
             }
@@ -73,7 +78,8 @@ public class WorkspaceR5Repository extends BaseRepository {
             if (!target.mkdirs()) {
                 throw new IOException("Could not create directory " + target);
             }
-            project.getWorkspace().changedFile(target);
+            project.getWorkspace()
+                .changedFile(target);
         }
         return target;
     }
@@ -119,13 +125,13 @@ public class WorkspaceR5Repository extends BaseRepository {
     }
 
     @Override
-    public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-        Map<Requirement,Collection<Capability>> result = new HashMap<Requirement,Collection<Capability>>();
+    public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
+        Map<Requirement, Collection<Capability>> result = new HashMap<Requirement, Collection<Capability>>();
         for (Requirement requirement : requirements) {
             List<Capability> matches = new LinkedList<Capability>();
             result.put(requirement, matches);
 
-            for (Entry<IProject,CapabilityIndex> entry : projectMap.entrySet()) {
+            for (Entry<IProject, CapabilityIndex> entry : projectMap.entrySet()) {
                 IProject project = entry.getKey();
                 if (project.exists() && project.isOpen()) {
                     CapabilityIndex capabilityIndex = entry.getValue();

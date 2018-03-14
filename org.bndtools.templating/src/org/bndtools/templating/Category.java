@@ -24,7 +24,8 @@ public final class Category implements Comparable<Category> {
                 return diff;
 
             // Sort on name
-            diff = t1.getName().compareTo(t2.getName());
+            diff = t1.getName()
+                .compareTo(t2.getName());
             if (diff != 0)
                 return diff;
 
@@ -41,7 +42,7 @@ public final class Category implements Comparable<Category> {
     private final String prefix;
 
     public static List<Category> categorise(Collection<Template> templates) {
-        SortedMap<Category,Category> cats = new TreeMap<>();
+        SortedMap<Category, Category> cats = new TreeMap<>();
 
         for (Template template : templates) {
             Category tmp = new Category(template.getCategory());

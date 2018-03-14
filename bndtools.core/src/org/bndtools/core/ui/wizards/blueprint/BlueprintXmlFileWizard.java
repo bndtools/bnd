@@ -64,7 +64,7 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
     protected WizardNewFileCreationPage mainPage;
     protected WizardBndFileSelector bndFileSelector;
 
-    //Eclipse won't let us setContainerFullPath with a directory that doesn't exist
+    // Eclipse won't let us setContainerFullPath with a directory that doesn't exist
     protected Stack<IFolder> speculativelyCreatedFolders = new Stack<IFolder>();
 
     @Override
@@ -107,7 +107,8 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
             folder = project.getFolder("OSGI-INF/blueprint");
             if (!folder.exists()) {
                 try {
-                    if (!folder.getParent().exists()) {
+                    if (!folder.getParent()
+                        .exists()) {
                         IFolder parent = (IFolder) folder.getParent();
                         parent.create(false, true, null);
                         speculativelyCreatedFolders.push(parent);
@@ -115,7 +116,8 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
                     folder.create(false, true, null);
                     speculativelyCreatedFolders.push(folder);
                 } catch (CoreException e) {
-                    logger.logError(String.format("Unable to open to create folder: %s", folder.getFullPath().toString()), e);
+                    logger.logError(String.format("Unable to open to create folder: %s", folder.getFullPath()
+                        .toString()), e);
                 }
             }
         } else if (selected instanceof IFolder) {
@@ -126,7 +128,8 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
         if (folder != null) {
             mainPage.setContainerFullPath(folder.getFullPath());
             int i = 1;
-            while (folder.getFile(name).exists()) {
+            while (folder.getFile(name)
+                .exists()) {
                 name = "blueprint-" + i++ + ".xml";
             }
         }
@@ -148,7 +151,8 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
                 speculativelyCreatedFolder.delete(false, null);
             } catch (CoreException e) {
                 // Oh well - we're stuck with the folder...
-                logger.logError(String.format("Unable to delete folder: %s", speculativelyCreatedFolder.getFullPath().toString()), e);
+                logger.logError(String.format("Unable to delete folder: %s", speculativelyCreatedFolder.getFullPath()
+                    .toString()), e);
             }
         }
     }
@@ -161,7 +165,9 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
             return false;
         }
 
-        if (!speculativelyCreatedFolders.isEmpty() && !speculativelyCreatedFolders.peek().getFullPath().isPrefixOf(file.getFullPath())) {
+        if (!speculativelyCreatedFolders.isEmpty() && !speculativelyCreatedFolders.peek()
+            .getFullPath()
+            .isPrefixOf(file.getFullPath())) {
             deleteSpeculativelyCreatedFolders();
         }
 
@@ -192,7 +198,8 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
     private void updateBundleBlueprintAndIncludeResource(IFile blueprintFile, IFile bndFile) throws Exception {
 
         BndEditModel editModel;
-        IEditorPart editor = ResourceUtil.findEditor(workbench.getActiveWorkbenchWindow().getActivePage(), bndFile);
+        IEditorPart editor = ResourceUtil.findEditor(workbench.getActiveWorkbenchWindow()
+            .getActivePage(), bndFile);
         IDocument doc = null;
         if (editor instanceof BndEditor) {
             editModel = ((BndEditor) editor).getEditModel();
@@ -202,7 +209,8 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
             editModel.loadFrom(new IDocumentWrapper(doc));
         }
 
-        String blueprintrelativePath = blueprintFile.getProjectRelativePath().toString();
+        String blueprintrelativePath = blueprintFile.getProjectRelativePath()
+            .toString();
 
         updateBundleBlueprintIfNecessary(editModel, blueprintrelativePath);
 
@@ -216,19 +224,23 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
 
     private void updateIncludeResourceIfNecessary(BndEditModel editModel, String blueprintrelativePath, IFile blueprintFile) throws Exception {
         try (Builder b = new Builder()) {
-            b.setBase(blueprintFile.getProject().getFullPath().toFile());
+            b.setBase(blueprintFile.getProject()
+                .getFullPath()
+                .toFile());
             StringBuilder sb = new StringBuilder();
             List<String> includeResource = editModel.getIncludeResource();
             if (includeResource != null) {
                 for (String s : includeResource) {
-                    sb.append(s).append(',');
+                    sb.append(s)
+                        .append(',');
                 }
                 if (sb.length() > 0) {
                     sb.deleteCharAt(sb.length() - 1);
                 }
                 b.setIncludeResource(sb.toString());
             }
-            if (!b.isInScope(Collections.singleton(blueprintFile.getFullPath().toFile()))) {
+            if (!b.isInScope(Collections.singleton(blueprintFile.getFullPath()
+                .toFile()))) {
                 editModel.addIncludeResource(blueprintrelativePath);
             }
         }
@@ -245,15 +257,19 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
                 } else if (clause.endsWith("/")) {
                     clause += "*.xml";
                 }
-                //Match either absolute or Glob
-                if ((!clause.contains("*") && clause.equals(blueprintrelativePath)) || (Glob.toPattern(clause).matcher(blueprintrelativePath).matches())) {
+                // Match either absolute or Glob
+                if ((!clause.contains("*") && clause.equals(blueprintrelativePath)) || (Glob.toPattern(clause)
+                    .matcher(blueprintrelativePath)
+                    .matches())) {
                     alreadyMatched = true;
                     break;
                 }
             }
         }
         if (!alreadyMatched) {
-            if ((Glob.toPattern(OSGI_INF_BLUEPRINT_XML).matcher(blueprintrelativePath).matches()))
+            if ((Glob.toPattern(OSGI_INF_BLUEPRINT_XML)
+                .matcher(blueprintrelativePath)
+                .matches()))
                 editModel.addBundleBlueprint(OSGI_INF_BLUEPRINT_XML);
             else
                 editModel.addBundleBlueprint(blueprintrelativePath);
@@ -268,7 +284,8 @@ public class BlueprintXmlFileWizard extends Wizard implements INewWizard {
 
     private InputStream getTemplateContents() throws IllegalArgumentException {
 
-        Bundle bundle = Plugin.getDefault().getBundle();
+        Bundle bundle = Plugin.getDefault()
+            .getBundle();
 
         try {
             URL entry = bundle.getEntry(BLUEPRINT_TEMPLATES_EMPTY_XML);

@@ -42,7 +42,8 @@ public class RunDescriptorTargetLocation extends BndTargetLocation {
     }
 
     public RunDescriptorTargetLocation setRunDescriptor(IFile bndrunFile) {
-        this.bndrunFileName = bndrunFile.getFullPath().toString();
+        this.bndrunFileName = bndrunFile.getFullPath()
+            .toString();
         this.bndrunFile = bndrunFile;
         clearResolutionStatus();
         return this;
@@ -62,7 +63,8 @@ public class RunDescriptorTargetLocation extends BndTargetLocation {
 
     @Override
     public String getText(Object element) {
-        return bndrunFile != null ? bndrunFile.getFullPath().toString() : bndrunFileName;
+        return bndrunFile != null ? bndrunFile.getFullPath()
+            .toString() : bndrunFileName;
     }
 
     @Override
@@ -84,7 +86,9 @@ public class RunDescriptorTargetLocation extends BndTargetLocation {
             throw new CoreException(new Status(IStatus.ERROR, PLUGIN_ID, MESSAGE_UNABLE_TO_LOCATE_WORKSPACE, e));
         }
 
-        try (Bndrun bndRun = new Bndrun(workspace, bndrunFile.getRawLocation().makeAbsolute().toFile())) {
+        try (Bndrun bndRun = new Bndrun(workspace, bndrunFile.getRawLocation()
+            .makeAbsolute()
+            .toFile())) {
             Collection<Container> containers = bndRun.getRunbundles();
             List<TargetBundle> bundles = new ArrayList<>(containers.size());
 
@@ -116,7 +120,8 @@ public class RunDescriptorTargetLocation extends BndTargetLocation {
     private void resolveBndrunFile() throws CoreException {
         IWorkspace workspace = ResourcesPlugin.getWorkspace();
         IPath path = new Path(bndrunFileName);
-        IResource resource = workspace.getRoot().findMember(path);
+        IResource resource = workspace.getRoot()
+            .findMember(path);
 
         if (resource instanceof IFile) {
             bndrunFile = (IFile) resource;

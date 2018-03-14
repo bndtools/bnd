@@ -55,10 +55,12 @@ import bndtools.Plugin;
 
 public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
-    private final Image editImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/pencil.png").createImage();
-    private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png").createImage();
+    private final Image editImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/pencil.png")
+        .createImage();
+    private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png")
+        .createImage();
 
-    private final Map<String,IConfigurationElement> configElements = new HashMap<String,IConfigurationElement>();
+    private final Map<String, IConfigurationElement> configElements = new HashMap<String, IConfigurationElement>();
 
     private List<HeaderClause> data;
 
@@ -73,7 +75,8 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
     public PluginsPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
 
-        IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "bndPlugins");
+        IConfigurationElement[] configElems = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(Plugin.PLUGIN_ID, "bndPlugins");
         for (IConfigurationElement configElem : configElems) {
             String className = configElem.getAttribute("class");
             configElements.put(className, configElem);
@@ -101,7 +104,8 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             public void selectionChanged(SelectionChangedEvent event) {
-                boolean enable = !viewer.getSelection().isEmpty();
+                boolean enable = !viewer.getSelection()
+                    .isEmpty();
                 removeItemTool.setEnabled(enable);
                 editItemTool.setEnabled(enable);
             }
@@ -152,7 +156,9 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
         section.setTextClient(toolbar);
 
         ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
-        addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        addItem.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_OBJ_ADD));
         addItem.setToolTipText("Add Plugin");
         addItem.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -173,8 +179,12 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
         });
 
         removeItemTool = new ToolItem(toolbar, SWT.PUSH);
-        removeItemTool.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-        removeItemTool.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        removeItemTool.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE));
+        removeItemTool.setDisabledImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
         removeItemTool.setToolTipText("Remove");
         removeItemTool.setEnabled(false);
         removeItemTool.addSelectionListener(new SelectionAdapter() {
@@ -230,7 +240,8 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
     void doAdd() {
         PluginSelectionWizard wizard = new PluginSelectionWizard();
-        WizardDialog dialog = new WizardDialog(getManagedForm().getForm().getShell(), wizard);
+        WizardDialog dialog = new WizardDialog(getManagedForm().getForm()
+            .getShell(), wizard);
         if (dialog.open() == Window.OK) {
             HeaderClause newPlugin = wizard.getHeader();
 
@@ -247,11 +258,14 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
             IConfigurationElement configElem = configElements.get(header.getName());
             PluginEditWizard wizard = new PluginEditWizard(configElem, copyOfProperties);
-            WizardDialog dialog = new WizardDialog(getManagedForm().getForm().getShell(), wizard);
+            WizardDialog dialog = new WizardDialog(getManagedForm().getForm()
+                .getShell(), wizard);
 
             if (dialog.open() == Window.OK && wizard.isChanged()) {
-                header.getAttribs().clear();
-                header.getAttribs().putAll(copyOfProperties);
+                header.getAttribs()
+                    .clear();
+                header.getAttribs()
+                    .putAll(copyOfProperties);
 
                 viewer.update(header, null);
                 markDirty();

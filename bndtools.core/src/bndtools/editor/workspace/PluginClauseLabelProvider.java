@@ -18,10 +18,10 @@ import bndtools.Plugin;
 
 public class PluginClauseLabelProvider extends StyledCellLabelProvider {
 
-    private final Map<String,IConfigurationElement> configElements;
-    private final Map<String,Image> images = new HashMap<String,Image>();
+    private final Map<String, IConfigurationElement> configElements;
+    private final Map<String, Image> images = new HashMap<String, Image>();
 
-    public PluginClauseLabelProvider(Map<String,IConfigurationElement> configElements) {
+    public PluginClauseLabelProvider(Map<String, IConfigurationElement> configElements) {
         this.configElements = configElements;
     }
 
@@ -32,11 +32,12 @@ public class PluginClauseLabelProvider extends StyledCellLabelProvider {
         String className = header.getName();
         StyledString label = new StyledString(className);
 
-        Map<String,String> attribs = header.getAttribs();
+        Map<String, String> attribs = header.getAttribs();
         if (!attribs.isEmpty())
             label.append(" ");
-        for (Iterator<Entry<String,String>> iter = attribs.entrySet().iterator(); iter.hasNext();) {
-            Entry<String,String> entry = iter.next();
+        for (Iterator<Entry<String, String>> iter = attribs.entrySet()
+            .iterator(); iter.hasNext();) {
+            Entry<String, String> entry = iter.next();
             label.append(entry.getKey(), StyledString.QUALIFIER_STYLER);
             label.append("=", StyledString.QUALIFIER_STYLER);
             label.append(entry.getValue(), StyledString.COUNTER_STYLER);
@@ -54,7 +55,8 @@ public class PluginClauseLabelProvider extends StyledCellLabelProvider {
             if (configElem != null) {
                 String iconPath = configElem.getAttribute("icon");
                 if (iconPath != null) {
-                    ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(configElem.getContributor().getName(), iconPath);
+                    ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(configElem.getContributor()
+                        .getName(), iconPath);
                     if (descriptor != null) {
                         image = descriptor.createImage();
                         images.put(className, image);
@@ -65,7 +67,8 @@ public class PluginClauseLabelProvider extends StyledCellLabelProvider {
         if (image == null) {
             image = images.get("__DEFAULT__");
             if (image == null) {
-                image = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/plugin.png").createImage();
+                image = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/plugin.png")
+                    .createImage();
                 images.put("__DEFAULT__", image);
             }
         }

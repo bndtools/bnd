@@ -28,7 +28,7 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
     private static final String PROP_VALUE = "VALUE";
 
     private static final String[] PROPS = new String[] {
-            PROP_NAME, PROP_VALUE
+        PROP_NAME, PROP_VALUE
     };
 
     private final TableViewer viewer;
@@ -52,7 +52,7 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
             result = key;
         } else if (PROP_VALUE.equals(property)) {
             @SuppressWarnings("unchecked")
-            Map<K,V> map = (Map<K,V>) viewer.getInput();
+            Map<K, V> map = (Map<K, V>) viewer.getInput();
             result = map.get(key);
         }
         if (result == null)
@@ -63,7 +63,7 @@ public class MapEntryCellModifier<K, V> implements ICellModifier {
     @Override
     public void modify(Object element, String property, Object editResult) {
         @SuppressWarnings("unchecked")
-        Map<K,V> map = (Map<K,V>) viewer.getInput();
+        Map<K, V> map = (Map<K, V>) viewer.getInput();
 
         Object e = element;
         if (e instanceof Item) {

@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+
 import org.bndtools.templating.Resource;
 import org.bndtools.templating.ResourceMap;
 import org.bndtools.templating.ResourceType;
@@ -38,7 +39,7 @@ import st4hidden.org.antlr.runtime.ANTLRInputStream;
 import st4hidden.org.antlr.runtime.CommonToken;
 
 @Component(name = "org.bndtools.templating.engine.st", property = {
-        "name=stringtemplate", "version=4.0.8"
+    "name=stringtemplate", "version=4.0.8"
 })
 public class StringTemplateEngine implements TemplateEngine {
 
@@ -76,7 +77,8 @@ public class StringTemplateEngine implements TemplateEngine {
         }
 
         private static char readSingleChar(Properties props, String propName, char dflt) {
-            String str = props.getProperty(propName, String.valueOf(dflt)).trim();
+            String str = props.getProperty(propName, String.valueOf(dflt))
+                .trim();
             if (str.length() != 1)
                 throw new IllegalArgumentException("Setting value for " + propName + "must be a single character");
             return str.charAt(0);
@@ -84,8 +86,8 @@ public class StringTemplateEngine implements TemplateEngine {
     }
 
     @Override
-    public Map<String,String> getTemplateParameters(ResourceMap inputs, IProgressMonitor monitor) throws Exception {
-        Map<String,String> params = new HashMap<>();
+    public Map<String, String> getTemplateParameters(ResourceMap inputs, IProgressMonitor monitor) throws Exception {
+        Map<String, String> params = new HashMap<>();
 
         // Initialise the engine
         TemplateSettings settings = readSettings(inputs);
@@ -101,7 +103,8 @@ public class StringTemplateEngine implements TemplateEngine {
         @SuppressWarnings("unchecked")
         Enumeration<String> contentEnum = (Enumeration<String>) contentProps.propertyNames();
         while (contentEnum.hasMoreElements()) {
-            String outputPath = contentEnum.nextElement().trim();
+            String outputPath = contentEnum.nextElement()
+                .trim();
             String sourcePath = contentProps.getProperty(outputPath);
 
             Resource source = inputs.get(sourcePath);
@@ -121,7 +124,7 @@ public class StringTemplateEngine implements TemplateEngine {
     }
 
     @Override
-    public ResourceMap generateOutputs(ResourceMap inputs, Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
+    public ResourceMap generateOutputs(ResourceMap inputs, Map<String, List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         TemplateSettings settings = readSettings(inputs);
         STGroup stg = new STGroup(settings.leftDelim, settings.rightDelim);
 
@@ -137,8 +140,10 @@ public class StringTemplateEngine implements TemplateEngine {
         @SuppressWarnings("unchecked")
         Enumeration<String> contentEnum = (Enumeration<String>) contentProps.propertyNames();
         while (contentEnum.hasMoreElements()) {
-            String outputName = contentEnum.nextElement().trim();
-            String sourceName = contentProps.getProperty(outputName, "").trim();
+            String outputName = contentEnum.nextElement()
+                .trim();
+            String sourceName = contentProps.getProperty(outputName, "")
+                .trim();
 
             Resource source = inputs.get(sourceName);
             if (source == null)
@@ -228,7 +233,7 @@ public class StringTemplateEngine implements TemplateEngine {
         }
     }
 
-    private void extractAttrs(ST st, final Map<String,String> attrs) throws Exception {
+    private void extractAttrs(ST st, final Map<String, String> attrs) throws Exception {
         Interpreter interpreter = new Interpreter(st.groupThatCreatedThisInstance, Locale.getDefault(), true) {
             @Override
             public Object getAttribute(InstanceScope scope, String name) {
@@ -240,8 +245,8 @@ public class StringTemplateEngine implements TemplateEngine {
         interpreter.exec(new AutoIndentWriter(writer), new InstanceScope(null, st));
     }
 
-    private String render(ST st, Map<String,List<Object>> params) throws Exception {
-        for (Entry<String,List<Object>> entry : params.entrySet()) {
+    private String render(ST st, Map<String, List<Object>> params) throws Exception {
+        for (Entry<String, List<Object>> entry : params.entrySet()) {
             for (Object value : entry.getValue()) {
                 st.add(entry.getKey(), value);
             }

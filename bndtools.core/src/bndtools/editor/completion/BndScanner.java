@@ -20,11 +20,11 @@ public class BndScanner extends RuleBasedScanner {
     public BndScanner(BndSourceViewerConfiguration manager) {
         bsvc = manager;
         IRule[] rules = new IRule[] {
-                new WhitespaceRule(new IWhitespaceDetector() {
-                    public boolean isWhitespace(char c) {
-                        return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
-                    }
-                }), new BndWordRule(), new MacroRule(bsvc.T_MACRO), new EndOfLineRule("#", bsvc.T_COMMENT), new BndEndOfLineRule("\\ ", bsvc.T_ERROR), new BndEndOfLineRule("\\\t", bsvc.T_ERROR),
+            new WhitespaceRule(new IWhitespaceDetector() {
+                public boolean isWhitespace(char c) {
+                    return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
+                }
+            }), new BndWordRule(), new MacroRule(bsvc.T_MACRO), new EndOfLineRule("#", bsvc.T_COMMENT), new BndEndOfLineRule("\\ ", bsvc.T_ERROR), new BndEndOfLineRule("\\\t", bsvc.T_ERROR),
         };
 
         setRules(rules);
@@ -33,7 +33,7 @@ public class BndScanner extends RuleBasedScanner {
 
     class BndWordRule implements IRule {
 
-        Map<String,IToken> keyWords = new HashMap<String,IToken>();
+        Map<String, IToken> keyWords = new HashMap<String, IToken>();
 
         public BndWordRule() {
             addWords(Analyzer.headers, bsvc.T_INSTRUCTION);

@@ -18,14 +18,17 @@ public class LaunchStatusHandler implements IStatusHandler {
         final AtomicBoolean result = new AtomicBoolean();
         Runnable uitask = new Runnable() {
             public void run() {
-                LaunchStatusDialog dialog = new LaunchStatusDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), status);
+                LaunchStatusDialog dialog = new LaunchStatusDialog(PlatformUI.getWorkbench()
+                    .getActiveWorkbenchWindow()
+                    .getShell(), status);
                 int response = dialog.open();
 
                 result.set(response == Window.OK);
             }
         };
 
-        Display display = PlatformUI.getWorkbench().getDisplay();
+        Display display = PlatformUI.getWorkbench()
+            .getDisplay();
         if (display.getThread() == Thread.currentThread())
             uitask.run();
         else

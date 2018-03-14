@@ -142,14 +142,16 @@ public class JARContentTreePart extends AbstractFormPart {
 
     String[] getSelectedPath() {
         String[] result;
-        if (viewer.getSelection().isEmpty()) {
+        if (viewer.getSelection()
+            .isEmpty()) {
             result = null;
         } else {
             TreeSelection selection = (TreeSelection) viewer.getSelection();
             TreePath treePath = selection.getPaths()[0];
             result = new String[treePath.getSegmentCount()];
             for (int i = 0; i < result.length; i++) {
-                result[i] = treePath.getSegment(i).toString();
+                result[i] = treePath.getSegment(i)
+                    .toString();
             }
         }
         return result;
@@ -157,8 +159,10 @@ public class JARContentTreePart extends AbstractFormPart {
 
     private static class JARTreeLabelProvider extends StyledCellLabelProvider {
 
-        private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/fldr_obj.gif").createImage();
-        private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/file_obj.gif").createImage();
+        private final Image folderImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/fldr_obj.gif")
+            .createImage();
+        private final Image fileImg = AbstractUIPlugin.imageDescriptorFromPlugin(PluginConstants.PLUGIN_ID, "/icons/file_obj.gif")
+            .createImage();
 
         public JARTreeLabelProvider() {
             super();
@@ -196,7 +200,7 @@ public class JARContentTreePart extends AbstractFormPart {
 
     private class JARTreeContentProvider implements ITreeContentProvider {
 
-        Map<String,ZipTreeNode> entryMap;
+        Map<String, ZipTreeNode> entryMap;
 
         public JARTreeContentProvider() {
             super();
@@ -205,7 +209,8 @@ public class JARContentTreePart extends AbstractFormPart {
         @Override
         public Object[] getChildren(final Object parentElement) {
             ZipTreeNode parentNode = (ZipTreeNode) parentElement;
-            return parentNode.getChildren().toArray();
+            return parentNode.getChildren()
+                .toArray();
         }
 
         @Override
@@ -220,7 +225,8 @@ public class JARContentTreePart extends AbstractFormPart {
 
         @Override
         public Object[] getElements(final Object inputElement) {
-            return entryMap.values().toArray();
+            return entryMap.values()
+                .toArray();
         }
 
         @Override
@@ -228,17 +234,19 @@ public class JARContentTreePart extends AbstractFormPart {
 
         @Override
         public void inputChanged(final Viewer viewer, final Object oldInput, final Object newInput) {
-            entryMap = new TreeMap<String,ZipTreeNode>();
+            entryMap = new TreeMap<String, ZipTreeNode>();
             final URI uri = URIHelper.retrieveFileURI((IEditorInput) newInput);
             if (uri != null) {
-                try (ZipInputStream zis = new ZipInputStream(uri.toURL().openStream())) {
+                try (ZipInputStream zis = new ZipInputStream(uri.toURL()
+                    .openStream())) {
                     ZipEntry entry;
                     while ((entry = zis.getNextEntry()) != null) {
                         ZipTreeNode.addEntry(entryMap, entry);
                     }
                 } catch (IOException e) {
                     Status status = new Status(IStatus.ERROR, PluginConstants.PLUGIN_ID, 0, "I/O error reading JAR file contents", e);
-                    ErrorDialog.openError(managedForm.getForm().getShell(), "Error", null, status);
+                    ErrorDialog.openError(managedForm.getForm()
+                        .getShell(), "Error", null, status);
                 }
             }
         }

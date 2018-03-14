@@ -19,18 +19,25 @@ public class RepositoryBundleUtils {
 
     public static VersionedClause convertRepoBundleVersion(RepositoryBundleVersion bundleVersion, DependencyPhase phase) {
         Attrs attribs = new Attrs();
-        if (RepoUtils.isWorkspaceRepo(bundleVersion.getParentBundle().getRepo()))
+        if (RepoUtils.isWorkspaceRepo(bundleVersion.getParentBundle()
+            .getRepo()))
             attribs.put(Constants.VERSION_ATTRIBUTE, VERSION_LATEST);
         else {
             StringBuilder builder = new StringBuilder();
 
-            builder.append(bundleVersion.getVersion().getMajor());
-            builder.append('.').append(bundleVersion.getVersion().getMinor());
+            builder.append(bundleVersion.getVersion()
+                .getMajor());
+            builder.append('.')
+                .append(bundleVersion.getVersion()
+                    .getMinor());
             if (phase != DependencyPhase.Build)
-                builder.append('.').append(bundleVersion.getVersion().getMicro());
+                builder.append('.')
+                    .append(bundleVersion.getVersion()
+                        .getMicro());
 
             attribs.put(Constants.VERSION_ATTRIBUTE, builder.toString());
         }
-        return new VersionedClause(bundleVersion.getParentBundle().getBsn(), attribs);
+        return new VersionedClause(bundleVersion.getParentBundle()
+            .getBsn(), attribs);
     }
 }

@@ -31,12 +31,9 @@ public interface BuildErrorDetailsHandler {
      * <p>
      * This method returns a list of markers that have as many attributes set as possible.
      *
-     * @param project
-     *            The Eclipse project
-     * @param model
-     *            The bnd Processor
-     * @param location
-     *            the location of the error
+     * @param project The Eclipse project
+     * @param model The bnd Processor
+     * @param location the location of the error
      * @return A list of marker data
      */
     List<MarkerData> generateMarkerData(IProject project, Processor model, Location location) throws Exception;

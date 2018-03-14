@@ -30,7 +30,7 @@ public class JavaVersionsValidator implements IValidator, IProjectValidator {
         }
 
         @SuppressWarnings("unchecked")
-        Map<String,String> options = javaProject.getOptions(true);
+        Map<String, String> options = javaProject.getOptions(true);
 
         String javacSource = model.getProperty(Constants.JAVAC_SOURCE);
         if (javacSource != null) {
@@ -39,7 +39,8 @@ public class JavaVersionsValidator implements IValidator, IProjectValidator {
                 eclipseSource = options.get(JavaCore.COMPILER_COMPLIANCE);
 
             if (!javacSource.equals(eclipseSource)) {
-                model.warning("Eclipse: javac.source inconsistency between bnd & Eclipse. bnd is %s and Eclipse is %s", javacSource, eclipseSource).header("javac.source");
+                model.warning("Eclipse: javac.source inconsistency between bnd & Eclipse. bnd is %s and Eclipse is %s", javacSource, eclipseSource)
+                    .header("javac.source");
             }
         }
 
@@ -47,7 +48,8 @@ public class JavaVersionsValidator implements IValidator, IProjectValidator {
         if (javacTarget != null) {
             String eclipseTarget = options.get(JavaCore.COMPILER_CODEGEN_TARGET_PLATFORM);
             if (!javacTarget.equals(eclipseTarget)) {
-                model.warning("Eclipse: javac.target inconsistency between bnd & Eclipse. bnd is %s and Eclipse is %s", javacTarget, eclipseTarget).header("javac.target");
+                model.warning("Eclipse: javac.target inconsistency between bnd & Eclipse. bnd is %s and Eclipse is %s", javacTarget, eclipseTarget)
+                    .header("javac.target");
             }
         }
     }

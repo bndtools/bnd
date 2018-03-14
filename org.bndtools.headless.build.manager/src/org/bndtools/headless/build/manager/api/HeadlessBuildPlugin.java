@@ -27,16 +27,11 @@ public interface HeadlessBuildPlugin {
     /**
      * Setup/remove files enabling headless build of a project.
      *
-     * @param cnf
-     *            true when the project directory is that of the cnf project
-     * @param projectDir
-     *            the project directory
-     * @param add
-     *            true to add/create the files, false to remove them
-     * @param enabledIgnorePlugins
-     *            set with enabled version control ignore plugins
-     * @throws IOException
-     *             upon error(s)
+     * @param cnf true when the project directory is that of the cnf project
+     * @param projectDir the project directory
+     * @param add true to add/create the files, false to remove them
+     * @param enabledIgnorePlugins set with enabled version control ignore plugins
+     * @throws IOException upon error(s)
      */
     @Deprecated
     void setup(boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins) throws IOException;
@@ -46,15 +41,15 @@ public interface HeadlessBuildPlugin {
     // Future expansion of the interface: automatic management of template files
     //
     // public enum HeadlessBuildFileStatus {
-    // 	NONE, UPDATE, ADD, REMOVE;
+    // NONE, UPDATE, ADD, REMOVE;
     // }
     //
     // public interface HeadlessBuildFileInfo {
-    // 	String getBuildFile();
+    // String getBuildFile();
     //
-    // 	File getFile();
+    // File getFile();
     //
-    // 	HeadlessBuildFileStatus getFileStatus();
+    // HeadlessBuildFileStatus getFileStatus();
     // }
     //
     // List<HeadlessBuildFileInfo> check(boolean cnf, File projectDir) throws IOException;

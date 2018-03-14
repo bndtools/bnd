@@ -16,7 +16,8 @@ public class NewDSComponentWizard extends NewElementWizard {
 
     public NewDSComponentWizard(NewDSComponentWizardPage page, boolean openEditorOnFinish) {
         setDefaultPageImageDescriptor(JavaPluginImages.DESC_WIZBAN_NEWCLASS);
-        setDialogSettings(JavaPlugin.getDefault().getDialogSettings());
+        setDialogSettings(JavaPlugin.getDefault()
+            .getDialogSettings());
         setWindowTitle(Messages.NewDSComponentWizard_title);
 
         fPage = page;
@@ -40,7 +41,8 @@ public class NewDSComponentWizard extends NewElementWizard {
         addPage(fPage);
     }
 
-    /*(non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jdt.internal.ui.wizards.NewElementWizard#canRunForked()
      */
     @Override
@@ -48,7 +50,8 @@ public class NewDSComponentWizard extends NewElementWizard {
         return !fPage.isEnclosingTypeSelected();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jdt.internal.ui.wizards.NewElementWizard#finishPage(org.eclipse.core.runtime.IProgressMonitor)
      */
     @Override
@@ -56,7 +59,8 @@ public class NewDSComponentWizard extends NewElementWizard {
         fPage.createType(monitor); // use the full progress monitor
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jface.wizard.IWizard#performFinish()
      */
     @Override
@@ -75,7 +79,8 @@ public class NewDSComponentWizard extends NewElementWizard {
         return res;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jdt.internal.ui.wizards.NewElementWizard#getCreatedElement()
      */
     @Override

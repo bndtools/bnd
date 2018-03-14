@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+
 import aQute.bnd.service.progress.ProgressPlugin;
 import bndtools.Plugin;
 
@@ -46,7 +47,8 @@ public class JobProgress implements ProgressPlugin {
                     } catch (InterruptedException e) {
                         monitor.setCanceled(true);
                         status.compareAndSet(null, new Status(Status.CANCEL, Plugin.PLUGIN_ID, "InterruptedException", e));
-                        Thread.currentThread().interrupt();
+                        Thread.currentThread()
+                            .interrupt();
                     }
                 }
             }

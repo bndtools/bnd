@@ -7,8 +7,7 @@ public class TeamUtils {
     /**
      * Get the id of the repository provider that is managing the project
      * 
-     * @param project
-     *            the project
+     * @param project the project
      * @return null when project is null or when the project is not managed by a version control plugin
      */
     static public String getProjectRepositoryProviderId(IJavaProject project) {

@@ -20,12 +20,15 @@ public class ResolutionChoiceInteractCallback implements ResolutionCallback {
         if (wired.size() > 0 || candidates.size() < 2)
             return;
 
-        final Display display = PlatformUI.getWorkbench().getDisplay();
+        final Display display = PlatformUI.getWorkbench()
+            .getDisplay();
         final AtomicInteger resultRef = new AtomicInteger();
 
         Runnable runnable = new Runnable() {
             public void run() {
-                Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
+                Shell shell = PlatformUI.getWorkbench()
+                    .getActiveWorkbenchWindow()
+                    .getShell();
                 if (!shell.isDisposed()) {
                     ResolutionChoiceSelectionDialog dialog = new ResolutionChoiceSelectionDialog(shell, requirement, candidates);
                     resultRef.set(dialog.open());

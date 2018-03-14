@@ -71,7 +71,9 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
                 return;
             }
 
-            IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(target);
+            IResource targetResource = ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .findMember(target);
             if (targetResource == null) {
                 p.error("No actual resource found for " + target);
                 return;
@@ -90,11 +92,13 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
             }
 
             Project model;
-            if (targetResource.getName().equals(Project.BNDFILE)) {
+            if (targetResource.getName()
+                .equals(Project.BNDFILE)) {
                 model = parentModel;
             } else {
 
-                File file = targetResource.getLocation().toFile();
+                File file = targetResource.getLocation()
+                    .toFile();
                 if (file == null || !file.isFile()) {
                     p.error("No file associated with the entry " + targetResource);
                     return;
@@ -111,7 +115,7 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
                 ProjectLauncher projectLauncher = model.getProjectLauncher();
                 try {
 
-                    List< ? extends RunSession> sessions = projectLauncher.getRunSessions();
+                    List<? extends RunSession> sessions = projectLauncher.getRunSessions();
                     if (sessions == null) {
                         projectLauncher.error("This launcher for %s cannot handle the new style", target);
                         return;
@@ -149,7 +153,8 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
 
                 if (!p.isOk()) {
                     IStatus status = Central.toStatus(projectLauncher, "Errors detected during the launch");
-                    IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(status);
+                    IStatusHandler prompter = DebugPlugin.getDefault()
+                        .getStatusHandler(status);
                     Boolean cont = (Boolean) prompter.handleStatus(status, null);
                     if (cont == null || !cont || monitor.isCanceled()) {
                         launch.terminate();
@@ -193,7 +198,9 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
                 return false;
 
             int processCount = 0;
-            for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
+            for (ILaunch l : DebugPlugin.getDefault()
+                .getLaunchManager()
+                .getLaunches()) {
                 // ... is it the same launch resource?
                 ILaunchConfiguration launchConfig = l.getLaunchConfiguration();
                 if (launchConfig == null) {
@@ -211,8 +218,9 @@ public class NativeBndLaunchDelegate extends JavaRemoteApplicationLaunchConfigur
             // Warn if existing processes running
             if (processCount > 0) {
                 Status status = new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0,
-                        "One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.", null);
-                IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(status);
+                    "One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.", null);
+                IStatusHandler prompter = DebugPlugin.getDefault()
+                    .getStatusHandler(status);
                 if (prompter != null) {
                     boolean okay = (Boolean) prompter.handleStatus(status, launchResource);
                     return !okay;

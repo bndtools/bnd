@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.osgi.resource.Capability;
+
 import bndtools.model.resolution.RequirementWrapper;
 
 public interface CapReqLoader extends Closeable {
@@ -13,8 +14,8 @@ public interface CapReqLoader extends Closeable {
 
     String getLongLabel();
 
-    Map<String,List<Capability>> loadCapabilities() throws Exception;
+    Map<String, List<Capability>> loadCapabilities() throws Exception;
 
-    Map<String,List<RequirementWrapper>> loadRequirements() throws Exception;
+    Map<String, List<RequirementWrapper>> loadRequirements() throws Exception;
 
 }

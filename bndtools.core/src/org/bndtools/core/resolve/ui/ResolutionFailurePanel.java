@@ -40,9 +40,12 @@ import bndtools.model.obr.SorterComparatorAdapter;
 
 public class ResolutionFailurePanel {
 
-    private final Image clipboardImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_copy.png").createImage();
-    private final Image treeViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/tree_mode.gif").createImage();
-    private final Image flatViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif").createImage();
+    private final Image clipboardImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/page_copy.png")
+        .createImage();
+    private final Image treeViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/tree_mode.gif")
+        .createImage();
+    private final Image flatViewImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/flat_mode.gif")
+        .createImage();
 
     private Composite composite;
 
@@ -69,7 +72,9 @@ public class ResolutionFailurePanel {
         ControlDecoration controlDecoration = new ControlDecoration(processingErrorsText, SWT.RIGHT | SWT.TOP);
         controlDecoration.setMarginWidth(2);
         controlDecoration.setDescriptionText("Double-click to view details");
-        controlDecoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL).getImage());
+        controlDecoration.setImage(FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL)
+            .getImage());
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 600;
@@ -112,7 +117,8 @@ public class ResolutionFailurePanel {
         ResolutionException resolutionException = resolutionResult.getResolutionException();
         Collection<Requirement> unresolved = resolutionException != null ? resolutionException.getUnresolvedRequirements() : Collections.<Requirement> emptyList();
 
-        if (resolutionException != null && resolutionException.getUnresolvedRequirements() != null && !resolutionException.getUnresolvedRequirements().isEmpty()) {
+        if (resolutionException != null && resolutionException.getUnresolvedRequirements() != null && !resolutionException.getUnresolvedRequirements()
+            .isEmpty()) {
             //
             // In this case I think we need to close the upper sash (right name?) with the exception
             // and only show the bottom one (the resolution result. The previous exception trace was
@@ -147,11 +153,13 @@ public class ResolutionFailurePanel {
                     pw.print(formatFailureStatus(child, exceptions, indent + "  "));
             } else {
                 if (status.getException() instanceof ResolutionException) {
-                    String message = status.getException().getMessage();
+                    String message = status.getException()
+                        .getMessage();
                     if (message != null)
                         message = message.replaceAll("\\[caused by:", "\r\n-> ");
                     else
-                        message = status.getException().toString();
+                        message = status.getException()
+                            .toString();
 
                     pw.println(message);
                 } else {
@@ -197,19 +205,11 @@ public class ResolutionFailurePanel {
         toolErrorsToClipboard.setToolTipText("Copy to Clipboard");
 
         /*
-        SelectionListener modeListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                boolean newTreeMode = treeViewToggle.getSelection();
-                if (newTreeMode != failureTreeMode) {
-                    failureTreeMode = newTreeMode;
-                    switchFailureViewMode();
-                }
-            }
-        };
-        treeViewToggle.addSelectionListener(modeListener);
-        flatViewToggle.addSelectionListener(modeListener);
-        */
+         * SelectionListener modeListener = new SelectionAdapter() {
+         * @Override public void widgetSelected(SelectionEvent e) { boolean newTreeMode = treeViewToggle.getSelection();
+         * if (newTreeMode != failureTreeMode) { failureTreeMode = newTreeMode; switchFailureViewMode(); } } };
+         * treeViewToggle.addSelectionListener(modeListener); flatViewToggle.addSelectionListener(modeListener);
+         */
 
         toolErrorsToClipboard.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -222,25 +222,21 @@ public class ResolutionFailurePanel {
 
     private void setFailureViewMode() {
         /*
-        if (failureTreeMode) {
-            unresolvedViewer.setContentProvider(new ResolutionFailureTreeContentProvider());
-            unresolvedViewer.setLabelProvider(new ResolutionFailureTreeLabelProvider());
-            unresolvedViewer.setSorter(new ResolutionFailureTreeSorter());
-        } else {
-            unresolvedViewer.setContentProvider(new ResolutionFailureFlatContentProvider());
-            unresolvedViewer.setLabelProvider(new ResolutionFailureFlatLabelProvider());
-            unresolvedViewer.setSorter(new ReasonSorter());
-        }
-        */
+         * if (failureTreeMode) { unresolvedViewer.setContentProvider(new ResolutionFailureTreeContentProvider());
+         * unresolvedViewer.setLabelProvider(new ResolutionFailureTreeLabelProvider()); unresolvedViewer.setSorter(new
+         * ResolutionFailureTreeSorter()); } else { unresolvedViewer.setContentProvider(new
+         * ResolutionFailureFlatContentProvider()); unresolvedViewer.setLabelProvider(new
+         * ResolutionFailureFlatLabelProvider()); unresolvedViewer.setSorter(new ReasonSorter()); }
+         */
     }
 
-    //    private void switchFailureViewMode() {
-    //        Object input = unresolvedViewer.getInput();
-    //        unresolvedViewer.setInput(null);
-    //        setFailureViewMode();
-    //        unresolvedViewer.setInput(input);
-    //        unresolvedViewer.expandToLevel(2);
-    //    }
+    // private void switchFailureViewMode() {
+    // Object input = unresolvedViewer.getInput();
+    // unresolvedViewer.setInput(null);
+    // setFailureViewMode();
+    // unresolvedViewer.setInput(input);
+    // unresolvedViewer.expandToLevel(2);
+    // }
 
     private void copyUnresolvedToClipboard() {
         StringBuilder builder = new StringBuilder();
@@ -272,9 +268,9 @@ public class ResolutionFailurePanel {
         Clipboard clipboard = new Clipboard(composite.getDisplay());
         TextTransfer transfer = TextTransfer.getInstance();
         clipboard.setContents(new Object[] {
-                builder.toString()
+            builder.toString()
         }, new Transfer[] {
-                transfer
+            transfer
         });
         clipboard.dispose();
     }
@@ -283,7 +279,7 @@ public class ResolutionFailurePanel {
         for (int i = 0; i < indent; i++)
             builder.append("..");
 
-        //        builder.append(getClipboardContent(unresolvedTreeElem)).append('\n');
+        // builder.append(getClipboardContent(unresolvedTreeElem)).append('\n');
 
         Object[] children = contentProvider.getChildren(unresolvedTreeElem);
         if (children == null)

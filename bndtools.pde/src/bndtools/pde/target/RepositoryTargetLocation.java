@@ -81,8 +81,9 @@ public class RepositoryTargetLocation extends BndTargetLocation {
 
             int i = 0;
             for (String bsn : bsns) {
-                Version version = repository.versions(bsn).last();
-                File download = repository.get(bsn, version, new HashMap<String,String>(), new RepositoryPlugin.DownloadListener[] {});
+                Version version = repository.versions(bsn)
+                    .last();
+                File download = repository.get(bsn, version, new HashMap<String, String>(), new RepositoryPlugin.DownloadListener[] {});
                 try {
                     bundles.add(new TargetBundle(download));
                 } catch (Exception e) {
@@ -113,7 +114,8 @@ public class RepositoryTargetLocation extends BndTargetLocation {
         }
 
         try {
-            if (repositoryName.equals(workspace.getWorkspaceRepository().getName())) {
+            if (repositoryName.equals(workspace.getWorkspaceRepository()
+                .getName())) {
                 this.repository = workspace.getWorkspaceRepository();
             } else {
                 for (RepositoryPlugin repository : workspace.getPlugins(RepositoryPlugin.class))

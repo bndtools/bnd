@@ -17,8 +17,7 @@ public class RepoBundleSelectionWizard extends Wizard {
      * Create a wizard for editing the specified list of bundles. The supplied collection will be modified by this
      * wizard.
      *
-     * @param bundles
-     *            A mutable collection of bundles.
+     * @param bundles A mutable collection of bundles.
      * @throws Exception
      */
     public RepoBundleSelectionWizard(List<VersionedClause> bundles, DependencyPhase phase) throws Exception {

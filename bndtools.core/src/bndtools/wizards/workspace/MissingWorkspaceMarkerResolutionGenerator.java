@@ -20,23 +20,23 @@ public class MissingWorkspaceMarkerResolutionGenerator implements IMarkerResolut
     @Override
     public IMarkerResolution[] getResolutions(IMarker marker) {
         return new IMarkerResolution[] {
-                new IMarkerResolution() {
-                    @Override
-                    public void run(IMarker marker) {
-                        IWorkbench workbench = PlatformUI.getWorkbench();
-                        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
+            new IMarkerResolution() {
+                @Override
+                public void run(IMarker marker) {
+                    IWorkbench workbench = PlatformUI.getWorkbench();
+                    IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
 
-                        WorkspaceSetupWizard wizard = new WorkspaceSetupWizard();
-                        wizard.init(workbench, StructuredSelection.EMPTY);
-                        WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
-                        dialog.open();
-                    }
-
-                    @Override
-                    public String getLabel() {
-                        return "Open 'New Bnd OSGi Workspace' Wizard";
-                    }
+                    WorkspaceSetupWizard wizard = new WorkspaceSetupWizard();
+                    wizard.init(workbench, StructuredSelection.EMPTY);
+                    WizardDialog dialog = new WizardDialog(window.getShell(), wizard);
+                    dialog.open();
                 }
+
+                @Override
+                public String getLabel() {
+                    return "Open 'New Bnd OSGi Workspace' Wizard";
+                }
+            }
         };
     }
 

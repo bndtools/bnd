@@ -147,7 +147,9 @@ public class EnableSubBundlesDialog extends TitleAreaDialog {
             }
         });
 
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), Plugin.PLUGIN_ID + ".enableSubBundles");
+        PlatformUI.getWorkbench()
+            .getHelpSystem()
+            .setHelp(getShell(), Plugin.PLUGIN_ID + ".enableSubBundles");
 
         return area;
     }

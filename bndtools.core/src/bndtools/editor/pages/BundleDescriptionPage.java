@@ -86,16 +86,20 @@ public class BundleDescriptionPage extends FormPage {
         leftPanel.setLayout(layout);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        infoPart.getSection().setLayoutData(gd);
+        infoPart.getSection()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        rightsPart.getSection().setLayoutData(gd);
+        rightsPart.getSection()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        vendorPart.getSection().setLayoutData(gd);
+        vendorPart.getSection()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        developerPart.getSection().setLayoutData(gd);
+        developerPart.getSection()
+            .setLayoutData(gd);
 
         sashForm.hookResizeListener();
 

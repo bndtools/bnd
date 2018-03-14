@@ -28,12 +28,10 @@ public class CreateFileChange extends ResourceChange {
     /**
      * Construct a CreateFileChange object.
      * 
-     * @param path
-     *            The path of the new file.
-     * @param source
-     *            Provides the content of the new file.
-     * @param updateFlags
-     *            Flags for creation (for possible values see {@link IFile#create(InputStream, int, IProgressMonitor)}).
+     * @param path The path of the new file.
+     * @param source Provides the content of the new file.
+     * @param updateFlags Flags for creation (for possible values see
+     *            {@link IFile#create(InputStream, int, IProgressMonitor)}).
      */
     public CreateFileChange(IPath path, InputStream source, int updateFlags, String encoding) {
         this.path = path;
@@ -44,7 +42,9 @@ public class CreateFileChange extends ResourceChange {
 
     @Override
     protected IResource getModifiedResource() {
-        return ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+        return ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getFile(path);
     }
 
     @Override
@@ -56,7 +56,8 @@ public class CreateFileChange extends ResourceChange {
     public Change perform(IProgressMonitor monitor) throws CoreException {
         SubMonitor progress = SubMonitor.convert(monitor, encoding != null ? 2 : 1);
 
-        IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+        IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+            .getRoot();
 
         IFile file = root.getFile(path);
         file.create(source, updateFlags, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
@@ -70,7 +71,9 @@ public class CreateFileChange extends ResourceChange {
     @Override
     public RefactoringStatus isValid(IProgressMonitor pm) throws CoreException {
         RefactoringStatus result = new RefactoringStatus();
-        IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+        IFile file = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getFile(path);
 
         URI location = file.getLocationURI();
         if (location == null) {
@@ -78,7 +81,8 @@ public class CreateFileChange extends ResourceChange {
             return result;
         }
 
-        IFileInfo jFile = EFS.getStore(location).fetchInfo();
+        IFileInfo jFile = EFS.getStore(location)
+            .fetchInfo();
         if (jFile.exists()) {
             result.addFatalError(String.format("File %s already exists", path));
             return result;

@@ -81,6 +81,7 @@ import org.eclipse.ui.texteditor.IElementStateListener;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
@@ -122,22 +123,25 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private final BndEditModel model = new BndEditModel();
 
-    private final Map<String,IFormPageFactory> pageFactories = new LinkedHashMap<String,IFormPageFactory>();
+    private final Map<String, IFormPageFactory> pageFactories = new LinkedHashMap<String, IFormPageFactory>();
 
-    private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
+    private final Image buildFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png")
+        .createImage();
 
     private BndSourceEditorPage sourcePage;
     private Promise<Workspace> modelReady;
 
     private File inputFile;
 
-    static Pair<String,String> getFileAndProject(IEditorInput input) {
+    static Pair<String, String> getFileAndProject(IEditorInput input) {
         String path;
         String projectName;
         if (input instanceof IFileEditorInput) {
             IFile file = ((IFileEditorInput) input).getFile();
-            path = file.getProjectRelativePath().toString();
-            projectName = file.getProject().getName();
+            path = file.getProjectRelativePath()
+                .toString();
+            projectName = file.getProject()
+                .getName();
         } else {
             path = input.getName();
             projectName = null;
@@ -149,7 +153,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         List<String> requiredPageIds = new LinkedList<String>();
 
         // Need to know the file and project names.
-        Pair<String,String> fileAndProject = getFileAndProject(getEditorInput());
+        Pair<String, String> fileAndProject = getFileAndProject(getEditorInput());
         String path = fileAndProject.getFirst();
         String projectName = fileAndProject.getSecond();
 
@@ -167,7 +171,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
         // Remove pages no longer required and remember the rest in a map
         int i = 0;
-        Map<String,IFormPage> pageCache = new HashMap<String,IFormPage>(requiredPageIds.size());
+        Map<String, IFormPage> pageCache = new HashMap<String, IFormPage>(requiredPageIds.size());
         while (i < getPageCount()) {
             IFormPage current = (IFormPage) pages.get(i);
             if (!requiredPageIds.contains(current.getId()))
@@ -181,7 +185,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         // Cache new pages
         for (String pageId : requiredPageIds) {
             if (!pageCache.containsKey(pageId)) {
-                IFormPage page = SOURCE_PAGE.equals(pageId) ? sourcePage : pageFactories.get(pageId).createPage(this, model, pageId);
+                IFormPage page = SOURCE_PAGE.equals(pageId) ? sourcePage
+                    : pageFactories.get(pageId)
+                        .createPage(this, model, pageId);
                 pageCache.put(pageId, page);
             }
         }
@@ -250,7 +256,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         ResolveMode resolveMode = getResolveMode();
 
         // If auto resolve, then resolve and save in background thread.
-        if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench().isClosing()) {
+        if (resolveMode == ResolveMode.auto && !PlatformUI.getWorkbench()
+            .isClosing()) {
             resolveRunBundles(monitor, true);
         } else {
             // Not auto-resolving, just save
@@ -282,7 +289,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         if (file == null) {
             MessageDialog.openError(shell, "Resolution Error", "Unable to run resolution because the file is not in the workspace.");
             reallySave(monitor);
-            return Central.promiseFactory().resolved(Status.CANCEL_STATUS);
+            return Central.promiseFactory()
+                .resolved(Status.CANCEL_STATUS);
         }
 
         Job loadWorkspaceJob = new Job("Loading workspace...") {
@@ -439,7 +447,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             IFormPage activePage = getActivePageInstance();
 
             if (activePage != null && activePage.getManagedForm() != null) {
-                ScrolledForm form = activePage.getManagedForm().getForm();
+                ScrolledForm form = activePage.getManagedForm()
+                    .getForm();
                 if (form.getMessage() == null) {
                     form.setMessage(SYNC_MESSAGE, IMessageProvider.WARNING);
                 }
@@ -479,7 +488,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         List<String> subBndFiles = model.getSubBndFiles();
         boolean isSubBundles = subBndFiles != null && !subBndFiles.isEmpty();
 
-        for (Entry<String,IFormPageFactory> pageEntry : pageFactories.entrySet()) {
+        for (Entry<String, IFormPageFactory> pageEntry : pageFactories.entrySet()) {
             String pageId = pageEntry.getKey();
             IFormPageFactory page = pageEntry.getValue();
 
@@ -494,8 +503,9 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private List<String> getPagesBndRun() {
         List<String> pageIds = new ArrayList<String>(3);
-        for (Entry<String,IFormPageFactory> pageEntry : pageFactories.entrySet()) {
-            if (pageEntry.getValue().supportsMode(IFormPageFactory.Mode.bndrun))
+        for (Entry<String, IFormPageFactory> pageEntry : pageFactories.entrySet()) {
+            if (pageEntry.getValue()
+                .supportsMode(IFormPageFactory.Mode.bndrun))
                 pageIds.add(pageEntry.getKey());
         }
         return pageIds;
@@ -510,9 +520,11 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             final String resourceName;
             IResource inputResource = ResourceUtil.getResource(input);
             if (inputResource != null) {
-                inputResource.getWorkspace().addResourceChangeListener(this);
+                inputResource.getWorkspace()
+                    .addResourceChangeListener(this);
                 resourceName = inputResource.getName();
-                inputFile = inputResource.getLocation().toFile();
+                inputFile = inputResource.getLocation()
+                    .toFile();
             } else {
                 IStorage storage = (IStorage) input.getAdapter(IStorage.class);
                 if (storage != null) {
@@ -539,7 +551,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                     modelReady = Central.onWorkspace(workspace -> loadEditModel());
                 }
             } else {
-                modelReady = Central.promiseFactory().failed(new Exception("Model unavailable"));
+                modelReady = Central.promiseFactory()
+                    .failed(new Exception("Model unavailable"));
             }
 
             setupActions();
@@ -575,7 +588,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                         handlerSvc.activateHandler(activation);
                 }
             };
-            Job.getJobManager().addJobChangeListener(resolveJobListener);
+            Job.getJobManager()
+                .addJobChangeListener(resolveJobListener);
         }
 
     }
@@ -588,36 +602,38 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         model.setProject(bndProject);
 
         // Load content into the edit model
-        Deferred<Workspace> completed = Central.promiseFactory().deferred();
-        Display.getDefault().asyncExec(() -> {
-            final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
-            // #1625: Ensure the IDocumentProvider is not null.
-            if (docProvider != null) {
-                try {
-                    IDocument document = docProvider.getDocument(getEditorInput());
-                    model.loadFrom(new IDocumentWrapper(document));
-                    model.setBndResource(inputFile);
-                    completed.resolve(ws);
-                } catch (IOException e) {
-                    logger.logError("Unable to load edit model", e);
-                    completed.fail(e);
-                }
+        Deferred<Workspace> completed = Central.promiseFactory()
+            .deferred();
+        Display.getDefault()
+            .asyncExec(() -> {
+                final IDocumentProvider docProvider = sourcePage.getDocumentProvider();
+                // #1625: Ensure the IDocumentProvider is not null.
+                if (docProvider != null) {
+                    try {
+                        IDocument document = docProvider.getDocument(getEditorInput());
+                        model.loadFrom(new IDocumentWrapper(document));
+                        model.setBndResource(inputFile);
+                        completed.resolve(ws);
+                    } catch (IOException e) {
+                        logger.logError("Unable to load edit model", e);
+                        completed.fail(e);
+                    }
 
-                for (int i = 0; i < getPageCount(); i++) {
-                    Control control = getControl(i);
+                    for (int i = 0; i < getPageCount(); i++) {
+                        Control control = getControl(i);
 
-                    if (control instanceof ScrolledForm) {
-                        ScrolledForm form = (ScrolledForm) control;
+                        if (control instanceof ScrolledForm) {
+                            ScrolledForm form = (ScrolledForm) control;
 
-                        if (SYNC_MESSAGE.equals(form.getMessage())) {
-                            form.setMessage(null, IMessageProvider.NONE);
+                            if (SYNC_MESSAGE.equals(form.getMessage())) {
+                                form.setMessage(null, IMessageProvider.NONE);
+                            }
                         }
                     }
+                } else {
+                    completed.fail(new Exception("Model unavailable"));
                 }
-            } else {
-                completed.fail(new Exception("Model unavailable"));
-            }
-        });
+            });
         return completed.getPromise();
     }
 
@@ -633,7 +649,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         pageFactories.put(BNDRUN_PAGE, ProjectRunPage.FACTORY_BNDRUN);
         pageFactories.put(TEST_SUITES_PAGE, TestSuitesPage.FACTORY);
 
-        IConfigurationElement[] configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "editorPages");
+        IConfigurationElement[] configElems = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(Plugin.PLUGIN_ID, "editorPages");
         if (configElems != null)
             for (IConfigurationElement configElem : configElems) {
                 String id = configElem.getAttribute("id");
@@ -649,7 +666,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     }
 
     private void setPartNameForInput(IEditorInput input) {
-        Pair<String,String> fileAndProject = getFileAndProject(input);
+        Pair<String, String> fileAndProject = getFileAndProject(input);
         String path = fileAndProject.getFirst();
         String projectName = fileAndProject.getSecond();
 
@@ -677,15 +694,18 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         super.dispose();
 
         if (resource != null) {
-            resource.getWorkspace().removeResourceChangeListener(this);
+            resource.getWorkspace()
+                .removeResourceChangeListener(this);
         }
 
         buildFileImg.dispose();
         if (resolveHandlerActivation != null) {
-            resolveHandlerActivation.getHandlerService().deactivateHandler(resolveHandlerActivation);
+            resolveHandlerActivation.getHandlerService()
+                .deactivateHandler(resolveHandlerActivation);
         }
         if (resolveJobListener != null) {
-            Job.getJobManager().removeJobChangeListener(resolveJobListener);
+            Job.getJobManager()
+                .removeJobChangeListener(resolveJobListener);
         }
     }
 
@@ -715,11 +735,14 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         // Close editor if file removed or switch to new location if file moved
         if (delta.getKind() == IResourceDelta.REMOVED) {
             if ((delta.getFlags() & IResourceDelta.MOVED_TO) != 0) {
-                IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(delta.getMovedToPath());
+                IFile file = ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .getFile(delta.getMovedToPath());
                 final FileEditorInput newInput = new FileEditorInput(file);
 
                 setInput(newInput);
-                Display display = getEditorSite().getShell().getDisplay();
+                Display display = getEditorSite().getShell()
+                    .getDisplay();
                 if (display != null) {
                     SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
                         @Override
@@ -812,7 +835,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
         @Override
         public void elementContentAboutToBeReplaced(Object element) {
-            // [cs] This check is here to attempt to save content that would be thrown away by a (misbehaving?) version control plugin.
+            // [cs] This check is here to attempt to save content that would be thrown away by a (misbehaving?) version
+            // control plugin.
             // Scenario: File is checked out by Perforce plugin.
             // This causes elementContentAboutToBeReplaced and elementContentReplaced callbacks to be fired.
             // However -- by the time that elementContentReplaced is called, the content inside of the IDocumentWrapper

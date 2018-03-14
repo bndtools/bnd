@@ -30,15 +30,16 @@ import bndtools.Plugin;
  */
 public class IconLoaderJob extends Job {
 
-    private final ILog log = Plugin.getDefault().getLog();
+    private final ILog log = Plugin.getDefault()
+        .getLog();
 
     private final Collection<Template> templates;
     private final int batchLimit;
     private final StructuredViewer viewer;
 
-    private final Map<Template,Image> loadedImageMap;
+    private final Map<Template, Image> loadedImageMap;
 
-    public IconLoaderJob(Collection<Template> templates, StructuredViewer viewer, Map<Template,Image> loadedImageMap, int batchLimit) {
+    public IconLoaderJob(Collection<Template> templates, StructuredViewer viewer, Map<Template, Image> loadedImageMap, int batchLimit) {
         super("load template icons");
         this.templates = templates;
         this.viewer = viewer;
@@ -50,14 +51,15 @@ public class IconLoaderJob extends Job {
     protected IStatus run(IProgressMonitor monitor) {
         SubMonitor progress = SubMonitor.convert(monitor, templates.size());
 
-        Map<Template,byte[]> batch = new IdentityHashMap<>();
+        Map<Template, byte[]> batch = new IdentityHashMap<>();
 
         for (Template template : templates) {
             InputStream iconStream = null;
             try {
                 URI iconUri = template.getIcon();
                 if (iconUri != null) {
-                    iconStream = iconUri.toURL().openStream();
+                    iconStream = iconUri.toURL()
+                        .openStream();
                     byte[] bytes = IO.read(iconStream);
                     batch.put(template, bytes);
 
@@ -78,38 +80,39 @@ public class IconLoaderJob extends Job {
         return Status.OK_STATUS;
     }
 
-    private void processBatch(final Map<Template,byte[]> batch) {
+    private void processBatch(final Map<Template, byte[]> batch) {
         if (batch.isEmpty())
             return;
         final Control control = viewer.getControl();
         if (control != null && !control.isDisposed()) {
-            control.getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (control.isDisposed())
-                        return;
-                    List<Object> toUpdate = new ArrayList<>(batch.size());
+            control.getDisplay()
+                .asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (control.isDisposed())
+                            return;
+                        List<Object> toUpdate = new ArrayList<>(batch.size());
 
-                    for (Entry<Template,byte[]> entry : batch.entrySet()) {
-                        Template template = entry.getKey();
-                        byte[] imgBytes = entry.getValue();
+                        for (Entry<Template, byte[]> entry : batch.entrySet()) {
+                            Template template = entry.getKey();
+                            byte[] imgBytes = entry.getValue();
 
-                        try {
-                            ImageData imgData = new ImageData(new ByteArrayInputStream(imgBytes));
-                            Image image = new Image(control.getDisplay(), imgData);
+                            try {
+                                ImageData imgData = new ImageData(new ByteArrayInputStream(imgBytes));
+                                Image image = new Image(control.getDisplay(), imgData);
 
-                            Image old = loadedImageMap.put(template, image);
-                            if (old != null && !old.isDisposed())
-                                old.dispose();
-                            toUpdate.add(template);
-                        } catch (Exception e) {
-                            log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading image data for template icon: " + template.getName(), e));
+                                Image old = loadedImageMap.put(template, image);
+                                if (old != null && !old.isDisposed())
+                                    old.dispose();
+                                toUpdate.add(template);
+                            } catch (Exception e) {
+                                log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading image data for template icon: " + template.getName(), e));
+                            }
                         }
-                    }
 
-                    viewer.update(toUpdate.toArray(), null);
-                }
-            });
+                        viewer.update(toUpdate.toArray(), null);
+                    }
+                });
         }
     }
 

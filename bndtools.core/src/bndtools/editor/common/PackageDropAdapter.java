@@ -54,7 +54,10 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 
     @Override
     public boolean validateDrop(Object target, int operation, TransferData transferType) {
-        return ResourceTransfer.getInstance().isSupportedType(transferType) || LocalSelectionTransfer.getTransfer().isSupportedType(transferType);
+        return ResourceTransfer.getInstance()
+            .isSupportedType(transferType)
+            || LocalSelectionTransfer.getTransfer()
+                .isSupportedType(transferType);
     }
 
     @Override
@@ -83,7 +86,7 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
                 }
             }
         } else if (data instanceof IStructuredSelection) {
-            Iterator< ? > iterator = ((IStructuredSelection) data).iterator();
+            Iterator<?> iterator = ((IStructuredSelection) data).iterator();
             while (iterator.hasNext()) {
                 Object element = iterator.next();
                 if (element instanceof IPackageFragment) {
@@ -93,7 +96,8 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
                     Capability cap = (Capability) element;
                     String namespace = cap.getNamespace();
                     if (PackageNamespace.PACKAGE_NAMESPACE.equals(namespace)) {
-                        String pkgName = (String) cap.getAttributes().get(namespace);
+                        String pkgName = (String) cap.getAttributes()
+                            .get(namespace);
                         newEntries.add(createNewEntry(pkgName));
                     }
                 } else if (element instanceof Requirement) {
@@ -116,7 +120,8 @@ public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
         if (!PackageNamespace.PACKAGE_NAMESPACE.equals(ns))
             return null;
 
-        String filterStr = req.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+        String filterStr = req.getDirectives()
+            .get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
         Matcher matcher = pkgFilterPattern.matcher(filterStr);
         if (!matcher.find())
             return null;

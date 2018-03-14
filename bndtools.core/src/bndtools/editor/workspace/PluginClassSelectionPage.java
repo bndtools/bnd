@@ -54,7 +54,8 @@ public class PluginClassSelectionPage extends WizardPage {
         // txtDescription = new ScrolledFormText(composite, true);
 
         // Load data
-        IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "bndPlugins");
+        IConfigurationElement[] elements = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(Plugin.PLUGIN_ID, "bndPlugins");
         viewer.setInput(elements);
 
         // Listeners

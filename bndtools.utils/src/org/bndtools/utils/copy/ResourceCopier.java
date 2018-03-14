@@ -15,13 +15,15 @@ import org.eclipse.core.runtime.SubMonitor;
 import aQute.lib.io.IO;
 
 public class ResourceCopier {
-    public static IFile copy(URL url, IFile dst, Map<String,String> replaceRegularExpressions, IProgressMonitor monitor) throws IOException, CoreException {
+    public static IFile copy(URL url, IFile dst, Map<String, String> replaceRegularExpressions, IProgressMonitor monitor) throws IOException, CoreException {
         InputStream is = null;
         try {
             SubMonitor progress = SubMonitor.convert(monitor, 2);
 
-            if (url.getPath().endsWith("/")) {
-                File file = dst.getProjectRelativePath().toFile();
+            if (url.getPath()
+                .endsWith("/")) {
+                File file = dst.getProjectRelativePath()
+                    .toFile();
 
                 if (file.isDirectory())
                     return dst; // already done

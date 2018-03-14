@@ -71,12 +71,13 @@ public class CapabilityBasedTemplate implements Template {
         this.locator = locator;
         this.engine = engine;
 
-        Map<String,Object> attrs = capability.getAttributes();
+        Map<String, Object> attrs = capability.getAttributes();
 
         Object nameObj = attrs.get("name");
         this.name = nameObj instanceof String ? (String) nameObj : "<<unknown>>";
 
-        this.description = "from " + ResourceUtils.getIdentityCapability(capability.getResource()).osgi_identity();
+        this.description = "from " + ResourceUtils.getIdentityCapability(capability.getResource())
+            .osgi_identity();
 
         Object categoryObj = attrs.get("category");
         category = categoryObj instanceof String ? (String) categoryObj : null;
@@ -137,7 +138,8 @@ public class CapabilityBasedTemplate implements Template {
 
     @Override
     public int getRanking() {
-        Object rankingObj = capability.getAttributes().get("ranking");
+        Object rankingObj = capability.getAttributes()
+            .get("ranking");
         return rankingObj instanceof Number ? ((Number) rankingObj).intValue() : 0;
     }
 
@@ -148,7 +150,8 @@ public class CapabilityBasedTemplate implements Template {
 
     @Override
     public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
-        String resourceId = ResourceUtils.getIdentityCapability(capability.getResource()).osgi_identity();
+        String resourceId = ResourceUtils.getIdentityCapability(capability.getResource())
+            .osgi_identity();
 
         final CompositeOCD compositeOcd = new CompositeOCD(name, description, null);
 
@@ -163,15 +166,19 @@ public class CapabilityBasedTemplate implements Template {
                     if (ocdMap != null) {
                         if (ocdMap.size() == 1) {
                             @SuppressWarnings("unchecked")
-                            Entry<String,OCD> entry = (Entry<String,OCD>) ocdMap.entrySet().iterator().next();
-                            // There is exactly one OCD, but if the capability specified the 'ocd' property then it must match.
+                            Entry<String, OCD> entry = (Entry<String, OCD>) ocdMap.entrySet()
+                                .iterator()
+                                .next();
+                            // There is exactly one OCD, but if the capability specified the 'ocd' property then it must
+                            // match.
                             if (ocdRef == null || ocdRef.equals(entry.getKey())) {
                                 compositeOcd.addDelegate(new FelixOCDAdapter(entry.getValue()));
                             } else {
                                 log(IStatus.WARNING, String.format("MetaType entry '%s' from resource '%s' did not contain an Object Class Definition with id '%s'", metaTypePath, resourceId, ocdRef), null);
                             }
                         } else {
-                            // There are multiple OCDs in the MetaType record, so the capability must have specified the 'ocd' property.
+                            // There are multiple OCDs in the MetaType record, so the capability must have specified the
+                            // 'ocd' property.
                             if (ocdRef != null) {
                                 OCD felixOcd = (OCD) ocdMap.get(ocdRef);
                                 if (felixOcd != null) {
@@ -192,12 +199,12 @@ public class CapabilityBasedTemplate implements Template {
         // loaded from the Metatype XML.
         ObjectClassDefinitionImpl ocdImpl = new ObjectClassDefinitionImpl(name, description, null);
         ResourceMap inputs = getInputSources();
-        Map<String,String> params = engine.getTemplateParameters(inputs, monitor);
-        for (Entry<String,String> entry : params.entrySet()) {
+        Map<String, String> params = engine.getTemplateParameters(inputs, monitor);
+        for (Entry<String, String> entry : params.entrySet()) {
             AttributeDefinitionImpl ad = new AttributeDefinitionImpl(entry.getKey(), entry.getKey(), 0, AttributeDefinition.STRING);
             if (entry.getValue() != null)
                 ad.setDefaultValue(new String[] {
-                        entry.getValue()
+                    entry.getValue()
                 });
             ocdImpl.addAttribute(ad, true);
         }
@@ -207,12 +214,12 @@ public class CapabilityBasedTemplate implements Template {
     }
 
     @Override
-    public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+    public ResourceMap generateOutputs(Map<String, List<Object>> parameters) throws Exception {
         return generateOutputs(parameters, new NullProgressMonitor());
     }
 
     @Override
-    public ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
+    public ResourceMap generateOutputs(Map<String, List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         ResourceMap inputs = getInputSources();
         return engine.generateOutputs(inputs, parameters, monitor);
     }
@@ -228,7 +235,8 @@ public class CapabilityBasedTemplate implements Template {
         if (helpPath != null) {
             try {
                 File f = fetchBundle();
-                uri = new URI("jar:" + f.toURI().toURL() + "!/" + helpPath);
+                uri = new URI("jar:" + f.toURI()
+                    .toURL() + "!/" + helpPath);
             } catch (Exception e) {
                 // ignore
             }
@@ -243,7 +251,8 @@ public class CapabilityBasedTemplate implements Template {
         try (JarInputStream in = new JarInputStream(IO.stream(bundleFile))) {
             JarEntry jarEntry = in.getNextJarEntry();
             while (jarEntry != null) {
-                String entryPath = jarEntry.getName().trim();
+                String entryPath = jarEntry.getName()
+                    .trim();
                 if (entryPath.startsWith(dir)) {
                     String relativePath = entryPath.substring(dir.length());
                     if (!relativePath.isEmpty()) { // skip the root folder
@@ -270,12 +279,18 @@ public class CapabilityBasedTemplate implements Template {
         if (_bundleFile != null && _bundleFile.exists())
             return _bundleFile;
 
-        Capability idCap = capability.getResource().getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0);
-        String id = (String) idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+        Capability idCap = capability.getResource()
+            .getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE)
+            .get(0);
+        String id = (String) idCap.getAttributes()
+            .get(IdentityNamespace.IDENTITY_NAMESPACE);
 
-        Capability contentCap = capability.getResource().getCapabilities(ContentNamespace.CONTENT_NAMESPACE).get(0);
+        Capability contentCap = capability.getResource()
+            .getCapabilities(ContentNamespace.CONTENT_NAMESPACE)
+            .get(0);
         URI location;
-        Object locationObj = contentCap.getAttributes().get("url");
+        Object locationObj = contentCap.getAttributes()
+            .get("url");
         if (locationObj instanceof URI)
             location = (URI) locationObj;
         else if (locationObj instanceof String)
@@ -290,7 +305,8 @@ public class CapabilityBasedTemplate implements Template {
 
         // Try to locate from the workspace and/or repositories if a BundleLocator was provide
         if (locator != null) {
-            String hashStr = (String) contentCap.getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);
+            String hashStr = (String) contentCap.getAttributes()
+                .get(ContentNamespace.CONTENT_NAMESPACE);
             try {
                 _bundleFile = locator.locate(id, hashStr, "SHA-256", location);
                 if (_bundleFile != null)
@@ -333,7 +349,9 @@ public class CapabilityBasedTemplate implements Template {
     }
 
     private static void log(int level, String message, Throwable e) {
-        Plugin.getDefault().getLog().log(new Status(level, Plugin.PLUGIN_ID, 0, message, e));
+        Plugin.getDefault()
+            .getLog()
+            .log(new Status(level, Plugin.PLUGIN_ID, 0, message, e));
     }
 
     private static class FelixADAdapter implements AttributeDefinition {
@@ -421,7 +439,9 @@ public class CapabilityBasedTemplate implements Template {
             if (ocd.getAttributeDefinitions() == null)
                 return null;
 
-            Iterator<AD> iter = ocd.getAttributeDefinitions().values().iterator();
+            Iterator<AD> iter = ocd.getAttributeDefinitions()
+                .values()
+                .iterator();
             if (filter == ObjectClassDefinition.OPTIONAL || filter == ObjectClassDefinition.REQUIRED) {
                 boolean required = (filter == ObjectClassDefinition.REQUIRED);
                 iter = new RequiredFilterIterator(iter, required);

@@ -26,19 +26,14 @@ public interface HeadlessBuildManager {
     /**
      * Setup/remove files enabling headless build of a project.
      *
-     * @param plugins
-     *            the plugins to involve in adding/removing the headless build of a project. Usually only the plugins
-     *            that are enabled through the preferences should be involved: it is strongly advised to get these
-     *            through {@link BndPreferences#getHeadlessBuildPluginsEnabled(HeadlessBuildPluginTracker, Set)} (the
-     *            burden is on the caller of this method to avoid class cycles).
-     * @param cnf
-     *            true when the project directory is that of the cnf project
-     * @param projectDir
-     *            the project directory
-     * @param add
-     *            true to add/create the files, false to remove them
-     * @param enabledIgnorePlugins
-     *            set with enabled version control ignore plugins
+     * @param plugins the plugins to involve in adding/removing the headless build of a project. Usually only the
+     *            plugins that are enabled through the preferences should be involved: it is strongly advised to get
+     *            these through {@link BndPreferences#getHeadlessBuildPluginsEnabled(HeadlessBuildPluginTracker, Set)}
+     *            (the burden is on the caller of this method to avoid class cycles).
+     * @param cnf true when the project directory is that of the cnf project
+     * @param projectDir the project directory
+     * @param add true to add/create the files, false to remove them
+     * @param enabledIgnorePlugins set with enabled version control ignore plugins
      */
     public void setup(Set<String> plugins, boolean cnf, File projectDir, boolean add, Set<String> enabledIgnorePlugins, List<String> warnings);
 

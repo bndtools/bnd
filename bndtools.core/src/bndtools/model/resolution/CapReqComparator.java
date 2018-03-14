@@ -55,8 +55,12 @@ public class CapReqComparator implements Comparator<Object> {
 
         // Compare the main attribute
         String attribName = R5LabelFormatter.getMainAttributeName(ns1);
-        String attrib1 = c1.getAttributes().get(attribName).toString();
-        String attrib2 = c2.getAttributes().get(attribName).toString();
+        String attrib1 = c1.getAttributes()
+            .get(attribName)
+            .toString();
+        String attrib2 = c2.getAttributes()
+            .get(attribName)
+            .toString();
         int attribDiff = attrib1.compareTo(attrib2);
         if (attribDiff != 0)
             return attribDiff;
@@ -65,10 +69,12 @@ public class CapReqComparator implements Comparator<Object> {
         String versionAttribName = R5LabelFormatter.getVersionAttributeName(ns1);
         if (versionAttribName == null)
             return 0;
-        Version v1 = (Version) c1.getAttributes().get(versionAttribName);
+        Version v1 = (Version) c1.getAttributes()
+            .get(versionAttribName);
         if (v1 == null)
             v1 = Version.emptyVersion;
-        Version v2 = (Version) c2.getAttributes().get(versionAttribName);
+        Version v2 = (Version) c2.getAttributes()
+            .get(versionAttribName);
         if (v2 == null)
             v2 = Version.emptyVersion;
         return v1.compareTo(v2);
@@ -86,9 +92,11 @@ public class CapReqComparator implements Comparator<Object> {
         Pattern filterPattern = R5LabelFormatter.getFilterPattern(ns1);
         if (filterPattern == null)
             return 0;
-        String filter1 = r1.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+        String filter1 = r1.getDirectives()
+            .get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
         Matcher m1 = filterPattern.matcher(filter1);
-        String filter2 = r2.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+        String filter2 = r2.getDirectives()
+            .get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
         Matcher m2 = filterPattern.matcher(filter2);
         if (!m1.find() || !m2.find())
             return 0;

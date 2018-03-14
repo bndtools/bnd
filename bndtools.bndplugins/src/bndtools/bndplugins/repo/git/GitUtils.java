@@ -22,12 +22,13 @@ import org.eclipse.jgit.util.FS;
 
 public class GitUtils {
 
-    private static final Map<File,Repository> localRepos = new HashMap<File,Repository>();
+    private static final Map<File, Repository> localRepos = new HashMap<File, Repository>();
 
     public static synchronized Repository getRepository(File gitRoot, String branch, String gitUrl, String gitPushUrl) throws IOException, ConfigInvalidException, JGitInternalException, GitAPIException {
 
         File dotGit;
-        if (gitRoot.getName().equals(Constants.DOT_GIT)) {
+        if (gitRoot.getName()
+            .equals(Constants.DOT_GIT)) {
             dotGit = gitRoot;
         } else {
             dotGit = new File(gitRoot, Constants.DOT_GIT);
@@ -39,7 +40,11 @@ public class GitUtils {
         }
 
         if (!dotGit.exists()) {
-            Git.cloneRepository().setDirectory(gitRoot).setCloneAllBranches(true).setURI(gitUrl).call();
+            Git.cloneRepository()
+                .setDirectory(gitRoot)
+                .setCloneAllBranches(true)
+                .setURI(gitUrl)
+                .call();
             FileBasedConfig config = new FileBasedConfig(new File(dotGit, "config"), FS.DETECTED);
             config.load();
             if (gitPushUrl != null) {
@@ -49,7 +54,10 @@ public class GitUtils {
         }
 
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        repository = builder.setGitDir(dotGit).readEnvironment().findGitDir().build();
+        repository = builder.setGitDir(dotGit)
+            .readEnvironment()
+            .findGitDir()
+            .build();
         localRepos.put(dotGit, repository);
         try {
             repository.incrementOpen();
@@ -68,9 +76,11 @@ public class GitUtils {
                 checkout.call();
             }
             if (pull) {
-                git.pull().call();
+                git.pull()
+                    .call();
             } else {
-                git.fetch().call();
+                git.fetch()
+                    .call();
             }
         } catch (Exception e) {
             if (!(e.getCause() instanceof TransportException)) {
@@ -86,7 +96,8 @@ public class GitUtils {
     }
 
     private static boolean branchExists(Git git, String branch) throws GitAPIException {
-        List<Ref> refs = git.branchList().call();
+        List<Ref> refs = git.branchList()
+            .call();
         for (Ref ref : refs) {
             if (branch.equals(ref.getName())) {
                 return true;

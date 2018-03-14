@@ -38,13 +38,15 @@ class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
         List<Project> projects;
         SubMonitor progress;
         try {
-            projects = new ArrayList<Project>(Central.getWorkspace().getAllProjects());
+            projects = new ArrayList<Project>(Central.getWorkspace()
+                .getAllProjects());
             progress = SubMonitor.convert(monitor, addedProjects.size());
         } catch (Exception e) {
             return Status.CANCEL_STATUS;
         }
 
-        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+            .getRoot();
         for (Project project : projects) {
             IProject eclipseProject = WorkspaceUtils.findOpenProject(wsroot, project);
             if (eclipseProject != null && addedProjects.contains(eclipseProject)) {
@@ -55,7 +57,8 @@ class AdjustClasspathsForNewProjectJob extends WorkspaceJob {
                         BndContainerInitializer.requestClasspathContainerUpdate(javaProject);
                     }
                 } catch (CoreException e) {
-                    IStatus result = new Status(e.getStatus().getSeverity(), BndtoolsBuilder.PLUGIN_ID, "Failure to update classpath for project " + eclipseProject, e);
+                    IStatus result = new Status(e.getStatus()
+                        .getSeverity(), BndtoolsBuilder.PLUGIN_ID, "Failure to update classpath for project " + eclipseProject, e);
                     logger.logStatus(result);
                 }
                 progress.worked(1);

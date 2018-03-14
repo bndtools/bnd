@@ -8,13 +8,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 public class CategorisedPrioritisedConfigurationElementTreeContentProvider implements ITreeContentProvider {
 
-    private final SortedMap<ConfigurationElementCategory,List<IConfigurationElement>> data = new TreeMap<ConfigurationElementCategory,List<IConfigurationElement>>();
+    private final SortedMap<ConfigurationElementCategory, List<IConfigurationElement>> data = new TreeMap<ConfigurationElementCategory, List<IConfigurationElement>>();
     private final boolean flattenSingleCategory;
 
     public CategorisedPrioritisedConfigurationElementTreeContentProvider(boolean flattenSingleCategory) {
@@ -39,7 +40,7 @@ public class CategorisedPrioritisedConfigurationElementTreeContentProvider imple
 
         // Sort within each category
         CategorisedConfigurationElementComparator comparator = new CategorisedConfigurationElementComparator(true);
-        for (Entry<ConfigurationElementCategory,List<IConfigurationElement>> entry : data.entrySet()) {
+        for (Entry<ConfigurationElementCategory, List<IConfigurationElement>> entry : data.entrySet()) {
             List<IConfigurationElement> list = entry.getValue();
             Collections.sort(list, comparator);
         }
@@ -61,7 +62,8 @@ public class CategorisedPrioritisedConfigurationElementTreeContentProvider imple
 
         Set<ConfigurationElementCategory> keys = data.keySet();
         if (keys.size() == 1 && flattenSingleCategory) {
-            List<IConfigurationElement> elements = data.get(keys.iterator().next());
+            List<IConfigurationElement> elements = data.get(keys.iterator()
+                .next());
             result = elements.toArray();
         } else {
             result = keys.toArray();

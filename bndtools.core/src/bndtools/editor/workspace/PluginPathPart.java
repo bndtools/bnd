@@ -39,6 +39,7 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
+
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
@@ -84,7 +85,8 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                boolean enable = !viewer.getSelection().isEmpty();
+                boolean enable = !viewer.getSelection()
+                    .isEmpty();
                 removeItem.setEnabled(enable);
             }
         });
@@ -106,7 +108,9 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         section.setTextClient(toolbar);
 
         ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
-        addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        addItem.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_OBJ_ADD));
         addItem.setToolTipText("Add Path");
 
         addItem.addSelectionListener(new SelectionAdapter() {
@@ -117,8 +121,12 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
         });
 
         removeItem = new ToolItem(toolbar, SWT.PUSH);
-        removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-        removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        removeItem.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE));
+        removeItem.setDisabledImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
         removeItem.setToolTipText("Remove");
         removeItem.setEnabled(false);
 
@@ -178,13 +186,16 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
     }
 
     void doAdd() {
-        FileDialog dialog = new FileDialog(getManagedForm().getForm().getShell(), SWT.OPEN | SWT.MULTI);
+        FileDialog dialog = new FileDialog(getManagedForm().getForm()
+            .getShell(), SWT.OPEN | SWT.MULTI);
         try {
-            File wsdir = Central.getWorkspace().getBase();
+            File wsdir = Central.getWorkspace()
+                .getBase();
             File cnfdir = new File(wsdir, Workspace.CNFDIR);
             dialog.setFilterPath(cnfdir.getAbsolutePath());
             dialog.setFilterExtensions(new String[] {
-                "*.jar"}); //$NON-NLS-1$
+                "*.jar" //$NON-NLS-1$
+            });
 
             String res = dialog.open();
             if (res != null) {
@@ -231,7 +242,8 @@ public class PluginPathPart extends SectionPart implements PropertyChangeListene
 
     private static final class PluginPathLabelProvider extends StyledCellLabelProvider {
 
-        private final Image jarImg = Icons.desc("jar").createImage();
+        private final Image jarImg = Icons.desc("jar")
+            .createImage();
 
         @Override
         public void update(ViewerCell cell) {

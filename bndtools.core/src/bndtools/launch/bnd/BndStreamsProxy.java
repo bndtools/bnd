@@ -37,7 +37,7 @@ public class BndStreamsProxy implements IStreamsProxy2 {
 
     class StreamMonitor implements IStreamMonitor, Appendable {
         final StringBuffer sb = new StringBuffer();
-        final ConcurrentHashMap<IStreamListener,Integer> listeners = new ConcurrentHashMap<IStreamListener,Integer>();
+        final ConcurrentHashMap<IStreamListener, Integer> listeners = new ConcurrentHashMap<IStreamListener, Integer>();
 
         @Override
         public void addListener(IStreamListener listener) {
@@ -76,11 +76,12 @@ public class BndStreamsProxy implements IStreamsProxy2 {
         }
 
         public void flush() {
-            for (Entry<IStreamListener,Integer> listener : listeners.entrySet()) {
+            for (Entry<IStreamListener, Integer> listener : listeners.entrySet()) {
                 int start = listener.getValue();
                 int end = sb.length();
                 listener.setValue(end);
-                listener.getKey().streamAppended(sb.substring(start, end), this);
+                listener.getKey()
+                    .streamAppended(sb.substring(start, end), this);
             }
         }
     }

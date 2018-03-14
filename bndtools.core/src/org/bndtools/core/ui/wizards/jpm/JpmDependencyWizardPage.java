@@ -36,10 +36,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
-import bndtools.central.Central;
+
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import bndtools.central.Central;
 
 public class JpmDependencyWizardPage extends WizardPage {
 
@@ -111,12 +112,13 @@ public class JpmDependencyWizardPage extends WizardPage {
 
         // Query JPM and show results *after* dialog is shown. This ensures progress is visible in the dialog's
         // progress bar
-        getContainer().getShell().addShellListener(new ShellAdapter() {
-            @Override
-            public void shellActivated(ShellEvent e) {
-                runQuery();
-            }
-        });
+        getContainer().getShell()
+            .addShellListener(new ShellAdapter() {
+                @Override
+                public void shellActivated(ShellEvent e) {
+                    runQuery();
+                }
+            });
         viewerIndirect.addCheckStateListener(new ICheckStateListener() {
             @Override
             public void checkStateChanged(CheckStateChangedEvent ev) {
@@ -208,7 +210,9 @@ public class JpmDependencyWizardPage extends WizardPage {
         label.setText(text);
 
         ControlDecoration decoration = new ControlDecoration(label, SWT.LEFT, container);
-        Image imgInfo = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage();
+        Image imgInfo = FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+            .getImage();
         decoration.setImage(imgInfo);
 
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, false);
@@ -236,7 +240,8 @@ public class JpmDependencyWizardPage extends WizardPage {
                 indirectResources = query.getIndirectResources();
                 selectedIndirectResources = new HashSet<ResourceDescriptor>();
             } catch (InvocationTargetException e) {
-                errorText = e.getCause().getMessage();
+                errorText = e.getCause()
+                    .getMessage();
             } catch (InterruptedException e) {
                 // ignore
             } catch (Exception e) {
@@ -301,7 +306,8 @@ public class JpmDependencyWizardPage extends WizardPage {
 
     private static class ResourceDescriptorLabelProvider extends StyledCellLabelProvider {
 
-        private final Image imgJar = Icons.desc("jar").createImage();
+        private final Image imgJar = Icons.desc("jar")
+            .createImage();
 
         @Override
         public void update(ViewerCell cell) {

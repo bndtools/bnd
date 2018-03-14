@@ -49,10 +49,10 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
 
     private boolean inited = false;
 
-    private final Map<String,IMavenProjectFacade> bsnMap = new HashMap<>();
+    private final Map<String, IMavenProjectFacade> bsnMap = new HashMap<>();
 
     @Override
-    public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+    public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
         return Collections.emptyMap();
     }
 
@@ -62,7 +62,7 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
     }
 
     @Override
-    public File get(final String bsn, final Version version, Map<String,String> properties, final DownloadListener... listeners) throws Exception {
+    public File get(final String bsn, final Version version, Map<String, String> properties, final DownloadListener... listeners) throws Exception {
         if (!inited) {
             init();
         }
@@ -75,7 +75,8 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
 
         // add the eclipse project that this comes from so we can look it up in the launch
         // see bndtools.launch.BndDependencySourceContainer.createSourceContainers()
-        final String projectName = projectFacade.getProject().getName();
+        final String projectName = projectFacade.getProject()
+            .getName();
         properties.put("sourceProjectName", projectName);
 
         File bundleFile = guessBundleFile(projectFacade);
@@ -114,7 +115,9 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
         IProject project = projectFacade.getProject();
         IPath outputLocation = projectFacade.getOutputLocation();
 
-        if (outputLocation.segment(0).equals(project.getFullPath().segment(0))) {
+        if (outputLocation.segment(0)
+            .equals(project.getFullPath()
+                .segment(0))) {
             outputLocation = outputLocation.removeFirstSegments(1);
         }
 
@@ -125,13 +128,16 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
         }
 
         if (outputLocation != null) {
-            if (outputLocation.lastSegment().equals("classes")) {
+            if (outputLocation.lastSegment()
+                .equals("classes")) {
                 outputLocation = outputLocation.removeLastSegments(1);
             }
 
             buildDirectoryGuess = outputLocation.toOSString();
         } else {
-            buildDirectoryGuess = projectFacade.getProject().getLocation().toOSString() + "/target";
+            buildDirectoryGuess = projectFacade.getProject()
+                .getLocation()
+                .toOSString() + "/target";
         }
 
         ArtifactKey artifactKey = projectFacade.getArtifactKey();
@@ -162,10 +168,12 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
         }
 
         if (finalName == null) {
-            finalName = mavenProject.getBuild().getFinalName();
+            finalName = mavenProject.getBuild()
+                .getFinalName();
         }
 
-        return new File(mavenProject.getBuild().getDirectory(), finalName + ".jar");
+        return new File(mavenProject.getBuild()
+            .getDirectory(), finalName + ".jar");
     }
 
     private String getBsnFromMavenProject(MavenProject mavenProject) throws Exception {
@@ -173,7 +181,8 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
 
         if (bundleFile.exists()) {
             Domain domain = Domain.domain(bundleFile);
-            String bsn = domain.getBundleSymbolicName().getKey();
+            String bsn = domain.getBundleSymbolicName()
+                .getKey();
             return bsn;
         }
 
@@ -200,7 +209,8 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
                     }
                 }
             } catch (Exception e) {
-                logger.logError("Unable to get bundle symbolic name for " + projectFacade.getProject().getName(), e);
+                logger.logError("Unable to get bundle symbolic name for " + projectFacade.getProject()
+                    .getName(), e);
             }
         }
 
@@ -212,7 +222,8 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
 
         if (bundleFileGuess.exists()) {
             Domain domain = Domain.domain(bundleFileGuess);
-            String bsn = domain.getBundleSymbolicName().getKey();
+            String bsn = domain.getBundleSymbolicName()
+                .getKey();
 
             return bsn;
         }
@@ -281,7 +292,8 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
         Location location = Platform.getInstanceLocation();
 
         if (location != null) {
-            return location.getURL().toString();
+            return location.getURL()
+                .toString();
         }
 
         return null;
@@ -295,12 +307,14 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
         for (MavenProjectChangedEvent event : events) {
             final IMavenProjectFacade oldProject = event.getOldMavenProject();
 
-            Iterator<Entry<String,IMavenProjectFacade>> entries = bsnMap.entrySet().iterator();
+            Iterator<Entry<String, IMavenProjectFacade>> entries = bsnMap.entrySet()
+                .iterator();
 
             while (entries.hasNext()) {
-                Entry<String,IMavenProjectFacade> entry = entries.next();
+                Entry<String, IMavenProjectFacade> entry = entries.next();
 
-                if (entry.getValue().equals(oldProject)) {
+                if (entry.getValue()
+                    .equals(oldProject)) {
                     String bsn = entry.getKey();
 
                     bsnMap.remove(bsn);

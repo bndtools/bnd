@@ -55,6 +55,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
+
 import bndtools.Plugin;
 
 public class IndexerWizardPage extends WizardPage {
@@ -77,9 +78,12 @@ public class IndexerWizardPage extends WizardPage {
     private TableViewer vwrInputs;
     private Label lblInputCount;
 
-    private final Image imgFile = Icons.desc("file").createImage(); //$NON-NLS-1$
-    private final Image imgWarning = Icons.desc("warning").createImage(); //$NON-NLS-1$
-    private final Image imgError = Icons.desc("error").createImage(); //$NON-NLS-1$
+    private final Image imgFile = Icons.desc("file") //$NON-NLS-1$
+        .createImage();
+    private final Image imgWarning = Icons.desc("warning") //$NON-NLS-1$
+        .createImage();
+    private final Image imgError = Icons.desc("error") //$NON-NLS-1$
+        .createImage();
 
     public IndexerWizardPage() {
         super("index"); //$NON-NLS-1$
@@ -107,7 +111,9 @@ public class IndexerWizardPage extends WizardPage {
         new Label(composite, SWT.NONE).setText(Messages.IndexerWizardPage_resourcePattern);
         txtResourcePattern = new Text(composite, SWT.BORDER);
         ControlDecoration decorResourcePattern = new ControlDecoration(txtResourcePattern, SWT.LEFT | SWT.TOP, composite);
-        decorResourcePattern.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        decorResourcePattern.setImage(FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+            .getImage());
         decorResourcePattern.setMarginWidth(3);
         decorResourcePattern.setDescriptionText(Messages.IndexerWizardPage_resourcePatternHelp);
         decorResourcePattern.setShowHover(true);
@@ -220,7 +226,8 @@ public class IndexerWizardPage extends WizardPage {
         btnBrowseWorkspace.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+                IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
+                    .getRoot();
                 ContainerSelectionDialog containerDlg = new ContainerSelectionDialog(getShell(), root, false, Messages.IndexerWizardPage_selectBaseDir);
                 containerDlg.showClosedProjects(false);
                 if (containerDlg.open() == Window.OK) {
@@ -231,7 +238,8 @@ public class IndexerWizardPage extends WizardPage {
                         if (resource == null)
                             MessageDialog.openError(getShell(), "Error", "Could not find resource for path " + workspacePath);
                         else
-                            txtBaseDir.setText(resource.getLocation().toString());
+                            txtBaseDir.setText(resource.getLocation()
+                                .toString());
                     }
                 }
             }
@@ -280,7 +288,8 @@ public class IndexerWizardPage extends WizardPage {
         setPageComplete(false);
         vwrInputs.setInput(inputPaths);
         lblInputCount.setText(String.format("%d resources found", inputPaths.size()));
-        lblInputCount.getParent().layout(new Control[] {
+        lblInputCount.getParent()
+            .layout(new Control[] {
                 lblInputCount
         });
         final String resourcePattern = this.resourcePattern;
@@ -305,7 +314,8 @@ public class IndexerWizardPage extends WizardPage {
                             // The error/warning status is displayed in the table instead of the path list
                             vwrInputs.setInput(Collections.singleton(status));
                         lblInputCount.setText(String.format("%d resources found", inputPaths.size()));
-                        lblInputCount.getParent().layout(new Control[] {
+                        lblInputCount.getParent()
+                            .layout(new Control[] {
                                 lblInputCount
                         });
                         validate();
@@ -317,7 +327,8 @@ public class IndexerWizardPage extends WizardPage {
         updateInputFilesJob.schedule(500);
         vwrInputs.setInput(Collections.singleton(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, Messages.IndexerWizardPage_checking, null)));
         lblInputCount.setText("...");
-        lblInputCount.getParent().layout(new Control[] {
+        lblInputCount.getParent()
+            .layout(new Control[] {
                 lblInputCount
         });
     }

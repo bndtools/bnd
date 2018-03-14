@@ -46,7 +46,8 @@ public class BndPreferences {
     private final IPreferenceStore store;
 
     public BndPreferences() {
-        store = Plugin.getDefault().getPreferenceStore();
+        store = Plugin.getDefault()
+            .getPreferenceStore();
 
         // Defaults...
         store.setDefault(PREF_WARN_EXISTING_LAUNCH, true);
@@ -61,10 +62,11 @@ public class BndPreferences {
         store.setDefault(PREF_USE_ALIAS_REQUIREMENTS, true);
     }
 
-    private String mapToPreference(Map<String,Boolean> names) {
+    private String mapToPreference(Map<String, Boolean> names) {
         StringBuilder sb = new StringBuilder();
-        for (Map.Entry<String,Boolean> nameEntry : names.entrySet()) {
-            if (nameEntry.getValue().booleanValue()) {
+        for (Map.Entry<String, Boolean> nameEntry : names.entrySet()) {
+            if (nameEntry.getValue()
+                .booleanValue()) {
                 if (sb.length() > 0) {
                     sb.append("|");
                 }
@@ -74,7 +76,7 @@ public class BndPreferences {
         return sb.toString();
     }
 
-    private Map<String,Boolean> preferenceToMap(String preference, Collection< ? extends NamedPlugin> allPluginsInformation, boolean onlyEnabled) {
+    private Map<String, Boolean> preferenceToMap(String preference, Collection<? extends NamedPlugin> allPluginsInformation, boolean onlyEnabled) {
         List<String> names = null;
         if (preference != null && !preference.isEmpty()) {
             names = Arrays.asList(preference.split("\\|"));
@@ -82,7 +84,7 @@ public class BndPreferences {
 
         boolean atLeastOneEnabled = false;
 
-        Map<String,Boolean> map = new TreeMap<String,Boolean>();
+        Map<String, Boolean> map = new TreeMap<String, Boolean>();
         for (NamedPlugin info : allPluginsInformation) {
             boolean enabled = (names == null) ? (info.isEnabledByDefault() && !info.isDeprecated()) : names.contains(info.getName());
             map.put(info.getName(), enabled);
@@ -97,8 +99,9 @@ public class BndPreferences {
 
         if (onlyEnabled) {
             Set<String> pluginsToRemove = new HashSet<String>();
-            for (Map.Entry<String,Boolean> entry : map.entrySet()) {
-                if (!entry.getValue().booleanValue()) {
+            for (Map.Entry<String, Boolean> entry : map.entrySet()) {
+                if (!entry.getValue()
+                    .booleanValue()) {
                     pluginsToRemove.add(entry.getKey());
                 }
             }
@@ -217,11 +220,11 @@ public class BndPreferences {
         return store.getBoolean(PREF_HEADLESS_BUILD_CREATE);
     }
 
-    public void setHeadlessBuildPlugins(Map<String,Boolean> names) {
+    public void setHeadlessBuildPlugins(Map<String, Boolean> names) {
         store.setValue(PREF_HEADLESS_BUILD_PLUGINS, mapToPreference(names));
     }
 
-    public Map<String,Boolean> getHeadlessBuildPlugins(Collection< ? extends NamedPlugin> allPluginsInformation, boolean onlyEnabled) {
+    public Map<String, Boolean> getHeadlessBuildPlugins(Collection<? extends NamedPlugin> allPluginsInformation, boolean onlyEnabled) {
         if (!getHeadlessBuildCreate()) {
             return Collections.emptyMap();
         }
@@ -236,10 +239,8 @@ public class BndPreferences {
      * <li>Otherwise this method determines from the preferences which plugins are enabled</li>
      * </ul>
      *
-     * @param manager
-     *            the headless build manager
-     * @param plugins
-     *            the plugins, can be null or empty.
+     * @param manager the headless build manager
+     * @param plugins the plugins, can be null or empty.
      * @return the enabled plugins
      */
     public Set<String> getHeadlessBuildPluginsEnabled(HeadlessBuildManager manager, Set<String> plugins) {
@@ -258,11 +259,11 @@ public class BndPreferences {
         return store.getBoolean(PREF_VCS_IGNORES_CREATE);
     }
 
-    public void setVersionControlIgnoresPlugins(Map<String,Boolean> names) {
+    public void setVersionControlIgnoresPlugins(Map<String, Boolean> names) {
         store.setValue(PREF_VCS_IGNORES_PLUGINS, mapToPreference(names));
     }
 
-    public Map<String,Boolean> getVersionControlIgnoresPlugins(Collection< ? extends NamedPlugin> allPluginsInformation, boolean onlyEnabled) {
+    public Map<String, Boolean> getVersionControlIgnoresPlugins(Collection<? extends NamedPlugin> allPluginsInformation, boolean onlyEnabled) {
         if (!getVersionControlIgnoresCreate()) {
             return Collections.emptyMap();
         }
@@ -274,17 +275,14 @@ public class BndPreferences {
      * Return the enabled version control ignores plugins.
      * <ul>
      * <li>When plugins is not null and not empty then plugins itself is returned</li>
-     * <li>Otherwise, when the files in the project are already managed by a version control system, this method tries to
-     * detect which plugins can apply ignores for the version control system</li>
+     * <li>Otherwise, when the files in the project are already managed by a version control system, this method tries
+     * to detect which plugins can apply ignores for the version control system</li>
      * <li>Otherwise this method determines from the preferences which plugins are enabled</li>
      * </ul>
      *
-     * @param manager
-     *            the version control ignores manager
-     * @param project
-     *            the project (can be null to ignore it)
-     * @param plugins
-     *            the plugins, can be null or empty.
+     * @param manager the version control ignores manager
+     * @param project the project (can be null to ignore it)
+     * @param plugins the plugins, can be null or empty.
      * @return the enabled plugins
      */
     public Set<String> getVersionControlIgnoresPluginsEnabled(VersionControlIgnoresManager manager, IJavaProject project, Set<String> plugins) {
@@ -295,7 +293,9 @@ public class BndPreferences {
         if (project != null) {
             String repositoryProviderId = TeamUtils.getProjectRepositoryProviderId(project);
             if (repositoryProviderId != null) {
-                Set<String> managingPlugins = Plugin.getDefault().getVersionControlIgnoresManager().getPluginsForProjectRepositoryProviderId(repositoryProviderId);
+                Set<String> managingPlugins = Plugin.getDefault()
+                    .getVersionControlIgnoresManager()
+                    .getPluginsForProjectRepositoryProviderId(repositoryProviderId);
                 if (managingPlugins != null && !managingPlugins.isEmpty()) {
                     return managingPlugins;
                 }

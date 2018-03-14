@@ -74,9 +74,11 @@ public enum PackageInfoStyle {
         File packageInfoJava = new File(dir, SpecAnnotation.fileName);
         if (packageInfoJava.exists()) {
             String content = IO.collect(packageInfoJava);
-            if (SpecAnnotation.searchRegex.matcher(content).find())
+            if (SpecAnnotation.searchRegex.matcher(content)
+                .find())
                 return SpecAnnotation;
-            if (BndAnnotation.searchRegex.matcher(content).find())
+            if (BndAnnotation.searchRegex.matcher(content)
+                .find())
                 return BndAnnotation;
             return null;
         }

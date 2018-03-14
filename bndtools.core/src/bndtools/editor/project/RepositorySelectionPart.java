@@ -68,6 +68,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.service.repository.Repository;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.deployer.repository.AbstractIndexedRepo;
@@ -87,14 +88,24 @@ import bndtools.shared.URLDialog;
 
 public class RepositorySelectionPart extends BndEditorPart implements IResourceChangeListener {
 
-    private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png").createImage();
-    private final Image bundleImg = Icons.desc("bundle").createImage();
-    private final Image nonObrRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif").createImage();
-    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
-    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
-    private final Image imgLink = Icons.desc("link").createImage();
-    private final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
-    private final Image repoImg = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+    private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png")
+        .createImage();
+    private final Image bundleImg = Icons.desc("bundle")
+        .createImage();
+    private final Image nonObrRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif")
+        .createImage();
+    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
+        .createImage();
+    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
+        .createImage();
+    private final Image imgLink = Icons.desc("link")
+        .createImage();
+    private final Image projectImg = PlatformUI.getWorkbench()
+        .getSharedImages()
+        .getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+    private final Image repoImg = PlatformUI.getWorkbench()
+        .getSharedImages()
+        .getImage(ISharedImages.IMG_OBJ_FOLDER);
     private final Object MESSAGE_KEY = new Object();
     private final EditorPart editor;
     private final Button btnStandaloneCheckbox;
@@ -177,11 +188,14 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
                     }
                 };
                 try {
-                    editor.getSite().getWorkbenchWindow().run(false, false, runnable);
+                    editor.getSite()
+                        .getWorkbenchWindow()
+                        .run(false, false, runnable);
                 } catch (InterruptedException e) {
                     // let it go
                 } catch (InvocationTargetException e) {
-                    ErrorDialog.openError(editor.getSite().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Save error", e.getTargetException()));
+                    ErrorDialog.openError(editor.getSite()
+                        .getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Save error", e.getTargetException()));
                 }
             }
         });
@@ -252,7 +266,8 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
             }
         });
 
-        final Styler strikeoutStyler = new StrikeoutStyler(StyledString.QUALIFIER_STYLER, JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR));
+        final Styler strikeoutStyler = new StrikeoutStyler(StyledString.QUALIFIER_STYLER, JFaceResources.getColorRegistry()
+            .get(JFacePreferences.QUALIFIER_COLOR));
 
         runReposViewer.setLabelProvider(new StyledCellLabelProvider() {
             @Override
@@ -290,7 +305,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
                 if (element instanceof Actionable) {
                     try {
                         tooltip = ((Actionable) element).tooltip(new Object[] {
-                                element
+                            element
                         });
                     } catch (Exception e) {
                         // ignore
@@ -315,7 +330,8 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
             }
         });
 
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, ResourceChangeEvent.POST_CHANGE | ResourceChangeEvent.POST_BUILD);
+        ResourcesPlugin.getWorkspace()
+            .addResourceChangeListener(this, ResourceChangeEvent.POST_CHANGE | ResourceChangeEvent.POST_BUILD);
 
         stackLayout.topControl = cmpBndLayout;
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -334,7 +350,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
         IStructuredSelection sel = (IStructuredSelection) runReposViewer.getSelection();
         if (!sel.isEmpty()) {
             @SuppressWarnings({
-                    "unchecked"
+                "unchecked"
             })
             List<Repository> list = sel.toList();
 
@@ -384,7 +400,8 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 
     private void doAddStandaloneLink() {
         try {
-            URLDialog dialog = new URLDialog(editor.getSite().getShell(), "Add repository URL");
+            URLDialog dialog = new URLDialog(editor.getSite()
+                .getShell(), "Add repository URL");
             if (dialog.open() == Window.OK) {
                 URI location = dialog.getLocation();
 
@@ -426,7 +443,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
     @Override
     protected String[] getProperties() {
         return new String[] {
-                BndConstants.RUNREPOS, BndEditModel.PROP_WORKSPACE
+            BndConstants.RUNREPOS, BndEditModel.PROP_WORKSPACE
         };
     }
 
@@ -446,7 +463,9 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
             List<URI> locations = getRepoLocations(repository);
 
             for (URI u : locations) {
-                IFile[] found = ResourcesPlugin.getWorkspace().getRoot().findFilesForLocationURI(u, IWorkspaceRoot.INCLUDE_HIDDEN | IWorkspaceRoot.INCLUDE_TEAM_PRIVATE_MEMBERS);
+                IFile[] found = ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .findFilesForLocationURI(u, IWorkspaceRoot.INCLUDE_HIDDEN | IWorkspaceRoot.INCLUDE_TEAM_PRIVATE_MEMBERS);
                 for (IFile file : found) {
                     files.add(file);
                 }
@@ -498,7 +517,8 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 
     @Override
     public void dispose() {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        ResourcesPlugin.getWorkspace()
+            .removeResourceChangeListener(this);
         refreshImg.dispose();
         bundleImg.dispose();
         nonObrRepoImg.dispose();
@@ -512,7 +532,8 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
     public void resourceChanged(IResourceChangeEvent event) {
         boolean reposChanged = false;
         for (IFile file : workspaceIndexFiles) {
-            if (event.getDelta().findMember(file.getFullPath()) != null) {
+            if (event.getDelta()
+                .findMember(file.getFullPath()) != null) {
                 reposChanged = true;
                 break;
             }
@@ -520,16 +541,17 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
 
         if (reposChanged) {
 
-            getSection().getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        repositories.updateStandaloneWorkspace(model);
-                    } catch (Exception e) {
-                        throw Exceptions.duck(e);
+            getSection().getDisplay()
+                .asyncExec(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            repositories.updateStandaloneWorkspace(model);
+                        } catch (Exception e) {
+                            throw Exceptions.duck(e);
+                        }
                     }
-                }
-            });
+                });
         }
     }
 

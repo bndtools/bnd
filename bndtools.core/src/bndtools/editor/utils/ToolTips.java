@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.swt.widgets.Control;
+
 import aQute.bnd.help.Syntax;
 
 public class ToolTips {
@@ -13,7 +14,8 @@ public class ToolTips {
 
     static private String getStrippedExample(Syntax syntax, String constant) {
         String example = syntax.getExample();
-        if ((example == null) || (example.trim().length() == 0)) {
+        if ((example == null) || (example.trim()
+            .length() == 0)) {
             return null;
         }
 
@@ -29,10 +31,8 @@ public class ToolTips {
     /**
      * Setup the message and the tooltip of a control. The Syntax class of bnd is used to determine these.
      * 
-     * @param control
-     *            the control
-     * @param constant
-     *            the constant, as mentioned in aQute.bnd.osgi.Constants
+     * @param control the control
+     * @param constant the constant, as mentioned in aQute.bnd.osgi.Constants
      */
     static public void setupMessageAndToolTipFromSyntax(Control control, String constant) {
         Syntax syntax = Syntax.HELP.get(constant);
@@ -48,10 +48,12 @@ public class ToolTips {
             values = values.replaceAll(",\\s*,", ",");
             values = values.replaceAll("(^,|,$)", "");
         }
-        if ((values == null) || (values.trim().length() == 0)) {
+        if ((values == null) || (values.trim()
+            .length() == 0)) {
             values = "";
         } else {
-            values = "\n\nProposed Values:\n" + values.trim().replaceAll("\\s*,\\s*", ", ");
+            values = "\n\nProposed Values:\n" + values.trim()
+                .replaceAll("\\s*,\\s*", ", ");
         }
 
         String examples = getStrippedExample(syntax, constant);

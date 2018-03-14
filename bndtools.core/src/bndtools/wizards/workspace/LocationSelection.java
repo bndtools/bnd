@@ -22,7 +22,8 @@ class LocationSelection {
      */
     String validate() {
         if (!eclipseWorkspace) {
-            if (externalPath == null || externalPath.trim().length() == 0)
+            if (externalPath == null || externalPath.trim()
+                .length() == 0)
                 return "Location must be specified";
             if (!Path.EMPTY.isValidPath(externalPath))
                 return "Invalid location.";
@@ -64,7 +65,10 @@ class LocationSelection {
 
     public File toFile() {
         if (eclipseWorkspace)
-            return ResourcesPlugin.getWorkspace().getRoot().getLocation().toFile();
+            return ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .getLocation()
+                .toFile();
         return new File(externalPath);
     }
 

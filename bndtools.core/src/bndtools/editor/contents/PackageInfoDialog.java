@@ -265,7 +265,8 @@ public class PackageInfoDialog extends TitleAreaDialog {
         @Override
         protected Object getValue(Object element) {
             FileVersionTuple pkg = (FileVersionTuple) element;
-            return pkg.getVersion().toString();
+            return pkg.getVersion()
+                .toString();
         }
 
         @Override
@@ -281,7 +282,8 @@ public class PackageInfoDialog extends TitleAreaDialog {
         private final Image image;
 
         public PackageNameLabelProvider(Device device) {
-            image = Icons.desc("package").createImage(device); //$NON-NLS-1$
+            image = Icons.desc("package") //$NON-NLS-1$
+                .createImage(device);
         }
 
         @Override
@@ -305,7 +307,8 @@ public class PackageInfoDialog extends TitleAreaDialog {
         public void update(ViewerCell cell) {
             FileVersionTuple pkg = (FileVersionTuple) cell.getElement();
 
-            StyledString label = new StyledString(pkg.getVersion().toString(), StyledString.COUNTER_STYLER);
+            StyledString label = new StyledString(pkg.getVersion()
+                .toString(), StyledString.COUNTER_STYLER);
             cell.setText(label.getString());
             cell.setStyleRanges(label.getStyleRanges());
         }

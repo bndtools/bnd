@@ -8,8 +8,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 public class CollectionUtil {
-    public static <K, V> Map<V,Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
-        Map<V,Set<K>> result = new TreeMap<V,Set<K>>();
+    public static <K, V> Map<V, Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
+        Map<V, Set<K>> result = new TreeMap<V, Set<K>>();
 
         for (Entry<K, ? extends Collection<V>> inputEntry : mapOfCollection.entrySet()) {
             K inputKey = inputEntry.getKey();

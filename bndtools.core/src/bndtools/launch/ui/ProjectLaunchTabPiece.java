@@ -162,7 +162,8 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
         if (dialog.open() == Window.OK) {
             Object[] files = dialog.getResult();
             if (files != null && files.length == 1) {
-                IPath path = ((IResource) files[0]).getFullPath().makeRelative();
+                IPath path = ((IResource) files[0]).getFullPath()
+                    .makeRelative();
                 launchTargetTxt.setText(path.toString());
             } else {
                 launchTargetTxt.setText("");
@@ -180,7 +181,8 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
             return Collections.emptyList();
         }
         List<IProject> result = new ArrayList<IProject>(projects.size());
-        IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+        IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace()
+            .getRoot();
         for (Project project : projects) {
             IProject iproject = workspaceRoot.getProject(project.getName());
             if (iproject != null && iproject.isOpen()) {
@@ -194,7 +196,9 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
         configuration.setAttribute(LaunchConstants.ATTR_LAUNCH_TARGET, launchTargetTxt.getText());
 
-        IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(launchTargetTxt.getText());
+        IResource targetResource = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .findMember(launchTargetTxt.getText());
         if (targetResource != null && targetResource.exists()) {
             IProject project = targetResource.getProject();
             if (project != null)
@@ -225,7 +229,9 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
             return "Launch target must be specified";
         }
 
-        IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(targetName);
+        IResource targetResource = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .findMember(targetName);
         if (targetResource == null || !targetResource.exists()) {
             return MessageFormat.format("Launch target {0} does not exist.", targetName);
         }
@@ -244,7 +250,8 @@ public class ProjectLaunchTabPiece extends AbstractLaunchTabPiece {
                 return "Error checking for Bnd OSGi project nature";
             }
         } else if (targetResource.getType() == IResource.FILE) {
-            if (!targetResource.getName().endsWith(LaunchConstants.EXT_BNDRUN)) {
+            if (!targetResource.getName()
+                .endsWith(LaunchConstants.EXT_BNDRUN)) {
                 return MessageFormat.format("Selected file {0} is not a .bndrun file.", targetName);
             }
         }

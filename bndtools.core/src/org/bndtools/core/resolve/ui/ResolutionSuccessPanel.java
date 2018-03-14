@@ -61,7 +61,7 @@ public class ResolutionSuccessPanel {
 
     private final ResolutionTreeContentProvider reasonsContentProvider = new ResolutionTreeContentProvider();
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
-    private final Map<Resource,Requirement> addedOptionals = new HashMap<>();
+    private final Map<Resource, Requirement> addedOptionals = new HashMap<>();
 
     private Composite composite;
     private TableViewer requiredViewer;
@@ -248,8 +248,9 @@ public class ResolutionSuccessPanel {
         ArrayList<Requirement> newRequires = new ArrayList<Requirement>(oldRequires.size() + checkedOptional.size());
         newRequires.addAll(oldRequires);
 
-        for (Iterator<Entry<Resource,Requirement>> it = addedOptionals.entrySet().iterator(); it.hasNext();) {
-            Entry<Resource,Requirement> entry = it.next();
+        for (Iterator<Entry<Resource, Requirement>> it = addedOptionals.entrySet()
+            .iterator(); it.hasNext();) {
+            Entry<Resource, Requirement> entry = it.next();
             if (!optionalViewer.getChecked(entry.getKey())) {
                 newRequires.remove(entry.getValue());
                 it.remove();
@@ -271,9 +272,11 @@ public class ResolutionSuccessPanel {
         this.result = result;
         checkedOptional.clear();
 
-        Set<Resource> wirings = (result != null && result.getResourceWirings() != null) ? result.getResourceWirings().keySet() : null;
+        Set<Resource> wirings = (result != null && result.getResourceWirings() != null) ? result.getResourceWirings()
+            .keySet() : null;
         requiredViewer.setInput(wirings != null ? wirings : null);
-        wirings = (result != null && result.getOptionalResources() != null) ? new HashSet<Resource>(result.getOptionalResources().keySet()) : new HashSet<Resource>();
+        wirings = (result != null && result.getOptionalResources() != null) ? new HashSet<Resource>(result.getOptionalResources()
+            .keySet()) : new HashSet<Resource>();
 
         wirings.addAll(addedOptionals.keySet());
 
@@ -283,10 +286,13 @@ public class ResolutionSuccessPanel {
             sectOptional.setExpanded(true);
         }
         optionalViewer.setInput(wirings.isEmpty() ? null : wirings);
-        optionalViewer.setGrayedElements(addedOptionals.keySet().toArray());
-        optionalViewer.setCheckedElements(addedOptionals.keySet().toArray());
+        optionalViewer.setGrayedElements(addedOptionals.keySet()
+            .toArray());
+        optionalViewer.setCheckedElements(addedOptionals.keySet()
+            .toArray());
 
-        for (TableItem tableItem : optionalViewer.getTable().getItems()) {
+        for (TableItem tableItem : optionalViewer.getTable()
+            .getItems()) {
             Display display = Display.getCurrent();
             Color addedColor = display.getSystemColor(SWT.COLOR_GRAY);
             if (tableItem.getGrayed()) {
@@ -327,7 +333,7 @@ public class ResolutionSuccessPanel {
     private void doOptionalReasonUpdate(Resource resource) {
         reasonsContentProvider.setOptional(true);
         if (result != null) {
-            Map<Resource,List<Wire>> combined = new HashMap<Resource,List<Wire>>(result.getResourceWirings());
+            Map<Resource, List<Wire>> combined = new HashMap<Resource, List<Wire>>(result.getResourceWirings());
             combined.putAll(result.getOptionalResources());
             reasonsContentProvider.setResolution(combined);
         }
@@ -346,7 +352,8 @@ public class ResolutionSuccessPanel {
         filter.addChild(new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, id));
         filter.addChild(new LiteralFilter(Filters.fromVersionRange(dropQualifier.toString())));
 
-        Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+        Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
+            .buildSyntheticRequirement();
         return req;
     }
 }

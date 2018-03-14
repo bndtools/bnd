@@ -43,7 +43,8 @@ public class MessagesPopupDialog extends PopupDialog {
     private final IWorkbenchPart part;
     private final HyperlinkGroup hyperlinkGroup;
 
-    private final Image bulletImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/bullet_go.png").createImage();
+    private final Image bulletImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/bullet_go.png")
+        .createImage();
 
     public MessagesPopupDialog(Control controlAttachment, IMessage[] messages, IWorkbenchPart part) {
         super(null, PopupDialog.INFOPOPUP_SHELLSTYLE, true, false, false, false, false, null, null);
@@ -89,7 +90,8 @@ public class MessagesPopupDialog extends PopupDialog {
             builder.append(messages[i].getMessage());
             Label lblText = new Label(pnlTitle, SWT.WRAP);
             lblText.setText(builder.toString());
-            lblText.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DIALOG_FONT));
+            lblText.setFont(JFaceResources.getFontRegistry()
+                .getItalic(JFaceResources.DIALOG_FONT));
             lblText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             // Fix actions, if present
@@ -112,7 +114,8 @@ public class MessagesPopupDialog extends PopupDialog {
 
                 Label lblFixes = new Label(pnlFixes, SWT.NONE);
                 lblFixes.setText("Available Fixes:");
-                lblFixes.setForeground(JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR));
+                lblFixes.setForeground(JFaceResources.getColorRegistry()
+                    .get(JFacePreferences.QUALIFIER_COLOR));
 
                 for (int j = 0; j < fixes.length; j++) {
                     if (j > 0)
@@ -150,20 +153,21 @@ public class MessagesPopupDialog extends PopupDialog {
     @Override
     protected Point getInitialLocation(Point initialSize) {
         Rectangle linkBounds = controlAttachment.getBounds();
-        linkBounds = controlAttachment.getDisplay().map(controlAttachment.getParent(), null, linkBounds);
+        linkBounds = controlAttachment.getDisplay()
+            .map(controlAttachment.getParent(), null, linkBounds);
         return new Point(linkBounds.x, linkBounds.y + linkBounds.height);
     }
 
     static Image getMessageImage(int messageType) {
         switch (messageType) {
-        case IMessageProvider.INFORMATION :
-            return JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);
-        case IMessageProvider.WARNING :
-            return JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_WARNING);
-        case IMessageProvider.ERROR :
-            return JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_ERROR);
-        default :
-            return null;
+            case IMessageProvider.INFORMATION :
+                return JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_INFO);
+            case IMessageProvider.WARNING :
+                return JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_WARNING);
+            case IMessageProvider.ERROR :
+                return JFaceResources.getImage(Dialog.DLG_IMG_MESSAGE_ERROR);
+            default :
+                return null;
         }
     }
 

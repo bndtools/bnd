@@ -1,6 +1,9 @@
 package org.bndtools.utils.parse.properties;
 
-import static org.bndtools.utils.parse.properties.LineType.*;
+import static org.bndtools.utils.parse.properties.LineType.blank;
+import static org.bndtools.utils.parse.properties.LineType.comment;
+import static org.bndtools.utils.parse.properties.LineType.entry;
+import static org.bndtools.utils.parse.properties.LineType.eof;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.Document;
@@ -98,11 +101,13 @@ public class PropertiesLineReader {
         }
 
         IRegion lineInfo = document.getLineInformation(lineNum);
-        char[] chars = document.get(lineInfo.getOffset(), lineInfo.getLength()).toCharArray();
+        char[] chars = document.get(lineInfo.getOffset(), lineInfo.getLength())
+            .toCharArray();
 
         if (continued) {
             int length = lastRegion.getLength();
-            length += document.getLineDelimiter(lineNum - 1).length();
+            length += document.getLineDelimiter(lineNum - 1)
+                .length();
             length += lineInfo.getLength();
             lastRegion = new Region(lastRegion.getOffset(), length);
         } else {

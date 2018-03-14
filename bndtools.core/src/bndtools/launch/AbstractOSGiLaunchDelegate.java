@@ -97,7 +97,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         }
 
         // Still nothing? Use the default JVM from the workspace.
-        // Eclipse tries really hard to force you to set a default VM, but this can still be null if the default has been disposed somehow.
+        // Eclipse tries really hard to force you to set a default VM, but this can still be null if the default has
+        // been disposed somehow.
         IVMInstall defaultVm = JavaRuntime.getDefaultVMInstall();
         if (defaultVm != null) {
             return defaultVm;
@@ -111,14 +112,14 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         }
 
         throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, StatusCode.NoVMForEE.getCode(),
-                "Could not select a JRE for launch. No Execution Environment is specified\n(using '-runee'), there is no default JRE in preferences and no relevant\nJava project settings.", null));
+            "Could not select a JRE for launch. No Execution Environment is specified\n(using '-runee'), there is no default JRE in preferences and no relevant\nJava project settings.", null));
     }
 
     @Override
     public String[][] getBootpathExt(ILaunchConfiguration configuration) throws CoreException {
         // TODO: support deriving bootclasspath extensions from the bndrun file
         return new String[][] {
-                null, null, null
+            null, null, null
         };
     }
 
@@ -148,7 +149,9 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Bnd launch target was not specified or does not exist.", null));
 
             int processCount = 0;
-            for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
+            for (ILaunch l : DebugPlugin.getDefault()
+                .getLaunchManager()
+                .getLaunches()) {
                 // ... is it the same launch resource?
                 ILaunchConfiguration launchConfig = l.getLaunchConfiguration();
                 if (launchConfig == null) {
@@ -166,8 +169,9 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
             // Warn if existing processes running
             if (processCount > 0) {
                 Status status = new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0,
-                        "One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.", null);
-                IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(status);
+                    "One or more OSGi Frameworks have already been launched for this configuration. Additional framework instances may interfere with each other due to the shared storage directory.", null);
+                IStatusHandler prompter = DebugPlugin.getDefault()
+                    .getStatusHandler(status);
                 if (prompter != null) {
                     boolean okay = (Boolean) prompter.handleStatus(status, launchResource);
                     if (!okay)
@@ -178,7 +182,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
 
         IStatus launchStatus = getLauncherStatus();
 
-        IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(launchStatus);
+        IStatusHandler prompter = DebugPlugin.getDefault()
+            .getStatusHandler(launchStatus);
         if (prompter != null)
             return (Boolean) prompter.handleStatus(launchStatus, run);
         return true;
@@ -199,7 +204,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
                             if (processLaunch == launch) {
                                 // Not interested in any further events =>
                                 // unregister this listener
-                                DebugPlugin.getDefault().removeDebugEventListener(this);
+                                DebugPlugin.getDefault()
+                                    .removeDebugEventListener(this);
 
                                 // Cleanup. Guard with a draconian catch because
                                 // changes in the ProjectLauncher API
@@ -217,7 +223,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
                 }
             }
         };
-        DebugPlugin.getDefault().addDebugEventListener(listener);
+        DebugPlugin.getDefault()
+            .addDebugEventListener(listener);
 
         // Now actually launch
         super.launch(configuration, mode, launch, monitor);
@@ -276,7 +283,9 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         }
         String logLevelStr = configuration.getAttribute(ATTR_LOGLEVEL, (String) null);
         if (logLevelStr != null) {
-            Plugin.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("The {0} attribute is no longer supported, use {1} instead.", ATTR_LOGLEVEL, LaunchConstants.ATTR_TRACE), null));
+            Plugin.getDefault()
+                .getLog()
+                .log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, MessageFormat.format("The {0} attribute is no longer supported, use {1} instead.", ATTR_LOGLEVEL, LaunchConstants.ATTR_TRACE), null));
             Level logLevel = Level.parse(logLevelStr);
             launcher.setTrace(launcher.getTrace() || logLevel.intValue() <= Level.FINE.intValue());
         }

@@ -1,6 +1,7 @@
 package bndtools.model.repo;
 
 import java.net.URI;
+
 import aQute.bnd.service.repository.SearchableRepository;
 
 public class ContinueSearchElement {

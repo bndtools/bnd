@@ -69,7 +69,7 @@ public class BundleTree extends Composite {
     protected TreeContentProvider bundleTreeViewerProvider = new TreeContentProvider();
     protected InfoContentProvider infoTreeViewerProvider = new InfoContentProvider();
 
-    private Map<Object,Version> initialSuggested;
+    private Map<Object, Version> initialSuggested;
 
     public BundleTree(Composite composite) {
         this(composite, SWT.NONE);
@@ -100,7 +100,7 @@ public class BundleTree extends Composite {
         createButtons(composite);
 
         sashForm.setWeights(new int[] {
-                30, 70
+            30, 70
         });
     }
 
@@ -114,7 +114,8 @@ public class BundleTree extends Composite {
 
         infoViewer = new TreeViewer(infoViewerComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
         infoViewer.setUseHashlookup(true);
-        infoViewer.getTree().setHeaderVisible(true);
+        infoViewer.getTree()
+            .setHeaderVisible(true);
 
         TreeViewerColumn treeViewerColumn = new TreeViewerColumn(infoViewer, SWT.NONE);
         TreeColumn treeColumn = treeViewerColumn.getColumn();
@@ -130,7 +131,9 @@ public class BundleTree extends Composite {
             @Override
             public String getText(Object element) {
                 if (element instanceof Baseline) {
-                    return ((Baseline) element).getOlderVersion().getWithoutQualifier().toString();
+                    return ((Baseline) element).getOlderVersion()
+                        .getWithoutQualifier()
+                        .toString();
                 }
                 if (element instanceof Info) {
                     return ((Info) element).olderVersion.toString();
@@ -147,7 +150,8 @@ public class BundleTree extends Composite {
             @Override
             public String getText(Object element) {
                 if (element instanceof Baseline) {
-                    return ((Baseline) element).getSuggestedVersion().toString();
+                    return ((Baseline) element).getSuggestedVersion()
+                        .toString();
                 }
                 if (element instanceof Info) {
                     return ((Info) element).suggestedVersion != null ? ((Info) element).suggestedVersion.toString() : ""; //$NON-NLS-1$
@@ -172,7 +176,8 @@ public class BundleTree extends Composite {
 
         bundleTreeViewer = new TreeViewer(bundleTreeViewerComposite, SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER | SWT.FULL_SELECTION);
         bundleTreeViewer.setUseHashlookup(true);
-        bundleTreeViewer.getTree().setHeaderVisible(true);
+        bundleTreeViewer.getTree()
+            .setHeaderVisible(true);
 
         TreeViewerColumn treeViewerColumn = new TreeViewerColumn(bundleTreeViewer, SWT.NONE);
         TreeColumn treeColumn = treeViewerColumn.getColumn();
@@ -234,7 +239,7 @@ public class BundleTree extends Composite {
 
         options = new Combo(composite, SWT.DROP_DOWN | SWT.READ_ONLY);
         options.setItems(new String[] {
-                Messages.updateVersionsAndRelease, Messages.updateVersions, Messages.release
+            Messages.updateVersionsAndRelease, Messages.updateVersions, Messages.release
         });
         options.add(Messages.comboSelectText, 0);
         options.select(0);
@@ -254,21 +259,25 @@ public class BundleTree extends Composite {
             bundleTreeViewer.setInput(Collections.emptyList());
             infoViewer.setInput(Collections.emptyList());
         } else {
-            bundleTreeViewer.getTree().setRedraw(false);
+            bundleTreeViewer.getTree()
+                .setRedraw(false);
             bundleTreeViewer.setSelection(null, false);
             bundleTreeViewer.setInput(input);
-            bundleTreeViewer.getTree().setRedraw(true);
-            infoViewer.getTree().setRedraw(false);
+            bundleTreeViewer.getTree()
+                .setRedraw(true);
+            infoViewer.getTree()
+                .setRedraw(false);
             infoViewer.setSelection(null, false);
             infoViewer.setInput(input);
-            infoViewer.getTree().setRedraw(true);
+            infoViewer.getTree()
+                .setRedraw(true);
         }
         sashForm.redraw();
     }
 
     private static boolean showInfoView(Object input) {
-        if (input instanceof List && ((List< ? >) input).size() > 0) {
-            Object obj = ((List< ? >) input).get(0);
+        if (input instanceof List && ((List<?>) input).size() > 0) {
+            Object obj = ((List<?>) input).get(0);
             if (obj instanceof Baseline) {
                 return true;
             }
@@ -278,7 +287,7 @@ public class BundleTree extends Composite {
 
     protected Version getInitialSuggestedVersion(Object obj) {
         if (initialSuggested == null) {
-            initialSuggested = new HashMap<Object,Version>();
+            initialSuggested = new HashMap<Object, Version>();
         }
 
         Version version = initialSuggested.get(obj);
@@ -362,7 +371,8 @@ public class BundleTree extends Composite {
 
             String selectedVersion = ""; //$NON-NLS-1$
             if (cell.getElement() instanceof Baseline) {
-                selectedVersion = ((Baseline) cell.getElement()).getSuggestedVersion().toString();
+                selectedVersion = ((Baseline) cell.getElement()).getSuggestedVersion()
+                    .toString();
             } else if (cell.getElement() instanceof Info) {
                 selectedVersion = ((Info) cell.getElement()).suggestedVersion.toString();
             }

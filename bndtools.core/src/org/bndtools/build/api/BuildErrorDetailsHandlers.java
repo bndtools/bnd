@@ -16,7 +16,7 @@ public final class BuildErrorDetailsHandlers {
 
     public static final BuildErrorDetailsHandlers INSTANCE = new BuildErrorDetailsHandlers();
 
-    private final ConcurrentMap<String,BuildErrorDetailsHandler> cache = new ConcurrentHashMap<String,BuildErrorDetailsHandler>();
+    private final ConcurrentMap<String, BuildErrorDetailsHandler> cache = new ConcurrentHashMap<String, BuildErrorDetailsHandler>();
 
     private BuildErrorDetailsHandlers() {}
 
@@ -29,7 +29,8 @@ public final class BuildErrorDetailsHandlers {
             return handler;
 
         handler = DefaultBuildErrorDetailsHandler.INSTANCE;
-        IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "buildErrorDetailsHandlers");
+        IConfigurationElement[] elements = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(Plugin.PLUGIN_ID, "buildErrorDetailsHandlers");
         if (elements != null) {
             for (IConfigurationElement element : elements) {
                 if (type.equals(element.getAttribute("typeMatch"))) {

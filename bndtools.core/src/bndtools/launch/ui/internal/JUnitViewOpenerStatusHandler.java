@@ -20,14 +20,17 @@ public class JUnitViewOpenerStatusHandler implements IStatusHandler {
         Runnable runnable = new Runnable() {
             public void run() {
                 try {
-                    IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-                    window.getActivePage().showView(BndPerspective.VIEW_ID_JUNIT_RESULTS, null, IWorkbenchPage.VIEW_VISIBLE);
+                    IWorkbenchWindow window = PlatformUI.getWorkbench()
+                        .getActiveWorkbenchWindow();
+                    window.getActivePage()
+                        .showView(BndPerspective.VIEW_ID_JUNIT_RESULTS, null, IWorkbenchPage.VIEW_VISIBLE);
                 } catch (PartInitException e) {
                     logger.logError("Error showing JUnit Results view", e);
                 }
             }
         };
-        Display display = PlatformUI.getWorkbench().getDisplay();
+        Display display = PlatformUI.getWorkbench()
+            .getDisplay();
         if (display.getThread() == Thread.currentThread())
             runnable.run();
         else

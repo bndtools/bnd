@@ -83,7 +83,9 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             }
         });
 
-        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(Plugin.getDefault().getBundle().getEntry("icons/bndtools-wizban.png")));
+        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(Plugin.getDefault()
+            .getBundle()
+            .getEntry("icons/bndtools-wizban.png")));
     }
 
     @Override
@@ -95,9 +97,9 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
     }
 
     @Override
-    protected Map<String,String> getProjectTemplateParams() {
+    protected Map<String, String> getProjectTemplateParams() {
         // Project Name
-        Map<ProjectTemplateParam,String> params = new HashMap<>();
+        Map<ProjectTemplateParam, String> params = new HashMap<>();
         params.put(ProjectTemplateParam.PROJECT_NAME, pageOne.getProjectName());
 
         // Package Name
@@ -113,9 +115,9 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
 
         // Source Folders
         IJavaProject javaProject = pageTwo.getJavaProject();
-        Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(javaProject);
+        Map<String, String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(javaProject);
         int nr = 1;
-        for (Map.Entry<String,String> entry : sourceOutputLocations.entrySet()) {
+        for (Map.Entry<String, String> entry : sourceOutputLocations.entrySet()) {
             String src = entry.getKey();
             String bin = entry.getValue();
 
@@ -144,24 +146,28 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             if (javaLevel != null)
                 params.put(ProjectTemplateParam.JAVA_LEVEL, javaLevel);
         } catch (Exception e) {
-            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Unable to get Java level for project %s", javaProject.getProject().getName()), e));
+            Plugin.getDefault()
+                .getLog()
+                .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Unable to get Java level for project %s", javaProject.getProject()
+                    .getName()), e));
         }
 
-        Map<String,String> params_ = new HashMap<>();
-        for (Entry<ProjectTemplateParam,String> entry : params.entrySet())
-            params_.put(entry.getKey().getString(), entry.getValue());
+        Map<String, String> params_ = new HashMap<>();
+        for (Entry<ProjectTemplateParam, String> entry : params.entrySet())
+            params_.put(entry.getKey()
+                .getString(), entry.getValue());
 
-        Map<String,String> editedParams = paramsPage.getValues();
-        for (Entry<String,String> editedEntry : editedParams.entrySet()) {
+        Map<String, String> editedParams = paramsPage.getValues();
+        for (Entry<String, String> editedEntry : editedParams.entrySet()) {
             params_.put(editedEntry.getKey(), editedEntry.getValue());
         }
         return params_;
     }
 
     @Override
-    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String,String> params) throws IOException {
-        Map<String,List<Object>> templateParams = new HashMap<>();
-        for (Entry<String,String> param : params.entrySet()) {
+    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String, String> params) throws IOException {
+        Map<String, List<Object>> templateParams = new HashMap<>();
+        for (Entry<String, String> param : params.entrySet()) {
             templateParams.put(param.getKey(), Collections.<Object> singletonList(param.getValue()));
         }
 
@@ -175,7 +181,7 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
             }
 
             SubMonitor progress = SubMonitor.convert(monitor, outputs.size() * 3);
-            for (Entry<String,Resource> outputEntry : outputs.entries()) {
+            for (Entry<String, Resource> outputEntry : outputs.entries()) {
                 String path = outputEntry.getKey();
                 Resource resource = outputEntry.getValue();
 
@@ -184,25 +190,25 @@ class NewBndProjectWizard extends AbstractNewBndProjectWizard {
                     path = path.substring(1);
 
                 switch (resource.getType()) {
-                case Folder :
-                    if (!path.isEmpty()) {
-                        IFolder folder = project.getFolder(path);
-                        FileUtils.mkdirs(folder, progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
-                    }
-                    break;
-                case File :
-                    IFile file = project.getFile(path);
-                    FileUtils.mkdirs(file.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
-                    try (InputStream in = resource.getContent()) {
-                        if (file.exists())
-                            file.setContents(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                        else
-                            file.create(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-                        file.setCharset(resource.getTextEncoding(), progress.newChild(1));
-                    }
-                    break;
-                default :
-                    throw new IllegalArgumentException("Unknown resource type " + resource.getType());
+                    case Folder :
+                        if (!path.isEmpty()) {
+                            IFolder folder = project.getFolder(path);
+                            FileUtils.mkdirs(folder, progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+                        }
+                        break;
+                    case File :
+                        IFile file = project.getFile(path);
+                        FileUtils.mkdirs(file.getParent(), progress.newChild(1, SubMonitor.SUPPRESS_ALL_LABELS));
+                        try (InputStream in = resource.getContent()) {
+                            if (file.exists())
+                                file.setContents(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                            else
+                                file.create(in, 0, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
+                            file.setCharset(resource.getTextEncoding(), progress.newChild(1));
+                        }
+                        break;
+                    default :
+                        throw new IllegalArgumentException("Unknown resource type " + resource.getType());
                 }
             }
         } catch (Exception e) {

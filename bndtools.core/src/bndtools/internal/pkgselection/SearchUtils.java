@@ -67,8 +67,7 @@ public class SearchUtils {
      * Returns whether the given pattern is a camel case pattern or not. <em>Note: this method does not consider the
      * {@link SearchPattern#R_CAMELCASE_SAME_PART_COUNT_MATCH} variant.<em>
      * 
-     * @param pattern
-     *            the pattern to inspect
+     * @param pattern the pattern to inspect
      * @return whether it is a camel case pattern or not
      */
     public static boolean isCamelCasePattern(String pattern) {

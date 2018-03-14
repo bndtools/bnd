@@ -80,48 +80,42 @@ public class Designate extends OptionalAttributes {
     }
 
     /**
-     * @param bundleLocation
-     *            the bundleLocation to set
+     * @param bundleLocation the bundleLocation to set
      */
     public void setBundleLocation(String bundleLocation) {
         this.bundleLocation = bundleLocation;
     }
 
     /**
-     * @param factoryPid
-     *            the factoryPid to set
+     * @param factoryPid the factoryPid to set
      */
     public void setFactoryPid(String factoryPid) {
         this.factoryPid = factoryPid;
     }
 
     /**
-     * @param merge
-     *            the merge to set
+     * @param merge the merge to set
      */
     public void setMerge(boolean merge) {
         this.merge = merge;
     }
 
     /**
-     * @param optional
-     *            the optional to set
+     * @param optional the optional to set
      */
     public void setOptional(boolean optional) {
         this.optional = optional;
     }
 
     /**
-     * @param pid
-     *            the pid to set
+     * @param pid the pid to set
      */
     public void setPid(String pid) {
         this.pid = pid;
     }
 
     /**
-     * @param object
-     *            the object to set
+     * @param object the object to set
      */
     public void setObject(DesignateObject object) {
         this.object = object;

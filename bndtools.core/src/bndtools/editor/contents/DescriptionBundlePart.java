@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -20,6 +21,7 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import bndtools.editor.utils.ToolTips;
@@ -53,7 +55,7 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
      * </pre>
      */
     private static final String[] EDITABLE_PROPERTIES = new String[] {
-            Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION, Constants.BUNDLE_CATEGORY
+        Constants.BUNDLE_NAME, Constants.BUNDLE_DESCRIPTION, Constants.BUNDLE_CATEGORY
     };
     private final Set<String> editablePropertySet;
     private final Set<String> dirtySet = new HashSet<String>();

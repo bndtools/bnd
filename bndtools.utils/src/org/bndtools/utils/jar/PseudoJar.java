@@ -59,7 +59,8 @@ public class PseudoJar implements Closeable {
         Arrays.sort(children, new Comparator<File>() {
             @Override
             public int compare(File f1, File f2) {
-                return f1.getName().compareTo(f2.getName());
+                return f1.getName()
+                    .compareTo(f2.getName());
             }
         });
         if (children != null)

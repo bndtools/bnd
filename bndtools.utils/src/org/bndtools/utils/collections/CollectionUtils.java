@@ -27,10 +27,8 @@ public class CollectionUtils {
     /**
      * Move the selected items down one position in the list.
      *
-     * @param list
-     *            The list of items, which will be altered in-place.
-     * @param selectionIndexes
-     *            The indexes of the items to be moved.
+     * @param list The list of items, which will be altered in-place.
+     * @param selectionIndexes The indexes of the items to be moved.
      * @return Whether any items have been moved. For example, would return false if the selected items were already at
      *         the bottom of the list.
      */
@@ -65,10 +63,8 @@ public class CollectionUtils {
     /**
      * Move the selected items up one position in the list.
      *
-     * @param list
-     *            The list of items, which will be altered in-place.
-     * @param selectionIndexes
-     *            The indexes of the items to be moved.
+     * @param list The list of items, which will be altered in-place.
+     * @param selectionIndexes The indexes of the items to be moved.
      * @return Whether any items have been moved. For example, would return false if the selected items were already at
      *         the top of the list.
      */
@@ -108,10 +104,10 @@ public class CollectionUtils {
         return false;
     }
 
-    public static <K, V> MultiMap<V,K> invertMultiMap(MultiMap<K,V> input) {
-        MultiMap<V,K> result = new MultiMap<V,K>();
+    public static <K, V> MultiMap<V, K> invertMultiMap(MultiMap<K, V> input) {
+        MultiMap<V, K> result = new MultiMap<V, K>();
 
-        for (Entry<K,List<V>> inputEntry : input.entrySet()) {
+        for (Entry<K, List<V>> inputEntry : input.entrySet()) {
             K inputKey = inputEntry.getKey();
             List<V> inputList = inputEntry.getValue();
             for (V inputVal : inputList) {
@@ -122,8 +118,8 @@ public class CollectionUtils {
         return result;
     }
 
-    public static <K, V> Map<V,Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
-        Map<V,Set<K>> result = new TreeMap<V,Set<K>>();
+    public static <K, V> Map<V, Set<K>> invertMapOfCollection(Map<K, ? extends Collection<V>> mapOfCollection) {
+        Map<V, Set<K>> result = new TreeMap<V, Set<K>>();
 
         for (Entry<K, ? extends Collection<V>> inputEntry : mapOfCollection.entrySet()) {
             K inputKey = inputEntry.getKey();
@@ -165,7 +161,7 @@ public class CollectionUtils {
         return result;
     }
 
-    public static <T> List<T> flatten(Collection< ? extends Collection<T>> listList) {
+    public static <T> List<T> flatten(Collection<? extends Collection<T>> listList) {
         int size = 0;
         for (Collection<T> list : listList)
             size += list.size();

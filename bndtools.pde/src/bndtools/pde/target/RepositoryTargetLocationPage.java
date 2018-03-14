@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.core.target.ITargetDefinition;
 import org.eclipse.pde.internal.ui.SWTFactory;
@@ -14,6 +15,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
+
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.service.IndexProvider;
@@ -56,7 +58,8 @@ public class RepositoryTargetLocationPage extends BndTargetLocationPage {
             for (RepositoryPlugin repository : workspace.getPlugins(RepositoryPlugin.class)) {
                 if (CACHE_REPOSITORY.equals(repository.getName()))
                     continue;
-                if (repository instanceof IndexProvider && !((IndexProvider) repository).getSupportedPhases().contains(ResolutionPhase.build))
+                if (repository instanceof IndexProvider && !((IndexProvider) repository).getSupportedPhases()
+                    .contains(ResolutionPhase.build))
                     continue;
                 repositories.add(repository);
             }
@@ -92,7 +95,8 @@ public class RepositoryTargetLocationPage extends BndTargetLocationPage {
             return false;
 
         for (int i = 0; i < pluginsCombo.getItemCount(); i++) {
-            if (pluginsCombo.getItem(i).equals(repository.getName())) {
+            if (pluginsCombo.getItem(i)
+                .equals(repository.getName())) {
                 pluginsCombo.select(i);
                 return true;
             }
@@ -154,11 +158,12 @@ public class RepositoryTargetLocationPage extends BndTargetLocationPage {
         repository = null;
     }
 
-    protected Collection< ? > getBundles() throws Exception {
+    protected Collection<?> getBundles() throws Exception {
         List<String> bundles = new ArrayList<>();
         if (repository != null) {
             for (String bsn : repository.list("*")) {
-                bundles.add(bsn + " - " + repository.versions(bsn).last());
+                bundles.add(bsn + " - " + repository.versions(bsn)
+                    .last());
             }
         }
         if (bundles.isEmpty())

@@ -28,7 +28,7 @@ import java.util.Map;
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
 @SuppressWarnings({
-        "rawtypes", "unchecked"
+    "rawtypes", "unchecked"
 })
 public class OCD extends OptionalAttributes {
 
@@ -69,8 +69,7 @@ public class OCD extends OptionalAttributes {
 
     /**
      * @param size
-     * @param icon
-     *            The icon, either an URL or a string designating a resource which may be a localized string
+     * @param icon The icon, either an URL or a string designating a resource which may be a localized string
      */
     public void addIcon(Integer size, String icon) {
         if (icon != null) {

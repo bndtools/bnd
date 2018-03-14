@@ -22,7 +22,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
     private static final Object[] EMPTY = new Object[0];
 
     private static final String[] NAMESPACE_ORDER = new String[] {
-            BundleNamespace.BUNDLE_NAMESPACE, IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE, PackageNamespace.PACKAGE_NAMESPACE
+        BundleNamespace.BUNDLE_NAMESPACE, IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE, PackageNamespace.PACKAGE_NAMESPACE
     };
 
     private static final Set<String> NAMESPACES;
@@ -46,7 +46,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
         List<Object[]> arrays = new LinkedList<>();
 
         @SuppressWarnings("unchecked")
-        Map<String,List<Object>> map = (Map<String,List<Object>>) input;
+        Map<String, List<Object>> map = (Map<String, List<Object>>) input;
 
         // Add entries for our preferred ordering of namespaces
         for (String namespace : NAMESPACE_ORDER) {
@@ -59,7 +59,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
         }
 
         // Now the rest in any order
-        for (Entry<String,List<Object>> entry : map.entrySet()) {
+        for (Entry<String, List<Object>> entry : map.entrySet()) {
             // Skip if namespace is a member of the namespaces we have already added.
             if (NAMESPACES.contains(entry.getKey()))
                 continue;
@@ -111,7 +111,7 @@ public class CapReqMapContentProvider implements ITreeContentProvider {
     public Object[] getChildren(Object parent) {
         Object[] result = EMPTY;
         if (parent instanceof RequirementWrapper) {
-            Collection< ? extends Object> requirers = ((RequirementWrapper) parent).requirers;
+            Collection<? extends Object> requirers = ((RequirementWrapper) parent).requirers;
             if (requirers != null)
                 result = requirers.toArray();
         }

@@ -50,7 +50,9 @@ public class ResolveJob extends Job {
 
             EE ee = EE.parse(eeStr);
             if (ee == null) {
-                String supportedEEs = Arrays.stream(EE.values()).map(EE::getEEName).collect(Collectors.joining(",\n - "));
+                String supportedEEs = Arrays.stream(EE.values())
+                    .map(EE::getEEName)
+                    .collect(Collectors.joining(",\n - "));
                 return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Unrecognized Execution Environment: \"{0}\".\n\nSupported values are:\n - {1}", eeStr, supportedEEs), null);
             }
 

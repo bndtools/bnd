@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({
-        "rawtypes", "unchecked"
+    "rawtypes", "unchecked"
 })
 public class OptionalAttributes {
     private Map optionalAttributes;

@@ -61,7 +61,8 @@ class ExportedBundle implements Comparable<ExportedBundle> {
     }
 
     public int compareTo(ExportedBundle other) {
-        int diff = this.getSymbolicName().compareTo(other.getSymbolicName());
+        int diff = this.getSymbolicName()
+            .compareTo(other.getSymbolicName());
         if (diff == 0) {
             Version version1 = this.getVersion();
             if (version1 == null)

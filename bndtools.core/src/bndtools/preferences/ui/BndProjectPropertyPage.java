@@ -61,22 +61,22 @@ public class BndProjectPropertyPage extends PropertyPage {
         IPreferenceStore store = getPreferenceStore();
         action = CompileErrorAction.parse(store.getString(CompileErrorAction.PREFERENCE_KEY));
         switch (action) {
-        case delete :
-            btnDelete.setSelection(true);
-            btnSkip.setSelection(false);
-            btnContinue.setSelection(false);
-            break;
-        case skip :
-        default :
-            btnDelete.setSelection(false);
-            btnSkip.setSelection(true);
-            btnContinue.setSelection(false);
-            break;
-        case build :
-            btnDelete.setSelection(false);
-            btnSkip.setSelection(false);
-            btnContinue.setSelection(true);
-            break;
+            case delete :
+                btnDelete.setSelection(true);
+                btnSkip.setSelection(false);
+                btnContinue.setSelection(false);
+                break;
+            case skip :
+            default :
+                btnDelete.setSelection(false);
+                btnSkip.setSelection(true);
+                btnContinue.setSelection(false);
+                break;
+            case build :
+                btnDelete.setSelection(false);
+                btnSkip.setSelection(false);
+                btnContinue.setSelection(true);
+                break;
         }
 
         // LISTENERS

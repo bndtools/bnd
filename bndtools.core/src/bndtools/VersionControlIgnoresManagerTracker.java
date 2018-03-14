@@ -14,7 +14,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
-public class VersionControlIgnoresManagerTracker extends ServiceTracker<VersionControlIgnoresManager,VersionControlIgnoresManager> implements VersionControlIgnoresManager {
+public class VersionControlIgnoresManagerTracker extends ServiceTracker<VersionControlIgnoresManager, VersionControlIgnoresManager> implements VersionControlIgnoresManager {
     private final AtomicReference<ServiceReference<VersionControlIgnoresManager>> managerReference = new AtomicReference<ServiceReference<VersionControlIgnoresManager>>();
     private final AtomicReference<VersionControlIgnoresManager> manager = new AtomicReference<VersionControlIgnoresManager>();
 
@@ -105,7 +105,7 @@ public class VersionControlIgnoresManagerTracker extends ServiceTracker<VersionC
     }
 
     @Override
-    public void createProjectIgnores(Set<String> plugins, File projectDir, Map<String,String> sourceOutputLocations, String targetDir) {
+    public void createProjectIgnores(Set<String> plugins, File projectDir, Map<String, String> sourceOutputLocations, String targetDir) {
         VersionControlIgnoresManager manager = this.manager.get();
         if (manager == null) {
             return;

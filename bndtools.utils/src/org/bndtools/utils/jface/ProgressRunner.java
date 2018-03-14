@@ -1,6 +1,7 @@
 package org.bndtools.utils.jface;
 
 import java.lang.reflect.InvocationTargetException;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -40,7 +41,8 @@ public class ProgressRunner {
                     thread.start();
 
                     if (display.getThread() == Thread.currentThread()) {
-                        // We are running unforked on the display thread, so keep it alive and processing events while we ping the cancellation status.
+                        // We are running unforked on the display thread, so keep it alive and processing events while
+                        // we ping the cancellation status.
                         while (thread.isAlive()) {
                             if (!display.readAndDispatch()) {
                                 if (monitor.isCanceled()) {
@@ -146,7 +148,8 @@ public class ProgressRunner {
 
         @Override
         public boolean isCanceled() {
-            return Thread.currentThread().isInterrupted();
+            return Thread.currentThread()
+                .isInterrupted();
         }
 
         @Override

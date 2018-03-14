@@ -26,7 +26,7 @@ public class DSAnnotationErrorHandler extends AbstractBuildErrorDetailsHandler {
 
         IJavaProject javaProject = JavaCore.create(project);
 
-        Map<String,Object> attribs = new HashMap<String,Object>();
+        Map<String, Object> attribs = new HashMap<String, Object>();
         attribs.put(IMarker.MESSAGE, location.message.trim());
 
         MarkerData md = null;

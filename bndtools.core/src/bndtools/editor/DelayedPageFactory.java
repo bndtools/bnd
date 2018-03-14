@@ -26,7 +26,8 @@ public class DelayedPageFactory implements IFormPageFactory {
         if (modeListStr != null) {
             StringTokenizer tokenizer = new StringTokenizer(modeListStr, ",");
             while (tokenizer.hasMoreTokens()) {
-                String token = tokenizer.nextToken().trim();
+                String token = tokenizer.nextToken()
+                    .trim();
 
                 try {
                     Mode mode = Enum.valueOf(Mode.class, token);

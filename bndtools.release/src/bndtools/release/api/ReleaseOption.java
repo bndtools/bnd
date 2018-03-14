@@ -11,6 +11,7 @@ public enum ReleaseOption {
     UPDATE_RELEASE(Messages.updateVersionsAndRelease);
 
     private String text;
+
     private ReleaseOption(String text) {
         this.text = text;
     }
@@ -28,7 +29,8 @@ public enum ReleaseOption {
 
         EnumSet<ReleaseOption> optionSet = EnumSet.allOf(ReleaseOption.class);
         for (ReleaseOption option : optionSet) {
-            if (option.getText().equals(optionString)) {
+            if (option.getText()
+                .equals(optionString)) {
                 return option;
             }
         }

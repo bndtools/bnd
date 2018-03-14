@@ -51,7 +51,8 @@ class ProjectTemplateSelectionWizardPage extends TemplateSelectionWizardPage {
             composite.setLayout(layout);
 
             Label lblWarning = new Label(composite, SWT.NONE);
-            warningImg = Icons.desc("warning.big").createImage(parent.getDisplay());
+            warningImg = Icons.desc("warning.big")
+                .createImage(parent.getDisplay());
             lblWarning.setImage(warningImg);
 
             Link link = new Link(composite, SWT.NONE);
@@ -76,12 +77,15 @@ class ProjectTemplateSelectionWizardPage extends TemplateSelectionWizardPage {
                                 projectWizard.init(PlatformUI.getWorkbench(), StructuredSelection.EMPTY);
                                 new WizardDialog(dialog.getShell(), projectWizard).open();
                             } catch (CoreException e) {
-                                Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to open New Bnd Project wizard", e));
+                                Plugin.getDefault()
+                                    .getLog()
+                                    .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unable to open New Bnd Project wizard", e));
                             }
                         }
                     } else if ("#prefs".equals(ev.text)) {
                         // Open the preference dialog with the template repositories page open.
-                        // We can't reopen the New Project wizard after because we don't know that the user changed anything.
+                        // We can't reopen the New Project wizard after because we don't know that the user changed
+                        // anything.
                         PreferenceDialog prefsDialog = PreferencesUtil.createPreferenceDialogOn(getShell(), "bndtools.prefPages.repos", null, null);
                         prefsDialog.open();
                     }
@@ -90,8 +94,8 @@ class ProjectTemplateSelectionWizardPage extends TemplateSelectionWizardPage {
             GridData gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
             link.setLayoutData(gd);
 
-            //            ControlDecoration decor = new ControlDecoration(link, SWT.LEFT, composite);
-            //            decor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_WARNING).getImage());
+            // ControlDecoration decor = new ControlDecoration(link, SWT.LEFT, composite);
+            // decor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_WARNING).getImage());
 
             Label separator = new Label(composite, SWT.SEPARATOR | SWT.HORIZONTAL);
             separator.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));

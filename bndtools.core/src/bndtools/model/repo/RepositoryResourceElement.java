@@ -3,6 +3,7 @@ package bndtools.model.repo;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
+
 import aQute.bnd.service.RepositoryPlugin;
 
 public class RepositoryResourceElement {

@@ -66,13 +66,17 @@ public class ProjectLocationGroup {
     private static IPath findWorkspaceLocation() {
 
         try {
-            for (IProject iproj : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-                if (iproj.getName().equals(Workspace.CNFDIR)) {
+            for (IProject iproj : ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .getProjects()) {
+                if (iproj.getName()
+                    .equals(Workspace.CNFDIR)) {
                     IPath rawLocation = iproj.getRawLocation();
                     if (rawLocation == null)
                         break;
 
-                    return iproj.getRawLocation().removeLastSegments(1);
+                    return iproj.getRawLocation()
+                        .removeLastSegments(1);
                 }
             }
         } catch (Exception e) {
@@ -86,15 +90,20 @@ public class ProjectLocationGroup {
             ws = Central.getWorkspace();
         } catch (Exception e) {
             ws = null;
-            for (IProject iproj : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-                if (iproj.getName().equals(Workspace.CNFDIR)) {
-                    return iproj.getRawLocation().removeLastSegments(1);
+            for (IProject iproj : ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .getProjects()) {
+                if (iproj.getName()
+                    .equals(Workspace.CNFDIR)) {
+                    return iproj.getRawLocation()
+                        .removeLastSegments(1);
                 }
             }
         }
 
         if (ws != null && !ws.isDefaultWorkspace())
-            p = Path.fromOSString(ws.getBase().getAbsolutePath());
+            p = Path.fromOSString(ws.getBase()
+                .getAbsolutePath());
 
         return p;
     }
@@ -155,9 +164,12 @@ public class ProjectLocationGroup {
             public void widgetSelected(SelectionEvent e) {
                 DirectoryDialog dialog = new DirectoryDialog(container.getShell());
                 dialog.setMessage("Choose a directory for the project contents:");
-                String directoryName = txtLocation.getText().trim();
+                String directoryName = txtLocation.getText()
+                    .trim();
                 if (directoryName == null || directoryName.length() == 0) {
-                    String previous = JavaPlugin.getDefault().getDialogSettings().get(DIALOGSTORE_LAST_EXTERNAL_LOC);
+                    String previous = JavaPlugin.getDefault()
+                        .getDialogSettings()
+                        .get(DIALOGSTORE_LAST_EXTERNAL_LOC);
                     if (previous != null)
                         directoryName = previous;
                 }
@@ -174,7 +186,8 @@ public class ProjectLocationGroup {
                 if (selected != null) {
                     IPath path = new Path(selected);
                     if (projectName != null && !projectName.equals(path.lastSegment()))
-                        selected = path.append(projectName).toString();
+                        selected = path.append(projectName)
+                            .toString();
                     txtLocation.setText(selected);
                 }
             }
@@ -200,7 +213,8 @@ public class ProjectLocationGroup {
             if (loc == null || loc.isEmpty())
                 return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Project location invalid or not specified.", null);
 
-            if (loc.lastSegment() == null || !loc.lastSegment().equals(projectName))
+            if (loc.lastSegment() == null || !loc.lastSegment()
+                .equals(projectName))
                 return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Project location must end with specified project name", null);
 
             if (workspaceLocation != null && !workspaceLocation.isPrefixOf(loc)) {
@@ -209,20 +223,28 @@ public class ProjectLocationGroup {
         }
 
         // Check valid name
-        IStatus nameStatus = JavaPlugin.getWorkspace().validateName(projectName != null ? projectName : "", IResource.PROJECT);
+        IStatus nameStatus = JavaPlugin.getWorkspace()
+            .validateName(projectName != null ? projectName : "", IResource.PROJECT);
         if (!nameStatus.isOK())
             return nameStatus;
 
         // Check if project name already exists
-        IProject existingProject = JavaPlugin.getWorkspace().getRoot().getProject(projectName);
+        IProject existingProject = JavaPlugin.getWorkspace()
+            .getRoot()
+            .getProject(projectName);
         if (existingProject.exists())
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Project \"{0}\" already exists.", projectName), null);
 
         // Find existing project at that location and check if name matches
-        IPath projectLocation = ResourcesPlugin.getWorkspace().getRoot().getLocation().append(projectName);
-        if (projectLocation.toFile().exists()) {
+        IPath projectLocation = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getLocation()
+            .append(projectName);
+        if (projectLocation.toFile()
+            .exists()) {
             try {
-                String path = projectLocation.toFile().getCanonicalPath();
+                String path = projectLocation.toFile()
+                    .getCanonicalPath();
                 projectLocation = new Path(path);
             } catch (IOException e) {
                 // TODO Auto-generated catch block

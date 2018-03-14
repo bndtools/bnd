@@ -19,11 +19,13 @@ public class ASTUtil {
         for (Iterator<SingleVariableDeclaration> iter = params.iterator(); iter.hasNext();) {
             String paramType;
             SingleVariableDeclaration param = iter.next();
-            ITypeBinding typeBinding = param.getType().resolveBinding();
+            ITypeBinding typeBinding = param.getType()
+                .resolveBinding();
             if (typeBinding != null)
                 paramType = typeBinding.getBinaryName();
             else
-                paramType = param.getName().getIdentifier();
+                paramType = param.getName()
+                    .getIdentifier();
 
             builder.append(paramType);
             if (iter.hasNext())

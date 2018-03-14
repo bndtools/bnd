@@ -31,7 +31,7 @@ public class RunExportSelectionPage extends WizardSelectionPage {
     private final BndEditModel model;
     private final Project bndProject;
 
-    private final Map<IConfigurationElement,IWizardNode> nodeCache = new HashMap<IConfigurationElement,IWizardNode>();
+    private final Map<IConfigurationElement, IWizardNode> nodeCache = new HashMap<IConfigurationElement, IWizardNode>();
 
     private Table table;
     private TableViewer viewer;

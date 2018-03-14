@@ -66,8 +66,10 @@ import bndtools.tasks.BndFileCapReqLoader;
 
 public class BundleCalculatedImportsPart extends SectionPart implements IResourceChangeListener {
 
-    private final Image imgRefresh = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png").createImage(); //$NON-NLS-1$
-    private final Image imgShowSelfImports = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif").createImage(); //$NON-NLS-1$
+    private final Image imgRefresh = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_refresh.png") //$NON-NLS-1$
+        .createImage();
+    private final Image imgShowSelfImports = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/package_folder_impexp.gif") //$NON-NLS-1$
+        .createImage();
 
     private Tree tree;
     private TreeViewer viewer;
@@ -120,7 +122,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             }
         };
         viewer.setFilters(new ViewerFilter[] {
-                nonPkgFilter, hideSelfImportsFilter
+            nonPkgFilter, hideSelfImportsFilter
         });
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -130,7 +132,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             }
         });
         viewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
-                LocalSelectionTransfer.getTransfer()
+            LocalSelectionTransfer.getTransfer()
         }, new DragSourceAdapter() {
             @Override
             public void dragSetData(DragSourceEvent event) {
@@ -143,7 +145,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             @Override
             public void open(OpenEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
+                for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
                     Object item = iter.next();
                     if (item instanceof Clazz) {
                         Clazz importUsedBy = (Clazz) item;
@@ -157,7 +159,7 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
                                 type = javaProject.findType(className);
                             } catch (JavaModelException e) {
                                 ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, Messages.BundleCalculatedImportsPart_errorFindingType,
-                                        new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
+                                    new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
                             }
                         }
                         try {
@@ -165,10 +167,10 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
                                 JavaUI.openInEditor(type, true, true);
                         } catch (PartInitException e) {
                             ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, null,
-                                    new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningJavaEditor, className), e));
+                                new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningJavaEditor, className), e));
                         } catch (JavaModelException e) {
                             ErrorDialog.openError(tree.getShell(), Messages.BundleCalculatedImportsPart_error, null,
-                                    new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
+                                new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format(Messages.BundleCalculatedImportsPart_errorOpeningClass, className), e));
                         }
                     }
                 }
@@ -181,9 +183,9 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
             public void widgetSelected(SelectionEvent e) {
                 boolean showSelfImports = showSelfImportsItem.getSelection();
                 ViewerFilter[] filters = showSelfImports ? new ViewerFilter[] {
-                        nonPkgFilter
+                    nonPkgFilter
                 } : new ViewerFilter[] {
-                        nonPkgFilter, hideSelfImportsFilter
+                    nonPkgFilter, hideSelfImportsFilter
                 };
                 viewer.setFilters(filters);
             }
@@ -206,7 +208,8 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
     public void initialize(IManagedForm form) {
         super.initialize(form);
 
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
+        ResourcesPlugin.getWorkspace()
+            .addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
     }
 
     @Override
@@ -226,7 +229,8 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
         job.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
-                if (job.getResult().isOK()) {
+                if (job.getResult()
+                    .isOK()) {
                     display.asyncExec(new Runnable() {
                         @Override
                         public void run() {
@@ -248,7 +252,8 @@ public class BundleCalculatedImportsPart extends SectionPart implements IResourc
 
     @Override
     public void dispose() {
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        ResourcesPlugin.getWorkspace()
+            .removeResourceChangeListener(this);
         super.dispose();
         imgRefresh.dispose();
         imgShowSelfImports.dispose();

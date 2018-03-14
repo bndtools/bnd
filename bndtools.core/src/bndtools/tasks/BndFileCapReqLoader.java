@@ -33,14 +33,17 @@ public class BndFileCapReqLoader extends BndBuilderCapReqLoader {
             IProject project = wsfiles[0].getProject();
 
             // Calculate the manifest
-            Project bndProject = Central.getInstance().getModel(JavaCore.create(project));
+            Project bndProject = Central.getInstance()
+                .getModel(JavaCore.create(project));
             if (bndProject == null)
                 return null;
-            if (file.getName().equals(Project.BNDFILE)) {
+            if (file.getName()
+                .equals(Project.BNDFILE)) {
                 ProjectBuilder pb = bndProject.getBuilder(null);
                 boolean close = true;
                 try {
-                    b = pb.getSubBuilders().get(0);
+                    b = pb.getSubBuilders()
+                        .get(0);
                     if (b == pb) {
                         close = false;
                     } else {

@@ -69,21 +69,21 @@ public class BuildLogger {
         full("Duration %.2f sec", (end - start) / 1000f);
         String kindString;
         switch (kind) {
-        case IncrementalProjectBuilder.FULL_BUILD :
-            kindString = "FULL";
-            break;
-        case IncrementalProjectBuilder.AUTO_BUILD :
-            kindString = "AUTO";
-            break;
-        case IncrementalProjectBuilder.CLEAN_BUILD :
-            kindString = "CLEAN";
-            break;
-        case IncrementalProjectBuilder.INCREMENTAL_BUILD :
-            kindString = "INCREMENTAL";
-            break;
-        default :
-            kindString = String.valueOf(kind);
-            break;
+            case IncrementalProjectBuilder.FULL_BUILD :
+                kindString = "FULL";
+                break;
+            case IncrementalProjectBuilder.AUTO_BUILD :
+                kindString = "AUTO";
+                break;
+            case IncrementalProjectBuilder.CLEAN_BUILD :
+                kindString = "CLEAN";
+                break;
+            case IncrementalProjectBuilder.INCREMENTAL_BUILD :
+                kindString = "INCREMENTAL";
+                break;
+            default :
+                kindString = String.valueOf(kind);
+                break;
         }
 
         StringBuilder top = new StringBuilder();
@@ -94,7 +94,9 @@ public class BuildLogger {
                 topper.format("BUILD %s %s no build", kindString, name);
         }
 
-        return top.append('\n').append(sb).toString();
+        return top.append('\n')
+            .append(sb)
+            .toString();
     }
 
     public boolean isActive() {

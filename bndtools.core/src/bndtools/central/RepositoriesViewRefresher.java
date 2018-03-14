@@ -27,6 +27,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceRegistration;
+
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
@@ -42,7 +43,7 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
     private boolean redo = false;
     private boolean busy = false;
     private final ServiceRegistration<RepositoryListenerPlugin> registration;
-    private final Map<TreeViewer,RefreshModel> viewers = new ConcurrentHashMap<>();
+    private final Map<TreeViewer, RefreshModel> viewers = new ConcurrentHashMap<>();
 
     RepositoriesViewRefresher() {
         ServiceRegistration<RepositoryListenerPlugin> reg = null;
@@ -92,10 +93,11 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 
                     // get repositories first, then do UI thread work
 
-                    final Map<Entry<TreeViewer,RefreshModel>,List<RepositoryPlugin>> entryRepos = new HashMap<>();
+                    final Map<Entry<TreeViewer, RefreshModel>, List<RepositoryPlugin>> entryRepos = new HashMap<>();
 
-                    for (Map.Entry<TreeViewer,RefreshModel> entry : viewers.entrySet()) {
-                        entryRepos.put(entry, entry.getValue().getRepositories());
+                    for (Map.Entry<TreeViewer, RefreshModel> entry : viewers.entrySet()) {
+                        entryRepos.put(entry, entry.getValue()
+                            .getRepositories());
                     }
 
                     //
@@ -110,13 +112,16 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
                                 redo = false;
                             }
 
-                            for (Map.Entry<TreeViewer,RefreshModel> entry : viewers.entrySet()) {
+                            for (Map.Entry<TreeViewer, RefreshModel> entry : viewers.entrySet()) {
 
-                                TreePath[] expandedTreePaths = entry.getKey().getExpandedTreePaths();
+                                TreePath[] expandedTreePaths = entry.getKey()
+                                    .getExpandedTreePaths();
 
-                                entry.getKey().setInput(entryRepos.get(entry));
+                                entry.getKey()
+                                    .setInput(entryRepos.get(entry));
                                 if (expandedTreePaths != null && expandedTreePaths.length > 0)
-                                    entry.getKey().setExpandedTreePaths(expandedTreePaths);
+                                    entry.getKey()
+                                        .setExpandedTreePaths(expandedTreePaths);
                             }
                             synchronized (RepositoriesViewRefresher.this) {
                                 busy = false;
@@ -172,7 +177,8 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 List<RepositoryPlugin> repositories = model.getRepositories();
-                Display.getDefault().asyncExec(() -> viewer.setInput(repositories));
+                Display.getDefault()
+                    .asyncExec(() -> viewer.setInput(repositories));
                 return Status.OK_STATUS;
             }
         }.schedule());
@@ -209,7 +215,7 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
 
     public static Display getDisplay() {
         Display display = Display.getCurrent();
-        //may be null if outside the UI thread
+        // may be null if outside the UI thread
         if (display == null)
             display = Display.getDefault();
         return display;

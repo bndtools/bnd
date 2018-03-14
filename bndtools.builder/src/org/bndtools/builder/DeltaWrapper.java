@@ -95,13 +95,14 @@ class DeltaWrapper {
                 if (resource.getType() == IResource.ROOT || resource.getType() == IResource.PROJECT)
                     return true;
 
-                String path = resource.getProjectRelativePath().toString();
+                String path = resource.getProjectRelativePath()
+                    .toString();
 
                 if (resource.getType() == IResource.FOLDER) {
                     if (check(path, model.getProperty(Constants.DEFAULT_PROP_SRC_DIR)) //
-                            || check(path, model.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR)) //
-                            || check(path, model.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR)) //
-                            || check(path, model.getProperty(Constants.DEFAULT_PROP_TARGET_DIR))) {
+                        || check(path, model.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR)) //
+                        || check(path, model.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR)) //
+                        || check(path, model.getProperty(Constants.DEFAULT_PROP_TARGET_DIR))) {
                         return false;
 
                     }
@@ -191,12 +192,14 @@ class DeltaWrapper {
     }
 
     public boolean isTestBin(IResource resource) {
-        String path = resource.getProjectRelativePath().toString();
+        String path = resource.getProjectRelativePath()
+            .toString();
         return check(path, model.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR));
     }
 
     /**
-     * Check if the target JARs have gone. We look for the buildfiles and the listed jars. If anything is odd, we rebuild.
+     * Check if the target JARs have gone. We look for the buildfiles and the listed jars. If anything is odd, we
+     * rebuild.
      */
     public boolean hasNoTarget(Project model) throws Exception {
 
@@ -268,12 +271,14 @@ class DeltaWrapper {
                     }
 
                     if (r.getType() == IResource.FILE) {
-                        files.add(d.getProjectRelativePath().toString());
+                        files.add(d.getProjectRelativePath()
+                            .toString());
                         return false;
                     }
                     if (r.getType() == IResource.FOLDER) {
                         if (dirsAlso)
-                            files.add(d.getProjectRelativePath().toString());
+                            files.add(d.getProjectRelativePath()
+                                .toString());
 
                         return true;
                     }

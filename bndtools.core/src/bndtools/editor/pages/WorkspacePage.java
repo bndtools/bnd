@@ -61,7 +61,8 @@ public class WorkspacePage extends FormPage {
         ScrolledForm form = managedForm.getForm();
         form.setText("Workspace Config");
         tk.decorateFormHeading(form.getForm());
-        form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
+        form.getForm()
+            .addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
         // Create controls
         Composite body = form.getBody();
@@ -79,17 +80,23 @@ public class WorkspacePage extends FormPage {
         GridLayout layout = new GridLayout(1, false);
         body.setLayout(layout);
 
-        linksPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
+        linksPart.getSection()
+            .setLayoutData(PageLayoutUtils.createCollapsed());
 
-        pluginPathPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
-        pluginPathPart.getSection().addExpansionListener(new ResizeExpansionAdapter(pluginPathPart.getSection()));
+        pluginPathPart.getSection()
+            .setLayoutData(PageLayoutUtils.createExpanded());
+        pluginPathPart.getSection()
+            .addExpansionListener(new ResizeExpansionAdapter(pluginPathPart.getSection()));
 
-        pluginsPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
-        pluginsPart.getSection().addExpansionListener(new ResizeExpansionAdapter(pluginsPart.getSection()));
+        pluginsPart.getSection()
+            .setLayoutData(PageLayoutUtils.createExpanded());
+        pluginsPart.getSection()
+            .addExpansionListener(new ResizeExpansionAdapter(pluginsPart.getSection()));
 
     }
 
     public void setSelectedPlugin(HeaderClause header) {
-        pluginsPart.getSelectionProvider().setSelection(new StructuredSelection(header));
+        pluginsPart.getSelectionProvider()
+            .setSelection(new StructuredSelection(header));
     }
 }

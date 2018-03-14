@@ -12,8 +12,8 @@ public abstract class AbstractNewEntryDialog extends TitleAreaDialog {
         super(parentShell);
     }
 
-    public abstract void setEntry(Pair<String,Attrs> entry);
+    public abstract void setEntry(Pair<String, Attrs> entry);
 
-    public abstract Pair<String,Attrs> getEntry();
+    public abstract Pair<String, Attrs> getEntry();
 
 }

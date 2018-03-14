@@ -78,7 +78,8 @@ public class RepoTemplateContentProvider implements ITreeContentProvider {
     @Override
     public boolean hasChildren(Object element) {
         if (element instanceof Category) {
-            return !((Category) element).getTemplates().isEmpty();
+            return !((Category) element).getTemplates()
+                .isEmpty();
         }
         return false;
     }
@@ -88,7 +89,8 @@ public class RepoTemplateContentProvider implements ITreeContentProvider {
         if (roots != null && roots.length > 0) {
             if (roots[0] instanceof Category) {
                 Category cat = (Category) roots[0];
-                Iterator<Template> templateIter = cat.getTemplates().iterator();
+                Iterator<Template> templateIter = cat.getTemplates()
+                    .iterator();
                 if (templateIter.hasNext())
                     result = templateIter.next();
             }

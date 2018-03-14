@@ -29,13 +29,21 @@ import bndtools.Plugin;
 public class RepositoryTreeLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
     private static final ILogger logger = Logger.getLogger(RepositoryTreeLabelProvider.class);
 
-    final Image arrowImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_down.png").createImage();
-    final Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png").createImage();
-    final Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png").createImage();
-    final Image bundleImg = Icons.desc("bundle").createImage();
-    final Image matchImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/star-small.png").createImage();
-    final Image projectImg = PlatformUI.getWorkbench().getSharedImages().getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
-    final Image loadingImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/loading_16x16.gif").createImage();
+    final Image arrowImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_down.png")
+        .createImage();
+    final Image localRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database.png")
+        .createImage();
+    final Image remoteRepoImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/database_link.png")
+        .createImage();
+    final Image bundleImg = Icons.desc("bundle")
+        .createImage();
+    final Image matchImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/star-small.png")
+        .createImage();
+    final Image projectImg = PlatformUI.getWorkbench()
+        .getSharedImages()
+        .getImage(IDE.SharedImages.IMG_OBJ_PROJECT);
+    final Image loadingImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/loading_16x16.gif")
+        .createImage();
 
     private final boolean showRepoId;
 
@@ -90,7 +98,8 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
                 RepositoryBundle bundle = (RepositoryBundle) element;
                 StyledString label = new StyledString(bundle.getText());
                 if (showRepoId)
-                    label.append("  [" + bundle.getRepo().getName() + "]", StyledString.QUALIFIER_STYLER);
+                    label.append("  [" + bundle.getRepo()
+                        .getName() + "]", StyledString.QUALIFIER_STYLER);
                 cell.setText(label.getString());
                 cell.setStyleRanges(label.getStyleRanges());
                 cell.setImage(bundleImg);
@@ -112,7 +121,8 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
         } else if (element instanceof RepositoryResourceElement) {
             RepositoryResourceElement resourceElem = (RepositoryResourceElement) element;
             StyledString label = new StyledString();
-            label.append(resourceElem.getIdentity()).append(" ");
+            label.append(resourceElem.getIdentity())
+                .append(" ");
             label.append(resourceElem.getVersionString(), StyledString.COUNTER_STYLER);
 
             cell.setText(label.getString());
@@ -132,7 +142,7 @@ public class RepositoryTreeLabelProvider extends StyledCellLabelProvider impleme
     }
 
     private static boolean isRemoteRepo(RepositoryPlugin repository) {
-        List< ? > locations = Collections.emptyList();
+        List<?> locations = Collections.emptyList();
         if (repository instanceof IndexProvider) {
             try {
                 locations = ((IndexProvider) repository).getIndexLocations();

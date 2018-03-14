@@ -42,12 +42,12 @@ public class Activator extends AbstractUIPlugin {
         instance = this;
         this.context = context;
 
-        Hashtable<String,Object> p = new Hashtable<String,Object>();
+        Hashtable<String, Object> p = new Hashtable<String, Object>();
         // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d",
         // "a:d:e"});
         context.registerService(Action.class.getName(), new ReflectAction(""), p);
 
-        Hashtable<String,Object> dataUrlHandlerProps = new Hashtable<>();
+        Hashtable<String, Object> dataUrlHandlerProps = new Hashtable<>();
         dataUrlHandlerProps.put(URLConstants.URL_HANDLER_PROTOCOL, DataURLStreamHandler.PROTOCOL);
         dataUrlHandlerReg = context.registerService(URLStreamHandlerService.class, new DataURLStreamHandler(), dataUrlHandlerProps);
     }
@@ -75,8 +75,7 @@ public class Activator extends AbstractUIPlugin {
     /**
      * Returns an image descriptor for the image file at the given plug-in relative path
      *
-     * @param path
-     *            the path
+     * @param path the path
      * @return the image descriptor
      */
     public static ImageDescriptor getImageDescriptor(String path) {
@@ -151,7 +150,8 @@ public class Activator extends AbstractUIPlugin {
 
     static void async(Runnable run) {
         if (Display.getCurrent() == null) {
-            Display.getDefault().asyncExec(run);
+            Display.getDefault()
+                .asyncExec(run);
         } else
             run.run();
     }
@@ -188,10 +188,14 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public static void report(boolean warnings, @SuppressWarnings("unused") boolean acknowledge, Processor reporter, final String title, final String extra) {
-        if (reporter.getErrors().size() > 0 || (warnings && reporter.getWarnings().size() > 0)) {
+        if (reporter.getErrors()
+            .size() > 0
+            || (warnings && reporter.getWarnings()
+                .size() > 0)) {
             final StringBuffer sb = new StringBuffer();
             sb.append("\n");
-            if (reporter.getErrors().size() > 0) {
+            if (reporter.getErrors()
+                .size() > 0) {
                 sb.append("[Errors]\n");
                 for (String msg : reporter.getErrors()) {
                     sb.append(msg);
@@ -199,7 +203,8 @@ public class Activator extends AbstractUIPlugin {
                 }
             }
             sb.append("\n");
-            if (reporter.getWarnings().size() > 0) {
+            if (reporter.getWarnings()
+                .size() > 0) {
                 sb.append("[Warnings]\n");
                 for (String msg : reporter.getWarnings()) {
                     sb.append(msg);

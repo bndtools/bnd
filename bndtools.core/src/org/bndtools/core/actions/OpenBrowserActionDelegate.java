@@ -9,7 +9,6 @@ import org.eclipse.ui.IWorkbenchWindowActionDelegate;
 import org.eclipse.ui.browser.IWebBrowser;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 
-
 public class OpenBrowserActionDelegate implements IWorkbenchWindowActionDelegate {
     private static final ILogger logger = Logger.getLogger(OpenBrowserActionDelegate.class);
 
@@ -17,7 +16,8 @@ public class OpenBrowserActionDelegate implements IWorkbenchWindowActionDelegate
 
     public void run(IAction action) {
         try {
-            IWorkbenchBrowserSupport browserSupport = window.getWorkbench().getBrowserSupport();
+            IWorkbenchBrowserSupport browserSupport = window.getWorkbench()
+                .getBrowserSupport();
             IWebBrowser browser = browserSupport.createBrowser(6, null, null, null);
             browser.openURL(null);
         } catch (Exception e) {

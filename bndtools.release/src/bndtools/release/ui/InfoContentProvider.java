@@ -31,11 +31,12 @@ public class InfoContentProvider implements ITreeContentProvider {
     @Override
     public Object[] getChildren(Object parent) {
         if (parent instanceof List) {
-            return ((List< ? >) parent).toArray();
+            return ((List<?>) parent).toArray();
         }
         if (parent instanceof Baseline) {
             if (isShowAll()) {
-                return ((Baseline) parent).getPackageInfos().toArray();
+                return ((Baseline) parent).getPackageInfos()
+                    .toArray();
             }
             Set<Info> infos = ((Baseline) parent).getPackageInfos();
             List<Info> filteredDiffs = new ArrayList<Info>();
@@ -66,7 +67,8 @@ public class InfoContentProvider implements ITreeContentProvider {
     @Override
     public boolean hasChildren(Object parent) {
         if (parent instanceof Baseline) {
-            return ((Baseline) parent).getPackageInfos().size() > 0;
+            return ((Baseline) parent).getPackageInfos()
+                .size() > 0;
         }
 
         return false;
@@ -87,7 +89,8 @@ public class InfoContentProvider implements ITreeContentProvider {
     public void dispose() {}
 
     /*
-     * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object, java.lang.Object)
+     * @see org.eclipse.jface.viewers.IContentProvider#inputChanged(org.eclipse.jface.viewers.Viewer, java.lang.Object,
+     * java.lang.Object)
      */
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {}

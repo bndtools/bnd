@@ -14,24 +14,25 @@ import org.eclipse.core.runtime.CoreException;
 public class DeltaAccumulator<T> implements IResourceDeltaVisitor {
 
     private final int acceptKinds;
-    private final Collection< ? super T> collector;
-    private final Map< ? super T,Integer> deltaKinds = new HashMap<T,Integer>();
-    private final IFilter< ? super T> filter;
-    private final IResourceConverter< ? extends T> converter;
+    private final Collection<? super T> collector;
+    private final Map<? super T, Integer> deltaKinds = new HashMap<T, Integer>();
+    private final IFilter<? super T> filter;
+    private final IResourceConverter<? extends T> converter;
 
-    public static final DeltaAccumulator<File> fileAccumulator(int acceptKinds, Collection< ? super File> collector, final FileFilter filter) {
+    public static final DeltaAccumulator<File> fileAccumulator(int acceptKinds, Collection<? super File> collector, final FileFilter filter) {
         return new DeltaAccumulator<File>(acceptKinds, collector, new IFilter<File>() {
             public boolean select(File file) {
                 return filter.accept(file);
             }
         }, new IResourceConverter<File>() {
             public File convert(IResource resource) {
-                return resource.getLocation().toFile();
+                return resource.getLocation()
+                    .toFile();
             }
         });
     }
 
-    public static final DeltaAccumulator<IResource> resourceAccumulator(int acceptKinds, Collection< ? super IResource> collector, IFilter<IResource> filter) {
+    public static final DeltaAccumulator<IResource> resourceAccumulator(int acceptKinds, Collection<? super IResource> collector, IFilter<IResource> filter) {
         return new DeltaAccumulator<IResource>(acceptKinds, collector, filter, new IResourceConverter<IResource>() {
             public IResource convert(IResource resource) {
                 return resource;
@@ -39,7 +40,7 @@ public class DeltaAccumulator<T> implements IResourceDeltaVisitor {
         });
     }
 
-    public DeltaAccumulator(int acceptKinds, Collection< ? super T> collector, IFilter< ? super T> filter, IResourceConverter< ? extends T> converter) {
+    public DeltaAccumulator(int acceptKinds, Collection<? super T> collector, IFilter<? super T> filter, IResourceConverter<? extends T> converter) {
         this.acceptKinds = acceptKinds;
         this.collector = collector;
         this.filter = filter;

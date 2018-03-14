@@ -54,7 +54,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
     private Requirement requirementFilter = null;
 
-    private final Map<RepositoryPlugin,Map<String,Object[]>> repoPluginListResults = new HashMap<>();
+    private final Map<RepositoryPlugin, Map<String, Object[]>> repoPluginListResults = new HashMap<>();
     private StructuredViewer structuredViewer;
 
     public RepositoryTreeContentProvider() {
@@ -75,7 +75,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
     public void setFilter(String filter) {
         this.rawFilter = filter;
-        if (filter == null || filter.length() == 0 || filter.trim().equals("*"))
+        if (filter == null || filter.length() == 0 || filter.trim()
+            .equals("*"))
             wildcardFilter = null;
         else
             wildcardFilter = "*" + filter.trim() + "*";
@@ -165,7 +166,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     }
 
     private void addRepositoryPlugins(Collection<Object> result, Workspace workspace) {
-        workspace.getErrors().clear();
+        workspace.getErrors()
+            .clear();
         List<RepositoryPlugin> repoPlugins = workspace.getPlugins(RepositoryPlugin.class);
         for (String error : workspace.getErrors()) {
             logger.logError(error, null);
@@ -236,9 +238,11 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
 
         SortedSet<Version> versions = null;
         try {
-            versions = bundle.getRepo().versions(bundle.getBsn());
+            versions = bundle.getRepo()
+                .versions(bundle.getBsn());
         } catch (Exception e) {
-            logger.logError(MessageFormat.format("Error querying versions for bundle {0} in repository {1}.", bundle.getBsn(), bundle.getRepo().getName()), e);
+            logger.logError(MessageFormat.format("Error querying versions for bundle {0} in repository {1}.", bundle.getBsn(), bundle.getRepo()
+                .getName()), e);
         }
         if (versions != null) {
             result = new RepositoryBundleVersion[versions.size()];
@@ -268,14 +272,12 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         }
 
         /*
-         * We can't directly call repoPlugin.list() since we are on the UI thread
-         * so the plan is to first check to see if we have cached the list results
-         * already from a previous job, if so, return those results directly
-         * If not, then we need to create a background job that will call list()
-         * and once it is finished, we tell the Viewer to refresh this node and the
-         * next time this method gets called the 'results' will be available in the cache
+         * We can't directly call repoPlugin.list() since we are on the UI thread so the plan is to first check to see
+         * if we have cached the list results already from a previous job, if so, return those results directly If not,
+         * then we need to create a background job that will call list() and once it is finished, we tell the Viewer to
+         * refresh this node and the next time this method gets called the 'results' will be available in the cache
          */
-        Map<String,Object[]> listResults = repoPluginListResults.get(repoPlugin);
+        Map<String, Object[]> listResults = repoPluginListResults.get(repoPlugin);
 
         if (listResults == null) {
             listResults = new HashMap<>();
@@ -309,15 +311,16 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                             jobresult[i++] = new RepositoryBundle(repoPlugin, bsn);
                         }
 
-                        Map<String,Object[]> listResults = repoPluginListResults.get(repoPlugin);
+                        Map<String, Object[]> listResults = repoPluginListResults.get(repoPlugin);
                         listResults.put(wildcardFilter, jobresult);
 
-                        Display.getDefault().asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                structuredViewer.refresh(repoPlugin, true);
-                            }
-                        });
+                        Display.getDefault()
+                            .asyncExec(new Runnable() {
+                                @Override
+                                public void run() {
+                                    structuredViewer.refresh(repoPlugin, true);
+                                }
+                            });
                     }
 
                     return status;
@@ -333,11 +336,11 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
             IStatus status = job.getResult();
 
             if (status != null && status.isOK()) {
-                Map<String,Object[]> fastResults = repoPluginListResults.get(repoPlugin);
+                Map<String, Object[]> fastResults = repoPluginListResults.get(repoPlugin);
                 result = fastResults.get(wildcardFilter);
             } else {
                 Object[] loading = new Object[] {
-                        new LoadingContentElement()
+                    new LoadingContentElement()
                 };
 
                 listResults.put(wildcardFilter, loading);
@@ -351,9 +354,9 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     private Object[] searchR5Repository(RepositoryPlugin repoPlugin, Repository osgiRepo) {
         Object[] result;
         Set<RepositoryResourceElement> resultSet = new LinkedHashSet<RepositoryResourceElement>();
-        Map<Requirement,Collection<Capability>> providers = osgiRepo.findProviders(Collections.singleton(requirementFilter));
+        Map<Requirement, Collection<Capability>> providers = osgiRepo.findProviders(Collections.singleton(requirementFilter));
 
-        for (Entry<Requirement,Collection<Capability>> providersEntry : providers.entrySet()) {
+        for (Entry<Requirement, Collection<Capability>> providersEntry : providers.entrySet()) {
             for (Capability providerCap : providersEntry.getValue())
                 resultSet.add(new RepositoryResourceElement(repoPlugin, providerCap.getResource()));
         }

@@ -23,7 +23,7 @@ public class BndFileModel {
     private final IPath path;
     private IPath targetPath;
     private Set<Instruction> includes;
-    private Collection< ? extends IPath> classpath;
+    private Collection<? extends IPath> classpath;
 
     public BndFileModel(IPath path) {
         this.path = path;
@@ -55,7 +55,7 @@ public class BndFileModel {
         return false;
     }
 
-    public boolean containsAny(Collection< ? extends String> affectedPackages) {
+    public boolean containsAny(Collection<? extends String> affectedPackages) {
         for (Instruction instruction : includes) {
             for (String pkg : affectedPackages) {
                 Matcher matcher = instruction.getMatcher(pkg);
@@ -67,11 +67,11 @@ public class BndFileModel {
         return false;
     }
 
-    public Collection< ? extends IPath> getClasspath() {
+    public Collection<? extends IPath> getClasspath() {
         return classpath;
     }
 
-    public void setClasspath(Collection< ? extends IPath> classpath) {
+    public void setClasspath(Collection<? extends IPath> classpath) {
         this.classpath = classpath;
     }
 }

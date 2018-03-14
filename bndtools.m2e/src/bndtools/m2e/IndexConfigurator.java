@@ -77,7 +77,8 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
         }
 
         private File find(String groupId, String artifactId, String version, String extension) {
-            IMavenProjectFacade found = MavenPlugin.getMavenProjectRegistry().getMavenProject(groupId, artifactId, version);
+            IMavenProjectFacade found = MavenPlugin.getMavenProjectRegistry()
+                .getMavenProject(groupId, artifactId, version);
 
             if (found != null) {
                 return getMavenOutputFile(extension, found, progress.newChild(1));
@@ -93,9 +94,13 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
         @Override
         public List<String> findVersions(org.eclipse.aether.artifact.Artifact artifact) {
             List<String> versions = new ArrayList<>();
-            for (IMavenProjectFacade facade : MavenPlugin.getMavenProjectRegistry().getProjects()) {
+            for (IMavenProjectFacade facade : MavenPlugin.getMavenProjectRegistry()
+                .getProjects()) {
                 ArtifactKey key = facade.getArtifactKey();
-                if (key.getArtifactId().equals(artifact.getArtifactId()) && key.getGroupId().equals(artifact.getGroupId())) {
+                if (key.getArtifactId()
+                    .equals(artifact.getArtifactId())
+                    && key.getGroupId()
+                        .equals(artifact.getGroupId())) {
                     versions.add(key.getVersion());
                 }
             }
@@ -139,7 +144,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
             final SubMonitor progress = SubMonitor.convert(monitor);
             MavenProject project = getMavenProject(facade, progress.newChild(1));
 
-            Map<ArtifactKey,String> keysToTypes = new HashMap<>();
+            Map<ArtifactKey, String> keysToTypes = new HashMap<>();
             for (Artifact a : project.getArtifacts()) {
                 keysToTypes.put(new ArtifactKey(a), a.getType());
             }
@@ -156,15 +161,19 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
 
                 needsBuild = needsBuild(delta, keysToTypes, facade, progress.newChild(1));
 
-                IProject[] refs = facade.getProject().getReferencedProjects();
+                IProject[] refs = facade.getProject()
+                    .getReferencedProjects();
                 for (int i = 0; !needsBuild && i < refs.length; i++) {
-                    IMavenProjectFacade pf = MavenPlugin.getMavenProjectRegistry().getProject(refs[i]);
+                    IMavenProjectFacade pf = MavenPlugin.getMavenProjectRegistry()
+                        .getProject(refs[i]);
                     needsBuild = pf != null ? needsBuild(delta, keysToTypes, pf, progress.newChild(1)) : false;
                 }
 
                 if (needsBuild) {
-                    SubMonitor buildMonitor = SubMonitor.convert(monitor, "Rebuilding index for project " + facade.getProject().getName(), 1);
-                    facade.getProject().build(FULL_BUILD, buildMonitor);
+                    SubMonitor buildMonitor = SubMonitor.convert(monitor, "Rebuilding index for project " + facade.getProject()
+                        .getName(), 1);
+                    facade.getProject()
+                        .build(FULL_BUILD, buildMonitor);
                     break;
                 }
             }
@@ -172,14 +181,15 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
             return Status.OK_STATUS;
         }
 
-        private boolean needsBuild(IResourceDelta delta, Map<ArtifactKey,String> keysToTypes, IMavenProjectFacade facade, IProgressMonitor monitor) {
+        private boolean needsBuild(IResourceDelta delta, Map<ArtifactKey, String> keysToTypes, IMavenProjectFacade facade, IProgressMonitor monitor) {
             String type = keysToTypes.get(facade.getArtifactKey());
             if (type != null) {
                 File dep = getMavenOutputFile(type, facade, monitor);
                 if (dep != null) {
                     IPath depPath = Path.fromOSString(dep.getAbsolutePath());
                     IProject p = facade.getProject();
-                    IPath projectRelativePath = p.getFile(depPath.makeRelativeTo(p.getLocation())).getFullPath();
+                    IPath projectRelativePath = p.getFile(depPath.makeRelativeTo(p.getLocation()))
+                        .getFullPath();
                     return delta.findMember(projectRelativePath) != null;
                 }
             }
@@ -191,7 +201,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
      * This must be static as this extension is instantiated multiple times and we are using it to avoid repeatedly
      * re-indexing the same projects
      */
-    private static final Map<IProject,RebuildIndexCheck> pendingJobs = new HashMap<>();
+    private static final Map<IProject, RebuildIndexCheck> pendingJobs = new HashMap<>();
 
     /**
      * This method finds the relevant file in the workspace if it exists
@@ -213,8 +223,10 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
             } catch (CoreException e) {}
 
             if (mp != null) {
-                String outputFileName = mp.getBuild().getFinalName() + "." + (extension == null ? "jar" : extension);
-                File check = new File(mp.getBuild().getDirectory(), outputFileName);
+                String outputFileName = mp.getBuild()
+                    .getFinalName() + "." + (extension == null ? "jar" : extension);
+                File check = new File(mp.getBuild()
+                    .getDirectory(), outputFileName);
                 if (check.exists()) {
                     f = check;
                 }
@@ -228,7 +240,8 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
      * We have to add a listener to trigger builds when dependent projects build
      */
     public IndexConfigurator() {
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, POST_BUILD);
+        ResourcesPlugin.getWorkspace()
+            .addResourceChangeListener(this, POST_BUILD);
     }
 
     @Override
@@ -252,7 +265,8 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
                     final IMaven maven = MavenPlugin.getMaven();
 
                     IMavenExecutionContext context = maven.createExecutionContext();
-                    context.getExecutionRequest().setWorkspaceReader(new IndexerWorkspaceRepository());
+                    context.getExecutionRequest()
+                        .setWorkspaceReader(new IndexerWorkspaceRepository());
 
                     final MavenProject mavenProject = getMavenProject(projectFacade, progress.newChild(1));
 
@@ -261,7 +275,8 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
                         public Void call(IMavenExecutionContext context, IProgressMonitor monitor) throws CoreException {
                             maven.execute(mavenProject, getMojoExecution(), monitor);
 
-                            IPath buildDirPath = Path.fromOSString(mavenProject.getBuild().getDirectory());
+                            IPath buildDirPath = Path.fromOSString(mavenProject.getBuild()
+                                .getDirectory());
                             IProject project = projectFacade.getProject();
                             IPath projectPath = project.getLocation();
                             IPath relativeBuildDirPath = buildDirPath.makeRelativeTo(projectPath);
@@ -293,12 +308,13 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
      * check is done to see if the change might be interesting, and if so a Job is scheduled to do a more comprehensive
      * check (and possibly a build).
      * <p>
-     * As this listener may be called a lot for "uninteresting projects", this seems like the best option, but it could be
-     * changed later with implementation experience.
+     * As this listener may be called a lot for "uninteresting projects", this seems like the best option, but it could
+     * be changed later with implementation experience.
      */
     @Override
     public void resourceChanged(final IResourceChangeEvent event) {
-        projects: for (IMavenProjectFacade facade : MavenPlugin.getMavenProjectRegistry().getProjects()) {
+        projects: for (IMavenProjectFacade facade : MavenPlugin.getMavenProjectRegistry()
+            .getProjects()) {
             IProject currentProject = facade.getProject();
             synchronized (pendingJobs) {
                 RebuildIndexCheck existing = pendingJobs.get(currentProject);
@@ -309,16 +325,19 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
                 }
             }
 
-            for (MojoExecutionKey key : facade.getMojoExecutionMapping().keySet()) {
+            for (MojoExecutionKey key : facade.getMojoExecutionMapping()
+                .keySet()) {
                 if ("biz.aQute.bnd".equals(key.getGroupId()) && "bnd-indexer-maven-plugin".equals(key.getArtifactId())) {
 
                     // This is an indexer project - if any referenced projects, or this project, were part
                     // of the change then we *may* need to trigger a rebuild of the index
                     try {
                         IProject[] projects = currentProject.getReferencedProjects();
-                        boolean doFullCheck = event.getDelta().findMember(facade.getFullPath()) != null;
+                        boolean doFullCheck = event.getDelta()
+                            .findMember(facade.getFullPath()) != null;
                         for (int i = 0; !doFullCheck && i < projects.length; i++) {
-                            doFullCheck = event.getDelta().findMember(projects[i].getFullPath()) != null;
+                            doFullCheck = event.getDelta()
+                                .findMember(projects[i].getFullPath()) != null;
                         }
                         if (doFullCheck) {
                             RebuildIndexCheck job = new RebuildIndexCheck("Checking index project " + currentProject.getName() + " for rebuild", event, facade);
@@ -337,7 +356,9 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
                             // Use a workspace lock, and give 100 millis to allow other
                             // build actions some time to accumulate events. This reduces
                             // the churn in the re-indexing when project changes ripple.
-                            job.setRule(facade.getProject().getWorkspace().getRoot());
+                            job.setRule(facade.getProject()
+                                .getWorkspace()
+                                .getRoot());
                             job.setPriority(Job.BUILD);
                             job.schedule(100);
                             continue projects;

@@ -45,7 +45,8 @@ public class TerminationListener implements IDebugEventSetListener {
                 }
 
                 if (isTerminated) {
-                    DebugPlugin.getDefault().removeDebugEventListener(this);
+                    DebugPlugin.getDefault()
+                        .removeDebugEventListener(this);
                     onTerminate.run();
                 }
             }

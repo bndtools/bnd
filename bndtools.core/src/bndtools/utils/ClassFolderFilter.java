@@ -31,7 +31,9 @@ public class ClassFolderFilter extends ViewerFilter {
             try {
                 IResource[] members = ((IContainer) element).members();
                 for (IResource member : members) {
-                    if (member instanceof IFile && member.getName().toLowerCase(Locale.ENGLISH).endsWith(".class")) {
+                    if (member instanceof IFile && member.getName()
+                        .toLowerCase(Locale.ENGLISH)
+                        .endsWith(".class")) {
                         return true;
                     } else if (member instanceof IContainer) {
                         boolean memberResult = select(viewer, element, member);

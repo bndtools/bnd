@@ -29,7 +29,7 @@ import org.osgi.resource.Requirement;
 
 public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistable {
 
-    private final Map<String,SearchPanel> panelMap = new LinkedHashMap<String,SearchPanel>();
+    private final Map<String, SearchPanel> panelMap = new LinkedHashMap<String, SearchPanel>();
 
     private TabFolder tabFolder;
     private int activeTabIndex = 0;
@@ -63,7 +63,7 @@ public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistabl
 
         final List<Image> images = new LinkedList<Image>();
 
-        for (Entry<String,SearchPanel> panelEntry : panelMap.entrySet()) {
+        for (Entry<String, SearchPanel> panelEntry : panelMap.entrySet()) {
             String title = panelEntry.getKey();
             SearchPanel panel = panelEntry.getValue();
 
@@ -100,7 +100,8 @@ public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistabl
         });
 
         tabFolder.setSelection(activeTabIndex);
-        SearchPanel currentPanel = (SearchPanel) tabFolder.getItem(activeTabIndex).getData();
+        SearchPanel currentPanel = (SearchPanel) tabFolder.getItem(activeTabIndex)
+            .getData();
         currentPanel.setFocus();
         requirement = currentPanel.getRequirement();
 
@@ -146,7 +147,7 @@ public class AdvancedSearchDialog extends TitleAreaDialog implements IPersistabl
     public void saveState(IMemento memento) {
         memento.putInteger("tabIndex", activeTabIndex);
 
-        for (Entry<String,SearchPanel> panelEntry : panelMap.entrySet()) {
+        for (Entry<String, SearchPanel> panelEntry : panelMap.entrySet()) {
             IMemento childMemento = memento.createChild("tab", panelEntry.getKey());
             SearchPanel panel = panelEntry.getValue();
             panel.saveState(childMemento);

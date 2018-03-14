@@ -34,7 +34,8 @@ public class PluginDeclarationLabelProvider extends StyledCellLabelProvider {
 
         String iconPath = element.getAttribute("icon");
         if (iconPath != null) {
-            ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor().getName(), iconPath);
+            ImageDescriptor descriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor()
+                .getName(), iconPath);
             if (descriptor != null) {
                 Image image = descriptor.createImage();
                 images.add(image);

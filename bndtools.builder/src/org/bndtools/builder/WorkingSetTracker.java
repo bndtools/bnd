@@ -75,15 +75,18 @@ public class WorkingSetTracker {
             }
         }
 
-        for (final Entry<String,Attrs> e : memberShips.entrySet()) {
+        for (final Entry<String, Attrs> e : memberShips.entrySet()) {
             String name = e.getKey();
-            boolean isMember = Processor.isTrue(e.getValue().get("member", "true"));
+            boolean isMember = Processor.isTrue(e.getValue()
+                .get("member", "true"));
             if (!isMember)
                 continue;
 
-            if (!JAVAID_P.matcher(name).matches()) {
+            if (!JAVAID_P.matcher(name)
+                .matches()) {
                 SetLocation error = model.warning("Invalid working set name '%s'. Must use pattern of Java identifier", name);
-                error.file(model.getPropertiesFile().getAbsolutePath());
+                error.file(model.getPropertiesFile()
+                    .getAbsolutePath());
                 error.header("-workingset");
                 continue;
             }

@@ -1,6 +1,6 @@
 package bndtools.types;
 
-public class ComparablePair<A extends Comparable<A>, B> extends Pair<A,B> implements Comparable<Pair<A, ? >> {
+public class ComparablePair<A extends Comparable<A>, B> extends Pair<A, B> implements Comparable<Pair<A, ?>> {
 
     private static final long serialVersionUID = 1L;
 
@@ -8,7 +8,7 @@ public class ComparablePair<A extends Comparable<A>, B> extends Pair<A,B> implem
         super(first, second);
     }
 
-    public int compareTo(Pair<A, ? > o) {
+    public int compareTo(Pair<A, ?> o) {
         return getFirst().compareTo(o.getFirst());
     }
 }

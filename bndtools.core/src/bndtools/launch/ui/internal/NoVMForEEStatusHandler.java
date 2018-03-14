@@ -24,9 +24,12 @@ public class NoVMForEEStatusHandler implements IStatusHandler {
         if (status.isOK())
             return true;
 
-        Display display = PlatformUI.getWorkbench().getDisplay();
+        Display display = PlatformUI.getWorkbench()
+            .getDisplay();
         SWTConcurrencyUtil.execForDisplay(display, true, () -> {
-            new NoVMForEEStatusDialog(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), status.getMessage()).open();
+            new NoVMForEEStatusDialog(PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow()
+                .getShell(), status.getMessage()).open();
         });
         return false;
     }
@@ -58,11 +61,13 @@ class NoVMForEEStatusDialog extends TitleAreaDialog {
         link.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent event) {
-                //NoVMForEEStatusDialog.this.close();
+                // NoVMForEEStatusDialog.this.close();
                 if ("#ee".equals(event.text)) {
-                    PreferencesUtil.createPreferenceDialogOn(getParentShell(), "org.eclipse.jdt.debug.ui.jreProfiles", null, null).open();
+                    PreferencesUtil.createPreferenceDialogOn(getParentShell(), "org.eclipse.jdt.debug.ui.jreProfiles", null, null)
+                        .open();
                 } else if ("#jre".equals(event.text)) {
-                    PreferencesUtil.createPreferenceDialogOn(getParentShell(), "org.eclipse.jdt.debug.ui.preferences.VMPreferencePage", null, null).open();
+                    PreferencesUtil.createPreferenceDialogOn(getParentShell(), "org.eclipse.jdt.debug.ui.preferences.VMPreferencePage", null, null)
+                        .open();
                 }
             }
         });

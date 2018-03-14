@@ -37,8 +37,8 @@ public class ResourceCapReqLoader implements CapReqLoader {
     }
 
     @Override
-    public Map<String,List<Capability>> loadCapabilities() throws Exception {
-        Map<String,List<Capability>> result = new HashMap<String,List<Capability>>();
+    public Map<String, List<Capability>> loadCapabilities() throws Exception {
+        Map<String, List<Capability>> result = new HashMap<String, List<Capability>>();
 
         List<Capability> caps = resource.getCapabilities(null);
         for (Capability cap : caps) {
@@ -55,8 +55,8 @@ public class ResourceCapReqLoader implements CapReqLoader {
     }
 
     @Override
-    public Map<String,List<RequirementWrapper>> loadRequirements() throws Exception {
-        Map<String,List<RequirementWrapper>> result = new HashMap<String,List<RequirementWrapper>>();
+    public Map<String, List<RequirementWrapper>> loadRequirements() throws Exception {
+        Map<String, List<RequirementWrapper>> result = new HashMap<String, List<RequirementWrapper>>();
 
         List<Requirement> reqs = resource.getRequirements(null);
         for (Requirement req : reqs) {

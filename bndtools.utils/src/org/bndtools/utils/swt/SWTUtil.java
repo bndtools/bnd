@@ -36,7 +36,10 @@ public class SWTUtil {
                 recurseEnable(en, child);
             }
         } else if (control instanceof Label) {
-            Color color = enable ? control.getDisplay().getSystemColor(SWT.COLOR_BLACK) : JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR);
+            Color color = enable ? control.getDisplay()
+                .getSystemColor(SWT.COLOR_BLACK)
+                : JFaceResources.getColorRegistry()
+                    .get(JFacePreferences.QUALIFIER_COLOR);
             control.setForeground(color);
         }
     }

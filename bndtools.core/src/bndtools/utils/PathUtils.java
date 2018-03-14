@@ -22,7 +22,8 @@ public class PathUtils {
      */
     public static IPath makeRelativeTo(IPath path, IPath base) {
         // can't make relative if devices are not equal
-        if (path.getDevice() != base.getDevice() && (path.getDevice() == null || !path.getDevice().equalsIgnoreCase(base.getDevice())))
+        if (path.getDevice() != base.getDevice() && (path.getDevice() == null || !path.getDevice()
+            .equalsIgnoreCase(base.getDevice())))
             return path;
         int commonLength = path.matchingFirstSegments(base);
         final int differenceLength = base.segmentCount() - commonLength;

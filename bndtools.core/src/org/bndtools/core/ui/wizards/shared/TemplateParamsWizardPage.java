@@ -37,7 +37,7 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
 
     private boolean skip = false;
 
-    private final Map<String,String> values = new HashMap<>();
+    private final Map<String, String> values = new HashMap<>();
 
     private ObjectClassDefinition ocd;
 
@@ -102,7 +102,8 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
 
                         String labelText = ad.getID();
                         if (requiredIds.contains(ad.getID())) {
-                            label.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
+                            label.setFont(JFaceResources.getFontRegistry()
+                                .getBold(JFaceResources.DEFAULT_FONT));
                         }
                         label.setText(labelText);
 
@@ -142,7 +143,8 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
             if (fixedAttribs.contains(ad.getID()))
                 continue;
             String value = values.get(ad.getID());
-            if (value == null || value.trim().isEmpty()) {
+            if (value == null || value.trim()
+                .isEmpty()) {
                 complete = false;
                 break;
             }
@@ -156,41 +158,45 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
 
     private Control createFieldControl(Composite parent, final AttributeDefinition ad) {
         switch (ad.getType()) {
-        case AttributeDefinition.STRING :
-        case AttributeDefinition.INTEGER :
-            final Text text = new Text(parent, SWT.BORDER);
-            if (ad.getName() != null)
-                text.setMessage(ad.getName());
+            case AttributeDefinition.STRING :
+            case AttributeDefinition.INTEGER :
+                final Text text = new Text(parent, SWT.BORDER);
+                if (ad.getName() != null)
+                    text.setMessage(ad.getName());
 
-            if (ad.getDescription() != null) {
-                ControlDecoration decor = new ControlDecoration(text, SWT.LEFT, parent);
-                decor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
-                decor.setShowHover(true);
-                decor.setDescriptionText(ad.getDescription());
-                decor.setMarginWidth(5);
-            }
-
-            String[] defaultValue = ad.getDefaultValue();
-            if (defaultValue != null && defaultValue.length == 1) {
-                text.setText(defaultValue[0]);
-                values.put(ad.getID(), defaultValue[0]);
-            }
-            text.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent ev) {
-                    values.put(ad.getID(), text.getText());
-                    updateValidation();
+                if (ad.getDescription() != null) {
+                    ControlDecoration decor = new ControlDecoration(text, SWT.LEFT, parent);
+                    decor.setImage(FieldDecorationRegistry.getDefault()
+                        .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+                        .getImage());
+                    decor.setShowHover(true);
+                    decor.setDescriptionText(ad.getDescription());
+                    decor.setMarginWidth(5);
                 }
-            });
 
-            return text;
+                String[] defaultValue = ad.getDefaultValue();
+                if (defaultValue != null && defaultValue.length == 1) {
+                    text.setText(defaultValue[0]);
+                    values.put(ad.getID(), defaultValue[0]);
+                }
+                text.addModifyListener(new ModifyListener() {
+                    @Override
+                    public void modifyText(ModifyEvent ev) {
+                        values.put(ad.getID(), text.getText());
+                        updateValidation();
+                    }
+                });
 
-        default :
-            Label label = new Label(parent, SWT.NONE);
-            label.setText("<Unknown Attribute Type>");
-            label.setFont(JFaceResources.getFontRegistry().getItalic(JFaceResources.DEFAULT_FONT));
-            label.setForeground(JFaceResources.getColorRegistry().get(JFacePreferences.ERROR_COLOR));
-            return label;
+                return text;
+
+            default :
+                Label label = new Label(parent, SWT.NONE);
+                label.setText("<Unknown Attribute Type>");
+                label.setFont(JFaceResources.getFontRegistry()
+                    .getItalic(JFaceResources.DEFAULT_FONT));
+                label.setForeground(JFaceResources.getColorRegistry()
+                    .get(JFacePreferences.ERROR_COLOR));
+                return label;
         }
     }
 
@@ -199,7 +205,7 @@ public class TemplateParamsWizardPage extends WizardPage implements ISkippableWi
         return skip;
     }
 
-    public Map<String,String> getValues() {
+    public Map<String, String> getValues() {
         return values;
     }
 

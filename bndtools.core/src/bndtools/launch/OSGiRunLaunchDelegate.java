@@ -84,7 +84,8 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                         public void run() {
                             dialog.open();
                             textArea.append(notification + "\n\n");
-                            dialog.getShell().redraw();
+                            dialog.getShell()
+                                .redraw();
                         }
                     });
                 }
@@ -96,13 +97,15 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
     @Override
     protected IStatus getLauncherStatus() {
         List<String> launcherErrors = bndLauncher.getErrors();
-        List<String> projectErrors = bndLauncher.getProject().getErrors();
+        List<String> projectErrors = bndLauncher.getProject()
+            .getErrors();
         List<String> errors = new ArrayList<String>(projectErrors.size() + launcherErrors.size());
         errors.addAll(launcherErrors);
         errors.addAll(projectErrors);
 
         List<String> launcherWarnings = bndLauncher.getWarnings();
-        List<String> projectWarnings = bndLauncher.getProject().getWarnings();
+        List<String> projectWarnings = bndLauncher.getProject()
+            .getWarnings();
         List<String> warnings = new ArrayList<String>(launcherWarnings.size() + projectWarnings.size());
         warnings.addAll(launcherWarnings);
         warnings.addAll(projectWarnings);
@@ -139,7 +142,8 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project launcher.", e));
         }
 
-        display = Workbench.getInstance().getDisplay();
+        display = Workbench.getInstance()
+            .getDisplay();
         display.syncExec(new Runnable() {
             @Override
             public void run() {
@@ -175,7 +179,10 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                             }
                         });
 
-                        GridDataFactory.fillDefaults().grab(true, false).align(SWT.END, SWT.FILL).applyTo(link);
+                        GridDataFactory.fillDefaults()
+                            .grab(true, false)
+                            .align(SWT.END, SWT.FILL)
+                            .applyTo(link);
                         return link;
                     }
 
@@ -254,9 +261,11 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
                     // Was the properties file (bnd.bnd or *.bndrun) included in
                     // the delta?
-                    IResourceDelta propsDelta = event.getDelta().findMember(bndbndPath);
+                    IResourceDelta propsDelta = event.getDelta()
+                        .findMember(bndbndPath);
                     if (propsDelta == null && targetResource.getType() == IResource.FILE)
-                        propsDelta = event.getDelta().findMember(targetResource.getFullPath());
+                        propsDelta = event.getDelta()
+                            .findMember(targetResource.getFullPath());
                     if (propsDelta != null) {
                         if (propsDelta.getKind() == IResourceDelta.CHANGED) {
                             update.set(true);
@@ -270,26 +279,27 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                         for (String bundlePath : bndLauncher.getRunBundles()) {
                             runBundleSet.add(new org.eclipse.core.runtime.Path(bundlePath).toPortableString());
                         }
-                        event.getDelta().accept(new IResourceDeltaVisitor() {
-                            @Override
-                            public boolean visit(IResourceDelta delta) throws CoreException {
-                                // Short circuit if we have already found a
-                                // match
-                                if (update.get())
-                                    return false;
+                        event.getDelta()
+                            .accept(new IResourceDeltaVisitor() {
+                                @Override
+                                public boolean visit(IResourceDelta delta) throws CoreException {
+                                    // Short circuit if we have already found a
+                                    // match
+                                    if (update.get())
+                                        return false;
 
-                                IResource resource = delta.getResource();
-                                if (resource.getType() == IResource.FILE) {
-                                    IPath location = resource.getLocation();
-                                    boolean isRunBundle = location != null ? runBundleSet.contains(location.toPortableString()) : false;
-                                    update.compareAndSet(false, isRunBundle);
-                                    return false;
+                                    IResource resource = delta.getResource();
+                                    if (resource.getType() == IResource.FILE) {
+                                        IPath location = resource.getLocation();
+                                        boolean isRunBundle = location != null ? runBundleSet.contains(location.toPortableString()) : false;
+                                        update.compareAndSet(false, isRunBundle);
+                                        return false;
+                                    }
+
+                                    // Recurse into containers
+                                    return true;
                                 }
-
-                                // Recurse into containers
-                                return true;
-                            }
-                        });
+                            });
                     }
 
                     if (update.get()) {
@@ -302,24 +312,28 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
                 }
             }
         };
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(resourceListener);
+        ResourcesPlugin.getWorkspace()
+            .addResourceChangeListener(resourceListener);
 
         // Register a listener for termination of the launched process
         Runnable onTerminate = new Runnable() {
             @Override
             public void run() {
-                ResourcesPlugin.getWorkspace().removeResourceChangeListener(resourceListener);
+                ResourcesPlugin.getWorkspace()
+                    .removeResourceChangeListener(resourceListener);
                 display.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         if (dialog != null && dialog.getShell() != null) {
-                            dialog.getShell().dispose();
+                            dialog.getShell()
+                                .dispose();
                         }
                     }
                 });
             }
         };
-        DebugPlugin.getDefault().addDebugEventListener(new TerminationListener(launch, onTerminate));
+        DebugPlugin.getDefault()
+            .addDebugEventListener(new TerminationListener(launch, onTerminate));
     }
 
     @Override

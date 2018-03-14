@@ -50,7 +50,8 @@ public class ResolveOperation implements IRunnableWithProgress {
         MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, Messages.ResolveOperation_errorOverview, null);
 
         // Start a coordination
-        BundleContext bc = Plugin.getDefault().getBundleContext();
+        BundleContext bc = Plugin.getDefault()
+            .getBundleContext();
         ServiceReference<Coordinator> coordSvcRef = bc.getServiceReference(Coordinator.class);
         Coordinator coordinator = coordSvcRef != null ? (Coordinator) bc.getService(coordSvcRef) : null;
         Coordination coordination = coordinator != null ? coordinator.begin(ResolveOperation.class.getName(), 0) : null;
@@ -62,9 +63,10 @@ public class ResolveOperation implements IRunnableWithProgress {
                 BndResolver bndResolver = new BndResolver(logger);
 
                 ReporterLogService log = new ReporterLogService(model.getWorkspace());
-                Map<Resource,List<Wire>> wirings = resolve.resolveRequired(model, model.getWorkspace(), bndResolver, callbacks, log);
+                Map<Resource, List<Wire>> wirings = resolve.resolveRequired(model, model.getWorkspace(), bndResolver, callbacks, log);
 
-                Map<Resource,List<Wire>> optionalResources = new HashMap<Resource,List<Wire>>(resolve.getOptionalResources().size());
+                Map<Resource, List<Wire>> optionalResources = new HashMap<Resource, List<Wire>>(resolve.getOptionalResources()
+                    .size());
 
                 for (Resource optional : resolve.getOptionalResources()) {
                     optionalResources.put(optional, new ArrayList<Wire>(resolve.getOptionalReasons(optional)));

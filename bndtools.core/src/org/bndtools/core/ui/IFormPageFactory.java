@@ -7,7 +7,10 @@ import aQute.bnd.build.model.BndEditModel;
 public interface IFormPageFactory {
 
     public static enum Mode {
-        project, bndrun, bundle, workspace
+        project,
+        bndrun,
+        bundle,
+        workspace
     }
 
     IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException;

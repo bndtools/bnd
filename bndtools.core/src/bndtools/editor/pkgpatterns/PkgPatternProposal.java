@@ -35,7 +35,8 @@ public class PkgPatternProposal implements IContentProposal {
     }
 
     public int getCursorPosition() {
-        int length = pkg.getElementName().length();
+        int length = pkg.getElementName()
+            .length();
         if (wildcard)
             length++;
         return length + replaceFromPos;

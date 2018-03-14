@@ -144,7 +144,8 @@ public class ExecutableJarWizardPage extends WizardPage {
     }
 
     private void loadLastExport() {
-        IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
+        IPreferenceStore prefs = Plugin.getDefault()
+            .getPreferenceStore();
         folder = prefs.getBoolean(PREF_LAST_EXPORT_IS_FOLDER);
 
         jarPath = prefs.getString(PREF_LAST_EXPORT_JAR_PATH);
@@ -157,7 +158,8 @@ public class ExecutableJarWizardPage extends WizardPage {
     }
 
     void saveLastExport() {
-        IPreferenceStore prefs = Plugin.getDefault().getPreferenceStore();
+        IPreferenceStore prefs = Plugin.getDefault()
+            .getPreferenceStore();
         prefs.setValue(PREF_LAST_EXPORT_IS_FOLDER, folder);
         prefs.setValue(PREF_LAST_EXPORT_JAR_PATH, jarPath);
         prefs.setValue(PREF_LAST_EXPORT_FOLDER_PATH, folderPath);

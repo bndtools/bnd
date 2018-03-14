@@ -31,16 +31,18 @@ import bndtools.preferences.BndPreferences;
 
 public class GeneratedResourcesPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
 
-    private final HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
-    private final VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
+    private final HeadlessBuildManager headlessBuildManager = Plugin.getDefault()
+        .getHeadlessBuildManager();
+    private final VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault()
+        .getVersionControlIgnoresManager();
 
     private String enableSubs;
     private boolean noAskPackageInfo = false;
     private boolean useAliasRequirements = true;
     private boolean headlessBuildCreate = true;
-    private final Map<String,Boolean> headlessBuildPlugins = new HashMap<String,Boolean>();
+    private final Map<String, Boolean> headlessBuildPlugins = new HashMap<String, Boolean>();
     private boolean versionControlIgnoresCreate = true;
-    private final Map<String,Boolean> versionControlIgnoresPlugins = new HashMap<String,Boolean>();
+    private final Map<String, Boolean> versionControlIgnoresPlugins = new HashMap<String, Boolean>();
 
     @Override
     public void init(IWorkbench workbench) {
@@ -195,8 +197,10 @@ public class GeneratedResourcesPreferencePage extends PreferencePage implements 
         ControlDecoration decorAlias = new ControlDecoration(btnAliasRequirements, SWT.RIGHT | SWT.CENTER);
         decorAlias.setShowHover(true);
         decorAlias.setDescriptionText(
-                "When adding a requirement to the editor, use a simplified alias such as \nbnd.identity; bsn=example\n.\nDisable to use the canonical requirement syntax e.g. \"osgi.identity; filter:='(osgi.identity=example)'\"");
-        decorAlias.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+            "When adding a requirement to the editor, use a simplified alias such as \nbnd.identity; bsn=example\n.\nDisable to use the canonical requirement syntax e.g. \"osgi.identity; filter:='(osgi.identity=example)'\"");
+        decorAlias.setImage(FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+            .getImage());
 
         // Load Initial Data
         btnNoAskPackageInfo.setSelection(noAskPackageInfo);

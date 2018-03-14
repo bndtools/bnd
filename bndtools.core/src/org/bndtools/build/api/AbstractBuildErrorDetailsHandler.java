@@ -42,10 +42,10 @@ import aQute.service.reporter.Report.Location;
 
 public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDetailsHandler {
 
-    private static final Map<Code,String> PRIMITIVES_TO_SIGNATURES;
+    private static final Map<Code, String> PRIMITIVES_TO_SIGNATURES;
 
     static {
-        Map<Code,String> tmp = new HashMap<PrimitiveType.Code,String>();
+        Map<Code, String> tmp = new HashMap<PrimitiveType.Code, String>();
 
         tmp.put(PrimitiveType.VOID, "V");
         tmp.put(PrimitiveType.BOOLEAN, "Z");
@@ -102,15 +102,13 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
      * Create a marker on a Java Type
      *
      * @param javaProject
-     * @param className
-     *            - the fully qualified class name (e.g java.lang.String)
+     * @param className - the fully qualified class name (e.g java.lang.String)
      * @param markerAttributes
-     * @param hasResolutions
-     *            - true if the marker will have resolutions
+     * @param hasResolutions - true if the marker will have resolutions
      * @return Marker Data that can be used to create an {@link IMarker}, or null if no location can be found
      * @throws JavaModelException
      */
-    public static final MarkerData createTypeMarkerData(IJavaProject javaProject, final String className, final Map<String,Object> markerAttributes, boolean hasResolutions) throws JavaModelException {
+    public static final MarkerData createTypeMarkerData(IJavaProject javaProject, final String className, final Map<String, Object> markerAttributes, boolean hasResolutions) throws JavaModelException {
 
         final CompilationUnit ast = createAST(javaProject, className);
 
@@ -122,7 +120,8 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
             public boolean visit(TypeDeclaration typeDecl) {
                 ITypeBinding typeBinding = typeDecl.resolveBinding();
                 if (typeBinding != null) {
-                    if (typeBinding.getBinaryName().equals(className)) {
+                    if (typeBinding.getBinaryName()
+                        .equals(className)) {
                         SimpleName nameNode = typeDecl.getName();
                         markerAttributes.put(IMarker.CHAR_START, nameNode.getStartPosition());
                         markerAttributes.put(IMarker.CHAR_END, nameNode.getStartPosition() + nameNode.getLength());
@@ -137,28 +136,25 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
         if (!markerAttributes.containsKey(IMarker.CHAR_START))
             return null;
 
-        return new MarkerData(ast.getJavaElement().getResource(), markerAttributes, hasResolutions);
+        return new MarkerData(ast.getJavaElement()
+            .getResource(), markerAttributes, hasResolutions);
     }
 
     /**
      * Create a marker on a Java Method
      *
      * @param javaProject
-     * @param className
-     *            - the fully qualified class name (e.g java.lang.String)
+     * @param className - the fully qualified class name (e.g java.lang.String)
      * @param methodName
-     * @param methodSignature
-     *            - signatures are in "internal form" e.g. (Ljava.lang.Integer;[Ljava/lang/String;Z)V
-     * @param markerAttributes
-     *            - attributes that should be included in the marker, typically a message. The start and end points for
-     *            the marker are added by this method.
-     * @param hasResolutions
-     *            - true if the marker will have resolutions
+     * @param methodSignature - signatures are in "internal form" e.g. (Ljava.lang.Integer;[Ljava/lang/String;Z)V
+     * @param markerAttributes - attributes that should be included in the marker, typically a message. The start and
+     *            end points for the marker are added by this method.
+     * @param hasResolutions - true if the marker will have resolutions
      * @return Marker Data that can be used to create an {@link IMarker}, or null if no location can be found
      * @throws JavaModelException
      */
-    public static final MarkerData createMethodMarkerData(IJavaProject javaProject, final String className, final String methodName, final String methodSignature, final Map<String,Object> markerAttributes, boolean hasResolutions)
-            throws JavaModelException {
+    public static final MarkerData createMethodMarkerData(IJavaProject javaProject, final String className, final String methodName, final String methodSignature, final Map<String, Object> markerAttributes, boolean hasResolutions)
+        throws JavaModelException {
 
         final CompilationUnit ast = createAST(javaProject, className);
 
@@ -182,7 +178,9 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                     if (!methodDecl.isConstructor()) {
                         return false;
                     }
-                } else if (!methodDecl.getName().getIdentifier().equals(methodName)) {
+                } else if (!methodDecl.getName()
+                    .getIdentifier()
+                    .equals(methodName)) {
                     return false;
                 }
 
@@ -193,7 +191,8 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                 StringBuilder signatureBuilder = new StringBuilder("(");
 
                 for (@SuppressWarnings("unchecked")
-                Iterator<SingleVariableDeclaration> it = methodDecl.parameters().iterator(); it.hasNext();) {
+                Iterator<SingleVariableDeclaration> it = methodDecl.parameters()
+                    .iterator(); it.hasNext();) {
                     SingleVariableDeclaration decl = it.next();
                     appendType(ast, signatureBuilder, decl.getType(), decl.getExtraDimensions());
                 }
@@ -210,7 +209,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                 }
                 Type rovingType = typeToAdd;
                 if (rovingType == null) {
-                    //A special return type for constructors, nice one Eclipse...
+                    // A special return type for constructors, nice one Eclipse...
                     signatureBuilder.append("V");
                 } else {
                     if (rovingType.isArrayType()) {
@@ -219,7 +218,7 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                         for (int i = 0; i < depth; i++) {
                             signatureBuilder.append('[');
                         }
-                        //We still need to add the array component type, which might be primitive or a reference
+                        // We still need to add the array component type, which might be primitive or a reference
                         rovingType = type.getElementType();
                     }
                     // Type erasure means that we should ignore parameters
@@ -233,17 +232,28 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                     } else if (rovingType.isSimpleType()) {
                         SimpleType type = (SimpleType) rovingType;
                         String name;
-                        if (type.getName().isQualifiedName()) {
-                            name = type.getName().getFullyQualifiedName();
+                        if (type.getName()
+                            .isQualifiedName()) {
+                            name = type.getName()
+                                .getFullyQualifiedName();
                         } else {
                             name = getFullyQualifiedNameForSimpleName(ast, type.getName());
                         }
                         name = name.replace('.', '/');
-                        signatureBuilder.append("L").append(name).append(";");
+                        signatureBuilder.append("L")
+                            .append(name)
+                            .append(";");
                     } else if (rovingType.isQualifiedType()) {
                         QualifiedType type = (QualifiedType) rovingType;
-                        String name = type.getQualifier().toString().replace('.', '/') + '/' + type.getName().getFullyQualifiedName().replace('.', '/');
-                        signatureBuilder.append("L").append(name).append(";");
+                        String name = type.getQualifier()
+                            .toString()
+                            .replace('.', '/') + '/'
+                            + type.getName()
+                                .getFullyQualifiedName()
+                                .replace('.', '/');
+                        signatureBuilder.append("L")
+                            .append(name)
+                            .append(";");
                     } else {
                         throw new IllegalArgumentException("We hit an unknown type " + rovingType);
                     }
@@ -259,14 +269,18 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                     if (id.isStatic())
                         continue;
                     if (id.isOnDemand()) {
-                        String packageName = id.getName().getFullyQualifiedName();
+                        String packageName = id.getName()
+                            .getFullyQualifiedName();
                         try {
-                            if (ast.getJavaElement().getJavaProject().findType(packageName + "." + name) != null) {
+                            if (ast.getJavaElement()
+                                .getJavaProject()
+                                .findType(packageName + "." + name) != null) {
                                 name = packageName + '.' + name;
                             }
                         } catch (JavaModelException e) {}
                     } else {
-                        String importName = id.getName().getFullyQualifiedName();
+                        String importName = id.getName()
+                            .getFullyQualifiedName();
                         if (importName.endsWith("." + name)) {
                             name = importName;
                             break;
@@ -276,7 +290,9 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
 
                 if (name.indexOf('.') < 0) {
                     try {
-                        if (ast.getJavaElement().getJavaProject().findType(name) == null) {
+                        if (ast.getJavaElement()
+                            .getJavaProject()
+                            .findType(name) == null) {
                             name = "java.lang." + name;
                         }
                     } catch (JavaModelException e) {}
@@ -288,27 +304,24 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
         if (!markerAttributes.containsKey(IMarker.CHAR_START))
             return null;
 
-        return new MarkerData(ast.getJavaElement().getResource(), markerAttributes, hasResolutions);
+        return new MarkerData(ast.getJavaElement()
+            .getResource(), markerAttributes, hasResolutions);
     }
 
     /**
      * Create a marker on a Java Method
      *
      * @param javaProject
-     * @param className
-     *            - the fully qualified class name (e.g java.lang.String)
+     * @param className - the fully qualified class name (e.g java.lang.String)
      * @param methodName
-     * @param methodSignature
-     *            - signatures are in "internal form" e.g. (Ljava.lang.Integer;[Ljava/lang/String;Z)V
-     * @param markerAttributes
-     *            - attributes that should be included in the marker, typically a message. The start and end points for
-     *            the marker are added by this method.
-     * @param hasResolutions
-     *            - true if the marker will have resolutions
+     * @param methodSignature - signatures are in "internal form" e.g. (Ljava.lang.Integer;[Ljava/lang/String;Z)V
+     * @param markerAttributes - attributes that should be included in the marker, typically a message. The start and
+     *            end points for the marker are added by this method.
+     * @param hasResolutions - true if the marker will have resolutions
      * @return Marker Data that can be used to create an {@link IMarker}, or null if no location can be found
      * @throws JavaModelException
      */
-    public static final MarkerData createFieldMarkerData(IJavaProject javaProject, final String className, final String fieldName, final Map<String,Object> markerAttributes, boolean hasResolutions) throws JavaModelException {
+    public static final MarkerData createFieldMarkerData(IJavaProject javaProject, final String className, final String fieldName, final Map<String, Object> markerAttributes, boolean hasResolutions) throws JavaModelException {
 
         final CompilationUnit ast = createAST(javaProject, className);
 
@@ -331,7 +344,8 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
                 @SuppressWarnings("unchecked")
                 List<VariableDeclarationFragment> list = (List<VariableDeclarationFragment>) fieldDecl.getStructuralProperty(FieldDeclaration.FRAGMENTS_PROPERTY);
                 for (VariableDeclarationFragment vdf : list) {
-                    if (fieldName.equals(vdf.getName().toString())) {
+                    if (fieldName.equals(vdf.getName()
+                        .toString())) {
                         return true;
                     }
                 }
@@ -342,7 +356,8 @@ public abstract class AbstractBuildErrorDetailsHandler implements BuildErrorDeta
         if (!markerAttributes.containsKey(IMarker.CHAR_START))
             return null;
 
-        return new MarkerData(ast.getJavaElement().getResource(), markerAttributes, hasResolutions);
+        return new MarkerData(ast.getJavaElement()
+            .getResource(), markerAttributes, hasResolutions);
     }
 
     @Override

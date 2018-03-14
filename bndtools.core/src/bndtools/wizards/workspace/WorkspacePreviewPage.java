@@ -60,7 +60,7 @@ public class WorkspacePreviewPage extends WizardPage {
     private final ModificationLock modifyLock = new ModificationLock();
 
     private final Set<String> existingFiles = new HashSet<>();
-    private final Map<String,String> resourceErrors = new HashMap<>();
+    private final Map<String, String> resourceErrors = new HashMap<>();
     private final Set<String> checkedPaths = new HashSet<>();
 
     private static final String MSG_NOTHING_SELECTED = "Select an entry to view details";
@@ -90,43 +90,50 @@ public class WorkspacePreviewPage extends WizardPage {
 
                         templateOutputs = template.generateOutputs(Collections.<String, List<Object>> emptyMap(), monitor);
 
-                        IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
+                        IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace()
+                            .getRoot();
 
-                        for (Entry<String,Resource> entry : templateOutputs.entries()) {
+                        for (Entry<String, Resource> entry : templateOutputs.entries()) {
                             // Check for existing files
                             File file = new File(targetDir, entry.getKey());
-                            switch (entry.getValue().getType()) {
-                            case Folder :
-                                if (file.exists() && !file.isDirectory())
-                                    resourceErrors.put(entry.getKey(), String.format("Path already exists and is not a directory: %s", entry.getKey()));
-                                break;
-                            case File :
-                                if (file.exists() && !isEqualContent(file, entry.getValue().getContent())) {
+                            switch (entry.getValue()
+                                .getType()) {
+                                case Folder :
+                                    if (file.exists() && !file.isDirectory())
+                                        resourceErrors.put(entry.getKey(), String.format("Path already exists and is not a directory: %s", entry.getKey()));
+                                    break;
+                                case File :
+                                    if (file.exists() && !isEqualContent(file, entry.getValue()
+                                        .getContent())) {
 
-                                    existingFiles.add(entry.getKey());
-                                    if (!file.isFile())
-                                        resourceErrors.put(entry.getKey(), String.format("Path already exists and is not a plain file: %s", entry.getKey()));
-                                }
-                                break;
-                            default :
-                                // ignore
+                                        existingFiles.add(entry.getKey());
+                                        if (!file.isFile())
+                                            resourceErrors.put(entry.getKey(), String.format("Path already exists and is not a plain file: %s", entry.getKey()));
+                                    }
+                                    break;
+                                default :
+                                    // ignore
                             }
 
-                            // If the base folder has the same name as a project, but the project has a different location in the filesystem, then we
+                            // If the base folder has the same name as a project, but the project has a different
+                            // location in the filesystem, then we
                             // can't import it.
                             String projectFolderName;
-                            int slashIndex = entry.getKey().indexOf('/');
+                            int slashIndex = entry.getKey()
+                                .indexOf('/');
                             if (slashIndex < 0)
                                 projectFolderName = entry.getKey();
                             else
-                                projectFolderName = entry.getKey().substring(0, slashIndex);
+                                projectFolderName = entry.getKey()
+                                    .substring(0, slashIndex);
                             File projectFolder = new File(targetDir, projectFolderName);
                             IProject project = workspaceRoot.getProject(projectFolderName);
                             if (project.exists()) {
-                                File existingProjectLoc = project.getLocation().toFile();
+                                File existingProjectLoc = project.getLocation()
+                                    .toFile();
                                 if (!existingProjectLoc.equals(projectFolder))
                                     resourceErrors.put(entry.getKey(), String.format("Cannot import project directory %s as it clashes with an existing project '%s' at location %s", projectFolder.getAbsolutePath(), project.getName(),
-                                            existingProjectLoc.getAbsolutePath()));
+                                        existingProjectLoc.getAbsolutePath()));
                             }
 
                         }
@@ -160,8 +167,9 @@ public class WorkspacePreviewPage extends WizardPage {
 
                 List<String> viewerInput;
                 if (templateOutputs != null) {
-                    viewerInput = new ArrayList<>(templateOutputs.entries().size());
-                    for (Entry<String,Resource> entry : templateOutputs.entries())
+                    viewerInput = new ArrayList<>(templateOutputs.entries()
+                        .size());
+                    for (Entry<String, Resource> entry : templateOutputs.entries())
                         viewerInput.add(entry.getKey());
                     seen = true;
                 } else {
@@ -191,9 +199,12 @@ public class WorkspacePreviewPage extends WizardPage {
         setTitle("Preview Changes");
         setImageDescriptor(Plugin.imageDescriptorFromPlugin("icons/bndtools-wizban.png")); //$NON-NLS-1$
 
-        imgAdded = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/incoming.gif").createImage(parent.getDisplay());
-        imgOverwrite = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/conflict.gif").createImage(parent.getDisplay());
-        imgError = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_obj.gif").createImage(parent.getDisplay());
+        imgAdded = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/incoming.gif")
+            .createImage(parent.getDisplay());
+        imgOverwrite = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/conflict.gif")
+            .createImage(parent.getDisplay());
+        imgError = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/error_obj.gif")
+            .createImage(parent.getDisplay());
 
         int columns = 4;
 
@@ -251,7 +262,7 @@ public class WorkspacePreviewPage extends WizardPage {
                     @Override
                     public void run() {
                         checkedPaths.clear();
-                        for (Entry<String,Resource> entry : templateOutputs.entries()) {
+                        for (Entry<String, Resource> entry : templateOutputs.entries()) {
                             String path = entry.getKey();
                             if (!existingFiles.contains(path))
                                 checkedPaths.add(path);
@@ -311,7 +322,7 @@ public class WorkspacePreviewPage extends WizardPage {
                             modifyLock.modifyOperation(new Runnable() {
                                 @Override
                                 public void run() {
-                                    for (Entry<String,Resource> entry : templateOutputs.entries()) {
+                                    for (Entry<String, Resource> entry : templateOutputs.entries()) {
                                         String path = entry.getKey();
                                         if (path.endsWith("/") && updatedPath.startsWith(path)) {
                                             checkedPaths.add(path);
@@ -327,7 +338,7 @@ public class WorkspacePreviewPage extends WizardPage {
                                 modifyLock.modifyOperation(new Runnable() {
                                     @Override
                                     public void run() {
-                                        for (Entry<String,Resource> entry : templateOutputs.entries()) {
+                                        for (Entry<String, Resource> entry : templateOutputs.entries()) {
                                             String path = entry.getKey();
                                             if (path.startsWith(updatedPath)) {
                                                 checkedPaths.remove(path);
@@ -365,7 +376,8 @@ public class WorkspacePreviewPage extends WizardPage {
             try {
                 getContainer().run(true, true, calculatePreviewTask);
             } catch (InvocationTargetException e) {
-                errorMessage = e.getTargetException().getMessage();
+                errorMessage = e.getTargetException()
+                    .getMessage();
             } catch (InterruptedException e) {
                 errorMessage = e.getMessage();
             }

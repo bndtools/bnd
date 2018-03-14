@@ -13,7 +13,8 @@ public class PseudoJarTest extends TestCase {
         PseudoJar pj = new PseudoJar(new File("testdata/hello.jar"));
         try {
             Manifest mf = pj.readManifest();
-            assertEquals("jellyfish", mf.getMainAttributes().getValue("Arbitrary-Header"));
+            assertEquals("jellyfish", mf.getMainAttributes()
+                .getValue("Arbitrary-Header"));
 
             assertEquals("OSGI-INF/", pj.nextEntry());
 
@@ -31,7 +32,8 @@ public class PseudoJarTest extends TestCase {
         PseudoJar pj = new PseudoJar(new File("testdata/hello_jar_dir"));
         try {
             Manifest mf = pj.readManifest();
-            assertEquals("jellyfish", mf.getMainAttributes().getValue("Arbitrary-Header"));
+            assertEquals("jellyfish", mf.getMainAttributes()
+                .getValue("Arbitrary-Header"));
 
             assertEquals("META-INF/", pj.nextEntry());
             assertEquals("META-INF/MANIFEST.MF", pj.nextEntry());

@@ -141,7 +141,9 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
                     button.setGrayed(false);
                     button.setSelection(false);
                     msgs.removeMessage(WARNING_EDITED_MANUALLY, control);
-                } else if (subBundleList.size() == 1 && subBundleList.iterator().next().equalsIgnoreCase(ALL_BND)) {
+                } else if (subBundleList.size() == 1 && subBundleList.iterator()
+                    .next()
+                    .equalsIgnoreCase(ALL_BND)) {
                     button.setGrayed(false);
                     button.setSelection(true);
                     msgs.removeMessage(WARNING_EDITED_MANUALLY, control);

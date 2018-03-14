@@ -39,7 +39,7 @@ public class RunDescriptorTargetLocationWizard extends Wizard implements ITarget
     @Override
     public ITargetLocation[] getLocations() {
         return new ITargetLocation[] {
-                targetLocation
+            targetLocation
         };
     }
 }

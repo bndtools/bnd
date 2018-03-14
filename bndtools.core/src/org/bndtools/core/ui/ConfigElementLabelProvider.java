@@ -19,12 +19,13 @@ public class ConfigElementLabelProvider extends StyledCellLabelProvider {
     private final Device device;
     private final Image defaultImg;
 
-    private final Map<ImageDescriptor,Image> imgCache = new HashMap<ImageDescriptor,Image>();
+    private final Map<ImageDescriptor, Image> imgCache = new HashMap<ImageDescriptor, Image>();
 
     public ConfigElementLabelProvider(Device device, String defaultIconPath) {
         this.device = device;
         if (defaultIconPath != null)
-            defaultImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, defaultIconPath).createImage(device);
+            defaultImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, defaultIconPath)
+                .createImage(device);
         else
             defaultImg = null;
     }
@@ -45,7 +46,8 @@ public class ConfigElementLabelProvider extends StyledCellLabelProvider {
 
             String iconPath = element.getAttribute("icon");
             if (iconPath != null)
-                iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor().getName(), iconPath);
+                iconDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(element.getContributor()
+                    .getName(), iconPath);
             else
                 iconDescriptor = null;
         } else {

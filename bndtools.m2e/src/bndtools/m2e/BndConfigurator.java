@@ -62,7 +62,8 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
         public MavenProjectInfo(MavenProject project) throws Exception {
             this.project = project;
-            File file = project.getArtifact().getFile();
+            File file = project.getArtifact()
+                .getFile();
             if (file == null) {
                 throw new IllegalStateException("The output file for project " + project.getName() + " does not exist");
             }
@@ -117,7 +118,8 @@ public class BndConfigurator extends AbstractProjectConfigurator {
                     return build;
                 }
 
-                // now we make sure jar is built in separate job, doing this during maven builder will throw lifecycle errors
+                // now we make sure jar is built in separate job, doing this during maven builder will throw lifecycle
+                // errors
                 final IProject project = projectFacade.getProject();
 
                 Job job = new WorkspaceJob("Executing " + project.getName() + " jar:jar goal") {
@@ -128,19 +130,25 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
                         // Find the maven output directory (usually "target")
                         MavenProject mvnProject = getMavenProject(projectFacade, progress.newChild(1));
-                        IPath buildDirPath = Path.fromOSString(mvnProject.getBuild().getDirectory());
+                        IPath buildDirPath = Path.fromOSString(mvnProject.getBuild()
+                            .getDirectory());
                         IPath projectPath = project.getLocation();
                         IPath relativeBuildDirPath = buildDirPath.makeRelativeTo(projectPath);
                         IFolder buildDir = project.getFolder(relativeBuildDirPath);
 
                         if (buildDir != null) {
-                            // TODO: there *may* be a remaining issue here if a source-generation plugin gets triggered by the above invocation of the jar:jar goal.
-                            // This could cause Eclipse to think that the Java sources are dirty and queue the project for rebuilding, thus entering an infinite loop.
-                            // One solution would be to find the output artifact jar and refresh ONLY that. However we have not been able to create the condition we
-                            // are worried about so we are deferring any extra work on this until it's shown to be a real problem.
+                            // TODO: there *may* be a remaining issue here if a source-generation plugin gets triggered
+                            // by the above invocation of the jar:jar goal.
+                            // This could cause Eclipse to think that the Java sources are dirty and queue the project
+                            // for rebuilding, thus entering an infinite loop.
+                            // One solution would be to find the output artifact jar and refresh ONLY that. However we
+                            // have not been able to create the condition we
+                            // are worried about so we are deferring any extra work on this until it's shown to be a
+                            // real problem.
                             buildDir.refreshLocal(IResource.DEPTH_INFINITE, progress.newChild(1));
                         } else {
-                            Logger.getLogger(BndConfigurator.class).logError(String.format("Project build folder '%s' does not exist, or is not a child of the project path '%s'", buildDirPath, projectPath), null);
+                            Logger.getLogger(BndConfigurator.class)
+                                .logError(String.format("Project build folder '%s' does not exist, or is not a child of the project path '%s'", buildDirPath, projectPath), null);
                             progress.worked(1);
                         }
 
@@ -169,7 +177,8 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
     private void execJarMojo(final IMavenProjectFacade projectFacade, IProgressMonitor monitor) throws CoreException {
         final IMaven maven = MavenPlugin.getMaven();
-        ProjectRegistryManager projectRegistryManager = MavenPluginActivator.getDefault().getMavenProjectManagerImpl();
+        ProjectRegistryManager projectRegistryManager = MavenPluginActivator.getDefault()
+            .getMavenProjectManagerImpl();
 
         ResolverConfiguration resolverConfiguration = new ResolverConfiguration();
         resolverConfiguration.setResolveWorkspaceProjects(true);
@@ -199,7 +208,8 @@ public class BndConfigurator extends AbstractProjectConfigurator {
                         decorator.updateDecoration(projectFacade.getProject(), info);
                     }
                 } catch (Exception e) {
-                    logger.logError("Failed to decorate project " + projectFacade.getProject().getName(), e);
+                    logger.logError("Failed to decorate project " + projectFacade.getProject()
+                        .getName(), e);
                 }
 
                 return null;

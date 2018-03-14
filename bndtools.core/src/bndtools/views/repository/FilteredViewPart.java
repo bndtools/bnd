@@ -21,7 +21,8 @@ import bndtools.Plugin;
  */
 public abstract class FilteredViewPart extends ViewPart {
 
-    private final FilterPanelPart filterPanel = new FilterPanelPart(Plugin.getDefault().getScheduler());
+    private final FilterPanelPart filterPanel = new FilterPanelPart(Plugin.getDefault()
+        .getScheduler());
 
     private Action filterAction;
 
@@ -64,7 +65,8 @@ public abstract class FilteredViewPart extends ViewPart {
 
         // Toolbar
         createActions();
-        fillToolBar(getViewSite().getActionBars().getToolBarManager());
+        fillToolBar(getViewSite().getActionBars()
+            .getToolBarManager());
     }
 
     private void createActions() {
@@ -74,8 +76,7 @@ public abstract class FilteredViewPart extends ViewPart {
     /**
      * Fill the view toolbar. Subclasses may override but must call <code>super.fillToolBar</code>
      * 
-     * @param toolBar
-     *            The toolbar manager supplied by the workbench
+     * @param toolBar The toolbar manager supplied by the workbench
      */
     protected void fillToolBar(IToolBarManager toolBar) {
         toolBar.add(filterAction);
@@ -84,8 +85,7 @@ public abstract class FilteredViewPart extends ViewPart {
     /**
      * Create the main content of the view, below the filter bar.
      * 
-     * @param container
-     *            The parent composite for the main content. Subclasses should set an appropriate layout on this
+     * @param container The parent composite for the main content. Subclasses should set an appropriate layout on this
      *            composite.
      */
     protected abstract void createMainControl(Composite container);
@@ -94,9 +94,8 @@ public abstract class FilteredViewPart extends ViewPart {
      * Called when the filter string is modified by the user. Subclasses should implement this method to apply the
      * filter to the controls they create.
      * 
-     * @param filterString
-     *            The new filter string, or an empty string ("") if there is no filter (e.g., because the user hid the
-     *            filter bar).
+     * @param filterString The new filter string, or an empty string ("") if there is no filter (e.g., because the user
+     *            hid the filter bar).
      */
     protected abstract void updatedFilter(String filterString);
 

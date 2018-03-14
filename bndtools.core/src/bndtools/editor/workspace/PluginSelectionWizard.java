@@ -28,7 +28,8 @@ public class PluginSelectionWizard extends Wizard {
 
     @Override
     public boolean performFinish() {
-        header = new HeaderClause(classPage.getSelectedElement().getAttribute("class"), propertiesPage.getProperties());
+        header = new HeaderClause(classPage.getSelectedElement()
+            .getAttribute("class"), propertiesPage.getProperties());
         return true;
     }
 

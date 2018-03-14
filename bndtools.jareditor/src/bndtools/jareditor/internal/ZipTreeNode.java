@@ -26,7 +26,7 @@ class ZipTreeNode implements IAdaptable {
     private final ZipTreeNode parent;
     private final String name;
     private final ZipEntry entry;
-    private final Map<String,ZipTreeNode> children = new LinkedHashMap<String,ZipTreeNode>();
+    private final Map<String, ZipTreeNode> children = new LinkedHashMap<String, ZipTreeNode>();
 
     private ZipTreeNode(ZipTreeNode parent, String name, ZipEntry entry) {
         this.parent = parent;
@@ -56,12 +56,12 @@ class ZipTreeNode implements IAdaptable {
 
     }
 
-    public static void addEntry(Map<String,ZipTreeNode> rootMap, ZipEntry entry) {
+    public static void addEntry(Map<String, ZipTreeNode> rootMap, ZipEntry entry) {
         List<String> path = getPath(entry);
         pushEntry(null, rootMap, path, entry);
     }
 
-    private static void pushEntry(ZipTreeNode parent, Map<String,ZipTreeNode> map, List<String> path, ZipEntry entry) {
+    private static void pushEntry(ZipTreeNode parent, Map<String, ZipTreeNode> map, List<String> path, ZipEntry entry) {
         String pathPart = path.remove(0);
         ZipTreeNode node = map.get(pathPart);
         if (node == null) {
@@ -91,8 +91,7 @@ class ZipTreeNode implements IAdaptable {
         return path;
     }
 
-    public Object getAdapter(@SuppressWarnings("rawtypes")
-    Class adapter) {
+    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         if (adapter == JarEntry.class) {
             return entry;
         }

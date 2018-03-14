@@ -20,13 +20,11 @@ public class GitVersionControlIgnoresPlugin implements VersionControlIgnoresPlug
     /**
      * Fully read an ignore file, including comments.
      *
-     * @param ignoreFile
-     *            The ignore file
+     * @param ignoreFile The ignore file
      * @return null when the ignore file is null, when the ignore file doesn't exist or when the ignore file is empty. A
      *         non-empty list of lines as read from the ignore file otherwise.
-     * @throws IOException
-     *             When the ignore file could not be fully read (for example due to the ignore file not being an regular
-     *             file or due to an IOException)
+     * @throws IOException When the ignore file could not be fully read (for example due to the ignore file not being an
+     *             regular file or due to an IOException)
      */
     private List<String> readIgnoreFile(File ignoreFile) throws IOException {
         if (ignoreFile == null || !ignoreFile.exists()) {
@@ -98,8 +96,7 @@ public class GitVersionControlIgnoresPlugin implements VersionControlIgnoresPlug
             List<String> currentIgnores = readIgnoreFile(ignoreFile);
 
             /*
-             * add new ignores to the current ignores, but only if the current
-             * ignores did not contain them
+             * add new ignores to the current ignores, but only if the current ignores did not contain them
              */
             if (currentIgnores == null) {
                 ignoresToAppend = newIgnores;

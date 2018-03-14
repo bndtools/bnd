@@ -61,7 +61,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     public static final String PROP_SELECTION = "selection";
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
 
-    private final Map<String,VersionedClause> selectedBundles = new LinkedHashMap<String,VersionedClause>();
+    private final Map<String, VersionedClause> selectedBundles = new LinkedHashMap<String, VersionedClause>();
     private final DependencyPhase phase;
 
     TreeViewer availableViewer;
@@ -75,7 +75,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     ViewerFilter alreadySelectedFilter = new ViewerFilter() {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
-            String search = selectionSearchTxt.getText().toLowerCase();
+            String search = selectionSearchTxt.getText()
+                .toLowerCase();
 
             String bsn = null;
             if (element instanceof RepositoryBundle) {
@@ -85,7 +86,8 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             }
 
             if (bsn != null) {
-                if (search.length() > 0 && bsn.toLowerCase().indexOf(search) == -1) {
+                if (search.length() > 0 && bsn.toLowerCase()
+                    .indexOf(search) == -1) {
                     return false;
                 }
                 return !selectedBundles.containsKey(bsn);
@@ -122,7 +124,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
         availableViewer.setAutoExpandLevel(2);
 
         availableViewer.setFilters(new ViewerFilter[] {
-                alreadySelectedFilter
+            alreadySelectedFilter
         });
 
         // Load data
@@ -145,7 +147,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 availableViewer.setFilters(new ViewerFilter[] {
-                        alreadySelectedFilter
+                    alreadySelectedFilter
                 });
             }
         });
@@ -155,7 +157,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 IStructuredSelection sel = (IStructuredSelection) availableViewer.getSelection();
-                for (Iterator< ? > iter = sel.iterator(); iter.hasNext();) {
+                for (Iterator<?> iter = sel.iterator(); iter.hasNext();) {
                     Object element = iter.next();
                     if (element instanceof RepositoryBundle || element instanceof RepositoryBundleVersion || element instanceof ProjectBundle) {
                         addButton.setEnabled(true);
@@ -292,7 +294,7 @@ public class RepoBundleSelectionWizardPage extends WizardPage {
     void doAdd() {
         IStructuredSelection selection = (IStructuredSelection) availableViewer.getSelection();
         List<VersionedClause> adding = new ArrayList<VersionedClause>(selection.size());
-        for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
+        for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
             Object item = iter.next();
             if (item instanceof RepositoryBundle) {
                 adding.add(RepositoryBundleUtils.convertRepoBundle((RepositoryBundle) item));
@@ -347,9 +349,9 @@ class MapValuesContentProvider implements IStructuredContentProvider {
 
     @Override
     public Object[] getElements(Object inputElement) {
-        Map< ? , ? > map = (Map< ? , ? >) inputElement;
+        Map<?, ?> map = (Map<?, ?>) inputElement;
 
-        Collection< ? > values = map.values();
+        Collection<?> values = map.values();
         return values.toArray();
     }
 

@@ -30,7 +30,7 @@ import org.osgi.service.metatype.AttributeDefinition;
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
 @SuppressWarnings({
-        "rawtypes", "unchecked", "deprecation"
+    "rawtypes", "unchecked", "deprecation"
 })
 final class ADValidator {
     /**
@@ -59,10 +59,8 @@ final class ADValidator {
      * option values.
      * </p>
      *
-     * @param ad
-     *            the attribute definition to use in the validation;
-     * @param rawInput
-     *            the raw input value to validate.
+     * @param ad the attribute definition to use in the validation;
+     * @param rawInput the raw input value to validate.
      * @return <code>null</code> if no validation is available, <tt>""</tt> if validation was successful, or any other
      *         non-empty string in case validation fails.
      */
@@ -80,7 +78,7 @@ final class ADValidator {
         String[] input;
         if (ad.getCardinality() == 0) {
             input = new String[] {
-                    rawInput.trim()
+                rawInput.trim()
             };
         } else {
             input = AD.splitList(rawInput);
@@ -88,38 +86,36 @@ final class ADValidator {
 
         int type = ad.getType();
         switch (type) {
-        case AttributeDefinition.BOOLEAN :
-            return validateBooleanValue(ad, input);
+            case AttributeDefinition.BOOLEAN :
+                return validateBooleanValue(ad, input);
 
-        case AttributeDefinition.CHARACTER :
-            return validateCharacterValue(ad, input);
+            case AttributeDefinition.CHARACTER :
+                return validateCharacterValue(ad, input);
 
-        case AttributeDefinition.BIGDECIMAL :
-        case AttributeDefinition.BIGINTEGER :
-        case AttributeDefinition.BYTE :
-        case AttributeDefinition.DOUBLE :
-        case AttributeDefinition.FLOAT :
-        case AttributeDefinition.INTEGER :
-        case AttributeDefinition.LONG :
-        case AttributeDefinition.SHORT :
-            return validateNumericValue(ad, input);
+            case AttributeDefinition.BIGDECIMAL :
+            case AttributeDefinition.BIGINTEGER :
+            case AttributeDefinition.BYTE :
+            case AttributeDefinition.DOUBLE :
+            case AttributeDefinition.FLOAT :
+            case AttributeDefinition.INTEGER :
+            case AttributeDefinition.LONG :
+            case AttributeDefinition.SHORT :
+                return validateNumericValue(ad, input);
 
-        case AttributeDefinition.PASSWORD :
-        case AttributeDefinition.STRING :
-            return validateString(ad, input);
+            case AttributeDefinition.PASSWORD :
+            case AttributeDefinition.STRING :
+                return validateString(ad, input);
 
-        default :
-            return null; // no validation present...
+            default :
+                return null; // no validation present...
         }
     }
 
     /**
      * Searches for a given search value in a given array of options.
      *
-     * @param searchValue
-     *            the value to search for;
-     * @param optionValues
-     *            the values to search in.
+     * @param searchValue the value to search for;
+     * @param optionValues the values to search in.
      * @return <code>null</code> if the given search value is not found in the given options, the searched value if
      *         found, or <tt>""</tt> if no search value or options were given.
      */
@@ -141,36 +137,33 @@ final class ADValidator {
     /**
      * Parses a given string value into a numeric type.
      *
-     * @param type
-     *            the type to parse;
-     * @param value
-     *            the value to parse.
+     * @param type the type to parse;
+     * @param value the value to parse.
      * @return a {@link Number} representation of the given value, or <code>null</code> if the input was
      *         <code>null</code>, empty, or not a numeric type.
-     * @throws NumberFormatException
-     *             in case the given value cannot be parsed as numeric value.
+     * @throws NumberFormatException in case the given value cannot be parsed as numeric value.
      */
     private static Comparable parseNumber(int type, String value) throws NumberFormatException {
         if ((value != null) && (value.length() > 0)) {
             switch (type) {
-            case AttributeDefinition.BIGDECIMAL :
-                return new BigDecimal(value);
-            case AttributeDefinition.BIGINTEGER :
-                return new BigInteger(value);
-            case AttributeDefinition.BYTE :
-                return Byte.valueOf(value);
-            case AttributeDefinition.SHORT :
-                return Short.valueOf(value);
-            case AttributeDefinition.INTEGER :
-                return Integer.valueOf(value);
-            case AttributeDefinition.LONG :
-                return Long.valueOf(value);
-            case AttributeDefinition.FLOAT :
-                return Float.valueOf(value);
-            case AttributeDefinition.DOUBLE :
-                return Double.valueOf(value);
-            default :
-                return null;
+                case AttributeDefinition.BIGDECIMAL :
+                    return new BigDecimal(value);
+                case AttributeDefinition.BIGINTEGER :
+                    return new BigInteger(value);
+                case AttributeDefinition.BYTE :
+                    return Byte.valueOf(value);
+                case AttributeDefinition.SHORT :
+                    return Short.valueOf(value);
+                case AttributeDefinition.INTEGER :
+                    return Integer.valueOf(value);
+                case AttributeDefinition.LONG :
+                    return Long.valueOf(value);
+                case AttributeDefinition.FLOAT :
+                    return Float.valueOf(value);
+                case AttributeDefinition.DOUBLE :
+                    return Double.valueOf(value);
+                default :
+                    return null;
             }
         }
         return null;
@@ -180,8 +173,7 @@ final class ADValidator {
      * Parses a given string value as character, allowing <code>null</code> -values and empty values to be given as
      * input.
      *
-     * @param value
-     *            the value to parse as character, can be <code>null</code> or an empty value.
+     * @param value the value to parse as character, can be <code>null</code> or an empty value.
      * @return the character value if, and only if, the given input was non- <code>null</code> and a non-empty string.
      */
     private static Character parseOptionalChar(String value) {
@@ -195,10 +187,8 @@ final class ADValidator {
      * Parses a given string value as numeric value, allowing <code>null</code>-values and invalid numeric values to be
      * given as input.
      *
-     * @param type
-     *            the type of number, should only be a numeric type;
-     * @param value
-     *            the value to parse as integer, can be <code>null</code> or a non-numeric value.
+     * @param type the type of number, should only be a numeric type;
+     * @param value the value to parse as integer, can be <code>null</code> or a non-numeric value.
      * @return the integer value if, and only if, the given input was non- <code>null</code> and a valid integer
      *         representation.
      */
@@ -216,10 +206,8 @@ final class ADValidator {
     /**
      * Validates a given input string as boolean value.
      *
-     * @param ad
-     *            the attribute definition to use in the validation;
-     * @param input
-     *            the array with input values to validate.
+     * @param ad the attribute definition to use in the validation;
+     * @param input the array with input values to validate.
      * @return <code>null</code> if no validation is available, <tt>""</tt> if validation was successful, or any other
      *         non-empty string in case validation fails.
      */
@@ -246,10 +234,8 @@ final class ADValidator {
     /**
      * Validates a given input string as character value.
      *
-     * @param ad
-     *            the attribute definition to use in the validation;
-     * @param input
-     *            the array with input values to validate.
+     * @param ad the attribute definition to use in the validation;
+     * @param input the array with input values to validate.
      * @return <code>null</code> if no validation is available, <tt>""</tt> if validation was successful, or any other
      *         non-empty string in case validation fails.
      */
@@ -289,10 +275,8 @@ final class ADValidator {
     /**
      * Validates a given input string as numeric value.
      *
-     * @param ad
-     *            the attribute definition to use in the validation;
-     * @param input
-     *            the array with input values to validate.
+     * @param ad the attribute definition to use in the validation;
+     * @param input the array with input values to validate.
      * @return <code>null</code> if no validation is available, <tt>""</tt> if validation was successful, or any other
      *         non-empty string in case validation fails.
      */
@@ -334,10 +318,8 @@ final class ADValidator {
     /**
      * Validates a given input string as string (or password).
      *
-     * @param ad
-     *            the attribute definition to use in the validation;
-     * @param input
-     *            the array with input values to validate.
+     * @param ad the attribute definition to use in the validation;
+     * @param input the array with input values to validate.
      * @return <code>null</code> if no validation is available, <tt>""</tt> if validation was successful, or any other
      *         non-empty string in case validation fails.
      */

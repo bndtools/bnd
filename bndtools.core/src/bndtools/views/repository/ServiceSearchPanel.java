@@ -43,7 +43,8 @@ public class ServiceSearchPanel extends SearchPanel {
         txtName.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                serviceClass = txtName.getText().trim();
+                serviceClass = txtName.getText()
+                    .trim();
                 validate();
             }
         });
@@ -53,12 +54,14 @@ public class ServiceSearchPanel extends SearchPanel {
     }
 
     public void validate() {
-        if (serviceClass == null || serviceClass.trim().isEmpty()) {
+        if (serviceClass == null || serviceClass.trim()
+            .isEmpty()) {
             setError(null);
             setRequirement(null);
         } else {
             String filter = String.format("(%s=%s)", ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE, serviceClass);
-            Requirement requirement = new CapReqBuilder(ServiceNamespace.SERVICE_NAMESPACE).addDirective(ServiceNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter).buildSyntheticRequirement();
+            Requirement requirement = new CapReqBuilder(ServiceNamespace.SERVICE_NAMESPACE).addDirective(ServiceNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter)
+                .buildSyntheticRequirement();
             setError(null);
             setRequirement(requirement);
         }
@@ -71,7 +74,8 @@ public class ServiceSearchPanel extends SearchPanel {
 
     @Override
     public Image createImage(Device device) {
-        return Icons.desc("service").createImage(device);
+        return Icons.desc("service")
+            .createImage(device);
     }
 
     @Override

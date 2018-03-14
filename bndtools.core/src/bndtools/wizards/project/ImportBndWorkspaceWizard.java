@@ -68,7 +68,9 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         setWindowTitle("Import Bnd Workspace");
-        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(Plugin.getDefault().getBundle().getEntry("icons/bndtools-wizban.png")));
+        setDefaultPageImageDescriptor(ImageDescriptor.createFromURL(Plugin.getDefault()
+            .getBundle()
+            .getEntry("icons/bndtools-wizban.png")));
 
     }
 
@@ -102,9 +104,11 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
                     op.run(monitor);
                 } catch (InvocationTargetException e) {
                     Throwable t = e.getCause();
-                    if (t instanceof CoreException && ((CoreException) t).getStatus().getException() != null) {
+                    if (t instanceof CoreException && ((CoreException) t).getStatus()
+                        .getException() != null) {
                         // unwrap the cause of the CoreException
-                        t = ((CoreException) t).getStatus().getException();
+                        t = ((CoreException) t).getStatus()
+                            .getException();
                     }
                     return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Could not finish import job for Bnd Workspace!", t);
                 } catch (InterruptedException e) {
@@ -119,7 +123,8 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
         try {
             // Prompt to switch to the BndTools perspective
             IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-            IPerspectiveDescriptor currentPerspective = window.getActivePage().getPerspective();
+            IPerspectiveDescriptor currentPerspective = window.getActivePage()
+                .getPerspective();
             if (!"bndtools.perspective".equals(currentPerspective.getId())) {
                 if (MessageDialog.openQuestion(getShell(), "Bndtools Perspective", "Switch to the Bndtools perspective?")) {
                     this.workbench.showPerspective("bndtools.perspective", window);
@@ -158,7 +163,8 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
     private boolean importProjects(final ImportSettings importSettings, IProgressMonitor monitor) throws Exception {
         Workspace bndWorkspace = Workspace.getWorkspace(importSettings.rootImportPath);
 
-        int steps = bndWorkspace.getAllProjects().size() + 2;
+        int steps = bndWorkspace.getAllProjects()
+            .size() + 2;
 
         monitor.beginTask("Importing Bnd workspace", steps);
 
@@ -171,7 +177,8 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
 
         // build
         monitor.subTask("Building workspace");
-        ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
+        ResourcesPlugin.getWorkspace()
+            .build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
         monitor.worked(1);
         monitor.done();
 
@@ -192,12 +199,16 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
         final IProject project = eclipseWorkspaceRoot.getProject(Workspace.CNFDIR);
 
         if (importSettings.deleteSettings) {
-            deleteOldProjectFiles(Paths.get(bndWorkspace.getBase().toURI()).resolve(Workspace.CNFDIR));
+            deleteOldProjectFiles(Paths.get(bndWorkspace.getBase()
+                .toURI())
+                .resolve(Workspace.CNFDIR));
         }
 
         // create JavaProject
-        IPath path = URIUtil.toPath(bndWorkspace.getBuildDir().toURI());
-        if (Platform.getLocation().isPrefixOf(path)) {
+        IPath path = URIUtil.toPath(bndWorkspace.getBuildDir()
+            .toURI());
+        if (Platform.getLocation()
+            .isPrefixOf(path)) {
             cnfProjectDescription.setLocation(null);
         } else {
             cnfProjectDescription.setLocation(path);
@@ -219,14 +230,16 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
         final IWorkspaceRoot eclipseWorkspaceRoot = eclipseWorkspace.getRoot();
 
         if (importSettings.deleteSettings) {
-            deleteOldProjectFiles(Paths.get(bndWorkspace.getBaseURI()).resolve(bndProject.getName()));
+            deleteOldProjectFiles(Paths.get(bndWorkspace.getBaseURI())
+                .resolve(bndProject.getName()));
         }
         // create generic project
         final IProjectDescription projectDescription = eclipseWorkspace.newProjectDescription(bndProject.getName());
         final IProject project = eclipseWorkspaceRoot.getProject(bndProject.getName());
 
         IPath path = URIUtil.toPath(bndProject.getBaseURI());
-        if (Platform.getLocation().isPrefixOf(path)) {
+        if (Platform.getLocation()
+            .isPrefixOf(path)) {
             projectDescription.setLocation(null);
         } else {
             projectDescription.setLocation(path);
@@ -253,13 +266,17 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
         removeClasspathDefaults(javaProject);
 
         // Output
-        IFolder sourceOutput = workspaceProject.getFolder(URIUtil.toPath(bndProject.getSrcOutput().toURI()).makeRelativeTo(workspaceProject.getLocation()));
+        IFolder sourceOutput = workspaceProject.getFolder(URIUtil.toPath(bndProject.getSrcOutput()
+            .toURI())
+            .makeRelativeTo(workspaceProject.getLocation()));
         IPackageFragmentRoot outputRoot = javaProject.getPackageFragmentRoot(sourceOutput);
 
         // Source (multiple possible)
         for (File folder : bndProject.getSourcePath()) {
-            IFolder source = workspaceProject.getFolder(URIUtil.toPath(folder.toURI()).makeRelativeTo(workspaceProject.getLocation()));
-            // Now the created source folder should be added to the class entries of the project, otherwise compilation will fail
+            IFolder source = workspaceProject.getFolder(URIUtil.toPath(folder.toURI())
+                .makeRelativeTo(workspaceProject.getLocation()));
+            // Now the created source folder should be added to the class entries of the project, otherwise compilation
+            // will fail
             IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(source);
             List<IClasspathEntry> entries = new ArrayList<>(Arrays.asList(javaProject.getRawClasspath()));
             entries.add(JavaCore.newSourceEntry(root.getPath(), null, outputRoot.getPath()));
@@ -268,11 +285,17 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
         }
         // Test-Source
         javaProject.setOutputLocation(sourceOutput.getFullPath(), null);
-        if (!bndProject.getSrcOutput().equals(bndProject.getTestOutput())) {
-            IFolder testOutput = workspaceProject.getFolder(URIUtil.toPath(bndProject.getTestOutput().toURI()).makeRelativeTo(workspaceProject.getLocation()));
+        if (!bndProject.getSrcOutput()
+            .equals(bndProject.getTestOutput())) {
+            IFolder testOutput = workspaceProject.getFolder(URIUtil.toPath(bndProject.getTestOutput()
+                .toURI())
+                .makeRelativeTo(workspaceProject.getLocation()));
             IPackageFragmentRoot testOutputRoot = javaProject.getPackageFragmentRoot(testOutput);
-            IFolder testSource = workspaceProject.getFolder(URIUtil.toPath(bndProject.getTestSrc().toURI()).makeRelativeTo(workspaceProject.getLocation()));
-            // Now the created source folder should be added to the class entries of the project, otherwise compilation will fail
+            IFolder testSource = workspaceProject.getFolder(URIUtil.toPath(bndProject.getTestSrc()
+                .toURI())
+                .makeRelativeTo(workspaceProject.getLocation()));
+            // Now the created source folder should be added to the class entries of the project, otherwise compilation
+            // will fail
             IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(testSource);
             List<IClasspathEntry> entries = new ArrayList<>(Arrays.asList(javaProject.getRawClasspath()));
             entries.add(JavaCore.newSourceEntry(root.getPath(), null, testOutputRoot.getPath()));
@@ -281,7 +304,9 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
         }
 
         // Generated Artifact
-        IFolder generated = workspaceProject.getFolder(URIUtil.toPath(bndProject.getTarget().toURI()).makeRelativeTo(workspaceProject.getLocation()));
+        IFolder generated = workspaceProject.getFolder(URIUtil.toPath(bndProject.getTarget()
+            .toURI())
+            .makeRelativeTo(workspaceProject.getLocation()));
         createFolderIfNecessary(generated, monitor);
     }
 
@@ -294,11 +319,9 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
     /**
      * The Java-Nature doesn't add a JRE-Container, so we add one
      *
-     * @param javaProject
-     *            the Java project which should get enhanced with LibraryContainer
+     * @param javaProject the Java project which should get enhanced with LibraryContainer
      * @param javacTarget
-     * @param monitor
-     *            current IProgressMonitor
+     * @param monitor current IProgressMonitor
      * @throws JavaModelException
      */
     private void addSystemLibraryContainer(final IJavaProject javaProject, final String javacTarget, final ImportSettings importSettings, IProgressMonitor monitor) throws JavaModelException {
@@ -309,7 +332,9 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
         Iterator<IClasspathEntry> it = entries.iterator();
         while (it.hasNext()) {
             IClasspathEntry entry = it.next();
-            if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER && entry.getPath() != null && entry.getPath().toString().startsWith(JavaRuntime.JRE_CONTAINER)) {
+            if (entry.getEntryKind() == IClasspathEntry.CPE_CONTAINER && entry.getPath() != null && entry.getPath()
+                .toString()
+                .startsWith(JavaRuntime.JRE_CONTAINER)) {
                 // remove existing entry if user want to infer EE
                 if (importSettings.inferExecutionEnvironment) {
                     it.remove();
@@ -323,15 +348,18 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
             IClasspathEntry defaultJREContainerEntry = JavaRuntime.getDefaultJREContainerEntry();
             if (importSettings.inferExecutionEnvironment) {
                 // fuzzy at the moment but better than nothing. We should find a way to handle CDC
-                IExecutionEnvironment environment = JavaRuntime.getExecutionEnvironmentsManager().getEnvironment("J2SE-" + javacTarget);
+                IExecutionEnvironment environment = JavaRuntime.getExecutionEnvironmentsManager()
+                    .getEnvironment("J2SE-" + javacTarget);
                 if (environment == null) {
-                    environment = JavaRuntime.getExecutionEnvironmentsManager().getEnvironment("JavaSE-" + javacTarget);
+                    environment = JavaRuntime.getExecutionEnvironmentsManager()
+                        .getEnvironment("JavaSE-" + javacTarget);
                 }
                 if (environment != null) {
                     entries.add(JavaCore.newContainerEntry(JavaRuntime.newJREContainerPath(environment)));
                 } else {
-                    Plugin.getDefault().getLog()
-                            .log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, String.format("Could not infer execution-environment in project '%s' for javac.target '%s'", javaProject.getElementName(), javacTarget), null));
+                    Plugin.getDefault()
+                        .getLog()
+                        .log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, String.format("Could not infer execution-environment in project '%s' for javac.target '%s'", javaProject.getElementName(), javacTarget), null));
                     entries.add(defaultJREContainerEntry);
                 }
             } else {
@@ -344,15 +372,16 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
     /**
      * Update Eclipse workspace with information from a Bnd workspace Currently only compiler-settings are matched
      *
-     * @param bndWorkspace
-     *            the imported Bnd workspace
+     * @param bndWorkspace the imported Bnd workspace
      */
     private void updateEclipseWorkspaceSettings(final Workspace bndWorkspace) {
-        final String javacSource = bndWorkspace.getProperties().getProperty(BndConstants.JAVAC_SOURCE);
-        final String javacTarget = bndWorkspace.getProperties().getProperty(BndConstants.JAVAC_TARGET);
+        final String javacSource = bndWorkspace.getProperties()
+            .getProperty(BndConstants.JAVAC_SOURCE);
+        final String javacTarget = bndWorkspace.getProperties()
+            .getProperty(BndConstants.JAVAC_TARGET);
 
         @SuppressWarnings("unchecked")
-        Hashtable<String,String> javaCoreOptions = JavaCore.getOptions();
+        Hashtable<String, String> javaCoreOptions = JavaCore.getOptions();
         if (javacSource != null) {
             javaCoreOptions.put(JavaCore.COMPILER_SOURCE, javacSource);
         }
@@ -367,20 +396,20 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
      * Updates the JavaProject with project-level settings from a Bnd project. Currently only compiler-settings are
      * matched if they differ from the Eclipse workspace (which has been set prior), as well as the JRE-SystemLibrary.
      *
-     * @param bndProject
-     *            the imported BndProject
-     * @param javaProject
-     *            the newly created JavaProject
+     * @param bndProject the imported BndProject
+     * @param javaProject the newly created JavaProject
      * @throws JavaModelException
      */
     private void updateJavaProjectSettings(final Project bndProject, final IJavaProject javaProject, final ImportSettings importSettings, IProgressMonitor monitor) throws JavaModelException {
-        final String javacSource = bndProject.getProperties().getProperty(BndConstants.JAVAC_SOURCE);
-        final String javacTarget = bndProject.getProperties().getProperty(BndConstants.JAVAC_TARGET);
+        final String javacSource = bndProject.getProperties()
+            .getProperty(BndConstants.JAVAC_SOURCE);
+        final String javacTarget = bndProject.getProperties()
+            .getProperty(BndConstants.JAVAC_TARGET);
 
         addSystemLibraryContainer(javaProject, javacTarget, importSettings, monitor);
 
         @SuppressWarnings("unchecked")
-        Map<String,String> projectOptions = javaProject.getOptions(false);
+        Map<String, String> projectOptions = javaProject.getOptions(false);
         // only update project-specific settings when different from workspace
         if (javacSource != null && !javacSource.equals(JavaCore.getOption(JavaCore.COMPILER_SOURCE))) {
             projectOptions.put(JavaCore.COMPILER_SOURCE, javacSource);
@@ -399,8 +428,7 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
      * project-directory itself. Furthermore, the BndProjectNature causes the classpath container to be available if the
      * Repositories-View is still populated from a prior Workspace-Setup.
      *
-     * @param javaProject
-     *            the Project which needs special treatment
+     * @param javaProject the Project which needs special treatment
      * @throws JavaModelException
      */
     private void removeClasspathDefaults(IJavaProject javaProject) throws JavaModelException {
@@ -420,7 +448,9 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
 
     private void error(final String message, final Throwable t) {
         // Log error
-        Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, t));
+        Plugin.getDefault()
+            .getLog()
+            .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, t));
         // build the error message and include the current stack trace
         final MultiStatus status = createMultiStatus(t);
         Runnable run = new Runnable() {
@@ -431,20 +461,20 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
             }
         };
         if (Display.getCurrent() == null) {
-            Display.getDefault().asyncExec(run);
+            Display.getDefault()
+                .asyncExec(run);
         } else {
             run.run();
         }
     }
 
     /*
-     * TODO probably something to move to Plugin
-     *
-     * creates a MultiStatus including StackTrace
+     * TODO probably something to move to Plugin creates a MultiStatus including StackTrace
      */
     private static MultiStatus createMultiStatus(Throwable t) {
         List<Status> childStatuses = new ArrayList<>();
-        StackTraceElement[] stackTraces = Thread.currentThread().getStackTrace();
+        StackTraceElement[] stackTraces = Thread.currentThread()
+            .getStackTrace();
 
         for (StackTraceElement stackTrace : stackTraces) {
             Status status = new Status(IStatus.ERROR, Plugin.PLUGIN_ID, stackTrace.toString());

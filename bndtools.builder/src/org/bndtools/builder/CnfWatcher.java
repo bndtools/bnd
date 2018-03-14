@@ -16,6 +16,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import bndtools.central.Central;
@@ -25,7 +26,8 @@ public class CnfWatcher implements IResourceChangeListener {
     private static final CnfWatcher INSTANCE = new CnfWatcher();
 
     static CnfWatcher install() {
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(INSTANCE, IResourceChangeEvent.POST_CHANGE);
+        ResourcesPlugin.getWorkspace()
+            .addResourceChangeListener(INSTANCE, IResourceChangeEvent.POST_CHANGE);
         return INSTANCE;
     }
 
@@ -50,7 +52,8 @@ public class CnfWatcher implements IResourceChangeListener {
                 return;
             }
 
-            final IProject cnfProject = WorkspaceUtils.findCnfProject(ResourcesPlugin.getWorkspace().getRoot(), workspace);
+            final IProject cnfProject = WorkspaceUtils.findCnfProject(ResourcesPlugin.getWorkspace()
+                .getRoot(), workspace);
             if (cnfProject == null)
                 return;
 
@@ -62,7 +65,8 @@ public class CnfWatcher implements IResourceChangeListener {
             if (allProjects.isEmpty())
                 return;
 
-            Project p = allProjects.iterator().next();
+            Project p = allProjects.iterator()
+                .next();
             DeltaWrapper dw = new DeltaWrapper(p, delta, new BuildLogger(BuildLogger.LOG_NONE, "", 0));
             if (dw.hasCnfChanged()) {
                 workspace.clear();

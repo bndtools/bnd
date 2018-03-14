@@ -16,6 +16,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Namespace;
+
 import aQute.bnd.osgi.resource.CapReqBuilder;
 
 public class ArbitraryNamespaceSearchPanel extends SearchPanel {
@@ -44,7 +45,8 @@ public class ArbitraryNamespaceSearchPanel extends SearchPanel {
         txtNamespace.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                namespace = txtNamespace.getText().trim();
+                namespace = txtNamespace.getText()
+                    .trim();
                 validate();
             }
         });
@@ -63,7 +65,8 @@ public class ArbitraryNamespaceSearchPanel extends SearchPanel {
         txtFilter.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                filterStr = txtFilter.getText().trim();
+                filterStr = txtFilter.getText()
+                    .trim();
                 validate();
             }
         });
@@ -99,7 +102,8 @@ public class ArbitraryNamespaceSearchPanel extends SearchPanel {
             updateFilterExpressionHint(namespace);
 
             CapReqBuilder builder = new CapReqBuilder(namespace);
-            if (filterStr != null && filterStr.trim().length() > 0) {
+            if (filterStr != null && filterStr.trim()
+                .length() > 0) {
                 try {
                     Filter filter = FrameworkUtil.createFilter(filterStr.trim());
                     builder.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());

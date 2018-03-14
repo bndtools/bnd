@@ -15,6 +15,7 @@ import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.graphics.Image;
+
 import aQute.bnd.build.model.clauses.HeaderClause;
 
 public abstract class HeaderClauseLabelProvider<C extends HeaderClause> extends StyledCellLabelProvider {
@@ -22,7 +23,8 @@ public abstract class HeaderClauseLabelProvider<C extends HeaderClause> extends 
     private final Image packageImg;
 
     public HeaderClauseLabelProvider() {
-        packageImg = Icons.desc("package").createImage();
+        packageImg = Icons.desc("package")
+            .createImage();
     }
 
     @Override
@@ -33,7 +35,8 @@ public abstract class HeaderClauseLabelProvider<C extends HeaderClause> extends 
         cell.setImage(packageImg);
 
         StyledString styledString = new StyledString(clause.getName());
-        String version = clause.getAttribs().get(org.osgi.framework.Constants.VERSION_ATTRIBUTE);
+        String version = clause.getAttribs()
+            .get(org.osgi.framework.Constants.VERSION_ATTRIBUTE);
         if (version != null) {
             styledString.append(": " + version, StyledString.COUNTER_STYLER);
         }

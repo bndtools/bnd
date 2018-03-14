@@ -54,10 +54,14 @@ public class OpenExtConfigsContributionItem extends CompoundContributionItem {
                             try {
                                 FileEditorInput input = new FileEditorInput((IFile) extFile);
 
-                                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                                IWorkbenchPage page = PlatformUI.getWorkbench()
+                                    .getActiveWorkbenchWindow()
+                                    .getActivePage();
                                 page.openEditor(input, "bndtools.bndWorkspaceConfigEditor", true);
                             } catch (PartInitException e) {
-                                ErrorDialog.openError(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(), "Error", "Unable to open editor", e.getStatus());
+                                ErrorDialog.openError(PlatformUI.getWorkbench()
+                                    .getActiveWorkbenchWindow()
+                                    .getShell(), "Error", "Unable to open editor", e.getStatus());
                             }
                         }
                     };

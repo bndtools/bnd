@@ -17,7 +17,8 @@ class ClasspathContainerFilter implements Predicate<IClasspathContainer> {
         boolean result = true;
         if (BndtoolsConstants.BND_CLASSPATH_ID.equals(container.getPath())) {
             result = false;
-        } else if (JavaRuntime.JRE_CONTAINER.equals(container.getPath().segment(0))) {
+        } else if (JavaRuntime.JRE_CONTAINER.equals(container.getPath()
+            .segment(0))) {
             result = false;
         }
         return result;

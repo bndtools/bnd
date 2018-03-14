@@ -80,13 +80,14 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
     private static final String NO_HELP_CONTENT = "<form>No help content available</form>";
 
-    private final ILog log = Plugin.getDefault().getLog();
+    private final ILog log = Plugin.getDefault()
+        .getLog();
 
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
     private final String templateType;
     private final Template emptyTemplate;
 
-    private final Map<Template,Image> loadedImages = new IdentityHashMap<>();
+    private final Map<Template, Image> loadedImages = new IdentityHashMap<>();
 
     private Tree tree;
     private TreeViewer viewer;
@@ -161,7 +162,8 @@ public class TemplateSelectionWizardPage extends WizardPage {
         gd.heightHint = 150;
         tree.setLayoutData(gd);
 
-        defaultTemplateImage = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/template.gif").createImage(parent.getDisplay());
+        defaultTemplateImage = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/template.gif")
+            .createImage(parent.getDisplay());
 
         viewer = new TreeViewer(tree);
         contentProvider = new RepoTemplateContentProvider(false);
@@ -187,7 +189,8 @@ public class TemplateSelectionWizardPage extends WizardPage {
         formText.setBackground(tree.getBackground());
         formText.setForeground(tree.getForeground());
         formText.setFont("fixed", JFaceResources.getTextFont());
-        formText.setFont("italic", JFaceResources.getFontRegistry().getItalic(""));
+        formText.setFont("italic", JFaceResources.getFontRegistry()
+            .getItalic(""));
 
         GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd_cmpDescription.heightHint = 25;
@@ -239,23 +242,29 @@ public class TemplateSelectionWizardPage extends WizardPage {
             @Override
             public void linkActivated(HyperlinkEvent ev) {
                 try {
-                    IWorkbenchBrowserSupport browser = PlatformUI.getWorkbench().getBrowserSupport();
-                    browser.getExternalBrowser().openURL(new URL("https://github.com/bndtools/bndtools/wiki/Blurry-Form-Text-on-High-Resolution-Displays"));
+                    IWorkbenchBrowserSupport browser = PlatformUI.getWorkbench()
+                        .getBrowserSupport();
+                    browser.getExternalBrowser()
+                        .openURL(new URL("https://github.com/bndtools/bndtools/wiki/Blurry-Form-Text-on-High-Resolution-Displays"));
                 } catch (Exception e) {
                     log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Browser open error", e));
                 }
             }
         });
-        txtDescription.getFormText().addHyperlinkListener(new HyperlinkAdapter() {
-            @Override
-            public void linkActivated(HyperlinkEvent ev) {
-                try {
-                    PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(new URL((String) ev.getHref()));
-                } catch (Exception ex) {
-                    log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Browser open error", ex));
+        txtDescription.getFormText()
+            .addHyperlinkListener(new HyperlinkAdapter() {
+                @Override
+                public void linkActivated(HyperlinkEvent ev) {
+                    try {
+                        PlatformUI.getWorkbench()
+                            .getBrowserSupport()
+                            .getExternalBrowser()
+                            .openURL(new URL((String) ev.getHref()));
+                    } catch (Exception ex) {
+                        log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Browser open error", ex));
+                    }
                 }
-            }
-        });
+            });
     }
 
     /**
@@ -270,7 +279,8 @@ public class TemplateSelectionWizardPage extends WizardPage {
         private final Shell shell;
         private final String originalMessage;
 
-        private final BundleContext context = FrameworkUtil.getBundle(LoadTemplatesJob.class).getBundleContext();
+        private final BundleContext context = FrameworkUtil.getBundle(LoadTemplatesJob.class)
+            .getBundleContext();
 
         public LoadTemplatesJob(Shell shell, String originalMessage) {
             this.shell = shell;
@@ -287,7 +297,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
                 List<ServiceReference<TemplateLoader>> templateLoaderSvcRefs = new ArrayList<>(context.getServiceReferences(TemplateLoader.class, null));
                 monitor.beginTask("Loading templates...", templateLoaderSvcRefs.size());
                 Collections.sort(templateLoaderSvcRefs);
-                List<Pair<String,Promise< ? extends Collection<Template>>>> promises = new LinkedList<>();
+                List<Pair<String, Promise<? extends Collection<Template>>>> promises = new LinkedList<>();
                 for (ServiceReference<TemplateLoader> templateLoaderSvcRef : templateLoaderSvcRefs) {
                     String label = (String) templateLoaderSvcRef.getProperty(Constants.SERVICE_DESCRIPTION);
                     if (label == null)
@@ -297,28 +307,34 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
                     TemplateLoader templateLoader = context.getService(templateLoaderSvcRef);
                     try {
-                        Promise< ? extends Collection<Template>> promise = templateLoader.findTemplates(templateType, new Processor());
-                        promises.add(new Pair<String,Promise< ? extends Collection<Template>>>(label, promise));
+                        Promise<? extends Collection<Template>> promise = templateLoader.findTemplates(templateType, new Processor());
+                        promises.add(new Pair<String, Promise<? extends Collection<Template>>>(label, promise));
                     } finally {
                         context.ungetService(templateLoaderSvcRef);
                     }
                 }
 
                 // Force the promises in sequence
-                for (Pair<String,Promise< ? extends Collection<Template>>> namedPromise : promises) {
+                for (Pair<String, Promise<? extends Collection<Template>>> namedPromise : promises) {
                     String name = namedPromise.getFirst();
                     SubMonitor childMonitor = monitor.newChild(1, SubMonitor.SUPPRESS_NONE);
                     childMonitor.beginTask(name, 1);
                     try {
-                        Throwable failure = namedPromise.getSecond().getFailure();
+                        Throwable failure = namedPromise.getSecond()
+                            .getFailure();
                         if (failure != null)
-                            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load from template loader: " + name, failure));
+                            Plugin.getDefault()
+                                .getLog()
+                                .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load from template loader: " + name, failure));
                         else {
-                            Collection<Template> loadedTemplates = namedPromise.getSecond().getValue();
+                            Collection<Template> loadedTemplates = namedPromise.getSecond()
+                                .getValue();
                             templates.addAll(loadedTemplates);
                         }
                     } catch (InterruptedException e) {
-                        Plugin.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Interrupted while loading from template loader: " + name, e));
+                        Plugin.getDefault()
+                            .getLog()
+                            .log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Interrupted while loading from template loader: " + name, e));
                     }
                 }
 
@@ -329,15 +345,16 @@ public class TemplateSelectionWizardPage extends WizardPage {
                 // Display results
                 Control control = viewer.getControl();
                 if (control != null && !control.isDisposed()) {
-                    control.getDisplay().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            setTemplates(templates);
-                            IconLoaderJob iconLoaderJob = new IconLoaderJob(templates, viewer, loadedImages, 5);
-                            iconLoaderJob.setSystem(true);
-                            iconLoaderJob.schedule(0);
-                        }
-                    });
+                    control.getDisplay()
+                        .asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                setTemplates(templates);
+                                IconLoaderJob iconLoaderJob = new IconLoaderJob(templates, viewer, loadedImages, 5);
+                                iconLoaderJob.setSystem(true);
+                                iconLoaderJob.schedule(0);
+                            }
+                        });
                 }
 
             } catch (InvalidSyntaxException ex) {
@@ -345,12 +362,13 @@ public class TemplateSelectionWizardPage extends WizardPage {
             } finally {
                 // Restore the original message to the page
                 if (!shell.isDisposed())
-                    shell.getDisplay().asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            setMessage(originalMessage);
-                        }
-                    });
+                    shell.getDisplay()
+                        .asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                setMessage(originalMessage);
+                            }
+                        });
                 if (progress != null)
                     progress.done();
             }
@@ -364,7 +382,8 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
         setMessage("Loading templates...");
         try {
-            ProgressRunner.execute(true, new LoadTemplatesJob(shell, oldMessage), getContainer(), getContainer().getShell().getDisplay());
+            ProgressRunner.execute(true, new LoadTemplatesJob(shell, oldMessage), getContainer(), getContainer().getShell()
+                .getDisplay());
         } catch (InvocationTargetException e) {
             Throwable exception = e.getTargetException();
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading templates.", exception));
@@ -378,7 +397,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
         if (!defaultTemplateImage.isDisposed())
             defaultTemplateImage.dispose();
 
-        for (Entry<Template,Image> entry : loadedImages.entrySet()) {
+        for (Entry<Template, Image> entry : loadedImages.entrySet()) {
             Image img = entry.getValue();
             if (!img.isDisposed())
                 img.dispose();
@@ -388,7 +407,9 @@ public class TemplateSelectionWizardPage extends WizardPage {
             try {
                 selected.close();
             } catch (IOException e) {
-                Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Problem cleaning up template content", e));
+                Plugin.getDefault()
+                    .getLog()
+                    .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Problem cleaning up template content", e));
             }
         }
     }
@@ -459,7 +480,8 @@ public class TemplateSelectionWizardPage extends WizardPage {
                 URI uri = template.getHelpContent();
                 if (uri != null) {
                     try {
-                        URLConnection conn = uri.toURL().openConnection();
+                        URLConnection conn = uri.toURL()
+                            .openConnection();
                         conn.setUseCaches(false);
                         tmp = IO.collect(conn.getInputStream());
                     } catch (IOException e) {
@@ -470,13 +492,14 @@ public class TemplateSelectionWizardPage extends WizardPage {
 
             final String text = tmp;
             if (control != null && !control.isDisposed()) {
-                control.getDisplay().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (!control.isDisposed())
-                            control.setText(text);
-                    }
-                });
+                control.getDisplay()
+                    .asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (!control.isDisposed())
+                                control.setText(text);
+                        }
+                    });
             }
 
             return Status.OK_STATUS;

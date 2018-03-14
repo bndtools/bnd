@@ -44,7 +44,9 @@ public class WorkspaceAnalyserJob extends Job {
 
     public WorkspaceAnalyserJob(Set<IProject> projects) {
         super(Messages.workspaceReleaseJob1);
-        this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+        this.shell = PlatformUI.getWorkbench()
+            .getDisplay()
+            .getActiveShell();
         setUser(true);
         this.projects = projects;
     }
@@ -57,7 +59,8 @@ public class WorkspaceAnalyserJob extends Job {
         }
 
         try {
-            Collection<Project> projects = Activator.getWorkspace().getAllProjects();
+            Collection<Project> projects = Activator.getWorkspace()
+                .getAllProjects();
 
             mon.beginTask(Messages.workspaceReleaseJob, projects.size() * 2);
 
@@ -113,7 +116,8 @@ public class WorkspaceAnalyserJob extends Job {
                     }
                 };
                 if (Display.getCurrent() == null) {
-                    Display.getDefault().syncExec(runnable);
+                    Display.getDefault()
+                        .syncExec(runnable);
                 } else {
                     runnable.run();
                 }
@@ -139,14 +143,16 @@ public class WorkspaceAnalyserJob extends Job {
                             return;
                         }
                         WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(projectDiffs, dialog.getReleaseOption(), dialog.isShowMessage());
-                        releaseJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
+                        releaseJob.setRule(ResourcesPlugin.getWorkspace()
+                            .getRoot());
                         releaseJob.schedule();
                     }
                 }
             };
 
             if (Display.getCurrent() == null) {
-                Display.getDefault().asyncExec(runnable);
+                Display.getDefault()
+                    .asyncExec(runnable);
             } else {
                 runnable.run();
             }

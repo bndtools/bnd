@@ -47,7 +47,7 @@ import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
 
 @Component(name = "org.bndtools.templating.repos", property = {
-        "source=workspace", Constants.SERVICE_DESCRIPTION + "=Load templates from the Workspace and Repositories", Constants.SERVICE_RANKING + "=" + ReposTemplateLoader.RANKING
+    "source=workspace", Constants.SERVICE_DESCRIPTION + "=Load templates from the Workspace and Repositories", Constants.SERVICE_RANKING + "=" + ReposTemplateLoader.RANKING
 })
 public class ReposTemplateLoader implements TemplateLoader {
 
@@ -55,7 +55,7 @@ public class ReposTemplateLoader implements TemplateLoader {
 
     private static final String NS_TEMPLATE = "org.bndtools.template";
 
-    private final ConcurrentMap<String,TemplateEngine> engines = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, TemplateEngine> engines = new ConcurrentHashMap<>();
 
     // for testing
     Workspace workspace = null;
@@ -69,12 +69,12 @@ public class ReposTemplateLoader implements TemplateLoader {
     }
 
     @Reference(cardinality = ReferenceCardinality.MULTIPLE, policy = ReferencePolicy.DYNAMIC)
-    void addTemplateEngine(TemplateEngine engine, Map<String,Object> svcProps) {
+    void addTemplateEngine(TemplateEngine engine, Map<String, Object> svcProps) {
         String name = (String) svcProps.get("name");
         engines.put(name, engine);
     }
 
-    void removeTemplateEngine(@SuppressWarnings("unused") TemplateEngine engine, Map<String,Object> svcProps) {
+    void removeTemplateEngine(@SuppressWarnings("unused") TemplateEngine engine, Map<String, Object> svcProps) {
         String name = (String) svcProps.get("name");
         engines.remove(name);
     }
@@ -97,7 +97,8 @@ public class ReposTemplateLoader implements TemplateLoader {
     @Override
     public Promise<List<Template>> findTemplates(String templateType, final Reporter reporter) {
         String filterStr = String.format("(%s=%s)", NS_TEMPLATE, templateType);
-        final Requirement requirement = new CapReqBuilder(NS_TEMPLATE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filterStr).buildSyntheticRequirement();
+        final Requirement requirement = new CapReqBuilder(NS_TEMPLATE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filterStr)
+            .buildSyntheticRequirement();
 
         // Try to get the repositories and BundleLocator from the workspace
         List<Repository> workspaceRepos;
@@ -119,26 +120,38 @@ public class ReposTemplateLoader implements TemplateLoader {
         addPreferenceConfiguredRepos(repos, reporter);
 
         // Map List<Repository> to Promise<List<Template>>
-        Promise<List<Template>> promise = repos.stream().map(repo -> promiseFactory.submit(() -> {
-            Map<Requirement,Collection<Capability>> providerMap = repo.findProviders(Collections.singleton(requirement));
-            return providerMap.get(requirement).stream().map(cap -> {
-                IdentityCapability idcap = ResourceUtils.getIdentityCapability(cap.getResource());
-                Object id = idcap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-                Object ver = idcap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-                try {
-                    String engineName = (String) cap.getAttributes().get("engine");
-                    if (engineName == null)
-                        engineName = "stringtemplate";
-                    TemplateEngine engine = engines.get(engineName);
-                    if (engine != null)
-                        return new CapabilityBasedTemplate(cap, locator, engine);
-                    reporter.error("Error loading template from resource '%s' version %s: no Template Engine available matching '%s'", id, ver, engineName);
-                } catch (Exception e) {
-                    reporter.error("Error loading template from resource '%s' version %s: %s", id, ver, e.getMessage());
-                }
-                return null;
-            }).filter(Objects::nonNull).collect(toList());
-        })).collect(toPromise(promiseFactory)).map(ll -> ll.stream().flatMap(List::stream).collect(toList()));
+        Promise<List<Template>> promise = repos.stream()
+            .map(repo -> promiseFactory.submit(() -> {
+                Map<Requirement, Collection<Capability>> providerMap = repo.findProviders(Collections.singleton(requirement));
+                return providerMap.get(requirement)
+                    .stream()
+                    .map(cap -> {
+                        IdentityCapability idcap = ResourceUtils.getIdentityCapability(cap.getResource());
+                        Object id = idcap.getAttributes()
+                            .get(IdentityNamespace.IDENTITY_NAMESPACE);
+                        Object ver = idcap.getAttributes()
+                            .get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+                        try {
+                            String engineName = (String) cap.getAttributes()
+                                .get("engine");
+                            if (engineName == null)
+                                engineName = "stringtemplate";
+                            TemplateEngine engine = engines.get(engineName);
+                            if (engine != null)
+                                return new CapabilityBasedTemplate(cap, locator, engine);
+                            reporter.error("Error loading template from resource '%s' version %s: no Template Engine available matching '%s'", id, ver, engineName);
+                        } catch (Exception e) {
+                            reporter.error("Error loading template from resource '%s' version %s: %s", id, ver, e.getMessage());
+                        }
+                        return null;
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(toList());
+            }))
+            .collect(toPromise(promiseFactory))
+            .map(ll -> ll.stream()
+                .flatMap(List::stream)
+                .collect(toList()));
 
         return promise;
     }
@@ -172,7 +185,7 @@ public class ReposTemplateLoader implements TemplateLoader {
             p.addBasicPlugin(new HttpClient(promiseFactory.executor(), promiseFactory.scheduledExecutor()));
             repo.setRegistry(p);
         }
-        Map<String,String> map = new HashMap<>();
+        Map<String, String> map = new HashMap<>();
         map.put("locations", Strings.join(uris));
         repo.setProperties(map);
         return repo;

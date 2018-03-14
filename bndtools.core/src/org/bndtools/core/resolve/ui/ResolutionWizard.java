@@ -40,11 +40,12 @@ public class ResolutionWizard extends Wizard {
     private final ILogger logger = Logger.getLogger(ResolutionWizard.class);
 
     private final ResolutionResultsWizardPage resultsPage;
-    private final Comparator<Entry<String,String>> clauseAttributeSorter = new Comparator<Map.Entry<String,String>>() {
+    private final Comparator<Entry<String, String>> clauseAttributeSorter = new Comparator<Map.Entry<String, String>>() {
         @Override
-        public int compare(Entry<String,String> e1, Entry<String,String> e2) {
+        public int compare(Entry<String, String> e1, Entry<String, String> e2) {
             // Reverse lexical ordering on keys
-            return e2.getKey().compareTo(e1.getKey());
+            return e2.getKey()
+                .compareTo(e1.getKey());
         }
     };
 
@@ -71,7 +72,8 @@ public class ResolutionWizard extends Wizard {
 
         ResolutionResult result = resultsPage.getResult();
         if (result != null && result.getOutcome() == ResolutionResult.Outcome.Resolved) {
-            resources = result.getResourceWirings().keySet();
+            resources = result.getResourceWirings()
+                .keySet();
         } else if (preserveRunBundleUnresolved) {
             return true;
         } else {
@@ -86,7 +88,9 @@ public class ResolutionWizard extends Wizard {
             Project bndProject = model.getProject();
             targetDir = bndProject.getTargetDir();
             if (targetDir == null)
-                targetDir = file.getLocation().toFile().getParentFile();
+                targetDir = file.getLocation()
+                    .toFile()
+                    .getParentFile();
 
             if (!targetDir.exists() && !targetDir.mkdirs()) {
                 throw new IOException("Could not create target directory " + targetDir);
@@ -95,7 +99,8 @@ public class ResolutionWizard extends Wizard {
             File pathsFile = new File(targetDir, file.getName() + RESOLVED_PATHS_EXTENSION);
             pathsStream = new PrintStream(pathsFile, "UTF-8");
         } catch (Exception e) {
-            logger.logError("Unable to write resolved path list in target directory for project " + file.getProject().getName(), e);
+            logger.logError("Unable to write resolved path list in target directory for project " + file.getProject()
+                .getName(), e);
         }
 
         // Generate -runbundles and path list
@@ -104,7 +109,7 @@ public class ResolutionWizard extends Wizard {
             for (Resource resource : resources) {
                 VersionedClause runBundle = resourceToRunBundle(resource);
 
-                //[cs] Skip dups
+                // [cs] Skip dups
                 if (runBundles.contains(runBundle)) {
                     continue;
                 }
@@ -113,7 +118,8 @@ public class ResolutionWizard extends Wizard {
                 if (pathsStream != null) {
                     VersionedClause runBundleWithUri = runBundle.clone();
                     URI uri = ResourceUtils.getURI(ResourceUtils.getContentCapability(resource));
-                    runBundleWithUri.getAttribs().put(BndConstants.RESOLUTION_URI_ATTRIBUTE, uri.toString());
+                    runBundleWithUri.getAttribs()
+                        .put(BndConstants.RESOLUTION_URI_ATTRIBUTE, uri.toString());
 
                     StringBuilder builder = new StringBuilder();
                     runBundleWithUri.formatTo(builder, clauseAttributeSorter);
@@ -124,7 +130,8 @@ public class ResolutionWizard extends Wizard {
             Collections.sort(runBundles, new Comparator<VersionedClause>() {
                 @Override
                 public int compare(VersionedClause vc1, VersionedClause vc2) {
-                    int diff = vc1.getName().compareTo(vc2.getName());
+                    int diff = vc1.getName()
+                        .compareTo(vc2.getName());
                     if (diff != 0)
                         return diff;
                     String r1 = vc1.getVersionRange();

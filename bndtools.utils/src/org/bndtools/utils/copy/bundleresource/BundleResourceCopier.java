@@ -20,8 +20,7 @@ public class BundleResourceCopier {
     /**
      * Constructor
      *
-     * @param bundle
-     *            the bundle holding the resources
+     * @param bundle the bundle holding the resources
      */
     public BundleResourceCopier(Bundle bundle) {
         super();
@@ -50,17 +49,14 @@ public class BundleResourceCopier {
     /**
      * Add/remove a file (backed by a bundle resource) to/from a directory.
      *
-     * @param dstDir
-     *            the destination directory under which to add/remove a file
-     * @param bundleDir
-     *            the bundle directory under which the resource is located
-     * @param relativePath
-     *            the path of the resource (relative to bundleDir) in the bundle. The resource will be added/removed
-     *            to/from the same path relative to dstDir. This parameter must only hold the path of a file.
+     * @param dstDir the destination directory under which to add/remove a file
+     * @param bundleDir the bundle directory under which the resource is located
+     * @param relativePath the path of the resource (relative to bundleDir) in the bundle. The resource will be
+     *            added/removed to/from the same path relative to dstDir. This parameter must only hold the path of a
+     *            file.
      * @param mode
-     * @throws IOException
-     *             when relativePath is null or empty, when the resource could not be found in the bundle, when the
-     *             directory holding the file could not be created (when add is true), or when the file could not be
+     * @throws IOException when relativePath is null or empty, when the resource could not be found in the bundle, when
+     *             the directory holding the file could not be created (when add is true), or when the file could not be
      *             removed (when add is false)
      */
     public Collection<File> addOrRemoveFile(File dstDir, String bundleDir, String relativePath, CopyMode mode) throws IOException {
@@ -107,18 +103,14 @@ public class BundleResourceCopier {
     /**
      * Add/remove files (backed by bundle resources) to/from a directory.
      *
-     * @param dstDir
-     *            the destination directory under which to add/remove files
-     * @param bundleDir
-     *            the bundle directory under which the resources are located
-     * @param relativePaths
-     *            the paths of the resources (relative to bundleDir) in the bundle. The resources will be added/removed
-     *            to/from the same paths relative to dstDir. This parameter must only hold paths of files.
+     * @param dstDir the destination directory under which to add/remove files
+     * @param bundleDir the bundle directory under which the resources are located
+     * @param relativePaths the paths of the resources (relative to bundleDir) in the bundle. The resources will be
+     *            added/removed to/from the same paths relative to dstDir. This parameter must only hold paths of files.
      * @param mode
-     * @throws IOException
-     *             when a relative path is null or empty, when a resource could not be found in the bundle, when a
-     *             directory holding a file could not be created (when add is true), or when a file could not be removed
-     *             (when add is false)
+     * @throws IOException when a relative path is null or empty, when a resource could not be found in the bundle, when
+     *             a directory holding a file could not be created (when add is true), or when a file could not be
+     *             removed (when add is false)
      */
     public Collection<File> addOrRemoveFiles(File dstDir, String bundleDir, String[] relativePaths, CopyMode mode) throws IOException {
         List<File> affected = new LinkedList<>();
@@ -131,19 +123,15 @@ public class BundleResourceCopier {
     /**
      * Recursively add/remove a directory and its files (backed by bundle resources) to/from a directory.
      *
-     * @param dstDir
-     *            the destination directory under which to add/remove the directory and its files
-     * @param bundleDir
-     *            the bundle directory under which the resources are located
-     * @param relativePath
-     *            the path of the resources (relative to bundleDir) in the bundle. The resources will be recursively
-     *            added/removed to/from the same paths relative to dstDir. This parameter must only hold a paths of a
-     *            directory. When null then "/" will be used.
+     * @param dstDir the destination directory under which to add/remove the directory and its files
+     * @param bundleDir the bundle directory under which the resources are located
+     * @param relativePath the path of the resources (relative to bundleDir) in the bundle. The resources will be
+     *            recursively added/removed to/from the same paths relative to dstDir. This parameter must only hold a
+     *            paths of a directory. When null then "/" will be used.
      * @param mode
      * @return A list of existing files that were/would have been affected.
-     * @throws IOException
-     *             when a relative path is null or empty, when a resource could not be found in the bundle, when a
-     *             directory holding a file could not be created (if add is true), or when a file could not be removed
+     * @throws IOException when a relative path is null or empty, when a resource could not be found in the bundle, when
+     *             a directory holding a file could not be created (if add is true), or when a file could not be removed
      *             (when add is false)
      */
     public Collection<File> addOrRemoveDirectory(File dstDir, String bundleDir, String relativePath, CopyMode mode) throws IOException {
@@ -169,19 +157,15 @@ public class BundleResourceCopier {
     /**
      * Recursively add/remove directories and their files (backed by bundle resources) to/from a directory.
      *
-     * @param dstDir
-     *            the destination directory under which to add/remove directories and files
-     * @param bundleDir
-     *            the bundle directory under which the resources are located
-     * @param relativePaths
-     *            the paths of the resources (relative to bundleDir) in the bundle. The resources will be recursively
-     *            added/removed to/from the same paths relative to dstDir. This parameter must only hold paths of
-     *            directories.
+     * @param dstDir the destination directory under which to add/remove directories and files
+     * @param bundleDir the bundle directory under which the resources are located
+     * @param relativePaths the paths of the resources (relative to bundleDir) in the bundle. The resources will be
+     *            recursively added/removed to/from the same paths relative to dstDir. This parameter must only hold
+     *            paths of directories.
      * @param mode
-     * @throws IOException
-     *             when a relative path is null or empty, when a resource could not be found in the bundle, when a
-     *             directory holding a file could not be created (when add is true), or when a file could not be removed
-     *             (when add is false)
+     * @throws IOException when a relative path is null or empty, when a resource could not be found in the bundle, when
+     *             a directory holding a file could not be created (when add is true), or when a file could not be
+     *             removed (when add is false)
      */
     public void addOrRemoveDirectories(File dstDir, String bundleDir, String[] relativePaths, CopyMode mode) throws IOException {
         for (String templatePath : relativePaths) {

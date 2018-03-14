@@ -27,7 +27,8 @@ import bndtools.utils.MessageHyperlinkAdapter;
 public class TestSuitesPage extends FormPage {
 
     private final BndEditModel model;
-    private final Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/junit.gif").createImage();
+    private final Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/junit.gif")
+        .createImage();
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
@@ -53,7 +54,8 @@ public class TestSuitesPage extends FormPage {
         form.setText("Tests");
         form.setImage(junitImg);
         toolkit.decorateFormHeading(form.getForm());
-        form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
+        form.getForm()
+            .addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
         Composite body = form.getBody();
         MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
@@ -83,7 +85,8 @@ public class TestSuitesPage extends FormPage {
         leftPanel.setLayout(layout);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        suitesPart.getSection().setLayoutData(gd);
+        suitesPart.getSection()
+            .setLayoutData(gd);
 
         layout = new GridLayout();
         rightPanel.setLayout(layout);
