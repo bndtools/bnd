@@ -36,6 +36,7 @@ public class BundleId implements Comparable<BundleId> {
 		return Objects.hash(bsn, version);
 	}
 
+	@Override
 	public int compareTo(BundleId other) {
 		int result = bsn.compareTo(other.bsn);
 		if (result != 0)

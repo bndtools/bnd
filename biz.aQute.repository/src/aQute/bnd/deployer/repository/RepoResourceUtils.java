@@ -31,8 +31,8 @@ public final class RepoResourceUtils {
 	private static final int READ_AHEAD_MAX = 5 * 1024 * 1024;
 
 	public static void readIndex(String name, URI baseUri, InputStream stream,
-			Collection<IRepositoryContentProvider> contentProviders, IRepositoryIndexProcessor listener, LogService log)
-					throws Exception {
+		Collection<IRepositoryContentProvider> contentProviders, IRepositoryIndexProcessor listener, LogService log)
+		throws Exception {
 		// Make sure we have a buffering stream
 		try (InputStream bufferedStream = stream.markSupported() ? stream : new BufferedInputStream(stream)) {
 			// Find a compatible content provider for the input
@@ -52,9 +52,9 @@ public final class RepoResourceUtils {
 					break;
 				} else if (checkResult.getDecision() == Decision.undecided) {
 					log.log(LogService.LOG_WARNING,
-							String.format(
-									"Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
-									provider.getName(), baseUri, checkResult.getMessage()));
+						String.format(
+							"Content provider '%s' was unable to determine compatibility with index at URL '%s': %s",
+							provider.getName(), baseUri, checkResult.getMessage()));
 					if (maybeSelectedProvider == null)
 						maybeSelectedProvider = provider;
 				}
@@ -66,12 +66,12 @@ public final class RepoResourceUtils {
 				if (maybeSelectedProvider != null) {
 					selectedProvider = maybeSelectedProvider;
 					log.log(LogService.LOG_WARNING,
-							String.format(
-									"No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
-									selectedProvider.getName()));
+						String.format(
+							"No content provider matches the specified index unambiguously. Selected '%s' arbitrarily.",
+							selectedProvider.getName()));
 				} else {
 					throw new IOException(
-							"Invalid repository index: no configured content provider understands the specified index.");
+						"Invalid repository index: no configured content provider understands the specified index.");
 				}
 			}
 
@@ -84,18 +84,20 @@ public final class RepoResourceUtils {
 		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identityCaps.isEmpty())
 			throw new IllegalArgumentException("Resource has no identity capability.");
-		return identityCaps.iterator().next();
+		return identityCaps.iterator()
+			.next();
 	}
 
 	public static String getResourceIdentity(Resource resource) {
-		return (String) getIdentityCapability(resource).getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+		return (String) getIdentityCapability(resource).getAttributes()
+			.get(IdentityNamespace.IDENTITY_NAMESPACE);
 	}
 
 	public static Version getResourceVersion(Resource resource) {
 		Version result;
 
 		Object versionObj = getIdentityCapability(resource).getAttributes()
-				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 		if (versionObj == null) {
 			result = Version.emptyVersion;
 		} else if (versionObj instanceof org.osgi.framework.Version) {
@@ -113,7 +115,10 @@ public final class RepoResourceUtils {
 		if (caps.isEmpty())
 			throw new IllegalArgumentException("Resource has no content capability");
 
-		Object uri = caps.iterator().next().getAttributes().get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
+		Object uri = caps.iterator()
+			.next()
+			.getAttributes()
+			.get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
 		if (uri == null)
 			throw new IllegalArgumentException("Resource content has no 'uri' attribute.");
 		if (uri instanceof URI)
@@ -136,17 +141,21 @@ public final class RepoResourceUtils {
 		if (caps.isEmpty())
 			return null;
 
-		Object contentObj = caps.iterator().next().getAttributes().get(ContentNamespace.CONTENT_NAMESPACE);
+		Object contentObj = caps.iterator()
+			.next()
+			.getAttributes()
+			.get(ContentNamespace.CONTENT_NAMESPACE);
 		if (contentObj == null)
 			return null;
 		if (contentObj instanceof String)
 			return (String) contentObj;
 
-		throw new IllegalArgumentException(
-				"Content attribute is wrong type: " + contentObj.getClass().toString() + " (expected String).");
+		throw new IllegalArgumentException("Content attribute is wrong type: " + contentObj.getClass()
+			.toString() + " (expected String).");
 	}
 
-	public static List<Resource> narrowVersionsByVersionRange(SortedMap<Version,Resource> versionMap, String rangeStr) {
+	public static List<Resource> narrowVersionsByVersionRange(SortedMap<Version, Resource> versionMap,
+		String rangeStr) {
 		List<Resource> result;
 		if (aQute.bnd.osgi.Constants.VERSION_ATTR_LATEST.equals(rangeStr)) {
 			Version highest = versionMap.lastKey();
@@ -159,7 +168,7 @@ public final class RepoResourceUtils {
 				versionMap = versionMap.tailMap(range.getLow());
 
 			result = new ArrayList<>(versionMap.size());
-			for (Entry<Version,Resource> entry : versionMap.entrySet()) {
+			for (Entry<Version, Resource> entry : versionMap.entrySet()) {
 				Version version = entry.getKey();
 				if (range == null || range.includes(version))
 					result.add(entry.getValue());

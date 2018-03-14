@@ -7,35 +7,35 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Scope {
-	final Map<String,Scope>	children	= new LinkedHashMap<>();
+	final Map<String, Scope>	children	= new LinkedHashMap<>();
 
 	// class: slashed name
 	// field: name ":" typed
 	// constructor: ":(" typed* ")" typed
 	// method: name ":(" typed* ")" typed
-	final String			name;
+	final String				name;
 
-	Access					access;
-	Kind					kind;
-	Scope					enclosing;
-	Scope					declaring;
-	GenericParameter		typeVars[];
-	Map<String,String[]>	name2bounds;
+	Access						access;
+	Kind						kind;
+	Scope						enclosing;
+	Scope						declaring;
+	GenericParameter			typeVars[];
+	Map<String, String[]>		name2bounds;
 
 	// class: super
 	// field: type
 	// constructor: void
 	// method: return
-	GenericType				base;
+	GenericType					base;
 
 	// class: interfaces
 	// constructor: args
 	// method: args
-	GenericType[]			parameters;
+	GenericType[]				parameters;
 
 	// constructor: exceptions
 	// method: exceptions
-	GenericType[]			exceptions;
+	GenericType[]				exceptions;
 
 	// class: super interfaces*
 	// field: type
@@ -144,17 +144,21 @@ public class Scope {
 	}
 
 	public void cleanRoot() {
-		children.entrySet().removeIf(entry -> !entry.getValue().isTop());
+		children.entrySet()
+			.removeIf(entry -> !entry.getValue()
+				.isTop());
 	}
 
 	public void prune(EnumSet<Access> level) {
-		Iterator<Map.Entry<String,Scope>> i = children.entrySet().iterator();
+		Iterator<Map.Entry<String, Scope>> i = children.entrySet()
+			.iterator();
 		while (i.hasNext()) {
-			Map.Entry<String,Scope> entry = i.next();
+			Map.Entry<String, Scope> entry = i.next();
 			if (!level.contains(entry.getValue().access))
 				i.remove();
 			else
-				entry.getValue().prune(level);
+				entry.getValue()
+					.prune(level);
 		}
 	}
 

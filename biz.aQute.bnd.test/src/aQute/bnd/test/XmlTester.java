@@ -39,6 +39,7 @@ public class XmlTester {
 	public XmlTester(InputStream in, final String... namespace) throws Exception {
 		xpath.setNamespaceContext(new NamespaceContext() {
 
+			@Override
 			public Iterator<String> getPrefixes(String namespaceURI) {
 				ArrayList<String> result = new ArrayList<>(namespace.length / 2);
 				for (int i = 0; i < namespace.length; i += 2) {
@@ -47,6 +48,7 @@ public class XmlTester {
 				return result.iterator();
 			}
 
+			@Override
 			public String getPrefix(String namespaceURI) {
 				for (int i = 0; i < namespace.length; i += 2) {
 					if (namespaceURI.equals(namespace[i + 1]))
@@ -55,6 +57,7 @@ public class XmlTester {
 				return null;
 			}
 
+			@Override
 			public String getNamespaceURI(String prefix) {
 				for (int i = 0; i < namespace.length; i += 2) {
 					if (prefix.equals(namespace[i]))
@@ -85,7 +88,8 @@ public class XmlTester {
 		System.err.println(expr);
 		String o = (String) xpath.evaluate(expr, document, XPathConstants.STRING);
 		assertNotNull(o);
-		assertEquals(value, o.trim().replaceAll("\n", "\\\\n"));
+		assertEquals(value, o.trim()
+			.replaceAll("\n", "\\\\n"));
 	}
 
 	public void assertNoAttribute(String expr) throws XPathExpressionException {

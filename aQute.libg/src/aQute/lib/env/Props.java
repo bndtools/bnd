@@ -8,14 +8,14 @@ import java.util.Set;
 
 import aQute.lib.collections.SortedList;
 
-public class Props implements Map<String,String> {
+public class Props implements Map<String, String> {
 
 	/**
 	 */
 	static String				EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
 
-	private Map<String,String>	map;
-	static Map<String,String>	EMPTY		= Collections.emptyMap();
+	private Map<String, String>	map;
+	static Map<String, String>	EMPTY		= Collections.emptyMap();
 	public static Props			EMPTY_ATTRS	= new Props();
 
 	static {
@@ -30,6 +30,7 @@ public class Props implements Map<String,String> {
 		}
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -41,6 +42,7 @@ public class Props implements Map<String,String> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsKey(Object name) {
@@ -58,6 +60,7 @@ public class Props implements Map<String,String> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsValue(Object value) {
@@ -68,13 +71,15 @@ public class Props implements Map<String,String> {
 		return map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<String,String>> entrySet() {
+	@Override
+	public Set<java.util.Map.Entry<String, String>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
 
 		return map.entrySet();
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public String get(Object key) {
@@ -99,10 +104,12 @@ public class Props implements Map<String,String> {
 		return s;
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map == null || map.isEmpty();
 	}
 
+	@Override
 	public Set<String> keySet() {
 		if (map == null)
 			return EMPTY.keySet();
@@ -110,6 +117,7 @@ public class Props implements Map<String,String> {
 		return map.keySet();
 	}
 
+	@Override
 	public String put(String key, String value) {
 		if (key == null)
 			return null;
@@ -120,11 +128,13 @@ public class Props implements Map<String,String> {
 		return map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends String, ? extends String> map) {
-		for (Map.Entry< ? extends String, ? extends String> e : map.entrySet())
+	@Override
+	public void putAll(Map<? extends String, ? extends String> map) {
+		for (Map.Entry<? extends String, ? extends String> e : map.entrySet())
 			put(e.getKey(), e.getValue());
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public String remove(Object var0) {
@@ -141,12 +151,14 @@ public class Props implements Map<String,String> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		if (map == null)
 			return 0;
 		return map.size();
 	}
 
+	@Override
 	public Collection<String> values() {
 		if (map == null)
 			return EMPTY.values();
@@ -168,7 +180,7 @@ public class Props implements Map<String,String> {
 	public void append(StringBuilder sb) {
 		try {
 			String del = "";
-			for (Map.Entry<String,String> e : entrySet()) {
+			for (Map.Entry<String, String> e : entrySet()) {
 				sb.append(del);
 				sb.append(e.getKey());
 

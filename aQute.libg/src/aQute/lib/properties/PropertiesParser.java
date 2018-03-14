@@ -19,7 +19,8 @@ public class PropertiesParser {
 
 	static public Properties parse(URI input) throws Exception {
 
-		Reader reader = IO.reader(input.toURL().openStream());
+		Reader reader = IO.reader(input.toURL()
+			.openStream());
 		return parse(reader, input);
 	}
 
@@ -92,7 +93,8 @@ public class PropertiesParser {
 				//
 
 				if (section != null)
-					name.append(section).append(".");
+					name.append(section)
+						.append(".");
 
 				while (Character.isJavaIdentifierPart(c) || c == '-') {
 					name.append((char) c);
@@ -190,8 +192,10 @@ public class PropertiesParser {
 				while (Character.isWhitespace(value.charAt(value.length() - 1)))
 					value.deleteCharAt(value.length() - 1);
 
-				if (name.toString().equals("-include")) {
-					for (String uri : name.toString().split("\\s*,\\s*")) {
+				if (name.toString()
+					.equals("-include")) {
+					for (String uri : name.toString()
+						.split("\\s*,\\s*")) {
 						boolean mandatory = true;
 						prefixes: while (true) {
 							if (uri.startsWith("-")) {
@@ -202,9 +206,10 @@ public class PropertiesParser {
 						}
 
 						URI u = input.resolve(uri);
-						try (Reader inc = IO.reader(u.toURL().openStream())) {
+						try (Reader inc = IO.reader(u.toURL()
+							.openStream())) {
 							Properties p = parse(u);
-							for (Enumeration< ? > e = p.propertyNames(); e.hasMoreElements();) {
+							for (Enumeration<?> e = p.propertyNames(); e.hasMoreElements();) {
 								String k = (String) e.nextElement();
 								String v = p.getProperty(k);
 

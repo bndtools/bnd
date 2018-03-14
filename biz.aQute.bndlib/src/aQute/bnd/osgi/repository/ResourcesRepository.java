@@ -24,7 +24,7 @@ public class ResourcesRepository extends BaseRepository {
 		add(resource);
 	}
 
-	public ResourcesRepository(Collection< ? extends Resource> resource) {
+	public ResourcesRepository(Collection<? extends Resource> resource) {
 		addAll(resource);
 	}
 
@@ -51,11 +51,11 @@ public class ResourcesRepository extends BaseRepository {
 		}
 	}
 
-	public void addAll(Collection< ? extends Resource> resources) {
+	public void addAll(Collection<? extends Resource> resources) {
 		resources.forEach(this::add);
 	}
 
-	protected void set(Collection< ? extends Resource> resources) {
+	protected void set(Collection<? extends Resource> resources) {
 		this.resources.clear();
 		addAll(resources);
 	}

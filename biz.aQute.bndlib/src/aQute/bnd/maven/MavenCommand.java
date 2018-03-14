@@ -49,8 +49,8 @@ import aQute.libg.command.Command;
 
 public class MavenCommand extends Processor {
 	private final static Logger	logger		= LoggerFactory.getLogger(MavenCommand.class);
-	final Settings	settings	= new Settings();
-	File			temp;
+	final Settings				settings	= new Settings();
+	File						temp;
 
 	public MavenCommand() {}
 
@@ -109,20 +109,20 @@ public class MavenCommand extends Processor {
 	private void help() {
 		System.err.printf("Usage:%n");
 		System.err.printf("  maven %n" //
-				+ "  [-temp <dir>]            use as temp directory%n" //
-				+ "  settings                 show maven settings%n" //
-				+ "  bundle                   turn a bundle into a maven bundle%n" //
-				+ "    [-properties <file>]   provide properties, properties starting with javadoc are options for javadoc, like javadoc-tag=...%n"
-				+ "    [-javadoc <file|url>]  where to find the javadoc (zip/dir), otherwise generated%n" //
-				+ "    [-source <file|url>]   where to find the source (zip/dir), otherwise from OSGI-OPT/src%n" //
-				+ "    [-scm <url>]           required scm in pom, otherwise from Bundle-SCM%n" //
-				+ "    [-url <url>]           required project url in pom%n" //
-				+ "    [-bsn bsn]             overrides bsn%n" //
-				+ "    [-version <version>]   overrides version%n" //
-				+ "    [-developer <email>]   developer email%n" //
-				+ "    [-nodelete]            do not delete temp files%n" //
-				+ "    [-passphrase <gpgp passphrase>] signer password%n"//
-				+ "        <file|url>%n");
+			+ "  [-temp <dir>]            use as temp directory%n" //
+			+ "  settings                 show maven settings%n" //
+			+ "  bundle                   turn a bundle into a maven bundle%n" //
+			+ "    [-properties <file>]   provide properties, properties starting with javadoc are options for javadoc, like javadoc-tag=...%n"
+			+ "    [-javadoc <file|url>]  where to find the javadoc (zip/dir), otherwise generated%n" //
+			+ "    [-source <file|url>]   where to find the source (zip/dir), otherwise from OSGI-OPT/src%n" //
+			+ "    [-scm <url>]           required scm in pom, otherwise from Bundle-SCM%n" //
+			+ "    [-url <url>]           required project url in pom%n" //
+			+ "    [-bsn bsn]             overrides bsn%n" //
+			+ "    [-version <version>]   overrides version%n" //
+			+ "    [-developer <email>]   developer email%n" //
+			+ "    [-nodelete]            do not delete temp files%n" //
+			+ "    [-passphrase <gpgp passphrase>] signer password%n"//
+			+ "        <file|url>%n");
 	}
 
 	/**
@@ -207,7 +207,8 @@ public class MavenCommand extends Processor {
 		if (developers.isEmpty()) {
 			String email = settings.remove("email");
 			if (email == null)
-				error("No developer email set, you can set global default email with: bnd global email Peter.Kriens@aQute.biz");
+				error(
+					"No developer email set, you can set global default email with: bnd global email Peter.Kriens@aQute.biz");
 			else
 				developers.add(email);
 		}
@@ -256,16 +257,20 @@ public class MavenCommand extends Processor {
 		for (String d : developers)
 			pom.addDeveloper(d);
 
-		Set<String> exports = OSGiHeader.parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE))
-				.keySet();
+		Set<String> exports = OSGiHeader.parseHeader(manifest.getMainAttributes()
+			.getValue(Constants.EXPORT_PACKAGE))
+			.keySet();
 
 		Jar sourceJar;
 		if (source == null) {
 			logger.debug("Splitting source code");
 			sourceJar = new Jar("source");
-			for (Map.Entry<String,Resource> entry : binaryJar.getResources().entrySet()) {
-				if (entry.getKey().startsWith("OSGI-OPT/src")) {
-					sourceJar.putResource(entry.getKey().substring("OSGI-OPT/src/".length()), entry.getValue());
+			for (Map.Entry<String, Resource> entry : binaryJar.getResources()
+				.entrySet()) {
+				if (entry.getKey()
+					.startsWith("OSGI-OPT/src")) {
+					sourceJar.putResource(entry.getKey()
+						.substring("OSGI-OPT/src/".length()), entry.getValue());
 				}
 			}
 			copyInfo(binaryJar, sourceJar, "source");
@@ -356,22 +361,28 @@ public class MavenCommand extends Processor {
 	}
 
 	private void copyInfoHeader(Manifest sm, Manifest dm, String key, String value) {
-		String v = sm.getMainAttributes().getValue(key);
+		String v = sm.getMainAttributes()
+			.getValue(key);
 		if (v == null) {
 			logger.debug("no source for {}", key);
 			return;
 		}
 
-		if (dm.getMainAttributes().getValue(key) != null) {
+		if (dm.getMainAttributes()
+			.getValue(key) != null) {
 			logger.debug("already have {}", key);
 			return;
 		}
 
-		dm.getMainAttributes().putValue(key, v + value);
+		dm.getMainAttributes()
+			.putValue(key, v + value);
 	}
 
 	private void copyInfoResource(Jar source, Jar dest, String type) {
-		if (source.getResources().containsKey(type) && !dest.getResources().containsKey(type))
+		if (source.getResources()
+			.containsKey(type)
+			&& !dest.getResources()
+				.containsKey(type))
 			dest.putResource(type, source.getResource(type));
 	}
 
@@ -454,7 +465,7 @@ public class MavenCommand extends Processor {
 		command.add("-tag");
 		command.add("noimplement:t:Consumers of this API must not implement this interface");
 
-		for (Enumeration< ? > e = pp.propertyNames(); e.hasMoreElements();) {
+		for (Enumeration<?> e = pp.propertyNames(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			String value = pp.getProperty(key);
 
@@ -495,11 +506,13 @@ public class MavenCommand extends Processor {
 
 		StringBuilder sb = new StringBuilder();
 		String sep = "Licensed under ";
-		for (Entry<String,Attrs> entry : map.entrySet()) {
+		for (Entry<String, Attrs> entry : map.entrySet()) {
 			sb.append(sep);
 			String key = entry.getKey();
-			String link = entry.getValue().get("link");
-			String description = entry.getValue().get("description");
+			String link = entry.getValue()
+				.get("link");
+			String description = entry.getValue()
+				.get("description");
 
 			if (description == null)
 				description = key;
@@ -598,13 +611,14 @@ public class MavenCommand extends Processor {
 						Set<Pom> dependencies = pom.getDependencies(Scope.compile, urls2);
 						for (Pom dep : dependencies) {
 							System.err.printf("%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(),
-									dep.getVersion());
+								dep.getVersion());
 							a.addClasspath(dep.getArtifact());
 						}
 						pw.println(a.getClasspath());
 						a.build();
 
-						TreeSet<PackageRef> sorted = new TreeSet<>(a.getImports().keySet());
+						TreeSet<PackageRef> sorted = new TreeSet<>(a.getImports()
+							.keySet());
 						for (PackageRef p : sorted) {
 							pw.printf("%-40s\n", p);
 						}

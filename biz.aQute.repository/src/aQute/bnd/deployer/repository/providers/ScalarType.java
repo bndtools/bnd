@@ -1,7 +1,10 @@
 package aQute.bnd.deployer.repository.providers;
 
 public enum ScalarType {
-	String, Version, Long, Double;
+	String,
+	Version,
+	Long,
+	Double;
 
 	public Object parseString(String input) {
 		Object result;

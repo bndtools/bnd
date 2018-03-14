@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(value = {
-		ElementType.FIELD
+	ElementType.FIELD
 })
 public @interface Numeric {
 	long min() default Long.MIN_VALUE;

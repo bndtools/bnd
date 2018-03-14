@@ -37,7 +37,7 @@ class SearchRepository extends InnerRepository {
 	final boolean				transitive;
 
 	SearchRepository(MavenRepository repo, File location, String query, String queryUrl, Reporter reporter,
-			HttpClient client, boolean transitive) throws Exception {
+		HttpClient client, boolean transitive) throws Exception {
 		super(repo, location);
 		this.query = query;
 		this.queryUrl = queryUrl;
@@ -48,17 +48,19 @@ class SearchRepository extends InnerRepository {
 		read();
 	}
 
+	@Override
 	void refresh() throws Exception {
 		SearchResult result = query();
 		Traverser traverser = new Traverser(getMavenRepository(), client, transitive)
-				.revisions(result.response.docsToRevisions());
-		Promise<Map<Archive,Resource>> p = traverser.getResources();
-		Collection<Resource> resources = p.getValue().values();
+			.revisions(result.response.docsToRevisions());
+		Promise<Map<Archive, Resource>> p = traverser.getResources();
+		Collection<Resource> resources = p.getValue()
+			.values();
 		set(resources);
 		save(getMavenRepository().getName(), resources, getLocation());
 	}
 
-	void save(String name, Collection< ? extends Resource> resources, File location) throws Exception, IOException {
+	void save(String name, Collection<? extends Resource> resources, File location) throws Exception, IOException {
 		XMLResourceGenerator generator = new XMLResourceGenerator();
 		generator.resources(resources);
 		generator.name(name);
@@ -76,6 +78,7 @@ class SearchRepository extends InnerRepository {
 		}
 	}
 
+	@Override
 	boolean isStale() {
 		if (!getLocation().isFile())
 			return true;
@@ -99,10 +102,10 @@ class SearchRepository extends InnerRepository {
 				logger.debug("Searching {}", query);
 
 				SearchResult result = client.build()
-						.headers("User-Agent", "Bnd")
-						.useCache(cacheFile, DEFAULT_MAX_STALE)
-						.get(SearchResult.class)
-						.go(url);
+					.headers("User-Agent", "Bnd")
+					.useCache(cacheFile, DEFAULT_MAX_STALE)
+					.get(SearchResult.class)
+					.go(url);
 
 				logger.debug("Searched {}", result);
 
@@ -120,7 +123,10 @@ class SearchRepository extends InnerRepository {
 		public SearchResult() throws Exception {};
 
 		public long getLastModified() {
-			return Arrays.stream(response.docs).mapToLong(doc -> doc.timestamp).max().orElse(-1);
+			return Arrays.stream(response.docs)
+				.mapToLong(doc -> doc.timestamp)
+				.max()
+				.orElse(-1);
 		}
 
 		public ResponseHeader	responseHeader;
@@ -130,7 +136,7 @@ class SearchRepository extends InnerRepository {
 	public static class ResponseHeader {
 		public ResponseHeader() throws Exception {}
 
-		public Map<String,String> params;
+		public Map<String, String> params;
 		/*
 		 * "responseHeader":{ "params":{ "spellcheck":"true", "fl":
 		 * "id,g,a,latestVersion,p,ec,repositoryId,text,timestamp,versionCount",
@@ -151,7 +157,9 @@ class SearchRepository extends InnerRepository {
 		public List<Revision> docsToRevisions() {
 			if (list != null)
 				return list;
-			return list = Arrays.stream(docs).map(Doc::toRevision).collect(toList());
+			return list = Arrays.stream(docs)
+				.map(Doc::toRevision)
+				.collect(toList());
 		}
 		/*
 		 * "response":{ "numFound":648, "start":0, "docs":[ ... ] }
@@ -177,9 +185,11 @@ class SearchRepository extends InnerRepository {
 		}
 
 		public Revision toRevision() {
-			return Program.valueOf(g, a).version(getVersion());
+			return Program.valueOf(g, a)
+				.version(getVersion());
 		}
 
+		@Override
 		public String toString() {
 			return String.format("%s:%s:%s", g, a, getVersion());
 		}

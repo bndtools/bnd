@@ -55,7 +55,7 @@ public class SimpleIndexer {
 		void analyzeFile(File file, ResourceBuilder resourceBuilder) throws Exception;
 	}
 
-	private static final Logger				logger		= LoggerFactory.getLogger(SimpleIndexer.class);
+	private static final Logger logger = LoggerFactory.getLogger(SimpleIndexer.class);
 
 	/**
 	 * @param files the files to include in the index
@@ -101,8 +101,7 @@ public class SimpleIndexer {
 	 * @throws Exception if the file cannot be indexed
 	 */
 	public static void index(Collection<File> files, OutputStream outputStream, URI base, boolean compress, String name,
-		FileAnalyzer analyzer)
-		throws Exception {
+		FileAnalyzer analyzer) throws Exception {
 
 		index(files, outputStream, base, compress, name, -1, analyzer);
 	}

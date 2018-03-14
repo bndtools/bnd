@@ -135,10 +135,10 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       include projectGraph as String[]
 
       /* Apply workspace plugin to root project */
-      gradle.projectsLoaded { gradle ->
-        gradle.rootProject.ext.bnd_cnf = cnf
-        gradle.rootProject.ext.bndWorkspace = workspace
-        gradle.rootProject.apply plugin: BndWorkspacePlugin.class
+      gradle.rootProject {
+        ext.bnd_cnf = cnf
+        ext.bndWorkspace = workspace
+        apply plugin: BndWorkspacePlugin.class
       }
     }
   }

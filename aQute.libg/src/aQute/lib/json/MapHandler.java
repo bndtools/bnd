@@ -12,11 +12,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class MapHandler extends Handler {
-	final Class< ? >	rawClass;
-	final Type			keyType;
-	final Type			valueType;
+	final Class<?>	rawClass;
+	final Type		keyType;
+	final Type		valueType;
 
-	MapHandler(Class< ? > rawClass, Type keyType, Type valueType) {
+	MapHandler(Class<?> rawClass, Type keyType, Type valueType) {
 
 		if (rawClass != Map.class) {
 			ParameterizedType type = findAncestor(rawClass, Map.class);
@@ -45,15 +45,15 @@ public class MapHandler extends Handler {
 	}
 
 	private Type resolve(Type type) {
-		if (type instanceof TypeVariable< ? >) {
-			TypeVariable< ? > tv = (TypeVariable< ? >) type;
+		if (type instanceof TypeVariable<?>) {
+			TypeVariable<?> tv = (TypeVariable<?>) type;
 			Type[] bounds = tv.getBounds();
 			return resolve(bounds[bounds.length - 1]);
 		}
 		return type;
 	}
 
-	private ParameterizedType findAncestor(Class< ? > start, Class< ? > target) {
+	private ParameterizedType findAncestor(Class<?> start, Class<?> target) {
 		if (start == null || start == Object.class)
 			return null;
 
@@ -63,7 +63,7 @@ public class MapHandler extends Handler {
 					return (ParameterizedType) t;
 			}
 		}
-		for (Class< ? > impls : start.getInterfaces()) {
+		for (Class<?> impls : start.getInterfaces()) {
 			ParameterizedType ancestor = findAncestor(impls, target);
 			if (ancestor != null)
 				return ancestor;
@@ -73,19 +73,22 @@ public class MapHandler extends Handler {
 	}
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
-		Map< ? , ? > map = (Map< ? , ? >) object;
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
+		Map<?, ?> map = (Map<?, ?>) object;
 
 		app.append("{");
 		String del = "";
-		for (Map.Entry< ? , ? > e : map.entrySet())
+		for (Map.Entry<?, ?> e : map.entrySet())
 			try {
 				app.append(del);
 				String key;
 				if (e.getKey() != null && (keyType == String.class || keyType == Object.class))
-					key = e.getKey().toString();
+					key = e.getKey()
+						.toString();
 				else {
-					key = app.codec.enc().put(e.getKey()).toString();
+					key = app.codec.enc()
+						.put(e.getKey())
+						.toString();
 				}
 				StringHandler.string(app, key);
 				app.append(":");
@@ -102,7 +105,8 @@ public class MapHandler extends Handler {
 		assert r.current() == '{';
 
 		@SuppressWarnings("unchecked")
-		Map<Object,Object> map = (Map<Object,Object>) rawClass.getConstructor().newInstance();
+		Map<Object, Object> map = (Map<Object, Object>) rawClass.getConstructor()
+			.newInstance();
 
 		int c = r.next();
 		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {
@@ -132,7 +136,7 @@ public class MapHandler extends Handler {
 			}
 
 			throw new IllegalArgumentException(
-					"Invalid character in parsing list, expected } or , but found " + (char) c);
+				"Invalid character in parsing list, expected } or , but found " + (char) c);
 		}
 		assert r.current() == '}';
 		r.read(); // skip closing

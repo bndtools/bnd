@@ -10,21 +10,21 @@ import java.util.regex.Pattern;
 
 public class Strings {
 
-	public static String join(String middle, Iterable< ? > objects) {
+	public static String join(String middle, Iterable<?> objects) {
 		return join(middle, objects, null, null);
 	}
 
-	public static String join(Iterable< ? > objects) {
+	public static String join(Iterable<?> objects) {
 		return join(",", objects, null, null);
 	}
 
-	public static String join(String middle, Iterable< ? > objects, Pattern pattern, String replace) {
+	public static String join(String middle, Iterable<?> objects, Pattern pattern, String replace) {
 		StringBuilder sb = new StringBuilder();
 		join(sb, middle, objects, pattern, replace);
 		return sb.toString();
 	}
 
-	public static void join(StringBuilder sb, String middle, Iterable< ? > objects, Pattern pattern, String replace) {
+	public static void join(StringBuilder sb, String middle, Iterable<?> objects, Pattern pattern, String replace) {
 		String del = "";
 		if (objects == null)
 			return;
@@ -312,7 +312,8 @@ public class Strings {
 		if (object == null) {
 			return null;
 		}
-		if (object.getClass().isArray()) {
+		if (object.getClass()
+			.isArray()) {
 			return Arrays.toString(makePrintableArray(object));
 		}
 		return object;

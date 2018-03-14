@@ -21,8 +21,9 @@ public class ETaggingResourceHandler extends ResourceHandler {
 
 	MimeTypes _mimeTypes = new MimeTypes();
 
+	@Override
 	public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
-			throws IOException, ServletException {
+		throws IOException, ServletException {
 		if (baseRequest.isHandled())
 			return;
 
@@ -93,7 +94,8 @@ public class ETaggingResourceHandler extends ResourceHandler {
 	}
 
 	protected static String calculateETag(Resource resource) {
-		return Integer.toHexString(Long.toString(resource.length()).hashCode());
+		return Integer.toHexString(Long.toString(resource.length())
+			.hashCode());
 	}
 
 }

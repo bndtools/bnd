@@ -20,8 +20,10 @@ public class Utils {
 	public static Repository createRepo(File index, String name) throws Exception {
 		OSGiRepository repo = new OSGiRepository();
 		HttpClient httpClient = new HttpClient();
-		Map<String,String> map = new HashMap<>();
-		map.put("locations", index.getAbsoluteFile().toURI().toString());
+		Map<String, String> map = new HashMap<>();
+		map.put("locations", index.getAbsoluteFile()
+			.toURI()
+			.toString());
 		map.put("name", name);
 		map.put("cache", new File("generated/tmp/test/cache/" + name).getAbsolutePath());
 		repo.setProperties(map);
@@ -43,7 +45,7 @@ public class Utils {
 	public static Repository createRepo(URI uri, String name) throws Exception {
 		OSGiRepository repo = new OSGiRepository();
 		HttpClient httpClient = new HttpClient();
-		Map<String,String> map = new HashMap<>();
+		Map<String, String> map = new HashMap<>();
 		map.put("locations", uri.toString());
 		map.put("name", name);
 		map.put("cache", new File("generated/tmp/test/cache/" + name).getAbsolutePath());
@@ -61,7 +63,9 @@ public class Utils {
 		if (contentCaps.size() > 1)
 			throw new IllegalArgumentException("Resource has more than one content capability");
 
-		Object uriObj = contentCaps.get(0).getAttributes().get("url");
+		Object uriObj = contentCaps.get(0)
+			.getAttributes()
+			.get("url");
 		if (uriObj == null)
 			throw new IllegalArgumentException("Resource content capability has no 'url' attribute.");
 		if (uriObj instanceof URI)

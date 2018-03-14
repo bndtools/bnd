@@ -10,7 +10,7 @@ public class GradleLogging {
 	/**
 	 * The Gradle LIFECYCLE marker.
 	 */
-	public final static Marker LIFECYCLE;
+	public final static Marker	LIFECYCLE;
 	/**
 	 * The Gradle QUIET marker.
 	 */
@@ -20,9 +20,11 @@ public class GradleLogging {
 		Marker lifecycle = null;
 		Marker quiet = null;
 		try {
-			Class< ? > logging = Class.forName("org.gradle.api.logging.Logging");
-			lifecycle = (Marker) logging.getField("LIFECYCLE").get(null);
-			quiet = (Marker) logging.getField("QUIET").get(null);
+			Class<?> logging = Class.forName("org.gradle.api.logging.Logging");
+			lifecycle = (Marker) logging.getField("LIFECYCLE")
+				.get(null);
+			quiet = (Marker) logging.getField("QUIET")
+				.get(null);
 		} catch (Exception e) {}
 		LIFECYCLE = lifecycle;
 		QUIET = quiet;

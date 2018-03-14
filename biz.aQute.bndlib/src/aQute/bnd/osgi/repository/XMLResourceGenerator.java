@@ -43,7 +43,8 @@ public class XMLResourceGenerator {
 	}
 
 	public void save(File location) throws IOException {
-		if (location.getName().endsWith(".gz"))
+		if (location.getName()
+			.endsWith(".gz"))
 			compress = true;
 
 		IO.mkdirs(location.getParentFile());
@@ -62,9 +63,9 @@ public class XMLResourceGenerator {
 			}
 
 			try (Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
-					PrintWriter pw = new PrintWriter(writer)) {
-					pw.printf("<?xml version='1.0' encoding='UTF-8'?>\n");
-					repository.print(indent, pw);
+				PrintWriter pw = new PrintWriter(writer)) {
+				pw.printf("<?xml version='1.0' encoding='UTF-8'?>\n");
+				repository.print(indent, pw);
 			}
 		} finally {
 			out.close();
@@ -110,15 +111,15 @@ public class XMLResourceGenerator {
 
 	public XMLResourceGenerator repository(Repository repository) throws Exception {
 		Requirement wildcard = ResourceUtils.createWildcardRequirement();
-		Map<Requirement,Collection<Capability>> findProviders = repository
-				.findProviders(Collections.singleton(wildcard));
+		Map<Requirement, Collection<Capability>> findProviders = repository
+			.findProviders(Collections.singleton(wildcard));
 		for (Capability capability : findProviders.get(wildcard)) {
 			resource(capability.getResource());
 		}
 		return this;
 	}
 
-	public XMLResourceGenerator resources(Collection< ? extends Resource> resources) throws Exception {
+	public XMLResourceGenerator resources(Collection<? extends Resource> resources) throws Exception {
 		for (Resource resource : resources) {
 			resource(resource);
 		}
@@ -147,16 +148,16 @@ public class XMLResourceGenerator {
 		return this;
 	}
 
-	private void directives(Tag cr, Map<String,String> directives) {
-		for (Entry<String,String> e : directives.entrySet()) {
+	private void directives(Tag cr, Map<String, String> directives) {
+		for (Entry<String, String> e : directives.entrySet()) {
 			Tag d = new Tag(cr, "directive");
 			d.addAttribute("name", e.getKey());
 			d.addAttribute("value", e.getValue());
 		}
 	}
 
-	private void attributes(Tag cr, Map<String,Object> atrributes) throws Exception {
-		for (Entry<String,Object> e : atrributes.entrySet()) {
+	private void attributes(Tag cr, Map<String, Object> atrributes) throws Exception {
+		for (Entry<String, Object> e : atrributes.entrySet()) {
 			Object value = e.getValue();
 			if (value == null)
 				continue;

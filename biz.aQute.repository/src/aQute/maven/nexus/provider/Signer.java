@@ -36,7 +36,8 @@ public class Signer {
 			cmd.add("--passphrase-fd");
 			cmd.add("0");
 			cmd.add("--output");
-			cmd.add(tmp.toAbsolutePath().toString());
+			cmd.add(tmp.toAbsolutePath()
+				.toString());
 			Files.delete(tmp);
 			cmd.add("-ab");
 			cmd.add(f.getAbsolutePath());

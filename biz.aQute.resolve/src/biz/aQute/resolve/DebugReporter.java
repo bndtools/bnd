@@ -47,7 +47,8 @@ public class DebugReporter {
 	private void doAllMembers() {
 		header("RESOURCES");
 
-		Requirement r = CapReqBuilder.createBundleRequirement("*", null).buildSyntheticRequirement();
+		Requirement r = CapReqBuilder.createBundleRequirement("*", null)
+			.buildSyntheticRequirement();
 
 		List<Capability> providers = context.findProviders(r);
 		Set<Resource> resources = ResourceUtils.getResources(providers);
@@ -90,14 +91,16 @@ public class DebugReporter {
 		String resolveError = null;
 		if (!context.isSystemResource(r) && level >= 3 && id != null)
 			try {
-				String v = id.version() == null ? null : id.version().toString();
+				String v = id.version() == null ? null
+					: id.version()
+						.toString();
 				Requirement req = CapReqBuilder.createBundleRequirement(id.osgi_identity(), v)
-						.buildSyntheticRequirement();
+					.buildSyntheticRequirement();
 
 				context.setInputRequirements(req);
 				try (ResolverLogger logger = new ResolverLogger(4)) {
 					Resolver resolver = new BndResolver(logger);
-					Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+					Map<Resource, List<Wire>> resolved = resolver.resolve(context);
 				}
 			} catch (Exception e) {
 				resolveError = e.toString();
@@ -121,7 +124,7 @@ public class DebugReporter {
 	}
 
 	private void capability(String prefix, Capability c) {
-		Map<String,Object> attributes = new HashMap<>(c.getAttributes());
+		Map<String, Object> attributes = new HashMap<>(c.getAttributes());
 		String name = (String) attributes.remove(c.getNamespace());
 		String ns = c.getNamespace();
 		switch (c.getNamespace()) {
@@ -150,11 +153,12 @@ public class DebugReporter {
 	}
 
 	private void requirement(String prefix, Requirement c) {
-		Map<String,String> directives = new HashMap<>(c.getDirectives());
+		Map<String, String> directives = new HashMap<>(c.getDirectives());
 		String namespace = c.getNamespace();
 		String filter = directives.remove("filter");
 		if (filter != null) {
-			filter = fp.parse(filter).toString();
+			filter = fp.parse(filter)
+				.toString();
 			out.printf("%sr: %-20s %s || %s%n", prefix, filter, c.getAttributes(), c.getDirectives());
 		} else {
 			out.printf("%sr: %-20s %s || %s%n", prefix, namespace, c.getAttributes(), directives);

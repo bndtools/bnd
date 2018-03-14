@@ -27,7 +27,7 @@ import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.ResourcesRepository;
-import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
@@ -69,13 +69,15 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 
 	private Promise<BridgeRepository> readFiles() {
 		Promise<List<Resource>> resources = getFiles().stream()
-				.map(this::parseFile)
-				.collect(toPromise(promiseFactory));
+			.map(this::parseFile)
+			.collect(toPromise(promiseFactory));
 		if (logger.isDebugEnabled()) {
-			resources.onSuccess(l -> l.stream().filter(Objects::nonNull).forEachOrdered(
-					r -> logger.debug("{}: adding resource {}", getName(), r)));
+			resources.onSuccess(l -> l.stream()
+				.filter(Objects::nonNull)
+				.forEachOrdered(r -> logger.debug("{}: adding resource {}", getName(), r)));
 		}
-		Promise<BridgeRepository> bridge = resources.map(ResourcesRepository::new).map(BridgeRepository::new);
+		Promise<BridgeRepository> bridge = resources.map(ResourcesRepository::new)
+			.map(BridgeRepository::new);
 		return bridge;
 	}
 
@@ -96,10 +98,12 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 			}
 			logger.debug("{}: parsing {}", getName(), file);
 			Attrs attrs = new Attrs();
-			attrs.put(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI().toString());
+			attrs.put(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, file.toURI()
+				.toString());
 			attrs.putTyped(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
-			attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file).asHex());
-			rb.addCapability(CapabilityBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
+			attrs.put(ContentNamespace.CONTENT_NAMESPACE, SHA256.digest(file)
+				.asHex());
+			rb.addCapability(CapReqBuilder.createCapReqBuilder(ContentNamespace.CONTENT_NAMESPACE, attrs));
 			return rb.build();
 		});
 		if (logger.isDebugEnabled()) {
@@ -109,15 +113,15 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	}
 
 	@Override
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		Promise<File> promise = get(bsn, version);
 		if (promise == null) {
 			return null;
 		}
 		if (listeners.length != 0) {
 			new DownloadListenerPromise(reporter, "Get " + bsn + "-" + version + " for " + getName(), promise,
-					listeners);
+				listeners);
 		}
 		return promise.getValue();
 	}
@@ -187,16 +191,17 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 	}
 
 	@Override
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		try {
-			return getBridge().getRepository().findProviders(requirements);
+			return getBridge().getRepository()
+				.findProviders(requirements);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
 	@Override
-	public void setProperties(Map<String,String> map) throws Exception {
+	public void setProperties(Map<String, String> map) throws Exception {
 		// ignored
 	}
 

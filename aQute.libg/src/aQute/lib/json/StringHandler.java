@@ -7,7 +7,7 @@ import java.util.Map;
 public class StringHandler extends Handler {
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException {
 		string(app, object.toString());
 	}
 

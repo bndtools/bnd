@@ -89,7 +89,7 @@ public class Selector {
 
 	public static List<Selector> getInstructions(Clauses clauses) {
 		List<Selector> result = new ArrayList<>();
-		for (Map.Entry<String,Map<String,String>> entry : clauses.entrySet()) {
+		for (Map.Entry<String, Map<String, String>> entry : clauses.entrySet()) {
 			Selector instruction = getPattern(entry.getKey());
 			result.add(instruction);
 		}

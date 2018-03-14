@@ -45,7 +45,7 @@ public class ProcessorTest extends TestCase {
 		assertNative("osname=Windows;osversion=10.0;processor=x86", "(osgi.native.processor~=pentium)");
 		assertNative("osname=Windows;osversion=10.0;processor=x86-64", "(osgi.native.processor~=amd64)");
 		assertNative("osname=Linux;osversion=5.1.0;processor=arm", "(osgi.native.processor~=arm)",
-				"The 'arm' processor is deprecated");
+			"The 'arm' processor is deprecated");
 
 	}
 
@@ -56,58 +56,58 @@ public class ProcessorTest extends TestCase {
 			// Use the current OS first to enable loading things like default
 			// file system before we change system properties.
 			assertNativeDefault(System.getProperty("os.name"), System.getProperty("os.version"),
-					System.getProperty("os.arch"),
-					"(&(osgi.native.osname=*)(osgi.native.osversion=*)(osgi.native.processor=*)(osgi.native.language=*))");
+				System.getProperty("os.arch"),
+				"(&(osgi.native.osname=*)(osgi.native.osversion=*)(osgi.native.processor=*)(osgi.native.language=*))");
 
 			//
 			// Mac OS
 			//
 
 			assertNativeDefault("Mac OS X", "10.8.2", "x86_64",
-					"(&(osgi.native.osname~=MacOSX)(osgi.native.osname~=Mac OS X))");
+				"(&(osgi.native.osname~=MacOSX)(osgi.native.osname~=Mac OS X))");
 			assertNativeDefault("Mac OS X", "10.8.2", "x86_64", "(osgi.native.osversion=0010.8.2)");
 			assertNativeDefault("Mac OS X", "10.8.2", "x86_64",
-					"(&(osgi.native.processor=x86-64)(osgi.native.processor=amd64)(osgi.native.processor=em64t)(osgi.native.processor=x86_64))");
+				"(&(osgi.native.processor=x86-64)(osgi.native.processor=amd64)(osgi.native.processor=em64t)(osgi.native.processor=x86_64))");
 
 			//
 			// Linux
 			//
 
 			assertNativeDefault("Linux", "3.8.8-202.fc18.x86_64", "amd64",
-					"(&(osgi.native.osname~=linux)(osgi.native.processor=*)(osgi.native.osversion=3.8.8.-202_fc18_x86_64))");
+				"(&(osgi.native.osname~=linux)(osgi.native.processor=*)(osgi.native.osversion=3.8.8.-202_fc18_x86_64))");
 
 			assertNativeDefault("Linux", "3.8.8-202.fc18.x86_64", "em64t",
-					"(&(osgi.native.osname~=linux)(osgi.native.processor=em64t)(osgi.native.osversion=3.8.8.-202_fc18_x86_64))");
+				"(&(osgi.native.osname~=linux)(osgi.native.processor=em64t)(osgi.native.osversion=3.8.8.-202_fc18_x86_64))");
 
 			//
 			// Windows
 			//
 
 			assertNativeDefault("Windows XP", "5.1.7601.17514", "x86",
-					"(&(osgi.native.osname~=WindowsXP)(osgi.native.osname~=WinXP)(osgi.native.osname~=Windows XP)(osgi.native.osname~=Win32))");
+				"(&(osgi.native.osname~=WindowsXP)(osgi.native.osname~=WinXP)(osgi.native.osname~=Windows XP)(osgi.native.osname~=Win32))");
 
 			assertNativeDefault("Windows XP", "5.1.7601.17514", "x86",
-					"(&(osgi.native.processor~=x86)(osgi.native.processor~=pentium)(osgi.native.processor~=i386)(osgi.native.processor~=i486)(osgi.native.processor~=i686)(osgi.native.processor~=i586))");
+				"(&(osgi.native.processor~=x86)(osgi.native.processor~=pentium)(osgi.native.processor~=i386)(osgi.native.processor~=i486)(osgi.native.processor~=i686)(osgi.native.processor~=i586))");
 
 			assertNativeDefault("Windows XP", "5.1.7601.17514", "x86", "(&(osgi.native.osversion=5.1.0))");
 
 			assertNativeDefault("Windows Vista", "6.0.7601.17514", "x86",
-					"(&(osgi.native.osname~=WindowsVista)(osgi.native.osname~=WinVista)(osgi.native.osname~=Windows Vista)(osgi.native.osname~=Win32))");
+				"(&(osgi.native.osname~=WindowsVista)(osgi.native.osname~=WinVista)(osgi.native.osname~=Windows Vista)(osgi.native.osname~=Win32))");
 
 			assertNativeDefault("Windows 7", "6.1.7601.17514", "x86",
-					"(&(osgi.native.osname~=Windows7)(osgi.native.osname~=Windows 7)(osgi.native.osname~=Win32)(osgi.native.osversion=6.1.0))");
+				"(&(osgi.native.osname~=Windows7)(osgi.native.osname~=Windows 7)(osgi.native.osname~=Win32)(osgi.native.osversion=6.1.0))");
 
 			assertNativeDefault("Windows 8", "6.2.7601.17514", "x86",
-					"(&(osgi.native.osname~=Windows8)(osgi.native.osname~=Windows 8)(osgi.native.osname~=Win32)(osgi.native.osversion=6.2.0))");
+				"(&(osgi.native.osname~=Windows8)(osgi.native.osname~=Windows 8)(osgi.native.osname~=Win32)(osgi.native.osversion=6.2.0))");
 		}
 	}
 
 	public void testOperatingSystems() {
 
 		assertIn(OSInformation.getOperatingSystemAliases("Windows XP", "5.1.x").osnames, "WindowsXP", "Windows XP",
-				"WinXP", "Win32");
+			"WinXP", "Win32");
 		assertIn(OSInformation.getOperatingSystemAliases("Windows Vista", "6.0.x").osnames, "WindowsVista",
-				"Windows Vista", "WinVista", "Win32");
+			"Windows Vista", "WinVista", "Win32");
 		assertIn(OSInformation.getOperatingSystemAliases("Solaris", "3.8").osnames, "Solaris");
 		assertIn(OSInformation.getOperatingSystemAliases("AIX", "3.8").osnames, "AIX");
 		assertIn(OSInformation.getOperatingSystemAliases("HP-UX", "3.8").osnames, "HPUX", "hp-ux");
@@ -125,7 +125,7 @@ public class ProcessorTest extends TestCase {
 	public void testUnknownProcessor() throws Exception {
 		try (Processor p = new Processor();) {
 			assertNative("osname=linux;osversion=2.3;processor=FOO;processor=BLA",
-					"(&(osgi.native.processor~=FOO)(osgi.native.processor~=BLA))");
+				"(&(osgi.native.processor~=FOO)(osgi.native.processor~=BLA))");
 		}
 
 	}
@@ -150,7 +150,7 @@ public class ProcessorTest extends TestCase {
 	}
 
 	private void assertNativeDefault(String osname, String osversion, String processor, String filter)
-			throws Exception {
+		throws Exception {
 		String origOsName = System.getProperty("os.name");
 		String origOsVersion = System.getProperty("os.version");
 		String origOsArch = System.getProperty("os.arch");
@@ -201,77 +201,103 @@ public class ProcessorTest extends TestCase {
 
 		p.error("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;restrict:=warning");
-		assertEquals(1, p.getErrors().size());
-		assertEquals(0, p.getWarnings().size());
+		assertEquals(1, p.getErrors()
+			.size());
+		assertEquals(0, p.getWarnings()
+			.size());
 
 		p.error("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc");
-		assertEquals(0, p.getErrors().size());
-		assertEquals(0, p.getWarnings().size());
+		assertEquals(0, p.getErrors()
+			.size());
+		assertEquals(0, p.getWarnings()
+			.size());
 
 		p.error("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;is:=error");
-		assertEquals(1, p.getErrors().size());
-		assertEquals(0, p.getWarnings().size());
+		assertEquals(1, p.getErrors()
+			.size());
+		assertEquals(0, p.getWarnings()
+			.size());
 
 		p.clear();
 		p.error("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;is:=warning");
-		assertEquals(0, p.getErrors().size());
-		assertEquals(1, p.getWarnings().size());
+		assertEquals(0, p.getErrors()
+			.size());
+		assertEquals(1, p.getWarnings()
+			.size());
 
 		p.clear();
 		p.error("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;replace:=def");
-		assertEquals("def", p.getErrors().get(0));
-		assertEquals(0, p.getWarnings().size());
+		assertEquals("def", p.getErrors()
+			.get(0));
+		assertEquals(0, p.getWarnings()
+			.size());
 
 		p.clear();
 		p.setProperty(Constants.FIXUPMESSAGES, "'abc def\\s*ghi';is:=warning");
 		p.error("abc def  \t\t   ghi");
-		assertEquals(0, p.getErrors().size());
-		assertEquals(1, p.getWarnings().size());
+		assertEquals(0, p.getErrors()
+			.size());
+		assertEquals(1, p.getWarnings()
+			.size());
 
 		p.error("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;replace:=def;is:=warning");
-		assertEquals("def", p.getWarnings().get(0));
-		assertEquals(0, p.getErrors().size());
+		assertEquals("def", p.getWarnings()
+			.get(0));
+		assertEquals(0, p.getErrors()
+			.size());
 
 		p.clear();
 		p.warning("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;restrict:=error");
-		assertEquals(0, p.getErrors().size());
-		assertEquals(1, p.getWarnings().size());
+		assertEquals(0, p.getErrors()
+			.size());
+		assertEquals(1, p.getWarnings()
+			.size());
 
 		p.clear();
 		p.warning("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc");
-		assertEquals(0, p.getErrors().size());
-		assertEquals(0, p.getWarnings().size());
+		assertEquals(0, p.getErrors()
+			.size());
+		assertEquals(0, p.getWarnings()
+			.size());
 
 		p.clear();
 		p.warning("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;is:=warning");
-		assertEquals(0, p.getErrors().size());
-		assertEquals(1, p.getWarnings().size());
+		assertEquals(0, p.getErrors()
+			.size());
+		assertEquals(1, p.getWarnings()
+			.size());
 
 		p.clear();
 		p.warning("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;is:=error");
-		assertEquals(1, p.getErrors().size());
-		assertEquals(0, p.getWarnings().size());
+		assertEquals(1, p.getErrors()
+			.size());
+		assertEquals(0, p.getWarnings()
+			.size());
 
 		p.clear();
 		p.warning("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;replace:=def");
-		assertEquals("def", p.getWarnings().get(0));
-		assertEquals(0, p.getErrors().size());
+		assertEquals("def", p.getWarnings()
+			.get(0));
+		assertEquals(0, p.getErrors()
+			.size());
 
 		p.clear();
 		p.warning("abc");
 		p.setProperty(Constants.FIXUPMESSAGES, "abc;replace:=def;is:=error");
-		assertEquals("def", p.getErrors().get(0));
-		assertEquals(0, p.getWarnings().size());
+		assertEquals("def", p.getErrors()
+			.get(0));
+		assertEquals(0, p.getWarnings()
+			.size());
 		p.close();
 	}
 
@@ -309,7 +335,8 @@ public class ProcessorTest extends TestCase {
 
 	public void testUriMacro() throws Exception {
 		try (Processor p = new Processor()) {
-			String baseURI = p.getBaseURI().toString();
+			String baseURI = p.getBaseURI()
+				.toString();
 			String otherURI = new URI("file:/some/dir/").toString();
 			p.setProperty("uri1", "${uri;dist/bundles}");
 			p.setProperty("uri2", "${uri;/dist/bundles}");
@@ -375,7 +402,8 @@ public class ProcessorTest extends TestCase {
 
 	public void testFileUriMacro() throws Exception {
 		try (Processor p = new Processor()) {
-			String baseURI = p.getBaseURI().toString();
+			String baseURI = p.getBaseURI()
+				.toString();
 			File some = new File("generated");
 			p.setProperty("uri1", "${fileuri;dist/bundles}");
 			p.setProperty("uri2", "${fileuri;" + some.getCanonicalPath() + "/dist/bundles}");

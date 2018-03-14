@@ -16,7 +16,8 @@ public class Run extends Project {
 		Processor processor;
 		if (workspace != null) {
 			Run run = new Run(workspace, file);
-			if (run.getProperties().get(STANDALONE) == null) {
+			if (run.getProperties()
+				.get(STANDALONE) == null) {
 				return run;
 			}
 			// -standalone specified
@@ -40,7 +41,7 @@ public class Run extends Project {
 	}
 
 	@Override
-	public void report(Map<String,Object> table) throws Exception {
+	public void report(Map<String, Object> table) throws Exception {
 		super.report(table, false);
 	}
 

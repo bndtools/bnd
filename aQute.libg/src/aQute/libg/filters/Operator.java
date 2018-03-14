@@ -2,7 +2,10 @@ package aQute.libg.filters;
 
 public enum Operator {
 
-	Equals("="), LessThanOrEqual("<="), GreaterThanOrEqual(">="), ApproxEqual("~=");
+	Equals("="),
+	LessThanOrEqual("<="),
+	GreaterThanOrEqual(">="),
+	ApproxEqual("~=");
 
 	private final String symbol;
 

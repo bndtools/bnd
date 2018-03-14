@@ -33,31 +33,31 @@ public interface RepositoryPlugin {
 		 * An exception is thrown if the specified digest and the calculated
 		 * digest do not match.
 		 */
-		public byte[] digest = null;
+		public byte[]				digest	= null;
 
 		/**
 		 * Specify the mime type of the importing stream. This can be either
 		 * {@link #BUNDLE} or {@link #LIB}. If left open, it is up to the
 		 * repository to guess the content type.
 		 */
-		public String type;
+		public String				type;
 
 		/**
 		 * When set, the repository must use it as the bsn
 		 */
-		public String bsn = null;
+		public String				bsn		= null;
 
 		/**
 		 * When set, the repository must use it as the version
 		 */
-		public Version version = null;
+		public Version				version	= null;
 
 		/**
 		 * Provides the context. This is an optional parameter but if possible
 		 * should link to the closest context of the dumped artifact. It will be
 		 * used for reporting and getting properties/instructions.
 		 */
-		public Processor context;
+		public Processor			context;
 	}
 
 	PutOptions DEFAULTOPTIONS = new PutOptions();
@@ -73,7 +73,7 @@ public interface RepositoryPlugin {
 		 * This can be a URI to the given artifact (when it was put into the
 		 * repository). This does not have to be a File URI!
 		 */
-		public URI artifact = null;
+		public URI		artifact	= null;
 
 		/**
 		 * The <b>SHA1</b> digest of the artifact as it was put into the
@@ -82,12 +82,12 @@ public interface RepositoryPlugin {
 		 * This can be null and it can differ from the input digest if the
 		 * repository rewrote the stream for optimization reason. If the
 		 */
-		public byte[] digest = null;
+		public byte[]	digest		= null;
 
 		/**
 		 * Set to true if this artifact was already released
 		 */
-		public boolean alreadyReleased;
+		public boolean	alreadyReleased;
 	}
 
 	/**
@@ -173,8 +173,8 @@ public interface RepositoryPlugin {
 	 * @throws Exception when anything goes wrong, in this case no listeners
 	 *             will be called back.
 	 */
-	File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception;
+	File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception;
 
 	/**
 	 * Answer if this repository can be used to store files.

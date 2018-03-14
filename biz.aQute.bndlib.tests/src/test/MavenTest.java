@@ -113,7 +113,7 @@ public class MavenTest extends TestCase {
 
 		Processor processor = new Processor(ws);
 		processor.setProperty(Constants.PLUGIN,
-				"aQute.bnd.maven.support.MavenRemoteRepository;repositories=testresources/ws/maven1/m2");
+			"aQute.bnd.maven.support.MavenRemoteRepository;repositories=testresources/ws/maven1/m2");
 
 		MavenRemoteRepository mr = processor.getPlugin(MavenRemoteRepository.class);
 		assertNotNull(mr);
@@ -124,14 +124,15 @@ public class MavenTest extends TestCase {
 		assertNotNull(me);
 		me.remove();
 
-		Map<String,String> map = MAP.$("groupId", "org.apache.commons");
+		Map<String, String> map = MAP.$("groupId", "org.apache.commons");
 		File file = mr.get("com.springsource.org.apache.commons.beanutils", "1.6.1", Strategy.LOWEST, map);
 
 		assertNotNull(file);
 		assertEquals("com.springsource.org.apache.commons.beanutils-1.6.1.jar", file.getName());
 		assertTrue(file.isFile());
 
-		Map<String,String> map2 = MAP.$("groupId", "org.apache.commons").$("scope", "compile");
+		Map<String, String> map2 = MAP.$("groupId", "org.apache.commons")
+			.$("scope", "compile");
 
 		file = mr.get("com.springsource.org.apache.commons.beanutils", "1.6.1", Strategy.LOWEST, map2);
 		assertNotNull(file);
@@ -140,9 +141,9 @@ public class MavenTest extends TestCase {
 		String lib = IO.collect(file);
 		System.err.println(lib);
 		lib = lib.replaceAll("org.apache.commons\\+com.springsource.org.apache.commons.beanutils;version=\"1.6.1\"",
-				"1");
+			"1");
 		lib = lib.replaceAll("org.apache.commons\\+com.springsource.org.apache.commons.collections;version=\"2.1.1\"",
-				"2");
+			"2");
 		lib = lib.replaceAll("org.apache.commons\\+com.springsource.org.apache.commons.logging;version=\"1.0.4\"", "3");
 		assertEquals("1\n2\n3\n", lib);
 	}
@@ -223,32 +224,33 @@ public class MavenTest extends TestCase {
 		me = maven.getEntry("org.apache.commons", "com.springsource.org.apache.commons.logging", "1.0.4");
 		me.remove();
 
-		mr.setRepositories(IO.getFile(new File("").getAbsoluteFile(), "testresources/ws/maven1/m2").toURI());
+		mr.setRepositories(IO.getFile(new File("").getAbsoluteFile(), "testresources/ws/maven1/m2")
+			.toURI());
 
-		Map<String,String> map = new HashMap<>();
+		Map<String, String> map = new HashMap<>();
 		map.put("scope", "compile");
 		File file = mr.get("org.apache.commons+com.springsource.org.apache.commons.beanutils", "1.6.1", Strategy.LOWEST,
-				map);
+			map);
 
 		assertNotNull(file);
 		assertTrue(file.isFile());
 
 		assertEquals(
-				"org.apache.commons+com.springsource.org.apache.commons.beanutils;version=\"1.6.1\"\n"
-						+ "org.apache.commons+com.springsource.org.apache.commons.collections;version=\"2.1.1\"\n"
-						+ "org.apache.commons+com.springsource.org.apache.commons.logging;version=\"1.0.4\"\n",
-				IO.collect(file));
+			"org.apache.commons+com.springsource.org.apache.commons.beanutils;version=\"1.6.1\"\n"
+				+ "org.apache.commons+com.springsource.org.apache.commons.collections;version=\"2.1.1\"\n"
+				+ "org.apache.commons+com.springsource.org.apache.commons.logging;version=\"1.0.4\"\n",
+			IO.collect(file));
 
 		file = mr.get("org.apache.commons+com.springsource.org.apache.commons.beanutils", "1.6.1", Strategy.LOWEST,
-				null);
+			null);
 		assertEquals("com.springsource.org.apache.commons.beanutils-1.6.1.jar", file.getName());
 	}
 
 	public static void testMavenx() throws Exception {
 		Maven maven = new Maven(null);
 		CachedPom pom = maven.getPom("javax.xml.bind", "com.springsource.javax.xml.bind", "2.2.0",
-				new URI("http://repository.springsource.com/maven/bundles/release"),
-				new URI("http://repository.springsource.com/maven/bundles/external"));
+			new URI("http://repository.springsource.com/maven/bundles/release"),
+			new URI("http://repository.springsource.com/maven/bundles/external"));
 		// Pom pom = maven.getPom("javax.xml.ws",
 		// "com.springsource.javax.xml.ws", "2.1.1", new
 		// URL("http://repository.springsource.com/maven/bundles/release"), new
@@ -280,10 +282,10 @@ public class MavenTest extends TestCase {
 		assertEquals("bundle", p.get("pom.packaging"));
 
 		Parameters map = parser.parseHeader(p.getProperty("pom.scope.test"));
-		Map<String,String> junit = map.get("junit.junit");
+		Map<String, String> junit = map.get("junit.junit");
 		assertNotNull(junit);
 		assertEquals("4.0", junit.get("version"));
-		Map<String,String> easymock = map.get("org.easymock.easymock");
+		Map<String, String> easymock = map.get("org.easymock.easymock");
 		assertNotNull(easymock);
 		assertEquals("2.4", easymock.get("version"));
 	}
@@ -362,26 +364,26 @@ public class MavenTest extends TestCase {
 	public void testPomResource() throws Exception {
 
 		testPom("pom.xml", "true", "com.example.foo", "1.2.3.qualifier", "com.example", "foo", "1.2.3.qualifier",
-				"url=http://github.com/bndtools,connection=scm:git:https://github.com/bndtools/bnd,developerConnection=scm:git:git@github.com/bndtools/bnd",
-				"Peter.Kriens@aQute.biz;name=\"Peter Kriens\";organization=aQute;roles=\"programmer,gopher\"", null);
+			"url=http://github.com/bndtools,connection=scm:git:https://github.com/bndtools/bnd,developerConnection=scm:git:git@github.com/bndtools/bnd",
+			"Peter.Kriens@aQute.biz;name=\"Peter Kriens\";organization=aQute;roles=\"programmer,gopher\"", null);
 		testPom("pom.xml", "true", "com.example.foo", "1.2.3.qualifier", "com.example", "foo", "1.2.3.qualifier", null,
-				null, null);
+			null, null);
 		testPom("pom.xml", "true", "uvw.xyz", "1.2.3", "uvw", "xyz", "1.2.3", null, null, null);
 		testPom("META-INF/maven/abc.def.ghi/jkl/pom.xml", "groupid=abc.def.ghi,artifactid=jkl", "uvw.xyz", "1.2.3",
-				"abc.def.ghi", "jkl", "1.2.3", null, null, "<<EXTERNAL>>");
+			"abc.def.ghi", "jkl", "1.2.3", null, null, "<<EXTERNAL>>");
 		testPom("META-INF/maven/abc.def.ghi/uvw.xyz/pom.xml", "groupid=abc.def.ghi", "uvw.xyz", "1.2.3", "abc.def.ghi",
-				"uvw.xyz", "1.2.3", null, null, "http://www.apache.org/licenses/LICENSE-2.0");
+			"uvw.xyz", "1.2.3", null, null, "http://www.apache.org/licenses/LICENSE-2.0");
 		testPom("META-INF/maven/abc.def.ghi/uvw.xyz/pom.xml", "groupid=abc.def.ghi,version=2.6.8", "uvw.xyz", "1.2.3",
-				"abc.def.ghi", "uvw.xyz", "2.6.8", null, null,
-				"http://www.apache.org/licenses/LICENSE-2.0;description=\"Apache License, Version 2.0\"");
+			"abc.def.ghi", "uvw.xyz", "2.6.8", null, null,
+			"http://www.apache.org/licenses/LICENSE-2.0;description=\"Apache License, Version 2.0\"");
 		testPom("META-INF/maven/pom.xml", "groupid=abc.def.ghi,version=2.6.8,where=META-INF/maven/pom.xml", "uvw.xyz",
-				"1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8", null, null,
-				"Apache-2.0;description=\"Apache License, Version 2.0\";link=\"http://www.apache.org/licenses/LICENSE-2.0\"");
+			"1.2.3", "abc.def.ghi", "uvw.xyz", "2.6.8", null, null,
+			"Apache-2.0;description=\"Apache License, Version 2.0\";link=\"http://www.apache.org/licenses/LICENSE-2.0\"");
 	}
 
 	void testPom(String where, String pom, String bsn, String version, String groupId, String artifactId,
-			String mversion, String scm, String developers, String license)
-					throws IOException, SAXException, ParserConfigurationException, Exception {
+		String mversion, String scm, String developers, String license)
+		throws IOException, SAXException, ParserConfigurationException, Exception {
 		Builder b = new Builder();
 		b.setProperty("-pom", pom);
 		b.setBundleSymbolicName(bsn);
@@ -400,15 +402,18 @@ public class MavenTest extends TestCase {
 		assertTrue(b.check());
 		Resource r = jar.getResource(where);
 		IO.copy(r.openInputStream(), System.out);
-		Document d = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(r.openInputStream());
-		XPath xpath = XPathFactory.newInstance().newXPath();
+		Document d = DocumentBuilderFactory.newInstance()
+			.newDocumentBuilder()
+			.parse(r.openInputStream());
+		XPath xpath = XPathFactory.newInstance()
+			.newXPath();
 		assertEquals(groupId, xpath.evaluate("/project/groupId", d));
 		assertEquals(artifactId, xpath.evaluate("/project/artifactId", d));
 		assertEquals(mversion, xpath.evaluate("/project/version", d));
 
 		assertEquals((developers == null) ? "0" : "1", xpath.evaluate("count(/project/developers)", d));
 		assertEquals((scm == null) ? "0" : "1", xpath.evaluate("count(/project/scm)", d));
-		assertEquals(((license == null) || license.trim().equals("<<EXTERNAL>>")) ? "0" : "1",
-				xpath.evaluate("count(/project/licenses)", d));
+		assertEquals(((license == null) || license.trim()
+			.equals("<<EXTERNAL>>")) ? "0" : "1", xpath.evaluate("count(/project/licenses)", d));
 	}
 }

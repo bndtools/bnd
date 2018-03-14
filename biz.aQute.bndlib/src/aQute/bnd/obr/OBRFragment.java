@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -46,29 +47,30 @@ public class OBRFragment {
 
 		Domain d = Domain.domain(m);
 		d.setTranslation(jar);
-		Entry<String,Attrs> bundleSymbolicName = d.getBundleSymbolicName();
+		Entry<String, Attrs> bundleSymbolicName = d.getBundleSymbolicName();
 
 		if (bundleSymbolicName == null)
 			return null;
 
-		boolean singleton = "true".equals(bundleSymbolicName.getValue().get(Constants.SINGLETON_DIRECTIVE + ":"));
+		boolean singleton = "true".equals(bundleSymbolicName.getValue()
+			.get(Constants.SINGLETON_DIRECTIVE + ":"));
 		boolean isFragment = d.get(Constants.FRAGMENT_HOST) != null;
 		Version version = d.getBundleVersion() == null ? Version.emptyVersion : new Version(d.getBundleVersion());
 
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
 		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bundleSymbolicName.getKey());
 		identity.addAttribute(IdentityNamespace.CAPABILITY_COPYRIGHT_ATTRIBUTE,
-				d.translate(Constants.BUNDLE_COPYRIGHT));
+			d.translate(Constants.BUNDLE_COPYRIGHT));
 		identity.addAttribute(IdentityNamespace.CAPABILITY_DESCRIPTION_ATTRIBUTE,
-				d.translate(Constants.BUNDLE_DESCRIPTION));
+			d.translate(Constants.BUNDLE_DESCRIPTION));
 		identity.addAttribute(IdentityNamespace.CAPABILITY_DOCUMENTATION_ATTRIBUTE,
-				d.translate(Constants.BUNDLE_DOCURL));
+			d.translate(Constants.BUNDLE_DOCURL));
 		identity.addAttribute(IdentityNamespace.CAPABILITY_LICENSE_ATTRIBUTE,
-				d.translate(aQute.bnd.osgi.Constants.BUNDLE_LICENSE));
+			d.translate(aQute.bnd.osgi.Constants.BUNDLE_LICENSE));
 		if (singleton)
 			identity.addAttribute(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
 		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
-				isFragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
+			isFragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
 		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, new Version(d.getBundleVersion()));
 
 		resource.addCapability(identity);
@@ -79,14 +81,15 @@ public class OBRFragment {
 			// Fragment-Host
 			//
 
-			Entry<String,Attrs> fragmentHost = d.getFragmentHost();
+			Entry<String, Attrs> fragmentHost = d.getFragmentHost();
 			CapReqBuilder fragment = new CapReqBuilder(HostNamespace.HOST_NAMESPACE);
-			String v = fragmentHost.getValue().get("version");
+			String v = fragmentHost.getValue()
+				.get("version");
 			if (v == null)
 				v = "0";
 			Version fragmentVersion = new Version(v);
 			String filter = filter(PackageNamespace.PACKAGE_NAMESPACE, fragmentHost.getKey(), fragmentHost.getValue());
-			fragment.addDirective(HostNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+			fragment.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
 			resource.addRequirement(fragment);
 		} else {
 
@@ -100,7 +103,8 @@ public class OBRFragment {
 			bundle.addAttribute("version", version);
 			host.addAttribute("version", version);
 
-			for (Entry<String,String> e : bundleSymbolicName.getValue().entrySet()) {
+			for (Entry<String, String> e : bundleSymbolicName.getValue()
+				.entrySet()) {
 				String key = e.getKey();
 				if (key.endsWith(":")) {
 					String directive = key.substring(0, key.length() - 1);
@@ -130,18 +134,21 @@ public class OBRFragment {
 		//
 
 		Parameters exports = d.getExportPackage();
-		for (Entry<String,Attrs> entry : exports.entrySet()) {
+		for (Entry<String, Attrs> entry : exports.entrySet()) {
 			CapReqBuilder exported = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
 
 			String pkgName = Processor.removeDuplicateMarker(entry.getKey());
 			exported.addAttribute(PackageNamespace.PACKAGE_NAMESPACE, pkgName);
 
-			String versionStr = entry.getValue().get(Constants.VERSION_ATTRIBUTE);
-			Version v = Version.parseVersion(entry.getValue().get("version"));
+			String versionStr = entry.getValue()
+				.get(Constants.VERSION_ATTRIBUTE);
+			Version v = Version.parseVersion(entry.getValue()
+				.get("version"));
 
 			exported.addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 
-			for (Entry<String,String> attribEntry : entry.getValue().entrySet()) {
+			for (Entry<String, String> attribEntry : entry.getValue()
+				.entrySet()) {
 				String key = attribEntry.getKey();
 				if (key.endsWith(":")) {
 					String directive = key.substring(0, key.length() - 1);
@@ -155,8 +162,8 @@ public class OBRFragment {
 			}
 
 			exported.addAttribute(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE,
-					bundleSymbolicName.getKey());
-			exported.addAttribute(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+				bundleSymbolicName.getKey());
+			exported.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
 
 			resource.addCapability(exported);
 		}
@@ -166,11 +173,11 @@ public class OBRFragment {
 		//
 
 		Parameters imports = d.getImportPackage();
-		for (Entry<String,Attrs> entry : imports.entrySet()) {
+		for (Entry<String, Attrs> entry : imports.entrySet()) {
 			CapReqBuilder imported = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
 			String name = Processor.removeDuplicateMarker(entry.getKey());
 			String filter = filter(PackageNamespace.PACKAGE_NAMESPACE, Processor.removeDuplicateMarker(entry.getKey()),
-					entry.getValue());
+				entry.getValue());
 			imported.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
 			resource.addRequirement(imported);
 		}
@@ -180,7 +187,7 @@ public class OBRFragment {
 		//
 
 		Parameters requires = d.getRequireBundle();
-		for (Entry<String,Attrs> entry : requires.entrySet()) {
+		for (Entry<String, Attrs> entry : requires.entrySet()) {
 			CapReqBuilder req = new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE);
 			String bsn = Processor.removeDuplicateMarker(entry.getKey());
 			String filter = filter(BundleNamespace.BUNDLE_NAMESPACE, bsn, entry.getValue());
@@ -196,14 +203,14 @@ public class OBRFragment {
 		try (Formatter formatter = new Formatter()) {
 			formatter.format("(|");
 
-			for (Entry<String,Attrs> bree : brees.entrySet()) {
+			for (Entry<String, Attrs> bree : brees.entrySet()) {
 				String name = Processor.removeDuplicateMarker(bree.getKey());
 				Matcher matcher = EE_PATTERN.matcher(name);
 				if (matcher.matches()) {
 					name = matcher.group(1);
 					Version v = Version.parseVersion(matcher.group(2));
 					formatter.format("%s", filter(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, name,
-							MAP.$("version", v.toString())));
+						MAP.$("version", v.toString())));
 				}
 			}
 			formatter.format(")");
@@ -215,12 +222,13 @@ public class OBRFragment {
 			// Export-Service (deprecated)
 			//
 
-			for (Entry<String,Attrs> export : d.getParameters(Constants.EXPORT_SERVICE).entrySet()) {
+			for (Entry<String, Attrs> export : d.getParameters(Constants.EXPORT_SERVICE)
+				.entrySet()) {
 				CapReqBuilder exportedService = new CapReqBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 				String service = Processor.removeDuplicateMarker(export.getKey());
 				exportedService.addAttribute(ServiceNamespace.SERVICE_NAMESPACE, service);
-				exportedService.addAttribute(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE,
-						export.getValue().get("objectclass"));
+				exportedService.addAttribute(ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE, export.getValue()
+					.get("objectclass"));
 				resource.addCapability(exportedService);
 			}
 
@@ -228,11 +236,12 @@ public class OBRFragment {
 			// Import-Service (deprecated)
 			//
 
-			for (Entry<String,Attrs> imported : d.getParameters(Constants.IMPORT_SERVICE).entrySet()) {
+			for (Entry<String, Attrs> imported : d.getParameters(Constants.IMPORT_SERVICE)
+				.entrySet()) {
 				CapReqBuilder importedService = new CapReqBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 				String service = Processor.removeDuplicateMarker(imported.getKey());
 				importedService.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE,
-						filter(ServiceNamespace.SERVICE_NAMESPACE, service, imported.getValue()));
+					filter(ServiceNamespace.SERVICE_NAMESPACE, service, imported.getValue()));
 				resource.addRequirement(importedService);
 			}
 
@@ -240,7 +249,8 @@ public class OBRFragment {
 			// Provide-Capability
 			//
 
-			for (Entry<String,Attrs> rc : d.getProvideCapability().entrySet()) {
+			for (Entry<String, Attrs> rc : d.getProvideCapability()
+				.entrySet()) {
 				resource.addCapability(toCapability(rc.getKey(), rc.getValue()));
 			}
 
@@ -248,7 +258,8 @@ public class OBRFragment {
 			// Require-Capability
 			//
 
-			for (Entry<String,Attrs> rc : d.getRequireCapability().entrySet()) {
+			for (Entry<String, Attrs> rc : d.getRequireCapability()
+				.entrySet()) {
 				resource.addCapability(toRequirement(rc.getKey(), rc.getValue()));
 			}
 		}
@@ -273,7 +284,8 @@ public class OBRFragment {
 				return reporter;
 
 			CapReqBuilder content = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE);
-			String sha = SHA1.digest(file).asHex();
+			String sha = SHA1.digest(file)
+				.asHex();
 			content.addAttribute(ContentNamespace.CONTENT_NAMESPACE, sha);
 			content.addAttribute(ContentNamespace.CAPABILITY_SIZE_ATTRIBUTE, file.length());
 			content.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, MIME_TYPE_OSGI_BUNDLE);
@@ -281,8 +293,8 @@ public class OBRFragment {
 			if (base != null) {
 				String path = file.getAbsolutePath();
 				if (base.startsWith(path)) {
-					content.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE,
-							path.substring(base.length()).replace(File.separatorChar, '/'));
+					content.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, path.substring(base.length())
+						.replace(File.separatorChar, '/'));
 				} else {
 					reporter.error("Base path %s is not parent of file path: %s", base, file.getAbsolutePath());
 				}
@@ -294,7 +306,7 @@ public class OBRFragment {
 	}
 
 	// TODO finish
-	private static String filter(String ns, String primary, Map<String,String> value) {
+	private static String filter(String ns, String primary, Map<String, String> value) {
 		try (Formatter f = new Formatter()) {
 			f.format("(&(%s=%s)", ns, primary);
 			for (String key : value.keySet()) {

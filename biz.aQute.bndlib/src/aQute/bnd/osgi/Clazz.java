@@ -36,7 +36,7 @@ import aQute.libg.generics.Create;
 public class Clazz {
 	private final static Logger	logger				= LoggerFactory.getLogger(Clazz.class);
 
-	static Pattern METHOD_DESCRIPTOR = Pattern.compile("(.*)\\)(.+)");
+	static Pattern				METHOD_DESCRIPTOR	= Pattern.compile("(.*)\\)(.+)");
 
 	public class ClassConstant {
 		int				cname;
@@ -50,6 +50,7 @@ public class Clazz {
 			return (String) pool[cname];
 		}
 
+		@Override
 		public String toString() {
 			return "ClassConstant[" + getName() + "]";
 		}
@@ -65,16 +66,17 @@ public class Clazz {
 		OpenJDK7(51, "JavaSE-1.7", "(&(osgi.ee=JavaSE)(version=1.7))"), //
 		OpenJDK8(52, "JavaSE-1.8", "(&(osgi.ee=JavaSE)(version=1.8))") {
 
-			Map<String,Set<String>> profiles;
+			Map<String, Set<String>> profiles;
 
-			public Map<String,Set<String>> getProfiles() throws IOException {
+			@Override
+			public Map<String, Set<String>> getProfiles() throws IOException {
 				if (profiles == null) {
 					Properties p = new UTF8Properties();
 					try (InputStream in = Clazz.class.getResourceAsStream("profiles-" + this + ".properties")) {
 						p.load(in);
 					}
 					profiles = new HashMap<>();
-					for (Map.Entry<Object,Object> prop : p.entrySet()) {
+					for (Map.Entry<Object, Object> prop : p.entrySet()) {
 						String list = (String) prop.getValue();
 						Set<String> set = new HashSet<>();
 						Collections.addAll(set, list.split("\\s*,\\s*"));
@@ -137,20 +139,50 @@ public class Clazz {
 			return filter;
 		}
 
-		public Map<String,Set<String>> getProfiles() throws IOException {
+		public Map<String, Set<String>> getProfiles() throws IOException {
 			return null;
 		}
 	}
 
 	public static enum QUERY {
-		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATED, RUNTIMEANNOTATIONS, CLASSANNOTATIONS, DEFAULT_CONSTRUCTOR;
+		IMPLEMENTS,
+		EXTENDS,
+		IMPORTS,
+		NAMED,
+		ANY,
+		VERSION,
+		CONCRETE,
+		ABSTRACT,
+		PUBLIC,
+		ANNOTATED,
+		RUNTIMEANNOTATIONS,
+		CLASSANNOTATIONS,
+		DEFAULT_CONSTRUCTOR;
 
 	}
 
 	static enum CONSTANT {
-		Zero(0), Utf8, Two, Integer(4), Float(4), Long(8), Double(8), Class(2), String(2), Fieldref(4), Methodref(
-				4), InterfaceMethodref(4), NameAndType(4), Thirteen, Fourteen, MethodHandle(3), MethodType(
-						2), Seventeen, InvokeDynamic(4), Module(2), Package(2);
+		Zero(0),
+		Utf8,
+		Two,
+		Integer(4),
+		Float(4),
+		Long(8),
+		Double(8),
+		Class(2),
+		String(2),
+		Fieldref(4),
+		Methodref(4),
+		InterfaceMethodref(4),
+		NameAndType(4),
+		Thirteen,
+		Fourteen,
+		MethodHandle(3),
+		MethodType(2),
+		Seventeen,
+		InvokeDynamic(4),
+		Module(2),
+		Package(2);
 		private final int skip;
 
 		CONSTANT(int skip) {
@@ -165,8 +197,9 @@ public class Clazz {
 			return skip;
 		}
 	}
+
 	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
-			QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED);
+		QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED);
 
 	/**
 	 * <pre>
@@ -176,7 +209,6 @@ public class Clazz {
 	 * invokespecial instruction. ACC_INTERFACE 0x0200 Is an interface, not a
 	 * class. ACC_ABSTRACT 0x0400 Declared abstract; may not be instantiated.
 	 * </pre>
-	 * 
 	 */
 
 	// Declared public; may be accessed from outside its package.
@@ -204,9 +236,10 @@ public class Clazz {
 		}
 
 		CONSTANT	tag;
-		int		a;
-		int		b;
+		int			a;
+		int			b;
 
+		@Override
 		public String toString() {
 			return "Assoc[" + tag + ", " + a + "," + b + "]";
 		}
@@ -276,7 +309,8 @@ public class Clazz {
 		void addAnnotation(Annotation a) {
 			if (annotations == null)
 				annotations = Create.set();
-			annotations.add(analyzer.getTypeRef(a.getName().getBinary()));
+			annotations.add(analyzer.getTypeRef(a.getName()
+				.getBinary()));
 		}
 
 		public Collection<TypeRef> getAnnotations() {
@@ -429,48 +463,49 @@ public class Clazz {
 		}
 	}
 
-	public static final Comparator<Clazz> NAME_COMPARATOR = new Comparator<Clazz>() {
+	public static final Comparator<Clazz>	NAME_COMPARATOR	= new Comparator<Clazz>() {
 
-		public int compare(Clazz a, Clazz b) {
-			return a.className.compareTo(b.className);
-		}
+																@Override
+																public int compare(Clazz a, Clazz b) {
+																	return a.className.compareTo(b.className);
+																}
 
-	};
+															};
 
-	boolean	hasRuntimeAnnotations;
-	boolean	hasClassAnnotations;
-	boolean	hasDefaultConstructor;
+	boolean									hasRuntimeAnnotations;
+	boolean									hasClassAnnotations;
+	boolean									hasDefaultConstructor;
 
-	int						depth		= 0;
-	Deque<ClassDataCollector> cds		= new LinkedList<>();
+	int										depth			= 0;
+	Deque<ClassDataCollector>				cds				= new LinkedList<>();
 
-	TypeRef				className;
-	Object				pool[];
-	int					intPool[];
-	Set<PackageRef>		imports		= Create.set();
-	String				path;
-	int					minor		= 0;
-	int					major		= 0;
-	int					innerAccess	= -1;
-	int					accessx		= 0;
-	String				sourceFile;
-	Set<TypeRef>		xref;
-	Set<TypeRef>		annotations;
-	int					forName		= 0;
-	int					class$		= 0;
-	TypeRef[]			interfaces;
-	TypeRef				zuper;
-	ClassDataCollector	cd			= null;
-	Resource			resource;
-	FieldDef			last		= null;
-	boolean				deprecated;
-	Set<PackageRef>		api;
-	final Analyzer		analyzer;
-	String				classSignature;
+	TypeRef									className;
+	Object									pool[];
+	int										intPool[];
+	Set<PackageRef>							imports			= Create.set();
+	String									path;
+	int										minor			= 0;
+	int										major			= 0;
+	int										innerAccess		= -1;
+	int										accessx			= 0;
+	String									sourceFile;
+	Set<TypeRef>							xref;
+	Set<TypeRef>							annotations;
+	int										forName			= 0;
+	int										class$			= 0;
+	TypeRef[]								interfaces;
+	TypeRef									zuper;
+	ClassDataCollector						cd				= null;
+	Resource								resource;
+	FieldDef								last			= null;
+	boolean									deprecated;
+	Set<PackageRef>							api;
+	final Analyzer							analyzer;
+	String									classSignature;
 
-	private boolean detectLdc;
+	private boolean							detectLdc;
 
-	private Map<String,Object> defaults;
+	private Map<String, Object>				defaults;
 
 	public Clazz(Analyzer analyzer, String path, Resource resource) {
 		this.path = path;
@@ -725,7 +760,7 @@ public class Clazz {
 				if (forName > 0) {
 					crawl = true;
 					class$ = findMethodReference(className.getBinary(), "class$",
-							"(Ljava/lang/String;)Ljava/lang/Class;");
+						"(Ljava/lang/String;)Ljava/lang/Class;");
 				}
 			}
 
@@ -957,8 +992,7 @@ public class Clazz {
 	 * @param access_flags
 	 * @throws Exception
 	 */
-	private void doAttributes(DataInput in, ElementType member, boolean crawl, int access_flags)
-			throws Exception {
+	private void doAttributes(DataInput in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		int attributesCount = in.readUnsignedShort();
 		for (int j = 0; j < attributesCount; j++) {
 			// skip name CONSTANT_Utf8 pointer
@@ -1274,7 +1308,7 @@ public class Clazz {
 						getMethodDef(0, methodref);
 
 					if ((methodref == forName || methodref == class$) && lastReference != -1
-							&& pool[intPool[lastReference]] instanceof String) {
+						&& pool[intPool[lastReference]] instanceof String) {
 						String fqn = (String) pool[intPool[lastReference]];
 						if (!fqn.equals("class") && fqn.indexOf('.') > 0) {
 							TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
@@ -1285,10 +1319,10 @@ public class Clazz {
 					break;
 				}
 
-					/*
-					 * 3/5: opcode, indexbyte1, indexbyte2 or iinc, indexbyte1,
-					 * indexbyte2, countbyte1, countbyte2
-					 */
+				/*
+				 * 3/5: opcode, indexbyte1, indexbyte2 or iinc, indexbyte1,
+				 * indexbyte2, countbyte1, countbyte2
+				 */
 				case OpCodes.wide :
 					int opcode = Byte.toUnsignedInt(bb.get());
 					bb.getShort(); // at least 3 bytes
@@ -1333,8 +1367,8 @@ public class Clazz {
 		this.sourceFile = pool[sourcefile_index].toString();
 	}
 
-	private void doParameterAnnotations(DataInput in, ElementType member, RetentionPolicy policy,
-			int access_flags) throws Exception {
+	private void doParameterAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
+		throws Exception {
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
 			if (cd != null)
@@ -1344,7 +1378,7 @@ public class Clazz {
 	}
 
 	private void doTypeAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
-			throws Exception {
+		throws Exception {
 		int num_annotations = in.readUnsignedShort();
 		for (int p = 0; p < num_annotations; p++) {
 
@@ -1500,7 +1534,7 @@ public class Clazz {
 	}
 
 	private void doAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
-			throws Exception {
+		throws Exception {
 		int num_annotations = in.readUnsignedShort(); // # of annotations
 		for (int a = 0; a < num_annotations; a++) {
 			if (cd == null)
@@ -1522,7 +1556,7 @@ public class Clazz {
 	// }
 
 	private Annotation doAnnotation(DataInput in, ElementType member, RetentionPolicy policy, boolean collect,
-			int access_flags) throws IOException {
+		int access_flags) throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
 			annotations = new HashSet<>();
@@ -1543,7 +1577,7 @@ public class Clazz {
 			}
 		}
 		int num_element_value_pairs = in.readUnsignedShort();
-		Map<String,Object> elements = null;
+		Map<String, Object> elements = null;
 		for (int v = 0; v < num_element_value_pairs; v++) {
 			int element_name_index = in.readUnsignedShort();
 			String element = (String) pool[element_name_index];
@@ -1560,7 +1594,7 @@ public class Clazz {
 	}
 
 	private Object doElementValue(DataInput in, ElementType member, RetentionPolicy policy, boolean collect,
-			int access_flags) throws IOException {
+		int access_flags) throws IOException {
 		char tag = (char) in.readUnsignedByte();
 		switch (tag) {
 			case 'B' : // Byte
@@ -1952,7 +1986,7 @@ public class Clazz {
 		Clazz clazz = analyzer.findClass(zuper);
 		if (clazz == null) {
 			analyzer.warning("While traversing the type tree while searching %s on %s cannot find class %s", query,
-					this, zuper);
+				this, zuper);
 			return false;
 		}
 
@@ -1991,13 +2025,13 @@ public class Clazz {
 					cd.referenceMethod(access, className, method, descriptor);
 				} else
 					throw new IllegalArgumentException(
-							"Invalid class file (or parsing is wrong), assoc is not type + name (12)");
+						"Invalid class file (or parsing is wrong), assoc is not type + name (12)");
 			} else
 				throw new IllegalArgumentException(
-						"Invalid class file (or parsing is wrong), Assoc is not method ref! (10)");
+					"Invalid class file (or parsing is wrong), Assoc is not method ref! (10)");
 		} else
 			throw new IllegalArgumentException(
-					"Invalid class file (or parsing is wrong), Not an assoc at a method ref");
+				"Invalid class file (or parsing is wrong), Not an assoc at a method ref");
 	}
 
 	public boolean isPublic() {
@@ -2009,7 +2043,8 @@ public class Clazz {
 	}
 
 	public boolean isEnum() {
-		return zuper != null && zuper.getBinary().equals("java/lang/Enum");
+		return zuper != null && zuper.getBinary()
+			.equals("java/lang/Enum");
 	}
 
 	public boolean isSynthetic() {
@@ -2027,7 +2062,8 @@ public class Clazz {
 
 	public static String objectDescriptorToFQN(String string) {
 		if ((string.startsWith("L") || string.startsWith("T")) && string.endsWith(";"))
-			return string.substring(1, string.length() - 1).replace('/', '.');
+			return string.substring(1, string.length() - 1)
+				.replace('/', '.');
 
 		switch (string.charAt(0)) {
 			case 'V' :
@@ -2193,7 +2229,7 @@ public class Clazz {
 		return classSignature;
 	}
 
-	public Map<String,Object> getDefaults() throws Exception {
+	public Map<String, Object> getDefaults() throws Exception {
 		if (defaults == null) {
 			defaults = new HashMap<>();
 

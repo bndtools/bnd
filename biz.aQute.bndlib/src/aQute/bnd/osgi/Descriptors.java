@@ -10,9 +10,9 @@ import org.osgi.annotation.versioning.ProviderType;
 import aQute.libg.generics.Create;
 
 public class Descriptors {
-	Map<String,TypeRef>		typeRefCache		= Create.map();
-	Map<String,Descriptor>	descriptorCache		= Create.map();
-	Map<String,PackageRef>	packageCache		= Create.map();
+	Map<String, TypeRef>	typeRefCache		= Create.map();
+	Map<String, Descriptor>	descriptorCache		= Create.map();
+	Map<String, PackageRef>	packageCache		= Create.map();
 
 	// MUST BE BEFORE PRIMITIVES, THEY USE THE DEFAULT PACKAGE!!
 	final static PackageRef	DEFAULT_PACKAGE		= new PackageRef();
@@ -29,11 +29,13 @@ public class Descriptors {
 	final static TypeRef	FLOAT				= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
 
 	public enum SignatureType {
-		TYPEVAR, METHOD, FIELD;
+		TYPEVAR,
+		METHOD,
+		FIELD;
 	}
 
 	public class Signature {
-		public Map<String,Signature>	typevariables	= new HashMap<>();
+		public Map<String, Signature>	typevariables	= new HashMap<>();
 		public Signature				type;
 		public List<Signature>			parameters;
 
@@ -127,6 +129,7 @@ public class Descriptors {
 			return this == PRIMITIVE_PACKAGE;
 		}
 
+		@Override
 		public int compareTo(PackageRef other) {
 			return fqn.compareTo(other.fqn);
 		}
@@ -144,7 +147,6 @@ public class Descriptors {
 
 		/**
 		 * Decide if the package is a metadata package.
-		 * 
 		 */
 		public boolean isMetaData() {
 			if (isDefaultPackage())
@@ -180,42 +182,52 @@ public class Descriptors {
 			this.packageRef = pref;
 		}
 
+		@Override
 		public String getBinary() {
 			return binaryName;
 		}
 
+		@Override
 		public String getPath() {
 			return binaryName + ".class";
 		}
 
+		@Override
 		public String getSourcePath() {
 			return binaryName + ".java";
 		}
 
+		@Override
 		public String getFQN() {
 			return fqn;
 		}
 
+		@Override
 		public String getDottedOnly() {
 			return fqn.replace('$', '.');
 		}
 
+		@Override
 		public boolean isPrimitive() {
 			return primitive;
 		}
 
+		@Override
 		public TypeRef getComponentTypeRef() {
 			return null;
 		}
 
+		@Override
 		public TypeRef getClassRef() {
 			return this;
 		}
 
+		@Override
 		public PackageRef getPackageRef() {
 			return packageRef;
 		}
 
+		@Override
 		public String getShortName() {
 			int n = binaryName.lastIndexOf('/');
 			return binaryName.substring(n + 1);
@@ -231,6 +243,7 @@ public class Descriptors {
 			return name.substring(n + 1);
 		}
 
+		@Override
 		public boolean isJava() {
 			return packageRef.isJava();
 		}
@@ -240,6 +253,7 @@ public class Descriptors {
 			return fqn;
 		}
 
+		@Override
 		public boolean isObject() {
 			return fqn.equals("java.lang.Object");
 		}
@@ -250,6 +264,7 @@ public class Descriptors {
 			return this == other;
 		}
 
+		@Override
 		public int compareTo(TypeRef other) {
 			if (this == other)
 				return 0;
@@ -270,30 +285,37 @@ public class Descriptors {
 			this.component = component;
 		}
 
+		@Override
 		public String getBinary() {
 			return "[" + component.getBinary();
 		}
 
+		@Override
 		public String getFQN() {
 			return component.getFQN() + "[]";
 		}
 
+		@Override
 		public String getPath() {
 			return component.getPath();
 		}
 
+		@Override
 		public String getSourcePath() {
 			return component.getSourcePath();
 		}
 
+		@Override
 		public boolean isPrimitive() {
 			return false;
 		}
 
+		@Override
 		public TypeRef getComponentTypeRef() {
 			return component;
 		}
 
+		@Override
 		public TypeRef getClassRef() {
 			return component.getClassRef();
 		}
@@ -306,14 +328,17 @@ public class Descriptors {
 			return component.equals(((ArrayRef) other).component);
 		}
 
+		@Override
 		public PackageRef getPackageRef() {
 			return component.getPackageRef();
 		}
 
+		@Override
 		public String getShortName() {
 			return component.getShortName() + "[]";
 		}
 
+		@Override
 		public boolean isJava() {
 			return component.isJava();
 		}
@@ -323,14 +348,17 @@ public class Descriptors {
 			return component.toString() + "[]";
 		}
 
+		@Override
 		public boolean isObject() {
 			return false;
 		}
 
+		@Override
 		public String getDottedOnly() {
 			return component.getDottedOnly();
 		}
 
+		@Override
 		public int compareTo(TypeRef other) {
 			if (this == other)
 				return 0;
@@ -491,7 +519,7 @@ public class Descriptors {
 
 				default :
 					throw new IllegalArgumentException(
-							"Invalid type in descriptor: " + c + " from " + descriptor + "[" + index + "]");
+						"Invalid type in descriptor: " + c + " from " + descriptor + "[" + index + "]");
 			}
 			types.add(getTypeRef(sb.toString()));
 			return index;
@@ -563,7 +591,8 @@ public class Descriptors {
 	public static String getPackage(String binaryNameOrFqn) {
 		int n = binaryNameOrFqn.lastIndexOf('/');
 		if (n >= 0)
-			return binaryNameOrFqn.substring(0, n).replace('/', '.');
+			return binaryNameOrFqn.substring(0, n)
+				.replace('/', '.');
 
 		n = binaryNameOrFqn.lastIndexOf('.');
 		if (n >= 0)

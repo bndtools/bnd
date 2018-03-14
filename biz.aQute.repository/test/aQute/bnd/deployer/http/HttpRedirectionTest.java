@@ -72,7 +72,8 @@ public class HttpRedirectionTest extends TestCase {
 		// Use a future to ensure we timeout after 1s if the redirect does
 		// actually loop forever
 		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Future< ? > future = executor.submit(new Runnable() {
+		Future<?> future = executor.submit(new Runnable() {
+			@Override
 			public void run() {
 				DefaultURLConnector connector = new DefaultURLConnector();
 				try {

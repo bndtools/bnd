@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map<K1,Map<K2,V>> {
+public class DoubleKeyMap<K1, K2, V> extends HashMap<K1, Map<K2, V>> implements Map<K1, Map<K2, V>> {
 	private static final long	serialVersionUID	= 1L;
-	private final Class< ? >	k1Class;
-	private final Class< ? >	k2Class;
-	private final Class< ? >	valueClass;
+	private final Class<?>		k1Class;
+	private final Class<?>		k2Class;
+	private final Class<?>		valueClass;
 
 	public DoubleKeyMap() {
 		k1Class = Object.class;
@@ -23,19 +23,19 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 		this.valueClass = valueClass;
 	}
 
-	public DoubleKeyMap(Map<K1,Map<K2,V>> other) {
+	public DoubleKeyMap(Map<K1, Map<K2, V>> other) {
 		this();
-		for (java.util.Map.Entry<K1,Map<K2,V>> e : other.entrySet()) {
+		for (java.util.Map.Entry<K1, Map<K2, V>> e : other.entrySet()) {
 			putAll(e.getKey(), e.getValue());
 		}
 	}
 
-	public DoubleKeyMap(DoubleKeyMap<K1,K2,V> other) {
+	public DoubleKeyMap(DoubleKeyMap<K1, K2, V> other) {
 		k1Class = other.k1Class;
 		k2Class = other.k2Class;
 		valueClass = other.valueClass;
 
-		for (java.util.Map.Entry<K1,Map<K2,V>> e : other.entrySet()) {
+		for (java.util.Map.Entry<K1, Map<K2, V>> e : other.entrySet()) {
 			putAll(e.getKey(), e.getValue());
 		}
 	}
@@ -46,7 +46,7 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 		assert k2Class.isInstance(key2);
 		assert valueClass.isInstance(value);
 
-		Map<K2,V> map = get(key1);
+		Map<K2, V> map = get(key1);
 		if (map == null) {
 			map = new HashMap<>();
 			if (valueClass != Object.class) {
@@ -58,7 +58,7 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 	}
 
 	public V get(K1 key1, K2 key2) {
-		Map<K2,V> map = get(key1);
+		Map<K2, V> map = get(key1);
 		if (map == null)
 			return null;
 
@@ -66,17 +66,17 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 	}
 
 	public boolean containsKeys(K1 key1, K2 key2) {
-		Map<K2,V> map = get(key1);
+		Map<K2, V> map = get(key1);
 		if (map == null)
 			return false;
 
 		return map.containsKey(key2);
 	}
 
-	public void putAll(K1 key1, Map<K2,V> map) {
+	public void putAll(K1 key1, Map<K2, V> map) {
 		assert k1Class.isInstance(key1);
 
-		for (Map.Entry<K2,V> e : map.entrySet()) {
+		for (Map.Entry<K2, V> e : map.entrySet()) {
 			put(key1, e.getKey(), e.getValue());
 		}
 	}
@@ -86,11 +86,12 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 		assert k2Class.isInstance(key2);
 		assert valueClass.isInstance(value);
 
-		Map<K2,V> set = get(key1);
+		Map<K2, V> set = get(key1);
 		if (set == null) {
 			return false;
 		}
-		boolean result = set.values().remove(value);
+		boolean result = set.values()
+			.remove(value);
 		if (set.isEmpty())
 			remove(key1);
 		return result;
@@ -100,7 +101,7 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 		assert k1Class.isInstance(key1);
 		assert k2Class.isInstance(key2);
 
-		Map<K2,V> set = get(key1);
+		Map<K2, V> set = get(key1);
 		if (set == null) {
 			return null;
 		}
@@ -110,11 +111,11 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 		return result;
 	}
 
-	public Iterator<Map.Entry<K2,V>> iterate(K1 key) {
+	public Iterator<Map.Entry<K2, V>> iterate(K1 key) {
 		assert k1Class.isInstance(key);
-		Map<K2,V> set = get(key);
+		Map<K2, V> set = get(key);
 		if (set == null)
-			return new Iterator<Map.Entry<K2,V>>() {
+			return new Iterator<Map.Entry<K2, V>>() {
 
 				@Override
 				public boolean hasNext() {
@@ -122,7 +123,7 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 				}
 
 				@Override
-				public Map.Entry<K2,V> next() {
+				public Map.Entry<K2, V> next() {
 					throw new UnsupportedOperationException();
 				}
 
@@ -132,18 +133,23 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 				}
 
 			};
-		return set.entrySet().iterator();
+		return set.entrySet()
+			.iterator();
 	}
 
 	public Iterator<V> all() {
 		return new Iterator<V>() {
-			Iterator<java.util.Map.Entry<K1,Map<K2,V>>> master = entrySet().iterator();
-			Iterator<Map.Entry<K2,V>> current = null;
+			Iterator<java.util.Map.Entry<K1, Map<K2, V>>>	master	= entrySet().iterator();
+			Iterator<Map.Entry<K2, V>>						current	= null;
 
+			@Override
 			public boolean hasNext() {
 				if (current == null || !current.hasNext()) {
 					if (master.hasNext()) {
-						current = master.next().getValue().entrySet().iterator();
+						current = master.next()
+							.getValue()
+							.entrySet()
+							.iterator();
 						return current.hasNext();
 					}
 					return false;
@@ -151,10 +157,13 @@ public class DoubleKeyMap<K1, K2, V> extends HashMap<K1,Map<K2,V>>implements Map
 				return true;
 			}
 
+			@Override
 			public V next() {
-				return current.next().getValue();
+				return current.next()
+					.getValue();
 			}
 
+			@Override
 			public void remove() {
 				current.remove();
 			}

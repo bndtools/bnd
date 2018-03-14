@@ -70,7 +70,9 @@ public class ClazzTest extends TestCase {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			c.parseClassFile(new FileInputStream("bin/test/ClazzTest$Catching.class"), new ClassDataCollector() {});
-			assertTrue(c.getReferred().toString().contains("org.xml.sax"));
+			assertTrue(c.getReferred()
+				.toString()
+				.contains("org.xml.sax"));
 		}
 	}
 
@@ -82,7 +84,7 @@ public class ClazzTest extends TestCase {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			c.parseClassFile(new FileInputStream("testresources/TestWeavingHook.jclass"), new ClassDataCollector() {});
-		// TODO test someething here
+			// TODO test someething here
 			System.out.println(c.getReferred());
 		}
 	}
@@ -105,10 +107,10 @@ public class ClazzTest extends TestCase {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 
-		// From aQute.lib.collections.SortedList.fromIterator()
+			// From aQute.lib.collections.SortedList.fromIterator()
 			c.parseDescriptor(
-					"<T::Ljava/lang/Comparable<*>;>(Ljava/util/Iterator<TT;>;)LaQute/lib/collections/SortedList<TT;>;",
-					Modifier.PUBLIC);
+				"<T::Ljava/lang/Comparable<*>;>(Ljava/util/Iterator<TT;>;)LaQute/lib/collections/SortedList<TT;>;",
+				Modifier.PUBLIC);
 		}
 	}
 
@@ -166,7 +168,7 @@ public class ClazzTest extends TestCase {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			c.parseClassFile(new FileInputStream("jar/DeploymentAdminPermission.1.jclass"),
-					new ClassDataCollector() {});
+				new ClassDataCollector() {});
 			Set<PackageRef> referred = c.getReferred();
 			Descriptors d = new Descriptors();
 			assertFalse(referred.contains(d.getPackageRef("")));
@@ -190,7 +192,7 @@ public class ClazzTest extends TestCase {
 		try (Analyzer a = new Analyzer()) {
 			Clazz c = new Clazz(a, "", null);
 			c.parseClassFile(new FileInputStream("jar/AnalyzerCrawlInvokerInterfaceAIOOBTest.jclass"),
-					new ClassDataCollector() {});
+				new ClassDataCollector() {});
 			Set<PackageRef> referred = c.getReferred();
 			System.out.println(referred);
 		}
@@ -206,9 +208,10 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
-			analyzer.getClassspace().put(clazz.getClassName(), clazz);
+			analyzer.getClassspace()
+				.put(clazz.getClassName(), clazz);
 			AnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class),
-					new XMLAttributeFinder(analyzer), AnnotationReader.V1_3);
+				new XMLAttributeFinder(analyzer), AnnotationReader.V1_3);
 		}
 	}
 }

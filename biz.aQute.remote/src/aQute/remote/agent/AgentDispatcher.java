@@ -41,7 +41,7 @@ public class AgentDispatcher {
 		AtomicBoolean					closed		= new AtomicBoolean(false);
 		List<AgentServer>				servers		= new CopyOnWriteArrayList<>();
 		Framework						framework;
-		Map<String,Object>				configuration;
+		Map<String, Object>				configuration;
 		File							storage;
 		File							shaCache;
 		String							name;
@@ -76,8 +76,8 @@ public class AgentDispatcher {
 	/**
 	 * Create a new framework. This is reflectively called from the Envoy
 	 */
-	public static Descriptor createFramework(String name, Map<String,Object> configuration, final File storage,
-			final File shacache) throws Exception {
+	public static Descriptor createFramework(String name, Map<String, Object> configuration, final File storage,
+		final File shacache) throws Exception {
 
 		//
 		// Use the service loader for loading a framework
@@ -98,17 +98,18 @@ public class AgentDispatcher {
 		//
 
 		@SuppressWarnings({
-				"unchecked", "rawtypes"
+			"unchecked", "rawtypes"
 		})
 		Framework framework = ff.newFramework((Map) configuration);
 		framework.init();
-		framework.getBundleContext().addFrameworkListener(new FrameworkListener() {
+		framework.getBundleContext()
+			.addFrameworkListener(new FrameworkListener() {
 
-			@Override
-			public void frameworkEvent(FrameworkEvent event) {
-				// System.err.println("FW Event " + event);
-			}
-		});
+				@Override
+				public void frameworkEvent(FrameworkEvent event) {
+					// System.err.println("FW Event " + event);
+				}
+			});
 
 		framework.start();
 
@@ -129,15 +130,17 @@ public class AgentDispatcher {
 		String embedded = (String) configuration.get("biz.aQute.remote.embedded");
 
 		if (embedded != null && !(embedded = embedded.trim()).isEmpty()) {
-			String activators[] = embedded.trim().split("\\s*,\\s*");
+			String activators[] = embedded.trim()
+				.split("\\s*,\\s*");
 			for (String activator : activators)
 				try {
-					Class< ? > activatorClass = loader.loadClass(activator);
+					Class<?> activatorClass = loader.loadClass(activator);
 					if (BundleActivator.class.isAssignableFrom(activatorClass)) {
 
 						// TODO check immediate
 
-						BundleActivator ba = (BundleActivator) activatorClass.getConstructor().newInstance();
+						BundleActivator ba = (BundleActivator) activatorClass.getConstructor()
+							.newInstance();
 						ba.start(framework.getBundleContext());
 						d.activators.add(ba);
 					}
@@ -172,6 +175,7 @@ public class AgentDispatcher {
 			//
 			// Override the close se we can remote it from the list
 			//
+			@Override
 			public void close() throws IOException {
 				descriptor.servers.remove(this);
 				super.close();
@@ -181,7 +185,7 @@ public class AgentDispatcher {
 		//
 		// Link up
 		//
-		Link<Agent,Supervisor> link = new Link<>(Supervisor.class, as, in, out);
+		Link<Agent, Supervisor> link = new Link<>(Supervisor.class, as, in, out);
 		as.setLink(link);
 		link.open();
 	}

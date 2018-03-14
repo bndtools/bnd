@@ -9,6 +9,7 @@ public class StringsTest extends TestCase {
 		assertEquals("-", Strings.times("-", -100));
 
 	}
+
 	public void testStrip() {
 		assertEquals("abcd", Strings.stripSuffix("abcdef", "ef"));
 		assertEquals("a", Strings.stripSuffix("abcdef", "b.*f"));

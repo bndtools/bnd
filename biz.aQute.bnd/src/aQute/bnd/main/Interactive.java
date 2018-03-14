@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class Interactive {
 
-	public Interactive(PrintStream out, InputStream in, Map<String,String> parameters) {
+	public Interactive(PrintStream out, InputStream in, Map<String, String> parameters) {
 
 	}
 

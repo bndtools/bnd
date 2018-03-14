@@ -40,19 +40,22 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	/**
 	 * Not doing anything is perfect ok
 	 */
+	@Override
 	public void handle(URLConnection connection) throws Exception {}
 
 	/**
 	 * Verify if the URL matches one of our globs. If there are no globs, we
 	 * always return true.
 	 */
+	@Override
 	public boolean matches(URL url) {
 		if (matchers.isEmpty())
 			return true;
 
 		String string = url.toString();
 		for (Glob g : matchers) {
-			if (g.matcher(string).matches())
+			if (g.matcher(string)
+				.matches())
 				return true;
 		}
 		return false;
@@ -71,6 +74,7 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	/**
 	 * We are a @link {@link RegistryPlugin} for convenience to our subclasses.
 	 */
+	@Override
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
@@ -80,7 +84,8 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	 * before they handle their own properties.
 	 */
 
-	public void setProperties(Map<String,String> map) throws Exception {
+	@Override
+	public void setProperties(Map<String, String> map) throws Exception {
 		String matches = map.get(MATCH);
 		if (matches != null) {
 			for (String p : matches.split("\\s*,\\s*")) {
@@ -89,31 +94,38 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 		}
 	}
 
+	@Override
 	public void setReporter(Reporter processor) {
 		this.reporter = processor;
 	}
 
 	// Delegated reporter methods for convenience
+	@Override
 	public List<String> getWarnings() {
 		return reporter.getWarnings();
 	}
 
+	@Override
 	public List<String> getErrors() {
 		return reporter.getErrors();
 	}
 
+	@Override
 	public Location getLocation(String msg) {
 		return reporter.getLocation(msg);
 	}
 
+	@Override
 	public boolean isOk() {
 		return reporter.isOk();
 	}
 
+	@Override
 	public SetLocation error(String format, Object... args) {
 		return reporter.error(format, args);
 	}
 
+	@Override
 	public SetLocation warning(String format, Object... args) {
 		return reporter.warning(format, args);
 	}
@@ -121,6 +133,7 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	/**
 	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
+	@Override
 	@Deprecated
 	public void trace(String format, Object... args) {
 		if (logger.isDebugEnabled()) {
@@ -133,6 +146,7 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
 	 *             instead.
 	 */
+	@Override
 	@Deprecated
 	public void progress(float progress, String format, Object... args) {
 		if (logger.isInfoEnabled(LIFECYCLE)) {
@@ -144,10 +158,12 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 		}
 	}
 
+	@Override
 	public SetLocation exception(Throwable t, String format, Object... args) {
 		return reporter.exception(t, format, args);
 	}
 
+	@Override
 	public boolean isPedantic() {
 		return reporter.isPedantic();
 	}

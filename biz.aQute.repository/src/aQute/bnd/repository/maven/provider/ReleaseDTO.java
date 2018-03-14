@@ -7,17 +7,19 @@ import aQute.bnd.util.dto.DTO;
 
 public class ReleaseDTO extends DTO {
 	public enum ReleaseType {
-		LOCAL, REMOTE;
+		LOCAL,
+		REMOTE;
 	}
 
 	public enum JavadocPackages {
-		ALL, EXPORT;
+		ALL,
+		EXPORT;
 	}
 
 	public static class JavadocDTO extends DTO {
 		public String				path;
 		public JavadocPackages		packages	= JavadocPackages.EXPORT;
-		public Map<String,String>	options		= new HashMap<>();
+		public Map<String, String>	options		= new HashMap<>();
 	}
 
 	public static class PomDTO extends DTO {

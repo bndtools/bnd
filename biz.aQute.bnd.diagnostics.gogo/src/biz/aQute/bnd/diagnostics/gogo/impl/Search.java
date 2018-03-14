@@ -20,12 +20,17 @@ public class Search implements Converter {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getState());
 
-		sb.append("[").append(searcher.getBundle().getBundleId()).append("] ");
+		sb.append("[")
+			.append(searcher.getBundle()
+				.getBundleId())
+			.append("] ");
 		sb.append(serviceName);
 
-		sb.append(" ").append(matched);
+		sb.append(" ")
+			.append(matched);
 		if (!mismatched.isEmpty())
-			sb.append(" !! ").append(mismatched);
+			sb.append(" !! ")
+				.append(mismatched);
 		return sb.toString();
 	}
 
@@ -46,14 +51,14 @@ public class Search implements Converter {
 	@Override
 	public CharSequence format(Object source, int level, Converter next) throws Exception {
 		switch (level) {
-		case Converter.INSPECT:
-			return inspect(this, next);
+			case Converter.INSPECT :
+				return inspect(this, next);
 
-		case Converter.LINE:
-			return line(this, next);
+			case Converter.LINE :
+				return line(this, next);
 
-		case Converter.PART:
-			return part(this, next);
+			case Converter.PART :
+				return part(this, next);
 		}
 		return null;
 	}
@@ -65,14 +70,15 @@ public class Search implements Converter {
 	private CharSequence line(Search search, Converter next) throws Exception {
 		try (Formatter f = new Formatter()) {
 			f.format("%s %-60s %-50s %s %s", getState(), search.serviceName, search.searcher.getBundle(),
-					search.matched.isEmpty() ? "" : search.matched,
-					search.mismatched.isEmpty() ? "" : "!! " + search.mismatched);
+				search.matched.isEmpty() ? "" : search.matched,
+				search.mismatched.isEmpty() ? "" : "!! " + search.mismatched);
 			return f.toString();
 		}
 	}
 
 	private CharSequence inspect(Search search, Converter next) throws Exception {
-		BundleContext context = search.searcher.getBundle().getBundleContext();
+		BundleContext context = search.searcher.getBundle()
+			.getBundleContext();
 
 		try (Formatter f = new Formatter()) {
 			f.format("Searching Bundle                %s\n", search.searcher.getBundle());

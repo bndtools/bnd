@@ -3,16 +3,17 @@ package aQute.bnd.build.model.conversions;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class MapFormatter implements Converter<String,Map<String,String>> {
+public class MapFormatter implements Converter<String, Map<String, String>> {
 
-	private CollectionFormatter<Entry<String,String>> entrySetFormatter;
+	private CollectionFormatter<Entry<String, String>> entrySetFormatter;
 
-	public MapFormatter(String listSeparator, Converter<String, ? super Entry<String,String>> entryFormatter,
-			String emptyOutput) {
+	public MapFormatter(String listSeparator, Converter<String, ? super Entry<String, String>> entryFormatter,
+		String emptyOutput) {
 		entrySetFormatter = new CollectionFormatter<>(listSeparator, entryFormatter, emptyOutput);
 	}
 
-	public String convert(Map<String,String> input) throws IllegalArgumentException {
+	@Override
+	public String convert(Map<String, String> input) throws IllegalArgumentException {
 		return entrySetFormatter.convert(input.entrySet());
 	}
 

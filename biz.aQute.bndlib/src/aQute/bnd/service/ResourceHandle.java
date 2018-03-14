@@ -6,7 +6,9 @@ import java.io.IOException;
 public interface ResourceHandle {
 
 	public enum Location {
-		local, remote_cached, remote
+		local,
+		remote_cached,
+		remote
 	}
 
 	String getName();

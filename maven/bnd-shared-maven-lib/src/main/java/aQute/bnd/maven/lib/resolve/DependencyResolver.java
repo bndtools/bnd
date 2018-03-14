@@ -31,17 +31,17 @@ import aQute.bnd.repository.fileset.FileSetRepository;
 
 public class DependencyResolver {
 
-	private static final Logger logger = LoggerFactory.getLogger(DependencyResolver.class);
+	private static final Logger					logger	= LoggerFactory.getLogger(DependencyResolver.class);
 
-	private final boolean includeTransitive;
-	private final MavenProject project;
-	final List<String> scopes;
-	private final RepositorySystemSession session;
-	private final RepositorySystem system;
-	private final ProjectDependenciesResolver resolver;
-	private final PostProcessor postProcessor;
+	private final boolean						includeTransitive;
+	private final MavenProject					project;
+	final List<String>							scopes;
+	private final RepositorySystemSession		session;
+	private final RepositorySystem				system;
+	private final ProjectDependenciesResolver	resolver;
+	private final PostProcessor					postProcessor;
 
-	private Map<File,ArtifactResult> resolvedDependencies;
+	private Map<File, ArtifactResult>			resolvedDependencies;
 
 	/**
 	 * Shortcut with {@code scopes = ['compile', 'runtime']},
@@ -52,18 +52,15 @@ public class DependencyResolver {
 	 * @param resolver
 	 * @param system
 	 */
-	public DependencyResolver(
-		MavenProject project, RepositorySystemSession session, ProjectDependenciesResolver resolver,
-		RepositorySystem system) {
+	public DependencyResolver(MavenProject project, RepositorySystemSession session,
+		ProjectDependenciesResolver resolver, RepositorySystem system) {
 
-		this(
-			project, session, resolver, system, Arrays.asList("compile", "runtime"), true,
-			new LocalPostProcessor());
+		this(project, session, resolver, system, Arrays.asList("compile", "runtime"), true, new LocalPostProcessor());
 	}
 
-	public DependencyResolver(
-		MavenProject project, RepositorySystemSession session, ProjectDependenciesResolver resolver,
-		RepositorySystem system, List<String> scopes, boolean includeTransitive, PostProcessor postProcessor) {
+	public DependencyResolver(MavenProject project, RepositorySystemSession session,
+		ProjectDependenciesResolver resolver, RepositorySystem system, List<String> scopes, boolean includeTransitive,
+		PostProcessor postProcessor) {
 
 		this.project = project;
 		this.session = session;
@@ -74,8 +71,6 @@ public class DependencyResolver {
 		this.postProcessor = postProcessor;
 	}
 
-	
-	
 	public Map<File, ArtifactResult> resolve() throws MojoExecutionException {
 		List<RemoteRepository> remoteRepositories = new ArrayList<>(project.getRemoteProjectRepositories());
 		ArtifactRepository deployRepo = project.getDistributionManagementArtifactRepository();
@@ -85,15 +80,16 @@ public class DependencyResolver {
 		return resolve(remoteRepositories);
 	}
 
-	public Map<File, ArtifactResult> resolveAgainstRepos(Collection<ArtifactRepository> repositories) throws MojoExecutionException {
+	public Map<File, ArtifactResult> resolveAgainstRepos(Collection<ArtifactRepository> repositories)
+		throws MojoExecutionException {
 		List<RemoteRepository> remoteRepositories = new ArrayList<>(repositories.size());
-		for(ArtifactRepository ar : repositories) {
+		for (ArtifactRepository ar : repositories) {
 			remoteRepositories.add(RepositoryUtils.toRepo(ar));
 		}
 
 		return resolve(remoteRepositories);
 	}
-		
+
 	private Map<File, ArtifactResult> resolve(List<RemoteRepository> remoteRepositories) throws MojoExecutionException {
 		if (resolvedDependencies != null) {
 			return resolvedDependencies;
@@ -112,25 +108,29 @@ public class DependencyResolver {
 
 		DependencyNode dependencyGraph = result.getDependencyGraph();
 
-		if (dependencyGraph != null && !dependencyGraph.getChildren().isEmpty()) {
-			discoverArtifacts(dependencies, dependencyGraph.getChildren(), project.getArtifact().getId(),
-					remoteRepositories);
+		if (dependencyGraph != null && !dependencyGraph.getChildren()
+			.isEmpty()) {
+			discoverArtifacts(dependencies, dependencyGraph.getChildren(), project.getArtifact()
+				.getId(), remoteRepositories);
 		}
 
 		return resolvedDependencies = dependencies;
 	}
 
-	public FileSetRepository getFileSetRepository(
-			String name, Collection<File> bundlesInputParameter, boolean useMavenDependencies)
-		throws Exception {
+	public FileSetRepository getFileSetRepository(String name, Collection<File> bundlesInputParameter,
+		boolean useMavenDependencies) throws Exception {
 
 		Collection<File> bundles = new ArrayList<>();
 		if (useMavenDependencies) {
-			Map<File,ArtifactResult> dependencies = resolve();
+			Map<File, ArtifactResult> dependencies = resolve();
 			bundles.addAll(dependencies.keySet());
 
-			// TODO Find a better way to get all the artifacts produced by this project!!!
-			File current = new File(project.getBuild().getDirectory(), project.getBuild().getFinalName() + ".jar");
+			// TODO Find a better way to get all the artifacts produced by this
+			// project!!!
+			File current = new File(project.getBuild()
+				.getDirectory(),
+				project.getBuild()
+					.getFinalName() + ".jar");
 			if (current.exists() && !bundles.contains(current)) {
 				bundles.add(current);
 			}
@@ -143,25 +143,26 @@ public class DependencyResolver {
 		return new FileSetRepository(name, bundles);
 	}
 
-	private void discoverArtifacts(Map<File,ArtifactResult> files, List<DependencyNode> nodes, String parent,
-			List<RemoteRepository> remoteRepositories)
-			throws MojoExecutionException {
+	private void discoverArtifacts(Map<File, ArtifactResult> files, List<DependencyNode> nodes, String parent,
+		List<RemoteRepository> remoteRepositories) throws MojoExecutionException {
 
 		for (DependencyNode node : nodes) {
-			if (!scopes.contains(node.getDependency().getScope())) {
+			if (!scopes.contains(node.getDependency()
+				.getScope())) {
 				continue;
 			}
 			// Ensure that the file is downloaded so we can index it
 			try {
-				ArtifactResult resolvedArtifact = postProcessor.postProcessResult(system.resolveArtifact(
-						session, new ArtifactRequest(node.getArtifact(), remoteRepositories, parent)));
-				logger.debug("Located file: {} for artifact {}", resolvedArtifact.getArtifact().getFile(),
-						resolvedArtifact);
+				ArtifactResult resolvedArtifact = postProcessor.postProcessResult(system.resolveArtifact(session,
+					new ArtifactRequest(node.getArtifact(), remoteRepositories, parent)));
+				logger.debug("Located file: {} for artifact {}", resolvedArtifact.getArtifact()
+					.getFile(), resolvedArtifact);
 
-				files.put(resolvedArtifact.getArtifact().getFile(), resolvedArtifact);
+				files.put(resolvedArtifact.getArtifact()
+					.getFile(), resolvedArtifact);
 			} catch (ArtifactResolutionException e) {
-				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact().toString(),
-						e);
+				throw new MojoExecutionException("Failed to resolve the dependency " + node.getArtifact()
+					.toString(), e);
 			}
 			if (includeTransitive) {
 				discoverArtifacts(files, node.getChildren(), node.getRequestContext(), remoteRepositories);

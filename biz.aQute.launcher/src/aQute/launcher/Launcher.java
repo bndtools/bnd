@@ -96,10 +96,10 @@ public class Launcher implements ServiceListener {
 	private SimplePermissionPolicy			policy;
 	private Callable<Integer>				mainThread;
 	private final List<BundleActivator>		embedded							= new ArrayList<>();
-	private final Map<Bundle,Throwable>		errors								= new HashMap<>();
-	private final Map<File,Bundle>			installedBundles					= new LinkedHashMap<>();
+	private final Map<Bundle, Throwable>	errors								= new HashMap<>();
+	private final Map<File, Bundle>			installedBundles					= new LinkedHashMap<>();
 	private File							home								= new File(
-			System.getProperty("user.home"));
+		System.getProperty("user.home"));
 	private File							bnd									= new File(home, "bnd");
 	private List<Bundle>					wantsToBeStarted					= new ArrayList<>();
 	AtomicBoolean							active								= new AtomicBoolean();
@@ -116,7 +116,8 @@ public class Launcher implements ServiceListener {
 
 				String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
 				if (path != null) {
-					Matcher matcher = Pattern.compile("^([\"'])(.*)\\1$").matcher(path);
+					Matcher matcher = Pattern.compile("^([\"'])(.*)\\1$")
+						.matcher(path);
 					if (matcher.matches()) {
 						path = matcher.group(2);
 					}
@@ -124,11 +125,12 @@ public class Launcher implements ServiceListener {
 					propertiesFile = new File(path).getAbsoluteFile();
 					if (!propertiesFile.isFile())
 						errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path,
-								propertiesFile.getAbsolutePath());
+							propertiesFile.getAbsolutePath());
 					in = IO.stream(propertiesFile);
 				} else {
 					propertiesFile = null;
-					in = Launcher.class.getClassLoader().getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
+					in = Launcher.class.getClassLoader()
+						.getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
 					if (in == null) {
 						printUsage();
 						errorAndExit("Launch file not specified, and no embedded properties found.");
@@ -176,17 +178,23 @@ public class Launcher implements ServiceListener {
 
 	private static String getVersion() {
 		try {
-			Enumeration<URL> manifests = Launcher.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+			Enumeration<URL> manifests = Launcher.class.getClassLoader()
+				.getResources("META-INF/MANIFEST.MF");
 			StringBuilder sb = new StringBuilder();
 			String del = "";
 			for (Enumeration<URL> u = manifests; u.hasMoreElements();) {
 				URL url = u.nextElement();
 				try (InputStream in = url.openStream()) {
 					Manifest m = new Manifest(in);
-					String bsn = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
-					String version = m.getMainAttributes().getValue(Constants.BUNDLE_VERSION);
+					String bsn = m.getMainAttributes()
+						.getValue(Constants.BUNDLE_SYMBOLICNAME);
+					String version = m.getMainAttributes()
+						.getValue(Constants.BUNDLE_VERSION);
 					if (bsn != null && version != null) {
-						sb.append(del).append(bsn).append(";version=").append(version);
+						sb.append(del)
+							.append(bsn)
+							.append(";version=")
+							.append(version);
 						del = ", ";
 					}
 				}
@@ -223,7 +231,8 @@ public class Launcher implements ServiceListener {
 				properties.put(key, v);
 		}
 
-		System.getProperties().putAll(properties);
+		System.getProperties()
+			.putAll(properties);
 
 		this.parms = new LauncherConstants(properties);
 		out = System.err;
@@ -231,13 +240,13 @@ public class Launcher implements ServiceListener {
 		setupComms();
 
 		trace("properties %s", properties);
-		trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators,
-				parms.timeout);
+		trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
 
 		if (propertiesFile != null && parms.embedded == false) {
 			TimerTask watchdog = new TimerTask() {
 				long begin = propertiesFile.lastModified();
 
+				@Override
 				public void run() {
 					long now = propertiesFile.lastModified();
 					if (begin < now) {
@@ -303,22 +312,23 @@ public class Launcher implements ServiceListener {
 
 				try {
 					if (LauncherAgent.instrumentation != null) {
-						Hashtable<String,Object> argprops = new Hashtable<>();
+						Hashtable<String, Object> argprops = new Hashtable<>();
 						if (LauncherAgent.agentArgs != null)
 							argprops.put("agent.arguments", LauncherAgent.agentArgs);
-						systemBundle.getBundleContext().registerService(Instrumentation.class.getName(),
-								LauncherAgent.instrumentation, argprops);
+						systemBundle.getBundleContext()
+							.registerService(Instrumentation.class.getName(), LauncherAgent.instrumentation, argprops);
 					}
 				} catch (NoClassDefFoundError e) {
 					// Must be running on a profile which does not support
 					// java.lang.instrument
 				}
 
-				Hashtable<String,Object> argprops = new Hashtable<>();
+				Hashtable<String, Object> argprops = new Hashtable<>();
 				argprops.put(LauncherConstants.LAUNCHER_ARGUMENTS, args);
 				argprops.put(LauncherConstants.LAUNCHER_READY, "true");
 				argprops.put(Constants.SERVICE_RANKING, -1000);
-				systemBundle.getBundleContext().registerService(new String[] {
+				systemBundle.getBundleContext()
+					.registerService(new String[] {
 						Object.class.getName(), Launcher.class.getName()
 				}, this, argprops);
 				trace("registered launcher with arguments for syncing");
@@ -378,7 +388,7 @@ public class Launcher implements ServiceListener {
 		BundleContext systemContext = systemBundle.getBundleContext();
 
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
-				+ Callable.class.getName() + "))(main.thread=true))");
+			+ Callable.class.getName() + "))(main.thread=true))");
 
 		// Initialize this framework so it becomes STARTING
 		systemBundle.start();
@@ -396,8 +406,9 @@ public class Launcher implements ServiceListener {
 			ClassLoader loader = getClass().getClassLoader();
 			for (Object token : parms.activators) {
 				try {
-					Class< ? > clazz = loader.loadClass((String) token);
-					BundleActivator activator = (BundleActivator) clazz.getConstructor().newInstance();
+					Class<?> clazz = loader.loadClass((String) token);
+					BundleActivator activator = (BundleActivator) clazz.getConstructor()
+						.newInstance();
 					if (isImmediate(activator)) {
 						start(systemContext, result, activator);
 					}
@@ -424,7 +435,8 @@ public class Launcher implements ServiceListener {
 
 	private boolean isImmediate(BundleActivator activator) {
 		try {
-			Field f = activator.getClass().getField("IMMEDIATE");
+			Field f = activator.getClass()
+				.getField("IMMEDIATE");
 
 			return f.getBoolean(activator);
 		} catch (Exception e) {
@@ -557,7 +569,8 @@ public class Launcher implements ServiceListener {
 		for (File f : tobedeleted)
 			try {
 				trace("uninstalling %s", f);
-				installedBundles.get(f).uninstall();
+				installedBundles.get(f)
+					.uninstall();
 				installedBundles.remove(f);
 			} catch (Exception e) {
 				error("Failed to uninstall bundle %s, exception %s", f, e);
@@ -643,9 +656,12 @@ public class Launcher implements ServiceListener {
 							if (value != null)
 								sb.append(value);
 							else
-								sb.append("${").append(key).append("}");
+								sb.append("${")
+									.append(key)
+									.append("}");
 						} else
-							sb.append('$').append(rover);
+							sb.append('$')
+								.append(rover);
 					} else
 						sb.append('$');
 					break;
@@ -666,15 +682,16 @@ public class Launcher implements ServiceListener {
 	 * Get the digest for a given path
 	 */
 	static String[] DIGESTS = {
-			"SHA-Digest", "SHA1-Digest", "SHA-1-Digest", "SHA-256-Digest", "SHA-224-Digest", "SHA-384-Digest",
-			"SHA-512-Digest", "MD5-Digest"
+		"SHA-Digest", "SHA1-Digest", "SHA-1-Digest", "SHA-256-Digest", "SHA-224-Digest", "SHA-384-Digest",
+		"SHA-512-Digest", "MD5-Digest"
 	};
 
 	String getDigest(String path) {
 		Manifest m = EmbeddedLauncher.MANIFEST;
 		if (m != null) {
 			for (String name : DIGESTS) {
-				String digest = m.getAttributes(path).getValue(name);
+				String digest = m.getAttributes(path)
+					.getValue(name);
 				if (digest != null) {
 					return digest;
 				}
@@ -696,7 +713,8 @@ public class Launcher implements ServiceListener {
 		for (Object o : parms.runbundles) {
 			String path = (String) o;
 			String digest = getDigest(path);
-			try (InputStream in = getClass().getClassLoader().getResourceAsStream(path)) {
+			try (InputStream in = getClass().getClassLoader()
+				.getResourceAsStream(path)) {
 				Bundle bundle = getBundleByLocation(path);
 				if (bundle == null) {
 					trace("installing %s", path);
@@ -754,7 +772,9 @@ public class Launcher implements ServiceListener {
 			return;
 
 		File digestFile = digestFile(bundle);
-		if (digestFile == null || !digestFile.getParentFile().isDirectory() && digestFile.getParentFile().canWrite())
+		if (digestFile == null || !digestFile.getParentFile()
+			.isDirectory() && digestFile.getParentFile()
+				.canWrite())
 			return;
 
 		try {
@@ -770,9 +790,13 @@ public class Launcher implements ServiceListener {
 			String reference;
 			if (isWindows() || parms.noreferences) {
 				trace("no reference: url %s", parms.noreferences);
-				reference = f.toURI().toURL().toExternalForm();
+				reference = f.toURI()
+					.toURL()
+					.toExternalForm();
 			} else
-				reference = "reference:" + f.toURI().toURL().toExternalForm();
+				reference = "reference:" + f.toURI()
+					.toURL()
+					.toExternalForm();
 
 			Bundle b = context.installBundle(reference);
 			if (b.getLastModified() < f.lastModified()) {
@@ -781,7 +805,9 @@ public class Launcher implements ServiceListener {
 			return b;
 		} catch (BundleException e) {
 			trace("failed reference, will try to install %s with input stream", f.getAbsolutePath());
-			String reference = f.toURI().toURL().toExternalForm();
+			String reference = f.toURI()
+				.toURL()
+				.toExternalForm();
 			try (InputStream in = IO.stream(f)) {
 				return context.installBundle(reference, in);
 			}
@@ -801,7 +827,8 @@ public class Launcher implements ServiceListener {
 				try {
 					FrameworkEvent result = systemBundle.waitForStop(parms.timeout);
 					if (!active.get()) {
-						trace("ignoring timeout handler because framework is already no longer active, shutdown is orderly handled");
+						trace(
+							"ignoring timeout handler because framework is already no longer active, shutdown is orderly handled");
 						return;
 					}
 
@@ -842,7 +869,7 @@ public class Launcher implements ServiceListener {
 	private void doSecurity() {
 		try {
 			PermissionInfo allPermissions[] = new PermissionInfo[] {
-					new PermissionInfo(AllPermission.class.getName(), null, null)
+				new PermissionInfo(AllPermission.class.getName(), null, null)
 			};
 			policy = new SimplePermissionPolicy(this, systemBundle.getBundleContext());
 
@@ -861,7 +888,8 @@ public class Launcher implements ServiceListener {
 		if (padmin != null)
 			return padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
 
-		return b.getHeaders().get(Constants.FRAGMENT_HOST) != null;
+		return b.getHeaders()
+			.get(Constants.FRAGMENT_HOST) != null;
 	}
 
 	public void deactivate() throws Exception {
@@ -869,7 +897,8 @@ public class Launcher implements ServiceListener {
 			systemBundle.stop();
 			systemBundle.waitForStop(parms.timeout);
 
-			ThreadGroup group = Thread.currentThread().getThreadGroup();
+			ThreadGroup group = Thread.currentThread()
+				.getThreadGroup();
 			Thread[] threads = new Thread[group.activeCount() + 100];
 			group.enumerate(threads);
 			{
@@ -908,11 +937,13 @@ public class Launcher implements ServiceListener {
 		if (workingdir == null) {
 			workingdir = File.createTempFile("osgi.", ".fw");
 			final File wd = workingdir;
-			Runtime.getRuntime().addShutdownHook(new Thread("launcher::delete temp working dir") {
-				public void run() {
-					deleteFiles(wd);
-				}
-			});
+			Runtime.getRuntime()
+				.addShutdownHook(new Thread("launcher::delete temp working dir") {
+					@Override
+					public void run() {
+						deleteFiles(wd);
+					}
+				});
 		}
 
 		trace("using working dir: %s with keeping=%s", workingdir, parms.keep);
@@ -960,13 +991,14 @@ public class Launcher implements ServiceListener {
 
 			String implementation = implementations.get(0);
 
-			Class< ? > clazz = loader.loadClass(implementation);
-			FrameworkFactory factory = (FrameworkFactory) clazz.getConstructor().newInstance();
+			Class<?> clazz = loader.loadClass(implementation);
+			FrameworkFactory factory = (FrameworkFactory) clazz.getConstructor()
+				.newInstance();
 			trace("Framework factory %s", factory);
 			@SuppressWarnings({
-					"unchecked", "rawtypes"
+				"unchecked", "rawtypes"
 			})
-			Map<String,String> configuration = (Map) p;
+			Map<String, String> configuration = (Map) p;
 			systemBundle = factory.newFramework(configuration);
 			trace("framework instance %s", systemBundle);
 		} else {
@@ -977,21 +1009,23 @@ public class Launcher implements ServiceListener {
 		systemBundle.init();
 
 		try {
-			systemBundle.getBundleContext().addFrameworkListener(new FrameworkListener() {
+			systemBundle.getBundleContext()
+				.addFrameworkListener(new FrameworkListener() {
 
-				public void frameworkEvent(FrameworkEvent event) {
-					switch (event.getType()) {
-						case FrameworkEvent.ERROR :
-						case FrameworkEvent.WAIT_TIMEDOUT :
-							trace("Refresh will end due to error or timeout %s", event.toString());
+					@Override
+					public void frameworkEvent(FrameworkEvent event) {
+						switch (event.getType()) {
+							case FrameworkEvent.ERROR :
+							case FrameworkEvent.WAIT_TIMEDOUT :
+								trace("Refresh will end due to error or timeout %s", event.toString());
 
-						case FrameworkEvent.PACKAGES_REFRESHED :
-							inrefresh = false;
-							trace("refresh ended");
-							break;
+							case FrameworkEvent.PACKAGES_REFRESHED :
+								inrefresh = false;
+								trace("refresh ended");
+								break;
+						}
 					}
-				}
-			});
+				});
 		} catch (Exception e) {
 			trace("could not register a framework listener: %s", e);
 		}
@@ -1058,7 +1092,7 @@ public class Launcher implements ServiceListener {
 			list(out, fill("System Packages", 40), split(parms.systemPackages, ","));
 			list(out, fill("System Capabilities", 40), split(parms.systemCapabilities, ","));
 			row(out, "Properties");
-			for (Entry<Object,Object> entry : properties.entrySet()) {
+			for (Entry<Object, Object> entry : properties.entrySet()) {
 				String key = (String) entry.getKey();
 				String value = (String) entry.getValue();
 				row(out, key, value);
@@ -1083,7 +1117,8 @@ public class Launcher implements ServiceListener {
 
 						if (errors.containsKey(bundles[i])) {
 							out.print(fill(loc, 50));
-							out.print(errors.get(bundles[i]).toString());
+							out.print(errors.get(bundles[i])
+								.toString());
 						} else
 							out.print(bundles[i].getLocation());
 
@@ -1112,7 +1147,7 @@ public class Launcher implements ServiceListener {
 		Calendar c = Calendar.getInstance();
 		c.setTimeInMillis(t);
 		return fill(c.get(Calendar.YEAR), 4) + fill(c.get(Calendar.MONTH), 2) + fill(c.get(Calendar.DAY_OF_MONTH), 2)
-				+ fill(c.get(Calendar.HOUR_OF_DAY), 2) + fill(c.get(Calendar.MINUTE), 2);
+			+ fill(c.get(Calendar.HOUR_OF_DAY), 2) + fill(c.get(Calendar.MINUTE), 2);
 	}
 
 	private String fill(int n, int width) {
@@ -1162,7 +1197,7 @@ public class Launcher implements ServiceListener {
 		return "? " + state;
 	}
 
-	private void list(PrintStream out, String del, List< ? > l) {
+	private void list(PrintStream out, String del, List<?> l) {
 		for (Object o : l) {
 			String s = o.toString();
 			out.print(del);
@@ -1202,7 +1237,7 @@ public class Launcher implements ServiceListener {
 					return "activator error " + t;
 				StackTraceElement top = stackTrace[0];
 				return "activator error " + t.getMessage() + " from: " + top.getClassName() + ":" + top.getMethodName()
-						+ "#" + top.getLineNumber();
+					+ "#" + top.getLineNumber();
 
 			case BundleException.DUPLICATE_BUNDLE_ERROR :
 			case BundleException.RESOLVE_ERROR :
@@ -1270,26 +1305,31 @@ public class Launcher implements ServiceListener {
 	 * done.
 	 */
 
+	@Override
 	@SuppressWarnings("unchecked")
 	public synchronized void serviceChanged(ServiceEvent event) {
 		if (event.getType() == ServiceEvent.REGISTERED) {
 			trace("service event %s", event);
-			final Object service = systemBundle.getBundleContext().getService(event.getServiceReference());
-			String[] objectclasses = (String[]) event.getServiceReference().getProperty(Constants.OBJECTCLASS);
+			final Object service = systemBundle.getBundleContext()
+				.getService(event.getServiceReference());
+			String[] objectclasses = (String[]) event.getServiceReference()
+				.getProperty(Constants.OBJECTCLASS);
 
 			// This looks a bit more complicated than necessary but for backward
 			// compatibility reasons we require the Callable or Runnable to be
 			// registered as such. Under that condition, we prefer the Callable.
 
 			for (String objectclass : objectclasses) {
-				if (Callable.class.getName().equals(objectclass)) {
+				if (Callable.class.getName()
+					.equals(objectclass)) {
 					Method m;
 					try {
-						m = service.getClass().getMethod("call");
+						m = service.getClass()
+							.getMethod("call");
 						if (m.getReturnType() != Integer.class)
 							throw new IllegalArgumentException(
-									"Found a main thread service which is Callable<" + m.getReturnType().getName()
-											+ "> which should be Callable<Integer> " + event.getServiceReference());
+								"Found a main thread service which is Callable<" + m.getReturnType()
+									.getName() + "> which should be Callable<Integer> " + event.getServiceReference());
 						mainThread = (Callable<Integer>) service;
 					} catch (NoSuchMethodException e) {
 						assert false;
@@ -1298,6 +1338,7 @@ public class Launcher implements ServiceListener {
 			}
 			if (mainThread == null) {
 				mainThread = new Callable<Integer>() {
+					@Override
 					public Integer call() throws Exception {
 						((Runnable) service).run();
 						return 0;
@@ -1385,7 +1426,8 @@ public class Launcher implements ServiceListener {
 	private Bundle getBundleByLocation(String path) {
 		BundleContext context = systemBundle.getBundleContext();
 		for (Bundle b : context.getBundles()) {
-			if (b.getLocation().equals(path))
+			if (b.getLocation()
+				.equals(path))
 				return b;
 		}
 		return null;

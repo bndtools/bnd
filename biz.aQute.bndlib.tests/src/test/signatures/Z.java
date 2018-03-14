@@ -12,7 +12,7 @@ public class Z<C> extends X<String> implements Y<Integer> {
 
 	public class V<D> {
 		public <E> void fooLCO(@SuppressWarnings("unused") E e, @SuppressWarnings("unused") C c,
-				@SuppressWarnings("unused") D d) {}
+			@SuppressWarnings("unused") D d) {}
 	}
 
 	public abstract class U extends Z<String> implements Cloneable, Serializable {
@@ -53,13 +53,13 @@ public class Z<C> extends X<String> implements Y<Integer> {
 	public <E> void fooLC(@SuppressWarnings("unused") E e, @SuppressWarnings("unused") C f) {}
 
 	// test wildcards
-	public Collection< ? >							wildcard_001;
-	public Collection< ? extends Cloneable>			wildcard_002;
-	public Collection< ? super Cloneable>			wildcard_003;
-	public Collection< ? extends C>					wildcard_004;
-	public Collection< ? super C>					wildcard_005;
-	public Collection< ? extends Z<C>.V<Integer>>	wildcard_006;
-	public Collection< ? super Z<C>.V<Integer>>		wildcard_007;
+	public Collection<?>							wildcard_001;
+	public Collection<? extends Cloneable>			wildcard_002;
+	public Collection<? super Cloneable>			wildcard_003;
+	public Collection<? extends C>					wildcard_004;
+	public Collection<? super C>					wildcard_005;
+	public Collection<? extends Z<C>.V<Integer>>	wildcard_006;
+	public Collection<? super Z<C>.V<Integer>>		wildcard_007;
 
 	// test compatibility
 	public static <E extends Cloneable> Collection<E> compatibility_001() {

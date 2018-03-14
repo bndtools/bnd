@@ -86,7 +86,7 @@ public class Tarjan<T> {
 	}
 
 	Set<Set<T>> getResult(Map<T, ? extends Collection<T>> graph) {
-		Map<T,Node> index = new HashMap<>();
+		Map<T, Node> index = new HashMap<>();
 
 		for (Map.Entry<T, ? extends Collection<T>> entry : graph.entrySet()) {
 			Node node = getNode(index, entry.getKey());
@@ -98,7 +98,7 @@ public class Tarjan<T> {
 		return scc;
 	}
 
-	private Node getNode(Map<T,Node> index, T key) {
+	private Node getNode(Map<T, Node> index, T key) {
 		Node node = index.get(key);
 		if (node == null) {
 			node = new Node(key);
@@ -107,7 +107,7 @@ public class Tarjan<T> {
 		return node;
 	}
 
-	public static <T> Collection< ? extends Collection<T>> tarjan(Map<T, ? extends Collection<T>> graph) {
+	public static <T> Collection<? extends Collection<T>> tarjan(Map<T, ? extends Collection<T>> graph) {
 		Tarjan<T> tarjan = new Tarjan<>();
 		return tarjan.getResult(graph);
 	}

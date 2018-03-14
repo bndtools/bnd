@@ -16,7 +16,9 @@ import aQute.lib.strings.Strings;
  * <?xml version='1.0' encoding='UTF-8'?>
  * <?compositeArtifactRepository version='1.0.0'?>
  * <repository name='&quot;Eclipse Project Test Site&quot;'
- *     type='org.eclipse.equinox.internal.p2.artifact.repository.CompositeArtifactRepository' version='1.0.0'>
+ *     type=
+'org.eclipse.equinox.internal.p2.artifact.repository.CompositeArtifactRepository' version
+='1.0.0'>
  *   <properties size='1'>
  *     <property name='p2.timestamp' value='1243822502440'/>
  *   </properties>
@@ -24,8 +26,8 @@ import aQute.lib.strings.Strings;
  *     <child location='childOne'/>
  *     <child location='childTwo'/>
  *   </children>
- * </repository>} </pre>
- * 
+ * </repository>}
+ * </pre>
  */
 
 class CompositeArtifacts extends XML {
@@ -44,6 +46,5 @@ class CompositeArtifacts extends XML {
 			uris.add(uri);
 		}
 	}
-
 
 }

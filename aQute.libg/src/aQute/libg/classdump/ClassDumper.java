@@ -164,7 +164,7 @@ public class ClassDumper {
 					name_and_type_index = in.readUnsignedShort();
 					pool[poolIndex] = new Assoc((byte) 11, class_index, name_and_type_index);
 					ps.printf("%30d tag(11) interface and method ref %d/%d%n", poolIndex, class_index,
-							name_and_type_index);
+						name_and_type_index);
 					break;
 
 				// Name and Type
@@ -202,7 +202,7 @@ public class ClassDumper {
 			int name_index = in.readUnsignedShort();
 			int descriptor_index = in.readUnsignedShort();
 			ps.printf("%-30s %x %s(#%d) %s(#%d)%n", "field def", access, pool[name_index], name_index,
-					pool[descriptor_index], descriptor_index);
+				pool[descriptor_index], descriptor_index);
 			doAttributes(in, "  ");
 		}
 
@@ -214,7 +214,7 @@ public class ClassDumper {
 			int name_index = in.readUnsignedShort();
 			int descriptor_index = in.readUnsignedShort();
 			ps.printf("%-30s %x %s(#%d) %s(#%d)%n", "method def", access_flags, pool[name_index], name_index,
-					pool[descriptor_index], descriptor_index);
+				pool[descriptor_index], descriptor_index);
 			doAttributes(in, "  ");
 		}
 
@@ -306,10 +306,10 @@ public class ClassDumper {
 		int class_index = in.readUnsignedShort();
 		int method_index = in.readUnsignedShort();
 		ps.printf("%-30s %s(#%d/c) %s%n", //
-				indent + "enclosing method", //
-				pool[((Integer) pool[class_index]).intValue()], //
-				class_index, //
-				(method_index == 0 ? "<>" : pool[method_index]));
+			indent + "enclosing method", //
+			pool[((Integer) pool[class_index]).intValue()], //
+			class_index, //
+			(method_index == 0 ? "<>" : pool[method_index]));
 	}
 
 	/**
@@ -385,7 +385,8 @@ public class ClassDumper {
 		while (index < code.length) {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 0; i < 16 && index < code.length; i++) {
-				String s = Integer.toHexString((0xFF & code[index++])).toUpperCase();
+				String s = Integer.toHexString((0xFF & code[index++]))
+					.toUpperCase();
 				if (s.length() == 1)
 					sb.append("0");
 				sb.append(s);
@@ -434,20 +435,20 @@ public class ClassDumper {
 			case 's' :
 				int const_value_index = in.readUnsignedShort();
 				ps.printf("%-30s %c %s(#%d)%n", indent + "element value", tag, pool[const_value_index],
-						const_value_index);
+					const_value_index);
 				break;
 
 			case 'e' :
 				int type_name_index = in.readUnsignedShort();
 				int const_name_index = in.readUnsignedShort();
 				ps.printf("%-30s %c %s(#%d) %s(#%d)%n", indent + "type+const", tag, pool[type_name_index],
-						type_name_index, pool[const_name_index], const_name_index);
+					type_name_index, pool[const_name_index], const_name_index);
 				break;
 
 			case 'c' :
 				int class_info_index = in.readUnsignedShort();
 				ps.printf("%-30s %c %s(#%d)%n", indent + "element value", tag, pool[class_info_index],
-						class_info_index);
+					class_info_index);
 				break;
 
 			case '@' :
@@ -509,7 +510,7 @@ public class ClassDumper {
 			int descriptor_index = in.readUnsignedShort();
 			int index = in.readUnsignedShort();
 			ps.printf("%-30s %d: %d/%d %s(#%d) %s(#%d)%n", indent, index, start_pc, length, pool[name_index],
-					name_index, pool[descriptor_index], descriptor_index);
+				name_index, pool[descriptor_index], descriptor_index);
 		}
 	}
 
@@ -540,7 +541,7 @@ public class ClassDumper {
 				oname = (String) pool[((Integer) pool[outer_class_info_index]).intValue()];
 
 			ps.printf("%-30s %d: %x %s(#%d/c) %s(#%d/c) %s(#%d) %n", indent, i, inner_class_access_flags, iname,
-					inner_class_info_index, oname, outer_class_info_index, pool[inner_name_index], inner_name_index);
+				inner_class_info_index, oname, outer_class_info_index, pool[inner_name_index], inner_name_index);
 		}
 	}
 

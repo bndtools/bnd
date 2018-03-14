@@ -15,7 +15,7 @@ public class TypedAttribute {
 
 	public static TypedAttribute getTypedAttribute(Object value) {
 		if (value instanceof Collection) {
-			Collection< ? > c = (Collection< ? >) value;
+			Collection<?> c = (Collection<?>) value;
 			if (c.isEmpty())
 				return null;
 
@@ -27,7 +27,8 @@ public class TypedAttribute {
 				if (subType == null)
 					subType = getType(v);
 
-				sb.append(del).append(escape(v.toString()));
+				sb.append(del)
+					.append(escape(v.toString()));
 				del = ",";
 			}
 			if (subType == null)
@@ -36,7 +37,8 @@ public class TypedAttribute {
 			return new TypedAttribute("List<" + subType + ">", sb.toString());
 		}
 
-		if (value.getClass().isArray()) {
+		if (value.getClass()
+			.isArray()) {
 			Object[] array = (Object[]) value;
 			if (array.length == 0)
 				return null;
@@ -49,7 +51,8 @@ public class TypedAttribute {
 				if (subType == null)
 					subType = getType(v);
 
-				sb.append(del).append(escape(v.toString()));
+				sb.append(del)
+					.append(escape(v.toString()));
 				del = ",";
 			}
 			if (subType == null)

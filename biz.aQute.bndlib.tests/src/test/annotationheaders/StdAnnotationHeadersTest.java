@@ -28,24 +28,34 @@ public class StdAnnotationHeadersTest extends TestCase {
 			b.setPrivatePackage("test.annotationheaders.multiple.std");
 			b.build();
 			assertTrue(b.check());
-			b.getJar().getManifest().write(System.out);
+			b.getJar()
+				.getManifest()
+				.write(System.out);
 
-			Attributes mainAttributes = b.getJar().getManifest().getMainAttributes();
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
 
 			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
 			Props p = req.get("require");
 			assertNotNull(p);
 			assertTrue(p.containsKey("filter:"));
-			assertTrue(p.get("filter:").contains("(a=b)"));
-			assertTrue(p.get("filter:").contains("(&(version>=1.0.0)(!(version>=2.0.0)))"));
-			assertTrue(p.get("filter:").contains("(require=Required)"));
+			assertTrue(p.get("filter:")
+				.contains("(a=b)"));
+			assertTrue(p.get("filter:")
+				.contains("(&(version>=1.0.0)(!(version>=2.0.0)))"));
+			assertTrue(p.get("filter:")
+				.contains("(require=Required)"));
 
 			p = req.get("require" + Header.DUPLICATE_MARKER);
 			assertNotNull(p);
 			assertTrue(p.containsKey("filter:"));
-			assertTrue(p.get("filter:").contains("(a=b)"));
-			assertTrue(p.get("filter:").contains("(&(version>=2.0.0)(!(version>=3.0.0)))"));
-			assertTrue(p.get("filter:").contains("(require=Required2)"));
+			assertTrue(p.get("filter:")
+				.contains("(a=b)"));
+			assertTrue(p.get("filter:")
+				.contains("(&(version>=2.0.0)(!(version>=3.0.0)))"));
+			assertTrue(p.get("filter:")
+				.contains("(require=Required2)"));
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
 			p = cap.get("provide");
@@ -76,9 +86,13 @@ public class StdAnnotationHeadersTest extends TestCase {
 			b.setPrivatePackage("test.annotationheaders.attrs.std");
 			b.build();
 			assertTrue(b.check());
-			b.getJar().getManifest().write(System.out);
+			b.getJar()
+				.getManifest()
+				.write(System.out);
 
-			Attributes mainAttributes = b.getJar().getManifest().getMainAttributes();
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
 
 			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
 			Props p = req.get("require");

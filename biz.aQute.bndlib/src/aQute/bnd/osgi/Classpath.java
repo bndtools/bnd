@@ -22,7 +22,7 @@ public class Classpath {
 		boolean visit(Clazz clazz) throws Exception;
 	}
 
-	List<File>	entries	= new ArrayList<>();
+	List<File> entries = new ArrayList<>();
 
 	public Classpath(Reporter project, String name) {}
 
@@ -53,7 +53,8 @@ public class Classpath {
 		try (Analyzer analyzer = new Analyzer()) {
 			for (File f : entries) {
 				try (Jar jar = new Jar(f)) {
-					for (String path : jar.getResources().keySet()) {
+					for (String path : jar.getResources()
+						.keySet()) {
 						if (path.endsWith(".class")) {
 							Resource r = jar.getResource(path);
 							Clazz c = new Clazz(analyzer, path, r);
@@ -66,6 +67,7 @@ public class Classpath {
 		}
 	}
 
+	@Override
 	public String toString() {
 		return Strings.join(File.pathSeparator, entries);
 	}

@@ -1,6 +1,5 @@
 package aQute.maven.api;
 
-
 import aQute.bnd.version.MavenVersion;
 import junit.framework.TestCase;
 
@@ -41,7 +40,6 @@ public class ArchiveTest extends TestCase {
 		assertTrue(a.equals(b));
 		assertTrue(a.hashCode() == b.hashCode());
 	}
-
 
 	public void testValueOf() {
 		Archive a = Archive.valueOf("a.b.c:def:1.3");

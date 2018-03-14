@@ -14,14 +14,14 @@ import aQute.libg.generics.Create;
 import aQute.libg.qtokens.QuotedTokenizer;
 import aQute.service.reporter.Reporter;
 
-public class Header implements Map<String,Props> {
-	public final static Pattern			TOKEN_P				= Pattern.compile("[-a-zA-Z0-9_]+");
+public class Header implements Map<String, Props> {
+	public final static Pattern				TOKEN_P				= Pattern.compile("[-a-zA-Z0-9_]+");
 
-	public static final char			DUPLICATE_MARKER	= '~';
+	public static final char				DUPLICATE_MARKER	= '~';
 
-	private LinkedHashMap<String,Props>	map;
-	static Map<String,Props>			EMPTY				= Collections.emptyMap();
-	String								error;
+	private LinkedHashMap<String, Props>	map;
+	static Map<String, Props>				EMPTY				= Collections.emptyMap();
+	String									error;
 
 	public Header() {}
 
@@ -33,6 +33,7 @@ public class Header implements Map<String,Props> {
 		Header.parseHeader(header, reporter, this);
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -50,6 +51,7 @@ public class Header implements Map<String,Props> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsKey(Object name) {
@@ -67,6 +69,7 @@ public class Header implements Map<String,Props> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsValue(Object value) {
@@ -77,13 +80,15 @@ public class Header implements Map<String,Props> {
 		return map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<String,Props>> entrySet() {
+	@Override
+	public Set<java.util.Map.Entry<String, Props>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
 
 		return map.entrySet();
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public Props get(Object key) {
@@ -101,10 +106,12 @@ public class Header implements Map<String,Props> {
 		return map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map == null || map.isEmpty();
 	}
 
+	@Override
 	public Set<String> keySet() {
 		if (map == null)
 			return EMPTY.keySet();
@@ -112,6 +119,7 @@ public class Header implements Map<String,Props> {
 		return map.keySet();
 	}
 
+	@Override
 	public Props put(String key, Props value) {
 		assert key != null;
 		assert value != null;
@@ -122,7 +130,8 @@ public class Header implements Map<String,Props> {
 		return map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends String, ? extends Props> map) {
+	@Override
+	public void putAll(Map<? extends String, ? extends Props> map) {
 		if (this.map == null) {
 			if (map.isEmpty())
 				return;
@@ -138,6 +147,7 @@ public class Header implements Map<String,Props> {
 		}
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public Props remove(Object var0) {
@@ -154,12 +164,14 @@ public class Header implements Map<String,Props> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		if (map == null)
 			return 0;
 		return map.size();
 	}
 
+	@Override
 	public Collection<Props> values() {
 		if (map == null)
 			return EMPTY.values();
@@ -176,12 +188,14 @@ public class Header implements Map<String,Props> {
 
 	public void append(StringBuilder sb) {
 		String del = "";
-		for (Map.Entry<String,Props> s : entrySet()) {
+		for (Map.Entry<String, Props> s : entrySet()) {
 			sb.append(del);
 			sb.append(Header.removeDuplicateMarker(s.getKey()));
-			if (!s.getValue().isEmpty()) {
+			if (!s.getValue()
+				.isEmpty()) {
 				sb.append(';');
-				s.getValue().append(sb);
+				s.getValue()
+					.append(sb);
 			}
 
 			del = ",";
@@ -224,7 +238,7 @@ public class Header implements Map<String,Props> {
 		return true;
 	}
 
-	public Map<String, ? extends Map<String,String>> asMapMap() {
+	public Map<String, ? extends Map<String, String>> asMapMap() {
 		return this;
 	}
 
@@ -246,7 +260,8 @@ public class Header implements Map<String,Props> {
 	}
 
 	static public Header parseHeader(String value, Reporter logger, Header result) {
-		if (value == null || value.trim().length() == 0)
+		if (value == null || value.trim()
+			.length() == 0)
 			return result;
 
 		QuotedTokenizer qt = new QuotedTokenizer(value, ";=,");
@@ -261,8 +276,8 @@ public class Header implements Map<String,Props> {
 			if (name == null || name.length() == 0) {
 				if (logger != null && logger.isPedantic()) {
 					logger.warning(
-							"Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: %s",
-							value);
+						"Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: %s",
+						value);
 				}
 				if (name == null)
 					break;
@@ -276,8 +291,8 @@ public class Header implements Map<String,Props> {
 						if (hadAttribute)
 							if (logger != null) {
 								logger.error(
-										"Header contains name field after attribute or directive: %s from %s. Name fields must be consecutive, separated by a ';' like a;b;c;x=3;y=4",
-										adname, value);
+									"Header contains name field after attribute or directive: %s from %s. Name fields must be consecutive, separated by a ';' like a;b;c;x=3;y=4",
+									adname, value);
 							}
 						if (adname != null && adname.length() > 0)
 							aliases.add(adname.trim());
@@ -286,8 +301,8 @@ public class Header implements Map<String,Props> {
 						if (clause.containsKey(adname)) {
 							if (logger != null && logger.isPedantic())
 								logger.warning(
-										"Duplicate attribute/directive name %s in %s. This attribute/directive will be ignored",
-										adname, value);
+									"Duplicate attribute/directive name %s in %s. This attribute/directive will be ignored",
+									adname, value);
 						}
 						if (advalue == null) {
 							if (logger != null)
@@ -307,8 +322,8 @@ public class Header implements Map<String,Props> {
 					if (result.containsKey(clauseName)) {
 						if (logger != null && logger.isPedantic())
 							logger.warning(
-									"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
-									clauseName, clauseName);
+								"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
+								clauseName, clauseName);
 						while (result.containsKey(clauseName))
 							clauseName += "~";
 					}
@@ -324,7 +339,8 @@ public class Header implements Map<String,Props> {
 	}
 
 	public static Props parseProperties(String input, Reporter logger) {
-		if (input == null || input.trim().length() == 0)
+		if (input == null || input.trim()
+			.length() == 0)
 			return new Props();
 
 		Props result = new Props();
@@ -379,14 +395,16 @@ public class Header implements Map<String,Props> {
 			value = value.substring(1, value.length() - 1);
 
 		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')
-				|| TOKEN_P.matcher(value).matches();
+			|| TOKEN_P.matcher(value)
+				.matches();
 		if (!clean)
 			sb.append("\"");
 		for (int i = 0; i < value.length(); i++) {
 			char c = value.charAt(i);
 			switch (c) {
 				case '"' :
-					sb.append('\\').append('"');
+					sb.append('\\')
+						.append('"');
 					break;
 
 				default :

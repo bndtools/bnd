@@ -9,29 +9,31 @@ import java.net.URI;
 public class RepositoryDTO {
 
 	/**
-	 * A unique identifier for a repository. This is used to match the repository
-	 * to configuration in the <code>settings.xml</code> file, for example.
-	 * Furthermore, the identifier is used during POM inheritance and profile
-	 * injection to detect repositories that should be merged.
+	 * A unique identifier for a repository. This is used to match the
+	 * repository to configuration in the <code>settings.xml</code> file, for
+	 * example. Furthermore, the identifier is used during POM inheritance and
+	 * profile injection to detect repositories that should be merged.
 	 */
 	public String				id;
-	
+
 	/**
 	 * Human readable name of the repository.
 	 */
-	public String name;
-	
+	public String				name;
+
 	/**
-	 * The url of the repository, in the form <code>protocol://hostname/path</code>.
+	 * The url of the repository, in the form
+	 * <code>protocol://hostname/path</code>.
 	 */
-	public URI url;
-	
+	public URI					url;
+
 	/**
-	 * The type of layout this repository uses for locating and storing artifacts - can be <code>legacy</code> or <code>default</code>.
+	 * The type of layout this repository uses for locating and storing
+	 * artifacts - can be <code>legacy</code> or <code>default</code>.
 	 */
 
-	public String layout;
-	
+	public String				layout;
+
 	/**
 	 * How to handle downloading of releases from this repository.
 	 */
@@ -41,6 +43,6 @@ public class RepositoryDTO {
 	 * How to handle downloading of snapshots from this repository.
 	 */
 
-	public RepositoryPolicyDTO snapshots;
+	public RepositoryPolicyDTO	snapshots;
 
 }

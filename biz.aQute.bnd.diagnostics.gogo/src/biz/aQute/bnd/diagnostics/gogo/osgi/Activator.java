@@ -19,19 +19,19 @@ public class Activator implements BundleActivator, Converter {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
-		Hashtable<String,Object> p = new Hashtable<>();
+		Hashtable<String, Object> p = new Hashtable<>();
 		p.put(CommandProcessor.COMMAND_SCOPE, "bnd");
 		Set<String> commands = new TreeSet<>();
-		for ( Method m : Diagnostics.class.getMethods()) {
+		for (Method m : Diagnostics.class.getMethods()) {
 			Descriptor d = m.getAnnotation(Descriptor.class);
-			
-			if ( d != null)
+
+			if (d != null)
 				commands.add(m.getName());
 		}
 		p.put(CommandProcessor.COMMAND_SCOPE, "bnd");
 		p.put(CommandProcessor.COMMAND_FUNCTION, commands.toArray(new String[0]));
-		context.registerService(Diagnostics.class, d=new Diagnostics(context), p);
-		
+		context.registerService(Diagnostics.class, d = new Diagnostics(context), p);
+
 		context.registerService(Converter.class, this, null);
 	}
 
@@ -42,7 +42,7 @@ public class Activator implements BundleActivator, Converter {
 
 	@Override
 	public Object convert(Class<?> targetType, Object source) throws Exception {
-		if ( source instanceof Converter) {
+		if (source instanceof Converter) {
 			return ((Converter) source).convert(targetType, source);
 		}
 		return null;
@@ -50,7 +50,7 @@ public class Activator implements BundleActivator, Converter {
 
 	@Override
 	public CharSequence format(Object source, int level, Converter next) throws Exception {
-		if ( source instanceof Converter) {
+		if (source instanceof Converter) {
 			return ((Converter) source).format(source, level, next);
 		}
 		return null;

@@ -146,30 +146,32 @@ import aQute.service.reporter.Reporter;
  */
 public class bnd extends Processor {
 	private final static Logger					logger					= LoggerFactory.getLogger(bnd.class);
-	static Pattern								ASSIGNMENT	= Pattern.compile(																			//
-			"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
-	Settings									settings	= new Settings();
-	final PrintStream							err			= System.err;
-	final public PrintStream					out			= System.out;
-	Justif										justif		= new Justif(80, 40, 42, 70);
-	BndMessages									messages	= ReporterMessages.base(this, BndMessages.class);
+	static Pattern								ASSIGNMENT				= Pattern.compile(															//
+		"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
+	Settings									settings				= new Settings();
+	final PrintStream							err						= System.err;
+	final public PrintStream					out						= System.out;
+	Justif										justif					= new Justif(80, 40, 42, 70);
+	BndMessages									messages				= ReporterMessages.base(this,
+		BndMessages.class);
 	private Workspace							ws;
 	private char[]								password;
 
-	private static final ThreadLocal<Boolean>	noExit		= new ThreadLocal<Boolean>() {
-																protected Boolean initialValue() {
-																	return false;
-																};
-															};
+	private static final ThreadLocal<Boolean>	noExit					= new ThreadLocal<Boolean>() {
+																			@Override
+																			protected Boolean initialValue() {
+																				return false;
+																			};
+																		};
 	private static final String					DEFAULT_LOG_LEVEL_KEY	= "org.slf4j.simpleLogger.defaultLogLevel";
 
-	static Pattern								JARCOMMANDS	= Pattern
-			.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
+	static Pattern								JARCOMMANDS				= Pattern
+		.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern								COMMAND		= Pattern.compile("\\w[\\w\\d]+");
-	static Pattern								EMAIL_P		= Pattern.compile(
-			"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
-			Pattern.CASE_INSENSITIVE);
+	static Pattern								COMMAND					= Pattern.compile("\\w[\\w\\d]+");
+	static Pattern								EMAIL_P					= Pattern.compile(
+		"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+		Pattern.CASE_INSENSITIVE);
 
 	@Description("OSGi Bundle Tool")
 	interface bndOptions extends Options {
@@ -203,8 +205,7 @@ public class bnd extends Processor {
 		super(ws);
 	}
 
-	public bnd() {
-	}
+	public bnd() {}
 
 	public static void main(String args[]) throws Exception {
 		Workspace.setDriver(Constants.BNDDRIVER_BND);
@@ -353,7 +354,8 @@ public class bnd extends Processor {
 				setBase(getFile(getBase(), options.base()));
 
 			// And the properties
-			for (Entry<String,String> entry : options._properties().entrySet()) {
+			for (Entry<String, String> entry : options._properties()
+				.entrySet()) {
 				setProperty(entry.getKey(), entry.getValue());
 			}
 
@@ -462,7 +464,8 @@ public class bnd extends Processor {
 		if (sdir != null)
 			dir = getFile(sdir);
 
-		if (options._arguments().isEmpty())
+		if (options._arguments()
+			.isEmpty())
 			add(jar, dir, ".", options.verbose());
 		else
 			for (String f : options._arguments()) {
@@ -577,7 +580,8 @@ public class bnd extends Processor {
 		}
 		try {
 			Instructions instructions = new Instructions(opts._arguments());
-			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
+			Collection<String> selected = instructions.select(jar.getResources()
+				.keySet(), true);
 			File store = getBase();
 			if (opts.cdir() != null)
 				store = getFile(opts.cdir());
@@ -586,7 +590,8 @@ public class bnd extends Processor {
 			Jar.Compression compression = jar.hasCompression();
 			for (String path : selected) {
 				if (opts.verbose())
-					System.err.printf("%8s: %s\n", compression.toString().toLowerCase(), path);
+					System.err.printf("%8s: %s\n", compression.toString()
+						.toLowerCase(), path);
 
 				File f = getFile(store, path);
 				File pf = f.getParentFile();
@@ -630,7 +635,8 @@ public class bnd extends Processor {
 
 		try {
 			Instructions instructions = new Instructions(opts._arguments());
-			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
+			Collection<String> selected = instructions.select(jar.getResources()
+				.keySet(), true);
 
 			for (String path : selected) {
 				if (opts.verbose()) {
@@ -643,7 +649,6 @@ public class bnd extends Processor {
 			jar.close();
 		}
 	}
-
 
 	@Description("Execute a file based on its extension. Supported extensions are: bnd (build), bndrun (run), and jar (print)")
 	interface dooptions extends Options {
@@ -665,7 +670,7 @@ public class bnd extends Processor {
 			if (path.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
 				build(options.output(), options.force(), path);
 			} else if (path.endsWith(Constants.DEFAULT_JAR_EXTENSION)
-					|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
+				|| path.endsWith(Constants.DEFAULT_BAR_EXTENSION)) {
 				try (Jar jar = getJar(path)) {
 					doPrint(jar, MANIFEST, null);
 				}
@@ -728,7 +733,8 @@ public class bnd extends Processor {
 		List<String> l = new ArrayList<>(options._arguments());
 		if (l.isEmpty()) {
 			err.printf("Name         %s\n", project.getName());
-			err.printf("Actions      %s\n", project.getActions().keySet());
+			err.printf("Actions      %s\n", project.getActions()
+				.keySet());
 			err.printf("Directory    %s\n", project.getBase());
 			err.printf("Depends on   %s\n", project.getDependson());
 			try (ProjectBuilder pb = project.getBuilder(null)) {
@@ -755,7 +761,8 @@ public class bnd extends Processor {
 			return;
 		}
 
-		Action a = project.getActions().get(cmd);
+		Action a = project.getActions()
+			.get(cmd);
 		if (a != null) {
 			a.execute(project, arg);
 			getInfo(project);
@@ -764,7 +771,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Bumps the version of a project. Will take the current version and then increment "
-			+ "with a major, minor, or micro increment. The default bump is minor.")
+		+ "with a major, minor, or micro increment. The default bump is minor.")
 	@Arguments(arg = "<major|minor|micro>")
 	interface bumpoptions extends Options {
 		@Description("Path to another project than the current project")
@@ -786,8 +793,10 @@ public class bnd extends Processor {
 		}
 
 		String mask = null;
-		if (!options._arguments().isEmpty()) {
-			mask = options._arguments().get(0);
+		if (!options._arguments()
+			.isEmpty()) {
+			mask = options._arguments()
+				.get(0);
 			if (mask.equalsIgnoreCase("major"))
 				mask = "+00";
 			else if (mask.equalsIgnoreCase("minor"))
@@ -852,6 +861,7 @@ public class bnd extends Processor {
 	public void _build(final buildoptions opts) throws Exception {
 
 		perProject(opts, new PerProject() {
+			@Override
 			public void doit(Project p) throws Exception {
 				p.build(opts.test());
 			}
@@ -869,6 +879,7 @@ public class bnd extends Processor {
 	@Description("Compile a project or the workspace")
 	public void _compile(final CompileOptions opts) throws Exception {
 		perProject(opts, new PerProject() {
+			@Override
 			public void doit(Project p) throws Exception {
 				p.compile(opts.test());
 			}
@@ -877,7 +888,7 @@ public class bnd extends Processor {
 
 	@Description("Test a project according to an OSGi test")
 	@Arguments(arg = {
-			"testclass[:method]..."
+		"testclass[:method]..."
 	})
 	interface testOptions extends projectOptions {
 		@Description("Verify all the dependencies before launching (runpath, runbundles, testpath)")
@@ -913,8 +924,9 @@ public class bnd extends Processor {
 					if (opts.force())
 						project.setProperty(TESTCASES, "");
 					else {
-						warning("No %s set on this bundle. Use -f/--force to try this test anyway (this works if another bundle provides the testcases)",
-								TESTCASES);
+						warning(
+							"No %s set on this bundle. Use -f/--force to try this test anyway (this works if another bundle provides the testcases)",
+							TESTCASES);
 						return;
 					}
 
@@ -1022,7 +1034,7 @@ public class bnd extends Processor {
 
 	@Description("Access the internal bnd database of keywords and options")
 	@Arguments(arg = {
-			"header|instruction", "..."
+		"header|instruction", "..."
 	})
 	interface syntaxOptions extends Options {
 		@Description("The width of the printout")
@@ -1072,10 +1084,10 @@ public class bnd extends Processor {
 	}
 
 	@Description("Package a bnd or bndrun file into a single jar that executes with java -jar <>.jar. The JAR contains all dependencies, including the framework and the launcher. "
-			+ "A profile can be specified which will be used to find properties. If a property is not found, a property with the name [<profile>]NAME will be looked up. This allows "
-			+ "you to make different profiles for testing and runtime.")
+		+ "A profile can be specified which will be used to find properties. If a property is not found, a property with the name [<profile>]NAME will be looked up. This allows "
+		+ "you to make different profiles for testing and runtime.")
 	@Arguments(arg = {
-			"<bnd|bndrun>", "[...]"
+		"<bnd|bndrun>", "[...]"
 	})
 	interface packageOptions extends Options {
 		@Description("Where to store the resulting file. Default the name of the bnd file with a .jar extension.")
@@ -1100,7 +1112,8 @@ public class bnd extends Processor {
 		} else
 			output = getBase();
 
-		if (opts._arguments().size() > 1) {
+		if (opts._arguments()
+			.size() > 1) {
 			IO.mkdirs(output);
 		} else {
 			File pf = output.getParentFile();
@@ -1180,7 +1193,8 @@ public class bnd extends Processor {
 		if (options.limit())
 			projects = Arrays.asList(project);
 		else
-			projects = project.getWorkspace().getAllProjects();
+			projects = project.getWorkspace()
+				.getAllProjects();
 
 		List<Container> containers = new ArrayList<>();
 
@@ -1197,7 +1211,7 @@ public class bnd extends Processor {
 
 	@Description("Show macro value. Macro can contain the ${ and } parentheses but it is also ok without. You can use the ':' instead of the ';' in a macro")
 	@Arguments(arg = {
-			"<macro>", "[...]"
+		"<macro>", "[...]"
 	})
 	interface macroOptions extends Options {
 		@Description("Path to project, default current directory")
@@ -1304,7 +1318,7 @@ public class bnd extends Processor {
 
 	@Description("Show a cross references for all classes in a set of jars.")
 	@Arguments(arg = {
-			"<jar path>", "[...]"
+		"<jar path>", "[...]"
 	})
 	interface xrefOptions extends Options {
 		@Description("Show classes instead of packages")
@@ -1322,8 +1336,8 @@ public class bnd extends Processor {
 	}
 
 	static public class All {
-		public Map<TypeRef,List<TypeRef>>		classes		= new HashMap<>();
-		public Map<PackageRef,List<PackageRef>>	packages	= new HashMap<>();
+		public Map<TypeRef, List<TypeRef>>			classes		= new HashMap<>();
+		public Map<PackageRef, List<PackageRef>>	packages	= new HashMap<>();
 	}
 
 	/**
@@ -1332,15 +1346,16 @@ public class bnd extends Processor {
 	@Description("Show a cross references for all classes in a set of jars.")
 	public void _xref(xrefOptions options) throws IOException, Exception {
 		Analyzer analyzer = new Analyzer();
-		final MultiMap<TypeRef,TypeRef> table = new MultiMap<>();
-		final MultiMap<PackageRef,PackageRef> packages = new MultiMap<>();
+		final MultiMap<TypeRef, TypeRef> table = new MultiMap<>();
+		final MultiMap<PackageRef, PackageRef> packages = new MultiMap<>();
 		Set<TypeRef> set = Create.set();
 		Instructions filter = new Instructions(options.match());
 		for (String arg : options._arguments()) {
 			try {
 				File file = new File(arg);
 				try (Jar jar = new Jar(file.getName(), file)) {
-					for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
+					for (Map.Entry<String, Resource> entry : jar.getResources()
+						.entrySet()) {
 						String key = entry.getKey();
 						Resource r = entry.getValue();
 						if (key.endsWith(".class")) {
@@ -1391,19 +1406,20 @@ public class bnd extends Processor {
 		}
 	}
 
-	private void printxref(MultiMap< ? , ? > map, String direction) {
-		SortedList< ? > labels = new SortedList<Object>(map.keySet(), null);
+	private void printxref(MultiMap<?, ?> map, String direction) {
+		SortedList<?> labels = new SortedList<Object>(map.keySet(), null);
 		for (Object element : labels) {
-			List< ? > e = map.get(element);
+			List<?> e = map.get(element);
 			if (e == null) {
 				// ignore
 			} else {
 				Set<Object> set = new LinkedHashSet<>(e);
 				set.remove(element);
-				Iterator< ? > row = set.iterator();
+				Iterator<?> row = set.iterator();
 				String first = "";
 				if (row.hasNext())
-					first = row.next().toString();
+					first = row.next()
+						.toString();
 				out.printf("%50s %s %s\n", element, direction, first);
 				while (row.hasNext()) {
 					out.printf("%50s   %s\n", "", row.next());
@@ -1429,7 +1445,8 @@ public class bnd extends Processor {
 		if (!dir.isDirectory())
 			error("Eclipse requires a path to a directory: %s", dir.getAbsolutePath());
 
-		if (options._arguments().size() != 0)
+		if (options._arguments()
+			.size() != 0)
 			error("Unnecessary arguments %s", options._arguments());
 
 		if (!isOk())
@@ -1518,7 +1535,8 @@ public class bnd extends Processor {
 			if (options.pom()) {
 				Resource r = new PomFromManifest(jar.getManifest());
 				jar.putResource("pom.xml", r);
-				String path = outputFile.getName().replaceAll("\\.jar$", ".pom");
+				String path = outputFile.getName()
+					.replaceAll("\\.jar$", ".pom");
 				if (path.equals(outputFile.getName()))
 					path = outputFile.getName() + ".pom";
 				File pom = new File(outputFile.getParentFile(), path);
@@ -1527,7 +1545,8 @@ public class bnd extends Processor {
 				}
 			}
 
-			getInfo(b, b.getPropertiesFile().getName());
+			getInfo(b, b.getPropertiesFile()
+				.getName());
 			if (isOk()) {
 				b.save(outputFile, options.force());
 			}
@@ -1566,7 +1585,7 @@ public class bnd extends Processor {
 
 	@Description("View a resource from a JAR file. Manifest will be pretty printed and class files are shown disassembled.")
 	@Arguments(arg = {
-			"<jar-file>", "<resource>", "[...]"
+		"<jar-file>", "<resource>", "[...]"
 	})
 	interface viewOptions extends Options {
 		@Description("Character set to use for viewing")
@@ -1584,7 +1603,8 @@ public class bnd extends Processor {
 		if (options.charset() != null)
 			charset = Charset.forName(options.charset());
 
-		if (options._arguments().isEmpty()) {
+		if (options._arguments()
+			.isEmpty()) {
 			error("Need a jarfile as source");
 			return;
 		}
@@ -1600,7 +1620,8 @@ public class bnd extends Processor {
 				args.add("*");
 
 			Instructions instructions = new Instructions(args);
-			Collection<String> selected = instructions.select(jar.getResources().keySet(), true);
+			Collection<String> selected = instructions.select(jar.getResources()
+				.keySet(), true);
 			for (String selection : selected) {
 				Resource r = jar.getResource(selection);
 
@@ -1619,11 +1640,11 @@ public class bnd extends Processor {
 	}
 
 	@Description("Wrap a jar into a bundle. This is a poor man's facility to "
-			+ "quickly turn a non-OSGi JAR into an OSGi bundle. "
-			+ "It is usually better to write a bnd file and use the bnd <file>.bnd "
-			+ "command because that has greater control. Even better is to wrap in bndtools.")
+		+ "quickly turn a non-OSGi JAR into an OSGi bundle. "
+		+ "It is usually better to write a bnd file and use the bnd <file>.bnd "
+		+ "command because that has greater control. Even better is to wrap in bndtools.")
 	@Arguments(arg = {
-			"<jar-file>", "[...]"
+		"<jar-file>", "[...]"
 	})
 	interface wrapOptions extends Options {
 		@Description("Path to the output, default the name of the input jar with the '.bar' extension. If this is a directory, the output is place there.")
@@ -1680,11 +1701,12 @@ public class bnd extends Processor {
 				wrapper.setJar(file);
 
 				File outputFile = wrapper.getOutputFile(options.output());
-				if (outputFile.getCanonicalFile().equals(file.getCanonicalFile())) {
+				if (outputFile.getCanonicalFile()
+					.equals(file.getCanonicalFile())) {
 					// #267: CommandLine wrap deletes target even if file equals
 					// source
 					error("Output file %s and source file %s are the same file, they must be different", outputFile,
-							file);
+						file);
 					return;
 				}
 				IO.delete(outputFile);
@@ -1715,7 +1737,8 @@ public class bnd extends Processor {
 				Manifest m = wrapper.calcManifest();
 
 				if (wrapper.isOk()) {
-					wrapper.getJar().setManifest(m);
+					wrapper.getJar()
+						.setManifest(m);
 					wrapper.save(outputFile, options.force());
 				}
 				getInfo(wrapper, file.toString());
@@ -1782,8 +1805,10 @@ public class bnd extends Processor {
 				}
 			}
 
-			for (File file : project.getBase().listFiles()) {
-				if (file.getName().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
+			for (File file : project.getBase()
+				.listFiles()) {
+				if (file.getName()
+					.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 					Run run = Workspace.getRun(file);
 					if (run == null) {
 						error("No such run file %s", file);
@@ -1811,10 +1836,11 @@ public class bnd extends Processor {
 	}
 
 	private void report(Justif justif, String string, Processor processor) throws Exception {
-		Map<String,Object> table = new LinkedHashMap<>();
+		Map<String, Object> table = new LinkedHashMap<>();
 		processor.report(table);
 		Justif j = new Justif(140, 40, 44, 48, 100);
-		j.formatter().format("$-\n%s %s\n$-\n", string, processor);
+		j.formatter()
+			.format("$-\n%s %s\n$-\n", string, processor);
 		j.table(table, "-");
 		out.println(j.wrap());
 		out.println();
@@ -1979,7 +2005,8 @@ public class bnd extends Processor {
 					if (imports.containsKey(p)) {
 						Attrs attrs = imports.get(p);
 						if (attrs.containsKey(VERSION_ATTRIBUTE)) {
-							exports.get(p).put("imported-as", attrs.get(VERSION_ATTRIBUTE));
+							exports.get(p)
+								.put("imported-as", attrs.get(VERSION_ATTRIBUTE));
 						}
 					}
 				}
@@ -2008,7 +2035,8 @@ public class bnd extends Processor {
 				analyzer.setJar(jar);
 				Manifest m = jar.getManifest();
 				if (m != null) {
-					String s = m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+					String s = m.getMainAttributes()
+						.getValue(Constants.EXPORT_PACKAGE);
 					if (s != null)
 						analyzer.setExportPackage(s);
 				}
@@ -2019,31 +2047,37 @@ public class bnd extends Processor {
 				Packages exports = analyzer.getExports();
 
 				if ((options & API) != 0) {
-					Map<PackageRef,List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(), !po.java());
+					Map<PackageRef, List<PackageRef>> apiUses = analyzer.cleanupUses(analyzer.getAPIUses(), !po.java());
 					if (!po.xport()) {
 						if (exports.isEmpty())
 							warning("Not filtering on exported only since exports are empty");
 						else
-							apiUses.keySet().retainAll(analyzer.getExports().keySet());
+							apiUses.keySet()
+								.retainAll(analyzer.getExports()
+									.keySet());
 					}
 					out.println("[API USES]");
 					printMultiMap(apiUses);
 
 					Set<PackageRef> privates = analyzer.getPrivates();
 					for (PackageRef export : exports.keySet()) {
-						Map<Def,List<TypeRef>> xRef = analyzer.getXRef(export, privates,
-								Modifier.PROTECTED + Modifier.PUBLIC);
+						Map<Def, List<TypeRef>> xRef = analyzer.getXRef(export, privates,
+							Modifier.PROTECTED + Modifier.PUBLIC);
 						if (!xRef.isEmpty()) {
 							out.println();
 							out.printf("%s refers to private Packages (not good)\n\n", export);
-							for (Entry<Def,List<TypeRef>> e : xRef.entrySet()) {
+							for (Entry<Def, List<TypeRef>> e : xRef.entrySet()) {
 								TreeSet<PackageRef> refs = new TreeSet<>();
 								for (TypeRef ref : e.getValue())
 									refs.add(ref.getPackageRef());
 
 								refs.retainAll(privates);
-								out.printf("%60s %-40s %s\n", e.getKey().getOwnerType().getFQN() //
-										, e.getKey().getName(), refs);
+								out.printf("%60s %-40s %s\n", e.getKey()
+									.getOwnerType()
+									.getFQN() //
+									, e.getKey()
+										.getName(),
+									refs);
 							}
 							out.println();
 						}
@@ -2051,7 +2085,7 @@ public class bnd extends Processor {
 					out.println();
 				}
 
-				Map<PackageRef,List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
+				Map<PackageRef, List<PackageRef>> uses = analyzer.cleanupUses(analyzer.getUses(), !po.java());
 				if ((options & USES) != 0) {
 					out.println("[USES]");
 					printMultiMap(uses);
@@ -2059,8 +2093,7 @@ public class bnd extends Processor {
 				}
 				if ((options & USEDBY) != 0) {
 					out.println("[USEDBY]");
-					MultiMap<PackageRef,PackageRef> usedBy = new MultiMap<>(
-							uses).transpose();
+					MultiMap<PackageRef, PackageRef> usedBy = new MultiMap<>(uses).transpose();
 					printMultiMap(usedBy);
 				}
 			}
@@ -2073,9 +2106,10 @@ public class bnd extends Processor {
 		}
 		if ((options & LIST) != 0) {
 			out.println("[LIST]");
-			for (Map.Entry<String,Map<String,Resource>> entry : jar.getDirectories().entrySet()) {
+			for (Map.Entry<String, Map<String, Resource>> entry : jar.getDirectories()
+				.entrySet()) {
 				String name = entry.getKey();
-				Map<String,Resource> contents = entry.getValue();
+				Map<String, Resource> contents = entry.getValue();
 				out.println(name);
 				if (contents != null) {
 					for (String element : contents.keySet()) {
@@ -2110,11 +2144,13 @@ public class bnd extends Processor {
 	 */
 	void printManifest(Manifest manifest) {
 		SortedSet<String> sorted = new TreeSet<>();
-		for (Object element : manifest.getMainAttributes().keySet()) {
+		for (Object element : manifest.getMainAttributes()
+			.keySet()) {
 			sorted.add(element.toString());
 		}
 		for (String key : sorted) {
-			Object value = manifest.getMainAttributes().getValue(key);
+			Object value = manifest.getMainAttributes()
+				.getValue(key);
 			out.printf("%-40s %-40s\n", key, value);
 		}
 	}
@@ -2153,7 +2189,8 @@ public class bnd extends Processor {
 			return;
 		}
 
-		String componentHeader = manifest.getMainAttributes().getValue(Constants.SERVICE_COMPONENT);
+		String componentHeader = manifest.getMainAttributes()
+			.getValue(Constants.SERVICE_COMPONENT);
 		Parameters clauses = new Parameters(componentHeader, this);
 		for (String path : clauses.keySet()) {
 			out.println(path);
@@ -2189,18 +2226,20 @@ public class bnd extends Processor {
 			return;
 		}
 
-		Map<String,Resource> map = jar.getDirectories().get("OSGI-INF/metatype");
+		Map<String, Resource> map = jar.getDirectories()
+			.get("OSGI-INF/metatype");
 		if (map != null) {
-			for (Map.Entry<String,Resource> entry : map.entrySet()) {
+			for (Map.Entry<String, Resource> entry : map.entrySet()) {
 				out.println(entry.getKey());
-				IO.copy(entry.getValue().openInputStream(), out);
+				IO.copy(entry.getValue()
+					.openInputStream(), out);
 				out.println();
 			}
 			out.println();
 		}
 	}
 
-	<T extends Comparable< ? super T>> void printMultiMap(Map<T, ? extends Collection< ? >> map) {
+	<T extends Comparable<? super T>> void printMultiMap(Map<T, ? extends Collection<?>> map) {
 		SortedList<T> keys = new SortedList<>(map.keySet());
 		for (Object key : keys) {
 			String name = key.toString();
@@ -2211,7 +2250,7 @@ public class bnd extends Processor {
 		}
 	}
 
-	String vertical(int padding, Collection< ? > used) {
+	String vertical(int padding, Collection<?> used) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Object s : used) {
@@ -2238,15 +2277,16 @@ public class bnd extends Processor {
 	 * @param ports
 	 */
 
-	private void print(String msg, Map< ? , ? extends Map< ? , ? >> ports) {
+	private void print(String msg, Map<?, ? extends Map<?, ?>> ports) {
 		if (ports.isEmpty())
 			return;
 		out.println(msg);
-		for (Entry< ? , ? extends Map< ? , ? >> entry : ports.entrySet()) {
+		for (Entry<?, ? extends Map<?, ?>> entry : ports.entrySet()) {
 			Object key = entry.getKey();
-			Map< ? , ? > clause = Create.copy((Map< ? , ? >) entry.getValue());
+			Map<?, ?> clause = Create.copy((Map<?, ?>) entry.getValue());
 			clause.remove("uses:");
-			out.printf("  %-38s %s\n", key.toString().trim(), clause.isEmpty() ? "" : clause.toString());
+			out.printf("  %-38s %s\n", key.toString()
+				.trim(), clause.isEmpty() ? "" : clause.toString());
 		}
 	}
 
@@ -2261,7 +2301,8 @@ public class bnd extends Processor {
 	public void patch(patchOptions opts) throws Exception {
 		PatchCommand pcmd = new PatchCommand(this);
 		List<String> args = opts._arguments();
-		opts._command().execute(pcmd, args.remove(0), args);
+		opts._command()
+			.execute(pcmd, args.remove(0), args);
 	}
 
 	@Description("Run OSGi tests and create report")
@@ -2334,7 +2375,8 @@ public class bnd extends Processor {
 					// the current directory
 					File[] files = cwd.listFiles();
 					for (File f : files) {
-						if (f.getName().endsWith(".bnd")) {
+						if (f.getName()
+							.endsWith(".bnd")) {
 							errors += runtTest(f, ws, reportDir, summary);
 						}
 					}
@@ -2389,7 +2431,8 @@ public class bnd extends Processor {
 			return 1;
 		}
 
-		Project project = new Project(ws, testFile.getAbsoluteFile().getParentFile(), testFile.getAbsoluteFile());
+		Project project = new Project(ws, testFile.getAbsoluteFile()
+			.getParentFile(), testFile.getAbsoluteFile());
 		project.use(this);
 		project.setProperty(NOBUNDLES, "true");
 
@@ -2496,7 +2539,7 @@ public class bnd extends Processor {
 	}
 
 	private void doHtmlReport(@SuppressWarnings("unused") Tag report, File file, Document doc,
-			@SuppressWarnings("unused") XPath xpath) throws Exception {
+		@SuppressWarnings("unused") XPath xpath) throws Exception {
 		String path = file.getAbsolutePath();
 		if (path.endsWith(".xml"))
 			path = path.substring(0, path.length() - 4);
@@ -2521,7 +2564,7 @@ public class bnd extends Processor {
 
 	@Description("Verify jars")
 	@Arguments(arg = {
-			"<jar path>", "[...]"
+		"<jar path>", "[...]"
 	})
 	interface verifyOptions extends Options {}
 
@@ -2553,7 +2596,7 @@ public class bnd extends Processor {
 	@Description("Merge a binary jar with its sources. It is possible to specify  source path")
 	//
 	@Arguments(arg = {
-			"<jar path>", "<source path>"
+		"<jar path>", "<source path>"
 	})
 	//
 	interface sourceOptions extends Options {
@@ -2591,7 +2634,8 @@ public class bnd extends Processor {
 
 		try (Jar bin = new Jar(jarFile); Jar src = new Jar(sourceFile)) {
 			bin.setDoNotTouchManifest();
-			for (String path : src.getResources().keySet())
+			for (String path : src.getResources()
+				.keySet())
 				bin.putResource("OSGI-OPT/src/" + path, src.getResource(path));
 			bin.write(tmp);
 		}
@@ -2659,7 +2703,8 @@ public class bnd extends Processor {
 		}
 
 		if (f.isFile()) {
-			if (f.getName().endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
+			if (f.getName()
+				.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 				Workspace ws = Workspace.findWorkspace(f.getParentFile());
 				Run run = Run.createRun(ws, f);
 				return run;
@@ -2692,7 +2737,8 @@ public class bnd extends Processor {
 		} else {
 			File f = getFile(where);
 			ws = Workspace.findWorkspace(f);
-			if (f.isFile() && f.getName().endsWith(Run.DEFAULT_BNDRUN_EXTENSION)) {
+			if (f.isFile() && f.getName()
+				.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 				Run run = Run.createRun(ws, f);
 				ws = run.getWorkspace();
 			}
@@ -2705,7 +2751,7 @@ public class bnd extends Processor {
 	 */
 	@Description("Converter to different formats")
 	@Arguments(arg = {
-			"from", "to"
+		"from", "to"
 	})
 	interface convertOptions extends Options {
 		@Config(description = "Convert a manifest to a properties files")
@@ -2717,15 +2763,20 @@ public class bnd extends Processor {
 
 	@Description("Converter to different formats")
 	public void _convert(convertOptions opts) throws IOException {
-		File from = getFile(opts._arguments().get(0));
-		File to = getFile(opts._arguments().get(1));
+		File from = getFile(opts._arguments()
+			.get(0));
+		File to = getFile(opts._arguments()
+			.get(1));
 		if (opts.m2p()) {
 			try (InputStream in = IO.stream(from)) {
 				Properties p = new UTF8Properties();
 				Manifest m = new Manifest(in);
 				Attributes attrs = m.getMainAttributes();
-				for (Map.Entry<Object,Object> i : attrs.entrySet()) {
-					p.put(i.getKey().toString(), i.getValue().toString());
+				for (Map.Entry<Object, Object> i : attrs.entrySet()) {
+					p.put(i.getKey()
+						.toString(),
+						i.getValue()
+							.toString());
 				}
 				try (OutputStream fout = IO.outputStream(to)) {
 					if (opts.xml())
@@ -2748,11 +2799,11 @@ public class bnd extends Processor {
 	 */
 	@Description("Helps finding information in a set of JARs by filtering on manifest data and printing out selected information.")
 	@Arguments(arg = {
-			"<jar-path>", "[...]"
+		"<jar-path>", "[...]"
 	})
 	interface selectOptions extends Options {
 		@Description("A simple assertion on a manifest header (e.g. " + Constants.BUNDLE_VERSION
-				+ "=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.")
+			+ "=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.")
 		String where();
 
 		@Description("A manifest header to print or: path, name, size, length, modified for information about the file, wildcards are allowed to print multiple headers. ")
@@ -2790,17 +2841,20 @@ public class bnd extends Processor {
 			}
 
 			Domain domain = Domain.domain(jar.getManifest());
-			Hashtable<String,Object> ht = new Hashtable<>();
+			Hashtable<String, Object> ht = new Hashtable<>();
 			Iterator<String> i = domain.iterator();
 			Set<String> realNames = new HashSet<>();
 
 			while (i.hasNext()) {
 				String key = i.next();
-				String value = domain.get(key).trim();
-				ht.put(key.trim().toLowerCase(), value);
+				String value = domain.get(key)
+					.trim();
+				ht.put(key.trim()
+					.toLowerCase(), value);
 				realNames.add(key);
 			}
-			ht.put("resources", jar.getResources().keySet());
+			ht.put("resources", jar.getResources()
+				.keySet());
 			realNames.add("resources");
 			if (filter != null) {
 				if (!filter.match(ht))
@@ -2811,10 +2865,12 @@ public class bnd extends Processor {
 			Collection<String> select = instructions.select(realNames, unused, true);
 			for (String h : select) {
 				if (opts.path()) {
-					out.print(jar.getSource().getAbsolutePath() + ":");
+					out.print(jar.getSource()
+						.getAbsolutePath() + ":");
 				}
 				if (opts.name()) {
-					out.print(jar.getSource().getName() + ":");
+					out.print(jar.getSource()
+						.getName() + ":");
 				}
 				if (opts.key()) {
 					out.print(h + ":");
@@ -2824,13 +2880,17 @@ public class bnd extends Processor {
 			for (Instruction ins : unused) {
 				String literal = ins.getLiteral();
 				if (literal.equals("name"))
-					out.println(jar.getSource().getName());
+					out.println(jar.getSource()
+						.getName());
 				else if (literal.equals("path"))
-					out.println(jar.getSource().getAbsolutePath());
+					out.println(jar.getSource()
+						.getAbsolutePath());
 				else if (literal.equals("size") || literal.equals("length"))
-					out.println(jar.getSource().length());
+					out.println(jar.getSource()
+						.length());
 				else if (literal.equals("modified"))
-					out.println(new Date(jar.getSource().lastModified()));
+					out.println(new Date(jar.getSource()
+						.lastModified()));
 			}
 		}
 	}
@@ -2885,12 +2945,14 @@ public class bnd extends Processor {
 			a.close();
 			return;
 		}
-		Enumeration<URL> e = getClass().getClassLoader().getResources("META-INF/MANIFEST.MF");
+		Enumeration<URL> e = getClass().getClassLoader()
+			.getResources("META-INF/MANIFEST.MF");
 		while (e.hasMoreElements()) {
 			URL u = e.nextElement();
 
 			Manifest m = new Manifest(u.openStream());
-			String bsn = m.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+			String bsn = m.getMainAttributes()
+				.getValue(Constants.BUNDLE_SYMBOLICNAME);
 			if (bsn != null && bsn.equals("biz.aQute.bnd")) {
 				Attributes attrs = m.getMainAttributes();
 
@@ -2905,7 +2967,8 @@ public class bnd extends Processor {
 					out.printf("%-40s %s\n", "From", new Date(lastModified));
 				Parameters p = OSGiHeader.parseHeader(attrs.getValue(Constants.BUNDLE_LICENSE));
 				for (String l : p.keySet())
-					out.printf("%-40s %s\n", "License", p.get(l).get("description"));
+					out.printf("%-40s %s\n", "License", p.get(l)
+						.get("description"));
 				out.printf("%-40s %s\n", "Copyright", attrs.getValue(Constants.BUNDLE_COPYRIGHT));
 				out.printf("%-40s %s\n", "Git-SHA", attrs.getValue("Git-SHA"));
 				out.printf("%-40s %s\n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
@@ -2945,9 +3008,9 @@ public class bnd extends Processor {
 			return;
 		}
 		boolean any = options.runbundles() || options.buildpath() || options.classpath() || options.dependsOn()
-				|| options.vmpath();
+			|| options.vmpath();
 
-		MultiMap<String,Object> table = new MultiMap<>();
+		MultiMap<String, Object> table = new MultiMap<>();
 		if (any || options.runbundles()) {
 			table.addAll("Run", p.getRunbundles());
 		}
@@ -2975,7 +3038,7 @@ public class bnd extends Processor {
 	 * Grep in jars
 	 */
 	@Arguments(arg = {
-			"pattern", "file..."
+		"pattern", "file..."
 	})
 	@Description("Grep the manifest of bundles/jar files. ")
 	interface grepOptions extends Options {
@@ -3007,6 +3070,7 @@ public class bnd extends Processor {
 		if (args.isEmpty()) {
 			args = new ExtList<>(getBase().list(new FilenameFilter() {
 
+				@Override
 				public boolean accept(File dir, String name) {
 					return name.endsWith(".jar");
 				}
@@ -3035,10 +3099,12 @@ public class bnd extends Processor {
 
 			try (JarInputStream in = new JarInputStream(IO.stream(file))) {
 				Manifest m = in.getManifest();
-				for (Object header : m.getMainAttributes().keySet()) {
+				for (Object header : m.getMainAttributes()
+					.keySet()) {
 					Attributes.Name name = (Name) header;
 					if (instructions.isEmpty() || instructions.matches(name.toString())) {
-						String h = m.getMainAttributes().getValue(name);
+						String h = m.getMainAttributes()
+							.getValue(name);
 						QuotedTokenizer qt = new QuotedTokenizer(h, ",;=");
 						for (String value : qt.getTokenSet()) {
 							Matcher matcher = pattern.matcher(value);
@@ -3052,9 +3118,9 @@ public class bnd extends Processor {
 									end = value.length();
 
 								out.printf("%40s : %20s ...%s[%s]%s...\n", fileName, name,
-										value.substring(start, matcher.start()),
-										value.substring(matcher.start(), matcher.end()),
-										value.substring(matcher.end(), end));
+									value.substring(start, matcher.start()),
+									value.substring(matcher.start(), matcher.end()),
+									value.substring(matcher.end(), end));
 							}
 						}
 					}
@@ -3068,7 +3134,7 @@ public class bnd extends Processor {
 	 */
 	@Description("Set bnd global variables. The key can be wildcard.")
 	@Arguments(arg = {
-			"<key>[=<value>]..."
+		"<key>[=<value>]..."
 	})
 	interface settingOptions extends Options {
 		@Description("Clear all the settings, including the public and private key")
@@ -3157,7 +3223,8 @@ public class bnd extends Processor {
 						// check if there is a value a='b'
 
 						String value = m.group(4);
-						if (value == null || value.trim().length() == 0) {
+						if (value == null || value.trim()
+							.length() == 0) {
 							// no value
 							// check '=' presence
 							if (m.group(2) == null) {
@@ -3202,15 +3269,17 @@ public class bnd extends Processor {
 		return data.length + " : " + (hex ? Hex.toHexString(data) : Base64.encodeBase64(data));
 	}
 
-	private void list(Collection<String> keys, Map<String,String> map) {
-		for (Entry<String,String> e : map.entrySet()) {
+	private void list(Collection<String> keys, Map<String, String> map) {
+		for (Entry<String, String> e : map.entrySet()) {
 			if (keys == null || keys.contains(e.getKey()))
 				out.printf("%-40s = %s\n", e.getKey(), e.getValue());
 		}
 	}
 
 	enum Alg {
-		SHA1, MD5, TIMELESS
+		SHA1,
+		MD5,
+		TIMELESS
 	};
 
 	@Description("Digest a number of files")
@@ -3262,10 +3331,12 @@ public class bnd extends Processor {
 							continue outer;
 
 						case SHA1 :
-							digest = SHA1.digest(f).digest();
+							digest = SHA1.digest(f)
+								.digest();
 							break;
 						case MD5 :
-							digest = MD5.digest(f).digest();
+							digest = MD5.digest(f)
+								.digest();
 							break;
 
 						case TIMELESS :
@@ -3278,23 +3349,26 @@ public class bnd extends Processor {
 					String del = "";
 
 					if (o.hex() || !o.b64()) {
-						sb.append(del).append(Hex.toHexString(digest));
+						sb.append(del)
+							.append(Hex.toHexString(digest));
 						del = " ";
 					}
 					if (o.b64()) {
-						sb.append(del).append(Base64.encodeBase64(digest));
+						sb.append(del)
+							.append(Base64.encodeBase64(digest));
 						del = " ";
 					}
 					if (o.name()) {
-						sb.append(del).append(f.getAbsolutePath());
+						sb.append(del)
+							.append(f.getAbsolutePath());
 						del = " ";
 					}
 					if (o.process()) {
 						sb.append(del)
-								.append(System.currentTimeMillis() - now)
-								.append(" ms ")
-								.append(f.length() / 1000)
-								.append(" Kb");
+							.append(System.currentTimeMillis() - now)
+							.append(" ms ")
+							.append(f.length() / 1000)
+							.append(" Kb");
 						total += f.length();
 					}
 					out.println(sb);
@@ -3305,8 +3379,8 @@ public class bnd extends Processor {
 		if (o.process()) {
 			long time = (System.currentTimeMillis() - start);
 			float mb = total / 1000000;
-			out.format("Total %s Mb, %s ms, %s Mb/sec %s files\n", mb, time, (total / time) / 1024,
-					o._arguments().size());
+			out.format("Total %s Mb, %s ms, %s Mb/sec %s files\n", mb, time, (total / time) / 1024, o._arguments()
+				.size());
 		}
 	}
 
@@ -3320,7 +3394,8 @@ public class bnd extends Processor {
 	public void _maven(Options options) throws Exception {
 		MavenCommand mc = new MavenCommand(this);
 		mc.use(this);
-		mc.run(options._arguments().toArray(new String[0]), 1);
+		mc.run(options._arguments()
+			.toArray(new String[0]), 1);
 		getInfo(mc);
 	}
 
@@ -3337,14 +3412,15 @@ public class bnd extends Processor {
 
 			Reporter r = new ReporterAdapter();
 			CommandLine c = new CommandLine(r);
-			Map<String,Method> commands = c.getCommands(this);
+			Map<String, Method> commands = c.getCommands(this);
 			StringBuilder sb = new StringBuilder();
 			for (String commandName : commands.keySet()) {
 				sb.append(" " + commandName);
 			}
 			sb.append(" help");
 
-			sed.replace("%listCommands%", sb.toString().substring(1));
+			sed.replace("%listCommands%", sb.toString()
+				.substring(1));
 			sed.doIt();
 			IO.copy(tmp, out);
 		} finally {
@@ -3381,11 +3457,13 @@ public class bnd extends Processor {
 			return;
 		}
 		for (Actionable o : actionables) {
-			if (filter.matcher(o.title()).matches()) {
+			if (filter.matcher(o.title())
+				.matches()) {
 				logger.debug("actionable {} - {}", o, o.title());
-				Map<String,Runnable> map = o.actions();
+				Map<String, Runnable> map = o.actions();
 				if (map != null) {
-					if (opts._arguments().isEmpty()) {
+					if (opts._arguments()
+						.isEmpty()) {
 						out.printf("# %s%n", o.title());
 						if (opts.tooltip() && o.tooltip() != null) {
 							out.printf("%s%n", o.tooltip());
@@ -3426,7 +3504,7 @@ public class bnd extends Processor {
 		Justif j = new Justif(80, 10);
 		Formatter f = j.formatter();
 
-		for (Map.Entry<Version,String[]> e : About.CHANGES.entrySet()) {
+		for (Map.Entry<Version, String[]> e : About.CHANGES.entrySet()) {
 			if (options.all() || first) {
 				f.format("$-\nRelease %s\n$-\n", e.getKey());
 				for (String s : e.getValue()) {
@@ -3437,7 +3515,8 @@ public class bnd extends Processor {
 						ff.format("\n\n");
 						CommandLine cli = options._command();
 						cli.help(ff, this, m.group(1));
-						j.indent(10, ff.out().toString());
+						j.indent(10, ff.out()
+							.toString());
 					}
 					m = BUG_P.matcher(s);
 					while (m.find()) {
@@ -3458,7 +3537,7 @@ public class bnd extends Processor {
 
 	@Arguments(arg = "[file]...")
 	@Description("Go through the exports and/or imports and match the given "
-			+ "exports/imports globs. If thet match print the file, package and version.")
+		+ "exports/imports globs. If thet match print the file, package and version.")
 	interface FindOptions extends Options {
 		@Description("Glob expression on the imports.")
 		Glob[] imports();
@@ -3500,9 +3579,11 @@ public class bnd extends Processor {
 					if (options.exports() != null) {
 						Parameters ep = domain.getExportPackage();
 						for (Glob g : options.exports()) {
-							for (Entry<String,Attrs> exp : ep.entrySet()) {
-								if (g.matcher(exp.getKey()).matches()) {
-									String v = exp.getValue().get(VERSION_ATTRIBUTE);
+							for (Entry<String, Attrs> exp : ep.entrySet()) {
+								if (g.matcher(exp.getKey())
+									.matches()) {
+									String v = exp.getValue()
+										.get(VERSION_ATTRIBUTE);
 									if (v == null)
 										v = "0";
 									out.printf(">%s: %s-%s%n", f.getPath(), exp.getKey(), v);
@@ -3513,9 +3594,11 @@ public class bnd extends Processor {
 					if (options.imports() != null) {
 						Parameters ip = domain.getImportPackage();
 						for (Glob g : options.imports()) {
-							for (Entry<String,Attrs> imp : ip.entrySet()) {
-								if (g.matcher(imp.getKey()).matches()) {
-									String v = imp.getValue().get(VERSION_ATTRIBUTE);
+							for (Entry<String, Attrs> imp : ip.entrySet()) {
+								if (g.matcher(imp.getKey())
+									.matches()) {
+									String v = imp.getValue()
+										.get(VERSION_ATTRIBUTE);
 									if (v == null)
 										v = "0";
 									out.printf("<%s: %s-%s%n", f.getPath(), imp.getKey(), v);
@@ -3540,12 +3623,13 @@ public class bnd extends Processor {
 	}
 
 	@Description("Merge a number of jar files into a new jar file. The used manifest is that of the first"
-			+ "given JAR file. The order of the JAR file is the class path order. I.e. earlier resources"
-			+ "are preferred over later resources with the same name.")
+		+ "given JAR file. The order of the JAR file is the class path order. I.e. earlier resources"
+		+ "are preferred over later resources with the same name.")
 	public void __merge(MergeOptions options) throws Exception {
 		String name = options.output() == null ? "output.jar" : options.output();
 		File out = getFile(name);
-		if (!out.getParentFile().isDirectory()) {
+		if (!out.getParentFile()
+			.isDirectory()) {
 			error("Output file is not in a valid directory: %s", out.getParentFile());
 		}
 		List<String> list = options._arguments();
@@ -3592,7 +3676,8 @@ public class bnd extends Processor {
 				try (Analyzer a = new Analyzer(this)) {
 					a.setJar(f);
 					a.analyze();
-					out.printf("%s %s%n", a.getJar().getName(), a.getEEs());
+					out.printf("%s %s%n", a.getJar()
+						.getName(), a.getEEs());
 				}
 			}
 		}
@@ -3615,7 +3700,7 @@ public class bnd extends Processor {
 		try {
 			final Project p = getProject(options.project());
 			final Workspace workspace = p == null || options.full() ? Workspace.getWorkspace(getBase())
-					: p.getWorkspace();
+				: p.getWorkspace();
 
 			if (!workspace.exists()) {
 				error("cannot find workspace");
@@ -3629,6 +3714,7 @@ public class bnd extends Processor {
 			for (final Project dep : targets) {
 				forker.doWhen(dep.getDependson(), dep, new Runnable() {
 
+					@Override
 					public void run() {
 						if (!quit.get()) {
 
@@ -3676,7 +3762,8 @@ public class bnd extends Processor {
 		Workspace ws = getWorkspace((File) null);
 
 		if (ws == null) {
-			error("Cannot find workspace, either reside in a project directory, point to a project with --project, or reside in the workspace directory");
+			error(
+				"Cannot find workspace, either reside in a project directory, point to a project with --project, or reside in the workspace directory");
 			return;
 		}
 
@@ -3701,7 +3788,7 @@ public class bnd extends Processor {
 			return;
 		}
 
-		MultiMap<String,Version> revisions = new MultiMap<>();
+		MultiMap<String, Version> revisions = new MultiMap<>();
 
 		for (RepositoryPlugin repo : p.getPlugins(RepositoryPlugin.class)) {
 			if (!(repo instanceof InfoRepository))
@@ -3729,10 +3816,11 @@ public class bnd extends Processor {
 					line = matcher.group(1);
 
 					Parameters bundles = new Parameters(line, this);
-					for (Map.Entry<String,Attrs> entry : bundles.entrySet()) {
+					for (Map.Entry<String, Attrs> entry : bundles.entrySet()) {
 
 						String bsn = entry.getKey();
-						VersionRange range = new VersionRange(entry.getValue().getVersion());
+						VersionRange range = new VersionRange(entry.getValue()
+							.getVersion());
 
 						List<Version> versions = revisions.get(bsn);
 						if (versions == null) {
@@ -3756,7 +3844,7 @@ public class bnd extends Processor {
 									}
 
 									out.println(
-											descriptor.url + " #" + descriptor.bsn + ";version=" + descriptor.version);
+										descriptor.url + " #" + descriptor.bsn + ";version=" + descriptor.version);
 								}
 							}
 						}
@@ -3787,8 +3875,10 @@ public class bnd extends Processor {
 		int n = 0;
 		for (Object o : ws.getPlugins()) {
 			String s = o.toString();
-			if (s.trim().length() == 0)
-				s = o.getClass().getName();
+			if (s.trim()
+				.length() == 0)
+				s = o.getClass()
+					.getName();
 
 			out.printf("%03d %s%n", n++, s);
 		}
@@ -3825,7 +3915,8 @@ public class bnd extends Processor {
 
 	public void _defaults(Options o) {
 		Processor defaults = Workspace.getDefaults();
-		out.println(Strings.join("\n", defaults.getProperties().entrySet()));
+		out.println(Strings.join("\n", defaults.getProperties()
+			.entrySet()));
 	}
 
 	/*
@@ -3833,7 +3924,7 @@ public class bnd extends Processor {
 	 */
 
 	@Arguments(arg = {
-			"src...", "dest"
+		"src...", "dest"
 	})
 	interface CopyOptions extends Options {
 
@@ -3880,20 +3971,26 @@ public class bnd extends Processor {
 			if (options.specific()) {
 				Manifest m = new Manifest();
 				if (jar.getManifest() != null) {
-					for (Entry<Object,Object> e : jar.getManifest().getMainAttributes().entrySet()) {
-						String header = e.getKey().toString().toLowerCase();
+					for (Entry<Object, Object> e : jar.getManifest()
+						.getMainAttributes()
+						.entrySet()) {
+						String header = e.getKey()
+							.toString()
+							.toLowerCase();
 						if (header.startsWith("bundle-"))
 							continue;
 
 						if (!isIn(Constants.BUNDLE_SPECIFIC_HEADERS, header))
-							m.getMainAttributes().put(e.getKey(), e.getValue());
+							m.getMainAttributes()
+								.put(e.getKey(), e.getValue());
 					}
 				}
 				jar.setManifest(m);
 			}
 
 			if (options.optional()) {
-				jar.getDirectories().remove("OSGI-OPT");
+				jar.getDirectories()
+					.remove("OSGI-OPT");
 			}
 
 			String name = getJarFileNameFrom(jar.getName());
@@ -3933,7 +4030,7 @@ public class bnd extends Processor {
 	 */
 
 	@Arguments(arg = {
-			"what", "name..."
+		"what", "name..."
 	})
 	interface AddOptions extends Options {
 
@@ -3990,7 +4087,7 @@ public class bnd extends Processor {
 	}
 
 	@Arguments(arg = {
-			"what", "name..."
+		"what", "name..."
 	})
 	interface RemoveOptions extends Options {}
 
@@ -4039,7 +4136,7 @@ public class bnd extends Processor {
 
 	@Description("Profile management. A profile is a JAR that only contains packages and capabilities")
 	@Arguments(arg = {
-			"create", "..."
+		"create", "..."
 	})
 	public interface ProfileOptions extends Options {
 
@@ -4061,7 +4158,8 @@ public class bnd extends Processor {
 
 	public void _resolve(ResolveCommand.ResolveOptions options) throws Exception {
 		ResolveCommand rc = new ResolveCommand(this);
-		String help = options._command().subCmd(options, rc);
+		String help = options._command()
+			.subCmd(options, rc);
 		if (help != null)
 			out.println(help);
 		getInfo(rc);
@@ -4076,7 +4174,8 @@ public class bnd extends Processor {
 
 	public void _remote(RemoteCommand.RemoteOptions options) throws Exception {
 		RemoteCommand rc = new RemoteCommand(this, options);
-		String help = options._command().subCmd(options, rc);
+		String help = options._command()
+			.subCmd(options, rc);
 		if (help != null)
 			out.println(help);
 		getInfo(rc);
@@ -4091,12 +4190,14 @@ public class bnd extends Processor {
 
 	public void _nexus(NexusCommand.NexusOptions options) throws Exception {
 		NexusCommand rc = new NexusCommand(this, options);
-		String help = options._command().subCmd(options, rc);
+		String help = options._command()
+			.subCmd(options, rc);
 		if (help != null)
 			out.println(help);
 		getInfo(rc);
 		rc.close();
 	}
+
 	/**
 	 * Export a bndrun file
 	 */
@@ -4116,7 +4217,8 @@ public class bnd extends Processor {
 		}
 
 		// temporary
-		project.getWorkspace().addBasicPlugin(new SubsystemExporter());
+		project.getWorkspace()
+			.addBasicPlugin(new SubsystemExporter());
 
 		for (String bndrun : opts._arguments()) {
 			File f = getFile(bndrun);
@@ -4140,11 +4242,11 @@ public class bnd extends Processor {
 				exports.putAll(new Parameters(exportTypes, this));
 			}
 
-			for (Entry<String,Attrs> e : exports.entrySet()) {
+			for (Entry<String, Attrs> e : exports.entrySet()) {
 
 				logger.debug("exporting {} to {} with {}", run, e.getKey(), e.getValue());
 
-				Map.Entry<String,Resource> result = run.export(e.getKey(), e.getValue());
+				Map.Entry<String, Resource> result = run.export(e.getKey(), e.getValue());
 				getInfo(run);
 
 				if (result != null && isOk()) {
@@ -4156,7 +4258,8 @@ public class bnd extends Processor {
 						output = new File(output, name);
 					IO.mkdirs(output.getParentFile());
 					logger.debug("Got a result for {}, store in {}", e.getKey(), output);
-					IO.copy(result.getValue().openInputStream(), output);
+					IO.copy(result.getValue()
+						.openInputStream(), output);
 				}
 			}
 		}
@@ -4167,7 +4270,7 @@ public class bnd extends Processor {
 	 */
 
 	@Arguments(arg = {
-			"input", "output"
+		"input", "output"
 	})
 	@Description("Flatten a bundle by expanding all entries on the Bundle-ClassPath")
 	interface FlattenOptions extends Options {}
@@ -4189,7 +4292,8 @@ public class bnd extends Processor {
 		File destination = getFile(outputPath);
 		IO.mkdirs(destination.getParentFile());
 
-		if (!destination.getParentFile().isDirectory()) {
+		if (!destination.getParentFile()
+			.isDirectory()) {
 			error("Could not create directory for output file %s", outputPath);
 		}
 
@@ -4199,7 +4303,8 @@ public class bnd extends Processor {
 		Manifest manifest = input.getManifest();
 
 		Domain domain = Domain.domain(manifest);
-		List<String> bundleClassPath = new ArrayList<>(domain.getBundleClasspath().keySet());
+		List<String> bundleClassPath = new ArrayList<>(domain.getBundleClasspath()
+			.keySet());
 
 		if (bundleClassPath.isEmpty()) {
 			warning("%s has no bundle class path", source);
@@ -4242,7 +4347,8 @@ public class bnd extends Processor {
 		if (prefix.length() > 0 && !prefix.endsWith("/"))
 			prefix += "/";
 
-		for (Map.Entry<String,Resource> e : sub.getResources().entrySet()) {
+		for (Map.Entry<String, Resource> e : sub.getResources()
+			.entrySet()) {
 			String path = e.getKey();
 
 			if (bundleClassPath != null && bundleClassPath.contains(path))

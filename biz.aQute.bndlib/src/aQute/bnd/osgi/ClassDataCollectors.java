@@ -41,6 +41,7 @@ class ClassDataCollectors implements Closeable {
 		}
 	}
 
+	@Override
 	public void close() {
 		for (ClassDataCollector cd : delegates)
 			try {
@@ -203,7 +204,7 @@ class ClassDataCollectors implements Closeable {
 
 		@Override
 		public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags)
-				throws Exception {
+			throws Exception {
 			for (ClassDataCollector cd : shortlist)
 				try {
 					cd.innerClass(innerClass, outerClass, innerName, innerClassAccessFlags);

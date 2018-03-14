@@ -39,11 +39,11 @@ public class Tag {
 	final static String				Name			= "[" + NameStartChar + "]" + NameChar + "*";
 	final public static Pattern		NAME_P			= Pattern.compile(Name);
 
-	Tag								parent;														// Parent
-	String							name;														// Name
-	final Map<String,String>		attributes	= new LinkedHashMap<>();
-	final List<Object>				content		= new ArrayList<>();						// Content
-	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	Tag								parent;																																											// Parent
+	String							name;																																											// Name
+	final Map<String, String>		attributes		= new LinkedHashMap<>();
+	final List<Object>				content			= new ArrayList<>();																																			// Content
+	final static SimpleDateFormat	format			= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 	boolean							cdata;
 
 	/**
@@ -62,19 +62,19 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Map<String,String> attributes, Object... contents) {
+	public Tag(String name, Map<String, String> attributes, Object... contents) {
 		this(name, contents);
 		this.attributes.putAll(attributes);
 
 	}
 
-	public Tag(String name, Map<String,String> attributes) {
+	public Tag(String name, Map<String, String> attributes) {
 		this(name, attributes, new Object[0]);
 	}
 
 	/**
-	 * Construct a new Tag with a name and a set of attributes. The attributes are
-	 * given as ( name, value ) ...
+	 * Construct a new Tag with a name and a set of attributes. The attributes
+	 * are given as ( name, value ) ...
 	 */
 	public Tag(String name, String[] attributes, Object... contents) {
 		this(name, contents);
@@ -247,7 +247,7 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Map<String,String> getAttributes() {
+	public Map<String, String> getAttributes() {
 		return attributes;
 	}
 
@@ -259,7 +259,8 @@ public class Tag {
 	}
 
 	/**
-	 * Return a string representation of this Tag and all its children recursively.
+	 * Return a string representation of this Tag and all its children
+	 * recursively.
 	 */
 	@Override
 	public String toString() {
@@ -269,12 +270,14 @@ public class Tag {
 	}
 
 	/**
-	 * Return only the tags of the first level of descendants that match the name.
+	 * Return only the tags of the first level of descendants that match the
+	 * name.
 	 */
 	public List<Object> getContents(String tag) {
 		List<Object> out = new ArrayList<>();
 		for (Object o : content) {
-			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
+			if (o instanceof Tag && ((Tag) o).getName()
+				.equals(tag))
 				out.add(o);
 		}
 		return out;
@@ -441,7 +444,8 @@ public class Tag {
 		for (Object o : content) {
 			if (o instanceof Tag) {
 				Tag child = (Tag) o;
-				if (child.getName().equals(elementName) || elementName.equals("*"))
+				if (child.getName()
+					.equals(elementName) || elementName.equals("*"))
 					child.select(remainder, results, mapping);
 			}
 		}
@@ -566,7 +570,8 @@ public class Tag {
 	boolean invalid(Formatter f) {
 		boolean invalid = false;
 
-		if (!NAME_P.matcher(name).matches()) {
+		if (!NAME_P.matcher(name)
+			.matches()) {
 			f.format("%s: Invalid name %s\n", getPath(), name);
 		}
 

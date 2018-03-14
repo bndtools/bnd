@@ -10,13 +10,13 @@ import aQute.bnd.service.progress.ProgressPlugin.Task;
 
 public class ProgressWrappingStream extends InputStream {
 
-	private InputStream	delegate;
-	private Task		task;
-	private int			size;
-	private int			reported;
-	private int			read;
-	private long		timeout;
-	private long		deadline;
+	private InputStream			delegate;
+	private Task				task;
+	private int					size;
+	private int					reported;
+	private int					read;
+	private long				timeout;
+	private long				deadline;
 	private final AtomicBoolean	closed	= new AtomicBoolean();
 
 	public ProgressWrappingStream(InputStream delegate, String name, int size, Task task, long timeout) {
@@ -99,7 +99,6 @@ public class ProgressWrappingStream extends InputStream {
 			close();
 			throw new EOFException("Canceled");
 		}
-
 
 		this.deadline = System.currentTimeMillis() + timeout;
 

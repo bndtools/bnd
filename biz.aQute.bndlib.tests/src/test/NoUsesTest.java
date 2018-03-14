@@ -107,18 +107,20 @@ public class NoUsesTest extends TestCase {
 
 	static String findUses(Builder bmaker, String pack, String... ignore) throws Exception {
 		File cp[] = {
-				new File("bin"), IO.getFile("jar/osgi.jar")
+			new File("bin"), IO.getFile("jar/osgi.jar")
 		};
 		bmaker.setClasspath(cp);
 		Jar jar = bmaker.build();
 		assertTrue(bmaker.check(ignore));
-		String exports = jar.getManifest().getMainAttributes().getValue("Export-Package");
+		String exports = jar.getManifest()
+			.getMainAttributes()
+			.getValue("Export-Package");
 		assertNotNull("exports", exports);
 		Parameters map = Processor.parseHeader(exports, null);
 		if (map == null)
 			return null;
 
-		Map<String,String> clause = map.get(pack);
+		Map<String, String> clause = map.get(pack);
 		if (clause == null)
 			return null;
 

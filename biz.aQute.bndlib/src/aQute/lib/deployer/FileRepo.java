@@ -166,35 +166,30 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. The command only runs when the location does not
 	 * exist.
 	 * </p>
-	 * 
 	 */
 	public static final String				CMD_INIT			= "cmd.init";
 
 	/**
 	 * Property for commands. Command is run before the repo is first used.
 	 * </p>
-	 * 
 	 */
 	public static final String				CMD_OPEN			= "cmd.open";
 
 	/**
 	 * Property for commands. The command runs after a put operation.
 	 * </p>
-	 * 
 	 */
 	public static final String				CMD_AFTER_PUT		= "cmd.after.put";
 
 	/**
 	 * Property for commands. The command runs when the repository is refreshed.
 	 * </p>
-	 * 
 	 */
 	public static final String				CMD_REFRESH			= "cmd.refresh";
 
 	/**
 	 * Property for commands. The command runs after the file is put.
 	 * </p>
-	 * 
 	 */
 	public static final String				CMD_BEFORE_PUT		= "cmd.before.put";
 
@@ -202,27 +197,23 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * Property for commands. The command runs when a put is aborted after file
 	 * changes were made.
 	 * </p>
-	 * 
 	 */
 	public static final String				CMD_ABORT_PUT		= "cmd.abort.put";
 
 	/**
 	 * Property for commands. The command runs after the file is put.
 	 * </p>
-	 * 
 	 */
 	public static final String				CMD_CLOSE			= "cmd.close";
 
 	/**
 	 * Property for commands. Will be run after an action has been executed.
 	 * </p>
-	 * 
 	 */
 	public static final String				CMD_AFTER_ACTION	= "cmd.after.action";
 
 	/**
 	 * Called before a before get.
-	 * 
 	 */
 	public static final String				CMD_BEFORE_GET		= "cmd.before.get";
 
@@ -235,8 +226,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	private static final String				LATEST_POSTFIX		= "-" + Constants.VERSION_ATTR_LATEST + ".jar";
 	public static final Version				LATEST_VERSION		= new Version(MAX_MAJOR, 0, 0);
-	private static final SortedSet<Version>	LATEST_SET			= new TreeSet<>(
-			Collections.singleton(LATEST_VERSION));
+	private static final SortedSet<Version>	LATEST_SET			= new TreeSet<>(Collections.singleton(LATEST_VERSION));
 
 	final static JSONCodec					codec				= new JSONCodec();
 	String									shell;
@@ -256,8 +246,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	Registry								registry;
 	boolean									createLatest		= true;
 	boolean									canWrite			= true;
-	Pattern									REPO_FILE			= Pattern.compile("(?:([-a-zA-z0-9_\\.]+)-)("
-			+ Version.VERSION_STRING + "|" + Constants.VERSION_ATTR_LATEST + ")\\.(jar|lib)");
+	Pattern									REPO_FILE			= Pattern.compile(
+		"(?:([-a-zA-z0-9_\\.]+)-)(" + Version.VERSION_STRING + "|" + Constants.VERSION_ATTR_LATEST + ")\\.(jar|lib)");
 	Reporter								reporter;
 	boolean									dirty				= true;
 	String									name;
@@ -314,7 +304,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * @see aQute.bnd.service.Plugin#setProperties(java.util.Map)
 	 */
-	public void setProperties(Map<String,String> map) {
+	@Override
+	public void setProperties(Map<String, String> map) {
 		String location = map.get(LOCATION);
 		if (location == null)
 			throw new IllegalArgumentException("Location must be set on a FileRepo plugin");
@@ -323,11 +314,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 		String readonly = map.get(READONLY);
 		if (readonly != null)
-			canWrite = !Boolean.valueOf(readonly).booleanValue();
+			canWrite = !Boolean.valueOf(readonly)
+				.booleanValue();
 
 		String createLatest = map.get(LATEST_OPTION);
 		if (createLatest != null)
-			this.createLatest = Boolean.valueOf(createLatest).booleanValue();
+			this.createLatest = Boolean.valueOf(createLatest)
+				.booleanValue();
 
 		hasIndex = Processor.isTrue(map.get(INDEX));
 		name = map.get(NAME);
@@ -349,6 +342,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	/**
 	 * Answer if this repository can write.
 	 */
+	@Override
 	public boolean canWrite() {
 		return canWrite;
 	}
@@ -418,7 +412,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 			if (hasIndex)
 				index.put(bsn + "-" + version.toStringWithoutQualifier(),
-						buildDescriptor(tmpFile, tmpJar, digest, bsn, version));
+					buildDescriptor(tmpFile, tmpJar, digest, bsn, version));
 
 			// An open jar on file will fail rename on windows
 			tmpJar.close();
@@ -449,6 +443,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @see aQute.bnd.service.RepositoryPlugin#put(java.io.InputStream,
 	 * aQute.bnd.service.RepositoryPlugin.PutOptions)
 	 */
+	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		/* determine if the put is allowed */
 		if (!canWrite) {
@@ -468,25 +463,25 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		 */
 		File tmpFile = IO.createTempFile(root, "put", ".jar");
 		try (DigestInputStream dis = new DigestInputStream(stream, MessageDigest.getInstance("SHA-1"))) {
-				IO.copy(dis, tmpFile);
+			IO.copy(dis, tmpFile);
 
-				byte[] digest = dis.getMessageDigest().digest();
+			byte[] digest = dis.getMessageDigest()
+				.digest();
 
-				if (options.digest != null && !Arrays.equals(digest, options.digest))
-					throw new IOException("Retrieved artifact digest doesn't match specified digest");
+			if (options.digest != null && !Arrays.equals(digest, options.digest))
+				throw new IOException("Retrieved artifact digest doesn't match specified digest");
 
-				/*
-				 * put the artifact into the repository (from the temporary
-				 * file)
-				 */
-				beforePut(tmpFile);
-				File file = putArtifact(tmpFile, options, digest);
+			/*
+			 * put the artifact into the repository (from the temporary file)
+			 */
+			beforePut(tmpFile);
+			File file = putArtifact(tmpFile, options, digest);
 
-				PutResult result = new PutResult();
-				result.digest = digest;
-				result.artifact = file.toURI();
+			PutResult result = new PutResult();
+			result.digest = digest;
+			result.artifact = file.toURI();
 
-				return result;
+			return result;
 		} catch (Exception e) {
 			abortPut(tmpFile);
 			throw e;
@@ -499,10 +494,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		root = IO.getFile(string);
 	}
 
+	@Override
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 	}
 
+	@Override
 	public List<String> list(String regex) throws Exception {
 		init();
 		Instruction pattern = null;
@@ -532,6 +529,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return result;
 	}
 
+	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
 		File dir = new File(root, bsn);
@@ -562,10 +560,12 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return String.format("%s [%-40s r/w=%s]", getName(), getRoot().getAbsolutePath(), canWrite());
 	}
 
+	@Override
 	public File getRoot() {
 		return root;
 	}
 
+	@Override
 	public boolean refresh() throws Exception {
 		init();
 		exec(refresh, root);
@@ -573,6 +573,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return true;
 	}
 
+	@Override
 	public String getName() {
 		if (name == null) {
 			return getLocation();
@@ -585,8 +586,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * @see aQute.bnd.service.RepositoryPlugin#get(java.lang.String,
 	 * aQute.bnd.version.Version, java.util.Map)
 	 */
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	@Override
+	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		init();
 		beforeGet(bsn, version);
 		File file = getLocal(bsn, version, properties);
@@ -603,19 +605,23 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return null;
 	}
 
+	@Override
 	public void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
 
+	@Override
 	public String getLocation() {
 		return root.toString();
 	}
 
-	public Map<String,Runnable> actions(Object... target) throws Exception {
+	@Override
+	public Map<String, Runnable> actions(Object... target) throws Exception {
 		if (target == null || target.length == 0) {
-			Map<String,Runnable> actions = new LinkedHashMap<>();
+			Map<String, Runnable> actions = new LinkedHashMap<>();
 			actions.put("Rebuild Resource Index", new Runnable() {
 
+				@Override
 				public void run() {
 					try {
 						refresh();
@@ -635,11 +641,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (f == null)
 				return null;
 
-			Map<String,Runnable> actions = new HashMap<>();
+			Map<String, Runnable> actions = new HashMap<>();
 			actions.put("Delete " + bsn + "-" + status(bsn, version), new Runnable() {
+				@Override
 				public void run() {
 					IO.delete(f);
-					if (f.getParentFile().list().length == 0)
+					if (f.getParentFile()
+						.list().length == 0)
 						IO.delete(f.getParentFile());
 					afterAction(f, "delete");
 				};
@@ -658,6 +666,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * (non-Javadoc)
 	 * @see aQute.bnd.service.Actionable#tooltip(java.lang.Object[])
 	 */
+	@Override
 	@SuppressWarnings("unchecked")
 	public String tooltip(Object... target) throws Exception {
 		if (target == null || target.length == 0)
@@ -666,9 +675,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		try {
 			String bsn = (String) target[0];
 			Version version = (Version) target[1];
-			Map<String,String> map = null;
+			Map<String, String> map = null;
 			if (target.length > 2)
-				map = (Map<String,String>) target[2];
+				map = (Map<String, String>) target[2];
 
 			File f = getLocal(bsn, version, map);
 
@@ -679,8 +688,10 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			}
 
 			s += String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0),
-					SHA1.digest(f).asHex());
-			if (f.getName().endsWith(".lib") && f.isFile()) {
+				SHA1.digest(f)
+					.asHex());
+			if (f.getName()
+				.endsWith(".lib") && f.isFile()) {
 				s += "\n" + IO.collect(f);
 			}
 			return s;
@@ -694,6 +705,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	 * (non-Javadoc)
 	 * @see aQute.bnd.service.Actionable#title(java.lang.Object[])
 	 */
+	@Override
 	public String title(Object... target) throws Exception {
 		if (target == null || target.length == 0)
 			return getName();
@@ -708,7 +720,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return null;
 	}
 
-	protected File getLocal(String bsn, Version version, Map<String,String> properties) {
+	protected File getLocal(String bsn, Version version, Map<String, String> properties) {
 		File dir = new File(root, bsn);
 
 		if (LATEST_VERSION.equals(version)) {
@@ -748,19 +760,25 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		StringBuilder sb = new StringBuilder(vs);
 		String del = " [";
 
-		if (file.getName().endsWith(".lib")) {
-			sb.append(del).append("L");
+		if (file.getName()
+			.endsWith(".lib")) {
+			sb.append(del)
+				.append("L");
 			del = "";
-		} else if (!file.getName().endsWith(".jar")) {
-			sb.append(del).append("?");
+		} else if (!file.getName()
+			.endsWith(".jar")) {
+			sb.append(del)
+				.append("?");
 			del = "";
 		}
 		if (!file.isFile()) {
-			sb.append(del).append("X");
+			sb.append(del)
+				.append("X");
 			del = "";
 		}
 		if (file.length() == 0) {
-			sb.append(del).append("0");
+			sb.append(del)
+				.append("0");
 			del = "";
 		}
 		if (del.equals(""))
@@ -769,7 +787,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	private static String[] names = {
-			"bytes", "Kb", "Mb", "Gb"
+		"bytes", "Kb", "Mb", "Gb"
 	};
 
 	private Object readable(long length, int n) {
@@ -782,6 +800,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 		return readable(length / 1024, n + 1);
 	}
 
+	@Override
 	public void close() throws IOException {
 		if (inited) {
 			exec(close, root.getAbsolutePath());
@@ -852,11 +871,13 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 					if (i == 0) {
 						// replaceAll backslash magic ensures windows paths
 						// remain intact
-						line = line.replaceAll("\\$\\{@\\}", args[0].toString().replaceAll("\\\\", "\\\\\\\\"));
+						line = line.replaceAll("\\$\\{@\\}", args[0].toString()
+							.replaceAll("\\\\", "\\\\\\\\"));
 					}
 					// replaceAll backslash magic ensures windows paths remain
 					// intact
-					line = line.replaceAll("\\$" + i, args[i].toString().replaceAll("\\\\", "\\\\\\\\"));
+					line = line.replaceAll("\\$" + i, args[i].toString()
+						.replaceAll("\\\\", "\\\\\\\\"));
 				}
 			}
 			// purge remaining placeholders
@@ -865,7 +886,9 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			int result = 0;
 			StringBuilder stdout = new StringBuilder();
 			StringBuilder stderr = new StringBuilder();
-			if (System.getProperty("os.name").toLowerCase().contains("win")) {
+			if (System.getProperty("os.name")
+				.toLowerCase()
+				.contains("win")) {
 
 				// FIXME ignoring possible shell setting stdin approach used
 				// below does not work in windows
@@ -949,41 +972,41 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	public SortedSet<ResourceDescriptor> getResources() throws Exception {
 		init();
 		if (hasIndex) {
-			TreeSet<ResourceDescriptor> resources = new TreeSet<>(
-					new Comparator<ResourceDescriptor>() {
+			TreeSet<ResourceDescriptor> resources = new TreeSet<>(new Comparator<ResourceDescriptor>() {
 
-						public int compare(ResourceDescriptor a, ResourceDescriptor b) {
-							if (a == b)
-								return 0;
+				@Override
+				public int compare(ResourceDescriptor a, ResourceDescriptor b) {
+					if (a == b)
+						return 0;
 
-							int r = a.bsn.compareTo(b.bsn);
-							if (r != 0)
-								return r;
+					int r = a.bsn.compareTo(b.bsn);
+					if (r != 0)
+						return r;
 
-							if (a.version != b.version) {
-								if (a.version == null)
-									return 1;
-								if (b.version == null)
-									return -1;
+					if (a.version != b.version) {
+						if (a.version == null)
+							return 1;
+						if (b.version == null)
+							return -1;
 
-								r = a.version.compareTo(b.version);
-								if (r != 0)
-									return r;
-							}
-							if (a.id.length > b.id.length)
-								return 1;
-							if (a.id.length < b.id.length)
-								return -1;
+						r = a.version.compareTo(b.version);
+						if (r != 0)
+							return r;
+					}
+					if (a.id.length > b.id.length)
+						return 1;
+					if (a.id.length < b.id.length)
+						return -1;
 
-							for (int i = 0; i < a.id.length; i++) {
-								if (a.id[i] > b.id[i])
-									return 1;
-								if (a.id[i] < b.id[i])
-									return 1;
-							}
-							return 0;
-						}
-					});
+					for (int i = 0; i < a.id.length; i++) {
+						if (a.id[i] > b.id[i])
+							return 1;
+						if (a.id[i] < b.id[i])
+							return 1;
+					}
+					return 0;
+				}
+			});
 			for (ResourceDescriptor rd : index.values()) {
 				resources.add(rd);
 			}
@@ -1019,7 +1042,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	}
 
 	private ResourceDescriptor buildDescriptor(File f, Jar jar, byte[] digest, String bsn, Version version)
-			throws NoSuchAlgorithmException, Exception {
+		throws NoSuchAlgorithmException, Exception {
 		init();
 		Jar tmpjar = jar;
 		if (jar == null)
@@ -1029,11 +1052,14 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			ResourceDescriptor rd = new ResourceDescriptor();
 			rd.bsn = bsn;
 			rd.version = version;
-			rd.description = m.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
+			rd.description = m.getMainAttributes()
+				.getValue(Constants.BUNDLE_DESCRIPTION);
 			rd.id = digest;
 			if (rd.id == null)
-				rd.id = SHA1.digest(f).digest();
-			rd.sha256 = SHA256.digest(f).digest();
+				rd.id = SHA1.digest(f)
+					.digest();
+			rd.sha256 = SHA256.digest(f)
+				.digest();
 			rd.url = f.toURI();
 			return rd;
 		} finally {

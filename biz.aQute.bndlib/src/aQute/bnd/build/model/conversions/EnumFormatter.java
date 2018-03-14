@@ -7,7 +7,7 @@ package aQute.bnd.build.model.conversions;
  * @param <E>
  * @author Neil Bartlett
  */
-public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
+public class EnumFormatter<E extends Enum<E>> implements Converter<String, E> {
 
 	private final E defaultValue;
 
@@ -35,6 +35,7 @@ public class EnumFormatter<E extends Enum<E>> implements Converter<String,E> {
 		this.defaultValue = defaultValue;
 	}
 
+	@Override
 	public String convert(E input) throws IllegalArgumentException {
 		String result;
 		if (input == defaultValue || input == null)

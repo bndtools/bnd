@@ -24,7 +24,8 @@ public class RunBundlesTask extends BaseTask {
 				workspace = new Workspace(rootDir);
 			} else {
 				workspace = Workspace.findWorkspace(bndFile);
-				log("Workspace not specified, using " + workspace.getBase().getAbsolutePath());
+				log("Workspace not specified, using " + workspace.getBase()
+					.getAbsolutePath());
 			}
 			// 2nd arg is not used, so no use trying to set it
 			Project bndProject = new Project(workspace, null, bndFile);

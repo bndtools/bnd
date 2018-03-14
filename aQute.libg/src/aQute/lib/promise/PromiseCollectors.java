@@ -12,7 +12,8 @@ public class PromiseCollectors {
 
 	private PromiseCollectors() {}
 
-	public static <V> Collector<Promise<V>,List<Promise<V>>,Promise<List<V>>> toPromise(PromiseFactory promiseFactory) {
+	public static <V> Collector<Promise<V>, List<Promise<V>>, Promise<List<V>>> toPromise(
+		PromiseFactory promiseFactory) {
 		return Collector.of(ArrayList::new, List::add, PromiseCollectors::combiner, promiseFactory::all);
 	}
 

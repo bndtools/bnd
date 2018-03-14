@@ -25,6 +25,7 @@ public class LauncherTest extends TestCase {
 	private static Workspace	workspace;
 	private static Project		project;
 
+	@Override
 	public void tearDown() throws IOException {
 		if (project != null) {
 			project.close();
@@ -221,7 +222,8 @@ public class LauncherTest extends TestCase {
 		ProjectLauncher l = project.getProjectLauncher();
 
 		l.setTrace(true);
-		l.getRunProperties().put("test.cmd", "setpersistence");
+		l.getRunProperties()
+			.put("test.cmd", "setpersistence");
 		assertEquals(55, l.launch());
 
 		//
@@ -235,7 +237,8 @@ public class LauncherTest extends TestCase {
 		l = project.getProjectLauncher();
 
 		l.setTrace(true);
-		l.getRunProperties().put("test.cmd", "getpersistence");
+		l.getRunProperties()
+			.put("test.cmd", "getpersistence");
 		assertEquals(-2, l.launch());
 
 		//
@@ -247,7 +250,8 @@ public class LauncherTest extends TestCase {
 		l = project.getProjectLauncher();
 
 		l.setTrace(true);
-		l.getRunProperties().put("test.cmd", "setpersistence");
+		l.getRunProperties()
+			.put("test.cmd", "setpersistence");
 		assertEquals(55, l.launch());
 
 		//
@@ -261,7 +265,8 @@ public class LauncherTest extends TestCase {
 		l = project.getProjectLauncher();
 
 		l.setTrace(true);
-		l.getRunProperties().put("test.cmd", "getpersistence");
+		l.getRunProperties()
+			.put("test.cmd", "getpersistence");
 		assertEquals(65, l.launch());
 
 	}
@@ -272,7 +277,8 @@ public class LauncherTest extends TestCase {
 
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTrace(true);
-		l.getRunProperties().put("test.cmd", "noreference");
+		l.getRunProperties()
+			.put("test.cmd", "noreference");
 		assertEquals(15, l.launch());
 	}
 
@@ -296,7 +302,8 @@ public class LauncherTest extends TestCase {
 			try {
 				ProjectLauncher l = p.getProjectLauncher();
 				l.setTrace(true);
-				l.getRunProperties().put("test.cmd", "exit");
+				l.getRunProperties()
+					.put("test.cmd", "exit");
 				assertEquals(42, l.launch());
 			} finally {
 				p.close();
@@ -318,7 +325,8 @@ public class LauncherTest extends TestCase {
 		project.setProperty("-javaagent", "true");
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTrace(true);
-		l.getRunProperties().put("test.cmd", "agent");
+		l.getRunProperties()
+			.put("test.cmd", "agent");
 		assertEquals(55, l.launch());
 	}
 
@@ -333,7 +341,8 @@ public class LauncherTest extends TestCase {
 		project.setProperty("-runenv", "ANSWER=84");
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTrace(true);
-		l.getRunProperties().put("test.cmd", "env");
+		l.getRunProperties()
+			.put("test.cmd", "env");
 		assertEquals(84, l.launch());
 	}
 
@@ -366,7 +375,8 @@ public class LauncherTest extends TestCase {
 		};
 
 		t.start();
-		l.getRunProperties().put("test.cmd", "timeout");
+		l.getRunProperties()
+			.put("test.cmd", "timeout");
 		l.launch();
 		assertNoProperties(target);
 	}
@@ -383,7 +393,8 @@ public class LauncherTest extends TestCase {
 			return;
 
 		for (File file : target.listFiles()) {
-			if (file.getAbsolutePath().startsWith("launch")) {
+			if (file.getAbsolutePath()
+				.startsWith("launch")) {
 				fail("There is a launch file in the target directory: " + file);
 			}
 		}
@@ -393,7 +404,8 @@ public class LauncherTest extends TestCase {
 		Project project = getProject();
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTrace(true);
-		l.getRunProperties().put("test.cmd", "exit");
+		l.getRunProperties()
+			.put("test.cmd", "exit");
 		// assertTrue(project.check());
 		assertEquals(42, l.launch());
 	}
@@ -428,35 +440,36 @@ public class LauncherTest extends TestCase {
 	 * @throws Exception
 	 */
 	// public static void testWorkspaceWithSpace() throws Exception {
-		// // reuse built .class files from the demo project.
-		// String base = new
-		// File("").getAbsoluteFile().getParentFile().getAbsolutePath();
-		// File ws = IO.getFile("tmp/ space ");
-		// try {
-		// IO.delete(ws);
-		// ws.mkdirs();
-		// IO.copy( IO.getFile("../demo"), IO.getFile(ws, "demo"));
-		// IO.getFile(ws, "cnf").mkdirs();
-		// IO.copy( IO.getFile("../cnf"), IO.getFile(ws, "cnf"));
-		// Workspace wp = new Workspace(ws);
-		//
-		// Project p = wp.getProject("demo");
-		// p.clear();
-		// ProjectLauncher l = p.getProjectLauncher();
-		// l.setTrace(true);
-		// l.getRunProperties().put("test.cmd", "exit");
-		// assertEquals(42, l.launch());
-		// }
-		// finally {
-		// IO.delete(ws);
-		// }
+	// // reuse built .class files from the demo project.
+	// String base = new
+	// File("").getAbsoluteFile().getParentFile().getAbsolutePath();
+	// File ws = IO.getFile("tmp/ space ");
+	// try {
+	// IO.delete(ws);
+	// ws.mkdirs();
+	// IO.copy( IO.getFile("../demo"), IO.getFile(ws, "demo"));
+	// IO.getFile(ws, "cnf").mkdirs();
+	// IO.copy( IO.getFile("../cnf"), IO.getFile(ws, "cnf"));
+	// Workspace wp = new Workspace(ws);
+	//
+	// Project p = wp.getProject("demo");
+	// p.clear();
+	// ProjectLauncher l = p.getProjectLauncher();
+	// l.setTrace(true);
+	// l.getRunProperties().put("test.cmd", "exit");
+	// assertEquals(42, l.launch());
+	// }
+	// finally {
+	// IO.delete(ws);
+	// }
 	// }
 
 	/**
 	 * @throws Exception
 	 */
 	static Project getProject() throws Exception {
-		workspace = Workspace.getWorkspace(new File("").getAbsoluteFile().getParentFile());
+		workspace = Workspace.getWorkspace(new File("").getAbsoluteFile()
+			.getParentFile());
 		workspace.clear();
 		project = workspace.getProject("demo");
 		project.setTrace(true);
@@ -497,7 +510,8 @@ public class LauncherTest extends TestCase {
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTimeout(100, TimeUnit.MILLISECONDS);
 		l.setTrace(false);
-		l.getRunProperties().put("test.cmd", "timeout");
+		l.getRunProperties()
+			.put("test.cmd", "timeout");
 		assertEquals(ProjectLauncher.TIMEDOUT, l.launch());
 	}
 
@@ -537,7 +551,8 @@ public class LauncherTest extends TestCase {
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTimeout(15000, TimeUnit.MILLISECONDS);
 		l.setTrace(true);
-		l.getRunProperties().put("test.cmd", cmd);
+		l.getRunProperties()
+			.put("test.cmd", cmd);
 		assertEquals(rv, l.launch());
 	}
 
@@ -546,7 +561,8 @@ public class LauncherTest extends TestCase {
 		project.clear();
 		project.setProperty(Constants.RUNTRACE, "true");
 
-		String mandatorynoversion = IO.getFile("jar/mandatorynoversion.jar").getAbsolutePath();
+		String mandatorynoversion = IO.getFile("jar/mandatorynoversion.jar")
+			.getAbsolutePath();
 		String runbundles = project.getProperty(Constants.RUNBUNDLES);
 		project.setProperty(Constants.RUNBUNDLES, runbundles + "," + mandatorynoversion + ";version=file");
 		ProjectTester tester = project.getProjectTester();

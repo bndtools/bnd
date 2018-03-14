@@ -82,13 +82,13 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 			doLog(level, toString(sr) + message, exception);
 		}
 
-		private String toString(ServiceReference< ? > sr) {
+		private String toString(ServiceReference<?> sr) {
 			return "[" + sr.getProperty(org.osgi.framework.Constants.SERVICE_ID) + "] ";
 		}
 	}
 
-	private final Project					project;
-	private Map<Resource,List<Wire>>		resolution;
+	private final Project							project;
+	private Map<Resource, List<Wire>>				resolution;
 	private final ReporterLogger					log			= new ReporterLogger(0);
 	private final Resolver							resolver	= new BndResolver(new ReporterLogger(0));
 	private final ResolveProcess					resolve		= new ResolveProcess();
@@ -100,7 +100,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 		this.project = project;
 	}
 
-	public Map<Resource,List<Wire>> resolve() throws ResolutionException {
+	public Map<Resource, List<Wire>> resolve() throws ResolutionException {
 		return resolution = resolve.resolveRequired(this, project, this, resolver, cbs, log);
 	}
 
@@ -116,7 +116,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	 */
 
 	public List<Container> getRunBundles() throws Exception {
-		Map<Resource,List<Wire>> resolution = this.resolution;
+		Map<Resource, List<Wire>> resolution = this.resolution;
 		if (resolution == null) {
 			resolution = resolve();
 		}
@@ -129,8 +129,8 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 				continue;
 			}
 
-			Container bundle = project.getBundle(identity.osgi_identity(), identity.version().toString(),
-					Strategy.EXACT, null);
+			Container bundle = project.getBundle(identity.osgi_identity(), identity.version()
+				.toString(), Strategy.EXACT, null);
 			if (bundle == null) {
 				error("Bundle for %s-%s not found", identity.osgi_identity(), identity.version());
 				continue;
@@ -168,7 +168,7 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 
 	private void exists(BndrunResolveContext context, String framework, String msg) throws Exception {
 		Parameters p = new Parameters(framework, this);
-		for (Map.Entry<String,Attrs> e : p.entrySet()) {
+		for (Map.Entry<String, Attrs> e : p.entrySet()) {
 			exists(context, e.getKey(), e.getValue(), msg);
 		}
 	}
@@ -185,12 +185,14 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	}
 
 	public IdentityCapability getResource(String bsn, String version) {
-		Requirement requirement = CapReqBuilder.createBundleRequirement(bsn, version).buildSyntheticRequirement();
+		Requirement requirement = CapReqBuilder.createBundleRequirement(bsn, version)
+			.buildSyntheticRequirement();
 		List<Capability> result = getContext().findProviders(requirement);
 		if (result == null || result.isEmpty())
 			return null;
 
-		return ResourceUtils.getIdentityCapability(result.get(0).getResource());
+		return ResourceUtils.getIdentityCapability(result.get(0)
+			.getResource());
 	}
 
 }

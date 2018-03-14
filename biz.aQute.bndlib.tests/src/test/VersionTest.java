@@ -33,6 +33,7 @@ public class VersionTest extends TestCase {
 	}
 
 	void compare(String a, String b, String result) {
-		assertEquals(result, new VersionRange(a).intersect(new VersionRange(b)).toString());
+		assertEquals(result, new VersionRange(a).intersect(new VersionRange(b))
+			.toString());
 	}
 }

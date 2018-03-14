@@ -67,11 +67,11 @@ import java.util.Properties;
  */
 class ComparableVersion implements Comparable<ComparableVersion> {
 	private static final ComparableVersion	empty	= new ComparableVersion("");
-	private final String	value;
+	private final String					value;
 
-	private final String	canonical;
+	private final String					canonical;
 
-	private final ListItem	items;
+	private final ListItem					items;
 
 	private interface Item {
 		int	INTEGER_ITEM	= 0;
@@ -103,14 +103,17 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 			this.value = new BigInteger(str);
 		}
 
+		@Override
 		public int getType() {
 			return INTEGER_ITEM;
 		}
 
+		@Override
 		public boolean isNull() {
 			return BIG_INTEGER_ZERO.equals(value);
 		}
 
+		@Override
 		public int compareTo(Item item) {
 			if (item == null) {
 				return BIG_INTEGER_ZERO.equals(value) ? 0 : 1; // 1.0 == 1, 1.1
@@ -132,6 +135,7 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 			}
 		}
 
+		@Override
 		public String toString() {
 			return value.toString();
 		}
@@ -182,10 +186,12 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 			this.value = ALIASES.getProperty(value, value);
 		}
 
+		@Override
 		public int getType() {
 			return STRING_ITEM;
 		}
 
+		@Override
 		public boolean isNull() {
 			return (comparableQualifier(value).compareTo(RELEASE_VERSION_INDEX) == 0);
 		}
@@ -208,6 +214,7 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 			return i == -1 ? (_QUALIFIERS.size() + "-" + qualifier) : String.valueOf(i);
 		}
 
+		@Override
 		public int compareTo(Item item) {
 			if (item == null) {
 				// 1-rc < 1, 1-ga > 1
@@ -228,6 +235,7 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 			}
 		}
 
+		@Override
 		public String toString() {
 			return value;
 		}
@@ -243,10 +251,12 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 
 		ListItem() {}
 
+		@Override
 		public int getType() {
 			return LIST_ITEM;
 		}
 
+		@Override
 		public boolean isNull() {
 			return (size() == 0);
 		}
@@ -264,6 +274,7 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 			}
 		}
 
+		@Override
 		public int compareTo(Item item) {
 			if (item == null) {
 				if (size() == 0) {
@@ -303,6 +314,7 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 			}
 		}
 
+		@Override
 		public String toString() {
 			StringBuilder buffer = new StringBuilder();
 			for (Item item : this) {
@@ -397,18 +409,22 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 		return isDigit ? new IntegerItem(buf) : new StringItem(buf, false);
 	}
 
+	@Override
 	public int compareTo(ComparableVersion o) {
 		return items.compareTo(o.items);
 	}
 
+	@Override
 	public String toString() {
 		return value;
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		return (o instanceof ComparableVersion) && canonical.equals(((ComparableVersion) o).canonical);
 	}
 
+	@Override
 	public int hashCode() {
 		return canonical.hashCode();
 	}

@@ -10,6 +10,7 @@ import aQute.bnd.service.AnalyzerPlugin;
 
 public class XMLTypeProcessor implements AnalyzerPlugin {
 
+	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		List<XMLType> types = getTypes(analyzer);
 		for (XMLType type : types) {

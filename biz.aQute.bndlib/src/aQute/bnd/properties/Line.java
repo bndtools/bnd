@@ -42,6 +42,7 @@ final class Line implements IRegion {
 	/*
 	 * @see org.eclipse.jface.text.IRegion#getOffset()
 	 */
+	@Override
 	public int getOffset() {
 		return offset;
 	}
@@ -49,6 +50,7 @@ final class Line implements IRegion {
 	/*
 	 * @see org.eclipse.jface.text.IRegion#getLength()
 	 */
+	@Override
 	public int getLength() {
 		return length;
 	}

@@ -6,10 +6,11 @@ package aQute.bnd.build.model.conversions;
  * 
  * @author aqute
  */
-public class NewlineEscapedStringFormatter implements Converter<String,String> {
+public class NewlineEscapedStringFormatter implements Converter<String, String> {
 
 	private static final String CONTINUE_STRING = "\\\n\t";
 
+	@Override
 	public String convert(String input) throws IllegalArgumentException {
 		if (input == null)
 			return null;
@@ -23,7 +24,8 @@ public class NewlineEscapedStringFormatter implements Converter<String,String> {
 					break;
 
 				case '\n' :
-					result.append("\\n").append(CONTINUE_STRING);
+					result.append("\\n")
+						.append(CONTINUE_STRING);
 					pos = 0;
 					break;
 

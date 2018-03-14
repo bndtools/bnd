@@ -21,7 +21,11 @@ public interface ResourceRepository {
 	String FILENAME = "repo.json";
 
 	enum TYPE {
-		ADD, REMOVE, START_DOWNLOAD, END_DOWNLOAD, ERROR
+		ADD,
+		REMOVE,
+		START_DOWNLOAD,
+		END_DOWNLOAD,
+		ERROR
 	}
 
 	class ResourceRepositoryEvent {
@@ -48,7 +52,7 @@ public interface ResourceRepository {
 	 *            {@link ResourceDescriptor}
 	 * @return an immutable list of resource descriptors
 	 */
-	List< ? extends ResourceDescriptor> filter(String repository, String filter) throws Exception;
+	List<? extends ResourceDescriptor> filter(String repository, String filter) throws Exception;
 
 	File getResource(byte[] id, RepositoryPlugin.DownloadListener... listeners) throws Exception;
 

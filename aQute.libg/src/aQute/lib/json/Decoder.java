@@ -20,12 +20,13 @@ import java.util.zip.InflaterInputStream;
 
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
+
 public class Decoder implements Closeable {
 	final JSONCodec		codec;
 	Reader				reader;
 	int					current;
 	MessageDigest		digest;
-	Map<String,Object>	extra;
+	Map<String, Object>	extra;
 	Charset				encoding	= UTF_8;
 
 	boolean				strict;
@@ -183,11 +184,12 @@ public class Decoder implements Closeable {
 		return c < 0;
 	}
 
+	@Override
 	public void close() throws IOException {
 		reader.close();
 	}
 
-	public Map<String,Object> getExtra() {
+	public Map<String, Object> getExtra() {
 		if (extra == null)
 			extra = new HashMap<>();
 		return extra;

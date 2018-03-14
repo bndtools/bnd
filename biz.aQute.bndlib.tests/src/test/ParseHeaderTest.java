@@ -19,14 +19,13 @@ public class ParseHeaderTest extends TestCase {
 
 	public void testTyped() {
 		Parameters p = new Parameters("a;a:Long=1;b:Double=3.2;c:String=abc;d:Version=1"
-				+ ";e:List<Long>='1,2,3';f:List<Double>='1.0,1.1,1.2';g:List<String>='abc,def,ghi';h:List<Version>='1.0.1,1.0.2'");
+			+ ";e:List<Long>='1,2,3';f:List<Double>='1.0,1.1,1.2';g:List<String>='abc,def,ghi';h:List<Version>='1.0.1,1.0.2'");
 
 		String s = p.toString();
 		System.out.println(s);
-		assertEquals(
-			"a;a:Long=1;b:Double=\"3.2\";c=abc;d:Version=1;"
-						+ "e:List<Long>=\"1,2,3\";f:List<Double>=\"1.0,1.1,1.2\";g:List<String>=\"abc,def,ghi\";h:List<Version>=\"1.0.1,1.0.2\"",
-				s);
+		assertEquals("a;a:Long=1;b:Double=\"3.2\";c=abc;d:Version=1;"
+			+ "e:List<Long>=\"1,2,3\";f:List<Double>=\"1.0,1.1,1.2\";g:List<String>=\"abc,def,ghi\";h:List<Version>=\"1.0.1,1.0.2\"",
+			s);
 
 		Attrs attrs = p.get("a");
 		assertNotNull(attrs);
@@ -63,9 +62,9 @@ public class ParseHeaderTest extends TestCase {
 			// It should be string.list2:List="a\"quote,a\,comma, aSpace
 			// ,\"start,\,start,end\",end\," (not handling escape of comma)
 			Parameters pp = new Parameters(
-					"a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"");
+				"a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"");
 			assertEquals("a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"",
-					pp.toString());
+				pp.toString());
 		}
 
 		{
@@ -76,7 +75,7 @@ public class ParseHeaderTest extends TestCase {
 	}
 
 	public void testPropertiesSimple() {
-		Map<String,String> p = OSGiHeader.parseProperties("a=1, b=\"3   3\", c=c");
+		Map<String, String> p = OSGiHeader.parseProperties("a=1, b=\"3   3\", c=c");
 		assertEquals("c", p.get("c"));
 		assertEquals("1", p.get("a"));
 		assertEquals("3   3", p.get("b"));
@@ -92,7 +91,7 @@ public class ParseHeaderTest extends TestCase {
 	 * work: -runproperties: osgi.console=,\ osgi.service.http.port=8180
 	 */
 	public void testUnfinishedProperties() {
-		Map<String,String> p = OSGiHeader.parseProperties("osgi.console");
+		Map<String, String> p = OSGiHeader.parseProperties("osgi.console");
 		assertEquals("", p.get("osgi.console"));
 		p = OSGiHeader.parseProperties("osgi.console=");
 		assertEquals("", p.get("osgi.console"));
@@ -110,44 +109,44 @@ public class ParseHeaderTest extends TestCase {
 
 	public void testClauseName() {
 		assertNames("a,b,c;", new String[] {
-				"a", "b", "c"
+			"a", "b", "c"
 		});
 		assertNames("a,b,c", new String[] {
-				"a", "b", "c"
+			"a", "b", "c"
 		});
 		assertNames("a;x=0,b;x=0,c;x=0", new String[] {
-				"a", "b", "c"
+			"a", "b", "c"
 		});
 		assertNames("a;b;c;x=0", new String[] {
-				"a", "b", "c"
+			"a", "b", "c"
 		});
 		assertNames(",", new String[] {}, null, "Empty clause, usually caused");
 		assertNames("a;a,b", new String[] {
-				"a", "a~", "b"
+			"a", "a~", "b"
 		}, null, "Duplicate name a used in header");
 		assertNames("a;x=0;b", new String[] {
-				"a", "b"
+			"a", "b"
 		}, "Header contains name field after attribute or directive", null);
 		assertNames("a;x=0;x=0,b", new String[] {
-				"a", "b"
+			"a", "b"
 		}, null, "Duplicate attribute/directive name");
 		assertNames("a;;;,b", new String[] {
-				"a", "b"
+			"a", "b"
 		});
 		assertNames(",,a,,", new String[] {
-				"a"
+			"a"
 		}, null, "Empty clause, usually caused by repeating");
 		assertNames(",a", new String[] {
-				"a"
+			"a"
 		}, null, "Empty clause, usually caused");
 		assertNames(",a,b,c,", new String[] {
-				"a", "b", "c"
+			"a", "b", "c"
 		}, null, "Empty clause, usually caused");
 		assertNames("a,b,c,", new String[] {
-				"a", "b", "c"
+			"a", "b", "c"
 		}, null, "Empty clause, usually caused");
 		assertNames("a,b,,c", new String[] {
-				"a", "b", "c"
+			"a", "b", "c"
 		}, null, "Empty clause, usually caused");
 	}
 
@@ -165,17 +164,24 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals(keys.length, map.size());
 		if (expectedError != null) {
 			System.err.println(p.getErrors());
-			assertTrue(p.getErrors().size() > 0);
-			assertTrue(p.getErrors().get(0).contains(expectedError));
+			assertTrue(p.getErrors()
+				.size() > 0);
+			assertTrue(p.getErrors()
+				.get(0)
+				.contains(expectedError));
 		} else
-			assertEquals(0, p.getErrors().size());
+			assertEquals(0, p.getErrors()
+				.size());
 		if (expectedWarning != null) {
 			System.err.println(p.getWarnings());
-			assertTrue(p.getWarnings().size() > 0);
-			String w = p.getWarnings().get(0);
+			assertTrue(p.getWarnings()
+				.size() > 0);
+			String w = p.getWarnings()
+				.get(0);
 			assertTrue(w.contains(expectedWarning));
 		} else
-			assertEquals(0, p.getWarnings().size());
+			assertEquals(0, p.getWarnings()
+				.size());
 	}
 
 	public void testSimple() {
@@ -183,15 +189,15 @@ public class ParseHeaderTest extends TestCase {
 		Parameters map = Processor.parseHeader(s, null);
 		assertEquals(5, map.size());
 
-		Map<String,String> a = map.get("a");
+		Map<String, String> a = map.get("a");
 		assertEquals("a1", a.get("a"));
 		assertEquals("a2", a.get("b"));
 		assertEquals("a3", a.get("c"));
 
-		Map<String,String> d = map.get("d");
+		Map<String, String> d = map.get("d");
 		assertEquals("x1", d.get("a"));
 
-		Map<String,String> e = map.get("e");
+		Map<String, String> e = map.get("e");
 		assertEquals(e, d);
 
 		System.err.println(map);

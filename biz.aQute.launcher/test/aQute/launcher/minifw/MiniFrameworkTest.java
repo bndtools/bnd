@@ -13,9 +13,12 @@ public class MiniFrameworkTest extends TestCase {
 	public static void testSimple() throws Exception {
 		Properties properties = new Properties();
 		MiniFramework framework = new MiniFramework(properties);
-		URL url = new File("../demo/generated/demo.jar").getCanonicalFile().toURI().toURL();
+		URL url = new File("../demo/generated/demo.jar").getCanonicalFile()
+			.toURI()
+			.toURL();
 
-		url.openStream().close();
+		url.openStream()
+			.close();
 		framework.init();
 
 		Bundle b = framework.installBundle("reference:" + url.toExternalForm());
@@ -25,7 +28,7 @@ public class MiniFrameworkTest extends TestCase {
 		assertNotNull(bundles);
 		assertEquals(2, bundles.length);
 
-		Class< ? > c = b.loadClass("test.TestActivator");
+		Class<?> c = b.loadClass("test.TestActivator");
 		assertNotNull(c);
 
 	}

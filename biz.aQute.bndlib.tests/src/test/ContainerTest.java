@@ -13,6 +13,7 @@ import junit.framework.TestCase;
 public class ContainerTest extends TestCase {
 	File tmp = IO.getFile("generated/tmp");
 
+	@Override
 	public void setUp() {
 		IO.delete(tmp);
 		tmp.mkdirs();
@@ -28,7 +29,8 @@ public class ContainerTest extends TestCase {
 			b.build();
 			assertTrue(b.check());
 			File testjar = IO.getFile(tmp, "test.jar");
-			b.getJar().write(testjar);
+			b.getJar()
+				.write(testjar);
 
 			Attrs attrs = new Attrs();
 			attrs.put("expand-bcp", "true");
@@ -38,7 +40,8 @@ public class ContainerTest extends TestCase {
 
 			assertEquals(2, files.size());
 
-			assertEquals(files.get(0).getCanonicalFile(), testjar.getCanonicalFile());
+			assertEquals(files.get(0)
+				.getCanonicalFile(), testjar.getCanonicalFile());
 		}
 	}
 }

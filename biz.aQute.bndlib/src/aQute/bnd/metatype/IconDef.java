@@ -14,7 +14,8 @@ public class IconDef {
 	}
 
 	Tag getTag() {
-		Tag icon = new Tag("Icon").addAttribute("resource", resource).addAttribute("size", size);
+		Tag icon = new Tag("Icon").addAttribute("resource", resource)
+			.addAttribute("size", size);
 		return icon;
 	}
 

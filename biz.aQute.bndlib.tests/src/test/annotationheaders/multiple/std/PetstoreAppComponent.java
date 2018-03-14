@@ -13,4 +13,3 @@ import org.osgi.annotation.bundle.Requirement;
 public class PetstoreAppComponent {
 	// ..
 }
-

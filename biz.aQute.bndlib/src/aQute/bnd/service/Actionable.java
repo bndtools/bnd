@@ -21,7 +21,7 @@ public interface Actionable {
 	 * @return A Map with the actions or null if no actions are available.
 	 * @throws Exception
 	 */
-	Map<String,Runnable> actions(Object... target) throws Exception;
+	Map<String, Runnable> actions(Object... target) throws Exception;
 
 	/**
 	 * Return a tooltip for the given target or the encompassing entity if null

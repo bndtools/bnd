@@ -15,7 +15,7 @@ public class ExtensionDef {
 
 	private final XMLAttributeFinder					finder;
 
-	private final List<Pair<XMLAttribute,Annotation>>	attributes	= new ArrayList<>();
+	private final List<Pair<XMLAttribute, Annotation>>	attributes	= new ArrayList<>();
 
 	public ExtensionDef(XMLAttributeFinder finder) {
 		this.finder = finder;
@@ -26,8 +26,8 @@ public class ExtensionDef {
 	}
 
 	public void addNamespaces(Namespaces namespaces, String docNS) {
-		for (Iterator<Pair<XMLAttribute,Annotation>> i = attributes.iterator(); i.hasNext();) {
-			Pair<XMLAttribute,Annotation> p = i.next();
+		for (Iterator<Pair<XMLAttribute, Annotation>> i = attributes.iterator(); i.hasNext();) {
+			Pair<XMLAttribute, Annotation> p = i.next();
 			XMLAttribute xmlAttr = p.getFirst();
 			if (matches(xmlAttr, docNS))
 				namespaces.registerNamespace(xmlAttr.prefix(), xmlAttr.namespace());
@@ -59,20 +59,22 @@ public class ExtensionDef {
 	// non-matching attributes have already been removed
 	public void addAttributes(Tag tag, Namespaces namespaces) {
 		if (namespaces != null) {
-			for (Pair<XMLAttribute,Annotation> entry : attributes) {
+			for (Pair<XMLAttribute, Annotation> entry : attributes) {
 				XMLAttribute xmlAttribute = entry.getFirst();
 				String prefix = namespaces.getPrefix(xmlAttribute.namespace());
 				Annotation a = entry.getSecond();
-				Map<String,String> props = finder.getDefaults(a);
+				Map<String, String> props = finder.getDefaults(a);
 				for (String key : a.keySet()) {
 					Object obj = a.get(key);
 					String value;
-					if (obj.getClass().isArray()) {
+					if (obj.getClass()
+						.isArray()) {
 						StringBuilder sb = new StringBuilder();
 						String sep = "";
 						for (int i = 0; i < Array.getLength(obj); i++) {
 							Object el = Array.get(obj, i);
-							sb.append(sep).append(String.valueOf(el));
+							sb.append(sep)
+								.append(String.valueOf(el));
 							sep = " ";
 						}
 						value = sb.toString();
@@ -82,7 +84,7 @@ public class ExtensionDef {
 					props.put(key, value);
 				}
 				String[] mapping = xmlAttribute.mapping();
-				for (Map.Entry<String,String> prop : props.entrySet()) {
+				for (Map.Entry<String, String> prop : props.entrySet()) {
 					String key = prop.getKey();
 					if (mapping != null && mapping.length > 0) {
 						String match = key + "=";

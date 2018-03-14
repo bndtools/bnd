@@ -18,7 +18,7 @@ public class DesignateReader extends ClassDataCollector {
 
 	private Analyzer					analyzer;
 	private Clazz						clazz;
-	private Map<TypeRef,OCDDef>			classToOCDMap;
+	private Map<TypeRef, OCDDef>		classToOCDMap;
 
 	private String[]					pids;
 	private String						pid;
@@ -26,15 +26,15 @@ public class DesignateReader extends ClassDataCollector {
 	private final XMLAttributeFinder	finder;
 	private DesignateDef				def;
 
-	DesignateReader(Analyzer analyzer, Clazz clazz, Map<TypeRef,OCDDef> classToOCDMap, XMLAttributeFinder finder) {
+	DesignateReader(Analyzer analyzer, Clazz clazz, Map<TypeRef, OCDDef> classToOCDMap, XMLAttributeFinder finder) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
 		this.classToOCDMap = classToOCDMap;
 		this.finder = finder;
 	}
 
-	static DesignateDef getDesignate(Clazz c, Analyzer analyzer, Map<TypeRef,OCDDef> classToOCDMap,
-			XMLAttributeFinder finder) throws Exception {
+	static DesignateDef getDesignate(Clazz c, Analyzer analyzer, Map<TypeRef, OCDDef> classToOCDMap,
+		XMLAttributeFinder finder) throws Exception {
 		DesignateReader r = new DesignateReader(analyzer, c, classToOCDMap, finder);
 		return r.getDef();
 	}
@@ -44,8 +44,10 @@ public class DesignateReader extends ClassDataCollector {
 		if (pid != null && designate != null) {
 			if (pids != null && pids.length > 1) {
 				analyzer.error(
-						"DS Component %s specifies multiple pids %s, and a Designate which requires exactly one pid",
-						clazz.getClassName().getFQN(), Arrays.asList(pids));
+					"DS Component %s specifies multiple pids %s, and a Designate which requires exactly one pid",
+					clazz.getClassName()
+						.getFQN(),
+					Arrays.asList(pids));
 				return null;
 			}
 			TypeRef ocdClass = designate.get("ocd");
@@ -53,7 +55,9 @@ public class DesignateReader extends ClassDataCollector {
 			OCDDef ocd = classToOCDMap.get(ocdClass);
 			if (ocd == null) {
 				analyzer.error("DS Component %s specifies ocd class %s which cannot be found; known classes %s",
-						clazz.getClassName().getFQN(), ocdClass, classToOCDMap.keySet());
+					clazz.getClassName()
+						.getFQN(),
+					ocdClass, classToOCDMap.keySet());
 				return null;
 			}
 			String id = ocd.id;
@@ -90,12 +94,16 @@ public class DesignateReader extends ClassDataCollector {
 	}
 
 	void doComponent(Annotation a, Component c) {
-		pids = a.keySet().contains("configurationPid") ? c.configurationPid() : null;
+		pids = a.keySet()
+			.contains("configurationPid") ? c.configurationPid() : null;
 		if (pids != null) {
 			pid = pids[0];
 		}
 		if (pids == null || "$".equals(pid)) {
-			pid = a.keySet().contains("name") ? c.name() : clazz.getClassName().getFQN();
+			pid = a.keySet()
+				.contains("name") ? c.name()
+					: clazz.getClassName()
+						.getFQN();
 		}
 	}
 

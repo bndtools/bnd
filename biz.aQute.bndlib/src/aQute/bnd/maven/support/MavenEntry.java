@@ -29,7 +29,7 @@ public class MavenEntry implements Closeable {
 	final File					dir;
 	final String				path;
 	final DirectoryLock			lock;
-	final Map<URI,CachedPom>	poms	= new HashMap<>();
+	final Map<URI, CachedPom>	poms	= new HashMap<>();
 	final File					pomFile;
 	final File					artifactFile;
 	final String				pomPath;
@@ -51,7 +51,8 @@ public class MavenEntry implements Closeable {
 		this.path = path;
 		this.pomPath = path + ".pom";
 		this.artifactPath = path + ".jar";
-		this.dir = IO.getFile(maven.repository, path).getParentFile();
+		this.dir = IO.getFile(maven.repository, path)
+			.getParentFile();
 		try {
 			IO.mkdirs(this.dir);
 		} catch (IOException e) {
@@ -122,6 +123,7 @@ public class MavenEntry implements Closeable {
 						if (verify(url, pomPath)) {
 							artifact = new FutureTask<>(new Callable<File>() {
 
+								@Override
 								public File call() throws Exception {
 									if (download(url, artifactPath)) {
 										verify(url, artifactPath);
@@ -292,8 +294,10 @@ public class MavenEntry implements Closeable {
 			final MessageDigest md = MessageDigest.getInstance(algorithm);
 			IO.copy(actualFile, md);
 			byte[] digest = md.digest();
-			String source = IO.collect(digestFile).toUpperCase();
-			String hex = Hex.toHexString(digest).toUpperCase();
+			String source = IO.collect(digestFile)
+				.toUpperCase();
+			String hex = Hex.toHexString(digest)
+				.toUpperCase();
 			if (source.startsWith(hex)) {
 				System.err.println("Verified ok " + actualFile + " digest " + algorithm);
 				return true;
@@ -313,6 +317,7 @@ public class MavenEntry implements Closeable {
 		return pomFile;
 	}
 
+	@Override
 	public void close() throws IOException {
 
 	}

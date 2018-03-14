@@ -10,18 +10,16 @@ import aQute.bnd.util.dto.DTO;
  * there, the profile will be activated.<br/>
  * Variable interpolation for these file specifications is limited to
  * <code>${basedir}</code>, System properties and request properties.
- * 
  */
 public class ActivationFileDTO extends DTO {
 	/**
 	 * The name of the file that must be missing to activate the profile.
 	 */
-	public String missing;
-
+	public String	missing;
 
 	/**
 	 * The name of the file that must exist to activate the profile.
 	 */
-	
-	public String exists;
+
+	public String	exists;
 }

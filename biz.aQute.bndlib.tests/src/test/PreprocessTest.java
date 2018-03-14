@@ -3,8 +3,8 @@ package test;
 import java.io.File;
 import java.util.Properties;
 
-import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
@@ -18,7 +18,7 @@ public class PreprocessTest extends TestCase {
 	 */
 	public static void testPreProcessDefaultExclusion() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Analyzer.INCLUDE_RESOURCE, "{src/test/tb1.jar}     ");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "{src/test/tb1.jar}     ");
 		b.build();
 		assertTrue(b.check());
 
@@ -42,9 +42,9 @@ public class PreprocessTest extends TestCase {
 	 */
 	public static void testPreProcessExcludeExtensionGlobal() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Analyzer.PREPROCESSMATCHERS, "!*.TXT:i,*");
-		b.setProperty(Analyzer.INCLUDE_RESOURCE,
-				"{src/test/builder-preprocess.txt},{src/test/builder-preprocess.txt2}");
+		b.setProperty(Constants.PREPROCESSMATCHERS, "!*.TXT:i,*");
+		b.setProperty(Constants.INCLUDE_RESOURCE,
+			"{src/test/builder-preprocess.txt},{src/test/builder-preprocess.txt2}");
 		b.setProperty("var", "Yes!");
 		;
 		b.build();
@@ -71,7 +71,7 @@ public class PreprocessTest extends TestCase {
 	 */
 	public static void testPreProcessExcludeExtensionLocal() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Analyzer.INCLUDE_RESOURCE, "{src/test/builder-preprocess.txt};-preprocessmatchers='!*.TXT:i,*'");
+		b.setProperty(Constants.INCLUDE_RESOURCE, "{src/test/builder-preprocess.txt};-preprocessmatchers='!*.TXT:i,*'");
 		b.setProperty("var", "Yes!");
 		;
 		b.build();
@@ -94,7 +94,7 @@ public class PreprocessTest extends TestCase {
 	 */
 	public static void testPreProcess() throws Exception {
 		Properties base = new Properties();
-		base.put(Analyzer.INCLUDE_RESOURCE, "{src/test/top.mf}     ");
+		base.put(Constants.INCLUDE_RESOURCE, "{src/test/top.mf}     ");
 		Builder analyzer = new Builder();
 		analyzer.setProperties(base);
 		analyzer.build();

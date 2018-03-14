@@ -37,7 +37,7 @@ public class OCDDef extends ExtensionDef {
 			ad.prepare(this);
 			if (!adIds.add(ad.id)) {
 				analyzer.error("OCD for %s.%s has duplicate AD id %s due to colliding munged element names", id, name,
-						ad.id);
+					ad.id);
 			}
 		}
 	}

@@ -1,4 +1,3 @@
 package test.api;
 
-public class A {
-}
+public class A {}

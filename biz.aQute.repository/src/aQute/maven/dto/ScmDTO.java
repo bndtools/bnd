@@ -7,7 +7,6 @@ import aQute.bnd.util.dto.DTO;
 /**
  * The <code>&lt;scm&gt;</code> element contains informations required to the
  * SCM (Source Control Management) of the project.
- *
  */
 public class ScmDTO extends DTO {
 	/**
@@ -18,26 +17,24 @@ public class ScmDTO extends DTO {
 	 * supported SCMs</a>. This connection is read-only. <br />
 	 * <b>Default value is</b>: parent value [+ path adjustment] + artifactId
 	 */
-	public String connection;
+	public String	connection;
 
 	/**
 	 * Just like <code>connection</code>, but for developers, i.e. this scm
 	 * connection will not be read only. <br />
 	 * <b>Default value is</b>: parent value [+ path adjustment] + artifactId
-	 * 
 	 */
-	public String developerConnection;
+	public String	developerConnection;
 
 	/**
 	 * The tag of current code. By default, it's set to HEAD during development.
 	 */
-	public String tag = "HEAD";
+	public String	tag	= "HEAD";
 
 	/**
 	 * The URL to the project's browsable SCM repository, such as ViewVC or
 	 * Fisheye. <br />
 	 * <b>Default value is</b>: parent value [+ path adjustment] + artifactId
-	 * 
 	 */
-	public URI url;
+	public URI		url;
 }

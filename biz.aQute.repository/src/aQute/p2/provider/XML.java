@@ -53,12 +53,12 @@ public class XML {
 		return (NodeList) xp.evaluate(path, root, XPathConstants.NODESET);
 	}
 
-	Map<String,String> getProperties(String path) throws Exception {
+	Map<String, String> getProperties(String path) throws Exception {
 		return getProperties(document, path);
 	}
 
-	Map<String,String> getProperties(Node node, String path) throws Exception {
-		Map<String,String> properties = new HashMap<>();
+	Map<String, String> getProperties(Node node, String path) throws Exception {
+		Map<String, String> properties = new HashMap<>();
 		NodeList propertyNodes = getNodes(node, path);
 		for (int i = 0; i < propertyNodes.getLength(); i++) {
 			Node propertyNode = propertyNodes.item(i);
@@ -70,7 +70,8 @@ public class XML {
 	}
 
 	<T> T getFromType(Node item, Class<T> clazz) throws Exception {
-		T a = clazz.getConstructor().newInstance();
+		T a = clazz.getConstructor()
+			.newInstance();
 		for (Field f : clazz.getDeclaredFields()) {
 			String s = getAttribute(item, f.getName());
 			if (s != null) {

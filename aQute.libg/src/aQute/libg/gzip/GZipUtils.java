@@ -52,7 +52,8 @@ public class GZipUtils {
 		}
 		if (b < -1 || b > 255) {
 			// Report on this.in, not argument in; see read{Header, Trailer}.
-			throw new IOException(in.getClass().getName() + ".read() returned value out of range -1..255: " + b);
+			throw new IOException(in.getClass()
+				.getName() + ".read() returned value out of range -1..255: " + b);
 		}
 		return b;
 	}

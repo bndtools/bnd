@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class UUIDHandler extends Handler {
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
 		StringHandler.string(app, object.toString());
 	}
 

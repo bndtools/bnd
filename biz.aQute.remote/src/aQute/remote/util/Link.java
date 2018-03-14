@@ -34,21 +34,21 @@ import aQute.lib.json.JSONCodec;
  * @param <R>
  */
 public class Link<L, R> extends Thread implements Closeable {
-	private static final String[]		EMPTY		= new String[] {};
-	static JSONCodec					codec		= new JSONCodec();
+	private static final String[]			EMPTY		= new String[] {};
+	static JSONCodec						codec		= new JSONCodec();
 
-	final DataInputStream				in;
-	final DataOutputStream				out;
-	final Class<R>						remoteClass;
-	final AtomicInteger					id			= new AtomicInteger(10000);
-	final ConcurrentMap<Integer,Result>	promises	= new ConcurrentHashMap<>();
-	final AtomicBoolean					quit		= new AtomicBoolean(false);
-	volatile boolean					transfer	= false;
-	private ThreadLocal<Integer>		msgid		= new ThreadLocal<>();
+	final DataInputStream					in;
+	final DataOutputStream					out;
+	final Class<R>							remoteClass;
+	final AtomicInteger						id			= new AtomicInteger(10000);
+	final ConcurrentMap<Integer, Result>	promises	= new ConcurrentHashMap<>();
+	final AtomicBoolean						quit		= new AtomicBoolean(false);
+	volatile boolean						transfer	= false;
+	private ThreadLocal<Integer>			msgid		= new ThreadLocal<>();
 
-	R									remote;
-	L									local;
-	ExecutorService						executor	= Executors.newFixedThreadPool(4);
+	R										remote;
+	L										local;
+	ExecutorService							executor	= Executors.newFixedThreadPool(4);
 
 	static class Result {
 		boolean			resolved;
@@ -82,6 +82,7 @@ public class Link<L, R> extends Thread implements Closeable {
 			start();
 	}
 
+	@Override
 	public void close() throws IOException {
 		if (quit.getAndSet(true) == true)
 			return; // already closed
@@ -110,10 +111,11 @@ public class Link<L, R> extends Thread implements Closeable {
 			return null;
 
 		if (remote == null)
-			remote = (R) Proxy.newProxyInstance(remoteClass.getClassLoader(), new Class< ? >[] {
-					remoteClass
+			remote = (R) Proxy.newProxyInstance(remoteClass.getClassLoader(), new Class<?>[] {
+				remoteClass
 			}, new InvocationHandler() {
 
+				@Override
 				public Object invoke(Object target, Method method, Object[] args) throws Throwable {
 					Object hash = new Object();
 
@@ -150,6 +152,7 @@ public class Link<L, R> extends Thread implements Closeable {
 		return remote;
 	}
 
+	@Override
 	public void run() {
 		while (!isInterrupted() && !transfer && !quit.get())
 			try {
@@ -167,6 +170,7 @@ public class Link<L, R> extends Thread implements Closeable {
 				}
 
 				Runnable r = new Runnable() {
+					@Override
 					public void run() {
 						try {
 							msgid.set(id);
@@ -200,11 +204,13 @@ public class Link<L, R> extends Thread implements Closeable {
 
 	Method getMethod(String cmd, int count) {
 
-		for (Method m : local.getClass().getMethods()) {
+		for (Method m : local.getClass()
+			.getMethods()) {
 			if (m.getDeclaringClass() == Link.class)
 				continue;
 
-			if (m.getName().equals(cmd) && m.getParameterTypes().length == count) {
+			if (m.getName()
+				.equals(cmd) && m.getParameterTypes().length == count) {
 				return m;
 			}
 		}
@@ -231,7 +237,9 @@ public class Link<L, R> extends Thread implements Closeable {
 					out.write(data);
 				} else {
 					ByteArrayOutputStream bout = new ByteArrayOutputStream();
-					codec.enc().to(bout).put(arg);
+					codec.enc()
+						.to(bout)
+						.put(arg);
 					byte[] data = bout.toByteArray();
 					out.writeInt(data.length);
 					out.write(data);
@@ -276,7 +284,9 @@ public class Link<L, R> extends Thread implements Closeable {
 							return null;
 
 						if (result.exception) {
-							String msg = codec.dec().from(result.value).get(String.class);
+							String msg = codec.dec()
+								.from(result.value)
+								.get(String.class);
 							System.out.println("Exception " + msg);
 							throw new RuntimeException(msg);
 						}
@@ -284,7 +294,9 @@ public class Link<L, R> extends Thread implements Closeable {
 						if (type == byte[].class)
 							return (T) result.value;
 
-						T value = (T) codec.dec().from(result.value).get(type);
+						T value = (T) codec.dec()
+							.from(result.value)
+							.get(type);
 						return value;
 					}
 
@@ -323,11 +335,13 @@ public class Link<L, R> extends Thread implements Closeable {
 
 			Object parameters[] = new Object[args.size()];
 			for (int i = 0; i < args.size(); i++) {
-				Class< ? > type = m.getParameterTypes()[i];
+				Class<?> type = m.getParameterTypes()[i];
 				if (type == byte[].class)
 					parameters[i] = args.get(i);
 				else {
-					parameters[i] = codec.dec().from(args.get(i)).get(m.getGenericParameterTypes()[i]);
+					parameters[i] = codec.dec()
+						.from(args.get(i))
+						.get(m.getGenericParameterTypes()[i]);
 				}
 			}
 
@@ -339,7 +353,7 @@ public class Link<L, R> extends Thread implements Closeable {
 
 				try {
 					send(id, null, new Object[] {
-							result
+						result
 					});
 				} catch (Exception e) {
 					terminate(e);
@@ -347,12 +361,12 @@ public class Link<L, R> extends Thread implements Closeable {
 				}
 			} catch (Throwable t) {
 				while (t instanceof InvocationTargetException
-						&& ((InvocationTargetException) t).getTargetException() != null)
+					&& ((InvocationTargetException) t).getTargetException() != null)
 					t = ((InvocationTargetException) t).getTargetException();
 				// t.printStackTrace();
 				try {
 					send(-id, null, new Object[] {
-							t + ""
+						t + ""
 					});
 				} catch (Exception e) {
 					terminate(e);
@@ -388,7 +402,7 @@ public class Link<L, R> extends Thread implements Closeable {
 		join();
 		if (result != null)
 			send(msgid.get(), null, new Object[] {
-					result
+				result
 			});
 		close();
 	}

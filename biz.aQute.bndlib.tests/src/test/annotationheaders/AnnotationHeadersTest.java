@@ -58,19 +58,20 @@ public class AnnotationHeadersTest extends TestCase {
 	 * then it only generates the Require.
 	 */
 
-
 	public void testMultipleManifestHeaders() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin"));
 			b.setPrivatePackage("test.annotationheaders.multiple");
 			b.build();
 			assertTrue(b.check());
-			b.getJar().getManifest().write(System.out);
-			Attributes mainAttributes = b.getJar().getManifest().getMainAttributes();
-			Parameters req = new Parameters(
-					mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
-			Parameters cap = new Parameters(
-					mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+			Parameters req = new Parameters(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			Parameters cap = new Parameters(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
 			assertTrue(cap.get("provide") != null);
 			assertTrue(req.get("require") != null);
 		}
@@ -99,9 +100,12 @@ public class AnnotationHeadersTest extends TestCase {
 			b.setPrivatePackage("test.annotationheaders.attrs.defaults");
 			b.build();
 			assertTrue(b.check());
-			b.getJar().getManifest().write(System.out);
+			b.getJar()
+				.getManifest()
+				.write(System.out);
 
-			Domain d = Domain.domain(b.getJar().getManifest());
+			Domain d = Domain.domain(b.getJar()
+				.getManifest());
 
 			Parameters rc = d.getRequireCapability();
 			assertNotNull(rc);
@@ -128,20 +132,24 @@ public class AnnotationHeadersTest extends TestCase {
 			b.build();
 			assertTrue(b.check());
 
-			Manifest m = b.getJar().getManifest();
+			Manifest m = b.getJar()
+				.getManifest();
 			m.write(System.out);
 
-			Parameters p = new Parameters(m.getMainAttributes().getValue("Provide-Capability"));
+			Parameters p = new Parameters(m.getMainAttributes()
+				.getValue("Provide-Capability"));
 			Attrs attrs = p.get("nsx");
 			assertNotNull(attrs);
 			assertEquals(Long.valueOf(3), attrs.getTyped("foo"));
 
-			p = new Parameters(m.getMainAttributes().getValue("Bundle-License"));
+			p = new Parameters(m.getMainAttributes()
+				.getValue("Bundle-License"));
 			attrs = p.get("license");
 			assertNotNull(attrs);
 			assertEquals("abc", attrs.get("foo"));
 
-			p = new Parameters(m.getMainAttributes().getValue("Require-Capability"));
+			p = new Parameters(m.getMainAttributes()
+				.getValue("Require-Capability"));
 			// namespaces must be "osgi.ee", "nsx" and "nsy" ONLY
 			assertNotNull(p.get("nsx"));
 			assertNotNull(p.get("nsy"));
@@ -250,15 +258,17 @@ public class AnnotationHeadersTest extends TestCase {
 		b.setProperty("Private-Package", "test.annotationheaders");
 		b.build();
 		assertTrue(b.check());
-		Manifest manifest = b.getJar().getManifest();
+		Manifest manifest = b.getJar()
+			.getManifest();
 		manifest.write(System.out);
-		Parameters provideWithExtraAttrs = new Parameters(
-				manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
+		Parameters provideWithExtraAttrs = new Parameters(manifest.getMainAttributes()
+			.getValue(Constants.PROVIDE_CAPABILITY));
 		Attrs attrs = provideWithExtraAttrs.get("extrattrs");
 		assertNotNull(attrs);
 		assertEquals("extrattrs=extrattrs;extra=YES", attrs.toString());
 
-		String rc = manifest.getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY);
+		String rc = manifest.getMainAttributes()
+			.getValue(Constants.REQUIRE_CAPABILITY);
 		assertNotNull(rc);
 		System.out.println(rc);
 		assertTrue(rc.contains("osgi.webresource=/google"));
@@ -269,37 +279,43 @@ public class AnnotationHeadersTest extends TestCase {
 
 		assertTrue(rc.contains(",nofilter,"));
 
-		String pc = manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY);
+		String pc = manifest.getMainAttributes()
+			.getValue(Constants.PROVIDE_CAPABILITY);
 		assertNotNull(pc);
 		System.out.println(pc);
 		assertTrue(pc.contains("x=xx"));
 
 		assertFalse(rc.contains("not.there"));
 
-		String bl = manifest.getMainAttributes().getValue(Constants.BUNDLE_LICENSE);
+		String bl = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_LICENSE);
 		assertNotNull(bl);
 		System.out.println(bl);
 		assertTrue(bl.contains("http://www.opensource.org/licenses/apache2.0.php;"));
 		assertTrue(bl.contains("MIT"));
 		assertFalse(bl.contains("GPL"));
 
-		String dv = manifest.getMainAttributes().getValue(Constants.BUNDLE_DEVELOPERS);
+		String dv = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_DEVELOPERS);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("Peter Kriens"));
 
-		dv = manifest.getMainAttributes().getValue(Constants.BUNDLE_CONTRIBUTORS);
+		dv = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_CONTRIBUTORS);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("Mieke Kriens"));
 		assertTrue(dv.contains("Thomas Kriens"));
 		assertFalse(dv.contains("Mischa Kriens"));
 
-		dv = manifest.getMainAttributes().getValue(Constants.BUNDLE_COPYRIGHT);
+		dv = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_COPYRIGHT);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("other baloney"));
-		Matcher m = Pattern.compile("([0-9]{4})").matcher(dv);
+		Matcher m = Pattern.compile("([0-9]{4})")
+			.matcher(dv);
 		assertTrue(m.find());
 		assertTrue(Integer.parseInt(m.group(1)) >= 2014);
 		assertTrue(dv.contains("v=1.2.3"));
@@ -307,13 +323,15 @@ public class AnnotationHeadersTest extends TestCase {
 		assertTrue(dv.contains("c=test.annotationheaders.AnnotationHeadersTest$C"));
 		assertTrue(dv.contains("s=AnnotationHeadersTest$C"));
 
-		dv = manifest.getMainAttributes().getValue(Constants.BUNDLE_DOCURL);
+		dv = manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_DOCURL);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("http://www.aQute.biz"));
 
-		Parameters cpr = new Parameters(manifest.getMainAttributes().getValue(Constants.BUNDLE_COPYRIGHT));
-		for (Entry<String,Attrs> e : cpr.entrySet()) {
+		Parameters cpr = new Parameters(manifest.getMainAttributes()
+			.getValue(Constants.BUNDLE_COPYRIGHT));
+		for (Entry<String, Attrs> e : cpr.entrySet()) {
 			System.out.println("cpr: " + e);
 		}
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
@@ -322,10 +340,12 @@ public class AnnotationHeadersTest extends TestCase {
 		System.out.println(s);
 		ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
 		Manifest m2 = new Manifest(bin);
-		String v = m2.getMainAttributes().getValue(Constants.BUNDLE_COPYRIGHT);
+		String v = m2.getMainAttributes()
+			.getValue(Constants.BUNDLE_COPYRIGHT);
 		assertNotNull(v);
 		assertTrue(v.contains("Hello world"));
-		assertNull(m2.getMainAttributes().getValue("Xyz"));
+		assertNull(m2.getMainAttributes()
+			.getValue("Xyz"));
 		b.close();
 	}
 

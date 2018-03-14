@@ -42,35 +42,37 @@ public class Standalone {
 		builder.setSocksMethods(usernamePasswordMethod);
 		socks5Proxy = builder.build();
 
-		socks5Proxy.getSessionManager().addSessionListener("abc", new SessionListener() {
+		socks5Proxy.getSessionManager()
+			.addSessionListener("abc", new SessionListener() {
 
-			@Override
-			public void onException(Session arg0, Exception arg1) {
-				System.err.println("Exception " + arg0 + " " + arg1);
-				arg1.printStackTrace();
-			}
+				@Override
+				public void onException(Session arg0, Exception arg1) {
+					System.err.println("Exception " + arg0 + " " + arg1);
+					arg1.printStackTrace();
+				}
 
-			@Override
-			public void onCommand(Session arg0, CommandMessage arg1) throws CloseSessionException {
-				System.err.println("Command " + arg0 + " " + arg1);
-			}
+				@Override
+				public void onCommand(Session arg0, CommandMessage arg1) throws CloseSessionException {
+					System.err.println("Command " + arg0 + " " + arg1);
+				}
 
-			@Override
-			public void onClose(Session arg0) {
-				System.err.println("Close " + arg0);
-			}
+				@Override
+				public void onClose(Session arg0) {
+					System.err.println("Close " + arg0);
+				}
 
-			@Override
-			public void onCreate(Session arg0) throws CloseSessionException {
-				System.err.println("Create " + arg0);
-			}
-		});
+				@Override
+				public void onCreate(Session arg0) throws CloseSessionException {
+					System.err.println("Create " + arg0);
+				}
+			});
 
 		socks5Proxy.start();
 	}
 
 	void createHttpProxy() {
-		HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap().withPort(9091);
+		HttpProxyServerBootstrap bootstrap = DefaultHttpProxyServer.bootstrap()
+			.withPort(9091);
 		bootstrap.withProxyAuthenticator(new ProxyAuthenticator() {
 
 			@Override

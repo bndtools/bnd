@@ -8,7 +8,7 @@ public interface Options {
 
 	CommandLine _command();
 
-	Map<String,String> _properties();
+	Map<String, String> _properties();
 
 	boolean _ok();
 

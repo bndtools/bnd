@@ -9,9 +9,10 @@ import junit.framework.TestCase;
 
 public class ProjectLaunchImplTest extends TestCase {
 
-	private Workspace ws;
+	private Workspace	ws;
 	private File		tmp;
 
+	@Override
 	protected void setUp() throws Exception {
 		tmp = new File("generated/tmp/test/" + getName());
 		tmp.mkdirs();
@@ -19,6 +20,7 @@ public class ProjectLaunchImplTest extends TestCase {
 		ws = new Workspace(tmp);
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		ws.close();
 		IO.delete(tmp);
@@ -40,8 +42,8 @@ public class ProjectLaunchImplTest extends TestCase {
 			ws.close();
 		}
 		assertEquals(
-				"osgi.native;osgi.native.osname:List<String>=\"Win7,Windows7,Windows 7\";osgi.native.osversion:Version=\"6.1\"",
-				systemCaps);
+			"osgi.native;osgi.native.osname:List<String>=\"Win7,Windows7,Windows 7\";osgi.native.osversion:Version=\"6.1\"",
+			systemCaps);
 	}
 
 	public void testCwdIsProjectBase() throws Exception {

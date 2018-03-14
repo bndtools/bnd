@@ -18,12 +18,14 @@ public class MultiURLConnectionHandler implements URLConnectionHandler {
 		this.registry = registry;
 	}
 
+	@Override
 	public void handle(URLConnection connection) throws Exception {
 		for (URLConnectionHandler h : registry.getPlugins(URLConnectionHandler.class)) {
 			h.handle(connection);
 		}
 	}
 
+	@Override
 	public boolean matches(URL url) {
 		return true;
 	}

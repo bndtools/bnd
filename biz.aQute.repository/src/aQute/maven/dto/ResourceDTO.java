@@ -5,7 +5,6 @@ import aQute.bnd.util.dto.DTO;
 /**
  * This element describes all of the classpath resources associated with a
  * project or unit tests.
- * 
  */
 public class ResourceDTO extends DTO {
 	/**
@@ -17,9 +16,8 @@ public class ResourceDTO extends DTO {
 	 * with this value: <code>org/apache/maven/messages</code>. This is not
 	 * required if you simply put the resources in that directory structure at
 	 * the source, however.
-	 * 
 	 */
-	public String targetPatg;
+	public String	targetPatg;
 
 	/**
 	 * Whether resources are filtered to replace tokens with parameterised
@@ -29,25 +27,24 @@ public class ResourceDTO extends DTO {
 	 * <code>String</code> for technical reasons, the semantic type is actually
 	 * <code>Boolean</code>. Default value is <code>false</code>.
 	 */
-	public boolean filtering = false;
+	public boolean	filtering	= false;
 
 	/**
 	 * Describe the directory where the resources are stored. The path is
 	 * relative to the POM.
 	 */
 
-	public String directory;
+	public String	directory;
 
 	/**
 	 * A list of patterns to include, e.g. <code>**&#47;*.xml</code>.
 	 */
 
-	public String[] includes;
+	public String[]	includes;
 
 	/**
 	 * A list of patterns to exclude, e.g. <code>**&#47;*.xml</code>
-	 * 
 	 */
 
-	public String[] excludes;
+	public String[]	excludes;
 }

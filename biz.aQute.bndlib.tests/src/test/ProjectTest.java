@@ -29,17 +29,19 @@ import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 @SuppressWarnings({
-		"resource", "restriction"
+	"resource", "restriction"
 })
 public class ProjectTest extends TestCase {
 	File tmp;
 
+	@Override
 	protected void setUp() {
 		tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
 		tmp.mkdirs();
 	}
 
+	@Override
 	protected void tearDown() throws Exception {
 		IO.delete(tmp);
 	}
@@ -64,7 +66,8 @@ public class ProjectTest extends TestCase {
 
 			assertTrue(Files.isSymbolicLink(files[0].toPath()));
 			Path linkedTo = Files.readSymbolicLink(files[0].toPath());
-			assertTrue(linkedTo.toString().endsWith("-0"));
+			assertTrue(linkedTo.toString()
+				.endsWith("-0"));
 
 		} finally {
 			project.clean();
@@ -135,9 +138,12 @@ public class ProjectTest extends TestCase {
 
 		List<Container> runbundles = new ArrayList<>(project.getRunbundles());
 		assertEquals(3, runbundles.size());
-		assertEquals("org.apache.felix.configadmin", runbundles.get(0).getBundleSymbolicName());
-		assertEquals("org.apache.felix.ipojo", runbundles.get(1).getBundleSymbolicName());
-		assertEquals("osgi.core", runbundles.get(2).getBundleSymbolicName());
+		assertEquals("org.apache.felix.configadmin", runbundles.get(0)
+			.getBundleSymbolicName());
+		assertEquals("org.apache.felix.ipojo", runbundles.get(1)
+			.getBundleSymbolicName());
+		assertEquals("osgi.core", runbundles.get(2)
+			.getBundleSymbolicName());
 
 		List<Container> runpath = new ArrayList<>(project.getRunpath());
 		assertEquals(3, runpath.size());
@@ -159,7 +165,8 @@ public class ProjectTest extends TestCase {
 		assertEquals(1, buildpath.size());
 		// Without repos filter we would get lowest version, i.e. 1.0.0 from the
 		// repo named "Repo".
-		assertEquals("1.1.0", buildpath.get(0).getVersion());
+		assertEquals("1.1.0", buildpath.get(0)
+			.getVersion());
 	}
 
 	public void testRepoFilterBuildPathMultiple() throws Exception {
@@ -170,7 +177,8 @@ public class ProjectTest extends TestCase {
 		ArrayList<Container> buildpath = new ArrayList<>(project.getBuildpath());
 		assertEquals(1, buildpath.size());
 		// Expect 1.2.0 from Release repo; not 1.8.8 from Repo2
-		assertEquals("1.2.0", buildpath.get(0).getVersion());
+		assertEquals("1.2.0", buildpath.get(0)
+			.getVersion());
 	}
 
 	public void testWildcardBuildPath() throws Exception {
@@ -197,11 +205,15 @@ public class ProjectTest extends TestCase {
 		ArrayList<Container> buildpath = new ArrayList<>(project.getBuildpath());
 		assertEquals(2, buildpath.size());
 
-		assertEquals(Container.TYPE.REPO, buildpath.get(0).getType());
-		assertEquals("org.apache.felix.configadmin", buildpath.get(0).getBundleSymbolicName());
+		assertEquals(Container.TYPE.REPO, buildpath.get(0)
+			.getType());
+		assertEquals("org.apache.felix.configadmin", buildpath.get(0)
+			.getBundleSymbolicName());
 
-		assertEquals(Container.TYPE.REPO, buildpath.get(1).getType());
-		assertEquals("p3", buildpath.get(1).getBundleSymbolicName());
+		assertEquals(Container.TYPE.REPO, buildpath.get(1)
+			.getType());
+		assertEquals("p3", buildpath.get(1)
+			.getBundleSymbolicName());
 	}
 
 	/**
@@ -230,8 +242,9 @@ public class ProjectTest extends TestCase {
 
 		top.setProperty("a", "${repo;org.apache.felix.configadmin;latest}");
 		System.out.println("a= '" + top.getProperty("a") + "'");
-		assertTrue(top.getProperty("a").endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar"
-				.replace('/', File.separatorChar)));
+		assertTrue(top.getProperty("a")
+			.endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar".replace('/',
+				File.separatorChar)));
 
 		top.setProperty("a", "${repo;IdoNotExist;latest}");
 		top.getProperty("a");
@@ -338,7 +351,7 @@ public class ProjectTest extends TestCase {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project top = ws.getProject("p1");
 		top.setProperty("-runbundles",
-				"org.apache.felix.configadmin;version='[1.0.1,1.0.1]',org.apache.felix.configadmin;version='[1.1.0,1.1.0]'");
+			"org.apache.felix.configadmin;version='[1.0.1,1.0.1]',org.apache.felix.configadmin;version='[1.1.0,1.1.0]'");
 		Collection<Container> runbundles = top.getRunbundles();
 		assertTrue(top.check());
 		assertNotNull(runbundles);
@@ -375,7 +388,8 @@ public class ProjectTest extends TestCase {
 		bottom.build();
 
 		long lastModified = bottom.lastModified();
-		top.getPropertiesFile().setLastModified(lastModified + 1000);
+		top.getPropertiesFile()
+			.setLastModified(lastModified + 1000);
 
 		stale(top, true);
 		stale(bottom, true);
@@ -421,7 +435,7 @@ public class ProjectTest extends TestCase {
 		System.err.println(project.getBundle("org.apache.felix.configadmin", "1.1.0", Strategy.LOWEST, null));
 
 		List<Container> bundles = project.getBundles(Strategy.LOWEST,
-				"org.apache.felix.configadmin;version=1.1.0,org.apache.felix.configadmin;version=1.1.0", "test");
+			"org.apache.felix.configadmin;version=1.1.0,org.apache.felix.configadmin;version=1.1.0", "test");
 		assertTrue(project.check("Multiple bundles with the same final URL", "Duplicate name"));
 		assertEquals(1, bundles.size());
 	}
@@ -450,20 +464,26 @@ public class ProjectTest extends TestCase {
 
 				System.err.println(Processor.join(project.getErrors(), "\n"));
 				System.err.println(Processor.join(project.getWarnings(), "\n"));
-				assertEquals(0, project.getErrors().size());
-				assertEquals(0, project.getWarnings().size());
+				assertEquals(0, project.getErrors()
+					.size());
+				assertEquals(0, project.getWarnings()
+					.size());
 				assertNotNull(files);
 				assertEquals(3, files.length);
 				for (File file : files) {
 					try (Jar jar = new Jar(file)) {
 						Manifest m = jar.getManifest();
-						assertTrue(names.contains(m.getMainAttributes().getValue("Bundle-SymbolicName")));
+						assertTrue(names.contains(m.getMainAttributes()
+							.getValue("Bundle-SymbolicName")));
 					}
 				}
 
-				assertEquals(12, project.getExports().size());
-				assertEquals(18, project.getImports().size());
-				assertEquals(12, project.getContained().size());
+				assertEquals(12, project.getExports()
+					.size());
+				assertEquals(18, project.getImports()
+					.size());
+				assertEquals(12, project.getContained()
+					.size());
 			}
 		}
 
@@ -484,8 +504,10 @@ public class ProjectTest extends TestCase {
 		System.err.println(Processor.join(project.getErrors(), "\n"));
 		System.err.println(Processor.join(project.getWarnings(), "\n"));
 
-		assertEquals(0, project.getErrors().size());
-		assertEquals(0, project.getWarnings().size());
+		assertEquals(0, project.getErrors()
+			.size());
+		assertEquals(0, project.getWarnings()
+			.size());
 		assertNotNull(files);
 		assertEquals(3, files.length);
 
@@ -493,10 +515,14 @@ public class ProjectTest extends TestCase {
 			Manifest ma = a.getManifest();
 			Manifest mb = b.getManifest();
 
-			assertEquals("base", ma.getMainAttributes().getValue("Base-Header"));
-			assertEquals("base", mb.getMainAttributes().getValue("Base-Header"));
-			assertEquals("a", ma.getMainAttributes().getValue("Sub-Header"));
-			assertEquals("b", mb.getMainAttributes().getValue("Sub-Header"));
+			assertEquals("base", ma.getMainAttributes()
+				.getValue("Base-Header"));
+			assertEquals("base", mb.getMainAttributes()
+				.getValue("Base-Header"));
+			assertEquals("a", ma.getMainAttributes()
+				.getValue("Sub-Header"));
+			assertEquals("b", mb.getMainAttributes()
+				.getValue("Sub-Header"));
 		}
 	}
 
@@ -541,17 +567,21 @@ public class ProjectTest extends TestCase {
 		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
 		Project project = ws.getProject("p2");
 		System.err.println(project.getPlugins(FileRepo.class));
-		String s = project.getReplacer().process(("${repo;libtest}"));
+		String s = project.getReplacer()
+			.process(("${repo;libtest}"));
 		System.err.println(s);
 		assertTrue(s.contains("org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.8.8"));
 		assertTrue(s.contains("org.apache.felix.ipojo" + File.separator + "org.apache.felix.ipojo-1.0.0.jar"));
 
-		s = project.getReplacer().process(("${repo;libtestxyz}"));
+		s = project.getReplacer()
+			.process(("${repo;libtestxyz}"));
 		assertTrue(s.matches(""));
 
-		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
+		s = project.getReplacer()
+			.process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
 		assertTrue(s.endsWith("org.apache.felix.configadmin-1.8.8.jar"));
-		s = project.getReplacer().process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
+		s = project.getReplacer()
+			.process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
 		assertTrue(s.endsWith("org.apache.felix.configadmin-1.0.1.jar"));
 	}
 
@@ -569,7 +599,8 @@ public class ProjectTest extends TestCase {
 	public void testBump() throws Exception {
 		Workspace ws = getWorkspace("testresources/ws");
 		Project project = ws.getProject("p1");
-		int size = project.getProperties().size();
+		int size = project.getProperties()
+			.size();
 		Version old = new Version(project.getProperty("Bundle-Version"));
 		System.err.println("Old version " + old);
 		project.bump("=+0");
@@ -578,7 +609,8 @@ public class ProjectTest extends TestCase {
 		assertEquals(old.getMajor(), newv.getMajor());
 		assertEquals(old.getMinor() + 1, newv.getMinor());
 		assertEquals(0, newv.getMicro());
-		assertEquals(size, project.getProperties().size());
+		assertEquals(size, project.getProperties()
+			.size());
 		assertEquals("sometime", newv.getQualifier());
 	}
 
@@ -720,10 +752,14 @@ public class ProjectTest extends TestCase {
 		Version newer = p.getPackageInfo("pkgb");
 		assertEquals(version, newer);
 
-		assertFalse(p.getFile("a/pkgb/package-info.java").isFile());
-		assertFalse(p.getFile("a/pkgb/packageinfo").isFile());
-		assertFalse(p.getFile("b/pkgb/package-info.java").isFile());
-		assertTrue(p.getFile("b/pkgb/packageinfo").isFile());
+		assertFalse(p.getFile("a/pkgb/package-info.java")
+			.isFile());
+		assertFalse(p.getFile("a/pkgb/packageinfo")
+			.isFile());
+		assertFalse(p.getFile("b/pkgb/package-info.java")
+			.isFile());
+		assertTrue(p.getFile("b/pkgb/packageinfo")
+			.isFile());
 	}
 
 	/*
@@ -789,7 +825,7 @@ public class ProjectTest extends TestCase {
 	}
 
 	private void checkPackageInfoFiles(Project project, String packageName, boolean expectPackageInfo,
-			boolean expectPackageInfoJava) throws Exception {
+		boolean expectPackageInfoJava) throws Exception {
 
 		File pkgInfo = project.getFile("src/" + packageName.replace('.', '/') + "/packageinfo");
 		File pkgInfoJava = project.getFile("src/" + packageName.replace('.', '/') + "/package-info.java");
@@ -831,8 +867,10 @@ public class ProjectTest extends TestCase {
 		// We expect p1 to be a single project (no sub builders)
 		//
 		try (ProjectBuilder pb = top.getBuilder(null)) {
-			assertEquals("p1 must be singleton", 1, pb.getSubBuilders().size());
-			Builder builder = pb.getSubBuilders().get(0);
+			assertEquals("p1 must be singleton", 1, pb.getSubBuilders()
+				.size());
+			Builder builder = pb.getSubBuilders()
+				.get(0);
 			assertEquals("p1 must be singleton", "p1", builder.getBsn());
 
 			// Check the default bsn.jar form
@@ -843,33 +881,33 @@ public class ProjectTest extends TestCase {
 			// Add the version to the filename
 			top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
 			assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
-					top.getOutputFile(builder.getBsn(), builder.getVersion()));
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
 			top.setProperty("Bundle-Version", "1.260.0.SNAPSHOT");
 			assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
-					top.getOutputFile(builder.getBsn(), builder.getVersion()));
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
 			top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
 			assertEquals(new File(top.getTarget(), "p1-1.260.0-SNAPSHOT.jar"),
-					top.getOutputFile(builder.getBsn(), builder.getVersion()));
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
 			top.setProperty("Bundle-Version", "1.260.0.NOTSNAPSHOT");
 			top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
 			assertEquals(new File(top.getTarget(), "p1-1.260.0.NOTSNAPSHOT.jar"),
-					top.getOutputFile(builder.getBsn(), builder.getVersion()));
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
 			top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
 			assertEquals(new File(top.getTarget(), "p1-1.260.0.jar"),
-					top.getOutputFile(builder.getBsn(), builder.getVersion()));
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
 			top.setProperty("Bundle-Version", "42");
 			top.setProperty("-outputmask", "${@bsn}-${version;===S;${@version}}.jar");
 			assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
-					top.getOutputFile(builder.getBsn(), builder.getVersion()));
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 
 			top.setProperty("-outputmask", "${@bsn}-${version;===s;${@version}}.jar");
 			assertEquals(new File(top.getTarget(), "p1-42.0.0.jar"),
-					top.getOutputFile(builder.getBsn(), builder.getVersion()));
+				top.getOutputFile(builder.getBsn(), builder.getVersion()));
 		}
 	}
 
@@ -910,11 +948,14 @@ public class ProjectTest extends TestCase {
 		Project project = ws.getProject("p1");
 		assertNotNull(project);
 		project.setProperty("-buildpath",
-				"tmp; version=hash; hash=7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
+			"tmp; version=hash; hash=7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
 
 		ArrayList<Container> buildpath = new ArrayList<>(project.getBuildpath());
 		assertEquals(1, buildpath.size());
-		assertEquals("bar", buildpath.get(0).getManifest().getMainAttributes().getValue("Prints"));
+		assertEquals("bar", buildpath.get(0)
+			.getManifest()
+			.getMainAttributes()
+			.getValue("Prints"));
 	}
 
 	public void testHashVersionWithAlgorithm() throws Exception {
@@ -922,11 +963,14 @@ public class ProjectTest extends TestCase {
 		Project project = ws.getProject("p1");
 		assertNotNull(project);
 		project.setProperty("-buildpath",
-				"tmp; version=hash; hash=SHA-256:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
+			"tmp; version=hash; hash=SHA-256:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
 
 		ArrayList<Container> buildpath = new ArrayList<>(project.getBuildpath());
 		assertEquals(1, buildpath.size());
-		assertEquals("bar", buildpath.get(0).getManifest().getMainAttributes().getValue("Prints"));
+		assertEquals("bar", buildpath.get(0)
+			.getManifest()
+			.getMainAttributes()
+			.getValue("Prints"));
 	}
 
 	public void testHashVersionWithAlgorithmNotFound() throws Exception {
@@ -934,7 +978,7 @@ public class ProjectTest extends TestCase {
 		Project project = ws.getProject("p1");
 		assertNotNull(project);
 		project.setProperty("-buildpath",
-				"tmp; version=hash; hash=SHA-1:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
+			"tmp; version=hash; hash=SHA-1:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
 
 		ArrayList<Container> buildpath = new ArrayList<>(project.getBuildpath());
 		assertEquals(0, buildpath.size());
@@ -945,7 +989,7 @@ public class ProjectTest extends TestCase {
 		Project project = ws.getProject("p1");
 		assertNotNull(project);
 		project.setProperty("-buildpath",
-				"WRONG; version=hash; hash=SHA-256:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
+			"WRONG; version=hash; hash=SHA-256:7fe83bfd5999fa4ef9cec40282d5d67dd0ff3303bac6b8c7b0e8be80a821441c");
 
 		ArrayList<Container> buildpath = new ArrayList<>(project.getBuildpath());
 		assertEquals(0, buildpath.size());

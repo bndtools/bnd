@@ -9,6 +9,7 @@ import java.util.jar.Manifest;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
@@ -67,7 +68,7 @@ public class PropertiesTest extends TestCase {
 
 	public static void testSpacesAround() throws Exception {
 		String test = "#comment\n" + "   abc    =   abc\r\n" + "def = def\n\r" + " ghi =               ghi\r"
-				+ " jkl =               jkl";
+			+ " jkl =               jkl";
 
 		byte[] bytes = test.getBytes("ISO8859-1");
 		ByteArrayInputStream bin = new ByteArrayInputStream(bytes);
@@ -82,7 +83,7 @@ public class PropertiesTest extends TestCase {
 
 	public static void testInternationalCharacters() throws Exception {
 		String test = "#comment\n" + "Namex=Lo\u00EFc Coton\u00E9a\n" + "Export-Package: *\n" + "Unicode=\\u0040\n"
-				+ "NameAgain=Loïc Cotonéa";
+			+ "NameAgain=Loïc Cotonéa";
 
 		byte[] bytes = test.getBytes("ISO8859-1");
 		ByteArrayInputStream bin = new ByteArrayInputStream(bytes);
@@ -98,28 +99,31 @@ public class PropertiesTest extends TestCase {
 		Jar jar = b.build();
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		jar.getManifest().write(bout);
+		jar.getManifest()
+			.write(bout);
 
 		bin = new ByteArrayInputStream(bout.toByteArray());
 		Manifest m = new Manifest(bin);
 
-		assertEquals("Lo\u00EFc Coton\u00E9a", m.getMainAttributes().getValue("Namex"));
+		assertEquals("Lo\u00EFc Coton\u00E9a", m.getMainAttributes()
+			.getValue("Namex"));
 	}
 
 	public static void testBadProperties() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		analyzer.setPedantic(true);
 		analyzer.setProperties(IO.getFile("src/test/badproperties.prop"));
-		String s = analyzer.getProperty(Analyzer.IMPORT_PACKAGE);
+		String s = analyzer.getProperty(Constants.IMPORT_PACKAGE);
 		Parameters map = analyzer.parseHeader(s);
 		assertEquals(2, map.size());
 		assertTrue(map.containsKey("org.osgi.service.cm"));
 		assertTrue(map.containsKey("org.osgi.util.tracker"));
-		assertEquals(1, analyzer.getWarnings().size());
+		assertEquals(1, analyzer.getWarnings()
+			.size());
 		System.err.println(analyzer.getWarnings());
 		assertTrue(analyzer.getWarnings()
-				.get(0)
-				.contains("Empty clause, usually caused by repeating a comma without"));
+			.get(0)
+			.contains("Empty clause, usually caused by repeating a comma without"));
 		System.err.println(analyzer.getWarnings());
 	}
 

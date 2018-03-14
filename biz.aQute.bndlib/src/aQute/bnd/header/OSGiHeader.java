@@ -29,7 +29,8 @@ public class OSGiHeader {
 	}
 
 	static public Parameters parseHeader(String value, Reporter logger, Parameters result) {
-		if (value == null || value.trim().length() == 0)
+		if (value == null || value.trim()
+			.length() == 0)
 			return result;
 
 		QuotedTokenizer qt = new QuotedTokenizer(value, ";=,");
@@ -44,8 +45,8 @@ public class OSGiHeader {
 			if (name == null || name.length() == 0) {
 				if (logger != null && logger.isPedantic()) {
 					logger.warning(
-							"Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: %s",
-							value);
+						"Empty clause, usually caused by repeating a comma without any name field or by having spaces after the backslash of a property file: %s",
+						value);
 				}
 				if (name == null)
 					break;
@@ -59,8 +60,8 @@ public class OSGiHeader {
 						if (hadAttribute)
 							if (logger != null) {
 								logger.error(
-										"Header contains name field after attribute or directive: %s from %s. Name fields must be consecutive, separated by a ';' like a;b;c;x=3;y=4",
-										adname, value);
+									"Header contains name field after attribute or directive: %s from %s. Name fields must be consecutive, separated by a ';' like a;b;c;x=3;y=4",
+									adname, value);
 							}
 						if (adname != null && adname.length() > 0)
 							aliases.add(adname.trim());
@@ -71,10 +72,10 @@ public class OSGiHeader {
 								while (clause.containsKey(adname))
 									adname += "~";
 							} else {
-							if (logger != null && logger.isPedantic())
+								if (logger != null && logger.isPedantic())
 									logger.warning(
-											"Duplicate attribute/directive name %s in %s. This attribute/directive will be ignored",
-											adname, value);
+										"Duplicate attribute/directive name %s in %s. This attribute/directive will be ignored",
+										adname, value);
 							}
 						}
 						if (advalue == null) {
@@ -95,8 +96,8 @@ public class OSGiHeader {
 					if (result.containsKey(clauseName)) {
 						if (logger != null && logger.isPedantic())
 							logger.warning(
-									"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
-									clauseName, value);
+								"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
+								clauseName, value);
 						while (result.containsKey(clauseName))
 							clauseName += "~";
 					}
@@ -112,7 +113,8 @@ public class OSGiHeader {
 	}
 
 	public static Attrs parseProperties(String input, Reporter logger) {
-		if (input == null || input.trim().length() == 0)
+		if (input == null || input.trim()
+			.length() == 0)
 			return new Attrs();
 
 		Attrs result = new Attrs();
@@ -125,7 +127,7 @@ public class OSGiHeader {
 				// happens at a trailing ',' without a followup
 				if (logger == null)
 					throw new IllegalArgumentException(
-							"Trailing comma found, forgot to escape the newline? Input=" + input);
+						"Trailing comma found, forgot to escape the newline? Input=" + input);
 				logger.error("Trailing comma found, forgot to escape the newline? Input=", input);
 				break;
 			}
@@ -175,14 +177,16 @@ public class OSGiHeader {
 			value = value.substring(1, value.length() - 1);
 
 		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')
-				|| TOKEN_P.matcher(value).matches();
+			|| TOKEN_P.matcher(value)
+				.matches();
 		if (!clean)
 			sb.append("\"");
 		for (int i = 0; i < value.length(); i++) {
 			char c = value.charAt(i);
 			switch (c) {
 				case '"' :
-					sb.append('\\').append('"');
+					sb.append('\\')
+						.append('"');
 					break;
 
 				default :

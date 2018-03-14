@@ -24,18 +24,18 @@ import aQute.service.reporter.Reporter;
 
 public class BaseTask extends Task implements Reporter {
 	private final static Logger	logger			= LoggerFactory.getLogger(BaseTask.class);
-	ReporterAdapter			reporter		= new ReporterAdapter();
+	ReporterAdapter				reporter		= new ReporterAdapter();
 
-	List<String>			errors			= new ArrayList<>();
-	List<String>			warnings		= new ArrayList<>();
-	List<String>			progress		= new ArrayList<>();
-	boolean					pedantic;
-	boolean					trace;
-	String					onfail;
-	final List<Property>	properties		= new LinkedList<>();
-	final List<Property>	workspaceProps	= new LinkedList<>();
-	final AntMessages		messages		= ReporterMessages.base(this, AntMessages.class);
-	boolean					exceptions;
+	List<String>				errors			= new ArrayList<>();
+	List<String>				warnings		= new ArrayList<>();
+	List<String>				progress		= new ArrayList<>();
+	boolean						pedantic;
+	boolean						trace;
+	String						onfail;
+	final List<Property>		properties		= new LinkedList<>();
+	final List<Property>		workspaceProps	= new LinkedList<>();
+	final AntMessages			messages		= ReporterMessages.base(this, AntMessages.class);
+	boolean						exceptions;
 
 	static {
 		Workspace.setDriver(Constants.BNDDRIVER_ANT);
@@ -47,7 +47,8 @@ public class BaseTask extends Task implements Reporter {
 	}
 
 	protected boolean report(Reporter reporter) {
-		int errCount = reporter.getErrors().size();
+		int errCount = reporter.getErrors()
+			.size();
 		if (errCount > 0) {
 			System.err.printf("%d ERRORS%n", errCount);
 			for (String e : reporter.getErrors()) {
@@ -55,7 +56,8 @@ public class BaseTask extends Task implements Reporter {
 			}
 			return true;
 		}
-		int warnCount = reporter.getWarnings().size();
+		int warnCount = reporter.getWarnings()
+			.size();
 		if (warnCount > 0) {
 			System.err.printf("%d WARNINGS%n", warnCount);
 			for (String w : reporter.getWarnings()) {
@@ -95,7 +97,7 @@ public class BaseTask extends Task implements Reporter {
 		return Arrays.asList(string.split("\\s*" + string + "\\s*"));
 	}
 
-	protected String join(Collection< ? > classpath, String string) {
+	protected String join(Collection<?> classpath, String string) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Object name : classpath) {
@@ -106,6 +108,7 @@ public class BaseTask extends Task implements Reporter {
 		return sb.toString();
 	}
 
+	@Override
 	public boolean isPedantic() {
 		return pedantic;
 	}
@@ -125,6 +128,7 @@ public class BaseTask extends Task implements Reporter {
 	/**
 	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
+	@Override
 	@Deprecated
 	public void trace(String s, Object... args) {
 		if (logger.isDebugEnabled()) {
@@ -148,26 +152,32 @@ public class BaseTask extends Task implements Reporter {
 		this.exceptions = exceptions;
 	}
 
+	@Override
 	public Location getLocation(String msg) {
 		return reporter.getLocation(msg);
 	}
 
+	@Override
 	public boolean isOk() {
 		return reporter.isOk();
 	}
 
+	@Override
 	public SetLocation exception(Throwable t, String format, Object... args) {
 		return reporter.exception(t, format, args);
 	}
 
+	@Override
 	public SetLocation error(String s, Object... args) {
 		return reporter.error(s, args);
 	}
 
+	@Override
 	public List<String> getErrors() {
 		return reporter.getErrors();
 	}
 
+	@Override
 	public List<String> getWarnings() {
 		return reporter.getWarnings();
 	}
@@ -177,6 +187,7 @@ public class BaseTask extends Task implements Reporter {
 	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
 	 *             instead.
 	 */
+	@Override
 	@Deprecated
 	public void progress(float progress, String s, Object... args) {
 		if (logger.isInfoEnabled(LIFECYCLE)) {
@@ -188,6 +199,7 @@ public class BaseTask extends Task implements Reporter {
 		}
 	}
 
+	@Override
 	public SetLocation warning(String s, Object... args) {
 		return reporter.warning(s, args);
 	}

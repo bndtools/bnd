@@ -36,17 +36,17 @@ public interface IMavenRepo extends Closeable {
 	 */
 	Pattern ARCHIVE_P = Pattern.compile(//
 										//
-			"           (?<group>[^:]+)" //
-					+ ":          (?<artifact>[^:]+)" //
-					+ "(:"//
-					+ "		(?<extension>[^:]+)"//
-					+ "		(:"//
-					+ "			(?<classifier>[^:]+)"//
-					+ "		)?"//
-					+ ")?"//
-					+ ":"//
-					+ "		(?<version>[^:]+)", //
-			Pattern.COMMENTS);
+		"           (?<group>[^:]+)" //
+			+ ":          (?<artifact>[^:]+)" //
+			+ "(:"//
+			+ "		(?<extension>[^:]+)"//
+			+ "		(:"//
+			+ "			(?<classifier>[^:]+)"//
+			+ "		)?"//
+			+ ")?"//
+			+ ":"//
+			+ "		(?<version>[^:]+)", //
+		Pattern.COMMENTS);
 
 	/**
 	 * Get the archive from the repository. Syntax:

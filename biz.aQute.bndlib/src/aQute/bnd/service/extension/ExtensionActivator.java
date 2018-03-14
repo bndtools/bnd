@@ -6,7 +6,7 @@ import java.util.Map;
 import aQute.bnd.build.Workspace;
 
 public interface ExtensionActivator {
-	List< ? > activate(Workspace workspace, Map<String,String> attrs);
+	List<?> activate(Workspace workspace, Map<String, String> attrs);
 
 	void deactivate();
 }

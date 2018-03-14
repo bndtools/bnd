@@ -32,8 +32,10 @@ public class JarTest extends TestCase {
 		jar.putResource("META-INF/MANIFEST.MF", r);
 		jar.putResource("com/example/foo.jar", r);
 
-		assertTrue(jar.getDirectories().containsKey("META-INF/maven/org/osgi/test"));
-		assertTrue(jar.getDirectories().containsKey("META-INF/maven"));
+		assertTrue(jar.getDirectories()
+			.containsKey("META-INF/maven/org/osgi/test"));
+		assertTrue(jar.getDirectories()
+			.containsKey("META-INF/maven"));
 		jar.removePrefix("META-INF/maven/");
 
 		assertNotNull(jar.getResource("META-INF/MANIFEST.MF"));
@@ -41,8 +43,10 @@ public class JarTest extends TestCase {
 		assertNull(jar.getResource("META-INF/maven/org/osgi/test/test.pom"));
 		assertNull(jar.getResource("META-INF/maven/org/osgi/test/test.properties"));
 
-		assertFalse(jar.getDirectories().containsKey("META-INF/maven"));
-		assertFalse(jar.getDirectories().containsKey("META-INF/maven/org/osgi/test"));
+		assertFalse(jar.getDirectories()
+			.containsKey("META-INF/maven"));
+		assertFalse(jar.getDirectories()
+			.containsKey("META-INF/maven/org/osgi/test"));
 	}
 
 	public static void testWriteFolder() throws Exception {
@@ -55,9 +59,11 @@ public class JarTest extends TestCase {
 		b.build();
 		assertTrue(b.check());
 
-		b.getJar().writeFolder(tmp);
+		b.getJar()
+			.writeFolder(tmp);
 
-		assertTrue(IO.getFile(tmp, "META-INF/MANIFEST.MF").isFile());
+		assertTrue(IO.getFile(tmp, "META-INF/MANIFEST.MF")
+			.isFile());
 		assertEquals("ab", IO.collect(IO.getFile(tmp, "a/b.txt")));
 		assertEquals("acde", IO.collect(IO.getFile(tmp, "a/c/d/e.txt")));
 
@@ -86,7 +92,7 @@ public class JarTest extends TestCase {
 		jar.setDoNotTouchManifest();
 		jar.putResource("a/b", new FileResource(IO.getFile("testresources/bnd.jar")));
 		jar.putResource("META-INF/MANIFEST.MF",
-				new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n".getBytes(), 0));
+			new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n".getBytes(), 0));
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		jar.write(bout);
@@ -94,14 +100,16 @@ public class JarTest extends TestCase {
 		JarInputStream jin = new JarInputStream(new ByteArrayInputStream(bout.toByteArray()));
 		Manifest m = jin.getManifest();
 		assertNotNull(m);
-		assertEquals("1", m.getMainAttributes().getValue("X"));
+		assertEquals("1", m.getMainAttributes()
+			.getValue("X"));
 		jin.close();
 	}
 
 	public static void testRenameManifest() throws Exception {
 		Jar jar = new Jar("dot");
 		Manifest manifest = new Manifest();
-		manifest.getMainAttributes().putValue("X", "1");
+		manifest.getMainAttributes()
+			.putValue("X", "1");
 		jar.setManifest(manifest);
 		jar.setManifestName("META-INF/FESTYMAN.MF");
 
@@ -117,7 +125,8 @@ public class JarTest extends TestCase {
 		assertEquals("META-INF/FESTYMAN.MF", firstEntry.getName());
 		manifest = new Manifest(zin);
 
-		assertEquals("1", manifest.getMainAttributes().getValue("X"));
+		assertEquals("1", manifest.getMainAttributes()
+			.getValue("X"));
 		zin.close();
 	}
 
@@ -152,7 +161,8 @@ public class JarTest extends TestCase {
 		String value = "Test\nTest\nTest\nTest";
 		String expectedValue = "Test Test Test Test";
 
-		manifest.getMainAttributes().putValue(Constants.BUNDLE_DESCRIPTION, value);
+		manifest.getMainAttributes()
+			.putValue(Constants.BUNDLE_DESCRIPTION, value);
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		jar.write(bout);
@@ -161,7 +171,8 @@ public class JarTest extends TestCase {
 		Manifest m = jin.getManifest();
 		assertNotNull(m);
 
-		String parsedValue = m.getMainAttributes().getValue(Constants.BUNDLE_DESCRIPTION);
+		String parsedValue = m.getMainAttributes()
+			.getValue(Constants.BUNDLE_DESCRIPTION);
 
 		assertEquals(expectedValue, parsedValue);
 	}

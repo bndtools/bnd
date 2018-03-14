@@ -43,7 +43,7 @@ class Server extends NanoHTTPD {
 	private X509Certificate[]		certificateChain;
 	private Config					config;
 	final static SecureRandom		random		= new SecureRandom();
-	final Map<String,HttpContext>	contexts	= new HashMap<>();
+	final Map<String, HttpContext>	contexts	= new HashMap<>();
 
 	public Server(HttpTestServer.Config config) throws Exception {
 		super(config.host, config.port);
@@ -65,7 +65,7 @@ class Server extends NanoHTTPD {
 			final aQute.http.testservers.HttpTestServer.Response response = new HttpTestServer.Response();
 			final aQute.http.testservers.HttpTestServer.Request request = new HttpTestServer.Request();
 
-			Map<String,String> headers = session.getHeaders();
+			Map<String, String> headers = session.getHeaders();
 			if (headers.containsKey("content-length")) {
 				int length = Integer.parseInt(headers.get("content-length"));
 				request.content = new byte[length];
@@ -76,17 +76,20 @@ class Server extends NanoHTTPD {
 			HttpContext context = findHandler(session.getUri());
 			if (context == null) {
 				return newFixedLengthResponse(NanoHTTPD.Response.Status.BAD_REQUEST, "text/plain",
-						"Method not found for " + session.getUri());
+					"Method not found for " + session.getUri());
 
 			}
 			request.uri = new URI(session.getUri());
 			request.headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 			request.headers.putAll(session.getHeaders());
 			request.args = session.getParms();
-			request.ip = session.getHeaders().get("remote-addr");
-			request.method = session.getMethod().name();
+			request.ip = session.getHeaders()
+				.get("remote-addr");
+			request.method = session.getMethod()
+				.name();
 
-			String path = request.uri.getPath().substring(context.path.length());
+			String path = request.uri.getPath()
+				.substring(context.path.length());
 			if (path.startsWith("/"))
 				path = path.substring(1);
 
@@ -112,9 +115,9 @@ class Server extends NanoHTTPD {
 				r = newFixedLengthResponse(status, response.mimeType, response.stream, response.length);
 			else
 				r = newFixedLengthResponse(status, response.mimeType, new ByteArrayInputStream(response.content),
-						response.length);
+					response.length);
 
-			for (Map.Entry<String,String> entry : response.headers.entrySet()) {
+			for (Map.Entry<String, String> entry : response.headers.entrySet()) {
 				r.addHeader(entry.getKey(), entry.getValue());
 			}
 
@@ -156,7 +159,7 @@ class Server extends NanoHTTPD {
 	}
 
 	private KeyStore createKeystore(KeyPair pair)
-			throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+		throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
 		KeyStore keystore = KeyStore.getInstance("JKS");
 		keystore.load(null, null);
 		keystore.setKeyEntry(config.host, pair.getPrivate(), PASSWORD, certificateChain);
@@ -164,7 +167,7 @@ class Server extends NanoHTTPD {
 	}
 
 	private SSLContext createTLSContext(KeyStore keystore)
-			throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
+		throws NoSuchAlgorithmException, KeyStoreException, UnrecoverableKeyException, KeyManagementException {
 		SSLContext ctx = SSLContext.getInstance("TLS");
 
 		KeyManagerFactory keyManagers = KeyManagerFactory.getInstance("SunX509");
@@ -187,13 +190,13 @@ class Server extends NanoHTTPD {
 		BigInteger serialNumber = new BigInteger(128, random);
 
 		X509v3CertificateBuilder certificateBuilder = new JcaX509v3CertificateBuilder(nameBuilder.build(), serialNumber,
-				notBefore, notAfter, nameBuilder.build(), keyPair.getPublic());
+			notBefore, notAfter, nameBuilder.build(), keyPair.getPublic());
 		ContentSigner contentSigner = new JcaContentSignerBuilder("SHA256WithRSAEncryption")
-				.build(keyPair.getPrivate());
+			.build(keyPair.getPrivate());
 		X509Certificate certificate = new JcaX509CertificateConverter()
-				.getCertificate(certificateBuilder.build(contentSigner));
+			.getCertificate(certificateBuilder.build(contentSigner));
 		return new X509Certificate[] {
-				certificate
+			certificate
 		};
 	}
 
@@ -222,6 +225,7 @@ class Server extends NanoHTTPD {
 		return certificateChain;
 	}
 
+	@Override
 	protected boolean useGzipWhenAccepted(Response r) {
 		return false;
 	}

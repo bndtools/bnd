@@ -9,7 +9,7 @@ public class GenericParameter {
 		this.bounds = bounds;
 		if (bounds == null || bounds.length == 0)
 			this.bounds = new GenericType[] {
-					new GenericType(Object.class)
+				new GenericType(Object.class)
 			};
 	}
 

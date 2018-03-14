@@ -346,7 +346,7 @@ public class LineTracker {
 	 * java.lang.String)
 	 */
 	public final void replace(@SuppressWarnings("unused") int position, @SuppressWarnings("unused") int length,
-			@SuppressWarnings("unused") String text) throws BadLocationException {
+		@SuppressWarnings("unused") String text) throws BadLocationException {
 		throw new UnsupportedOperationException();
 	}
 

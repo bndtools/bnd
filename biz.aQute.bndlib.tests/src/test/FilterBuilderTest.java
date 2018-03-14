@@ -54,38 +54,48 @@ public class FilterBuilderTest extends TestCase {
 	}
 
 	public void testGt() {
-		assertEquals("(!(a<=b))", fb.gt("a", "b").toString());
+		assertEquals("(!(a<=b))", fb.gt("a", "b")
+			.toString());
 	}
 
 	public void testGe() {
-		assertEquals("(a>=b)", fb.ge("a", "b").toString());
+		assertEquals("(a>=b)", fb.ge("a", "b")
+			.toString());
 	}
 
 	public void testLe() {
-		assertEquals("(a<=b)", fb.le("a", "b").toString());
+		assertEquals("(a<=b)", fb.le("a", "b")
+			.toString());
 	}
 
 	public void testApprox() {
-		assertEquals("(a~=b)", fb.approximate("a", "b").toString());
+		assertEquals("(a~=b)", fb.approximate("a", "b")
+			.toString());
 	}
 
 	public void testPresent() {
-		assertEquals("(a=*)", fb.isPresent("a").toString());
+		assertEquals("(a=*)", fb.isPresent("a")
+			.toString());
 	}
 
 	public void testVersionRange() {
-		assertEquals("(&(version>=1.0.0)(!(version>=2.0.0)))", fb.in("version", new VersionRange("[1,2)")).toString());
+		assertEquals("(&(version>=1.0.0)(!(version>=2.0.0)))", fb.in("version", new VersionRange("[1,2)"))
+			.toString());
 		fb = new FilterBuilder();
-		assertEquals("(&(!(version<=1.0.0))(version<=2.0.0))", fb.in("version", new VersionRange("(1,2]")).toString());
+		assertEquals("(&(!(version<=1.0.0))(version<=2.0.0))", fb.in("version", new VersionRange("(1,2]"))
+			.toString());
 	}
 
 	public void testVersionRangeOSGi() {
-		assertEquals("(&(version>=1.0.0)(!(version>=2.0.0)))", fb.in("version", new org.osgi.framework.VersionRange("[1,2)")).toString());
+		assertEquals("(&(version>=1.0.0)(!(version>=2.0.0)))",
+			fb.in("version", new org.osgi.framework.VersionRange("[1,2)"))
+				.toString());
 		fb = new FilterBuilder();
 		assertEquals("(&(!(version<=1.0.0))(version<=2.0.0))",
-				fb.in("version", new org.osgi.framework.VersionRange("(1,2]")).toString());
+			fb.in("version", new org.osgi.framework.VersionRange("(1,2]"))
+				.toString());
 	}
-	
+
 	public void testAOSS() {
 		fb.and();
 		fb.or();

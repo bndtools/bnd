@@ -10,7 +10,7 @@ import junit.framework.TestCase;
 public class ReplacerTest extends TestCase {
 
 	static class Processor extends ReporterAdapter implements Domain {
-		final Map<String,String>	map	= new HashMap<>();
+		final Map<String, String>	map	= new HashMap<>();
 		final Domain				parent;
 		final ReplacerAdapter		replacer;
 
@@ -24,10 +24,12 @@ public class ReplacerTest extends TestCase {
 			this(null);
 		}
 
-		public Map<String,String> getMap() {
+		@Override
+		public Map<String, String> getMap() {
 			return map;
 		}
 
+		@Override
 		public Domain getParent() {
 			return parent;
 		}
@@ -56,7 +58,8 @@ public class ReplacerTest extends TestCase {
 
 	public void testNonStrings() {
 		Processor top = new Processor();
-		top.getMap().put("p", "${processors}");
+		top.getMap()
+			.put("p", "${processors}");
 		Integer n = Integer.parseInt(top.getProcessed("p"));
 		assertTrue(n >= 1);
 	}
@@ -67,20 +70,34 @@ public class ReplacerTest extends TestCase {
 
 	public static void testCurrentWorkingDirectory() {
 		Processor top = new Processor();
-		top.getMap().put("cwd.1", "./"); // empty
-		top.getMap().put("cwd.2", " ./"); // empty
-		top.getMap().put("cwd.3", "./ "); // empty
-		top.getMap().put("cwd.4", " ./ "); // empty
-		top.getMap().put("cwd.5", "|./|"); // empty
-		top.getMap().put("cwd.6", "/.//"); // empty
-		top.getMap().put("cwd.7", "."); // empty
-		top.getMap().put("cwd.8", " . "); // empty
-		top.getMap().put("cwd.9", " . /"); // empty
-		top.getMap().put("cwd.10", " ."); // empty
-		top.getMap().put("cwd.11", "| ./|"); // empty
-		top.getMap().put("cwd.12", "|\t./|"); // empty
-		top.getMap().put("cwd.13", "|\r./|"); // empty
-		top.getMap().put("cwd.14", "|\n./|"); // empty
+		top.getMap()
+			.put("cwd.1", "./"); // empty
+		top.getMap()
+			.put("cwd.2", " ./"); // empty
+		top.getMap()
+			.put("cwd.3", "./ "); // empty
+		top.getMap()
+			.put("cwd.4", " ./ "); // empty
+		top.getMap()
+			.put("cwd.5", "|./|"); // empty
+		top.getMap()
+			.put("cwd.6", "/.//"); // empty
+		top.getMap()
+			.put("cwd.7", "."); // empty
+		top.getMap()
+			.put("cwd.8", " . "); // empty
+		top.getMap()
+			.put("cwd.9", " . /"); // empty
+		top.getMap()
+			.put("cwd.10", " ."); // empty
+		top.getMap()
+			.put("cwd.11", "| ./|"); // empty
+		top.getMap()
+			.put("cwd.12", "|\t./|"); // empty
+		top.getMap()
+			.put("cwd.13", "|\r./|"); // empty
+		top.getMap()
+			.put("cwd.14", "|\n./|"); // empty
 
 		String cwd = new File("").getAbsolutePath() + "/";
 
@@ -108,16 +125,23 @@ public class ReplacerTest extends TestCase {
 
 	public static void testifDir() {
 		Processor top = new Processor();
-		top.getMap().put("presentd", "${if;${isdir;src};YES;NO}");
-		top.getMap().put("presentd", "${if;${isdir;test};YES;NO}");
-		top.getMap().put("absentd", "${if;${isdir;xxx};YES;NO}");
-		top.getMap().put("wrongd", "${if;${isdir;bnd.bnd};YES;NO}");
+		top.getMap()
+			.put("presentd", "${if;${isdir;src};YES;NO}");
+		top.getMap()
+			.put("presentd", "${if;${isdir;test};YES;NO}");
+		top.getMap()
+			.put("absentd", "${if;${isdir;xxx};YES;NO}");
+		top.getMap()
+			.put("wrongd", "${if;${isdir;bnd.bnd};YES;NO}");
 		assertEquals("YES", top.getProcessed("presentd"));
 		assertEquals("NO", top.getProcessed("wrongd"));
 		assertEquals("NO", top.getProcessed("absentd"));
-		top.getMap().put("presentf", "${if;${isfile;bnd.bnd};YES;NO}");
-		top.getMap().put("absentf", "${if;${isfile;xxx};YES;NO}");
-		top.getMap().put("wrongf", "${if;${isfile;jar};YES;NO}");
+		top.getMap()
+			.put("presentf", "${if;${isfile;bnd.bnd};YES;NO}");
+		top.getMap()
+			.put("absentf", "${if;${isfile;xxx};YES;NO}");
+		top.getMap()
+			.put("wrongf", "${if;${isfile;jar};YES;NO}");
 		assertEquals("YES", top.getProcessed("presentf"));
 		assertEquals("NO", top.getProcessed("absentf"));
 		assertEquals("NO", top.getProcessed("wrongf"));
@@ -130,11 +154,16 @@ public class ReplacerTest extends TestCase {
 
 	public static void testWildcardKeys() {
 		Processor top = new Processor();
-		top.getMap().put("a.3", "a.3");
-		top.getMap().put("a.1", "a.1");
-		top.getMap().put("a.2", "a.2");
-		top.getMap().put("a.4", "a.4");
-		top.getMap().put("aa", "${a.*}");
+		top.getMap()
+			.put("a.3", "a.3");
+		top.getMap()
+			.put("a.1", "a.1");
+		top.getMap()
+			.put("a.2", "a.2");
+		top.getMap()
+			.put("a.4", "a.4");
+		top.getMap()
+			.put("aa", "${a.*}");
 		assertEquals("a.1,a.2,a.3,a.4", top.getProcessed("a.*"));
 		assertEquals("a.1,a.2,a.3,a.4", top.getProcessed("aa"));
 		top.check();
@@ -142,7 +171,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testEnv() {
 		Processor top = new Processor();
-		String s = top.getReplacer().process("${env;USER}");
+		String s = top.getReplacer()
+			.process("${env;USER}");
 		assertNotNull(s);
 		top.check();
 	}
@@ -152,8 +182,10 @@ public class ReplacerTest extends TestCase {
 	 */
 	public static void testRandom() {
 		Processor top = new Processor();
-		top.getMap().put("a", "${random}");
-		top.getMap().put("a12", "${random;12}");
+		top.getMap()
+			.put("a", "${random}");
+		top.getMap()
+			.put("a12", "${random;12}");
 		String a = top.getProcessed("a");
 		System.err.println(a);
 		assertEquals(8, a.length());
@@ -173,14 +205,22 @@ public class ReplacerTest extends TestCase {
 		Processor middle = new Processor(top);
 		Processor bottom = new Processor(middle);
 
-		top.getMap().put("a", "top.a");
-		top.getMap().put("b", "top.b");
-		top.getMap().put("c", "top.c");
-		top.getMap().put("Bundle-Version", "0.0.0");
-		middle.getMap().put("a", "middle.a");
-		middle.getMap().put("b", "${^a}");
-		middle.getMap().put("c", "-${^c}-");
-		middle.getMap().put("Bundle-Version", "${^Bundle-Version}");
+		top.getMap()
+			.put("a", "top.a");
+		top.getMap()
+			.put("b", "top.b");
+		top.getMap()
+			.put("c", "top.c");
+		top.getMap()
+			.put("Bundle-Version", "0.0.0");
+		middle.getMap()
+			.put("a", "middle.a");
+		middle.getMap()
+			.put("b", "${^a}");
+		middle.getMap()
+			.put("c", "-${^c}-");
+		middle.getMap()
+			.put("Bundle-Version", "${^Bundle-Version}");
 		assertEquals("middle.a", bottom.getProcessed("a"));
 		assertEquals("top.a", bottom.getProcessed("b"));
 		assertEquals("-top.c-", bottom.getProcessed("c"));
@@ -196,21 +236,28 @@ public class ReplacerTest extends TestCase {
 
 	public static void testNesting2() {
 		Processor p = new Processor();
-		p.getMap().put("groupId", "com.trivadis.tomas");
-		p.getMap().put("artifactId", "common");
-		p.getMap().put("bsn", "${if;${symbolicName};${symbolicName};${groupId}.${artifactId}}");
-		p.getMap().put("Bundle-SymbolicName", "${bsn}");
-		p.getMap().put("symbolicName", "");
+		p.getMap()
+			.put("groupId", "com.trivadis.tomas");
+		p.getMap()
+			.put("artifactId", "common");
+		p.getMap()
+			.put("bsn", "${if;${symbolicName};${symbolicName};${groupId}.${artifactId}}");
+		p.getMap()
+			.put("Bundle-SymbolicName", "${bsn}");
+		p.getMap()
+			.put("symbolicName", "");
 
 		// Not set, so get the maven name
 		assertEquals("com.trivadis.tomas.common", p.getProcessed("Bundle-SymbolicName"));
 
 		// Set it
-		p.getMap().put("symbolicName", "testing");
+		p.getMap()
+			.put("symbolicName", "testing");
 		assertEquals("testing", p.getProcessed("Bundle-SymbolicName"));
 
 		// And remove it
-		p.getMap().put("symbolicName", "");
+		p.getMap()
+			.put("symbolicName", "");
 		assertEquals("com.trivadis.tomas.common", p.getProcessed("Bundle-SymbolicName"));
 		p.check();
 	}
@@ -226,14 +273,16 @@ public class ReplacerTest extends TestCase {
 
 		Processor p = new Processor();
 		assertEquals("Hello World", p.process("${system;echo Hello World}"));
-		assertTrue(p.process("${system;wc;Hello World}").matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
+		assertTrue(p.process("${system;wc;Hello World}")
+			.matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
 		p.check();
 	}
 
 	public static void testSystemFail() throws Exception {
 		Processor p = new Processor();
 		String cmd = "${system;mostidioticcommandthatwillsurelyfail}";
-		assertTrue(p.process(cmd).startsWith("${system;"));
+		assertTrue(p.process(cmd)
+			.startsWith("${system;"));
 		p.check();
 	}
 
@@ -252,15 +301,18 @@ public class ReplacerTest extends TestCase {
 	 */
 	public static void testPriority() {
 		Processor p = new Processor();
-		p.getMap().put("now", "not set");
+		p.getMap()
+			.put("now", "not set");
 		assertEquals("not set", p.process("${now}"));
 		p.check();
 	}
 
 	public static void testNames() {
 		Processor p = new Processor();
-		p.getMap().put("a", "a");
-		p.getMap().put("aa", "aa");
+		p.getMap()
+			.put("a", "a");
+		p.getMap()
+			.put("aa", "aa");
 
 		assertEquals("aa", p.process("${${a}${a}}"));
 		p.check();
@@ -271,7 +323,9 @@ public class ReplacerTest extends TestCase {
 	 */
 
 	public static void testWc() {
-		String pckg = ReplacerTest.class.getPackage().getName().replace('.', '/');
+		String pckg = ReplacerTest.class.getPackage()
+			.getName()
+			.replace('.', '/');
 
 		Processor p = new Processor();
 		String a = p.process("${lsr;test/" + pckg + ";*.java}");
@@ -289,11 +343,16 @@ public class ReplacerTest extends TestCase {
 
 	public static void testUniq() {
 		Processor p = new Processor();
-		p.getMap().put("a", "${uniq;1}");
-		p.getMap().put("b", "${uniq;1,2}");
-		p.getMap().put("c", "${uniq;1;2}");
-		p.getMap().put("d", "${uniq;1; 1,  2 , 3}");
-		p.getMap().put("e", "${uniq;1; 1 , 2 ;      3;3,4,5,6}");
+		p.getMap()
+			.put("a", "${uniq;1}");
+		p.getMap()
+			.put("b", "${uniq;1,2}");
+		p.getMap()
+			.put("c", "${uniq;1;2}");
+		p.getMap()
+			.put("d", "${uniq;1; 1,  2 , 3}");
+		p.getMap()
+			.put("e", "${uniq;1; 1 , 2 ;      3;3,4,5,6}");
 		assertEquals("1,2,3", p.getProcessed("d"));
 		assertEquals("1,2", p.getProcessed("b"));
 		assertEquals("1", p.getProcessed("a"));
@@ -309,7 +368,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testEscapedArgs() {
 		Processor p = new Processor();
-		p.getMap().put("x", "${replace;1,2,3;.+;$0\\;version=1}");
+		p.getMap()
+			.put("x", "${replace;1,2,3;.+;$0\\;version=1}");
 		assertEquals("1;version=1, 2;version=1, 3;version=1", p.getProcessed("x"));
 		p.check();
 	}
@@ -319,16 +379,24 @@ public class ReplacerTest extends TestCase {
 	 */
 	public static void testNested() {
 		Processor p = new Processor();
-		p.getMap().put("a", ".");
-		p.getMap().put("b", "${a}");
-		p.getMap().put("c", "${b}");
+		p.getMap()
+			.put("a", ".");
+		p.getMap()
+			.put("b", "${a}");
+		p.getMap()
+			.put("c", "${b}");
 
-		p.getMap().put("d", "${tstamp;${format};UTC;${aug152008}}");
-		p.getMap().put("format", "yyyy");
-		p.getMap().put("aug152008", "1218810097322");
+		p.getMap()
+			.put("d", "${tstamp;${format};UTC;${aug152008}}");
+		p.getMap()
+			.put("format", "yyyy");
+		p.getMap()
+			.put("aug152008", "1218810097322");
 
-		p.getMap().put("f", "${d}");
-		p.getMap().put("aug152008", "1218810097322");
+		p.getMap()
+			.put("f", "${d}");
+		p.getMap()
+			.put("aug152008", "1218810097322");
 
 		assertEquals(".", p.getProcessed("c"));
 		assertEquals("2008", p.getProcessed("d"));
@@ -338,14 +406,21 @@ public class ReplacerTest extends TestCase {
 
 	public static void testLoop() {
 		Processor p = new Processor();
-		p.getMap().put("a", "${b}");
-		p.getMap().put("b", "${a}");
+		p.getMap()
+			.put("a", "${b}");
+		p.getMap()
+			.put("b", "${a}");
 
-		p.getMap().put("d", "${e}");
-		p.getMap().put("e", "${f}");
-		p.getMap().put("f", "${g}");
-		p.getMap().put("g", "${h}");
-		p.getMap().put("h", "${d}");
+		p.getMap()
+			.put("d", "${e}");
+		p.getMap()
+			.put("e", "${f}");
+		p.getMap()
+			.put("f", "${g}");
+		p.getMap()
+			.put("g", "${h}");
+		p.getMap()
+			.put("h", "${d}");
 
 		assertEquals("${infinite:[a,b]}", p.getProcessed("a"));
 		assertEquals("${infinite:[d,e,f,g,h]}", p.getProcessed("d"));
@@ -374,7 +449,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testParentFile() {
 		Processor p = new Processor();
-		assertTrue(p.process("${dir;.project}").endsWith("aQute.libg"));
+		assertTrue(p.process("${dir;.project}")
+			.endsWith("aQute.libg"));
 		p.check();
 	}
 
@@ -390,8 +466,10 @@ public class ReplacerTest extends TestCase {
 
 	public static void testDef() {
 		Processor p = new Processor();
-		p.getMap().put("set.1", "1");
-		p.getMap().put("set.2", "2");
+		p.getMap()
+			.put("set.1", "1");
+		p.getMap()
+			.put("set.2", "2");
 		assertEquals("NO", p.process("${if;${def;set.3};YES;NO}"));
 		assertEquals("YES", p.process("${if;${def;set.1};YES;NO}"));
 		assertEquals("YES", p.process("${if;${def;set.2};YES;NO}"));
@@ -403,7 +481,8 @@ public class ReplacerTest extends TestCase {
 	 */
 	public static void testReplace() {
 		Processor p = new Processor();
-		p.getMap().put("specs", "a,b, c,    d");
+		p.getMap()
+			.put("specs", "a,b, c,    d");
 		assertEquals("xay, xby, xcy, xdy", p.process("${replace;${specs};([^\\s]+);x$1y}"));
 		p.check();
 	}
@@ -422,22 +501,33 @@ public class ReplacerTest extends TestCase {
 
 	public static void testWarning() {
 		Processor p = new Processor();
-		p.getMap().put("three", "333");
-		p.getMap().put("empty", "");
-		p.getMap().put("real", "true");
+		p.getMap()
+			.put("three", "333");
+		p.getMap()
+			.put("empty", "");
+		p.getMap()
+			.put("real", "true");
 
 		p.process("    ${warning;xw;1;2;3 ${three}}");
 		p.process("    ${error;xe;1;2;3 ${three}}");
 		p.process("    ${if;1;$<a>}");
-		assertEquals("xw", p.getWarnings().get(0));
-		assertEquals("1", p.getWarnings().get(1));
-		assertEquals("2", p.getWarnings().get(2));
-		assertEquals("3 333", p.getWarnings().get(3));
+		assertEquals("xw", p.getWarnings()
+			.get(0));
+		assertEquals("1", p.getWarnings()
+			.get(1));
+		assertEquals("2", p.getWarnings()
+			.get(2));
+		assertEquals("3 333", p.getWarnings()
+			.get(3));
 
-		assertEquals("xe", p.getErrors().get(0));
-		assertEquals("1", p.getErrors().get(1));
-		assertEquals("2", p.getErrors().get(2));
-		assertEquals("3 333", p.getErrors().get(3));
+		assertEquals("xe", p.getErrors()
+			.get(0));
+		assertEquals("1", p.getErrors()
+			.get(1));
+		assertEquals("2", p.getErrors()
+			.get(2));
+		assertEquals("3 333", p.getErrors()
+			.get(3));
 	}
 
 	public static void testNestedReplace() {
@@ -448,7 +538,8 @@ public class ReplacerTest extends TestCase {
 
 		assertEquals("xx1.222.3xx", p.process("xx$(replace;1.222.3-SNAPSHOT;(\\d+(\\.\\d+)+).*;$1)xx"));
 
-		p.getMap().put("a", "aaaa");
+		p.getMap()
+			.put("a", "aaaa");
 		assertEquals("[cac]", p.process("$[replace;acaca;a(.*)a;[$1]]"));
 		assertEquals("xxx", p.process("$(replace;yxxxy;[^x]*(x+)[^x]*;$1)"));
 		assertEquals("xxx", p.process("$(replace;yxxxy;([^x]*(x+)[^x]*);$2)"));
@@ -464,7 +555,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testSimple() {
 		Processor p = new Processor();
-		p.getMap().put("a", "aaaa");
+		p.getMap()
+			.put("a", "aaaa");
 		assertEquals("aaaa", p.process("${a}"));
 		assertEquals("aaaa", p.process("$<a>"));
 		assertEquals("aaaa", p.process("$(a)"));
@@ -477,7 +569,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testFilter() {
 		Processor p = new Processor();
-		p.getMap().put("a", "aaaa");
+		p.getMap()
+			.put("a", "aaaa");
 		assertEquals("aa,cc,ee", p.process("${filter;aa,bb,cc,dd,ee,ff;[ace]+}"));
 		assertEquals("aaaa,cc,ee", p.process("${filter;${a},bb,cc,dd,ee,ff;[ace]+}"));
 		assertEquals("bb,dd,ff", p.process("${filter;${a},bb,cc,dd,ee,ff;[^ace]+}"));
@@ -486,7 +579,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testFilterOut() {
 		Processor p = new Processor();
-		p.getMap().put("a", "aaaa");
+		p.getMap()
+			.put("a", "aaaa");
 		assertEquals("bb,dd,ff", p.process("${filterout;aa,bb,cc,dd,ee,ff;[ace]+}"));
 		assertEquals("bb,dd,ff", p.process("${filterout;${a},bb,cc,dd,ee,ff;[ace]+}"));
 		assertEquals("aaaa,cc,ee", p.process("${filterout;${a},bb,cc,dd,ee,ff;[^ace]+}"));
@@ -495,7 +589,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testSort() {
 		Processor p = new Processor();
-		p.getMap().put("a", "aaaa");
+		p.getMap()
+			.put("a", "aaaa");
 		assertEquals("aa,bb,cc,dd,ee,ff", p.process("${sort;aa,bb,cc,dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", p.process("${sort;ff,ee,cc,bb,dd,aa}"));
 		assertEquals("aaaa,bb,cc,dd,ee,ff", p.process("${sort;ff,ee,cc,bb,dd,$<a>}"));
@@ -504,7 +599,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testJoin() {
 		Processor p = new Processor();
-		p.getMap().put("a", "aaaa");
+		p.getMap()
+			.put("a", "aaaa");
 		assertEquals("aa,bb,cc,dd,ee,ff", p.process("${join;aa,bb,cc,dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", p.process("${join;aa,bb,cc;dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", p.process("${join;aa;bb;cc;dd;ee,ff}"));
@@ -513,7 +609,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testIf() {
 		Processor p = new Processor();
-		p.getMap().put("a", "aaaa");
+		p.getMap()
+			.put("a", "aaaa");
 		assertEquals("aaaa", p.process("${if;1;$<a>}"));
 		assertEquals("", p.process("${if;;$<a>}"));
 		assertEquals("yes", p.process("${if;;$<a>;yes}"));
@@ -523,7 +620,8 @@ public class ReplacerTest extends TestCase {
 
 	public static void testLiteral() {
 		Processor p = new Processor();
-		p.getMap().put("a", "aaaa");
+		p.getMap()
+			.put("a", "aaaa");
 		assertEquals("${aaaa}", p.process("${literal;$<a>}"));
 		p.check();
 	}

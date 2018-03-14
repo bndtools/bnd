@@ -11,26 +11,24 @@ public class ReportSetDTO extends DTO {
 	/**
 	 * The unique id for this report set, to be used during POM inheritance and
 	 * profile injection for merging of report sets.
-	 * 
 	 */
-	public String id = "default";
+	public String				id			= "default";
 
 	/**
 	 * The list of reports from this plugin which should be generated from this
 	 * set.
 	 */
 
-	public String[] reports;
+	public String[]				reports;
 
 	/**
 	 * Whether any configuration should be propagated to child POMs. Note: While
 	 * the type of this field is <code>String</code> for technical reasons, the
 	 * semantic type is actually <code>Boolean</code>. Default value is
 	 * <code>true</code>.
-	 * 
 	 */
 
-	public boolean inherited = true;
+	public boolean				inherited	= true;
 
 	/**
 	 * <p>
@@ -60,5 +58,5 @@ public class ReportSetDTO extends DTO {
 	 * </p>
 	 */
 
-	public Map<String, Object> configuration;
+	public Map<String, Object>	configuration;
 }

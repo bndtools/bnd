@@ -25,7 +25,7 @@ import aQute.lib.utf8properties.UTF8Properties;
  */
 public class Plugins {
 	private static final Pattern	PLUGIN_FILE_P	= Pattern.compile("(.*)\\.bnd");
-	private Map<String,Class< ? >>	annotatedPlugins;
+	private Map<String, Class<?>>	annotatedPlugins;
 	private final Workspace			ws;
 	private final bnd				bnd;
 
@@ -46,7 +46,7 @@ public class Plugins {
 
 	public void _add(PluginAddOptions opts) throws Exception {
 		List<String> args = opts._arguments();
-		Map<String,Class< ? >> plugins = getAnnotatedPlugins();
+		Map<String, Class<?>> plugins = getAnnotatedPlugins();
 
 		if (args.isEmpty()) {
 			print(plugins);
@@ -56,13 +56,13 @@ public class Plugins {
 		String pluginName = args.remove(0);
 		String alias = opts.alias() == null ? pluginName : opts.alias();
 
-		Class< ? > plugin = plugins.get(pluginName);
+		Class<?> plugin = plugins.get(pluginName);
 		if (plugin == null) {
 			bnd.error("No such plugin: %s", pluginName);
 			return;
 		} else {
 
-			Map<String,String> parameters = new HashMap<>();
+			Map<String, String> parameters = new HashMap<>();
 
 			for (String parameter : args) {
 				if (parameter.indexOf('=') < 1)
@@ -93,7 +93,8 @@ public class Plugins {
 		List<String> args = opts._arguments();
 
 		if (args.isEmpty()) {
-			for (String file : ws.getFile("cnf/ext").list()) {
+			for (String file : ws.getFile("cnf/ext")
+				.list()) {
 				Matcher m = PLUGIN_FILE_P.matcher(file);
 				if (m.matches()) {
 					bnd.out.println(m.group(1));
@@ -107,9 +108,9 @@ public class Plugins {
 		}
 	}
 
-	private void print(Map<String,Class< ? >> plugins) {
+	private void print(Map<String, Class<?>> plugins) {
 		bnd.out.printf("%-30s %s%n", "Type", "Description");
-		for (Map.Entry<String,Class< ? >> e : plugins.entrySet()) {
+		for (Map.Entry<String, Class<?>> e : plugins.entrySet()) {
 			bnd.out.printf("%-30s %s%n", e.getKey(), getDescription(e.getValue()));
 		}
 	}
@@ -118,7 +119,7 @@ public class Plugins {
 	 * Return the description of the plugin. Requires a plugin that is annotated
 	 * with BndPlugin and that has a Config which is annotated with an OCD.
 	 */
-	private String getDescription(Class< ? > clazz) {
+	private String getDescription(Class<?> clazz) {
 		String description = clazz.getName();
 
 		Meta.OCD ocd = getOCD(clazz);
@@ -128,10 +129,10 @@ public class Plugins {
 		return description;
 	}
 
-	private Meta.OCD getOCD(Class< ? > pluginClass) {
+	private Meta.OCD getOCD(Class<?> pluginClass) {
 		BndPlugin plugin = pluginClass.getAnnotation(BndPlugin.class);
 		if (plugin != null) {
-			Class< ? > configClass = plugin.parameters();
+			Class<?> configClass = plugin.parameters();
 			if (configClass != null && configClass != Object.class) {
 				Meta.OCD ocd = configClass.getAnnotation(Meta.OCD.class);
 				return ocd;
@@ -140,7 +141,7 @@ public class Plugins {
 		return null;
 	}
 
-	private Map<String,Class< ? >> getAnnotatedPlugins() throws IOException {
+	private Map<String, Class<?>> getAnnotatedPlugins() throws IOException {
 		if (annotatedPlugins == null) {
 			annotatedPlugins = new TreeMap<>();
 
@@ -150,9 +151,10 @@ public class Plugins {
 				Parameters classes = new Parameters(p.getProperty("plugins"), bnd);
 				for (String cname : classes.keySet()) {
 					try {
-						Class< ? > c = getClass().getClassLoader().loadClass(cname);
+						Class<?> c = getClass().getClassLoader()
+							.loadClass(cname);
 						aQute.bnd.annotation.plugin.BndPlugin annotation = c
-								.getAnnotation(aQute.bnd.annotation.plugin.BndPlugin.class);
+							.getAnnotation(aQute.bnd.annotation.plugin.BndPlugin.class);
 						if (annotation != null) {
 							annotatedPlugins.put(annotation.name(), c);
 						}

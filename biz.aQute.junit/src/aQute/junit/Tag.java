@@ -28,11 +28,11 @@ public class Tag {
 																								// of
 																								// the
 																								// tag
-	Hashtable<String,String>		attributes	= new Hashtable<>();				// Attributes
+	Hashtable<String, String>		attributes	= new Hashtable<>();							// Attributes
 																								// name
 																								// ->
 																								// value
-	Vector<Object>					content		= new Vector<>();							// Content
+	Vector<Object>					content		= new Vector<>();								// Content
 																								// elements
 	boolean							cdata;
 
@@ -48,7 +48,7 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Hashtable<String,String> attributes) {
+	public Tag(String name, Hashtable<String, String> attributes) {
 		this.name = name;
 		this.attributes = attributes;
 	}
@@ -149,7 +149,7 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Dictionary<String,String> getAttributes() {
+	public Dictionary<String, String> getAttributes() {
 		return attributes;
 	}
 
@@ -179,7 +179,8 @@ public class Tag {
 		Vector<Object> out = new Vector<>();
 		for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
 			Object o = e.nextElement();
-			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
+			if (o instanceof Tag && ((Tag) o).getName()
+				.equals(tag))
 				out.addElement(o);
 		}
 		return out;
@@ -272,10 +273,11 @@ public class Tag {
 	private void copyURL(PrintWriter pw, URL url) {
 		try {
 			try (InputStream in = url.openStream();
-					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, UTF_8))) {
+				BufferedReader rdr = new BufferedReader(new InputStreamReader(in, UTF_8))) {
 				String line = rdr.readLine();
 				if (line != null) {
-					while (line != null && line.trim().startsWith("<?"))
+					while (line != null && line.trim()
+						.startsWith("<?"))
 						line = rdr.readLine();
 
 					while (line != null) {
@@ -409,7 +411,8 @@ public class Tag {
 			Object o = e.nextElement();
 			if (o instanceof Tag) {
 				Tag child = (Tag) o;
-				if (child.getName().equals(elementName) || elementName.equals("*"))
+				if (child.getName()
+					.equals(elementName) || elementName.equals("*"))
 					child.select(remainder, results, mapping);
 			}
 		}

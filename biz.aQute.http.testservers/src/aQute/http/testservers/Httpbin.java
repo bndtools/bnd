@@ -116,22 +116,22 @@ public class Httpbin extends HttpTestServer {
 		rsp.code = code;
 	}
 
-	public Map<String,String> _ip(Request rq) {
+	public Map<String, String> _ip(Request rq) {
 		return Collections.singletonMap("origin", rq.ip);
 	}
 
-	public Map<String,String> _headers(Request rq) {
+	public Map<String, String> _headers(Request rq) {
 		return rq.headers;
 	}
 
-	public Map<String,String> _user$2dagent(Request rq) {
+	public Map<String, String> _user$2dagent(Request rq) {
 		return Collections.singletonMap("user-agent", rq.headers.get("user-agent"));
 	}
 
 	static Pattern BASIC_AUTH_P = Pattern.compile("Basic\\s+(?<auth>[^\\s]+)\\s*", Pattern.CASE_INSENSITIVE);
 
 	public Request _basic$2dauth(Request req, Response response, String user, String passwrd)
-			throws UnsupportedEncodingException {
+		throws UnsupportedEncodingException {
 		String auth = Base64.encodeBase64((user + ":" + passwrd).getBytes("UTF-8"));
 
 		String authorization = req.headers.get("Authorization");
@@ -167,7 +167,7 @@ public class Httpbin extends HttpTestServer {
 		if (count > 0) {
 			System.out.println("redirect " + count);
 			String location = (!rq.args.containsKey("relative") ? getBaseURI() : "") + "/redirect/" + (--count) + "/"
-					+ response;
+				+ response;
 			rsp.headers.put("Location", location);
 			rsp.code = 301;
 		} else {
@@ -193,7 +193,8 @@ public class Httpbin extends HttpTestServer {
 			rsp.headers.put("ETag", qetag);
 
 		if (requestedDate != null) {
-			long modifiedSince = sdf.parse(requestedDate).getTime();
+			long modifiedSince = sdf.parse(requestedDate)
+				.getTime();
 			if (modifiedSince >= resourceModifiedTime) {
 				rsp.code = HttpURLConnection.HTTP_NOT_MODIFIED;
 				return null;

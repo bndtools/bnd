@@ -33,7 +33,7 @@ class Releaser implements Release {
 	private Properties					context;
 
 	Releaser(MavenRepository home, Revision revision, MavenBackingRepository repo, Properties context)
-			throws Exception {
+		throws Exception {
 		this.home = home;
 		this.revision = revision;
 		this.repo = repo;
@@ -123,7 +123,7 @@ class Releaser implements Release {
 						return;
 
 					throw new IllegalStateException(
-							"Revision already exists on remote system " + revision + " " + repo);
+						"Revision already exists on remote system " + revision + " " + repo);
 
 				} else {
 					metadata.versions.add(revision.version);
@@ -208,6 +208,7 @@ class Releaser implements Release {
 		aborted = true;
 	}
 
+	@Override
 	public void force() {
 		force = true;
 	}
@@ -248,7 +249,7 @@ class Releaser implements Release {
 			command.add("--passphrase", passphrase);
 		else
 			throw new IOException(
-					"gpg signing %s failed because no passphrase was set (either context, System property `gpg.passphrase`, or env var GPG_PASSPHRASE");
+				"gpg signing %s failed because no passphrase was set (either context, System property `gpg.passphrase`, or env var GPG_PASSPHRASE");
 
 		command.add("-ab", "--sign"); // not the -b!!
 		command.add(file.getAbsolutePath());
@@ -263,8 +264,8 @@ class Releaser implements Release {
 	}
 
 	private String getPassphrase() {
-		return context.getProperty("gpg.passphrase",
-				System.getProperties().getProperty("gpg.passphrase", System.getenv("GPG_PASSPHRASE")));
+		return context.getProperty("gpg.passphrase", System.getProperties()
+			.getProperty("gpg.passphrase", System.getenv("GPG_PASSPHRASE")));
 	}
 
 }

@@ -8,55 +8,50 @@ import aQute.bnd.version.MavenVersion;
 /**
  * The <code>&lt;plugin&gt;</code> element contains informations required for a
  * plugin.
- * 
  */
 public class PluginDTO extends DTO {
 
 	/**
 	 * The group ID of the plugin in the repository.
 	 */
-	public String groupId = "org.apache.maven.plugins";
+	public String				groupId		= "org.apache.maven.plugins";
 
 	/**
 	 * The artifact ID of the plugin in the repository.
-	 * 
 	 */
-	public String		artifactId;
+	public String				artifactId;
 	/**
 	 * The version (or valid range of versions) of the plugin to be used.
 	 */
-	public MavenVersion	version;
+	public MavenVersion			version;
 	/**
 	 * Whether to load Maven extensions (such as packaging and type handlers)
 	 * from this plugin. For performance reasons, this should only be enabled
 	 * when necessary. Note: While the type of this field is <code>String</code>
 	 * for technical reasons, the semantic type is actually <code>Boolean</code>
 	 * . Default value is <code>false</code>.
-	 * 
 	 */
-	public String		extensions;
+	public String				extensions;
 
 	/**
 	 * Multiple specifications of a set of goals to execute during the build
 	 * lifecycle, each having (possibly) a different configuration.
-	 * 
 	 */
-	public PluginExecutionDTO[] executions;
+	public PluginExecutionDTO[]	executions;
 
 	/**
 	 * Additional dependencies that this project needs to introduce to the
 	 * plugin's classloader.
 	 */
-	public DependencyDTO[] depencies;
+	public DependencyDTO[]		depencies;
 
 	/**
 	 * Whether any configuration should be propagated to child POMs. Note: While
 	 * the type of this field is <code>String</code> for technical reasons, the
 	 * semantic type is actually <code>Boolean</code>. Default value is
 	 * <code>true</code>.
-	 * 
 	 */
-	public boolean inherited = true;
+	public boolean				inherited	= true;
 
 	/**
 	 * <p>
@@ -84,8 +79,7 @@ public class PluginDTO extends DTO {
 	 * "http://plexus.codehaus.org/plexus-utils/apidocs/org/codehaus/plexus/util/xml/Xpp3DomUtils.html">
 	 * Xpp3DomUtils</a> for more information.
 	 * </p>
-	 * 
 	 */
-	public Map<String, String> configuration;
+	public Map<String, String>	configuration;
 
 }

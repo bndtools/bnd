@@ -39,7 +39,7 @@ import aQute.lib.base64.Base64;
  * conversion
  */
 @SuppressWarnings({
-		"unchecked", "rawtypes"
+	"unchecked", "rawtypes"
 })
 public class Converter {
 	public interface Hook {
@@ -47,7 +47,7 @@ public class Converter {
 	}
 
 	boolean			fatal	= true;
-	Map<Type,Hook>	hooks;
+	Map<Type, Hook>	hooks;
 	List<Hook>		allHooks;
 
 	public <T> T convert(Class<T> type, Object o) throws Exception {
@@ -87,7 +87,7 @@ public class Converter {
 			}
 		}
 
-		Class< ? > actualType = o.getClass();
+		Class<?> actualType = o.getClass();
 
 		// We can always make a string
 
@@ -123,9 +123,9 @@ public class Converter {
 		//
 
 		if (o instanceof Dictionary && !(o instanceof Map)) {
-			Dictionary< ? , ? > dict = (Dictionary< ? , ? >) o;
-			Map<Object,Object> map = new HashMap<>();
-			Enumeration< ? > e = dict.keys();
+			Dictionary<?, ?> dict = (Dictionary<?, ?>) o;
+			Map<Object, Object> map = new HashMap<>();
+			Enumeration<?> e = dict.keys();
 			while (e.hasMoreElements()) {
 				Object k = e.nextElement();
 				Object v = dict.get(k);
@@ -254,7 +254,7 @@ public class Converter {
 			}
 
 			try {
-				Constructor< ? > c = resultType.getConstructor(String.class);
+				Constructor<?> c = resultType.getConstructor(String.class);
 				return c.newInstance(o.toString());
 			} catch (Throwable t) {}
 			try {
@@ -290,14 +290,16 @@ public class Converter {
 		if (o instanceof Collection) {
 			Collection col = (Collection) o;
 			if (col.size() == 1)
-				return convert(type, col.iterator().next());
+				return convert(type, col.iterator()
+					.next());
 		}
 
 		if (o instanceof Map) {
 			String key = null;
 			try {
-				Map<Object,Object> map = (Map) o;
-				Object instance = resultType.getConstructor().newInstance();
+				Map<Object, Object> map = (Map) o;
+				Object instance = resultType.getConstructor()
+					.newInstance();
 				for (Map.Entry e : map.entrySet()) {
 					key = (String) e.getKey();
 					try {
@@ -308,7 +310,7 @@ public class Converter {
 
 						// We cannot find the key, so try the __extra field
 						Field f = resultType.getField("__extra");
-						Map<String,Object> extra = (Map<String,Object>) f.get(instance);
+						Map<String, Object> extra = (Map<String, Object>) f.get(instance);
 						if (extra == null) {
 							extra = new HashMap<>();
 							f.set(instance, extra);
@@ -320,7 +322,7 @@ public class Converter {
 				return instance;
 			} catch (Exception e) {
 				return error(
-						"No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key " + key);
+					"No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key " + key);
 			}
 		}
 
@@ -330,7 +332,8 @@ public class Converter {
 	private String sanitizeInputForURI(String input) {
 		int newline = input.indexOf("\n");
 		if (newline > -1)
-			return input.substring(0, newline).trim();
+			return input.substring(0, newline)
+				.trim();
 		return input;
 	}
 
@@ -355,8 +358,8 @@ public class Converter {
 		return null;
 	}
 
-	private Collection collection(Type collectionType, Class< ? extends Collection> rawClass, Object o)
-			throws Exception {
+	private Collection collection(Type collectionType, Class<? extends Collection> rawClass, Object o)
+		throws Exception {
 		Collection collection;
 		if (rawClass.isInterface() || Modifier.isAbstract(rawClass.getModifiers())) {
 			if (rawClass.isAssignableFrom(ArrayList.class))
@@ -376,7 +379,8 @@ public class Converter {
 			else
 				return (Collection) error("Cannot find a suitable collection for the collection interface " + rawClass);
 		} else
-			collection = rawClass.getConstructor().newInstance();
+			collection = rawClass.getConstructor()
+				.newInstance();
 
 		Type subType = Object.class;
 		if (collectionType instanceof ParameterizedType) {
@@ -392,7 +396,7 @@ public class Converter {
 		return collection;
 	}
 
-	private Map map(Type mapType, Class< ? extends Map< ? , ? >> rawClass, Object o) throws Exception {
+	private Map map(Type mapType, Class<? extends Map<?, ?>> rawClass, Object o) throws Exception {
 		Map result;
 		if (rawClass.isInterface() || Modifier.isAbstract(rawClass.getModifiers())) {
 			if (rawClass.isAssignableFrom(HashMap.class))
@@ -405,9 +409,10 @@ public class Converter {
 				return (Map) error("Cannot find suitable map for map interface " + rawClass);
 			}
 		} else
-			result = rawClass.getConstructor().newInstance();
+			result = rawClass.getConstructor()
+				.newInstance();
 
-		Map< ? , ? > input = toMap(o);
+		Map<?, ?> input = toMap(o);
 
 		Type keyType = Object.class;
 		Type valueType = Object.class;
@@ -417,7 +422,7 @@ public class Converter {
 			valueType = ptype.getActualTypeArguments()[1];
 		}
 
-		for (Map.Entry< ? , ? > entry : input.entrySet()) {
+		for (Map.Entry<?, ?> entry : input.entrySet()) {
 			Object key = convert(keyType, entry.getKey());
 			Object value = convert(valueType, entry.getValue());
 			if (key == null)
@@ -430,8 +435,8 @@ public class Converter {
 	}
 
 	public Object array(Type type, Object o) throws Exception {
-		Collection< ? > input = toCollection(o);
-		Class< ? > componentClass = getRawClass(type);
+		Collection<?> input = toCollection(o);
+		Class<?> componentClass = getRawClass(type);
 		Object array = Array.newInstance(componentClass, input.size());
 
 		int i = 0;
@@ -441,37 +446,43 @@ public class Converter {
 		return array;
 	}
 
-	private Class< ? > getRawClass(Type type) {
+	private Class<?> getRawClass(Type type) {
 		if (type instanceof Class)
-			return (Class< ? >) type;
+			return (Class<?>) type;
 
 		if (type instanceof ParameterizedType)
-			return (Class< ? >) ((ParameterizedType) type).getRawType();
+			return (Class<?>) ((ParameterizedType) type).getRawType();
 
 		if (type instanceof GenericArrayType) {
 			Type componentType = ((GenericArrayType) type).getGenericComponentType();
-			return Array.newInstance(getRawClass(componentType), 0).getClass();
+			return Array.newInstance(getRawClass(componentType), 0)
+				.getClass();
 		}
 
 		if (type instanceof TypeVariable) {
 			Type componentType = ((TypeVariable) type).getBounds()[0];
-			return Array.newInstance(getRawClass(componentType), 0).getClass();
+			return Array.newInstance(getRawClass(componentType), 0)
+				.getClass();
 		}
 
 		if (type instanceof WildcardType) {
 			Type componentType = ((WildcardType) type).getUpperBounds()[0];
-			return Array.newInstance(getRawClass(componentType), 0).getClass();
+			return Array.newInstance(getRawClass(componentType), 0)
+				.getClass();
 		}
 
 		return Object.class;
 	}
 
-	public Collection< ? > toCollection(Object o) {
+	public Collection<?> toCollection(Object o) {
 		if (o instanceof Collection)
-			return (Collection< ? >) o;
+			return (Collection<?>) o;
 
-		if (o.getClass().isArray()) {
-			if (o.getClass().getComponentType().isPrimitive()) {
+		if (o.getClass()
+			.isArray()) {
+			if (o.getClass()
+				.getComponentType()
+				.isPrimitive()) {
 				int length = Array.getLength(o);
 				List<Object> result = new ArrayList<>(length);
 				for (int i = 0; i < length; i++) {
@@ -485,11 +496,12 @@ public class Converter {
 		return Arrays.asList(o);
 	}
 
-	public Map< ? , ? > toMap(Object o) throws Exception {
+	public Map<?, ?> toMap(Object o) throws Exception {
 		if (o instanceof Map)
-			return (Map< ? , ? >) o;
+			return (Map<?, ?>) o;
 		Map result = new HashMap();
-		Field fields[] = o.getClass().getFields();
+		Field fields[] = o.getClass()
+			.getFields();
 		for (Field f : fields)
 			result.put(f.getName(), f.get(o));
 		if (result.isEmpty())
@@ -529,11 +541,12 @@ public class Converter {
 	 * @param properties
 	 * @return proxy object for map
 	 */
-	public <T> T proxy(Class<T> interfc, final Map< ? , ? > properties) {
+	public <T> T proxy(Class<T> interfc, final Map<?, ?> properties) {
 		return (T) Proxy.newProxyInstance(interfc.getClassLoader(), new Class[] {
-				interfc
+			interfc
 		}, new InvocationHandler() {
 
+			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				Object o = properties.get(method.getName());
 				if (o == null)

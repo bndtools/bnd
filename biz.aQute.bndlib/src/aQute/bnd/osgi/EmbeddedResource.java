@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 import aQute.lib.io.IO;
+
 public class EmbeddedResource implements Resource {
 	private final ByteBuffer	buffer;
 	private final long			lastModified;
@@ -35,10 +36,12 @@ public class EmbeddedResource implements Resource {
 		return buffer.duplicate();
 	}
 
+	@Override
 	public InputStream openInputStream() {
 		return IO.stream(buffer());
 	}
 
+	@Override
 	public void write(OutputStream out) throws Exception {
 		IO.copy(buffer(), out);
 	}
@@ -48,21 +51,26 @@ public class EmbeddedResource implements Resource {
 		return ":" + size() + ":";
 	}
 
+	@Override
 	public long lastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public String getExtra() {
 		return extra;
 	}
 
+	@Override
 	public void setExtra(String extra) {
 		this.extra = extra;
 	}
 
+	@Override
 	public long size() {
 		return buffer.limit();
 	}
 
+	@Override
 	public void close() throws IOException {}
 }

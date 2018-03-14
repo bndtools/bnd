@@ -29,7 +29,6 @@ import biz.aQute.bnd.diagnostics.gogo.foo.Foo;
 import biz.aQute.bnd.diagnostics.gogo.impl.Diagnostics;
 import biz.aQute.bnd.diagnostics.gogo.impl.Search;
 
-
 public class DiagnosticsTest {
 	static JUnitFramework	fw;
 	static ConsoleLogger	log;
@@ -39,11 +38,8 @@ public class DiagnosticsTest {
 		try {
 			fw = new JUnitFramework();
 			log = new ConsoleLogger(fw.context);
-			fw.addBundle(
-					"	org.apache.felix.gogo.command," +
-							"org.apache.felix.gogo.runtime," +
-							"org.apache.felix.scr;version=2.0.12" +
-							"");
+			fw.addBundle("	org.apache.felix.gogo.command," + "org.apache.felix.gogo.runtime,"
+				+ "org.apache.felix.scr;version=2.0.12" + "");
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
@@ -63,7 +59,8 @@ public class DiagnosticsTest {
 
 		ServiceReference<LogService> serviceReference = fw.context.getServiceReference(LogService.class);
 		assertNotNull(serviceReference);
-		assertEquals(0L, serviceReference.getBundle().getBundleId());
+		assertEquals(0L, serviceReference.getBundle()
+			.getBundleId());
 		LogService service = fw.context.getService(serviceReference);
 		assertTrue(service instanceof ConsoleLogger.Facade);
 
@@ -118,45 +115,47 @@ public class DiagnosticsTest {
 		//
 		BundleBuilder aBuilder = fw.bundle();
 		aBuilder.addResource(TestSearchingComponent.class);
-		aBuilder.setPrivatePackage(Foo.class.getPackage().getName());
+		aBuilder.setPrivatePackage(Foo.class.getPackage()
+			.getName());
 		Bundle a = aBuilder.install();
 		a.start();
 
 		List<Search> wanted = diagnostic.wanted(a.getBundleId(), Glob.ALL);
-		
+
 		boolean foundFooClassDiagnostic = false;
-		for ( Search s : wanted) {
-			if ( s.serviceName.equals( Foo.class.getName())) {
-				assertThat( s.mismatched.isEmpty(), is(true));
-				assertThat( s.matched.isEmpty(), is(true));
+		for (Search s : wanted) {
+			if (s.serviceName.equals(Foo.class.getName())) {
+				assertThat(s.mismatched.isEmpty(), is(true));
+				assertThat(s.matched.isEmpty(), is(true));
 				foundFooClassDiagnostic = true;
 			}
 		}
-		
-		assertThat( foundFooClassDiagnostic, is(true));
-		
+
+		assertThat(foundFooClassDiagnostic, is(true));
+
 		//
 		// register service Foo, exported package with Foo
-		// 
-		
+		//
+
 		BundleBuilder bBuilder = fw.bundle();
 		bBuilder.addResource(TestFooComponent.class);
-		bBuilder.setExportPackage(Foo.class.getPackage().getName());
+		bBuilder.setExportPackage(Foo.class.getPackage()
+			.getName());
 		Bundle b = bBuilder.install();
 		b.start();
 
 		wanted = diagnostic.wanted(a.getBundleId(), Glob.ALL);
-		
+
 		foundFooClassDiagnostic = false;
-		for ( Search s : wanted) {
-			if ( s.serviceName.equals( Foo.class.getName())) {
-				assertThat( s.mismatched, hasItem(b.getBundleId()));
-				assertThat( s.matched.isEmpty(), is(true));
+		for (Search s : wanted) {
+			if (s.serviceName.equals(Foo.class.getName())) {
+				assertThat(s.mismatched, hasItem(b.getBundleId()));
+				assertThat(s.matched.isEmpty(), is(true));
 				foundFooClassDiagnostic = true;
 			}
 		}
-		assertThat( foundFooClassDiagnostic, is(true));
-		
+		assertThat(foundFooClassDiagnostic, is(true));
+
 		a.uninstall();
 		b.uninstall();
 	}
