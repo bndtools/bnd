@@ -55,6 +55,7 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.Filters;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.io.IO;
@@ -553,7 +554,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			// 4. Higher capability version
 			String ns1 = o1.getNamespace();
 			String ns2 = o2.getNamespace();
-			if (ns1 == ns2 || (ns1 != null && ns1.equals(ns2))) {
+			if (ns1.equals(ns2)) {
 				try {
 					// We use package namespace, as that defines the general
 					// contract for versions
@@ -592,6 +593,18 @@ public abstract class AbstractResolveContext extends ResolveContext {
 					Version v2 = getVersion(o2, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 					if (!v1.equals(v2))
 						return v2.compareTo(v1);
+				}
+				// 6.5 Higher bundle version for other namespace's
+			} else if (ns1.equals(ns2)) {
+				IdentityCapability idCap1 = ResourceUtils.getIdentityCapability(res1);
+				IdentityCapability idCap2 = ResourceUtils.getIdentityCapability(res2);
+
+				if (idCap1 != null && idCap2 != null && idCap1.osgi_identity()
+					.equals(idCap2.osgi_identity())) {
+					if (!idCap1.version()
+						.equals(idCap2.version()))
+						return idCap2.version()
+							.compareTo(idCap1.version());
 				}
 			}
 

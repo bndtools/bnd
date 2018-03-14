@@ -468,4 +468,41 @@ public class ResolveTest extends TestCase {
 		assertEquals(4, resolvedResources.size());
 	}
 
+	/**
+	 * Test that latest bundle is selected when namespace is 'osgi.service'
+	 * 
+	 * @throws Exception
+	 */
+	public void testLatestBundleServiceNamespace() throws Exception {
+		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", IO.getFile("testdata/repo8/index.xml")
+				.toURI()
+				.toString());
+			map.put("name", getName());
+			map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+			repo.setProperties(map);
+			Processor model = new Processor();
+			model.addBasicPlugin(httpClient);
+			repo.setRegistry(model);
+
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires",
+				"osgi.service;filter:='(objectClass=org.osgi.service.component.runtime.ServiceComponentRuntime)'");
+			BndrunResolveContext context = new BndrunResolveContext(model, null, model, log);
+			context.setLevel(0);
+			context.addRepository(repo);
+			context.init();
+			try (ResolverLogger logger = new ResolverLogger(4)) {
+				Resolver resolver = new BndResolver(logger);
+				Map<Resource, List<Wire>> resolved = resolver.resolve(context);
+				Set<Resource> resources = resolved.keySet();
+				Resource scr = getResource(resources, "org.apache.felix.scr", "2.0.14");
+				assertNotNull(scr);
+			} catch (ResolutionException e) {
+				e.printStackTrace();
+				fail("Resolve failed");
+			}
+		}
+	}
 }
