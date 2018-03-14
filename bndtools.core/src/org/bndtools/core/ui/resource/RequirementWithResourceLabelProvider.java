@@ -16,10 +16,12 @@ public class RequirementWithResourceLabelProvider extends RequirementLabelProvid
         StyledString label = new StyledString();
 
         Resource resource = requirement.getResource();
-        if (!(resource == null || resource.getCapabilities("osgi.content").isEmpty()))
+        if (!(resource == null || resource.getCapabilities("osgi.content")
+            .isEmpty()))
             appendResourceLabel(label, resource);
 
-        if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
+        if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
+            .get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
             label.append(" optionally", StyledString.QUALIFIER_STYLER);
         label.append(" requires ", StyledString.QUALIFIER_STYLER);
 

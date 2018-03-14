@@ -49,9 +49,11 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
                         boolean found = false;
                         String customText = null;
 
-                        for (IMarker marker : unit.getResource().findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
+                        for (IMarker marker : unit.getResource()
+                            .findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
                             found = true;
-                            customText = marker.getAttribute(IMarker.MESSAGE).toString();
+                            customText = marker.getAttribute(IMarker.MESSAGE)
+                                .toString();
                         }
 
                         if (found) {
@@ -81,9 +83,12 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
 
                 boolean found = false;
                 String customText = null;
-                for (IMarker marker : type.getCompilationUnit().getResource().findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
+                for (IMarker marker : type.getCompilationUnit()
+                    .getResource()
+                    .findMarkers(BndtoolsConstants.MARKER_COMPONENT, true, IResource.DEPTH_ONE)) {
                     found = true;
-                    customText = marker.getAttribute(IMarker.MESSAGE).toString();
+                    customText = marker.getAttribute(IMarker.MESSAGE)
+                        .toString();
                 }
 
                 if (found) {
@@ -133,7 +138,10 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
 
         if ((unit != null) && unit.exists()) {
             for (IImportDeclaration importDecl : unit.getImports()) {
-                annotationInImports = importDecl.getElementName().equals(ComponentMarker.ANNOTATION_COMPONENT_FQN) || importDecl.getElementName().equals(ComponentMarker.ANNOTATION_COMPONENT_PACKAGE + ".*");
+                annotationInImports = importDecl.getElementName()
+                    .equals(ComponentMarker.ANNOTATION_COMPONENT_FQN)
+                    || importDecl.getElementName()
+                        .equals(ComponentMarker.ANNOTATION_COMPONENT_PACKAGE + ".*");
                 if (annotationInImports) {
                     break;
                 }

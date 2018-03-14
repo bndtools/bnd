@@ -67,7 +67,9 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
         btnEnableTemplateRepo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
 
         ControlDecoration decoration = new ControlDecoration(btnEnableTemplateRepo, SWT.RIGHT | SWT.TOP, composite);
-        decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        decoration.setImage(FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+            .getImage());
         decoration.setMarginWidth(3);
         decoration.setDescriptionText("These repositories are used to load\ntemplates, in addition to repositories\nconfigured in the Bnd OSGi Workspace.");
         decoration.setShowHover(true);
@@ -107,7 +109,8 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
         vwrRepos.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                addRemoveRepoPart.setRemoveEnabled(!vwrRepos.getSelection().isEmpty());
+                addRemoveRepoPart.setRemoveEnabled(!vwrRepos.getSelection()
+                    .isEmpty());
             }
         });
         tblRepos.addKeyListener(new KeyAdapter() {
@@ -142,7 +145,8 @@ public class ReposPreferencePage extends PreferencePage implements IWorkbenchPre
     }
 
     private void doRemoveRepo() {
-        int[] selectedIndexes = vwrRepos.getTable().getSelectionIndices();
+        int[] selectedIndexes = vwrRepos.getTable()
+            .getSelectionIndices();
         if (selectedIndexes == null)
             return;
         List<Object> selected = new ArrayList<>(selectedIndexes.length);

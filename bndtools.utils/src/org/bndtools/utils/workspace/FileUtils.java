@@ -8,6 +8,7 @@ import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
+
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -68,7 +69,8 @@ public class FileUtils {
         try {
             String charset = file.getCharset(true);
             if (charset == null) {
-                charset = Charset.defaultCharset().name();
+                charset = Charset.defaultCharset()
+                    .name();
             }
             inputStream = new ByteArrayInputStream(text.getBytes(charset));
         } catch (UnsupportedEncodingException e) {
@@ -80,7 +82,8 @@ public class FileUtils {
             if (createIfAbsent)
                 file.create(inputStream, false, null);
             else
-                throw new CoreException(new Status(IStatus.ERROR, BundleUtils.getBundleSymbolicName(FileUtils.class), 0, "File does not exist: " + file.getFullPath().toString(), null));
+                throw new CoreException(new Status(IStatus.ERROR, BundleUtils.getBundleSymbolicName(FileUtils.class), 0, "File does not exist: " + file.getFullPath()
+                    .toString(), null));
         }
     }
 
@@ -98,7 +101,9 @@ public class FileUtils {
             return null;
         }
 
-        String projectPath = project.getLocation().toFile().getAbsolutePath();
+        String projectPath = project.getLocation()
+            .toFile()
+            .getAbsolutePath();
         String filePath = file.getAbsolutePath();
         if (!filePath.startsWith(projectPath)) {
             return null;

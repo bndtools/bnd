@@ -81,7 +81,8 @@ public class RepoDownloadJob extends Job {
                 String resourceName = "<<unknown>>";
                 try {
                     RemoteRepositoryPlugin repo = (RemoteRepositoryPlugin) rbv.getRepo();
-                    ResourceHandle handle = repo.getHandle(rbv.getBsn(), rbv.getVersion().toString(), Strategy.EXACT, Collections.<String, String> emptyMap());
+                    ResourceHandle handle = repo.getHandle(rbv.getBsn(), rbv.getVersion()
+                        .toString(), Strategy.EXACT, Collections.<String, String> emptyMap());
                     resourceName = handle.getName();
                     Location location = handle.getLocation();
 

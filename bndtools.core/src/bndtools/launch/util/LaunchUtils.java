@@ -3,8 +3,8 @@ package bndtools.launch.util;
 import java.io.File;
 
 import org.bndtools.api.ILogger;
-import org.bndtools.api.RunListener;
 import org.bndtools.api.Logger;
+import org.bndtools.api.RunListener;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -24,7 +24,7 @@ public final class LaunchUtils {
 
     private static final ILogger logger = Logger.getLogger(LaunchUtils.class);
 
-    private static ServiceTracker<RunListener,RunListener> runListeners;
+    private static ServiceTracker<RunListener, RunListener> runListeners;
 
     private LaunchUtils() {}
 
@@ -33,7 +33,9 @@ public final class LaunchUtils {
         if (target == null)
             return null;
 
-        IResource targetResource = ResourcesPlugin.getWorkspace().getRoot().findMember(target);
+        IResource targetResource = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .findMember(target);
         return targetResource;
     }
 
@@ -43,7 +45,8 @@ public final class LaunchUtils {
         IProject project = launchResource.getProject();
         Project bnd;
         try {
-            bnd = Central.getWorkspace().getProject(project.getName());
+            bnd = Central.getWorkspace()
+                .getProject(project.getName());
         } catch (Exception e) {
             bnd = null;
         }
@@ -71,14 +74,17 @@ public final class LaunchUtils {
             IProject project = (IProject) targetResource;
             if (ws == null)
                 throw new Exception(String.format("Cannot load Bnd project for directory %s: no Bnd workspace found", project.getLocation()));
-            File bndFile = project.getFile(Project.BNDFILE).getLocation().toFile();
+            File bndFile = project.getFile(Project.BNDFILE)
+                .getLocation()
+                .toFile();
             if (bndFile == null || !bndFile.isFile())
                 throw new Exception(String.format("Failed to load Bnd project for directory %s: %s does not exist or is not a file.", project.getLocation(), Project.BNDFILE));
 
             run = Run.createRun(ws, bndFile);
         } else if (targetResource.getType() == IResource.FILE) {
             // This is file, use directly
-            File file = targetResource.getLocation().toFile();
+            File file = targetResource.getLocation()
+                .toFile();
             if (file == null || !file.isFile())
                 throw new Exception(String.format("Failed to create Bnd launch configuration: %s does not exist or is not a file.", file));
             run = Run.createRun(ws, file);
@@ -117,13 +123,14 @@ public final class LaunchUtils {
 
     private static synchronized RunListener[] getRunListeners() {
         if (runListeners == null) {
-            final BundleContext context = FrameworkUtil.getBundle(LaunchUtils.class).getBundleContext();
+            final BundleContext context = FrameworkUtil.getBundle(LaunchUtils.class)
+                .getBundleContext();
 
             if (context == null) {
                 throw new IllegalStateException("Bundle context is null");
             }
 
-            runListeners = new ServiceTracker<RunListener,RunListener>(context, RunListener.class, null);
+            runListeners = new ServiceTracker<RunListener, RunListener>(context, RunListener.class, null);
             runListeners.open();
         }
 

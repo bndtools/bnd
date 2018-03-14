@@ -84,7 +84,8 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                removeTool.setEnabled(!viewer.getSelection().isEmpty());
+                removeTool.setEnabled(!viewer.getSelection()
+                    .isEmpty());
             }
         });
         table.addKeyListener(new KeyAdapter() {
@@ -109,7 +110,9 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 
         // Add Bundle
         addBundleTool = new ToolItem(toolbar, SWT.PUSH);
-        addBundleTool.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        addBundleTool.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_OBJ_ADD));
         addBundleTool.setToolTipText(getAddButtonLabel());
         addBundleTool.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -120,8 +123,12 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
 
         // Remove
         removeTool = new ToolItem(toolbar, SWT.PUSH);
-        removeTool.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-        removeTool.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        removeTool.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE));
+        removeTool.setDisabledImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
         removeTool.setToolTipText("Remove");
         removeTool.setEnabled(false);
         removeTool.addSelectionListener(new SelectionAdapter() {
@@ -191,7 +198,7 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
     private void doRemove() {
         IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
         if (!selection.isEmpty()) {
-            Iterator< ? > elements = selection.iterator();
+            Iterator<?> elements = selection.iterator();
             List<Object> removed = new LinkedList<Object>();
             while (elements.hasNext()) {
                 Object element = elements.next();
@@ -238,11 +245,10 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
     }
 
     /**
-     * Update the requirements already available with new ones. Already existing requirements will be removed from the given
-     * set.
+     * Update the requirements already available with new ones. Already existing requirements will be removed from the
+     * given set.
      *
-     * @param adding
-     *            Set with {@link Requirement}s to add
+     * @param adding Set with {@link Requirement}s to add
      * @return true if requirements were added.
      */
     private boolean updateViewerWithNewRequirements(Set<Requirement> adding) {
@@ -266,7 +272,8 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
         } else if (elem instanceof RepositoryBundleVersion) {
             RepositoryBundleVersion rbv = (RepositoryBundleVersion) elem;
             bsn = rbv.getBsn();
-            versionRange = rbv.getVersion().toString();
+            versionRange = rbv.getVersion()
+                .toString();
         } else if (elem instanceof ProjectBundle) {
             bsn = ((ProjectBundle) elem).getBsn();
         } else if (elem instanceof VersionedClause) {
@@ -274,7 +281,8 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
             bsn = clause.getName();
             versionRange = clause.getVersionRange();
         } else {
-            throw new IllegalArgumentException("Unable to derive identity from an object of type " + elem.getClass().getSimpleName());
+            throw new IllegalArgumentException("Unable to derive identity from an object of type " + elem.getClass()
+                .getSimpleName());
         }
 
         final CapReqBuilder reqBuilder;
@@ -285,7 +293,8 @@ public abstract class AbstractRequirementListPart extends BndEditorPart implemen
         } else {
             Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, bsn);
             if (versionRange != null)
-                filter = new AndFilter().addChild(filter).addChild(new SimpleFilter("version", Operator.GreaterThanOrEqual, versionRange));
+                filter = new AndFilter().addChild(filter)
+                    .addChild(new SimpleFilter("version", Operator.GreaterThanOrEqual, versionRange));
             reqBuilder = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
         }
         return reqBuilder.buildSyntheticRequirement();

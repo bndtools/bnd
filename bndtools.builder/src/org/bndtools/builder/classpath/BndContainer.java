@@ -67,7 +67,8 @@ public class BndContainer implements IClasspathContainer, Serializable {
         if (files == null) {
             return;
         }
-        if (ResourcesPlugin.getWorkspace().isTreeLocked()) {
+        if (ResourcesPlugin.getWorkspace()
+            .isTreeLocked()) {
             return;
         }
         for (IResource target : files) {

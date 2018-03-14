@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -42,12 +43,12 @@ public class Activator extends AbstractUIPlugin {
         instance = this;
         this.context = context;
 
-        Hashtable<String,Object> p = new Hashtable<String,Object>();
+        Hashtable<String, Object> p = new Hashtable<String, Object>();
         // p.put(Action.ACTION_MENU, new String[] {"a:b", "a:c", "a:d",
         // "a:d:e"});
         context.registerService(Action.class.getName(), new ReflectAction(""), p);
 
-        Hashtable<String,Object> dataUrlHandlerProps = new Hashtable<>();
+        Hashtable<String, Object> dataUrlHandlerProps = new Hashtable<>();
         dataUrlHandlerProps.put(URLConstants.URL_HANDLER_PROTOCOL, DataURLStreamHandler.PROTOCOL);
         dataUrlHandlerReg = context.registerService(URLStreamHandlerService.class, new DataURLStreamHandler(), dataUrlHandlerProps);
     }
@@ -75,8 +76,7 @@ public class Activator extends AbstractUIPlugin {
     /**
      * Returns an image descriptor for the image file at the given plug-in relative path
      *
-     * @param path
-     *            the path
+     * @param path the path
      * @return the image descriptor
      */
     public static ImageDescriptor getImageDescriptor(String path) {
@@ -86,7 +86,7 @@ public class Activator extends AbstractUIPlugin {
     static volatile boolean busy;
 
     public void error(final String msg, final Throwable t) {
-        Status s = new Status(Status.ERROR, PLUGIN_ID, 0, msg, t);
+        Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, msg, t);
         getLog().log(s);
         async(new Runnable() {
             @Override
@@ -96,7 +96,7 @@ public class Activator extends AbstractUIPlugin {
                         return;
                     busy = true;
                 }
-                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s);
 
                 busy = false;
@@ -105,7 +105,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public void info(String msg) {
-        Status s = new Status(Status.INFO, PLUGIN_ID, 0, msg, null);
+        Status s = new Status(IStatus.INFO, PLUGIN_ID, 0, msg, null);
         getLog().log(s);
     }
 
@@ -119,7 +119,7 @@ public class Activator extends AbstractUIPlugin {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
             }
         });
@@ -143,7 +143,7 @@ public class Activator extends AbstractUIPlugin {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.WARNING, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.WARNING, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
             }
         });
@@ -151,7 +151,8 @@ public class Activator extends AbstractUIPlugin {
 
     static void async(Runnable run) {
         if (Display.getCurrent() == null) {
-            Display.getDefault().asyncExec(run);
+            Display.getDefault()
+                .asyncExec(run);
         } else
             run.run();
     }
@@ -188,10 +189,14 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public static void report(boolean warnings, @SuppressWarnings("unused") boolean acknowledge, Processor reporter, final String title, final String extra) {
-        if (reporter.getErrors().size() > 0 || (warnings && reporter.getWarnings().size() > 0)) {
+        if (reporter.getErrors()
+            .size() > 0
+            || (warnings && reporter.getWarnings()
+                .size() > 0)) {
             final StringBuffer sb = new StringBuffer();
             sb.append("\n");
-            if (reporter.getErrors().size() > 0) {
+            if (reporter.getErrors()
+                .size() > 0) {
                 sb.append("[Errors]\n");
                 for (String msg : reporter.getErrors()) {
                     sb.append(msg);
@@ -199,14 +204,15 @@ public class Activator extends AbstractUIPlugin {
                 }
             }
             sb.append("\n");
-            if (reporter.getWarnings().size() > 0) {
+            if (reporter.getWarnings()
+                .size() > 0) {
                 sb.append("[Warnings]\n");
                 for (String msg : reporter.getWarnings()) {
                     sb.append(msg);
                     sb.append("\n");
                 }
             }
-            final Status s = new Status(Status.ERROR, PLUGIN_ID, 0, sb.toString(), null);
+            final Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, sb.toString(), null);
             reporter.clear();
 
             async(new Runnable() {

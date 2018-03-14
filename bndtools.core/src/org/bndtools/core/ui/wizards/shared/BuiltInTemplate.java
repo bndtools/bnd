@@ -77,17 +77,18 @@ public class BuiltInTemplate implements Template {
     }
 
     @Override
-    public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+    public ResourceMap generateOutputs(Map<String, List<Object>> parameters) throws Exception {
         return generateOutputs(parameters, new NullProgressMonitor());
     }
 
     @Override
-    public ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
+    public ResourceMap generateOutputs(Map<String, List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         BundleContext context = bundle.getBundleContext();
         Collection<ServiceReference<TemplateEngine>> svcRefs = context.getServiceReferences(TemplateEngine.class, String.format("(name=%s)", engineName));
         if (svcRefs == null || svcRefs.isEmpty())
             throw new Exception(String.format("Unable to generate built-in template '%s': no Template Engine available matching '%s'", name, engineName));
-        ServiceReference<TemplateEngine> svcRef = svcRefs.iterator().next();
+        ServiceReference<TemplateEngine> svcRef = svcRefs.iterator()
+            .next();
         TemplateEngine engine = context.getService(svcRef);
         if (engine == null)
             throw new Exception(String.format("Unable to generate built-in template '%s': no Template Engine available matching '%s'", name, engineName));

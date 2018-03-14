@@ -29,6 +29,7 @@ public class TerminationListener implements IDebugEventSetListener {
         this.onTerminate = onTerminate;
     }
 
+    @Override
     public void handleDebugEvents(DebugEvent[] events) {
         for (DebugEvent event : events) {
             Object source = event.getSource();
@@ -45,7 +46,8 @@ public class TerminationListener implements IDebugEventSetListener {
                 }
 
                 if (isTerminated) {
-                    DebugPlugin.getDefault().removeDebugEventListener(this);
+                    DebugPlugin.getDefault()
+                        .removeDebugEventListener(this);
                     onTerminate.run();
                 }
             }

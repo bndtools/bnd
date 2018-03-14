@@ -35,12 +35,11 @@ import bndtools.launch.util.LaunchUtils;
 
 public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
     static String JNAME_S = "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
-    static Pattern FAILURES_P = Pattern.compile(
-            "^(" + JNAME_S + ")   # method name\n" //
-                    + "\\(" //
-                    + "     (" + JNAME_S + "(?:\\." + JNAME_S + ")*)          # fqn class name\n" //
-                    + "\\)$                                                   # close\n", //
-            Pattern.UNIX_LINES + Pattern.MULTILINE + Pattern.COMMENTS);
+    static Pattern FAILURES_P = Pattern.compile("^(" + JNAME_S + ")   # method name\n" //
+        + "\\(" //
+        + "     (" + JNAME_S + "(?:\\." + JNAME_S + ")*)          # fqn class name\n" //
+        + "\\)$                                                   # close\n", //
+        Pattern.UNIX_LINES + Pattern.MULTILINE + Pattern.COMMENTS);
     public static final String ORG_BNDTOOLS_TESTNAMES = "org.bndtools.testnames";
     private static final String JDT_JUNIT_BSN = "org.eclipse.jdt.junit";
     private static final String ATTR_JUNIT_PORT = "org.eclipse.jdt.junit.PORT";
@@ -67,7 +66,8 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
         // Trigger opening of the JUnit view
         Status junitStatus = new Status(IStatus.INFO, Plugin.PLUGIN_ID, LaunchConstants.LAUNCH_STATUS_JUNIT, "", null);
-        IStatusHandler handler = DebugPlugin.getDefault().getStatusHandler(junitStatus);
+        IStatusHandler handler = DebugPlugin.getDefault()
+            .getStatusHandler(junitStatus);
         if (handler != null)
             handler.handleStatus(junitStatus, null);
 
@@ -76,7 +76,10 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
     @Override
     protected IStatus getLauncherStatus() {
-        return createStatus("Problem(s) preparing the runtime environment.", bndTester.getProjectLauncher().getErrors(), bndTester.getProjectLauncher().getWarnings());
+        return createStatus("Problem(s) preparing the runtime environment.", bndTester.getProjectLauncher()
+            .getErrors(),
+            bndTester.getProjectLauncher()
+                .getWarnings());
     }
 
     // A couple of hacks to make sure the JUnit plugin is active and notices our
@@ -85,7 +88,8 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
     public ILaunch getLaunch(ILaunchConfiguration configuration, String mode) throws CoreException {
         // start the JUnit plugin
         try {
-            Bundle jdtJUnitBundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), JDT_JUNIT_BSN, null);
+            Bundle jdtJUnitBundle = BundleUtils.findBundle(Plugin.getDefault()
+                .getBundleContext(), JDT_JUNIT_BSN, null);
             if (jdtJUnitBundle == null)
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bundle \"{0}\" was not found. Cannot report JUnit results via the Workbench.", JDT_JUNIT_BSN), null));
             jdtJUnitBundle.start();
@@ -101,10 +105,13 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
         if (launchResource != null) {
             String launchProjectName = LaunchUtils.getLaunchProjectName(launchResource);
 
-            IProject launchProject = ResourcesPlugin.getWorkspace().getRoot().getProject(launchProjectName);
+            IProject launchProject = ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .getProject(launchProjectName);
 
             if (!launchProject.exists()) {
-                launchProjectName = launchResource.getProject().getName();
+                launchProjectName = launchResource.getProject()
+                    .getName();
             }
 
             modifiedConfig.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, launchProjectName);
@@ -169,22 +176,25 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
                 testName += ":" + testMethod;
             bndTester.addTest(testName);
         } else {
-            //We're not being asked to run a specific class and/or method, so use
+            // We're not being asked to run a specific class and/or method, so use
             String tests = configuration.getAttribute(ORG_BNDTOOLS_TESTNAMES, (String) null);
-            if (tests != null && !tests.trim().isEmpty()) {
-                for (String test : tests.trim().split("\\s+")) {
+            if (tests != null && !tests.trim()
+                .isEmpty()) {
+                for (String test : tests.trim()
+                    .split("\\s+")) {
                     bndTester.addTest(test);
                 }
             }
         }
 
-        //        if (bndTester.getTests().isEmpty()) {
-        //            if (!bndTester.getContinuous() || bndTester.getProject().getProperty(Constants.TESTCASES) == null) {
-        //                throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No tests are selected. " //
-        //                        + "This starts the tester who will then wait " //
-        //                        + "for bundles with the Test-Cases header listing the test cases. To enable this, set " + Constants.TESTCONTINUOUS + " to true", null));
-        //            }
-        //        }
+        // if (bndTester.getTests().isEmpty()) {
+        // if (!bndTester.getContinuous() || bndTester.getProject().getProperty(Constants.TESTCASES) == null) {
+        // throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "No tests are selected. " //
+        // + "This starts the tester who will then wait " //
+        // + "for bundles with the Test-Cases header listing the test cases. To enable this, set " +
+        // Constants.TESTCONTINUOUS + " to true", null));
+        // }
+        // }
 
         return port;
     }

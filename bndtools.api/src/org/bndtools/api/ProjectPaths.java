@@ -15,12 +15,12 @@ public class ProjectPaths {
         /* This call MUST NOT access any remotes */
         Processor defaults = Workspace.getDefaults();
         DEFAULT = new ProjectPaths( //
-                "bnd", //
-                defaults.getProperty(Constants.DEFAULT_PROP_SRC_DIR), //
-                defaults.getProperty(Constants.DEFAULT_PROP_BIN_DIR), //
-                defaults.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR), //
-                defaults.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR), //
-                defaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR));
+            "bnd", //
+            defaults.getProperty(Constants.DEFAULT_PROP_SRC_DIR), //
+            defaults.getProperty(Constants.DEFAULT_PROP_BIN_DIR), //
+            defaults.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR), //
+            defaults.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR), //
+            defaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR));
     }
 
     /*

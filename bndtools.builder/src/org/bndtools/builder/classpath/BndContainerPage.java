@@ -63,8 +63,12 @@ public class BndContainerPage extends WizardPage implements IClasspathContainerP
     @Override
     public void initialize(IJavaProject project, IClasspathEntry[] currentEntries) {
         javaProject = project;
-        model = Central.getInstance().getModel(project);
-        basedir = project.getProject().getLocation().makeAbsolute().toFile();
+        model = Central.getInstance()
+            .getModel(project);
+        basedir = project.getProject()
+            .getLocation()
+            .makeAbsolute()
+            .toFile();
     }
 
     /*
@@ -122,7 +126,8 @@ public class BndContainerPage extends WizardPage implements IClasspathContainerP
                 if (model != null)
                     try {
 
-                        return model.getBuildpath().toArray();
+                        return model.getBuildpath()
+                            .toArray();
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
@@ -155,16 +160,17 @@ public class BndContainerPage extends WizardPage implements IClasspathContainerP
             public String getColumnText(Object element, int columnIndex) {
                 Container c = (Container) element;
                 switch (columnIndex) {
-                case 0 :
-                    return c.getBundleSymbolicName();
-                case 1 :
-                    return c.getVersion();
-                case 2 :
-                    return c.getError();
-                case 3 :
-                    return c.getFile() + " (" + (c.getFile() != null && c.getFile().exists() ? "exists" : "?") + ")";
-                default :
-                    break;
+                    case 0 :
+                        return c.getBundleSymbolicName();
+                    case 1 :
+                        return c.getVersion();
+                    case 2 :
+                        return c.getError();
+                    case 3 :
+                        return c.getFile() + " (" + (c.getFile() != null && c.getFile()
+                            .exists() ? "exists" : "?") + ")";
+                    default :
+                        break;
                 }
                 return null;
             }
@@ -227,8 +233,10 @@ public class BndContainerPage extends WizardPage implements IClasspathContainerP
                     ps.println("-buildpath:                        osgi;                                        version=4.0, \\");
                     ps.println("                                   com.springsource.junit;                      version=\"[3.8,4)\"");
                 }
-                javaProject.getResource().refreshLocal(IResource.DEPTH_ONE, null);
-                model = Central.getInstance().getModel(javaProject);
+                javaProject.getResource()
+                    .refreshLocal(IResource.DEPTH_ONE, null);
+                model = Central.getInstance()
+                    .getModel(javaProject);
                 return model != null;
             } catch (IOException e) {
                 e.printStackTrace();

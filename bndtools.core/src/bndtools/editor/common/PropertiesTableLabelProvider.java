@@ -22,7 +22,7 @@ public class PropertiesTableLabelProvider extends StyledCellLabelProvider {
     public void update(ViewerCell cell) {
         ColumnViewer viewer = getViewer();
         @SuppressWarnings("unchecked")
-        Map<String,String> map = (Map<String,String>) viewer.getInput();
+        Map<String, String> map = (Map<String, String>) viewer.getInput();
 
         String key = (String) cell.getElement();
 

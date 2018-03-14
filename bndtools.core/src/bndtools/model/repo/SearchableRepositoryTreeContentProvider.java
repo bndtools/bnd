@@ -20,7 +20,7 @@ public class SearchableRepositoryTreeContentProvider extends RepositoryTreeConte
                     result[bundles.length] = newElem;
                 } else {
                     result = new Object[] {
-                            newElem
+                        newElem
                     };
                 }
             }

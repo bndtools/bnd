@@ -17,13 +17,13 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
 
     @SuppressWarnings("unused")
     private boolean optional;
-    private Map<Resource,List<Wire>> resolution;
+    private Map<Resource, List<Wire>> resolution;
 
     public void setOptional(boolean optional) {
         this.optional = optional;
     }
 
-    public void setResolution(Map<Resource,List<Wire>> resolution) {
+    public void setResolution(Map<Resource, List<Wire>> resolution) {
         this.resolution = resolution;
     }
 
@@ -42,11 +42,12 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
         if (parent instanceof Resource) {
             Resource parentResource = (Resource) parent;
 
-            Map<Capability,ResolutionTreeItem> items = new HashMap<Capability,ResolutionTreeItem>();
+            Map<Capability, ResolutionTreeItem> items = new HashMap<Capability, ResolutionTreeItem>();
             List<Wire> wires = resolution.get(parentResource);
             processWires(wires, items);
 
-            result = items.values().toArray();
+            result = items.values()
+                .toArray();
         } else if (parent instanceof Requirement) {
             result = getChildren(((Requirement) parent).getResource());
         } else if (parent instanceof ResolutionTreeItem) {
@@ -63,7 +64,7 @@ public class ResolutionTreeContentProvider implements ITreeContentProvider {
         return result;
     }
 
-    private static void processWires(Collection<Wire> wires, Map<Capability,ResolutionTreeItem> items) {
+    private static void processWires(Collection<Wire> wires, Map<Capability, ResolutionTreeItem> items) {
         if (wires != null) {
             for (Wire wire : wires) {
                 ResolutionTreeItem item = items.get(wire.getCapability());

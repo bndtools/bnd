@@ -21,7 +21,8 @@ public class NewIndexWizard extends Wizard implements INewWizard {
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         Object firstSelElem = selection.getFirstElement();
         if (firstSelElem instanceof IFolder) {
-            File dir = ((IFolder) firstSelElem).getLocation().toFile();
+            File dir = ((IFolder) firstSelElem).getLocation()
+                .toFile();
             indexPage.setBaseDir(dir);
         }
     }
@@ -38,7 +39,8 @@ public class NewIndexWizard extends Wizard implements INewWizard {
         List<Path> paths = indexPage.getInputPaths();
         Set<File> inputFiles = new HashSet<>(paths.size());
         for (Path path : paths)
-            inputFiles.add(basePath.resolve(path).toFile());
+            inputFiles.add(basePath.resolve(path)
+                .toFile());
 
         // Setup index config
         Boolean compressed = Boolean.valueOf(indexPage.getOutputStyle() == IndexFormatStyle.COMPRESSED);

@@ -15,9 +15,9 @@ public class WorkspaceURLStreamHandlerService extends AbstractURLStreamHandlerSe
 
     public static final String PROTOCOL = "workspace";
 
-    private final ServiceTracker<IWorkspace,IWorkspace> workspaceTracker;
+    private final ServiceTracker<IWorkspace, IWorkspace> workspaceTracker;
 
-    public WorkspaceURLStreamHandlerService(ServiceTracker<IWorkspace,IWorkspace> workspaceTracker) {
+    public WorkspaceURLStreamHandlerService(ServiceTracker<IWorkspace, IWorkspace> workspaceTracker) {
         this.workspaceTracker = workspaceTracker;
     }
 
@@ -33,7 +33,8 @@ public class WorkspaceURLStreamHandlerService extends AbstractURLStreamHandlerSe
         if (workspace == null)
             throw new IOException("Workspace is not available");
 
-        IPath workspaceLocation = workspace.getRoot().getLocation();
+        IPath workspaceLocation = workspace.getRoot()
+            .getLocation();
         if (workspaceLocation == null)
             throw new IOException("Cannot determine workspace location.");
 

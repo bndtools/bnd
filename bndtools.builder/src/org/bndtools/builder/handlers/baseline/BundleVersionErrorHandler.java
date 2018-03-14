@@ -48,11 +48,14 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
         BundleInfo info = (BundleInfo) location.details;
         try (ProjectBuilder pb = model.getBuilder(null)) {
             for (Builder builder : pb.getSubBuilders()) {
-                if (builder.getBsn().equals(info.bsn)) {
+                if (builder.getBsn()
+                    .equals(info.bsn)) {
                     File propsFile = builder.getPropertiesFile();
                     // Try to find in the sub-bundle file
                     if (propsFile != null) {
-                        bndFile = project.getWorkspace().getRoot().getFileForLocation(new Path(propsFile.getAbsolutePath()));
+                        bndFile = project.getWorkspace()
+                            .getRoot()
+                            .getFileForLocation(new Path(propsFile.getAbsolutePath()));
                         if (bndFile != null) {
                             loc = findBundleVersionHeader(bndFile);
                         }
@@ -78,7 +81,8 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
 
                     if (loc == null) {
                         // Not found in build.bnd, try included files. Marker will appear on bnd.bnd
-                        List<File> extensions = Central.getWorkspace().getIncluded();
+                        List<File> extensions = Central.getWorkspace()
+                            .getIncluded();
                         if (extensions != null) {
                             for (File extension : extensions) {
                                 loc = findBundleVersionHeader(Central.toResource(extension));
@@ -94,7 +98,7 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
                     }
 
                     if (loc != null) {
-                        Map<String,Object> attribs = new HashMap<String,Object>();
+                        Map<String, Object> attribs = new HashMap<String, Object>();
                         attribs.put(IMarker.MESSAGE, location.message);
                         attribs.put(IMarker.LINE_NUMBER, loc.lineNum);
                         attribs.put(IMarker.CHAR_START, loc.start);
@@ -120,7 +124,8 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
     }
 
     private LineLocation findBundleVersionHeader(IResource bndFile) throws Exception {
-        File file = bndFile.getLocation().toFile();
+        File file = bndFile.getLocation()
+            .toFile();
         String content = IO.collect(file);
 
         PropertiesLineReader reader = new PropertiesLineReader(content);

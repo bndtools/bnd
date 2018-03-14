@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
+
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.service.RepositoryListenerPlugin;
@@ -43,19 +44,28 @@ public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceCh
                 if (refresh.get())
                     return false;
 
-                switch (delta.getResource().getType()) {
-                case IResource.FILE : // project folder
-                    String fileExtension = delta.getResource().getFileExtension();
-                    if ("bnd".equals(fileExtension)) {
-                        refresh.set(true);
-                    }
-                    return false;
-                case IResource.FOLDER :
-                    if (cnfProject == null)
+                switch (delta.getResource()
+                    .getType()) {
+                    case IResource.FILE : // project folder
+                        String fileExtension = delta.getResource()
+                            .getFileExtension();
+                        if ("bnd".equals(fileExtension)) {
+                            refresh.set(true);
+                        }
                         return false;
-                    return delta.getResource().getParent().getType() == IResource.PROJECT && delta.getResource().getParent().equals(cnfProject) && delta.getResource().getName().equals("ext");
-                default :
-                    return false;
+                    case IResource.FOLDER :
+                        if (cnfProject == null)
+                            return false;
+                        return delta.getResource()
+                            .getParent()
+                            .getType() == IResource.PROJECT && delta.getResource()
+                                .getParent()
+                                .equals(cnfProject)
+                            && delta.getResource()
+                                .getName()
+                                .equals("ext");
+                    default :
+                        return false;
                 }
             }
 
@@ -66,22 +76,23 @@ public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceCh
             if (refresh.get())
                 return false;
 
-            switch (delta.getResource().getType()) {
-            case IResource.ROOT :
-                return true;
+            switch (delta.getResource()
+                .getType()) {
+                case IResource.ROOT :
+                    return true;
 
-            case IResource.PROJECT : // project folder
+                case IResource.PROJECT : // project folder
 
-                if (delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.REMOVED) {
-                    refresh.set(true);
+                    if (delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.REMOVED) {
+                        refresh.set(true);
+                        return false;
+                    }
+                    for (IResourceDelta subDelta : delta.getAffectedChildren(IResourceDelta.ADDED | IResourceDelta.REMOVED | IResourceDelta.CHANGED))
+                        subDelta.accept(projectFolder);
                     return false;
-                }
-                for (IResourceDelta subDelta : delta.getAffectedChildren(IResourceDelta.ADDED | IResourceDelta.REMOVED | IResourceDelta.CHANGED))
-                    subDelta.accept(projectFolder);
-                return false;
 
-            default :
-                return false;
+                default :
+                    return false;
             }
         }
 
@@ -118,7 +129,8 @@ public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceCh
             if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
 
                 RootFolderVisitor rootFolderVisitor = new RootFolderVisitor();
-                event.getDelta().accept(rootFolderVisitor);
+                event.getDelta()
+                    .accept(rootFolderVisitor);
 
                 if (refresh.getAndSet(false)) {
                     WorkspaceJob job = new WorkspaceJob("Refresh Workspace Repository") {

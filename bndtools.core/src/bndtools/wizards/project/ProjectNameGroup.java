@@ -58,7 +58,8 @@ public class ProjectNameGroup {
             @Override
             public void modifyText(ModifyEvent e) {
                 String old = projectName;
-                projectName = txtProjectName.getText().trim();
+                projectName = txtProjectName.getText()
+                    .trim();
                 propSupport.firePropertyChange(PROP_PROJECT_NAME, old, projectName);
 
                 if (btnInferBasePackageName.getSelection()) {
@@ -77,7 +78,8 @@ public class ProjectNameGroup {
             @Override
             public void modifyText(ModifyEvent ev) {
                 String old = packageName;
-                packageName = txtBasePackageName.getText().trim();
+                packageName = txtBasePackageName.getText()
+                    .trim();
                 propSupport.firePropertyChange(PROP_PACKAGE_NAME, old, packageName);
                 updateStatus();
             }
@@ -167,7 +169,8 @@ public class ProjectNameGroup {
                 if (Character.isJavaIdentifierStart(firstChar))
                     builder.append(firstChar);
                 else if (Character.isJavaIdentifierPart(firstChar))
-                    builder.append('_').append(firstChar);
+                    builder.append('_')
+                        .append(firstChar);
                 else if ('-' == firstChar)
                     builder.append('-');
 

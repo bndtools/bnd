@@ -56,7 +56,8 @@ public class BndProjectNature implements IProjectNature {
     private static void addBuilder(IProjectDescription desc) {
         ICommand[] commands = desc.getBuildSpec();
         for (ICommand command : commands) {
-            if (command.getBuilderName().equals(BndtoolsConstants.BUILDER_ID))
+            if (command.getBuilderName()
+                .equals(BndtoolsConstants.BUILDER_ID))
                 return;
         }
 
@@ -73,7 +74,8 @@ public class BndProjectNature implements IProjectNature {
         ICommand[] commands = desc.getBuildSpec();
         List<ICommand> nu = new ArrayList<ICommand>();
         for (ICommand command : commands) {
-            if (!command.getBuilderName().equals(BndtoolsConstants.BUILDER_ID)) {
+            if (!command.getBuilderName()
+                .equals(BndtoolsConstants.BUILDER_ID)) {
                 nu.add(command);
             }
         }
@@ -125,7 +127,8 @@ public class BndProjectNature implements IProjectNature {
                 }
             }
         };
-        project.getWorkspace().run(runnable, null);
+        project.getWorkspace()
+            .run(runnable, null);
     }
 
 }

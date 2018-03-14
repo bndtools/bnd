@@ -23,15 +23,15 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
     private FormToolkit toolkit;
     private Composite parent;
 
-    private final Map<Class< ? >,IDetailsPage> pageMap = new HashMap<Class< ? >,IDetailsPage>(3);
-    private final Map<Class< ? >,Control> controlCache = new HashMap<Class< ? >,Control>(3);
+    private final Map<Class<?>, IDetailsPage> pageMap = new HashMap<Class<?>, IDetailsPage>(3);
+    private final Map<Class<?>, Control> controlCache = new HashMap<Class<?>, Control>(3);
     private IDetailsPage deselectedPage = null;
 
     private IDetailsPage currentPage = null;
     private ISelection currentSelection;
     private IFormPart masterPart;
 
-    public void registerPage(Class< ? > clazz, IDetailsPage page) {
+    public void registerPage(Class<?> clazz, IDetailsPage page) {
         pageMap.put(clazz, page);
         page.initialize(managedForm);
     }
@@ -54,11 +54,12 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         stack.topControl = deselectedPanel;
     }
 
+    @Override
     public void selectionChanged(IFormPart part, ISelection selection) {
         masterPart = part;
         currentSelection = selection;
 
-        Class< ? > clazz = null;
+        Class<?> clazz = null;
         if (selection instanceof IStructuredSelection) {
             Object selected = ((IStructuredSelection) selection).getFirstElement();
             if (selected != null)
@@ -67,7 +68,7 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         showPage(clazz);
     }
 
-    void showPage(Class< ? > clazz) {
+    void showPage(Class<?> clazz) {
         IDetailsPage oldPage = currentPage;
 
         currentPage = clazz != null ? currentPage = pageMap.get(clazz) : null;
@@ -98,42 +99,50 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
             currentPage.refresh();
     }
 
+    @Override
     public void commit(boolean onSave) {
         if (currentPage != null)
             currentPage.commit(onSave);
     }
 
+    @Override
     public void dispose() {
-        for (Class< ? > key : pageMap.keySet()) {
+        for (Class<?> key : pageMap.keySet()) {
             controlCache.remove(key);
             IDetailsPage page = pageMap.get(key);
             page.dispose();
         }
     }
 
+    @Override
     public void initialize(IManagedForm form) {
         this.managedForm = form;
     }
 
+    @Override
     public boolean isDirty() {
         boolean dirty = currentPage != null && currentPage.isDirty();
         return dirty;
     }
 
+    @Override
     public boolean isStale() {
         return currentPage != null && currentPage.isStale();
     }
 
+    @Override
     public void refresh() {
         if (currentPage != null)
             currentPage.refresh();
     }
 
+    @Override
     public void setFocus() {
         if (currentPage != null)
             currentPage.setFocus();
     }
 
+    @Override
     public boolean setFormInput(Object input) {
         return false;
     }

@@ -19,7 +19,6 @@ public class TestRelease extends TestCase {
         version = ReleaseHelper.updateTemplateVersion("1.0.2.${tstamp}", Version.parseVersion("2"));
         assertEquals("2.0.0.${tstamp}", version);
 
-
     }
 
 }

@@ -13,7 +13,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
-public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildManager,HeadlessBuildManager> implements HeadlessBuildManager {
+public class HeadlessBuildManagerTracker extends ServiceTracker<HeadlessBuildManager, HeadlessBuildManager> implements HeadlessBuildManager {
     private final AtomicReference<ServiceReference<HeadlessBuildManager>> managerReference = new AtomicReference<ServiceReference<HeadlessBuildManager>>();
     private final AtomicReference<HeadlessBuildManager> manager = new AtomicReference<HeadlessBuildManager>();
 

@@ -16,9 +16,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 
-import bndtools.Plugin;
 import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import bndtools.Plugin;
 
 public class AddJpmDependenciesWizard extends Wizard {
 
@@ -72,7 +72,8 @@ public class AddJpmDependenciesWizard extends Wizard {
 
             return true;
         } catch (InvocationTargetException e) {
-            MessageDialog.openError(getShell(), "Error", e.getCause().getMessage());
+            MessageDialog.openError(getShell(), "Error", e.getCause()
+                .getMessage());
             return false;
         } catch (InterruptedException e) {
             return false;

@@ -19,8 +19,7 @@ public class CircularDependencyException extends Exception {
     @SuppressWarnings("rawtypes")
     private final List circle;
 
-    public CircularDependencyException(@SuppressWarnings("rawtypes")
-    List circle) {
+    public CircularDependencyException(@SuppressWarnings("rawtypes") List circle) {
         this.circle = circle;
     }
 
@@ -28,8 +27,9 @@ public class CircularDependencyException extends Exception {
     public String getLocalizedMessage() {
         StringBuilder builder = new StringBuilder();
         builder.append("Artifacts in cycle: ");
-        for (Iterator< ? > iter = circle.iterator(); iter.hasNext();) {
-            builder.append(iter.next().toString());
+        for (Iterator<?> iter = circle.iterator(); iter.hasNext();) {
+            builder.append(iter.next()
+                .toString());
             if (iter.hasNext())
                 builder.append(" -> ");
         }

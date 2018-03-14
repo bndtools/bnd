@@ -22,10 +22,14 @@ import bndtools.Plugin;
 
 public class BndEditorContentOutlineLabelProvider extends StyledCellLabelProvider {
 
-    final Image pageImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/page_white_text.png").createImage();
-    final Image packageImg = Icons.desc("package").createImage();
-    final Image brickImg = Icons.desc("bundle").createImage();
-    final Image pluginImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/plugin.png").createImage();
+    final Image pageImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/page_white_text.png")
+        .createImage();
+    final Image packageImg = Icons.desc("package")
+        .createImage();
+    final Image brickImg = Icons.desc("bundle")
+        .createImage();
+    final Image pluginImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/plugin.png")
+        .createImage();
 
     @Override
     public void update(ViewerCell cell) {

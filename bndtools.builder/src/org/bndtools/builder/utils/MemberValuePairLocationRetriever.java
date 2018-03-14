@@ -46,7 +46,9 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
     @Override
     public boolean visit(AnnotationTypeDeclaration node) {
         final IJavaElement ancestor = javaAnnotation.getAncestor(IJavaElement.TYPE);
-        if (ancestor != null && ancestor.exists() && ancestor.getElementName().equals(node.getName().getFullyQualifiedName())) {
+        if (ancestor != null && ancestor.exists() && ancestor.getElementName()
+            .equals(node.getName()
+                .getFullyQualifiedName())) {
             // keep searching
             return true;
         }
@@ -60,7 +62,9 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
     @Override
     public boolean visit(TypeDeclaration node) {
         final IJavaElement ancestor = javaAnnotation.getAncestor(IJavaElement.TYPE);
-        if (ancestor != null && ancestor.exists() && ancestor.getElementName().equals(node.getName().getFullyQualifiedName())) {
+        if (ancestor != null && ancestor.exists() && ancestor.getElementName()
+            .equals(node.getName()
+                .getFullyQualifiedName())) {
             // keep searching
             return true;
         }
@@ -74,7 +78,9 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
     @Override
     public boolean visit(VariableDeclarationFragment node) {
         final IJavaElement ancestor = javaAnnotation.getAncestor(IJavaElement.FIELD);
-        if (ancestor != null && ancestor.exists() && ancestor.getElementName().equals(node.getName().getFullyQualifiedName())) {
+        if (ancestor != null && ancestor.exists() && ancestor.getElementName()
+            .equals(node.getName()
+                .getFullyQualifiedName())) {
             // keep searching
             return true;
         }
@@ -88,7 +94,9 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
     @Override
     public boolean visit(MethodDeclaration node) {
         final IJavaElement ancestor = javaAnnotation.getAncestor(IJavaElement.METHOD);
-        if (ancestor != null && ancestor.exists() && ancestor.getElementName().equals(node.getName().getFullyQualifiedName())) {
+        if (ancestor != null && ancestor.exists() && ancestor.getElementName()
+            .equals(node.getName()
+                .getFullyQualifiedName())) {
             // keep searching
             return true;
         }
@@ -103,7 +111,8 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
     public boolean visit(SingleMemberAnnotation node) {
         final IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
         if (annotationBinding != null) {
-            final String nodeName = annotationBinding.getAnnotationType().getQualifiedName();
+            final String nodeName = annotationBinding.getAnnotationType()
+                .getQualifiedName();
             boolean match;
             try {
                 match = this.annotationNameMatch.test(nodeName);
@@ -111,7 +120,10 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
                 match = false;
             }
             if (match) {
-                this.locatedSourceRange = new SourceRange(node.getValue().getStartPosition(), node.getValue().getLength());
+                this.locatedSourceRange = new SourceRange(node.getValue()
+                    .getStartPosition(),
+                    node.getValue()
+                        .getLength());
             }
         }
         return false;
@@ -123,7 +135,9 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
     @Override
     public boolean visit(NormalAnnotation node) {
         final IJavaElement ancestor = javaAnnotation.getAncestor(IJavaElement.ANNOTATION);
-        if (ancestor != null && ancestor.exists() && ancestor.getElementName().equals(node.getTypeName().getFullyQualifiedName())) {
+        if (ancestor != null && ancestor.exists() && ancestor.getElementName()
+            .equals(node.getTypeName()
+                .getFullyQualifiedName())) {
             // keep searching
             return true;
         }
@@ -136,7 +150,9 @@ public class MemberValuePairLocationRetriever extends ASTVisitor {
      */
     @Override
     public boolean visit(MemberValuePair node) {
-        if (node.getName().getFullyQualifiedName().equals(memberName)) {
+        if (node.getName()
+            .getFullyQualifiedName()
+            .equals(memberName)) {
             this.locatedSourceRange = new SourceRange(node.getStartPosition(), node.getLength());
         }
         // no need to drill down from here anyway

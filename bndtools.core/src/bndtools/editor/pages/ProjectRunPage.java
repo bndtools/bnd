@@ -18,10 +18,12 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
@@ -40,8 +42,10 @@ public class ProjectRunPage extends FormPage {
 
     private final BndEditModel model;
 
-    private final Image imgBndLayout = Icons.desc("bnd.workspace.bndlayout").createImage();
-    private final Image imgStandaloneLayout = Icons.desc("bnd.workspace.standalone").createImage();
+    private final Image imgBndLayout = Icons.desc("bnd.workspace.bndlayout")
+        .createImage();
+    private final Image imgStandaloneLayout = Icons.desc("bnd.workspace.standalone")
+        .createImage();
 
     public static final IFormPageFactory FACTORY_PROJECT = new IFormPageFactory() {
         @Override
@@ -91,7 +95,8 @@ public class ProjectRunPage extends FormPage {
         Central.onWorkspaceAsync(workspace -> updateFormImage(form));
 
         tk.decorateFormHeading(form.getForm());
-        form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
+        form.getForm()
+            .addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
         // Toolbar Actions
         RunAction runAction = new RunAction(this, "run");
@@ -99,14 +104,16 @@ public class ProjectRunPage extends FormPage {
         runAction.setText("Run OSGi");
         ActionContributionItem runContrib = new ActionContributionItem(runAction);
         runContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-        form.getToolBarManager().add(runContrib);
+        form.getToolBarManager()
+            .add(runContrib);
 
         RunAction debugAction = new RunAction(this, "debug");
         debugAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/debug.gif"));
         debugAction.setText("Debug OSGi");
         ActionContributionItem debugContrib = new ActionContributionItem(debugAction);
         debugContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
-        form.getToolBarManager().add(debugContrib);
+        form.getToolBarManager()
+            .add(debugContrib);
 
         ExportAction exportAction = new ExportAction(getEditorSite().getShell(), getEditor(), model);
         exportAction.setImageDescriptor(AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/run_export.png"));
@@ -114,9 +121,11 @@ public class ProjectRunPage extends FormPage {
         ActionContributionItem exportContrib = new ActionContributionItem(exportAction);
         exportContrib.setMode(ActionContributionItem.MODE_FORCE_TEXT);
         if (exportAction.shouldEnable())
-            form.getToolBarManager().add(exportContrib);
+            form.getToolBarManager()
+                .add(exportContrib);
 
-        form.getToolBarManager().update(true);
+        form.getToolBarManager()
+            .update(true);
 
         GridLayout gl;
         GridData gd;
@@ -141,68 +150,81 @@ public class ProjectRunPage extends FormPage {
         right.setLayout(gl);
 
         // First column
-        RepositorySelectionPart reposPart = new RepositorySelectionPart(getEditor(), left, tk, Section.TITLE_BAR | Section.TWISTIE);
+        RepositorySelectionPart reposPart = new RepositorySelectionPart(getEditor(), left, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
         managedForm.addPart(reposPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
         gd.heightHint = 50;
-        reposPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
+        reposPart.getSection()
+            .setLayoutData(PageLayoutUtils.createCollapsed());
 
-        AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, Section.TITLE_BAR | Section.EXPANDED);
+        AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         managedForm.addPart(availableBundlesPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
         gd.heightHint = 50;
-        availableBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
+        availableBundlesPart.getSection()
+            .setLayoutData(PageLayoutUtils.createExpanded());
 
-        RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         managedForm.addPart(runFwkPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        runFwkPart.getSection().setLayoutData(gd);
+        runFwkPart.getSection()
+            .setLayoutData(gd);
 
-        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(left, tk, Section.TITLE_BAR | Section.TWISTIE);
+        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(left, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
         managedForm.addPart(runPropertiesPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        runPropertiesPart.getSection().setLayoutData(gd);
+        runPropertiesPart.getSection()
+            .setLayoutData(gd);
 
         // SECOND COLUMN
         if (supportsResolve) {
-            RunRequirementsPart requirementsPart = new RunRequirementsPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
+            RunRequirementsPart requirementsPart = new RunRequirementsPart(right, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED | Section.DESCRIPTION);
             managedForm.addPart(requirementsPart);
-            requirementsPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
-            requirementsPart.getSection().addExpansionListener(new ResizeExpansionAdapter(requirementsPart.getSection()));
+            requirementsPart.getSection()
+                .setLayoutData(PageLayoutUtils.createExpanded());
+            requirementsPart.getSection()
+                .addExpansionListener(new ResizeExpansionAdapter(requirementsPart.getSection()));
 
-            RunBlacklistPart blacklistPart = new RunBlacklistPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.COMPACT | Section.DESCRIPTION);
+            RunBlacklistPart blacklistPart = new RunBlacklistPart(right, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.COMPACT | Section.DESCRIPTION);
             managedForm.addPart(blacklistPart);
-            blacklistPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
-            blacklistPart.getSection().addExpansionListener(new ResizeExpansionAdapter(blacklistPart.getSection()));
+            blacklistPart.getSection()
+                .setLayoutData(PageLayoutUtils.createCollapsed());
+            blacklistPart.getSection()
+                .addExpansionListener(new ResizeExpansionAdapter(blacklistPart.getSection()));
 
-            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE);
+            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
             managedForm.addPart(runBundlesPart);
-            runBundlesPart.getSection().setLayoutData(PageLayoutUtils.createCollapsed());
-            runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
+            runBundlesPart.getSection()
+                .setLayoutData(PageLayoutUtils.createCollapsed());
+            runBundlesPart.getSection()
+                .addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
         } else {
-            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
             managedForm.addPart(runBundlesPart);
-            runBundlesPart.getSection().setLayoutData(PageLayoutUtils.createExpanded());
-            runBundlesPart.getSection().addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
+            runBundlesPart.getSection()
+                .setLayoutData(PageLayoutUtils.createExpanded());
+            runBundlesPart.getSection()
+                .addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
         }
 
         // Listeners
         model.addPropertyChangeListener(BndEditModel.PROP_WORKSPACE, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                Display.getDefault().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateFormImage(form);
-                    }
-                });
+                Display.getDefault()
+                    .asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            updateFormImage(form);
+                        }
+                    });
             }
         });
 
         sashForm.setWeights(new int[] {
-                1, 1
+            1, 1
         });
         sashForm.hookResizeListener();
         body.setLayout(new FillLayout());
@@ -218,13 +240,13 @@ public class ProjectRunPage extends FormPage {
     private void updateFormImage(final ScrolledForm form) {
         Workspace ws = model.getWorkspace();
         switch (ws.getLayout()) {
-        case BND :
-            form.setImage(imgBndLayout);
-            break;
-        case STANDALONE :
-            form.setImage(imgStandaloneLayout);
-            break;
-        default :
+            case BND :
+                form.setImage(imgBndLayout);
+                break;
+            case STANDALONE :
+                form.setImage(imgStandaloneLayout);
+                break;
+            default :
         }
     }
 }

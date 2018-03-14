@@ -40,6 +40,7 @@ public class PluginPropertiesPage extends WizardPage {
         super("pluginProperties");
     }
 
+    @Override
     public void createControl(Composite parent) {
         setTitle("Plug-in Configuration");
         setDescription("Set configuration properties for the plug-in.");
@@ -69,6 +70,7 @@ public class PluginPropertiesPage extends WizardPage {
         if (path != null)
             txtPath.setText(path);
         txtPath.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 String path = txtPath.getText();
                 if (path == null || path.length() == 0)
@@ -160,6 +162,7 @@ public class PluginPropertiesPage extends WizardPage {
                         text.setText(value);
 
                     text.addModifyListener(new ModifyListener() {
+                        @Override
                         public void modifyText(ModifyEvent e) {
                             String value = text.getText();
                             if (value == null || value.length() == 0)
@@ -176,7 +179,9 @@ public class PluginPropertiesPage extends WizardPage {
                     ControlDecoration decoration = new ControlDecoration(label, SWT.RIGHT | SWT.CENTER);
                     decoration.setShowHover(true);
                     decoration.setDescriptionText(description);
-                    decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+                    decoration.setImage(FieldDecorationRegistry.getDefault()
+                        .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+                        .getImage());
                 }
 
                 String deprecation = propertyElement.getAttribute("deprecated");
@@ -184,7 +189,9 @@ public class PluginPropertiesPage extends WizardPage {
                     ControlDecoration decoration = new ControlDecoration(label, SWT.LEFT | SWT.CENTER);
                     decoration.setShowHover(true);
                     decoration.setDescriptionText("Property deprecated: " + deprecation);
-                    decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_WARNING).getImage());
+                    decoration.setImage(FieldDecorationRegistry.getDefault()
+                        .getFieldDecoration(FieldDecorationRegistry.DEC_WARNING)
+                        .getImage());
                 }
             }
             Label summaryLabel = new Label(fieldContainer, SWT.NONE);

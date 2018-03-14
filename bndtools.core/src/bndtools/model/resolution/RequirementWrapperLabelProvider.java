@@ -73,11 +73,19 @@ public class RequirementWrapperLabelProvider extends RequirementLabelProvider {
                 buf.append("RESOLVED:\n");
             buf.append(req.getNamespace());
 
-            for (Entry<String,Object> attr : req.getAttributes().entrySet())
-                buf.append(";\n\t").append(attr.getKey()).append(" = ").append(attr.getValue());
+            for (Entry<String, Object> attr : req.getAttributes()
+                .entrySet())
+                buf.append(";\n\t")
+                    .append(attr.getKey())
+                    .append(" = ")
+                    .append(attr.getValue());
 
-            for (Entry<String,String> directive : req.getDirectives().entrySet())
-                buf.append(";\n\t").append(directive.getKey()).append(" := ").append(directive.getValue());
+            for (Entry<String, String> directive : req.getDirectives()
+                .entrySet())
+                buf.append(";\n\t")
+                    .append(directive.getKey())
+                    .append(" := ")
+                    .append(directive.getValue());
 
             return buf.toString();
         }

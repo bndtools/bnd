@@ -6,8 +6,14 @@ import java.util.Comparator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.jface.text.*;
-import org.eclipse.jface.text.contentassist.*;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.contentassist.CompletionProposal;
+import org.eclipse.jface.text.contentassist.ContextInformation;
+import org.eclipse.jface.text.contentassist.ICompletionProposal;
+import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
+import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
 import aQute.bnd.help.Syntax;
 
@@ -18,14 +24,16 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
         try {
-            String pre = viewer.getDocument().get(0, offset);
+            String pre = viewer.getDocument()
+                .get(0, offset);
             Matcher matcher = PREFIX_PATTERN.matcher(pre);
             if (matcher.matches()) {
                 String prefix = matcher.group(1);
                 ICompletionProposal[] found = proposals(prefix, offset);
                 if (found.length == 1) {
                     found[0].apply(viewer.getDocument());
-                    viewer.setSelectedRange(offset + (found[0].getDisplayString().length() - prefix.length() + 2), 0);
+                    viewer.setSelectedRange(offset + (found[0].getDisplayString()
+                        .length() - prefix.length() + 2), 0);
                     return new ICompletionProposal[0];
                 }
                 return found;
@@ -39,16 +47,20 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
     private static ICompletionProposal[] proposals(String prefix, int offset) {
         ArrayList<ICompletionProposal> results = new ArrayList<ICompletionProposal>(Syntax.HELP.size());
         for (Syntax s : Syntax.HELP.values()) {
-            if (prefix == null || s.getHeader().startsWith(prefix)) {
+            if (prefix == null || s.getHeader()
+                .startsWith(prefix)) {
                 IContextInformation info = new ContextInformation(s.getHeader(), s.getHeader());
-                String text = prefix == null ? s.getHeader() : s.getHeader().substring(prefix.length());
+                String text = prefix == null ? s.getHeader()
+                    : s.getHeader()
+                        .substring(prefix.length());
                 results.add(new CompletionProposal(text + ": ", offset, 0, text.length() + 2, null, s.getHeader(), info, s.getLead())); //$NON-NLS-1$
             }
         }
         Collections.sort(results, new Comparator<ICompletionProposal>() {
             @Override
             public int compare(ICompletionProposal p1, ICompletionProposal p2) {
-                return p1.getDisplayString().compareTo(p2.getDisplayString());
+                return p1.getDisplayString()
+                    .compareTo(p2.getDisplayString());
             }
         });
         return results.toArray(new ICompletionProposal[0]);
@@ -63,14 +75,14 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
     @Override
     public char[] getCompletionProposalAutoActivationCharacters() {
         return new char[] {
-                '-'
+            '-'
         };
     }
 
     @Override
     public char[] getContextInformationAutoActivationCharacters() {
         return new char[] {
-                '-'
+            '-'
         };
     }
 

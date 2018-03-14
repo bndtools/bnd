@@ -18,55 +18,55 @@ import org.eclipse.swt.graphics.Point;
 
 public class OverlayImageDescriptor extends CompositeImageDescriptor {
 
-	private Point size;
-	private String baseImage;
-	private String overlayImage;
-	private int xValue = 5;
-	private int yValue = 6;
-	private ImageRegistry reg;
-	
-	public OverlayImageDescriptor(ImageRegistry reg, String baseImageKey, String overlayImageKey) {
-		this.reg = reg;
-		this.baseImage = baseImageKey;
-		this.overlayImage = overlayImageKey;
-		this.size = new Point(16, 16);
-	}
+    private Point size;
+    private String baseImage;
+    private String overlayImage;
+    private int xValue = 5;
+    private int yValue = 6;
+    private ImageRegistry reg;
 
-	@Override
-	protected void drawCompositeImage(int width, int height) {
+    public OverlayImageDescriptor(ImageRegistry reg, String baseImageKey, String overlayImageKey) {
+        this.reg = reg;
+        this.baseImage = baseImageKey;
+        this.overlayImage = overlayImageKey;
+        this.size = new Point(16, 16);
+    }
 
-		Image id = reg.get(baseImage);
-		
-		// Draw the base image using the base image's image data
-		drawImage(id.getImageData(), 0, 0);
+    @Override
+    protected void drawCompositeImage(int width, int height) {
 
-		// Overlaying the icon in the top left corner i.e. x and y
-		// coordinates are both zero
-		ImageDescriptor imgDescr = reg.getDescriptor(overlayImage);
-		if (imgDescr == null) {
-			return;
-		}
-		drawImage(imgDescr.getImageData(), xValue, yValue);
-	}
+        Image id = reg.get(baseImage);
 
-	@Override
-	protected Point getSize() {
-		return size;
-	}
+        // Draw the base image using the base image's image data
+        drawImage(id.getImageData(), 0, 0);
 
-	public int getXValue() {
-		return xValue;
-	}
+        // Overlaying the icon in the top left corner i.e. x and y
+        // coordinates are both zero
+        ImageDescriptor imgDescr = reg.getDescriptor(overlayImage);
+        if (imgDescr == null) {
+            return;
+        }
+        drawImage(imgDescr.getImageData(), xValue, yValue);
+    }
 
-	public void setXValue(int xValue) {
-		this.xValue = xValue;
-	}
+    @Override
+    protected Point getSize() {
+        return size;
+    }
 
-	public int getYValue() {
-		return yValue;
-	}
+    public int getXValue() {
+        return xValue;
+    }
 
-	public void setYValue(int yValue) {
-		this.yValue = yValue;
-	}
+    public void setXValue(int xValue) {
+        this.xValue = xValue;
+    }
+
+    public int getYValue() {
+        return yValue;
+    }
+
+    public void setYValue(int yValue) {
+        this.yValue = yValue;
+    }
 }

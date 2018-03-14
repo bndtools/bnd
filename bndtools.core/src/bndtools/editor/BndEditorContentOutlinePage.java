@@ -43,6 +43,7 @@ public class BndEditorContentOutlinePage extends ContentOutlinePage {
         viewer.setLabelProvider(new BndEditorContentOutlineLabelProvider());
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                 Object element = selection.getFirstElement();

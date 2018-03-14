@@ -44,7 +44,7 @@ public class PackageInfoBaselineQuickFixProcessor implements IQuickFixProcessor 
                         change.setEdit(new ReplaceEdit(markerStart, markerLength, quotedVersion.toString()));
 
                         return new IJavaCompletionProposal[] {
-                                new ChangeCorrectionProposal("Change package version to " + newVersion, change, 1000)
+                            new ChangeCorrectionProposal("Change package version to " + newVersion, change, 1000)
                         };
                     }
                 }

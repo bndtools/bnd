@@ -35,6 +35,7 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
 
     private Set<IProject> projects = Collections.emptySet();
 
+    @Override
     public void run(IAction action) {
 
         if (projects.size() > 0) {
@@ -43,11 +44,13 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
                 return;
             }
 
-            if (!PlatformUI.getWorkbench().saveAllEditors(true)) {
+            if (!PlatformUI.getWorkbench()
+                .saveAllEditors(true)) {
                 return;
             }
             WorkspaceAnalyserJob job = new WorkspaceAnalyserJob(projects);
-            job.setRule(ResourcesPlugin.getWorkspace().getRoot());
+            job.setRule(ResourcesPlugin.getWorkspace()
+                .getRoot());
             job.schedule();
         }
     }
@@ -55,6 +58,7 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
     /**
      * @see IActionDelegate#selectionChanged(IAction, ISelection)
      */
+    @Override
     public void selectionChanged(IAction action, ISelection selection) {
         projects = Collections.emptySet();
         if (selection != null && (selection instanceof StructuredSelection)) {
@@ -74,15 +78,16 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
                     }
                 } else if (selected instanceof IFile) {
                     IFile bndFile = (IFile) selected;
-                    if (bndFile.getName().endsWith(Constants.DEFAULT_BND_EXTENSION)) {
+                    if (bndFile.getName()
+                        .endsWith(Constants.DEFAULT_BND_EXTENSION)) {
                         if (!projects.contains(bndFile.getProject()))
-                        projects.add(bndFile.getProject());
+                            projects.add(bndFile.getProject());
                     }
                 }
             }
         }
     }
 
-    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-    }
+    @Override
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {}
 }

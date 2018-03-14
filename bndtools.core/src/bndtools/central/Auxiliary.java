@@ -43,7 +43,8 @@ class Auxiliary implements Closeable, WeavingHook {
         this.tracker = new BundleTracker<Bundle>(context, Bundle.RESOLVED + Bundle.ACTIVE + Bundle.STARTING, null) {
             @Override
             public Bundle addingBundle(Bundle bundle, BundleEvent event) {
-                if (!doImport(bundle.getHeaders().get(Constants.EXPORT_PACKAGE)))
+                if (!doImport(bundle.getHeaders()
+                    .get(Constants.EXPORT_PACKAGE)))
                     return null;
 
                 return super.addingBundle(bundle, event);
@@ -55,8 +56,7 @@ class Auxiliary implements Closeable, WeavingHook {
     }
 
     /*
-    * Parse the exports and see
-     *
+     * Parse the exports and see
      */
     private boolean doImport(String exports) {
         if (closed.get() || exports == null || exports.isEmpty())
@@ -65,7 +65,7 @@ class Auxiliary implements Closeable, WeavingHook {
         Parameters out = new Parameters();
 
         Parameters p = new Parameters(exports);
-        for (Entry<String,Attrs> e : p.entrySet()) {
+        for (Entry<String, Attrs> e : p.entrySet()) {
             Attrs attrs = e.getValue();
             if (attrs == null)
                 continue;
@@ -90,7 +90,8 @@ class Auxiliary implements Closeable, WeavingHook {
             if (v == null)
                 v = "0";
 
-            for (Iterator<String> i = attrs.keySet().iterator(); i.hasNext();) {
+            for (Iterator<String> i = attrs.keySet()
+                .iterator(); i.hasNext();) {
                 String key = i.next();
                 if (key.endsWith(":"))
                     i.remove();
@@ -134,7 +135,8 @@ class Auxiliary implements Closeable, WeavingHook {
             delta = null;
         }
         if (extra != null)
-            wovenClass.getDynamicImports().addAll(extra);
+            wovenClass.getDynamicImports()
+                .addAll(extra);
     }
 
     @Override

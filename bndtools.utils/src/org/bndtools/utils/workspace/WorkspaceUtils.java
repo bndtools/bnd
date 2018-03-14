@@ -27,7 +27,8 @@ public class WorkspaceUtils {
     }
 
     public static IProject findCnfProject(IWorkspaceRoot wsroot, Workspace ws) throws Exception {
-        return findOpenProject(wsroot, ws.getBuildDir().getName());
+        return findOpenProject(wsroot, ws.getBuildDir()
+            .getName());
     }
 
     private static boolean checkProject(IProject project, String name) {

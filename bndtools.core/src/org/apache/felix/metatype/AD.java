@@ -35,7 +35,7 @@ import bndtools.Plugin;
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
 @SuppressWarnings({
-        "rawtypes", "unchecked"
+    "rawtypes", "unchecked"
 })
 public class AD extends OptionalAttributes {
 
@@ -128,8 +128,7 @@ public class AD extends OptionalAttributes {
     /**
      * Implements validation of the <code>valueString</code> and returns an indication of the validation result.
      *
-     * @param valueString
-     *            The string representation of the value to validate, can be <code>null</code>.
+     * @param valueString The string representation of the value to validate, can be <code>null</code>.
      * @return <code>null</code> if no validation is performed, <tt>""</tt> if the value is accepted as valid, or a
      *         non-empty string indicating a validation problem was found.
      * @see ADValidator#validate(AD, String)
@@ -143,57 +142,52 @@ public class AD extends OptionalAttributes {
         return ADValidator.validate(this, valueString);
     }
 
-    //--------- Setters for setting up this instance --------------------------
+    // --------- Setters for setting up this instance --------------------------
 
     /**
-     * @param id
-     *            the id to set
+     * @param id the id to set
      */
     public void setID(String id) {
         this.id = id;
     }
 
     /**
-     * @param name
-     *            the name to set
+     * @param name the name to set
      */
     public void setName(String name) {
         this.name = name;
     }
 
     /**
-     * @param description
-     *            the description to set
+     * @param description the description to set
      */
     public void setDescription(String description) {
         this.description = description;
     }
 
     /**
-     * @param typeString
-     *            the type to set
+     * @param typeString the type to set
      */
     public void setType(String typeString) {
         this.type = toType(typeString);
     }
 
     /**
-     * @param cardinality
-     *            the cardinality to set
+     * @param cardinality the cardinality to set
      */
     public void setCardinality(int cardinality) {
         this.cardinality = cardinality;
     }
 
     /**
-     * @param options
-     *            the options to set
+     * @param options the options to set
      */
     public void setOptions(Map options) {
         optionLabels = new String[options.size()];
         optionValues = new String[options.size()];
         int i = 0;
-        for (Iterator oi = options.entrySet().iterator(); oi.hasNext(); i++) {
+        for (Iterator oi = options.entrySet()
+            .iterator(); oi.hasNext(); i++) {
             Map.Entry entry = (Map.Entry) oi.next();
             optionValues[i] = String.valueOf(entry.getKey());
             optionLabels[i] = String.valueOf(entry.getValue());
@@ -207,8 +201,7 @@ public class AD extends OptionalAttributes {
      * properly set <b>before</b> calling this method.
      * </p>
      *
-     * @param defaultValue
-     *            the default value to set, as encoded string-value (using comma's as separator), can be
+     * @param defaultValue the default value to set, as encoded string-value (using comma's as separator), can be
      *            <code>null</code>.
      */
     public void setDefaultValue(String defaultValue) {
@@ -216,24 +209,21 @@ public class AD extends OptionalAttributes {
     }
 
     /**
-     * @param min
-     *            the min to set
+     * @param min the min to set
      */
     public void setMin(String min) {
         this.min = min;
     }
 
     /**
-     * @param max
-     *            the max to set
+     * @param max the max to set
      */
     public void setMax(String max) {
         this.max = max;
     }
 
     /**
-     * @param isRequired
-     *            the isRequired to set
+     * @param isRequired the isRequired to set
      */
     public void setRequired(boolean isRequired) {
         this.isRequired = isRequired;
@@ -271,7 +261,7 @@ public class AD extends OptionalAttributes {
             return null;
         } else if (listString.length() == 0) {
             return new String[] {
-                    ""
+                ""
             };
         }
 
@@ -336,30 +326,32 @@ public class AD extends OptionalAttributes {
         if (value != null && value.length() > 0) {
             try {
                 switch (getType()) {
-                case AttributeDefinition.BOOLEAN :
-                    // Boolean is only Comparable starting with Java 5
-                    return new ComparableBoolean(value);
-                case AttributeDefinition.CHARACTER :
-                    return Character.valueOf(value.charAt(0));
-                case AttributeDefinition.BYTE :
-                    return Byte.valueOf(value);
-                case AttributeDefinition.SHORT :
-                    return Short.valueOf(value);
-                case AttributeDefinition.INTEGER :
-                    return Integer.valueOf(value);
-                case AttributeDefinition.LONG :
-                    return Long.valueOf(value);
-                case AttributeDefinition.FLOAT :
-                    return Float.valueOf(value);
-                case AttributeDefinition.DOUBLE :
-                    return Double.valueOf(value);
-                case AttributeDefinition.STRING :
-                case AttributeDefinition.PASSWORD :
-                default :
-                    return value;
+                    case AttributeDefinition.BOOLEAN :
+                        // Boolean is only Comparable starting with Java 5
+                        return new ComparableBoolean(value);
+                    case AttributeDefinition.CHARACTER :
+                        return Character.valueOf(value.charAt(0));
+                    case AttributeDefinition.BYTE :
+                        return Byte.valueOf(value);
+                    case AttributeDefinition.SHORT :
+                        return Short.valueOf(value);
+                    case AttributeDefinition.INTEGER :
+                        return Integer.valueOf(value);
+                    case AttributeDefinition.LONG :
+                        return Long.valueOf(value);
+                    case AttributeDefinition.FLOAT :
+                        return Float.valueOf(value);
+                    case AttributeDefinition.DOUBLE :
+                        return Double.valueOf(value);
+                    case AttributeDefinition.STRING :
+                    case AttributeDefinition.PASSWORD :
+                    default :
+                        return value;
                 }
             } catch (NumberFormatException nfe) {
-                Plugin.getDefault().getLog().log(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, "Cannot convert value '" + value + "'", nfe));
+                Plugin.getDefault()
+                    .getLog()
+                    .log(new Status(IStatus.INFO, Plugin.PLUGIN_ID, 0, "Cannot convert value '" + value + "'", nfe));
             }
         }
 
@@ -367,8 +359,7 @@ public class AD extends OptionalAttributes {
     }
 
     /**
-     * @param values
-     *            the defaultValue to set
+     * @param values the defaultValue to set
      */
     protected void setDefaultValue(String[] values, int cardinality) {
         if (values != null) {
@@ -402,7 +393,8 @@ public class AD extends OptionalAttributes {
         private final boolean value;
 
         ComparableBoolean(String boolValue) {
-            value = Boolean.valueOf(boolValue).booleanValue();
+            value = Boolean.valueOf(boolValue)
+                .booleanValue();
         }
 
         @Override

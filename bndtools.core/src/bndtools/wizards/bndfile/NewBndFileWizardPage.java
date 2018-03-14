@@ -54,7 +54,9 @@ public class NewBndFileWizardPage extends WizardNewFileCreationPage {
 
         String fileName = getFileName();
         IPath containerPath = getContainerFullPath();
-        IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(containerPath);
+        IResource container = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .findMember(containerPath);
         IProject project = container.getProject();
 
         try {

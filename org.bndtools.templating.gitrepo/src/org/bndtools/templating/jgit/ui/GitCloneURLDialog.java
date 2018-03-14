@@ -73,7 +73,9 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
 
         ControlDecoration branchDecor = new ControlDecoration(txtBranch, SWT.LEFT, container);
         branchDecor.setDescriptionText("Specify the branch, tag or commit ID you would like to clone from the\nrepository. The default is 'origin/master'.");
-        branchDecor.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        branchDecor.setImage(FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+            .getImage());
         branchDecor.setShowHover(true);
 
         ModifyListener modifyListener = new ModifyListener() {
@@ -101,9 +103,12 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
 
     private void updateFromInput() {
         try {
-            cloneUri = txtRepository.getText().trim();
-            name = txtName.getText().trim();
-            branch = txtBranch.getText().trim();
+            cloneUri = txtRepository.getText()
+                .trim();
+            name = txtName.getText()
+                .trim();
+            branch = txtBranch.getText()
+                .trim();
             setErrorMessage(null);
 
             @SuppressWarnings("unused") // for validation
@@ -118,10 +123,12 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
     }
 
     @Override
-    public void setEntry(Pair<String,Attrs> entry) {
+    public void setEntry(Pair<String, Attrs> entry) {
         cloneUri = entry.getFirst();
-        name = entry.getSecond().get("name");
-        branch = entry.getSecond().get("branch");
+        name = entry.getSecond()
+            .get("name");
+        branch = entry.getSecond()
+            .get("branch");
 
         if (txtRepository != null && !txtRepository.isDisposed())
             txtRepository.setText(cloneUri);
@@ -132,7 +139,7 @@ public class GitCloneURLDialog extends AbstractNewEntryDialog {
     }
 
     @Override
-    public Pair<String,Attrs> getEntry() {
+    public Pair<String, Attrs> getEntry() {
         Attrs attrs = new Attrs();
         if (name != null && !name.isEmpty())
             attrs.put("name", name);

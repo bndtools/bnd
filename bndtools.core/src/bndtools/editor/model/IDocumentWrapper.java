@@ -8,10 +8,12 @@ public class IDocumentWrapper implements aQute.bnd.properties.IDocument {
         this.document = document;
     }
 
+    @Override
     public int getNumberOfLines() {
         return document.getNumberOfLines();
     }
 
+    @Override
     public aQute.bnd.properties.IRegion getLineInformation(int lineNum) throws aQute.bnd.properties.BadLocationException {
         try {
             return new IRegionWrapper(document.getLineInformation(lineNum));
@@ -22,10 +24,12 @@ public class IDocumentWrapper implements aQute.bnd.properties.IDocument {
         }
     }
 
+    @Override
     public String get() {
         return document.get();
     }
 
+    @Override
     public String get(int offset, int length) throws aQute.bnd.properties.BadLocationException {
         try {
             return document.get(offset, length);
@@ -36,6 +40,7 @@ public class IDocumentWrapper implements aQute.bnd.properties.IDocument {
         }
     }
 
+    @Override
     public String getLineDelimiter(int line) throws aQute.bnd.properties.BadLocationException {
         try {
             return document.getLineDelimiter(line);
@@ -46,10 +51,12 @@ public class IDocumentWrapper implements aQute.bnd.properties.IDocument {
         }
     }
 
+    @Override
     public int getLength() {
         return document.getLength();
     }
 
+    @Override
     public void replace(int offset, int length, String data) throws aQute.bnd.properties.BadLocationException {
         try {
             document.replace(offset, length, data);
@@ -60,6 +67,7 @@ public class IDocumentWrapper implements aQute.bnd.properties.IDocument {
         }
     }
 
+    @Override
     public char getChar(int offset) throws aQute.bnd.properties.BadLocationException {
         try {
             return document.getChar(offset);
@@ -78,10 +86,12 @@ public class IDocumentWrapper implements aQute.bnd.properties.IDocument {
             this.region = region;
         }
 
+        @Override
         public int getLength() {
             return region.getLength();
         }
 
+        @Override
         public int getOffset() {
             return region.getOffset();
         }

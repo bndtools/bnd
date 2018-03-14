@@ -100,6 +100,7 @@ public class LaunchStatusDialog extends TitleAreaDialog {
         viewer.setInput(status);
 
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 IStatus status = (IStatus) ((IStructuredSelection) event.getSelection()).getFirstElement();
 

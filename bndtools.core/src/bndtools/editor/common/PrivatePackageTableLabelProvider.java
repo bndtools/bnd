@@ -17,7 +17,8 @@ import org.eclipse.swt.graphics.Image;
 
 public class PrivatePackageTableLabelProvider extends LabelProvider implements ITableLabelProvider {
 
-    private final Image packageImg = Icons.desc("package").createImage();
+    private final Image packageImg = Icons.desc("package")
+        .createImage();
 
     @Override
     public Image getColumnImage(Object element, int columnIndex) {

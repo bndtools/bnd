@@ -38,10 +38,12 @@ public class ResolutionTreeLabelProvider extends ImageCachingLabelProvider {
             R5LabelFormatter.appendCapability(label, item.getCapability(), shortenNamespaces);
 
             // Get the icon from the capability namespace
-            icon = getImage(R5LabelFormatter.getNamespaceImagePath(item.getCapability().getNamespace()), true);
+            icon = getImage(R5LabelFormatter.getNamespaceImagePath(item.getCapability()
+                .getNamespace()), true);
         } else if (element instanceof Requirement) {
             Requirement requirement = (Requirement) element;
-            if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
+            if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
+                .get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
                 label.append(" OPTIONALLY", StyledString.QUALIFIER_STYLER);
             label.append(" REQUIRED BY ", StyledString.QUALIFIER_STYLER);
 
@@ -53,7 +55,8 @@ public class ResolutionTreeLabelProvider extends ImageCachingLabelProvider {
 
             label.append(" [", StyledString.QUALIFIER_STYLER);
             boolean first = true;
-            for (Entry<String,String> entry : requirement.getDirectives().entrySet()) {
+            for (Entry<String, String> entry : requirement.getDirectives()
+                .entrySet()) {
                 String key = entry.getKey();
                 if (!key.equals(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)) {
                     if (!first)

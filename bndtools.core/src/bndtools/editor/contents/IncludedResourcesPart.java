@@ -51,5 +51,6 @@ public class IncludedResourcesPart extends SectionPart implements PropertyChange
         table.setLayoutData(gd);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {}
 }

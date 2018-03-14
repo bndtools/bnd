@@ -25,7 +25,8 @@ public class BoldStyler extends Styler {
     @Override
     public void applyStyles(TextStyle textStyle) {
         ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
-        Font font = JFaceResources.getFontRegistry().getBold(fontName);
+        Font font = JFaceResources.getFontRegistry()
+            .getBold(fontName);
         if (fForegroundColorName != null) {
             textStyle.foreground = colorRegistry.get(fForegroundColorName);
         }

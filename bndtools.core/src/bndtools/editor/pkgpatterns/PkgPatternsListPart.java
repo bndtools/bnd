@@ -77,10 +77,14 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 
     private List<C> selection;
 
-    private final Image imgAnalyse = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png").createImage();
-    private final Image imgInsert = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/table_row_insert.png").createImage();
-    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
-    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
+    private final Image imgAnalyse = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/cog_go.png")
+        .createImage();
+    private final Image imgInsert = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/table_row_insert.png")
+        .createImage();
+    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
+        .createImage();
+    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
+        .createImage();
 
     protected final String title;
 
@@ -102,7 +106,9 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         ToolBar toolbar = new ToolBar(section, SWT.FLAT);
         section.setTextClient(toolbar);
         final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
-        addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        addItem.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_OBJ_ADD));
         addItem.setToolTipText("Add");
 
         final ToolItem insertItem = new ToolItem(toolbar, SWT.PUSH);
@@ -111,8 +117,12 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         insertItem.setEnabled(false);
 
         final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
-        removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-        removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        removeItem.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE));
+        removeItem.setDisabledImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
         removeItem.setToolTipText("Remove");
         removeItem.setEnabled(false);
 
@@ -156,7 +166,8 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
                 propChangeSupport.firePropertyChange(PROP_SELECTION, oldSelection, selection);
 
                 managedForm.fireSelectionChanged(PkgPatternsListPart.this, event.getSelection());
-                boolean enabled = !viewer.getSelection().isEmpty();
+                boolean enabled = !viewer.getSelection()
+                    .isEmpty();
                 insertItem.setEnabled(enabled);
                 removeItem.setEnabled(enabled);
                 btnMoveUp.setEnabled(enabled);
@@ -164,7 +175,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
             }
         });
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                LocalSelectionTransfer.getTransfer(), ResourceTransfer.getInstance(), TextTransfer.getInstance()
+            LocalSelectionTransfer.getTransfer(), ResourceTransfer.getInstance(), TextTransfer.getInstance()
         }, new PackageDropAdapter<C>(viewer) {
             @Override
             protected C createNewEntry(String packageName) {
@@ -243,13 +254,13 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
 
     protected abstract List<C> loadFromModel(BndEditModel model);
 
-    protected abstract void saveToModel(BndEditModel model, List< ? extends C> clauses);
+    protected abstract void saveToModel(BndEditModel model, List<? extends C> clauses);
 
     protected List<C> getClauses() {
         return clauses;
     }
 
-    protected Collection< ? extends C> generateClauses() {
+    protected Collection<? extends C> generateClauses() {
         Collection<C> result = new ArrayList<C>();
         result.add(newHeaderClause(""));
         return result;
@@ -258,12 +269,10 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
     /**
      * Add the specified clauses to the view.
      *
-     * @param newClauses
-     *            The new clauses.
-     * @param index
-     *            The index at which to insert the new clauses OR -1 to append at the end.
+     * @param newClauses The new clauses.
+     * @param index The index at which to insert the new clauses OR -1 to append at the end.
      */
-    protected void doAddClauses(Collection< ? extends C> newClauses, int index, boolean select) {
+    protected void doAddClauses(Collection<? extends C> newClauses, int index, boolean select) {
         Object[] newClausesArray = newClauses.toArray();
 
         if (index == -1 || index == this.clauses.size()) {
@@ -280,13 +289,13 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         markDirty();
     }
 
-    private void doAddClausesAfterSelection(Collection< ? extends C> newClauses) {
+    private void doAddClausesAfterSelection(Collection<? extends C> newClauses) {
         if (newClauses != null && !newClauses.isEmpty()) {
             int selectedIndex = -1;
             IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
             if (!selection.isEmpty()) {
                 // find the highest selected index
-                for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
+                for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
                     int index = this.clauses.indexOf(iter.next());
                     if (index > selectedIndex)
                         selectedIndex = index;
@@ -296,7 +305,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         }
     }
 
-    private void doInsertClausesAtSelection(Collection< ? extends C> newClauses) {
+    private void doInsertClausesAtSelection(Collection<? extends C> newClauses) {
         if (newClauses != null && !newClauses.isEmpty()) {
             int selectedIndex;
             IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
@@ -308,7 +317,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
         }
     }
 
-    protected void doRemoveClauses(List< ? > toRemove) {
+    protected void doRemoveClauses(List<?> toRemove) {
         clauses.removeAll(toRemove);
         viewer.remove(toRemove.toArray());
 
@@ -413,7 +422,7 @@ public abstract class PkgPatternsListPart<C extends HeaderClause> extends Sectio
             markStale();
     }
 
-    public void updateLabels(Collection< ? > elements) {
+    public void updateLabels(Collection<?> elements) {
         updateLabels(elements.toArray());
     }
 

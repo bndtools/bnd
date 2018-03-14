@@ -31,21 +31,22 @@ public class TreeContentProvider implements ITreeContentProvider {
     @Override
     public Object[] getChildren(Object parent) {
         if (parent instanceof List) {
-            return ((List< ? >) parent).toArray();
+            return ((List<?>) parent).toArray();
         }
         if (parent instanceof Baseline) {
-            Collection< ? extends Diff> diffs = ((Baseline) parent).getDiff().getChildren();
+            Collection<? extends Diff> diffs = ((Baseline) parent).getDiff()
+                .getChildren();
             List<Diff> filteredDiffs = new ArrayList<Diff>();
             for (Diff diff : diffs) {
                 switch (diff.getType()) {
-                case API :
-                case MANIFEST :
-                case RESOURCES :
-                    if (getChildren(diff).length == 0)
-                        continue;
-                    break;
-                default :
-                    break;
+                    case API :
+                    case MANIFEST :
+                    case RESOURCES :
+                        if (getChildren(diff).length == 0)
+                            continue;
+                        break;
+                    default :
+                        break;
                 }
                 filteredDiffs.add(diff);
             }
@@ -63,7 +64,7 @@ public class TreeContentProvider implements ITreeContentProvider {
     }
 
     private Object[] getChildren(Diff parent) {
-        Collection< ? extends Diff> diffs = parent.getChildren();
+        Collection<? extends Diff> diffs = parent.getChildren();
         List<Diff> filteredDiffs = new ArrayList<Diff>();
         for (Diff diff : diffs) {
             if (!showAll && (diff.getDelta() == Delta.IGNORED || diff.getDelta() == Delta.UNCHANGED)) {
@@ -75,7 +76,8 @@ public class TreeContentProvider implements ITreeContentProvider {
             if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
                 continue;
             }
-            if (diff.getType() == Type.HEADER && diff.getName().startsWith(Constants.BUNDLE_VERSION)) {
+            if (diff.getType() == Type.HEADER && diff.getName()
+                .startsWith(Constants.BUNDLE_VERSION)) {
                 continue;
             }
             filteredDiffs.add(diff);
@@ -94,16 +96,17 @@ public class TreeContentProvider implements ITreeContentProvider {
     @Override
     public boolean hasChildren(Object parent) {
         if (parent instanceof Baseline) {
-            for (Diff diff : ((Baseline) parent).getDiff().getChildren()) {
+            for (Diff diff : ((Baseline) parent).getDiff()
+                .getChildren()) {
                 switch (diff.getType()) {
-                case API :
-                case MANIFEST :
-                case RESOURCES :
-                    if (getChildren(diff).length > 0)
-                        return true;
-                    break;
-                default :
-                    break;
+                    case API :
+                    case MANIFEST :
+                    case RESOURCES :
+                        if (getChildren(diff).length > 0)
+                            return true;
+                        break;
+                    default :
+                        break;
                 }
             }
             return false;

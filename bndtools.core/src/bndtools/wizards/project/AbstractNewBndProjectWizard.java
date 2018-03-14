@@ -99,8 +99,8 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
     }
 
     /**
-     * Modify the newly generated Java project; this method is executed from within a workspace operation so is free to make
-     * workspace resource modifications.
+     * Modify the newly generated Java project; this method is executed from within a workspace operation so is free to
+     * make workspace resource modifications.
      *
      * @throws CoreException
      */
@@ -113,19 +113,23 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
 
         ByteArrayInputStream bndInput;
         try {
-            bndInput = new ByteArrayInputStream(document.get().getBytes("UTF-8"));
+            bndInput = new ByteArrayInputStream(document.get()
+                .getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             return;
         }
-        IFile bndBndFile = project.getProject().getFile(Project.BNDFILE);
+        IFile bndBndFile = project.getProject()
+            .getFile(Project.BNDFILE);
         if (bndBndFile.exists()) {
             bndBndFile.setContents(bndInput, false, false, progress.newChild(1));
         }
 
         BndProject proj = generateBndProject(project.getProject(), progress.newChild(1));
 
-        progress.setWorkRemaining(proj.getResources().size());
-        for (Map.Entry<String,BndProjectResource> resource : proj.getResources().entrySet()) {
+        progress.setWorkRemaining(proj.getResources()
+            .size());
+        for (Map.Entry<String, BndProjectResource> resource : proj.getResources()
+            .entrySet()) {
             importResource(project.getProject(), resource.getKey(), resource.getValue(), progress.newChild(1));
         }
 
@@ -134,25 +138,33 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         }
 
         /* Version control ignores */
-        VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
+        VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault()
+            .getVersionControlIgnoresManager();
         Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresManager, project, null);
-        Map<String,String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(project);
-        versionControlIgnoresManager.createProjectIgnores(enabledIgnorePlugins, project.getProject().getLocation().toFile(), sourceOutputLocations, projectPaths.getTargetDir());
+        Map<String, String> sourceOutputLocations = JavaProjectUtils.getSourceOutputLocations(project);
+        versionControlIgnoresManager.createProjectIgnores(enabledIgnorePlugins, project.getProject()
+            .getLocation()
+            .toFile(), sourceOutputLocations, projectPaths.getTargetDir());
 
         /* Headless build files */
-        HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
+        HeadlessBuildManager headlessBuildManager = Plugin.getDefault()
+            .getHeadlessBuildManager();
         Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildManager, null);
-        headlessBuildManager.setup(enabledPlugins, false, project.getProject().getLocation().toFile(), true, enabledIgnorePlugins, new LinkedList<String>());
+        headlessBuildManager.setup(enabledPlugins, false, project.getProject()
+            .getLocation()
+            .toFile(), true, enabledIgnorePlugins, new LinkedList<String>());
 
         /* refresh the project; files were created outside of Eclipse API */
-        project.getProject().refreshLocal(IResource.DEPTH_INFINITE, progress);
+        project.getProject()
+            .refreshLocal(IResource.DEPTH_INFINITE, progress);
 
-        project.getProject().build(IncrementalProjectBuilder.CLEAN_BUILD, progress);
+        project.getProject()
+            .build(IncrementalProjectBuilder.CLEAN_BUILD, progress);
     }
 
     protected static IFile importResource(IProject project, String fullPath, BndProjectResource bndProjectResource, IProgressMonitor monitor) throws CoreException {
         URL url = bndProjectResource.getUrl();
-        Map<String,String> replaceRegularExpressions = bndProjectResource.getReplaceRegularExpressions();
+        Map<String, String> replaceRegularExpressions = bndProjectResource.getReplaceRegularExpressions();
         IFile dst = project.getFile(fullPath);
 
         try {
@@ -163,11 +175,11 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
     }
 
     @SuppressWarnings("unused")
-    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String,String> templateParams) throws IOException {
+    protected void generateProjectContent(IProject project, IProgressMonitor monitor, Map<String, String> templateParams) throws IOException {
         // this implementation does nothing.
     }
 
-    protected abstract Map<String,String> getProjectTemplateParams();
+    protected abstract Map<String, String> getProjectTemplateParams();
 
     @Override
     public boolean performFinish() {
@@ -175,7 +187,7 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
         if (result) {
             final IJavaProject javaProj = (IJavaProject) getCreatedElement();
             final IProject project = javaProj.getProject();
-            final Map<String,String> templateParams = getProjectTemplateParams();
+            final Map<String, String> templateParams = getProjectTemplateParams();
 
             try {
                 // Run using the progress bar from the wizard dialog
@@ -194,7 +206,9 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                                     }
                                 }
                             };
-                            javaProj.getProject().getWorkspace().run(op, monitor);
+                            javaProj.getProject()
+                                .getWorkspace()
+                                .run(op, monitor);
                         } catch (CoreException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -217,7 +231,8 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             }
 
             // get bnd.bnd file
-            IFile bndFile = javaProj.getProject().getFile(Project.BNDFILE);
+            IFile bndFile = javaProj.getProject()
+                .getFile(Project.BNDFILE);
 
             // check to see if we need to add marker about missing workspace
             try {
@@ -238,9 +253,11 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
             // Open the bnd.bnd file in the editor
             try {
                 if (bndFile.exists())
-                    IDE.openEditor(getWorkbench().getActiveWorkbenchWindow().getActivePage(), bndFile);
+                    IDE.openEditor(getWorkbench().getActiveWorkbenchWindow()
+                        .getActivePage(), bndFile);
             } catch (PartInitException e) {
-                ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to open project descriptor file {0} in the editor.", bndFile.getFullPath().toString()), e));
+                ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to open project descriptor file {0} in the editor.", bndFile.getFullPath()
+                    .toString()), e));
             }
         }
         return result;

@@ -36,13 +36,14 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
     private static final ILogger logger = Logger.getLogger(RunRequirementsPart.class);
 
     private static final String[] SUBSCRIBE_PROPS = new String[] {
-            RUNREQUIRE, BndConstants.RUNREQUIRES, BndConstants.RESOLVE_MODE
+        RUNREQUIRE, BndConstants.RUNREQUIRES, BndConstants.RESOLVE_MODE
     };
 
     private Button btnAutoResolve;
     private ResolveMode resolveMode;
 
-    private final Image resolveIcon = Icons.desc("resolve").createImage();
+    private final Image resolveIcon = Icons.desc("resolve")
+        .createImage();
     private Button btnResolveNow;
     private JobChangeAdapter resolveJobListener;
 
@@ -106,7 +107,8 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
                 }
             }
         };
-        Job.getJobManager().addJobChangeListener(resolveJobListener);
+        Job.getJobManager()
+            .addJobChangeListener(resolveJobListener);
 
         // Layout
         GridLayout layout;
@@ -122,7 +124,8 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd.widthHint = 50;
         gd.heightHint = 50;
-        viewer.getControl().setLayoutData(gd);
+        viewer.getControl()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
         btnResolveNow.setLayoutData(gd);
@@ -131,7 +134,8 @@ public class RunRequirementsPart extends AbstractRequirementListPart {
     @Override
     public void dispose() {
         super.dispose();
-        Job.getJobManager().removeJobChangeListener(resolveJobListener);
+        Job.getJobManager()
+            .removeJobChangeListener(resolveJobListener);
         resolveIcon.dispose();
     }
 

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.core.resources.IContainer;
@@ -59,8 +60,8 @@ import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.editor.contents.PackageInfoDialog;
-import bndtools.editor.contents.PackageInfoStyle;
 import bndtools.editor.contents.PackageInfoDialog.FileVersionTuple;
+import bndtools.editor.contents.PackageInfoStyle;
 import bndtools.editor.pkgpatterns.PkgPatternsListPart;
 import bndtools.internal.pkgselection.IPackageFilter;
 import bndtools.internal.pkgselection.JavaSearchScopePackageLister;
@@ -95,14 +96,16 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         };
 
         IFormPage page = (IFormPage) getManagedForm().getContainer();
-        IWorkbenchWindow window = page.getEditorSite().getWorkbenchWindow();
+        IWorkbenchWindow window = page.getEditorSite()
+            .getWorkbenchWindow();
 
         // Prepare the package lister from the Java project
-        IProject project = ResourceUtil.getResource(page.getEditorInput()).getProject();
+        IProject project = ResourceUtil.getResource(page.getEditorInput())
+            .getProject();
         IJavaProject javaProject = JavaCore.create(project);
 
         IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
-                javaProject
+            javaProject
         });
         JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
 
@@ -125,12 +128,13 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
     }
 
     @Override
-    protected void doAddClauses(Collection< ? extends ExportedPackage> pkgs, int index, boolean select) {
+    protected void doAddClauses(Collection<? extends ExportedPackage> pkgs, int index, boolean select) {
         List<FileVersionTuple> missingPkgInfoDirs;
         try {
             missingPkgInfoDirs = new ArrayList<FileVersionTuple>(findSourcePackagesWithoutPackageInfo(pkgs));
         } catch (Exception e) {
-            ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding source package for exported 1packages.", e));
+            ErrorDialog.openError(getManagedForm().getForm()
+                .getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error finding source package for exported 1packages.", e));
             missingPkgInfoDirs = Collections.emptyList();
         }
         List<FileVersionTuple> generatePkgInfoDirs = new ArrayList<FileVersionTuple>(missingPkgInfoDirs.size());
@@ -151,15 +155,16 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         try {
             generatePackageInfos(generatePkgInfoDirs);
         } catch (CoreException e) {
-            ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generated packageinfo files.", e));
+            ErrorDialog.openError(getManagedForm().getForm()
+                .getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generated packageinfo files.", e));
         }
 
         // Actually add the new exports
         super.doAddClauses(pkgs, index, select);
     }
 
-    private Collection<FileVersionTuple> findSourcePackagesWithoutPackageInfo(Collection< ? extends ExportedPackage> pkgs) throws Exception {
-        Map<String,FileVersionTuple> result = new HashMap<String,FileVersionTuple>();
+    private Collection<FileVersionTuple> findSourcePackagesWithoutPackageInfo(Collection<? extends ExportedPackage> pkgs) throws Exception {
+        Map<String, FileVersionTuple> result = new HashMap<String, FileVersionTuple>();
 
         Project project = getProject();
 
@@ -168,7 +173,8 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
             for (File sourceDir : sourceDirs) {
                 for (ExportedPackage pkg : pkgs) {
                     if (!result.containsKey(pkg.getName())) {
-                        File pkgDir = new File(sourceDir, pkg.getName().replace('.', '/'));
+                        File pkgDir = new File(sourceDir, pkg.getName()
+                            .replace('.', '/'));
                         if (pkgDir.isDirectory()) {
                             PackageInfoStyle existingPkgInfo = PackageInfoStyle.findExisting(pkgDir);
                             if (existingPkgInfo == null)
@@ -182,14 +188,17 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
         return result.values();
     }
 
-    private static void generatePackageInfos(final Collection< ? extends FileVersionTuple> pkgs) throws CoreException {
+    private static void generatePackageInfos(final Collection<? extends FileVersionTuple> pkgs) throws CoreException {
         final IWorkspaceRunnable wsOperation = new IWorkspaceRunnable() {
             @Override
             public void run(IProgressMonitor monitor) throws CoreException {
                 SubMonitor progress = SubMonitor.convert(monitor, pkgs.size());
                 MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Errors occurred while creating packageinfo files.", null);
                 for (FileVersionTuple pkg : pkgs) {
-                    IContainer[] locations = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(pkg.getFile().toURI());
+                    IContainer[] locations = ResourcesPlugin.getWorkspace()
+                        .getRoot()
+                        .findContainersForLocationURI(pkg.getFile()
+                            .toURI());
                     if (locations != null && locations.length > 0) {
                         IContainer container = locations[0];
 
@@ -219,14 +228,17 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 try {
-                    ResourcesPlugin.getWorkspace().run(wsOperation, monitor);
+                    ResourcesPlugin.getWorkspace()
+                        .run(wsOperation, monitor);
                 } catch (CoreException e) {
                     throw new InvocationTargetException(e);
                 }
             }
         };
         try {
-            PlatformUI.getWorkbench().getActiveWorkbenchWindow().run(true, true, uiOperation);
+            PlatformUI.getWorkbench()
+                .getActiveWorkbenchWindow()
+                .run(true, true, uiOperation);
         } catch (InvocationTargetException e) {
             throw (CoreException) e.getTargetException();
         } catch (InterruptedException e) {
@@ -245,7 +257,7 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
     }
 
     @Override
-    protected void saveToModel(BndEditModel model, List< ? extends ExportedPackage> clauses) {
+    protected void saveToModel(BndEditModel model, List<? extends ExportedPackage> clauses) {
         model.setExportedPackages(clauses);
     }
 
@@ -255,7 +267,9 @@ public class ExportPatternsListPart extends PkgPatternsListPart<ExportedPackage>
             BndEditModel model = (BndEditModel) getManagedForm().getInput();
             File bndFile = model.getBndResource();
             IPath path = Central.toPath(bndFile);
-            IFile resource = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+            IFile resource = ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .getFile(path);
             project = Central.getProject(resource.getProject());
         } catch (Exception e) {
             logger.logError("Error getting project from editor model", e);

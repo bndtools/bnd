@@ -22,6 +22,7 @@ public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
 
     private Button keepAliveButton;
 
+    @Override
     public Control createControl(Composite parent) {
         Group group = new Group(parent, SWT.NONE);
         group.setText(Messages.JUnitTestParamsLaunchTabPiece_title);
@@ -52,10 +53,12 @@ public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
         return group;
     }
 
+    @Override
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
         configuration.setAttribute(LaunchConstants.ATTR_JUNIT_KEEP_ALIVE, LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE);
     }
 
+    @Override
     @SuppressWarnings("deprecation")
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
         keepAlive = configuration.getAttribute(LaunchConstants.ATTR_JUNIT_KEEP_ALIVE, LaunchConstants.DEFAULT_JUNIT_KEEP_ALIVE);
@@ -65,6 +68,7 @@ public class JUnitTestParamsLaunchTabPiece extends AbstractLaunchTabPiece {
         keepAliveButton.setSelection(keepAlive);
     }
 
+    @Override
     @SuppressWarnings("deprecation")
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
         configuration.setAttribute(LaunchConstants.ATTR_JUNIT_KEEP_ALIVE, keepAlive);

@@ -32,7 +32,9 @@ import org.eclipse.swt.widgets.Table;
  * 		TableViewerKeyBoardSupporter supporter = new TableViewerKeyBoardSupporter(tblViewer);
  * 		supporter.startSupport();
  *  
- * </CODE></PRE></P>
+ * </CODE>
+ * </PRE>
+ * </P>
  */
 public class TableViewerKeyBoardSupporter {
     protected TableViewer fTableViewer = null;
@@ -60,7 +62,8 @@ public class TableViewerKeyBoardSupporter {
                 if (cellEditor != null) {
                     // cellEditor.getControl().addKeyListener(new
                     // CellEditorKeyListener(this, cellEditor, colIndex));
-                    cellEditor.getControl().addTraverseListener(new CellEditorTraverseListener(this, cellEditor, colIndex));
+                    cellEditor.getControl()
+                        .addTraverseListener(new CellEditorTraverseListener(this, cellEditor, colIndex));
                 }
             }
         }
@@ -145,31 +148,36 @@ class CellEditorKeyListener extends KeyAdapter {
             return;
 
         switch (e.keyCode) {
-        case SWT.ARROW_DOWN :
-            e.doit = false;
-            int nextRow = fKeyBoardSupporter.getTable().getSelectionIndex() + 1;
-            if (nextRow >= fKeyBoardSupporter.getTable().getItemCount())
+            case SWT.ARROW_DOWN :
+                e.doit = false;
+                int nextRow = fKeyBoardSupporter.getTable()
+                    .getSelectionIndex() + 1;
+                if (nextRow >= fKeyBoardSupporter.getTable()
+                    .getItemCount())
+                    break;
+                fKeyBoardSupporter.getTable()
+                    .setSelection(nextRow);
+                fKeyBoardSupporter.editColumnOrPrevPossible(fEditorColumn);
                 break;
-            fKeyBoardSupporter.getTable().setSelection(nextRow);
-            fKeyBoardSupporter.editColumnOrPrevPossible(fEditorColumn);
-            break;
 
-        case SWT.ARROW_UP :
-            e.doit = false;
-            int prevRow = fKeyBoardSupporter.getTable().getSelectionIndex() - 1;
-            if (prevRow < 0)
+            case SWT.ARROW_UP :
+                e.doit = false;
+                int prevRow = fKeyBoardSupporter.getTable()
+                    .getSelectionIndex() - 1;
+                if (prevRow < 0)
+                    break;
+                fKeyBoardSupporter.getTable()
+                    .setSelection(prevRow);
+                fKeyBoardSupporter.editColumnOrPrevPossible(fEditorColumn);
                 break;
-            fKeyBoardSupporter.getTable().setSelection(prevRow);
-            fKeyBoardSupporter.editColumnOrPrevPossible(fEditorColumn);
-            break;
 
-        case SWT.F2 :
-            e.doit = false;
-            fEditor.deactivate();
-            break;
+            case SWT.F2 :
+                e.doit = false;
+                fEditor.deactivate();
+                break;
 
-        default :
-            break;
+            default :
+                break;
         }
     }
 }
@@ -189,31 +197,33 @@ class CellEditorTraverseListener implements TraverseListener {
      * (non-Javadoc)
      * @see org.eclipse.swt.events.TraverseListener#keyTraversed(org.eclipse.swt. events.TraverseEvent)
      */
+    @Override
     public void keyTraversed(TraverseEvent e) {
 
         switch (e.detail) {
-        case SWT.TRAVERSE_TAB_NEXT :
-            fKeyBoardSupporter.editColumnOrNextPossible(fKeyBoardSupporter.nextColumn(fEditorColumn));
-            e.detail = SWT.TRAVERSE_NONE;
-            break;
+            case SWT.TRAVERSE_TAB_NEXT :
+                fKeyBoardSupporter.editColumnOrNextPossible(fKeyBoardSupporter.nextColumn(fEditorColumn));
+                e.detail = SWT.TRAVERSE_NONE;
+                break;
 
-        case SWT.TRAVERSE_TAB_PREVIOUS :
-            fKeyBoardSupporter.editColumnOrPrevPossible(fKeyBoardSupporter.prevColumn(fEditorColumn));
-            e.detail = SWT.TRAVERSE_NONE;
-            break;
+            case SWT.TRAVERSE_TAB_PREVIOUS :
+                fKeyBoardSupporter.editColumnOrPrevPossible(fKeyBoardSupporter.prevColumn(fEditorColumn));
+                e.detail = SWT.TRAVERSE_NONE;
+                break;
 
-        case SWT.TRAVERSE_ESCAPE :
-            fKeyBoardSupporter.getTableViewer().cancelEditing();
-            e.detail = SWT.TRAVERSE_NONE;
-            break;
+            case SWT.TRAVERSE_ESCAPE :
+                fKeyBoardSupporter.getTableViewer()
+                    .cancelEditing();
+                e.detail = SWT.TRAVERSE_NONE;
+                break;
 
-        case SWT.TRAVERSE_RETURN :
-            fEditor.deactivate();
-            e.detail = SWT.TRAVERSE_NONE;
-            break;
+            case SWT.TRAVERSE_RETURN :
+                fEditor.deactivate();
+                e.detail = SWT.TRAVERSE_NONE;
+                break;
 
-        default :
-            break;
+            default :
+                break;
         }
     }
 }
@@ -229,6 +239,7 @@ class TableTraverseListener implements TraverseListener {
      * (non-Javadoc)
      * @see org.eclipse.swt.events.TraverseListener#keyTraversed(org.eclipse.swt. events.TraverseEvent)
      */
+    @Override
     public void keyTraversed(TraverseEvent e) {
         if (e.detail == SWT.TRAVERSE_RETURN && e.stateMask == SWT.NONE) {
             fKeyBoardSupporter.editColumnOrNextPossible(0);

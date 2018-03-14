@@ -17,6 +17,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ProjectPaths;
 import org.bndtools.templating.Template;
@@ -96,8 +97,12 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
     }
 
     private static boolean isDirectlyInWorkspace(IPath location) {
-        File wslocation = Platform.getLocation().toFile();
-        return location.toFile().getAbsoluteFile().getParentFile().equals(wslocation);
+        File wslocation = Platform.getLocation()
+            .toFile();
+        return location.toFile()
+            .getAbsoluteFile()
+            .getParentFile()
+            .equals(wslocation);
     }
 
     @Override
@@ -163,7 +168,9 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
                 enableTestSrcDir = findAttribute(templateMeta, ProjectTemplateParam.TEST_SRC_DIR.getString()) != null;
             }
         } catch (Exception e) {
-            Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing template parameters", e));
+            Plugin.getDefault()
+                .getLog()
+                .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing template parameters", e));
             enableTestSrcDir = true;
         }
         if (enableTestSrcDir)
@@ -187,7 +194,8 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     @Override
     public IPath getOutputLocation() {
-        return new Path(getProjectName()).makeAbsolute().append(ProjectPaths.DEFAULT.getBin());
+        return new Path(getProjectName()).makeAbsolute()
+            .append(ProjectPaths.DEFAULT.getBin());
     }
 
     public void setTemplate(Template template) {

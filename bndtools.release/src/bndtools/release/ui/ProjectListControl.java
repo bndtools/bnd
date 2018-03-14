@@ -79,7 +79,7 @@ public class ProjectListControl {
 
     // Set column names
     private static final String[] columnNames = new String[] {
-            PROJECT_COLUMN, REPOSITORY_COLUMN, BUNDLES_COLUMN
+        PROJECT_COLUMN, REPOSITORY_COLUMN, BUNDLES_COLUMN
     };
 
     public ProjectListControl(SelectionListener selectionListener, String[] releaseRepos) {
@@ -119,7 +119,8 @@ public class ProjectListControl {
         gridData.grabExcessHorizontalSpace = true;
         composite.setLayoutData(gridData);
 
-        FilterPanelPart filterPart = new FilterPanelPart(Activator.getDefault().getScheduler());
+        FilterPanelPart filterPart = new FilterPanelPart(Activator.getDefault()
+            .getScheduler());
         filterPart.createControl(composite, 0, 0);
         filterPart.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -131,7 +132,8 @@ public class ProjectListControl {
 
         ToolBar toolbar = new ToolBar(composite, SWT.FLAT);
         ToolItem tiCheckAll = new ToolItem(toolbar, SWT.FLAT);
-        tiCheckAll.setImage(Activator.getImageDescriptor("icons/check_all.gif").createImage());
+        tiCheckAll.setImage(Activator.getImageDescriptor("icons/check_all.gif")
+            .createImage());
         tiCheckAll.setToolTipText(Messages.checkAll);
         tiCheckAll.addSelectionListener(new SelectionAdapter() {
 
@@ -147,7 +149,8 @@ public class ProjectListControl {
         });
 
         ToolItem tiUncheckAll = new ToolItem(toolbar, SWT.FLAT);
-        tiUncheckAll.setImage(Activator.getImageDescriptor("icons/uncheck_all.gif").createImage());
+        tiUncheckAll.setImage(Activator.getImageDescriptor("icons/uncheck_all.gif")
+            .createImage());
         tiUncheckAll.setToolTipText(Messages.uncheckAll);
         tiUncheckAll.addSelectionListener(new SelectionAdapter() {
 
@@ -165,7 +168,8 @@ public class ProjectListControl {
 
     private void updatedFilter(String filterString) {
         String newFilter;
-        if (filterString == null || filterString.length() == 0 || filterString.trim().equals("*"))
+        if (filterString == null || filterString.length() == 0 || filterString.trim()
+            .equals("*"))
             newFilter = null;
         else
             newFilter = "*" + filterString.trim() + "*";
@@ -344,7 +348,9 @@ public class ProjectListControl {
             Glob glob = new Glob(filter);
             List<ProjectDiff> filtered = new ArrayList<ProjectDiff>();
             for (ProjectDiff diff : projectDiffs) {
-                if (glob.matcher(diff.getProject().getName()).matches()) {
+                if (glob.matcher(diff.getProject()
+                    .getName())
+                    .matches()) {
                     filtered.add(diff);
                 }
             }
@@ -352,23 +358,26 @@ public class ProjectListControl {
         }
 
         @Override
-        public Comparable< ? > getValue(Object element, int columnIndex) {
+        public Comparable<?> getValue(Object element, int columnIndex) {
             ProjectDiff diff = (ProjectDiff) element;
             switch (columnIndex) {
-            case 0 :
-                return diff.getProject().getName();
-            case 1 :
-                return diff.getReleaseRepository();
-            case 2 :
-                int bundles = -1;
-                try (ProjectBuilder pb = diff.getProject().getBuilder(null)) {
-                    bundles = pb.getSubBuilders().size();
-                } catch (Exception e) {
-                    /* ignore */
-                }
-                return Integer.valueOf(bundles);
-            default :
-                return "";
+                case 0 :
+                    return diff.getProject()
+                        .getName();
+                case 1 :
+                    return diff.getReleaseRepository();
+                case 2 :
+                    int bundles = -1;
+                    try (ProjectBuilder pb = diff.getProject()
+                        .getBuilder(null)) {
+                        bundles = pb.getSubBuilders()
+                            .size();
+                    } catch (Exception e) {
+                        /* ignore */
+                    }
+                    return Integer.valueOf(bundles);
+                default :
+                    return "";
             }
         }
     }
@@ -385,26 +394,29 @@ public class ProjectListControl {
             String text = "";
             ProjectDiff diff = (ProjectDiff) element;
             switch (columnIndex) {
-            case 0 :
-                text = diff.getProject().getName();
-                break;
-            case 1 :
-                text = diff.getReleaseRepository();
-                if (text == null) {
-                    text = diff.getDefaultReleaseRepository();
-                }
-                break;
-            case 2 :
-                int bundles = -1;
-                try (ProjectBuilder pb = diff.getProject().getBuilder(null)) {
-                    bundles = pb.getSubBuilders().size();
-                } catch (Exception e) {
-                    /* ignore */
-                }
-                text = String.valueOf(bundles);
-                break;
-            default :
-                break;
+                case 0 :
+                    text = diff.getProject()
+                        .getName();
+                    break;
+                case 1 :
+                    text = diff.getReleaseRepository();
+                    if (text == null) {
+                        text = diff.getDefaultReleaseRepository();
+                    }
+                    break;
+                case 2 :
+                    int bundles = -1;
+                    try (ProjectBuilder pb = diff.getProject()
+                        .getBuilder(null)) {
+                        bundles = pb.getSubBuilders()
+                            .size();
+                    } catch (Exception e) {
+                        /* ignore */
+                    }
+                    text = String.valueOf(bundles);
+                    break;
+                default :
+                    break;
             }
             return text;
         }

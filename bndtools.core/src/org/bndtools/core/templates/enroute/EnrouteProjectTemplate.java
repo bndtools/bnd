@@ -53,7 +53,7 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
     static Pattern SKIP = Pattern.compile("\\.classpath|\\.project");
     static Pattern TOP_LEVEL = Pattern.compile("^(?:(?:com|biz|org|net|uk.co|gnu|gov|mil|[a-z][a-z]|info|name)\\.)(.*)", Pattern.CASE_INSENSITIVE);
 
-    private static final Map<String,String> parameters = new HashMap<>();
+    private static final Map<String, String> parameters = new HashMap<>();
 
     static {
         parameters.put(PROP_SRC_DIR, "Source Directory");
@@ -77,11 +77,14 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
         category = config.getAttribute("category");
         if (category == null)
             category = "Uncategorised";
-        description = String.format("from %s (installed plug-in)", config.getContributor().getName());
+        description = String.format("from %s (installed plug-in)", config.getContributor()
+            .getName());
 
         RegistryContributor contributor = (RegistryContributor) config.getContributor();
         long bundleId = Long.parseLong(contributor.getActualId());
-        bundle = Plugin.getDefault().getBundleContext().getBundle(bundleId);
+        bundle = Plugin.getDefault()
+            .getBundleContext()
+            .getBundle(bundleId);
         try {
             iconUri = pathToURI(bundle, config.getAttribute("icon"));
             docUri = pathToURI(bundle, config.getAttribute("doc"));
@@ -148,12 +151,12 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
     @Override
     public ObjectClassDefinition getMetadata(IProgressMonitor monitor) throws Exception {
         ObjectClassDefinitionImpl ocd = new ObjectClassDefinitionImpl(name, description, iconUri);
-        for (Entry<String,String> entry : parameters.entrySet())
+        for (Entry<String, String> entry : parameters.entrySet())
             ocd.addAttribute(new AttributeDefinitionImpl(entry.getKey(), entry.getValue(), 0, AttributeDefinition.STRING), true);
         return ocd;
     }
 
-    private static String param(String name, Map<String,List<Object>> params) {
+    private static String param(String name, Map<String, List<Object>> params) {
         List<Object> list = params.get(name);
         if (list == null || list.isEmpty())
             throw new IllegalArgumentException("Missing required parameter: " + name);
@@ -162,16 +165,17 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
         if (object instanceof String)
             return (String) object;
 
-        throw new IllegalArgumentException(String.format("Unexpected type for parameter '%s': expected String, found %s", name, object != null ? object.getClass().getName() : "<null>"));
+        throw new IllegalArgumentException(String.format("Unexpected type for parameter '%s': expected String, found %s", name, object != null ? object.getClass()
+            .getName() : "<null>"));
     }
 
     @Override
-    public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+    public ResourceMap generateOutputs(Map<String, List<Object>> parameters) throws Exception {
         return generateOutputs(parameters, new NullProgressMonitor());
     }
 
     @Override
-    public ResourceMap generateOutputs(Map<String,List<Object>> params, IProgressMonitor monitor) throws Exception {
+    public ResourceMap generateOutputs(Map<String, List<Object>> params, IProgressMonitor monitor) throws Exception {
 
         String projectName = param(PROP_PROJECT_NAME, params);
         String pkg = param(PROP_BASE_PACKAGE_NAME, params);
@@ -190,7 +194,7 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
         BndEditModel model = new BndEditModel();
 
         model.setPrivatePackages(Arrays.asList(new String[] {
-                pkg + ".provider"
+            pkg + ".provider"
         }));
         model.setExportedPackages(Arrays.asList(new ExportedPackage(projectName + ".api", new Attrs())));
 
@@ -295,7 +299,7 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
 
         String pkgPath = toBinaryPackage(basePackageName);
 
-        Map<String,String> regex = new LinkedHashMap<String,String>();
+        Map<String, String> regex = new LinkedHashMap<String, String>();
         regex.put("_stem_", stem);
         regex.put("_STEM_", stem.toUpperCase());
         regex.put("_type_", type);
@@ -354,8 +358,10 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
     }
 
     private String toPROJECT(String projectName) {
-        String name = TOP_LEVEL.matcher(projectName).replaceFirst("");
-        return name.toUpperCase().replace('.', ' ');
+        String name = TOP_LEVEL.matcher(projectName)
+            .replaceFirst("");
+        return name.toUpperCase()
+            .replace('.', ' ');
     }
 
     private String toCmd(String stem) {
@@ -376,10 +382,10 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
         return sb.toString();
     }
 
-    protected void copy(ResourceMap resourceMap, String prefix, Map<String,String> regex) {
+    protected void copy(ResourceMap resourceMap, String prefix, Map<String, String> regex) {
         List<String> paths = new ArrayList<String>();
 
-        Map<String,URL> resources = new HashMap<String,URL>();
+        Map<String, URL> resources = new HashMap<String, URL>();
 
         getPaths(bundle, prefix, paths);
         for (String path : paths) {
@@ -406,10 +412,11 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
         // Content should however, use the dotted variation of package
         //
 
-        String replace = regex.get("_package_").replace('/', '.');
+        String replace = regex.get("_package_")
+            .replace('/', '.');
         regex.put("_package_", replace);
 
-        for (Entry<String,URL> e : resources.entrySet()) {
+        for (Entry<String, URL> e : resources.entrySet()) {
             RegexReplacingResource resource = new RegexReplacingResource(e.getValue(), regex, "UTF-8");
             resourceMap.put(e.getKey(), resource);
 
@@ -427,9 +434,9 @@ public class EnrouteProjectTemplate implements Template, IExecutableExtension {
         }
     }
 
-    protected String replace(String out, Map<String,String> regex) {
+    protected String replace(String out, Map<String, String> regex) {
         String out_ = out;
-        for (Entry<String,String> e : regex.entrySet()) {
+        for (Entry<String, String> e : regex.entrySet()) {
             out_ = out_.replace(e.getKey(), e.getValue());
         }
         return out_;

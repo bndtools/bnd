@@ -18,11 +18,13 @@ public class BytesResource implements Resource {
 
     public BytesResource(byte[] data) {
         this.data = data;
-        this.encoding = Charset.defaultCharset().name();
+        this.encoding = Charset.defaultCharset()
+            .name();
     }
 
     public static BytesResource loadFrom(InputStream input) throws IOException {
-        return loadFrom(input, Charset.defaultCharset().name());
+        return loadFrom(input, Charset.defaultCharset()
+            .name());
     }
 
     public static BytesResource loadFrom(InputStream input, String encoding) throws IOException {

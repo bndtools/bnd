@@ -8,6 +8,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+
 import aQute.bnd.service.progress.ProgressPlugin;
 import bndtools.Plugin;
 
@@ -45,8 +46,9 @@ public class JobProgress implements ProgressPlugin {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         monitor.setCanceled(true);
-                        status.compareAndSet(null, new Status(Status.CANCEL, Plugin.PLUGIN_ID, "InterruptedException", e));
-                        Thread.currentThread().interrupt();
+                        status.compareAndSet(null, new Status(IStatus.CANCEL, Plugin.PLUGIN_ID, "InterruptedException", e));
+                        Thread.currentThread()
+                            .interrupt();
                     }
                 }
             }
@@ -61,7 +63,7 @@ public class JobProgress implements ProgressPlugin {
         private boolean isCanceled(IProgressMonitor m) {
             boolean canceled = m.isCanceled();
             if (canceled) {
-                status.compareAndSet(null, new Status(Status.CANCEL, Plugin.PLUGIN_ID, "Canceled"));
+                status.compareAndSet(null, new Status(IStatus.CANCEL, Plugin.PLUGIN_ID, "Canceled"));
             }
             return canceled;
         }
@@ -77,7 +79,7 @@ public class JobProgress implements ProgressPlugin {
 
         @Override
         public void done(String message, Throwable error) {
-            status.compareAndSet(null, new Status(error == null ? Status.OK : Status.ERROR, Plugin.PLUGIN_ID, message, error));
+            status.compareAndSet(null, new Status(error == null ? IStatus.OK : IStatus.ERROR, Plugin.PLUGIN_ID, message, error));
         }
 
         @Override

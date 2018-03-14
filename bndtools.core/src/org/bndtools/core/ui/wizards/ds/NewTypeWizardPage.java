@@ -149,7 +149,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             fImportsRewrite = StubUtility.createImportRewrite(astRoot, true);
         }
 
-                /* package */ICompilationUnit getCompilationUnit() {
+        /* package */ICompilationUnit getCompilationUnit() {
             return fImportsRewrite.getCompilationUnit();
         }
 
@@ -157,8 +157,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
          * Adds a new import declaration that is sorted in the existing imports. If an import already exists or the
          * import would conflict with an import of an other type with the same simple name, the import is not added.
          *
-         * @param qualifiedTypeName
-         *            The fully qualified name of the type to import (dot separated).
+         * @param qualifiedTypeName The fully qualified name of the type to import (dot separated).
          * @return Returns the simple type name that can be used in the code or the fully qualified type name if an
          *         import conflict prevented the import.
          */
@@ -170,8 +169,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
          * Adds a new import declaration that is sorted in the existing imports. If an import already exists or the
          * import would conflict with an import of an other type with the same simple name, the import is not added.
          *
-         * @param typeBinding
-         *            the binding of the type to import
+         * @param typeBinding the binding of the type to import
          * @return Returns the simple type name that can be used in the code or the fully qualified type name if an
          *         import conflict prevented the import.
          */
@@ -184,12 +182,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
          * exists or the import would conflict with an import of an other static import with the same simple name, the
          * import is not added.
          *
-         * @param declaringTypeName
-         *            The qualified name of the static's member declaring type
-         * @param simpleName
-         *            the simple name of the member; either a field or a method name.
-         * @param isField
-         *            <code>true</code> specifies that the member is a field, <code>false</code> if it is a method.
+         * @param declaringTypeName The qualified name of the static's member declaring type
+         * @param simpleName the simple name of the member; either a field or a method name.
+         * @param isField <code>true</code> specifies that the member is a field, <code>false</code> if it is a method.
          * @return returns either the simple member name if the import was successful or else the qualified name if an
          *         import conflict prevented the import.
          * @since 3.2
@@ -198,16 +193,16 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             return fImportsRewrite.addStaticImport(declaringTypeName, simpleName, isField);
         }
 
-                /* package */void create(boolean needsSave, IProgressMonitor monitor) throws CoreException {
+        /* package */void create(boolean needsSave, IProgressMonitor monitor) throws CoreException {
             TextEdit edit = fImportsRewrite.rewriteImports(monitor);
             JavaModelUtil.applyEdit(fImportsRewrite.getCompilationUnit(), edit, needsSave, null);
         }
 
-                /* package */void removeImport(String qualifiedName) {
+        /* package */void removeImport(String qualifiedName) {
             fImportsRewrite.removeImport(qualifiedName);
         }
 
-                /* package */void removeStaticImport(String qualifiedName) {
+        /* package */void removeStaticImport(String qualifiedName) {
             fImportsRewrite.removeStaticImport(qualifiedName);
         }
     }
@@ -304,7 +299,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     private final SelectionButtonDialogFieldGroup fOtherMdfButtons;
 
     private final SelectionButtonDialogField fAddCommentButton;
-    private boolean fUseAddCommentButtonValue; // used for compatibility: Wizards that don't show the comment button control
+    private boolean fUseAddCommentButtonValue; // used for compatibility: Wizards that don't show the comment button
+                                               // control
     // will use the preferences settings
 
     private IType fCreatedType;
@@ -357,10 +353,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Creates a new <code>NewTypeWizardPage</code>.
      *
-     * @param isClass
-     *            <code>true</code> if a new class is to be created; otherwise an interface is to be created
-     * @param pageName
-     *            the wizard page's name
+     * @param isClass <code>true</code> if a new class is to be created; otherwise an interface is to be created
+     * @param pageName the wizard page's name
      */
     public NewTypeWizardPage(boolean isClass, String pageName) {
         this(isClass ? CLASS_TYPE : INTERFACE_TYPE, pageName);
@@ -369,11 +363,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Creates a new <code>NewTypeWizardPage</code>.
      *
-     * @param typeKind
-     *            Signals the kind of the type to be created. Valid kinds are {@link #CLASS_TYPE},
+     * @param typeKind Signals the kind of the type to be created. Valid kinds are {@link #CLASS_TYPE},
      *            {@link #INTERFACE_TYPE}, {@link #ENUM_TYPE} and {@link #ANNOTATION_TYPE}
-     * @param pageName
-     *            the wizard page's name
+     * @param pageName the wizard page's name
      * @since 3.1
      */
     public NewTypeWizardPage(int typeKind, String pageName) {
@@ -408,7 +400,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         fSuperClassDialogField.setButtonLabel(NewWizardMessages.NewTypeWizardPage_superclass_button);
 
         String[] addButtons = new String[] {
-                NewWizardMessages.NewTypeWizardPage_interfaces_add, /* 1 */null, NewWizardMessages.NewTypeWizardPage_interfaces_remove
+            NewWizardMessages.NewTypeWizardPage_interfaces_add, /* 1 */null, NewWizardMessages.NewTypeWizardPage_interfaces_remove
         };
         fSuperInterfacesDialogField = new ListDialogField<InterfaceWrapper>(adapter, addButtons, new InterfacesListLabelProvider());
         fSuperInterfacesDialogField.setDialogFieldListener(adapter);
@@ -417,7 +409,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         fSuperInterfacesDialogField.setRemoveButtonIndex(2);
 
         String[] buttonNames1 = new String[] {
-                NewWizardMessages.NewTypeWizardPage_modifiers_public, NewWizardMessages.NewTypeWizardPage_modifiers_default, NewWizardMessages.NewTypeWizardPage_modifiers_private, NewWizardMessages.NewTypeWizardPage_modifiers_protected
+            NewWizardMessages.NewTypeWizardPage_modifiers_public, NewWizardMessages.NewTypeWizardPage_modifiers_default, NewWizardMessages.NewTypeWizardPage_modifiers_private, NewWizardMessages.NewTypeWizardPage_modifiers_protected
         };
         fAccMdfButtons = new SelectionButtonDialogFieldGroup(SWT.RADIO, buttonNames1, 4);
         fAccMdfButtons.setDialogFieldListener(adapter);
@@ -427,12 +419,12 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         String[] buttonNames2;
         if (fTypeKind == CLASS_TYPE) {
             buttonNames2 = new String[] {
-                    NewWizardMessages.NewTypeWizardPage_modifiers_abstract, NewWizardMessages.NewTypeWizardPage_modifiers_final, NewWizardMessages.NewTypeWizardPage_modifiers_static
+                NewWizardMessages.NewTypeWizardPage_modifiers_abstract, NewWizardMessages.NewTypeWizardPage_modifiers_final, NewWizardMessages.NewTypeWizardPage_modifiers_static
             };
         } else {
             if (fTypeKind == ENUM_TYPE || fTypeKind == ANNOTATION_TYPE) {
                 buttonNames2 = new String[] {
-                        NewWizardMessages.NewTypeWizardPage_modifiers_abstract, NewWizardMessages.NewTypeWizardPage_modifiers_static
+                    NewWizardMessages.NewTypeWizardPage_modifiers_abstract, NewWizardMessages.NewTypeWizardPage_modifiers_static
                 };
             } else
                 buttonNames2 = new String[] {};
@@ -474,8 +466,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Initializes all fields provided by the page with a given selection.
      *
-     * @param elem
-     *            the selection used to initialize this page or <code>
+     * @param elem the selection used to initialize this page or <code>
      * null</code> if no selection was available
      */
     protected void initTypePage(IJavaElement elem) {
@@ -623,10 +614,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Creates a separator line. Expects a <code>GridLayout</code> with at least 1 column.
      *
-     * @param composite
-     *            the parent composite
-     * @param nColumns
-     *            number of columns to span
+     * @param composite the parent composite
+     * @param nColumns number of columns to span
      */
     protected void createSeparator(Composite composite, int nColumns) {
         (new Separator(SWT.SEPARATOR | SWT.HORIZONTAL)).doFillIntoGrid(composite, nColumns, convertHeightInCharsToPixels(1));
@@ -635,10 +624,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Creates the controls for the package name field. Expects a <code>GridLayout</code> with at least 4 columns.
      *
-     * @param composite
-     *            the parent composite
-     * @param nColumns
-     *            number of columns to span
+     * @param composite the parent composite
+     * @param nColumns number of columns to span
      */
     protected void createPackageControls(Composite composite, int nColumns) {
         fPackageDialogField.doFillIntoGrid(composite, nColumns);
@@ -653,10 +640,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Creates the controls for the enclosing type name field. Expects a <code>GridLayout</code> with at least 4
      * columns.
      *
-     * @param composite
-     *            the parent composite
-     * @param nColumns
-     *            number of columns to span
+     * @param composite the parent composite
+     * @param nColumns number of columns to span
      */
     @SuppressWarnings("unused")
     protected void createEnclosingTypeControls(Composite composite, int nColumns) {
@@ -688,10 +673,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Creates the controls for the type name field. Expects a <code>GridLayout</code> with at least 2 columns.
      *
-     * @param composite
-     *            the parent composite
-     * @param nColumns
-     *            number of columns to span
+     * @param composite the parent composite
+     * @param nColumns number of columns to span
      */
     protected void createTypeNameControls(Composite composite, int nColumns) {
         fTypeNameDialogField.doFillIntoGrid(composite, nColumns - 1);
@@ -706,10 +689,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Creates the controls for the modifiers radio/checkbox buttons. Expects a <code>GridLayout</code> with at least 3
      * columns.
      *
-     * @param composite
-     *            the parent composite
-     * @param nColumns
-     *            number of columns to span
+     * @param composite the parent composite
+     * @param nColumns number of columns to span
      */
     protected void createModifierControls(Composite composite, int nColumns) {
         LayoutUtil.setHorizontalSpan(fAccMdfButtons.getLabelControl(composite), 1);
@@ -736,10 +717,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Creates the controls for the superclass name field. Expects a <code>GridLayout</code> with at least 3 columns.
      *
-     * @param composite
-     *            the parent composite
-     * @param nColumns
-     *            number of columns to span
+     * @param composite the parent composite
+     * @param nColumns number of columns to span
      */
     protected void createSuperClassControls(Composite composite, int nColumns) {
         fSuperClassDialogField.doFillIntoGrid(composite, nColumns);
@@ -761,17 +740,15 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Creates the controls for the superclass name field. Expects a <code>GridLayout</code> with at least 3 columns.
      *
-     * @param composite
-     *            the parent composite
-     * @param nColumns
-     *            number of columns to span
+     * @param composite the parent composite
+     * @param nColumns number of columns to span
      */
     protected void createSuperInterfacesControls(Composite composite, int nColumns) {
         final String INTERFACE = "interface"; //$NON-NLS-1$
         fSuperInterfacesDialogField.doFillIntoGrid(composite, nColumns);
         final TableViewer tableViewer = fSuperInterfacesDialogField.getTableViewer();
         tableViewer.setColumnProperties(new String[] {
-                INTERFACE
+            INTERFACE
         });
 
         TableTextCellEditor cellEditor = new TableTextCellEditor(tableViewer, 0) {
@@ -779,7 +756,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             protected void doSetFocus() {
                 if (text != null) {
                     text.setFocus();
-                    text.setSelection(text.getText().length());
+                    text.setSelection(text.getText()
+                        .length());
                     checkSelection();
                     checkDeleteable();
                     checkSelectable();
@@ -797,14 +775,14 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         org.eclipse.jface.contentassist.SubjectControlContentAssistant contentAssistant = ControlContentAssistHelper.createJavaContentAssistant(superInterfaceCompletionProcessor);
         Text cellEditorText = cellEditor.getText();
         @SuppressWarnings({
-                "deprecation", "unused"
+            "deprecation", "unused"
         })
         org.eclipse.ui.contentassist.ContentAssistHandler contentAssistantHandler = org.eclipse.ui.contentassist.ContentAssistHandler.createHandlerForText(cellEditorText, contentAssistant);
         TextFieldNavigationHandler.install(cellEditorText);
         cellEditor.setContentAssistant(contentAssistant);
 
         tableViewer.setCellEditors(new CellEditor[] {
-                cellEditor
+            cellEditor
         });
         tableViewer.setCellModifier(new ICellModifier() {
             @Override
@@ -827,19 +805,21 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                 return true;
             }
         });
-        tableViewer.getTable().addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent event) {
-                if (event.keyCode == SWT.F2 && event.stateMask == 0) {
-                    ISelection selection = tableViewer.getSelection();
-                    if (!(selection instanceof IStructuredSelection))
-                        return;
-                    IStructuredSelection structuredSelection = (IStructuredSelection) selection;
-                    tableViewer.editElement(structuredSelection.getFirstElement(), 0);
+        tableViewer.getTable()
+            .addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent event) {
+                    if (event.keyCode == SWT.F2 && event.stateMask == 0) {
+                        ISelection selection = tableViewer.getSelection();
+                        if (!(selection instanceof IStructuredSelection))
+                            return;
+                        IStructuredSelection structuredSelection = (IStructuredSelection) selection;
+                        tableViewer.editElement(structuredSelection.getFirstElement(), 0);
+                    }
                 }
-            }
-        });
-        GridData gd = (GridData) fSuperInterfacesDialogField.getListControl(null).getLayoutData();
+            });
+        GridData gd = (GridData) fSuperInterfacesDialogField.getListControl(null)
+            .getLayoutData();
         if (fTypeKind == CLASS_TYPE) {
             gd.heightHint = convertHeightInCharsToPixels(3);
         } else {
@@ -852,10 +832,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Creates the controls for the preference page links. Expects a <code>GridLayout</code> with at least 3 columns.
      *
-     * @param composite
-     *            the parent composite
-     * @param nColumns
-     *            number of columns to span
+     * @param composite the parent composite
+     * @param nColumns number of columns to span
      * @since 3.1
      */
     protected void createCommentControls(Composite composite, int nColumns) {
@@ -960,8 +938,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     }
 
     /*
-     * A field on the type has changed. The fields' status and all dependent
-     * status are updated.
+     * A field on the type has changed. The fields' status and all dependent status are updated.
      */
     private void typePageDialogFieldChanged(DialogField field) {
         String fieldName = null;
@@ -1070,10 +1047,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Sets the package fragment to the given value. The method updates the model and the text of the control.
      *
-     * @param pack
-     *            the package fragment to be set
-     * @param canBeModified
-     *            if <code>true</code> the package fragment is editable; otherwise it is read-only.
+     * @param pack the package fragment to be set
+     * @param canBeModified if <code>true</code> the package fragment is editable; otherwise it is read-only.
      */
     public void setPackageFragment(IPackageFragment pack, boolean canBeModified) {
         fCurrPackage = pack;
@@ -1099,10 +1074,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Sets the enclosing type. The method updates the underlying model and the text of the control.
      *
-     * @param type
-     *            the enclosing type
-     * @param canBeModified
-     *            if <code>true</code> the enclosing type field is editable; otherwise it is read-only.
+     * @param type the enclosing type
+     * @param canBeModified if <code>true</code> the enclosing type field is editable; otherwise it is read-only.
      */
     public void setEnclosingType(IType type, boolean canBeModified) {
         fCurrEnclosingType = type;
@@ -1124,10 +1097,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Sets the enclosing type checkbox's selection state.
      *
-     * @param isSelected
-     *            the checkbox's selection state
-     * @param canBeModified
-     *            if <code>true</code> the enclosing type checkbox is modifiable; otherwise it is read-only.
+     * @param isSelected the checkbox's selection state
+     * @param canBeModified if <code>true</code> the enclosing type checkbox is modifiable; otherwise it is read-only.
      */
     public void setEnclosingTypeSelection(boolean isSelected, boolean canBeModified) {
         fEnclosingTypeSelection.setSelection(isSelected);
@@ -1147,10 +1118,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Sets the type name input field's text to the given value. Method doesn't update the model.
      *
-     * @param name
-     *            the new type name
-     * @param canBeModified
-     *            if <code>true</code> the type name field is editable; otherwise it is read-only.
+     * @param name the new type name
+     * @param canBeModified if <code>true</code> the type name field is editable; otherwise it is read-only.
      */
     public void setTypeName(String name, boolean canBeModified) {
         fTypeNameDialogField.setText(name);
@@ -1187,11 +1156,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Sets the modifiers.
      *
-     * @param modifiers
-     *            <code>F_PUBLIC</code>, <code>F_PRIVATE</code>, <code>F_PROTECTED</code>, <code>F_ABSTRACT</code>,
-     *            <code>F_FINAL</code> or <code>F_STATIC</code> or a valid combination.
-     * @param canBeModified
-     *            if <code>true</code> the modifier fields are editable; otherwise they are read-only
+     * @param modifiers <code>F_PUBLIC</code>, <code>F_PRIVATE</code>, <code>F_PROTECTED</code>,
+     *            <code>F_ABSTRACT</code>, <code>F_FINAL</code> or <code>F_STATIC</code> or a valid combination.
+     * @param canBeModified if <code>true</code> the modifier fields are editable; otherwise they are read-only
      * @see Flags
      */
     public void setModifiers(int modifiers, boolean canBeModified) {
@@ -1230,10 +1197,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Sets the super class name.
      *
-     * @param name
-     *            the new superclass name
-     * @param canBeModified
-     *            if <code>true</code> the superclass name field is editable; otherwise it is read-only.
+     * @param name the new superclass name
+     * @param canBeModified if <code>true</code> the superclass name field is editable; otherwise it is read-only.
      */
     public void setSuperClass(String name, boolean canBeModified) {
         fSuperClassDialogField.setText(name);
@@ -1258,11 +1223,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Sets the super interfaces.
      *
-     * @param interfacesNames
-     *            a list of super interface. The method requires that the list's elements are of type
+     * @param interfacesNames a list of super interface. The method requires that the list's elements are of type
      *            <code>String</code>
-     * @param canBeModified
-     *            if <code>true</code> the super interface field is editable; otherwise it is read-only.
+     * @param canBeModified if <code>true</code> the super interface field is editable; otherwise it is read-only.
      */
     public void setSuperInterfaces(List<String> interfacesNames, boolean canBeModified) {
         ArrayList<InterfaceWrapper> interfaces = new ArrayList<InterfaceWrapper>(interfacesNames.size());
@@ -1276,8 +1239,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Adds a super interface to the end of the list and selects it if it is not in the list yet.
      *
-     * @param superInterface
-     *            the fully qualified type name of the interface.
+     * @param superInterface the fully qualified type name of the interface.
      * @return returns <code>true</code>if the interfaces has been added, <code>false</code> if the interface already is
      *         in the list.
      * @since 3.2
@@ -1290,10 +1252,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Sets 'Add comment' checkbox. The value set will only be used when creating source when the comment control is
      * enabled (see {@link #enableCommentControl(boolean)}
      *
-     * @param doAddComments
-     *            if <code>true</code>, comments are added.
-     * @param canBeModified
-     *            if <code>true</code> check box is editable; otherwise it is read-only.
+     * @param doAddComments if <code>true</code>, comments are added.
+     * @param canBeModified if <code>true</code> check box is editable; otherwise it is read-only.
      * @since 3.1
      */
     public void setAddComments(boolean doAddComments, boolean canBeModified) {
@@ -1305,8 +1265,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Sets to use the 'Add comment' checkbox value. Clients that use the 'Add comment' checkbox additionally have to
      * enable the control. This has been added for backwards compatibility.
      *
-     * @param useAddCommentValue
-     *            if <code>true</code>,
+     * @param useAddCommentValue if <code>true</code>,
      * @since 3.1
      */
     public void enableCommentControl(boolean useAddCommentValue) {
@@ -1342,7 +1301,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         IPackageFragment pack = getPackageFragment();
         if (pack != null) {
             String cuName = getCompilationUnitName(getTypeNameWithoutParameters());
-            return pack.getCompilationUnit(cuName).getResource();
+            return pack.getCompilationUnit(cuName)
+                .getResource();
         }
         return null;
     }
@@ -1441,7 +1401,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                     status.setError(NewWizardMessages.NewTypeWizardPage_error_PackageIsVirtual);
                     return status;
                 }
-                if (!ResourcesPlugin.getWorkspace().validateFiltered(resource).isOK()) {
+                if (!ResourcesPlugin.getWorkspace()
+                    .validateFiltered(resource)
+                    .isOK()) {
                     status.setError(NewWizardMessages.NewTypeWizardPage_error_PackageNameFiltered);
                     return status;
                 }
@@ -1554,8 +1516,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Hook method that is called when evaluating the name of the compilation unit to create. By default, a file
      * extension <code>java</code> is added to the given type name, but implementors can override this behavior.
      *
-     * @param typeName
-     *            the name of the type to create the compilation unit for.
+     * @param typeName the name of the type to create the compilation unit for.
      * @return the name of the compilation unit to be created for the given name
      * @since 3.2
      */
@@ -1610,7 +1571,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                     status.setError(NewWizardMessages.NewTypeWizardPage_error_TypeNameExists);
                     return status;
                 }
-                if (!ResourcesPlugin.getWorkspace().validateFiltered(resource).isOK()) {
+                if (!ResourcesPlugin.getWorkspace()
+                    .validateFiltered(resource)
+                    .isOK()) {
                     status.setError(NewWizardMessages.NewTypeWizardPage_error_TypeNameFiltered);
                     return status;
                 }
@@ -1618,7 +1581,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                 if (location != null) {
                     try {
                         IFileStore store = EFS.getStore(location);
-                        if (store.fetchInfo().exists()) {
+                        if (store.fetchInfo()
+                            .exists()) {
                             status.setError(NewWizardMessages.NewTypeWizardPage_error_TypeNameExistsDifferentCase);
                             return status;
                         }
@@ -1810,7 +1774,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         IPackageFragment pack = getPackageFragment();
         if (pack != null) {
             dialog.setInitialSelections(new Object[] {
-                    pack
+                pack
             });
         }
 
@@ -1837,7 +1801,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         }
 
         IJavaSearchScope scope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
-                root
+            root
         });
 
         FilteredTypesSelectionDialog dialog = new FilteredTypesSelectionDialog(getShell(), false, getWizard().getContainer(), scope, IJavaSearchConstants.TYPE);
@@ -1868,7 +1832,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         }
 
         IJavaElement[] elements = new IJavaElement[] {
-                project
+            project
         };
         IJavaSearchScope scope = SearchEngine.createJavaSearchScope(elements);
 
@@ -1915,12 +1879,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     /**
      * Creates the new type using the entered field values.
      *
-     * @param monitor
-     *            a progress monitor to report progress.
-     * @throws CoreException
-     *             Thrown when the creation failed.
-     * @throws InterruptedException
-     *             Thrown when the operation was canceled.
+     * @param monitor a progress monitor to report progress.
+     * @throws CoreException Thrown when the creation failed.
+     * @throws InterruptedException Thrown when the operation was canceled.
      */
     public void createType(IProgressMonitor monitor) throws CoreException, InterruptedException {
         IProgressMonitor monitorInternal = monitor;
@@ -1966,7 +1927,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                 // create a working copy with a new owner
 
                 needsSave = true;
-                parentCU.becomeWorkingCopy(new SubProgressMonitor(monitorInternal, 1)); // cu is now a (primary) working copy
+                parentCU.becomeWorkingCopy(new SubProgressMonitor(monitorInternal, 1)); // cu is now a (primary) working
+                                                                                        // copy
                 connectedCU = parentCU;
 
                 IBuffer buffer = parentCU.getBuffer();
@@ -1986,8 +1948,10 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
                 int index = cuContent.lastIndexOf(simpleTypeStub);
                 if (index == -1) {
-                    AbstractTypeDeclaration typeNode = (AbstractTypeDeclaration) astRoot.types().get(0);
-                    int start = ((ASTNode) typeNode.modifiers().get(0)).getStartPosition();
+                    AbstractTypeDeclaration typeNode = (AbstractTypeDeclaration) astRoot.types()
+                        .get(0);
+                    int start = ((ASTNode) typeNode.modifiers()
+                        .get(0)).getStartPosition();
                     int end = typeNode.getStartPosition() + typeNode.getLength();
                     buffer.replace(start, end - start, typeContent);
                 } else {
@@ -2001,7 +1965,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                 ICompilationUnit parentCU = enclosingType.getCompilationUnit();
 
                 needsSave = !parentCU.isWorkingCopy();
-                parentCU.becomeWorkingCopy(new SubProgressMonitor(monitorInternal, 1)); // cu is now for sure (primary) a working copy
+                parentCU.becomeWorkingCopy(new SubProgressMonitor(monitorInternal, 1)); // cu is now for sure (primary)
+                                                                                        // a working copy
                 connectedCU = parentCU;
 
                 CompilationUnit astRoot = createASTForImports(parentCU);
@@ -2144,13 +2109,15 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             IProblem curr = problems[i];
             if (curr.getSourceEnd() < importsEnd) {
                 int id = curr.getID();
-                if (id == IProblem.UnusedImport || id == IProblem.NotVisibleType) { // not visible problems hide unused -> remove both
+                if (id == IProblem.UnusedImport || id == IProblem.NotVisibleType) { // not visible problems hide unused
+                                                                                    // -> remove both
                     int pos = curr.getSourceStart();
                     for (int k = 0; k < importsDecls.size(); k++) {
                         ImportDeclaration decl = importsDecls.get(k);
                         if (decl.getStartPosition() <= pos && pos < decl.getStartPosition() + decl.getLength()) {
                             if (existingImports.isEmpty() || !existingImports.contains(ASTNodes.asString(decl))) {
-                                String name = decl.getName().getFullyQualifiedName();
+                                String name = decl.getName()
+                                    .getFullyQualifiedName();
                                 if (decl.isOnDemand()) {
                                     name += ".*"; //$NON-NLS-1$
                                 }
@@ -2173,15 +2140,12 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Uses the New Java file template from the code template page to generate a compilation unit with the given type
      * content.
      *
-     * @param cu
-     *            The new created compilation unit
-     * @param typeContent
-     *            The content of the type, including signature and type body.
-     * @param lineDelimiter
-     *            The line delimiter to be used.
+     * @param cu The new created compilation unit
+     * @param typeContent The content of the type, including signature and type body.
+     * @param lineDelimiter The line delimiter to be used.
      * @return String Returns the result of evaluating the new file template with the given type content.
-     * @throws CoreException
-     *             when fetching the file comment fails or fetching the content for the new compilation unit fails
+     * @throws CoreException when fetching the file comment fails or fetching the content for the new compilation unit
+     *             fails
      * @since 2.1
      */
     protected String constructCUContent(ICompilationUnit cu, String typeContent, String lineDelimiter) throws CoreException {
@@ -2194,17 +2158,22 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             parser.setProject(cu.getJavaProject());
             parser.setSource(content.toCharArray());
             CompilationUnit unit = (CompilationUnit) parser.createAST(null);
-            if ((pack.isDefaultPackage() || unit.getPackage() != null) && !unit.types().isEmpty()) {
+            if ((pack.isDefaultPackage() || unit.getPackage() != null) && !unit.types()
+                .isEmpty()) {
                 return content;
             }
         }
         StringBuffer buf = new StringBuffer();
         if (!pack.isDefaultPackage()) {
-            buf.append("package ").append(pack.getElementName()).append(';'); //$NON-NLS-1$
+            buf.append("package ") //$NON-NLS-1$
+                .append(pack.getElementName())
+                .append(';');
         }
-        buf.append(lineDelimiter).append(lineDelimiter);
+        buf.append(lineDelimiter)
+            .append(lineDelimiter);
         if (typeComment != null) {
-            buf.append(typeComment).append(lineDelimiter);
+            buf.append(typeComment)
+                .append(lineDelimiter);
         }
         buf.append(typeContent);
         return buf.toString();
@@ -2293,38 +2262,40 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         String type = ""; //$NON-NLS-1$
         String templateID = ""; //$NON-NLS-1$
         switch (fTypeKind) {
-        case CLASS_TYPE :
-            type = "class "; //$NON-NLS-1$
-            templateID = CodeGeneration.CLASS_BODY_TEMPLATE_ID;
-            break;
-        case ENUM_TYPE :
-            type = "enum "; //$NON-NLS-1$
-            templateID = CodeGeneration.ENUM_BODY_TEMPLATE_ID;
-            break;
-        case ANNOTATION_TYPE :
-            type = "@interface "; //$NON-NLS-1$
-            templateID = CodeGeneration.ANNOTATION_BODY_TEMPLATE_ID;
-            break;
+            case CLASS_TYPE :
+                type = "class "; //$NON-NLS-1$
+                templateID = CodeGeneration.CLASS_BODY_TEMPLATE_ID;
+                break;
+            case ENUM_TYPE :
+                type = "enum "; //$NON-NLS-1$
+                templateID = CodeGeneration.ENUM_BODY_TEMPLATE_ID;
+                break;
+            case ANNOTATION_TYPE :
+                type = "@interface "; //$NON-NLS-1$
+                templateID = CodeGeneration.ANNOTATION_BODY_TEMPLATE_ID;
+                break;
 
-        case INTERFACE_TYPE :
-        default :
-            type = "interface "; //$NON-NLS-1$
-            templateID = CodeGeneration.INTERFACE_BODY_TEMPLATE_ID;
-            break;
+            case INTERFACE_TYPE :
+            default :
+                type = "interface "; //$NON-NLS-1$
+                templateID = CodeGeneration.INTERFACE_BODY_TEMPLATE_ID;
+                break;
         }
         buf.append(type);
         buf.append(getTypeName());
         writeSuperClass(buf, imports);
         writeSuperInterfaces(buf, imports);
 
-        buf.append(" {").append(lineDelimiter); //$NON-NLS-1$
+        buf.append(" {") //$NON-NLS-1$
+            .append(lineDelimiter);
         String typeBody = CodeGeneration.getTypeBody(templateID, parentCU, getTypeName(), lineDelimiter);
         if (typeBody != null) {
             buf.append(typeBody);
         } else {
             buf.append(lineDelimiter);
         }
-        buf.append('}').append(lineDelimiter);
+        buf.append('}')
+            .append(lineDelimiter);
         return buf.toString();
     }
 
@@ -2345,14 +2316,10 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * wizard at the end of the type creation process using the given import manager.
      * </p>
      *
-     * @param newType
-     *            the new type created via <code>createType</code>
-     * @param imports
-     *            an import manager which can be used to add new imports
-     * @param monitor
-     *            a progress monitor to report progress. Must not be <code>null</code>
-     * @throws CoreException
-     *             thrown when creation of the type members failed
+     * @param newType the new type created via <code>createType</code>
+     * @param imports an import manager which can be used to add new imports
+     * @param monitor a progress monitor to report progress. Must not be <code>null</code>
+     * @throws CoreException thrown when creation of the type members failed
      * @see #createType(IProgressMonitor)
      */
     @SuppressWarnings("unused")
@@ -2365,8 +2332,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     }
 
     /**
-     * @param parentCU
-     *            the current compilation unit
+     * @param parentCU the current compilation unit
      * @return returns the file template or <code>null</code>
      * @deprecated Instead of file templates, the new type code template specifies the stub for a compilation unit.
      */
@@ -2380,13 +2346,10 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Hook method that gets called from <code>createType</code> to retrieve a file comment. This default implementation
      * returns the content of the 'file comment' template or <code>null</code> if no comment should be created.
      *
-     * @param parentCU
-     *            the parent compilation unit
-     * @param lineDelimiter
-     *            the line delimiter to use
+     * @param parentCU the parent compilation unit
+     * @param lineDelimiter the line delimiter to use
      * @return the file comment or <code>null</code> if a file comment is not desired
-     * @throws CoreException
-     *             when fetching the file comment fails
+     * @throws CoreException when fetching the file comment fails
      * @since 3.1
      */
     protected String getFileComment(ICompilationUnit parentCU, String lineDelimiter) throws CoreException {
@@ -2414,10 +2377,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Hook method that gets called from <code>createType</code> to retrieve a type comment. This default implementation
      * returns the content of the 'type comment' template.
      *
-     * @param parentCU
-     *            the parent compilation unit
-     * @param lineDelimiter
-     *            the line delimiter to use
+     * @param parentCU the parent compilation unit
+     * @param lineDelimiter the line delimiter to use
      * @return the type comment or <code>null</code> if a type comment is not desired
      * @since 3.0
      */
@@ -2426,7 +2387,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             try {
                 StringBuffer typeName = new StringBuffer();
                 if (isEnclosingTypeSelected()) {
-                    typeName.append(getEnclosingType().getTypeQualifiedName('.')).append('.');
+                    typeName.append(getEnclosingType().getTypeQualifiedName('.'))
+                        .append('.');
                 }
                 typeName.append(getTypeNameWithoutParameters());
                 String[] typeParamNames = new String[0];
@@ -2442,8 +2404,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     }
 
     /**
-     * @param parentCU
-     *            the current compilation unit
+     * @param parentCU the current compilation unit
      * @return returns the template or <code>null</code>
      * @deprecated Use getTypeComment(ICompilationUnit, String)
      */
@@ -2455,10 +2416,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
     }
 
     /**
-     * @param name
-     *            the name of the template
-     * @param parentCU
-     *            the current compilation unit
+     * @param name the name of the template
+     * @param parentCU the current compilation unit
      * @return returns the template or <code>null</code>
      * @deprecated Use getTemplate(String,ICompilationUnit,int)
      */
@@ -2473,17 +2432,16 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * <code>constructCUContent</code> to construct a compilation unit stub or getTypeComment for the comment of the
      * type.
      *
-     * @param name
-     *            the template to be evaluated
-     * @param parentCU
-     *            the templates evaluation context
-     * @param pos
-     *            a source offset into the parent compilation unit. The template is evaluated at the given source offset
+     * @param name the template to be evaluated
+     * @param parentCU the templates evaluation context
+     * @param pos a source offset into the parent compilation unit. The template is evaluated at the given source offset
      * @return return the template with the given name or <code>null</code> if the template could not be found.
      */
     protected String getTemplate(String name, ICompilationUnit parentCU, int pos) {
         try {
-            Template template = JavaPlugin.getDefault().getTemplateStore().findTemplate(name);
+            Template template = JavaPlugin.getDefault()
+                .getTemplateStore()
+                .findTemplate(name);
             if (template != null) {
                 return JavaContext.evaluateTemplate(template, parentCU, pos);
             }
@@ -2501,19 +2459,13 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Creates the bodies of all unimplemented methods and constructors and adds them to the type. Method is typically
      * called by implementers of <code>NewTypeWizardPage</code> to add needed method and constructors.
      *
-     * @param type
-     *            the type for which the new methods and constructor are to be created
-     * @param doConstructors
-     *            if <code>true</code> unimplemented constructors are created
-     * @param doUnimplementedMethods
-     *            if <code>true</code> unimplemented methods are created
-     * @param imports
-     *            an import manager to add all needed import statements
-     * @param monitor
-     *            a progress monitor to report progress
+     * @param type the type for which the new methods and constructor are to be created
+     * @param doConstructors if <code>true</code> unimplemented constructors are created
+     * @param doUnimplementedMethods if <code>true</code> unimplemented methods are created
+     * @param imports an import manager to add all needed import statements
+     * @param monitor a progress monitor to report progress
      * @return the created methods.
-     * @throws CoreException
-     *             thrown when the creation fails.
+     * @throws CoreException thrown when the creation fails.
      */
     protected IMethod[] createInheritedMethods(IType type, boolean doConstructors, boolean doUnimplementedMethods, ImportsManager imports, IProgressMonitor monitor) throws CoreException {
         final ICompilationUnit cu = type.getCompilationUnit();

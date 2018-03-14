@@ -14,7 +14,8 @@ import org.osgi.resource.Resource;
 
 public class ResourceLabelProvider extends StyledCellLabelProvider {
 
-    private final Image bundleImg = Icons.desc("bundle").createImage();
+    private final Image bundleImg = Icons.desc("bundle")
+        .createImage();
 
     @Override
     public void update(ViewerCell cell) {

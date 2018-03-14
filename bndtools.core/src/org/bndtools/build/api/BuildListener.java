@@ -13,7 +13,9 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface BuildListener {
 
     enum BuildState {
-        starting, built, released;
+        starting,
+        built,
+        released;
     }
 
     /**
@@ -27,10 +29,8 @@ public interface BuildListener {
     /**
      * Bndtools has built one or more bundles in the specified project.
      *
-     * @param project
-     *            The Eclipse project for which the built has been executed.
-     * @param paths
-     *            An array of workspace-relative paths.
+     * @param project The Eclipse project for which the built has been executed.
+     * @param paths An array of workspace-relative paths.
      */
     void builtBundles(IProject project, IPath[] paths);
 

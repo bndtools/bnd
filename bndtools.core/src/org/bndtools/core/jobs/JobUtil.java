@@ -7,6 +7,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.osgi.util.promise.Deferred;
 import org.osgi.util.promise.Promise;
+
 import bndtools.central.Central;
 
 public class JobUtil {
@@ -18,9 +19,11 @@ public class JobUtil {
     public static Promise<IStatus> chainJobs(final long delay, Job... jobs) {
         // Shortcut when there are zero jobs
         if (jobs == null || jobs.length == 0)
-            return Central.promiseFactory().resolved(Status.OK_STATUS);
+            return Central.promiseFactory()
+                .resolved(Status.OK_STATUS);
 
-        final Deferred<IStatus> completion = Central.promiseFactory().deferred();
+        final Deferred<IStatus> completion = Central.promiseFactory()
+            .deferred();
         for (int i = 0; i < jobs.length; i++) {
             final Job currentJob = jobs[i];
             final Job nextJob = (i + 1 < jobs.length) ? jobs[i + 1] : null;

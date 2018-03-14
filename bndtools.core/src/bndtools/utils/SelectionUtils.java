@@ -43,14 +43,14 @@ public class SelectionUtils {
         return null;
     }
 
-    public static <T> Collection<T> getSelectionMembers(ISelection selection, Class<T> clazz, Predicate< ? super T> filter) throws Exception {
+    public static <T> Collection<T> getSelectionMembers(ISelection selection, Class<T> clazz, Predicate<? super T> filter) throws Exception {
         if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
             return Collections.emptyList();
         }
 
         IStructuredSelection structSel = (IStructuredSelection) selection;
         List<T> result = new ArrayList<T>(structSel.size());
-        Iterator< ? > iter = structSel.iterator();
+        Iterator<?> iter = structSel.iterator();
         while (iter.hasNext()) {
             Object element = iter.next();
             if (clazz.isInstance(element)) {

@@ -14,7 +14,7 @@ import org.eclipse.swt.widgets.Display;
 
 public class OSGiFrameworkLabelProvider extends LabelProvider {
 
-    private final Map<URI,Image> images = new HashMap<URI,Image>();
+    private final Map<URI, Image> images = new HashMap<URI, Image>();
 
     @Override
     public String getText(Object element) {

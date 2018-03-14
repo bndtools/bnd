@@ -16,8 +16,10 @@ import org.eclipse.swt.graphics.Image;
 
 public class PkgPatternProposalLabelProvider extends LabelProvider {
 
-    private final Image singleImg = Icons.desc("package").createImage();
-    private final Image multiImg = Icons.desc("packages").createImage();
+    private final Image singleImg = Icons.desc("package")
+        .createImage();
+    private final Image multiImg = Icons.desc("packages")
+        .createImage();
 
     @Override
     public String getText(Object element) {

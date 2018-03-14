@@ -51,7 +51,8 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
      */
     @Override
     public void createControl(Composite parent) {
-        parent.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WHITE));
+        parent.setBackground(parent.getDisplay()
+            .getSystemColor(SWT.COLOR_WHITE));
         Composite container = new Composite(parent, SWT.NULL);
         setControl(container);
 
@@ -96,12 +97,13 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
     private void updateUi() {
         resolutionSuccessPanel.setInput(result);
         resolutionFailurePanel.setInput(result);
-        //        String log = (result != null) ? result.getLog() : null;
-        //        txtLog.setText(log != null ? log : "<<UNAVAILABLE>>");
+        // String log = (result != null) ? result.getLog() : null;
+        // txtLog.setText(log != null ? log : "<<UNAVAILABLE>>");
 
-        boolean resolved = result != null && result.getOutcome().equals(ResolutionResult.Outcome.Resolved);
-        //        SWTUtil.recurseEnable(resolved, tbtmResults.getControl());
-        //        SWTUtil.recurseEnable(!resolved, tbtmErrors.getControl());
+        boolean resolved = result != null && result.getOutcome()
+            .equals(ResolutionResult.Outcome.Resolved);
+        // SWTUtil.recurseEnable(resolved, tbtmResults.getControl());
+        // SWTUtil.recurseEnable(!resolved, tbtmErrors.getControl());
         stack.topControl = resolved ? resolutionSuccessPanel.getControl() : resolutionFailurePanel.getControl();
         ((Composite) getControl()).layout(true, true);
 
@@ -121,7 +123,8 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
         if (allowCompleteUnresolved)
             complete = true;
         else
-            complete = result != null && result.getOutcome().equals(ResolutionResult.Outcome.Resolved) && resolutionSuccessPanel.isComplete();
+            complete = result != null && result.getOutcome()
+                .equals(ResolutionResult.Outcome.Resolved) && resolutionSuccessPanel.isComplete();
         return complete;
     }
 

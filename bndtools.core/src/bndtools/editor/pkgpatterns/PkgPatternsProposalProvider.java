@@ -47,7 +47,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
     }
 
     @Override
-    protected Collection< ? extends IContentProposal> doGenerateProposals(String contents, int position) {
+    protected Collection<? extends IContentProposal> doGenerateProposals(String contents, int position) {
         String prefix = contents.substring(0, position);
 
         final int replaceFromPos;
@@ -59,10 +59,15 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
         }
 
         Comparator<PkgPatternProposal> comparator = new Comparator<PkgPatternProposal>() {
+            @Override
             public int compare(PkgPatternProposal o1, PkgPatternProposal o2) {
-                int result = o1.getPackageFragment().getElementName().compareTo(o2.getPackageFragment().getElementName());
+                int result = o1.getPackageFragment()
+                    .getElementName()
+                    .compareTo(o2.getPackageFragment()
+                        .getElementName());
                 if (result == 0) {
-                    result = Boolean.valueOf(o1.isWildcard()).compareTo(Boolean.valueOf(o2.isWildcard()));
+                    result = Boolean.valueOf(o1.isWildcard())
+                        .compareTo(Boolean.valueOf(o2.isWildcard()));
                 }
                 return result;
             }
@@ -79,7 +84,8 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
                 IPackageFragment pkg = (IPackageFragment) match.getElement();
                 // Reject the default package and any package starting with
                 // "java." since these cannot be imported
-                if (pkg.isDefaultPackage() || pkg.getElementName().startsWith("java."))
+                if (pkg.isDefaultPackage() || pkg.getElementName()
+                    .startsWith("java."))
                     return;
 
                 result.add(new PkgPatternProposal(pkg, false, replaceFromPos));
@@ -87,6 +93,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
             }
         };
         IRunnableWithProgress runnable = new IRunnableWithProgress() {
+            @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 try {
                     new SearchEngine().search(pattern, new SearchParticipant[] {
@@ -110,7 +117,8 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
             logger.logError("Error searching for packages.", e);
             return Collections.emptyList();
         } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            Thread.currentThread()
+                .interrupt();
             return Collections.emptyList();
         }
     }
@@ -118,7 +126,10 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
     @Override
     protected boolean match(String contents, int position, IContentProposal proposal) {
         final String prefix = contents.substring(0, position);
-        return ((PkgPatternProposal) proposal).getPackageFragment().getElementName().toLowerCase().indexOf(prefix.toLowerCase()) > -1;
+        return ((PkgPatternProposal) proposal).getPackageFragment()
+            .getElementName()
+            .toLowerCase()
+            .indexOf(prefix.toLowerCase()) > -1;
     }
 
 }

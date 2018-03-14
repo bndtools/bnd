@@ -74,7 +74,10 @@ public class BndContainerRuntimeClasspathEntryResolver implements IRuntimeClassp
         try {
             for (IClasspathEntry classpathEntry : classpathEntries) {
                 if (classpathEntry.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
-                    final IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(classpathEntry.getPath().segment(0));
+                    final IProject project = ResourcesPlugin.getWorkspace()
+                        .getRoot()
+                        .getProject(classpathEntry.getPath()
+                            .segment(0));
                     final IJavaProject javaProject = JavaCore.create(project);
                     if (!projects.contains(javaProject)) {
                         projects.add(javaProject);
@@ -82,9 +85,12 @@ public class BndContainerRuntimeClasspathEntryResolver implements IRuntimeClassp
                         final IRuntimeClasspathEntry[] projectRuntimeClasspathEntries = defaultProjectClasspathEntry.getRuntimeClasspathEntries(null);
 
                         for (IRuntimeClasspathEntry projectRuntimeClasspathEntry : projectRuntimeClasspathEntries) {
-                            // the only reason for this entire class is the following check, for Projects that get resolved
-                            // from our BndContainer we need to override the default behavior found here: JavaRuntime.resolveOutputLocations(IJavaProject, int)
-                            // instead of resolving all output locations we simply just return the project runtime classpath entry itself
+                            // the only reason for this entire class is the following check, for Projects that get
+                            // resolved
+                            // from our BndContainer we need to override the default behavior found here:
+                            // JavaRuntime.resolveOutputLocations(IJavaProject, int)
+                            // instead of resolving all output locations we simply just return the project runtime
+                            // classpath entry itself
                             if (projectRuntimeClasspathEntry.getType() == IRuntimeClasspathEntry.PROJECT) {
                                 IResource resource = projectRuntimeClasspathEntry.getResource();
                                 if (resource instanceof IProject) {

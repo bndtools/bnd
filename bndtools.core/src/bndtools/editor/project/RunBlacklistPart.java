@@ -16,7 +16,7 @@ import bndtools.BndConstants;
 public class RunBlacklistPart extends AbstractRequirementListPart {
 
     private static final String[] SUBSCRIBE_PROPS = new String[] {
-            BndConstants.RUNBLACKLIST
+        BndConstants.RUNBLACKLIST
     };
 
     public RunBlacklistPart(Composite parent, FormToolkit toolkit, int style) {
@@ -57,7 +57,8 @@ public class RunBlacklistPart extends AbstractRequirementListPart {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         gd.widthHint = 50;
         gd.heightHint = 50;
-        viewer.getControl().setLayoutData(gd);
+        viewer.getControl()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.RIGHT, SWT.CENTER, true, false);
     }

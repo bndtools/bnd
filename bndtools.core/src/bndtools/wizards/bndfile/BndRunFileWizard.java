@@ -53,7 +53,7 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
     private static final String PROP_FILE_BASE_NAME = "fileBaseName";
     private static final String PROP_FILE_NAME = "fileName";
     private static final String[] PROPS = new String[] {
-            PROP_FILE_NAME, PROP_FILE_BASE_NAME, PROP_PROJECT_NAME
+        PROP_FILE_NAME, PROP_FILE_BASE_NAME, PROP_PROJECT_NAME
     };
 
     public static final String DEFAULT_TEMPLATE_ENGINE = "stringtemplate"; //$NON-NLS-1$
@@ -160,21 +160,24 @@ public class BndRunFileWizard extends Wizard implements INewWizard {
 
     private InputStream getTemplateContents(String fileName) throws Exception {
         // Load properties
-        Map<String,List<Object>> params = new HashMap<>();
+        Map<String, List<Object>> params = new HashMap<>();
         params.put(PROP_FILE_NAME, Collections.<Object> singletonList(fileName));
         params.put(PROP_FILE_BASE_NAME, Collections.<Object> singletonList(baseName(fileName)));
 
         IPath containerPath = mainPage.getContainerFullPath();
         if (containerPath != null) {
-            IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(containerPath);
+            IResource container = ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .findMember(containerPath);
             if (container != null) {
-                String projectName = container.getProject().getName();
+                String projectName = container.getProject()
+                    .getName();
                 params.put(PROP_PROJECT_NAME, Collections.<Object> singletonList(projectName));
             }
         }
 
-        Map<String,String> editedParams = paramsPage.getValues();
-        for (Entry<String,String> editedParam : editedParams.entrySet()) {
+        Map<String, String> editedParams = paramsPage.getValues();
+        for (Entry<String, String> editedParam : editedParams.entrySet()) {
             params.put(editedParam.getKey(), Collections.<Object> singletonList(editedParam.getValue()));
         }
 

@@ -15,11 +15,11 @@ import java.util.Map;
 public class ResourceReplacer extends Thread {
     private PipedInputStream in = null;
     private PipedOutputStream out = null;
-    private Map<String,String> replaceRegularExpressions = null;
+    private Map<String, String> replaceRegularExpressions = null;
     private URL url = null;
     private IOException result = null;
 
-    public ResourceReplacer(Map<String,String> replaceRegularExpressions, URL url) throws IOException {
+    public ResourceReplacer(Map<String, String> replaceRegularExpressions, URL url) throws IOException {
         if ((replaceRegularExpressions == null) || (replaceRegularExpressions.isEmpty())) {
             this.replaceRegularExpressions = Collections.emptyMap();
         } else {
@@ -33,10 +33,10 @@ public class ResourceReplacer extends Thread {
     @Override
     public void run() {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), Charset.forName("UTF-8"))); //
-                BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, Charset.forName("UTF-8")))) {
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out, Charset.forName("UTF-8")))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                for (Map.Entry<String,String> replaceRegularExpression : replaceRegularExpressions.entrySet()) {
+                for (Map.Entry<String, String> replaceRegularExpression : replaceRegularExpressions.entrySet()) {
                     line = line.replaceAll(replaceRegularExpression.getKey(), replaceRegularExpression.getValue());
                 }
                 writer.write(line);

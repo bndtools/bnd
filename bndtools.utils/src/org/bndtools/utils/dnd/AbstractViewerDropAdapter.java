@@ -89,13 +89,17 @@ public class AbstractViewerDropAdapter extends ViewerDropAdapter {
 
     @Override
     public boolean validateDrop(Object target, int operation, TransferData transferType) {
-        if (supportedTransfers.contains(SupportedTransfer.File) && FileTransfer.getInstance().isSupportedType(transferType)) {
+        if (supportedTransfers.contains(SupportedTransfer.File) && FileTransfer.getInstance()
+            .isSupportedType(transferType)) {
             return validateFileDrop(target);
-        } else if (supportedTransfers.contains(SupportedTransfer.Resource) && ResourceTransfer.getInstance().isSupportedType(transferType)) {
+        } else if (supportedTransfers.contains(SupportedTransfer.Resource) && ResourceTransfer.getInstance()
+            .isSupportedType(transferType)) {
             return validateResourceDrop(target);
-        } else if (supportedTransfers.contains(SupportedTransfer.Text) && TextTransfer.getInstance().isSupportedType(transferType)) {
+        } else if (supportedTransfers.contains(SupportedTransfer.Text) && TextTransfer.getInstance()
+            .isSupportedType(transferType)) {
             return validateTextDrop(target);
-        } else if (supportedTransfers.contains(SupportedTransfer.LocalSelection) && LocalSelectionTransfer.getTransfer().isSupportedType(transferType)) {
+        } else if (supportedTransfers.contains(SupportedTransfer.LocalSelection) && LocalSelectionTransfer.getTransfer()
+            .isSupportedType(transferType)) {
             return validateLocalSelectionDrop(target);
         } else {
             return false;

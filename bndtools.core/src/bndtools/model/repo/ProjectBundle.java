@@ -37,6 +37,7 @@ public class ProjectBundle implements IAdaptable {
         return "ProjectBundle [project=" + project + ", bsn=" + bsn + "]";
     }
 
+    @Override
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         Object result = null;
 
@@ -46,7 +47,9 @@ public class ProjectBundle implements IAdaptable {
                 File bundleFile = new File(targetDir, bsn + ".jar");
                 if (bundleFile.isFile()) {
                     Path path = new Path(bundleFile.getAbsolutePath());
-                    result = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+                    result = ResourcesPlugin.getWorkspace()
+                        .getRoot()
+                        .getFileForLocation(path);
                 }
             } catch (Exception e) {
                 logger.logError(MessageFormat.format("Error retrieving bundle {0} from project {1}.", bsn, project.getName()), e);

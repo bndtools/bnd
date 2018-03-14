@@ -26,6 +26,7 @@ import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresMana
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -62,7 +63,7 @@ public class Plugin extends AbstractUIPlugin {
     private Activator bndActivator;
     private final List<IStartupParticipant> startupParticipants = new LinkedList<IStartupParticipant>();
 
-    private volatile ServiceTracker<IWorkspace,IWorkspace> workspaceTracker;
+    private volatile ServiceTracker<IWorkspace, IWorkspace> workspaceTracker;
     private volatile ServiceRegistration<URLStreamHandlerService> urlHandlerReg;
     private volatile HeadlessBuildManagerTracker headlessBuildManager;
     private volatile VersionControlIgnoresManagerTracker versionControlIgnoresManager;
@@ -93,25 +94,26 @@ public class Plugin extends AbstractUIPlugin {
     }
 
     private static void registerWorkspaceServiceFactory(BundleContext context) {
-        Dictionary<String,Object> props = new Hashtable<String,Object>();
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("name", "bndtools");
 
         context.registerService(Workspace.class.getName(), new WorkspaceServiceFactory(), props);
     }
 
     private void registerWorkspaceURLHandler(BundleContext context) {
-        workspaceTracker = new ServiceTracker<IWorkspace,IWorkspace>(context, IWorkspace.class.getName(), null);
+        workspaceTracker = new ServiceTracker<IWorkspace, IWorkspace>(context, IWorkspace.class.getName(), null);
         workspaceTracker.open();
 
-        Dictionary<String,Object> props = new Hashtable<String,Object>();
+        Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put(URLConstants.URL_HANDLER_PROTOCOL, new String[] {
-                WorkspaceURLStreamHandlerService.PROTOCOL
+            WorkspaceURLStreamHandlerService.PROTOCOL
         });
         urlHandlerReg = context.registerService(URLStreamHandlerService.class, new WorkspaceURLStreamHandlerService(workspaceTracker), props);
     }
 
     private void runStartupParticipants() {
-        IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
+        IConfigurationElement[] elements = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(PLUGIN_ID, "bndtoolsStartupParticipant");
 
         for (IConfigurationElement element : elements) {
             try {
@@ -168,10 +170,14 @@ public class Plugin extends AbstractUIPlugin {
     }
 
     public static void report(boolean warnings, @SuppressWarnings("unused") boolean acknowledge, Processor reporter, final String title, final String extra) {
-        if (reporter.getErrors().size() > 0 || (warnings && reporter.getWarnings().size() > 0)) {
+        if (reporter.getErrors()
+            .size() > 0
+            || (warnings && reporter.getWarnings()
+                .size() > 0)) {
             final StringBuffer sb = new StringBuffer();
             sb.append("\n");
-            if (reporter.getErrors().size() > 0) {
+            if (reporter.getErrors()
+                .size() > 0) {
                 sb.append("[Errors]\n");
                 for (String msg : reporter.getErrors()) {
                     sb.append(msg);
@@ -179,14 +185,15 @@ public class Plugin extends AbstractUIPlugin {
                 }
             }
             sb.append("\n");
-            if (reporter.getWarnings().size() > 0) {
+            if (reporter.getWarnings()
+                .size() > 0) {
                 sb.append("[Warnings]\n");
                 for (String msg : reporter.getWarnings()) {
                     sb.append(msg);
                     sb.append("\n");
                 }
             }
-            final Status s = new Status(Status.ERROR, PLUGIN_ID, 0, sb.toString(), null);
+            final Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, sb.toString(), null);
             reporter.clear();
 
             async(new Runnable() {
@@ -212,7 +219,8 @@ public class Plugin extends AbstractUIPlugin {
 
     static void async(Runnable run) {
         if (Display.getCurrent() == null) {
-            Display.getDefault().asyncExec(run);
+            Display.getDefault()
+                .asyncExec(run);
         } else
             run.run();
     }
@@ -227,7 +235,7 @@ public class Plugin extends AbstractUIPlugin {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
             }
         });
@@ -236,13 +244,13 @@ public class Plugin extends AbstractUIPlugin {
     static final AtomicBoolean busy = new AtomicBoolean(false);
 
     public void error(final String msg, final Throwable t) {
-        Status s = new Status(Status.ERROR, PLUGIN_ID, 0, msg, t);
+        Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, msg, t);
         getLog().log(s);
         async(new Runnable() {
             @Override
             public void run() {
                 if (!busy.compareAndSet(false, true)) {
-                    Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                    Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
                     ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s);
 
                     busy.set(false);
@@ -260,7 +268,7 @@ public class Plugin extends AbstractUIPlugin {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.WARNING, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.WARNING, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
             }
         });

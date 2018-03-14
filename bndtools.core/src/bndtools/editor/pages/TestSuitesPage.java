@@ -12,9 +12,9 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
@@ -27,13 +27,16 @@ import bndtools.utils.MessageHyperlinkAdapter;
 public class TestSuitesPage extends FormPage {
 
     private final BndEditModel model;
-    private final Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/junit.gif").createImage();
+    private final Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/junit.gif")
+        .createImage();
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new TestSuitesPage(editor, model, id, "Tests");
         }
 
+        @Override
         public boolean supportsMode(Mode mode) {
             return mode == Mode.bundle;
         }
@@ -53,7 +56,8 @@ public class TestSuitesPage extends FormPage {
         form.setText("Tests");
         form.setImage(junitImg);
         toolkit.decorateFormHeading(form.getForm());
-        form.getForm().addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
+        form.getForm()
+            .addMessageHyperlinkListener(new MessageHyperlinkAdapter(getEditor()));
 
         Composite body = form.getBody();
         MDSashForm sashForm = new MDSashForm(body, SWT.HORIZONTAL, managedForm);
@@ -63,7 +67,7 @@ public class TestSuitesPage extends FormPage {
         Composite leftPanel = toolkit.createComposite(sashForm);
         Composite rightPanel = toolkit.createComposite(sashForm);
 
-        TestSuitesPart suitesPart = new TestSuitesPart(leftPanel, toolkit, Section.TITLE_BAR | Section.EXPANDED);
+        TestSuitesPart suitesPart = new TestSuitesPart(leftPanel, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         managedForm.addPart(suitesPart);
 
         SaneDetailsPart detailsPart = new SaneDetailsPart();
@@ -83,7 +87,8 @@ public class TestSuitesPage extends FormPage {
         leftPanel.setLayout(layout);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        suitesPart.getSection().setLayoutData(gd);
+        suitesPart.getSection()
+            .setLayoutData(gd);
 
         layout = new GridLayout();
         rightPanel.setLayout(layout);

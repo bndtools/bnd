@@ -15,12 +15,14 @@ import org.osgi.framework.Version;
 
 public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
 
-    private static final Image IMG_FOLDER = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+    private static final Image IMG_FOLDER = PlatformUI.getWorkbench()
+        .getSharedImages()
+        .getImage(ISharedImages.IMG_OBJ_FOLDER);
 
-    private final Map<Template,Image> loadedImages;
+    private final Map<Template, Image> loadedImages;
     private final Image defaultIcon;
 
-    public RepoTemplateLabelProvider(Map<Template,Image> loadedImages, Image defaultIcon) {
+    public RepoTemplateLabelProvider(Map<Template, Image> loadedImages, Image defaultIcon) {
         this.loadedImages = loadedImages;
         this.defaultIcon = defaultIcon;
     }
@@ -51,7 +53,9 @@ public class RepoTemplateLabelProvider extends StyledCellLabelProvider {
 
             String description = template.getShortDescription();
             if (description != null) {
-                label.append(" \u2014 [", StyledString.QUALIFIER_STYLER).append(template.getShortDescription(), StyledString.QUALIFIER_STYLER).append("]", StyledString.QUALIFIER_STYLER);
+                label.append(" \u2014 [", StyledString.QUALIFIER_STYLER)
+                    .append(template.getShortDescription(), StyledString.QUALIFIER_STYLER)
+                    .append("]", StyledString.QUALIFIER_STYLER);
             }
 
             cell.setText(label.toString());

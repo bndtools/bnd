@@ -10,10 +10,12 @@ public abstract class AbstractLaunchTabPiece implements ILaunchTabPiece {
 
     private boolean dirty = false;
 
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propSupport.addPropertyChangeListener(listener);
     }
 
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propSupport.removePropertyChangeListener(listener);
     }
@@ -34,6 +36,7 @@ public abstract class AbstractLaunchTabPiece implements ILaunchTabPiece {
         propSupport.firePropertyChange(evt);
     }
 
+    @Override
     public boolean isDirty() {
         return dirty;
     }
@@ -42,6 +45,7 @@ public abstract class AbstractLaunchTabPiece implements ILaunchTabPiece {
         this.dirty = dirty;
     }
 
+    @Override
     public String checkForError() {
         return null;
     }

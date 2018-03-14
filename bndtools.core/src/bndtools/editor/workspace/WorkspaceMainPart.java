@@ -31,6 +31,7 @@ import org.eclipse.ui.forms.widgets.ImageHyperlink;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+
 import bndtools.Plugin;
 import bndtools.central.Central;
 
@@ -39,9 +40,12 @@ public class WorkspaceMainPart extends SectionPart {
     private final boolean mainFile;
 
     private final Color warningColor;
-    private final Image bndFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png").createImage();
-    private final Image extFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png").createImage();
-    private final Image warningImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif").createImage();
+    private final Image bndFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bndtools-logo-16x16.png")
+        .createImage();
+    private final Image extFileImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/bullet_go.png")
+        .createImage();
+    private final Image warningImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_obj.gif")
+        .createImage();
 
     public WorkspaceMainPart(boolean mainFile, Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -76,11 +80,15 @@ public class WorkspaceMainPart extends SectionPart {
 
         @Override
         public void linkActivated(HyperlinkEvent e) {
-            IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+            IFile file = ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .getFile(path);
             FileEditorInput input = new FileEditorInput(file);
 
             try {
-                IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+                IWorkbenchPage page = PlatformUI.getWorkbench()
+                    .getActiveWorkbenchWindow()
+                    .getActivePage();
                 page.openEditor(input, "bndtools.bndWorkspaceConfigEditor", true);
             } catch (PartInitException ex) {
                 ErrorDialog.openError(getSection().getShell(), "Error", "Unable to open editor", ex.getStatus());
@@ -122,7 +130,8 @@ public class WorkspaceMainPart extends SectionPart {
             Composite contents = new Composite(container, SWT.NONE);
 
             if (!mainFile) {
-                ImageHyperlink link = form.getToolkit().createImageHyperlink(contents, SWT.CENTER);
+                ImageHyperlink link = form.getToolkit()
+                    .createImageHyperlink(contents, SWT.CENTER);
                 link.setText("Open main build.bnd file.");
                 link.setImage(bndFileImg);
                 link.addHyperlinkListener(new FileOpenLinkListener(buildFile.getFullPath()));
@@ -139,7 +148,8 @@ public class WorkspaceMainPart extends SectionPart {
                 if (extFiles.length > 0) {
                     for (IResource extFile : extFiles) {
                         if (extFile.getType() == IResource.FILE && "bnd".equalsIgnoreCase(extFile.getFileExtension())) {
-                            ImageHyperlink link = form.getToolkit().createImageHyperlink(contents, SWT.CENTER);
+                            ImageHyperlink link = form.getToolkit()
+                                .createImageHyperlink(contents, SWT.CENTER);
                             link.setText("Open " + extFile.getName());
                             link.setImage(extFileImg);
                             link.addHyperlinkListener(new FileOpenLinkListener(extFile.getFullPath()));
@@ -152,7 +162,8 @@ public class WorkspaceMainPart extends SectionPart {
 
             stackLayout.topControl = contents;
             container.layout();
-        }).onFailure(e -> Plugin.error(Collections.singletonList(e.getMessage())));
+        })
+            .onFailure(e -> Plugin.error(Collections.singletonList(e.getMessage())));
     }
 
     private void createMissingExtsWarningPanel(Composite parent, FormToolkit tk, IPath extPath) {

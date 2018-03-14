@@ -40,7 +40,8 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
     private final Deferred<List<OSGiFramework>> contentReadyQueue;
 
     public OSGiFrameworkContentProvider() {
-        contentReadyQueue = Central.promiseFactory().deferred();
+        contentReadyQueue = Central.promiseFactory()
+            .deferred();
     }
 
     private StructuredViewer structuredViewer;
@@ -58,7 +59,8 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
     private IStatus refreshProviders() {
         List<IStatus> statuses = new ArrayList<>();
 
-        IConfigurationElement[] configElements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "osgiFrameworks");
+        IConfigurationElement[] configElements = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(Plugin.PLUGIN_ID, "osgiFrameworks");
 
         for (IConfigurationElement element : configElements) {
             String frameworkName = element.getAttribute("name");
@@ -67,7 +69,11 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
             URL iconUrl = null;
             String iconPath = element.getAttribute("icon");
             if (iconPath != null) {
-                Bundle contributorBundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), element.getContributor().getName(), null);
+                Bundle contributorBundle = BundleUtils.findBundle(Plugin.getDefault()
+                    .getBundleContext(),
+                    element.getContributor()
+                        .getName(),
+                    null);
                 if (contributorBundle != null)
                     iconUrl = contributorBundle.getEntry(iconPath);
             }
@@ -102,12 +108,13 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
             }
         }
 
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                structuredViewer.refresh(true);
-            }
-        });
+        Display.getDefault()
+            .asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    structuredViewer.refresh(true);
+                }
+            });
 
         if (statuses.size() > 0) {
             return new MultiStatus(Plugin.PLUGIN_ID, IStatus.ERROR, statuses.toArray(new IStatus[0]), "Errors while refreshing OSGi framework providers.", null);
@@ -144,7 +151,8 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
 
     public void onContentReady(Consumer<List<OSGiFramework>> callback) {
         Promise<List<OSGiFramework>> p = contentReadyQueue.getPromise();
-        p.thenAccept(callback).onFailure(fail -> logger.logError("onContentReady callback failed", fail));
+        p.thenAccept(callback)
+            .onFailure(fail -> logger.logError("onContentReady callback failed", fail));
     }
 
     private static abstract class LoadingContentJob extends Job {
@@ -158,7 +166,7 @@ public class OSGiFrameworkContentProvider implements IStructuredContentProvider 
         }
 
         private final Object[] loadingContent = new Object[] {
-                new LoadingContentElement()
+            new LoadingContentElement()
         };
 
     }

@@ -20,9 +20,9 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.IProjectValidator;
 import org.bndtools.api.IValidator;
 import org.bndtools.api.Logger;
+import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.bndtools.build.api.BuildErrorDetailsHandlers;
-import org.bndtools.build.api.DefaultBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -98,7 +98,8 @@ class MarkerSupport {
     void createMarker(Processor model, int severity, String formatted, String markerType) throws Exception {
         Location location = model != null ? model.getLocation(formatted) : null;
         if (location != null) {
-            String type = location.details != null ? location.details.getClass().getName() : null;
+            String type = location.details != null ? location.details.getClass()
+                .getName() : null;
             BuildErrorDetailsHandler handler = BuildErrorDetailsHandlers.INSTANCE.findHandler(type);
 
             List<MarkerData> markers = handler.generateMarkerData(project, model, location);
@@ -122,7 +123,8 @@ class MarkerSupport {
                         marker.setAttribute(BNDTOOLS_MARKER_REFERENCE_ATTR, location.reference);
 
                     marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, markerData.hasResolutions());
-                    for (Entry<String,Object> attrib : markerData.getAttribs().entrySet())
+                    for (Entry<String, Object> attrib : markerData.getAttribs()
+                        .entrySet())
                         marker.setAttribute(attrib.getKey(), attrib.getValue());
                 }
             }
@@ -130,7 +132,7 @@ class MarkerSupport {
         }
 
         String defaultResource = model instanceof Project ? Project.BNDFILE : model instanceof Workspace ? Workspace.BUILDFILE : null;
-        IResource resource = DefaultBuildErrorDetailsHandler.getDefaultResource(project, defaultResource);
+        IResource resource = AbstractBuildErrorDetailsHandler.getDefaultResource(project, defaultResource);
         if (resource.exists()) {
             IMarker marker = resource.createMarker(markerType);
             marker.setAttribute(IMarker.SEVERITY, severity);
@@ -161,7 +163,8 @@ class MarkerSupport {
 
     static List<IValidator> loadValidators() {
         List<IValidator> validators = null;
-        IConfigurationElement[] validatorElems = Platform.getExtensionRegistry().getConfigurationElementsFor(CORE_PLUGIN_ID, "validators");
+        IConfigurationElement[] validatorElems = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(CORE_PLUGIN_ID, "validators");
         if (validatorElems != null && validatorElems.length > 0) {
             validators = new ArrayList<IValidator>(validatorElems.length);
             for (IConfigurationElement elem : validatorElems) {
@@ -221,7 +224,8 @@ class MarkerSupport {
                     location = reporter.warning(status.getMessage());
                 }
             }
-            location.file(reporter.getPropertiesFile().getAbsolutePath());
+            location.file(reporter.getPropertiesFile()
+                .getAbsolutePath());
         }
     }
 }

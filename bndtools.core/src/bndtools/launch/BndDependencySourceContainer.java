@@ -81,9 +81,12 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                 Collection<Container> runbundles = run.getRunbundles();
                 for (Container runbundle : runbundles) {
                     if (runbundle.getType() == TYPE.PROJECT) {
-                        String targetProjName = runbundle.getProject().getName();
+                        String targetProjName = runbundle.getProject()
+                            .getName();
                         if (projectsAdded.add(targetProjName)) {
-                            IProject targetProj = ResourcesPlugin.getWorkspace().getRoot().getProject(targetProjName);
+                            IProject targetProj = ResourcesPlugin.getWorkspace()
+                                .getRoot()
+                                .getProject(targetProjName);
                             if (targetProj != null) {
                                 IJavaProject targetJavaProj = JavaCore.create(targetProj);
                                 result.add(new JavaProjectSourceContainer(targetJavaProj));
@@ -93,17 +96,22 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                         IPath bundlePath = Central.toPath(runbundle.getFile());
                         IFile bundleFile = null;
                         if (bundlePath != null) {
-                            bundleFile = ResourcesPlugin.getWorkspace().getRoot().getFile(bundlePath);
+                            bundleFile = ResourcesPlugin.getWorkspace()
+                                .getRoot()
+                                .getFile(bundlePath);
                         }
                         if (bundleFile != null) {
                             ISourceContainer sourceContainer = null;
 
                             // check to see if this archive came from a repo that encodes the source project name
-                            final String sourceProjectName = runbundle.getAttributes().get("sourceProjectName");
+                            final String sourceProjectName = runbundle.getAttributes()
+                                .get("sourceProjectName");
 
                             if (sourceProjectName != null) {
                                 try {
-                                    IProject sourceProject = ResourcesPlugin.getWorkspace().getRoot().getProject(sourceProjectName);
+                                    IProject sourceProject = ResourcesPlugin.getWorkspace()
+                                        .getRoot()
+                                        .getProject(sourceProjectName);
 
                                     if (sourceProject.exists()) {
                                         IJavaProject javaSourceProject = JavaCore.create(sourceProject);
@@ -122,7 +130,8 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
 
                             result.add(sourceContainer);
                         } else {
-                            ExternalArchiveSourceContainer container = new ExternalArchiveSourceContainer(runbundle.getFile().toString(), false);
+                            ExternalArchiveSourceContainer container = new ExternalArchiveSourceContainer(runbundle.getFile()
+                                .toString(), false);
                             result.add(container);
                         }
                     }

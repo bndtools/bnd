@@ -18,7 +18,8 @@ public class BndContainerCompilationParticipant extends CompilationParticipant {
         try {
             return BndContainerInitializer.requestClasspathContainerUpdate(javaProject) ? NEEDS_FULL_BUILD : READY_FOR_BUILD;
         } catch (CoreException e) {
-            logger.logWarning(String.format("Failed to update classpath container for project %s", javaProject.getProject().getName()), e);
+            logger.logWarning(String.format("Failed to update classpath container for project %s", javaProject.getProject()
+                .getName()), e);
         }
         return READY_FOR_BUILD;
     }

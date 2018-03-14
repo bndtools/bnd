@@ -34,138 +34,147 @@ import bndtools.release.nl.Messages;
 
 public class WorkspaceReleaseDialog extends Dialog implements SelectionListener {
 
-	private List<ProjectDiff> projectDiffs;
-	private ProjectListControl projectListControl;
-	private BundleTree bundleRelease;
-	protected SashForm sashForm;
+    private List<ProjectDiff> projectDiffs;
+    private ProjectListControl projectListControl;
+    private BundleTree bundleRelease;
+    protected SashForm sashForm;
 
-	private final boolean showMessage;
+    private final boolean showMessage;
     private ReleaseOption releaseOption;
 
-	public WorkspaceReleaseDialog(Shell parentShell, List<ProjectDiff> projectDiffs, boolean showMessage) {
-		super(parentShell);
-		super.setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
-		this.projectDiffs = projectDiffs;
-		this.showMessage = showMessage;
-	}
-	
-	@Override
-	protected void configureShell(Shell newShell) {
-	    super.configureShell(newShell);
-	    newShell.setText(Messages.releaseDialogTitle);
-	    newShell.setImage(Activator.getImageDescriptor("icons/lorry.png").createImage());
+    public WorkspaceReleaseDialog(Shell parentShell, List<ProjectDiff> projectDiffs, boolean showMessage) {
+        super(parentShell);
+        super.setShellStyle(SWT.DIALOG_TRIM | SWT.RESIZE | SWT.MAX | SWT.MIN);
+        this.projectDiffs = projectDiffs;
+        this.showMessage = showMessage;
+    }
 
-	    int width = 640, height = 480;
-	    int top = -1, left = -1;
-	    
-	    Shell parent = (Shell) newShell.getParent();
-	    
-	    if (parent != null) {
-	        Point parentSize = parent.getSize();
-	        Point parentLocation = parent.getLocation();
-	        
-            width = Math.max(Double.valueOf(parentSize.x * 0.8).intValue(), 640);
-            height = Math.max(Double.valueOf(parentSize.y * 0.8).intValue(), 480);
-            
+    @Override
+    protected void configureShell(Shell newShell) {
+        super.configureShell(newShell);
+        newShell.setText(Messages.releaseDialogTitle);
+        newShell.setImage(Activator.getImageDescriptor("icons/lorry.png")
+            .createImage());
+
+        int width = 640, height = 480;
+        int top = -1, left = -1;
+
+        Shell parent = (Shell) newShell.getParent();
+
+        if (parent != null) {
+            Point parentSize = parent.getSize();
+            Point parentLocation = parent.getLocation();
+
+            width = Math.max(Double.valueOf(parentSize.x * 0.8)
+                .intValue(), 640);
+            height = Math.max(Double.valueOf(parentSize.y * 0.8)
+                .intValue(), 480);
+
             top = parentLocation.y + ((parentSize.y - height) / 2);
             left = parentLocation.x + ((parentSize.x - width) / 2);
-	    }
-	    
-	    newShell.setSize(width, height);
+        }
 
-	    if (top != -1 && left != -1) {
-	        newShell.setLocation(left, top);
-	    }
-	}
-	
-	@Override
-	protected Control createDialogArea(Composite parent) {
-		Composite composite = (Composite) super.createDialogArea(parent);
+        newShell.setSize(width, height);
 
-		GridData gridData = createFillGridData();
+        if (top != -1 && left != -1) {
+            newShell.setLocation(left, top);
+        }
+    }
 
-	    sashForm = new SashForm(composite, SWT.HORIZONTAL);
-	    sashForm.setLayout(createGridLayout());
-	    sashForm.setLayoutData(gridData);
+    @Override
+    protected Control createDialogArea(Composite parent) {
+        Composite composite = (Composite) super.createDialogArea(parent);
 
-	    Composite left = new Composite(sashForm, SWT.NONE);
-	    left.setLayout(createGridLayout());
-	    left.setLayoutData(createFillGridData());
+        GridData gridData = createFillGridData();
+
+        sashForm = new SashForm(composite, SWT.HORIZONTAL);
+        sashForm.setLayout(createGridLayout());
+        sashForm.setLayoutData(gridData);
+
+        Composite left = new Composite(sashForm, SWT.NONE);
+        left.setLayout(createGridLayout());
+        left.setLayoutData(createFillGridData());
 
         Composite right = new Composite(sashForm, SWT.NONE);
         right.setLayout(createGridLayout());
         right.setLayoutData(createFillGridData());
 
-		String[] items = ReleaseHelper.getReleaseRepositories();
+        String[] items = ReleaseHelper.getReleaseRepositories();
 
-		projectListControl = new ProjectListControl(this, items);
-		projectListControl.createControl(left);
+        projectListControl = new ProjectListControl(this, items);
+        projectListControl.createControl(left);
 
-		bundleRelease = new BundleTree(right);
+        bundleRelease = new BundleTree(right);
 
-		projectListControl.setInput(projectDiffs);
+        projectListControl.setInput(projectDiffs);
 
-        sashForm.setWeights(new int[] { 40, 60 });
-        
+        sashForm.setWeights(new int[] {
+            40, 60
+        });
+
         sashForm.pack();
 
-		return sashForm;
-	}
+        return sashForm;
+    }
 
-	public void setSelected(int index) {
+    public void setSelected(int index) {
 
-		ProjectDiff projectDiff = null;
-		if (projectDiffs.size() > 0) {
-			projectListControl.setSelected(index);
-			projectDiff = projectDiffs.get(index);
-		}
+        ProjectDiff projectDiff = null;
+        if (projectDiffs.size() > 0) {
+            projectListControl.setSelected(index);
+            projectDiff = projectDiffs.get(index);
+        }
 
-		if (projectDiff != null) {
-			bundleRelease.setInput(projectDiff.getBaselines());
-			bundleRelease.setVisible(true);
-		} else {
-			bundleRelease.setVisible(false);
-		}
+        if (projectDiff != null) {
+            bundleRelease.setInput(projectDiff.getBaselines());
+            bundleRelease.setVisible(true);
+        } else {
+            bundleRelease.setVisible(false);
+        }
 
-	}
+    }
 
-	public void widgetSelected(SelectionEvent e) {
+    @Override
+    public void widgetSelected(SelectionEvent e) {
 
         if (e.item == null || e.item.isDisposed()) {
             return;
         }
 
-		ProjectDiff projectDiff = (ProjectDiff) ((TableItem) e.item).getData();
-		if (projectDiff != null) {
-			if (e.detail > 0) {
-				int checkedIndex = -1;
-				TableItem[] items = projectListControl.getTable().getItems();
-				for (int i = 0; i < items.length; i++) {
-					if (items[i] == e.item) {
-						checkedIndex = i;
-						break;
-					}
-				}
-				TableItem ti = projectListControl.getTable().getItem(checkedIndex);
-				boolean checked = ti.getChecked();
-				projectDiff.setRelease(checked);
+        ProjectDiff projectDiff = (ProjectDiff) ((TableItem) e.item).getData();
+        if (projectDiff != null) {
+            if (e.detail > 0) {
+                int checkedIndex = -1;
+                TableItem[] items = projectListControl.getTable()
+                    .getItems();
+                for (int i = 0; i < items.length; i++) {
+                    if (items[i] == e.item) {
+                        checkedIndex = i;
+                        break;
+                    }
+                }
+                TableItem ti = projectListControl.getTable()
+                    .getItem(checkedIndex);
+                boolean checked = ti.getChecked();
+                projectDiff.setRelease(checked);
 
-				if (checkedIndex > -1) {
-					projectListControl.getTable().deselectAll();
-					projectListControl.setSelected(checkedIndex);
-				}
-			}
+                if (checkedIndex > -1) {
+                    projectListControl.getTable()
+                        .deselectAll();
+                    projectListControl.setSelected(checkedIndex);
+                }
+            }
 
-			bundleRelease.setInput(projectDiff.getBaselines());
-			bundleRelease.setVisible(true);
-		} else {
-			bundleRelease.setVisible(false);
-		}
+            bundleRelease.setInput(projectDiff.getBaselines());
+            bundleRelease.setVisible(true);
+        } else {
+            bundleRelease.setVisible(false);
+        }
 
-	}
+    }
 
-    public void widgetDefaultSelected(SelectionEvent e) {
-	}
+    @Override
+    public void widgetDefaultSelected(SelectionEvent e) {}
 
     public ReleaseOption getReleaseOption() {
         return releaseOption;
@@ -210,8 +219,11 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
                 sb.append("\n\n");
                 for (MacroInfo info : bsns) {
                     sb.append("\t");
-                    sb.append(info.projectDiff.getProject().getName());
-                    if (!info.projectDiff.getProject().getName().equals(info.bsn)) {
+                    sb.append(info.projectDiff.getProject()
+                        .getName());
+                    if (!info.projectDiff.getProject()
+                        .getName()
+                        .equals(info.bsn)) {
                         sb.append(" (");
                         sb.append(info.bsn);
                         sb.append(")");

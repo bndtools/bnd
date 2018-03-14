@@ -21,8 +21,10 @@ import bndtools.Plugin;
 
 public class UpDownButtonBarPart {
 
-    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png").createImage();
-    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png").createImage();
+    private final Image imgUp = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_up.png")
+        .createImage();
+    private final Image imgDown = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/arrow_down.png")
+        .createImage();
 
     public static interface UpDownListener {
         void changed(List<Object> list);
@@ -82,7 +84,8 @@ public class UpDownButtonBarPart {
     }
 
     private void doMoveUp() {
-        int[] indexes = viewer.getTable().getSelectionIndices();
+        int[] indexes = viewer.getTable()
+            .getSelectionIndices();
 
         @SuppressWarnings("unchecked")
         List<Object> list = (List<Object>) viewer.getInput();
@@ -95,7 +98,8 @@ public class UpDownButtonBarPart {
     }
 
     private void doMoveDown() {
-        int[] indexes = viewer.getTable().getSelectionIndices();
+        int[] indexes = viewer.getTable()
+            .getSelectionIndices();
 
         @SuppressWarnings("unchecked")
         List<Object> list = (List<Object>) viewer.getInput();

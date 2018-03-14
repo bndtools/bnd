@@ -92,7 +92,8 @@ public class GradleHeadlessBuildPlugin implements HeadlessBuildPlugin {
             List<String> ignoredEntries = new LinkedList<String>();
             ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, "/.gradle/", true));
             ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, "/reports/", true));
-            ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, Workspace.getDefaults().getProperty(Constants.DEFAULT_PROP_TARGET_DIR), true));
+            ignoredEntries.add(ignoresManager.sanitiseGitIgnoreGlob(true, Workspace.getDefaults()
+                .getProperty(Constants.DEFAULT_PROP_TARGET_DIR), true));
 
             ignoresManager.addIgnores(enabledIgnorePlugins, workspaceRoot, ignoredEntries);
         }

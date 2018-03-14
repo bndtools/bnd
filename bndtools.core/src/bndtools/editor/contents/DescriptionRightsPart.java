@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -20,6 +21,7 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import bndtools.editor.utils.ToolTips;
@@ -28,7 +30,7 @@ import bndtools.utils.ModificationLock;
 public class DescriptionRightsPart extends SectionPart implements PropertyChangeListener {
     /** The properties that can be changed by this part */
     private static final String[] EDITABLE_PROPERTIES = new String[] {
-            Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_LICENSE
+        Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_LICENSE
     };
     private final Set<String> editablePropertySet;
     private final Set<String> dirtySet = new HashSet<String>();
@@ -48,8 +50,10 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
         bundleCopyright = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(bundleCopyright, Constants.BUNDLE_COPYRIGHT);
         bundleCopyright.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_COPYRIGHT);
                     }
@@ -61,8 +65,10 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
         bundleLicense = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(bundleLicense, Constants.BUNDLE_LICENSE);
         bundleLicense.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_LICENSE);
                     }
@@ -88,6 +94,7 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
 
     protected void addDirtyProperty(final String property) {
         lock.ifNotModifying(new Runnable() {
+            @Override
             public void run() {
                 dirtySet.add(property);
                 getManagedForm().dirtyStateChanged();
@@ -134,6 +141,7 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
     public void refresh() {
         super.refresh();
         lock.modifyOperation(new Runnable() {
+            @Override
             public void run() {
                 String bundleCR = model.getBundleCopyright();
                 bundleCopyright.setText(bundleCR != null ? bundleCR : ""); //$NON-NLS-1$
@@ -152,6 +160,7 @@ public class DescriptionRightsPart extends SectionPart implements PropertyChange
         this.model.addPropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (editablePropertySet.contains(evt.getPropertyName())) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();

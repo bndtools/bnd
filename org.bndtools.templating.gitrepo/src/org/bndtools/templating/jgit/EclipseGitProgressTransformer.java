@@ -21,8 +21,7 @@ public class EclipseGitProgressTransformer implements ProgressMonitor {
     /**
      * Create a new progress monitor.
      *
-     * @param eclipseMonitor
-     *            the Eclipse monitor we update.
+     * @param eclipseMonitor the Eclipse monitor we update.
      */
     public EclipseGitProgressTransformer(final IProgressMonitor eclipseMonitor) {
         root = eclipseMonitor;

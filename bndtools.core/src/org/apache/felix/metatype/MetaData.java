@@ -30,7 +30,7 @@ import java.util.Map;
  * @author <a href="mailto:dev@felix.apache.org">Felix Project Team</a>
  */
 @SuppressWarnings({
-        "rawtypes", "unchecked"
+    "rawtypes", "unchecked"
 })
 public class MetaData extends OptionalAttributes {
     private String namespace;

@@ -28,7 +28,7 @@ public class DependencyUtils {
         void process(T obj, IProgressMonitor monitor) throws CoreException;
     }
 
-    public static <T> void processDependencyMap(Collection<T> input, Map<T,Set<T>> dependencies, Processor<T> processor, IProgressMonitor monitor) throws CoreException, CircularDependencyException {
+    public static <T> void processDependencyMap(Collection<T> input, Map<T, Set<T>> dependencies, Processor<T> processor, IProgressMonitor monitor) throws CoreException, CircularDependencyException {
         SubMonitor progress = SubMonitor.convert(monitor, input.size());
         Set<T> processed = new TreeSet<T>();
         Stack<T> callStack = new Stack<T>();
@@ -37,7 +37,7 @@ public class DependencyUtils {
         }
     }
 
-    private static <T> void processDependencyMap(T selected, Stack<T> callStack, Map<T,Set<T>> dependencies, Set<T> processed, Processor<T> processor, SubMonitor subMonitor) throws CoreException, CircularDependencyException {
+    private static <T> void processDependencyMap(T selected, Stack<T> callStack, Map<T, Set<T>> dependencies, Set<T> processed, Processor<T> processor, SubMonitor subMonitor) throws CoreException, CircularDependencyException {
         if (processed.contains(selected))
             return;
 

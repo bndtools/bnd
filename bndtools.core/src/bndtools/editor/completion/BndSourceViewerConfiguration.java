@@ -1,19 +1,28 @@
 package bndtools.editor.completion;
 
-import java.util.*;
+import java.util.Properties;
 
 import org.bndtools.core.editors.BndMarkerAnnotationHover;
 import org.bndtools.core.editors.BndMarkerQuickAssistProcessor;
 import org.eclipse.jdt.ui.text.IColorManager;
 import org.eclipse.jdt.ui.text.IJavaColorConstants;
-import org.eclipse.jface.text.*;
-import org.eclipse.jface.text.contentassist.*;
-import org.eclipse.jface.text.presentation.*;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.ITextHover;
+import org.eclipse.jface.text.TextAttribute;
+import org.eclipse.jface.text.contentassist.ContentAssistant;
+import org.eclipse.jface.text.contentassist.IContentAssistant;
+import org.eclipse.jface.text.presentation.IPresentationReconciler;
+import org.eclipse.jface.text.presentation.PresentationReconciler;
 import org.eclipse.jface.text.quickassist.IQuickAssistAssistant;
 import org.eclipse.jface.text.quickassist.QuickAssistAssistant;
-import org.eclipse.jface.text.rules.*;
-import org.eclipse.jface.text.source.*;
-import org.eclipse.swt.*;
+import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
+import org.eclipse.jface.text.rules.ITokenScanner;
+import org.eclipse.jface.text.rules.RuleBasedScanner;
+import org.eclipse.jface.text.rules.Token;
+import org.eclipse.jface.text.source.IAnnotationHover;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.SourceViewerConfiguration;
+import org.eclipse.swt.SWT;
 
 public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
 
@@ -82,7 +91,7 @@ public class BndSourceViewerConfiguration extends SourceViewerConfiguration {
     public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType) {
         if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType) || SINGLELINE_COMMENT_TYPE.equals(contentType)) {
             return new String[] {
-                    "#", "//"
+                "#", "//"
             };
         }
         return null;

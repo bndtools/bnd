@@ -26,7 +26,7 @@ public class RefreshReposHandler extends AbstractHandler {
                 try {
                     Central.refreshPlugins();
                 } catch (Exception e) {
-                    return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Failed to refresh repositories", e);
+                    return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Failed to refresh repositories", e);
                 }
 
                 return Status.OK_STATUS;

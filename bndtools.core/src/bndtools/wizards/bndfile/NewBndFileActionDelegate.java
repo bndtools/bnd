@@ -12,6 +12,7 @@ public class NewBndFileActionDelegate implements IWorkbenchWindowActionDelegate 
     private IWorkbenchWindow window;
     private IStructuredSelection selection;
 
+    @Override
     public void run(IAction action) {
         EmptyBndFileWizard wizard = new EmptyBndFileWizard();
         wizard.init(window.getWorkbench(), selection);
@@ -20,6 +21,7 @@ public class NewBndFileActionDelegate implements IWorkbenchWindowActionDelegate 
         dialog.open();
     }
 
+    @Override
     public void selectionChanged(IAction action, ISelection selection) {
         if (selection instanceof IStructuredSelection) {
             this.selection = (IStructuredSelection) selection;
@@ -28,8 +30,10 @@ public class NewBndFileActionDelegate implements IWorkbenchWindowActionDelegate 
         }
     }
 
+    @Override
     public void dispose() {}
 
+    @Override
     public void init(IWorkbenchWindow window) {
         this.window = window;
     }

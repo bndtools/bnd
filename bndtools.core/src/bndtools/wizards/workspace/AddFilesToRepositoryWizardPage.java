@@ -54,12 +54,16 @@ import bndtools.utils.FileExtensionFilter;
 public class AddFilesToRepositoryWizardPage extends WizardPage {
     private static final ILogger logger = Logger.getLogger(AddFilesToRepositoryWizardPage.class);
 
-    private final Image jarImg = Icons.desc("jar").createImage();
-    private final Image warnImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/warning_obj.gif").createImage();
-    private final Image errorImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/error.gif").createImage();
-    private final Image okayImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tick.png").createImage();
+    private final Image jarImg = Icons.desc("jar")
+        .createImage();
+    private final Image warnImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/warning_obj.gif")
+        .createImage();
+    private final Image errorImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/error.gif")
+        .createImage();
+    private final Image okayImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "/icons/tick.png")
+        .createImage();
 
-    private final Map<File,Pair<String,String>> bsnMap = new HashMap<File,Pair<String,String>>();
+    private final Map<File, Pair<String, String>> bsnMap = new HashMap<File, Pair<String, String>>();
     private final List<File> files = new ArrayList<File>(1);
 
     private TableViewer viewer;
@@ -75,7 +79,8 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
             this.files.add(file);
         }
 
-        if (viewer != null && !viewer.getControl().isDisposed()) {
+        if (viewer != null && !viewer.getControl()
+            .isDisposed()) {
             viewer.refresh();
             validate();
         }
@@ -87,7 +92,8 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
 
     void analyseFile(File file) {
         try (Jar jar = new Jar(file)) {
-            Attributes attribs = jar.getManifest().getMainAttributes();
+            Attributes attribs = jar.getManifest()
+                .getMainAttributes();
             String bsn = attribs.getValue(Constants.BUNDLE_SYMBOLICNAME);
             String version = attribs.getValue(Constants.BUNDLE_VERSION);
 
@@ -124,7 +130,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
             @Override
             public void update(ViewerCell cell) {
                 File file = (File) cell.getElement();
-                Pair<String,String> bundleId = bsnMap.get(file);
+                Pair<String, String> bundleId = bsnMap.get(file);
 
                 int index = cell.getColumnIndex();
                 if (index == 0) {
@@ -180,7 +186,8 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                btnRemove.setEnabled(!viewer.getSelection().isEmpty());
+                btnRemove.setEnabled(!viewer.getSelection()
+                    .isEmpty());
             }
         });
         btnAdd.addSelectionListener(new SelectionAdapter() {
@@ -225,14 +232,16 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
         dialog.setAllowMultiple(true);
         dialog.setTitle("JAR File Selection");
         dialog.addFilter(new FileExtensionFilter("jar")); //$NON-NLS-1$
-        dialog.setInput(ResourcesPlugin.getWorkspace().getRoot());
+        dialog.setInput(ResourcesPlugin.getWorkspace()
+            .getRoot());
 
         if (dialog.open() == Window.OK) {
             Object[] result = dialog.getResult();
             List<File> added = new ArrayList<File>(result.length);
             for (Object fileObj : result) {
                 IFile ifile = (IFile) fileObj;
-                File file = ifile.getLocation().toFile();
+                File file = ifile.getLocation()
+                    .toFile();
                 analyseFile(file);
                 files.add(file);
                 added.add(file);
@@ -247,7 +256,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
     void doAddExternal() {
         FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
         dialog.setFilterExtensions(new String[] {
-                "*.jar" //$NON-NLS-1$
+            "*.jar" //$NON-NLS-1$
         });
         String res = dialog.open();
         if (res != null) {
@@ -256,7 +265,8 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
             String[] fileNames = dialog.getFileNames();
             List<File> added = new ArrayList<File>(fileNames.length);
             for (String fileName : fileNames) {
-                added.add(filterPath.append(fileName).toFile());
+                added.add(filterPath.append(fileName)
+                    .toFile());
             }
             if (!added.isEmpty()) {
                 for (File addedFile : added) {
@@ -272,7 +282,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
     void doRemove() {
         IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
         if (!selection.isEmpty()) {
-            for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
+            for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
                 Object item = iter.next();
                 files.remove(item);
                 viewer.remove(item);
@@ -286,7 +296,7 @@ public class AddFilesToRepositoryWizardPage extends WizardPage {
         String warning = null;
 
         for (File file : files) {
-            Pair<String,String> pair = bsnMap.get(file);
+            Pair<String, String> pair = bsnMap.get(file);
             if (pair == null) {
                 error = "One or more selected files is not a JAR.";
             } else {

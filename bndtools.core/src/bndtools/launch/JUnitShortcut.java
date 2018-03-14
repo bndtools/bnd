@@ -25,6 +25,7 @@ import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+
 import aQute.lib.strings.Strings;
 import bndtools.launch.api.AbstractLaunchShortcut;
 
@@ -35,15 +36,15 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
     }
 
     /*
-    * This is called when the launch starts in the editor. If a method or type is selected
-    * in a Java Editor, we will test that type/method.
-    */
+     * This is called when the launch starts in the editor. If a method or type is selected in a Java Editor, we will
+     * test that type/method.
+     */
     @Override
     public void launch(IEditorPart editor, String mode) {
         try {
 
             //
-            // Check if a method is selected. It is more precise then the 
+            // Check if a method is selected. It is more precise then the
             // older next method that adapts the editor to a JavaElement
             // this in general returns a Compilation Unit
             //
@@ -74,8 +75,11 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
     protected void launchJavaElements(List<IJavaElement> elements, String mode) throws CoreException {
         assert elements != null && elements.size() > 0;
 
-        IProject targetProject = elements.get(0).getJavaProject().getProject();
-        IPath projectPath = targetProject.getFullPath().makeRelative();
+        IProject targetProject = elements.get(0)
+            .getJavaProject()
+            .getProject();
+        IPath projectPath = targetProject.getFullPath()
+            .makeRelative();
 
         ILaunchConfiguration config = findLaunchConfig(projectPath);
         ILaunchConfigurationWorkingCopy wc = null;
@@ -94,11 +98,9 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
     }
 
     /*
-     * From the Java element, we traverse over all the children of the given element 
-     * until we hit a Type. Types are then added if they are either a JUnit 3 
-     * (implements junit.framework.Test) or JUnit 4 (one of the methods has an org.junit 
-     * annotation)
-     * 
+     * From the Java element, we traverse over all the children of the given element until we hit a Type. Types are then
+     * added if they are either a JUnit 3 (implements junit.framework.Test) or JUnit 4 (one of the methods has an
+     * org.junit annotation)
      */
     private static void customise(List<IJavaElement> elements, ILaunchConfigurationWorkingCopy config) throws JavaModelException {
 
@@ -125,38 +127,38 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
 
         switch (element.getElementType()) {
 
-        /*
-         * For a type, we only have to check if it is testable.
-         */
-        case IJavaElement.TYPE : {
-            IType type = (IType) element;
-            if (isTestable(type)) {
-                testNames.add((type).getFullyQualifiedName());
-            }
-        }
-            break;
-
-        /*
-         * Normally we do not traverse to methods but we can call the customise with a method 
-         */
-        case IJavaElement.METHOD : {
-            IMethod method = (IMethod) element;
-            String typeName = ((IType) method.getParent()).getFullyQualifiedName();
-            String methodName = method.getElementName();
-            testNames.add(typeName + ":" + methodName);
-        }
-            break;
-
-        /*
-         * Default we go deeper if the element is a parent
-         */
-        default : {
-            if (element instanceof IParent)
-                for (IJavaElement type : ((IParent) element).getChildren()) {
-                    gatherTests(testNames, type, config);
+            /*
+             * For a type, we only have to check if it is testable.
+             */
+            case IJavaElement.TYPE : {
+                IType type = (IType) element;
+                if (isTestable(type)) {
+                    testNames.add((type).getFullyQualifiedName());
                 }
-        }
-            break;
+            }
+                break;
+
+            /*
+             * Normally we do not traverse to methods but we can call the customise with a method
+             */
+            case IJavaElement.METHOD : {
+                IMethod method = (IMethod) element;
+                String typeName = ((IType) method.getParent()).getFullyQualifiedName();
+                String methodName = method.getElementName();
+                testNames.add(typeName + ":" + methodName);
+            }
+                break;
+
+            /*
+             * Default we go deeper if the element is a parent
+             */
+            default : {
+                if (element instanceof IParent)
+                    for (IJavaElement type : ((IParent) element).getChildren()) {
+                        gatherTests(testNames, type, config);
+                    }
+            }
+                break;
         }
     }
 
@@ -181,7 +183,8 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
         //
         ITypeHierarchy hierarchy = type.newSupertypeHierarchy(null);
         for (IType z : hierarchy.getAllSupertypes(type)) {
-            if (z.getFullyQualifiedName().startsWith("junit."))
+            if (z.getFullyQualifiedName()
+                .startsWith("junit."))
                 return true;
         }
 
@@ -197,17 +200,15 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
     }
 
     /*
-    *
-    * Check if any of the methods has an annotation
-    * from the org.junit package
-    *
-    */
+     * Check if any of the methods has an annotation from the org.junit package
+     */
 
     private static boolean isJUnit4(IType z) throws JavaModelException {
         for (IMethod m : z.getMethods()) {
             if (Flags.isPublic(m.getFlags())) {
                 for (IAnnotation annotation : m.getAnnotations()) {
-                    String[][] names = m.getDeclaringType().resolveType(annotation.getElementName());
+                    String[][] names = m.getDeclaringType()
+                        .resolveType(annotation.getElementName());
                     for (String[] pair : names) {
                         if (pair[0].contains("org.junit"))
                             return true;
@@ -225,7 +226,8 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
     private IJavaElement getSelectedJavaElement(JavaEditor editor) throws JavaModelException {
         IJavaElement elem = JavaUI.getEditorInputJavaElement(editor.getEditorInput());
         if (elem instanceof ICompilationUnit) {
-            ITextSelection selection = (ITextSelection) editor.getSelectionProvider().getSelection();
+            ITextSelection selection = (ITextSelection) editor.getSelectionProvider()
+                .getSelection();
             if (selection != null)
                 return ((ICompilationUnit) elem).getElementAt(selection.getOffset());
         }

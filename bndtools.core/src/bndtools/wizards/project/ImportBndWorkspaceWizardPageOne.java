@@ -108,13 +108,15 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
         txtFolder.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent event) {
-                getWizard().getContainer().updateButtons();
+                getWizard().getContainer()
+                    .updateButtons();
             }
         });
 
-        //Adding the decorator
+        // Adding the decorator
         txtFolderErrorDecorator = new ControlDecoration(txtFolder, SWT.TOP | SWT.RIGHT);
-        FieldDecoration fieldDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
+        FieldDecoration fieldDecoration = FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
         Image img = fieldDecoration.getImage();
         txtFolderErrorDecorator.setImage(img);
         txtFolderErrorDecorator.setDescriptionText("Selected folder must contain valid Bnd Workspace configuration project.");
@@ -128,10 +130,14 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
             @Override
             public void widgetSelected(SelectionEvent event) {
                 DirectoryDialog dirDialog = new DirectoryDialog(container.getShell());
-                dirDialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
+                dirDialog.setFilterPath(ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .getLocation()
+                    .toOSString());
                 dirDialog.setText("Select the folder containing the project.");
                 txtFolder.setText(dirDialog.open());
-                getWizard().getContainer().updateButtons();
+                getWizard().getContainer()
+                    .updateButtons();
             }
         });
 
@@ -158,7 +164,8 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
             @Override
             public void selectionChanged(final SelectionChangedEvent event) {
                 // Disable selection since the tableviewer should be readonly, but not disabled
-                if (!event.getSelection().isEmpty()) {
+                if (!event.getSelection()
+                    .isEmpty()) {
                     tableViewer.setSelection(StructuredSelection.EMPTY);
                 }
             }
@@ -172,7 +179,8 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent event) {
-                getWizard().getContainer().updateButtons();
+                getWizard().getContainer()
+                    .updateButtons();
             }
         });
 
@@ -183,7 +191,7 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
         inferExecutionEnvironmentButton.setSelection(true);
         inferExecutionEnvironmentButton.setText("Infer execution-environment (J2SE and JavaSE).");
         inferExecutionEnvironmentButton
-                .setToolTipText("Uses the 'javac.target' from the Bnd Workspace to infer a Execution Environment to the JRE container. If nothing matches, the default JRE will be used.\nExisting containers will be removed.");
+            .setToolTipText("Uses the 'javac.target' from the Bnd Workspace to infer a Execution Environment to the JRE container. If nothing matches, the default JRE will be used.\nExisting containers will be removed.");
 
         FormLayout layout = new FormLayout();
         container.setLayout(layout);
@@ -215,7 +223,8 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
         fd_table.left = new FormAttachment(lblFolder, 0, SWT.LEFT);
         fd_table.right = new FormAttachment(100, -100);
         fd_table.bottom = new FormAttachment(100, -55);
-        tableViewer.getTable().setLayoutData(fd_table);
+        tableViewer.getTable()
+            .setLayoutData(fd_table);
 
         FormData fd_btnRefresh = new FormData();
         fd_btnRefresh.top = new FormAttachment(tableViewer.getTable(), 0, SWT.TOP);
@@ -239,7 +248,10 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
         setControl(parent);
         setPageComplete(false);
 
-        txtFolder.setText(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
+        txtFolder.setText(ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getLocation()
+            .toOSString());
     }
 
     @Override
@@ -263,7 +275,8 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
         final String selectedFolder = txtFolder.getText();
         boolean result = false;
         // check if folder containing a cnf-folder for Bnd was selected
-        if (null != selectedFolder && selectedFolder.trim().length() > 0) {
+        if (null != selectedFolder && selectedFolder.trim()
+            .length() > 0) {
             File chosenDirectory = new File(txtFolder.getText());
             if (chosenDirectory.exists()) {
                 final Workspace bndWorkspace;
@@ -289,7 +302,8 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
         if (!result) {
             tableViewer.setInput(Collections.emptyList());
         }
-        for (TableColumn col : tableViewer.getTable().getColumns()) {
+        for (TableColumn col : tableViewer.getTable()
+            .getColumns()) {
             // make sure TableViewerColumn has enough width to display new selection
             col.pack();
         }
@@ -305,17 +319,32 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
 
         private ProjectsColumnLabelProvider() {
             // prepare images (greyscale used for disabled)
-            if (Plugin.getDefault().getImageRegistry().get(KEY_GENERAL_PROJECT) == null) {
-                Image image = PlatformUI.getWorkbench().getSharedImages().getImage(SharedImages.IMG_OBJ_PROJECT);
-                Plugin.getDefault().getImageRegistry().put(KEY_GENERAL_PROJECT, image);
-                Plugin.getDefault().getImageRegistry().put(KEY_GENERAL_PROJECT_GREYSCALE, new Image(Display.getCurrent(), image, SWT.IMAGE_GRAY));
+            if (Plugin.getDefault()
+                .getImageRegistry()
+                .get(KEY_GENERAL_PROJECT) == null) {
+                Image image = PlatformUI.getWorkbench()
+                    .getSharedImages()
+                    .getImage(SharedImages.IMG_OBJ_PROJECT);
+                Plugin.getDefault()
+                    .getImageRegistry()
+                    .put(KEY_GENERAL_PROJECT, image);
+                Plugin.getDefault()
+                    .getImageRegistry()
+                    .put(KEY_GENERAL_PROJECT_GREYSCALE, new Image(Display.getCurrent(), image, SWT.IMAGE_GRAY));
             }
 
-            if (Plugin.getDefault().getImageRegistry().get(KEY_JAVA_PROJECT) == null) {
+            if (Plugin.getDefault()
+                .getImageRegistry()
+                .get(KEY_JAVA_PROJECT) == null) {
                 // use Java-Project image from JDT (unfortunately not shared by JDT-Plugin)
-                Image image = AbstractUIPlugin.imageDescriptorFromPlugin(JavaUI.ID_PLUGIN, "icons/full/eview16/projects.gif").createImage();
-                Plugin.getDefault().getImageRegistry().put(KEY_JAVA_PROJECT, image);
-                Plugin.getDefault().getImageRegistry().put(KEY_JAVA_PROJECT_GREYSCALE, new Image(Display.getCurrent(), image, SWT.IMAGE_GRAY));
+                Image image = AbstractUIPlugin.imageDescriptorFromPlugin(JavaUI.ID_PLUGIN, "icons/full/eview16/projects.gif")
+                    .createImage();
+                Plugin.getDefault()
+                    .getImageRegistry()
+                    .put(KEY_JAVA_PROJECT, image);
+                Plugin.getDefault()
+                    .getImageRegistry()
+                    .put(KEY_JAVA_PROJECT_GREYSCALE, new Image(Display.getCurrent(), image, SWT.IMAGE_GRAY));
             }
         }
 
@@ -338,7 +367,8 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
         public Color getForeground(Object element) {
             if (projectExistsInEclipse(element)) {
                 // maybe check for some "disabled" foreground to work better with theming
-                return Display.getCurrent().getSystemColor(SWT.COLOR_GRAY);
+                return Display.getCurrent()
+                    .getSystemColor(SWT.COLOR_GRAY);
             }
             return super.getForeground(element);
         }
@@ -349,15 +379,23 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
             final Image image;
             if (element instanceof File) {
                 if (projectExists) {
-                    image = Plugin.getDefault().getImageRegistry().get(KEY_GENERAL_PROJECT_GREYSCALE);
+                    image = Plugin.getDefault()
+                        .getImageRegistry()
+                        .get(KEY_GENERAL_PROJECT_GREYSCALE);
                 } else {
-                    image = Plugin.getDefault().getImageRegistry().get(KEY_GENERAL_PROJECT);
+                    image = Plugin.getDefault()
+                        .getImageRegistry()
+                        .get(KEY_GENERAL_PROJECT);
                 }
             } else {
                 if (projectExists) {
-                    image = Plugin.getDefault().getImageRegistry().get(KEY_JAVA_PROJECT_GREYSCALE);
+                    image = Plugin.getDefault()
+                        .getImageRegistry()
+                        .get(KEY_JAVA_PROJECT_GREYSCALE);
                 } else {
-                    image = Plugin.getDefault().getImageRegistry().get(KEY_JAVA_PROJECT);
+                    image = Plugin.getDefault()
+                        .getImageRegistry()
+                        .get(KEY_JAVA_PROJECT);
                 }
             }
             return image;
@@ -367,12 +405,21 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
             final IProject existingProject;
             if (element instanceof File) {
                 File cnfFile = (File) element;
-                existingProject = ResourcesPlugin.getWorkspace().getRoot().getProject(cnfFile.getName());
-                return existingProject.exists() && existingProject.getLocation().toString().equals(cnfFile.toString());
+                existingProject = ResourcesPlugin.getWorkspace()
+                    .getRoot()
+                    .getProject(cnfFile.getName());
+                return existingProject.exists() && existingProject.getLocation()
+                    .toString()
+                    .equals(cnfFile.toString());
             }
             Project project = (Project) element;
-            existingProject = ResourcesPlugin.getWorkspace().getRoot().getProject(project.getName());
-            return existingProject.exists() && existingProject.getLocation().toString().equals(project.getBase().toString());
+            existingProject = ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .getProject(project.getName());
+            return existingProject.exists() && existingProject.getLocation()
+                .toString()
+                .equals(project.getBase()
+                    .toString());
         }
     }
 

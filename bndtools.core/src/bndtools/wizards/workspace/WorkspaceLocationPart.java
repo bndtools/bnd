@@ -51,7 +51,10 @@ public class WorkspaceLocationPart {
             btnCreateInEclipseWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 3, 1));
 
             Label lblEclipseWorkspace = new Label(group, SWT.NONE);
-            lblEclipseWorkspace.setText(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
+            lblEclipseWorkspace.setText(ResourcesPlugin.getWorkspace()
+                .getRoot()
+                .getLocation()
+                .toOSString());
             lblEclipseWorkspace.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
 
             final Button btnCreateExternal = new Button(group, SWT.RADIO);
@@ -123,9 +126,12 @@ public class WorkspaceLocationPart {
     }
 
     private File getUpdate() {
-        IProject cnfProject = ResourcesPlugin.getWorkspace().getRoot().getProject(Project.BNDCNF);
+        IProject cnfProject = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getProject(Project.BNDCNF);
         if (cnfProject != null && cnfProject.exists()) {
-            File cnf = cnfProject.getLocation().toFile();
+            File cnf = cnfProject.getLocation()
+                .toFile();
             if (cnf == null || !cnf.exists())
                 return null;
 

@@ -1,8 +1,10 @@
 package bndtools.pde.target;
 
 import java.util.Collection;
+
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.wizard.WizardPage;
@@ -31,7 +33,8 @@ public abstract class BndTargetLocationPage extends WizardPage implements IEditB
         this.logger = Logger.getLogger(getClass());
         this.message = message;
         this.targetDefinition = targetDefinition;
-        this.bundleIcon = AbstractUIPlugin.imageDescriptorFromPlugin("bndtools.core", "/icons/bundle.png").createImage();
+        this.bundleIcon = AbstractUIPlugin.imageDescriptorFromPlugin("bndtools.core", "/icons/bundle.png")
+            .createImage();
     }
 
     public ITargetDefinition getTargetDefinition() {
@@ -40,12 +43,12 @@ public abstract class BndTargetLocationPage extends WizardPage implements IEditB
 
     protected void logError(String message, Exception e) {
         logger.logError(message, e);
-        setMessage(message, WizardPage.ERROR);
+        setMessage(message, IMessageProvider.ERROR);
     }
 
     protected void logWarning(String message, Exception e) {
         logger.logWarning(message, e);
-        setMessage(message, WizardPage.WARNING);
+        setMessage(message, IMessageProvider.WARNING);
     }
 
     protected void resetMessage() {
@@ -54,7 +57,8 @@ public abstract class BndTargetLocationPage extends WizardPage implements IEditB
 
     protected TreeViewer createBundleListArea(Composite composite, int hSpan) {
         TreeViewer bundleList = new TreeViewer(new Tree(composite, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER));
-        bundleList.getTree().setLayoutData(fillGridData(hSpan));
+        bundleList.getTree()
+            .setLayoutData(fillGridData(hSpan));
         bundleList.setLabelProvider(new LabelProvider() {
             @Override
             public Image getImage(Object element) {
@@ -64,7 +68,7 @@ public abstract class BndTargetLocationPage extends WizardPage implements IEditB
         bundleList.setContentProvider(new TreeContentProvider() {
             @Override
             public Object[] getElements(Object element) {
-                return ((Collection< ? >) element).toArray();
+                return ((Collection<?>) element).toArray();
             }
         });
         return bundleList;

@@ -51,7 +51,7 @@ public class FilterPanelPart {
                 display.asyncExec(update);
         }
     };
-    private ScheduledFuture< ? > scheduledFilterUpdate = null;
+    private ScheduledFuture<?> scheduledFilterUpdate = null;
 
     public FilterPanelPart(ScheduledExecutorService scheduler) {
         this.scheduler = scheduler;

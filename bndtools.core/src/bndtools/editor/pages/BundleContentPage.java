@@ -27,6 +27,7 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
@@ -93,7 +94,7 @@ public class BundleContentPage extends FormPage {
         createRightPanel(managedForm, rightPanel);
 
         sashForm.setWeights(new int[] {
-                1, 1
+            1, 1
         });
         sashForm.hookResizeListener();
 
@@ -104,13 +105,13 @@ public class BundleContentPage extends FormPage {
     void createLeftPanel(IManagedForm mform, Composite parent) {
         FormToolkit toolkit = mform.getToolkit();
 
-        GeneralInfoPart infoPart = new GeneralInfoPart(parent, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        GeneralInfoPart infoPart = new GeneralInfoPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         mform.addPart(infoPart);
 
-        privPkgsPart = new PrivatePackagesPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
+        privPkgsPart = new PrivatePackagesPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         mform.addPart(privPkgsPart);
 
-        exportPatternListPart = new ExportPatternsListPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
+        exportPatternListPart = new ExportPatternsListPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         mform.addPart(exportPatternListPart);
 
         // LAYOUT
@@ -121,13 +122,16 @@ public class BundleContentPage extends FormPage {
         parent.setLayout(layout);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        infoPart.getSection().setLayoutData(gd);
+        infoPart.getSection()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        privPkgsPart.getSection().setLayoutData(gd);
+        privPkgsPart.getSection()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        exportPatternListPart.getSection().setLayoutData(gd);
+        exportPatternListPart.getSection()
+            .setLayoutData(gd);
     }
 
     class NoSelectionPage extends AbstractFormPart implements IDetailsPage {
@@ -139,7 +143,7 @@ public class BundleContentPage extends FormPage {
             FormToolkit toolkit = getManagedForm().getToolkit();
             // toolkit.createLabel(parent, "Nothing is selected");
 
-            Section section = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
+            Section section = toolkit.createSection(parent, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
             section.setText("Selection Details");
 
             Composite composite = toolkit.createComposite(section);
@@ -166,10 +170,10 @@ public class BundleContentPage extends FormPage {
     void createRightPanel(IManagedForm mform, final Composite parent) {
         FormToolkit toolkit = mform.getToolkit();
 
-        BundleCalculatedImportsPart importsPart = new BundleCalculatedImportsPart(parent, toolkit, Section.TITLE_BAR | Section.EXPANDED);
+        BundleCalculatedImportsPart importsPart = new BundleCalculatedImportsPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         mform.addPart(importsPart);
 
-        importPatternListPart = new ImportPatternsListPart(parent, toolkit, Section.TITLE_BAR | Section.TWISTIE);
+        importPatternListPart = new ImportPatternsListPart(parent, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
         mform.addPart(importPatternListPart);
 
         GridLayout layout;
@@ -181,22 +185,27 @@ public class BundleContentPage extends FormPage {
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 100;
         gd.heightHint = 200;
-        importsPart.getSection().setLayoutData(gd);
+        importsPart.getSection()
+            .setLayoutData(gd);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
-        importPatternListPart.getSection().setLayoutData(gd);
+        importPatternListPart.getSection()
+            .setLayoutData(gd);
     }
 
     public void setSelectedExport(ExportedPackage export) {
-        exportPatternListPart.getSelectionProvider().setSelection(new StructuredSelection(export));
+        exportPatternListPart.getSelectionProvider()
+            .setSelection(new StructuredSelection(export));
     }
 
     public void setSelectedPrivatePkg(String pkg) {
-        privPkgsPart.getSelectionProvider().setSelection(new StructuredSelection(pkg));
+        privPkgsPart.getSelectionProvider()
+            .setSelection(new StructuredSelection(pkg));
     }
 
     public void setSelectedImport(ImportPattern element) {
-        importPatternListPart.getSelectionProvider().setSelection(new StructuredSelection(element));
+        importPatternListPart.getSelectionProvider()
+            .setSelection(new StructuredSelection(element));
     }
 
 }

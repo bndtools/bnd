@@ -1,9 +1,13 @@
 package org.bndtools.utils.parse.properties;
 
-import static org.bndtools.utils.parse.properties.LineType.*;
-import junit.framework.TestCase;
+import static org.bndtools.utils.parse.properties.LineType.blank;
+import static org.bndtools.utils.parse.properties.LineType.comment;
+import static org.bndtools.utils.parse.properties.LineType.entry;
+import static org.bndtools.utils.parse.properties.LineType.eof;
 
 import org.eclipse.jface.text.Region;
+
+import junit.framework.TestCase;
 
 public class TestPropertiesLineReader extends TestCase {
 

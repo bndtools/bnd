@@ -69,6 +69,7 @@ public class PackageListWizardPage extends WizardPage {
         setMessage("The selected packages will be included in the bundle and provided as Exports.");
     }
 
+    @Override
     @SuppressWarnings("unused")
     public void createControl(Composite parent) {
 
@@ -90,11 +91,13 @@ public class PackageListWizardPage extends WizardPage {
         availableViewer.setContentProvider(ArrayContentProvider.getInstance());
         availableViewer.setLabelProvider(new PackageNameLabelProvider());
         availableViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 updateUI();
             }
         });
         availableViewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
             public void doubleClick(DoubleClickEvent event) {
                 doAddSelection();
             }
@@ -158,11 +161,13 @@ public class PackageListWizardPage extends WizardPage {
         selectedViewer.setContentProvider(ArrayContentProvider.getInstance());
         selectedViewer.setLabelProvider(new PackageNameLabelProvider());
         selectedViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 updateUI();
             }
         });
         selectedViewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
             public void doubleClick(DoubleClickEvent event) {
                 doRemoveSelection();
             }
@@ -179,6 +184,7 @@ public class PackageListWizardPage extends WizardPage {
         txtProjectName.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
         txtProjectName.setText(projectName != null ? projectName : "");
         txtProjectName.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 if (!programmaticChange) {
                     try {
@@ -204,6 +210,7 @@ public class PackageListWizardPage extends WizardPage {
         if (!loaded) {
             try {
                 getContainer().run(false, false, new IRunnableWithProgress() {
+                    @Override
                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         availablePackages.clear();
                         selectedPackages.clear();
@@ -213,10 +220,14 @@ public class PackageListWizardPage extends WizardPage {
                                 if (path.isAbsolute())
                                     jar = new Jar(path.toFile());
                                 else
-                                    jar = new Jar(ResourcesPlugin.getWorkspace().getRoot().getLocation().append(path).toFile());
+                                    jar = new Jar(ResourcesPlugin.getWorkspace()
+                                        .getRoot()
+                                        .getLocation()
+                                        .append(path)
+                                        .toFile());
 
-                                Map<String,Map<String,Resource>> dirs = jar.getDirectories();
-                                for (Entry<String,Map<String,Resource>> entry : dirs.entrySet()) {
+                                Map<String, Map<String, Resource>> dirs = jar.getDirectories();
+                                for (Entry<String, Map<String, Resource>> entry : dirs.entrySet()) {
                                     if (entry.getValue() == null)
                                         continue;
 
@@ -251,9 +262,11 @@ public class PackageListWizardPage extends WizardPage {
     }
 
     private void updateUI() {
-        btnAdd.setEnabled(!availableViewer.getSelection().isEmpty());
+        btnAdd.setEnabled(!availableViewer.getSelection()
+            .isEmpty());
         btnAddAll.setEnabled(!availablePackages.isEmpty());
-        btnRemove.setEnabled(!selectedViewer.getSelection().isEmpty());
+        btnRemove.setEnabled(!selectedViewer.getSelection()
+            .isEmpty());
         btnRemoveAll.setEnabled(!selectedPackages.isEmpty());
 
         getContainer().updateButtons();

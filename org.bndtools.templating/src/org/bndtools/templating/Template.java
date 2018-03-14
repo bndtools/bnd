@@ -53,12 +53,12 @@ public interface Template extends Closeable {
     /**
      * Generate the output resources.
      */
-    ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception;
+    ResourceMap generateOutputs(Map<String, List<Object>> parameters) throws Exception;
 
     /**
      * Generate the output resources.
      */
-    ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception;
+    ResourceMap generateOutputs(Map<String, List<Object>> parameters, IProgressMonitor monitor) throws Exception;
 
     /**
      * An icon representing the template, or null if not available.

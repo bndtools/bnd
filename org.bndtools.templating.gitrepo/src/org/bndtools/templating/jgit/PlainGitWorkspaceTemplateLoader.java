@@ -26,7 +26,7 @@ import aQute.bnd.header.Parameters;
 import aQute.service.reporter.Reporter;
 
 @Component(name = "org.bndtools.core.templating.workspace.git", property = {
-        Constants.SERVICE_DESCRIPTION + "=Load workspace templates from Git clone URLs"
+    Constants.SERVICE_DESCRIPTION + "=Load workspace templates from Git clone URLs"
 })
 public class PlainGitWorkspaceTemplateLoader implements TemplateLoader {
 
@@ -44,7 +44,8 @@ public class PlainGitWorkspaceTemplateLoader implements TemplateLoader {
 
     @Activate
     void activate(BundleContext context) {
-        iconUrl = context.getBundle().getEntry("icons/git-16px.png");
+        iconUrl = context.getBundle()
+            .getEntry("icons/git-16px.png");
         if (promiseFactory == null) {
             localExecutor = Executors.newCachedThreadPool();
             promiseFactory = new PromiseFactory(localExecutor);
@@ -65,23 +66,27 @@ public class PlainGitWorkspaceTemplateLoader implements TemplateLoader {
         }
 
         Parameters gitRepos = new GitRepoPreferences().getGitRepos();
-        List<Template> templates = gitRepos.entrySet().stream().map(entry -> {
-            String cloneUrl = GitRepoPreferences.removeDuplicateMarker(entry.getKey());
-            Attrs attribs = entry.getValue();
-            try {
-                GitCloneTemplateParams params = new GitCloneTemplateParams();
-                params.cloneUrl = cloneUrl;
-                params.category = "Git Repositories";
-                params.name = attribs.get("name");
-                params.iconUri = iconUrl.toURI();
-                params.branch = attribs.get("branch");
+        List<Template> templates = gitRepos.entrySet()
+            .stream()
+            .map(entry -> {
+                String cloneUrl = GitRepoPreferences.removeDuplicateMarker(entry.getKey());
+                Attrs attribs = entry.getValue();
+                try {
+                    GitCloneTemplateParams params = new GitCloneTemplateParams();
+                    params.cloneUrl = cloneUrl;
+                    params.category = "Git Repositories";
+                    params.name = attribs.get("name");
+                    params.iconUri = iconUrl.toURI();
+                    params.branch = attribs.get("branch");
 
-                return (Template) new GitCloneTemplate(params);
-            } catch (Exception e) {
-                reporter.exception(e, "Error loading template from Git clone URL %s", cloneUrl);
-                return null;
-            }
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+                    return (Template) new GitCloneTemplate(params);
+                } catch (Exception e) {
+                    reporter.exception(e, "Error loading template from Git clone URL %s", cloneUrl);
+                    return null;
+                }
+            })
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
 
         return promiseFactory.resolved(templates);
     }

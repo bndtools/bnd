@@ -1,11 +1,10 @@
 package org.bndtools.core.editors;
 
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
-
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.contentassist.ICompletionProposal;
 import org.eclipse.jface.text.contentassist.IContextInformation;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 
 /**
  * Proposal telling that there are no proposals available.
@@ -20,6 +19,7 @@ public final class NoCompletionsProposal implements ICompletionProposal {
     /*
      * @see org.eclipse.jface.text.contentassist.ICompletionProposal#apply(org.eclipse.jface.text.IDocument)
      */
+    @Override
     public void apply(IDocument document) {
         // do nothing
     }
@@ -27,6 +27,7 @@ public final class NoCompletionsProposal implements ICompletionProposal {
     /*
      * @see org.eclipse.jface.text.contentassist.ICompletionProposal#getAdditionalProposalInfo()
      */
+    @Override
     public String getAdditionalProposalInfo() {
         return null;
     }
@@ -34,6 +35,7 @@ public final class NoCompletionsProposal implements ICompletionProposal {
     /*
      * @see org.eclipse.jface.text.contentassist.ICompletionProposal#getContextInformation()
      */
+    @Override
     public IContextInformation getContextInformation() {
         return null;
     }
@@ -41,6 +43,7 @@ public final class NoCompletionsProposal implements ICompletionProposal {
     /*
      * @see org.eclipse.jface.text.contentassist.ICompletionProposal#getDisplayString()
      */
+    @Override
     public String getDisplayString() {
         return "No suggestions available";
     }
@@ -48,6 +51,7 @@ public final class NoCompletionsProposal implements ICompletionProposal {
     /*
      * @see org.eclipse.jface.text.contentassist.ICompletionProposal#getImage()
      */
+    @Override
     public Image getImage() {
         return null;
     }
@@ -55,6 +59,7 @@ public final class NoCompletionsProposal implements ICompletionProposal {
     /*
      * @see org.eclipse.jface.text.contentassist.ICompletionProposal#getSelection(org.eclipse.jface.text.IDocument)
      */
+    @Override
     public Point getSelection(IDocument document) {
         return null;
     }

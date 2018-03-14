@@ -83,12 +83,12 @@ public class GitCloneTemplate implements Template {
     }
 
     @Override
-    public ResourceMap generateOutputs(Map<String,List<Object>> parameters) throws Exception {
+    public ResourceMap generateOutputs(Map<String, List<Object>> parameters) throws Exception {
         return generateOutputs(parameters, new NullProgressMonitor());
     }
 
     @Override
-    public ResourceMap generateOutputs(Map<String,List<Object>> parameters, IProgressMonitor monitor) throws Exception {
+    public ResourceMap generateOutputs(Map<String, List<Object>> parameters, IProgressMonitor monitor) throws Exception {
         File workingDir = null;
         File gitDir = null;
 
@@ -102,15 +102,21 @@ public class GitCloneTemplate implements Template {
 
         if (workingDir == null) {
             // Need to do a new checkout
-            workingDir = Files.createTempDirectory("checkout").toFile();
+            workingDir = Files.createTempDirectory("checkout")
+                .toFile();
             gitDir = new File(workingDir, ".git");
 
             try {
-                CloneCommand cloneCmd = Git.cloneRepository().setURI(params.cloneUrl).setDirectory(workingDir).setNoCheckout(true);
+                CloneCommand cloneCmd = Git.cloneRepository()
+                    .setURI(params.cloneUrl)
+                    .setDirectory(workingDir)
+                    .setNoCheckout(true);
                 cloneCmd.setProgressMonitor(new EclipseGitProgressTransformer(monitor));
                 Git git = cloneCmd.call();
 
-                CheckoutCommand checkout = git.checkout().setCreateBranch(true).setName("_tmp");
+                CheckoutCommand checkout = git.checkout()
+                    .setCreateBranch(true)
+                    .setName("_tmp");
 
                 if (params.branch == null) {
                     checkout.setStartPoint(GitCloneTemplateParams.DEFAULT_BRANCH);
@@ -121,8 +127,10 @@ public class GitCloneTemplate implements Template {
                         startPoint = params.branch;
                     } else {
                         // Check for a matching tag
-                        for (Ref ref : git.tagList().call()) {
-                            if (ref.getName().endsWith("/" + params.branch)) {
+                        for (Ref ref : git.tagList()
+                            .call()) {
+                            if (ref.getName()
+                                .endsWith("/" + params.branch)) {
                                 startPoint = params.branch;
                                 break;
                             }
@@ -130,15 +138,19 @@ public class GitCloneTemplate implements Template {
 
                         if (startPoint == null) {
                             // Check remote branches
-                            for (Ref ref : git.branchList().setListMode(ListMode.REMOTE).call()) {
-                                if (ref.getName().endsWith("/" + params.branch)) {
+                            for (Ref ref : git.branchList()
+                                .setListMode(ListMode.REMOTE)
+                                .call()) {
+                                if (ref.getName()
+                                    .endsWith("/" + params.branch)) {
                                     startPoint = Constants.DEFAULT_REMOTE_NAME + "/" + params.branch;
                                     break;
                                 }
                             }
 
                             if (startPoint == null) {
-                                if (SHA1_PATTERN.matcher(params.branch).matches()) {
+                                if (SHA1_PATTERN.matcher(params.branch)
+                                    .matches()) {
                                     startPoint = params.branch;
 
                                     if (startPoint == null) {

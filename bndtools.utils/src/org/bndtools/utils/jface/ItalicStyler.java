@@ -26,7 +26,8 @@ public class ItalicStyler extends Styler {
     @Override
     public void applyStyles(TextStyle textStyle) {
         ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
-        Font font = JFaceResources.getFontRegistry().getItalic(fontName);
+        Font font = JFaceResources.getFontRegistry()
+            .getItalic(fontName);
         if (fForegroundColorName != null) {
             textStyle.foreground = colorRegistry.get(fForegroundColorName);
         }

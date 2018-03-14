@@ -14,6 +14,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IMemento;
 import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.resource.Namespace;
+
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.version.VersionRange;
 
@@ -42,7 +44,8 @@ public class PackageSearchPanel extends SearchPanel {
         txtPackageName.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                packageName = txtPackageName.getText().trim();
+                packageName = txtPackageName.getText()
+                    .trim();
                 validate();
             }
         });
@@ -72,14 +75,16 @@ public class PackageSearchPanel extends SearchPanel {
         try {
             String filter = null;
 
-            if (packageName == null || packageName.trim().isEmpty()) {
+            if (packageName == null || packageName.trim()
+                .isEmpty()) {
                 setError(null);
                 setRequirement(null);
                 return;
             }
 
             VersionRange versionRange = null;
-            if (versionRangeStr != null && versionRangeStr.trim().length() > 0) {
+            if (versionRangeStr != null && versionRangeStr.trim()
+                .length() > 0) {
                 try {
                     versionRange = new VersionRange(versionRangeStr);
                 } catch (Exception e) {
@@ -88,7 +93,8 @@ public class PackageSearchPanel extends SearchPanel {
             }
             filter = formatPackageRequirement(packageName, versionRange);
             if (filter != null)
-                setRequirement(new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addDirective(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter).buildSyntheticRequirement());
+                setRequirement(new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter)
+                    .buildSyntheticRequirement());
             setError(null);
         } catch (Exception e) {
             setError(e.getMessage());
@@ -103,16 +109,28 @@ public class PackageSearchPanel extends SearchPanel {
             filter = String.format("(%s=%s)", PackageNamespace.PACKAGE_NAMESPACE, packageName.trim());
         } else {
             StringBuilder builder = new StringBuilder();
-            builder.append("(&(").append(PackageNamespace.PACKAGE_NAMESPACE).append('=').append(packageName).append(')');
+            builder.append("(&(")
+                .append(PackageNamespace.PACKAGE_NAMESPACE)
+                .append('=')
+                .append(packageName)
+                .append(')');
             if (versionRange.includeLow())
-                builder.append("(version>=").append(versionRange.getLow()).append(')');
+                builder.append("(version>=")
+                    .append(versionRange.getLow())
+                    .append(')');
             else
-                builder.append("(!(version<=").append(versionRange.getLow()).append("))");
+                builder.append("(!(version<=")
+                    .append(versionRange.getLow())
+                    .append("))");
             if (versionRange.isRange()) {
                 if (versionRange.includeHigh())
-                    builder.append("(version<=").append(versionRange.getHigh()).append(')');
+                    builder.append("(version<=")
+                        .append(versionRange.getHigh())
+                        .append(')');
                 else
-                    builder.append("(!(version>=").append(versionRange.getHigh()).append("))");
+                    builder.append("(!(version>=")
+                        .append(versionRange.getHigh())
+                        .append("))");
             }
             builder.append(')');
             filter = builder.toString();
@@ -128,7 +146,8 @@ public class PackageSearchPanel extends SearchPanel {
 
     @Override
     public Image createImage(Device device) {
-        return Icons.desc("package").createImage(device);
+        return Icons.desc("package")
+            .createImage(device);
     }
 
     @Override

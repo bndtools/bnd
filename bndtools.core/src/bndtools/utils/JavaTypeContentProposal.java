@@ -18,7 +18,8 @@ public class JavaTypeContentProposal extends JavaContentProposal {
     private final IType element;
 
     public JavaTypeContentProposal(IType element) throws JavaModelException {
-        super(element.getPackageFragment().getElementName(), element.getElementName(), element.isInterface());
+        super(element.getPackageFragment()
+            .getElementName(), element.getElementName(), element.isInterface());
         this.element = element;
     }
 

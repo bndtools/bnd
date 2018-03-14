@@ -66,12 +66,14 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
         templatePage = new TemplateSelectionWizardPage("workspaceTemplateSelection", "workspace", null);
         templatePage.setTitle("Select Workspace Template");
         previewPage = new WorkspacePreviewPage();
-        previewPage.setTargetDir(setupPage.getLocation().toFile());
+        previewPage.setTargetDir(setupPage.getLocation()
+            .toFile());
 
         setupPage.addPropertyChangeListener(WorkspaceLocationPart.PROP_LOCATION, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                previewPage.setTargetDir(setupPage.getLocation().toFile());
+                previewPage.setTargetDir(setupPage.getLocation()
+                    .toFile());
             }
         });
         templatePage.addPropertyChangeListener(TemplateSelectionWizardPage.PROP_TEMPLATE, new PropertyChangeListener() {
@@ -102,7 +104,7 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
             // Expand the template
             ResourceMap outputs = previewPage.getTemplateOutputs();
             final Set<File> topLevelFolders = new HashSet<>();
-            for (Entry<String,Resource> entry : outputs.entries()) {
+            for (Entry<String, Resource> entry : outputs.entries()) {
                 String path = entry.getKey();
                 if (checkedPaths.contains(path)) {
                     Resource resource = entry.getValue();
@@ -110,22 +112,23 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
                     // Create the folder or file resource
                     File file = new File(targetDir, path);
                     switch (resource.getType()) {
-                    case Folder :
-                        Files.createDirectories(file.toPath());
-                        break;
-                    case File :
-                        File parentDir = file.getParentFile();
-                        Files.createDirectories(parentDir.toPath());
-                        try (InputStream in = resource.getContent()) {
-                            IO.copy(in, file);
-                        }
-                        break;
-                    default :
-                        throw new IllegalArgumentException("Unknown resource type " + resource.getType());
+                        case Folder :
+                            Files.createDirectories(file.toPath());
+                            break;
+                        case File :
+                            File parentDir = file.getParentFile();
+                            Files.createDirectories(parentDir.toPath());
+                            try (InputStream in = resource.getContent()) {
+                                IO.copy(in, file);
+                            }
+                            break;
+                        default :
+                            throw new IllegalArgumentException("Unknown resource type " + resource.getType());
                     }
 
                     // Remember the top-level folders we create, for importing below
-                    if (file.getParentFile().equals(targetDir))
+                    if (file.getParentFile()
+                        .equals(targetDir))
                         topLevelFolders.add(file);
                 }
             }
@@ -146,7 +149,8 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
                                 String projectName = folder.getName();
                                 File projectFile = new File(folder, IProjectDescription.DESCRIPTION_FILE_NAME);
                                 if (projectFile.exists()) {
-                                    IProject project = workspace.getRoot().getProject(projectName);
+                                    IProject project = workspace.getRoot()
+                                        .getProject(projectName);
                                     if (!project.exists()) {
 
                                         // No existing project in the workspace, so import the generated project.
@@ -156,16 +160,19 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
 
                                         // Now make sure it is associated with the right location
                                         IProjectDescription description = project.getDescription();
-                                        IPath path = Path.fromOSString(projectFile.getParentFile().getAbsolutePath());
+                                        IPath path = Path.fromOSString(projectFile.getParentFile()
+                                            .getAbsolutePath());
                                         description.setLocation(path);
                                         project.move(description, IResource.REPLACE, progress);
 
                                     } else {
-                                        // If a project with the same name exists, does it live in the same location? If not, we can't import the generated project.
-                                        File existingLocation = project.getLocation().toFile();
+                                        // If a project with the same name exists, does it live in the same location? If
+                                        // not, we can't import the generated project.
+                                        File existingLocation = project.getLocation()
+                                            .toFile();
                                         if (!existingLocation.equals(folder)) {
                                             String message = String.format("Cannot import generated project from %s. A project named %s already exists in the workspace and is mapped to location %s", folder.getAbsolutePath(), projectName,
-                                                    existingLocation);
+                                                existingLocation);
                                             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, message, null));
                                         }
 
@@ -209,7 +216,8 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
 
             // Prompt to switch to the bndtools perspective
             IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-            IPerspectiveDescriptor currentPerspective = window.getActivePage().getPerspective();
+            IPerspectiveDescriptor currentPerspective = window.getActivePage()
+                .getPerspective();
             if (!"bndtools.perspective".equals(currentPerspective.getId())) {
                 if (MessageDialog.openQuestion(getShell(), "Bndtools Perspective", "Switch to the Bndtools perspective?")) {
                     workbench.showPerspective("bndtools.perspective", window);
@@ -229,19 +237,25 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
     private void updateSetupPageForExistingProjects() {
         // find existing bnd projects
         File existingBndLocation = null;
-        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+        for (IProject project : ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getProjects()) {
             if (!project.isOpen())
                 continue;
 
             try {
                 IProjectNature bndNature = project.getNature(Plugin.BNDTOOLS_NATURE);
-                if (bndNature != null || project.getName().equals(Project.BNDCNF)) {
-                    File projectLocation = project.getLocation().toFile();
+                if (bndNature != null || project.getName()
+                    .equals(Project.BNDCNF)) {
+                    File projectLocation = project.getLocation()
+                        .toFile();
                     existingBndLocation = projectLocation.getParentFile();
                     break;
                 }
             } catch (CoreException ex) {
-                Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load project nature", ex));
+                Plugin.getDefault()
+                    .getLog()
+                    .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Failed to load project nature", ex));
             }
         }
         if (existingBndLocation != null) {

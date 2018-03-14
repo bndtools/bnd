@@ -49,7 +49,7 @@ public class ServiceComponentAttribs {
     private String deactivate = null;
     private String modified = null;
 
-    static ServiceComponentAttribs loadFrom(Map<String,String> map) {
+    static ServiceComponentAttribs loadFrom(Map<String, String> map) {
         ServiceComponentAttribs result = new ServiceComponentAttribs();
 
         result.name = map.get(COMPONENT_NAME);
@@ -84,7 +84,8 @@ public class ServiceComponentAttribs {
         List<String> result = new ArrayList<String>();
         StringTokenizer tokenizer = new StringTokenizer(string, ",");
         while (tokenizer.hasMoreTokens()) {
-            result.add(tokenizer.nextToken().trim());
+            result.add(tokenizer.nextToken()
+                .trim());
         }
 
         return result;

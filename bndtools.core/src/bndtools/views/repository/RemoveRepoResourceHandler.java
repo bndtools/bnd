@@ -11,6 +11,7 @@ import bndtools.model.repo.RepositoryBundle;
 
 public class RemoveRepoResourceHandler extends AbstractHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
         ISelection selection = HandlerUtil.getCurrentSelection(event);

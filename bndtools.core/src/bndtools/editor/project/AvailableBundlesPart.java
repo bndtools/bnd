@@ -33,9 +33,9 @@ import org.eclipse.ui.forms.widgets.Section;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
-import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.RepositoriesViewRefresher;
@@ -52,7 +52,7 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
     private static final long SEARCH_DELAY = 1000;
 
     private String searchStr = "";
-    private ScheduledFuture< ? > scheduledFilterUpdate = null;
+    private ScheduledFuture<?> scheduledFilterUpdate = null;
 
     private final RepositoryTreeContentProvider contentProvider = new RepositoryTreeContentProvider(ResolutionPhase.runtime);
     private Text txtSearch;
@@ -73,7 +73,8 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
                 } else if (repo instanceof WorkspaceRepository) {
                     select = includedRepos.contains("Workspace");
                 } else {
-                    select = includedRepos.contains(repoBundle.getRepo().getName());
+                    select = includedRepos.contains(repoBundle.getRepo()
+                        .getName());
                 }
             } else {
                 select = true;
@@ -85,7 +86,8 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
     private final Runnable updateFilterTask = new Runnable() {
         @Override
         public void run() {
-            Display display = viewer.getControl().getDisplay();
+            Display display = viewer.getControl()
+                .getDisplay();
 
             Runnable update = new Runnable() {
                 @Override
@@ -136,7 +138,7 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
         viewer.setContentProvider(contentProvider);
         viewer.setLabelProvider(new RepositoryTreeLabelProvider(true));
         viewer.setFilters(new ViewerFilter[] {
-                includedRepoFilter
+            includedRepoFilter
         });
 
         txtSearch.addModifyListener(new ModifyListener() {
@@ -146,7 +148,9 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
                     scheduledFilterUpdate.cancel(true);
 
                 searchStr = txtSearch.getText();
-                scheduledFilterUpdate = Plugin.getDefault().getScheduler().schedule(updateFilterTask, SEARCH_DELAY, TimeUnit.MILLISECONDS);
+                scheduledFilterUpdate = Plugin.getDefault()
+                    .getScheduler()
+                    .schedule(updateFilterTask, SEARCH_DELAY, TimeUnit.MILLISECONDS);
             }
         });
         txtSearch.addSelectionListener(new SelectionAdapter() {
@@ -162,14 +166,16 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
         });
 
         viewer.addDragSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                LocalSelectionTransfer.getTransfer()
+            LocalSelectionTransfer.getTransfer()
         }, new SelectionDragAdapter(viewer) {
             @Override
             public void dragStart(DragSourceEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                 if (!selection.isEmpty()) {
-                    LocalSelectionTransfer.getTransfer().setSelection(selection);
-                    LocalSelectionTransfer.getTransfer().setSelectionSetTime(event.time & 0xFFFFFFFFL);
+                    LocalSelectionTransfer.getTransfer()
+                        .setSelection(selection);
+                    LocalSelectionTransfer.getTransfer()
+                        .setSelectionSetTime(event.time & 0xFFFFFFFFL);
                 } else {
                     event.doit = false;
                 }
@@ -185,7 +191,7 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
     @Override
     protected String[] getProperties() {
         return new String[] {
-                BndConstants.RUNREPOS, BndEditModel.PROP_WORKSPACE
+            Constants.RUNREPOS, BndEditModel.PROP_WORKSPACE
         };
     }
 

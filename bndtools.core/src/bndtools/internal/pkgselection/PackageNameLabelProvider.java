@@ -17,7 +17,8 @@ import org.eclipse.swt.graphics.Image;
 
 public class PackageNameLabelProvider extends LabelProvider {
 
-    private final Image packageImg = Icons.desc("package").createImage();
+    private final Image packageImg = Icons.desc("package")
+        .createImage();
 
     @Override
     public String getText(Object element) {
@@ -25,7 +26,8 @@ public class PackageNameLabelProvider extends LabelProvider {
         if (element instanceof String)
             result = (String) element;
         else if (element instanceof IPath)
-            result = ((IPath) element).toString().replace('/', '.');
+            result = ((IPath) element).toString()
+                .replace('/', '.');
         else
             result = "<error>";
         return result;

@@ -139,7 +139,7 @@ public class JarListWizardPage extends WizardPage {
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setSelectionFeedbackEnabled(false);
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                FileTransfer.getInstance()
+            FileTransfer.getInstance()
         }, dropAdapter);
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -172,7 +172,8 @@ public class JarListWizardPage extends WizardPage {
                     Object[] files = dialog.getResult();
                     List<IPath> added = new ArrayList<IPath>(files.length);
                     for (Object file : files) {
-                        added.add(((IResource) file).getFullPath().makeRelative());
+                        added.add(((IResource) file).getFullPath()
+                            .makeRelative());
                     }
                     if (!added.isEmpty()) {
                         addToPaths(added);
@@ -188,7 +189,7 @@ public class JarListWizardPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
                 dialog.setFilterExtensions(new String[] {
-                        "*.jar" //$NON-NLS-1$
+                    "*.jar" //$NON-NLS-1$
                 });
                 String res = dialog.open();
                 if (res != null) {
@@ -252,7 +253,8 @@ public class JarListWizardPage extends WizardPage {
     }
 
     private void update() {
-        btnRemove.setEnabled(!viewer.getSelection().isEmpty());
+        btnRemove.setEnabled(!viewer.getSelection()
+            .isEmpty());
         if (isCurrentPage()) {
             getContainer().updateButtons();
             getContainer().updateMessage();
@@ -267,13 +269,17 @@ public class JarListWizardPage extends WizardPage {
                 if (path.isAbsolute()) {
                     jar = new Jar(path.toFile());
                 } else {
-                    path = ResourcesPlugin.getWorkspace().getRoot().getLocation().append(path);
+                    path = ResourcesPlugin.getWorkspace()
+                        .getRoot()
+                        .getLocation()
+                        .append(path);
                     jar = new Jar(path.toFile());
                 }
 
                 Manifest manifest = jar.getManifest();
                 if (manifest != null) {
-                    String bsn = manifest.getMainAttributes().getValue(Constants.BUNDLE_SYMBOLICNAME);
+                    String bsn = manifest.getMainAttributes()
+                        .getValue(Constants.BUNDLE_SYMBOLICNAME);
                     if (bsn != null) {
                         alreadyBundles.add(path);
                     }

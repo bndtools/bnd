@@ -4,6 +4,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -20,6 +21,7 @@ import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.ide.ResourceUtil;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.osgi.Constants;
 import bndtools.editor.utils.ToolTips;
@@ -72,8 +74,10 @@ public class DescriptionDeveloperPart extends SectionPart implements PropertyCha
         bundleDocUrl = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(bundleDocUrl, Constants.BUNDLE_DOCURL);
         bundleDocUrl.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_DOCURL);
                     }
@@ -96,6 +100,7 @@ public class DescriptionDeveloperPart extends SectionPart implements PropertyCha
 
     protected void addDirtyProperty(final String property) {
         lock.ifNotModifying(new Runnable() {
+            @Override
             public void run() {
                 dirtySet.add(property);
                 getManagedForm().dirtyStateChanged();
@@ -136,6 +141,7 @@ public class DescriptionDeveloperPart extends SectionPart implements PropertyCha
     public void refresh() {
         super.refresh();
         lock.modifyOperation(new Runnable() {
+            @Override
             public void run() {
                 String bundleDU = model.getBundleDocUrl();
                 bundleDocUrl.setText(bundleDU != null ? bundleDU : ""); //$NON-NLS-1$
@@ -152,6 +158,7 @@ public class DescriptionDeveloperPart extends SectionPart implements PropertyCha
         this.model.addPropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (editablePropertySet.contains(evt.getPropertyName())) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();

@@ -13,12 +13,11 @@ public class JavaProjectUtils {
     /**
      * Access the project's (Eclipse) classpath to determine the source directories and their output directories
      *
-     * @param project
-     *            the project
-     * @return a map of source directories and their output directories, all relative to the project directory. empty map
-     *         when project is null or when an error occurred.
+     * @param project the project
+     * @return a map of source directories and their output directories, all relative to the project directory. empty
+     *         map when project is null or when an error occurred.
      */
-    static public Map<String,String> getSourceOutputLocations(IJavaProject project) {
+    static public Map<String, String> getSourceOutputLocations(IJavaProject project) {
         if (project == null) {
             return Collections.emptyMap();
         }
@@ -38,7 +37,7 @@ public class JavaProjectUtils {
 
         IPath projectPath = project.getPath();
 
-        Map<String,String> sourceOutputLocations = new LinkedHashMap<String,String>();
+        Map<String, String> sourceOutputLocations = new LinkedHashMap<String, String>();
         for (IClasspathEntry classPathEntry : classPathEntries) {
             if (classPathEntry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
                 IPath src = classPathEntry.getPath();
@@ -51,7 +50,10 @@ public class JavaProjectUtils {
                 assert (src != null);
                 assert (bin != null);
 
-                sourceOutputLocations.put(src.makeRelativeTo(projectPath).toString(), bin.makeRelativeTo(projectPath).toString());
+                sourceOutputLocations.put(src.makeRelativeTo(projectPath)
+                    .toString(),
+                    bin.makeRelativeTo(projectPath)
+                        .toString());
             }
         }
 
@@ -62,8 +64,14 @@ public class JavaProjectUtils {
     public static final String PATH_JRE_STANDARD_VM = "org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType";
 
     private static enum JavaLevel {
-        J2SE_1_2("J2SE-1.2", "1.2"), J2SE_1_3("J2SE-1.3", "1.3"), J2SE_1_4("J2SE-1.4", "1.4"), J2SE_1_5("J2SE-1.5", "1.5"), JAVASE_1_6("JavaSE-1.6", "1.6"), JAVASE_1_7("JavaSE-1.7", "1.7"), JAVASE_1_8("JavaSE-1.8",
-                "1.8"), JAVASE_9("JavaSE-9", "9");
+        J2SE_1_2("J2SE-1.2", "1.2"),
+        J2SE_1_3("J2SE-1.3", "1.3"),
+        J2SE_1_4("J2SE-1.4", "1.4"),
+        J2SE_1_5("J2SE-1.5", "1.5"),
+        JAVASE_1_6("JavaSE-1.6", "1.6"),
+        JAVASE_1_7("JavaSE-1.7", "1.7"),
+        JAVASE_1_8("JavaSE-1.8", "1.8"),
+        JAVASE_9("JavaSE-9", "9");
 
         private final String label;
         private final String level;
@@ -96,7 +104,8 @@ public class JavaProjectUtils {
                     continue;
                 if (PATH_JRE_CONTAINER.equals(path.segment(0)) && PATH_JRE_STANDARD_VM.equals(path.segment(1))) {
                     String jreName = path.segment(2);
-                    return JavaLevel.fromLabel(jreName).getLevel();
+                    return JavaLevel.fromLabel(jreName)
+                        .getLevel();
                 }
             }
         }

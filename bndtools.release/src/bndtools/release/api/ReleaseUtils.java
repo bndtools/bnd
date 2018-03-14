@@ -48,14 +48,14 @@ import aQute.bnd.version.Version;
 public class ReleaseUtils {
 
     /**
-     * @param jar
-     *            the jar
+     * @param jar the jar
      * @return the Jar name as it appears in the Repository e.g. bndtools.release-1.0.0.jar
      */
     public static String getJarFileName(Jar jar) {
         try {
             Domain domain = Domain.domain(jar.getManifest());
-            return domain.getBundleSymbolicName().getKey() + '-' + stripVersionQualifier(domain.getBundleVersion()) + ".jar";
+            return domain.getBundleSymbolicName()
+                .getKey() + '-' + stripVersionQualifier(domain.getBundleVersion()) + ".jar";
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -81,7 +81,8 @@ public class ReleaseUtils {
     public static String getBundleSymbolicName(Jar jar) {
         try {
             Domain domain = Domain.domain(jar.getManifest());
-            return domain.getBundleSymbolicName().getKey();
+            return domain.getBundleSymbolicName()
+                .getKey();
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);
@@ -99,7 +100,8 @@ public class ReleaseUtils {
 
     public static IFolder getLocalRepoLocation(RepositoryPlugin repository) {
         try {
-            Method m = repository.getClass().getMethod("getRoot");
+            Method m = repository.getClass()
+                .getMethod("getRoot");
             if (m.getReturnType() == File.class) {
                 return (IFolder) toWorkspaceResource((File) m.invoke(repository));
             }
@@ -110,7 +112,8 @@ public class ReleaseUtils {
     }
 
     public static IResource toWorkspaceResource(File workspaceFile) {
-        IWorkspaceRoot wsRoot = ResourcesPlugin.getWorkspace().getRoot();
+        IWorkspaceRoot wsRoot = ResourcesPlugin.getWorkspace()
+            .getRoot();
         IPath workingCopyPath = Path.fromOSString(workspaceFile.getAbsolutePath());
         IResource resource = wsRoot.getContainerForLocation(workingCopyPath);
         if (resource == null) {
@@ -120,7 +123,8 @@ public class ReleaseUtils {
     }
 
     public static IResource toResource(File file) {
-        IWorkspaceRoot wsRoot = ResourcesPlugin.getWorkspace().getRoot();
+        IWorkspaceRoot wsRoot = ResourcesPlugin.getWorkspace()
+            .getRoot();
         IPath workingCopyPath = Path.fromOSString(file.getAbsolutePath());
         IFile resource = wsRoot.getFileForLocation(workingCopyPath);
         return resource;
@@ -188,7 +192,8 @@ public class ReleaseUtils {
             return null;
         }
 
-        IFileHistory history = provider.getFileHistoryProvider().getFileHistoryFor(resource, flags, monitor);
+        IFileHistory history = provider.getFileHistoryProvider()
+            .getFileHistoryFor(resource, flags, monitor);
         if (history == null) {
             return new IFileRevision[0];
         }
@@ -214,18 +219,21 @@ public class ReleaseUtils {
         }
         Subscriber subscriber = provider.getSubscriber();
         subscriber.refresh(new IResource[] {
-                project
+            project
         }, IResource.DEPTH_INFINITE, monitor);
 
         SyncInfoSet sis = new SyncInfoSet();
         subscriber.collectOutOfSync(new IResource[] {
-                project
+            project
         }, IResource.DEPTH_INFINITE, sis, monitor);
         List<IResource> res = new ArrayList<IResource>();
         for (IResource resource : sis.getResources()) {
             if (resource instanceof IFile) {
                 IFile file = (IFile) resource;
-                if (file.getName().endsWith(".bnd") || file.getName().equals("packageinfo")) {
+                if (file.getName()
+                    .endsWith(".bnd")
+                    || file.getName()
+                        .equals("packageinfo")) {
                     continue;
                 }
             }
@@ -246,18 +254,20 @@ public class ReleaseUtils {
     }
 
     public static boolean needsRelease(Baseline baseline) {
-        Delta delta = baseline.getDiff().getDelta(new Ignore() {
-            @Override
-            public boolean contains(Diff diff) {
-                if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
-                    return true;
+        Delta delta = baseline.getDiff()
+            .getDelta(new Ignore() {
+                @Override
+                public boolean contains(Diff diff) {
+                    if ("META-INF/MANIFEST.MF".equals(diff.getName())) { //$NON-NLS-1$
+                        return true;
+                    }
+                    if (diff.getType() == Type.HEADER && diff.getName()
+                        .startsWith(Constants.BUNDLE_VERSION)) {
+                        return true;
+                    }
+                    return false;
                 }
-                if (diff.getType() == Type.HEADER && diff.getName().startsWith(Constants.BUNDLE_VERSION)) {
-                    return true;
-                }
-                return false;
-            }
-        });
+            });
         if (delta != Delta.UNCHANGED && delta != Delta.IGNORED) {
             return true;
         }

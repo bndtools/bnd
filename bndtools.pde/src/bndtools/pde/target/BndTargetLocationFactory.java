@@ -26,7 +26,8 @@ public abstract class BndTargetLocationFactory implements ITargetLocationFactory
         if (this.type.equals(type)) {
             Element locationElement;
             try {
-                DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance()
+                    .newDocumentBuilder();
                 Document document = docBuilder.parse(new ByteArrayInputStream(serializedXML.getBytes("UTF-8")));
                 locationElement = document.getDocumentElement();
 
@@ -34,7 +35,8 @@ public abstract class BndTargetLocationFactory implements ITargetLocationFactory
                     return getTargetLocation(locationElement);
                 }
             } catch (Exception e) {
-                Logger.getLogger(getClass()).logError("Problem reading target location " + type, null);
+                Logger.getLogger(getClass())
+                    .logError("Problem reading target location " + type, null);
                 return null;
             }
         }
@@ -42,7 +44,8 @@ public abstract class BndTargetLocationFactory implements ITargetLocationFactory
     }
 
     public boolean isElement(Node node, String elementName) {
-        return node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equalsIgnoreCase(elementName);
+        return node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName()
+            .equalsIgnoreCase(elementName);
     }
 
     public abstract ITargetLocation getTargetLocation(Element locationElement) throws CoreException;

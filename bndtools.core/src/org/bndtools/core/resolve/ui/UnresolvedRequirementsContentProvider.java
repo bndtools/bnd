@@ -12,8 +12,8 @@ public class UnresolvedRequirementsContentProvider implements ITreeContentProvid
         if (inputElement instanceof Object[])
             return (Object[]) inputElement;
 
-        if (inputElement instanceof Collection< ? >) {
-            Collection< ? > coll = (Collection< ? >) inputElement;
+        if (inputElement instanceof Collection<?>) {
+            Collection<?> coll = (Collection<?>) inputElement;
             return coll.toArray();
         }
 

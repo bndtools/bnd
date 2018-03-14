@@ -26,8 +26,10 @@ import bndtools.Plugin;
 
 public class BuildOperationsPart extends SectionPart {
 
-    private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png").createImage();
-    private final Image cleanImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/clear.gif").createImage();
+    private final Image refreshImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/arrow_refresh.png")
+        .createImage();
+    private final Image cleanImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/clear.gif")
+        .createImage();
 
     /**
      * Create the SectionPart.

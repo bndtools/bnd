@@ -8,8 +8,8 @@ import aQute.service.reporter.Reporter;
 public class TestPlugin implements Plugin {
 
     @Override
-    public void setProperties(Map<String,String> map) throws Exception {
-        //System.out.println("Yes, worked!");
+    public void setProperties(Map<String, String> map) throws Exception {
+        // System.out.println("Yes, worked!");
     }
 
     @Override

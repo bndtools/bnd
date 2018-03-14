@@ -33,7 +33,7 @@ public class ReposTemplateLoaderTest extends TestCase {
         loader.workspace = project.getWorkspace();
         loader.activate();
 
-        Map<String,Object> engineProps = new HashMap<>();
+        Map<String, Object> engineProps = new HashMap<>();
         engineProps.put("name", "stringtemplate");
         loader.addTemplateEngine(new StringTemplateEngine(), engineProps);
     }
@@ -44,7 +44,8 @@ public class ReposTemplateLoaderTest extends TestCase {
     }
 
     public void testLoad() throws Exception {
-        List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
+        List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), ""))
+            .getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
         assertEquals("Hello", template.getName());
@@ -53,11 +54,12 @@ public class ReposTemplateLoaderTest extends TestCase {
     }
 
     public void testProcessTemplate() throws Exception {
-        List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
+        List<Template> templates = loader.findTemplates("test1", new ProgressMonitorReporter(new NullProgressMonitor(), ""))
+            .getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
-        Map<String,List<Object>> parameters = new HashMap<>();
+        Map<String, List<Object>> parameters = new HashMap<>();
         parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
         parameters.put("srcDir", Collections.<Object> singletonList("src/main/java"));
         parameters.put("basePackageDir", Collections.<Object> singletonList("org/example/foo"));
@@ -66,20 +68,25 @@ public class ReposTemplateLoaderTest extends TestCase {
 
         assertEquals(5, outputs.size());
 
-        Entry<String,Resource> entry;
+        Entry<String, Resource> entry;
 
-        Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
+        Iterator<Entry<String, Resource>> iter = outputs.entries()
+            .iterator();
         entry = iter.next();
         assertEquals("src/main/java/org/example/foo/Activator.java", entry.getKey());
-        assertEquals("package org.example.foo; public class Activator {}", IO.collect(entry.getValue().getContent()));
+        assertEquals("package org.example.foo; public class Activator {}", IO.collect(entry.getValue()
+            .getContent()));
 
         entry = iter.next();
         assertEquals("pic.jpg", entry.getKey());
         // Check the digest of the pic to ensure it didn't get damaged by the templating engine
-        DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
+        DigestInputStream digestStream = new DigestInputStream(entry.getValue()
+            .getContent(), MessageDigest.getInstance("SHA-256"));
         IO.drain(digestStream);
-        byte[] digest = digestStream.getMessageDigest().digest();
-        assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
+        byte[] digest = digestStream.getMessageDigest()
+            .digest();
+        assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest)
+            .toLowerCase());
 
         entry = iter.next();
         assertEquals("src/main/java/", entry.getKey());
@@ -89,15 +96,17 @@ public class ReposTemplateLoaderTest extends TestCase {
 
         entry = iter.next();
         assertEquals("bnd.bnd", entry.getKey());
-        assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue().getContent()));
+        assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue()
+            .getContent()));
     }
 
     public void testAlternateDelimiters() throws Exception {
-        List<Template> templates = loader.findTemplates("test2", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
+        List<Template> templates = loader.findTemplates("test2", new ProgressMonitorReporter(new NullProgressMonitor(), ""))
+            .getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
-        Map<String,List<Object>> parameters = new HashMap<>();
+        Map<String, List<Object>> parameters = new HashMap<>();
         parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
         parameters.put("srcDir", Collections.<Object> singletonList("src/main/java"));
         parameters.put("basePackageDir", Collections.<Object> singletonList("org/example/foo"));
@@ -106,20 +115,25 @@ public class ReposTemplateLoaderTest extends TestCase {
 
         assertEquals(5, outputs.size());
 
-        Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
-        Entry<String,Resource> entry;
+        Iterator<Entry<String, Resource>> iter = outputs.entries()
+            .iterator();
+        Entry<String, Resource> entry;
 
         entry = iter.next();
         assertEquals("src/main/java/org/example/foo/Activator.java", entry.getKey());
-        assertEquals("package org.example.foo; public class Activator {}", IO.collect(entry.getValue().getContent()));
+        assertEquals("package org.example.foo; public class Activator {}", IO.collect(entry.getValue()
+            .getContent()));
 
         entry = iter.next();
         assertEquals("pic.jpg", entry.getKey());
         // Check the digest of the pic to ensure it didn't get damaged by the templating engine
-        DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
+        DigestInputStream digestStream = new DigestInputStream(entry.getValue()
+            .getContent(), MessageDigest.getInstance("SHA-256"));
         IO.drain(digestStream);
-        byte[] digest = digestStream.getMessageDigest().digest();
-        assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
+        byte[] digest = digestStream.getMessageDigest()
+            .digest();
+        assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest)
+            .toLowerCase());
 
         entry = iter.next();
         assertEquals("src/main/java/", entry.getKey());
@@ -129,49 +143,58 @@ public class ReposTemplateLoaderTest extends TestCase {
 
         entry = iter.next();
         assertEquals("bnd.bnd", entry.getKey());
-        assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue().getContent()));
+        assertEquals("Bundle-SymbolicName: org.example.foo", IO.collect(entry.getValue()
+            .getContent()));
     }
 
     public void testReferTemplateDefinitions() throws Exception {
-        List<Template> templates = loader.findTemplates("test3", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
+        List<Template> templates = loader.findTemplates("test3", new ProgressMonitorReporter(new NullProgressMonitor(), ""))
+            .getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
-        Map<String,List<Object>> parameters = new HashMap<>();
+        Map<String, List<Object>> parameters = new HashMap<>();
         parameters.put("name", Collections.<Object> singletonList("Homer Simpson"));
 
         ResourceMap outputs = template.generateOutputs(parameters);
         assertEquals(1, outputs.size());
 
-        Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
-        Entry<String,Resource> entry;
+        Iterator<Entry<String, Resource>> iter = outputs.entries()
+            .iterator();
+        Entry<String, Resource> entry;
 
         entry = iter.next();
         assertEquals("example.html", entry.getKey());
-        assertEquals("My name is <i>Homer Simpson</i>!", IO.collect(entry.getValue().getContent()));
+        assertEquals("My name is <i>Homer Simpson</i>!", IO.collect(entry.getValue()
+            .getContent()));
     }
 
     public void testExtendUnprocessedPatternAndIgnore() throws Exception {
-        List<Template> templates = loader.findTemplates("test4", new ProgressMonitorReporter(new NullProgressMonitor(), "")).getValue();
+        List<Template> templates = loader.findTemplates("test4", new ProgressMonitorReporter(new NullProgressMonitor(), ""))
+            .getValue();
         assertEquals(1, templates.size());
         Template template = templates.get(0);
 
-        Map<String,List<Object>> parameters = new HashMap<>();
+        Map<String, List<Object>> parameters = new HashMap<>();
         parameters.put("projectName", Collections.<Object> singletonList("org.example.foo"));
 
         ResourceMap outputs = template.generateOutputs(parameters);
 
         assertEquals(1, outputs.size());
 
-        Entry<String,Resource> entry;
-        Iterator<Entry<String,Resource>> iter = outputs.entries().iterator();
+        Entry<String, Resource> entry;
+        Iterator<Entry<String, Resource>> iter = outputs.entries()
+            .iterator();
         entry = iter.next();
         assertEquals("pic.xxx", entry.getKey());
         // Check the digest of the pic to ensure it didn't get damaged by the templating engine
-        DigestInputStream digestStream = new DigestInputStream(entry.getValue().getContent(), MessageDigest.getInstance("SHA-256"));
+        DigestInputStream digestStream = new DigestInputStream(entry.getValue()
+            .getContent(), MessageDigest.getInstance("SHA-256"));
         IO.drain(digestStream);
-        byte[] digest = digestStream.getMessageDigest().digest();
-        assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest).toLowerCase());
+        byte[] digest = digestStream.getMessageDigest()
+            .digest();
+        assertEquals("ea5d770bc2deddb1f9a20df3ad337bdc1490ba7b35fa41c33aa4e9a534e82ada", Hex.toHexString(digest)
+            .toLowerCase());
     }
 
 }

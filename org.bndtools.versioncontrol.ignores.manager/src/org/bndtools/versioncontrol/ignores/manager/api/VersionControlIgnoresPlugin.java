@@ -32,8 +32,7 @@ public interface VersionControlIgnoresPlugin {
     boolean canStoreEmptyDirectories();
 
     /**
-     * @param repositoryProviderId
-     *            the Eclipse plugin id that provides version control for a project
+     * @param repositoryProviderId the Eclipse plugin id that provides version control for a project
      * @return true when this plugin provides can apply version control ignore globs for the specified
      *         repositoryProviderId
      */
@@ -42,13 +41,10 @@ public interface VersionControlIgnoresPlugin {
     /**
      * Apply version control ignore globs to a directory.
      * 
-     * @param dstDir
-     *            the destination directory
-     * @param ignores
-     *            a list of ignore globs (in Git format). Can be empty, which specifically is the case when the
+     * @param dstDir the destination directory
+     * @param ignores a list of ignore globs (in Git format). Can be empty, which specifically is the case when the
      *            destination directory contains no files and when {@link #canStoreEmptyDirectories()} returned false.
-     * @throws Exception
-     *             upon error(s)
+     * @throws Exception upon error(s)
      */
     void addIgnores(File dstDir, List<String> ignores) throws Exception;
 }

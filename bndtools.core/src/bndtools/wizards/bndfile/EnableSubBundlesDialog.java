@@ -123,6 +123,7 @@ public class EnableSubBundlesDialog extends TitleAreaDialog {
             }
         });
         viewer.addCheckStateListener(new ICheckStateListener() {
+            @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 String property = (String) event.getElement();
                 if (event.getChecked())
@@ -147,7 +148,9 @@ public class EnableSubBundlesDialog extends TitleAreaDialog {
             }
         });
 
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(getShell(), Plugin.PLUGIN_ID + ".enableSubBundles");
+        PlatformUI.getWorkbench()
+            .getHelpSystem()
+            .setHelp(getShell(), Plugin.PLUGIN_ID + ".enableSubBundles");
 
         return area;
     }

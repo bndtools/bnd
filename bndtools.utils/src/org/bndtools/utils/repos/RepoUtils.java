@@ -5,7 +5,7 @@ import aQute.bnd.service.RepositoryPlugin;
 
 public class RepoUtils {
 
-	public static boolean isWorkspaceRepo(RepositoryPlugin repo) {
+    public static boolean isWorkspaceRepo(RepositoryPlugin repo) {
         if (repo.getClass() == WorkspaceRepository.class)
             return true;
         return false;

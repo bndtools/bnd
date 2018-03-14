@@ -86,8 +86,10 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
                 if (pkgRootResource == null) {
                     continue;
                 }
-                File pkgRootFile = pkgRootResource.getLocation().toFile();
-                boolean pkgInSourcePath = model.getSourcePath().contains(pkgRootFile);
+                File pkgRootFile = pkgRootResource.getLocation()
+                    .toFile();
+                boolean pkgInSourcePath = model.getSourcePath()
+                    .contains(pkgRootFile);
                 for (IJavaElement child : pkgRoot.getChildren()) {
                     IPackageFragment pkg = (IPackageFragment) child;
                     assert pkg.getKind() == IPackageFragmentRoot.K_SOURCE;
@@ -100,14 +102,17 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
                         String pkgName = pkg.getElementName();
 
                         // Decorate if exported package
-                        Attrs pkgAttrs = model.getExports().getByFQN(pkgName);
+                        Attrs pkgAttrs = model.getExports()
+                            .getByFQN(pkgName);
                         if (pkgAttrs != null) {
                             StringBuilder sb = new StringBuilder(" ").append(Version.parseVersion(pkgAttrs.getVersion()));
-                            pkgAttrs = model.getImports().getByFQN(pkgName);
+                            pkgAttrs = model.getImports()
+                                .getByFQN(pkgName);
                             if (pkgAttrs != null) {
                                 String versionRange = pkgAttrs.getVersion();
                                 if (versionRange != null) {
-                                    sb.append('\u2194').append(versionRange);
+                                    sb.append('\u2194')
+                                        .append(versionRange);
                                 }
                             }
                             String version = sb.toString();
@@ -119,7 +124,8 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
                         }
 
                         // Decorate if non-empty, non-contained package
-                        if (pkg.containsJavaResources() && !model.getContained().containsFQN(pkgName)) {
+                        if (pkg.containsJavaResources() && !model.getContained()
+                            .containsFQN(pkgName)) {
                             if (!excluded.equals(text)) {
                                 pkgResource.setPersistentProperty(packageDecoratorKey, excluded);
                                 changed = true;
@@ -139,11 +145,14 @@ public class PackageDecorator extends LabelProvider implements ILightweightLabel
 
         // If decoration change, update display
         if (changed) {
-            Display display = PlatformUI.getWorkbench().getDisplay();
+            Display display = PlatformUI.getWorkbench()
+                .getDisplay();
             SWTConcurrencyUtil.execForDisplay(display, true, new Runnable() {
                 @Override
                 public void run() {
-                    PlatformUI.getWorkbench().getDecoratorManager().update(packageDecoratorId);
+                    PlatformUI.getWorkbench()
+                        .getDecoratorManager()
+                        .update(packageDecoratorId);
                 }
             });
         }

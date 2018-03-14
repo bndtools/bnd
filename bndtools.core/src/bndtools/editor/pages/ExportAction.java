@@ -38,7 +38,8 @@ public class ExportAction extends Action {
         this.editor = editor;
         this.model = model;
 
-        configElems = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, "runExportWizards");
+        configElems = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(Plugin.PLUGIN_ID, "runExportWizards");
     }
 
     boolean shouldEnable() {
@@ -53,12 +54,14 @@ public class ExportAction extends Action {
         if (editor.isDirty()) {
             if (MessageDialog.openConfirm(parentShell, "Export", "The editor content must be saved before exporting. Save now?")) {
                 try {
-                    editor.getSite().getWorkbenchWindow().run(false, false, new IRunnableWithProgress() {
-                        @Override
-                        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            editor.doSave(monitor);
-                        }
-                    });
+                    editor.getSite()
+                        .getWorkbenchWindow()
+                        .run(false, false, new IRunnableWithProgress() {
+                            @Override
+                            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                                editor.doSave(monitor);
+                            }
+                        });
                 } catch (Exception e) {
                     ErrorDialog.openError(parentShell, "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error during save.", e));
                     return;

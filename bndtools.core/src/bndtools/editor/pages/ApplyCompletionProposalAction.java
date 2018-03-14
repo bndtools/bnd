@@ -35,7 +35,8 @@ public class ApplyCompletionProposalAction extends Action {
 
         mainEditor.setActivePage(switchToPageId);
 
-        IDocument document = textEditor.getDocumentProvider().getDocument(mainEditor.getEditorInput());
+        IDocument document = textEditor.getDocumentProvider()
+            .getDocument(mainEditor.getEditorInput());
         proposal.apply(document);
 
         Point selection = proposal.getSelection(document);

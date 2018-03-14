@@ -65,8 +65,8 @@ public class RepositoryBundleVersion extends RepositoryEntry implements Actionab
     }
 
     @Override
-    public Map<String,Runnable> actions(Object... target) throws Exception {
-        Map<String,Runnable> map = null;
+    public Map<String, Runnable> actions(Object... target) throws Exception {
+        Map<String, Runnable> map = null;
         try {
             if (bundle.getRepo() instanceof Actionable) {
                 map = ((Actionable) bundle.getRepo()).actions(bundle.getBsn(), version);

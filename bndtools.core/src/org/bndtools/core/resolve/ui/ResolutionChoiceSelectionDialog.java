@@ -62,19 +62,22 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
 
         Label lblRequirement = new Label(contents, SWT.NONE);
         lblRequirement.setText("Requirement Info");
-        lblRequirement.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        lblRequirement.setFont(JFaceResources.getFontRegistry()
+            .getBold(JFaceResources.DIALOG_FONT));
 
         StyledText txtRequirement = new StyledText(contents, SWT.WRAP | SWT.BORDER);
         txtRequirement.setEditable(false);
         txtRequirement.setCaret(null);
-        //        txtRequirement.setBackground(contents.getBackground());
-        txtRequirement.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+        // txtRequirement.setBackground(contents.getBackground());
+        txtRequirement.setCursor(parent.getDisplay()
+            .getSystemCursor(SWT.CURSOR_ARROW));
 
         new Label(contents, SWT.NONE);
 
         Label lblCandidates = new Label(contents, SWT.NONE);
         lblCandidates.setText("Candidates");
-        lblCandidates.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DIALOG_FONT));
+        lblCandidates.setFont(JFaceResources.getFontRegistry()
+            .getBold(JFaceResources.DIALOG_FONT));
 
         Composite lowerPanel = new Composite(contents, SWT.NONE);
         Table tbl = new Table(lowerPanel, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER);
@@ -97,7 +100,8 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
         txtSavePreference.setEditable(false);
         txtSavePreference.setCaret(null);
         txtSavePreference.setBackground(contents.getBackground());
-        txtSavePreference.setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+        txtSavePreference.setCursor(parent.getDisplay()
+            .getSystemCursor(SWT.CURSOR_ARROW));
 
         // Events
         txtSavePreference.addMouseListener(new MouseAdapter() {
@@ -165,7 +169,8 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
     }
 
     private void updateSavePreferenceText() {
-        Resource resource = candidates.get(0).getResource();
+        Resource resource = candidates.get(0)
+            .getResource();
         Capability identity = ResourceUtils.getIdentityCapability(resource);
         String name = ResourceUtils.getIdentity(identity);
 
@@ -187,13 +192,15 @@ public class ResolutionChoiceSelectionDialog extends TitleAreaDialog {
         R5LabelFormatter.appendRequirementLabel(label, requirement, false);
         label.append("\n");
 
-        for (Entry<String,String> entry : requirement.getDirectives().entrySet()) {
+        for (Entry<String, String> entry : requirement.getDirectives()
+            .entrySet()) {
             String key = entry.getKey();
             if (!Namespace.REQUIREMENT_FILTER_DIRECTIVE.equals(key) && !Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE.equals(key))
                 label.append("    " + key + ":=" + entry.getValue() + "\n");
         }
 
-        if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
+        if (Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
+            .get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE)))
             label.append("Optionally ", ItalicStyler.INSTANCE_DEFAULT);
         label.append("Required by Resource: ");
         R5LabelFormatter.appendResourceLabel(label, requirement.getResource());

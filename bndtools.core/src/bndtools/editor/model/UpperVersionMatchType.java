@@ -11,7 +11,10 @@
 package bndtools.editor.model;
 
 public enum UpperVersionMatchType {
-    Exact("${@}"), NextMicro("${version;==+;${@}}"), NextMinor("${version;=+;${@}}"), NextMajor("${version;+;${@}}");
+    Exact("${@}"),
+    NextMicro("${version;==+;${@}}"),
+    NextMinor("${version;=+;${@}}"),
+    NextMajor("${version;+;${@}}");
 
     private final String representation;
 
@@ -25,7 +28,8 @@ public enum UpperVersionMatchType {
 
     public static UpperVersionMatchType parse(String string) throws IllegalArgumentException {
         for (UpperVersionMatchType type : UpperVersionMatchType.class.getEnumConstants()) {
-            if (type.getRepresentation().equals(string)) {
+            if (type.getRepresentation()
+                .equals(string)) {
                 return type;
             }
         }

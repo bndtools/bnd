@@ -22,6 +22,7 @@ import org.eclipse.jdt.launching.IVMConnector;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.RunSession;
@@ -32,9 +33,10 @@ class LaunchThread extends Thread implements IProcess {
     private static final ILogger logger = Logger.getLogger(OSGiRunLaunchDelegate.class);
     private final ProjectLauncher launcher;
     private final AtomicBoolean terminated = new AtomicBoolean(false);
-    private final BundleContext context = FrameworkUtil.getBundle(LaunchThread.class).getBundleContext();
+    private final BundleContext context = FrameworkUtil.getBundle(LaunchThread.class)
+        .getBundleContext();
     private final ILaunch launch;
-    private final Map<String,String> attributes = new HashMap<String,String>();
+    private final Map<String, String> attributes = new HashMap<String, String>();
     private int exitValue;
     private BndStreamsProxy sproxy;
     private final RunSession session;
@@ -57,7 +59,7 @@ class LaunchThread extends Thread implements IProcess {
     void doDebug(IProgressMonitor monitor) throws InterruptedException {
         monitor.setTaskName("Connecting debugger " + session.getName() + " to " + session.getHost() + ":" + session.getJdb());
 
-        Map<String,String> parameters = new HashMap<String,String>();
+        Map<String, String> parameters = new HashMap<String, String>();
         parameters.put("hostname", session.getHost());
         parameters.put("port", session.getJdb() + "");
         parameters.put("timeout", session.getTimeout() + "");
@@ -117,7 +119,8 @@ class LaunchThread extends Thread implements IProcess {
             //
 
             if (launcher.getProject() instanceof Run)
-                launcher.getProject().refresh();
+                launcher.getProject()
+                    .refresh();
 
             launcher.update();
         } catch (Exception e) {
@@ -191,7 +194,8 @@ class LaunchThread extends Thread implements IProcess {
 
     @Override
     public String getLabel() {
-        return launcher.getProject().toString();
+        return launcher.getProject()
+            .toString();
     }
 
     @Override
@@ -248,8 +252,7 @@ class LaunchThread extends Thread implements IProcess {
     /**
      * Fires the given debug event.
      *
-     * @param event
-     *            debug event to fire
+     * @param event debug event to fire
      */
     protected void fireEvent(DebugEvent event) {
         DebugPlugin manager = DebugPlugin.getDefault();

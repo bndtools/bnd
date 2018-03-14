@@ -1,15 +1,5 @@
 package bndtools.refactor;
 
-import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.build.model.clauses.ExportedPackage;
-import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.bnd.build.model.clauses.ImportPattern;
-import aQute.bnd.properties.Document;
-import aQute.bnd.properties.IDocument;
-import aQute.bnd.properties.IRegion;
-import aQute.bnd.properties.LineType;
-import aQute.bnd.properties.PropertiesLineReader;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,15 +7,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Map.Entry;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.utils.workspace.FileUtils;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -50,10 +39,20 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
+import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.clauses.ImportPattern;
+import aQute.bnd.properties.Document;
+import aQute.bnd.properties.IDocument;
+import aQute.bnd.properties.IRegion;
+import aQute.bnd.properties.LineType;
+import aQute.bnd.properties.PropertiesLineReader;
+
 public class PkgRenameParticipant extends RenameParticipant implements ISharableParticipant {
     private static final ILogger logger = Logger.getLogger(PkgRenameParticipant.class);
 
-    private final Map<IPackageFragment,RenameArguments> pkgFragments = new HashMap<IPackageFragment,RenameArguments>();
+    private final Map<IPackageFragment, RenameArguments> pkgFragments = new HashMap<IPackageFragment, RenameArguments>();
     private String changeTitle = null;
 
     @Override
@@ -95,7 +94,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
 
     @Override
     public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
-        final Map<IFile,TextChange> fileChanges = new HashMap<IFile,TextChange>();
+        final Map<IFile, TextChange> fileChanges = new HashMap<IFile, TextChange>();
 
         IResourceProxyVisitor visitor = new IResourceProxyVisitor() {
             @Override
@@ -104,7 +103,9 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                     return true;
                 }
 
-                if (!((proxy.getType() == IResource.FILE) && proxy.getName().toLowerCase().endsWith(".bnd"))) {
+                if (!((proxy.getType() == IResource.FILE) && proxy.getName()
+                    .toLowerCase()
+                    .endsWith(".bnd"))) {
                     return false;
                 }
 
@@ -116,7 +117,8 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                 /* read the file as a single string */
                 String bndFileText = null;
                 try {
-                    bndFileText = FileUtils.readFully(resource).get();
+                    bndFileText = FileUtils.readFully(resource)
+                        .get();
                 } catch (Exception e) {
                     String str = "Could not read file " + proxy.getName();
                     logger.logError(str, e);
@@ -147,7 +149,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                 }
 
                 /* loop over all renames to perform */
-                for (Map.Entry<IPackageFragment,RenameArguments> entry : pkgFragments.entrySet()) {
+                for (Map.Entry<IPackageFragment, RenameArguments> entry : pkgFragments.entrySet()) {
                     IPackageFragment pkgFragment = entry.getKey();
                     RenameArguments arguments = entry.getValue();
 
@@ -169,10 +171,11 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                         model.setPrivatePackages(newPrivatePackages);
                     }
 
-                    Map<String,String> changes = model.getDocumentChanges();
+                    Map<String, String> changes = model.getDocumentChanges();
 
-                    for (Iterator<Entry<String,String>> iter = changes.entrySet().iterator(); iter.hasNext();) {
-                        Entry<String,String> change = iter.next();
+                    for (Iterator<Entry<String, String>> iter = changes.entrySet()
+                        .iterator(); iter.hasNext();) {
+                        Entry<String, String> change = iter.next();
 
                         String propertyName = change.getKey();
                         String stringValue = change.getValue();
@@ -191,7 +194,8 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                     /* find all matches to replace and add them to the root edit */
                     Matcher matcher = pattern.matcher(bndFileText);
                     while (matcher.find()) {
-                        rootEdit.addChild(new ReplaceEdit(matcher.start(3), matcher.group(3).length(), newName));
+                        rootEdit.addChild(new ReplaceEdit(matcher.start(3), matcher.group(3)
+                            .length(), newName));
                     }
                 }
 
@@ -210,18 +214,23 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
         /* determine which projects have to be visited */
         Set<IProject> projectsToVisit = new HashSet<IProject>();
         for (IPackageFragment pkgFragment : pkgFragments.keySet()) {
-            projectsToVisit.add(pkgFragment.getResource().getProject());
-            for (IProject projectToVisit : pkgFragment.getResource().getProject().getReferencingProjects()) {
+            projectsToVisit.add(pkgFragment.getResource()
+                .getProject());
+            for (IProject projectToVisit : pkgFragment.getResource()
+                .getProject()
+                .getReferencingProjects()) {
                 projectsToVisit.add(projectToVisit);
             }
-            for (IProject projectToVisit : pkgFragment.getResource().getProject().getReferencedProjects()) {
+            for (IProject projectToVisit : pkgFragment.getResource()
+                .getProject()
+                .getReferencedProjects()) {
                 projectsToVisit.add(projectToVisit);
             }
         }
 
         /* visit the projects */
         for (IProject projectToVisit : projectsToVisit) {
-            projectToVisit.accept(visitor, IContainer.NONE);
+            projectToVisit.accept(visitor, IResource.NONE);
         }
 
         if (fileChanges.isEmpty()) {
@@ -249,7 +258,8 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
                     HeaderClause newHeader = ((HeaderClause) header).clone();
                     newHeaders.add((T) newHeader);
 
-                    if (newHeader.getName().equals(oldName)) {
+                    if (newHeader.getName()
+                        .equals(oldName)) {
                         newHeader.setName(newName);
                         changed = true;
                     }
@@ -296,7 +306,9 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
         String newEntry;
         if (value != null) {
             StringBuilder buffer = new StringBuilder();
-            buffer.append(name).append(": ").append(value);
+            buffer.append(name)
+                .append(": ")
+                .append(value);
             newEntry = buffer.toString();
         } else {
             newEntry = "";

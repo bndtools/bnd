@@ -34,6 +34,7 @@ public class ConfigurationElementCategory implements Comparable<ConfigurationEle
         return label;
     }
 
+    @Override
     public int compareTo(ConfigurationElementCategory other) {
         return this.sort.compareTo(other.sort);
     }

@@ -23,8 +23,8 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
     private final ILogger logger = Logger.getLogger(this.getClass());
 
-    private final Map<String,HeadlessBuildPlugin> plugins = new TreeMap<String,HeadlessBuildPlugin>();
-    private final Map<String,NamedPlugin> pluginsInformation = new TreeMap<String,NamedPlugin>();
+    private final Map<String, HeadlessBuildPlugin> plugins = new TreeMap<String, HeadlessBuildPlugin>();
+    private final Map<String, NamedPlugin> pluginsInformation = new TreeMap<String, NamedPlugin>();
 
     @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
     void addPlugin(HeadlessBuildPlugin plugin) {
@@ -45,7 +45,8 @@ public class HeadlessBuildManagerImpl implements HeadlessBuildManager {
             return;
         }
 
-        String name = plugin.getInformation().getName();
+        String name = plugin.getInformation()
+            .getName();
         synchronized (plugins) {
             pluginsInformation.remove(name);
             plugins.remove(name);

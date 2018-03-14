@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -48,14 +49,16 @@ public final class ResourceUtils {
     }
 
     public static String getIdentity(Capability identityCapability) throws IllegalArgumentException {
-        String id = (String) identityCapability.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+        String id = (String) identityCapability.getAttributes()
+            .get(IdentityNamespace.IDENTITY_NAMESPACE);
         if (id == null)
             throw new IllegalArgumentException("Resource identity capability has missing identity attribute");
         return id;
     }
 
     public static final Version getVersion(Capability identityCapability) throws IllegalArgumentException {
-        Object versionObj = identityCapability.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+        Object versionObj = identityCapability.getAttributes()
+            .get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
         if (versionObj instanceof Version)
             return (Version) versionObj;
 
@@ -80,16 +83,17 @@ public final class ResourceUtils {
         if (caps == null)
             throw new IllegalArgumentException("Resource has no content");
 
-        //A resource may have multiple capabilities and this is acceptable according to the specification
-        //to us, we should pick
-        //the first one with a URL that we understand, or the first URL if we understand none of them
+        // A resource may have multiple capabilities and this is acceptable according to the specification
+        // to us, we should pick
+        // the first one with a URL that we understand, or the first URL if we understand none of them
         Capability firstCap = null;
         for (Capability c : caps) {
 
             if (firstCap == null)
                 firstCap = c;
 
-            Object url = c.getAttributes().get("url");
+            Object url = c.getAttributes()
+                .get("url");
 
             if (url == null)
                 continue;
@@ -111,7 +115,8 @@ public final class ResourceUtils {
     }
 
     public static URI getURI(Capability contentCapability) {
-        Object uriObj = contentCapability.getAttributes().get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
+        Object uriObj = contentCapability.getAttributes()
+            .get(ContentNamespace.CAPABILITY_URL_ATTRIBUTE);
         if (uriObj == null)
             throw new IllegalArgumentException("Resource content capability has missing URL attribute");
 
@@ -150,9 +155,9 @@ public final class ResourceUtils {
         if (IdentityNamespace.IDENTITY_NAMESPACE.equals(ns))
             name = IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
         else if (BundleNamespace.BUNDLE_NAMESPACE.equals(ns))
-            name = BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+            name = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
         else if (HostNamespace.HOST_NAMESPACE.equals(ns))
-            name = HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+            name = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
         else if (PackageNamespace.PACKAGE_NAMESPACE.equals(ns))
             name = PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE;
         else if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))

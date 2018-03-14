@@ -91,12 +91,18 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
         ToolBar toolbar = new ToolBar(section, SWT.FLAT);
         section.setTextClient(toolbar);
         final ToolItem addItem = new ToolItem(toolbar, SWT.PUSH);
-        addItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        addItem.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_OBJ_ADD));
         addItem.setToolTipText("Add");
 
         final ToolItem removeItem = new ToolItem(toolbar, SWT.PUSH);
-        removeItem.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-        removeItem.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        removeItem.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE));
+        removeItem.setDisabledImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
         removeItem.setToolTipText("Remove");
         removeItem.setEnabled(false);
 
@@ -114,11 +120,12 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 managedForm.fireSelectionChanged(PrivatePackagesPart.this, event.getSelection());
-                removeItem.setEnabled(!viewer.getSelection().isEmpty());
+                removeItem.setEnabled(!viewer.getSelection()
+                    .isEmpty());
             }
         });
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                LocalSelectionTransfer.getTransfer(), TextTransfer.getInstance(), ResourceTransfer.getInstance()
+            LocalSelectionTransfer.getTransfer(), TextTransfer.getInstance(), ResourceTransfer.getInstance()
         }, new PackageDropAdapter<String>(viewer) {
             @Override
             protected String createNewEntry(String packageName) {
@@ -195,7 +202,8 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
             }
         };
         IFormPage page = (IFormPage) getManagedForm().getContainer();
-        IWorkbenchWindow window = page.getEditorSite().getWorkbenchWindow();
+        IWorkbenchWindow window = page.getEditorSite()
+            .getWorkbenchWindow();
 
         // Prepare the package lister from the Java project
         IJavaProject javaProject = getJavaProject();
@@ -204,7 +212,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
             return;
         }
         IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[] {
-                javaProject
+            javaProject
         });
         JavaSearchScopePackageLister packageLister = new JavaSearchScopePackageLister(searchScope, window);
 
@@ -235,7 +243,7 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
     private void doRemovePackages() {
         IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
         if (!selection.isEmpty()) {
-            Iterator< ? > elements = selection.iterator();
+            Iterator<?> elements = selection.iterator();
             List<Object> removed = new LinkedList<Object>();
             while (elements.hasNext()) {
                 Object pkg = elements.next();
@@ -298,7 +306,8 @@ public class PrivatePackagesPart extends SectionPart implements PropertyChangeLi
         if (!IFileEditorInput.class.isInstance(input)) {
             return null;
         }
-        IProject project = ((IFileEditorInput) input).getFile().getProject();
+        IProject project = ((IFileEditorInput) input).getFile()
+            .getProject();
         return JavaCore.create(project);
     }
 

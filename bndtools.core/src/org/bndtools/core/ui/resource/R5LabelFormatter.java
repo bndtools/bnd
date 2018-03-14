@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.StyledString;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -43,7 +44,7 @@ public class R5LabelFormatter {
 
     static Pattern EE_PATTERN = Pattern.compile("osgi.ee=([^\\)]*).*version=([^\\)]*)");
 
-    static final Map<String,Pattern> FILTER_PATTERNS;
+    static final Map<String, Pattern> FILTER_PATTERNS;
 
     static {
         FILTER_PATTERNS = new HashMap<>();
@@ -61,9 +62,9 @@ public class R5LabelFormatter {
         else if (ns.equals(ContentNamespace.CONTENT_NAMESPACE))
             r = null;
         else if (ns.equals(BundleNamespace.BUNDLE_NAMESPACE))
-            r = BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+            r = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
         else if (ns.equals(HostNamespace.HOST_NAMESPACE))
-            r = HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+            r = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
         else if (ns.equals(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE))
             r = ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
         else if (ns.equals(PackageNamespace.PACKAGE_NAMESPACE))
@@ -86,9 +87,8 @@ public class R5LabelFormatter {
 
     /*
      * Most namespaces have a "main" attribute that is the same as the namespace. For example, namespace
-     * osgi.wiring.package has an attribute "osgi.wiring.package" that specifies the package name.
-     *
-     * The main exception to this rule is the osgi.service namespace, which uses "objectClass".
+     * osgi.wiring.package has an attribute "osgi.wiring.package" that specifies the package name. The main exception to
+     * this rule is the osgi.service namespace, which uses "objectClass".
      */
     public static String getMainAttributeName(String ns) {
         if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))
@@ -149,13 +149,15 @@ public class R5LabelFormatter {
     public static void appendCapability(StyledString label, Capability cap, boolean shorten) {
         String ns = cap.getNamespace();
 
-        Object nsValue = cap.getAttributes().get(getMainAttributeName(ns));
+        Object nsValue = cap.getAttributes()
+            .get(getMainAttributeName(ns));
         String versionAttributeName = getVersionAttributeName(ns);
         if (nsValue != null) {
             appendNamespaceWithValue(label, ns, nsValue.toString(), shorten);
 
             if (versionAttributeName != null) {
-                Object version = cap.getAttributes().get(versionAttributeName);
+                Object version = cap.getAttributes()
+                    .get(versionAttributeName);
                 if (version != null) {
                     label.append(", " + versionAttributeName, StyledString.QUALIFIER_STYLER);
                     label.append(" " + version.toString(), BoldStyler.INSTANCE_COUNTER);
@@ -166,9 +168,11 @@ public class R5LabelFormatter {
         }
         label.append(" ", StyledString.QUALIFIER_STYLER);
 
-        if (!cap.getAttributes().isEmpty()) {
+        if (!cap.getAttributes()
+            .isEmpty()) {
             boolean first = true;
-            for (Entry<String,Object> entry : cap.getAttributes().entrySet()) {
+            for (Entry<String, Object> entry : cap.getAttributes()
+                .entrySet()) {
                 String key = entry.getKey();
                 if (!key.equals(ns) && !key.equals(versionAttributeName)) {
                     if (first)
@@ -178,17 +182,20 @@ public class R5LabelFormatter {
 
                     first = false;
                     label.append(key + "=", StyledString.QUALIFIER_STYLER);
-                    label.append(entry.getValue() != null ? entry.getValue().toString() : "<null>", StyledString.QUALIFIER_STYLER);
+                    label.append(entry.getValue() != null ? entry.getValue()
+                        .toString() : "<null>", StyledString.QUALIFIER_STYLER);
                 }
             }
             if (!first)
                 label.append("]", StyledString.QUALIFIER_STYLER);
         }
 
-        if (!cap.getDirectives().isEmpty()) {
+        if (!cap.getDirectives()
+            .isEmpty()) {
             label.append(" ");
             boolean first = true;
-            for (Entry<String,String> directive : cap.getDirectives().entrySet()) {
+            for (Entry<String, String> directive : cap.getDirectives()
+                .entrySet()) {
                 label.append(directive.getKey() + ":=" + directive.getValue(), StyledString.QUALIFIER_STYLER);
                 if (!first)
                     label.append(", ", StyledString.QUALIFIER_STYLER);
@@ -218,13 +225,17 @@ public class R5LabelFormatter {
         try {
             requirement = CapReqBuilder.unalias(requirement);
         } catch (Exception e) {
-            Plugin.getDefault().getLog().log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Error parsing aliased requirement, using original", e));
+            Plugin.getDefault()
+                .getLog()
+                .log(new Status(IStatus.WARNING, Plugin.PLUGIN_ID, 0, "Error parsing aliased requirement, using original", e));
         }
 
         String namespace = requirement.getNamespace();
-        String filter = requirement.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+        String filter = requirement.getDirectives()
+            .get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 
-        boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives().get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
+        boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
+            .get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
 
         FilterParser fp = new FilterParser();
         if (filter == null) {
@@ -247,14 +258,16 @@ public class R5LabelFormatter {
                     appendNamespaceWithValue(label, namespace, ((WithRangeExpression) exp).printExcludingRange(), shorten);
                     RangeExpression range = ((WithRangeExpression) exp).getRangeExpression();
                     if (range != null)
-                        label.append(" ").append(formatRangeString(range), StyledString.COUNTER_STYLER);
+                        label.append(" ")
+                            .append(formatRangeString(range), StyledString.COUNTER_STYLER);
                 } else if (ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(namespace)) {
                     Matcher matcher = EE_PATTERN.matcher(filter);
                     if (matcher.find()) {
                         String eename = matcher.group(1);
                         String version = matcher.group(2);
                         appendNamespaceWithValue(label, namespace, eename, true);
-                        label.append(" ").append(version, StyledString.COUNTER_STYLER);
+                        label.append(" ")
+                            .append(version, StyledString.COUNTER_STYLER);
                     } else {
                         appendNamespaceWithValue(label, namespace, filter, true);
                     }
@@ -268,12 +281,15 @@ public class R5LabelFormatter {
         }
 
         boolean first = true;
-        for (Entry<String,String> directive : requirement.getDirectives().entrySet()) {
+        for (Entry<String, String> directive : requirement.getDirectives()
+            .entrySet()) {
             if (Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE.equals(directive.getKey()) || Namespace.REQUIREMENT_FILTER_DIRECTIVE.equals(directive.getKey()))
                 continue; // deal with the filter: and resolution: directives separately
             StringBuilder buf = new StringBuilder();
             buf.append(first ? " " : ", ");
-            buf.append(directive.getKey()).append(":=").append(directive.getValue());
+            buf.append(directive.getKey())
+                .append(":=")
+                .append(directive.getValue());
             label.append(buf.toString(), StyledString.QUALIFIER_STYLER);
             first = false;
         }

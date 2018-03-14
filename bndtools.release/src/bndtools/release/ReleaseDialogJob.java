@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -39,7 +40,9 @@ public class ReleaseDialogJob extends Job {
     public ReleaseDialogJob(Project project, List<File> subBundles) {
         super(Messages.releaseJob);
         this.project = project;
-        this.shell = PlatformUI.getWorkbench().getDisplay().getActiveShell();
+        this.shell = PlatformUI.getWorkbench()
+            .getDisplay()
+            .getActiveShell();
         this.subBundles = subBundles;
         setUser(true);
     }
@@ -71,7 +74,7 @@ public class ReleaseDialogJob extends Job {
                 }
             }
             if (diffs.size() == 0) {
-                //TODO: message
+                // TODO: message
                 return Status.OK_STATUS;
             }
             monitor.worked(33);
@@ -83,7 +86,7 @@ public class ReleaseDialogJob extends Job {
                     projectDiffs.add(new ProjectDiff(project, diffs));
                     ReleaseHelper.initializeProjectDiffs(projectDiffs);
                     WorkspaceReleaseDialog dialog = new WorkspaceReleaseDialog(shell, projectDiffs, true);
-                    if (dialog.open() == WorkspaceReleaseDialog.OK) {
+                    if (dialog.open() == Window.OK) {
                         boolean runJob = false;
                         for (ProjectDiff diff : projectDiffs) {
                             if (diff.isRelease()) {
@@ -95,14 +98,16 @@ public class ReleaseDialogJob extends Job {
                             return;
                         }
                         WorkspaceReleaseJob releaseJob = new WorkspaceReleaseJob(projectDiffs, dialog.getReleaseOption(), dialog.isShowMessage());
-                        releaseJob.setRule(ResourcesPlugin.getWorkspace().getRoot());
+                        releaseJob.setRule(ResourcesPlugin.getWorkspace()
+                            .getRoot());
                         releaseJob.schedule();
                     }
                 }
             };
 
             if (Display.getCurrent() == null) {
-                Display.getDefault().asyncExec(runnable);
+                Display.getDefault()
+                    .asyncExec(runnable);
             } else {
                 runnable.run();
             }
@@ -110,7 +115,7 @@ public class ReleaseDialogJob extends Job {
             monitor.worked(33);
             return Status.OK_STATUS;
         } catch (Exception e) {
-            return new Status(Status.ERROR, Activator.PLUGIN_ID, "Error : " + e.getMessage(), e);
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Error : " + e.getMessage(), e);
         } finally {
 
             monitor.done();

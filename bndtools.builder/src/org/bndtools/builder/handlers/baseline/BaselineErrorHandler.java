@@ -93,13 +93,17 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
 
                 // Find in packageinfo file
                 IPath pkgInfoPath = pkgPath.append(PACKAGEINFO);
-                IFile pkgInfoFile = javaProject.getProject().getWorkspace().getRoot().getFile(pkgInfoPath);
+                IFile pkgInfoFile = javaProject.getProject()
+                    .getWorkspace()
+                    .getRoot()
+                    .getFile(pkgInfoPath);
                 if (pkgInfoFile != null && pkgInfoFile.exists()) {
-                    Map<String,Object> attribs = new HashMap<String,Object>();
+                    Map<String, Object> attribs = new HashMap<String, Object>();
                     attribs.put(IMarker.MESSAGE, message.trim());
                     attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
 
-                    LineLocation lineLoc = findVersionLocation(pkgInfoFile.getLocation().toFile());
+                    LineLocation lineLoc = findVersionLocation(pkgInfoFile.getLocation()
+                        .toFile());
                     if (lineLoc != null) {
                         attribs.put(IMarker.LINE_NUMBER, lineLoc.lineNum);
                         attribs.put(IMarker.CHAR_START, lineLoc.start);
@@ -116,7 +120,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                     if (pkgInfoJava != null && pkgInfoJava.exists()) {
                         ISourceRange range = findPackageInfoJavaVersionLocation(baselineInfo.packageName, pkgInfoJava);
 
-                        Map<String,Object> attribs = new HashMap<String,Object>();
+                        Map<String, Object> attribs = new HashMap<String, Object>();
                         attribs.put(IMarker.MESSAGE, message.trim());
                         attribs.put(IJavaModelMarker.ID, 8088);
                         attribs.put(PROP_SUGGESTED_VERSION, baselineInfo.suggestedVersion.toString());
@@ -173,13 +177,14 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
         // Iterate into the package member diffs
         for (Diff pkgMemberDiff : baselineInfo.packageDiff.getChildren()) {
             // Skip deltas that have lesser significance than the overall package delta
-            if (pkgMemberDiff.getDelta().ordinal() < packageDelta.ordinal())
+            if (pkgMemberDiff.getDelta()
+                .ordinal() < packageDelta.ordinal())
                 continue;
 
             if (Delta.ADDED == pkgMemberDiff.getDelta()) {
                 @SuppressWarnings("unused")
                 Tree pkgMember = pkgMemberDiff.getNewer();
-                //                markers.addAll(generateAddedTypeMarker(javaProject, pkgMember.getName(), pkgMember.ifAdded()));
+                // markers.addAll(generateAddedTypeMarker(javaProject, pkgMember.getName(), pkgMember.ifAdded()));
             } else if (Delta.REMOVED == pkgMemberDiff.getDelta()) {} else {
                 Tree pkgMember = pkgMemberDiff.getOlder();
                 if (pkgMember != null && (Type.INTERFACE == pkgMember.getType() || Type.CLASS == pkgMember.getType())) {
@@ -188,7 +193,8 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                     // Iterate into the class member diffs
                     for (Diff classMemberDiff : pkgMemberDiff.getChildren()) {
                         // Skip deltas that have lesser significance than the overall package delta (again)
-                        if (classMemberDiff.getDelta().ordinal() < packageDelta.ordinal())
+                        if (classMemberDiff.getDelta()
+                            .ordinal() < packageDelta.ordinal())
                             continue;
 
                         if (Delta.ADDED == classMemberDiff.getDelta()) {
@@ -211,11 +217,9 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
     }
 
     /*
-    List<MarkerData> generateAddedTypeMarker(IJavaProject javaProject, String name, Delta ifAdded) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-    */
+     * List<MarkerData> generateAddedTypeMarker(IJavaProject javaProject, String name, Delta ifAdded) { // TODO
+     * Auto-generated method stub return null; }
+     */
 
     List<MarkerData> generateAddedMethodMarker(IJavaProject javaProject, String className, final String methodName, final Delta requiresDelta) throws JavaModelException {
         final List<MarkerData> markers = new LinkedList<MarkerData>();
@@ -227,14 +231,15 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                     String signature = ASTUtil.buildMethodSignature(methodDecl);
                     if (signature.equals(methodName)) {
                         // Create the marker attribs here
-                        Map<String,Object> attribs = new HashMap<String,Object>();
+                        Map<String, Object> attribs = new HashMap<String, Object>();
                         attribs.put(IMarker.CHAR_START, methodDecl.getStartPosition());
                         attribs.put(IMarker.CHAR_END, methodDecl.getStartPosition() + methodDecl.getLength());
 
                         String message = String.format("This method was added, which requires a %s change to the package.", requiresDelta);
                         attribs.put(IMarker.MESSAGE, message);
 
-                        markers.add(new MarkerData(ast.getJavaElement().getResource(), attribs, false));
+                        markers.add(new MarkerData(ast.getJavaElement()
+                            .getResource(), attribs, false));
                     }
 
                     return false;
@@ -253,8 +258,9 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                 public boolean visit(TypeDeclaration typeDecl) {
                     ITypeBinding typeBinding = typeDecl.resolveBinding();
                     if (typeBinding != null) {
-                        if (typeBinding.getBinaryName().equals(className)) {
-                            Map<String,Object> attribs = new HashMap<String,Object>();
+                        if (typeBinding.getBinaryName()
+                            .equals(className)) {
+                            Map<String, Object> attribs = new HashMap<String, Object>();
                             SimpleName nameNode = typeDecl.getName();
                             attribs.put(IMarker.CHAR_START, nameNode.getStartPosition());
                             attribs.put(IMarker.CHAR_END, nameNode.getStartPosition() + nameNode.getLength());
@@ -262,7 +268,8 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                             String message = String.format("The method '%s' was removed, which requires a %s change to the package.", methodName, requiresDelta);
                             attribs.put(IMarker.MESSAGE, message);
 
-                            markers.add(new MarkerData(ast.getJavaElement().getResource(), attribs, false));
+                            markers.add(new MarkerData(ast.getJavaElement()
+                                .getResource(), attribs, false));
                             return false;
                         }
                     }

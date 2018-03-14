@@ -27,6 +27,7 @@ public class PkgPatternProposal implements IContentProposal {
         this.replaceFromPos = replaceFromPos;
     }
 
+    @Override
     public String getContent() {
         String content = pkg.getElementName();
         if (wildcard)
@@ -34,17 +35,21 @@ public class PkgPatternProposal implements IContentProposal {
         return content;
     }
 
+    @Override
     public int getCursorPosition() {
-        int length = pkg.getElementName().length();
+        int length = pkg.getElementName()
+            .length();
         if (wildcard)
             length++;
         return length + replaceFromPos;
     }
 
+    @Override
     public String getDescription() {
         return null;
     }
 
+    @Override
     public String getLabel() {
         return getContent();
     }

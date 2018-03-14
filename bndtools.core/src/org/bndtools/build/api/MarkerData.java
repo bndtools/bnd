@@ -7,15 +7,15 @@ import org.eclipse.core.resources.IResource;
 public class MarkerData {
 
     private final IResource resource;
-    private final Map<String,Object> attribs;
+    private final Map<String, Object> attribs;
     private final boolean hasResolutions;
     private final String typeOverride;
 
-    public MarkerData(IResource resource, Map<String,Object> attribs, boolean hasResolutions) {
+    public MarkerData(IResource resource, Map<String, Object> attribs, boolean hasResolutions) {
         this(resource, attribs, hasResolutions, null);
     }
 
-    public MarkerData(IResource resource, Map<String,Object> attribs, boolean hasResolutions, String typeOverride) {
+    public MarkerData(IResource resource, Map<String, Object> attribs, boolean hasResolutions, String typeOverride) {
         this.resource = resource;
         this.attribs = attribs;
         this.hasResolutions = hasResolutions;
@@ -26,7 +26,7 @@ public class MarkerData {
         return resource;
     }
 
-    public Map<String,Object> getAttribs() {
+    public Map<String, Object> getAttribs() {
         return attribs;
     }
 

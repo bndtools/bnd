@@ -35,7 +35,8 @@ public abstract class BaseOCD implements ObjectClassDefinition {
 
     @Override
     public InputStream getIcon(int size) throws IOException {
-        return iconUri != null ? iconUri.toURL().openStream() : null;
+        return iconUri != null ? iconUri.toURL()
+            .openStream() : null;
     }
 
 }

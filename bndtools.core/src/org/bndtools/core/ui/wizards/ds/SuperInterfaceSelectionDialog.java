@@ -3,20 +3,8 @@ package org.bndtools.core.ui.wizards.ds;
 import java.util.Iterator;
 import java.util.List;
 
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
-
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.jface.viewers.StructuredSelection;
-
-import org.eclipse.ui.PlatformUI;
-
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeParameter;
@@ -25,16 +13,22 @@ import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.TypeNameMatch;
-
 import org.eclipse.jdt.internal.corext.util.JavaModelUtil;
 import org.eclipse.jdt.internal.corext.util.Messages;
-
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.internal.ui.dialogs.OpenTypeSelectionDialog;
 import org.eclipse.jdt.internal.ui.dialogs.StatusInfo;
 import org.eclipse.jdt.internal.ui.viewsupport.BasicElementLabels;
 import org.eclipse.jdt.internal.ui.wizards.NewWizardMessages;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.operation.IRunnableContext;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * A type selection dialog providing means to open interface(s).
@@ -49,14 +43,10 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
     /**
      * Creates new instance of SuperInterfaceSelectionDialog
      * 
-     * @param parent
-     *            shell to parent the dialog on
-     * @param context
-     *            context used to execute long-running operations associated with this dialog
-     * @param page
-     *            page that opened this dialog
-     * @param p
-     *            the java project which will be considered when searching for interfaces
+     * @param parent shell to parent the dialog on
+     * @param context context used to execute long-running operations associated with this dialog
+     * @param page page that opened this dialog
+     * @param p the java project which will be considered when searching for interfaces
      */
     public SuperInterfaceSelectionDialog(Shell parent, IRunnableContext context, NewTypeWizardPage page, IJavaProject p) {
         super(parent, true, context, createSearchScope(p), IJavaSearchConstants.INTERFACE);
@@ -66,7 +56,8 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
         setStatusLineAboveButtons(true);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.ui.dialogs.SelectionDialog#createButtonsForButtonBar(org.eclipse.swt.widgets.Composite)
      */
     @Override
@@ -75,15 +66,18 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
         super.createButtonsForButtonBar(parent);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jface.dialogs.Dialog#getDialogBoundsSettings()
      */
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
-        return JavaPlugin.getDefault().getDialogSettingsSection("DialogBounds_SuperInterfaceSelectionDialog"); //$NON-NLS-1$
+        return JavaPlugin.getDefault()
+            .getDialogSettingsSection("DialogBounds_SuperInterfaceSelectionDialog"); //$NON-NLS-1$
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.ui.dialogs.SelectionStatusDialog#updateButtonsEnableState(org.eclipse.core.runtime.IStatus)
      */
     @Override
@@ -94,7 +88,8 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
             addButton.setEnabled(!status.matches(IStatus.ERROR));
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jface.window.Window#handleShellCloseEvent()
      */
     @Override
@@ -104,7 +99,8 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
         fTypeWizardPage.setSuperInterfaces(fOldContent, true);
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jface.dialogs.Dialog#cancelPressed()
      */
     @Override
@@ -113,7 +109,8 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
         super.cancelPressed();
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jface.dialogs.Dialog#buttonPressed(int)
      */
     @Override
@@ -125,7 +122,8 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.ui.dialogs.SelectionStatusDialog#okPressed()
      */
     @Override
@@ -141,7 +139,7 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
         StructuredSelection selection = getSelectedItems();
         if (selection == null)
             return;
-        for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
+        for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
             Object obj = iter.next();
             if (obj instanceof TypeNameMatch) {
                 accessedHistoryItem(obj);
@@ -168,7 +166,8 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
         });
     }
 
-    /*(non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#handleDoubleClick()
      */
     @Override
@@ -176,14 +175,17 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
         buttonPressed(ADD_ID);
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#handleSelected(org.eclipse.jface.viewers.StructuredSelection)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.eclipse.ui.dialogs.FilteredItemsSelectionDialog#handleSelected(org.eclipse.jface.viewers.StructuredSelection)
      */
     @Override
     protected void handleSelected(StructuredSelection selection) {
         super.handleSelected(selection);
 
-        if (selection.size() == 0 && fTypeWizardPage.getSuperInterfaces().size() > fOldContent.size()) {
+        if (selection.size() == 0 && fTypeWizardPage.getSuperInterfaces()
+            .size() > fOldContent.size()) {
             // overrides updateStatus() from handleSelected() if
             // list of super interfaces was modified
             // the <code>super.handleSelected(selection)</code> has to be
@@ -200,13 +202,16 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
         }
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see org.eclipse.jdt.internal.ui.dialogs.OpenTypeSelectionDialog2#configureShell(org.eclipse.swt.widgets.Shell)
      */
     @Override
     protected void configureShell(Shell newShell) {
         super.configureShell(newShell);
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(newShell, IJavaHelpContextIds.SUPER_INTERFACE_SELECTION_DIALOG);
+        PlatformUI.getWorkbench()
+            .getHelpSystem()
+            .setHelp(newShell, IJavaHelpContextIds.SUPER_INTERFACE_SELECTION_DIALOG);
     }
 
     public static String getNameWithTypeParameters(IType type) {
@@ -221,7 +226,8 @@ public class SuperInterfaceSelectionDialog extends OpenTypeSelectionDialog {
                 buf.append('<');
                 for (int k = 0; k < typeParameters.length; k++) {
                     if (k != 0) {
-                        buf.append(',').append(' ');
+                        buf.append(',')
+                            .append(' ');
                     }
                     buf.append(typeParameters[k].getElementName());
                 }

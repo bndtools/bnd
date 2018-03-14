@@ -44,7 +44,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
     }
 
     private static final Set<String> PROJECT_ONLY_HEADERS = new HashSet<String>(Arrays.asList(new String[] {
-            "-buildpath", "-runbundles", "-runsystempackages", "-runpath", "-runvm", "-runtrace", "-runframework", "-runfw", "-sub", "-debug"
+        "-buildpath", "-runbundles", "-runsystempackages", "-runpath", "-runvm", "-runtrace", "-runframework", "-runfw", "-sub", "-debug"
     }));
 
     private final Shell parentShell;
@@ -61,7 +61,8 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
 
     @Override
     public void run(final IProgressMonitor monitor) throws CoreException {
-        IResource container = workspace.getRoot().findMember(containerPath);
+        IResource container = workspace.getRoot()
+            .findMember(containerPath);
 
         if (container == null || !container.exists())
             throw newCoreException("Container path does not exist", null);
@@ -122,7 +123,7 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
             // Enable subs and copy entries from project model to new bundle model
             if (enableSubs) {
                 projectModel.setSubBndFiles(Arrays.asList(new String[] {
-                        "*.bnd"
+                    "*.bnd"
                 }));
                 for (String propertyName : bundleSpecificHeaders) {
                     Object value = projectModel.genericGet(propertyName);
@@ -141,7 +142,8 @@ public class EnableSubBundlesOperation implements IWorkspaceRunnable {
         newBundleModel.saveChangesTo(newBundleDocument);
 
         try {
-            newBundleInputStream = new ByteArrayInputStream(newBundleDocument.get().getBytes("UTF-8"));
+            newBundleInputStream = new ByteArrayInputStream(newBundleDocument.get()
+                .getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             newBundleInputStream = null;
         }

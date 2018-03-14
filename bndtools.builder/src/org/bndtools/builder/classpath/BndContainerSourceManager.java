@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -56,12 +57,15 @@ public class BndContainerSourceManager {
             if (IClasspathEntry.CPE_LIBRARY != entry.getEntryKind()) {
                 continue;
             }
-            final String path = entry.getPath().toPortableString();
+            final String path = entry.getPath()
+                .toPortableString();
             if (entry.getSourceAttachmentPath() != null) {
-                props.put(path + PROPERTY_SRC_PATH, entry.getSourceAttachmentPath().toPortableString());
+                props.put(path + PROPERTY_SRC_PATH, entry.getSourceAttachmentPath()
+                    .toPortableString());
             }
             if (entry.getSourceAttachmentRootPath() != null) {
-                props.put(path + PROPERTY_SRC_ROOT, entry.getSourceAttachmentRootPath().toPortableString());
+                props.put(path + PROPERTY_SRC_ROOT, entry.getSourceAttachmentRootPath()
+                    .toPortableString());
             }
         }
 
@@ -73,7 +77,7 @@ public class BndContainerSourceManager {
             try (OutputStream out = IO.outputStream(propertiesFile)) {
                 props.store(out, new Date().toString());
             } catch (final IOException e) {
-                throw new CoreException(new Status(Status.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to write container source attachments", e));
+                throw new CoreException(new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to write container source attachments", e));
             }
         }
     }
@@ -97,7 +101,8 @@ public class BndContainerSourceManager {
                 continue;
             }
 
-            final String key = entry.getPath().toPortableString();
+            final String key = entry.getPath()
+                .toPortableString();
 
             IPath srcPath = null;
             IPath srcRoot = null;
@@ -110,7 +115,7 @@ public class BndContainerSourceManager {
                 }
             } else {
                 // If there is no saved source attachment, then try and find a source bundle
-                Map<String,String> extraProps = new HashMap<String,String>();
+                Map<String, String> extraProps = new HashMap<String, String>();
 
                 for (IClasspathAttribute attr : entry.getExtraAttributes()) {
                     extraProps.put(attr.getName(), attr.getValue());
@@ -132,7 +137,7 @@ public class BndContainerSourceManager {
         return configuredClassPathEntries;
     }
 
-    private static File getSourceBundle(IPath path, Map<String,String> props) {
+    private static File getSourceBundle(IPath path, Map<String, String> props) {
         Workspace bndWorkspace;
 
         try {
@@ -159,7 +164,7 @@ public class BndContainerSourceManager {
             }
 
             Domain domain = Domain.domain(manifest);
-            Entry<String,Attrs> bsnAttrs = domain.getBundleSymbolicName();
+            Entry<String, Attrs> bsnAttrs = domain.getBundleSymbolicName();
             if (bsnAttrs == null) {
                 return null;
             }
@@ -197,7 +202,7 @@ public class BndContainerSourceManager {
             try (InputStream in = IO.stream(propertiesFile)) {
                 props.load(in);
             } catch (final IOException e) {
-                throw new CoreException(new Status(Status.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to read container source attachments", e));
+                throw new CoreException(new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to read container source attachments", e));
             }
         }
 
@@ -205,7 +210,9 @@ public class BndContainerSourceManager {
     }
 
     private static File getSourceAttachmentPropertiesFile(final IProject project) {
-        return new File(BuilderPlugin.getInstance().getStateLocation().toFile(), project.getName() + ".sources"); //$NON-NLS-1$
+        return new File(BuilderPlugin.getInstance()
+            .getStateLocation()
+            .toFile(), project.getName() + ".sources"); //$NON-NLS-1$
     }
 
 }

@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageTwo;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+
 import bndtools.Plugin;
 
 public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
@@ -62,7 +63,8 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        project.getWorkspace().run(workspaceOp, monitor);
+                        project.getWorkspace()
+                            .run(workspaceOp, monitor);
                     } catch (CoreException e) {
                         throw new InvocationTargetException(e);
                     }

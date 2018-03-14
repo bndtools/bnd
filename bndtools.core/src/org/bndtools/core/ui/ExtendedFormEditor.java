@@ -36,12 +36,14 @@ public abstract class ExtendedFormEditor extends FormEditor {
             return;
         }
 
-        baseImageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(cfig.getContributor().getName(), strIcon);
+        baseImageDescriptor = AbstractUIPlugin.imageDescriptorFromPlugin(cfig.getContributor()
+            .getName(), strIcon);
         if (baseImageDescriptor == null) {
             return;
         }
 
-        titleImage = JFaceResources.getResources().createImageWithDefault(baseImageDescriptor);
+        titleImage = JFaceResources.getResources()
+            .createImageWithDefault(baseImageDescriptor);
     }
 
     @Override
@@ -61,9 +63,11 @@ public abstract class ExtendedFormEditor extends FormEditor {
     public void dispose() {
         super.dispose();
         if (baseImageDescriptor != null)
-            JFaceResources.getResources().destroyImage(baseImageDescriptor);
+            JFaceResources.getResources()
+                .destroyImage(baseImageDescriptor);
         if (overlaidTitleImageDescriptor != null)
-            JFaceResources.getResources().destroyImage(overlaidTitleImageDescriptor);
+            JFaceResources.getResources()
+                .destroyImage(overlaidTitleImageDescriptor);
     }
 
     public void setOverlayTitleImage(ImageDescriptor overlay) {
@@ -71,14 +75,17 @@ public abstract class ExtendedFormEditor extends FormEditor {
             overlaidTitleImage = null;
             firePropertyChange(PROP_TITLE);
             if (overlaidTitleImageDescriptor != null)
-                JFaceResources.getResources().destroyImage(overlaidTitleImageDescriptor);
+                JFaceResources.getResources()
+                    .destroyImage(overlaidTitleImageDescriptor);
             overlaidTitleImageDescriptor = null;
         } else {
             DecorationOverlayIcon newOverlaidDesc = new DecorationOverlayIcon(titleImage, overlay, IDecoration.BOTTOM_LEFT);
-            overlaidTitleImage = JFaceResources.getResources().createImage(newOverlaidDesc);
+            overlaidTitleImage = JFaceResources.getResources()
+                .createImage(newOverlaidDesc);
             firePropertyChange(PROP_TITLE);
             if (overlaidTitleImageDescriptor != null)
-                JFaceResources.getResources().destroyImage(overlaidTitleImageDescriptor);
+                JFaceResources.getResources()
+                    .destroyImage(overlaidTitleImageDescriptor);
             overlaidTitleImageDescriptor = newOverlaidDesc;
         }
     }

@@ -56,7 +56,7 @@ public class GitOBRRepo extends LocalIndexedRepo {
     private final List<Mapping> mappings = Collections.synchronizedList(new LinkedList<Mapping>());
 
     @Override
-    public synchronized void setProperties(Map<String,String> map) {
+    public synchronized void setProperties(Map<String, String> map) {
 
         configFileList = map.get(CONFIG_FILE_LIST);
 
@@ -138,7 +138,8 @@ public class GitOBRRepo extends LocalIndexedRepo {
             Git git = Git.wrap(repository);
 
             // Pull remote repository
-            PullResult pullResult = git.pull().call();
+            PullResult pullResult = git.pull()
+                .call();
 
             // Check result
             MergeResult mergeResult = pullResult.getMergeResult();
@@ -158,10 +159,17 @@ public class GitOBRRepo extends LocalIndexedRepo {
                 for (IRepositoryContentProvider provider : generatingProviders) {
                     if (!provider.supportsGeneration())
                         continue;
-                    git.add().addFilepattern(getRelativePath(gitRootDir, newFile)).addFilepattern(getRelativePath(gitRootDir, new File(provider.getDefaultIndexName(pretty)))).call();
+                    git.add()
+                        .addFilepattern(getRelativePath(gitRootDir, newFile))
+                        .addFilepattern(getRelativePath(gitRootDir, new File(provider.getDefaultIndexName(pretty))))
+                        .call();
                 }
-                git.commit().setMessage("bndtools added bundle : " + getRelativePath(gitRootDir, newFile)).call();
-                git.push().setCredentialsProvider(CredentialsProvider.getDefault()).call();
+                git.commit()
+                    .setMessage("bndtools added bundle : " + getRelativePath(gitRootDir, newFile))
+                    .call();
+                git.push()
+                    .setCredentialsProvider(CredentialsProvider.getDefault())
+                    .call();
 
                 // Re-read the index
                 reset();
@@ -187,7 +195,9 @@ public class GitOBRRepo extends LocalIndexedRepo {
     }
 
     private static String getRelativePath(File base, File file) throws Exception {
-        return base.toURI().relativize(file.toURI()).getPath();
+        return base.toURI()
+            .relativize(file.toURI())
+            .getPath();
     }
 
     @Override
@@ -209,7 +219,8 @@ public class GitOBRRepo extends LocalIndexedRepo {
 
             StringTokenizer tokenizer = new StringTokenizer(configFileList, ",");
             while (tokenizer.hasMoreTokens()) {
-                String configFileName = tokenizer.nextToken().trim();
+                String configFileName = tokenizer.nextToken()
+                    .trim();
 
                 File file = new File(configFileName);
                 if (file.exists()) {

@@ -13,6 +13,7 @@ import java.util.jar.Manifest;
 
 import org.bndtools.utils.osgi.BundleUtils;
 import org.osgi.framework.Constants;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -50,13 +51,14 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
 
     @Override
     public String getLongLabel() {
-        return file.getName() + " - " + file.getParentFile().getAbsolutePath();
+        return file.getName() + " - " + file.getParentFile()
+            .getAbsolutePath();
     }
 
     protected abstract Builder getBuilder() throws Exception;
 
     @Override
-    public Map<String,List<Capability>> loadCapabilities() throws Exception {
+    public Map<String, List<Capability>> loadCapabilities() throws Exception {
         Builder builder = getBuilder();
         if (builder == null)
             return Collections.emptyMap();
@@ -70,15 +72,17 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
             return Collections.emptyMap();
 
         Attributes attribs = manifest.getMainAttributes();
-        Map<String,List<Capability>> capMap = new HashMap<String,List<Capability>>();
+        Map<String, List<Capability>> capMap = new HashMap<String, List<Capability>>();
 
         // Load export packages
         String exportsPkgStr = attribs.getValue(Constants.EXPORT_PACKAGE);
         Parameters exportsMap = new Parameters(exportsPkgStr);
-        for (Entry<String,Attrs> entry : exportsMap.entrySet()) {
+        for (Entry<String, Attrs> entry : exportsMap.entrySet()) {
             String pkg = Processor.removeDuplicateMarker(entry.getKey());
-            org.osgi.framework.Version version = org.osgi.framework.Version.parseVersion(entry.getValue().getVersion());
-            CapReqBuilder cb = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addAttribute(PackageNamespace.PACKAGE_NAMESPACE, pkg).addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+            org.osgi.framework.Version version = org.osgi.framework.Version.parseVersion(entry.getValue()
+                .getVersion());
+            CapReqBuilder cb = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addAttribute(PackageNamespace.PACKAGE_NAMESPACE, pkg)
+                .addAttribute(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
             // TODO attributes and directives
             addCapability(capMap, cb.buildSyntheticCapability());
         }
@@ -88,17 +92,21 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
         if (bsn != null) { // Ignore if not a bundle
             org.osgi.framework.Version version = org.osgi.framework.Version.parseVersion(attribs.getValue(Constants.BUNDLE_VERSION));
             // TODO attributes and directives
-            addCapability(capMap,
-                    new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn).addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version).buildSyntheticCapability());
-            addCapability(capMap,
-                    new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE).addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn).addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version).buildSyntheticCapability());
-            addCapability(capMap, new CapReqBuilder(HostNamespace.HOST_NAMESPACE).addAttribute(HostNamespace.HOST_NAMESPACE, bsn).addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version).buildSyntheticCapability());
+            addCapability(capMap, new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn)
+                .addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version)
+                .buildSyntheticCapability());
+            addCapability(capMap, new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE).addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn)
+                .addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version)
+                .buildSyntheticCapability());
+            addCapability(capMap, new CapReqBuilder(HostNamespace.HOST_NAMESPACE).addAttribute(HostNamespace.HOST_NAMESPACE, bsn)
+                .addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version)
+                .buildSyntheticCapability());
         }
 
         // Generic capabilities
         String providesStr = attribs.getValue(Constants.PROVIDE_CAPABILITY);
         Parameters provides = new Parameters(providesStr);
-        for (Entry<String,Attrs> entry : provides.entrySet()) {
+        for (Entry<String, Attrs> entry : provides.entrySet()) {
             String ns = Processor.removeDuplicateMarker(entry.getKey());
             Attrs attrs = entry.getValue();
 
@@ -116,7 +124,7 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
     }
 
     @Override
-    public Map<String,List<RequirementWrapper>> loadRequirements() throws Exception {
+    public Map<String, List<RequirementWrapper>> loadRequirements() throws Exception {
         Builder builder = getBuilder();
         if (builder == null)
             return Collections.emptyMap();
@@ -129,18 +137,18 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
             return Collections.emptyMap();
 
         Attributes attribs = manifest.getMainAttributes();
-        Map<String,List<RequirementWrapper>> requirements = new HashMap<String,List<RequirementWrapper>>();
+        Map<String, List<RequirementWrapper>> requirements = new HashMap<String, List<RequirementWrapper>>();
 
         // Process imports
         String importPkgStr = attribs.getValue(Constants.IMPORT_PACKAGE);
         Parameters importsMap = new Parameters(importPkgStr);
-        for (Entry<String,Attrs> entry : importsMap.entrySet()) {
+        for (Entry<String, Attrs> entry : importsMap.entrySet()) {
             String pkgName = Processor.removeDuplicateMarker(entry.getKey());
             Attrs attrs = entry.getValue();
 
             CapReqBuilder rb = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
             String filter = createVersionFilter(PackageNamespace.PACKAGE_NAMESPACE, pkgName, attrs.get(Constants.VERSION_ATTRIBUTE), PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-            rb.addDirective(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+            rb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
             if (Constants.RESOLUTION_OPTIONAL.equals(attrs.get(Constants.RESOLUTION_DIRECTIVE + ":")))
                 rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Namespace.RESOLUTION_OPTIONAL);
 
@@ -156,13 +164,13 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
         // Process require-bundle
         String requireBundleStr = attribs.getValue(Constants.REQUIRE_BUNDLE);
         Parameters requireBundles = new Parameters(requireBundleStr);
-        for (Entry<String,Attrs> entry : requireBundles.entrySet()) {
+        for (Entry<String, Attrs> entry : requireBundles.entrySet()) {
             String bsn = Processor.removeDuplicateMarker(entry.getKey());
             Attrs attrs = entry.getValue();
 
             CapReqBuilder rb = new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE);
-            String filter = createVersionFilter(BundleNamespace.BUNDLE_NAMESPACE, bsn, attrs.get(Constants.BUNDLE_VERSION_ATTRIBUTE), BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-            rb.addDirective(BundleNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+            String filter = createVersionFilter(BundleNamespace.BUNDLE_NAMESPACE, bsn, attrs.get(Constants.BUNDLE_VERSION_ATTRIBUTE), AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+            rb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
             if (Constants.RESOLUTION_OPTIONAL.equals(attrs.get(Constants.RESOLUTION_DIRECTIVE + ":")))
                 rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Namespace.RESOLUTION_OPTIONAL);
 
@@ -174,7 +182,7 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
         // Process generic requires
         String requiresStr = attribs.getValue(Constants.REQUIRE_CAPABILITY);
         Parameters requires = new Parameters(requiresStr);
-        for (Entry<String,Attrs> entry : requires.entrySet()) {
+        for (Entry<String, Attrs> entry : requires.entrySet()) {
             String ns = Processor.removeDuplicateMarker(entry.getKey());
             Attrs attrs = entry.getValue();
 
@@ -194,7 +202,7 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
         return requirements;
     }
 
-    private static void addCapability(Map<String,List<Capability>> capMap, Capability cap) {
+    private static void addCapability(Map<String, List<Capability>> capMap, Capability cap) {
         List<Capability> capsForNs = capMap.get(cap.getNamespace());
         if (capsForNs == null) {
             capsForNs = new LinkedList<Capability>();
@@ -203,7 +211,7 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
         capsForNs.add(cap);
     }
 
-    private static void addRequirement(Map<String,List<RequirementWrapper>> requirements, RequirementWrapper req) {
+    private static void addRequirement(Map<String, List<RequirementWrapper>> requirements, RequirementWrapper req) {
         List<RequirementWrapper> listForNs = requirements.get(req.requirement.getNamespace());
         if (listForNs == null) {
             listForNs = new LinkedList<RequirementWrapper>();
@@ -221,19 +229,24 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
 
             Filter left;
             if (range.includeLow())
-                left = new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, range.getLow().toString());
+                left = new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, range.getLow()
+                    .toString());
             else
-                left = new NotFilter(new SimpleFilter(versionAttr, Operator.LessThanOrEqual, range.getLow().toString()));
+                left = new NotFilter(new SimpleFilter(versionAttr, Operator.LessThanOrEqual, range.getLow()
+                    .toString()));
 
             Filter right;
             if (!range.isRange())
                 right = null;
             else if (range.includeHigh())
-                right = new SimpleFilter(versionAttr, Operator.LessThanOrEqual, range.getHigh().toString());
+                right = new SimpleFilter(versionAttr, Operator.LessThanOrEqual, range.getHigh()
+                    .toString());
             else
-                right = new NotFilter(new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, range.getHigh().toString()));
+                right = new NotFilter(new SimpleFilter(versionAttr, Operator.GreaterThanOrEqual, range.getHigh()
+                    .toString()));
 
-            AndFilter combined = new AndFilter().addChild(pkgNameFilter).addChild(left);
+            AndFilter combined = new AndFilter().addChild(pkgNameFilter)
+                .addChild(left);
             if (right != null)
                 combined.addChild(right);
             filter = combined;

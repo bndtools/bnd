@@ -14,7 +14,8 @@ public class LatestTemplateFilter extends ViewerFilter {
     public Object[] filter(Viewer viewer, Object parent, Object[] elements) {
         Object[] result;
         if (parent instanceof Category) {
-            Map<String,Template> selected = new LinkedHashMap<>(); // Preserves the order of names, as they were already sorted by the content provider.
+            Map<String, Template> selected = new LinkedHashMap<>(); // Preserves the order of names, as they were
+                                                                    // already sorted by the content provider.
             for (Object element : elements) {
                 Template template = (Template) element;
                 Template existing = selected.get(template.getName());
@@ -23,11 +24,13 @@ public class LatestTemplateFilter extends ViewerFilter {
                     // no selected template for this name -> add
                     selected.put(template.getName(), template);
 
-                else if (template.getVersion().compareTo(existing.getVersion()) > 0)
+                else if (template.getVersion()
+                    .compareTo(existing.getVersion()) > 0)
                     // existing selected template for this name is lower -> replace
                     selected.put(template.getName(), template);
             }
-            result = selected.values().toArray();
+            result = selected.values()
+                .toArray();
         } else {
             result = elements;
         }

@@ -42,7 +42,8 @@ public class PackageInfoEditor extends TextEditor implements IResourceChangeList
         String strIcon = cfig.getAttribute("icon");
 
         // Load the icons
-        ImageDescriptor baseImageDesc = strIcon != null ? AbstractUIPlugin.imageDescriptorFromPlugin(cfig.getContributor().getName(), strIcon) : null;
+        ImageDescriptor baseImageDesc = strIcon != null ? AbstractUIPlugin.imageDescriptorFromPlugin(cfig.getContributor()
+            .getName(), strIcon) : null;
         imgTitleBase = baseImageDesc != null ? baseImageDesc.createImage() : getDefaultImage();
 
         ImageDescriptor imgWarningOverlay = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/warning_co.gif");
@@ -73,7 +74,8 @@ public class PackageInfoEditor extends TextEditor implements IResourceChangeList
 
         IResource resource = ResourceUtil.getResource(getEditorInput());
         if (resource != null)
-            resource.getWorkspace().addResourceChangeListener(this);
+            resource.getWorkspace()
+                .addResourceChangeListener(this);
     }
 
     void updateTitleIcon() {
@@ -116,7 +118,8 @@ public class PackageInfoEditor extends TextEditor implements IResourceChangeList
         super.dispose();
 
         if (resource != null)
-            resource.getWorkspace().removeResourceChangeListener(this);
+            resource.getWorkspace()
+                .removeResourceChangeListener(this);
 
         if (imgTitleBase != null)
             imgTitleBase.dispose();
@@ -127,6 +130,7 @@ public class PackageInfoEditor extends TextEditor implements IResourceChangeList
 
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
         IResource resource = ResourceUtil.getResource(getEditorInput());
         IResourceDelta delta = event.getDelta();
@@ -140,6 +144,7 @@ public class PackageInfoEditor extends TextEditor implements IResourceChangeList
 
         if ((delta.getFlags() & IResourceDelta.MARKERS) != 0)
             SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, new Runnable() {
+                @Override
                 public void run() {
                     updateTitleIcon();
                 }

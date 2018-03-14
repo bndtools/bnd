@@ -16,6 +16,7 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 
 public class BundleClassCompletionProposalComputer implements IJavaCompletionProposalComputer {
 
+    @Override
     public List<ICompletionProposal> computeCompletionProposals(ContentAssistInvocationContext context, IProgressMonitor monitor) {
         List<ICompletionProposal> result = new LinkedList<ICompletionProposal>();
 
@@ -37,6 +38,7 @@ public class BundleClassCompletionProposalComputer implements IJavaCompletionPro
         return result;
     }
 
+    @Override
     public List<IContextInformation> computeContextInformation(ContentAssistInvocationContext context, IProgressMonitor monitor) {
         List<IContextInformation> result = new LinkedList<IContextInformation>();
 
@@ -45,11 +47,14 @@ public class BundleClassCompletionProposalComputer implements IJavaCompletionPro
         return result;
     }
 
+    @Override
     public String getErrorMessage() {
         return null;
     }
 
+    @Override
     public void sessionStarted() {}
 
+    @Override
     public void sessionEnded() {}
 }

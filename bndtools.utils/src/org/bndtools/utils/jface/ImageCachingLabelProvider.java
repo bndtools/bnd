@@ -19,7 +19,7 @@ public class ImageCachingLabelProvider extends StyledCellLabelProvider {
 
     private static final Bundle bundle = FrameworkUtil.getBundle(ImageCachingLabelProvider.class);
 
-    private final Map<String,Image> cache = new HashMap<String,Image>();
+    private final Map<String, Image> cache = new HashMap<String, Image>();
     private final String pluginId;
 
     private final ILog log;
@@ -27,7 +27,8 @@ public class ImageCachingLabelProvider extends StyledCellLabelProvider {
     public ImageCachingLabelProvider(String pluginId) {
         this.pluginId = pluginId;
 
-        this.log = (bundle != null) ? InternalPlatform.getDefault().getLog(bundle) : null;
+        this.log = (bundle != null) ? InternalPlatform.getDefault()
+            .getLog(bundle) : null;
     }
 
     protected synchronized Image getImage(String path, boolean returnMissingImageOnError) {
@@ -57,7 +58,7 @@ public class ImageCachingLabelProvider extends StyledCellLabelProvider {
         super.dispose();
 
         synchronized (this) {
-            for (Entry<String,Image> entry : cache.entrySet()) {
+            for (Entry<String, Image> entry : cache.entrySet()) {
                 Image image = entry.getValue();
                 if (!image.isDisposed())
                     image.dispose();

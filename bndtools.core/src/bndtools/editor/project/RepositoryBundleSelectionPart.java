@@ -98,14 +98,16 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
     @Override
     protected String[] getProperties() {
         return new String[] {
-                propertyName
+            propertyName
         };
     }
 
     protected ToolItem createAddItemTool(ToolBar toolbar) {
         ToolItem tool = new ToolItem(toolbar, SWT.PUSH);
 
-        tool.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ADD));
+        tool.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_OBJ_ADD));
         tool.setToolTipText("Add Bundle");
         tool.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -120,8 +122,12 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
     protected ToolItem createRemoveItemTool(ToolBar toolbar) {
         ToolItem tool = new ToolItem(toolbar, SWT.PUSH);
 
-        tool.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE));
-        tool.setDisabledImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
+        tool.setImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE));
+        tool.setDisabledImage(PlatformUI.getWorkbench()
+            .getSharedImages()
+            .getImage(ISharedImages.IMG_TOOL_DELETE_DISABLED));
         tool.setToolTipText("Remove");
         tool.setEnabled(false);
         tool.addSelectionListener(new SelectionAdapter() {
@@ -180,21 +186,25 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 
             @Override
             public boolean validateDrop(Object target, int operation, TransferData transferType) {
-                if (FileTransfer.getInstance().isSupportedType(transferType))
+                if (FileTransfer.getInstance()
+                    .isSupportedType(transferType))
                     return true;
 
-                if (ResourceTransfer.getInstance().isSupportedType(transferType))
+                if (ResourceTransfer.getInstance()
+                    .isSupportedType(transferType))
                     return true;
 
-                if (URLTransfer.getInstance().isSupportedType(transferType))
+                if (URLTransfer.getInstance()
+                    .isSupportedType(transferType))
                     return true;
 
-                ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+                ISelection selection = LocalSelectionTransfer.getTransfer()
+                    .getSelection();
                 if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
                     return false;
                 }
 
-                Iterator< ? > iterator = ((IStructuredSelection) selection).iterator();
+                Iterator<?> iterator = ((IStructuredSelection) selection).iterator();
                 while (iterator.hasNext()) {
                     if (!selectionIsDroppable(iterator.next())) {
                         return false;
@@ -211,8 +221,10 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
             public boolean performDrop(Object data) {
                 TransferData transfer = getCurrentEvent().currentDataType;
 
-                if (URLTransfer.getInstance().isSupportedType(transfer)) {
-                    String urlStr = (String) URLTransfer.getInstance().nativeToJava(transfer);
+                if (URLTransfer.getInstance()
+                    .isSupportedType(transfer)) {
+                    String urlStr = (String) URLTransfer.getInstance()
+                        .nativeToJava(transfer);
                     return handleURLDrop(urlStr);
                 } else if (data instanceof String[]) {
                     return handleFileNameDrop((String[]) data);
@@ -226,7 +238,8 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
             private boolean handleResourceDrop(IResource[] resources) {
                 File[] files = new File[resources.length];
                 for (int i = 0; i < resources.length; i++) {
-                    files[i] = resources[i].getLocation().toFile();
+                    files[i] = resources[i].getLocation()
+                        .toFile();
                 }
                 return handleFileDrop(files);
             }
@@ -245,7 +258,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
                     boolean hideWarning = prefs.getHideWarningExternalFile();
                     if (!hideWarning) {
                         MessageDialogWithToggle dialog = MessageDialogWithToggle.openWarning(getSection().getShell(), "Add External Files",
-                                "External files cannot be directly added to a project, they must be added to a local repository first.", "Do not show this warning again.", false, null, null);
+                            "External files cannot be directly added to a project, they must be added to a local repository first.", "Do not show this warning again.", false, null, null);
                         if (Window.CANCEL == dialog.getReturnCode())
                             return false;
                         if (dialog.getToggleState()) {
@@ -256,10 +269,10 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
                     AddFilesToRepositoryWizard wizard = new AddFilesToRepositoryWizard(null, files);
                     WizardDialog dialog = new WizardDialog(getSection().getShell(), wizard);
                     if (Window.OK == dialog.open()) {
-                        List<Pair<String,String>> addingBundles = wizard.getSelectedBundles();
+                        List<Pair<String, String>> addingBundles = wizard.getSelectedBundles();
                         List<VersionedClause> addingClauses = new ArrayList<VersionedClause>(addingBundles.size());
 
-                        for (Pair<String,String> addingBundle : addingBundles) {
+                        for (Pair<String, String> addingBundle : addingBundles) {
                             Attrs attribs = new Attrs();
                             attribs.put(Constants.VERSION_ATTRIBUTE, addingBundle.getSecond());
                             addingClauses.add(new VersionedClause(addingBundle.getFirst(), attribs));
@@ -273,12 +286,13 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
             }
 
             private boolean handleSelectionDrop() {
-                ISelection selection = LocalSelectionTransfer.getTransfer().getSelection();
+                ISelection selection = LocalSelectionTransfer.getTransfer()
+                    .getSelection();
                 if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
                     return false;
                 }
                 List<VersionedClause> adding = new LinkedList<VersionedClause>();
-                Iterator< ? > iterator = ((IStructuredSelection) selection).iterator();
+                Iterator<?> iterator = ((IStructuredSelection) selection).iterator();
                 while (iterator.hasNext()) {
                     Object item = iterator.next();
                     if (item instanceof RepositoryBundle) {
@@ -327,7 +341,8 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
             private String sanitizeUrl(String urlStr) {
                 int newline = urlStr.indexOf('\n');
                 if (newline > -1)
-                    return urlStr.substring(0, newline).trim();
+                    return urlStr.substring(0, newline)
+                        .trim();
                 return urlStr;
             }
 
@@ -340,7 +355,8 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
                     boolean found = false;
                     for (ListIterator<VersionedClause> iter = bundles.listIterator(); iter.hasNext();) {
                         VersionedClause existing = iter.next();
-                        if (newClause.getName().equals(existing.getName())) {
+                        if (newClause.getName()
+                            .equals(existing.getName())) {
                             int index = iter.previousIndex();
                             iter.set(newClause);
                             viewer.replace(newClause, index);
@@ -362,7 +378,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
         dropAdapter.setFeedbackEnabled(false);
         dropAdapter.setExpandEnabled(false);
         viewer.addDropSupport(DND.DROP_COPY | DND.DROP_MOVE, new Transfer[] {
-                LocalSelectionTransfer.getTransfer(), FileTransfer.getInstance(), ResourceTransfer.getInstance(), URLTransfer.getInstance()
+            LocalSelectionTransfer.getTransfer(), FileTransfer.getInstance(), ResourceTransfer.getInstance(), URLTransfer.getInstance()
         }, dropAdapter);
 
         table.addKeyListener(new KeyAdapter() {
@@ -395,7 +411,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
             return false;
 
         if (selection instanceof IStructuredSelection) {
-            List< ? > list = ((IStructuredSelection) selection).toList();
+            List<?> list = ((IStructuredSelection) selection).toList();
             for (Object object : list) {
                 if (!(object instanceof VersionedClause)) {
                     return false;
@@ -417,12 +433,13 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 
     protected void setBundles(final List<VersionedClause> bundles) {
         this.bundles = bundles;
-        Display.getDefault().asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                viewer.setInput(bundles);
-            }
-        });
+        Display.getDefault()
+            .asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    viewer.setInput(bundles);
+                }
+            });
     }
 
     private void doAdd() {
@@ -446,7 +463,7 @@ public abstract class RepositoryBundleSelectionPart extends BndEditorPart implem
 
         IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
         if (!selection.isEmpty()) {
-            Iterator< ? > elements = selection.iterator();
+            Iterator<?> elements = selection.iterator();
             List<Object> removed = new LinkedList<Object>();
             while (elements.hasNext()) {
                 Object element = elements.next();

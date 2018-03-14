@@ -90,7 +90,8 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
         formText.setBackground(tree.getBackground());
         formText.setForeground(tree.getForeground());
         formText.setFont("fixed", JFaceResources.getTextFont());
-        formText.setFont("italic", JFaceResources.getFontRegistry().getItalic(""));
+        formText.setFont("italic", JFaceResources.getFontRegistry()
+            .getItalic(""));
 
         GridData gd_cmpDescription = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd_cmpDescription.heightHint = 100;
@@ -120,20 +121,22 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
             }
         });
 
-        txtDescription.getFormText().addHyperlinkListener(new HyperlinkAdapter() {
-            @Override
-            public void linkActivated(HyperlinkEvent event) {
-                IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench().getBrowserSupport();
-                try {
-                    IWebBrowser externalBrowser = browserSupport.getExternalBrowser();
-                    externalBrowser.openURL(new URL((String) event.getHref()));
-                } catch (PartInitException e) {
-                    logger.logError("Error opening external browser.", e);
-                } catch (MalformedURLException e) {
-                    // Ignore
+        txtDescription.getFormText()
+            .addHyperlinkListener(new HyperlinkAdapter() {
+                @Override
+                public void linkActivated(HyperlinkEvent event) {
+                    IWorkbenchBrowserSupport browserSupport = PlatformUI.getWorkbench()
+                        .getBrowserSupport();
+                    try {
+                        IWebBrowser externalBrowser = browserSupport.getExternalBrowser();
+                        externalBrowser.openURL(new URL((String) event.getHref()));
+                    } catch (PartInitException e) {
+                        logger.logError("Error opening external browser.", e);
+                    } catch (MalformedURLException e) {
+                        // Ignore
+                    }
                 }
-            }
-        });
+            });
 
         updateUI();
     }
@@ -173,8 +176,10 @@ public abstract class AbstractTemplateSelectionWizardPage extends WizardPage {
             String name = element.getAttribute("name");
             String htmlAttr = element.getAttribute("doc");
             if (htmlAttr != null) {
-                String bsn = element.getContributor().getName();
-                Bundle bundle = BundleUtils.findBundle(Plugin.getDefault().getBundleContext(), bsn, null);
+                String bsn = element.getContributor()
+                    .getName();
+                Bundle bundle = BundleUtils.findBundle(Plugin.getDefault()
+                    .getBundleContext(), bsn, null);
                 if (bundle != null) {
                     URL htmlUrl = bundle.getResource(htmlAttr);
                     if (htmlUrl == null)

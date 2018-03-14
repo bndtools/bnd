@@ -31,11 +31,11 @@ import aQute.service.reporter.Reporter;
 import bndtools.Plugin;
 
 @Component(name = "org.bndtools.templating.extension", property = {
-        "source=extension", Constants.SERVICE_DESCRIPTION + "=Load templates from the Eclipse Extension Registry"
+    "source=extension", Constants.SERVICE_DESCRIPTION + "=Load templates from the Eclipse Extension Registry"
 })
 public class ExtensionRegistryTemplateLoader implements TemplateLoader {
 
-    private final Map<String,String> typeToExtPoint = new HashMap<>();
+    private final Map<String, String> typeToExtPoint = new HashMap<>();
 
     private PromiseFactory promiseFactory;
     private ExecutorService localExecutor = null;
@@ -68,7 +68,8 @@ public class ExtensionRegistryTemplateLoader implements TemplateLoader {
         List<Template> templates;
         String extPoint = typeToExtPoint.get(type);
         if (extPoint != null) {
-            IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(Plugin.PLUGIN_ID, extPoint);
+            IConfigurationElement[] elements = Platform.getExtensionRegistry()
+                .getConfigurationElementsFor(Plugin.PLUGIN_ID, extPoint);
             if (elements == null)
                 elements = new IConfigurationElement[0];
             templates = new ArrayList<>(elements.length);
@@ -83,7 +84,9 @@ public class ExtensionRegistryTemplateLoader implements TemplateLoader {
                     Template extTemplate = (Template) element.createExecutableExtension("class");
                     templates.add(extTemplate);
                 } catch (CoreException e) {
-                    Plugin.getDefault().getLog().log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error loading template '%s' from bundle %s", elementName, contributor.getName()), e));
+                    Plugin.getDefault()
+                        .getLog()
+                        .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, String.format("Error loading template '%s' from bundle %s", elementName, contributor.getName()), e));
                 } finally {
                     worked += 1f;
                     reporter.progress(worked / total, "Loading templates");

@@ -5,12 +5,12 @@ import java.io.File;
 import org.bndtools.api.IValidator;
 import org.eclipse.core.runtime.IStatus;
 
-import bndtools.central.Central;
 import aQute.bnd.build.Project;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.service.reporter.Reporter.SetLocation;
+import bndtools.central.Central;
 
 public class BsnValidator implements IValidator {
 
@@ -39,7 +39,8 @@ public class BsnValidator implements IValidator {
         }
 
         File pf = builder.getPropertiesFile();
-        String rover = bsn.substring(project.getName().length());
+        String rover = bsn.substring(project.getName()
+            .length());
         if (rover.startsWith(".")) {
             rover = rover.substring(1);
 

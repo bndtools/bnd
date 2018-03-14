@@ -13,8 +13,10 @@ public class URLLabelProvider extends StyledCellLabelProvider {
     private final Image fileImg;
 
     public URLLabelProvider(Device device) {
-        linkImg = Icons.desc("link").createImage(device);
-        fileImg = Icons.desc("file").createImage();
+        linkImg = Icons.desc("link")
+            .createImage(device);
+        fileImg = Icons.desc("file")
+            .createImage();
     }
 
     @Override

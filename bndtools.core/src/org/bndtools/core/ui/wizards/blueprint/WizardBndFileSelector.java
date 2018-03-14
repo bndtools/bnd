@@ -111,7 +111,9 @@ public class WizardBndFileSelector extends WizardPage {
     public void updateControls(IPath containerFullPath) {
 
         String selectedProjectName = containerFullPath.segment(0);
-        final IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(selectedProjectName);
+        final IProject project = ResourcesPlugin.getWorkspace()
+            .getRoot()
+            .getProject(selectedProjectName);
 
         final List<IResource> bndFiles = new ArrayList<IResource>();
 
@@ -120,7 +122,8 @@ public class WizardBndFileSelector extends WizardPage {
 
                 @Override
                 public boolean visit(IResourceProxy res) throws CoreException {
-                    if (res.getType() == IResource.FILE && res.getName().endsWith(".bnd")) {
+                    if (res.getType() == IResource.FILE && res.getName()
+                        .endsWith(".bnd")) {
                         bndFiles.add(res.requestResource());
                     }
                     return true;
@@ -137,7 +140,8 @@ public class WizardBndFileSelector extends WizardPage {
             checkboxTreeViewer.setCheckedElements(bndFiles.toArray());
 
         checkboxTreeViewer.refresh(true);
-        checkboxTreeViewer.getControl().redraw();
+        checkboxTreeViewer.getControl()
+            .redraw();
     }
 
     private void setupTree(final List<IResource> bndFiles) {

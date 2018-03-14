@@ -102,7 +102,7 @@ import bndtools.utils.SelectionUtils;
 public class ResolutionView extends ViewPart implements ISelectionListener, IResourceChangeListener {
 
     private static String[] FILTERED_CAPABILITY_NAMESPACES = {
-            IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE
+        IdentityNamespace.IDENTITY_NAMESPACE, HostNamespace.HOST_NAMESPACE
     };
 
     private Display display = null;
@@ -138,10 +138,12 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
                 IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
                 IFile file = ResourceUtil.getFile(editorInput);
                 if (file != null) {
-                    CapReqLoader loader = getLoaderForFile(file.getLocation().toFile());
+                    CapReqLoader loader = getLoaderForFile(file.getLocation()
+                        .toFile());
                     if (loader != null) {
                         setLoaders(Collections.singleton(loader));
-                        if (getSite().getPage().isPartVisible(ResolutionView.this)) {
+                        if (getSite().getPage()
+                            .isPartVisible(ResolutionView.this)) {
                             executeAnalysis();
                         } else {
                             outOfDate = true;
@@ -166,9 +168,13 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
     private CapReqLoader getLoaderForFile(File file) {
         CapReqLoader loader;
-        if (file.getName().toLowerCase().endsWith(".bnd")) {
+        if (file.getName()
+            .toLowerCase()
+            .endsWith(".bnd")) {
             loader = new BndFileCapReqLoader(file);
-        } else if (file.getName().toLowerCase().endsWith(".jar")) {
+        } else if (file.getName()
+            .toLowerCase()
+            .endsWith(".jar")) {
             loader = new JarFileCapReqLoader(file);
         } else {
             loader = null;
@@ -221,12 +227,12 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         capsViewer.setLabelProvider(new CapabilityLabelProvider(true));
         capsViewer.setContentProvider(new CapReqMapContentProvider());
         capsViewer.setFilters(new ViewerFilter[] {
-                new ViewerFilter() {
-                    @Override
-                    public boolean select(Viewer viewer, Object parent, Object element) {
-                        return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
-                    }
+            new ViewerFilter() {
+                @Override
+                public boolean select(Viewer viewer, Object parent, Object element) {
+                    return !filteredCapabilityNamespaces.contains(((Capability) element).getNamespace());
                 }
+            }
         });
 
         hideSelfImportsFilter = new ViewerFilter() {
@@ -241,29 +247,30 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
             }
         };
         reqsViewer.setFilters(new ViewerFilter[] {
-                hideSelfImportsFilter
+            hideSelfImportsFilter
         });
 
         reqsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
-                LocalSelectionTransfer.getTransfer()
+            LocalSelectionTransfer.getTransfer()
         }, new LocalTransferDragListener(reqsViewer));
 
         capsViewer.addDragSupport(DND.DROP_MOVE | DND.DROP_COPY, new Transfer[] {
-                LocalSelectionTransfer.getTransfer()
+            LocalSelectionTransfer.getTransfer()
         }, new LocalTransferDragListener(capsViewer));
 
         reqsViewer.addOpenListener(new IOpenListener() {
             @Override
             public void open(OpenEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                for (Iterator< ? > iter = selection.iterator(); iter.hasNext();) {
+                for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
                     Object item = iter.next();
                     if (item instanceof Clazz) {
                         Clazz clazz = (Clazz) item;
                         String className = clazz.getFQN();
                         IType type = null;
                         if (!loaders.isEmpty()) {
-                            IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+                            IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+                                .getRoot();
                             for (CapReqLoader loader : loaders) {
                                 if (loader instanceof BndBuilderCapReqLoader) {
                                     File loaderFile = ((BndBuilderCapReqLoader) loader).getFile();
@@ -297,13 +304,19 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
         fillActionBars();
 
-        getSite().getPage().addPostSelectionListener(this);
-        getSite().getPage().addPartListener(partAdapter);
-        ResourcesPlugin.getWorkspace().addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
+        getSite().getPage()
+            .addPostSelectionListener(this);
+        getSite().getPage()
+            .addPartListener(partAdapter);
+        ResourcesPlugin.getWorkspace()
+            .addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 
         // Current selection & part
-        IWorkbenchPart activePart = getSite().getPage().getActivePart();
-        ISelection activeSelection = getSite().getWorkbenchWindow().getSelectionService().getSelection();
+        IWorkbenchPart activePart = getSite().getPage()
+            .getActivePart();
+        ISelection activeSelection = getSite().getWorkbenchWindow()
+            .getSelectionService()
+            .getSelection();
         selectionChanged(activePart, activeSelection);
     }
 
@@ -335,7 +348,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
         toggleLockInput.setImageDescriptor(Icons.desc("lock"));
         toggleLockInput.setToolTipText("Lock to current selection");
 
-        IToolBarManager toolBarManager = getViewSite().getActionBars().getToolBarManager();
+        IToolBarManager toolBarManager = getViewSite().getActionBars()
+            .getToolBarManager();
         toolBarManager.add(toggleShowSelfImports);
         toolBarManager.add(toggleLockInput);
     }
@@ -345,14 +359,17 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
     @Override
     public void dispose() {
-        getSite().getPage().removeSelectionListener(this);
-        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-        getSite().getPage().removePartListener(partAdapter);
+        getSite().getPage()
+            .removeSelectionListener(this);
+        ResourcesPlugin.getWorkspace()
+            .removeResourceChangeListener(this);
+        getSite().getPage()
+            .removePartListener(partAdapter);
         setLoaders(Collections.<CapReqLoader> emptySet());
         super.dispose();
     }
 
-    public void setInput(Set<CapReqLoader> sourceLoaders, Map<String,List<Capability>> capabilities, Map<String,List<RequirementWrapper>> requirements) {
+    public void setInput(Set<CapReqLoader> sourceLoaders, Map<String, List<Capability>> capabilities, Map<String, List<RequirementWrapper>> requirements) {
         setLoaders(sourceLoaders);
         sourceLoaders = loaders;
         if (reqsTree != null && !reqsTree.isDisposed() && capsTable != null && !capsTable.isDisposed()) {
@@ -384,7 +401,8 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
         Set<CapReqLoader> loaders = getLoadersFromSelection((IStructuredSelection) selection);
         if (setLoaders(loaders)) {
-            if (getSite().getPage().isPartVisible(this)) {
+            if (getSite().getPage()
+                .isPartVisible(this)) {
                 executeAnalysis();
             } else {
                 outOfDate = true;
@@ -394,7 +412,7 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
 
     private Set<CapReqLoader> getLoadersFromSelection(IStructuredSelection structSel) {
         Set<CapReqLoader> result = new LinkedHashSet<CapReqLoader>();
-        Iterator< ? > iter = structSel.iterator();
+        Iterator<?> iter = structSel.iterator();
         while (iter.hasNext()) {
 
             Object element = iter.next();
@@ -480,13 +498,15 @@ public class ResolutionView extends ViewPart implements ISelectionListener, IRes
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
         if (!loaders.isEmpty()) {
-            IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+            IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+                .getRoot();
             for (CapReqLoader loader : loaders) {
                 if (loader instanceof BndBuilderCapReqLoader) {
                     File file = ((BndBuilderCapReqLoader) loader).getFile();
                     IFile[] wsfiles = wsroot.findFilesForLocationURI(file.toURI());
                     for (IFile wsfile : wsfiles) {
-                        if (event.getDelta().findMember(wsfile.getFullPath()) != null) {
+                        if (event.getDelta()
+                            .findMember(wsfile.getFullPath()) != null) {
                             executeAnalysis();
                             break;
                         }

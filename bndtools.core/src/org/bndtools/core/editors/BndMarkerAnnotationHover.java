@@ -9,9 +9,11 @@ import org.eclipse.ui.texteditor.MarkerAnnotation;
 
 public class BndMarkerAnnotationHover implements IAnnotationHover {
 
+    @Override
     public String getHoverInfo(ISourceViewer sourceViewer, int lineNum) {
         @SuppressWarnings("rawtypes")
-        Iterator iter = sourceViewer.getAnnotationModel().getAnnotationIterator();
+        Iterator iter = sourceViewer.getAnnotationModel()
+            .getAnnotationIterator();
         while (iter.hasNext()) {
             Object annotation = iter.next();
             if (annotation instanceof MarkerAnnotation) {

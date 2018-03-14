@@ -62,7 +62,7 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
     // The shared instance
     private static Activator plugin;
 
-    private static ServiceTracker<Workspace,Workspace> workspaceTracker;
+    private static ServiceTracker<Workspace, Workspace> workspaceTracker;
 
     private volatile ScheduledExecutorService scheduler;
 
@@ -75,7 +75,7 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
     public void start(BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
-        workspaceTracker = new ServiceTracker<Workspace,Workspace>(context, Workspace.class, null);
+        workspaceTracker = new ServiceTracker<Workspace, Workspace>(context, Workspace.class, null);
         workspaceTracker.open();
 
         scheduler = Executors.newScheduledThreadPool(1);
@@ -104,20 +104,23 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
 
     public static void log(String msg, int msgType) {
         ILog log = getDefault().getLog();
-        Status status = new Status(msgType, getDefault().getBundle().getSymbolicName(), msgType, msg + "\n", null); //$NON-NLS-1$
+        Status status = new Status(msgType, getDefault().getBundle()
+            .getSymbolicName(), msgType, msg + "\n", null); //$NON-NLS-1$
         log.log(status);
     }
 
     static void async(Runnable run) {
         if (Display.getCurrent() == null) {
-            Display.getDefault().asyncExec(run);
+            Display.getDefault()
+                .asyncExec(run);
         } else
             run.run();
     }
 
     static void sync(Runnable run) {
         if (Display.getCurrent() == null) {
-            Display.getDefault().syncExec(run);
+            Display.getDefault()
+                .syncExec(run);
         } else
             run.run();
     }
@@ -145,8 +148,7 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
     /**
      * Returns an image descriptor for the image file at the given plug-in relative path
      *
-     * @param path
-     *            the path
+     * @param path the path
      * @return the image descriptor
      */
     public static ImageDescriptor getImageDescriptor(String path) {
@@ -163,7 +165,8 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
     }
 
     private static void loadBundleImages(ImageRegistry reg, String rootPath, String parent, String filePattern) {
-        Enumeration<URL> en = plugin.getBundle().findEntries(rootPath + "/" + parent, filePattern, false);
+        Enumeration<URL> en = plugin.getBundle()
+            .findEntries(rootPath + "/" + parent, filePattern, false);
         if (en == null) {
             return;
         }
@@ -176,8 +179,10 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
     }
 
     private static String getResourceName(URL url) {
-        int idx = url.getPath().lastIndexOf('/');
-        String name = url.getPath().substring(idx + 1);
+        int idx = url.getPath()
+            .lastIndexOf('/');
+        String name = url.getPath()
+            .substring(idx + 1);
         return name.substring(0, name.lastIndexOf('.'));
     }
 
@@ -194,7 +199,8 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
 
     public static File getLocalRepoLocation(RepositoryPlugin repository) {
         try {
-            Method m = repository.getClass().getMethod("getRoot"); //$NON-NLS-1$
+            Method m = repository.getClass()
+                .getMethod("getRoot"); //$NON-NLS-1$
             if (m.getReturnType() == File.class) {
                 return (File) m.invoke(repository);
             }
@@ -253,7 +259,8 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
     }
 
     public static List<IReleaseParticipant> getReleaseParticipants() {
-        IConfigurationElement[] elements = Platform.getExtensionRegistry().getConfigurationElementsFor(PLUGIN_ID, "bndtoolsReleaseParticipant"); //$NON-NLS-1$
+        IConfigurationElement[] elements = Platform.getExtensionRegistry()
+            .getConfigurationElementsFor(PLUGIN_ID, "bndtoolsReleaseParticipant"); //$NON-NLS-1$
         if (elements.length == 0) {
             return Collections.emptyList();
         }
@@ -282,7 +289,8 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
     public static void log(IStatus status) {
         Activator instance = plugin;
         if (instance != null) {
-            instance.getLog().log(status);
+            instance.getLog()
+                .log(status);
         } else {
             System.err.println(String.format(Messages.loggingError, Activator.PLUGIN_ID));
         }
@@ -298,7 +306,7 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null); //$NON-NLS-1$
+                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null); //$NON-NLS-1$
                 ErrorDialog.openError(null, Messages.errorDialogTitle, sb.toString(), s);
             }
         });

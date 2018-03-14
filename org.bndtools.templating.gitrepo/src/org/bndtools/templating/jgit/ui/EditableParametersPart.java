@@ -50,7 +50,7 @@ public class EditableParametersPart {
     private final String title;
     private final NewEntryDialogFactory dialogFactory;
 
-    private List<Pair<String,Attrs>> entries;
+    private List<Pair<String, Attrs>> entries;
 
     private Composite parent;
     private TableViewer viewer;
@@ -64,14 +64,14 @@ public class EditableParametersPart {
 
     public void setParameters(Parameters params) {
         entries = new ArrayList<>(params.size());
-        for (Entry<String,Attrs> entry : params.entrySet()) {
+        for (Entry<String, Attrs> entry : params.entrySet()) {
             entries.add(new Pair<>(GitRepoPreferences.removeDuplicateMarker(entry.getKey()), entry.getValue()));
         }
     }
 
     public Parameters getParameters() {
         Parameters params = new Parameters();
-        for (Pair<String,Attrs> entry : entries) {
+        for (Pair<String, Attrs> entry : entries) {
             params.add(entry.getFirst(), entry.getSecond());
         }
         return params;
@@ -95,9 +95,10 @@ public class EditableParametersPart {
             @Override
             public void update(ViewerCell cell) {
                 @SuppressWarnings("unchecked")
-                Pair<String,Attrs> entry = (Pair<String,Attrs>) cell.getElement();
+                Pair<String, Attrs> entry = (Pair<String, Attrs>) cell.getElement();
                 StyledString label = new StyledString(entry.getFirst(), BoldStyler.INSTANCE_DEFAULT);
-                for (Entry<String,String> attribEntry : entry.getSecond().entrySet()) {
+                for (Entry<String, String> attribEntry : entry.getSecond()
+                    .entrySet()) {
                     label.append("; " + attribEntry.getKey() + "=", StyledString.QUALIFIER_STYLER);
                     label.append(attribEntry.getValue());
                 }
@@ -115,8 +116,10 @@ public class EditableParametersPart {
         final AddRemoveButtonBarPart buttonBarPart = new AddRemoveButtonBarPart();
         ToolBar buttonBar = buttonBarPart.createControl(composite, SWT.FLAT | SWT.VERTICAL);
         buttonBar.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false));
-        final Image imgEdit = ImageDescriptor.createFromURL(BUNDLE.getEntry("icons/edit.gif")).createImage(parent.getDisplay());
-        final Image imgEditDisabled = ImageDescriptor.createFromURL(BUNDLE.getEntry("icons/edit-disabled.gif")).createImage(parent.getDisplay());
+        final Image imgEdit = ImageDescriptor.createFromURL(BUNDLE.getEntry("icons/edit.gif"))
+            .createImage(parent.getDisplay());
+        final Image imgEditDisabled = ImageDescriptor.createFromURL(BUNDLE.getEntry("icons/edit-disabled.gif"))
+            .createImage(parent.getDisplay());
         final ToolItem btnEdit = new ToolItem(buttonBar, SWT.PUSH);
         btnEdit.setImage(imgEdit);
         btnEdit.setDisabledImage(imgEditDisabled);
@@ -143,7 +146,8 @@ public class EditableParametersPart {
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event) {
-                boolean enabled = !viewer.getSelection().isEmpty();
+                boolean enabled = !viewer.getSelection()
+                    .isEmpty();
                 buttonBarPart.setRemoveEnabled(enabled);
                 btnEdit.setEnabled(enabled);
             }
@@ -176,14 +180,15 @@ public class EditableParametersPart {
     void doAdd() {
         AbstractNewEntryDialog dialog = dialogFactory.create(parent.getShell());
         if (dialog.open() == Window.OK) {
-            Pair<String,Attrs> entry = dialog.getEntry();
+            Pair<String, Attrs> entry = dialog.getEntry();
             entries.add(entry);
             viewer.add(entry);
         }
     }
 
     void doRemove() {
-        int[] indices = viewer.getTable().getSelectionIndices();
+        int[] indices = viewer.getTable()
+            .getSelectionIndices();
         if (indices == null)
             return;
 
@@ -196,11 +201,11 @@ public class EditableParametersPart {
 
     void doEdit() {
         @SuppressWarnings("unchecked")
-        Pair<String,Attrs> selected = (Pair<String,Attrs>) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
+        Pair<String, Attrs> selected = (Pair<String, Attrs>) ((IStructuredSelection) viewer.getSelection()).getFirstElement();
         AbstractNewEntryDialog dialog = dialogFactory.create(parent.getShell());
         dialog.setEntry(selected);
         if (dialog.open() == Window.OK) {
-            Pair<String,Attrs> newEntry = dialog.getEntry();
+            Pair<String, Attrs> newEntry = dialog.getEntry();
 
             int index = entries.indexOf(selected);
             entries.set(index, newEntry);

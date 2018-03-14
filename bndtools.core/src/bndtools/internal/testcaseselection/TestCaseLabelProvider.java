@@ -19,7 +19,8 @@ import bndtools.Plugin;
 
 public class TestCaseLabelProvider extends LabelProvider {
 
-    private Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/test.gif").createImage();
+    private Image junitImg = AbstractUIPlugin.imageDescriptorFromPlugin(Plugin.PLUGIN_ID, "icons/test.gif")
+        .createImage();
 
     @Override
     public String getText(Object element) {
@@ -27,7 +28,8 @@ public class TestCaseLabelProvider extends LabelProvider {
         if (element instanceof String)
             result = (String) element;
         else if (element instanceof IPath)
-            result = ((IPath) element).toString().replace('/', '.');
+            result = ((IPath) element).toString()
+                .replace('/', '.');
         else
             result = "<error>"; //$NON-NLS-1$
         return result;

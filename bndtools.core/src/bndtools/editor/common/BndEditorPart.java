@@ -13,6 +13,7 @@ import org.eclipse.ui.forms.SectionPart;
 import org.eclipse.ui.forms.editor.IFormPage;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
+
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.central.Central;
 import bndtools.editor.BndEditor;

@@ -84,11 +84,13 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
     private static final ILogger logger = Logger.getLogger(GeneralInfoPart.class);
 
     private static final String[] EDITABLE_PROPERTIES = new String[] {
-            Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.DSANNOTATIONS
+        Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.DSANNOTATIONS
     };
 
     private static enum ComponentChoice {
-        None("None"), Bnd("Bnd Annotations"), DS("OSGi DS Annotations");
+        None("None"),
+        Bnd("Bnd Annotations"),
+        DS("OSGi DS Annotations");
 
         private final String label;
 
@@ -144,7 +146,8 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         } catch (ParseException x) {
             // Ignore
         }
-        FieldDecoration contentAssistDecoration = FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
+        FieldDecoration contentAssistDecoration = FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL);
 
         Composite composite = toolkit.createComposite(section);
         section.setClient(composite);
@@ -184,7 +187,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
         // Decorator for the Components combo
         ControlDecoration decorComponents = new ControlDecoration(cmbComponents, SWT.LEFT | SWT.CENTER, composite);
-        decorComponents.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION).getImage());
+        decorComponents.setImage(FieldDecorationRegistry.getDefault()
+            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
+            .getImage());
         decorComponents.setMarginWidth(3);
         decorComponents.setDescriptionText("Use Java annotations to detect Declarative Service Components.");
         decorComponents.setShowOnlyOnFocus(false);
@@ -251,10 +256,11 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                             JavaUI.openInEditor(activatorType, true, true);
                         }
                     } catch (PartInitException e) {
-                        ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null,
-                                new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening an editor for activator class '{0}'.", activatorClassName), e));
+                        ErrorDialog.openError(getManagedForm().getForm()
+                            .getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error opening an editor for activator class '{0}'.", activatorClassName), e));
                     } catch (JavaModelException e) {
-                        ErrorDialog.openError(getManagedForm().getForm().getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error searching for activator class '{0}'.", activatorClassName), e));
+                        ErrorDialog.openError(getManagedForm().getForm()
+                            .getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error searching for activator class '{0}'.", activatorClassName), e));
                     }
                 }
             }
@@ -324,17 +330,17 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
             if (dirtySet.contains(aQute.bnd.osgi.Constants.SERVICE_COMPONENT) || dirtySet.contains(aQute.bnd.osgi.Constants.DSANNOTATIONS)) {
                 switch (componentChoice) {
-                case Bnd :
-                    model.setServiceComponents(Collections.singletonList(SERVICE_COMPONENT_STAR));
-                    model.setDSAnnotationPatterns(null);
-                    break;
-                case None :
-                    model.setServiceComponents(null);
-                    model.setDSAnnotationPatterns(Collections.singletonList(""));
-                    break;
-                default :
-                    model.setServiceComponents(null);
-                    model.setDSAnnotationPatterns(null);
+                    case Bnd :
+                        model.setServiceComponents(Collections.singletonList(SERVICE_COMPONENT_STAR));
+                        model.setDSAnnotationPatterns(null);
+                        break;
+                    case None :
+                        model.setServiceComponents(null);
+                        model.setDSAnnotationPatterns(Collections.singletonList(""));
+                        break;
+                    default :
+                        model.setServiceComponents(null);
+                        model.setDSAnnotationPatterns(null);
                 }
             }
         } finally {
@@ -439,7 +445,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                             if (activatorType != null) {
                                 ITypeHierarchy hierarchy = activatorType.newTypeHierarchy(javaProject, monitor);
                                 for (IType subType : hierarchy.getAllSubtypes(activatorType)) {
-                                    if (!Flags.isAbstract(subType.getFlags()) && subType.getElementName().toLowerCase().contains(prefix.toLowerCase())) {
+                                    if (!Flags.isAbstract(subType.getFlags()) && subType.getElementName()
+                                        .toLowerCase()
+                                        .contains(prefix.toLowerCase())) {
                                         result.add(new JavaTypeContentProposal(subType));
                                     }
                                 }
@@ -450,14 +458,16 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                     }
                 };
 
-                IWorkbenchWindow window = ((IFormPage) getManagedForm().getContainer()).getEditorSite().getWorkbenchWindow();
+                IWorkbenchWindow window = ((IFormPage) getManagedForm().getContainer()).getEditorSite()
+                    .getWorkbenchWindow();
                 window.run(false, false, runnable);
                 return result;
             } catch (InvocationTargetException e) {
                 logger.logError("Error searching for BundleActivator types", e.getTargetException());
                 return Collections.emptyList();
             } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                Thread.currentThread()
+                    .interrupt();
                 return Collections.emptyList();
             }
         }
@@ -465,7 +475,9 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         @Override
         protected boolean match(String contents, int position, IContentProposal proposal) {
             String prefix = contents.substring(0, position);
-            return ((JavaTypeContentProposal) proposal).getTypeName().toLowerCase().startsWith(prefix.toLowerCase());
+            return ((JavaTypeContentProposal) proposal).getTypeName()
+                .toLowerCase()
+                .startsWith(prefix.toLowerCase());
         }
     }
 }

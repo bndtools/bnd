@@ -20,6 +20,7 @@ public class PluginSelectionWizard extends Wizard {
         addPage(propertiesPage);
 
         classPage.addPropertyChangeListener("selectedElement", new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 propertiesPage.setConfigElement((IConfigurationElement) evt.getNewValue());
             }
@@ -28,7 +29,8 @@ public class PluginSelectionWizard extends Wizard {
 
     @Override
     public boolean performFinish() {
-        header = new HeaderClause(classPage.getSelectedElement().getAttribute("class"), propertiesPage.getProperties());
+        header = new HeaderClause(classPage.getSelectedElement()
+            .getAttribute("class"), propertiesPage.getProperties());
         return true;
     }
 

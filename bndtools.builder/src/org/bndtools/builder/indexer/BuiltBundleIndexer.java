@@ -34,7 +34,8 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
 
     @Override
     public void builtBundles(final IProject project, IPath[] paths) {
-        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace().getRoot();
+        IWorkspaceRoot wsroot = ResourcesPlugin.getWorkspace()
+            .getRoot();
         final URI workspaceRootUri = wsroot.getLocationURI();
 
         Set<File> files = new HashSet<File>();
@@ -81,7 +82,9 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
         // Parse the index and add to the workspace repository
         try (InputStream input = IO.stream(indexFile)) {
             WorkspaceR5Repository workspaceRepo = Central.getWorkspaceR5Repository();
-            workspaceRepo.loadProjectIndex(project, input, project.getLocation().toFile().toURI());
+            workspaceRepo.loadProjectIndex(project, input, project.getLocation()
+                .toFile()
+                .toURI());
         } catch (Exception e) {
             logger.logError("Failed to update workspace index.", e);
         }

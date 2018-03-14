@@ -29,7 +29,8 @@ class RepositoriesEditModel {
 
     RepositoriesEditModel(BndEditModel model) {
         this.model = model;
-        this.pluginOrder = model.getWorkspace().getPlugins(Repository.class);
+        this.pluginOrder = model.getWorkspace()
+            .getPlugins(Repository.class);
         this.standalone = model.getStandaloneLinks();
         this.runrepos = model.getRunRepos();
         this.ignoreStandalone = model.getIgnoreStandalone();
@@ -204,7 +205,9 @@ class RepositoriesEditModel {
         assert isStandalone();
 
         Processor properties = model.getProperties();
-        model.setWorkspace(Workspace.createStandaloneWorkspace(properties, model.getProject().getPropertiesFile().toURI()));
+        model.setWorkspace(Workspace.createStandaloneWorkspace(properties, model.getProject()
+            .getPropertiesFile()
+            .toURI()));
     }
 
     public RepositoriesEditModel setStandalone(boolean standalone, BndEditModel model) throws Exception {
@@ -229,7 +232,8 @@ class RepositoriesEditModel {
         String rname = toName(r);
 
         for (HeaderClause clause : standalone) {
-            String name = clause.getAttribs().get("name");
+            String name = clause.getAttribs()
+                .get("name");
             if (name == null)
                 name = clause.getName();
 

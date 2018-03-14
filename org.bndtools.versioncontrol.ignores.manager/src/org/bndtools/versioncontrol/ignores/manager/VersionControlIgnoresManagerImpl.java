@@ -24,8 +24,8 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresManager {
     private final ILogger logger = Logger.getLogger(this.getClass());
 
-    private final Map<String,VersionControlIgnoresPlugin> plugins = new TreeMap<String,VersionControlIgnoresPlugin>();
-    private final Map<String,NamedPlugin> pluginsInformation = new TreeMap<String,NamedPlugin>();
+    private final Map<String, VersionControlIgnoresPlugin> plugins = new TreeMap<String, VersionControlIgnoresPlugin>();
+    private final Map<String, NamedPlugin> pluginsInformation = new TreeMap<String, NamedPlugin>();
 
     @Reference(cardinality = ReferenceCardinality.AT_LEAST_ONE, policy = ReferencePolicy.DYNAMIC)
     void addPlugin(VersionControlIgnoresPlugin plugin) {
@@ -46,7 +46,8 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
             return;
         }
 
-        String name = plugin.getInformation().getName();
+        String name = plugin.getInformation()
+            .getName();
         synchronized (plugins) {
             pluginsInformation.remove(name);
             plugins.remove(name);
@@ -78,7 +79,8 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
     public void addIgnores(Set<String> plugins, File dstDir, String ignores) {
         List<String> ignoredEntries = null;
         if (ignores != null && ignores.trim() != null) {
-            String[] entries = ignores.trim().split("\\s*,\\s*");
+            String[] entries = ignores.trim()
+                .split("\\s*,\\s*");
             ignoredEntries = new LinkedList<String>();
             for (String entry : entries) {
                 ignoredEntries.add(entry);
@@ -109,7 +111,8 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
             try {
                 plugin.addIgnores(dstDir, ignores);
             } catch (Throwable e) {
-                logger.logError(String.format("Unable to add %s ignores %s to directory %s", plugin.getInformation().getName(), ignores, dstDir), e);
+                logger.logError(String.format("Unable to add %s ignores %s to directory %s", plugin.getInformation()
+                    .getName(), ignores, dstDir), e);
             }
         }
     }
@@ -122,7 +125,7 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
 
         Set<String> matches = new HashSet<String>();
         synchronized (plugins) {
-            for (Map.Entry<String,VersionControlIgnoresPlugin> entry : plugins.entrySet()) {
+            for (Map.Entry<String, VersionControlIgnoresPlugin> entry : plugins.entrySet()) {
                 VersionControlIgnoresPlugin plugin = this.plugins.get(entry.getKey());
                 if (plugin == null) {
                     continue;
@@ -149,7 +152,7 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
     }
 
     @Override
-    public void createProjectIgnores(Set<String> plugins, File projectDir, Map<String,String> sourceOutputLocations, String targetDir) {
+    public void createProjectIgnores(Set<String> plugins, File projectDir, Map<String, String> sourceOutputLocations, String targetDir) {
         if (projectDir == null || plugins == null || plugins.isEmpty()) {
             return;
         }
@@ -166,7 +169,7 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
             List<String> projectIgnores = new LinkedList<String>();
 
             List<String> emptyIgnores = new LinkedList<String>();
-            for (Map.Entry<String,String> sourceOutputLocation : sourceOutputLocations.entrySet()) {
+            for (Map.Entry<String, String> sourceOutputLocation : sourceOutputLocations.entrySet()) {
                 String srcDir = sourceOutputLocation.getKey();
                 String binDir = sourceOutputLocation.getValue();
                 assert (srcDir != null);
@@ -175,14 +178,15 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
                 File srcDirFile = new File(projectDir, srcDir);
 
                 /*
-                 * when the version control system can't store empty directories and
-                 * the source directory doesn't exist or is empty, then add empty ignores
+                 * when the version control system can't store empty directories and the source directory doesn't exist
+                 * or is empty, then add empty ignores
                  */
                 if (!plugin.canStoreEmptyDirectories() && (!srcDirFile.exists() || (srcDirFile.list().length == 0))) {
                     try {
                         plugin.addIgnores(srcDirFile, emptyIgnores);
                     } catch (Throwable e) {
-                        logger.logError(String.format("Unable to add empty %s ignores to the project in %s", plugin.getInformation().getName(), projectDir), e);
+                        logger.logError(String.format("Unable to add empty %s ignores to the project in %s", plugin.getInformation()
+                            .getName(), projectDir), e);
                     }
                 }
 
@@ -199,7 +203,8 @@ public class VersionControlIgnoresManagerImpl implements VersionControlIgnoresMa
                 try {
                     plugin.addIgnores(projectDir, projectIgnores);
                 } catch (Throwable e) {
-                    logger.logError(String.format("Unable to add %s ignores %s to the project in %s", plugin.getInformation().getName(), projectIgnores, projectDir), e);
+                    logger.logError(String.format("Unable to add %s ignores %s to the project in %s", plugin.getInformation()
+                        .getName(), projectIgnores, projectDir), e);
                 }
             }
         }

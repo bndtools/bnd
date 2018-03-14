@@ -20,8 +20,7 @@ public class TableSortingEnabler {
 
     private TableViewer tableViewer;
 
-    private TableSortingEnabler() {
-    }
+    private TableSortingEnabler() {}
 
     private void setTableViewer(TableViewer tableViewer) {
         this.tableViewer = tableViewer;
@@ -35,7 +34,8 @@ public class TableSortingEnabler {
     }
 
     private void addColumnSelectionListeners(TableViewer tableViewer) {
-        TableColumn[] columns = tableViewer.getTable().getColumns();
+        TableColumn[] columns = tableViewer.getTable()
+            .getColumns();
         for (int i = 0; i < columns.length; i++) {
             addColumnSelectionListener(columns[i]);
         }
@@ -55,7 +55,7 @@ public class TableSortingEnabler {
         if (column.equals(table.getSortColumn())) {
             int direction = getSortDirection(table.getSortDirection());
             table.setSortDirection(direction);
-            if (direction  == SWT.NONE) {
+            if (direction == SWT.NONE) {
                 table.setSortColumn(null);
             }
         } else {
@@ -67,22 +67,23 @@ public class TableSortingEnabler {
 
     private static int getSortDirection(int currentDirection) {
         switch (currentDirection) {
-        case SWT.NONE:
-            return SWT.UP;
-        case SWT.UP:
-            return SWT.DOWN;
-        default:
-            return SWT.NONE;
+            case SWT.NONE :
+                return SWT.UP;
+            case SWT.UP :
+                return SWT.DOWN;
+            default :
+                return SWT.NONE;
         }
     }
 
     @SuppressWarnings({
-            "rawtypes", "unchecked"
+        "rawtypes", "unchecked"
     })
     private int compareElements(Object e1, Object e2) {
         IColumnContentProvider columnValueProvider = (IColumnContentProvider) tableViewer.getContentProvider();
         Table table = tableViewer.getTable();
-        int index = Arrays.asList(table.getColumns()).indexOf(table.getSortColumn());
+        int index = Arrays.asList(table.getColumns())
+            .indexOf(table.getSortColumn());
         int result = 0;
         if (index != -1) {
             Comparable c1 = columnValueProvider.getValue(e1, index);

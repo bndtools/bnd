@@ -14,22 +14,30 @@ public class SelectionDragAdapter implements DragSourceListener {
         this.viewer = viewer;
     }
 
+    @Override
     public void dragStart(DragSourceEvent event) {
         ISelection selection = viewer.getSelection();
-        LocalSelectionTransfer.getTransfer().setSelection(selection);
-        LocalSelectionTransfer.getTransfer().setSelectionSetTime(event.time & 0xFFFFFFFFL);
+        LocalSelectionTransfer.getTransfer()
+            .setSelection(selection);
+        LocalSelectionTransfer.getTransfer()
+            .setSelectionSetTime(event.time & 0xFFFFFFFFL);
         event.doit = !selection.isEmpty();
     }
 
+    @Override
     public void dragSetData(DragSourceEvent event) {
         // For consistency set the data to the selection even though
         // the selection is provided by the LocalSelectionTransfer
         // to the drop target adapter.
-        event.data = LocalSelectionTransfer.getTransfer().getSelection();
+        event.data = LocalSelectionTransfer.getTransfer()
+            .getSelection();
     }
 
+    @Override
     public void dragFinished(DragSourceEvent event) {
-        LocalSelectionTransfer.getTransfer().setSelection(null);
-        LocalSelectionTransfer.getTransfer().setSelectionSetTime(0);
+        LocalSelectionTransfer.getTransfer()
+            .setSelection(null);
+        LocalSelectionTransfer.getTransfer()
+            .setSelectionSetTime(0);
     }
 }

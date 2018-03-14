@@ -32,95 +32,101 @@ import bndtools.central.Central;
 import bndtools.release.nl.Messages;
 
 public class ReleaseAction implements IObjectActionDelegate {
-//	@SuppressWarnings("unused")
-//	private IWorkbenchPart targetPart;
+    // @SuppressWarnings("unused")
+    // private IWorkbenchPart targetPart;
 
-	private Map<Project, List<File>> bndFiles;
+    private Map<Project, List<File>> bndFiles;
 
-	public void run(IAction action) {
+    @Override
+    public void run(IAction action) {
 
-		if (bndFiles != null) {
+        if (bndFiles != null) {
             if (ReleaseHelper.getReleaseRepositories().length == 0) {
                 Activator.message(Messages.noReleaseRepos);
                 return;
             }
 
-			if (!PlatformUI.getWorkbench().saveAllEditors(true)) {
-				return;
-			}
+            if (!PlatformUI.getWorkbench()
+                .saveAllEditors(true)) {
+                return;
+            }
 
-			for (Map.Entry<Project, List<File>> me : bndFiles.entrySet()) {
+            for (Map.Entry<Project, List<File>> me : bndFiles.entrySet()) {
 
-				Project project;
-				try {
-					project = me.getKey();
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-				ReleaseDialogJob job;
-				if (isBndBndSelected(me.getValue())) {
-					job = new ReleaseDialogJob(project, null);
-				} else {
-					job = new ReleaseDialogJob(project, me.getValue());
-				}
-				job.schedule();
-			}
-		}
-	}
+                Project project;
+                try {
+                    project = me.getKey();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                ReleaseDialogJob job;
+                if (isBndBndSelected(me.getValue())) {
+                    job = new ReleaseDialogJob(project, null);
+                } else {
+                    job = new ReleaseDialogJob(project, me.getValue());
+                }
+                job.schedule();
+            }
+        }
+    }
 
-	private static boolean isBndBndSelected(List<File> files) {
-		for (File file : files) {
-			if (Project.BNDFILE.equals(file.getName())) {
-				return true;
-			}
-		}
-		return false;
-	}
+    private static boolean isBndBndSelected(List<File> files) {
+        for (File file : files) {
+            if (Project.BNDFILE.equals(file.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-	/**
-	 * @see IActionDelegate#selectionChanged(IAction, ISelection)
-	 */
-	public void selectionChanged(IAction action, ISelection selection) {
-		IFile[] locations = getLocations(selection);
-		bndFiles = new LinkedHashMap<Project, List<File>>();
-		for (IFile iFile : locations) {
-			File file = iFile.getLocation().toFile();
-			Project project;
-			try {
-			    IProject iProject = iFile.getProject();
-				project = Central.getWorkspace().getProject(iProject.getName());
-				// .bnd files exists in cnf that are unreleasable
-				if (project == null || project.isCnf()) {
-				    continue;
-				}
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-			List<File> projectFiles = bndFiles.get(project);
-			if (projectFiles == null) {
-				projectFiles = new ArrayList<File>();
-				bndFiles.put(project, projectFiles);
-			}
-			projectFiles.add(file);
-		}
-	}
+    /**
+     * @see IActionDelegate#selectionChanged(IAction, ISelection)
+     */
+    @Override
+    public void selectionChanged(IAction action, ISelection selection) {
+        IFile[] locations = getLocations(selection);
+        bndFiles = new LinkedHashMap<Project, List<File>>();
+        for (IFile iFile : locations) {
+            File file = iFile.getLocation()
+                .toFile();
+            Project project;
+            try {
+                IProject iProject = iFile.getProject();
+                project = Central.getWorkspace()
+                    .getProject(iProject.getName());
+                // .bnd files exists in cnf that are unreleasable
+                if (project == null || project.isCnf()) {
+                    continue;
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            List<File> projectFiles = bndFiles.get(project);
+            if (projectFiles == null) {
+                projectFiles = new ArrayList<File>();
+                bndFiles.put(project, projectFiles);
+            }
+            projectFiles.add(file);
+        }
+    }
 
-	static
-	IFile[] getLocations(ISelection selection) {
-		if (selection != null && (selection instanceof StructuredSelection)) {
-			StructuredSelection ss = (StructuredSelection) selection;
-			IFile[] result = new IFile[ss.size()];
-			int n = 0;
-			for (@SuppressWarnings("unchecked") Iterator<IFile> i = ss.iterator(); i.hasNext();) {
-				result[n++] = i.next();
-			}
-			return result;
-		}
-		return null;
-	}
+    static IFile[] getLocations(ISelection selection) {
+        if (selection != null && (selection instanceof StructuredSelection)) {
+            StructuredSelection ss = (StructuredSelection) selection;
+            IFile[] result = new IFile[ss.size()];
+            int n = 0;
+            for (@SuppressWarnings("unchecked")
+            Iterator<IFile> i = ss.iterator(); i.hasNext();) {
+                result[n++] = i.next();
+            }
+            return result;
+        }
+        return null;
+    }
 
-	public void setActivePart(IAction action, IWorkbenchPart targetPart) {
-		// this.targetPart = targetPart;
-	}
+    @Override
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+        // this.targetPart = targetPart;
+    }
 
 }

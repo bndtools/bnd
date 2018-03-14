@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Constants;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -63,7 +64,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     public static final String PLUGIN_ID = "bndtools.builder";
     public static final String BUILDER_ID = BndtoolsConstants.BUILDER_ID;
     private static final ILogger logger = Logger.getLogger(BndtoolsBuilder.class);
-    static final Set<Project> dirty = Collections.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
+    static final Set<Project> dirty = Collections.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
 
     static {
         CnfWatcher.install();
@@ -75,8 +76,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     private boolean postponed;
 
     /**
-     * Called from Eclipse when it thinks this project should be build. We're proposed to figure out if we've changed and
-     * then build as quickly as possible.
+     * Called from Eclipse when it thinks this project should be build. We're proposed to figure out if we've changed
+     * and then build as quickly as possible.
      * <p>
      * We ensure we're called in proper order defined by bnd, if not we will make it be called in proper order.
      *
@@ -86,7 +87,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
      * @return List of projects we depend on
      */
     @Override
-    protected IProject[] build(int kind, Map<String,String> args, IProgressMonitor monitor) throws CoreException {
+    protected IProject[] build(int kind, Map<String, String> args, IProgressMonitor monitor) throws CoreException {
 
         IProject myProject = getProject();
         BndPreferences prefs = new BndPreferences();
@@ -105,7 +106,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
             //
 
             if (dependsOn == null) {
-                dependsOn = myProject.getDescription().getDynamicReferences();
+                dependsOn = myProject.getDescription()
+                    .getDynamicReferences();
             }
 
             if (model == null) {
@@ -254,7 +256,8 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                     ComponentMarker.updateComponentMarkers(myProject, adapter);
 
                     if (model.isCnf()) {
-                        model.getWorkspace().refresh(); // this is for bnd plugins built in cnf
+                        model.getWorkspace()
+                            .refresh(); // this is for bnd plugins built in cnf
                     }
 
                     return report(markers);
@@ -330,8 +333,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     }
 
     /*
-     * Check if any of the projects of which we depend has changes.
-     * We use the generated/buildfiles as the marker.
+     * Check if any of the projects of which we depend has changes. We use the generated/buildfiles as the marker.
      */
     private boolean hasUpstreamChanges() throws Exception {
 
@@ -384,13 +386,14 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 if (f != null)
                     IO.delete(f);
             }
-        IO.delete(new File(model.getTarget(), Project.BUILDFILES));
+        IO.delete(new File(model.getTarget(), Constants.BUILDFILES));
     }
 
     private IProject[] calculateDependsOn(Project model) throws Exception {
         Collection<Project> dependsOn = model.getDependson();
 
-        IWorkspaceRoot wsroot = getProject().getWorkspace().getRoot();
+        IWorkspaceRoot wsroot = getProject().getWorkspace()
+            .getRoot();
 
         List<IProject> result = new ArrayList<IProject>(dependsOn.size() + 1);
 

@@ -1,15 +1,22 @@
 package bndtools.bndplugins.repo.git;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.xml.sax.*;
+import org.xml.sax.Attributes;
 
-import aQute.libg.sax.filters.*;
+import aQute.libg.sax.filters.ElementSelectionFilter;
 
 public class UniqueResourceFilter extends ElementSelectionFilter {
 
     final Set<String> uris = new HashSet<String>();
-    final Map<String,List<String>> filteredResources = new HashMap<String,List<String>>();
+    final Map<String, List<String>> filteredResources = new HashMap<String, List<String>>();
 
     @Override
     protected boolean select(int depth, String uri, String localName, String qName, Attributes attribs) {

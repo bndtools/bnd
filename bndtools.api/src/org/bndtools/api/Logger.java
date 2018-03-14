@@ -17,9 +17,9 @@ import org.osgi.framework.FrameworkUtil;
 public class Logger implements ILogger {
 
     private static final Logger NULL_BUNDLE_LOGGER = new Logger(null);
-    private static final Map<Bundle,Logger> CACHE = new HashMap<Bundle,Logger>();
+    private static final Map<Bundle, Logger> CACHE = new HashMap<Bundle, Logger>();
 
-    public synchronized static ILogger getLogger(Class< ? > clazz) {
+    public synchronized static ILogger getLogger(Class<?> clazz) {
         Bundle bundle = FrameworkUtil.getBundle(clazz);
         if (bundle == null)
             return NULL_BUNDLE_LOGGER;
@@ -64,21 +64,27 @@ public class Logger implements ILogger {
         logStatus(constructStatus(status, message, exception));
     }
 
+    @Override
     public void logError(String message, Throwable exception) {
         log(IStatus.ERROR, message, exception);
     }
 
+    @Override
     public void logWarning(String message, Throwable exception) {
         log(IStatus.WARNING, message, exception);
     }
 
+    @Override
     public void logInfo(String message, Throwable exception) {
         log(IStatus.INFO, message, exception);
     }
 
+    @Override
     public void logStatus(IStatus status) {
         if (bundle != null)
-            InternalPlatform.getDefault().getLog(bundle).log(status);
+            InternalPlatform.getDefault()
+                .getLog(bundle)
+                .log(status);
         else
             System.err.println(constructSysErrString(status));
     }

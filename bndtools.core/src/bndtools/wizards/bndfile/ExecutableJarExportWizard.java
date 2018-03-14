@@ -1,6 +1,7 @@
 package bndtools.wizards.bndfile;
 
 import java.lang.reflect.InvocationTargetException;
+
 import org.bndtools.core.ui.IRunDescriptionExportWizard;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

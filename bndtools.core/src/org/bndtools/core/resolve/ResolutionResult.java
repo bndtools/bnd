@@ -11,17 +11,20 @@ import org.osgi.service.resolver.ResolutionException;
 public class ResolutionResult {
 
     private final Outcome outcome;
-    private final Map<Resource,List<Wire>> resourceWirings;
-    private final Map<Resource,List<Wire>> optionalResources;
+    private final Map<Resource, List<Wire>> resourceWirings;
+    private final Map<Resource, List<Wire>> optionalResources;
     private final IStatus status;
     private final String log;
     private final ResolutionException resolutionException;
 
     public static enum Outcome {
-        Resolved, Unresolved, Error, Cancelled
+        Resolved,
+        Unresolved,
+        Error,
+        Cancelled
     }
 
-    public ResolutionResult(Outcome outcome, Map<Resource,List<Wire>> resourceWirings, Map<Resource,List<Wire>> optionalResources, ResolutionException resolutionExceptoin, IStatus status, String log) {
+    public ResolutionResult(Outcome outcome, Map<Resource, List<Wire>> resourceWirings, Map<Resource, List<Wire>> optionalResources, ResolutionException resolutionExceptoin, IStatus status, String log) {
         this.outcome = outcome;
         this.resourceWirings = resourceWirings;
         this.optionalResources = optionalResources;
@@ -34,11 +37,11 @@ public class ResolutionResult {
         return outcome;
     }
 
-    public Map<Resource,List<Wire>> getResourceWirings() {
+    public Map<Resource, List<Wire>> getResourceWirings() {
         return resourceWirings;
     }
 
-    public Map<Resource,List<Wire>> getOptionalResources() {
+    public Map<Resource, List<Wire>> getOptionalResources() {
         return optionalResources;
     }
 

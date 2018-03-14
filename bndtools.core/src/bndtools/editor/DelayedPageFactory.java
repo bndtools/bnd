@@ -26,7 +26,8 @@ public class DelayedPageFactory implements IFormPageFactory {
         if (modeListStr != null) {
             StringTokenizer tokenizer = new StringTokenizer(modeListStr, ",");
             while (tokenizer.hasMoreTokens()) {
-                String token = tokenizer.nextToken().trim();
+                String token = tokenizer.nextToken()
+                    .trim();
 
                 try {
                     Mode mode = Enum.valueOf(Mode.class, token);
@@ -39,6 +40,7 @@ public class DelayedPageFactory implements IFormPageFactory {
         }
     }
 
+    @Override
     public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
         try {
             IFormPageFactory factory = (IFormPageFactory) configElem.createExecutableExtension("class");
@@ -49,6 +51,7 @@ public class DelayedPageFactory implements IFormPageFactory {
         }
     }
 
+    @Override
     public boolean supportsMode(Mode mode) {
         return modes.contains(mode);
     }

@@ -55,6 +55,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
             @Override
             public void widgetSelected(SelectionEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         if (button.getSelection()) {
                             subBundleList = Arrays.asList(new String[] {
@@ -131,6 +132,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
         subBundleList = model.getSubBndFiles();
 
         lock.modifyOperation(new Runnable() {
+            @Override
             public void run() {
                 IMessageManager msgs = getManagedForm().getMessageManager();
                 Control control = getSection().getDescriptionControl();
@@ -141,7 +143,9 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
                     button.setGrayed(false);
                     button.setSelection(false);
                     msgs.removeMessage(WARNING_EDITED_MANUALLY, control);
-                } else if (subBundleList.size() == 1 && subBundleList.iterator().next().equalsIgnoreCase(ALL_BND)) {
+                } else if (subBundleList.size() == 1 && subBundleList.iterator()
+                    .next()
+                    .equalsIgnoreCase(ALL_BND)) {
                     button.setGrayed(false);
                     button.setSelection(true);
                     msgs.removeMessage(WARNING_EDITED_MANUALLY, control);
@@ -160,6 +164,7 @@ public class SubBundlesPart extends SectionPart implements PropertyChangeListene
         // model changes already committed
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         if (page.isActive()) {

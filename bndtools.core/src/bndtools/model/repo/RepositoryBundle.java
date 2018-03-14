@@ -56,8 +56,8 @@ public class RepositoryBundle extends RepositoryEntry implements Actionable {
     }
 
     @Override
-    public Map<String,Runnable> actions(Object... target) throws Exception {
-        Map<String,Runnable> map = null;
+    public Map<String, Runnable> actions(Object... target) throws Exception {
+        Map<String, Runnable> map = null;
         try {
             if (getRepo() instanceof Actionable) {
                 map = ((Actionable) getRepo()).actions(getBsn());

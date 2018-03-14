@@ -19,7 +19,7 @@ public class RepoPluginsBundleLocator implements BundleLocator {
 
     @Override
     public File locate(String bsn, String hash, String algo, URI location) throws Exception {
-        Map<String,String> searchProps = new HashMap<>();
+        Map<String, String> searchProps = new HashMap<>();
         searchProps.put("version", "hash");
         searchProps.put("hash", algo + ":" + hash);
 

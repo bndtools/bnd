@@ -37,6 +37,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IObjectActionDelegate;
 import org.eclipse.ui.IWorkbenchPart;
+
 import aQute.bnd.build.Project;
 import bndtools.Plugin;
 import bndtools.preferences.BndPreferences;
@@ -53,7 +54,7 @@ public class ToggleNatureAction implements IObjectActionDelegate {
     @Override
     public void run(IAction action) {
         if (selection instanceof IStructuredSelection) {
-            for (Iterator< ? > it = ((IStructuredSelection) selection).iterator(); it.hasNext();) {
+            for (Iterator<?> it = ((IStructuredSelection) selection).iterator(); it.hasNext();) {
                 Object element = it.next();
                 IProject project = null;
                 if (element instanceof IProject) {
@@ -71,7 +72,8 @@ public class ToggleNatureAction implements IObjectActionDelegate {
                     if (isJavaProject) {
                         IStatus status = toggleNature(JavaCore.create(project));
                         if (!status.isOK())
-                            ErrorDialog.openError(targetPart.getSite().getShell(), "Toggle Bnd Nature", null, status);
+                            ErrorDialog.openError(targetPart.getSite()
+                                .getShell(), "Toggle Bnd Nature", null, status);
                     }
                 }
             }
@@ -107,17 +109,18 @@ public class ToggleNatureAction implements IObjectActionDelegate {
     /**
      * Toggles sample nature on a project
      *
-     * @param project
-     *            to have sample nature added or removed
+     * @param project to have sample nature added or removed
      */
     private static IStatus toggleNature(IJavaProject project) {
         try {
             /* Version control ignores */
-            VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault().getVersionControlIgnoresManager();
+            VersionControlIgnoresManager versionControlIgnoresManager = Plugin.getDefault()
+                .getVersionControlIgnoresManager();
             Set<String> enabledIgnorePlugins = new BndPreferences().getVersionControlIgnoresPluginsEnabled(versionControlIgnoresManager, project, null);
 
             /* Headless build files */
-            HeadlessBuildManager headlessBuildManager = Plugin.getDefault().getHeadlessBuildManager();
+            HeadlessBuildManager headlessBuildManager = Plugin.getDefault()
+                .getHeadlessBuildManager();
             Set<String> enabledPlugins = new BndPreferences().getHeadlessBuildPluginsEnabled(headlessBuildManager, null);
 
             IProject iProject = project.getProject();
@@ -136,7 +139,8 @@ public class ToggleNatureAction implements IObjectActionDelegate {
                     iProject.setDescription(description, null);
 
                     /* Remove the headless build files */
-                    headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation().toFile(), false, enabledIgnorePlugins, headlessBuildWarnings);
+                    headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation()
+                        .toFile(), false, enabledIgnorePlugins, headlessBuildWarnings);
 
                     /* refresh the project; files were created outside of Eclipse API */
                     iProject.refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -146,7 +150,8 @@ public class ToggleNatureAction implements IObjectActionDelegate {
             }
 
             /* Add the headless build files */
-            headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation().toFile(), true, enabledIgnorePlugins, headlessBuildWarnings);
+            headlessBuildManager.setup(enabledPlugins, false, iProject.getLocation()
+                .toFile(), true, enabledIgnorePlugins, headlessBuildWarnings);
 
             // Add the nature
             ensureBndBndExists(iProject);

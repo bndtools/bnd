@@ -61,13 +61,15 @@ public class RunDescriptorTargetLocationPage extends BndTargetLocationPage {
         updateTarget();
         selectTargetInTree(projectTree);
 
-        if (projectTree.getTree().getItems().length == 0)
+        if (projectTree.getTree()
+            .getItems().length == 0)
             logError("No run descriptors found in workspace", null);
     }
 
     private TreeViewer createRunDescriptorSelectionArea(Composite composite) {
         final TreeViewer projectTree = new TreeViewer(new Tree(composite, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER));
-        projectTree.getTree().setLayoutData(fillGridData(1));
+        projectTree.getTree()
+            .setLayoutData(fillGridData(1));
 
         projectTree.setContentProvider(new WorkbenchContentProvider());
         projectTree.setLabelProvider(new WorkbenchLabelProvider());
@@ -106,7 +108,7 @@ public class RunDescriptorTargetLocationPage extends BndTargetLocationPage {
         };
         bndrunFilter.setPattern("*");
         return new ViewerFilter[] {
-                bndrunFilter
+            bndrunFilter
         };
     }
 
@@ -115,7 +117,9 @@ public class RunDescriptorTargetLocationPage extends BndTargetLocationPage {
             clearTarget();
         } else {
             try {
-                File file = runDescriptorFile.getRawLocation().makeAbsolute().toFile();
+                File file = runDescriptorFile.getRawLocation()
+                    .makeAbsolute()
+                    .toFile();
                 Workspace workspace = Central.getWorkspace();
                 List<String> bundles = new ArrayList<>();
 
@@ -150,7 +154,8 @@ public class RunDescriptorTargetLocationPage extends BndTargetLocationPage {
         if (runDescriptorFile == null)
             return false;
 
-        for (TreeItem item : projectTree.getTree().getItems()) {
+        for (TreeItem item : projectTree.getTree()
+            .getItems()) {
             if (setSelectedFileInTree(projectTree, item)) {
                 return true;
             }
@@ -162,7 +167,8 @@ public class RunDescriptorTargetLocationPage extends BndTargetLocationPage {
         if (item.getData() instanceof IFile) {
             IFile file = (IFile) item.getData();
             if (file.equals(runDescriptorFile)) {
-                projectTree.getTree().select(item);
+                projectTree.getTree()
+                    .select(item);
                 return true;
             }
         }

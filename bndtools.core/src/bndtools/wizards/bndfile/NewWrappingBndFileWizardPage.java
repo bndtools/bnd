@@ -36,7 +36,7 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
     private static final String LIST_SEPARATOR = ",\\\n\t"; //$NON-NLS-1$
     private static final Object ASSIGNMENT_SEPARATOR = ": "; //$NON-NLS-1$
 
-    private Collection< ? extends IPath> paths;
+    private Collection<? extends IPath> paths;
     private Text txtBSN;
     private Text txtVersion;
 
@@ -50,7 +50,7 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
         setMessage(Messages.NewWrappingBndFileWizardPage_messageSpecifyFileName);
     }
 
-    public void setPaths(Collection< ? extends IPath> paths) {
+    public void setPaths(Collection<? extends IPath> paths) {
         this.paths = paths;
     }
 
@@ -67,6 +67,7 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
         txtVersion.setText(version.toString());
 
         txtBSN.addListener(SWT.Modify, new Listener() {
+            @Override
             public void handleEvent(Event event) {
                 bsn = txtBSN.getText();
                 getContainer().updateButtons();
@@ -74,6 +75,7 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
             }
         });
         txtVersion.addListener(SWT.Modify, new Listener() {
+            @Override
             public void handleEvent(Event event) {
                 try {
                     version = Version.parseVersion(txtVersion.getText());
@@ -119,8 +121,9 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
 
         // Do -classpath
         IPath containerPath = getContainerFullPath();
-        builder.append(Constants.CLASSPATH).append(ASSIGNMENT_SEPARATOR);
-        for (Iterator< ? extends IPath> iterator = paths.iterator(); iterator.hasNext();) {
+        builder.append(Constants.CLASSPATH)
+            .append(ASSIGNMENT_SEPARATOR);
+        for (Iterator<? extends IPath> iterator = paths.iterator(); iterator.hasNext();) {
             IPath path = iterator.next();
 
             if (path.isAbsolute()) {
@@ -136,15 +139,28 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
 
         // Do BSN and Bundle-Version
         if (bsn != null && bsn.length() > 0)
-            builder.append(Constants.BUNDLE_SYMBOLICNAME).append(ASSIGNMENT_SEPARATOR).append(bsn).append('\n');
-        builder.append(Constants.BUNDLE_VERSION).append(ASSIGNMENT_SEPARATOR).append(version.toString()).append('\n');
+            builder.append(Constants.BUNDLE_SYMBOLICNAME)
+                .append(ASSIGNMENT_SEPARATOR)
+                .append(bsn)
+                .append('\n');
+        builder.append(Constants.BUNDLE_VERSION)
+            .append(ASSIGNMENT_SEPARATOR)
+            .append(version.toString())
+            .append('\n');
 
         // Do Export Package
-        builder.append(Constants.EXPORT_PACKAGE).append(ASSIGNMENT_SEPARATOR).append("*;") //$NON-NLS-1$
-                .append(Constants.VERSION_ATTRIBUTE).append('=').append("${").append(Constants.BUNDLE_VERSION).append("}\n"); //$NON-NLS-1$ //$NON-NLS-2$
+        builder.append(Constants.EXPORT_PACKAGE)
+            .append(ASSIGNMENT_SEPARATOR)
+            .append("*;") //$NON-NLS-1$
+            .append(Constants.VERSION_ATTRIBUTE)
+            .append('=')
+            .append("${") //$NON-NLS-1$
+            .append(Constants.BUNDLE_VERSION)
+            .append("}\n"); //$NON-NLS-1$
 
         try {
-            return new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
+            return new ByteArrayInputStream(builder.toString()
+                .getBytes("UTF-8"));
         } catch (UnsupportedEncodingException e) {
             return null;
         }

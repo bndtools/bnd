@@ -11,7 +11,7 @@ public class NativeLaunchTabGroup extends AbstractLaunchConfigurationTabGroup {
     @Override
     public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
         ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-                new SourceLookupTab(), new JavaConnectTab()
+            new SourceLookupTab(), new JavaConnectTab()
         };
         setTabs(tabs);
     }

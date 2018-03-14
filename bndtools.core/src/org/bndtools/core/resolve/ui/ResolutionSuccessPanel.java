@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.osgi.framework.Version;
@@ -61,7 +62,7 @@ public class ResolutionSuccessPanel {
 
     private final ResolutionTreeContentProvider reasonsContentProvider = new ResolutionTreeContentProvider();
     private final List<Resource> checkedOptional = new ArrayList<Resource>();
-    private final Map<Resource,Requirement> addedOptionals = new HashMap<>();
+    private final Map<Resource, Requirement> addedOptionals = new HashMap<>();
 
     private Composite composite;
     private TableViewer requiredViewer;
@@ -89,7 +90,7 @@ public class ResolutionSuccessPanel {
 
         GridData gd;
 
-        Section sectRequired = toolkit.createSection(form, Section.TITLE_BAR | Section.EXPANDED);
+        Section sectRequired = toolkit.createSection(form, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         sectRequired.setText("Required Resources");
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -120,7 +121,7 @@ public class ResolutionSuccessPanel {
             }
         });
 
-        sectOptional = toolkit.createSection(form, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        sectOptional = toolkit.createSection(form, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         sectOptional.setText("Optional Resources");
 
         Composite cmpOptional = toolkit.createComposite(sectOptional);
@@ -220,7 +221,7 @@ public class ResolutionSuccessPanel {
         });
         btnClearOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 
-        Section sectReason = toolkit.createSection(form, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        Section sectReason = toolkit.createSection(form, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         sectReason.setText("Reasons");
 
         Tree tblReasons = new Tree(sectReason, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -248,8 +249,9 @@ public class ResolutionSuccessPanel {
         ArrayList<Requirement> newRequires = new ArrayList<Requirement>(oldRequires.size() + checkedOptional.size());
         newRequires.addAll(oldRequires);
 
-        for (Iterator<Entry<Resource,Requirement>> it = addedOptionals.entrySet().iterator(); it.hasNext();) {
-            Entry<Resource,Requirement> entry = it.next();
+        for (Iterator<Entry<Resource, Requirement>> it = addedOptionals.entrySet()
+            .iterator(); it.hasNext();) {
+            Entry<Resource, Requirement> entry = it.next();
             if (!optionalViewer.getChecked(entry.getKey())) {
                 newRequires.remove(entry.getValue());
                 it.remove();
@@ -271,9 +273,11 @@ public class ResolutionSuccessPanel {
         this.result = result;
         checkedOptional.clear();
 
-        Set<Resource> wirings = (result != null && result.getResourceWirings() != null) ? result.getResourceWirings().keySet() : null;
+        Set<Resource> wirings = (result != null && result.getResourceWirings() != null) ? result.getResourceWirings()
+            .keySet() : null;
         requiredViewer.setInput(wirings != null ? wirings : null);
-        wirings = (result != null && result.getOptionalResources() != null) ? new HashSet<Resource>(result.getOptionalResources().keySet()) : new HashSet<Resource>();
+        wirings = (result != null && result.getOptionalResources() != null) ? new HashSet<Resource>(result.getOptionalResources()
+            .keySet()) : new HashSet<Resource>();
 
         wirings.addAll(addedOptionals.keySet());
 
@@ -283,10 +287,13 @@ public class ResolutionSuccessPanel {
             sectOptional.setExpanded(true);
         }
         optionalViewer.setInput(wirings.isEmpty() ? null : wirings);
-        optionalViewer.setGrayedElements(addedOptionals.keySet().toArray());
-        optionalViewer.setCheckedElements(addedOptionals.keySet().toArray());
+        optionalViewer.setGrayedElements(addedOptionals.keySet()
+            .toArray());
+        optionalViewer.setCheckedElements(addedOptionals.keySet()
+            .toArray());
 
-        for (TableItem tableItem : optionalViewer.getTable().getItems()) {
+        for (TableItem tableItem : optionalViewer.getTable()
+            .getItems()) {
             Display display = Display.getCurrent();
             Color addedColor = display.getSystemColor(SWT.COLOR_GRAY);
             if (tableItem.getGrayed()) {
@@ -327,7 +334,7 @@ public class ResolutionSuccessPanel {
     private void doOptionalReasonUpdate(Resource resource) {
         reasonsContentProvider.setOptional(true);
         if (result != null) {
-            Map<Resource,List<Wire>> combined = new HashMap<Resource,List<Wire>>(result.getResourceWirings());
+            Map<Resource, List<Wire>> combined = new HashMap<Resource, List<Wire>>(result.getResourceWirings());
             combined.putAll(result.getOptionalResources());
             reasonsContentProvider.setResolution(combined);
         }
@@ -346,7 +353,8 @@ public class ResolutionSuccessPanel {
         filter.addChild(new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, id));
         filter.addChild(new LiteralFilter(Filters.fromVersionRange(dropQualifier.toString())));
 
-        Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString()).buildSyntheticRequirement();
+        Requirement req = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
+            .buildSyntheticRequirement();
         return req;
     }
 }
