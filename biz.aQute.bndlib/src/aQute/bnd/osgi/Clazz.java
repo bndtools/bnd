@@ -1922,30 +1922,26 @@ public class Clazz {
 				return true;
 
 			case NAMED :
-				if (instr.matches(getClassName().getDottedOnly()))
-					return !instr.isNegated();
-				return false;
+				return instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
 
 			case VERSION :
 				String v = major + "." + minor;
-				if (instr.matches(v))
-					return !instr.isNegated();
-				return false;
+				return instr.matches(v) ^ instr.isNegated();
 
 			case IMPLEMENTS :
 				for (int i = 0; interfaces != null && i < interfaces.length; i++) {
 					if (instr.matches(interfaces[i].getDottedOnly()))
 						return !instr.isNegated();
 				}
-				break;
+				break; // check super type
 
 			case EXTENDS :
 				if (zuper == null)
-					return false;
+					return instr.isNegated();
 
 				if (instr.matches(zuper.getDottedOnly()))
 					return !instr.isNegated();
-				break;
+				break; // check super type
 
 			case PUBLIC :
 				return Modifier.isPublic(accessx);
@@ -1955,18 +1951,18 @@ public class Clazz {
 
 			case ANNOTATED :
 				if (annotations == null)
-					return false;
+					return instr.isNegated();
 
 				for (TypeRef annotation : annotations) {
 					if (instr.matches(annotation.getFQN()))
 						return !instr.isNegated();
 				}
 
-				return false;
+				return instr.isNegated();
 
 			case INDIRECTLY_ANNOTATED :
 				if (annotations == null)
-					return false;
+					return instr.isNegated();
 				Deque<TypeRef> stack = new ArrayDeque<>();
 				Set<Clazz> done = new HashSet<>();
 				done.add(this);
@@ -1982,7 +1978,7 @@ public class Clazz {
 					}
 				}
 
-				return false;
+				return instr.isNegated();
 
 			case RUNTIMEANNOTATIONS :
 				return hasRuntimeAnnotations;
@@ -1997,13 +1993,13 @@ public class Clazz {
 					if (instr.matches(imp.getFQN()))
 						return !instr.isNegated();
 				}
-				break;
+				break; // check super type
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
 		}
 
 		if (zuper == null)
-			return false;
+			return instr.isNegated();
 
 		Clazz clazz = analyzer.findClass(zuper);
 		if (clazz == null) {
