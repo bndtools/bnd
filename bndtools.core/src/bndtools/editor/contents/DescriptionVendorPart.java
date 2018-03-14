@@ -50,8 +50,10 @@ public class DescriptionVendorPart extends SectionPart implements PropertyChange
         bundleVendor = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(bundleVendor, Constants.BUNDLE_VENDOR);
         bundleVendor.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_VENDOR);
                     }
@@ -63,8 +65,10 @@ public class DescriptionVendorPart extends SectionPart implements PropertyChange
         bundleContactAddress = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(bundleContactAddress, Constants.BUNDLE_CONTACTADDRESS);
         bundleContactAddress.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_CONTACTADDRESS);
                     }
@@ -90,6 +94,7 @@ public class DescriptionVendorPart extends SectionPart implements PropertyChange
 
     protected void addDirtyProperty(final String property) {
         lock.ifNotModifying(new Runnable() {
+            @Override
             public void run() {
                 dirtySet.add(property);
                 getManagedForm().dirtyStateChanged();
@@ -136,6 +141,7 @@ public class DescriptionVendorPart extends SectionPart implements PropertyChange
     public void refresh() {
         super.refresh();
         lock.modifyOperation(new Runnable() {
+            @Override
             public void run() {
                 String bundleVndr = model.getBundleVendor();
                 bundleVendor.setText(bundleVndr != null ? bundleVndr : ""); //$NON-NLS-1$
@@ -154,6 +160,7 @@ public class DescriptionVendorPart extends SectionPart implements PropertyChange
         this.model.addPropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (editablePropertySet.contains(evt.getPropertyName())) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();

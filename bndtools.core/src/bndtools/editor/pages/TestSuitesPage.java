@@ -12,9 +12,9 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 import aQute.bnd.build.model.BndEditModel;
@@ -31,10 +31,12 @@ public class TestSuitesPage extends FormPage {
         .createImage();
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new TestSuitesPage(editor, model, id, "Tests");
         }
 
+        @Override
         public boolean supportsMode(Mode mode) {
             return mode == Mode.bundle;
         }
@@ -65,7 +67,7 @@ public class TestSuitesPage extends FormPage {
         Composite leftPanel = toolkit.createComposite(sashForm);
         Composite rightPanel = toolkit.createComposite(sashForm);
 
-        TestSuitesPart suitesPart = new TestSuitesPart(leftPanel, toolkit, Section.TITLE_BAR | Section.EXPANDED);
+        TestSuitesPart suitesPart = new TestSuitesPart(leftPanel, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         managedForm.addPart(suitesPart);
 
         SaneDetailsPart detailsPart = new SaneDetailsPart();

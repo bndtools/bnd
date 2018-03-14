@@ -92,6 +92,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
         return "Service Interfaces:";
     }
 
+    @Override
     public void createControl(Composite parent) {
         initializeDialogUnits(parent);
 
@@ -186,6 +187,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
         vwrActivateStub.setInput(EnumSet.allOf(ActivateSignature.class));
         vwrActivateStub.setSelection(new StructuredSelection(activateSignature), true);
         vwrActivateStub.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 ISelection sel = event.getSelection();
                 if (!sel.isEmpty() && sel instanceof IStructuredSelection) {

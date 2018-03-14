@@ -13,6 +13,7 @@ public class LaunchPropertyTester extends PropertyTester {
 
     public static final String PROP_IS_IN_BND_JAVA_PROJECT = "isInBndJavaProject";
 
+    @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         if (PROP_IS_IN_BND_JAVA_PROJECT.equals(property)) {
             try {

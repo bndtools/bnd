@@ -13,6 +13,7 @@ import java.util.jar.Manifest;
 
 import org.bndtools.utils.osgi.BundleUtils;
 import org.osgi.framework.Constants;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
@@ -95,10 +96,10 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
                 .addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version)
                 .buildSyntheticCapability());
             addCapability(capMap, new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE).addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn)
-                .addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version)
+                .addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version)
                 .buildSyntheticCapability());
             addCapability(capMap, new CapReqBuilder(HostNamespace.HOST_NAMESPACE).addAttribute(HostNamespace.HOST_NAMESPACE, bsn)
-                .addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version)
+                .addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version)
                 .buildSyntheticCapability());
         }
 
@@ -147,7 +148,7 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
 
             CapReqBuilder rb = new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE);
             String filter = createVersionFilter(PackageNamespace.PACKAGE_NAMESPACE, pkgName, attrs.get(Constants.VERSION_ATTRIBUTE), PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-            rb.addDirective(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+            rb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
             if (Constants.RESOLUTION_OPTIONAL.equals(attrs.get(Constants.RESOLUTION_DIRECTIVE + ":")))
                 rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Namespace.RESOLUTION_OPTIONAL);
 
@@ -168,8 +169,8 @@ public abstract class BndBuilderCapReqLoader implements CapReqLoader {
             Attrs attrs = entry.getValue();
 
             CapReqBuilder rb = new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE);
-            String filter = createVersionFilter(BundleNamespace.BUNDLE_NAMESPACE, bsn, attrs.get(Constants.BUNDLE_VERSION_ATTRIBUTE), BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
-            rb.addDirective(BundleNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
+            String filter = createVersionFilter(BundleNamespace.BUNDLE_NAMESPACE, bsn, attrs.get(Constants.BUNDLE_VERSION_ATTRIBUTE), AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+            rb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter);
             if (Constants.RESOLUTION_OPTIONAL.equals(attrs.get(Constants.RESOLUTION_DIRECTIVE + ":")))
                 rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Namespace.RESOLUTION_OPTIONAL);
 

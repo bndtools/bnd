@@ -18,10 +18,12 @@ public class BndProject implements IBndProject {
         this.project = project;
     }
 
+    @Override
     public String getProjectName() {
         return project.getName();
     }
 
+    @Override
     public void addResource(String fullPath, BndProjectResource bndProjectResource) {
         if (resources == null) {
             resources = new LinkedHashMap<String, BndProjectResource>();

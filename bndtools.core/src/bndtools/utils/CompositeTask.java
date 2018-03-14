@@ -21,6 +21,7 @@ public class CompositeTask implements IRunnableWithProgress {
         totalWeight += weight;
     }
 
+    @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         SubMonitor progress = SubMonitor.convert(monitor, "Composite Task...", totalWeight);
 

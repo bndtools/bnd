@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -131,7 +132,7 @@ public class WorkspaceAnalyserJob extends Job {
                 public void run() {
                     WorkspaceReleaseDialog dialog = new WorkspaceReleaseDialog(shell, projectDiffs, false);
                     int ret = dialog.open();
-                    if (ret == WorkspaceReleaseDialog.OK) {
+                    if (ret == Window.OK) {
                         boolean runJob = false;
                         for (ProjectDiff diff : projectDiffs) {
                             if (diff.isRelease()) {

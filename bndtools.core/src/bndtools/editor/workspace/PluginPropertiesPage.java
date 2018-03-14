@@ -40,6 +40,7 @@ public class PluginPropertiesPage extends WizardPage {
         super("pluginProperties");
     }
 
+    @Override
     public void createControl(Composite parent) {
         setTitle("Plug-in Configuration");
         setDescription("Set configuration properties for the plug-in.");
@@ -69,6 +70,7 @@ public class PluginPropertiesPage extends WizardPage {
         if (path != null)
             txtPath.setText(path);
         txtPath.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 String path = txtPath.getText();
                 if (path == null || path.length() == 0)
@@ -160,6 +162,7 @@ public class PluginPropertiesPage extends WizardPage {
                         text.setText(value);
 
                     text.addModifyListener(new ModifyListener() {
+                        @Override
                         public void modifyText(ModifyEvent e) {
                             String value = text.getText();
                             if (value == null || value.length() == 0)

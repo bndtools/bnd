@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -63,7 +64,7 @@ public class ResolutionFailurePanel {
         composite.setLayout(new GridLayout(1, false));
         GridData gd;
 
-        sectProcessingErrors = toolkit.createSection(composite, Section.TITLE_BAR | Section.EXPANDED);
+        sectProcessingErrors = toolkit.createSection(composite, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         sectProcessingErrors.setText("Processing Errors:");
 
         processingErrorsText = toolkit.createText(sectProcessingErrors, "", SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY | SWT.V_SCROLL);
@@ -81,7 +82,7 @@ public class ResolutionFailurePanel {
         gd.heightHint = 300;
         sectProcessingErrors.setLayoutData(gd);
 
-        sectUnresolved = toolkit.createSection(composite, Section.TITLE_BAR | Section.TWISTIE);
+        sectUnresolved = toolkit.createSection(composite, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
         sectUnresolved.setText("Unresolved Requirements:");
 
         createUnresolvedViewToolBar(sectUnresolved);

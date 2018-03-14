@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import aQute.bnd.deployer.repository.LocalIndexedRepo;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
@@ -73,7 +74,7 @@ public class TestGitOBRRepo extends TestCase {
         properties.put(GitOBRRepo.PROP_GIT_URI, repoUri);
         properties.put(GitOBRRepo.PROP_GIT_PUSH_URI, repoUri);
         properties.put(GitOBRRepo.PROP_GIT_BRANCH, "master");
-        properties.put(GitOBRRepo.PROP_LOCAL_DIR, checkoutDir.getAbsolutePath());
+        properties.put(LocalIndexedRepo.PROP_LOCAL_DIR, checkoutDir.getAbsolutePath());
         properties.put(GitOBRRepo.PROP_LOCAL_SUB_DIR, "jars");
 
         GitOBRRepo repo = new GitOBRRepo();

@@ -14,6 +14,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IMemento;
 import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.resource.Namespace;
 
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.version.VersionRange;
@@ -92,7 +93,7 @@ public class PackageSearchPanel extends SearchPanel {
             }
             filter = formatPackageRequirement(packageName, versionRange);
             if (filter != null)
-                setRequirement(new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addDirective(PackageNamespace.REQUIREMENT_FILTER_DIRECTIVE, filter)
+                setRequirement(new CapReqBuilder(PackageNamespace.PACKAGE_NAMESPACE).addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter)
                     .buildSyntheticRequirement());
             setError(null);
         } catch (Exception e) {

@@ -67,6 +67,7 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
         txtVersion.setText(version.toString());
 
         txtBSN.addListener(SWT.Modify, new Listener() {
+            @Override
             public void handleEvent(Event event) {
                 bsn = txtBSN.getText();
                 getContainer().updateButtons();
@@ -74,6 +75,7 @@ public class NewWrappingBndFileWizardPage extends NewBndFileWizardPage {
             }
         });
         txtVersion.addListener(SWT.Modify, new Listener() {
+            @Override
             public void handleEvent(Event event) {
                 try {
                     version = Version.parseVersion(txtVersion.getText());

@@ -26,6 +26,7 @@ import org.bndtools.versioncontrol.ignores.manager.api.VersionControlIgnoresMana
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -192,7 +193,7 @@ public class Plugin extends AbstractUIPlugin {
                     sb.append("\n");
                 }
             }
-            final Status s = new Status(Status.ERROR, PLUGIN_ID, 0, sb.toString(), null);
+            final Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, sb.toString(), null);
             reporter.clear();
 
             async(new Runnable() {
@@ -234,7 +235,7 @@ public class Plugin extends AbstractUIPlugin {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
             }
         });
@@ -243,13 +244,13 @@ public class Plugin extends AbstractUIPlugin {
     static final AtomicBoolean busy = new AtomicBoolean(false);
 
     public void error(final String msg, final Throwable t) {
-        Status s = new Status(Status.ERROR, PLUGIN_ID, 0, msg, t);
+        Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, msg, t);
         getLog().log(s);
         async(new Runnable() {
             @Override
             public void run() {
                 if (!busy.compareAndSet(false, true)) {
-                    Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                    Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
                     ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s);
 
                     busy.set(false);
@@ -267,7 +268,7 @@ public class Plugin extends AbstractUIPlugin {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.WARNING, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.WARNING, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
             }
         });

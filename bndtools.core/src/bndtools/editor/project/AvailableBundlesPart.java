@@ -33,9 +33,9 @@ import org.eclipse.ui.forms.widgets.Section;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceRepository;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.ResolutionPhase;
-import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.RepositoriesViewRefresher;
@@ -191,7 +191,7 @@ public class AvailableBundlesPart extends BndEditorPart implements RepositoriesV
     @Override
     protected String[] getProperties() {
         return new String[] {
-            BndConstants.RUNREPOS, BndEditModel.PROP_WORKSPACE
+            Constants.RUNREPOS, BndEditModel.PROP_WORKSPACE
         };
     }
 

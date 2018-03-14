@@ -12,19 +12,23 @@ public class LogServiceAdapter implements LogService {
         this.delegate = delegate;
     }
 
+    @Override
     public void log(int level, String message) {
         log(null, level, message, null);
     }
 
+    @Override
     public void log(int level, String message, Throwable exception) {
         log(null, level, message, exception);
     }
 
+    @Override
     @SuppressWarnings("rawtypes")
     public void log(ServiceReference sr, int level, String message) {
         log(sr, level, message, null);
     }
 
+    @Override
     @SuppressWarnings("rawtypes")
     public void log(ServiceReference sr, int level, String message, Throwable exception) {
         switch (level) {

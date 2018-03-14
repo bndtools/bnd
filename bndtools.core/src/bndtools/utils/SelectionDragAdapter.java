@@ -14,6 +14,7 @@ public class SelectionDragAdapter implements DragSourceListener {
         this.viewer = viewer;
     }
 
+    @Override
     public void dragStart(DragSourceEvent event) {
         ISelection selection = viewer.getSelection();
         LocalSelectionTransfer.getTransfer()
@@ -23,6 +24,7 @@ public class SelectionDragAdapter implements DragSourceListener {
         event.doit = !selection.isEmpty();
     }
 
+    @Override
     public void dragSetData(DragSourceEvent event) {
         // For consistency set the data to the selection even though
         // the selection is provided by the LocalSelectionTransfer
@@ -31,6 +33,7 @@ public class SelectionDragAdapter implements DragSourceListener {
             .getSelection();
     }
 
+    @Override
     public void dragFinished(DragSourceEvent event) {
         LocalSelectionTransfer.getTransfer()
             .setSelection(null);

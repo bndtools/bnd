@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Tree;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.osgi.framework.Version;
@@ -89,7 +90,7 @@ public class ResolutionSuccessPanel {
 
         GridData gd;
 
-        Section sectRequired = toolkit.createSection(form, Section.TITLE_BAR | Section.EXPANDED);
+        Section sectRequired = toolkit.createSection(form, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         sectRequired.setText("Required Resources");
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -120,7 +121,7 @@ public class ResolutionSuccessPanel {
             }
         });
 
-        sectOptional = toolkit.createSection(form, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        sectOptional = toolkit.createSection(form, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         sectOptional.setText("Optional Resources");
 
         Composite cmpOptional = toolkit.createComposite(sectOptional);
@@ -220,7 +221,7 @@ public class ResolutionSuccessPanel {
         });
         btnClearOptional.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false));
 
-        Section sectReason = toolkit.createSection(form, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        Section sectReason = toolkit.createSection(form, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         sectReason.setText("Reasons");
 
         Tree tblReasons = new Tree(sectReason, SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);

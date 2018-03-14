@@ -44,6 +44,7 @@ class LocalRepositorySelectionPage extends WizardPage {
         this.selectedRepository = selectedRepository;
     }
 
+    @Override
     public void createControl(Composite parent) {
         setTitle("Select Local Repository");
         setMessage("Bundle will be imported into the selected repository.");
@@ -76,12 +77,14 @@ class LocalRepositorySelectionPage extends WizardPage {
 
         // LISTENERS
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                 setSelectedRepository((RepositoryPlugin) selection.getFirstElement());
             }
         });
         viewer.addOpenListener(new IOpenListener() {
+            @Override
             public void open(OpenEvent evt) {
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                 setSelectedRepository((RepositoryPlugin) selection.getFirstElement());

@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.utils.workspace.FileUtils;
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -231,7 +230,7 @@ public class PkgRenameParticipant extends RenameParticipant implements ISharable
 
         /* visit the projects */
         for (IProject projectToVisit : projectsToVisit) {
-            projectToVisit.accept(visitor, IContainer.NONE);
+            projectToVisit.accept(visitor, IResource.NONE);
         }
 
         if (fileChanges.isEmpty()) {

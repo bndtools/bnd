@@ -11,12 +11,14 @@ import org.eclipse.ui.PlatformUI;
 
 public class LaunchStatusHandler implements IStatusHandler {
 
+    @Override
     public Boolean handleStatus(final IStatus status, Object source) throws CoreException {
         if (status.isOK())
             return true;
 
         final AtomicBoolean result = new AtomicBoolean();
         Runnable uitask = new Runnable() {
+            @Override
             public void run() {
                 LaunchStatusDialog dialog = new LaunchStatusDialog(PlatformUI.getWorkbench()
                     .getActiveWorkbenchWindow()

@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.osgi.Constants;
 import aQute.lib.io.IO;
 import bndtools.central.Central;
 import bndtools.preferences.BndPreferences;
@@ -385,7 +386,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
                 if (f != null)
                     IO.delete(f);
             }
-        IO.delete(new File(model.getTarget(), Project.BUILDFILES));
+        IO.delete(new File(model.getTarget(), Constants.BUILDFILES));
     }
 
     private IProject[] calculateDependsOn(Project model) throws Exception {

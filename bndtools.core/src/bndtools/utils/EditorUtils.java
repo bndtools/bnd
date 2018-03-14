@@ -26,6 +26,7 @@ public class EditorUtils {
             if (MessageDialog.openConfirm(editor.getEditorSite()
                 .getShell(), dialogTitle, message)) {
                 IRunnableWithProgress saveRunnable = new IRunnableWithProgress() {
+                    @Override
                     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         editor.doSave(monitor);
                     }

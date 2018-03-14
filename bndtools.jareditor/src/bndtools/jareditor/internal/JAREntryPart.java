@@ -39,6 +39,7 @@ import org.eclipse.ui.forms.IFormPart;
 import org.eclipse.ui.forms.IPartSelectionListener;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
 import org.eclipse.ui.forms.events.ExpansionEvent;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 
@@ -72,14 +73,14 @@ public class JAREntryPart extends AbstractFormPart implements IPartSelectionList
     }
 
     private void createContent(Composite parent, FormToolkit toolkit) {
-        Section textSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
+        Section textSection = toolkit.createSection(parent, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         textSection.setText("Entry Content");
         Composite textComposite = toolkit.createComposite(textSection);
         text = toolkit.createText(textComposite, "", SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL | SWT.READ_ONLY);
         text.setFont(JFaceResources.getTextFont());
         textSection.setClient(textComposite);
 
-        Section encodingSection = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
+        Section encodingSection = toolkit.createSection(parent, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         encodingSection.setText("Display Options");
         Composite encodingPanel = toolkit.createComposite(encodingSection);
         encodingSection.setClient(encodingPanel);

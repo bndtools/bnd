@@ -197,6 +197,7 @@ class CellEditorTraverseListener implements TraverseListener {
      * (non-Javadoc)
      * @see org.eclipse.swt.events.TraverseListener#keyTraversed(org.eclipse.swt. events.TraverseEvent)
      */
+    @Override
     public void keyTraversed(TraverseEvent e) {
 
         switch (e.detail) {
@@ -238,6 +239,7 @@ class TableTraverseListener implements TraverseListener {
      * (non-Javadoc)
      * @see org.eclipse.swt.events.TraverseListener#keyTraversed(org.eclipse.swt. events.TraverseEvent)
      */
+    @Override
     public void keyTraversed(TraverseEvent e) {
         if (e.detail == SWT.TRAVERSE_RETURN && e.stateMask == SWT.NONE) {
             fKeyBoardSupporter.editColumnOrNextPossible(0);

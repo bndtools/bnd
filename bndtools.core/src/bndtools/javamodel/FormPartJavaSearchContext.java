@@ -27,6 +27,7 @@ public class FormPartJavaSearchContext implements IJavaSearchContext {
         this.formPart = formPart;
     }
 
+    @Override
     public IJavaProject getJavaProject() {
         IFormPage page = getFormPage();
         if (page == null)
@@ -49,6 +50,7 @@ public class FormPartJavaSearchContext implements IJavaSearchContext {
         return (IFormPage) container;
     }
 
+    @Override
     public IRunnableContext getRunContext() {
         IFormPage page = getFormPage();
         if (page == null)

@@ -32,10 +32,12 @@ public class RunExportWizardNode implements IWizardNode {
         this.bndProject = bndProject;
     }
 
+    @Override
     public Point getExtent() {
         return new Point(-1, -1);
     }
 
+    @Override
     public IWizard getWizard() {
         IRunDescriptionExportWizard wizard = wizardRef.get();
         if (wizard != null)
@@ -55,10 +57,12 @@ public class RunExportWizardNode implements IWizardNode {
         }
     }
 
+    @Override
     public boolean isContentCreated() {
         return wizardRef.get() != null;
     }
 
+    @Override
     public void dispose() {}
 
     @Override

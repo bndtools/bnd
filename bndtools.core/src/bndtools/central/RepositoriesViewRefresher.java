@@ -162,11 +162,11 @@ public class RepositoriesViewRefresher implements RepositoryListenerPlugin {
                         }
                     }, monitor);
                 } catch (TimeoutException | InterruptedException e) {
-                    return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Unable to acquire lock to refresh repository " + repo.getName(), e);
+                    return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Unable to acquire lock to refresh repository " + repo.getName(), e);
                 }
             }
         } catch (Exception e) {
-            return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Exception refreshing repositories", e);
+            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Exception refreshing repositories", e);
         }
         return Status.OK_STATUS;
     }

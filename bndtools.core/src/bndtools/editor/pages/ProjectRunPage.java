@@ -18,6 +18,7 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
@@ -149,7 +150,7 @@ public class ProjectRunPage extends FormPage {
         right.setLayout(gl);
 
         // First column
-        RepositorySelectionPart reposPart = new RepositorySelectionPart(getEditor(), left, tk, Section.TITLE_BAR | Section.TWISTIE);
+        RepositorySelectionPart reposPart = new RepositorySelectionPart(getEditor(), left, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
         managedForm.addPart(reposPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
@@ -157,7 +158,7 @@ public class ProjectRunPage extends FormPage {
         reposPart.getSection()
             .setLayoutData(PageLayoutUtils.createCollapsed());
 
-        AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, Section.TITLE_BAR | Section.EXPANDED);
+        AvailableBundlesPart availableBundlesPart = new AvailableBundlesPart(left, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
         managedForm.addPart(availableBundlesPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
@@ -165,13 +166,13 @@ public class ProjectRunPage extends FormPage {
         availableBundlesPart.getSection()
             .setLayoutData(PageLayoutUtils.createExpanded());
 
-        RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        RunFrameworkPart runFwkPart = new RunFrameworkPart(left, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         managedForm.addPart(runFwkPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         runFwkPart.getSection()
             .setLayoutData(gd);
 
-        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(left, tk, Section.TITLE_BAR | Section.TWISTIE);
+        RunPropertiesPart runPropertiesPart = new RunPropertiesPart(left, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
         managedForm.addPart(runPropertiesPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         runPropertiesPart.getSection()
@@ -179,28 +180,28 @@ public class ProjectRunPage extends FormPage {
 
         // SECOND COLUMN
         if (supportsResolve) {
-            RunRequirementsPart requirementsPart = new RunRequirementsPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED | Section.DESCRIPTION);
+            RunRequirementsPart requirementsPart = new RunRequirementsPart(right, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED | Section.DESCRIPTION);
             managedForm.addPart(requirementsPart);
             requirementsPart.getSection()
                 .setLayoutData(PageLayoutUtils.createExpanded());
             requirementsPart.getSection()
                 .addExpansionListener(new ResizeExpansionAdapter(requirementsPart.getSection()));
 
-            RunBlacklistPart blacklistPart = new RunBlacklistPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.COMPACT | Section.DESCRIPTION);
+            RunBlacklistPart blacklistPart = new RunBlacklistPart(right, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.COMPACT | Section.DESCRIPTION);
             managedForm.addPart(blacklistPart);
             blacklistPart.getSection()
                 .setLayoutData(PageLayoutUtils.createCollapsed());
             blacklistPart.getSection()
                 .addExpansionListener(new ResizeExpansionAdapter(blacklistPart.getSection()));
 
-            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE);
+            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE);
             managedForm.addPart(runBundlesPart);
             runBundlesPart.getSection()
                 .setLayoutData(PageLayoutUtils.createCollapsed());
             runBundlesPart.getSection()
                 .addExpansionListener(new ResizeExpansionAdapter(runBundlesPart.getSection()));
         } else {
-            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+            RunBundlesPart runBundlesPart = new RunBundlesPart(right, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
             managedForm.addPart(runBundlesPart);
             runBundlesPart.getSection()
                 .setLayoutData(PageLayoutUtils.createExpanded());

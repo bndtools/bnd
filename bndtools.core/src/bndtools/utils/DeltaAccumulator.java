@@ -21,10 +21,12 @@ public class DeltaAccumulator<T> implements IResourceDeltaVisitor {
 
     public static final DeltaAccumulator<File> fileAccumulator(int acceptKinds, Collection<? super File> collector, final FileFilter filter) {
         return new DeltaAccumulator<File>(acceptKinds, collector, new IFilter<File>() {
+            @Override
             public boolean select(File file) {
                 return filter.accept(file);
             }
         }, new IResourceConverter<File>() {
+            @Override
             public File convert(IResource resource) {
                 return resource.getLocation()
                     .toFile();
@@ -34,6 +36,7 @@ public class DeltaAccumulator<T> implements IResourceDeltaVisitor {
 
     public static final DeltaAccumulator<IResource> resourceAccumulator(int acceptKinds, Collection<? super IResource> collector, IFilter<IResource> filter) {
         return new DeltaAccumulator<IResource>(acceptKinds, collector, filter, new IResourceConverter<IResource>() {
+            @Override
             public IResource convert(IResource resource) {
                 return resource;
             }
@@ -47,6 +50,7 @@ public class DeltaAccumulator<T> implements IResourceDeltaVisitor {
         this.converter = converter;
     }
 
+    @Override
     public boolean visit(IResourceDelta delta) throws CoreException {
         if ((acceptKinds & delta.getKind()) == 0)
             return false;

@@ -134,6 +134,7 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 
     }
 
+    @Override
     public void widgetSelected(SelectionEvent e) {
 
         if (e.item == null || e.item.isDisposed()) {
@@ -172,6 +173,7 @@ public class WorkspaceReleaseDialog extends Dialog implements SelectionListener 
 
     }
 
+    @Override
     public void widgetDefaultSelected(SelectionEvent e) {}
 
     public ReleaseOption getReleaseOption() {

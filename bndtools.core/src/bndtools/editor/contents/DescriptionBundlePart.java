@@ -76,8 +76,10 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
         bundleName = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(bundleName, Constants.BUNDLE_NAME);
         bundleName.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_NAME);
                     }
@@ -89,8 +91,10 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
         bundleDescription = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(bundleDescription, Constants.BUNDLE_DESCRIPTION);
         bundleDescription.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_DESCRIPTION);
                     }
@@ -102,8 +106,10 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
         bundleCategory = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(bundleCategory, Constants.BUNDLE_CATEGORY);
         bundleCategory.addModifyListener(new ModifyListener() {
+            @Override
             public void modifyText(ModifyEvent e) {
                 lock.ifNotModifying(new Runnable() {
+                    @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_CATEGORY);
                     }
@@ -132,6 +138,7 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
 
     protected void addDirtyProperty(final String property) {
         lock.ifNotModifying(new Runnable() {
+            @Override
             public void run() {
                 dirtySet.add(property);
                 getManagedForm().dirtyStateChanged();
@@ -184,6 +191,7 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
     public void refresh() {
         super.refresh();
         lock.modifyOperation(new Runnable() {
+            @Override
             public void run() {
                 String bundleNm = model.getBundleName();
                 bundleName.setText(bundleNm != null ? bundleNm : ""); //$NON-NLS-1$
@@ -204,6 +212,7 @@ public class DescriptionBundlePart extends SectionPart implements PropertyChange
         this.model.addPropertyChangeListener(this);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (editablePropertySet.contains(evt.getPropertyName())) {
             IFormPage page = (IFormPage) getManagedForm().getContainer();

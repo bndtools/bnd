@@ -39,6 +39,7 @@ public class PluginClassSelectionPage extends WizardPage {
         super("pluginClassSelection");
     }
 
+    @Override
     public void createControl(Composite parent) {
         setTitle("Plug-in Type");
         setDescription("Select from one of the following known plug-in types.");
@@ -60,6 +61,7 @@ public class PluginClassSelectionPage extends WizardPage {
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 if (!programmaticChange) {
                     try {
@@ -73,6 +75,7 @@ public class PluginClassSelectionPage extends WizardPage {
             }
         });
         viewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
             public void doubleClick(DoubleClickEvent event) {
                 getContainer().showPage(getNextPage());
             }

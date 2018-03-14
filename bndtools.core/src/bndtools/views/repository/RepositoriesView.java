@@ -44,6 +44,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -613,7 +614,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                             refreshAction.setEnabled(false);
                             Central.refreshPlugins();
                         } catch (Exception e) {
-                            return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Failed to refresh plugins", e);
+                            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Failed to refresh plugins", e);
                         } finally {
                             refreshAction.setEnabled(true);
                         }
@@ -651,7 +652,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         addBundlesAction.setImageDescriptor(Icons.desc("add"));
         addBundlesAction.setDisabledImageDescriptor(Icons.desc("add.disabled"));
 
-        advancedSearchAction = new Action("Advanced Search", Action.AS_CHECK_BOX) {
+        advancedSearchAction = new Action("Advanced Search", IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
                 if (advancedSearchAction.isChecked()) {
@@ -747,7 +748,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
         downloadAction.setImageDescriptor(Icons.desc("download"));
         downloadAction.setDisabledImageDescriptor(Icons.desc("download.disabled"));
 
-        offlineAction = new Action("Online/Offline Mode", Action.AS_CHECK_BOX) {
+        offlineAction = new Action("Online/Offline Mode", IAction.AS_CHECK_BOX) {
             @Override
             public void run() {
                 Workspace workspace = Central.getWorkspaceIfPresent();

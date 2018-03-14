@@ -55,7 +55,7 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
-import bndtools.BndConstants;
+import aQute.bnd.osgi.Constants;
 import bndtools.Plugin;
 
 public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
@@ -110,7 +110,7 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
                         t = ((CoreException) t).getStatus()
                             .getException();
                     }
-                    return new Status(Status.ERROR, Plugin.PLUGIN_ID, "Could not finish import job for Bnd Workspace!", t);
+                    return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Could not finish import job for Bnd Workspace!", t);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
                 }
@@ -376,9 +376,9 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
      */
     private void updateEclipseWorkspaceSettings(final Workspace bndWorkspace) {
         final String javacSource = bndWorkspace.getProperties()
-            .getProperty(BndConstants.JAVAC_SOURCE);
+            .getProperty(Constants.JAVAC_SOURCE);
         final String javacTarget = bndWorkspace.getProperties()
-            .getProperty(BndConstants.JAVAC_TARGET);
+            .getProperty(Constants.JAVAC_TARGET);
 
         @SuppressWarnings("unchecked")
         Hashtable<String, String> javaCoreOptions = JavaCore.getOptions();
@@ -402,9 +402,9 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
      */
     private void updateJavaProjectSettings(final Project bndProject, final IJavaProject javaProject, final ImportSettings importSettings, IProgressMonitor monitor) throws JavaModelException {
         final String javacSource = bndProject.getProperties()
-            .getProperty(BndConstants.JAVAC_SOURCE);
+            .getProperty(Constants.JAVAC_SOURCE);
         final String javacTarget = bndProject.getProperties()
-            .getProperty(BndConstants.JAVAC_TARGET);
+            .getProperty(Constants.JAVAC_TARGET);
 
         addSystemLibraryContainer(javaProject, javacTarget, importSettings, monitor);
 

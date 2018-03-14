@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.StyledString;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -61,9 +62,9 @@ public class R5LabelFormatter {
         else if (ns.equals(ContentNamespace.CONTENT_NAMESPACE))
             r = null;
         else if (ns.equals(BundleNamespace.BUNDLE_NAMESPACE))
-            r = BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+            r = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
         else if (ns.equals(HostNamespace.HOST_NAMESPACE))
-            r = HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+            r = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
         else if (ns.equals(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE))
             r = ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
         else if (ns.equals(PackageNamespace.PACKAGE_NAMESPACE))

@@ -306,7 +306,7 @@ public class Activator extends AbstractUIPlugin implements BundleActivator {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null); //$NON-NLS-1$
+                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null); //$NON-NLS-1$
                 ErrorDialog.openError(null, Messages.errorDialogTitle, sb.toString(), s);
             }
         });

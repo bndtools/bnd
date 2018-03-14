@@ -103,6 +103,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
 
         // Listeners
         viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
             public void selectionChanged(SelectionChangedEvent event) {
                 boolean enable = !viewer.getSelection()
                     .isEmpty();
@@ -229,6 +230,7 @@ public class PluginsPart extends SectionPart implements PropertyChangeListener {
         model.setPlugins(data);
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         IFormPage page = (IFormPage) getManagedForm().getContainer();
         if (page.isActive()) {

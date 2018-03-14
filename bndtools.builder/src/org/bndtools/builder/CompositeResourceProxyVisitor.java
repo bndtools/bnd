@@ -29,6 +29,7 @@ public class CompositeResourceProxyVisitor implements IResourceProxyVisitor {
         delegateList.remove(delegate);
     }
 
+    @Override
     public boolean visit(IResourceProxy proxy) throws CoreException {
         boolean recurse = false;
 

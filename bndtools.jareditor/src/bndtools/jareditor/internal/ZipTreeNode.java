@@ -91,6 +91,7 @@ class ZipTreeNode implements IAdaptable {
         return path;
     }
 
+    @Override
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         if (adapter == JarEntry.class) {
             return entry;

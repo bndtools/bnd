@@ -54,6 +54,7 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         stack.topControl = deselectedPanel;
     }
 
+    @Override
     public void selectionChanged(IFormPart part, ISelection selection) {
         masterPart = part;
         currentSelection = selection;
@@ -98,11 +99,13 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
             currentPage.refresh();
     }
 
+    @Override
     public void commit(boolean onSave) {
         if (currentPage != null)
             currentPage.commit(onSave);
     }
 
+    @Override
     public void dispose() {
         for (Class<?> key : pageMap.keySet()) {
             controlCache.remove(key);
@@ -111,29 +114,35 @@ public class SaneDetailsPart implements IFormPart, IPartSelectionListener {
         }
     }
 
+    @Override
     public void initialize(IManagedForm form) {
         this.managedForm = form;
     }
 
+    @Override
     public boolean isDirty() {
         boolean dirty = currentPage != null && currentPage.isDirty();
         return dirty;
     }
 
+    @Override
     public boolean isStale() {
         return currentPage != null && currentPage.isStale();
     }
 
+    @Override
     public void refresh() {
         if (currentPage != null)
             currentPage.refresh();
     }
 
+    @Override
     public void setFocus() {
         if (currentPage != null)
             currentPage.setFocus();
     }
 
+    @Override
     public boolean setFormInput(Object input) {
         return false;
     }

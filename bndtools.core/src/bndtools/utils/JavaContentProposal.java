@@ -24,18 +24,22 @@ public class JavaContentProposal implements IContentProposal {
         this.isInterface = isInterface;
     }
 
+    @Override
     public String getContent() {
         return packageName + "." + typeName;
     }
 
+    @Override
     public int getCursorPosition() {
         return packageName.length() + typeName.length() + 1;
     }
 
+    @Override
     public String getDescription() {
         return null;
     }
 
+    @Override
     public String getLabel() {
         return typeName + " - " + packageName;
     }

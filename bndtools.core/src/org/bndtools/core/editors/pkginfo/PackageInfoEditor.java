@@ -130,6 +130,7 @@ public class PackageInfoEditor extends TextEditor implements IResourceChangeList
 
     }
 
+    @Override
     public void resourceChanged(IResourceChangeEvent event) {
         IResource resource = ResourceUtil.getResource(getEditorInput());
         IResourceDelta delta = event.getDelta();
@@ -143,6 +144,7 @@ public class PackageInfoEditor extends TextEditor implements IResourceChangeList
 
         if ((delta.getFlags() & IResourceDelta.MARKERS) != 0)
             SWTConcurrencyUtil.execForControl(getEditorSite().getShell(), true, new Runnable() {
+                @Override
                 public void run() {
                     updateTitleIcon();
                 }

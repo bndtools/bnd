@@ -59,6 +59,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
         }
 
         Comparator<PkgPatternProposal> comparator = new Comparator<PkgPatternProposal>() {
+            @Override
             public int compare(PkgPatternProposal o1, PkgPatternProposal o2) {
                 int result = o1.getPackageFragment()
                     .getElementName()
@@ -92,6 +93,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
             }
         };
         IRunnableWithProgress runnable = new IRunnableWithProgress() {
+            @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                 try {
                     new SearchEngine().search(pattern, new SearchParticipant[] {

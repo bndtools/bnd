@@ -12,7 +12,7 @@ import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
 
-import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Constants;
 
 public class BndScanner extends RuleBasedScanner {
     BndSourceViewerConfiguration bsvc;
@@ -21,6 +21,7 @@ public class BndScanner extends RuleBasedScanner {
         bsvc = manager;
         IRule[] rules = new IRule[] {
             new WhitespaceRule(new IWhitespaceDetector() {
+                @Override
                 public boolean isWhitespace(char c) {
                     return (c == ' ' || c == '\t' || c == '\n' || c == '\r');
                 }
@@ -36,9 +37,9 @@ public class BndScanner extends RuleBasedScanner {
         Map<String, IToken> keyWords = new HashMap<String, IToken>();
 
         public BndWordRule() {
-            addWords(Analyzer.headers, bsvc.T_INSTRUCTION);
-            addWords(Analyzer.options, bsvc.T_OPTION);
-            addWords(Analyzer.directives, bsvc.T_DIRECTIVE);
+            addWords(Constants.headers, bsvc.T_INSTRUCTION);
+            addWords(Constants.options, bsvc.T_OPTION);
+            addWords(Constants.directives, bsvc.T_DIRECTIVE);
             // TODO need to move these constants to Constants to avoid the
             // dependency on aQute.bnd.make.component which drags in half the
             // universe
@@ -53,6 +54,7 @@ public class BndScanner extends RuleBasedScanner {
             return Character.isJavaIdentifierPart(c) || c == '-';
         }
 
+        @Override
         public IToken evaluate(ICharacterScanner scanner) {
             StringBuffer sb = new StringBuffer();
 

@@ -9,6 +9,7 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
@@ -26,20 +27,24 @@ public class WorkspacePage extends FormPage {
     private PluginsPart pluginsPart;
 
     public static final IFormPageFactory MAIN_FACTORY = new IFormPageFactory() {
+        @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(true, editor, model, id, "Workspace");
         }
 
+        @Override
         public boolean supportsMode(Mode mode) {
             return mode == Mode.workspace;
         }
     };
 
     public static final IFormPageFactory EXT_FACTORY = new IFormPageFactory() {
+        @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new WorkspacePage(false, editor, model, id, "Workspace");
         }
 
+        @Override
         public boolean supportsMode(Mode mode) {
             return mode == Mode.workspace;
         }
@@ -67,13 +72,13 @@ public class WorkspacePage extends FormPage {
         // Create controls
         Composite body = form.getBody();
 
-        WorkspaceMainPart linksPart = new WorkspaceMainPart(mainBuildFile, body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        WorkspaceMainPart linksPart = new WorkspaceMainPart(mainBuildFile, body, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(linksPart);
 
-        PluginPathPart pluginPathPart = new PluginPathPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION | Section.TWISTIE);
+        PluginPathPart pluginPathPart = new PluginPathPart(body, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED | Section.DESCRIPTION | ExpandableComposite.TWISTIE);
         managedForm.addPart(pluginPathPart);
 
-        pluginsPart = new PluginsPart(body, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION | Section.TWISTIE);
+        pluginsPart = new PluginsPart(body, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED | Section.DESCRIPTION | ExpandableComposite.TWISTIE);
         managedForm.addPart(pluginsPart);
 
         // Layout

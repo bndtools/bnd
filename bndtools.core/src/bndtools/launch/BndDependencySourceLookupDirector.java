@@ -10,6 +10,7 @@ import org.eclipse.jdt.launching.sourcelookup.containers.JavaSourceLookupPartici
 
 public class BndDependencySourceLookupDirector extends AbstractSourceLookupDirector {
 
+    @Override
     public void initializeParticipants() {
         addParticipants(new ISourceLookupParticipant[] {
             new JavaSourceLookupParticipant()

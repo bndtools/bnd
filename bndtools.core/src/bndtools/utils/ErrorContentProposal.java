@@ -20,18 +20,22 @@ class ErrorContentProposal implements IContentProposal {
         this.message = message;
     }
 
+    @Override
     public String getContent() {
         return "";
     }
 
+    @Override
     public String getDescription() {
         return null;
     }
 
+    @Override
     public String getLabel() {
         return message;
     }
 
+    @Override
     public int getCursorPosition() {
         return 0;
     }

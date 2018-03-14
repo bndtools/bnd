@@ -20,9 +20,9 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.IProjectValidator;
 import org.bndtools.api.IValidator;
 import org.bndtools.api.Logger;
+import org.bndtools.build.api.AbstractBuildErrorDetailsHandler;
 import org.bndtools.build.api.BuildErrorDetailsHandler;
 import org.bndtools.build.api.BuildErrorDetailsHandlers;
-import org.bndtools.build.api.DefaultBuildErrorDetailsHandler;
 import org.bndtools.build.api.MarkerData;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
@@ -132,7 +132,7 @@ class MarkerSupport {
         }
 
         String defaultResource = model instanceof Project ? Project.BNDFILE : model instanceof Workspace ? Workspace.BUILDFILE : null;
-        IResource resource = DefaultBuildErrorDetailsHandler.getDefaultResource(project, defaultResource);
+        IResource resource = AbstractBuildErrorDetailsHandler.getDefaultResource(project, defaultResource);
         if (resource.exists()) {
             IMarker marker = resource.createMarker(markerType);
             marker.setAttribute(IMarker.SEVERITY, severity);

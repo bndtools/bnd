@@ -23,6 +23,7 @@ public class FrameworkLaunchTabPiece extends AbstractLaunchTabPiece {
     private Button dynamicUpdateBtn;
     private Button cleanBtn;
 
+    @Override
     public Control createControl(Composite parent) {
         Group frameworkGroup = new Group(parent, SWT.NONE);
         frameworkGroup.setText("Framework:");
@@ -65,8 +66,10 @@ public class FrameworkLaunchTabPiece extends AbstractLaunchTabPiece {
         return frameworkGroup;
     }
 
+    @Override
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {}
 
+    @Override
     public void initializeFrom(ILaunchConfiguration configuration) throws CoreException {
         dynamicUpdate = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
         dynamicUpdateBtn.setSelection(dynamicUpdate);
@@ -75,6 +78,7 @@ public class FrameworkLaunchTabPiece extends AbstractLaunchTabPiece {
         cleanBtn.setSelection(clean);
     }
 
+    @Override
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
         configuration.setAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES, dynamicUpdate);
         configuration.setAttribute(LaunchConstants.ATTR_CLEAN, clean);

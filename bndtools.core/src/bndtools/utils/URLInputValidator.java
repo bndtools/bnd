@@ -6,6 +6,7 @@ import java.net.URL;
 import org.eclipse.jface.dialogs.IInputValidator;
 
 public class URLInputValidator implements IInputValidator {
+    @Override
     public String isValid(String newText) {
         String s = null;
         boolean valid = true;

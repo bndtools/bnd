@@ -60,6 +60,7 @@ class ExportedBundle implements Comparable<ExportedBundle> {
         return "ExportedBundle [symbolicName=" + symbolicName + ", version=" + version + ", path=" + path + "]";
     }
 
+    @Override
     public int compareTo(ExportedBundle other) {
         int diff = this.getSymbolicName()
             .compareTo(other.getSymbolicName());

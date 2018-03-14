@@ -8,6 +8,7 @@ public class ComparablePair<A extends Comparable<A>, B> extends Pair<A, B> imple
         super(first, second);
     }
 
+    @Override
     public int compareTo(Pair<A, ?> o) {
         return getFirst().compareTo(o.getFirst());
     }

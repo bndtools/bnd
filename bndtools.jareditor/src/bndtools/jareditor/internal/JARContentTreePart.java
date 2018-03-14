@@ -43,6 +43,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.forms.AbstractFormPart;
 import org.eclipse.ui.forms.IManagedForm;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.Section;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -61,7 +62,7 @@ public class JARContentTreePart extends AbstractFormPart {
         this.managedForm = managedForm;
 
         FormToolkit toolkit = managedForm.getToolkit();
-        Section section = toolkit.createSection(parent, Section.TITLE_BAR | Section.EXPANDED);
+        Section section = toolkit.createSection(parent, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED);
 
         section.setText("Content Tree");
         tree = toolkit.createTree(section, SWT.FULL_SELECTION | SWT.SINGLE);

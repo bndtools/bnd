@@ -21,6 +21,7 @@ public class MDSashForm extends SashForm {
 
     ArrayList<Sash> sashes = new ArrayList<Sash>();
     Listener listener = new Listener() {
+        @Override
         public void handleEvent(Event e) {
             switch (e.type) {
                 case SWT.MouseEnter :

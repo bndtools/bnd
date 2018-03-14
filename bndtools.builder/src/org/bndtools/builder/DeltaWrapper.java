@@ -126,7 +126,7 @@ class DeltaWrapper {
     }
 
     boolean hasBuildfile() throws Exception {
-        File f = new File(model.getTarget(), Project.BUILDFILES);
+        File f = new File(model.getTarget(), Constants.BUILDFILES);
         return has(f);
     }
 
@@ -211,7 +211,7 @@ class DeltaWrapper {
         if (buildFiles == null)
             return true;
 
-        File file = IO.getFile(model.getTarget(), Project.BUILDFILES);
+        File file = IO.getFile(model.getTarget(), Constants.BUILDFILES);
         if (!file.isFile())
             return true;
 

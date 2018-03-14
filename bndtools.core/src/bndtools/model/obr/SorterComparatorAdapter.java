@@ -15,6 +15,7 @@ public class SorterComparatorAdapter implements Comparator<Object> {
         this.sorter = sorter;
     }
 
+    @Override
     public int compare(Object o1, Object o2) {
         int diff;
 

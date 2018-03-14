@@ -16,6 +16,7 @@ import biz.aQute.resolve.ResolutionCallback;
 
 public class ResolutionChoiceInteractCallback implements ResolutionCallback {
 
+    @Override
     public void processCandidates(final Requirement requirement, Set<Capability> wired, final List<Capability> candidates) {
         if (wired.size() > 0 || candidates.size() < 2)
             return;
@@ -25,6 +26,7 @@ public class ResolutionChoiceInteractCallback implements ResolutionCallback {
         final AtomicInteger resultRef = new AtomicInteger();
 
         Runnable runnable = new Runnable() {
+            @Override
             public void run() {
                 Shell shell = PlatformUI.getWorkbench()
                     .getActiveWorkbenchWindow()

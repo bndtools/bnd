@@ -64,18 +64,22 @@ public class Logger implements ILogger {
         logStatus(constructStatus(status, message, exception));
     }
 
+    @Override
     public void logError(String message, Throwable exception) {
         log(IStatus.ERROR, message, exception);
     }
 
+    @Override
     public void logWarning(String message, Throwable exception) {
         log(IStatus.WARNING, message, exception);
     }
 
+    @Override
     public void logInfo(String message, Throwable exception) {
         log(IStatus.INFO, message, exception);
     }
 
+    @Override
     public void logStatus(IStatus status) {
         if (bundle != null)
             InternalPlatform.getDefault()

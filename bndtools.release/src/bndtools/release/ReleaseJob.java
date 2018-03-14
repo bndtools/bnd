@@ -95,7 +95,7 @@ public class ReleaseJob extends Job {
             // context.getErrorHandler().error(spec.getBsn(), jarDiff.getSuggestedVersion() != null ?
             // jarDiff.getSuggestedVersion().toString() : "0.0.0", e.getMessage());
             // }
-            return new Status(Status.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
+            return new Status(IStatus.ERROR, Activator.PLUGIN_ID, e.getMessage(), e);
         }
 
         return Status.OK_STATUS;

@@ -37,6 +37,7 @@ public class ReleaseAction implements IObjectActionDelegate {
 
     private Map<Project, List<File>> bndFiles;
 
+    @Override
     public void run(IAction action) {
 
         if (bndFiles != null) {
@@ -81,6 +82,7 @@ public class ReleaseAction implements IObjectActionDelegate {
     /**
      * @see IActionDelegate#selectionChanged(IAction, ISelection)
      */
+    @Override
     public void selectionChanged(IAction action, ISelection selection) {
         IFile[] locations = getLocations(selection);
         bndFiles = new LinkedHashMap<Project, List<File>>();
@@ -122,6 +124,7 @@ public class ReleaseAction implements IObjectActionDelegate {
         return null;
     }
 
+    @Override
     public void setActivePart(IAction action, IWorkbenchPart targetPart) {
         // this.targetPart = targetPart;
     }

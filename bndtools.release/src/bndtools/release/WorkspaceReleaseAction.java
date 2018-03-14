@@ -35,6 +35,7 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
 
     private Set<IProject> projects = Collections.emptySet();
 
+    @Override
     public void run(IAction action) {
 
         if (projects.size() > 0) {
@@ -57,6 +58,7 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
     /**
      * @see IActionDelegate#selectionChanged(IAction, ISelection)
      */
+    @Override
     public void selectionChanged(IAction action, ISelection selection) {
         projects = Collections.emptySet();
         if (selection != null && (selection instanceof StructuredSelection)) {
@@ -86,5 +88,6 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
         }
     }
 
+    @Override
     public void setActivePart(IAction action, IWorkbenchPart targetPart) {}
 }

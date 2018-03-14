@@ -51,11 +51,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.window.Window;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Control;
@@ -358,7 +358,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                                 WizardDialog dialog = new DuringSaveWizardDialog(shell, wizard);
                                 dialog.create();
                                 dialog.setErrorMessage("Resolve Failed! Saving now will not update the Run Bundles.");
-                                if (dialog.open() == Dialog.OK)
+                                if (dialog.open() == Window.OK)
                                     reallySave(monitor);
                             } else {
                                 wizard.performFinish();
@@ -368,7 +368,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                             // This is an interactive resolve, always show the dialog
                             boolean dirtyBeforeResolve = isDirty();
                             WizardDialog dialog = new WizardDialog(shell, wizard);
-                            if (dialog.open() == Dialog.OK && !dirtyBeforeResolve) {
+                            if (dialog.open() == Window.OK && !dirtyBeforeResolve) {
                                 // save changes immediately if there were no unsaved changes before the resolve
                                 reallySave(monitor);
                             }

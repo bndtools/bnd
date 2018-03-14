@@ -40,6 +40,7 @@ public class DelayedPageFactory implements IFormPageFactory {
         }
     }
 
+    @Override
     public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
         try {
             IFormPageFactory factory = (IFormPageFactory) configElem.createExecutableExtension("class");
@@ -50,6 +51,7 @@ public class DelayedPageFactory implements IFormPageFactory {
         }
     }
 
+    @Override
     public boolean supportsMode(Mode mode) {
         return modes.contains(mode);
     }

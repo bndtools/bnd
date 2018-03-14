@@ -29,6 +29,7 @@ public class CompositeResourceDeltaVisitor implements IResourceDeltaVisitor {
         this.delegates.remove(delegate);
     }
 
+    @Override
     public boolean visit(IResourceDelta delta) throws CoreException {
         boolean recurse = false;
 

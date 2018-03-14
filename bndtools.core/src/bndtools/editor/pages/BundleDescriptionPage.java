@@ -12,10 +12,10 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.editor.FormEditor;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.Form;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
-import org.eclipse.ui.forms.widgets.Section;
 
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.editor.common.MDSashForm;
@@ -30,10 +30,12 @@ public class BundleDescriptionPage extends FormPage {
     private Color greyTitleBarColour;
 
     public static final IFormPageFactory FACTORY = new IFormPageFactory() {
+        @Override
         public IFormPage createPage(ExtendedFormEditor editor, BndEditModel model, String id) throws IllegalArgumentException {
             return new BundleDescriptionPage(editor, model, id, "Description");
         }
 
+        @Override
         public boolean supportsMode(Mode mode) {
             return mode == Mode.bundle;
         }
@@ -66,16 +68,16 @@ public class BundleDescriptionPage extends FormPage {
 
         Composite leftPanel = toolkit.createComposite(sashForm);
 
-        DescriptionBundlePart infoPart = new DescriptionBundlePart(leftPanel, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        DescriptionBundlePart infoPart = new DescriptionBundlePart(leftPanel, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         managedForm.addPart(infoPart);
 
-        DescriptionRightsPart rightsPart = new DescriptionRightsPart(leftPanel, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        DescriptionRightsPart rightsPart = new DescriptionRightsPart(leftPanel, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         managedForm.addPart(rightsPart);
 
-        DescriptionVendorPart vendorPart = new DescriptionVendorPart(leftPanel, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        DescriptionVendorPart vendorPart = new DescriptionVendorPart(leftPanel, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         managedForm.addPart(vendorPart);
 
-        DescriptionDeveloperPart developerPart = new DescriptionDeveloperPart(leftPanel, toolkit, Section.TITLE_BAR | Section.TWISTIE | Section.EXPANDED);
+        DescriptionDeveloperPart developerPart = new DescriptionDeveloperPart(leftPanel, toolkit, ExpandableComposite.TITLE_BAR | ExpandableComposite.TWISTIE | ExpandableComposite.EXPANDED);
         managedForm.addPart(developerPart);
 
         // LAYOUT

@@ -232,10 +232,12 @@ public class ErrorList {
             super();
         }
 
+        @Override
         public Image getColumnImage(Object element, int columnIndex) {
             return null;
         }
 
+        @Override
         public String getColumnText(Object element, int columnIndex) {
             String[] cols = (String[]) element;
             return cols[columnIndex];
@@ -247,15 +249,18 @@ public class ErrorList {
             super();
         }
 
+        @Override
         public Object[] getElements(Object inputElement) {
             String[][] table = (String[][]) inputElement;
             return table;
         }
 
+        @Override
         public void dispose() {
             /* ignore */
         }
 
+        @Override
         public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
             /* ignore */
         }

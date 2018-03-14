@@ -20,6 +20,7 @@ import bndtools.release.nl.Messages;
 
 public class ReleaseWorkspaceHandler extends AbstractHandler {
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         try {
 

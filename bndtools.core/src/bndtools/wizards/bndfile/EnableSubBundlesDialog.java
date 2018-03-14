@@ -123,6 +123,7 @@ public class EnableSubBundlesDialog extends TitleAreaDialog {
             }
         });
         viewer.addCheckStateListener(new ICheckStateListener() {
+            @Override
             public void checkStateChanged(CheckStateChangedEvent event) {
                 String property = (String) event.getElement();
                 if (event.getChecked())

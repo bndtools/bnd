@@ -32,6 +32,7 @@ public abstract class GenericStackedLaunchTab extends AbstractLaunchConfiguratio
     }
 
     private final PropertyChangeListener updateListener = new PropertyChangeListener() {
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             checkValid();
             updateLaunchConfigurationDialog();
@@ -47,6 +48,7 @@ public abstract class GenericStackedLaunchTab extends AbstractLaunchConfiguratio
         return false;
     }
 
+    @Override
     public void createControl(Composite parent) {
         Composite composite = new Composite(parent, SWT.NONE);
         setControl(composite);
@@ -70,12 +72,14 @@ public abstract class GenericStackedLaunchTab extends AbstractLaunchConfiguratio
         setErrorMessage(null);
     }
 
+    @Override
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
         for (ILaunchTabPiece piece : getStack()) {
             piece.setDefaults(configuration);
         }
     }
 
+    @Override
     public void initializeFrom(ILaunchConfiguration configuration) {
         try {
             for (ILaunchTabPiece piece : getStack()) {
@@ -88,6 +92,7 @@ public abstract class GenericStackedLaunchTab extends AbstractLaunchConfiguratio
         checkValid();
     }
 
+    @Override
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
         for (ILaunchTabPiece piece : getStack()) {
             piece.performApply(configuration);

@@ -17,6 +17,7 @@ import bndtools.central.Central;
 public class OpenMainConfigHandler extends AbstractHandler {
     private static final ILogger logger = Logger.getLogger(OpenMainConfigHandler.class);
 
+    @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         try {
             IFile buildFile = Central.getWorkspaceBuildFile();

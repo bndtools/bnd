@@ -26,6 +26,7 @@ public class QueryJpmDependenciesRunnable implements IRunnableWithProgress {
         this.repository = repository;
     }
 
+    @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         SubMonitor progress = SubMonitor.convert(monitor, 5);
         progress.setTaskName("Querying dependencies...");

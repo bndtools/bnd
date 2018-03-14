@@ -55,6 +55,7 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
 
         try {
             getContainer().run(false, false, new IRunnableWithProgress() {
+                @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         IWorkspace ws = ResourcesPlugin.getWorkspace();
@@ -96,6 +97,7 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
         return true;
     }
 
+    @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         this.workbench = workbench;
         this.selection = selection;

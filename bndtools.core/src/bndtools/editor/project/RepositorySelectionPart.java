@@ -15,11 +15,10 @@ import org.bndtools.utils.jface.StrikeoutStyler;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart;
 import org.bndtools.utils.swt.AddRemoveButtonBarPart.AddRemoveListener;
 import org.bndtools.utils.swt.SWTConcurrencyUtil;
-import org.eclipse.core.internal.events.ResourceChangeEvent;
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -73,11 +72,11 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.deployer.repository.AbstractIndexedRepo;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.osgi.OSGiRepository;
 import aQute.bnd.service.Actionable;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.exceptions.Exceptions;
-import bndtools.BndConstants;
 import bndtools.Plugin;
 import bndtools.central.Central;
 import bndtools.central.WorkspaceR5Repository;
@@ -331,7 +330,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
         });
 
         ResourcesPlugin.getWorkspace()
-            .addResourceChangeListener(this, ResourceChangeEvent.POST_CHANGE | ResourceChangeEvent.POST_BUILD);
+            .addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE | IResourceChangeEvent.POST_BUILD);
 
         stackLayout.topControl = cmpBndLayout;
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
@@ -443,7 +442,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
     @Override
     protected String[] getProperties() {
         return new String[] {
-            BndConstants.RUNREPOS, BndEditModel.PROP_WORKSPACE
+            Constants.RUNREPOS, BndEditModel.PROP_WORKSPACE
         };
     }
 
@@ -465,7 +464,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
             for (URI u : locations) {
                 IFile[] found = ResourcesPlugin.getWorkspace()
                     .getRoot()
-                    .findFilesForLocationURI(u, IWorkspaceRoot.INCLUDE_HIDDEN | IWorkspaceRoot.INCLUDE_TEAM_PRIVATE_MEMBERS);
+                    .findFilesForLocationURI(u, IContainer.INCLUDE_HIDDEN | IContainer.INCLUDE_TEAM_PRIVATE_MEMBERS);
                 for (IFile file : found) {
                     files.add(file);
                 }

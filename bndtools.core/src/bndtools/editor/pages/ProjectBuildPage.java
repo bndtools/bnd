@@ -40,6 +40,7 @@ import org.eclipse.ui.forms.IManagedForm;
 import org.eclipse.ui.forms.IMessageManager;
 import org.eclipse.ui.forms.editor.FormPage;
 import org.eclipse.ui.forms.editor.IFormPage;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.eclipse.ui.forms.widgets.FormToolkit;
 import org.eclipse.ui.forms.widgets.ScrolledForm;
 import org.eclipse.ui.forms.widgets.Section;
@@ -126,13 +127,13 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         layout = new GridLayout(1, false);
         leftPanel.setLayout(layout);
 
-        SubBundlesPart subBundlesPart = new SubBundlesPart(leftPanel, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        SubBundlesPart subBundlesPart = new SubBundlesPart(leftPanel, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(subBundlesPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);
         subBundlesPart.getSection()
             .setLayoutData(gd);
 
-        BuildPathPart buildPathPart = new BuildPathPart(leftPanel, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        BuildPathPart buildPathPart = new BuildPathPart(leftPanel, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(buildPathPart);
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 50;
@@ -144,7 +145,7 @@ public class ProjectBuildPage extends FormPage implements IPriority, IResourceCh
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         rightPanel.setLayoutData(gd);
 
-        BuildOperationsPart buildOpsPart = new BuildOperationsPart(rightPanel, tk, Section.TITLE_BAR | Section.EXPANDED | Section.DESCRIPTION);
+        BuildOperationsPart buildOpsPart = new BuildOperationsPart(rightPanel, tk, ExpandableComposite.TITLE_BAR | ExpandableComposite.EXPANDED | Section.DESCRIPTION);
         managedForm.addPart(buildOpsPart);
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, false);

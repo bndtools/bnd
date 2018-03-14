@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IClasspathAttribute;
@@ -76,7 +77,7 @@ public class BndContainerSourceManager {
             try (OutputStream out = IO.outputStream(propertiesFile)) {
                 props.store(out, new Date().toString());
             } catch (final IOException e) {
-                throw new CoreException(new Status(Status.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to write container source attachments", e));
+                throw new CoreException(new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to write container source attachments", e));
             }
         }
     }
@@ -201,7 +202,7 @@ public class BndContainerSourceManager {
             try (InputStream in = IO.stream(propertiesFile)) {
                 props.load(in);
             } catch (final IOException e) {
-                throw new CoreException(new Status(Status.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to read container source attachments", e));
+                throw new CoreException(new Status(IStatus.ERROR, BndtoolsBuilder.PLUGIN_ID, "Failure to read container source attachments", e));
             }
         }
 

@@ -37,6 +37,7 @@ public class ProjectBundle implements IAdaptable {
         return "ProjectBundle [project=" + project + ", bsn=" + bsn + "]";
     }
 
+    @Override
     public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
         Object result = null;
 

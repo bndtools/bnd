@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Hashtable;
 import java.util.List;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -85,7 +86,7 @@ public class Activator extends AbstractUIPlugin {
     static volatile boolean busy;
 
     public void error(final String msg, final Throwable t) {
-        Status s = new Status(Status.ERROR, PLUGIN_ID, 0, msg, t);
+        Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, msg, t);
         getLog().log(s);
         async(new Runnable() {
             @Override
@@ -95,7 +96,7 @@ public class Activator extends AbstractUIPlugin {
                         return;
                     busy = true;
                 }
-                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Errors during bundle generation", msg + " " + t.getMessage(), s);
 
                 busy = false;
@@ -104,7 +105,7 @@ public class Activator extends AbstractUIPlugin {
     }
 
     public void info(String msg) {
-        Status s = new Status(Status.INFO, PLUGIN_ID, 0, msg, null);
+        Status s = new Status(IStatus.INFO, PLUGIN_ID, 0, msg, null);
         getLog().log(s);
     }
 
@@ -118,7 +119,7 @@ public class Activator extends AbstractUIPlugin {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.ERROR, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Errors during bundle generation", sb.toString(), s);
             }
         });
@@ -142,7 +143,7 @@ public class Activator extends AbstractUIPlugin {
         async(new Runnable() {
             @Override
             public void run() {
-                Status s = new Status(Status.WARNING, PLUGIN_ID, 0, "", null);
+                Status s = new Status(IStatus.WARNING, PLUGIN_ID, 0, "", null);
                 ErrorDialog.openError(null, "Warnings during bundle generation", sb.toString(), s);
             }
         });
@@ -211,7 +212,7 @@ public class Activator extends AbstractUIPlugin {
                     sb.append("\n");
                 }
             }
-            final Status s = new Status(Status.ERROR, PLUGIN_ID, 0, sb.toString(), null);
+            final Status s = new Status(IStatus.ERROR, PLUGIN_ID, 0, sb.toString(), null);
             reporter.clear();
 
             async(new Runnable() {
