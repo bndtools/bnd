@@ -474,6 +474,21 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
+	public static void testClassQuery_b() throws Exception {
+		try (Analyzer a = new Analyzer()) {
+			a.setJar(IO.getFile("jar/osgi.jar"));
+			a.analyze();
+
+			String result = a._classes("cmd", "named", "org.osgi.service.cu.*", "named", "!org.osgi.service.cu.admin.*",
+				"named", "!org.osgi.service.cu.diag.*");
+			TreeSet<String> r = new TreeSet<>(Processor.split(result));
+			assertEquals(new TreeSet<>(
+				Arrays.asList("org.osgi.service.cu.ControlUnit", "org.osgi.service.cu.ControlUnitConstants",
+					"org.osgi.service.cu.ControlUnitException", "org.osgi.service.cu.StateVariableListener")),
+				r);
+		}
+	}
+
 	/**
 	 * Use a private activator, check it is not imported.
 	 * 
