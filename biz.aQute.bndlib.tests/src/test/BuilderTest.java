@@ -744,15 +744,15 @@ public class BuilderTest extends BndTestCase {
 	public void testClasses() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.setProperty("x", "${classes;CONCRETE;ANNOTATION;test.BuilderTest$TestAnnotation}");
-			b.setProperty("y", "${classes;CONCRETE;ANNOTATED;test.BuilderTest$TestAnnotation}");
+			b.setProperty("x", "${classes;CONCRETE;ANNOTATION;test.BuilderTest.TestAnnotation}");
+			b.setProperty("y", "${classes;CONCRETE;ANNOTATED;test.BuilderTest.TestAnnotation}");
 			b.setProperty("z", "${classes;CONCRETE;ANNOTATEDX;x.y.Z}");
 			b.setPrivatePackage("test");
 			b.addClasspath(IO.getFile("bin"));
 			b.build();
 			String s = b.getProperty("x");
 			assertEquals(s, b.getProperty("y"));
-			assertTrue(s.contains("test.BuilderTest$Target"));
+			assertTrue(s.contains("test.BuilderTest.Target"));
 			assertEquals("${classes;CONCRETE;ANNOTATEDX;x.y.Z}", b.getProperty("z"));
 			assertTrue(b.check("ANNOTATEDX"));
 		} finally {

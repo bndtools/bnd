@@ -225,9 +225,9 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
-			assertTrue(clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertTrue(clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest.RecursiveAnno"), analyzer));
 			assertFalse(
-				clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+				clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest.RecursiveAnno"), analyzer));
 		}
 	}
 
@@ -236,8 +236,8 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
-			assertTrue(clazz.is(QUERY.ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
-			assertFalse(clazz.is(QUERY.ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+			assertTrue(clazz.is(QUERY.ANNOTATED, new Instruction("test.ClazzTest.RecursiveAnno"), analyzer));
+			assertFalse(clazz.is(QUERY.ANNOTATED, new Instruction("!test.ClazzTest.RecursiveAnno"), analyzer));
 		}
 	}
 
@@ -247,9 +247,9 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
-			assertTrue(clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertTrue(clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest.RecursiveAnno"), analyzer));
 			assertFalse(
-				clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+				clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest.RecursiveAnno"), analyzer));
 		}
 	}
 
@@ -258,8 +258,8 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
-			assertFalse(clazz.is(QUERY.ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
-			assertTrue(clazz.is(QUERY.ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+			assertFalse(clazz.is(QUERY.ANNOTATED, new Instruction("test.ClazzTest.RecursiveAnno"), analyzer));
+			assertTrue(clazz.is(QUERY.ANNOTATED, new Instruction("!test.ClazzTest.RecursiveAnno"), analyzer));
 		}
 	}
 
