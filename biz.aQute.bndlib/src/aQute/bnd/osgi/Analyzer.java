@@ -2704,13 +2704,10 @@ public class Analyzer extends Processor {
 	 * that extend a base class.
 	 */
 
-	static String _classesHelp = "${classes;'implementing'|'extending'|'importing'|'named'|'version'|'any';<pattern>}, Return a list of class fully qualified class names that extend/implement/import any of the contained classes matching the pattern\n";
+	static final String _classesHelp = "${classes[;<query>;<pattern>]*}, Return a list of fully qualified class names of the contained classes matching the queries.\n"
+		+ "A query must be one of " + join(Clazz.QUERY.values());
 
 	public String _classes(String... args) throws Exception {
-		// Macro.verifyCommand(args, _classesHelp, new
-		// Pattern[]{null,Pattern.compile("(implementing|implements|extending|extends|importing|imports|any)"),
-		// null}, 3,3);
-
 		Collection<Clazz> matched = getClasses(args);
 		if (matched.isEmpty())
 			return "";
@@ -2722,28 +2719,33 @@ public class Analyzer extends Processor {
 
 		Set<Clazz> matched = new HashSet<>(classspace.values());
 		for (int i = 1; i < args.length; i++) {
-			if (args.length < i + 1)
-				throw new IllegalArgumentException(
-					"${classes} macro must have odd number of arguments. " + _classesHelp);
-
-			String typeName = args[i];
-			if (typeName.equalsIgnoreCase("extending"))
-				typeName = "extends";
-			else if (typeName.equalsIgnoreCase("importing"))
-				typeName = "imports";
-			else if (typeName.equalsIgnoreCase("annotation"))
-				typeName = "annotated";
-			else if (typeName.equalsIgnoreCase("implementing"))
-				typeName = "implements";
-
-			Clazz.QUERY type = Clazz.QUERY.valueOf(typeName.toUpperCase());
-
-			if (type == null)
-				throw new IllegalArgumentException("${classes} has invalid type: " + typeName + ". " + _classesHelp);
+			String typeName = args[i].toUpperCase();
+			Clazz.QUERY type;
+			switch (typeName) {
+				case "EXTENDING" :
+					type = Clazz.QUERY.EXTENDS;
+					break;
+				case "IMPORTING" :
+					type = Clazz.QUERY.IMPORTS;
+					break;
+				case "ANNOTATION" :
+					type = Clazz.QUERY.ANNOTATED;
+					break;
+				case "IMPLEMENTING" :
+					type = Clazz.QUERY.IMPLEMENTS;
+					break;
+				default :
+					type = Clazz.QUERY.valueOf(typeName);
+					break;
+			}
 
 			Instruction instr = null;
 			if (Clazz.HAS_ARGUMENT.contains(type)) {
-				String s = args[++i];
+				if (++i == args.length) {
+					throw new IllegalArgumentException(
+						"${classes} query " + type + " must have a pattern argument. " + _classesHelp);
+				}
+				String s = args[i];
 				instr = new Instruction(s);
 			}
 			for (Iterator<Clazz> c = matched.iterator(); c.hasNext();) {
@@ -2756,7 +2758,8 @@ public class Analyzer extends Processor {
 		return new SortedList<>(matched, Clazz.NAME_COMPARATOR);
 	}
 
-	static String _packagesHelp = "${packages;'named'|'annotated'|'any'|'versioned'|'conditional';<pattern>}, Return a list of packages contained in the bundle that match the pattern\n";
+	static final String _packagesHelp = "${packages[;<query>;<pattern>]}, Return a list of packages contained in the bundle matching the query.\n"
+		+ "A query must be one of " + join(Packages.QUERY.values());
 
 	public String _packages(String... args) throws Exception {
 		Collection<PackageRef> matched = getPackages(contained, args);

@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,8 +24,13 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
@@ -1916,6 +1925,109 @@ public class Clazz {
 		}
 	}
 
+	private Stream<Clazz> hierarchyStream(Analyzer analyzer) {
+		return StreamSupport.stream(new Spliterator<Clazz>() {
+			private Clazz clazz;
+			{
+				requireNonNull(analyzer);
+				clazz = Clazz.this;
+			}
+
+			@Override
+			public boolean tryAdvance(Consumer<? super Clazz> action) {
+				requireNonNull(action);
+				if (clazz == null) {
+					return false;
+				}
+				action.accept(clazz);
+				TypeRef type = clazz.zuper;
+				if (type == null) {
+					clazz = null;
+				} else {
+					try {
+						clazz = analyzer.findClass(type);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+					if (clazz == null) {
+						analyzer.warning("While traversing the type tree for %s cannot find class %s", Clazz.this,
+							type);
+					}
+				}
+				return true;
+			}
+
+			@Override
+			public Spliterator<Clazz> trySplit() {
+				return null;
+			}
+
+			@Override
+			public long estimateSize() {
+				return Long.MAX_VALUE;
+			}
+
+			@Override
+			public int characteristics() {
+				return Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL;
+			}
+		}, false);
+	}
+
+	private Stream<TypeRef> interfacesStream(Analyzer analyzer,
+		Function<? super Clazz, Collection<? extends TypeRef>> func,
+		Set<TypeRef> visited) {
+		return StreamSupport.stream(new Spliterator<TypeRef>() {
+			private Deque<TypeRef> queue;
+			{
+				requireNonNull(analyzer);
+				// initialize queue from this class
+				queue = new ArrayDeque<>(requireNonNull(func).apply(Clazz.this));
+			}
+
+			@Override
+			public boolean tryAdvance(Consumer<? super TypeRef> action) {
+				requireNonNull(action);
+				TypeRef type = queue.poll();
+				if (type == null) {
+					return false;
+				}
+				action.accept(type);
+				if ((visited != null) && visited.add(type)) {
+					Clazz clazz;
+					try {
+						clazz = analyzer.findClass(type);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+					if (clazz == null) {
+						analyzer.warning("While traversing the type tree for %s cannot find class %s", Clazz.this,
+							type);
+					} else {
+						queue.addAll(func.apply(clazz));
+						queue.removeAll(visited);
+					}
+				}
+				return true;
+			}
+
+			@Override
+			public Spliterator<TypeRef> trySplit() {
+				return null;
+			}
+
+			@Override
+			public long estimateSize() {
+				return Long.MAX_VALUE;
+			}
+
+			@Override
+			public int characteristics() {
+				return Spliterator.NONNULL;
+			}
+		}, false);
+	}
+
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {
 		switch (query) {
 			case ANY :
@@ -1928,20 +2040,19 @@ public class Clazz {
 				String v = major + "." + minor;
 				return instr.matches(v) ^ instr.isNegated();
 
-			case IMPLEMENTS :
-				for (int i = 0; interfaces != null && i < interfaces.length; i++) {
-					if (instr.matches(interfaces[i].getDottedOnly()))
-						return !instr.isNegated();
-				}
-				break; // check super type
+			case IMPLEMENTS : {
+				Set<TypeRef> visited = new HashSet<>();
+				return hierarchyStream(analyzer).anyMatch(c -> c
+					.interfacesStream(analyzer,
+						i -> (i.interfaces != null) ? Arrays.asList(i.interfaces) : Collections.emptyList(), visited)
+					.anyMatch(i -> instr.matches(i.getDottedOnly()))) ^ instr.isNegated();
+			}
 
 			case EXTENDS :
-				if (zuper == null)
-					return instr.isNegated();
-
-				if (instr.matches(zuper.getDottedOnly()))
-					return !instr.isNegated();
-				break; // check super type
+				return hierarchyStream(analyzer).skip(1) // skip this class
+					.anyMatch(c -> instr.matches(c.getClassName()
+						.getDottedOnly()))
+					^ instr.isNegated();
 
 			case PUBLIC :
 				return Modifier.isPublic(accessx);
@@ -1950,38 +2061,20 @@ public class Clazz {
 				return !Modifier.isAbstract(accessx);
 
 			case ANNOTATED :
-				if (annotations == null)
-					return instr.isNegated();
-
-				for (TypeRef annotation : annotations) {
-					if (instr.matches(annotation.getFQN()))
-						return !instr.isNegated();
-				}
-
-				return instr.isNegated();
+				return interfacesStream(analyzer,
+					c -> (c.annotations != null) ? c.annotations : Collections.emptyList(), null)
+						.anyMatch(a -> instr.matches(a.getFQN()))
+					^ instr.isNegated();
 
 			case INDIRECTLY_ANNOTATED :
-				if (annotations == null)
-					return instr.isNegated();
-				Deque<TypeRef> stack = new ArrayDeque<>();
-				Set<Clazz> done = new HashSet<>();
-				done.add(this);
-				annotations.forEach(stack::push);
-				TypeRef annotation;
-				while ((annotation = stack.poll()) != null) {
-					if (instr.matches(annotation.getFQN()))
-						return !instr.isNegated();
-					Clazz annoClazz = analyzer.findClass(annotation);
-					if (annoClazz != null && done.add(annoClazz)) {
-						if (annoClazz.annotations != null)
-							annoClazz.annotations.forEach(stack::push);
-					}
-				}
-
-				return instr.isNegated();
+				return interfacesStream(analyzer,
+					c -> (c.annotations != null) ? c.annotations : Collections.emptyList(), new HashSet<>())
+						.anyMatch(a -> instr.matches(a.getFQN()))
+					^ instr.isNegated();
 
 			case RUNTIMEANNOTATIONS :
 				return hasRuntimeAnnotations;
+
 			case CLASSANNOTATIONS :
 				return hasClassAnnotations;
 
@@ -1989,26 +2082,14 @@ public class Clazz {
 				return Modifier.isAbstract(accessx);
 
 			case IMPORTS :
-				for (PackageRef imp : imports) {
-					if (instr.matches(imp.getFQN()))
-						return !instr.isNegated();
-				}
-				break; // check super type
+				return hierarchyStream(analyzer).flatMap(c -> c.imports.stream())
+					.anyMatch(pkg -> instr.matches(pkg.getFQN())) ^ instr.isNegated();
+
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
 		}
 
-		if (zuper == null)
-			return instr.isNegated();
-
-		Clazz clazz = analyzer.findClass(zuper);
-		if (clazz == null) {
-			analyzer.warning("While traversing the type tree while searching %s on %s cannot find class %s", query,
-				this, zuper);
-			return false;
-		}
-
-		return clazz.is(query, instr, analyzer);
+		return instr == null ? false : instr.isNegated();
 	}
 
 	@Override
