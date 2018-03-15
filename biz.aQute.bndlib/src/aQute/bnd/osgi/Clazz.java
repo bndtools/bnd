@@ -1954,7 +1954,7 @@ public class Clazz {
 					return instr.isNegated();
 
 				for (TypeRef annotation : annotations) {
-					if (instr.matches(annotation.getFQN()))
+					if (instr.matches(annotation.getDottedOnly()))
 						return !instr.isNegated();
 				}
 
@@ -1969,7 +1969,7 @@ public class Clazz {
 				annotations.forEach(stack::push);
 				TypeRef annotation;
 				while ((annotation = stack.poll()) != null) {
-					if (instr.matches(annotation.getFQN()))
+					if (instr.matches(annotation.getDottedOnly()))
 						return !instr.isNegated();
 					Clazz annoClazz = analyzer.findClass(annotation);
 					if (annoClazz != null && done.add(annoClazz)) {
@@ -2014,7 +2014,7 @@ public class Clazz {
 	@Override
 	public String toString() {
 		if (className != null) {
-			return className.getFQN();
+			return className.getDottedOnly();
 		}
 		return resource.toString();
 	}
