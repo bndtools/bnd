@@ -47,12 +47,22 @@ public class MessageHyperlinkAdapter implements IHyperlinkListener {
 
         IMessage[] messages = (IMessage[]) e.data;
 
-        if (messages == null || messages.length == 0) {
+        if (messages == null || messages.length == 0 || hasNull(messages)) {
             MessageDialog.openInformation(part.getSite()
                 .getShell(), part.getTitle(), "No further information available.");
         } else {
             popupDialog = new MessagesPopupDialog(link, (IMessage[]) e.data, part);
             popupDialog.open();
         }
+    }
+
+    private static boolean hasNull(IMessage[] messages) {
+        for (int i = 0; i < messages.length; i++) {
+            if (messages[i] == null) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
