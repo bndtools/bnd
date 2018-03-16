@@ -209,6 +209,21 @@
 				</with>
 			</enablement>
 		</quickFixProcessor>
+		<quickFixProcessor id="ImportPackageQuickFixProcessor"
+			name="Import Package Quick Fix" requiredSourceLevel="1.5"
+			class="org.bndtools.core.editors.ImportPackageQuickFixProcessor"
+			icon="icons/bricks.png">
+ 			<handledMarkerTypes>
+				<markerType id="org.eclipse.jdt.core.problem" />
+			</handledMarkerTypes>
+			<enablement>
+				<with variable="projectNatures">
+					<iterate operator="or">
+						<equals value="bndtools.core.bndnature" />
+					</iterate>
+				</with>
+			</enablement>
+		</quickFixProcessor>
 	</extension>
 
    <extension
