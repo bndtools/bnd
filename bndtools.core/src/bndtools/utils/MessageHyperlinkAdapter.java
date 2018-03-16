@@ -10,6 +10,9 @@
  *******************************************************************************/
 package bndtools.utils;
 
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.ui.IWorkbenchPart;
@@ -47,7 +50,15 @@ public class MessageHyperlinkAdapter implements IHyperlinkListener {
 
         IMessage[] messages = (IMessage[]) e.data;
 
-        if (messages == null || messages.length == 0 || hasNull(messages)) {
+        if (messages == null) {
+            messages = new IMessage[0];
+        } else {
+            messages = Stream.of(messages)
+                .filter(Objects::nonNull)
+                .toArray(IMessage[]::new);
+        }
+
+        if (messages.length == 0) {
             MessageDialog.openInformation(part.getSite()
                 .getShell(), part.getTitle(), "No further information available.");
         } else {
@@ -56,13 +67,4 @@ public class MessageHyperlinkAdapter implements IHyperlinkListener {
         }
     }
 
-    private static boolean hasNull(IMessage[] messages) {
-        for (int i = 0; i < messages.length; i++) {
-            if (messages[i] == null) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 }
