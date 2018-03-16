@@ -15,7 +15,7 @@ public class ExpandPropertiesTask extends BaseTask {
 	File propertyFile;
 
 	@Override
-	@SuppressWarnings("cast")
+	@SuppressWarnings("unchecked")
 	public void execute() throws BuildException {
 		try {
 			if (propertyFile.exists()) {
