@@ -32,6 +32,14 @@ baselinerepo: https://dl.bintray.com/bndtools/bndtools/${baseline.version}
         name="Eclipse m2e 1.6.2"; \
         url="http://download.eclipse.org/technology/m2e/releases/1.6/1.6.2.20150902-0002/";\
         location=${build}/cache/stable/EclipseM2E,\
+    aQute.bnd.repository.p2.provider.P2Repository; \
+        name="Eclipse EMF 2.13"; \
+        url="http://download.eclipse.org/modeling/emf/emf/builds/release/2.13";\
+        location=${build}/cache/stable/EclipseEMF,\
+    aQute.bnd.repository.p2.provider.P2Repository; \
+        name="Eclipse Webtools 3.6.3"; \
+        url="http://download.eclipse.org/webtools/downloads/drops/R3.6.3/R-3.6.3-20150216091848/repository/";\
+        location=${build}/cache/stable/Webtools363,\
 	aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
         name="m2e Deps"; \
         revision="org.apache.maven:maven-core:3.3.3,org.sonatype.plexus:plexus-build-api:0.0.7"; \
