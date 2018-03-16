@@ -870,8 +870,10 @@ public class Analyzer extends Processor {
 
 			// ----- Require/Capabilities section
 
-			Parameters requirements = new Parameters(annotationHeaders.getHeader(REQUIRE_CAPABILITY), this);
-			Parameters capabilities = new Parameters(annotationHeaders.getHeader(PROVIDE_CAPABILITY), this);
+			Parameters requirements = new Parameters(
+				getReplacer().process(annotationHeaders.getHeader(REQUIRE_CAPABILITY), this), this);
+			Parameters capabilities = new Parameters(
+				getReplacer().process(annotationHeaders.getHeader(PROVIDE_CAPABILITY), this), this);
 
 			//
 			// Do any contracts contracts
