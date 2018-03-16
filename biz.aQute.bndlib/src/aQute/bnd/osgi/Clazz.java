@@ -1978,22 +1978,27 @@ public class Clazz {
 		Function<? super Clazz, Collection<? extends TypeRef>> func,
 		Set<TypeRef> visited) {
 		return StreamSupport.stream(new Spliterator<TypeRef>() {
-			private Deque<TypeRef> queue;
+			private final Deque<TypeRef>	queue;
+			private final Set<TypeRef>		done;
 			{
 				requireNonNull(analyzer);
 				// initialize queue from this class
 				queue = new ArrayDeque<>(requireNonNull(func).apply(Clazz.this));
+				done = (visited != null) ? visited : new HashSet<>();
 			}
 
 			@Override
 			public boolean tryAdvance(Consumer<? super TypeRef> action) {
 				requireNonNull(action);
-				TypeRef type = queue.poll();
-				if (type == null) {
-					return false;
-				}
+				TypeRef type;
+				do {
+					type = queue.poll();
+					if (type == null) {
+						return false;
+					}
+				} while (!done.add(type));
 				action.accept(type);
-				if ((visited != null) && visited.add(type)) {
+				if (visited != null) {
 					Clazz clazz;
 					try {
 						clazz = analyzer.findClass(type);
@@ -2005,7 +2010,6 @@ public class Clazz {
 							type);
 					} else {
 						queue.addAll(func.apply(clazz));
-						queue.removeAll(visited);
 					}
 				}
 				return true;
@@ -2023,7 +2027,7 @@ public class Clazz {
 
 			@Override
 			public int characteristics() {
-				return Spliterator.NONNULL;
+				return Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL;
 			}
 		}, false);
 	}
