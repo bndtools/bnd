@@ -1103,8 +1103,7 @@ public class AnnotationReader extends ClassDataCollector {
 	@SuppressWarnings("deprecation")
 	protected void doComponent(Component comp, Annotation annotation) throws Exception {
 
-		String componentName = (annotation.keySet()
-			.contains("name")) ? comp.name() : className.getFQN();
+		String componentName = annotation.containsKey("name") ? comp.name() : className.getFQN();
 
 		if (!mismatchedAnnotations.isEmpty()) {
 			for (Entry<String, List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {

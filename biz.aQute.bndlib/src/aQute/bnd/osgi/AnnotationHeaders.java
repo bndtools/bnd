@@ -606,20 +606,17 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				.append('\'');
 		}
 
-		if (a.keySet()
-			.contains("resolution")) {
+		if (a.containsKey("resolution")) {
 			req.append(";resolution:=")
 				.append(annotation.resolution());
 		}
 
-		if (a.keySet()
-			.contains("cardinality")) {
+		if (a.containsKey("cardinality")) {
 			req.append(";cardinality:=")
 				.append(annotation.cardinality());
 		}
 
-		if (a.keySet()
-			.contains("effective")) {
+		if (a.containsKey("effective")) {
 			req.append(";effective:=");
 			escape(req, annotation.effective());
 		}
@@ -636,15 +633,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		StringBuilder filter = new StringBuilder();
 
 		boolean addAnd = false;
-		if (a.keySet()
-			.contains("filter")) {
+		if (a.containsKey("filter")) {
 			filter.append(annotation.filter());
 			addAnd = true;
 		}
 
 		boolean andAdded = false;
-		if (a.keySet()
-			.contains("name")) {
+		if (a.containsKey("name")) {
 			filter.append('(')
 				.append(annotation.namespace())
 				.append('=')
@@ -658,8 +653,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			addAnd = true;
 		}
 
-		if (a.keySet()
-			.contains("version")) {
+		if (a.containsKey("version")) {
 			Version floor = Version.parseVersion(annotation.version());
 			Version max = new Version(floor.getMajor() + 1);
 
@@ -691,16 +685,14 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		cap.append(annotation.namespace());
 
-		if (a.keySet()
-			.contains("name")) {
+		if (a.containsKey("name")) {
 			cap.append(';')
 				.append(annotation.namespace())
 				.append('=')
 				.append(annotation.name());
 		}
 
-		if (a.keySet()
-			.contains("version")) {
+		if (a.containsKey("version")) {
 			try {
 				Version.parseVersion(annotation.version());
 				cap.append(";version:Version=")
@@ -724,8 +716,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			.ifPresent(s -> cap.append(";uses:=")
 				.append(s));
 
-		if (a.keySet()
-			.contains("effective")) {
+		if (a.containsKey("effective")) {
 			cap.append(";effective:=");
 			escape(cap, annotation.effective());
 		}

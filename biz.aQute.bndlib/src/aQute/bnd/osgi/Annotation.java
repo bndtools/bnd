@@ -82,6 +82,12 @@ public class Annotation {
 		elements.put(string, v);
 	}
 
+	public boolean containsKey(String key) {
+		if (elements == null)
+			return false;
+		return elements.containsKey(key);
+	}
+
 	public Set<String> keySet() {
 		if (elements == null)
 			return Collections.emptySet();
