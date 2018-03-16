@@ -1,10 +1,8 @@
 package aQute.bnd.osgi;
 
-import static java.util.stream.Collectors.toSet;
-
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -92,7 +90,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		DO_NOT_SCAN = Stream
 			.of("org.osgi.annotation.versioning.ProviderType", "org.osgi.annotation.versioning.ConsumerType",
 				"org.osgi.annotation.versioning.Version")
-			.collect(toSet());
+			.collect(Collectors.collectingAndThen(Collectors.toSet(), Collections::unmodifiableSet));
 	}
 
 	final Analyzer					analyzer;
@@ -327,18 +325,16 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 							for (int i = 0; i < annotations.length; i++) {
 								mergeAttributesAndDirectives((Annotation) annotations[i]);
 							}
-						} else {
-							Stream<String> toAdd = attributesAndDirectives.keySet()
-								.stream()
-								.map(attributesAndDirectives::toString);
-
-							String[] original = a.get("attribute");
-							original = original == null ? new String[0] : original;
-
-							String[] updated = Stream.concat(Arrays.stream(original), toAdd)
-								.collect(Collectors.toList())
-								.toArray(original);
-
+						} else if (!attributesAndDirectives.isEmpty()) {
+							Object[] original = a.get("attribute");
+							int length = (original != null) ? original.length : 0;
+							Object[] updated = new Object[length + attributesAndDirectives.size()];
+							if (length > 0) {
+								System.arraycopy(original, 0, updated, 0, length);
+							}
+							for (String key : attributesAndDirectives.keySet()) {
+								updated[length++] = attributesAndDirectives.toString(key);
+							}
 							a.put("attribute", updated);
 						}
 					}
@@ -708,13 +704,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				.append(attr);
 		}
 
-		Arrays.stream(annotation.uses())
-			.map(Class::getPackage)
-			.map(Package::getName)
-			.distinct()
-			.reduce((x, y) -> x + "," + y)
-			.ifPresent(s -> cap.append(";uses:=")
-				.append(s));
+		if (a.containsKey("uses")) {
+			cap.append(a.stream("uses", TypeRef.class) //
+				.map(TypeRef::getPackageRef)
+				.map(PackageRef::getFQN)
+				.distinct()
+				.collect(joining(",", ";uses:=\"", "\"", "")));
+		}
 
 		if (a.containsKey("effective")) {
 			cap.append(";effective:=");

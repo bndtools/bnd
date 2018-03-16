@@ -46,6 +46,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 				.contains("(&(version>=1.0.0)(!(version>=2.0.0)))"));
 			assertTrue(p.get("filter:")
 				.contains("(require=Required)"));
+			assertFalse(p.containsKey("foo"));
 
 			p = req.get("require" + Header.DUPLICATE_MARKER);
 			assertNotNull(p);
@@ -56,18 +57,23 @@ public class StdAnnotationHeadersTest extends TestCase {
 				.contains("(&(version>=2.0.0)(!(version>=3.0.0)))"));
 			assertTrue(p.get("filter:")
 				.contains("(require=Required2)"));
+			assertEquals("direct", p.get("foo"));
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
 			p = cap.get("provide");
 			assertNotNull(p);
 			assertTrue(p.containsKey("provide"));
 			assertEquals("Provided", p.get("provide"));
+			assertFalse(p.containsKey("uses:"));
+			assertFalse(p.containsKey("foo"));
 
 			p = cap.get("provide" + Header.DUPLICATE_MARKER);
 			assertNotNull(p);
 			assertTrue(p.containsKey("provide"));
 			assertEquals("Provided2", p.get("provide"));
 			assertEquals("2", p.get("version:Version"));
+			assertEquals("test.annotationheaders.multiple.std,org.osgi.annotation.bundle", p.get("uses:"));
+			assertEquals("direct", p.get("foo"));
 
 			assertEquals("bar", mainAttributes.getValue("Foo"));
 			assertEquals("buzz", mainAttributes.getValue("Fizz"));
@@ -157,6 +163,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("number:Long"));
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
+			assertEquals("meta", p.get("foo"));
 
 			p = req.get("maybe");
 			assertNotNull(p);
@@ -187,6 +194,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("number:Long"));
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
+			assertEquals("meta", p.get("foo"));
 
 			p = cap.get("provide" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
 			assertNotNull(p);
