@@ -1,5 +1,8 @@
 package aQute.bnd.osgi;
 
+import java.util.StringJoiner;
+import java.util.stream.Collector;
+
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
 @SuppressWarnings("unused")
@@ -86,4 +89,9 @@ public class ClassDataCollector {
 		annotationDefault(last);
 	}
 
+	public static Collector<String, StringJoiner, String> joining(CharSequence delimiter, CharSequence prefix,
+		CharSequence suffix, CharSequence emptyValue) {
+		return Collector.of(() -> new StringJoiner(delimiter, prefix, suffix).setEmptyValue(emptyValue),
+			StringJoiner::add, StringJoiner::merge, StringJoiner::toString);
+	}
 }
