@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.LinkedHashMap;
@@ -20,16 +21,16 @@ import java.util.regex.Pattern;
  */
 public class Tag {
 
-	final static String			NameStartChar	= ":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]\uFDF0-\uFFFD";
-	final static String			NameChar		= "[" + NameStartChar + "0-9.\u00B7\u0300-\u036F\u203F-\u2040\\-]";
-	final static String			Name			= "[" + NameStartChar + "]" + NameChar + "*";
-	final public static Pattern	NAME_P			= Pattern.compile(Name);
+	final static String				NameStartChar	= ":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]\uFDF0-\uFFFD";
+	final static String				NameChar		= "[" + NameStartChar + "0-9.\u00B7\u0300-\u036F\u203F-\u2040\\-]";
+	final static String				Name			= "[" + NameStartChar + "]" + NameChar + "*";
+	final public static Pattern		NAME_P			= Pattern.compile(Name);
 
-	Tag								parent;														// Parent
-	String							name;														// Name
-	final Map<String,String>		attributes	= new LinkedHashMap<String,String>();
-	final List<Object>				content		= new ArrayList<Object>();						// Content
-	final static SimpleDateFormat	format		= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	Tag								parent;																																											// Parent
+	String							name;																																											// Name
+	final Map<String, String>		attributes		= new LinkedHashMap<>();
+	final List<Object>				content			= new ArrayList<>();																																			// Content
+	final static SimpleDateFormat	format			= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 	boolean							cdata;
 
 	/**
@@ -37,8 +38,7 @@ public class Tag {
 	 */
 	public Tag(String name, Object... contents) {
 		this.name = name;
-		for (Object c : contents)
-			content.add(c);
+		Collections.addAll(content, contents);
 	}
 
 	public Tag(Tag parent, String name, Object... contents) {
@@ -49,13 +49,13 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Map<String,String> attributes, Object... contents) {
+	public Tag(String name, Map<String, String> attributes, Object... contents) {
 		this(name, contents);
 		this.attributes.putAll(attributes);
 
 	}
 
-	public Tag(String name, Map<String,String> attributes) {
+	public Tag(String name, Map<String, String> attributes) {
 		this(name, attributes, new Object[0]);
 	}
 
@@ -156,7 +156,7 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Map<String,String> getAttributes() {
+	public Map<String, String> getAttributes() {
 		return attributes;
 	}
 
@@ -183,9 +183,10 @@ public class Tag {
 	 * name.
 	 */
 	public List<Object> getContents(String tag) {
-		List<Object> out = new ArrayList<Object>();
+		List<Object> out = new ArrayList<>();
 		for (Object o : content) {
-			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
+			if (o instanceof Tag && ((Tag) o).getName()
+				.equals(tag))
 				out.add(o);
 		}
 		return out;
@@ -310,11 +311,11 @@ public class Tag {
 	 * root/preferences/native/os
 	 */
 	public Collection<Tag> select(String path) {
-		return select(path, (Tag) null);
+		return select(path, null);
 	}
 
 	public Collection<Tag> select(String path, Tag mapping) {
-		List<Tag> v = new ArrayList<Tag>();
+		List<Tag> v = new ArrayList<>();
 		select(path, v, mapping);
 		return v;
 	}
@@ -352,7 +353,8 @@ public class Tag {
 		for (Object o : content) {
 			if (o instanceof Tag) {
 				Tag child = (Tag) o;
-				if (child.getName().equals(elementName) || elementName.equals("*"))
+				if (child.getName()
+					.equals(elementName) || elementName.equals("*"))
 					child.select(remainder, results, mapping);
 			}
 		}
@@ -477,7 +479,8 @@ public class Tag {
 	boolean invalid(Formatter f) {
 		boolean invalid = false;
 
-		if (!NAME_P.matcher(name).matches()) {
+		if (!NAME_P.matcher(name)
+			.matches()) {
 			f.format("%s: Invalid name %s\n", getPath(), name);
 		}
 

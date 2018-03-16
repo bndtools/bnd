@@ -6,14 +6,14 @@ import java.math.BigInteger;
 import java.util.Map;
 
 public class NumberHandler extends Handler {
-	final Class< ? > type;
+	final Class<?> type;
 
-	NumberHandler(Class< ? > clazz) {
+	NumberHandler(Class<?> clazz) {
 		this.type = clazz;
 	}
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws Exception {
 		String s = object.toString();
 		if (s.endsWith(".0"))
 			s = s.substring(0, s.length() - 2);

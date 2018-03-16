@@ -84,36 +84,40 @@ public class JMXBundleDeployer {
 
 		if (bundleId > -1) {
 			mBeanServerConnection.invoke(framework, "stopBundle", new Object[] {
-					bundleId
+				bundleId
 			}, new String[] {
-					"long"
+				"long"
 			});
 
 			mBeanServerConnection.invoke(framework, "updateBundleFromURL", new Object[] {
-					bundleId, bundle.toURI().toURL().toExternalForm()
+				bundleId, bundle.toURI()
+					.toURL()
+					.toExternalForm()
 			}, new String[] {
-					"long", String.class.getName()
+				"long", String.class.getName()
 			});
 
 			mBeanServerConnection.invoke(framework, "refreshBundle", new Object[] {
-					bundleId
+				bundleId
 			}, new String[] {
-					"long"
+				"long"
 			});
 		} else {
 			Object installed = mBeanServerConnection.invoke(framework, "installBundleFromURL", new Object[] {
-					bundle.getAbsolutePath(), bundle.toURI().toURL().toExternalForm()
+				bundle.getAbsolutePath(), bundle.toURI()
+					.toURL()
+					.toExternalForm()
 			}, new String[] {
-					String.class.getName(), String.class.getName()
+				String.class.getName(), String.class.getName()
 			});
 
 			bundleId = Long.parseLong(installed.toString());
 		}
 
 		mBeanServerConnection.invoke(framework, "startBundle", new Object[] {
-				bundleId
+			bundleId
 		}, new String[] {
-				"long"
+			"long"
 		});
 
 		return bundleId;
@@ -122,18 +126,19 @@ public class JMXBundleDeployer {
 	private ObjectName getBundleState() throws MalformedObjectNameException, IOException {
 
 		return mBeanServerConnection.queryNames(new ObjectName(OBJECTNAME + ":type=bundleState,*"), null)
-				.iterator()
-				.next();
+			.iterator()
+			.next();
 	}
 
 	private static ObjectName getFramework(MBeanServerConnection mBeanServerConnection)
-			throws MalformedObjectNameException, IOException {
+		throws MalformedObjectNameException, IOException {
 
 		final ObjectName objectName = new ObjectName(OBJECTNAME + ":type=framework,*");
 		final Set<ObjectName> objectNames = mBeanServerConnection.queryNames(objectName, null);
 
 		if (objectNames != null && objectNames.size() > 0) {
-			return objectNames.iterator().next();
+			return objectNames.iterator()
+				.next();
 		}
 
 		return null;
@@ -145,23 +150,23 @@ public class JMXBundleDeployer {
 	 * @return array of bundles in framework
 	 */
 	public BundleDTO[] listBundles() {
-		final List<BundleDTO> retval = new ArrayList<BundleDTO>();
+		final List<BundleDTO> retval = new ArrayList<>();
 
 		try {
 			final ObjectName bundleState = getBundleState();
 
 			final Object[] params = new Object[] {
-					new String[] {
-							"Identifier", "SymbolicName", "State", "Version",
-					}
+				new String[] {
+					"Identifier", "SymbolicName", "State", "Version",
+				}
 			};
 
 			final String[] signature = new String[] {
-					String[].class.getName()
+				String[].class.getName()
 			};
 
 			final TabularData data = (TabularData) mBeanServerConnection.invoke(bundleState, "listBundles", params,
-					signature);
+				signature);
 
 			for (Object value : data.values()) {
 				final CompositeData cd = (CompositeData) value;
@@ -181,10 +186,13 @@ public class JMXBundleDeployer {
 
 	private static BundleDTO newFromData(CompositeData cd) {
 		final BundleDTO dto = new BundleDTO();
-		dto.id = Long.parseLong(cd.get("Identifier").toString());
-		dto.symbolicName = cd.get("SymbolicName").toString();
+		dto.id = Long.parseLong(cd.get("Identifier")
+			.toString());
+		dto.symbolicName = cd.get("SymbolicName")
+			.toString();
 
-		String state = cd.get("State").toString();
+		String state = cd.get("State")
+			.toString();
 
 		if ("UNINSTALLED".equals(state)) {
 			dto.state = Bundle.UNINSTALLED;
@@ -200,7 +208,8 @@ public class JMXBundleDeployer {
 			dto.state = Bundle.ACTIVE;
 		}
 
-		dto.version = cd.get("Version").toString();
+		dto.version = cd.get("Version")
+			.toString();
 
 		return dto;
 	}
@@ -235,11 +244,11 @@ public class JMXBundleDeployer {
 		final ObjectName framework = getFramework(mBeanServerConnection);
 
 		Object[] objects = new Object[] {
-				id
+			id
 		};
 
 		String[] params = new String[] {
-				"long"
+			"long"
 		};
 
 		mBeanServerConnection.invoke(framework, "uninstallBundle", objects, params);
@@ -250,28 +259,28 @@ public class JMXBundleDeployer {
 	 * for the osgi.core MBeans. This will stop searching for VMs once the
 	 * MBeans are found. Beware if you have multiple JVMs with osgi.core MBeans
 	 * published.
-	 *
 	 */
 	@SuppressWarnings("unchecked")
 	static String getLocalConnectorAddress() {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		ClassLoader cl = Thread.currentThread()
+			.getContextClassLoader();
 		ClassLoader toolsClassloader = null;
 
 		try {
 			toolsClassloader = getToolsClassLoader(cl);
 
 			if (toolsClassloader != null) {
-				Thread.currentThread().setContextClassLoader(toolsClassloader);
+				Thread.currentThread()
+					.setContextClassLoader(toolsClassloader);
 
-				Class< ? > vmClass = toolsClassloader.loadClass("com.sun.tools.attach.VirtualMachine");
+				Class<?> vmClass = toolsClassloader.loadClass("com.sun.tools.attach.VirtualMachine");
 
 				Method listMethod = vmClass.getMethod("list");
 				List<Object> vmds = (List<Object>) listMethod.invoke(null);
 
 				for (Object vmd : vmds) {
 					try {
-						Class< ? > vmdClass = toolsClassloader
-								.loadClass("com.sun.tools.attach.VirtualMachineDescriptor");
+						Class<?> vmdClass = toolsClassloader.loadClass("com.sun.tools.attach.VirtualMachineDescriptor");
 						Method idMethod = vmdClass.getMethod("id");
 						String id = (String) idMethod.invoke(vmd);
 
@@ -283,7 +292,7 @@ public class JMXBundleDeployer {
 							Properties agentProperties = (Properties) getAgentPropertiesMethod.invoke(vm);
 
 							String localConnectorAddress = agentProperties
-									.getProperty("com.sun.management.jmxremote.localConnectorAddress");
+								.getProperty("com.sun.management.jmxremote.localConnectorAddress");
 
 							if (localConnectorAddress == null) {
 								File agentJar = findJdkJar("management-agent.jar");
@@ -295,7 +304,7 @@ public class JMXBundleDeployer {
 									agentProperties = (Properties) getAgentPropertiesMethod.invoke(vm);
 
 									localConnectorAddress = agentProperties
-											.getProperty("com.sun.management.jmxremote.localConnectorAddress");
+										.getProperty("com.sun.management.jmxremote.localConnectorAddress");
 								}
 							}
 
@@ -304,7 +313,7 @@ public class JMXBundleDeployer {
 								final JMXConnector jmxConnector = JMXConnectorFactory.connect(jmxServiceUrl, null);
 
 								final MBeanServerConnection mBeanServerConnection = jmxConnector
-										.getMBeanServerConnection();
+									.getMBeanServerConnection();
 
 								if (mBeanServerConnection != null) {
 									final ObjectName framework = getFramework(mBeanServerConnection);
@@ -328,20 +337,24 @@ public class JMXBundleDeployer {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			Thread.currentThread().setContextClassLoader(cl);
+			Thread.currentThread()
+				.setContextClassLoader(cl);
 			// try to get custom classloader to unload native libs
 			try {
 				if (toolsClassloader != null) {
 					Field nl = ClassLoader.class.getDeclaredField("nativeLibraries");
 					nl.setAccessible(true);
-					Vector< ? > nativeLibs = (Vector< ? >) nl.get(toolsClassloader);
+					Vector<?> nativeLibs = (Vector<?>) nl.get(toolsClassloader);
 					for (Object nativeLib : nativeLibs) {
-						Field nameField = nativeLib.getClass().getDeclaredField("name");
+						Field nameField = nativeLib.getClass()
+							.getDeclaredField("name");
 						nameField.setAccessible(true);
 						String name = (String) nameField.get(nativeLib);
 
-						if (new File(name).getName().contains("attach")) {
-							Method f = nativeLib.getClass().getDeclaredMethod("finalize");
+						if (new File(name).getName()
+							.contains("attach")) {
+							Method f = nativeLib.getClass()
+								.getDeclaredMethod("finalize");
 							f.setAccessible(true);
 							f.invoke(nativeLib);
 						}
@@ -362,13 +375,14 @@ public class JMXBundleDeployer {
 			URL toolsUrl = null;
 
 			try {
-				toolsUrl = toolsJar.toURI().toURL();
+				toolsUrl = toolsJar.toURI()
+					.toURL();
 			} catch (MalformedURLException e) {
 				//
 			}
 
 			URL[] urls = new URL[] {
-					toolsUrl
+				toolsUrl
 			};
 
 			return new URLClassLoader(urls, parent);

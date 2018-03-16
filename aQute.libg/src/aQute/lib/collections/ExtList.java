@@ -2,6 +2,7 @@ package aQute.lib.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 public class ExtList<T> extends ArrayList<T> {
 	private static final long serialVersionUID = 1L;
@@ -18,11 +19,11 @@ public class ExtList<T> extends ArrayList<T> {
 		super(size);
 	}
 
-	public ExtList(Collection< ? extends T> col) {
+	public ExtList(Collection<? extends T> col) {
 		super(col);
 	}
 
-	public ExtList(Iterable< ? extends T> col) {
+	public ExtList(Iterable<? extends T> col) {
 		for (T t : col)
 			add(t);
 	}
@@ -33,10 +34,9 @@ public class ExtList<T> extends ArrayList<T> {
 	}
 
 	public static ExtList<String> from(String s, String delimeter) {
-		ExtList<String> result = new ExtList<String>();
+		ExtList<String> result = new ExtList<>();
 		String[] parts = s.split(delimeter);
-		for (String p : parts)
-			result.add(p);
+		Collections.addAll(result, parts);
 		return result;
 	}
 

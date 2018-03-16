@@ -46,13 +46,15 @@ public class DSAnnotationExtrasTest extends BndTestCase {
 	public void testRequireCapabilityCardinality() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, DS13reference_cardinalities.class.getName());
-		b.setProperty("Private-Package", DS13reference_cardinalities.class.getPackage().getName());
+		b.setProperty("Private-Package", DS13reference_cardinalities.class.getPackage()
+			.getName());
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
 		assertOk(b);
 
-		Attributes attrs = jar.getManifest().getMainAttributes();
+		Attributes attrs = jar.getManifest()
+			.getMainAttributes();
 
 		Parameters requires = new Parameters(attrs.getValue(Constants.REQUIRE_CAPABILITY));
 		List<Attrs> serviceRequires = getAll(requires, "osgi.service");
@@ -63,8 +65,7 @@ public class DSAnnotationExtrasTest extends BndTestCase {
 		checkServiceRequirements(serviceRequires, MetaTypeService.class, false, true);
 	}
 
-	private void checkServiceRequirements(List<Attrs> serviceReqs, Class< ? > clazz, boolean optional,
-			boolean multiple) {
+	private void checkServiceRequirements(List<Attrs> serviceReqs, Class<?> clazz, boolean optional, boolean multiple) {
 		String filter = String.format("(objectClass=%s)", clazz.getName());
 		boolean found = false;
 		for (Attrs serviceReq : serviceReqs) {
@@ -72,10 +73,10 @@ public class DSAnnotationExtrasTest extends BndTestCase {
 				assertEquals("missing effective:=active on " + clazz.getName(), "active", serviceReq.get("effective:"));
 				if (optional)
 					assertEquals("missing resolution:=optional on " + clazz.getName(), "optional",
-							serviceReq.get("resolution:"));
+						serviceReq.get("resolution:"));
 				if (multiple)
 					assertEquals("missing cardinality:=multiple on " + clazz.getName(), "multiple",
-							serviceReq.get("cardinality:"));
+						serviceReq.get("cardinality:"));
 				found = true;
 			}
 		}
@@ -83,7 +84,7 @@ public class DSAnnotationExtrasTest extends BndTestCase {
 	}
 
 	private static List<Attrs> getAll(Parameters p, String key) {
-		List<Attrs> l = new ArrayList<Attrs>();
+		List<Attrs> l = new ArrayList<>();
 		for (; p.containsKey(key); key += aQute.bnd.osgi.Constants.DUPLICATE_MARKER) {
 			l.add(p.get(key));
 		}

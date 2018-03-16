@@ -37,18 +37,23 @@ public class Tool extends Processor {
 
 	public Tool(Processor parent, Jar jar) throws Exception {
 		super(parent);
-		tmp = Files.createTempDirectory("tool").toFile();
+		tmp = Files.createTempDirectory("tool")
+			.toFile();
 		sources = new File(tmp, "sources");
 		javadoc = new File(tmp, "javadoc");
 		javadocOptions = new File(tmp, "javadoc.options");
 		manifest = Domain.domain(jar.getManifest());
 
-		for (Entry<String,Resource> e : jar.getResources().entrySet()) {
-			if (e.getKey().startsWith(OSGI_OPT_SRC)) {
-				String path = e.getKey().substring(OSGI_OPT_SRC.length());
+		for (Entry<String, Resource> e : jar.getResources()
+			.entrySet()) {
+			if (e.getKey()
+				.startsWith(OSGI_OPT_SRC)) {
+				String path = e.getKey()
+					.substring(OSGI_OPT_SRC.length());
 				File out = IO.getFile(sources, path);
 				IO.mkdirs(out.getParentFile());
-				IO.copy(e.getValue().openInputStream(), out);
+				IO.copy(e.getValue()
+					.openInputStream(), out);
 			}
 		}
 	}
@@ -57,7 +62,7 @@ public class Tool extends Processor {
 		return sources.isDirectory();
 	}
 
-	public Jar doJavadoc(Map<String,String> options, boolean exportsOnly) throws Exception {
+	public Jar doJavadoc(Map<String, String> options, boolean exportsOnly) throws Exception {
 		if (!hasSources())
 			return new Jar("javadoc");
 
@@ -74,7 +79,8 @@ public class Tool extends Processor {
 
 		String name = manifest.getBundleName();
 		if (name == null)
-			name = manifest.getBundleSymbolicName().getKey();
+			name = manifest.getBundleSymbolicName()
+				.getKey();
 
 		String version = manifest.getBundleVersion();
 		if (version == null)
@@ -82,7 +88,8 @@ public class Tool extends Processor {
 
 		String bundleDescription = manifest.getBundleDescription();
 
-		if (bundleDescription != null && !Strings.trim(bundleDescription).isEmpty()) {
+		if (bundleDescription != null && !Strings.trim(bundleDescription)
+			.isEmpty()) {
 			printOverview(name, version, bundleDescription);
 		}
 
@@ -99,7 +106,7 @@ public class Tool extends Processor {
 		args.add("-tag 'security:m:\"Required Permissions\"'");
 		args.add("-tag 'noimplement:t:\"Consumers of this API must not implement this interface\"'");
 
-		for (Enumeration< ? > e = pp.propertyNames(); e.hasMoreElements();) {
+		for (Enumeration<?> e = pp.propertyNames(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			String value = pp.getProperty(key);
 
@@ -157,8 +164,8 @@ public class Tool extends Processor {
 	}
 
 	private String escape(String input) {
-		return input.replace("\\", "\\\\").replace(System.getProperty("line.separator"),
-				"\\" + System.getProperty("line.separator"));
+		return input.replace("\\", "\\\\")
+			.replace(System.getProperty("line.separator"), "\\" + System.getProperty("line.separator"));
 	}
 
 	void printOverview(String name, String version, String bundleDescription) throws FileNotFoundException {
@@ -169,8 +176,7 @@ public class Tool extends Processor {
 
 		Tag table = new Tag(body, "table");
 		for (String key : manifest) {
-			if (key.equalsIgnoreCase(Constants.BUNDLE_DESCRIPTION)
-					|| key.equalsIgnoreCase(Constants.BUNDLE_VERSION))
+			if (key.equalsIgnoreCase(Constants.BUNDLE_DESCRIPTION) || key.equalsIgnoreCase(Constants.BUNDLE_VERSION))
 				continue;
 
 			Tag tr = new Tag(table, "tr");
@@ -201,6 +207,7 @@ public class Tool extends Processor {
 		return new Jar(sources);
 	}
 
+	@Override
 	public void close() throws IOException {
 		try {
 			super.close();

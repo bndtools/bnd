@@ -3,8 +3,6 @@ package aQute.lib.io;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.DataOutput;
 import java.io.File;
@@ -52,14 +50,15 @@ import java.util.regex.Pattern;
 import aQute.libg.glob.Glob;
 
 public class IO {
-	static final int			BUFFER_SIZE	= IOConstants.PAGE_SIZE * 16;
+	static final int									BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	private static final int							DIRECT_MAP_THRESHOLD	= BUFFER_SIZE;
-	private static final boolean						isWindows		= File.separatorChar == '\\';
-	static final public File	work		= new File(System.getProperty("user.dir"));
-	static final public File	home;
-	private static final EnumSet<StandardOpenOption>	writeOptions	= EnumSet.of(StandardOpenOption.WRITE,
-			StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-	private static final EnumSet<StandardOpenOption>	readOptions		= EnumSet.of(StandardOpenOption.READ);
+	private static final boolean						isWindows				= File.separatorChar == '\\';
+	static final public File							work					= new File(
+		System.getProperty("user.dir"));
+	static final public File							home;
+	private static final EnumSet<StandardOpenOption>	writeOptions			= EnumSet.of(StandardOpenOption.WRITE,
+		StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+	private static final EnumSet<StandardOpenOption>	readOptions				= EnumSet.of(StandardOpenOption.READ);
 	static {
 		File tmp = null;
 		try {
@@ -80,19 +79,20 @@ public class IO {
 	}
 
 	public static Collection<File> tree(File current) {
-		Set<File> files = new LinkedHashSet<File>();
+		Set<File> files = new LinkedHashSet<>();
 		traverse(files, current, null);
 		return files;
 	}
 
 	public static Collection<File> tree(File current, String glob) {
-		Set<File> files = new LinkedHashSet<File>();
+		Set<File> files = new LinkedHashSet<>();
 		traverse(files, current, glob == null ? null : new Glob(glob));
 		return files;
 	}
 
 	private static void traverse(Collection<File> files, File current, Glob glob) {
-		if (current.isFile() && (glob == null || glob.matcher(current.getName()).matches())) {
+		if (current.isFile() && (glob == null || glob.matcher(current.getName())
+			.matches())) {
 			files.add(current);
 		} else if (current.isDirectory()) {
 			for (File sub : current.listFiles()) {
@@ -180,6 +180,15 @@ public class IO {
 		}
 	}
 
+	public static ByteBufferOutputStream copy(InputStream in, ByteBufferOutputStream out) throws IOException {
+		try {
+			out.write(in);
+			return out;
+		} finally {
+			in.close();
+		}
+	}
+
 	public static DataOutput copy(InputStream in, DataOutput out) throws IOException {
 		try {
 			byte[] buffer = new byte[BUFFER_SIZE];
@@ -214,9 +223,9 @@ public class IO {
 			if (bb.hasArray()) {
 				byte[] buffer = bb.array();
 				int offset = bb.arrayOffset();
-				for (int size; bb.hasRemaining()
-						&& (size = in.read(buffer, offset + bb.position(), bb.remaining())) > 0;) {
-					bb.position(bb.position() + size);
+				for (int size, position; bb.hasRemaining()
+					&& (size = in.read(buffer, offset + (position = bb.position()), bb.remaining())) > 0;) {
+					bb.position(position + size);
 				}
 			} else {
 				int length = Math.min(bb.remaining(), BUFFER_SIZE);
@@ -359,42 +368,45 @@ public class IO {
 				throw new IllegalArgumentException("target directory can not be child of source directory.");
 
 			Files.walkFileTree(source, EnumSet.of(FileVisitOption.FOLLOW_LINKS), Integer.MAX_VALUE,
-					new FileVisitor<Path>() {
-						final FileTime now = FileTime.fromMillis(System.currentTimeMillis());
-						@Override
-						public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs)
-								throws IOException {
-							Path targetdir = target.resolve(source.relativize(dir));
-							try {
-								Files.copy(dir, targetdir);
-							} catch (FileAlreadyExistsException e) {
-								if (!Files.isDirectory(targetdir))
-									throw e;
-							}
-							return FileVisitResult.CONTINUE;
+				new FileVisitor<Path>() {
+					final FileTime now = FileTime.fromMillis(System.currentTimeMillis());
+
+					@Override
+					public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+						Path targetdir = target.resolve(source.relativize(dir));
+						try {
+							Files.copy(dir, targetdir);
+						} catch (FileAlreadyExistsException e) {
+							if (!Files.isDirectory(targetdir))
+								throw e;
 						}
-						@Override
-						public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-							Path targetFile = target.resolve(source.relativize(file));
-							Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING);
-							Files.setLastModifiedTime(targetFile, now);
-							return FileVisitResult.CONTINUE;
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+						Path targetFile = target.resolve(source.relativize(file));
+						Files.copy(file, targetFile, StandardCopyOption.REPLACE_EXISTING);
+						Files.setLastModifiedTime(targetFile, now);
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+						if (exc != null) { // directory iteration failed
+							throw exc;
 						}
-						@Override
-						public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-							if (exc != null) { // directory iteration failed
-								throw exc;
-							}
-							return FileVisitResult.CONTINUE;
+						return FileVisitResult.CONTINUE;
+					}
+
+					@Override
+					public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+						if (exc != null) {
+							throw exc;
 						}
-						@Override
-						public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-							if (exc != null) {
-								throw exc;
-							}
-							return FileVisitResult.CONTINUE;
-						}
-					});
+						return FileVisitResult.CONTINUE;
+					}
+				});
 			return tgt;
 		}
 		throw new FileNotFoundException("During copy: " + source.toString());
@@ -424,8 +436,8 @@ public class IO {
 		try {
 			ByteBuffer bb = ByteBuffer.allocate(BUFFER_SIZE);
 			byte[] buffer = bb.array();
-			for (int size; (size = in.read(buffer, bb.position(), bb.remaining())) > 0;) {
-				bb.position(bb.position() + size);
+			for (int size, position; (size = in.read(buffer, position = bb.position(), bb.remaining())) > 0;) {
+				bb.position(position + size);
 				bb.flip();
 				out.write(bb);
 				bb.compact();
@@ -473,7 +485,7 @@ public class IO {
 		}
 	}
 
-	public static byte[] read(ByteBuffer bb) throws IOException {
+	public static byte[] read(ByteBuffer bb) {
 		byte[] data = new byte[bb.remaining()];
 		bb.get(data, 0, data.length);
 		return data;
@@ -490,9 +502,7 @@ public class IO {
 	}
 
 	public static byte[] read(InputStream in) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream(IOConstants.PAGE_SIZE);
-		copy(in, out);
-		return out.toByteArray();
+		return copy(in, new ByteBufferOutputStream()).toByteArray();
 	}
 
 	public static void write(byte[] data, OutputStream out) throws Exception {
@@ -523,7 +533,7 @@ public class IO {
 		return collect(reader(path, encoding));
 	}
 
-	public static String collect(ByteBuffer bb, Charset encoding) throws IOException {
+	public static String collect(ByteBuffer bb, Charset encoding) {
 		return decode(bb, encoding).toString();
 	}
 
@@ -576,10 +586,10 @@ public class IO {
 	 *             directory
 	 */
 	public static File createTempFile(File directory, String pattern, String suffix)
-			throws IllegalArgumentException, IOException {
+		throws IllegalArgumentException, IOException {
 		if ((pattern == null) || (pattern.length() < 3)) {
-			throw new IllegalArgumentException("Pattern must be at least 3 characters long, got "
-					+ ((pattern == null) ? "null" : pattern.length()));
+			throw new IllegalArgumentException(
+				"Pattern must be at least 3 characters long, got " + ((pattern == null) ? "null" : pattern.length()));
 		}
 
 		if ((directory != null) && !directory.isDirectory()) {
@@ -696,11 +706,13 @@ public class IO {
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 				return FileVisitResult.CONTINUE;
 			}
+
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				Files.delete(file);
 				return FileVisitResult.CONTINUE;
 			}
+
 			@Override
 			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
 				try {
@@ -710,6 +722,7 @@ public class IO {
 				}
 				return FileVisitResult.CONTINUE;
 			}
+
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 				if (exc != null) { // directory iteration failed
@@ -770,7 +783,7 @@ public class IO {
 		}
 	}
 
-	public static OutputStream copy(Collection< ? > c, OutputStream out) throws IOException {
+	public static OutputStream copy(Collection<?> c, OutputStream out) throws IOException {
 		PrintWriter pw = writer(out);
 		try {
 			for (Object o : c) {
@@ -798,7 +811,8 @@ public class IO {
 			// is url
 			return new URL(s);
 		}
-		return getFile(base, s).toURI().toURL();
+		return getFile(base, s).toURI()
+			.toURL();
 	}
 
 	public static void store(Object o, File file) throws IOException {
@@ -843,7 +857,7 @@ public class IO {
 	}
 
 	public static InputStream stream(byte[] data) {
-		return new ByteArrayInputStream(data);
+		return stream(ByteBuffer.wrap(data));
 	}
 
 	public static InputStream stream(ByteBuffer bb) {
@@ -854,7 +868,7 @@ public class IO {
 		return stream(s, UTF_8);
 	}
 
-	public static InputStream stream(String s, String encoding) throws IOException {
+	public static InputStream stream(String s, String encoding) {
 		return stream(s, Charset.forName(encoding));
 	}
 
@@ -890,11 +904,11 @@ public class IO {
 		return FileChannel.open(path, writeOptions);
 	}
 
-	public static CharBuffer decode(ByteBuffer bb, Charset encoding) throws IOException {
+	public static CharBuffer decode(ByteBuffer bb, Charset encoding) {
 		return encoding.decode(bb);
 	}
 
-	public static ByteBuffer encode(CharBuffer cb, Charset encoding) throws IOException {
+	public static ByteBuffer encode(CharBuffer cb, Charset encoding) {
 		return encoding.encode(cb);
 	}
 
@@ -918,27 +932,27 @@ public class IO {
 		return reader(readChannel(path), encoding);
 	}
 
-	public static BufferedReader reader(ByteBuffer bb, Charset encoding) throws IOException {
+	public static BufferedReader reader(ByteBuffer bb, Charset encoding) {
 		return reader(new ByteBufferInputStream(bb), encoding);
 	}
 
-	public static BufferedReader reader(CharBuffer cb) throws IOException {
+	public static BufferedReader reader(CharBuffer cb) {
 		return new BufferedReader(new CharBufferReader(cb));
 	}
 
-	public static BufferedReader reader(ReadableByteChannel in, Charset encoding) throws IOException {
+	public static BufferedReader reader(ReadableByteChannel in, Charset encoding) {
 		return new BufferedReader(Channels.newReader(in, encoding.newDecoder(), -1));
 	}
 
-	public static BufferedReader reader(InputStream in) throws IOException {
+	public static BufferedReader reader(InputStream in) {
 		return reader(in, UTF_8);
 	}
 
-	public static BufferedReader reader(InputStream in, String encoding) throws IOException {
+	public static BufferedReader reader(InputStream in, String encoding) {
 		return reader(in, Charset.forName(encoding));
 	}
 
-	public static BufferedReader reader(InputStream in, Charset encoding) throws IOException {
+	public static BufferedReader reader(InputStream in, Charset encoding) {
 		return new BufferedReader(new InputStreamReader(in, encoding));
 	}
 
@@ -958,19 +972,19 @@ public class IO {
 		return writer(writeChannel(path), encoding);
 	}
 
-	public static PrintWriter writer(WritableByteChannel out, Charset encoding) throws IOException {
+	public static PrintWriter writer(WritableByteChannel out, Charset encoding) {
 		return new PrintWriter(Channels.newWriter(out, encoding.newEncoder(), -1));
 	}
 
-	public static PrintWriter writer(OutputStream out) throws IOException {
+	public static PrintWriter writer(OutputStream out) {
 		return writer(out, UTF_8);
 	}
 
-	public static PrintWriter writer(OutputStream out, String encoding) throws IOException {
+	public static PrintWriter writer(OutputStream out, String encoding) {
 		return writer(out, Charset.forName(encoding));
 	}
 
-	public static PrintWriter writer(OutputStream out, Charset encoding) throws IOException {
+	public static PrintWriter writer(OutputStream out, Charset encoding) {
 		return new PrintWriter(new OutputStreamWriter(out, encoding));
 	}
 
@@ -1043,8 +1057,8 @@ public class IO {
 				BasicFileAttributes targetAttrs = Files.readAttributes(target, BasicFileAttributes.class);
 				try {
 					BasicFileAttributes linkAttrs = Files.readAttributes(link, BasicFileAttributes.class);
-					if (targetAttrs.lastModifiedTime().equals(linkAttrs.lastModifiedTime())
-							&& targetAttrs.size() == linkAttrs.size()) {
+					if (targetAttrs.lastModifiedTime()
+						.equals(linkAttrs.lastModifiedTime()) && targetAttrs.size() == linkAttrs.size()) {
 						return true;
 					}
 				} catch (IOException e) {
@@ -1060,48 +1074,62 @@ public class IO {
 		return false;
 	}
 
-	static final public OutputStream	nullStream	= new OutputStream() {
+	static final public OutputStream	nullStream	=						//
+		new OutputStream() {
+			@Override
+			public void write(int var0) {}
 
-												@Override
-												public void write(int var0) throws IOException {}
+			@Override
+			public void write(byte[] var0) {}
 
-												@Override
-												public void write(byte[] var0) throws IOException {}
+			@Override
+			public void write(byte[] var0, int from, int l) {}
 
-												@Override
-												public void write(byte[] var0, int from, int l) throws IOException {}
-											};
-	static final public Writer			nullWriter	= new Writer() {
-												public java.io.Writer append(char var0) throws java.io.IOException {
-													return null;
-												}
+			@Override
+			public void close() {}
 
-												public java.io.Writer append(java.lang.CharSequence var0)
-														throws java.io.IOException {
-													return null;
-												}
+			@Override
+			public void flush() {}
+		};
 
-												public java.io.Writer append(java.lang.CharSequence var0, int var1,
-														int var2) throws java.io.IOException {
-													return null;
-												}
+	static final public Writer			nullWriter	=						//
+		new Writer() {
+			@Override
+			public Writer append(char var0) {
+				return this;
+			}
 
-												public void write(int var0) throws java.io.IOException {}
+			@Override
+			public Writer append(CharSequence var0) {
+				return this;
+			}
 
-												public void write(java.lang.String var0) throws java.io.IOException {}
+			@Override
+			public Writer append(CharSequence var0, int var1, int var2) {
+				return this;
+			}
 
-												public void write(java.lang.String var0, int var1, int var2)
-														throws java.io.IOException {}
+			@Override
+			public void write(int var0) {}
 
-												public void write(char[] var0) throws java.io.IOException {}
+			@Override
+			public void write(String var0) {}
 
-												public void write(char[] var0, int var1, int var2)
-														throws java.io.IOException {}
+			@Override
+			public void write(String var0, int var1, int var2) {}
 
-												public void close() throws IOException {}
+			@Override
+			public void write(char[] var0) {}
 
-												public void flush() throws IOException {}
-											};
+			@Override
+			public void write(char[] var0, int var1, int var2) {}
+
+			@Override
+			public void close() {}
+
+			@Override
+			public void flush() {}
+		};
 
 	public static String toSafeFileName(String string) {
 		StringBuilder sb = new StringBuilder();
@@ -1136,14 +1164,14 @@ public class IO {
 				}
 			}
 		}
-		if (sb.length() == 0 || (isWindows && RESERVED_WINDOWS_P.matcher(sb).matches()))
+		if (sb.length() == 0 || (isWindows && RESERVED_WINDOWS_P.matcher(sb)
+			.matches()))
 			sb.append("_");
 
 		return sb.toString();
 	}
 
-	final static Pattern RESERVED_WINDOWS_P = Pattern.compile(
-			"CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
+	final static Pattern RESERVED_WINDOWS_P = Pattern.compile("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
 
 	public static boolean isWindows() {
 		return isWindows;

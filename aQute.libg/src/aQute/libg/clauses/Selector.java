@@ -88,8 +88,8 @@ public class Selector {
 	}
 
 	public static List<Selector> getInstructions(Clauses clauses) {
-		List<Selector> result = new ArrayList<Selector>();
-		for (Map.Entry<String,Map<String,String>> entry : clauses.entrySet()) {
+		List<Selector> result = new ArrayList<>();
+		for (Map.Entry<String, Map<String, String>> entry : clauses.entrySet()) {
 			Selector instruction = getPattern(entry.getKey());
 			result.add(instruction);
 		}
@@ -97,7 +97,7 @@ public class Selector {
 	}
 
 	public static <T> List<T> select(Collection<T> domain, List<Selector> instructions) {
-		List<T> result = new ArrayList<T>();
+		List<T> result = new ArrayList<>();
 		Iterator<T> iterator = domain.iterator();
 		value: while (iterator.hasNext()) {
 			T value = iterator.next();

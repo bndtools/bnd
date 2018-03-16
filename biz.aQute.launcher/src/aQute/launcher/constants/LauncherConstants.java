@@ -16,7 +16,7 @@ public class LauncherConstants {
 	public final static String		LAUNCHER_ARGUMENTS			= "launcher.arguments";
 	public final static String		LAUNCHER_READY				= "launcher.ready";
 
-	// MUST BE ALIGNED WITH ProjectLauncher! Donot want to create coupling
+	// MUST BE ALIGNED WITH ProjectLauncher! Do not want to create coupling
 	// so cannot refer.
 	public final static int			OK							= 0;
 	public final static int			ERROR						= -2;
@@ -49,9 +49,9 @@ public class LauncherConstants {
 	final static String				LAUNCH_NOTIFICATION_PORT	= "launch.notificationPort";
 
 	public final static String[]	LAUNCHER_PROPERTY_KEYS		= {
-			LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES,
-			LAUNCH_SYSTEMPACKAGES, LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, LAUNCH_TRACE, LAUNCH_TIMEOUT,
-			LAUNCH_ACTIVATORS, LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT
+		LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES, LAUNCH_SYSTEMPACKAGES,
+		LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, LAUNCH_TRACE, LAUNCH_TIMEOUT, LAUNCH_ACTIVATORS,
+		LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT
 	};
 	/**
 	 * The command line arguments of the launcher. Launcher are not supposed to
@@ -64,13 +64,13 @@ public class LauncherConstants {
 	public boolean					noreferences;
 	public File						storageDir;
 	public boolean					keep;
-	public final List<String>		runbundles					= new ArrayList<String>();
+	public final List<String>		runbundles					= new ArrayList<>();
 	public String					systemPackages;
 	public String					systemCapabilities;
 	public boolean					trace;
 	public long						timeout;
-	public final List<String>		activators					= new ArrayList<String>();
-	public Map<String,String>		runProperties				= new HashMap<String,String>();
+	public final List<String>		activators					= new ArrayList<>();
+	public Map<String, String>		runProperties				= new HashMap<>();
 	public boolean					embedded					= false;
 	public String					name;
 	public int						notificationPort			= -1;
@@ -78,7 +78,7 @@ public class LauncherConstants {
 	/**
 	 * Translate a constants to properties.
 	 */
-	public Properties getProperties(Properties p) {
+	public <P extends Properties> P getProperties(P p) {
 		p.setProperty(LAUNCH_NOREFERENCES, noreferences + "");
 		p.setProperty(LAUNCH_SERVICES, services + "");
 		if (storageDir != null)
@@ -98,7 +98,7 @@ public class LauncherConstants {
 
 		p.setProperty(LAUNCH_NOTIFICATION_PORT, String.valueOf(notificationPort));
 
-		for (Map.Entry<String,String> entry : runProperties.entrySet()) {
+		for (Map.Entry<String, String> entry : runProperties.entrySet()) {
 			if (entry.getValue() == null) {
 				if (entry.getKey() != null)
 					p.remove(entry.getKey());
@@ -138,14 +138,14 @@ public class LauncherConstants {
 		name = p.getProperty(LAUNCH_NAME);
 		notificationPort = Integer.valueOf(p.getProperty(LAUNCH_NOTIFICATION_PORT, "-1"));
 		@SuppressWarnings({
-				"unchecked", "rawtypes"
+			"unchecked", "rawtypes"
 		})
-		Map<String,String> map = (Map) p;
+		Map<String, String> map = (Map) p;
 		runProperties.putAll(map);
 	}
 
-	private Collection< ? extends String> split(String property, String string) {
-		List<String> result = new ArrayList<String>();
+	private Collection<String> split(String property, String string) {
+		List<String> result = new ArrayList<>();
 		StringTokenizer st = new StringTokenizer(property, string);
 		while (st.hasMoreTokens()) {
 			result.add(st.nextToken());
@@ -154,10 +154,10 @@ public class LauncherConstants {
 		return result;
 	}
 
-	private static String join(List< ? > runbundles2, String string) {
+	private static String join(List<String> runbundles2, String string) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Object r : runbundles2) {
+		for (String r : runbundles2) {
 			sb.append(del);
 			sb.append(r);
 			del = string;

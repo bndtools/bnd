@@ -23,10 +23,11 @@ public class WorkspaceBundleVersionedDependencyTest extends TestCase {
 
 	public static void testWorkspaceVersionedDependencyWithSubbundle() throws Exception {
 		IO.copy(IO.getFile("testresources/ws-versioneddependencies-withsubbundle"),
-				IO.getFile("generated/ws-versioneddependencies-withsubbundle"));
+			IO.getFile("generated/ws-versioneddependencies-withsubbundle"));
 		Workspace ws = Workspace.getWorkspace(IO.getFile("generated/ws-versioneddependencies-withsubbundle"));
 
-		ws.getProject("mydependency").build();
+		ws.getProject("mydependency")
+			.build();
 		Project project = ws.getProject("myconsumer");
 		project.clean();
 		project.build();

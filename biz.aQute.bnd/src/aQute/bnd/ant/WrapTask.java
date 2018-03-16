@@ -29,14 +29,14 @@ public class WrapTask extends BaseTask {
 	/**
 	 * List of jars to wrap
 	 */
-	List<File>	jars		= new ArrayList<File>();
+	List<File>	jars		= new ArrayList<>();
 
 	/**
 	 * Output directory or file (directory must be used
 	 */
 	File		output		= null;
 	File		definitions	= null;
-	List<File>	classpath	= new ArrayList<File>();
+	List<File>	classpath	= new ArrayList<>();
 	String		bsn;
 	Version		version;
 	boolean		force;
@@ -53,15 +53,13 @@ public class WrapTask extends BaseTask {
 
 			if (output != null && jars.size() > 1 && !output.isDirectory()) {
 				throw new BuildException(
-						"Multiple jars must be wrapped but the output given is not a directory " + output,
-						getLocation());
+					"Multiple jars must be wrapped but the output given is not a directory " + output, getLocation());
 			}
 
 			if (definitions != null && jars.size() > 1 && !definitions.isDirectory()) {
 				throw new BuildException(
-						"Multiple jars must be wrapped but the definitions parameters is not a directory "
-								+ definitions,
-						getLocation());
+					"Multiple jars must be wrapped but the definitions parameters is not a directory " + definitions,
+					getLocation());
 			}
 
 			for (File file : jars) {
@@ -92,7 +90,7 @@ public class WrapTask extends BaseTask {
 						File properties = definitions;
 						if (properties.isDirectory()) {
 							String pfile = wrapper.replaceExtension(outputFile.getName(),
-									Constants.DEFAULT_JAR_EXTENSION, Constants.DEFAULT_BND_EXTENSION);
+								Constants.DEFAULT_JAR_EXTENSION, Constants.DEFAULT_BND_EXTENSION);
 							properties = new File(definitions, pfile);
 						}
 						if (properties.isFile()) {
@@ -102,11 +100,14 @@ public class WrapTask extends BaseTask {
 
 					Manifest manifest = wrapper.calcManifest();
 					if (wrapper.isOk()) {
-						wrapper.getJar().setManifest(manifest);
+						wrapper.getJar()
+							.setManifest(manifest);
 						boolean saved = wrapper.save(outputFile, force);
-						log(String.format("%30s %6d %s%n",
-								wrapper.getJar().getBsn() + "-" + wrapper.getJar().getVersion(), outputFile.length(),
-								saved ? "" : "(not modified)"));
+						log(String.format("%30s %6d %s%n", wrapper.getJar()
+							.getBsn() + "-"
+							+ wrapper.getJar()
+								.getVersion(),
+							outputFile.length(), saved ? "" : "(not modified)"));
 					}
 
 					failed |= report(wrapper);

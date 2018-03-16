@@ -19,9 +19,9 @@ class PackageInfo {
 	private static final String		PACKAGE_INFO_JAVA	= "package-info.java";
 	private static final String		PACKAGEINFO			= "packageinfo";
 	private final static Pattern	MODERN_P			= Pattern
-			.compile("@\\s*[a-zA-Z0-9_$.]*\\s*Version\\((?:\\s*value\\s*=\\s*)?\"(" + Verifier.VERSION_S + ")\"\\)");
+		.compile("@\\s*[a-zA-Z0-9_$.]*\\s*Version\\((?:\\s*value\\s*=\\s*)?\"(" + Verifier.VERSION_S + ")\"\\)");
 	private final static Pattern	CLASSIC_P			= Pattern
-			.compile("\\s*version\\s*(?:\\s|:|=)\\s*(" + Verifier.VERSION_S + ")");
+		.compile("\\s*version\\s*(?:\\s|:|=)\\s*(" + Verifier.VERSION_S + ")");
 	private final static Pattern	MODERN_PACKAGE_P	= Pattern.compile("package[^;]*;");
 	private final Project			project;
 
@@ -71,7 +71,8 @@ class PackageInfo {
 		// packages that do not exist.
 		//
 
-		if (target == null || !target.getParentFile().isDirectory())
+		if (target == null || !target.getParentFile()
+			.isDirectory())
 			return false;
 
 		//
@@ -97,7 +98,7 @@ class PackageInfo {
 					Matcher m = MODERN_PACKAGE_P.matcher(content);
 					if (m.find()) {
 						content = m
-								.replaceFirst("@Version(\"" + version + "\")\n$0\nimport " + versionAnnotation + ";");
+							.replaceFirst("@Version(\"" + version + "\")\n$0\nimport " + versionAnnotation + ";");
 						IO.store(content, target);
 						return true;
 					}
@@ -126,7 +127,6 @@ class PackageInfo {
 	 * <li>other -> use the content as the version annotation, must have the
 	 * same prototype as the bnd/osgi ann.
 	 * </ul>
-	 *
 	 */
 	private String getVersionAnnotation() {
 		String versionAnnotation = project.getProperty(Constants.PACKAGEINFOTYPE);
@@ -170,7 +170,8 @@ class PackageInfo {
 	}
 
 	private boolean isModern(File target) {
-		return target.getName().endsWith(".java");
+		return target.getName()
+			.endsWith(".java");
 	}
 
 	/*

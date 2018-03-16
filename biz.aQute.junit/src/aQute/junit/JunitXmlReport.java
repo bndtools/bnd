@@ -36,7 +36,8 @@ public class JunitXmlReport implements TestReporter {
 
 	public JunitXmlReport(Writer report, Bundle bundle, BasicTestReport basic) throws Exception {
 		if (hostname == null)
-			hostname = InetAddress.getLocalHost().getHostName();
+			hostname = InetAddress.getLocalHost()
+				.getHostName();
 		out = new PrintWriter(report);
 		this.bundle = bundle;
 		this.basic = basic;
@@ -46,6 +47,7 @@ public class JunitXmlReport implements TestReporter {
 		this.progress = progress;
 	}
 
+	@Override
 	public void setup(Bundle fw, Bundle targetBundle) {
 		startTime = System.currentTimeMillis();
 
@@ -64,14 +66,16 @@ public class JunitXmlReport implements TestReporter {
 		Tag properties = new Tag("properties");
 		testsuite.addContent(properties);
 
-		for (Map.Entry<Object,Object> entry : System.getProperties().entrySet()) {
+		for (Map.Entry<Object, Object> entry : System.getProperties()
+			.entrySet()) {
 			Tag property = new Tag(properties, "property");
 			property.addAttribute("name", entry.getKey());
 			property.addAttribute("value", entry.getValue());
 		}
 
 		if (targetBundle != null) {
-			String header = (String) targetBundle.getHeaders().get(aQute.bnd.osgi.Constants.BND_ADDXMLTOTEST);
+			String header = (String) targetBundle.getHeaders()
+				.get(aQute.bnd.osgi.Constants.BND_ADDXMLTOTEST);
 			if (header != null) {
 				StringTokenizer st = new StringTokenizer(header, " ,");
 
@@ -90,14 +94,19 @@ public class JunitXmlReport implements TestReporter {
 		}
 	}
 
+	@Override
 	public void begin(List<Test> classNames, int realcount) {}
 
+	@Override
 	public void end() {
 		if (!finished) {
 			finished = true;
-			testsuite.addAttribute("tests", basic.getTestResult().runCount());
-			testsuite.addAttribute("failures", basic.getTestResult().failureCount());
-			testsuite.addAttribute("errors", basic.getTestResult().errorCount());
+			testsuite.addAttribute("tests", basic.getTestResult()
+				.runCount());
+			testsuite.addAttribute("failures", basic.getTestResult()
+				.failureCount());
+			testsuite.addAttribute("errors", basic.getTestResult()
+				.errorCount());
 			testsuite.addAttribute("time", getFraction(System.currentTimeMillis() - startTime, 1000));
 			testsuite.addAttribute("timestamp", df.format(new Date()));
 			testsuite.print(0, out);
@@ -113,10 +122,12 @@ public class JunitXmlReport implements TestReporter {
 	// time="0.045" />
 	static Pattern NAMEANDCLASS = Pattern.compile("(.*)\\((.*)\\)");
 
+	@Override
 	public void startTest(Test test) {
 		String nameAndClass = test.toString();
 		String name = nameAndClass;
-		String clazz = test.getClass().getName();
+		String clazz = test.getClass()
+			.getName();
 
 		if (test instanceof Describable) {
 			Description description = ((Describable) test).getDescription();
@@ -154,10 +165,12 @@ public class JunitXmlReport implements TestReporter {
 	// </error>
 	// </testcase>
 
+	@Override
 	public void addError(Test test, Throwable t) {
 		Tag error = new Tag("error");
 		error.setCDATA();
-		error.addAttribute("type", t.getClass().getName());
+		error.addAttribute("type", t.getClass()
+			.getName());
 		String message = t.getMessage();
 		if (message != null) {
 			error.addAttribute("message", message);
@@ -177,7 +190,8 @@ public class JunitXmlReport implements TestReporter {
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
 		pw.close();
-		return sw.toString().replace('\t', ' ');
+		return sw.toString()
+			.replace('\t', ' ');
 	}
 
 	// <testcase classname="test.AnalyzerTest" name="testFindClass"
@@ -188,10 +202,12 @@ public class JunitXmlReport implements TestReporter {
 	// </failure>
 	// <testcase>
 	//
+	@Override
 	public void addFailure(Test test, AssertionFailedError t) {
 		Tag failure = new Tag("failure");
 		failure.setCDATA();
-		failure.addAttribute("type", t.getClass().getName());
+		failure.addAttribute("type", t.getClass()
+			.getName());
 		String message = t.getMessage();
 		if (message != null) {
 			failure.addAttribute("message", message);
@@ -201,6 +217,7 @@ public class JunitXmlReport implements TestReporter {
 		progress(" f");
 	}
 
+	@Override
 	public void endTest(Test test) {
 		String[] outs = basic.getCaptured();
 		if (outs[0] != null) {
@@ -222,6 +239,7 @@ public class JunitXmlReport implements TestReporter {
 		end();
 	}
 
+	@Override
 	public void aborted() {
 		testsuite.addAttribute("aborted", "true");
 		close();

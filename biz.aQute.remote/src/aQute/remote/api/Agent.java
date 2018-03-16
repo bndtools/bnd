@@ -138,7 +138,7 @@ public interface Agent {
 	 * 
 	 * @param bundles the bundles to update
 	 */
-	String update(Map<String,String> bundles) throws Exception;
+	String update(Map<String, String> bundles) throws Exception;
 
 	/**
 	 * Updates a single bundle by id in the framework. The SHA identifies the
@@ -195,7 +195,7 @@ public interface Agent {
 	 * 
 	 * @return the remote systems properties
 	 */
-	Map<String,String> getSystemProperties() throws Exception;
+	Map<String, String> getSystemProperties() throws Exception;
 
 	/**
 	 * This method is only implemented in the Envoy (the pre-Agent). It is meant
@@ -210,7 +210,7 @@ public interface Agent {
 	 * @param properties the framework properties
 	 * @return if this created a new framework
 	 */
-	boolean createFramework(String name, Collection<String> runpath, Map<String,Object> properties) throws Exception;
+	boolean createFramework(String name, Collection<String> runpath, Map<String, Object> properties) throws Exception;
 
 	/**
 	 * Abort the remote agent. The agent should send an event back and die. This

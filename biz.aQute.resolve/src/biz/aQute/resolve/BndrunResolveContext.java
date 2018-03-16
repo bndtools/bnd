@@ -60,7 +60,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 public class BndrunResolveContext extends AbstractResolveContext {
 	private final static Logger	logger						= LoggerFactory.getLogger(BndrunResolveContext.class);
 
-	private static final String BND_AUGMENT = "bnd.augment";
+	private static final String	BND_AUGMENT					= "bnd.augment";
 	public static final String	RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
 	public static final String	PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
 
@@ -140,7 +140,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 			constructBlacklist(augments);
 
-			Map<String,Set<String>> effectiveSet = loadEffectiveSet();
+			Map<String, Set<String>> effectiveSet = loadEffectiveSet();
 			if (effectiveSet != null)
 				addEffectiveSet(effectiveSet);
 
@@ -169,7 +169,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			//
 
 			String distro = properties.mergeProperties(Constants.DISTRO);
-			if (distro != null && !distro.trim().isEmpty()) {
+			if (distro != null && !distro.trim()
+				.isEmpty()) {
 				loadPath(system, distro, Constants.DISTRO);
 
 				loadProvidedCapabilities(system);
@@ -198,7 +199,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				//
 
 				Parameters systemCapabilities = new Parameters(
-						properties.mergeProperties(Constants.RUNSYSTEMCAPABILITIES), project);
+					properties.mergeProperties(Constants.RUNSYSTEMCAPABILITIES), project);
 				system.addProvideCapabilities(systemCapabilities);
 
 				loadProvidedCapabilities(system);
@@ -217,7 +218,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 				String runpath = properties.mergeProperties(Constants.RUNPATH);
 
-				if (runpath != null && !runpath.trim().isEmpty())
+				if (runpath != null && !runpath.trim()
+					.isEmpty())
 					loadPath(system, runpath, Constants.RUNPATH);
 			}
 
@@ -232,10 +234,11 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			// capabilities
 			//
 			List<Capability> frameworkPackages = system.findCapabilities(PackageNamespace.PACKAGE_NAMESPACE,
-					"(" + PackageNamespace.PACKAGE_NAMESPACE + "=org.osgi.framework)");
+				"(" + PackageNamespace.PACKAGE_NAMESPACE + "=org.osgi.framework)");
 			if (!frameworkPackages.isEmpty()) {
 				Capability c = frameworkPackages.get(0);
-				Version version = (Version) c.getAttributes().get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+				Version version = (Version) c.getAttributes()
+					.get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 
 				CapReqBuilder crb = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
 				crb.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, "system.bundle");
@@ -260,7 +263,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		//
 
 		Parameters providedCapabilities = new Parameters(properties.mergeProperties(Constants.RUNPROVIDEDCAPABILITIES),
-				project);
+			project);
 		system.addProvideCapabilities(providedCapabilities);
 	}
 
@@ -273,12 +276,15 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 		if (parameters.size() > 1)
 			throw new IllegalArgumentException(
-					"Too many frameworks specified in " + Constants.RUNFW + " (" + parameters + ")");
+				"Too many frameworks specified in " + Constants.RUNFW + " (" + parameters + ")");
 
-		Map.Entry<String,Attrs> bsn = parameters.entrySet().iterator().next();
+		Map.Entry<String, Attrs> bsn = parameters.entrySet()
+			.iterator()
+			.next();
 
 		String name = bsn.getKey();
-		String version = bsn.getValue().getVersion();
+		String version = bsn.getValue()
+			.getVersion();
 
 		log.log(LogService.LOG_INFO, "Using frameowork " + name + ";" + version);
 
@@ -298,6 +304,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	 * -runpath and it is also used for -distro.
 	 */
 
+	@Override
 	public void loadPath(ResourceBuilder system, String path, String what) throws Exception {
 
 		if (project != null) {
@@ -321,17 +328,17 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	/**
 	 * Load the effective set from the properties
 	 */
-	Map<String,Set<String>> loadEffectiveSet() {
+	Map<String, Set<String>> loadEffectiveSet() {
 		String effective = properties.getProperty(RUN_EFFECTIVE_INSTRUCTION);
 		if (effective == null)
 			return null;
 
-		HashMap<String,Set<String>> effectiveSet = new HashMap<String,Set<String>>();
+		HashMap<String, Set<String>> effectiveSet = new HashMap<>();
 
-		for (Entry<String,Attrs> entry : new Parameters(effective, project).entrySet()) {
-			String skip = entry.getValue().get("skip:");
-			Set<String> toSkip = skip == null ? new HashSet<String>()
-					: new HashSet<String>(Arrays.asList(skip.split(",")));
+		for (Entry<String, Attrs> entry : new Parameters(effective, project).entrySet()) {
+			String skip = entry.getValue()
+				.get("skip:");
+			Set<String> toSkip = skip == null ? new HashSet<>() : new HashSet<>(Arrays.asList(skip.split(",")));
 			effectiveSet.put(entry.getKey(), toSkip);
 		}
 
@@ -369,15 +376,10 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 			// Map the repository names...
 
-			Map<String,Repository> repoNameMap = new HashMap<String,Repository>(allRepos.size());
+			Map<String, Repository> repoNameMap = new HashMap<>(allRepos.size());
 			for (Repository repo : allRepos) {
 				String name;
-				if (repo instanceof aQute.bnd.deployer.repository.wrapper.Plugin) {
-					@SuppressWarnings("resource")
-					aQute.bnd.deployer.repository.wrapper.Plugin wrapper = (aQute.bnd.deployer.repository.wrapper.Plugin) repo;
-					wrapper.init();
-					name = wrapper.toString();
-				} else if (repo instanceof RepositoryPlugin) {
+				if (repo instanceof RepositoryPlugin) {
 					name = ((RepositoryPlugin) repo).getName();
 				} else {
 					name = repo.toString();
@@ -402,7 +404,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		if (!augments.isEmpty()) {
 			AggregateRepository aggregate = new AggregateRepository(orderedRepositories);
 			AugmentRepository augment = new AugmentRepository(augments, aggregate);
-			orderedRepositories = Collections.singleton((Repository) augment);
+			orderedRepositories = Collections.singleton(augment);
 		}
 
 		for (Repository repository : orderedRepositories) {
@@ -419,7 +421,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		Requirement req = rb.buildSyntheticRequirement();
 
 		for (Repository r : orderedRepositories) {
-			Map<Requirement,Collection<Capability>> found = r.findProviders(Collections.singleton(req));
+			Map<Requirement, Collection<Capability>> found = r.findProviders(Collections.singleton(req));
 			Collection<Capability> capabilities = found.get(req);
 			if (capabilities != null) {
 				for (Capability capability : capabilities) {
@@ -432,12 +434,13 @@ public class BndrunResolveContext extends AbstractResolveContext {
 
 	private void findAdditionalAugmentsFromResource(Processor augments, Capability capability) {
 		Resource resource = capability.getResource();
-		Map<URI,String> locations = ResourceUtils.getLocations(resource);
+		Map<URI, String> locations = ResourceUtils.getLocations(resource);
 
 		if (locations == null || locations.isEmpty())
 			return;
 
-		Object pathObject = capability.getAttributes().get("path");
+		Object pathObject = capability.getAttributes()
+			.get("path");
 		if (pathObject == null)
 			pathObject = "augments.bnd";
 
@@ -449,13 +452,17 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			for (URI uri : locations.keySet())
 				try {
 					logger.debug("loading augments from {}", uri);
-					File file = http.build().age(24, TimeUnit.HOURS).useCache().go(uri);
+					File file = http.build()
+						.age(24, TimeUnit.HOURS)
+						.useCache()
+						.go(uri);
 					try (Jar jar = new Jar(file)) {
 						aQute.bnd.osgi.Resource rs = jar.getResource(path);
 						try (InputStream in = rs.openInputStream()) {
 							UTF8Properties p = new UTF8Properties();
 							p.load(in, file, project);
-							augments.getProperties().putAll(p);
+							augments.getProperties()
+								.putAll(p);
 							return;
 						}
 					}
@@ -475,7 +482,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		ResourceBuilder resBuilder = new ResourceBuilder();
 
 		CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
-				.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE);
+			.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, IDENTITY_INITIAL_RESOURCE);
 		resBuilder.addCapability(identity);
 
 		Parameters inputRequirements = new Parameters(properties.mergeProperties(Constants.RUNREQUIRES), project);
@@ -501,6 +508,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		resolvePrefs = new Parameters(properties.getProperty(PROP_RESOLVE_PREFERENCES), project);
 	}
 
+	@Override
 	protected void postProcessProviders(Requirement requirement, Set<Capability> wired, List<Capability> candidates) {
 		if (candidates.size() == 0)
 			return;
@@ -514,7 +522,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		boolean prefsUsed = false;
 
 		if (resolvePrefs != null && !resolvePrefs.isEmpty()) {
-			List<Capability> insertions = new LinkedList<Capability>();
+			List<Capability> insertions = new LinkedList<>();
 			for (Iterator<Capability> iterator = candidates.iterator(); iterator.hasNext();) {
 				Capability cap = iterator.next();
 				if (resolvePrefs.containsKey(getResourceIdentity(cap.getResource()))) {

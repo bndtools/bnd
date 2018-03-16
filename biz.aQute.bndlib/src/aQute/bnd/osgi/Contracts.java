@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.osgi.namespace.contract.ContractNamespace;
+import org.osgi.resource.Namespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,14 +27,14 @@ import aQute.service.reporter.Report.Location;
  */
 class Contracts {
 	private final static Logger							logger					= LoggerFactory
-			.getLogger(Contracts.class);
+		.getLogger(Contracts.class);
 
 	private Analyzer									analyzer;
-	private final MultiMap<PackageRef,Contract>			contracted				= new MultiMap<PackageRef,Contract>(
-			PackageRef.class, Contract.class, true);
-	private MultiMap<Collection<Contract>,PackageRef>	overlappingContracts	= new MultiMap<Collection<Contract>,PackageRef>();
+	private final MultiMap<PackageRef, Contract>		contracted				= new MultiMap<>(PackageRef.class,
+		Contract.class, true);
+	private MultiMap<Collection<Contract>, PackageRef>	overlappingContracts	= new MultiMap<>();
 	private Instructions								instructions;
-	private final Set<Contract>							contracts				= new HashSet<Contract>();
+	private final Set<Contract>							contracts				= new HashSet<>();
 
 	public class Contract {
 		public String				name;
@@ -74,7 +75,7 @@ class Contracts {
 	 */
 	void collectContracts(String from, Parameters pcs) {
 
-		contract: for (Entry<String,Attrs> p : pcs.entrySet()) {
+		contract: for (Entry<String, Attrs> p : pcs.entrySet()) {
 			String namespace = p.getKey();
 
 			if (namespace.equals(ContractNamespace.CONTRACT_NAMESPACE)) {
@@ -83,11 +84,11 @@ class Contracts {
 				String name = capabilityAttrs.get(ContractNamespace.CONTRACT_NAMESPACE);
 				if (name == null) {
 					analyzer.warning("No name (attr %s) defined in bundle %s from contract namespace: %s",
-							ContractNamespace.CONTRACT_NAMESPACE, from, capabilityAttrs);
+						ContractNamespace.CONTRACT_NAMESPACE, from, capabilityAttrs);
 					continue contract;
 				}
 
-				for (Entry<Instruction,Attrs> i : getFilter().entrySet()) {
+				for (Entry<Instruction, Attrs> i : getFilter().entrySet()) {
 					Instruction instruction = i.getKey();
 					if (instruction.matches(name)) {
 						if (instruction.isNegated()) {
@@ -100,7 +101,7 @@ class Contracts {
 						Contract c = new Contract();
 						c.name = name;
 
-						String list = capabilityAttrs.get(ContractNamespace.CAPABILITY_USES_DIRECTIVE + ":");
+						String list = capabilityAttrs.get(Namespace.CAPABILITY_USES_DIRECTIVE + ":");
 						if (list == null || list.length() == 0) {
 							analyzer.warning("Contract %s has no uses: directive in %s.", name, from);
 							continue contract; // next contract
@@ -110,14 +111,14 @@ class Contracts {
 
 						try {
 							Version version = capabilityAttrs.getTyped(Attrs.VERSION,
-									ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+								ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 
 							if (version != null)
 								c.version = version;
 						} catch (IllegalArgumentException iae) {
 							// choose the highest version from the list
 							List<Version> versions = capabilityAttrs.getTyped(Attrs.LIST_VERSION,
-									ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+								ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 
 							c.version = versions.get(0);
 
@@ -197,10 +198,11 @@ class Contracts {
 			}
 		}
 
-		for (Entry<Collection<Contract>,List<PackageRef>> oc : overlappingContracts.entrySet()) {
+		for (Entry<Collection<Contract>, List<PackageRef>> oc : overlappingContracts.entrySet()) {
 			Location location = analyzer.error("Contracts %s declare the same packages in their uses: directive: %s. "
-					+ "Contracts are found in declaring bundles (see their 'from' field), it is possible to control the finding"
-					+ "with the -contract instruction", oc.getKey(), oc.getValue()).location();
+				+ "Contracts are found in declaring bundles (see their 'from' field), it is possible to control the finding"
+				+ "with the -contract instruction", oc.getKey(), oc.getValue())
+				.location();
 			location.header = Constants.CONTRACT;
 		}
 	}

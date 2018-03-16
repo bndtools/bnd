@@ -20,7 +20,7 @@ public @interface Reference {
 
 	String name() default "";
 
-	Class< ? > service() default Object.class;
+	Class<?> service() default Object.class;
 
 	boolean optional() default false;
 

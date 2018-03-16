@@ -26,7 +26,7 @@ import junit.framework.TestCase;
 
 public class XMLResourceGeneratorTest extends TestCase {
 	private static final Requirement	WILDCARD	= ResourceUtils.createWildcardRequirement();
-	File tmp = IO.getFile("generated/tmp");
+	File								tmp			= IO.getFile("generated/tmp");
 
 	{
 		IO.delete(tmp);
@@ -36,17 +36,22 @@ public class XMLResourceGeneratorTest extends TestCase {
 	public void testBasic() throws URISyntaxException, Exception {
 		Repository repository = getTestRepository();
 		File location = new File(tmp, "index.xml");
-		new XMLResourceGenerator().name("test").repository(repository).save(location);
+		new XMLResourceGenerator().name("test")
+			.repository(repository)
+			.save(location);
 
 		Repository other = getRepository(location.toURI());
-		Map<Requirement,Collection<Capability>> findProviders = other.findProviders(Collections.singleton(WILDCARD));
+		Map<Requirement, Collection<Capability>> findProviders = other.findProviders(Collections.singleton(WILDCARD));
 
 		Set<Resource> resources = ResourceUtils.getResources(findProviders.get(WILDCARD));
 		assertEquals(1, resources.size());
-		Resource r = resources.iterator().next();
+		Resource r = resources.iterator()
+			.next();
 		assertEquals(
-				"http://macbadge-updates.s3.amazonaws.com/plugins/name.njbartlett.eclipse.macbadge_1.0.0.201110100042.jar",
-				ResourceUtils.getContentCapability(r).url().toString());
+			"http://macbadge-updates.s3.amazonaws.com/plugins/name.njbartlett.eclipse.macbadge_1.0.0.201110100042.jar",
+			ResourceUtils.getContentCapability(r)
+				.url()
+				.toString());
 	}
 
 	public void testFillInDefaultCapabilityAttribs() throws Exception {
@@ -104,7 +109,8 @@ public class XMLResourceGeneratorTest extends TestCase {
 	}
 
 	private Repository getTestRepository() throws URISyntaxException, Exception {
-		return getRepository(XMLResourceGeneratorTest.class.getResource("data/macbadge.xml").toURI());
+		return getRepository(XMLResourceGeneratorTest.class.getResource("data/macbadge.xml")
+			.toURI());
 	}
 
 	private Repository getRepository(URI uri) throws IOException, Exception {

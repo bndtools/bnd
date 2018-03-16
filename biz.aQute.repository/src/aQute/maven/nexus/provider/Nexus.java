@@ -21,12 +21,14 @@ public class Nexus {
 	}
 
 	public HttpRequest<Object> request() {
-		return client.build().headers("Accept", "application/json").headers("User-Agent", "bnd");
+		return client.build()
+			.headers("Accept", "application/json")
+			.headers("User-Agent", "bnd");
 	}
 
 	public List<URI> files() throws Exception {
 		URI uri = new URI(this.uri + "/content/");
-		List<URI> uris = new ArrayList<URI>();
+		List<URI> uris = new ArrayList<>();
 
 		files(uris, uri);
 		return uris;
@@ -42,7 +44,8 @@ public class Nexus {
 	 * <sizeOnDisk>-1</sizeOnDisk> </content-item> </data> </content> </pre>
 	 */
 	public void files(List<URI> list, URI uri) throws Exception {
-		ContentDTO content = request().get(ContentDTO.class).go(uri);
+		ContentDTO content = request().get(ContentDTO.class)
+			.go(uri);
 		for (ContentDTO.ItemDTO item : content.data) {
 			if (item.sizeOnDisk < 0) {
 				files(list, item.resourceURI);
@@ -54,15 +57,25 @@ public class Nexus {
 	}
 
 	private boolean isReal(URI uri) {
-		return !(uri.getPath().endsWith(".sha1") || uri.getPath().endsWith(".asc") || uri.getPath().endsWith(".md5"));
+		return !(uri.getPath()
+			.endsWith(".sha1")
+			|| uri.getPath()
+				.endsWith(".asc")
+			|| uri.getPath()
+				.endsWith(".md5"));
 	}
 
 	public File download(URI uri) throws Exception {
-		return request().useCache().age(30, TimeUnit.SECONDS).go(uri);
+		return request().useCache()
+			.age(30, TimeUnit.SECONDS)
+			.go(uri);
 	}
 
 	public void upload(URI uri, byte[] data) throws Exception {
-		try (TaggedData tag = request().put().upload(data).asTag().go(uri)) {
+		try (TaggedData tag = request().put()
+			.upload(data)
+			.asTag()
+			.go(uri)) {
 			switch (tag.getState()) {
 				case NOT_FOUND :
 				case OTHER :

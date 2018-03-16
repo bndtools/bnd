@@ -81,10 +81,10 @@ public class FileRepoTest extends TestCase {
 	}
 
 	private FileRepo createRepo(File root) {
-		return createRepo(root, new HashMap<String,String>());
+		return createRepo(root, new HashMap<>());
 	}
 
-	private FileRepo createRepo(File root, Map<String,String> props) {
+	private FileRepo createRepo(File root, Map<String, String> props) {
 		FileRepo repo = new FileRepo();
 
 		props.put("location", root.getAbsolutePath());
@@ -111,7 +111,10 @@ public class FileRepoTest extends TestCase {
 		// Check that we can actually put a resource
 		//
 
-		PutResult put = indexedRepo.put(IO.getFile("jar/osgi.jar").toURI().toURL().openStream(), null);
+		PutResult put = indexedRepo.put(IO.getFile("jar/osgi.jar")
+			.toURI()
+			.toURL()
+			.openStream(), null);
 		assertNotNull(put);
 
 		// Can we get it?
@@ -128,7 +131,7 @@ public class FileRepoTest extends TestCase {
 		//
 
 		assertEquals("OSGi Service Platform Release 4 Interfaces and Classes for use in compiling bundles.",
-				desc.description);
+			desc.description);
 
 		//
 		// We must be able to access by its sha1
@@ -142,7 +145,8 @@ public class FileRepoTest extends TestCase {
 		//
 		SortedSet<ResourceDescriptor> resources = indexedRepo.getResources();
 		assertEquals(1, resources.size());
-		ResourceDescriptor rd = resources.iterator().next();
+		ResourceDescriptor rd = resources.iterator()
+			.next();
 		assertTrue(Arrays.equals(rd.id, put.digest));
 
 		//
@@ -150,8 +154,10 @@ public class FileRepoTest extends TestCase {
 		//
 		File file = indexedRepo.get(desc.bsn, desc.version, null);
 		assertNotNull(file);
-		assertTrue(Arrays.equals(put.digest, SHA1.digest(file).digest()));
-		byte[] digest = SHA256.digest(file).digest();
+		assertTrue(Arrays.equals(put.digest, SHA1.digest(file)
+			.digest()));
+		byte[] digest = SHA256.digest(file)
+			.digest();
 		assertTrue(Arrays.equals(rd.sha256, digest));
 
 		//
@@ -225,7 +231,8 @@ public class FileRepoTest extends TestCase {
 			DownloadListener mock = Mockito.mock(DownloadListener.class);
 
 			f = repo.get("test", new Version("0"), null, mock);
-			Mockito.verify(mock).success(f);
+			Mockito.verify(mock)
+				.success(f);
 			Mockito.verifyNoMoreInteractions(mock);
 			Mockito.reset(mock);
 
@@ -239,13 +246,15 @@ public class FileRepoTest extends TestCase {
 
 	public void testDeployToNonexistentRepoFails() throws Exception {
 
-		if (System.getProperty("os.name").toLowerCase().indexOf("win") >= 0) {
+		if (System.getProperty("os.name")
+			.toLowerCase()
+			.contains("win")) {
 			// File#setReadonly() is broken on windows
 			return;
 		}
 		try {
 			nonExistentRepo.put(new BufferedInputStream(new FileInputStream("testresources/test.jar")),
-					new RepositoryPlugin.PutOptions());
+				new RepositoryPlugin.PutOptions());
 			fail("Should have thrown exception");
 		} catch (Exception e) {
 			// OK, you cannot check for exception messages or exception type
@@ -259,7 +268,7 @@ public class FileRepoTest extends TestCase {
 		delete(root);
 
 		try {
-			Map<String,String> props = new HashMap<String,String>();
+			Map<String, String> props = new HashMap<>();
 			props.put(FileRepo.LOCATION, root.getAbsolutePath());
 			props.put(FileRepo.CMD_INIT, "echo init $0 $1 $2 $3 >>report");
 			props.put(FileRepo.CMD_OPEN, "echo open $0 $1 $2 $3 >>report");
@@ -298,7 +307,8 @@ public class FileRepoTest extends TestCase {
 			String s = collect(new File(root, "report"));
 			System.out.println(s);
 			s = s.replaceAll("\\\\", "/");
-			s = s.replaceAll(root.getAbsolutePath().replaceAll("\\\\", "/"), "@");
+			s = s.replaceAll(root.getAbsolutePath()
+				.replaceAll("\\\\", "/"), "@");
 
 			String parts[] = s.split("\r?\n");
 			assertEquals(8, parts.length);

@@ -23,38 +23,39 @@ import aQute.bnd.osgi.WriteResource;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 import aQute.libg.generics.Create;
+
 public class MetaTypeReader extends WriteResource {
-	final Analyzer			reporter;
-	Clazz					clazz;
-	String					interfaces[];
-	Tag						metadata	= new Tag("metatype:MetaData", new String[] {
-												"xmlns:metatype", "http://www.osgi.org/xmlns/metatype/v1.1.0"
-											});
-	Tag						ocd			= new Tag(metadata, "OCD");
-	Tag						designate	= new Tag(metadata, "Designate");
-	Tag						object		= new Tag(designate, "Object");
+	final Analyzer				reporter;
+	Clazz						clazz;
+	String						interfaces[];
+	Tag							metadata	= new Tag("metatype:MetaData", new String[] {
+		"xmlns:metatype", "http://www.osgi.org/xmlns/metatype/v1.1.0"
+	});
+	Tag							ocd			= new Tag(metadata, "OCD");
+	Tag							designate	= new Tag(metadata, "Designate");
+	Tag							object		= new Tag(designate, "Object");
 
 	// Resource
-	String					extra;
+	String						extra;
 
 	// Should we process super interfaces
-	boolean					inherit;
+	boolean						inherit;
 
 	// One time init
-	boolean					finished;
+	boolean						finished;
 
 	// Designate
-	boolean					override;
-	String					designatePid;
-	boolean					factory;
+	boolean						override;
+	String						designatePid;
+	boolean						factory;
 
 	// AD
-	Map<MethodDef,Annotation>	methods		= new LinkedHashMap<>();
+	Map<MethodDef, Annotation>	methods		= new LinkedHashMap<>();
 
 	// OCD
-	Annotation				ocdAnnotation;
+	Annotation					ocdAnnotation;
 
-	MethodDef				method;
+	MethodDef					method;
 
 	public MetaTypeReader(Clazz clazz, Analyzer reporter) {
 		this.clazz = clazz;
@@ -84,8 +85,11 @@ public class MetaTypeReader extends WriteResource {
 		if (rtype.indexOf('<') > 0) {
 			if (cardinality != 0)
 				reporter.error(
-						"AD for %s.%s uses an array of collections in return type (%s), Metatype allows either Vector or array",
-						clazz.getClassName().getFQN(), method.getName(), method.getType().getFQN());
+					"AD for %s.%s uses an array of collections in return type (%s), Metatype allows either Vector or array",
+					clazz.getClassName()
+						.getFQN(),
+					method.getName(), method.getType()
+						.getFQN());
 			Matcher m = COLLECTION.matcher(rtype);
 			if (m.matches()) {
 				rtype = Clazz.objectDescriptorToFQN(m.group(3));
@@ -194,21 +198,29 @@ public class MetaTypeReader extends WriteResource {
 				throw new IllegalArgumentException("Can only handle array of depth one");
 		}
 
-		if ("boolean".equals(rtype) || Boolean.class.getName().equals(rtype))
+		if ("boolean".equals(rtype) || Boolean.class.getName()
+			.equals(rtype))
 			return Meta.Type.Boolean;
-		else if ("byte".equals(rtype) || Byte.class.getName().equals(rtype))
+		else if ("byte".equals(rtype) || Byte.class.getName()
+			.equals(rtype))
 			return Meta.Type.Byte;
-		else if ("char".equals(rtype) || Character.class.getName().equals(rtype))
+		else if ("char".equals(rtype) || Character.class.getName()
+			.equals(rtype))
 			return Meta.Type.Character;
-		else if ("short".equals(rtype) || Short.class.getName().equals(rtype))
+		else if ("short".equals(rtype) || Short.class.getName()
+			.equals(rtype))
 			return Meta.Type.Short;
-		else if ("int".equals(rtype) || Integer.class.getName().equals(rtype))
+		else if ("int".equals(rtype) || Integer.class.getName()
+			.equals(rtype))
 			return Meta.Type.Integer;
-		else if ("long".equals(rtype) || Long.class.getName().equals(rtype))
+		else if ("long".equals(rtype) || Long.class.getName()
+			.equals(rtype))
 			return Meta.Type.Long;
-		else if ("float".equals(rtype) || Float.class.getName().equals(rtype))
+		else if ("float".equals(rtype) || Float.class.getName()
+			.equals(rtype))
 			return Meta.Type.Float;
-		else if ("double".equals(rtype) || Double.class.getName().equals(rtype))
+		else if ("double".equals(rtype) || Double.class.getName()
+			.equals(rtype))
 			return Meta.Type.Double;
 		else
 			return Meta.Type.String;
@@ -225,9 +237,13 @@ public class MetaTypeReader extends WriteResource {
 		@Override
 		public void annotation(Annotation annotation) {
 			try {
-				if (Meta.OCD.class.getName().equals(annotation.getName().getFQN())) {
+				if (Meta.OCD.class.getName()
+					.equals(annotation.getName()
+						.getFQN())) {
 					MetaTypeReader.this.ocdAnnotation = annotation;
-				} else if (Meta.AD.class.getName().equals(annotation.getName().getFQN())) {
+				} else if (Meta.AD.class.getName()
+					.equals(annotation.getName()
+						.getFQN())) {
 					assert method != null;
 					methods.put(method, annotation);
 				}
@@ -258,8 +274,10 @@ public class MetaTypeReader extends WriteResource {
 			clazz.parseClassFileWithCollector(new Find());
 
 			// defaults
-			String id = clazz.getClassName().getFQN();
-			String name = Clazz.unCamel(clazz.getClassName().getShortName());
+			String id = clazz.getClassName()
+				.getFQN();
+			String name = Clazz.unCamel(clazz.getClassName()
+				.getShortName());
 			String description = null;
 			String localization = id;
 			boolean factory = this.factory;
@@ -268,7 +286,7 @@ public class MetaTypeReader extends WriteResource {
 				Meta.OCD ocd = this.ocdAnnotation.getAnnotation(Meta.OCD.class);
 				if (this.ocdAnnotation.get("id") != null)
 					id = ocd.id();
-				
+
 				if (this.ocdAnnotation.get("name") != null)
 					name = ocd.name();
 
@@ -296,7 +314,7 @@ public class MetaTypeReader extends WriteResource {
 			this.metadata.addAttribute("localization", localization);
 
 			// do ADs
-			for (Map.Entry<MethodDef,Annotation> entry : methods.entrySet())
+			for (Map.Entry<MethodDef, Annotation> entry : methods.entrySet())
 				addMethod(entry.getKey(), entry.getValue());
 
 			this.designate.addAttribute("pid", pid);
@@ -329,14 +347,13 @@ public class MetaTypeReader extends WriteResource {
 			return;
 		Clazz ec = reporter.findClass(ref);
 		if (ec == null) {
-			reporter.error(
-					"Missing inherited class for Metatype annotations: %s from %s", ref, child.getClassName());
+			reporter.error("Missing inherited class for Metatype annotations: %s from %s", ref, child.getClassName());
 		} else {
 			@SuppressWarnings("resource")
 			MetaTypeReader mtr = new MetaTypeReader(ec, reporter);
 			mtr.setDesignate(designatePid, factory);
 			mtr.finish();
-			for (Map.Entry<MethodDef,Annotation> entry : mtr.methods.entrySet())
+			for (Map.Entry<MethodDef, Annotation> entry : mtr.methods.entrySet())
 				addMethod(entry.getKey(), entry.getValue());
 
 			handleInheritedClasses(ec);

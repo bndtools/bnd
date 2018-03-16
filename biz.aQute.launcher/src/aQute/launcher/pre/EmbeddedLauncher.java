@@ -30,10 +30,11 @@ public class EmbeddedLauncher {
 			URL murl = manifests.nextElement();
 
 			Manifest m = new Manifest(murl.openStream());
-			String runpath = m.getMainAttributes().getValue(EMBEDDED_RUNPATH);
+			String runpath = m.getMainAttributes()
+				.getValue(EMBEDDED_RUNPATH);
 			if (runpath != null) {
 				MANIFEST = m;
-				List<URL> classpath = new ArrayList<URL>();
+				List<URL> classpath = new ArrayList<>();
 
 				for (String path : runpath.split("\\s*,\\s*")) {
 					URL url = toFileURL(cl.getResource(path));
@@ -41,12 +42,10 @@ public class EmbeddedLauncher {
 				}
 
 				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]), cl)) {
-					Class< ? > embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
-					Method method = embeddedLauncher.getMethod("main", new Class< ? >[] {
-							String[].class
-					});
+					Class<?> embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
+					Method method = embeddedLauncher.getMethod("main", String[].class);
 					method.invoke(null, new Object[] {
-							args
+						args
 					});
 				}
 				return;
@@ -56,7 +55,8 @@ public class EmbeddedLauncher {
 
 	private static URL toFileURL(URL resource) throws IOException {
 		File f = File.createTempFile("resource", ".jar");
-		Files.createDirectories(f.getParentFile().toPath());
+		Files.createDirectories(f.getParentFile()
+			.toPath());
 		try (InputStream in = resource.openStream(); OutputStream out = Files.newOutputStream(f.toPath())) {
 			byte[] buffer = new byte[BUFFER_SIZE];
 			for (int size; (size = in.read(buffer, 0, buffer.length)) > 0;) {
@@ -64,7 +64,8 @@ public class EmbeddedLauncher {
 			}
 		}
 		f.deleteOnExit();
-		return f.toURI().toURL();
+		return f.toURI()
+			.toURL();
 	}
 
 }

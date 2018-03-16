@@ -47,8 +47,9 @@ public class OSGiRepositoryTest extends TestCase {
 
 	public void testSimple() throws Exception {
 		try (OSGiRepository r = new OSGiRepository();) {
-			Map<String,String> map = new HashMap<>();
-			map.put("locations", fnx.getBaseURI("/repo/minir5.xml").toString());
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", fnx.getBaseURI("/repo/minir5.xml")
+				.toString());
 			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			r.setProperties(map);
@@ -117,6 +118,7 @@ public class OSGiRepositoryTest extends TestCase {
 			return;
 		}
 	}
+
 	public void testPolling() throws Exception {
 		Processor p = new Processor();
 		testPolling(Workspace.createStandaloneWorkspace(p, ws.toURI()));
@@ -124,8 +126,9 @@ public class OSGiRepositoryTest extends TestCase {
 
 	public void testPolling(Workspace workspace) throws Exception {
 		try (OSGiRepository r = new OSGiRepository();) {
-			Map<String,String> map = new HashMap<>();
-			map.put("locations", fnx.getBaseURI("/repo/minir5.xml").toString());
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", fnx.getBaseURI("/repo/minir5.xml")
+				.toString());
 			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			map.put("name", "test");
@@ -167,7 +170,7 @@ public class OSGiRepositoryTest extends TestCase {
 			});
 			File file = r.get("dummybundle", new Version("0"), null);
 			assertNotNull(file);
-			assertNull(r.title(new Object[0])); // not stale, default name
+			assertNull(r.title()); // not stale, default name
 
 			System.out.println("1");
 			Thread.sleep(3000);
@@ -186,15 +189,17 @@ public class OSGiRepositoryTest extends TestCase {
 			System.out.println("6");
 
 			assertEquals(r, refreshed.get());
-			assertEquals("test [stale]", r.title(new Object[0]));
-			System.out.println(r.tooltip(new Object[0]));
+			assertEquals("test [stale]", r.title());
+			System.out.println(r.tooltip());
 		}
 	}
 
 	public void testPollingWithFile() throws Exception {
 		try (OSGiRepository r = new OSGiRepository();) {
-			Map<String,String> map = new HashMap<>();
-			map.put("locations", IO.getFile(remote, "minir5.xml").toURI().toString());
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", IO.getFile(remote, "minir5.xml")
+				.toURI()
+				.toString());
 			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			map.put("name", "test");
@@ -245,28 +250,29 @@ public class OSGiRepositoryTest extends TestCase {
 			// update the index file
 			File index = IO.getFile(remote, "minir5.xml");
 			long time = index.lastModified();
-			do { 
+			do {
 				Thread.sleep(1000);
 				String s = IO.collect(index);
 				s += " "; // change the sha
 				IO.store(s, index);
 				System.out.println(index.lastModified());
 			} while (index.lastModified() == time);
-			
+
 			System.out.println("2 ");
 			Thread.sleep(3000); // give the poller a chance
 			System.out.println("3 ");
 
 			assertEquals(r, refreshed.get());
-			assertEquals("test [stale]", r.title(new Object[0]));
-			System.out.println(r.tooltip(new Object[0]));
+			assertEquals("test [stale]", r.title());
+			System.out.println(r.tooltip());
 		}
 	}
+
 	public void testBndRepo() throws Exception {
 		try (OSGiRepository r = new OSGiRepository();) {
-			Map<String,String> map = new HashMap<>();
+			Map<String, String> map = new HashMap<>();
 			map.put("locations",
-					"https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/index.xml.gz");
+				"https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/index.xml.gz");
 			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			r.setProperties(map);

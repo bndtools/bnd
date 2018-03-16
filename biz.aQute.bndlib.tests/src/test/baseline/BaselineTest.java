@@ -51,6 +51,7 @@ public class BaselineTest extends TestCase {
 		return workspace = new Workspace(tmp);
 	}
 
+	@Override
 	public void tearDown() throws Exception {
 		IO.delete(tmp);
 		workspace = null;
@@ -62,7 +63,7 @@ public class BaselineTest extends TestCase {
 	public void testCompilerEnumDifference() throws Exception {
 		DiffPluginImpl diff = new DiffPluginImpl();
 		try (Jar ecj = new Jar(IO.getFile("jar/baseline/com.example.baseline.ecj.jar"));
-				Jar javac = new Jar(IO.getFile("jar/baseline/com.example.baseline.javac.jar"));) {
+			Jar javac = new Jar(IO.getFile("jar/baseline/com.example.baseline.javac.jar"));) {
 
 			Tree tecj = diff.tree(ecj);
 			Tree tjavac = diff.tree(javac);
@@ -78,32 +79,36 @@ public class BaselineTest extends TestCase {
 		DiffPluginImpl diff = new DiffPluginImpl();
 		try (Jar jar = new Jar(IO.getFile("jar/osgi.jar")); Jar out = new Jar(".");) {
 			out.putResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java",
-					jar.getResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
+				jar.getResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
 			out.putResource("org/osgi/application/ApplicationContext.class",
-					jar.getResource("org/osgi/application/ApplicationContext.class"));
+				jar.getResource("org/osgi/application/ApplicationContext.class"));
 			Tree tree = diff.tree(out);
 
 			Tree src = tree.get("<resources>")
-					.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
-					.getChildren()[0];
+				.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
+				.getChildren()[0];
 
 			assertNotNull(src);
 
-			assertNull(tree.get("<resources>").get("org/osgi/application/ApplicationContext.class"));
+			assertNull(tree.get("<resources>")
+				.get("org/osgi/application/ApplicationContext.class"));
 		}
 	}
 
 	public void testClassesDiffWithoutSource() throws Exception {
 		DiffPluginImpl diff = new DiffPluginImpl();
 		try (Jar jar = new Jar(IO.getFile("jar/osgi.jar")); Jar out = new Jar(".");) {
-			for (String path : jar.getResources().keySet()) {
+			for (String path : jar.getResources()
+				.keySet()) {
 				if (!path.startsWith("OSGI-OPT/src/"))
 					out.putResource(path, jar.getResource(path));
 			}
 
 			Tree tree = diff.tree(out);
-			assertNull(tree.get("<resources>").get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
-			assertNotNull(tree.get("<resources>").get("org/osgi/application/ApplicationContext.class"));
+			assertNull(tree.get("<resources>")
+				.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
+			assertNotNull(tree.get("<resources>")
+				.get("org/osgi/application/ApplicationContext.class"));
 		}
 	}
 
@@ -238,7 +243,8 @@ public class BaselineTest extends TestCase {
 						Set<Info> infos = baseline.baseline(j2, j11, null);
 						print(baseline.getDiff(), " ");
 
-						assertEquals(Delta.UNCHANGED, baseline.getDiff().getDelta());
+						assertEquals(Delta.UNCHANGED, baseline.getDiff()
+							.getDelta());
 					}
 				} finally {
 					tmp.delete();
@@ -248,7 +254,7 @@ public class BaselineTest extends TestCase {
 	}
 
 	static Pattern VERSION_HEADER_P = Pattern.compile("Bundle-Header:(" + Verifier.VERSION_STRING + ")",
-			Pattern.CASE_INSENSITIVE);
+		Pattern.CASE_INSENSITIVE);
 
 	void print(Diff diff, String indent) {
 		if (diff.getDelta() == Delta.UNCHANGED)
@@ -277,31 +283,35 @@ public class BaselineTest extends TestCase {
 		RepositoryPlugin repo = mock(RepositoryPlugin.class);
 		getWorkspace().addBasicPlugin(repo);
 		@SuppressWarnings("unchecked")
-		Map<String,String> map = any(Map.class);
+		Map<String, String> map = any(Map.class);
 		when(repo.get(anyString(), any(Version.class), map))
-				.thenReturn(IO.getFile("testresources/ws/cnf/releaserepo/p3/p3-1.2.0.jar"));
+			.thenReturn(IO.getFile("testresources/ws/cnf/releaserepo/p3/p3-1.2.0.jar"));
 		System.out.println(repo.get("p3", new Version("1.2.0.b"), new Attrs()));
 
 		when(repo.canWrite()).thenReturn(true);
 		when(repo.getName()).thenReturn("Baseline");
-		when(repo.versions("p3")).thenReturn(new SortedList<Version>(new Version("1.1.0.a"), new Version("1.1.0.b"),
-				new Version("1.2.0.a"), new Version("1.2.0.b")));
+		when(repo.versions("p3")).thenReturn(new SortedList<>(new Version("1.1.0.a"), new Version("1.1.0.b"),
+			new Version("1.2.0.a"), new Version("1.2.0.b")));
 
 		Project p3 = getWorkspace().getProject("p3");
 		p3.setBundleVersion("1.3.0");
-		ProjectBuilder builder = (ProjectBuilder) p3.getBuilder(null).getSubBuilder();
+		ProjectBuilder builder = (ProjectBuilder) p3.getBuilder(null)
+			.getSubBuilder();
 		builder.setProperty(Constants.BASELINE, "*");
 		builder.setProperty(Constants.BASELINEREPO, "Baseline");
 
 		// Nothing specified
 		Jar jar = builder.getBaselineJar();
-		assertEquals("1.2.0", new Version(jar.getVersion()).getWithoutQualifier().toString());
+		assertEquals("1.2.0", new Version(jar.getVersion()).getWithoutQualifier()
+			.toString());
 
 		if (!builder.check())
-			fail(builder.getErrors().toString());
+			fail(builder.getErrors()
+				.toString());
 		{
 			// check for error when repository contains later versions
-			builder = (ProjectBuilder) p3.getBuilder(null).getSubBuilder();
+			builder = (ProjectBuilder) p3.getBuilder(null)
+				.getSubBuilder();
 			builder.setBundleVersion("1.1.3");
 			builder.setTrace(true);
 			builder.setProperty(Constants.BASELINE, "*");
@@ -310,11 +320,13 @@ public class BaselineTest extends TestCase {
 			assertNull(jar);
 
 			if (!builder.check("The baseline version 1.2.0.b is higher than the current version 1.1.3 for p3"))
-				fail(builder.getErrors().toString());
+				fail(builder.getErrors()
+					.toString());
 		}
 		{
 			// check for no error when repository has the same version
-			builder = (ProjectBuilder) p3.getBuilder(null).getSubBuilder();
+			builder = (ProjectBuilder) p3.getBuilder(null)
+				.getSubBuilder();
 			builder.setBundleVersion("1.2.0.b");
 			builder.setTrace(true);
 			builder.setProperty(Constants.BASELINE, "*");
@@ -323,12 +335,14 @@ public class BaselineTest extends TestCase {
 			assertNotNull(jar);
 
 			if (!builder.check())
-				fail(builder.getErrors().toString());
+				fail(builder.getErrors()
+					.toString());
 
 		}
 		{
 			// check for no error when repository has the same version
-			builder = (ProjectBuilder) p3.getBuilder(null).getSubBuilder();
+			builder = (ProjectBuilder) p3.getBuilder(null)
+				.getSubBuilder();
 			builder.setBundleVersion("1.2.0.b");
 			builder.setTrace(true);
 			builder.setProperty(Constants.BASELINE, "*");
@@ -336,7 +350,8 @@ public class BaselineTest extends TestCase {
 			builder.build();
 
 			if (!builder.check("The bundle version \\(1.2.0/1.2.0\\) is too low, must be at least 1.3.0"))
-				fail(builder.getErrors().toString());
+				fail(builder.getErrors()
+					.toString());
 
 		}
 	}
@@ -354,7 +369,7 @@ public class BaselineTest extends TestCase {
 			RepositoryPlugin repo = mock(RepositoryPlugin.class);
 			when(repo.canWrite()).thenReturn(true);
 			when(repo.getName()).thenReturn("Baseline");
-			when(repo.versions("p3")).thenReturn(new TreeSet<Version>());
+			when(repo.versions("p3")).thenReturn(new TreeSet<>());
 			getWorkspace().addBasicPlugin(repo);
 			Project p3 = getWorkspace().getProject("p3");
 			p3.setProperty(Constants.BASELINE, "*");
@@ -383,13 +398,15 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
-				Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
+			Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
 
 			Set<Info> infoSet = baseline.baseline(newer, older, null);
-			System.out.println(differ.tree(newer).get("<api>"));
+			System.out.println(differ.tree(newer)
+				.get("<api>"));
 
 			assertEquals(1, infoSet.size());
-			Info info = infoSet.iterator().next();
+			Info info = infoSet.iterator()
+				.next();
 
 			assertTrue(info.mismatch);
 			assertEquals("dummy.api", info.packageName);
@@ -405,12 +422,13 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
-				Jar newer = new Jar(IO.getFile("testresources/api-consumerbump.jar"));) {
+			Jar newer = new Jar(IO.getFile("testresources/api-consumerbump.jar"));) {
 
 			Set<Info> infoSet = baseline.baseline(newer, older, null);
 
 			assertEquals(1, infoSet.size());
-			Info info = infoSet.iterator().next();
+			Info info = infoSet.iterator()
+				.next();
 
 			assertTrue(info.mismatch);
 			assertEquals("dummy.api", info.packageName);
@@ -426,7 +444,7 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
-				Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
+			Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
 
 			baseline.baseline(newer, older, null);
 
@@ -445,9 +463,11 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("testresources/api-orig.jar"));
-				Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
+			Jar newer = new Jar(IO.getFile("testresources/api-providerbump.jar"));) {
 
-			newer.getManifest().getMainAttributes().putValue(BUNDLE_SYMBOLICNAME, "a.different.name");
+			newer.getManifest()
+				.getMainAttributes()
+				.putValue(BUNDLE_SYMBOLICNAME, "a.different.name");
 
 			baseline.baseline(newer, older, null);
 
@@ -458,7 +478,8 @@ public class BaselineTest extends TestCase {
 		}
 	}
 
-	// Adding a method to an exported class produces a MINOR bump (1.0.0 -> 1.1.0)
+	// Adding a method to an exported class produces a MINOR bump (1.0.0 ->
+	// 1.1.0)
 	public void testMinorChange() throws Exception {
 		Processor processor = new Processor();
 
@@ -466,7 +487,7 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
-				Jar newer = new Jar(IO.getFile("testresources/minor-change-1.0.1.jar"));) {
+			Jar newer = new Jar(IO.getFile("testresources/minor-change-1.0.1.jar"));) {
 
 			baseline.baseline(newer, older, null);
 
@@ -477,7 +498,8 @@ public class BaselineTest extends TestCase {
 		}
 	}
 
-	// Adding a method to an exported class and unexporting a package produces a MINOR bump (1.0.0 -> 1.1.0)
+	// Adding a method to an exported class and unexporting a package produces a
+	// MINOR bump (1.0.0 -> 1.1.0)
 	public void testMinorAndRemovedChange() throws Exception {
 		Processor processor = new Processor();
 
@@ -485,7 +507,7 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.0.jar"));
-				Jar newer = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.1.jar"));) {
+			Jar newer = new Jar(IO.getFile("testresources/minor-and-removed-change-1.0.1.jar"));) {
 
 			baseline.baseline(newer, older, null);
 
@@ -505,7 +527,7 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("jar/baseline/provider-deletion-1.0.0.jar"));
-				Jar newer = new Jar(IO.getFile("jar/baseline/provider-deletion-1.1.0.jar"));) {
+			Jar newer = new Jar(IO.getFile("jar/baseline/provider-deletion-1.1.0.jar"));) {
 
 			baseline.baseline(newer, older, null);
 
@@ -518,7 +540,8 @@ public class BaselineTest extends TestCase {
 
 			assertEquals(1, packageInfos.size());
 
-			Info change = packageInfos.iterator().next();
+			Info change = packageInfos.iterator()
+				.next();
 			assertTrue(change.mismatch);
 			assertEquals("bnd.baseline.test", change.packageName);
 			assertEquals("1.1.0", change.suggestedVersion.toString());
@@ -534,7 +557,7 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("jar/baseline/com.liferay.calendar.api-2.0.5.jar"));
-				Jar newer = new Jar(IO.getFile("jar/baseline/com.liferay.calendar.api-2.1.0.jar"));) {
+			Jar newer = new Jar(IO.getFile("jar/baseline/com.liferay.calendar.api-2.1.0.jar"));) {
 
 			baseline.baseline(newer, older, null);
 
@@ -547,7 +570,8 @@ public class BaselineTest extends TestCase {
 
 			assertEquals(12, packageInfos.size());
 
-			Info change = packageInfos.iterator().next();
+			Info change = packageInfos.iterator()
+				.next();
 			assertFalse(change.mismatch);
 			assertEquals("com.google.ical.iter", change.packageName);
 			assertEquals("20110304.0.0", change.suggestedVersion.toString());
@@ -566,7 +590,7 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("jar/baseline/inheritance-change-1.0.0.jar"));
-				Jar newer = new Jar(IO.getFile("jar/baseline/inheritance-change-1.1.0.jar"));) {
+			Jar newer = new Jar(IO.getFile("jar/baseline/inheritance-change-1.1.0.jar"));) {
 
 			baseline.baseline(newer, older, null);
 
@@ -579,18 +603,19 @@ public class BaselineTest extends TestCase {
 
 			assertEquals(1, packageInfos.size());
 
-			Info change = packageInfos.iterator().next();
+			Info change = packageInfos.iterator()
+				.next();
 			assertFalse(change.mismatch);
 			assertEquals("example", change.packageName);
 			assertEquals("1.1.0", change.suggestedVersion.toString());
 
 			Diff packageDiff = change.packageDiff;
 
-			Collection< ? extends Diff> children = packageDiff.getChildren();
+			Collection<? extends Diff> children = packageDiff.getChildren();
 
 			assertEquals(5, children.size());
 
-			Iterator< ? extends Diff> iterator = children.iterator();
+			Iterator<? extends Diff> iterator = children.iterator();
 
 			Diff diff = iterator.next();
 			assertEquals(Delta.MICRO, diff.getDelta());
@@ -616,7 +641,7 @@ public class BaselineTest extends TestCase {
 		Baseline baseline = new Baseline(processor, differ);
 
 		try (Jar older = new Jar(IO.getFile("jar/baseline/expanding-erasure-1.0.0.jar"));
-				Jar newer = new Jar(IO.getFile("jar/baseline/expanding-erasure-1.1.0.jar"));) {
+			Jar newer = new Jar(IO.getFile("jar/baseline/expanding-erasure-1.1.0.jar"));) {
 
 			baseline.baseline(newer, older, null);
 
@@ -629,18 +654,19 @@ public class BaselineTest extends TestCase {
 
 			assertEquals(1, packageInfos.size());
 
-			Info change = packageInfos.iterator().next();
+			Info change = packageInfos.iterator()
+				.next();
 			assertFalse(change.mismatch);
 			assertEquals("bnd.test", change.packageName);
 			assertEquals("1.0.0", change.suggestedVersion.toString());
 
 			Diff packageDiff = change.packageDiff;
 
-			Collection< ? extends Diff> children = packageDiff.getChildren();
+			Collection<? extends Diff> children = packageDiff.getChildren();
 
 			assertEquals(3, children.size());
 
-			Iterator< ? extends Diff> iterator = children.iterator();
+			Iterator<? extends Diff> iterator = children.iterator();
 
 			Diff diff = iterator.next();
 			assertEquals(Delta.UNCHANGED, diff.getDelta());

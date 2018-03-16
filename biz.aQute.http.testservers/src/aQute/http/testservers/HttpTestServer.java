@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,7 +35,7 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		public boolean				https;
 		public int					port;
 		public String				host	= "localhost";
-		public Map<String,String>	users	= new HashMap<>();
+		public Map<String, String>	users	= new HashMap<>();
 		public int					backlog	= 0;
 		public int					keysize	= 1024;
 	}
@@ -44,8 +44,8 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		public final long				time	= System.currentTimeMillis();
 		public String					method;
 		public URI						uri;
-		public TreeMap<String,String>	headers;
-		public Map<String,String>		args	= new HashMap<>();
+		public TreeMap<String, String>	headers;
+		public Map<String, String>		args	= new HashMap<>();
 		public byte[]					content;
 		public String					ip;
 
@@ -56,7 +56,7 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 	}
 
 	public static class Response {
-		public Map<String,String>	headers	= new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+		public Map<String, String>	headers	= new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		public byte[]				content;
 		public int					code	= 200;
 		public String				mimeType;
@@ -75,7 +75,8 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		this.config = config == null ? config = new Config() : config;
 
 		if (config.host == null)
-			config.host = Inet4Address.getLoopbackAddress().getHostAddress();
+			config.host = InetAddress.getLoopbackAddress()
+				.getHostAddress();
 
 		server = new Server(config);
 
@@ -93,7 +94,8 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 	void setMethodHandlers() {
 		for (final Method m : getClass().getMethods()) {
 
-			if (m.getName().startsWith("_")) {
+			if (m.getName()
+				.startsWith("_")) {
 				String path = methodToPath(m);
 				createContext(m, path);
 			}
@@ -102,14 +104,17 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 
 	public String methodToPath(final Method m) {
 		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < m.getName().length(); i++) {
-			char c = m.getName().charAt(i);
+		for (int i = 0; i < m.getName()
+			.length(); i++) {
+			char c = m.getName()
+				.charAt(i);
 			switch (c) {
 				case '_' :
 					sb.append('/');
 					break;
 				case '$' :
-					String hex = m.getName().substring(i + 1, i + 3);
+					String hex = m.getName()
+						.substring(i + 1, i + 3);
 					int charCode = Integer.parseInt(hex, 16);
 					sb.append((char) charCode);
 					i += 2;
@@ -182,7 +187,7 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 			}
 
 			public List<Object> assign(final Method m, Request request, Response response, String path)
-					throws Exception {
+				throws Exception {
 				List<Object> args = new ArrayList<>();
 
 				Type[] types = m.getGenericParameterTypes();
@@ -219,20 +224,27 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 	}
 
 	private byte[] toJSON(Object result) throws Exception {
-		return json.enc().put(result).toString().getBytes("UTF-8");
+		return json.enc()
+			.put(result)
+			.toString()
+			.getBytes("UTF-8");
 	}
 
 	public URI getBaseURI() throws URISyntaxException {
 		int port = server.getListeningPort();
 		StringBuilder sb = new StringBuilder();
 		if (config.https) {
-			sb.append("https://").append(config.host);
+			sb.append("https://")
+				.append(config.host);
 			if (port != 443)
-				sb.append(":").append(port);
+				sb.append(":")
+					.append(port);
 		} else {
-			sb.append("http://").append(config.host);
+			sb.append("http://")
+				.append(config.host);
 			if (port != 80)
-				sb.append(":").append(port);
+				sb.append(":")
+					.append(port);
 		}
 		return new URI(sb.toString());
 	}
@@ -254,7 +266,7 @@ public class HttpTestServer implements AutoCloseable, Closeable {
 		throw new FileNotFoundException(name);
 	}
 
-	protected boolean getResource(Class< ? > clazz, Response rsp, String name, String mime) throws IOException {
+	protected boolean getResource(Class<?> clazz, Response rsp, String name, String mime) throws IOException {
 		try (InputStream in = clazz.getResourceAsStream("www/" + name)) {
 
 			if (in == null)

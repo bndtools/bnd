@@ -19,7 +19,7 @@
                 <groupId>biz.aQute.bnd</groupId>
                 <artifactId>bnd-export-maven-plugin</artifactId>
                 <configuration>
-                    <bundlesOnly>true</bundlesOnly>
+                    <exporter>bnd.runbundles</exporter>
                 </configuration>
             </plugin>
         </plugins>

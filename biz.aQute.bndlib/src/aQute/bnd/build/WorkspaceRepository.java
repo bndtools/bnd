@@ -31,9 +31,9 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	private File[] get(String bsn, String range) throws Exception {
 		Collection<Project> projects = workspace.getAllProjects();
-		SortedMap<Version,File> foundVersion = new TreeMap<Version,File>();
+		SortedMap<Version, File> foundVersion = new TreeMap<>();
 		for (Project project : projects) {
-			Map<String,Version> versions = project.getVersions();
+			Map<String, Version> versions = project.getVersions();
 			if (!versions.containsKey(bsn)) {
 				continue;
 			}
@@ -55,19 +55,20 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 			}
 		}
 
-		File[] result = foundVersion.values().toArray(new File[0]);
+		File[] result = foundVersion.values()
+			.toArray(new File[0]);
 		if (!Constants.VERSION_ATTR_LATEST.equals(range)) {
 			return result;
 		}
 		if (result.length > 0) {
 			return new File[] {
-					result[0]
+				result[0]
 			};
 		}
 		return new File[0];
 	}
 
-	private File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception {
+	private File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
 		File[] files = get(bsn, range);
 
 		if (files.length == 0) {
@@ -86,7 +87,8 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 	}
 
 	private boolean matchVersion(String range, Version version, boolean exact) {
-		if (range == null || range.trim().length() == 0)
+		if (range == null || range.trim()
+			.length() == 0)
 			return true;
 		VersionRange vr = new VersionRange(range);
 
@@ -95,23 +97,27 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 			if (vr.isRange())
 				result = false;
 			else
-				result = vr.getHigh().equals(version);
+				result = vr.getHigh()
+					.equals(version);
 		} else {
 			result = vr.includes(version);
 		}
 		return result;
 	}
 
+	@Override
 	public boolean canWrite() {
 		return false;
 	}
 
+	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new UnsupportedOperationException("Read only repository");
 	}
 
+	@Override
 	public List<String> list(String pattern) throws Exception {
-		List<String> names = new ArrayList<String>();
+		List<String> names = new ArrayList<>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
 			for (String bsn : project.getBsns()) {
@@ -134,11 +140,12 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		return names;
 	}
 
+	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
-		List<Version> versions = new ArrayList<Version>();
+		List<Version> versions = new ArrayList<>();
 		Collection<Project> projects = workspace.getAllProjects();
 		for (Project project : projects) {
-			Map<String,Version> projectVersions = project.getVersions();
+			Map<String, Version> projectVersions = project.getVersions();
 			if (!projectVersions.containsKey(bsn)) {
 				continue;
 			}
@@ -148,19 +155,24 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		if (versions.isEmpty())
 			return SortedList.empty();
 
-		return new SortedList<Version>(versions);
+		return new SortedList<>(versions);
 	}
 
+	@Override
 	public String getName() {
-		return "Workspace " + workspace.getBase().getName();
+		return "Workspace " + workspace.getBase()
+			.getName();
 	}
 
+	@Override
 	public String getLocation() {
-		return workspace.getBase().getAbsolutePath();
+		return workspace.getBase()
+			.getAbsolutePath();
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	@Override
+	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		File file = get(bsn, version.toString(), Strategy.EXACT, properties);
 		if (file == null)
 			return null;
@@ -174,16 +186,19 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 		return file;
 	}
 
-	public Map<String,Runnable> actions(Object... target) throws Exception {
+	@Override
+	public Map<String, Runnable> actions(Object... target) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public String tooltip(Object... target) throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
+	@Override
 	public String title(Object... target) throws Exception {
 		// TODO Auto-generated method stub
 		return null;

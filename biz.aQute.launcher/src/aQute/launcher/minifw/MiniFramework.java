@@ -33,12 +33,12 @@ import org.osgi.framework.launch.Framework;
 public class MiniFramework implements Framework, Bundle, BundleContext {
 	ClassLoader			loader;
 	Properties			properties;
-	Map<Long,Bundle>	bundles	= new HashMap<Long,Bundle>();
+	Map<Long, Bundle>	bundles	= new HashMap<>();
 	int					ID		= 0;
 	int					state	= Bundle.INSTALLED;
 	ClassLoader			last;
 
-	public MiniFramework(Map<Object,Object> properties) {
+	public MiniFramework(Map<Object, Object> properties) {
 		this.properties = new Properties(System.getProperties());
 		this.properties.putAll(properties);
 
@@ -89,12 +89,12 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	@Override
-	public Dictionary<String,String> getHeaders() {
-		return new Hashtable<String,String>();
+	public Dictionary<String, String> getHeaders() {
+		return new Hashtable<>();
 	}
 
 	@Override
-	public Dictionary<String,String> getHeaders(String locale) {
+	public Dictionary<String, String> getHeaders(String locale) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -139,7 +139,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	@Override
-	public Class< ? > loadClass(String name) throws ClassNotFoundException {
+	public Class<?> loadClass(String name) throws ClassNotFoundException {
 		return loader.loadClass(name);
 	}
 
@@ -172,7 +172,8 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	@Override
 	public Bundle[] getBundles() {
-		return bundles.values().toArray(new Bundle[0]);
+		return bundles.values()
+			.toArray(new Bundle[0]);
 	}
 
 	@Override
@@ -215,9 +216,9 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 				URL url = new URL(location);
 			} catch (MalformedURLException e) {
 				throw new BundleException(
-						"For the mini framework, the location must be a proper URL even though this is not required by the specification "
-								+ location,
-						e);
+					"For the mini framework, the location must be a proper URL even though this is not required by the specification "
+						+ location,
+					e);
 			}
 			c = new Context(this, last, ++ID, location);
 			bundles.put(Long.valueOf(c.id), c);
@@ -244,7 +245,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	@Override
-	public Map<X509Certificate,List<X509Certificate>> getSignerCertificates(int signersType) {
+	public Map<X509Certificate, List<X509Certificate>> getSignerCertificates(int signersType) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -325,7 +326,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 
 	class Loader extends ClassLoader {
 		@Override
-		public Class< ? > findClass(String name) throws ClassNotFoundException {
+		public Class<?> findClass(String name) throws ClassNotFoundException {
 			for (Bundle b : bundles.values()) {
 				try {
 					return b.loadClass(name);
@@ -352,7 +353,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 		return null;
 	}
 
-	public <S> ServiceRegistration registerService(Class<S> clazz, S service, Dictionary<String, ? > properties) {
+	public <S> ServiceRegistration registerService(Class<S> clazz, S service, Dictionary<String, ?> properties) {
 		return null;
 	}
 
@@ -361,7 +362,7 @@ public class MiniFramework implements Framework, Bundle, BundleContext {
 	}
 
 	public <S> Collection<ServiceReference> getServiceReferences(Class<S> clazz, String filter)
-			throws InvalidSyntaxException {
+		throws InvalidSyntaxException {
 		return null;
 	}
 

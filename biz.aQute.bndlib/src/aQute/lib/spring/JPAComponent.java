@@ -19,7 +19,7 @@ public class JPAComponent extends XMLTypeProcessor {
 
 	@Override
 	protected List<XMLType> getTypes(Analyzer analyzer) throws Exception {
-		List<XMLType> types = new ArrayList<XMLType>();
+		List<XMLType> types = new ArrayList<>();
 		process(types, "jpa.xsl", "META-INF", "persistence.xml");
 		return types;
 	}

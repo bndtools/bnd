@@ -59,7 +59,7 @@ public class ClassDataCollector {
 	 * @throws Exception
 	 */
 	public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags)
-			throws Exception {}
+		throws Exception {}
 
 	public void signature(String signature) {}
 

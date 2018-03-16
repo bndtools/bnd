@@ -11,12 +11,12 @@ import aQute.lib.hex.Hex;
 public class ArrayHandler extends Handler {
 	Type componentType;
 
-	ArrayHandler(@SuppressWarnings("unused") Class< ? > rawClass, Type componentType) {
+	ArrayHandler(@SuppressWarnings("unused") Class<?> rawClass, Type componentType) {
 		this.componentType = componentType;
 	}
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws IOException, Exception {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
 
 		// Byte arrays should not be treated as arrays. We treat them
 		// as hex strings
@@ -43,7 +43,7 @@ public class ArrayHandler extends Handler {
 
 	@Override
 	public Object decodeArray(Decoder r) throws Exception {
-		ArrayList<Object> list = new ArrayList<Object>();
+		ArrayList<Object> list = new ArrayList<>();
 		r.codec.parseArray(list, componentType, r);
 		Object array = Array.newInstance(r.codec.getRawClass(componentType), list.size());
 		int n = 0;

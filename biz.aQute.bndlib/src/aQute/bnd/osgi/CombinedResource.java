@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CombinedResource extends WriteResource {
-	final List<Resource>	resources		= new ArrayList<Resource>();
+	final List<Resource>	resources		= new ArrayList<>();
 	long					lastModified	= 0;
 
 	@Override

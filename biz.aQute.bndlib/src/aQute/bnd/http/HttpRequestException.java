@@ -13,7 +13,7 @@ public class HttpRequestException extends RuntimeException {
 
 	public HttpRequestException(HttpURLConnection conn) throws IOException {
 		super(conn.getURL() + ":" + conn.getResponseCode() + ":" + conn.getResponseMessage() == null ? getMessage(conn)
-				: conn.getResponseMessage());
+			: conn.getResponseMessage());
 		this.responseCode = conn.getResponseCode();
 	}
 

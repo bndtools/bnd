@@ -24,13 +24,13 @@ public class RepoTreeTest extends TestCase {
 
 		when(a.getName()).thenReturn("a");
 		when(a.list(null)).thenReturn(Arrays.asList("a", "b"));
-		when(a.versions("a")).thenReturn(new SortedList<Version>(new Version("1"), new Version("2")));
-		when(a.versions("b")).thenReturn(new SortedList<Version>(new Version("2"), new Version("3")));
+		when(a.versions("a")).thenReturn(new SortedList<>(new Version("1"), new Version("2")));
+		when(a.versions("b")).thenReturn(new SortedList<>(new Version("2"), new Version("3")));
 
 		when(b.getName()).thenReturn("b");
 		when(b.list(null)).thenReturn(Arrays.asList("b", "c"));
-		when(b.versions("b")).thenReturn(new SortedList<Version>(new Version("1"), new Version("2")));
-		when(b.versions("c")).thenReturn(new SortedList<Version>(new Version("2"), new Version("3")));
+		when(b.versions("b")).thenReturn(new SortedList<>(new Version("1"), new Version("2")));
+		when(b.versions("c")).thenReturn(new SortedList<>(new Version("2"), new Version("3")));
 
 		Tree ta = RepositoryElement.getTree(a);
 		Tree tb = RepositoryElement.getTree(b);
@@ -39,24 +39,42 @@ public class RepoTreeTest extends TestCase {
 		print(diff, 0);
 
 		assertEquals(Delta.MAJOR, diff.getDelta());
-		assertEquals(Type.PROGRAM, diff.get("a").getType());
-		assertEquals(Type.VERSION, diff.get("a").get("1.0.0").getType());
-		assertEquals(Delta.ADDED, diff.get("a").get("1.0.0").getDelta());
-		assertEquals(Delta.ADDED, diff.get("a").get("2.0.0").getDelta());
+		assertEquals(Type.PROGRAM, diff.get("a")
+			.getType());
+		assertEquals(Type.VERSION, diff.get("a")
+			.get("1.0.0")
+			.getType());
+		assertEquals(Delta.ADDED, diff.get("a")
+			.get("1.0.0")
+			.getDelta());
+		assertEquals(Delta.ADDED, diff.get("a")
+			.get("2.0.0")
+			.getDelta());
 
-		assertEquals(Delta.REMOVED, diff.get("b").get("1.0.0").getDelta());
-		assertEquals(Delta.UNCHANGED, diff.get("b").get("2.0.0").getDelta());
-		assertEquals(Delta.ADDED, diff.get("b").get("3.0.0").getDelta());
+		assertEquals(Delta.REMOVED, diff.get("b")
+			.get("1.0.0")
+			.getDelta());
+		assertEquals(Delta.UNCHANGED, diff.get("b")
+			.get("2.0.0")
+			.getDelta());
+		assertEquals(Delta.ADDED, diff.get("b")
+			.get("3.0.0")
+			.getDelta());
 
-		assertEquals(Delta.REMOVED, diff.get("c").getDelta());
-		assertEquals(Delta.REMOVED, diff.get("c").get("2.0.0").getDelta());
-		assertEquals(Delta.REMOVED, diff.get("c").get("3.0.0").getDelta());
+		assertEquals(Delta.REMOVED, diff.get("c")
+			.getDelta());
+		assertEquals(Delta.REMOVED, diff.get("c")
+			.get("2.0.0")
+			.getDelta());
+		assertEquals(Delta.REMOVED, diff.get("c")
+			.get("3.0.0")
+			.getDelta());
 
 	}
 
 	static void print(Diff diff, int n) {
 		System.out.println("                            ".substring(0, n) + diff.getName() + " " + diff.getType() + "  "
-				+ diff.getDelta());
+			+ diff.getDelta());
 		for (Diff c : diff.getChildren()) {
 			print(c, n + 1);
 		}

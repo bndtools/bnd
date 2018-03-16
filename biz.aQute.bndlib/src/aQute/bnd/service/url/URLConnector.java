@@ -11,7 +11,7 @@ public interface URLConnector {
 	 * 
 	 * @param url
 	 * @throws IOException
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	InputStream connect(URL url) throws IOException, Exception;
 

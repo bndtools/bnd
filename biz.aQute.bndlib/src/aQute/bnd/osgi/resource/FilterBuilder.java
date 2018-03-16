@@ -8,7 +8,10 @@ import org.osgi.framework.VersionRange;
 public class FilterBuilder {
 
 	public enum Operator {
-		EQ("="), APPROX("~="), GE(">="), LE("<=");
+		EQ("="),
+		APPROX("~="),
+		GE(">="),
+		LE("<=");
 
 		String name;
 
@@ -17,10 +20,9 @@ public class FilterBuilder {
 		}
 	}
 
-
 	static class Sub {
-		Sub			previous;
-		String		op;
+		Sub				previous;
+		String			op;
 		List<Object>	members	= new ArrayList<>();
 
 		public Sub(String op, Sub current) {
@@ -28,15 +30,18 @@ public class FilterBuilder {
 			this.previous = current;
 		}
 
+		@Override
 		public String toString() {
 			if (members.isEmpty())
 				return "";
 
 			if (!op.equals("!") && members.size() == 1)
-				return members.get(0).toString();
+				return members.get(0)
+					.toString();
 
 			StringBuilder sb = new StringBuilder();
-			sb.append("(").append(op);
+			sb.append("(")
+				.append(op);
 			for (Object top : members) {
 				sb.append(top);
 			}
@@ -156,6 +161,7 @@ public class FilterBuilder {
 		return sb.toString();
 	}
 
+	@Override
 	public String toString() {
 		return current.toString();
 	}
@@ -181,7 +187,6 @@ public class FilterBuilder {
 		return this;
 	}
 
-
 	public FilterBuilder in(String key, aQute.bnd.version.VersionRange range) {
 		and();
 
@@ -200,7 +205,7 @@ public class FilterBuilder {
 	}
 
 	public void endAnd() {
-		if ( !current.op.equals("&"))
+		if (!current.op.equals("&"))
 			throw new IllegalStateException("Expected an & but had " + current.op);
 		end();
 	}

@@ -15,10 +15,13 @@ public class LibDirectiveTest extends TestCase {
 			b.set("-includeresource", "lib/=jar/asm.jar;lib:=true");
 			b.build();
 			assertTrue(b.check());
-			Manifest m = b.getJar().getManifest();
+			Manifest m = b.getJar()
+				.getManifest();
 
-			assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH));
-			assertEquals(".,lib/asm.jar", m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH));
+			assertNotNull(m.getMainAttributes()
+				.getValue(Constants.BUNDLE_CLASSPATH));
+			assertEquals(".,lib/asm.jar", m.getMainAttributes()
+				.getValue(Constants.BUNDLE_CLASSPATH));
 		} finally {
 			b.close();
 		}
@@ -30,10 +33,13 @@ public class LibDirectiveTest extends TestCase {
 			b.set("-includeresource", "lib/=jar/asm.jar;lib:=true");
 			b.build();
 			assertTrue(b.check());
-			Manifest m = b.getJar().getManifest();
+			Manifest m = b.getJar()
+				.getManifest();
 
-			assertNotNull(m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH));
-			assertEquals(".,lib/asm.jar", m.getMainAttributes().getValue(Constants.BUNDLE_CLASSPATH));
+			assertNotNull(m.getMainAttributes()
+				.getValue(Constants.BUNDLE_CLASSPATH));
+			assertEquals(".,lib/asm.jar", m.getMainAttributes()
+				.getValue(Constants.BUNDLE_CLASSPATH));
 		} finally {
 			b.close();
 		}

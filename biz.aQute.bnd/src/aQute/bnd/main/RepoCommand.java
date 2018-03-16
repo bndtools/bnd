@@ -62,12 +62,12 @@ import aQute.libg.glob.Glob;
 
 public class RepoCommand {
 	private final static Logger	logger	= LoggerFactory.getLogger(RepoCommand.class);
-	final static JSONCodec codec = new JSONCodec();
+	final static JSONCodec		codec	= new JSONCodec();
 
 	@Description("Access to the repositories. Provides a number of sub commands to manipulate the repository "
-			+ "(see repo help) that provide access to the installed repos for the current project.")
+		+ "(see repo help) that provide access to the installed repos for the current project.")
 	@Arguments(arg = {
-			"sub-cmd", "..."
+		"sub-cmd", "..."
 	})
 	interface repoOptions extends Options {
 		@Description("Workspace (a standalone bndrun file or a sbdirectory of a workspace (default is the cwd)")
@@ -94,7 +94,7 @@ public class RepoCommand {
 	final bnd						bnd;
 	final repoOptions				opts;
 	final RepositoryPlugin			writable;
-	final List<RepositoryPlugin>	repos	= new ArrayList<RepositoryPlugin>();
+	final List<RepositoryPlugin>	repos	= new ArrayList<>();
 	final Workspace					workspace;
 
 	/**
@@ -141,7 +141,8 @@ public class RepoCommand {
 			Project p = bnd.getProject(opts.project());
 
 			if (p != null) {
-				repos.addAll(p.getWorkspace().getRepositories());
+				repos.addAll(p.getWorkspace()
+					.getRepositories());
 			} else {
 				Workspace w = bnd.getWorkspace((File) null);
 				if (w != null) {
@@ -157,11 +158,14 @@ public class RepoCommand {
 			RepositoryPlugin rpp = rp.next();
 
 			// Check for the cache
-			if (!opts.cache() && rpp.getName().equals("cache")) {
+			if (!opts.cache() && rpp.getName()
+				.equals("cache")) {
 				rp.remove();
 			}
 			if (w == null && rpp.canWrite()) {
-				if (opts.release() == null || opts.release().matcher(rpp.getName()).matches())
+				if (opts.release() == null || opts.release()
+					.matcher(rpp.getName())
+					.matches())
 					w = rpp;
 			}
 		}
@@ -175,7 +179,8 @@ public class RepoCommand {
 		} else {
 			// Other commands
 			String cmd = args.remove(0);
-			String help = opts._command().execute(this, cmd, args);
+			String help = opts._command()
+				.execute(this, cmd, args);
 			if (help != null) {
 				bnd.out.print(help);
 			}
@@ -200,7 +205,9 @@ public class RepoCommand {
 				// Ignore
 			}
 			bnd.out.printf("%03d: %-20s %4s %-20s %s%n", n++, repo.getName(), repo.canWrite() ? "r/w" : "r/o",
-					Descriptors.getShortName(repo.getClass().getName()), location);
+				Descriptors.getShortName(repo.getClass()
+					.getName()),
+				location);
 		}
 	}
 
@@ -224,7 +231,7 @@ public class RepoCommand {
 	@Description("List all artifacts from the current repositories with their versions")
 	public void _list(listOptions opts) throws Exception {
 		logger.debug("list");
-		Set<String> bsns = new HashSet<String>();
+		Set<String> bsns = new HashSet<>();
 		Instruction from = opts.from();
 		if (from == null)
 			from = new Instruction("*");
@@ -235,9 +242,9 @@ public class RepoCommand {
 		}
 		logger.debug("list {}", bsns);
 
-		for (String bsn : new SortedList<String>(bsns)) {
+		for (String bsn : new SortedList<>(bsns)) {
 			if (!opts.noversions()) {
-				Set<Version> versions = new TreeSet<Version>();
+				Set<Version> versions = new TreeSet<>();
 				for (RepositoryPlugin repo : repos) {
 					logger.debug("get {} from {}", bsn, repo);
 					if (from.matches(repo.getName())) {
@@ -255,7 +262,7 @@ public class RepoCommand {
 
 	@Description("Get an artifact from a repository.")
 	@Arguments(arg = {
-			"bsn", "[range]"
+		"bsn", "[range]"
 	})
 	interface getOptions extends Options {
 		@Description("Where to store the artifact")
@@ -295,7 +302,7 @@ public class RepoCommand {
 		}
 
 		VersionRange r = new VersionRange(range == null ? "0" : range);
-		Map<Version,RepositoryPlugin> index = new HashMap<Version,RepositoryPlugin>();
+		Map<Version, RepositoryPlugin> index = new HashMap<>();
 
 		for (RepositoryPlugin repo : repos) {
 			if (from.matches(repo.getName())) {
@@ -308,7 +315,7 @@ public class RepoCommand {
 			}
 		}
 
-		SortedList<Version> l = new SortedList<Version>(index.keySet());
+		SortedList<Version> l = new SortedList<>(index.keySet());
 		if (l.isEmpty()) {
 			bnd.out.printf("No versions found for %s%n", bsn);
 			return;
@@ -345,7 +352,7 @@ public class RepoCommand {
 
 	@Description("Put an artifact into the repository after it has been verified.")
 	@Arguments(arg = {
-			"<jar>..."
+		"<jar>..."
 	})
 	interface putOptions extends Options {
 		@Description("Put in repository even if verification fails (actually, no verification is done).")
@@ -401,9 +408,9 @@ public class RepoCommand {
 
 				if (bnd.isOk()) {
 					PutResult r = writable.put(new BufferedInputStream(IO.stream(file)),
-							new RepositoryPlugin.PutOptions());
+						new RepositoryPlugin.PutOptions());
 					logger.debug("put {} in {} ({}) into {}", source, writable.getName(), writable.getLocation(),
-							r.artifact);
+						r.artifact);
 				}
 			}
 			if (delete)
@@ -412,11 +419,11 @@ public class RepoCommand {
 	}
 
 	@Arguments(arg = {
-			"newer repo", "[older repo]"
+		"newer repo", "[older repo]"
 	})
 	@Description("Show the diff tree of a single repo or compare 2  repos. A diff tree is a "
-			+ "detailed tree of all aspects of a bundle, including its packages, types, methods, "
-			+ "fields, and modifiers.")
+		+ "detailed tree of all aspects of a bundle, including its packages, types, methods, "
+		+ "fields, and modifiers.")
 	interface diffOptions extends Options {
 		@Description("Serialize to JSON")
 		boolean json();
@@ -460,23 +467,25 @@ public class RepoCommand {
 		Tree tNewer = RepositoryElement.getTree(rnewer);
 		if (rolder == null) {
 			if (options.json())
-				codec.enc().to(pw).put(tNewer.serialize()).flush();
+				codec.enc()
+					.to(pw)
+					.put(tNewer.serialize())
+					.flush();
 			else
 				DiffCommand.show(pw, tNewer, 0);
 		} else {
 			Tree tOlder = RepositoryElement.getTree(rolder);
 			Diff diff = new DiffImpl(tNewer, tOlder);
-			MultiMap<String,String> map = new MultiMap<String,String>();
+			MultiMap<String, String> map = new MultiMap<>();
 			for (Diff bsn : diff.getChildren()) {
 
 				for (Diff version : bsn.getChildren()) {
 					if (version.getDelta() == Delta.UNCHANGED)
 						continue;
 
-					if (options.remove() == false && options.added() == false
-							|| (options.remove() //
-									&& version.getDelta() == Delta.REMOVED)
-							|| (options.added() && version.getDelta() == Delta.ADDED)) {
+					if (options.remove() == false && options.added() == false || (options.remove() //
+						&& version.getDelta() == Delta.REMOVED)
+						|| (options.added() && version.getDelta() == Delta.ADDED)) {
 
 						map.add(bsn.getName(), version.getName());
 					}
@@ -484,7 +493,10 @@ public class RepoCommand {
 			}
 
 			if (options.json())
-				codec.enc().to(pw).put(map).flush();
+				codec.enc()
+					.to(pw)
+					.put(map)
+					.flush();
 			else if (!options.diff())
 				bnd.printMultiMap(map);
 			else
@@ -495,7 +507,8 @@ public class RepoCommand {
 
 	private RepositoryPlugin findRepo(String name) {
 		for (RepositoryPlugin repo : repos) {
-			if (repo.getName().equals(name))
+			if (repo.getName()
+				.equals(name))
 				return repo;
 		}
 		return null;
@@ -525,8 +538,9 @@ public class RepoCommand {
 
 	@Description("Displays a list of versions for a given bsn that can be found in the current repositories.")
 	public void _versions(VersionsOptions opts) throws Exception {
-		TreeSet<Version> versions = new TreeSet<Version>();
-		String bsn = opts._arguments().remove(0);
+		TreeSet<Version> versions = new TreeSet<>();
+		String bsn = opts._arguments()
+			.remove(0);
 		for (RepositoryPlugin repo : repos) {
 			versions.addAll(repo.versions(bsn));
 		}
@@ -537,7 +551,7 @@ public class RepoCommand {
 	 * Copy
 	 */
 	@Arguments(arg = {
-			"source", "dest"
+		"source", "dest"
 	})
 	interface CopyOptions extends projectOptions {
 
@@ -582,7 +596,7 @@ public class RepoCommand {
 			public byte[]	digest;
 		}
 
-		List<Spec> sources = new ArrayList<Spec>();
+		List<Spec> sources = new ArrayList<>();
 
 		//
 		// Get the repo contents, using background downloads
@@ -621,7 +635,8 @@ public class RepoCommand {
 			if (!src.isFile()) {
 				bnd.error("Not a valid file %s", spec.src.getFile());
 			}
-			spec.digest = SHA1.digest(src).digest();
+			spec.digest = SHA1.digest(src)
+				.digest();
 		}
 
 		//
@@ -673,7 +688,7 @@ public class RepoCommand {
 
 	@Description("Create a POM out of a bnd repository")
 	@Arguments(arg = {
-			"repo", "name"
+		"repo", "name"
 	})
 	interface PomOptions extends Options {
 

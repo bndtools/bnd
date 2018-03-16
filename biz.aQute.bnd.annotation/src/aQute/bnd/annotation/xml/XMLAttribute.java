@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
-		ElementType.ANNOTATION_TYPE
+	ElementType.ANNOTATION_TYPE
 })
 public @interface XMLAttribute {
 
@@ -67,7 +67,7 @@ public @interface XMLAttribute {
 	 * @return array of applicable xml namespaces
 	 */
 	String[] embedIn() default {
-			"*"
+		"*"
 	};
 
 	/**

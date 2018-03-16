@@ -15,8 +15,8 @@ import aQute.bnd.build.Workspace;
 
 public class DeployTask extends BaseTask {
 	private final static Logger	logger		= LoggerFactory.getLogger(DeployTask.class);
-	private String	deployRepo	= null;
-	List<FileSet>	filesets	= new ArrayList<FileSet>();
+	private String				deployRepo	= null;
+	List<FileSet>				filesets	= new ArrayList<>();
 
 	@Override
 	public void execute() throws BuildException {
@@ -33,7 +33,8 @@ public class DeployTask extends BaseTask {
 				for (int i = 0; i < files.length; i++) {
 					File file = new File(ds.getBasedir(), files[i]);
 					try {
-						if (file.isFile() && file.getName().endsWith(".jar")) {
+						if (file.isFile() && file.getName()
+							.endsWith(".jar")) {
 							if (deployRepo != null)
 								project.deploy(deployRepo, file);
 							else
@@ -46,7 +47,8 @@ public class DeployTask extends BaseTask {
 				}
 			}
 			report(project);
-			if (project.getErrors().size() > 0)
+			if (project.getErrors()
+				.size() > 0)
 				throw new BuildException("Deploy failed");
 		} catch (Throwable t) {
 			t.printStackTrace();

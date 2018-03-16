@@ -10,21 +10,21 @@ import java.util.regex.Pattern;
 
 public class Strings {
 
-	public static String join(String middle, Iterable< ? > objects) {
+	public static String join(String middle, Iterable<?> objects) {
 		return join(middle, objects, null, null);
 	}
 
-	public static String join(Iterable< ? > objects) {
+	public static String join(Iterable<?> objects) {
 		return join(",", objects, null, null);
 	}
 
-	public static String join(String middle, Iterable< ? > objects, Pattern pattern, String replace) {
+	public static String join(String middle, Iterable<?> objects, Pattern pattern, String replace) {
 		StringBuilder sb = new StringBuilder();
 		join(sb, middle, objects, pattern, replace);
 		return sb.toString();
 	}
 
-	public static void join(StringBuilder sb, String middle, Iterable< ? > objects, Pattern pattern, String replace) {
+	public static void join(StringBuilder sb, String middle, Iterable<?> objects, Pattern pattern, String replace) {
 		String del = "";
 		if (objects == null)
 			return;
@@ -98,19 +98,25 @@ public class Strings {
 		return s.substring(start, end);
 	}
 
+	private final static Pattern LIST_SPLITTER_PATTERN = Pattern.compile("\\s*,\\s*");
+
 	public static List<String> split(String s) {
-		return split("\\s*,\\s*", s);
+		if (s == null || (s = s.trim()).isEmpty())
+			return new ArrayList<>();
+		return toList(LIST_SPLITTER_PATTERN.split(s, 0));
 	}
 
 	public static List<String> split(String regex, String s) {
-		if (s == null)
-			return Collections.emptyList();
+		if (s == null || (s = s.trim()).isEmpty())
+			return new ArrayList<>();
+		return toList(s.split(regex, 0));
+	}
 
-		String[] split = s.split(regex);
-		List<String> l = new ArrayList<String>(split.length);
-		for (int i = 0; i < split.length; i++)
-			l.add(split[i]);
-		return l;
+	@SafeVarargs
+	private static <T> List<T> toList(T... array) {
+		List<T> list = new ArrayList<>(array.length);
+		Collections.addAll(list, array);
+		return list;
 	}
 
 	public static boolean in(String[] skip, String key) {
@@ -306,7 +312,8 @@ public class Strings {
 		if (object == null) {
 			return null;
 		}
-		if (object.getClass().isArray()) {
+		if (object.getClass()
+			.isArray()) {
 			return Arrays.toString(makePrintableArray(object));
 		}
 		return object;

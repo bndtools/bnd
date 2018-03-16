@@ -6,9 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.service.progress.ProgressPlugin;
+
 public class LoggingProgressPlugin implements ProgressPlugin {
 
-	private final static Logger	logger	= LoggerFactory.getLogger(LoggingProgressPlugin.class);
+	private final static Logger logger = LoggerFactory.getLogger(LoggingProgressPlugin.class);
 
 	@Override
 	public Task startTask(final String name, final int size) {

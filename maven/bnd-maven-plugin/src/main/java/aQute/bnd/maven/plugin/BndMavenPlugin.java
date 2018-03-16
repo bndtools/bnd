@@ -28,6 +28,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
@@ -36,6 +38,8 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -68,38 +72,38 @@ import aQute.service.reporter.Report.Location;
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
 	private static final Logger						logger					= LoggerFactory
-			.getLogger(BndMavenPlugin.class);
+		.getLogger(BndMavenPlugin.class);
 	private static final String						MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
 	private static final String						MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
-	private static final String	PACKAGING_POM	= "pom";
-	private static final String	TSTAMP			= "${tstamp}";
+	private static final String						PACKAGING_POM			= "pom";
+	private static final String						TSTAMP					= "${tstamp}";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	private File				targetDir;
+	private File									targetDir;
 
 	@Parameter(defaultValue = "${project.build.sourceDirectory}", readonly = true)
-	private File				sourceDir;
+	private File									sourceDir;
 
 	@Parameter(defaultValue = "${project.build.resources}", readonly = true)
 	private List<org.apache.maven.model.Resource>	resources;
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
-	private File				classesDir;
+	private File									classesDir;
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF", readonly = true)
-	private File				manifestPath;
+	private File									manifestPath;
 
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
-	private MavenProject		project;
+	private MavenProject							project;
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
-	private Settings			settings;
+	private Settings								settings;
 
 	@Parameter(defaultValue = "${mojoExecution}", readonly = true)
 	private MojoExecution							mojoExecution;
 
 	@Parameter(property = "bnd.skip", defaultValue = "false")
-    private boolean				skip;
+	private boolean									skip;
 
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
@@ -129,10 +133,11 @@ public class BndMavenPlugin extends AbstractMojo {
 	private String									bnd;
 
 	@Component
-	private BuildContext		buildContext;
+	private BuildContext							buildContext;
 
 	private File									propertiesFile;
 
+	@Override
 	public void execute() throws MojoExecutionException {
 		if (skip) {
 			logger.debug("skip project as configured");
@@ -156,11 +161,11 @@ public class BndMavenPlugin extends AbstractMojo {
 			builder.setTrace(logger.isDebugEnabled());
 
 			builder.setBase(project.getBasedir());
-			propertiesFile = loadProjectProperties(builder, project);
+			propertiesFile = loadProperties(builder);
 			builder.setProperty("project.output", targetDir.getCanonicalPath());
 
 			// If no bundle to be built, we have nothing to do
-			if (Builder.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
+			if (Processor.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
 				logger.debug(Constants.NOBUNDLES + ": true");
 				return;
 			}
@@ -190,7 +195,8 @@ public class BndMavenPlugin extends AbstractMojo {
 			Set<Artifact> artifacts = project.getArtifacts();
 			List<Object> buildpath = new ArrayList<Object>(artifacts.size());
 			for (Artifact artifact : artifacts) {
-				File cpe = artifact.getFile().getCanonicalFile();
+				File cpe = artifact.getFile()
+					.getCanonicalFile();
 				if (!cpe.exists()) {
 					logger.debug("dependency {} does not exist", cpe);
 					continue;
@@ -201,7 +207,8 @@ public class BndMavenPlugin extends AbstractMojo {
 					builder.updateModified(cpeJar.lastModified(), cpe.getPath());
 					buildpath.add(cpeJar);
 				} else {
-					if (!artifact.getType().equals("jar")) {
+					if (!artifact.getType()
+						.equals("jar")) {
 						/*
 						 * Check if it is a valid zip file. We don't create a
 						 * Jar object here because we want to avoid the cost of
@@ -248,7 +255,8 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 			// Set Bundle-Version
 			if (builder.getProperty(Constants.BUNDLE_VERSION) == null) {
-				Version version = MavenVersion.parseString(project.getVersion()).getOSGiVersion();
+				Version version = MavenVersion.parseString(project.getVersion())
+					.getOSGiVersion();
 				builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
 				if (builder.getProperty(Constants.SNAPSHOT) == null) {
 					builder.setProperty(Constants.SNAPSHOT, TSTAMP);
@@ -258,7 +266,8 @@ public class BndMavenPlugin extends AbstractMojo {
 			logger.debug("builder properties: {}", builder.getProperties());
 			logger.debug("builder delta: {}", delta);
 
-			if (delta || (builder.getJar() == null) || (builder.lastModified() > builder.getJar().lastModified())) {
+			if (delta || (builder.getJar() == null) || (builder.lastModified() > builder.getJar()
+				.lastModified())) {
 				// Set builder paths
 				builder.setClasspath(buildpath);
 				builder.setSourcepath(sourcepath.toArray(new File[0]));
@@ -281,28 +290,54 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 	}
 
-	private File loadProjectProperties(Builder builder, MavenProject project) throws Exception {
+	private File loadProperties(Builder builder) throws Exception {
 		// Load parent project properties first
-		MavenProject parentProject = project.getParent();
-		if (parentProject != null) {
-			loadProjectProperties(builder, parentProject);
+		loadParentProjectProperties(builder, project);
+
+		// Load current project properties
+		Xpp3Dom configuration = Optional.ofNullable(project.getBuildPlugins())
+			.flatMap(this::getConfiguration)
+			.orElseGet(this::defaultConfiguration);
+		return loadProjectProperties(builder, project, project, configuration);
+	}
+
+	private void loadParentProjectProperties(Builder builder, MavenProject currentProject) throws Exception {
+		MavenProject parentProject = currentProject.getParent();
+		if (parentProject == null) {
+			return;
+		}
+		loadParentProjectProperties(builder, parentProject);
+
+		// Get configuration from parent project
+		Xpp3Dom configuration = Optional.ofNullable(parentProject.getBuildPlugins())
+			.flatMap(this::getConfiguration)
+			.orElse(null);
+		if (configuration != null) {
+			// Load parent project's properties
+			loadProjectProperties(builder, parentProject, parentProject, configuration);
+			return;
 		}
 
-		// Merge in current project properties
-		Xpp3Dom configuration = project.getGoalConfiguration("biz.aQute.bnd", "bnd-maven-plugin",
-				mojoExecution.getExecutionId(), mojoExecution.getGoal());
-		File baseDir = project.getBasedir();
+		// Get configuration in project's pluginManagement
+		configuration = Optional.ofNullable(currentProject.getPluginManagement())
+			.map(PluginManagement::getPlugins)
+			.flatMap(this::getConfiguration)
+			.orElseGet(this::defaultConfiguration);
+		// Load properties from parent project's bnd file or configuration in
+		// project's pluginManagement
+		loadProjectProperties(builder, parentProject, currentProject, configuration);
+	}
+
+	private File loadProjectProperties(Builder builder, MavenProject bndProject, MavenProject pomProject,
+		Xpp3Dom configuration) throws Exception {
+		// check for bnd file configuration
+		File baseDir = bndProject.getBasedir();
 		if (baseDir != null) { // file system based pom
-			File pomFile = project.getFile();
+			File pomFile = bndProject.getFile();
 			builder.updateModified(pomFile.lastModified(), "POM: " + pomFile);
 			// check for bnd file
-			String bndFileName = Project.BNDFILE;
-			if (configuration != null) {
-				Xpp3Dom bndfileElement = configuration.getChild("bndfile");
-				if (bndfileElement != null) {
-					bndFileName = bndfileElement.getValue();
-				}
-			}
+			Xpp3Dom bndfileElement = configuration.getChild("bndfile");
+			String bndFileName = (bndfileElement != null) ? bndfileElement.getValue() : Project.BNDFILE;
 			File bndFile = IO.getFile(baseDir, bndFileName);
 			if (bndFile.isFile()) {
 				logger.debug("loading bnd properties from file: {}", bndFile);
@@ -312,23 +347,44 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 			// no bnd file found, so we fall through
 		}
+
 		// check for bnd-in-pom configuration
-		if (configuration != null) {
-			Xpp3Dom bndElement = configuration.getChild("bnd");
-			if (bndElement != null) {
-				logger.debug("loading bnd properties from bnd element in pom: {}", project);
-				UTF8Properties properties = new UTF8Properties();
-				properties.load(bndElement.getValue(), project.getFile(), builder);
-				if (baseDir != null) {
-					String here = baseDir.toURI().getPath();
-					here = Matcher.quoteReplacement(here.substring(0, here.length() - 1));
-					properties = properties.replaceAll("\\$\\{\\.\\}", here);
-				}
-				// we use setProperties to handle -include
-				builder.setProperties(baseDir, properties);
-			}
+		baseDir = pomProject.getBasedir();
+		File pomFile = pomProject.getFile();
+		if (baseDir != null) {
+			builder.updateModified(pomFile.lastModified(), "POM: " + pomFile);
 		}
-		return project.getFile();
+		Xpp3Dom bndElement = configuration.getChild("bnd");
+		if (bndElement != null) {
+			logger.debug("loading bnd properties from bnd element in pom: {}", pomProject);
+			UTF8Properties properties = new UTF8Properties();
+			properties.load(bndElement.getValue(), pomFile, builder);
+			if (baseDir != null) {
+				String here = baseDir.toURI()
+					.getPath();
+				here = Matcher.quoteReplacement(here.substring(0, here.length() - 1));
+				properties = properties.replaceAll("\\$\\{\\.\\}", here);
+			}
+			// we use setProperties to handle -include
+			builder.setProperties(baseDir, properties);
+		}
+		return pomFile;
+	}
+
+	private Optional<Xpp3Dom> getConfiguration(List<Plugin> plugins) {
+		return plugins.stream()
+			.filter(p -> Objects.equals(p.getGroupId(), "biz.aQute.bnd")
+				&& Objects.equals(p.getArtifactId(), "bnd-maven-plugin"))
+			.flatMap(p -> p.getExecutions()
+				.stream())
+			.filter(e -> Objects.equals(e.getId(), mojoExecution.getExecutionId()))
+			.findFirst()
+			.map(e -> (Xpp3Dom) e.getConfiguration())
+			.map(Xpp3Dom::new);
+	}
+
+	private Xpp3Dom defaultConfiguration() {
+		return new Xpp3Dom("configuration");
 	}
 
 	private void reportErrorsAndWarnings(Builder builder) throws MojoExecutionException {
@@ -355,7 +411,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			File f = location.file == null ? propertiesFile : new File(location.file);
 			markedFiles.add(f);
 			buildContext.addMessage(f, location.line, location.length, location.message, BuildContext.SEVERITY_WARNING,
-					null);
+				null);
 		}
 		List<String> errors = builder.getErrors();
 		for (String error : errors) {
@@ -367,7 +423,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			File f = location.file == null ? propertiesFile : new File(location.file);
 			markedFiles.add(f);
 			buildContext.addMessage(f, location.line, location.length, location.message, BuildContext.SEVERITY_ERROR,
-					null);
+				null);
 		}
 		buildContext.setValue(MARKED_FILES, markedFiles);
 		if (!builder.isOk()) {
@@ -386,7 +442,8 @@ public class BndMavenPlugin extends AbstractMojo {
 		dir = dir.getAbsoluteFile();
 		Files.createDirectories(dir.toPath());
 
-		for (Map.Entry<String,Resource> entry : jar.getResources().entrySet()) {
+		for (Map.Entry<String, Resource> entry : jar.getResources()
+			.entrySet()) {
 			File outFile = getFile(dir, entry.getKey());
 			Resource resource = entry.getValue();
 			// Skip the copy if the source and target are the same file
@@ -401,11 +458,12 @@ public class BndMavenPlugin extends AbstractMojo {
 				if (logger.isDebugEnabled()) {
 					if (outFile.exists())
 						logger.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", outFile.lastModified(),
-								outFile));
+							outFile));
 					else
 						logger.debug("Creating '{}'", outFile);
 				}
-				Files.createDirectories(outFile.toPath().getParent());
+				Files.createDirectories(outFile.toPath()
+					.getParent());
 				try (OutputStream out = buildContext.newFileOutputStream(outFile)) {
 					IO.copy(resource.openInputStream(), out);
 				}
@@ -416,11 +474,12 @@ public class BndMavenPlugin extends AbstractMojo {
 			if (logger.isDebugEnabled()) {
 				if (!manifestOutOfDate())
 					logger.debug(String.format("Updating lastModified: %tF %<tT.%<tL '%s'", manifestPath.lastModified(),
-							manifestPath));
+						manifestPath));
 				else
 					logger.debug("Creating '{}'", manifestPath);
 			}
-			Files.createDirectories(manifestPath.toPath().getParent());
+			Files.createDirectories(manifestPath.toPath()
+				.getParent());
 			try (OutputStream manifestOut = buildContext.newFileOutputStream(manifestPath)) {
 				jar.writeManifest(manifestOut);
 			}
@@ -467,7 +526,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			final String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 			Object value = null;
 			try {
-				Class< ? > targetClass = target.getClass();
+				Class<?> targetClass = target.getClass();
 				while (!Modifier.isPublic(targetClass.getModifiers())) {
 					targetClass = targetClass.getSuperclass();
 				}

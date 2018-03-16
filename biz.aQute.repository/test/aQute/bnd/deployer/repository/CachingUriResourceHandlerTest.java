@@ -15,18 +15,18 @@ import test.lib.NanoHTTPD;
 public class CachingUriResourceHandlerTest extends TestCase {
 
 	private static final String	EXPECTED_SHA	= "d0002141a722ef03ecd8fd2e0d3e4d3bc680ba91483cb4962f68a41a12dd01ab"
-			.toUpperCase();
+		.toUpperCase();
 
 	static File					currentDir		= new File(System.getProperty("user.dir"));
 
 	public static void testLoadFromCache() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/1"),
-				new DefaultURLConnector(), (String) null);
+			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/1"),
+			new DefaultURLConnector(), null);
 		File result = handle.request();
 
 		assertEquals(IO.getFile("testdata/httpcache/1/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar")
-				.getAbsolutePath(), result.getAbsolutePath());
+			.getAbsolutePath(), result.getAbsolutePath());
 	}
 
 	public static void testFailedLoadFromRemote() throws Exception {
@@ -34,8 +34,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		File cacheDir = new File(testDirName);
 		URI baseUri = new URI("http://localhost:18083/bundles");
 		URI uri = new URI(baseUri + "/dummybundle.jar");
-		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(),
-				(String) null);
+		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(), null);
 
 		try {
 			handle.request();
@@ -45,13 +44,15 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 			/* cleanup */
 			List<String> cacheFiles = Arrays.asList(cacheDir.list());
-			String uriCacheDir = URLEncoder.encode(baseUri.toURL().toExternalForm(), "UTF-8");
+			String uriCacheDir = URLEncoder.encode(baseUri.toURL()
+				.toExternalForm(), "UTF-8");
 			assert (cacheFiles.size() == 1 || cacheFiles.size() == 2);
 			assert (cacheFiles.contains(uriCacheDir));
 			if (cacheFiles.size() == 2) {
 				assert (cacheFiles.contains(".gitignore"));
 			}
-			IO.getFile(testDirName + "/" + uriCacheDir).delete();
+			IO.getFile(testDirName + "/" + uriCacheDir)
+				.delete();
 		}
 	}
 
@@ -60,14 +61,13 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		File cacheDir = new File(testDirName);
 		URI baseUri = new URI("http://localhost:18083/bundles");
 		URI uri = new URI(baseUri + "/dummybundle.jar");
-		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(),
-				(String) null);
+		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(), null);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
 			File result = handle.request();
 			assertEquals(IO.getFile("testdata/httpcache/3/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar")
-					.getAbsolutePath(), result.getAbsolutePath());
+				.getAbsolutePath(), result.getAbsolutePath());
 
 			File shaFile = new File(result.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
 			assertEquals(EXPECTED_SHA, IO.collect(shaFile));
@@ -77,13 +77,15 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 			/* cleanup */
 			List<String> cacheFiles = Arrays.asList(cacheDir.list());
-			String uriCacheDir = URLEncoder.encode(baseUri.toURL().toExternalForm(), "UTF-8");
+			String uriCacheDir = URLEncoder.encode(baseUri.toURL()
+				.toExternalForm(), "UTF-8");
 			assert (cacheFiles.size() == 1 || cacheFiles.size() == 2);
 			assert (cacheFiles.contains(uriCacheDir));
 			if (cacheFiles.size() == 2) {
 				assert (cacheFiles.contains(".gitignore"));
 			}
-			IO.getFile(testDirName + "/" + uriCacheDir).delete();
+			IO.getFile(testDirName + "/" + uriCacheDir)
+				.delete();
 		} finally {
 			httpd.stop();
 		}
@@ -94,8 +96,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		long cacheTimestamp = cached.lastModified();
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/4"),
-				new DefaultURLConnector(), EXPECTED_SHA);
+			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/4"),
+			new DefaultURLConnector(), EXPECTED_SHA);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
@@ -116,8 +118,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		IO.store("00000000", shaFile);
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/5"),
-				new DefaultURLConnector(), EXPECTED_SHA);
+			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/5"),
+			new DefaultURLConnector(), EXPECTED_SHA);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
@@ -137,7 +139,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		URI baseUri = new URI("http://localhost:18083/bundles");
 		String jarName = "dummybundle.jar";
 		URI uri = new URI(baseUri + "/" + jarName);
-		String uriCacheDir = URLEncoder.encode(baseUri.toURL().toExternalForm(), "UTF-8");
+		String uriCacheDir = URLEncoder.encode(baseUri.toURL()
+			.toExternalForm(), "UTF-8");
 
 		File cached = IO.getFile(testDirName + "/" + uriCacheDir + "/" + jarName);
 		cached.delete();
@@ -146,7 +149,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		shaFile.delete();
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(),
-				EXPECTED_SHA);
+			EXPECTED_SHA);
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
 			File result = handle.request();
@@ -169,8 +172,8 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	public static void testUseCacheWhenRemoteUnavailable() throws Exception {
 		File cached = IO.getFile("testdata/httpcache/7/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
-				new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/7"),
-				new DefaultURLConnector(), (String) null);
+			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/7"),
+			new DefaultURLConnector(), null);
 
 		// whoops where's the server...
 

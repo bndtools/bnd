@@ -37,7 +37,7 @@ import aQute.libg.map.MAP;
 import junit.framework.TestCase;
 
 @SuppressWarnings({
-		"unchecked", "rawtypes"
+	"unchecked", "rawtypes"
 })
 public class ConverterTest extends TestCase {
 	Converter converter = new Converter();
@@ -53,7 +53,8 @@ public class ConverterTest extends TestCase {
 	}
 
 	public void testMap() throws Exception {
-		Map<String,String> map = MAP.$("a", "A").$("b", "2");
+		Map<String, String> map = MAP.$("a", "A")
+			.$("b", "2");
 		M m = converter.convert(M.class, map);
 		assertEquals("A", m.a());
 		assertEquals(2, m.b());
@@ -62,16 +63,17 @@ public class ConverterTest extends TestCase {
 	}
 
 	public void testTypeRef() throws Exception {
-		Map<String,Integer> f;
-		Type type = (new TypeReference<Map<String,Integer>>() {}).getType();
+		Map<String, Integer> f;
+		Type type = (new TypeReference<Map<String, Integer>>() {}).getType();
 		assertTrue(type instanceof ParameterizedType);
 		ParameterizedType ptype = (ParameterizedType) type;
 		assertEquals(Map.class, ptype.getRawType());
 		assertEquals(String.class, ptype.getActualTypeArguments()[0]);
 		assertEquals(Integer.class, ptype.getActualTypeArguments()[1]);
 
-		Map<Integer,String> m = MAP.$(1, "1").$(2, "2");
-		f = converter.convert(new TypeReference<Map<String,Integer>>() {}, m);
+		Map<Integer, String> m = MAP.$(1, "1")
+			.$(2, "2");
+		f = converter.convert(new TypeReference<Map<String, Integer>>() {}, m);
 
 		assertEquals(f.get("1"), (Integer) 1);
 		assertEquals(f.get("2"), (Integer) 2);
@@ -80,6 +82,7 @@ public class ConverterTest extends TestCase {
 	public static void hookTest() throws Exception {
 		Converter converter = new Converter().hook(File.class, new Hook() {
 
+			@Override
 			public Object convert(Type dest, Object o) {
 				if (o instanceof String) {
 					return IO.getFile(new File(""), o.toString());
@@ -93,9 +96,10 @@ public class ConverterTest extends TestCase {
 
 		converter.hook(null, new Hook() {
 
+			@Override
 			public Object convert(Type dest, Object o) throws Exception {
 				if (dest instanceof Class) {
-					if (Number.class.isAssignableFrom((Class< ? >) dest))
+					if (Number.class.isAssignableFrom((Class<?>) dest))
 						return 1;
 				}
 				return null;
@@ -152,10 +156,10 @@ public class ConverterTest extends TestCase {
 
 	public void testCharacters() throws Exception {
 		assertTrue(Arrays.equals(new char[] {
-				'A', 'B', 'C'
+			'A', 'B', 'C'
 		}, converter.convert(char[].class, "ABC")));
 		assertEquals("ABC", converter.convert(String.class, new char[] {
-				'A', 'B', 'C'
+			'A', 'B', 'C'
 		}));
 
 	}
@@ -196,7 +200,7 @@ public class ConverterTest extends TestCase {
 	 */
 	public void testWrappers() throws Exception {
 		Object[] types = {
-				Boolean.FALSE, (byte) 0, '\u0000', (short) 0, 0, 0L, 0f, 0d
+			Boolean.FALSE, (byte) 0, '\u0000', (short) 0, 0, 0L, 0f, 0d
 		};
 		for (int i = 0; i < types.length; i++) {
 			for (int j = 0; j < types.length; j++) {
@@ -214,10 +218,10 @@ public class ConverterTest extends TestCase {
 		assertPrimitives1(1);
 		assertPrimitives(0);
 		assertPrimitives(new Object[] {
-				0, 1, 2
+			0, 1, 2
 		});
 		assertPrimitives1(new Object[] {
-				1, 2
+			1, 2
 		});
 		assertPrimitives(false);
 		assertPrimitives1(true);
@@ -229,7 +233,9 @@ public class ConverterTest extends TestCase {
 	 * Test enums
 	 */
 	public enum X {
-		A, B, C;
+		A,
+		B,
+		C;
 	}
 
 	public void testEnums() throws Exception {
@@ -256,13 +262,15 @@ public class ConverterTest extends TestCase {
 
 	public void testCollections() throws Exception {
 		Class<XX> xx = XX.class;
-		Object xxx = xx.getConstructor().newInstance();
+		Object xxx = xx.getConstructor()
+			.newInstance();
 		int count = 11;
 		for (Field field : xx.getFields()) {
 			Object o = converter.convert(field.getGenericType(), 1);
 			assertTrue(o instanceof Collection);
 			Collection c = (Collection) o;
-			assertEquals("1", c.iterator().next());
+			assertEquals("1", c.iterator()
+				.next());
 			field.set(xxx, o);
 			count--;
 		}
@@ -283,14 +291,17 @@ public class ConverterTest extends TestCase {
 
 	public void testGenericCollections() throws Exception {
 		Class<GC> xx = GC.class;
-		GC g = xx.getConstructor().newInstance();
+		GC g = xx.getConstructor()
+			.newInstance();
 
 		for (Field field : xx.getFields()) {
 			Object o = converter.convert(field.getGenericType(), 1);
 			field.set(g, o);
 		}
 		assertEquals("[1]", g.strings.toString());
-		assertEquals(String.class, g.strings.iterator().next().getClass());
+		assertEquals(String.class, g.strings.iterator()
+			.next()
+			.getClass());
 		assertEquals("[[1]]", g.stringss.toString());
 		assertEquals("[1]", g.stringsarray[0].toString());
 		assertEquals("[1]", g.list.toString());
@@ -303,11 +314,11 @@ public class ConverterTest extends TestCase {
 	 * Test generic maps
 	 */
 	public static class GM {
-		public Map<String,Integer>					strings;
-		public SortedMap<String,Integer>			sorted;
-		public TreeMap<String,Integer>				tree;
-		public ConcurrentHashMap<String,Integer>	concurrenthash;
-		public ConcurrentMap<String,Integer>		concurrent;
+		public Map<String, Integer>					strings;
+		public SortedMap<String, Integer>			sorted;
+		public TreeMap<String, Integer>				tree;
+		public ConcurrentHashMap<String, Integer>	concurrenthash;
+		public ConcurrentMap<String, Integer>		concurrent;
 		public Map									map;
 	}
 
@@ -318,11 +329,13 @@ public class ConverterTest extends TestCase {
 
 	public void testGenericMaps() throws Exception {
 		Class<GM> xx = GM.class;
-		GM gMap = xx.getConstructor().newInstance();
-		GM gSemiMap = xx.getConstructor().newInstance();
+		GM gMap = xx.getConstructor()
+			.newInstance();
+		GM gSemiMap = xx.getConstructor()
+			.newInstance();
 
 		GT semiMap = new GT();
-		Map map = new HashMap<String,Integer>();
+		Map map = new HashMap<String, Integer>();
 		map.put("a", 1);
 		map.put("b", 2);
 
@@ -338,10 +351,11 @@ public class ConverterTest extends TestCase {
 
 	void assertPrimitives(@SuppressWarnings("unused") Object source) throws Exception {
 		Class[] types = {
-				byte.class, boolean.class, char.class, short.class, int.class, long.class, float.class, double.class
+			byte.class, boolean.class, char.class, short.class, int.class, long.class, float.class, double.class
 		};
 		for (Class c : types) {
-			Class at = Array.newInstance(c, 1).getClass();
+			Class at = Array.newInstance(c, 1)
+				.getClass();
 			Object parray = converter.convert(at, 0);
 			Object o = Array.get(parray, 0);
 			if (o instanceof Number)
@@ -354,7 +368,8 @@ public class ConverterTest extends TestCase {
 				fail(o.getClass() + " unexpected ");
 
 			assertEquals(at, parray.getClass());
-			assertEquals(c, parray.getClass().getComponentType());
+			assertEquals(c, parray.getClass()
+				.getComponentType());
 		}
 	}
 
@@ -388,10 +403,11 @@ public class ConverterTest extends TestCase {
 
 	void assertPrimitives1(Object source) throws Exception {
 		Class[] types = {
-				byte.class, boolean.class, char.class, short.class, int.class, long.class, float.class, double.class
+			byte.class, boolean.class, char.class, short.class, int.class, long.class, float.class, double.class
 		};
 		for (Class c : types) {
-			Class at = Array.newInstance(c, 1).getClass();
+			Class at = Array.newInstance(c, 1)
+				.getClass();
 			Object parray = converter.convert(at, source);
 			Object o = Array.get(parray, 0);
 			if (o instanceof Number)
@@ -404,7 +420,8 @@ public class ConverterTest extends TestCase {
 				fail(o.getClass() + " unexpected ");
 
 			assertEquals(at, parray.getClass());
-			assertEquals(c, parray.getClass().getComponentType());
+			assertEquals(c, parray.getClass()
+				.getComponentType());
 		}
 	}
 
@@ -415,7 +432,7 @@ public class ConverterTest extends TestCase {
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1D));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, 1f));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new String[] {
-				"1"
+			"1"
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList((byte) 1)));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList((short) 1)));
@@ -425,45 +442,45 @@ public class ConverterTest extends TestCase {
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, Arrays.asList(1L)));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigDecimal(1)));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigInteger(new byte[] {
-				1
+			1
 		})));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new byte[] {
-				1
+			1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new short[] {
-				1
+			1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new char[] {
-				1
+			1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new long[] {
-				1
+			1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new float[] {
-				1
+			1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new double[] {
-				1
+			1
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigInteger[] {
-				new BigInteger(new byte[] {
-						1
-				})
+			new BigInteger(new byte[] {
+				1
+			})
 		}));
 		assertEquals(Arrays.asList(1L), Converter.cnv(new TypeReference<List<Long>>() {}, new BigDecimal[] {
-				new BigDecimal(1)
+			new BigDecimal(1)
 		}));
 	}
 
 	public void testURIs() throws Exception {
 		URI expected = new URI("https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0");
+		assertEquals(expected,
+			Converter.cnv(URI.class, "https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0"));
 		assertEquals(expected, Converter.cnv(URI.class,
-				"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0"));
+			"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n"));
 		assertEquals(expected, Converter.cnv(URI.class,
-				"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n"));
+			"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n1.3.1"));
 		assertEquals(expected, Converter.cnv(URI.class,
-				"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\n1.3.1"));
-		assertEquals(expected, Converter.cnv(URI.class,
-				"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\r\n1.3.1"));
+			"https://www.jpm4j.org/#!/p/sha/C621B54583719AC0310404463D6D99DB27E1052C//0.0.0\r\n1.3.1"));
 	}
 }

@@ -91,11 +91,13 @@ public class PropertiesLineReader {
 		}
 
 		IRegion lineInfo = document.getLineInformation(lineNum);
-		char[] chars = document.get(lineInfo.getOffset(), lineInfo.getLength()).toCharArray();
+		char[] chars = document.get(lineInfo.getOffset(), lineInfo.getLength())
+			.toCharArray();
 
 		if (continued) {
 			int length = lastRegion.getLength();
-			length += document.getLineDelimiter(lineNum - 1).length();
+			length += document.getLineDelimiter(lineNum - 1)
+				.length();
 			length += lineInfo.getLength();
 			lastRegion = new Region(lastRegion.getOffset(), length);
 		} else {
@@ -115,14 +117,14 @@ public class PropertiesLineReader {
 	public String key() {
 		if (lastKey == null)
 			throw new IllegalStateException(
-					"Last key not available: either before state or after end of document, or last line type was not 'entry'.");
+				"Last key not available: either before state or after end of document, or last line type was not 'entry'.");
 		return lastKey;
 	}
 
 	public String value() {
 		if (lastValue == null)
 			throw new IllegalStateException(
-					"Last value not available: either before state or after end of document, or last line type was not 'entry'.");
+				"Last value not available: either before state or after end of document, or last line type was not 'entry'.");
 		return lastValue;
 	}
 }

@@ -32,7 +32,7 @@ public class MavenPlugin extends LifeCyclePlugin {
 		String rootPom = IO.collect(root);
 		if (!rootPom.contains(getTag(p))) {
 			rootPom = rootPom.replaceAll("<!-- DO NOT EDIT MANAGED BY BND MAVEN LIFECYCLE PLUGIN -->\n",
-					"$0\n\t\t" + getTag(p) + "\n");
+				"$0\n\t\t" + getTag(p) + "\n");
 			IO.store(rootPom, root);
 		}
 	}
@@ -46,7 +46,8 @@ public class MavenPlugin extends LifeCyclePlugin {
 
 	private void copy(String source, String dest, Project p) throws IOException {
 
-		File f = p.getWorkspace().getFile("maven/" + source + ".tmpl");
+		File f = p.getWorkspace()
+			.getFile("maven/" + source + ".tmpl");
 		String s;
 		if (f.isFile()) {
 			s = IO.collect(f);
@@ -60,7 +61,8 @@ public class MavenPlugin extends LifeCyclePlugin {
 			}
 		}
 
-		String process = p.getReplacer().process(s);
+		String process = p.getReplacer()
+			.process(s);
 
 		File d = p.getFile(dest);
 		IO.mkdirs(d.getParentFile());
@@ -68,7 +70,7 @@ public class MavenPlugin extends LifeCyclePlugin {
 	}
 
 	@Override
-	public String augmentSetup(String setup, String alias, Map<String,String> parameters) throws Exception {
+	public String augmentSetup(String setup, String alias, Map<String, String> parameters) throws Exception {
 		try (Formatter f = new Formatter()) {
 			f.format("%s", setup);
 			f.format("\n#\n# Change disk layout to fit maven\n#\n\n");
@@ -84,7 +86,8 @@ public class MavenPlugin extends LifeCyclePlugin {
 
 	@Override
 	public void delete(Project p) throws IOException {
-		File root = p.getWorkspace().getFile("pom.xml");
+		File root = p.getWorkspace()
+			.getFile("pom.xml");
 		String rootPom = IO.collect(root);
 		if (rootPom.contains(getTag(p))) {
 			rootPom = rootPom.replaceAll("\n\\s*" + getTag(p) + "\\s*", "\n");

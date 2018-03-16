@@ -14,7 +14,16 @@ import java.lang.annotation.Target;
 
 public interface Meta {
 	enum Type {
-		Boolean, Byte, Character, Short, Integer, Long, Float, Double, String, Password
+		Boolean,
+		Byte,
+		Character,
+		Short,
+		Integer,
+		Long,
+		Float,
+		Double,
+		String,
+		Password
 	}
 
 	/**
@@ -147,7 +156,6 @@ public interface Meta {
 		/**
 		 * Indicates that this attribute is required. By default attributes are
 		 * required.
-		 * 
 		 */
 		boolean required() default true;
 

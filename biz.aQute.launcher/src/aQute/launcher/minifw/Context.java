@@ -43,33 +43,37 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	private TreeSet<String>	paths;
 	private File			jarFile;
 
-	class Dict extends Dictionary<String,String> {
+	class Dict extends Dictionary<String, String> {
 
 		@Override
 		public Enumeration<String> elements() {
 			@SuppressWarnings({
-					"unchecked", "rawtypes"
+				"unchecked", "rawtypes"
 			})
-			Enumeration<String> enumeration = (Enumeration) Collections
-					.enumeration(manifest.getMainAttributes().values());
+			Enumeration<String> enumeration = (Enumeration) Collections.enumeration(manifest.getMainAttributes()
+				.values());
 			return enumeration;
 		}
 
 		@Override
 		public String get(Object key) {
-			String o = manifest.getMainAttributes().getValue((String) key);
+			String o = manifest.getMainAttributes()
+				.getValue((String) key);
 			return o;
 		}
 
 		@Override
 		public boolean isEmpty() {
-			return manifest.getMainAttributes().isEmpty();
+			return manifest.getMainAttributes()
+				.isEmpty();
 		}
 
 		@Override
 		public Enumeration<String> keys() {
-			Vector<String> v = new Vector<String>();
-			for (Iterator<Object> i = manifest.getMainAttributes().keySet().iterator(); i.hasNext();) {
+			Vector<String> v = new Vector<>();
+			for (Iterator<Object> i = manifest.getMainAttributes()
+				.keySet()
+				.iterator(); i.hasNext();) {
 				Attributes.Name name = (Attributes.Name) i.next();
 				v.add(name.toString());
 			}
@@ -88,14 +92,16 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 		@Override
 		public int size() {
-			return manifest.getMainAttributes().size();
+			return manifest.getMainAttributes()
+				.size();
 		}
 
 	}
 
 	public Context(MiniFramework fw, ClassLoader parent, int id, String location) throws Exception {
 		super(new URL[] {
-				new File(location).toURI().toURL()
+			new File(location).toURI()
+				.toURL()
 		}, parent);
 		this.fw = fw;
 		this.id = id;
@@ -133,12 +139,12 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	}
 
 	@Override
-	public Dictionary<String,String> getHeaders() {
+	public Dictionary<String, String> getHeaders() {
 		return new Dict();
 	}
 
 	@Override
-	public Dictionary<String,String> getHeaders(String locale) {
+	public Dictionary<String, String> getHeaders(String locale) {
 		return new Dict();
 	}
 
@@ -161,7 +167,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 			if (!path.endsWith("/"))
 				path += "/";
 
-			Vector<URL> paths = new Vector<URL>();
+			Vector<URL> paths = new Vector<>();
 			for (Iterator<String> i = getPaths().iterator(); i.hasNext();) {
 				String entry = i.next();
 				if (entry.startsWith(path)) {
@@ -186,7 +192,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		do {
 			int part = filePattern.indexOf('*');
 			if (part < 0) {
-				return path.indexOf(filePattern) >= 0;
+				return path.contains(filePattern);
 			}
 			String match = filePattern.substring(0, part);
 			int m = path.indexOf(match);
@@ -202,7 +208,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		if (paths != null)
 			return paths;
 
-		paths = new TreeSet<String>();
+		paths = new TreeSet<>();
 		try (JarFile jar = new JarFile(new File(location))) {
 			for (Enumeration<JarEntry> e = jar.entries(); e.hasMoreElements();) {
 				ZipEntry entry = e.nextElement();
@@ -223,7 +229,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	}
 
 	@Override
-	public Map<X509Certificate,List<X509Certificate>> getSignerCertificates(int signersType) {
+	public Map<X509Certificate, List<X509Certificate>> getSignerCertificates(int signersType) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -234,12 +240,14 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public String getSymbolicName() {
-		return getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME).trim();
+		return getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME)
+			.trim();
 	}
 
 	@Override
 	public Version getVersion() {
-		String v = getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_VERSION).trim();
+		String v = getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_VERSION)
+			.trim();
 		if (v == null)
 			return new Version("0");
 		return new Version(v);
@@ -394,7 +402,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 		return null;
 	}
 
-	public ServiceRegistration registerService(Class< ? > clazz, Object service, Dictionary<String, ? > properties) {
+	public ServiceRegistration registerService(Class<?> clazz, Object service, Dictionary<String, ?> properties) {
 		return null;
 	}
 
@@ -403,7 +411,7 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 	}
 
 	public <S> Collection<ServiceReference> getServiceReferences(Class<S> clazz, String filter)
-			throws InvalidSyntaxException {
+		throws InvalidSyntaxException {
 		return null;
 	}
 

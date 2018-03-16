@@ -24,8 +24,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public class Forker<T> {
 	final Executor		executor;
-	final Map<T,Job>	waiting		= new HashMap<T,Job>();
-	final Set<Job>		executing	= new HashSet<Job>();
+	final Map<T, Job>	waiting		= new HashMap<>();
+	final Set<Job>		executing	= new HashSet<>();
 	final AtomicBoolean	canceled	= new AtomicBoolean();
 	private int			count;
 
@@ -43,6 +43,7 @@ public class Forker<T> {
 		/**
 		 * Run when the job's dependencies are done.
 		 */
+		@Override
 		public void run() {
 			Thread.interrupted(); // clear the interrupt flag
 
@@ -105,13 +106,13 @@ public class Forker<T> {
 	 *            ran
 	 * @param runnable the runnable to run
 	 */
-	public synchronized void doWhen(Collection< ? extends T> dependencies, T target, Runnable runnable) {
+	public synchronized void doWhen(Collection<? extends T> dependencies, T target, Runnable runnable) {
 		if (waiting.containsKey(target))
 			throw new IllegalArgumentException("You can only add a target once to the forker");
 
 		System.err.println("doWhen " + dependencies + " " + target);
 		Job job = new Job();
-		job.dependencies = new HashSet<T>(dependencies);
+		job.dependencies = new HashSet<>(dependencies);
 		job.target = target;
 		job.runnable = runnable;
 		waiting.put(target, job);
@@ -127,13 +128,13 @@ public class Forker<T> {
 	}
 
 	private void check() {
-		Set<T> dependencies = new HashSet<T>();
+		Set<T> dependencies = new HashSet<>();
 		for (Job job : waiting.values())
 			dependencies.addAll(job.dependencies);
 		dependencies.removeAll(waiting.keySet());
 		if (dependencies.size() > 0)
 			throw new IllegalArgumentException(
-					"There are dependencies in the jobs that are not present in the targets: " + dependencies);
+				"There are dependencies in the jobs that are not present in the targets: " + dependencies);
 
 	}
 
@@ -150,9 +151,10 @@ public class Forker<T> {
 		if (canceled.get())
 			return;
 
-		List<Runnable> torun = new ArrayList<Runnable>();
+		List<Runnable> torun = new ArrayList<>();
 		synchronized (this) {
-			for (Iterator<Job> e = waiting.values().iterator(); e.hasNext();) {
+			for (Iterator<Job> e = waiting.values()
+				.iterator(); e.hasNext();) {
 				Job job = e.next();
 				if (job.dependencies.isEmpty()) {
 					torun.add(job);

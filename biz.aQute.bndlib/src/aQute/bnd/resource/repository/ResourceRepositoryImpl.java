@@ -45,6 +45,7 @@ import aQute.lib.json.JSONCodec;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
+
 /**
  * This class implements a hidden repository. This repo is kept in a text file
  * that is under scm control. Files are fetched on demand. The idea is that bnd
@@ -53,40 +54,41 @@ import aQute.service.reporter.Reporter;
  */
 public class ResourceRepositoryImpl implements ResourceRepository {
 	private final static Logger						logger							= LoggerFactory
-			.getLogger(ResourceRepositoryImpl.class);
+		.getLogger(ResourceRepositoryImpl.class);
 	private static Comparator<ResourceDescriptor>	RESOURCE_DESCRIPTOR_COMPARATOR	= new Comparator<ResourceDescriptor>() {
 
+																						@Override
 																						public int compare(
-																								ResourceDescriptor o1,
-																								ResourceDescriptor o2) {
+																							ResourceDescriptor o1,
+																							ResourceDescriptor o2) {
 																							if (o1 == o2)
 																								return 0;
 
 																							int r = o1.bsn
-																									.compareTo(o2.bsn);
+																								.compareTo(o2.bsn);
 																							if (r > 0)
 																								return 1;
 																							else if (r < 0)
 																								return -1;
 
-																							return o1.version.compareTo(
-																									o2.version);
+																							return o1.version
+																								.compareTo(o2.version);
 																						}
 																					};
-	private static final long						THRESHOLD						= 4 * 3600 * 1000;											// 4
+	private static final long						THRESHOLD						= 4 * 3600 * 1000;						// 4
 	protected static final DownloadListener[]		EMPTY_LISTENER					= new DownloadListener[0];
 	static JSONCodec								codec							= new JSONCodec();
-	private final List<Listener>					listeners						= new CopyOnWriteArrayList<ResourceRepository.Listener>();
+	private final List<Listener>					listeners						= new CopyOnWriteArrayList<>();
 	private boolean									dirty;
 	private FileLayout								index;
-	private Map<URI,Long>							failures						= new HashMap<URI,Long>();
+	private Map<URI, Long>							failures						= new HashMap<>();
 	private File									cache;
 	private File									hosting;
 	private Reporter								reporter						= new ReporterAdapter(System.out);
 	private Executor								executor;
 	private File									indexFile;
 	private URLConnectionHandler					connector						= new DefaultURLConnectionHandler();
-	final MultiMap<File,DownloadListener>			queues							= new MultiMap<File,RepositoryPlugin.DownloadListener>();
+	final MultiMap<File, DownloadListener>			queues							= new MultiMap<>();
 	final Semaphore									limitDownloads					= new Semaphore(5);
 
 	{
@@ -99,7 +101,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	 */
 	static public class FileLayout {
 		public int							version;
-		public List<ResourceDescriptorImpl>	descriptors	= new ArrayList<ResourceDescriptorImpl>();
+		public List<ResourceDescriptorImpl>	descriptors	= new ArrayList<>();
 		public int							increment;
 		public long							date;
 
@@ -111,15 +113,18 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 			date = System.currentTimeMillis();
 
 			format.format(//
-					"{\n\"version\"      :%s,\n" //
-							+ "\"descriptors\"   : [\n",
-					version);
+				"{\n\"version\"      :%s,\n" //
+					+ "\"descriptors\"   : [\n",
+				version);
 			String del = "";
 
 			for (ResourceDescriptorImpl rd : descriptors) {
 				format.format(del);
 				format.flush();
-				codec.enc().to(format.out()).keepOpen().put(rd);
+				codec.enc()
+					.to(format.out())
+					.keepOpen()
+					.put(rd);
 				del = ",\n";
 			}
 			format.format("\n]}\n");
@@ -130,8 +135,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * List the resources. We skip the filter for now.
 	 */
+	@Override
 	public List<ResourceDescriptorImpl> filter(String repoId, String filter) throws Exception {
-		List<ResourceDescriptorImpl> result = new ArrayList<ResourceDescriptorImpl>();
+		List<ResourceDescriptorImpl> result = new ArrayList<>();
 		for (ResourceDescriptorImpl rdi : getIndex().descriptors) {
 			if (repoId == null || rdi.repositories.contains(repoId))
 				result.add(rdi);
@@ -156,6 +162,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		save();
 	}
 
+	@Override
 	public boolean delete(String repoId, byte[] id) throws Exception {
 		ResourceDescriptorImpl rd = getResourceDescriptor(id);
 		if (rd == null)
@@ -178,6 +185,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * Delete a cache entry
 	 */
+	@Override
 	public boolean deleteCache(byte[] id) throws Exception {
 		File dir = IO.getFile(cache, Hex.toHexString(id));
 		if (dir.isDirectory()) {
@@ -190,6 +198,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * Add a resource descriptor to the index.
 	 */
+	@Override
 	public boolean add(String repoId, ResourceDescriptor rd) throws Exception {
 		ResourceDescriptorImpl rdi = getResourceDescriptor(rd.id);
 		boolean add = false;
@@ -211,6 +220,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * Get the file belonging to a Resource Descriptor
 	 */
+	@Override
 	public File getResource(byte[] rd, final RepositoryPlugin.DownloadListener... blockers) throws Exception {
 		final ResourceDescriptorImpl rds = getResourceDescriptor(rd);
 
@@ -284,15 +294,18 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		limitDownloads.acquire();
 
 		executor.execute(new Runnable() {
+			@Override
 			public void run() {
 				try {
 					download(rds, path);
 					synchronized (queues) {
-						ok(queues.get(path).toArray(EMPTY_LISTENER), path);
+						ok(queues.get(path)
+							.toArray(EMPTY_LISTENER), path);
 					}
 				} catch (Exception e) {
 					synchronized (queues) {
-						fail(e, queues.get(path).toArray(EMPTY_LISTENER), path);
+						fail(e, queues.get(path)
+							.toArray(EMPTY_LISTENER), path);
 					}
 				} finally {
 					synchronized (queues) {
@@ -308,6 +321,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * Add a new event listener
 	 */
+	@Override
 	public void addListener(Listener rrl) {
 		listeners.add(rrl);
 	}
@@ -329,6 +343,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	/**
 	 * List the resources. We skip the filter for now.
 	 */
+	@Override
 	public ResourceDescriptorImpl getResourceDescriptor(byte[] rd) throws Exception {
 		for (ResourceDescriptorImpl d : getIndex().descriptors) {
 			if (Arrays.equals(d.id, rd))
@@ -423,7 +438,8 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 			String deflate = http.getHeaderField("Content-Encoding");
 			in = http.getInputStream();
-			if (deflate != null && deflate.toLowerCase().contains("deflate")) {
+			if (deflate != null && deflate.toLowerCase()
+				.contains("deflate")) {
 				in = new InflaterInputStream(in);
 				logger.debug("inflate");
 			}
@@ -434,7 +450,8 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 
 		IO.copy(in, tmp);
 
-		byte[] digest = SHA1.digest(tmp).digest();
+		byte[] digest = SHA1.digest(tmp)
+			.digest();
 		if (Arrays.equals(digest, sha)) {
 			IO.rename(tmp, path);
 		} else {
@@ -506,7 +523,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		if (!indexFile.isFile()) {
 			return index = new FileLayout();
 		} else
-			return index = codec.dec().from(indexFile).get(FileLayout.class);
+			return index = codec.dec()
+				.from(indexFile)
+				.get(FileLayout.class);
 	}
 
 	public void setReporter(Reporter processor) {
@@ -530,8 +549,9 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		this.connector = connector;
 	}
 
+	@Override
 	public SortedSet<ResourceDescriptor> find(String repoId, String bsn, VersionRange range) throws Exception {
-		TreeSet<ResourceDescriptor> result = new TreeSet<ResourceDescriptor>(RESOURCE_DESCRIPTOR_COMPARATOR);
+		TreeSet<ResourceDescriptor> result = new TreeSet<>(RESOURCE_DESCRIPTOR_COMPARATOR);
 
 		for (ResourceDescriptorImpl r : filter(repoId, null)) {
 			if (!bsn.equals(r.bsn))
@@ -545,6 +565,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		return result;
 	}
 
+	@Override
 	public File getCacheDir(String name) {
 		File dir = new File(hosting, name);
 		try {
@@ -558,7 +579,7 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 	@Override
 	public String toString() {
 		return "ResourceRepositoryImpl [" + (cache != null ? "cache=" + cache + ", " : "")
-				+ (indexFile != null ? "indexFile=" + indexFile + ", " : "") + "]";
+			+ (indexFile != null ? "indexFile=" + indexFile + ", " : "") + "]";
 	}
 
 }

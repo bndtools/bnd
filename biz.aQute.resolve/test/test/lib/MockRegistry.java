@@ -8,14 +8,15 @@ import aQute.bnd.service.Registry;
 
 public class MockRegistry implements Registry {
 
-	private final List<Object> plugins = new LinkedList<Object>();
+	private final List<Object> plugins = new LinkedList<>();
 
 	public void addPlugin(Object plugin) {
 		plugins.add(plugin);
 	}
 
+	@Override
 	public <T> List<T> getPlugins(Class<T> clazz) {
-		List<T> l = new ArrayList<T>();
+		List<T> l = new ArrayList<>();
 		for (Object plugin : plugins) {
 			if (clazz.isInstance(plugin))
 				l.add(clazz.cast(plugin));
@@ -23,6 +24,7 @@ public class MockRegistry implements Registry {
 		return l;
 	}
 
+	@Override
 	public <T> T getPlugin(Class<T> clazz) {
 		for (Object plugin : plugins) {
 			if (clazz.isInstance(plugin))

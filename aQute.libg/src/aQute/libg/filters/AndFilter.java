@@ -5,7 +5,7 @@ import java.util.List;
 
 public final class AndFilter extends Filter {
 
-	private final List<Filter> children = new LinkedList<Filter>();
+	private final List<Filter> children = new LinkedList<>();
 
 	public AndFilter addChild(Filter child) {
 		if (child instanceof AndFilter)

@@ -11,16 +11,16 @@ import org.osgi.framework.hooks.service.ListenerHook;
 import aQute.lib.collections.MultiMap;
 
 class FilterListener implements ListenerHook {
-	final static Pattern LISTENER_INFO_PATTERN = Pattern.compile("\\(objectClass=([^)]+)\\)");
-	final MultiMap<String, BundleContext> listenerContexts = new MultiMap<String, BundleContext>();
+	final static Pattern						LISTENER_INFO_PATTERN	= Pattern.compile("\\(objectClass=([^)]+)\\)");
+	final MultiMap<String, BundleContext>		listenerContexts		= new MultiMap<String, BundleContext>();
 
-	volatile boolean quiting;
-	private ServiceRegistration<ListenerHook> lhook;
-	
+	volatile boolean							quiting;
+	private ServiceRegistration<ListenerHook>	lhook;
+
 	public FilterListener(BundleContext context) {
 		lhook = context.registerService(ListenerHook.class, this, null);
 	}
-	
+
 	@Override
 	public synchronized void added(Collection<ListenerInfo> listeners) {
 		if (quiting)
@@ -39,7 +39,7 @@ class FilterListener implements ListenerHook {
 		}
 	}
 
-	private  void addListenerInfo(ListenerInfo o) {
+	private void addListenerInfo(ListenerInfo o) {
 		String filter = o.getFilter();
 		if (filter != null) {
 			Matcher m = LISTENER_INFO_PATTERN.matcher(filter);
@@ -49,7 +49,7 @@ class FilterListener implements ListenerHook {
 		}
 	}
 
-	private  void removeListenerInfo(ListenerInfo o) {
+	private void removeListenerInfo(ListenerInfo o) {
 		String filter = o.getFilter();
 		if (filter != null) {
 			Matcher m = LISTENER_INFO_PATTERN.matcher(filter);
@@ -58,7 +58,6 @@ class FilterListener implements ListenerHook {
 			}
 		}
 	}
-
 
 	public void close() {
 		quiting = true;

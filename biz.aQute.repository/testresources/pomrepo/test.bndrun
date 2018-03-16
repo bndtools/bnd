@@ -1,7 +1,7 @@
 -plugin.enroute-distro = \
 	aQute.bnd.repository.maven.pom.provider.BndPomRepository; \
 	snapshotUrls=https://oss.sonatype.org/content/repositories/osgi/; \
-	releaseUrls=https://repo1.maven.org/maven2/; \
+	releaseUrls=https://repo.maven.apache.org/maven2/; \
 	pom=org.osgi:osgi.enroute.distro.pom:2.0.0-SNAPSHOT; \
 	name=enRouteDistroPom
 

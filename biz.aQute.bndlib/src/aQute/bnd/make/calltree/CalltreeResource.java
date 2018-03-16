@@ -83,10 +83,8 @@ public class CalltreeResource extends WriteResource {
 	 */
 	public static void writeCalltree(PrintWriter out, Collection<Clazz> classes) throws Exception {
 
-		final Map<Clazz.MethodDef,Set<Clazz.MethodDef>> using = new TreeMap<Clazz.MethodDef,Set<Clazz.MethodDef>>(
-				COMPARATOR);
-		final Map<Clazz.MethodDef,Set<Clazz.MethodDef>> usedby = new TreeMap<Clazz.MethodDef,Set<Clazz.MethodDef>>(
-				COMPARATOR);
+		final Map<Clazz.MethodDef, Set<Clazz.MethodDef>> using = new TreeMap<>(COMPARATOR);
+		final Map<Clazz.MethodDef, Set<Clazz.MethodDef>> usedby = new TreeMap<>(COMPARATOR);
 
 		ClassDataCollector cd = new ClassDataCollector() {
 			// Clazz.MethodDef source;
@@ -120,17 +118,23 @@ public class CalltreeResource extends WriteResource {
 	 */
 	static Comparator<Clazz.MethodDef> COMPARATOR = new Comparator<Clazz.MethodDef>() {
 
+		@Override
 		public int compare(MethodDef a, MethodDef b) {
-			int r = a.getName().compareTo(b.getName());
-			return r != 0 ? r : a.getDescriptor().toString().compareTo(b.getDescriptor().toString());
+			int r = a.getName()
+				.compareTo(b.getName());
+			return r != 0 ? r
+				: a.getDescriptor()
+					.toString()
+					.compareTo(b.getDescriptor()
+						.toString());
 		}
 	};
 
-	static void xref(Map<Clazz.MethodDef,Set<Clazz.MethodDef>> references, Clazz.MethodDef source,
-			Clazz.MethodDef reference) {
+	static void xref(Map<Clazz.MethodDef, Set<Clazz.MethodDef>> references, Clazz.MethodDef source,
+		Clazz.MethodDef reference) {
 		Set<Clazz.MethodDef> set = references.get(source);
 		if (set == null)
-			references.put(source, set = new TreeSet<Clazz.MethodDef>(COMPARATOR));
+			references.put(source, set = new TreeSet<>(COMPARATOR));
 		if (reference != null)
 			set.add(reference);
 	}
@@ -138,9 +142,9 @@ public class CalltreeResource extends WriteResource {
 	/*
 	 * Print out either using or usedby sets
 	 */
-	private static void xref(PrintWriter out, String group, Map<Clazz.MethodDef,Set<Clazz.MethodDef>> references) {
+	private static void xref(PrintWriter out, String group, Map<Clazz.MethodDef, Set<Clazz.MethodDef>> references) {
 		out.println("  <" + group + ">");
-		for (Map.Entry<Clazz.MethodDef,Set<Clazz.MethodDef>> entry : references.entrySet()) {
+		for (Map.Entry<Clazz.MethodDef, Set<Clazz.MethodDef>> entry : references.entrySet()) {
 			Clazz.MethodDef source = entry.getKey();
 			Set<Clazz.MethodDef> refs = entry.getValue();
 			method(out, "method", source, ">");
@@ -156,9 +160,10 @@ public class CalltreeResource extends WriteResource {
 	 * Print out a method.
 	 */
 	private static void method(PrintWriter out, String element, Clazz.MethodDef source, String closeElement) {
-		out.println("      <" + element + " class='" + source.getContainingClass().getFQN() + "'"
-				+ getAccess(source.getAccess()) + (source.isConstructor() ? "" : " name='" + source.getName() + "'")
-				+ " descriptor='" + source.getDescriptor() + "' pretty='" + source.toString() + "'" + closeElement);
+		out.println("      <" + element + " class='" + source.getContainingClass()
+			.getFQN() + "'" + getAccess(source.getAccess())
+			+ (source.isConstructor() ? "" : " name='" + source.getName() + "'") + " descriptor='"
+			+ source.getDescriptor() + "' pretty='" + source.toString() + "'" + closeElement);
 	}
 
 	private static String getAccess(int access) {

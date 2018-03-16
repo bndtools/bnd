@@ -46,11 +46,12 @@ public class AgentTest extends TestCase {
 		t2 = create("bsn-2", new Version(2, 0, 0));
 		t3 = create("bsn-3", new Version(3, 0, 0));
 
-		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class,
-				this.getClass().getClassLoader());
+		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class, this.getClass()
+			.getClassLoader());
 
-		FrameworkFactory ff = sl.iterator().next();
-		Map<String,String> configuration = new HashMap<String,String>();
+		FrameworkFactory ff = sl.iterator()
+			.next();
+		Map<String, String> configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
 		framework = ff.newFramework(configuration);
@@ -58,13 +59,17 @@ public class AgentTest extends TestCase {
 		framework.start();
 		context = framework.getBundleContext();
 
-		String location = "reference:" + t1.toURI().toString();
+		String location = "reference:" + t1.toURI()
+			.toString();
 		context.installBundle(location);
 
-		location = "reference:" + t2.toURI().toString();
+		location = "reference:" + t2.toURI()
+			.toString();
 		context.installBundle(location);
 
-		location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent.jar").toURI().toString();
+		location = "reference:" + IO.getFile("generated/biz.aQute.remote.agent.jar")
+			.toURI()
+			.toString();
 		agent = context.installBundle(location);
 		agent.start();
 
@@ -86,7 +91,8 @@ public class AgentTest extends TestCase {
 	}
 
 	public void testAgentGetBundles() throws Exception {
-		List<BundleDTO> bundles = supervisor.getAgent().getBundles();
+		List<BundleDTO> bundles = supervisor.getAgent()
+			.getBundles();
 
 		assertNotNull(bundles);
 		assertEquals(4, bundles.size());
@@ -95,14 +101,16 @@ public class AgentTest extends TestCase {
 		assertEquals("bsn-2", bundles.get(2).symbolicName);
 		assertEquals("2.0.0", bundles.get(2).version);
 
-		bundles = supervisor.getAgent().getBundles(1, 2);
+		bundles = supervisor.getAgent()
+			.getBundles(1, 2);
 		assertEquals(2, bundles.size());
 		assertEquals("bsn-1", bundles.get(0).symbolicName);
 		assertEquals("1.0.0", bundles.get(0).version);
 	}
 
 	public void testAgentGetBundleRevisions() throws Exception {
-		List<BundleRevisionDTO> bundleRevisions = supervisor.getAgent().getBundleRevisons();
+		List<BundleRevisionDTO> bundleRevisions = supervisor.getAgent()
+			.getBundleRevisons();
 
 		assertNotNull(bundleRevisions);
 		assertEquals(4, bundleRevisions.size());
@@ -115,7 +123,8 @@ public class AgentTest extends TestCase {
 
 	public void testAgentInstallBundle() throws Exception {
 		String sha = supervisor.addFile(t3);
-		BundleDTO bundle = supervisor.getAgent().install(t3.getAbsolutePath(), sha);
+		BundleDTO bundle = supervisor.getAgent()
+			.install(t3.getAbsolutePath(), sha);
 
 		assertNotNull(bundle);
 		assertEquals(4, bundle.id);
@@ -124,33 +133,43 @@ public class AgentTest extends TestCase {
 	}
 
 	public void testAgentInstallBundleFromURL() throws Exception {
-		BundleDTO bundle = supervisor.getAgent().installFromURL(t3.getAbsolutePath(),
-				t3.toURI().toURL().toExternalForm());
+		BundleDTO bundle = supervisor.getAgent()
+			.installFromURL(t3.getAbsolutePath(), t3.toURI()
+				.toURL()
+				.toExternalForm());
 
 		assertNotNull(bundle);
 		assertEquals(4, bundle.id);
 		assertEquals("bsn-3", bundle.symbolicName);
 		assertEquals("3.0.0", bundle.version);
-		assertEquals(5, supervisor.getAgent().getBundles().size());
+		assertEquals(5, supervisor.getAgent()
+			.getBundles()
+			.size());
 	}
 
 	public void testAgentUninstallBundle() throws Exception {
-		List<BundleDTO> existingBundles = supervisor.getAgent().getBundles();
+		List<BundleDTO> existingBundles = supervisor.getAgent()
+			.getBundles();
 
 		assertNotNull(existingBundles);
 		assertTrue(existingBundles.size() == 4);
 
-		assertNull(supervisor.getAgent().uninstall(1));
-		assertNull(supervisor.getAgent().uninstall(2));
+		assertNull(supervisor.getAgent()
+			.uninstall(1));
+		assertNull(supervisor.getAgent()
+			.uninstall(2));
 
-		existingBundles = supervisor.getAgent().getBundles();
+		existingBundles = supervisor.getAgent()
+			.getBundles();
 
 		assertNotNull(existingBundles);
 		assertTrue(existingBundles.size() == 2);
 	}
 
 	public void testAgentUpdateBundle() throws Exception {
-		BundleDTO t2Bundle = supervisor.getAgent().getBundles(2).get(0);
+		BundleDTO t2Bundle = supervisor.getAgent()
+			.getBundles(2)
+			.get(0);
 
 		assertEquals("bsn-2", t2Bundle.symbolicName);
 		assertEquals("2.0.0", t2Bundle.version);
@@ -160,15 +179,20 @@ public class AgentTest extends TestCase {
 		File t2prime = create("bsn-2", new Version(2, 0, 1));
 		String sha = supervisor.addFile(t2prime);
 
-		assertNull(supervisor.getAgent().update(2, sha));
+		assertNull(supervisor.getAgent()
+			.update(2, sha));
 
-		t2Bundle = supervisor.getAgent().getBundles(2).get(0);
+		t2Bundle = supervisor.getAgent()
+			.getBundles(2)
+			.get(0);
 
 		assertTrue(previousModified != t2Bundle.lastModified);
 	}
 
 	public void testAgentUpdateBundleFromURL() throws Exception {
-		BundleDTO t2Bundle = supervisor.getAgent().getBundles(2).get(0);
+		BundleDTO t2Bundle = supervisor.getAgent()
+			.getBundles(2)
+			.get(0);
 
 		assertEquals("bsn-2", t2Bundle.symbolicName);
 		assertEquals("2.0.0", t2Bundle.version);
@@ -177,9 +201,14 @@ public class AgentTest extends TestCase {
 
 		File t2prime = create("bsn-2", new Version(2, 0, 1));
 
-		assertNull(supervisor.getAgent().updateFromURL(t2Bundle.id, t2prime.toURI().toURL().toExternalForm()));
+		assertNull(supervisor.getAgent()
+			.updateFromURL(t2Bundle.id, t2prime.toURI()
+				.toURL()
+				.toExternalForm()));
 
-		t2Bundle = supervisor.getAgent().getBundles(2).get(0);
+		t2Bundle = supervisor.getAgent()
+			.getBundles(2)
+			.get(0);
 
 		assertTrue(previousModified != t2Bundle.lastModified);
 	}
@@ -226,14 +255,15 @@ public class AgentTest extends TestCase {
 		assertTrue(b.check());
 
 		File file = IO.getFile(tmp, name + ".jar");
-		file.getParentFile().mkdirs();
+		file.getParentFile()
+			.mkdirs();
 		jar.updateModified(System.currentTimeMillis(), "Force it to now");
 		jar.write(file);
 		b.close();
 		return file;
 	}
 
-	static class TestSupervisor extends AgentSupervisor<Supervisor,Agent> implements Supervisor {
+	static class TestSupervisor extends AgentSupervisor<Supervisor, Agent> implements Supervisor {
 		@Override
 		public boolean stdout(String out) throws Exception {
 			return true;

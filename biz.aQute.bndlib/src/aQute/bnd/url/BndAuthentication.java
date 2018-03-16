@@ -62,23 +62,23 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 		String email();
 	}
 
-	private static final String		MACHINE					= "machine";
-	private static final String		PRIVATE_KEY				= "privateKey";
-	private static final String		PUBLIC_KEY				= "publicKey";
-	private static final String		EMAIL					= "email";
-	private static SimpleDateFormat	httpFormat				= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz",
-			Locale.US);
+	private static final String		MACHINE		= "machine";
+	private static final String		PRIVATE_KEY	= "privateKey";
+	private static final String		PUBLIC_KEY	= "publicKey";
+	private static final String		EMAIL		= "email";
+	private static SimpleDateFormat	httpFormat	= new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.US);
 
 	static {
 		httpFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
-	private static final String		X_A_QUTE_AUTHORIZATION	= "X-aQute-Authorization";
-	private String					identity;
-	private String					email;
-	private String					machine;
-	private PrivateKey				privateKey;
-	private PublicKey				publicKey;
+	private static final String	X_A_QUTE_AUTHORIZATION	= "X-aQute-Authorization";
+	private String				identity;
+	private String				email;
+	private String				machine;
+	private PrivateKey			privateKey;
+	private PublicKey			publicKey;
 
+	@Override
 	public void handle(URLConnection connection) throws Exception {
 
 		// TODO switch to https since this signing is only secure with https
@@ -120,29 +120,34 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 		if (identity != null)
 			return;
 
-		machine = InetAddress.getLocalHost().getHostName();
+		machine = InetAddress.getLocalHost()
+			.getHostName();
 
 		StringBuilder sb = new StringBuilder();
 
-		sb.append(email).append("!");
+		sb.append(email)
+			.append("!");
 
 		if (machine != null)
 			sb.append(machine);
 
-		sb.append("!").append(Base64.encodeBase64(publicKey.getEncoded())).append(":");
+		sb.append("!")
+			.append(Base64.encodeBase64(publicKey.getEncoded()))
+			.append(":");
 
 		this.identity = sb.toString();
 	}
 
 	@Override
-	public void setProperties(Map<String,String> map) throws Exception {
+	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
 		String email = map.get(EMAIL);
 		if (email == null) {
 			Settings settings = registry.getPlugin(Settings.class);
 			email = settings.getEmail();
 			if (email == null) {
-				error("The bnd authentication URL connection handler has no email set as property, nor have the bnd settings been set");
+				error(
+					"The bnd authentication URL connection handler has no email set as property, nor have the bnd settings been set");
 				return;
 			}
 			credentials(email, settings.getPublicKey(), settings.getPrivateKey());
@@ -163,7 +168,7 @@ public class BndAuthentication extends DefaultURLConnectionHandler {
 	}
 
 	private void credentials(String email, byte[] publicKey, byte[] privateKey)
-			throws InvalidKeySpecException, NoSuchAlgorithmException {
+		throws InvalidKeySpecException, NoSuchAlgorithmException {
 		this.email = email;
 		if (publicKey != null && privateKey != null) {
 			PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(privateKey);

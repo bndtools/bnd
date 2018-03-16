@@ -46,17 +46,20 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		this(new UTF8Properties(env.properties), env, null);
 	}
 
+	@Override
 	public String process(String line) {
 		return replacer.process(line);
 	}
 
+	@Override
 	@SuppressWarnings("unchecked")
-	public Map<String,String> getMap() {
+	public Map<String, String> getMap() {
 		@SuppressWarnings("rawtypes")
-		Map<String,String> map = (Map) properties;
+		Map<String, String> map = (Map) properties;
 		return map;
 	}
 
+	@Override
 	public Domain getParent() {
 		return parent;
 	}
@@ -92,25 +95,25 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		properties.remove(key);
 	}
 
-	public void putAll(Map<String,String> map) {
+	public void putAll(Map<String, String> map) {
 		properties.putAll(map);
 	}
 
 	@SuppressWarnings({
-			"unchecked", "rawtypes"
+		"unchecked", "rawtypes"
 	})
 	public void putAll(Properties map) {
 		putAll((Map) map);
 	}
 
-	public void addAll(Map<String,String> map) {
-		for (Entry<String,String> entry : map.entrySet()) {
+	public void addAll(Map<String, String> map) {
+		for (Entry<String, String> entry : map.entrySet()) {
 			addProperty(entry.getKey(), entry.getValue());
 		}
 	}
 
 	@SuppressWarnings({
-			"unchecked", "rawtypes"
+		"unchecked", "rawtypes"
 	})
 	public void addAll(Properties map) {
 		addAll((Map) map);
@@ -131,7 +134,8 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 			setProperties(file);
 		else {
 			for (File sub : file.listFiles()) {
-				if (matching == null || matching.matcher(sub.getName()).matches()) {
+				if (matching == null || matching.matcher(sub.getName())
+					.matches()) {
 					addProperties(file, matching);
 				}
 			}
@@ -140,7 +144,8 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 
 	public void setProperties(URI uri) throws Exception {
 		UTF8Properties props = new UTF8Properties();
-		try (InputStream in = uri.toURL().openStream()) {
+		try (InputStream in = uri.toURL()
+			.openStream()) {
 			props.load(in, null, this);
 		}
 		putAll(props);
@@ -249,24 +254,27 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 	 * @return an interface that can be used to get and set properties
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T config(Class< ? > front, final String prefix) {
+	public <T> T config(Class<?> front, final String prefix) {
 		final Env THIS = this;
 
 		return (T) java.lang.reflect.Proxy.newProxyInstance(front.getClassLoader(), new Class[] {
-				front
+			front
 		}, new InvocationHandler() {
 
+			@Override
 			public Object invoke(Object target, Method method, Object[] parameters) throws Throwable {
 				String name = mangleMethodName(prefix, method.getName());
 				if (parameters == null || parameters.length == 0) {
 					String value = getProperty(name);
 					if (value == null) {
-						if (method.getReturnType().isPrimitive())
+						if (method.getReturnType()
+							.isPrimitive())
 							return Converter.cnv(method.getReturnType(), null);
 						else
 							return null;
 					}
-					if (method.getReturnType().isInstance(value))
+					if (method.getReturnType()
+						.isInstance(value))
 						return value;
 
 					return Converter.cnv(method.getGenericReturnType(), value);
@@ -276,7 +284,8 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 						removeProperty(name);
 					else
 						setProperty(name, arg.toString());
-					if (method.getReturnType().isInstance(THIS))
+					if (method.getReturnType()
+						.isInstance(THIS))
 						return THIS;
 					return Converter.cnv(method.getReturnType(), null);
 				}
@@ -285,7 +294,7 @@ public class Env extends ReporterAdapter implements Replacer, Domain {
 		});
 	}
 
-	public <T> T config(Class< ? > front) {
+	public <T> T config(Class<?> front) {
 		return config(front, null);
 	}
 

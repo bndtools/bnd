@@ -5,7 +5,6 @@ import java.io.InputStream;
 
 import aQute.bnd.version.MavenVersion;
 import aQute.lib.io.IO;
-import aQute.maven.provider.MetadataParser;
 import aQute.maven.provider.MetadataParser.ProgramMetadata;
 import aQute.maven.provider.MetadataParser.RevisionMetadata;
 import aQute.maven.provider.MetadataParser.SnapshotVersion;

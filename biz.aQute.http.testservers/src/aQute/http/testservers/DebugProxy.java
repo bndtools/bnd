@@ -30,32 +30,38 @@ public class DebugProxy extends NanoHTTPD {
 
 			final HttpURLConnection c = (HttpURLConnection) uri.openConnection();
 
-			c.setRequestMethod(session.getMethod().toString());
+			c.setRequestMethod(session.getMethod()
+				.toString());
 			System.out.println("-> " + session.getMethod() + " " + session.getUri());
 
-			for (Entry<String,String> e : session.getHeaders().entrySet()) {
-				if (e.getKey().equalsIgnoreCase("host")) {
+			for (Entry<String, String> e : session.getHeaders()
+				.entrySet()) {
+				if (e.getKey()
+					.equalsIgnoreCase("host")) {
 					String host = forward.getHost();
 					if (forward.getPort() != forward.getDefaultPort())
 						host += ":" + forward.getPort();
 
 					c.setRequestProperty("host", host);
-				} else if (!e.getKey().equals("accept-encoding"))
+				} else if (!e.getKey()
+					.equals("accept-encoding"))
 					c.setRequestProperty(e.getKey(), e.getValue());
 				System.out.println("-> " + e.getKey() + "=" + e.getValue());
 			}
 
 			byte[] data = null;
 
-			Map<String,String> headers = session.getHeaders();
+			Map<String, String> headers = session.getHeaders();
 			if (headers.containsKey("content-length")) {
 				int length = Integer.parseInt(headers.get("content-length"));
 				data = new byte[length];
 				DataInputStream din = new DataInputStream(session.getInputStream());
 				din.readFully(data);
 				c.setDoOutput(true);
-				c.getOutputStream().write(data);
-				c.getOutputStream().flush();
+				c.getOutputStream()
+					.write(data);
+				c.getOutputStream()
+					.flush();
 			}
 
 			c.connect();
@@ -99,7 +105,8 @@ public class DebugProxy extends NanoHTTPD {
 
 			Response r = new Response(status, c.getContentType(), in, c.getContentLengthLong()) {
 				{
-					for (Map.Entry<String,List<String>> l : c.getHeaderFields().entrySet()) {
+					for (Map.Entry<String, List<String>> l : c.getHeaderFields()
+						.entrySet()) {
 						for (String value : l.getValue()) {
 							if (l.getKey() != null)
 								addHeader(l.getKey(), value);

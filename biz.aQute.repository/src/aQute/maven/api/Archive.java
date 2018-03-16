@@ -6,17 +6,17 @@ import java.util.regex.Pattern;
 import aQute.bnd.version.MavenVersion;
 
 public class Archive implements Comparable<Archive> {
-	public static final Pattern	ARCHIVE_P	= Pattern.compile(																																					//
-			"\\s*"																																																// skip
-																																																				// whitespace
-					+ "(?<program>[^:]+:[^:]+)         # program\n"																																				//
-					+ "(:(?<extension>[^:]+)         # optional extension\n"																																	//
-					+ "    (:(?<classifier>[^:]+))?  # optional classifer (must be preceded by extension)\n"																									//
-					+ ")?                            # end of extension\n"																																		//
-					+ ":(?<version>[^:]+)           # version is last\n"																																						//
-					+ "\\s*",																																													// skip
-																																																				// whitespace
-			Pattern.COMMENTS);
+	public static final Pattern	ARCHIVE_P	= Pattern.compile(																																									//
+		"\\s*"																																																					// skip
+																																																								// whitespace
+			+ "(?<program>[^:]+:[^:]+)         # program\n"																																										//
+			+ "(:(?<extension>[^:]+)         # optional extension\n"																																							//
+			+ "    (:(?<classifier>[^:]+))?  # optional classifer (must be preceded by extension)\n"																															//
+			+ ")?                            # end of extension\n"																																								//
+			+ ":(?<version>[^:]+)           # version is last\n"																																								//
+			+ "\\s*",																																																			// skip
+																																																								// whitespace
+		Pattern.COMMENTS);
 	public final Revision		revision;
 	public final String			classifier;
 	public final String			extension;
@@ -43,7 +43,6 @@ public class Archive implements Comparable<Archive> {
 		this.remotePath = revision.path + "/" + getName(snapshot);
 	}
 
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -54,7 +53,6 @@ public class Archive implements Comparable<Archive> {
 		result = prime * result + (snapshot == null ? 0 : snapshot.hashCode());
 		return result;
 	}
-
 
 	@Override
 	public boolean equals(Object obj) {
@@ -98,19 +96,20 @@ public class Archive implements Comparable<Archive> {
 
 	public String getName(MavenVersion version) {
 		return revision.program.artifact + "-" + (version == null ? revision.version : version)
-				+ (this.classifier.isEmpty() ? "" : "-" + this.classifier) + "." + this.extension;
+			+ (this.classifier.isEmpty() ? "" : "-" + this.classifier) + "." + this.extension;
 	}
 
+	@Override
 	public String toString() {
 		StringBuilder sb = prefix();
-		sb.append(":").append(revision.version);
+		sb.append(":")
+			.append(revision.version);
 		return sb.toString();
 	}
 
 	public String getWithoutVersion() {
 		return prefix().toString();
 	}
-
 
 	private StringBuilder prefix() {
 		StringBuilder sb = new StringBuilder();
@@ -119,12 +118,15 @@ public class Archive implements Comparable<Archive> {
 		sb.append(revision.program.artifact);
 
 		if (!extension.isEmpty() && !extension.equals("jar")) {
-			sb.append(":").append(extension);
+			sb.append(":")
+				.append(extension);
 			if (!classifier.isEmpty())
-				sb.append(":").append(classifier);
+				sb.append(":")
+					.append(classifier);
 		} else {
 			if (!classifier.isEmpty()) {
-				sb.append(":jar:").append(classifier);
+				sb.append(":jar:")
+					.append(classifier);
 			}
 		}
 		return sb;
@@ -150,7 +152,8 @@ public class Archive implements Comparable<Archive> {
 	}
 
 	public static boolean isValid(String archive) {
-		return ARCHIVE_P.matcher(archive).matches();
+		return ARCHIVE_P.matcher(archive)
+			.matches();
 	}
 
 	public static Archive valueOf(String archive) {
@@ -159,7 +162,8 @@ public class Archive implements Comparable<Archive> {
 			return null;
 
 		Program p = Program.valueOf(m.group("program"));
-		return p.version(m.group("version")).archive(m.group("extension"), m.group("classifier"));
+		return p.version(m.group("version"))
+			.archive(m.group("extension"), m.group("classifier"));
 	}
 
 	@Override
@@ -176,13 +180,15 @@ public class Archive implements Comparable<Archive> {
 	}
 
 	final static Pattern FILEPATH_P = Pattern
-			.compile("(?<group>([^/]+)(/[^/]+)+)/(?<artifact>[^/]+)/(?<version>[^/]+)/(?<name>[^/]+)");
+		.compile("(?<group>([^/]+)(/[^/]+)+)/(?<artifact>[^/]+)/(?<version>[^/]+)/(?<name>[^/]+)");
+
 	public static Archive fromFilepath(String filePath) {
 		Matcher matcher = FILEPATH_P.matcher(filePath);
 		if (!matcher.matches())
 			return null;
 
-		String group = matcher.group("group").replace('/', '.');
+		String group = matcher.group("group")
+			.replace('/', '.');
 		String artifact = matcher.group("artifact");
 		Program program = Program.valueOf(group, artifact);
 
@@ -209,7 +215,9 @@ public class Archive implements Comparable<Archive> {
 	}
 
 	public static Archive valueOf(String group, String artifact, String version, String extension, String classifier) {
-		return Program.valueOf(group, artifact).version(version).archive(extension, classifier);
+		return Program.valueOf(group, artifact)
+			.version(version)
+			.archive(extension, classifier);
 	}
 
 	public boolean hasClassifier() {

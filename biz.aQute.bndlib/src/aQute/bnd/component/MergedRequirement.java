@@ -21,7 +21,7 @@ public class MergedRequirement {
 	private static final String	MULTIPLE	= "\"multiple\"";
 	private static final String	OPTIONAL	= "\"optional\"";
 
-	private static class FilterEffectivePair extends Pair<String,String> {
+	private static class FilterEffectivePair extends Pair<String, String> {
 		private static final long serialVersionUID = 1L;
 
 		FilterEffectivePair(String filter, String effective) {
@@ -29,7 +29,7 @@ public class MergedRequirement {
 		}
 	}
 
-	private final Map<FilterEffectivePair,Attrs>	filterMap	= new LinkedHashMap<FilterEffectivePair,Attrs>();
+	private final Map<FilterEffectivePair, Attrs>	filterMap	= new LinkedHashMap<>();
 	private final String							namespace;
 
 	public MergedRequirement(String namespace) {
@@ -70,11 +70,14 @@ public class MergedRequirement {
 	 * Require-Capability header.
 	 */
 	public List<String> toStringList() {
-		List<String> strings = new ArrayList<String>(filterMap.size());
+		List<String> strings = new ArrayList<>(filterMap.size());
 
-		for (Entry<FilterEffectivePair,Attrs> entry : filterMap.entrySet()) {
+		for (Entry<FilterEffectivePair, Attrs> entry : filterMap.entrySet()) {
 			Attrs attrs = entry.getValue();
-			strings.add(new StringBuilder().append(namespace).append(';').append(attrs).toString());
+			strings.add(new StringBuilder().append(namespace)
+				.append(';')
+				.append(attrs)
+				.toString());
 		}
 
 		return strings;

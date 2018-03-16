@@ -22,11 +22,11 @@ import aQute.libg.cryptography.SHA256;
 
 public class URLCache {
 	private final static Logger			logger	= LoggerFactory.getLogger(URLCache.class);
-	private final static JSONCodec		codec		= new JSONCodec();
+	private final static JSONCodec		codec	= new JSONCodec();
 
 	private final File					root;
 
-	private ConcurrentMap<File,Info>	infos		= new ConcurrentHashMap<>();
+	private ConcurrentMap<File, Info>	infos	= new ConcurrentHashMap<>();
 
 	public static class InfoDTO {
 		public String	etag;
@@ -54,7 +54,9 @@ public class URLCache {
 			this.jsonFile = new File(content.getParentFile(), content.getName() + ".json");
 			if (this.jsonFile.isFile()) {
 				try {
-					this.dto = codec.dec().from(jsonFile).get(InfoDTO.class);
+					this.dto = codec.dec()
+						.from(jsonFile)
+						.get(InfoDTO.class);
 				} catch (Exception e) {
 					this.dto = new InfoDTO();
 					logger.error("URLCache Failed to load data for {} from {}", content, jsonFile);
@@ -81,11 +83,15 @@ public class URLCache {
 		}
 
 		public void update(String etag) throws Exception {
-			this.dto.sha_1 = SHA1.digest(file).asHex();
-			this.dto.sha_256 = SHA256.digest(file).asHex();
+			this.dto.sha_1 = SHA1.digest(file)
+				.asHex();
+			this.dto.sha_256 = SHA256.digest(file)
+				.asHex();
 			this.dto.etag = etag;
 			this.dto.modified = file.lastModified();
-			codec.enc().to(jsonFile).put(this.dto);
+			codec.enc()
+				.to(jsonFile)
+				.put(this.dto);
 		}
 
 		public boolean isPresent() {
@@ -128,26 +134,33 @@ public class URLCache {
 	}
 
 	public Info get(File file, URI uri) throws Exception {
-		synchronized (this) {
-			if (file == null)
-				file = getCacheFileFor(uri);
-			Info info = infos.get(file);
+		if (file == null)
+			file = getCacheFileFor(uri);
+
+		// Unfortunately, the Info constructor throws Exception, making
+		// ConcurrentMap.computeIfAbsent() impossible. So we do it the
+		// hard(er) way
+		Info info = infos.get(file);
+		if (info == null) {
+			Info candidate = new Info(file, uri);
+			info = infos.putIfAbsent(file, candidate);
 			if (info == null) {
-				info = new Info(file, uri);
-				infos.put(file, info);
+				info = candidate;
 			}
-
-			if (info.lock.tryLock(5, TimeUnit.MINUTES)) {
-			} else {
-				logger.debug("Could not locked url cache {} - {}", uri, info);
-			}
-
-			return info;
 		}
+
+		// FIXME: 5 minutes is a bit excessive, no?
+		if (!info.lock.tryLock(5, TimeUnit.MINUTES)) {
+			logger.debug("Could not lock URL cache for {} - {}", uri, info);
+		}
+
+		return info;
 	}
 
 	public static String toName(URI uri) throws Exception {
-		return SHA1.digest(uri.toASCIIString().getBytes(StandardCharsets.UTF_8)).asHex();
+		return SHA1.digest(uri.toASCIIString()
+			.getBytes(StandardCharsets.UTF_8))
+			.asHex();
 	}
 
 	public static void update(File file, String tag) {

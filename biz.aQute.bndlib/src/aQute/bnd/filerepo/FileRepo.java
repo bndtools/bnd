@@ -43,6 +43,7 @@ public class FileRepo {
 		// this list.
 		//
 		return f.listFiles(new FilenameFilter() {
+			@Override
 			public boolean accept(File dir, String name) {
 				Matcher m = REPO_FILE.matcher(name);
 				if (!m.matches())
@@ -63,6 +64,7 @@ public class FileRepo {
 
 		String list[] = root.list(new FilenameFilter() {
 
+			@Override
 			public boolean accept(File dir, String name) {
 				Matcher matcher = pattern.matcher(name);
 				return matcher.matches();
@@ -74,9 +76,10 @@ public class FileRepo {
 
 	public List<Version> versions(String bsn) throws Exception {
 		File dir = new File(root, bsn);
-		final List<Version> versions = new ArrayList<Version>();
+		final List<Version> versions = new ArrayList<>();
 		dir.list(new FilenameFilter() {
 
+			@Override
 			public boolean accept(File dir, String name) {
 				Matcher m = REPO_FILE.matcher(name);
 				if (m.matches()) {
@@ -108,7 +111,7 @@ public class FileRepo {
 		File dir = new File(root, bsn);
 		IO.mkdirs(dir);
 		File file = new File(dir,
-				bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro() + ".jar");
+			bsn + "-" + version.getMajor() + "." + version.getMinor() + "." + version.getMicro() + ".jar");
 		return file;
 	}
 

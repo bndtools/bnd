@@ -49,7 +49,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	private final String		UPWARDS_ARROW			= " \u2191";
 	private final String		DOWNWARDS_ARROW			= " \u2193";
 	Pattern						REPO_FILE				= Pattern
-			.compile("([-a-zA-z0-9_\\.]+)(-|_)([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
+		.compile("([-a-zA-z0-9_\\.]+)(-|_)([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
 	private static final String	CACHE_PATH				= ".cache";
 	public static final String	PROP_LOCAL_DIR			= "local";
 	public static final String	PROP_READONLY			= "readonly";
@@ -65,7 +65,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	private String				onlydirs				= null;
 
 	// @GuardedBy("newFilesInCoordination")
-	private final List<URI>		newFilesInCoordination	= new LinkedList<URI>();
+	private final List<URI>		newFilesInCoordination	= new LinkedList<>();
 	private static final String	EMPTY_LOCATION			= "";
 
 	public static final String	PROP_LOCATIONS			= "locations";
@@ -73,11 +73,11 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 
 	private String				locations;
 	protected File				cacheDir				= new File(
-			System.getProperty("user.home") + File.separator + DEFAULT_CACHE_DIR);
+		System.getProperty("user.home") + File.separator + DEFAULT_CACHE_DIR);
 
 	@SuppressWarnings("deprecation")
 	@Override
-	public synchronized void setProperties(Map<String,String> map) {
+	public synchronized void setProperties(Map<String, String> map) {
 		super.setProperties(map);
 		locations = map.get(PROP_LOCATIONS);
 		String cachePath = map.get(PROP_CACHE);
@@ -85,8 +85,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 			cacheDir = new File(cachePath);
 			if (!cacheDir.isDirectory())
 				try {
-					throw new IllegalArgumentException(String.format(
-							"Cache path '%s' does not exist, or is not a directory.", cacheDir.getCanonicalPath()));
+					throw new IllegalArgumentException(String
+						.format("Cache path '%s' does not exist, or is not a directory.", cacheDir.getCanonicalPath()));
 				} catch (IOException e) {
 					throw new IllegalArgumentException("Could not get cacheDir canonical path", e);
 				}
@@ -96,12 +96,12 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		String localDirPath = map.get(PROP_LOCAL_DIR);
 		if (localDirPath == null)
 			throw new IllegalArgumentException(
-					String.format("Attribute '%s' must be set on %s plugin.", PROP_LOCAL_DIR, getClass().getName()));
+				String.format("Attribute '%s' must be set on %s plugin.", PROP_LOCAL_DIR, getClass().getName()));
 
 		storageDir = new File(localDirPath);
 		if (storageDir.exists() && !storageDir.isDirectory())
 			throw new IllegalArgumentException(
-					String.format("Local path '%s' exists and is not a directory.", localDirPath));
+				String.format("Local path '%s' exists and is not a directory.", localDirPath));
 
 		readOnly = Boolean.parseBoolean(map.get(PROP_READONLY));
 		pretty = Boolean.parseBoolean(map.get(PROP_PRETTY));
@@ -112,8 +112,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		cacheDir = new File(storageDir, CACHE_PATH);
 		if (cacheDir.exists() && !cacheDir.isDirectory())
 			throw new IllegalArgumentException(
-					String.format("Cannot create repository cache: '%s' already exists but is not directory.",
-							cacheDir.getAbsolutePath()));
+				String.format("Cannot create repository cache: '%s' already exists but is not directory.",
+					cacheDir.getAbsolutePath()));
 	}
 
 	@Override
@@ -126,10 +126,10 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 				remotes = Collections.emptyList();
 		} catch (MalformedURLException e) {
 			throw new IllegalArgumentException(
-					String.format("Invalid location, unable to parse as URL list: %s", locations), e);
+				String.format("Invalid location, unable to parse as URL list: %s", locations), e);
 		}
 
-		List<URI> indexes = new ArrayList<URI>(remotes.size() + generatingProviders.size());
+		List<URI> indexes = new ArrayList<>(remotes.size() + generatingProviders.size());
 
 		for (IRepositoryContentProvider contentProvider : generatingProviders) {
 			File indexFile = getIndexFile(contentProvider);
@@ -144,9 +144,9 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 				}
 			} catch (Exception e) {
 				logService.log(LogService.LOG_ERROR,
-						String.format("Unable to load/generate index file '%s' for repository type %s", indexFile,
-								contentProvider.getName()),
-						e);
+					String.format("Unable to load/generate index file '%s' for repository type %s", indexFile,
+						contentProvider.getName()),
+					e);
 			}
 		}
 
@@ -154,6 +154,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		return indexes;
 	}
 
+	@Override
 	public synchronized File getCacheDirectory() {
 		return cacheDir;
 	}
@@ -166,7 +167,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 
 	@Override
 	public synchronized String getName() {
-		if (name != null && !name.equals(this.getClass().getName()))
+		if (name != null && !name.equals(this.getClass()
+			.getName()))
 			return name;
 
 		return locations;
@@ -186,17 +188,15 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		for (IRepositoryContentProvider provider : generatingProviders) {
 			if (!provider.supportsGeneration()) {
 				logService.log(LogService.LOG_WARNING,
-						String.format("Repository type '%s' does not support index generation.", provider.getName()));
+					String.format("Repository type '%s' does not support index generation.", provider.getName()));
 				continue;
 			}
 			File indexFile = getIndexFile(provider);
 			try {
 				generateIndex(indexFile, provider);
 			} catch (Exception e) {
-				logService.log(LogService.LOG_ERROR,
-						String.format("Unable to regenerate index file '%s' for repository type %s", indexFile,
-								provider.getName()),
-						e);
+				logService.log(LogService.LOG_ERROR, String.format(
+					"Unable to regenerate index file '%s' for repository type %s", indexFile, provider.getName()), e);
 			}
 		}
 	}
@@ -204,15 +204,16 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	private synchronized void generateIndex(File indexFile, IRepositoryContentProvider provider) throws Exception {
 		if (indexFile.exists() && !indexFile.isFile())
 			throw new IllegalArgumentException(String.format(
-					"Cannot create file: '%s' already exists but is not a plain file.", indexFile.getAbsoluteFile()));
+				"Cannot create file: '%s' already exists but is not a plain file.", indexFile.getAbsoluteFile()));
 
-		Set<File> allFiles = new HashSet<File>();
+		Set<File> allFiles = new HashSet<>();
 		gatherFiles(allFiles);
 
 		IO.mkdirs(storageDir);
 		File shaFile = new File(indexFile.getPath() + REPO_INDEX_SHA_EXTENSION);
 		try (OutputStream out = IO.outputStream(indexFile)) {
-			URI rootUri = storageDir.getCanonicalFile().toURI();
+			URI rootUri = storageDir.getCanonicalFile()
+				.toURI();
 			provider.generateIndex(allFiles, out, this.getName(), rootUri, pretty, registry, logService);
 		} finally {
 			IO.delete(shaFile);
@@ -220,7 +221,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 
 		MessageDigest md = MessageDigest.getInstance(SHA256.ALGORITHM);
 		IO.copy(indexFile, md);
-		IO.store(Hex.toHexString(md.digest()).toLowerCase(), shaFile);
+		IO.store(Hex.toHexString(md.digest())
+			.toLowerCase(), shaFile);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -228,7 +230,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		if (!storageDir.isDirectory())
 			return;
 
-		LinkedList<File> files = new LinkedList<File>();
+		LinkedList<File> files = new LinkedList<>();
 		String[] onlydirsFiles = null;
 		if (onlydirs != null) {
 			String[] onlydirs2 = onlydirs.split(",");
@@ -244,10 +246,11 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 	}
 
 	private void listRecurse(final Pattern pattern, final String[] onlydirsFiles, File root, File dir,
-			LinkedList<File> files) {
-		final LinkedList<File> dirs = new LinkedList<File>();
+		LinkedList<File> files) {
+		final LinkedList<File> dirs = new LinkedList<>();
 		File[] moreFiles = dir.listFiles(new FileFilter() {
 
+			@Override
 			public boolean accept(File f) {
 				if (f.isDirectory()) {
 					boolean addit = true;
@@ -289,7 +292,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		reset();
 		regenerateAllIndexes();
 
-		List<URI> clone = new ArrayList<URI>(newFilesInCoordination);
+		List<URI> clone = new ArrayList<>(newFilesInCoordination);
 		synchronized (newFilesInCoordination) {
 			newFilesInCoordination.clear();
 		}
@@ -299,14 +302,16 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		}
 	}
 
+	@Override
 	public synchronized void ended(Coordination coordination) throws Exception {
 		finishPut();
 	}
 
+	@Override
 	public void failed(Coordination coordination) throws Exception {
 		ArrayList<URI> clone;
 		synchronized (newFilesInCoordination) {
-			clone = new ArrayList<URI>(newFilesInCoordination);
+			clone = new ArrayList<>(newFilesInCoordination);
 			newFilesInCoordination.clear();
 		}
 		for (URI entry : clone) {
@@ -332,7 +337,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 			File dir = new File(storageDir, bsn);
 			if (dir.exists() && !dir.isDirectory())
 				throw new IllegalArgumentException(
-						"Path already exists but is not a directory: " + dir.getAbsolutePath());
+					"Path already exists but is not a directory: " + dir.getAbsolutePath());
 			IO.mkdirs(dir);
 
 			String versionString = jar.getVersion();
@@ -402,7 +407,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 			IO.copy(dis, tmpFile);
 
 			/* beforeGet the digest if available */
-			byte[] disDigest = dis.getMessageDigest().digest();
+			byte[] disDigest = dis.getMessageDigest()
+				.digest();
 
 			if (options.digest != null && !Arrays.equals(options.digest, disDigest))
 				throw new IOException("Retrieved artifact digest doesn't match specified digest");
@@ -424,12 +430,14 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		}
 	}
 
+	@Override
 	public boolean refresh() {
 		reset();
 		regenerateAllIndexes();
 		return true;
 	}
 
+	@Override
 	public synchronized File getRoot() {
 		return storageDir;
 	}
@@ -459,7 +467,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 
 		String otherPaths = (locations == null) ? EMPTY_LOCATION : locations.toString();
 		if (otherPaths != null && otherPaths.length() > 0)
-			builder.append(", ").append(otherPaths);
+			builder.append(", ")
+				.append(otherPaths);
 
 		return builder.toString();
 	}
@@ -469,10 +478,12 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		this.locations = locations;
 	}
 
-	public Map<String,Runnable> actions(Object... target) throws Exception {
-		Map<String,Runnable> map = new HashMap<String,Runnable>();
+	@Override
+	public Map<String, Runnable> actions(Object... target) throws Exception {
+		Map<String, Runnable> map = new HashMap<>();
 		map.put("Refresh", new Runnable() {
 
+			@Override
 			public void run() {
 				regenerateAllIndexes();
 			}
@@ -489,6 +500,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 			if (f != null) {
 				map.put("Delete", new Runnable() {
 
+					@Override
 					public void run() {
 						deleteEntry(f);
 						regenerateAllIndexes();
@@ -498,7 +510,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 						File parent = f.getParentFile();
 						IO.delete(f);
 						File[] listFiles = parent.listFiles();
-						if (listFiles.length == 1 && listFiles[0].getName().endsWith("-latest.jar"))
+						if (listFiles.length == 1 && listFiles[0].getName()
+							.endsWith("-latest.jar"))
 							IO.delete(listFiles[0]);
 
 						listFiles = parent.listFiles();
@@ -513,6 +526,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		return map;
 	}
 
+	@Override
 	public String tooltip(Object... target) throws Exception {
 		if (target == null || target.length == 0)
 			return "LocalIndexedRepo @ " + getLocation();
@@ -528,7 +542,11 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 				return h.getName() + " (remote, not yet cached)";
 			}
 
-			return h.request().getAbsolutePath() + "\n" + SHA1.digest(h.request()).asHex() + "\n" + h.getLocation();
+			return h.request()
+				.getAbsolutePath() + "\n"
+				+ SHA1.digest(h.request())
+					.asHex()
+				+ "\n" + h.getLocation();
 		}
 		return null;
 	}
@@ -545,6 +563,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		return h;
 	}
 
+	@Override
 	public String title(Object... target) throws Exception {
 		if (target == null)
 			return null;
@@ -577,7 +596,6 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		return null;
 	}
 
-	public void close() {
-	}
+	public void close() {}
 
 }

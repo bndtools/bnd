@@ -5,7 +5,7 @@ import java.util.List;
 
 public final class OrFilter extends Filter {
 
-	private final List<Filter> children = new LinkedList<Filter>();
+	private final List<Filter> children = new LinkedList<>();
 
 	public OrFilter addChild(Filter child) {
 		if (child instanceof OrFilter)

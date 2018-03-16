@@ -25,15 +25,16 @@ public abstract class AbstractConsoleApp extends Env {
 	protected final PrintStream	out;
 
 	static String				encoding	= System.getProperty("file.encoding");
-	int							width		= 120;											// characters
+	int							width		= 120;									// characters
 	int							tabs[]		= {
-													40, 48, 56, 64, 72, 80, 88, 96, 104, 112
-												};
+		40, 48, 56, 64, 72, 80, 88, 96, 104, 112
+	};
 	private final Object		target;
 
 	static {
 		if (encoding == null)
-			encoding = Charset.defaultCharset().name();
+			encoding = Charset.defaultCharset()
+				.name();
 	}
 
 	/**
@@ -60,7 +61,7 @@ public abstract class AbstractConsoleApp extends Env {
 	public void run(String args[]) throws Exception {
 		try {
 			CommandLine cl = new CommandLine(this);
-			ExtList<String> list = new ExtList<String>(args);
+			ExtList<String> list = new ExtList<>(args);
 			String help = cl.execute(target, "_main", list);
 			check();
 			if (help != null)

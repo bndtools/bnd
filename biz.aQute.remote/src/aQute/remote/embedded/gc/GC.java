@@ -20,7 +20,8 @@ public class GC implements BundleActivator {
 			public void bundleChanged(BundleEvent event) {
 				if (event.getType() == BundleEvent.UNINSTALLED) {
 					Bundle b = event.getBundle();
-					String embedded = b.getHeaders().get("Bnd-Embedded");
+					String embedded = b.getHeaders()
+						.get("Bnd-Embedded");
 					if (embedded != null) {
 						uninstalled(b);
 					}
@@ -33,7 +34,8 @@ public class GC implements BundleActivator {
 		String bsn = parent.getSymbolicName();
 
 		for (Bundle b : context.getBundles()) {
-			if (b.getLocation().startsWith(bsn + "@"))
+			if (b.getLocation()
+				.startsWith(bsn + "@"))
 				;
 			try {
 				b.uninstall();

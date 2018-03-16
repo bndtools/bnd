@@ -29,8 +29,9 @@ public class VersionPolicyTest extends TestCase {
 		Jar jar = a.build();
 
 		Manifest m = jar.getManifest();
-		Parameters exports = Processor.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE), null);
-		Map<String,String> attrs = exports.get("test.refer");
+		Parameters exports = Processor.parseHeader(m.getMainAttributes()
+			.getValue(Constants.EXPORT_PACKAGE), null);
+		Map<String, String> attrs = exports.get("test.refer");
 		assertNotNull(attrs);
 		assertNull(attrs.get("version"));
 	}
@@ -46,8 +47,9 @@ public class VersionPolicyTest extends TestCase {
 		Jar jar = a.build();
 
 		Manifest m = jar.getManifest();
-		Parameters exports = Processor.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE), null);
-		Map<String,String> attrs = exports.get("test.refer");
+		Parameters exports = Processor.parseHeader(m.getMainAttributes()
+			.getValue(Constants.EXPORT_PACKAGE), null);
+		Map<String, String> attrs = exports.get("test.refer");
 		assertNotNull(attrs);
 		assertEquals("1.2.3", attrs.get("version"));
 	}
@@ -62,13 +64,16 @@ public class VersionPolicyTest extends TestCase {
 		a.setProperty("Private-Package", "test.refer");
 		a.setProperty("Import-Package", "org.osgi.service.event;provide:=true,*");
 		Jar jar = a.build();
-		Map<String,String> event = a.getImports().getByFQN("org.osgi.service.event");
+		Map<String, String> event = a.getImports()
+			.getByFQN("org.osgi.service.event");
 		assertEquals("[1.0,1.1)", event.get("version"));
-		Map<String,String> http = a.getImports().getByFQN("org.osgi.service.http");
+		Map<String, String> http = a.getImports()
+			.getByFQN("org.osgi.service.http");
 		assertEquals("[1.2,2)", http.get("version"));
 
 		Manifest m = jar.getManifest();
-		String imports = m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
+		String imports = m.getMainAttributes()
+			.getValue(Constants.IMPORT_PACKAGE);
 		assertFalse(imports.contains(Constants.PROVIDE_DIRECTIVE));
 	}
 
@@ -82,13 +87,16 @@ public class VersionPolicyTest extends TestCase {
 		a.setProperty("Private-Package", "test.refer");
 		a.setProperty("Export-Package", "org.osgi.service.http;provide:=true");
 		Jar jar = a.build();
-		Map<String,String> event = a.getImports().getByFQN("org.osgi.service.event");
+		Map<String, String> event = a.getImports()
+			.getByFQN("org.osgi.service.event");
 		assertEquals("[1.0,2)", event.get("version"));
-		Map<String,String> http = a.getImports().getByFQN("org.osgi.service.http");
+		Map<String, String> http = a.getImports()
+			.getByFQN("org.osgi.service.http");
 		assertEquals("[1.2,1.3)", http.get("version"));
 
 		Manifest m = jar.getManifest();
-		String imports = m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE);
+		String imports = m.getMainAttributes()
+			.getValue(Constants.IMPORT_PACKAGE);
 		assertFalse(imports.contains(Constants.PROVIDE_DIRECTIVE));
 	}
 
@@ -101,7 +109,8 @@ public class VersionPolicyTest extends TestCase {
 		a.setProperty("build", "xyz");
 		a.setProperty("Export-Package", "test.versionpolicy.api");
 		a.build();
-		Map<String,String> attrs = a.getExports().getByFQN("test.versionpolicy.api");
+		Map<String, String> attrs = a.getExports()
+			.getByFQN("test.versionpolicy.api");
 		assertEquals("1.2.0.xyz", attrs.get("version"));
 		assertEquals("PrivateImpl", attrs.get("exclude:"));
 		assertEquals("a", attrs.get("mandatory:"));
@@ -122,7 +131,7 @@ public class VersionPolicyTest extends TestCase {
 														// added?
 		a.setProperty("build", "123");
 		a.setProperty("-fixupmessages",
-				"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
+			"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
 		Jar jar = a.build();
 		assertTrue(a.check());
 		Manifest m = jar.getManifest();
@@ -171,7 +180,7 @@ public class VersionPolicyTest extends TestCase {
 		a.setExportPackage("test.versionpolicy.api");
 		a.setProperty("build", "123");
 		a.setProperty("-fixupmessages",
-				"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
+			"The annotation aQute.bnd.annotation.Export applied to package test.versionpolicy.api is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead");
 		Jar jar = a.build();
 		assertTrue(a.check());
 		Manifest m = jar.getManifest();
@@ -203,14 +212,18 @@ public class VersionPolicyTest extends TestCase {
 		b.setProperty("-versionpolicy-uses", "USES");
 		b.setProperty("Private-Package", pack);
 		b.build();
-		Manifest m = b.getJar().getManifest();
+		Manifest m = b.getJar()
+			.getManifest();
 		m.write(System.err);
-		Map<String,String> map = b.getImports().getByFQN("test.versionpolicy.api");
+		Map<String, String> map = b.getImports()
+			.getByFQN("test.versionpolicy.api");
 		assertNotNull(map);
 		// String s = map.get(Constants.IMPLEMENTED_DIRECTIVE);
 		// assertEquals("true", s);
-		Parameters mp = Processor.parseHeader(m.getMainAttributes().getValue("Import-Package"), null);
-		assertEquals(type, mp.get("test.versionpolicy.api").get("version"));
+		Parameters mp = Processor.parseHeader(m.getMainAttributes()
+			.getValue("Import-Package"), null);
+		assertEquals(type, mp.get("test.versionpolicy.api")
+			.get("version"));
 	}
 
 	/**
@@ -223,14 +236,21 @@ public class VersionPolicyTest extends TestCase {
 		b.setProperty("Private-Package", "org.objectweb.asm");
 		b.setProperty("Import-Package", "org.osgi.framework,org.objectweb.asm,abc;version=2.0.0,*");
 		b.build();
-		Manifest m = b.getJar().getManifest();
+		Manifest m = b.getJar()
+			.getManifest();
 		m.write(System.err);
-		String s = b.getImports().getByFQN("org.objectweb.asm").get("version");
+		String s = b.getImports()
+			.getByFQN("org.objectweb.asm")
+			.get("version");
 		assertNull(s);
-		s = b.getImports().getByFQN("abc").get("version");
+		s = b.getImports()
+			.getByFQN("abc")
+			.get("version");
 		assertEquals("2.0.0", s);
 
-		s = b.getImports().getByFQN("org.osgi.framework").get("version");
+		s = b.getImports()
+			.getByFQN("org.osgi.framework")
+			.get("version");
 		assertEquals("[1.3,2)", s);
 
 	}
@@ -246,7 +266,9 @@ public class VersionPolicyTest extends TestCase {
 		b.setProperty("Export-Package", "org.osgi.service.event");
 		b.setProperty("Private-Package", "test.refer");
 		b.build();
-		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+		String s = b.getImports()
+			.getByFQN("org.osgi.service.event")
+			.get("version");
 		assertEquals("[1.0,2)", s);
 
 	}
@@ -263,7 +285,9 @@ public class VersionPolicyTest extends TestCase {
 		b.setProperty("Private-Package", "test.refer");
 		b.setProperty("Import-Package", "org.osgi.service.event;version=2.1.3.q");
 		b.build();
-		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+		String s = b.getImports()
+			.getByFQN("org.osgi.service.event")
+			.get("version");
 		assertEquals("2.1.3.q", s);
 	}
 
@@ -278,7 +302,9 @@ public class VersionPolicyTest extends TestCase {
 		b.setProperty("Export-Package", "org.osgi.service.event");
 		b.setProperty("Private-Package", "test.refer");
 		b.build();
-		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+		String s = b.getImports()
+			.getByFQN("org.osgi.service.event")
+			.get("version");
 		assertEquals("[1.0,2)", s);
 	}
 
@@ -291,7 +317,9 @@ public class VersionPolicyTest extends TestCase {
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setProperty("Import-Package", "org.osgi.service.event");
 		b.build();
-		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
+		String s = b.getImports()
+			.getByFQN("org.osgi.service.event")
+			.get("version");
 		assertEquals("[1.0,2)", s);
 	}
 
@@ -303,10 +331,14 @@ public class VersionPolicyTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setProperty("Import-Package",
-				"org.osgi.service.event;version=${@}, org.osgi.service.log;version=\"${range;[==,=+)}\"");
+			"org.osgi.service.event;version=${@}, org.osgi.service.log;version=\"${range;[==,=+)}\"");
 		b.build();
-		String s = b.getImports().getByFQN("org.osgi.service.event").get("version");
-		String l = b.getImports().getByFQN("org.osgi.service.log").get("version");
+		String s = b.getImports()
+			.getByFQN("org.osgi.service.event")
+			.get("version");
+		String l = b.getImports()
+			.getByFQN("org.osgi.service.log")
+			.get("version");
 		assertEquals("1.0.1", s);
 		assertEquals("[1.3,1.4)", l);
 	}

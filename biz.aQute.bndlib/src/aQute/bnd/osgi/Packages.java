@@ -8,11 +8,15 @@ import java.util.Set;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 
-public class Packages implements Map<PackageRef,Attrs> {
+public class Packages implements Map<PackageRef, Attrs> {
 	private final Map<PackageRef, Attrs> map;
 
 	public static enum QUERY {
-		ANY, ANNOTATED, NAMED, VERSIONED
+		ANY,
+		ANNOTATED,
+		NAMED,
+		VERSIONED,
+		CONDITIONAL;
 	}
 
 	public Packages(Packages other) {
@@ -23,6 +27,7 @@ public class Packages implements Map<PackageRef,Attrs> {
 		map = new LinkedHashMap<>();
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -31,6 +36,7 @@ public class Packages implements Map<PackageRef,Attrs> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsKey(Object name) {
 		assert name instanceof PackageRef;
@@ -41,16 +47,19 @@ public class Packages implements Map<PackageRef,Attrs> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsValue(Object value) {
 		assert value instanceof Attrs;
 		return map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<PackageRef,Attrs>> entrySet() {
+	@Override
+	public Set<java.util.Map.Entry<PackageRef, Attrs>> entrySet() {
 		return map.entrySet();
 	}
 
+	@Override
 	@Deprecated
 	public Attrs get(Object key) {
 		assert key instanceof PackageRef;
@@ -61,10 +70,12 @@ public class Packages implements Map<PackageRef,Attrs> {
 		return map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map.isEmpty();
 	}
 
+	@Override
 	public Set<PackageRef> keySet() {
 		return map.keySet();
 	}
@@ -79,11 +90,13 @@ public class Packages implements Map<PackageRef,Attrs> {
 		return attrs;
 	}
 
+	@Override
 	public Attrs put(PackageRef key, Attrs value) {
 		return map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends PackageRef, ? extends Attrs> map) {
+	@Override
+	public void putAll(Map<? extends PackageRef, ? extends Attrs> map) {
 		this.map.putAll(map);
 	}
 
@@ -94,6 +107,7 @@ public class Packages implements Map<PackageRef,Attrs> {
 		}
 	}
 
+	@Override
 	@Deprecated
 	public Attrs remove(Object var0) {
 		assert var0 instanceof PackageRef;
@@ -104,25 +118,31 @@ public class Packages implements Map<PackageRef,Attrs> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		return map.size();
 	}
 
+	@Override
 	public Collection<Attrs> values() {
 		return map.values();
 	}
 
 	public Attrs getByFQN(String s) {
-		for (Map.Entry<PackageRef,Attrs> pr : map.entrySet()) {
-			if (pr.getKey().getFQN().equals(s))
+		for (Map.Entry<PackageRef, Attrs> pr : map.entrySet()) {
+			if (pr.getKey()
+				.getFQN()
+				.equals(s))
 				return pr.getValue();
 		}
 		return null;
 	}
 
 	public Attrs getByBinaryName(String s) {
-		for (Map.Entry<PackageRef,Attrs> pr : map.entrySet()) {
-			if (pr.getKey().getBinary().equals(s))
+		for (Map.Entry<PackageRef, Attrs> pr : map.entrySet()) {
+			if (pr.getKey()
+				.getBinary()
+				.equals(s))
 				return pr.getValue();
 		}
 		return null;
@@ -145,12 +165,14 @@ public class Packages implements Map<PackageRef,Attrs> {
 
 	public void append(StringBuilder sb) {
 		String del = "";
-		for (Map.Entry<PackageRef,Attrs> s : entrySet()) {
+		for (Map.Entry<PackageRef, Attrs> s : entrySet()) {
 			sb.append(del);
 			sb.append(s.getKey());
-			if (!s.getValue().isEmpty()) {
+			if (!s.getValue()
+				.isEmpty()) {
 				sb.append(';');
-				s.getValue().append(sb);
+				s.getValue()
+					.append(sb);
 			}
 			del = ",";
 		}

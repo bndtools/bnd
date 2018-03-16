@@ -39,7 +39,7 @@ import aQute.libg.glob.Glob;
 
 public class ConnectionSettings extends Processor {
 	final static Logger						logger							= LoggerFactory
-			.getLogger(ConnectionSettings.class);
+		.getLogger(ConnectionSettings.class);
 	public static final String				M2_SETTINGS_SECURITY_XML		= "~/.m2/settings-security.xml";
 	public static final String				M2_SETTINGS_SECURITY_PROPERTY	= "settings.security";
 	private static final String				M2_SETTINGS_XML					= "~/.m2/settings.xml";
@@ -51,7 +51,7 @@ public class ConnectionSettings extends Processor {
 
 																				@Override
 																				public String create()
-																						throws Exception {
+																					throws Exception {
 																					return readMavenMasterPassphrase();
 																				}
 
@@ -79,7 +79,7 @@ public class ConnectionSettings extends Processor {
 				return;
 			}
 
-			for (Map.Entry<String,Attrs> entry : connectionSettings.entrySet()) {
+			for (Map.Entry<String, Attrs> entry : connectionSettings.entrySet()) {
 
 				String key = entry.getKey();
 				if ("false".equalsIgnoreCase(key))
@@ -99,8 +99,8 @@ public class ConnectionSettings extends Processor {
 						String variable = attrs.get("var");
 						if (variable == null) {
 							getParent().error(
-									"Specified -connection-settings: %s, with 'env' but the 'var' parameter is no found",
-									connectionSettings);
+								"Specified -connection-settings: %s, with 'env' but the 'var' parameter is no found",
+								connectionSettings);
 						} else {
 							String value = System.getenv(key);
 							if (value != null) {
@@ -109,8 +109,8 @@ public class ConnectionSettings extends Processor {
 								key = tmp.getAbsolutePath();
 							} else
 								getParent().error(
-										"Specified -connection-settings: %s, but no such environment variable %s is found",
-										connectionSettings, key);
+									"Specified -connection-settings: %s, but no such environment variable %s is found",
+									connectionSettings, key);
 						}
 						break;
 				}
@@ -130,8 +130,8 @@ public class ConnectionSettings extends Processor {
 					if (!file.isFile()) {
 
 						if (!ignoreError) {
-							SetLocation error = getParent().error(
-									"Specified -connection-settings: %s, but no such file or is directory", file);
+							SetLocation error = getParent()
+								.error("Specified -connection-settings: %s, but no such file or is directory", file);
 							FileLine header = getParent().getHeader(CONNECTION_SETTINGS, key);
 							if (header != null)
 								header.set(error);
@@ -180,7 +180,8 @@ public class ConnectionSettings extends Processor {
 	}
 
 	private boolean isEmpty(String s) {
-		return s == null || s.trim().isEmpty();
+		return s == null || s.trim()
+			.isEmpty();
 	}
 
 	public URLConnectionHandler createUrlConnectionHandler(ServerDTO serverDTO) {
@@ -193,15 +194,20 @@ public class ConnectionSettings extends Processor {
 
 			@Override
 			public boolean matches(URL url) {
-				String scheme = url.getProtocol().toLowerCase();
+				String scheme = url.getProtocol()
+					.toLowerCase();
 
 				StringBuilder address = new StringBuilder();
-				address.append(scheme).append("://").append(url.getHost());
+				address.append(scheme)
+					.append("://")
+					.append(url.getHost());
 
 				if (url.getPort() > 0 && url.getPort() != url.getDefaultPort())
-					address.append(":").append(url.getPort());
+					address.append(":")
+						.append(url.getPort());
 
-				return match.matcher(address).matches();
+				return match.matcher(address)
+					.matches();
 			}
 
 			@Override
@@ -216,9 +222,11 @@ public class ConnectionSettings extends Processor {
 			}
 
 			boolean isHttps(URLConnection connection) {
-				return "https".equalsIgnoreCase(connection.getURL().getProtocol());
+				return "https".equalsIgnoreCase(connection.getURL()
+					.getProtocol());
 			}
 
+			@Override
 			public String toString() {
 				return "Server [ match=" + match + ", basic=" + basic + ", https=" + https + "]";
 			}
@@ -253,7 +261,8 @@ public class ConnectionSettings extends Processor {
 
 					case "HTTP" :
 						type = Type.HTTP;
-						if (url.getProtocol().equalsIgnoreCase("http")) {
+						if (url.getProtocol()
+							.equalsIgnoreCase("http")) {
 							// ok
 						} else
 							return null;
@@ -261,7 +270,8 @@ public class ConnectionSettings extends Processor {
 						break;
 					case "HTTPS" :
 						type = Type.HTTP;
-						if (url.getProtocol().equalsIgnoreCase("https")) {
+						if (url.getProtocol()
+							.equalsIgnoreCase("https")) {
 							// ok
 						} else
 							return null;
@@ -289,7 +299,7 @@ public class ConnectionSettings extends Processor {
 					proxySetup = new ProxySetup();
 					if (proxyDTO.username != null && proxyDTO.password != null)
 						proxySetup.authentication = new PasswordAuthentication(proxyDTO.username,
-								proxyDTO.password.toCharArray());
+							proxyDTO.password.toCharArray());
 
 					SocketAddress socketAddress;
 					if (proxyDTO.host != null)
@@ -307,7 +317,8 @@ public class ConnectionSettings extends Processor {
 				Glob[] globs = getNonProxyHosts(proxyDTO);
 
 				for (Glob glob : globs) {
-					if (glob.matcher(host).matches())
+					if (glob.matcher(host)
+						.matches())
 						return true;
 				}
 				return false;
@@ -388,7 +399,7 @@ public class ConnectionSettings extends Processor {
 				return MavenPasswordObfuscator.decrypt(master, M2_SETTINGS_SECURITY_PROPERTY);
 			} catch (Exception e) {
 				exception(e, "Could not decrypt the master password from %s with key %s", path,
-						M2_SETTINGS_SECURITY_PROPERTY);
+					M2_SETTINGS_SECURITY_PROPERTY);
 				return null;
 			}
 		}
@@ -419,7 +430,8 @@ public class ConnectionSettings extends Processor {
 				if (parts.length > 1) {
 
 					String pp[] = parts[1].split("/");
-					address = InetAddress.getByName(pp[0]).getAddress();
+					address = InetAddress.getByName(pp[0])
+						.getAddress();
 					maskLength = pp.length > 1 ? Integer.parseInt(pp[1]) : address.length * 8;
 
 				}
@@ -435,14 +447,16 @@ public class ConnectionSettings extends Processor {
 					if (!ni.isUp())
 						continue;
 
-					if (g.matcher(ni.getName()).matches()) {
+					if (g.matcher(ni.getName())
+						.matches()) {
 
 						if (address == null)
 							return true;
 
 						for (InterfaceAddress ia : ni.getInterfaceAddresses()) {
 
-							byte[] iaa = ia.getAddress().getAddress();
+							byte[] iaa = ia.getAddress()
+								.getAddress();
 
 							if (address.length != iaa.length)
 								continue;

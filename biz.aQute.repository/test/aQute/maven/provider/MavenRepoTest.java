@@ -17,15 +17,15 @@ import aQute.maven.api.Revision;
 import junit.framework.TestCase;
 
 public class MavenRepoTest extends TestCase {
-	File aFile = IO.getFile("testresources/empty");
+	File							aFile		= IO.getFile("testresources/empty");
 
-	String					tmpName;
-	File					local;
-	File					remote;
-	FakeNexus		fnx;
+	String							tmpName;
+	File							local;
+	File							remote;
+	FakeNexus						fnx;
 	List<MavenBackingRepository>	repo;
-	MavenRepository	storage;
-	ReporterAdapter	reporter	= new ReporterAdapter(System.err);
+	MavenRepository					storage;
+	ReporterAdapter					reporter	= new ReporterAdapter(System.err);
 
 	@Override
 	protected void setUp() throws Exception {
@@ -70,33 +70,37 @@ public class MavenRepoTest extends TestCase {
 		assertNotNull(archive);
 		assertEquals("1.4-20160119.062305-9", archive.snapshot.toString());
 
-		File file = storage.get(archive).getValue();
+		File file = storage.get(archive)
+			.getValue();
 		assertNotNull(file);
 		assertEquals(10373L, file.length());
 
 	}
 
-
 	public void testSnapshotCaches() throws Exception {
 		File fpom = IO.getFile(local, "commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-SNAPSHOT.pom");
 		Program program = Program.valueOf("commons-cli", "commons-cli");
-		Revision revision = Program.valueOf("commons-cli", "commons-cli").version("1.4-SNAPSHOT");
+		Revision revision = Program.valueOf("commons-cli", "commons-cli")
+			.version("1.4-SNAPSHOT");
 		Archive apom = revision.archive("pom", null);
 		assertFalse(fpom.exists());
 		assertFalse(apom.isResolved());
 
-		File f = storage.get(apom).getValue();
+		File f = storage.get(apom)
+			.getValue();
 		assertEquals(fpom.getAbsolutePath(), f.getAbsolutePath());
 		assertRecent(f);
 		long flastModified = f.lastModified();
 		Thread.sleep(1001);
 
-		f = storage.get(apom).getValue();
+		f = storage.get(apom)
+			.getValue();
 		assertEquals(flastModified, f.lastModified());
 
 		f.setLastModified(0);
 		assertFalse(Math.abs(System.currentTimeMillis() - f.lastModified()) <= 2000);
-		f = storage.get(apom).getValue();
+		f = storage.get(apom)
+			.getValue();
 		assertFalse(f.lastModified() != 0);
 	}
 
@@ -107,7 +111,8 @@ public class MavenRepoTest extends TestCase {
 	public void testImmutable() throws Exception {
 		File fpom = IO.getFile(local, "commons-cli/commons-cli/1.2/commons-cli-1.2.pom");
 		Program program = Program.valueOf("commons-cli", "commons-cli");
-		Revision revision = Program.valueOf("commons-cli", "commons-cli").version("1.2");
+		Revision revision = Program.valueOf("commons-cli", "commons-cli")
+			.version("1.2");
 		Archive apom = revision.archive("pom", null);
 		assertFalse(fpom.exists());
 
@@ -115,12 +120,14 @@ public class MavenRepoTest extends TestCase {
 		assertTrue(rapom.isResolved());
 		assertEquals(rapom, apom);
 
-		File f = storage.get(rapom).getValue();
+		File f = storage.get(rapom)
+			.getValue();
 		assertEquals(fpom, f);
 		assertRecent(f);
 
 		f.setLastModified(10000);
-		f = storage.get(rapom).getValue();
+		f = storage.get(rapom)
+			.getValue();
 		assertEquals(fpom, f);
 		assertEquals(10000L, f.lastModified());
 
@@ -130,7 +137,8 @@ public class MavenRepoTest extends TestCase {
 		File fpom = IO.getFile(local, "commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-SNAPSHOT.pom");
 		File rpom = IO.getFile(remote, "commons-cli/commons-cli/1.4-SNAPSHOT/commons-cli-1.4-19700101.000010-10.pom");
 		Program program = Program.valueOf("commons-cli", "commons-cli");
-		Revision revision = Program.valueOf("commons-cli", "commons-cli").version("1.4-SNAPSHOT");
+		Revision revision = Program.valueOf("commons-cli", "commons-cli")
+			.version("1.4-SNAPSHOT");
 		Archive apom = revision.archive("pom", null);
 		assertFalse(fpom.exists());
 

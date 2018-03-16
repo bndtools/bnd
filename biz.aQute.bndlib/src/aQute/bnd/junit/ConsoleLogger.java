@@ -25,19 +25,19 @@ public class ConsoleLogger implements LogReaderService {
 	public List<LogListener>						logListeners	= new CopyOnWriteArrayList<>();
 	public static AtomicLong						timer			= new AtomicLong(0);
 	public PrintStream								logToConsole	= System.out;
-	private ServiceRegistration< ? >				registerService;
+	private ServiceRegistration<?>					registerService;
 	private ServiceRegistration<LogReaderService>	lrRegistration;
 	private AtomicBoolean							closed			= new AtomicBoolean();
 
 	public static class LogEntryImpl implements LogEntry {
 		public final Bundle					bundle;
-		public final ServiceReference< ? >	reference;
+		public final ServiceReference<?>	reference;
 		public final Throwable				exception;
 		public final String					message;
 		public final int					level;
 		public final long					time	= timer.incrementAndGet();
 
-		public LogEntryImpl(Bundle b, ServiceReference< ? > reference, Throwable e, int level, String message) {
+		public LogEntryImpl(Bundle b, ServiceReference<?> reference, Throwable e, int level, String message) {
 			bundle = b;
 			this.reference = reference;
 			exception = e;
@@ -79,7 +79,7 @@ public class ConsoleLogger implements LogReaderService {
 
 	public class Facade implements LogService {
 
-		private Bundle							bundle;
+		private Bundle bundle;
 
 		public Facade(Bundle bundle, ServiceRegistration<LogService> registration) {
 			this.bundle = bundle;
@@ -132,19 +132,19 @@ public class ConsoleLogger implements LogReaderService {
 		};
 
 		registerService = context.registerService(new String[] {
-				LogService.class.getName()
+			LogService.class.getName()
 		}, serviceFactory, null);
 
 		lrRegistration = context.registerService(LogReaderService.class, this, null);
 	}
 
-	void log(Bundle bundle, ServiceReference< ? > sr, int level, String message, Throwable exception) {
+	void log(Bundle bundle, ServiceReference<?> sr, int level, String message, Throwable exception) {
 		LogEntry le = new LogEntryImpl(bundle, sr, exception, level, message);
 		synchronized (this) {
 			entries.add(le);
 			if (logToConsole != null) {
 				logToConsole.format("%8s: %s %s %s\n", le.getTime(), le.getMessage(), le.getServiceReference(),
-						le.getException());
+					le.getException());
 			}
 		}
 	}
@@ -158,7 +158,6 @@ public class ConsoleLogger implements LogReaderService {
 	public void removeLogListener(LogListener listener) {
 		logListeners.remove(listener);
 	}
-
 
 	@Override
 	public Enumeration getLog() {

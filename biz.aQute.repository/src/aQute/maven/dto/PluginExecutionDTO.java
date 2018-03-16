@@ -14,10 +14,9 @@ public class PluginExecutionDTO extends DTO {
 	 * The identifier of this execution for labelling the goals during the
 	 * build, and for matching executions to merge during inheritance and
 	 * profile injection.
-	 * 
 	 */
 
-	public String id = "default";
+	public String				id	= "default";
 
 	/**
 	 * The build lifecycle phase to bind the goals in this execution to. If
@@ -25,23 +24,22 @@ public class PluginExecutionDTO extends DTO {
 	 * plugin.
 	 */
 
-	public String phase;
+	public String				phase;
 
 	/**
 	 * The goals to execute with the given configuration.
 	 */
 
-	public String[] goals;
+	public String[]				goals;
 
 	/**
 	 * Whether any configuration should be propagated to child POMs. Note: While
 	 * the type of this field is <code>String</code> for technical reasons, the
 	 * semantic type is actually <code>Boolean</code>. Default value is
 	 * <code>true</code>.
-	 * 
 	 */
 
-	public boolean inherited;
+	public boolean				inherited;
 
 	/**
 	 * <p>
@@ -71,5 +69,5 @@ public class PluginExecutionDTO extends DTO {
 	 * </p>
 	 */
 
-	public Map<String, Object> configuration;
+	public Map<String, Object>	configuration;
 }

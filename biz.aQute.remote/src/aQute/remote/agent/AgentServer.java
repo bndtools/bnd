@@ -60,7 +60,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	// Constant so we do not have to repeat it
 	//
 
-	private static final TypeReference<Map<String,String>>	MAP_STRING_STRING_T	= new TypeReference<Map<String,String>>() {};
+	private static final TypeReference<Map<String, String>>	MAP_STRING_STRING_T	= new TypeReference<Map<String, String>>() {};
 
 	private static final long[]								EMPTY				= new long[0];
 
@@ -71,39 +71,24 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 	@SuppressWarnings("deprecation")
 	static String											keys[]				= {
-																						Constants.FRAMEWORK_BEGINNING_STARTLEVEL,
-																						Constants.FRAMEWORK_BOOTDELEGATION,
-																						Constants.FRAMEWORK_BSNVERSION,
-																						Constants.FRAMEWORK_BUNDLE_PARENT,
-																						Constants.FRAMEWORK_TRUST_REPOSITORIES,
-																						Constants.FRAMEWORK_COMMAND_ABSPATH,
-																						Constants.FRAMEWORK_EXECPERMISSION,
-																						Constants.FRAMEWORK_EXECUTIONENVIRONMENT,
-																						Constants.FRAMEWORK_LANGUAGE,
-																						Constants.FRAMEWORK_LIBRARY_EXTENSIONS,
-																						Constants.FRAMEWORK_OS_NAME,
-																						Constants.FRAMEWORK_OS_VERSION,
-																						Constants.FRAMEWORK_PROCESSOR,
-																						Constants.FRAMEWORK_SECURITY,
-																						Constants.FRAMEWORK_STORAGE,
-																						Constants.FRAMEWORK_SYSTEMCAPABILITIES,
-																						Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA,
-																						Constants.FRAMEWORK_SYSTEMPACKAGES,
-																						Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA,
-																						Constants.FRAMEWORK_UUID,
-																						Constants.FRAMEWORK_VENDOR,
-																						Constants.FRAMEWORK_VERSION,
-																						Constants.FRAMEWORK_WINDOWSYSTEM,
-																					};
+		Constants.FRAMEWORK_BEGINNING_STARTLEVEL, Constants.FRAMEWORK_BOOTDELEGATION, Constants.FRAMEWORK_BSNVERSION,
+		Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_TRUST_REPOSITORIES, Constants.FRAMEWORK_COMMAND_ABSPATH,
+		Constants.FRAMEWORK_EXECPERMISSION, Constants.FRAMEWORK_EXECUTIONENVIRONMENT, Constants.FRAMEWORK_LANGUAGE,
+		Constants.FRAMEWORK_LIBRARY_EXTENSIONS, Constants.FRAMEWORK_OS_NAME, Constants.FRAMEWORK_OS_VERSION,
+		Constants.FRAMEWORK_PROCESSOR, Constants.FRAMEWORK_SECURITY, Constants.FRAMEWORK_STORAGE,
+		Constants.FRAMEWORK_SYSTEMCAPABILITIES, Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA,
+		Constants.FRAMEWORK_SYSTEMPACKAGES, Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, Constants.FRAMEWORK_UUID,
+		Constants.FRAMEWORK_VENDOR, Constants.FRAMEWORK_VERSION, Constants.FRAMEWORK_WINDOWSYSTEM,
+	};
 
 	private Supervisor										remote;
 	private BundleContext									context;
 	private final ShaCache									cache;
 	private ShaSource										source;
-	private final Map<String,String>						installed			= new HashMap<String,String>();
+	private final Map<String, String>						installed			= new HashMap<>();
 	volatile boolean										quit;
 	private Redirector										redirector			= new NullRedirector();
-	private Link<Agent,Supervisor>							link;
+	private Link<Agent, Supervisor>							link;
 	private CountDownLatch									refresh				= new CountDownLatch(0);
 
 	/**
@@ -162,7 +147,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			try {
 				bundle.start();
 			} catch (BundleException e) {
-				sb.append(e.getMessage()).append("\n");
+				sb.append(e.getMessage())
+					.append("\n");
 			}
 		}
 		return sb.length() == 0 ? null : sb.toString();
@@ -177,7 +163,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			try {
 				bundle.stop();
 			} catch (BundleException e) {
-				sb.append(e.getMessage()).append("\n");
+				sb.append(e.getMessage())
+					.append("\n");
 			}
 		}
 		return sb.length() == 0 ? null : sb.toString();
@@ -193,14 +180,15 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 				bundle.uninstall();
 				installed.remove(bundle.getLocation());
 			} catch (BundleException e) {
-				sb.append(e.getMessage()).append("\n");
+				sb.append(e.getMessage())
+					.append("\n");
 			}
 		}
 		return sb.length() == 0 ? null : sb.toString();
 	}
 
 	@Override
-	public String update(Map<String,String> bundles) throws InterruptedException {
+	public String update(Map<String, String> bundles) throws InterruptedException {
 
 		refresh.await();
 
@@ -209,20 +197,22 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			bundles = Collections.emptyMap();
 		}
 
-		Set<String> toBeDeleted = new HashSet<String>(installed.keySet());
+		Set<String> toBeDeleted = new HashSet<>(installed.keySet());
 		toBeDeleted.removeAll(bundles.keySet());
 
-		LinkedHashSet<String> toBeInstalled = new LinkedHashSet<String>(bundles.keySet());
+		LinkedHashSet<String> toBeInstalled = new LinkedHashSet<>(bundles.keySet());
 		toBeInstalled.removeAll(installed.keySet());
 
-		Map<String,String> changed = new HashMap<String,String>(bundles);
-		changed.values().removeAll(installed.values());
-		changed.keySet().removeAll(toBeInstalled);
+		Map<String, String> changed = new HashMap<>(bundles);
+		changed.values()
+			.removeAll(installed.values());
+		changed.keySet()
+			.removeAll(toBeInstalled);
 
-		Set<String> affected = new HashSet<String>(toBeDeleted);
+		Set<String> affected = new HashSet<>(toBeDeleted);
 		affected.addAll(changed.keySet());
 
-		LinkedHashSet<Bundle> toBeStarted = new LinkedHashSet<Bundle>();
+		LinkedHashSet<Bundle> toBeStarted = new LinkedHashSet<>();
 
 		for (String location : affected) {
 			Bundle b = getBundle(location);
@@ -280,7 +270,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			}
 		}
 
-		for (Entry<String,String> e : changed.entrySet()) {
+		for (Entry<String, String> e : changed.entrySet()) {
 			String location = e.getKey();
 			String sha = e.getValue();
 
@@ -327,6 +317,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		return result;
 	}
 
+	@Override
 	public String update(long id, String sha) throws Exception {
 		InputStream in = cache.getStream(sha, source);
 		if (in == null)
@@ -339,12 +330,14 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			bundle.update(in);
 			refresh(true);
 		} catch (Exception e) {
-			sb.append(e.getMessage()).append("\n");
+			sb.append(e.getMessage())
+				.append("\n");
 		}
 
 		return sb.length() == 0 ? null : sb.toString();
 	}
 
+	@Override
 	public String updateFromURL(long id, String url) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		InputStream is = new URL(url).openStream();
@@ -354,7 +347,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			bundle.update(is);
 			refresh(true);
 		} catch (Exception e) {
-			sb.append(e.getMessage()).append("\n");
+			sb.append(e.getMessage())
+				.append("\n");
 		}
 
 		return sb.length() == 0 ? null : sb.toString();
@@ -432,14 +426,15 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	private List<ServiceReferenceDTO> getServiceReferences() throws Exception {
-		ServiceReference< ? >[] refs = context.getAllServiceReferences(null, null);
+		ServiceReference<?>[] refs = context.getAllServiceReferences(null, null);
 		if (refs == null)
 			return Collections.emptyList();
 
-		ArrayList<ServiceReferenceDTO> list = new ArrayList<ServiceReferenceDTO>(refs.length);
-		for (ServiceReference< ? > r : refs) {
+		ArrayList<ServiceReferenceDTO> list = new ArrayList<>(refs.length);
+		for (ServiceReference<?> r : refs) {
 			ServiceReferenceDTO ref = new ServiceReferenceDTO();
-			ref.bundle = r.getBundle().getBundleId();
+			ref.bundle = r.getBundle()
+				.getBundleId();
 			ref.id = (Long) r.getProperty(Constants.SERVICE_ID);
 			ref.properties = getProperties(r);
 			Bundle[] usingBundles = r.getUsingBundles();
@@ -456,17 +451,17 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		return list;
 	}
 
-	private Map<String,Object> getProperties(ServiceReference< ? > ref) {
-		Map<String,Object> map = new HashMap<String,Object>();
+	private Map<String, Object> getProperties(ServiceReference<?> ref) {
+		Map<String, Object> map = new HashMap<>();
 		for (String key : ref.getPropertyKeys())
 			map.put(key, ref.getProperty(key));
 		return map;
 	}
 
 	@SuppressWarnings({
-			"unchecked", "rawtypes"
+		"unchecked", "rawtypes"
 	})
-	private Map<String,Object> getProperties() {
+	private Map<String, Object> getProperties() {
 		Map map = new HashMap();
 		map.putAll(System.getenv());
 		map.putAll(System.getProperties());
@@ -480,7 +475,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 	private List<BundleDTO> getBundles() {
 		Bundle[] bundles = context.getBundles();
-		ArrayList<BundleDTO> list = new ArrayList<BundleDTO>(bundles.length);
+		ArrayList<BundleDTO> list = new ArrayList<>(bundles.length);
 		for (Bundle b : bundles) {
 			list.add(toDTO(b));
 		}
@@ -493,7 +488,9 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		bd.lastModified = b.getLastModified();
 		bd.state = b.getState();
 		bd.symbolicName = b.getSymbolicName();
-		bd.version = b.getVersion() == null ? "0" : b.getVersion().toString();
+		bd.version = b.getVersion() == null ? "0"
+			: b.getVersion()
+				.toString();
 		return bd;
 	}
 
@@ -580,13 +577,13 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
-	public Map<String,String> getSystemProperties() throws Exception {
+	public Map<String, String> getSystemProperties() throws Exception {
 		return Converter.cnv(MAP_STRING_STRING_T, System.getProperties());
 	}
 
 	@Override
-	public boolean createFramework(String name, Collection<String> runpath, Map<String,Object> properties)
-			throws Exception {
+	public boolean createFramework(String name, Collection<String> runpath, Map<String, Object> properties)
+		throws Exception {
 		throw new UnsupportedOperationException("This is an agent, we can't create new frameworks (for now)");
 	}
 
@@ -594,11 +591,12 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		return remote;
 	}
 
-	public void setLink(Link<Agent,Supervisor> link) {
+	public void setLink(Link<Agent, Supervisor> link) {
 		setRemote(link.getRemote());
 		this.link = link;
 	}
 
+	@Override
 	public boolean ping() {
 		return true;
 	}
@@ -610,7 +608,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	@SuppressWarnings("deprecation")
 	public void refresh(boolean async) throws InterruptedException {
 		try {
-			FrameworkWiring f = context.getBundle(0).adapt(FrameworkWiring.class);
+			FrameworkWiring f = context.getBundle(0)
+				.adapt(FrameworkWiring.class);
 			if (f != null) {
 				refresh = new CountDownLatch(1);
 				f.refreshBundles(null, new FrameworkListener() {
@@ -630,8 +629,8 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 		} catch (Exception | NoSuchMethodError e) {
 			@SuppressWarnings("unchecked")
 			ServiceReference<org.osgi.service.packageadmin.PackageAdmin> ref = (ServiceReference<org.osgi.service.packageadmin.PackageAdmin>) context
-					.getServiceReference(org.osgi.service.packageadmin.PackageAdmin.class.getName());
-			if ( ref != null) {
+				.getServiceReference(org.osgi.service.packageadmin.PackageAdmin.class.getName());
+			if (ref != null) {
 				org.osgi.service.packageadmin.PackageAdmin padmin = context.getService(ref);
 				padmin.refreshPackages(null);
 				return;
@@ -653,7 +652,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			}
 		}
 
-		List<BundleDTO> bundleDTOs = new ArrayList<BundleDTO>(bundles.length);
+		List<BundleDTO> bundleDTOs = new ArrayList<>(bundles.length);
 
 		for (Bundle b : bundles) {
 			BundleDTO dto = toDTO(b);
@@ -679,7 +678,7 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 			}
 		}
 
-		List<BundleRevisionDTO> revisions = new ArrayList<BundleRevisionDTO>(bundles.length);
+		List<BundleRevisionDTO> revisions = new ArrayList<>(bundles.length);
 
 		for (Bundle b : bundles) {
 			BundleRevision resource = b.adapt(BundleRevision.class);
@@ -697,19 +696,21 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 
 	private BundleRevisionDTO toDTO(BundleRevision resource) {
 		BundleRevisionDTO brd = new BundleRevisionDTO();
-		brd.bundle = resource.getBundle().getBundleId();
+		brd.bundle = resource.getBundle()
+			.getBundleId();
 		brd.id = sequence.getAndIncrement();
 		brd.symbolicName = resource.getSymbolicName();
 		brd.type = resource.getTypes();
-		brd.version = resource.getVersion().toString();
+		brd.version = resource.getVersion()
+			.toString();
 
-		brd.requirements = new ArrayList<RequirementDTO>();
+		brd.requirements = new ArrayList<>();
 
 		for (Requirement r : resource.getRequirements(null)) {
 			brd.requirements.add(toDTO(brd.id, r));
 		}
 
-		brd.capabilities = new ArrayList<CapabilityDTO>();
+		brd.capabilities = new ArrayList<>();
 		for (Capability c : resource.getCapabilities(null)) {
 			brd.capabilities.add(toDTO(brd.id, c));
 		}

@@ -30,9 +30,10 @@ public class TestTask extends BaseTask {
 				projects = Collections.singletonList(baseProject);
 			} else {
 				StringTokenizer tokenizer = new StringTokenizer(runFiles, ",");
-				projects = new LinkedList<Project>();
+				projects = new LinkedList<>();
 				while (tokenizer.hasMoreTokens()) {
-					String runFilePath = tokenizer.nextToken().trim();
+					String runFilePath = tokenizer.nextToken()
+						.trim();
 					Project runProject;
 					if (".".equals(runFilePath)) {
 						runProject = baseProject;
@@ -40,7 +41,7 @@ public class TestTask extends BaseTask {
 						File runFile = new File(baseDir, runFilePath);
 						if (!runFile.isFile())
 							throw new BuildException(String.format("Run file %s does not exist (or is not a file).",
-									runFile.getAbsolutePath()));
+								runFile.getAbsolutePath()));
 						runProject = new Project(baseProject.getWorkspace(), baseDir, runFile);
 						runProject.setParent(baseProject);
 					}

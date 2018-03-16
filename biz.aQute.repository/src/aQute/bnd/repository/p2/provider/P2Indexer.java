@@ -50,23 +50,23 @@ import aQute.p2.provider.P2Impl;
 import aQute.service.reporter.Reporter;
 
 class P2Indexer implements Closeable {
-	private final static Logger			logger		= LoggerFactory.getLogger(P2Indexer.class);
-	private static final long	MAX_STALE	= TimeUnit.DAYS.toMillis(100);
-	private final Reporter					reporter;
-	final File								location;
-	private final HttpClient				client;
+	private final static Logger			logger					= LoggerFactory.getLogger(P2Indexer.class);
+	private static final long			MAX_STALE				= TimeUnit.DAYS.toMillis(100);
+	private final Reporter				reporter;
+	final File							location;
+	private final HttpClient			client;
 	private final PromiseFactory		promiseFactory;
-	private final URI						url;
-	private final String					name;
+	private final URI					url;
+	private final String				name;
 	private final String				urlHash;
-	private final File						indexFile;
-	private volatile BridgeRepository		bridge;
-	private static final Resource		RECOVERY	= new ResourceBuilder().build();
+	private final File					indexFile;
+	private volatile BridgeRepository	bridge;
+	private static final Resource		RECOVERY				= new ResourceBuilder().build();
 	private static final String			P2_CAPABILITY_NAMESPACE	= "bnd.p2";
 	private static final String			MD5_ATTRIBUTE			= "md5";
 	private static final Requirement	MD5_REQUIREMENT			= new RequirementBuilder(P2_CAPABILITY_NAMESPACE)
-			.addFilter(new FilterBuilder().isPresent(MD5_ATTRIBUTE))
-			.buildSyntheticRequirement();
+		.addFilter(new FilterBuilder().isPresent(MD5_ATTRIBUTE))
+		.buildSyntheticRequirement();
 
 	P2Indexer(Reporter reporter, File location, HttpClient client, URI url, String name) throws Exception {
 		this.reporter = reporter;
@@ -89,8 +89,8 @@ class P2Indexer implements Closeable {
 			throw new IllegalArgumentException("%s cannot be made a directory" + this.location);
 	}
 
-	File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		Resource resource = getBridge().get(bsn, version);
 		if (resource == null)
 			return null;
@@ -107,7 +107,10 @@ class P2Indexer implements Closeable {
 
 		IO.createSymbolicLinkOrCopy(link, source);
 
-		Promise<File> go = client.build().useCache(MAX_STALE).async(url.toURL()).map(file -> link);
+		Promise<File> go = client.build()
+			.useCache(MAX_STALE)
+			.async(url.toURL())
+			.map(file -> link);
 
 		if (listeners.length == 0)
 			return go.getValue();
@@ -137,58 +140,71 @@ class P2Indexer implements Closeable {
 	}
 
 	private Repository readRepository() throws Exception {
-		Map<ArtifactID,Resource> knownResources = (getBridge() != null) ? getBridge().getRepository()
-				.findProviders(singleton(MD5_REQUIREMENT))
-				.get(MD5_REQUIREMENT)
-				.stream()
-				.collect(toMap(capability -> {
-					IdentityCapability identity = ResourceUtils.getIdentityCapability(capability.getResource());
-					return new ArtifactID(identity.osgi_identity(), identity.version(),
-							(String) capability.getAttributes().get(MD5_ATTRIBUTE));
-				}, Capability::getResource, (u, v) -> v)) : new HashMap<>();
+		Map<ArtifactID, Resource> knownResources = (getBridge() != null) ? getBridge().getRepository()
+			.findProviders(singleton(MD5_REQUIREMENT))
+			.get(MD5_REQUIREMENT)
+			.stream()
+			.collect(toMap(capability -> {
+				IdentityCapability identity = ResourceUtils.getIdentityCapability(capability.getResource());
+				return new ArtifactID(identity.osgi_identity(), identity.version(), (String) capability.getAttributes()
+					.get(MD5_ATTRIBUTE));
+			}, Capability::getResource, (u, v) -> v)) : new HashMap<>();
 
 		P2Impl p2 = new P2Impl(client, this.url, promiseFactory);
 		List<Artifact> artifacts = p2.getArtifacts();
 		Set<ArtifactID> visitedArtifacts = new HashSet<>(artifacts.size());
 		Set<URI> visitedURIs = new HashSet<>(artifacts.size());
 
-		Promise<List<Resource>> all = artifacts.stream().map(a -> {
-			if (!visitedURIs.add(a.uri))
-				return null;
-			if (a.md5 != null) {
-				ArtifactID id = new ArtifactID(a.id, toVersion(a.version), a.md5);
-				if (!visitedArtifacts.add(id))
+		Promise<List<Resource>> all = artifacts.stream()
+			.map(a -> {
+				if (!visitedURIs.add(a.uri))
 					return null;
-				if (knownResources.containsKey(id)) {
-					return promiseFactory.resolved(knownResources.get(id));
-				}
-			}
-
-			return client.build().useCache(MAX_STALE).async(a.uri).map(file -> {
-				ResourceBuilder rb = new ResourceBuilder();
-				rb.addFile(file, a.uri);
 				if (a.md5 != null) {
-					rb.addCapability(new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
+					ArtifactID id = new ArtifactID(a.id, toVersion(a.version), a.md5);
+					if (!visitedArtifacts.add(id))
+						return null;
+					if (knownResources.containsKey(id)) {
+						return promiseFactory.resolved(knownResources.get(id));
+					}
 				}
-				return rb.build();
-			}).recover(failed -> {
-				logger.debug("{}: Failed to create resource for {}", name, a, failed.getFailure());
-				return RECOVERY;
-			});
-		}).filter(Objects::nonNull).collect(toPromise(promiseFactory));
 
-		return all.map(resources -> resources.stream().filter(resource -> resource != RECOVERY).collect(
-				toResourcesRepository())).getValue();
+				return client.build()
+					.useCache(MAX_STALE)
+					.async(a.uri)
+					.map(file -> {
+						ResourceBuilder rb = new ResourceBuilder();
+						rb.addFile(file, a.uri);
+						if (a.md5 != null) {
+							rb.addCapability(
+								new CapabilityBuilder(P2_CAPABILITY_NAMESPACE).addAttribute(MD5_ATTRIBUTE, a.md5));
+						}
+						return rb.build();
+					})
+					.recover(failed -> {
+						logger.debug("{}: Failed to create resource for {}", name, a, failed.getFailure());
+						return RECOVERY;
+					});
+			})
+			.filter(Objects::nonNull)
+			.collect(toPromise(promiseFactory));
+
+		return all.map(resources -> resources.stream()
+			.filter(resource -> resource != RECOVERY)
+			.collect(toResourcesRepository()))
+			.getValue();
 	}
 
 	private Repository save(Repository repository) throws IOException, Exception {
 		XMLResourceGenerator xrg = new XMLResourceGenerator();
-		xrg.repository(repository).name(urlHash).save(indexFile);
+		xrg.repository(repository)
+			.name(urlHash)
+			.save(indexFile);
 		return repository;
 	}
 
-	Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
-		return getBridge().getRepository().findProviders(requirements);
+	Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
+		return getBridge().getRepository()
+			.findProviders(requirements);
 	}
 
 	public void refresh() throws Exception {

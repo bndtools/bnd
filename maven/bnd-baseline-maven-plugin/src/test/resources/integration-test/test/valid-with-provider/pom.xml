@@ -28,6 +28,7 @@
 				<configuration>
 					<base>
 						<artifactId>valid-no-previous</artifactId>
+						<version>0.0.1</version>
 					</base>
 					<includeDistributionManagement>true</includeDistributionManagement>
 				</configuration>

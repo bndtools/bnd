@@ -13,12 +13,12 @@ import java.util.TimerTask;
  * recursive calls that can happen when there is shit happening deep down below.
  */
 public class RedirectOutput extends PrintStream {
-	static Timer						timer	= new Timer();
+	static Timer						timer		= new Timer();
 	private final List<AgentServer>		agents;
 	private final PrintStream			out;
-	private StringBuilder				sb		= new StringBuilder();
+	private StringBuilder				sb			= new StringBuilder();
 	private boolean						err;
-	private static ThreadLocal<Boolean>	onStack	= new ThreadLocal<Boolean>();
+	private static ThreadLocal<Boolean>	onStack		= new ThreadLocal<>();
 	private TimerTask					active;
 	private String						lastOutput	= "";
 
@@ -42,16 +42,19 @@ public class RedirectOutput extends PrintStream {
 		return new PrintStream(new NullOutputStream());
 	}
 
+	@Override
 	public void write(int b) {
 		this.write(new byte[] {
-				(byte) b
+			(byte) b
 		}, 0, 1);
 	}
 
+	@Override
 	public void write(byte b[]) {
 		write(b, 0, b.length);
 	}
 
+	@Override
 	public void write(byte b[], int off, int len) {
 		if ((off | len | (b.length - (len + off)) | (off + len)) < 0)
 			throw new IndexOutOfBoundsException();
@@ -92,6 +95,7 @@ public class RedirectOutput extends PrintStream {
 		}
 	}
 
+	@Override
 	public void flush() {
 		final String output;
 		synchronized (this) {
@@ -110,9 +114,11 @@ public class RedirectOutput extends PrintStream {
 
 			try {
 				if (err)
-					agent.getSupervisor().stderr(output);
+					agent.getSupervisor()
+						.stderr(output);
 				else
-					agent.getSupervisor().stdout(output);
+					agent.getSupervisor()
+						.stdout(output);
 			} catch (InterruptedException ie) {
 				return;
 			} catch (Exception ie) {
@@ -127,6 +133,7 @@ public class RedirectOutput extends PrintStream {
 		super.flush();
 	}
 
+	@Override
 	public void close() {
 		super.close();
 	}

@@ -9,22 +9,23 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
 
-public class HeaderClauseListConverter<R> implements Converter<List<R>,String> {
+public class HeaderClauseListConverter<R> implements Converter<List<R>, String> {
 
-	private final Converter< ? extends R, ? super HeaderClause> itemConverter;
+	private final Converter<? extends R, ? super HeaderClause> itemConverter;
 
-	public HeaderClauseListConverter(Converter< ? extends R, ? super HeaderClause> itemConverter) {
+	public HeaderClauseListConverter(Converter<? extends R, ? super HeaderClause> itemConverter) {
 		this.itemConverter = itemConverter;
 	}
 
+	@Override
 	public List<R> convert(String input) throws IllegalArgumentException {
 		if (input == null)
 			return null;
 
-		List<R> result = new ArrayList<R>();
+		List<R> result = new ArrayList<>();
 
 		Parameters header = new Parameters(input);
-		for (Entry<String,Attrs> entry : header.entrySet()) {
+		for (Entry<String, Attrs> entry : header.entrySet()) {
 			String key = Processor.removeDuplicateMarker(entry.getKey());
 			HeaderClause clause = new HeaderClause(key, entry.getValue());
 			result.add(itemConverter.convert(clause));
@@ -35,7 +36,7 @@ public class HeaderClauseListConverter<R> implements Converter<List<R>,String> {
 
 	@Override
 	public List<R> error(String msg) {
-		List<R> l = new ArrayList<R>();
+		List<R> l = new ArrayList<>();
 		l.add(itemConverter.error(msg));
 		return l;
 	}

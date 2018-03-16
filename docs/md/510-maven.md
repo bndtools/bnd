@@ -15,7 +15,7 @@ The Maven plugin is described at [Felix maven plugin][http://felix.apache.org/si
 
 The repository with the latest plugin is:
 
-  http://repo1.maven.org/maven2
+  https://repo.maven.apache.org/maven2
 
   Group ID: org.apache.felix
   Artifact: maven-bundle-plugin

@@ -45,7 +45,7 @@ import junit.framework.TestCase;
 import test.lib.MockRegistry;
 
 @SuppressWarnings({
-		"restriction", "deprecation"
+	"restriction", "deprecation"
 })
 public class ResolveTest extends TestCase {
 
@@ -83,9 +83,10 @@ public class ResolveTest extends TestCase {
 		Run run = Run.createRun(ws, f);
 		BndrunResolveContext context = new BndrunResolveContext(run, run, ws, log);
 		context.init();
-		Map<String,Set<String>> effectiveSet = context.getEffectiveSet();
+		Map<String, Set<String>> effectiveSet = context.getEffectiveSet();
 		assertNotNull(effectiveSet.get("active"));
-		assertTrue(effectiveSet.get("active").contains(value));
+		assertTrue(effectiveSet.get("active")
+			.contains(value));
 	}
 
 	/**
@@ -95,7 +96,7 @@ public class ResolveTest extends TestCase {
 	public void testDefaultVersionsForJava() throws Exception {
 		Run run = Run.createRun(null, IO.getFile("testdata/defltversions/run.bndrun"));
 		try (ProjectResolver pr = new ProjectResolver(run);) {
-			Map<Resource,List<Wire>> resolve = pr.resolve();
+			Map<Resource, List<Wire>> resolve = pr.resolve();
 			assertTrue(pr.check());
 			assertNotNull(resolve);
 			assertTrue(resolve.size() > 0);
@@ -114,8 +115,9 @@ public class ResolveTest extends TestCase {
 		registry.addPlugin(repo);
 
 		List<Requirement> reqs = CapReqBuilder.getRequirementsFrom(
-				new Parameters("osgi.wiring.package;filter:='(osgi.wiring.package=org.osgi.service.async)'"));
-		Collection<Capability> pack = repo.findProviders(reqs).get(reqs.get(0));
+			new Parameters("osgi.wiring.package;filter:='(osgi.wiring.package=org.osgi.service.async)'"));
+		Collection<Capability> pack = repo.findProviders(reqs)
+			.get(reqs.get(0));
 		assertEquals(2, pack.size());
 
 		ResourceBuilder b = new ResourceBuilder();
@@ -128,17 +130,18 @@ public class ResolveTest extends TestCase {
 		Processor model = new Processor();
 		model.setRunfw("org.eclipse.osgi");
 		model.setRunblacklist(
-				"osgi.identity;filter:='(osgi.identity=osgi.enroute.base.api)',osgi.identity;filter:='(osgi.identity=osgi.cmpn)',osgi.identity;filter:='(osgi.identity=osgi.core)");
+			"osgi.identity;filter:='(osgi.identity=osgi.enroute.base.api)',osgi.identity;filter:='(osgi.identity=osgi.cmpn)',osgi.identity;filter:='(osgi.identity=osgi.core)");
 		model.setRunRequires("osgi.identity;filter:='(osgi.identity=osgi.enroute.base.guard)'");
 		model.setRunee("JavaSE-1.8");
 		try (ResolverLogger logger = new ResolverLogger(4)) {
 			BndrunResolveContext context = new BndrunResolveContext(model, null, registry, log);
 			Resolver resolver = new BndResolver(logger);
 
-			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+			Map<Resource, List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
 		} catch (ResolutionException e) {
-			String msg = e.getMessage().replaceAll("\\[caused by:", "\n->");
+			String msg = e.getMessage()
+				.replaceAll("\\[caused by:", "\n->");
 			System.out.println(msg);
 			fail(msg);
 		}
@@ -154,8 +157,8 @@ public class ResolveTest extends TestCase {
 	public void testResolveWithAugments() throws Exception {
 		// Add requirement
 		assertAugmentResolve(
-				"org.apache.felix.gogo.shell;capability:='foo;foo=gogo';requirement:='foo;filter:=\"(foo=*)\"'",
-				"foo;filter:='(foo=gogo)'", null);
+			"org.apache.felix.gogo.shell;capability:='foo;foo=gogo';requirement:='foo;filter:=\"(foo=*)\"'",
+			"foo;filter:='(foo=gogo)'", null);
 
 		// Default effective
 		assertAugmentResolve("org.apache.felix.gogo.shell;capability:='foo;foo=gogo'", "foo;filter:='(foo=*)'", null);
@@ -167,16 +170,16 @@ public class ResolveTest extends TestCase {
 
 		// Version range
 		assertAugmentResolve("org.apache.felix.gogo.*;version='[0,1)';capability:='foo;foo=gogo'",
-				"foo;filter:='(foo=*)'", null);
+			"foo;filter:='(foo=*)'", null);
 
 		assertAugmentResolveFails("org.apache.felix.gogo.*;version='[1,2)';capability:='foo;foo=gogo'",
-				"foo;filter:='(foo=*)'", null);
+			"foo;filter:='(foo=*)'", null);
 
 		// Effective
 		assertAugmentResolve("org.apache.felix.gogo.shell;capability:='foo;foo=gogo;effective:=foo'",
-				"foo;filter:='(foo=gogo)';effective:=foo", "foo");
+			"foo;filter:='(foo=gogo)';effective:=foo", "foo");
 		assertAugmentResolveFails("org.apache.felix.gogo.shell;capability:='foo;foo=gogo;effective:=bar'",
-				"foo;filter:='(foo=*)';effective:=foo", "foo");
+			"foo;filter:='(foo=*)';effective:=foo", "foo");
 
 	}
 
@@ -205,7 +208,7 @@ public class ResolveTest extends TestCase {
 		try (ResolverLogger logger = new ResolverLogger(4)) {
 			Resolver resolver = new BndResolver(logger);
 
-			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+			Map<Resource, List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
 			Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");
 			assertNotNull(resource);
@@ -220,15 +223,16 @@ public class ResolveTest extends TestCase {
 	 */
 	public void testMinimalSetup() throws Exception {
 		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
-			Map<String,String> map = new HashMap<>();
-			map.put("locations", IO.getFile("testdata/repo3.index.xml").toURI().toString());
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", IO.getFile("testdata/repo3.index.xml")
+				.toURI()
+				.toString());
 			map.put("name", getName());
 			map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
 			repo.setProperties(map);
 			Processor model = new Processor();
 			model.addBasicPlugin(httpClient);
 			repo.setRegistry(model);
-
 
 			model.setProperty("-runfw", "org.apache.felix.framework");
 			model.setProperty("-runrequires", "osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)'");
@@ -238,7 +242,7 @@ public class ResolveTest extends TestCase {
 			context.init();
 			try (ResolverLogger logger = new ResolverLogger(4)) {
 				Resolver resolver = new BndResolver(logger);
-				Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+				Map<Resource, List<Wire>> resolved = resolver.resolve(context);
 				Set<Resource> resources = resolved.keySet();
 				Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
 				assertNotNull(shell);
@@ -261,7 +265,7 @@ public class ResolveTest extends TestCase {
 
 		BndEditModel model = new BndEditModel();
 		model.setDistro(Arrays.asList("testdata/distro.jar;version=file"));
-		List<Requirement> requires = new ArrayList<Requirement>();
+		List<Requirement> requires = new ArrayList<>();
 		CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
 		requires.add(capReq.buildSyntheticRequirement());
 
@@ -272,7 +276,7 @@ public class ResolveTest extends TestCase {
 		try (ResolverLogger logger = new ResolverLogger(4)) {
 			Resolver resolver = new BndResolver(logger);
 
-			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+			Map<Resource, List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
 			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
 			assertNotNull(shell);
@@ -294,7 +298,7 @@ public class ResolveTest extends TestCase {
 
 		model.setRunFw("org.apache.felix.framework");
 
-		List<Requirement> requires = new ArrayList<Requirement>();
+		List<Requirement> requires = new ArrayList<>();
 		CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
 		requires.add(capReq.buildSyntheticRequirement());
 
@@ -303,7 +307,7 @@ public class ResolveTest extends TestCase {
 
 		try (ResolverLogger logger = new ResolverLogger()) {
 			Resolver resolver = new BndResolver(logger);
-			Map<Resource,List<Wire>> resolved = resolver.resolve(context);
+			Map<Resource, List<Wire>> resolved = resolver.resolve(context);
 			Set<Resource> resources = resolved.keySet();
 			Resource resource = getResource(resources, "org.apache.felix.gogo.runtime", "0.10");
 			assertNotNull(resource);
@@ -387,8 +391,10 @@ public class ResolveTest extends TestCase {
 			List<Capability> identities = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 			if (identities != null && identities.size() == 1) {
 				Capability idCap = identities.get(0);
-				Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-				Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+				Object id = idCap.getAttributes()
+					.get(IdentityNamespace.IDENTITY_NAMESPACE);
+				Object version = idCap.getAttributes()
+					.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 				if (bsn.equals(id)) {
 					if (versionString == null) {
 						return resource;
@@ -428,14 +434,17 @@ public class ResolveTest extends TestCase {
 		runModel.setGenericString("-resolve.effective", "active");
 
 		// Require the log service, GoGo shell and GoGo commands
-		List<Requirement> requirements = new ArrayList<Requirement>();
+		List<Requirement> requirements = new ArrayList<>();
 
-		requirements.add(new CapReqBuilder("osgi.identity")
-				.addDirective("filter", "(osgi.identity=org.apache.felix.log)").buildSyntheticRequirement());
-		requirements.add(new CapReqBuilder("osgi.identity")
-				.addDirective("filter", "(osgi.identity=org.apache.felix.gogo.shell)").buildSyntheticRequirement());
-		requirements.add(new CapReqBuilder("osgi.identity")
-				.addDirective("filter", "(osgi.identity=org.apache.felix.gogo.command)").buildSyntheticRequirement());
+		requirements
+			.add(new CapReqBuilder("osgi.identity").addDirective("filter", "(osgi.identity=org.apache.felix.log)")
+				.buildSyntheticRequirement());
+		requirements.add(
+			new CapReqBuilder("osgi.identity").addDirective("filter", "(osgi.identity=org.apache.felix.gogo.shell)")
+				.buildSyntheticRequirement());
+		requirements.add(
+			new CapReqBuilder("osgi.identity").addDirective("filter", "(osgi.identity=org.apache.felix.gogo.command)")
+				.buildSyntheticRequirement());
 
 		runModel.setRunRequires(requirements);
 
@@ -443,18 +452,57 @@ public class ResolveTest extends TestCase {
 		BndrunResolveContext context = new BndrunResolveContext(runModel, registry, log);
 		Resolver resolver = new BndResolver(new org.apache.felix.resolver.Logger(4));
 		Collection<Resource> resolvedResources = new ResolveProcess()
-				.resolveRequired(runModel, registry, resolver, Collections.<ResolutionCallback> emptyList(), log)
-				.keySet();
+			.resolveRequired(runModel, registry, resolver, Collections.emptyList(), log)
+			.keySet();
 
-		Map<String,Resource> mandatoryResourcesBySymbolicName = new HashMap<String,Resource>();
+		Map<String, Resource> mandatoryResourcesBySymbolicName = new HashMap<>();
 		for (Resource r : resolvedResources) {
-			Capability cap = r.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE).get(0);
+			Capability cap = r.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE)
+				.get(0);
 			// We shouldn't have more than one match for each symbolic name for
 			// this resolve
-			String symbolicName = (String) cap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+			String symbolicName = (String) cap.getAttributes()
+				.get(IdentityNamespace.IDENTITY_NAMESPACE);
 			assertNull("Multiple results for " + symbolicName, mandatoryResourcesBySymbolicName.put(symbolicName, r));
 		}
 		assertEquals(4, resolvedResources.size());
 	}
 
+	/**
+	 * Test that latest bundle is selected when namespace is 'osgi.service'
+	 * 
+	 * @throws Exception
+	 */
+	public void testLatestBundleServiceNamespace() throws Exception {
+		try (OSGiRepository repo = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
+			Map<String, String> map = new HashMap<>();
+			map.put("locations", IO.getFile("testdata/repo8/index.xml")
+				.toURI()
+				.toString());
+			map.put("name", getName());
+			map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
+			repo.setProperties(map);
+			Processor model = new Processor();
+			model.addBasicPlugin(httpClient);
+			repo.setRegistry(model);
+
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires",
+				"osgi.service;filter:='(objectClass=org.osgi.service.component.runtime.ServiceComponentRuntime)'");
+			BndrunResolveContext context = new BndrunResolveContext(model, null, model, log);
+			context.setLevel(0);
+			context.addRepository(repo);
+			context.init();
+			try (ResolverLogger logger = new ResolverLogger(4)) {
+				Resolver resolver = new BndResolver(logger);
+				Map<Resource, List<Wire>> resolved = resolver.resolve(context);
+				Set<Resource> resources = resolved.keySet();
+				Resource scr = getResource(resources, "org.apache.felix.scr", "2.0.14");
+				assertNotNull(scr);
+			} catch (ResolutionException e) {
+				e.printStackTrace();
+				fail("Resolve failed");
+			}
+		}
+	}
 }

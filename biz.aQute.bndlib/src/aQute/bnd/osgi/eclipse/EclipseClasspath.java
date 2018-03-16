@@ -35,18 +35,18 @@ public class EclipseClasspath {
 	DocumentBuilder					db;
 	File							project;
 	File							workspace;
-	Set<File>						sources					= new LinkedHashSet<File>();
-	Set<File>						allSources				= new LinkedHashSet<File>();
+	Set<File>						sources					= new LinkedHashSet<>();
+	Set<File>						allSources				= new LinkedHashSet<>();
 
-	Set<File>						classpath				= new LinkedHashSet<File>();
-	List<File>						dependents				= new ArrayList<File>();
+	Set<File>						classpath				= new LinkedHashSet<>();
+	List<File>						dependents				= new ArrayList<>();
 	File							output;
 	boolean							recurse					= true;
-	Set<File>						exports					= new LinkedHashSet<File>();
-	Map<String,String>				properties				= new HashMap<String,String>();
+	Set<File>						exports					= new LinkedHashSet<>();
+	Map<String, String>				properties				= new HashMap<>();
 	Reporter						reporter;
 	int								options;
-	Set<File>						bootclasspath			= new LinkedHashSet<File>();
+	Set<File>						bootclasspath			= new LinkedHashSet<>();
 
 	public final static int			DO_VARIABLES			= 1;
 
@@ -61,7 +61,7 @@ public class EclipseClasspath {
 	 */
 
 	public EclipseClasspath(Reporter reporter, File workspace, File project, @SuppressWarnings("unused") int options)
-			throws Exception {
+		throws Exception {
 		this.project = project.getCanonicalFile();
 		this.workspace = workspace.getCanonicalFile();
 		this.reporter = reporter;
@@ -90,7 +90,8 @@ public class EclipseClasspath {
 			throw new FileNotFoundException(".classpath file not found: " + file.getAbsolutePath());
 
 		Document doc = db.parse(file);
-		NodeList nodelist = doc.getDocumentElement().getElementsByTagName("classpathentry");
+		NodeList nodelist = doc.getDocumentElement()
+			.getElementsByTagName("classpathentry");
 
 		if (nodelist == null)
 			throw new IllegalArgumentException("Can not find classpathentry in classpath file");
@@ -124,7 +125,8 @@ public class EclipseClasspath {
 				boolean exported = "true".equalsIgnoreCase(get(attrs, "exported"));
 				if (top || exported) {
 					File jar = getFile(workspace, project, path);
-					if (jar.getName().startsWith("ee."))
+					if (jar.getName()
+						.startsWith("ee."))
 						bootclasspath.add(jar);
 					else
 						classpath.add(jar);
@@ -174,7 +176,7 @@ public class EclipseClasspath {
 
 		if (!result.exists())
 			System.err.println("File not found: project=" + project + " workspace=" + workspace + " path=" + opath
-					+ " file=" + result);
+				+ " file=" + result);
 		return result;
 	}
 
@@ -232,7 +234,7 @@ public class EclipseClasspath {
 		return exports;
 	}
 
-	public void setProperties(Map<String,String> map) {
+	public void setProperties(Map<String, String> map) {
 		this.properties = map;
 	}
 

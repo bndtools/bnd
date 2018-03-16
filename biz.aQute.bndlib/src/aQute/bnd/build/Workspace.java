@@ -49,7 +49,8 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.connection.settings.ConnectionSettings;
-import aQute.bnd.exporter.subsystem.SubsystemExporter;
+import aQute.bnd.exporter.executable.ExecutableJarExporter;
+import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -97,35 +98,36 @@ public class Workspace extends Processor {
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE				= "-plugin.standalone_";
 	private final Pattern		EMBEDDED_REPO_TESTING_PATTERN	= Pattern
-			.compile(".*biz\\.aQute\\.bnd\\.embedded-repo(-.*)?\\.jar");
+		.compile(".*biz\\.aQute\\.bnd\\.embedded-repo(-.*)?\\.jar");
 
 	static class WorkspaceData {
 		List<RepositoryPlugin> repositories;
 	}
 
-	private final static Map<File,WeakReference<Workspace>>	cache					= newHashMap();
-	static Processor							defaults				= null;
+	private final static Map<File, WeakReference<Workspace>>	cache					= newHashMap();
+	static Processor											defaults				= null;
 	private final Map<String, Project>							models					= new HashMap<>();
 	private final Set<String>									modelsUnderConstruction	= new HashSet<>();
-	final Map<String,Action>					commands				= newMap();
-	final Maven									maven					= new Maven(Processor.getExecutor());
-	private final AtomicBoolean								offline					= new AtomicBoolean();
-	Settings									settings				= new Settings();
-	WorkspaceRepository							workspaceRepo			= new WorkspaceRepository(this);
-	static String								overallDriver			= "unset";
-	static Parameters							overallGestalt			= new Parameters();
+	final Map<String, Action>									commands				= newMap();
+	final Maven													maven					= new Maven(
+		Processor.getExecutor());
+	private final AtomicBoolean									offline					= new AtomicBoolean();
+	Settings													settings				= new Settings();
+	WorkspaceRepository											workspaceRepo			= new WorkspaceRepository(this);
+	static String												overallDriver			= "unset";
+	static Parameters											overallGestalt			= new Parameters();
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>					signalBusy				= new ThreadLocal<Reporter>();
-	ResourceRepositoryImpl						resourceRepositoryImpl;
-	private Parameters							gestalt;
-	private String								driver;
-	private final WorkspaceLayout				layout;
-	final Set<Project>							trail					= Collections
-			.newSetFromMap(new ConcurrentHashMap<Project,Boolean>());
-	private WorkspaceData						data					= new WorkspaceData();
-	private File								buildDir;
+	final ThreadLocal<Reporter>									signalBusy				= new ThreadLocal<>();
+	ResourceRepositoryImpl										resourceRepositoryImpl;
+	private Parameters											gestalt;
+	private String												driver;
+	private final WorkspaceLayout								layout;
+	final Set<Project>											trail					= Collections
+		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
+	private WorkspaceData										data					= new WorkspaceData();
+	private File												buildDir;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -207,7 +209,8 @@ public class Workspace extends Processor {
 				break;
 
 			if (test.isFile()) {
-				String redirect = IO.collect(test).trim();
+				String redirect = IO.collect(test)
+					.trim();
 				test = getFile(test.getParentFile(), redirect).getAbsoluteFile();
 				workspaceDir = test;
 			}
@@ -220,7 +223,7 @@ public class Workspace extends Processor {
 			Workspace ws;
 			if (wsr == null || (ws = wsr.get()) == null) {
 				ws = new Workspace(workspaceDir, bndDir);
-				cache.put(workspaceDir, new WeakReference<Workspace>(ws));
+				cache.put(workspaceDir, new WeakReference<>(ws));
 			}
 			return ws;
 		}
@@ -273,7 +276,7 @@ public class Workspace extends Processor {
 		//
 
 		Attrs sysProps = OSGiHeader.parseProperties(mergeProperties(SYSTEMPROPERTIES));
-		for (Entry<String,String> e : sysProps.entrySet()) {
+		for (Entry<String, String> e : sysProps.entrySet()) {
 			System.setProperty(e.getKey(), e.getValue());
 		}
 	}
@@ -386,7 +389,7 @@ public class Workspace extends Processor {
 		commands.remove(menu);
 	}
 
-	public void fillActions(Map<String,Action> all) {
+	public void fillActions(Map<String, Action> all) {
 		all.putAll(commands);
 	}
 
@@ -486,11 +489,13 @@ public class Workspace extends Processor {
 					// We may be in unit test, look for
 					// biz.aQute.bnd.embedded-repo.jar on the
 					// classpath
-					StringTokenizer classPathTokenizer = new StringTokenizer(
-							System.getProperty("java.class.path", ""), File.pathSeparator);
+					StringTokenizer classPathTokenizer = new StringTokenizer(System.getProperty("java.class.path", ""),
+						File.pathSeparator);
 					while (classPathTokenizer.hasMoreTokens()) {
-						String classPathEntry = classPathTokenizer.nextToken().trim();
-						if (EMBEDDED_REPO_TESTING_PATTERN.matcher(classPathEntry).matches()) {
+						String classPathEntry = classPathTokenizer.nextToken()
+							.trim();
+						if (EMBEDDED_REPO_TESTING_PATTERN.matcher(classPathEntry)
+							.matches()) {
 							try (InputStream in = IO.stream(Paths.get(classPathEntry))) {
 								unzip(in, root);
 								return true;
@@ -552,7 +557,7 @@ public class Workspace extends Processor {
 	}
 
 	public Collection<Project> getBuildOrder() throws Exception {
-		Set<Project> result = new LinkedHashSet<Project>();
+		Set<Project> result = new LinkedHashSet<>();
 		for (Project project : getAllProjects()) {
 			Collection<Project> dependsOn = project.getDependson();
 			getBuildOrder(dependsOn, result);
@@ -605,7 +610,8 @@ public class Workspace extends Processor {
 			// Exporters
 			//
 
-			list.add(new SubsystemExporter());
+			list.add(new ExecutableJarExporter());
+			list.add(new RunbundlesExporter());
 
 			try {
 				HttpClient client = new HttpClient(getExecutor(), getScheduledExecutor());
@@ -638,11 +644,12 @@ public class Workspace extends Processor {
 		// <bsn>; version=<range>
 		//
 		Parameters extensions = getMergedParameters(EXTENSION);
-		Map<DownloadBlocker,Attrs> blockers = new HashMap<DownloadBlocker,Attrs>();
+		Map<DownloadBlocker, Attrs> blockers = new HashMap<>();
 
-		for (Entry<String,Attrs> i : extensions.entrySet()) {
+		for (Entry<String, Attrs> i : extensions.entrySet()) {
 			String bsn = removeDuplicateMarker(i.getKey());
-			String stringRange = i.getValue().get(VERSION_ATTRIBUTE);
+			String stringRange = i.getValue()
+				.get(VERSION_ATTRIBUTE);
 
 			logger.debug("Adding extension {}-{}", bsn, stringRange);
 
@@ -654,7 +661,7 @@ public class Workspace extends Processor {
 			}
 			try {
 				SortedSet<ResourceDescriptor> matches = resourceRepositoryImpl.find(null, bsn,
-						new VersionRange(stringRange));
+					new VersionRange(stringRange));
 				if (matches.isEmpty()) {
 					error("Extension %s;version=%s not found in base repo", bsn, stringRange);
 					continue;
@@ -670,9 +677,10 @@ public class Workspace extends Processor {
 
 		logger.debug("Found extensions {}", blockers);
 
-		for (Entry<DownloadBlocker,Attrs> blocker : blockers.entrySet()) {
+		for (Entry<DownloadBlocker, Attrs> blocker : blockers.entrySet()) {
 			try {
-				String reason = blocker.getKey().getReason();
+				String reason = blocker.getKey()
+					.getReason();
 				if (reason != null) {
 					error("Extension load failed: %s", reason);
 					continue;
@@ -680,18 +688,23 @@ public class Workspace extends Processor {
 
 				@SuppressWarnings("resource")
 				URLClassLoader cl = new URLClassLoader(new URL[] {
-						blocker.getKey().getFile().toURI().toURL()
+					blocker.getKey()
+						.getFile()
+						.toURI()
+						.toURL()
 				}, getClass().getClassLoader());
 				Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 				while (manifests.hasMoreElements()) {
-					try(InputStream is = manifests.nextElement().openStream()) {
+					try (InputStream is = manifests.nextElement()
+						.openStream()) {
 						Manifest m = new Manifest(is);
-						Parameters activators = new Parameters(m.getMainAttributes().getValue("Extension-Activator"), this);
+						Parameters activators = new Parameters(m.getMainAttributes()
+							.getValue("Extension-Activator"), this);
 						for (Entry<String, Attrs> e : activators.entrySet()) {
 							try {
 								Class<?> c = cl.loadClass(e.getKey());
 								ExtensionActivator extensionActivator = (ExtensionActivator) c.getConstructor()
-										.newInstance();
+									.newInstance();
 								customize(extensionActivator, blocker.getValue());
 								List<?> plugins = extensionActivator.activate(this, blocker.getValue());
 								list.add(extensionActivator);
@@ -702,7 +715,7 @@ public class Workspace extends Processor {
 									}
 							} catch (ClassNotFoundException cnfe) {
 								error("Loading extension %s, extension activator missing: %s (ignored)", blocker,
-										e.getKey());
+									e.getKey());
 							}
 						}
 					}
@@ -734,7 +747,7 @@ public class Workspace extends Processor {
 
 	public String _global(String[] args) throws Exception {
 		Macro.verifyCommand(args, "${global;<name>[;<default>]}, get a global setting from ~/.bnd/settings.json", null,
-				2, 3);
+			2, 3);
 
 		String key = args[1];
 		if (key.equals("key.public"))
@@ -766,7 +779,8 @@ public class Workspace extends Processor {
 		List<RepositoryPlugin> repos = getRepositories();
 		if (args.length > 1) {
 			repos: for (Iterator<RepositoryPlugin> it = repos.iterator(); it.hasNext();) {
-				String name = it.next().getName();
+				String name = it.next()
+					.getName();
 				for (int i = 1; i < args.length; i++) {
 					if (name.equals(args[i])) {
 						continue repos;
@@ -775,7 +789,7 @@ public class Workspace extends Processor {
 				it.remove();
 			}
 		}
-		List<String> digests = new ArrayList<String>();
+		List<String> digests = new ArrayList<>();
 		for (RepositoryPlugin repo : repos) {
 			try {
 				if (repo instanceof RepositoryDigest) {
@@ -817,7 +831,8 @@ public class Workspace extends Processor {
 	 * Report details of this workspace
 	 */
 
-	public void report(Map<String,Object> table) throws Exception {
+	@Override
+	public void report(Map<String, Object> table) throws Exception {
 		super.report(table);
 		table.put("Workspace", toString());
 		table.put("Plugins", getPlugins(Object.class));
@@ -857,7 +872,8 @@ public class Workspace extends Processor {
 	}
 
 	public boolean isValid() {
-		return IO.getFile(getBuildDir(), BUILDFILE).isFile();
+		return IO.getFile(getBuildDir(), BUILDFILE)
+			.isFile();
 	}
 
 	public RepositoryPlugin getRepository(String repo) throws Exception {
@@ -869,6 +885,7 @@ public class Workspace extends Processor {
 		return null;
 	}
 
+	@Override
 	public void close() {
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(getBase());
@@ -1021,15 +1038,18 @@ public class Workspace extends Processor {
 
 	public Project createProject(String name) throws Exception {
 
-		if (!Verifier.SYMBOLICNAME.matcher(name).matches()) {
-			error("A project name is a Bundle Symbolic Name, this must therefore consist of only letters, digits and dots");
+		if (!Verifier.SYMBOLICNAME.matcher(name)
+			.matches()) {
+			error(
+				"A project name is a Bundle Symbolic Name, this must therefore consist of only letters, digits and dots");
 			return null;
 		}
 
 		File pdir = getFile(name);
 		IO.mkdirs(pdir);
 
-		IO.store("#\n#   " + name.toUpperCase().replace('.', ' ') + "\n#\n", getFile(pdir, Project.BNDFILE));
+		IO.store("#\n#   " + name.toUpperCase()
+			.replace('.', ' ') + "\n#\n", getFile(pdir, Project.BNDFILE));
 		Project p = new Project(this, pdir);
 
 		IO.mkdirs(p.getTarget());
@@ -1079,15 +1099,16 @@ public class Workspace extends Processor {
 	 * @throws Exception
 	 */
 
-	public boolean addPlugin(Class< ? > plugin, String alias, Map<String,String> parameters, boolean force)
-			throws Exception {
+	public boolean addPlugin(Class<?> plugin, String alias, Map<String, String> parameters, boolean force)
+		throws Exception {
 		BndPlugin ann = plugin.getAnnotation(BndPlugin.class);
 
 		if (alias == null) {
 			if (ann != null)
 				alias = ann.name();
 			else {
-				alias = Strings.getLastSegment(plugin.getName()).toLowerCase();
+				alias = Strings.getLastSegment(plugin.getName())
+					.toLowerCase();
 				if (alias.endsWith("plugin")) {
 					alias = alias.substring(0, alias.length() - "plugin".length());
 				}
@@ -1112,15 +1133,16 @@ public class Workspace extends Processor {
 			IO.delete(f);
 		}
 
-		Object l = plugin.getConstructor().newInstance();
+		Object l = plugin.getConstructor()
+			.newInstance();
 
 		try (Formatter setup = new Formatter()) {
 			setup.format("#\n" //
-					+ "# Plugin %s setup\n" //
-					+ "#\n", alias);
+				+ "# Plugin %s setup\n" //
+				+ "#\n", alias);
 			setup.format("-plugin.%s = %s", alias, plugin.getName());
 
-			for (Map.Entry<String,String> e : parameters.entrySet()) {
+			for (Map.Entry<String, String> e : parameters.entrySet()) {
 				setup.format("; \\\n \t%s = '%s'", e.getKey(), escaped(e.getValue()));
 			}
 			setup.format("\n\n");
@@ -1179,14 +1201,15 @@ public class Workspace extends Processor {
 		StringBuilder sb = new StringBuilder();
 		try (Formatter f = new Formatter(sb, Locale.US)) {
 			int counter = 1;
-			for (Map.Entry<String,Attrs> e : standalone.entrySet()) {
+			for (Map.Entry<String, Attrs> e : standalone.entrySet()) {
 				String locationStr = e.getKey();
 				if ("true".equalsIgnoreCase(locationStr))
 					break;
 
 				URI resolvedLocation = URIUtil.resolve(base, locationStr);
 
-				String key = f.format("%s%02d", PLUGIN_STANDALONE, counter).toString();
+				String key = f.format("%s%02d", PLUGIN_STANDALONE, counter)
+					.toString();
 				sb.setLength(0);
 				Attrs attrs = e.getValue();
 				String name = attrs.get("name");
@@ -1194,7 +1217,7 @@ public class Workspace extends Processor {
 					name = String.format("repo%02d", counter);
 				}
 				f.format("%s; name='%s'; locations='%s'", STANDALONE_REPO_CLASS, name, resolvedLocation);
-				for (Map.Entry<String,String> attribEntry : attrs.entrySet()) {
+				for (Map.Entry<String, String> attribEntry : attrs.entrySet()) {
 					if (!"name".equals(attribEntry.getKey()))
 						f.format("; %s='%s'", attribEntry.getKey(), attribEntry.getValue());
 				}

@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
@@ -46,16 +45,17 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		if (string == null)
 			return null;
 
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		StringTokenizer tokenizer = new StringTokenizer(string, ",");
 		while (tokenizer.hasMoreTokens()) {
-			result.add(tokenizer.nextToken().trim());
+			result.add(tokenizer.nextToken()
+				.trim());
 		}
 
 		return result;
 	}
 
-	public void setListAttrib(String attrib, Collection< ? extends String> value) {
+	public void setListAttrib(String attrib, Collection<? extends String> value) {
 		if (value == null || value.isEmpty())
 			attribs.remove(attrib);
 		else {
@@ -75,7 +75,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		formatTo(buffer, null);
 	}
 
-	public void formatTo(StringBuilder buffer, Comparator<Entry<String,String>> sorter) {
+	public void formatTo(StringBuilder buffer, Comparator<Entry<String, String>> sorter) {
 		String separator = newlinesBetweenAttributes() ? INTERNAL_LIST_SEPARATOR_NEWLINES : INTERNAL_LIST_SEPARATOR;
 		// If the name contains a comma, then quote the whole thing
 		String tmpName = name;
@@ -84,16 +84,16 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		buffer.append(tmpName);
 
 		if (attribs != null) {
-			Set<Entry<String,String>> set;
+			Set<Entry<String, String>> set;
 			if (sorter != null) {
-				set = new TreeSet<Map.Entry<String,String>>(sorter);
+				set = new TreeSet<>(sorter);
 				set.addAll(attribs.entrySet());
 			} else {
 				set = attribs.entrySet();
 			}
 
-			for (Iterator<Entry<String,String>> iter = set.iterator(); iter.hasNext();) {
-				Entry<String,String> entry = iter.next();
+			for (Iterator<Entry<String, String>> iter = set.iterator(); iter.hasNext();) {
+				Entry<String, String> entry = iter.next();
 				String name = entry.getKey();
 				String value = entry.getValue();
 
@@ -105,7 +105,9 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 					if (value.indexOf(',') > -1 || value.indexOf('=') > -1)
 						value = "'" + value + "'";
 
-					buffer.append(name).append('=').append(value);
+					buffer.append(name)
+						.append('=')
+						.append(value);
 				}
 			}
 		}
@@ -127,6 +129,7 @@ public class HeaderClause implements Cloneable, Comparable<HeaderClause> {
 		}
 	}
 
+	@Override
 	public int compareTo(HeaderClause other) {
 		return this.name.compareTo(other.name);
 	}

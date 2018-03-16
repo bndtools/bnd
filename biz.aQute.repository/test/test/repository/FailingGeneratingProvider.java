@@ -17,26 +17,32 @@ import aQute.bnd.service.Registry;
 
 public class FailingGeneratingProvider implements IRepositoryContentProvider {
 
+	@Override
 	public String getName() {
 		return "Fail";
 	}
 
+	@Override
 	public void parseIndex(InputStream stream, URI baseUrl, IRepositoryIndexProcessor listener, LogService log)
-			throws Exception {}
+		throws Exception {}
 
+	@Override
 	public CheckResult checkStream(String name, InputStream stream) throws IOException {
 		return new CheckResult(Decision.accept, "I accept anything but create nothing!", null);
 	}
 
+	@Override
 	public boolean supportsGeneration() {
 		return true;
 	}
 
+	@Override
 	public void generateIndex(Set<File> files, OutputStream output, String repoName, URI rootUrl, boolean pretty,
-			Registry registry, LogService log) throws Exception {
+		Registry registry, LogService log) throws Exception {
 		throw new UnsupportedOperationException("This always breaks");
 	}
 
+	@Override
 	public String getDefaultIndexName(boolean pretty) {
 		return "neverhappens.xml";
 	}

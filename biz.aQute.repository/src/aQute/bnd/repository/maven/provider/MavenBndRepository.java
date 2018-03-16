@@ -79,24 +79,24 @@ import aQute.service.reporter.Reporter;
  */
 @BndPlugin(name = "MavenBndRepository")
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
-		Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
-	private final static Logger		logger						= LoggerFactory.getLogger(MavenBndRepository.class);
+	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
+	private final static Logger	logger				= LoggerFactory.getLogger(MavenBndRepository.class);
 	private static final int	DEFAULT_POLL_TIME	= 5;
 
-	private static final String		NONE						= "NONE";
+	private static final String	NONE				= "NONE";
 	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
-	private Configuration			configuration;
-	private Registry				registry;
-	private File					localRepo;
-	private Reporter				reporter;
-	IMavenRepo						storage;
-	private boolean					inited;
-	IndexFile						index;
-	private ScheduledFuture< ? >	indexPoller;
-	private RepoActions				actions						= new RepoActions(this);
-	private String					name;
-	private HttpClient				client;
-	private ReleasePluginImpl		releasePlugin		= new ReleasePluginImpl(this, null);
+	private Configuration		configuration;
+	private Registry			registry;
+	private File				localRepo;
+	private Reporter			reporter;
+	IMavenRepo					storage;
+	private boolean				inited;
+	IndexFile					index;
+	private ScheduledFuture<?>	indexPoller;
+	private RepoActions			actions				= new RepoActions(this);
+	private String				name;
+	private HttpClient			client;
+	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
 
 	static class LocalPutResult extends PutResult {
 		Archive			binaryArchive;
@@ -122,7 +122,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			IO.copy(stream, binaryFile);
 
 			if (options.digest != null) {
-				byte[] digest = SHA1.digest(binaryFile).digest();
+				byte[] digest = SHA1.digest(binaryFile)
+					.digest();
 				if (!Arrays.equals(options.digest, digest))
 					throw new IllegalArgumentException("The given sha-1 does not match the contents sha-1");
 			}
@@ -144,7 +145,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					File f = options.context.getFile(instructions.pom.path);
 					if (!f.isFile())
 						throw new IllegalArgumentException(
-								"-maven-release specifies " + f + " as pom file but this file is not found");
+							"-maven-release specifies " + f + " as pom file but this file is not found");
 
 					pomResource = new FileResource(f);
 				} else {
@@ -154,7 +155,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						pomResource = createPomResource(binary, options.context);
 						if (pomResource == null)
 							throw new IllegalArgumentException(
-									"No POM resource in META-INF/maven/... The Maven Bnd Repository requires this pom.");
+								"No POM resource in META-INF/maven/... The Maven Bnd Repository requires this pom.");
 					}
 				}
 
@@ -188,7 +189,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					if (isLocal(instructions))
 						releaser.setLocalOnly();
 
-					result.pomArchive = pom.getRevision().pomArchive();
+					result.pomArchive = pom.getRevision()
+						.pomArchive();
 					releaser.add(result.pomArchive, pomFile);
 					result.binaryArchive = binaryArchive;
 					result.artifact = storage.toRemoteURI(binaryArchive);
@@ -201,17 +203,17 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 							if (instructions.javadoc != null) {
 								if (!NONE.equals(instructions.javadoc.path)) {
 									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
-											instructions.javadoc.options,
-											instructions.javadoc.packages == JavadocPackages.EXPORT)) {
-										save(releaser, pom.getRevision(), jar, "javadoc");
+										instructions.javadoc.options,
+										instructions.javadoc.packages == JavadocPackages.EXPORT)) {
+										save(releaser, pom.getRevision(), jar);
 									}
 								}
 							}
 
 							if (instructions.sources != null) {
 								if (!NONE.equals(instructions.sources.path)) {
-									try (Jar jar = getSource(tool, options.context, instructions.sources.path)) {
-										save(releaser, pom.getRevision(), jar, "sources");
+									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
+										save(releaser, pom.getRevision(), jar);
 									}
 								}
 							}
@@ -235,12 +237,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	void checkRemotePossible(ReleaseDTO instructions, boolean snapshot) {
 		if (instructions.type == ReleaseType.REMOTE) {
 			if (snapshot) {
-				if (this.storage.getSnapshotRepositories().isEmpty())
+				if (this.storage.getSnapshotRepositories()
+					.isEmpty())
 					throw new IllegalArgumentException(
-							"Remote snapshot release requested but no snapshot repository set for " + getName());
-			} else if (this.storage.getReleaseRepositories().isEmpty())
+						"Remote snapshot release requested but no snapshot repository set for " + getName());
+			} else if (this.storage.getReleaseRepositories()
+				.isEmpty())
 				throw new IllegalArgumentException(
-						"Remote release requested but no release repository set for " + getName());
+					"Remote release requested but no release repository set for " + getName());
 		}
 	}
 
@@ -248,23 +252,25 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return instructions.type == ReleaseType.LOCAL;
 	}
 
-	private Jar getSource(Tool tool, Processor context, String path) throws Exception {
+	private Jar getSources(Tool tool, Processor context, String path) throws Exception {
 		Jar jar = toJar(context, path);
 		if (jar == null) {
 			jar = tool.doSource();
 		}
 		jar.ensureManifest();
+		jar.setName("sources"); // set jar name to classifier
 		tool.addClose(jar);
 		return jar;
 	}
 
-	private Jar getJavadoc(Tool tool, Processor context, String path, Map<String,String> options, boolean exports)
-			throws Exception {
+	private Jar getJavadoc(Tool tool, Processor context, String path, Map<String, String> options, boolean exports)
+		throws Exception {
 		Jar jar = toJar(context, path);
 		if (jar == null) {
 			jar = tool.doJavadoc(options, exports);
 		}
 		jar.ensureManifest();
+		jar.setName("javadoc"); // set jar name to classifier
 		tool.addClose(jar);
 		return jar;
 	}
@@ -280,8 +286,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return null;
 	}
 
-	private void save(Release releaser, Revision revision, Jar jar, String classifier) throws Exception {
-		String extension = IO.getExtension(jar.getName(), "jar");
+	private void save(Release releaser, Revision revision, Jar jar) throws Exception {
+		String classifier = jar.getName(); // jar name is classifier
+		String extension = "jar";
 		File tmp = File.createTempFile(classifier, extension);
 		try {
 			jar.write(tmp);
@@ -347,7 +354,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	private Resource getPomResource(Jar jar) {
-		for (Map.Entry<String,Resource> e : jar.getResources().entrySet()) {
+		for (Map.Entry<String, Resource> e : jar.getResources()
+			.entrySet()) {
 			String path = e.getKey();
 
 			if (path.startsWith("META-INF/maven/") && path.endsWith("/pom.xml")) {
@@ -370,8 +378,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	@Override
-	public File get(String bsn, Version version, Map<String,String> properties, final DownloadListener... listeners)
-			throws Exception {
+	public File get(String bsn, Version version, Map<String, String> properties, final DownloadListener... listeners)
+		throws Exception {
 		init();
 
 		BundleDescriptor descriptor = index.getDescriptor(bsn, version);
@@ -440,7 +448,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		List<String> bsns = new ArrayList<>();
 
 		for (String bsn : index.list()) {
-			if (g == null || g.matcher(bsn).matches())
+			if (g == null || g.matcher(bsn)
+				.matches())
 				bsns.add(bsn);
 		}
 		return bsns;
@@ -449,7 +458,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
-		TreeSet<Version> versions = new TreeSet<Version>();
+		TreeSet<Version> versions = new TreeSet<>();
 
 		for (Version version : index.list(bsn)) {
 			versions.add(version);
@@ -476,11 +485,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 
 			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrl(), reporter,
-					localRepo, client);
+				localRepo, client);
 			List<MavenBackingRepository> snapshot = MavenBackingRepository.create(configuration.snapshotUrl(), reporter,
-					localRepo, client);
-			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.promiseFactory().executor(),
-				reporter);
+				localRepo, client);
+			storage = new MavenRepository(localRepo, getName(), release, snapshot, client.promiseFactory()
+				.executor(), reporter);
 
 			File base = IO.work;
 			if (registry != null) {
@@ -504,9 +513,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private void startPoll() {
 		Workspace ws = registry.getPlugin(Workspace.class);
-		if ((ws != null) && (ws.getGestalt().containsKey(Constants.GESTALT_BATCH)
-				|| ws.getGestalt().containsKey(Constants.GESTALT_CI)
-				|| ws.getGestalt().containsKey(Constants.GESTALT_OFFLINE))) {
+		if ((ws != null) && (ws.getGestalt()
+			.containsKey(Constants.GESTALT_BATCH)
+			|| ws.getGestalt()
+				.containsKey(Constants.GESTALT_CI)
+			|| ws.getGestalt()
+				.containsKey(Constants.GESTALT_OFFLINE))) {
 			return;
 		}
 		int polltime = configuration.poll_time(DEFAULT_POLL_TIME);
@@ -537,7 +549,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	@Override
-	public void setProperties(Map<String,String> map) throws Exception {
+	public void setProperties(Map<String, String> map) throws Exception {
 		configuration = Converter.cnv(Configuration.class, map);
 
 	}
@@ -590,7 +602,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	@Override
-	public Map<String,Runnable> actions(Object... target) throws Exception {
+	public Map<String, Runnable> actions(Object... target) throws Exception {
 		switch (target.length) {
 			case 0 :
 				return null;
@@ -634,8 +646,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					f.format("Bundle-Version %s\n", bd.version);
 					f.format("Last Modified %s\n", new Date(bd.lastModified));
 					f.format("URL %s\n", bd.url);
-					f.format("SHA-1 %s\n", Hex.toHexString(bd.id).toLowerCase());
-					f.format("SHA-256 %s\n", Hex.toHexString(bd.sha256).toLowerCase());
+					f.format("SHA-1 %s\n", Hex.toHexString(bd.id)
+						.toLowerCase());
+					f.format("SHA-256 %s\n", Hex.toHexString(bd.sha256)
+						.toLowerCase());
 					File localFile = storage.toLocalFile(bd.archive);
 					f.format("Local %s%s\n", localFile, localFile.isFile() ? "" : " ?");
 					if (bd.description != null)
@@ -697,12 +711,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	private boolean isLocal(Archive archive) {
-		return storage.toLocalFile(archive).isFile();
+		return storage.toLocalFile(archive)
+			.isFile();
 	}
 
 	public boolean dropTarget(URI uri) throws Exception {
 
-		String t = uri.toString().trim();
+		String t = uri.toString()
+			.trim();
 		int n = t.indexOf('\n');
 		if (n > 0) {
 			uri = new URI(t.substring(0, n));
@@ -713,14 +729,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			return doSearchMaven(uri);
 		}
 
-		if (uri.getPath() != null && uri.getPath().endsWith(".pom"))
+		if (uri.getPath() != null && uri.getPath()
+			.endsWith(".pom"))
 			return addPom(uri);
 
 		return false;
 	}
 
 	public boolean dropTarget(File file) throws Exception {
-		if (file.getName().equals("pom.xml")) {
+		if (file.getName()
+			.equals("pom.xml")) {
 			return addPom(file.toURI());
 		}
 		return false;
@@ -742,7 +760,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	}
 
 	boolean doSearchMaven(URI uri) throws UnsupportedEncodingException, Exception {
-		Map<String,String> map = getMapFromQuery(uri);
+		Map<String, String> map = getMapFromQuery(uri);
 		String filePath = map.get("filepath");
 		if (filePath != null) {
 			Archive archive = Archive.fromFilepath(filePath);
@@ -756,9 +774,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return false;
 	}
 
-	Map<String,String> getMapFromQuery(URI uri) throws UnsupportedEncodingException {
+	Map<String, String> getMapFromQuery(URI uri) throws UnsupportedEncodingException {
 		String rawQuery = uri.getRawQuery();
-		Map<String,String> map = new HashMap<>();
+		Map<String, String> map = new HashMap<>();
 		if (rawQuery != null) {
 			String parts[] = rawQuery.split("&");
 			for (String part : parts) {
@@ -779,14 +797,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		init();
 		PomGenerator pg = new PomGenerator(index.getArchives());
 		pg.name(Revision.valueOf(options.gav))
-				.parent(Revision.valueOf(options.parent))
-				.dependencyManagement(options.dependencyManagement)
-				.out(out);
+			.parent(Revision.valueOf(options.parent))
+			.dependencyManagement(options.dependencyManagement)
+			.out(out);
 
 	}
 
 	@Override
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		init();
 		return index.findProviders(requirements);
 	}

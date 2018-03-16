@@ -42,7 +42,7 @@ class OSGiIndex {
 	private final List<URI>					uris;
 
 	OSGiIndex(String name, HttpClient client, File cache, List<URI> uris, int staleTime, boolean refresh)
-			throws Exception {
+		throws Exception {
 		this.name = name;
 		this.uris = uris;
 		this.client = client;
@@ -54,10 +54,13 @@ class OSGiIndex {
 
 	private Promise<BridgeRepository> readIndexes(boolean refresh) throws Exception {
 		Promise<List<Resource>> resources = getURIs().stream()
-				.map(uri -> download(uri, refresh))
-				.collect(toPromise(promiseFactory))
-				.map(ll -> ll.stream().flatMap(List::stream).collect(toList()));
-		Promise<BridgeRepository> bridge = resources.map(ResourcesRepository::new).map(BridgeRepository::new);
+			.map(uri -> download(uri, refresh))
+			.collect(toPromise(promiseFactory))
+			.map(ll -> ll.stream()
+				.flatMap(List::stream)
+				.collect(toList()));
+		Promise<BridgeRepository> bridge = resources.map(ResourcesRepository::new)
+			.map(BridgeRepository::new);
 		return bridge;
 	}
 
@@ -69,17 +72,19 @@ class OSGiIndex {
 	}
 
 	private Promise<List<Resource>> download(URI uri, boolean refresh) {
-		HttpRequest<File> req = client.build().useCache(refresh ? -1 : staleTime);
+		HttpRequest<File> req = client.build()
+			.useCache(refresh ? -1 : staleTime);
 
-		return req.async(uri).map(file -> {
-			if (file == null) {
-				logger.debug("{}: No file downloaded for {}", name, uri);
-				return Collections.emptyList();
-			}
-			try (XMLResourceParser xmlp = new XMLResourceParser(IO.stream(file), name, uri)) {
-				return xmlp.parse();
-			}
-		});
+		return req.async(uri)
+			.map(file -> {
+				if (file == null) {
+					logger.debug("{}: No file downloaded for {}", name, uri);
+					return Collections.emptyList();
+				}
+				try (XMLResourceParser xmlp = new XMLResourceParser(IO.stream(file), name, uri)) {
+					return xmlp.parse();
+				}
+			});
 	}
 
 	Promise<File> get(String bsn, Version version, File file) throws Exception {
@@ -99,7 +104,9 @@ class OSGiIndex {
 			return null;
 		}
 
-		return client.build().useCache(file, staleTime).async(url);
+		return client.build()
+			.useCache(file, staleTime)
+			.async(url);
 	}
 
 	BridgeRepository getBridge() throws Exception {
@@ -120,13 +127,18 @@ class OSGiIndex {
 		final Deferred<List<Void>> freshness = promiseFactory.deferred();
 		List<Promise<Void>> promises = new ArrayList<>(getURIs().size());
 		for (final URI uri : getURIs()) {
-			if (freshness.getPromise().isDone()) {
+			if (freshness.getPromise()
+				.isDone()) {
 				break; // early exit if staleness already detected
 			}
 			try {
-				Promise<TaggedData> async = client.build().useCache().asTag().async(uri);
+				Promise<TaggedData> async = client.build()
+					.useCache()
+					.asTag()
+					.async(uri);
 				promises.add(async.then(resolved -> {
-					switch (resolved.getValue().getState()) {
+					switch (resolved.getValue()
+						.getState()) {
 						case OTHER :
 							// in the offline case
 							// ignore might be best here
@@ -157,15 +169,17 @@ class OSGiIndex {
 		freshness.resolveWith(all);
 
 		// Block until freshness is resolved
-		return freshness.getPromise().getFailure() != null;
+		return freshness.getPromise()
+			.getFailure() != null;
 	}
 
 	List<URI> getURIs() {
 		return uris;
 	}
 
-	Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements)
-			throws Exception {
-		return getBridge().getRepository().findProviders(requirements);
+	Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements)
+		throws Exception {
+		return getBridge().getRepository()
+			.findProviders(requirements);
 	}
 }

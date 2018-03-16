@@ -37,7 +37,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @param service The service interface type.
 	 * @param filter An additional service filter, which may be {@code null}.
 	 */
-	protected void assertSvcAvail(Class< ? > service, String filter) {
+	protected void assertSvcAvail(Class<?> service, String filter) {
 		assertSvcAvail(null, service, filter);
 	}
 
@@ -51,7 +51,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @param filter An additional service filter, which may be {@code
 		 * null}.
 	 */
-	protected void assertSvcAvail(String message, Class< ? > service, String filter) {
+	protected void assertSvcAvail(String message, Class<?> service, String filter) {
 		BundleContext context = getBundleContext();
 		ServiceReference[] refs = null;
 		try {
@@ -90,7 +90,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * </p>
 	 * 
 	 * <pre>
-	 * String reply = withService(HelloService.class, null, new Operation&lt;HelloService,String&gt;() {
+	 * String reply = withService(HelloService.class, null, new Operation&lt;HelloService, String&gt;() {
 	 * 	public String call(HelloService service) {
 	 * 		return service.sayHello();
 	 * 	}
@@ -105,8 +105,8 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @param operation The operation to perform against the service.
 	 * @throws Exception
 	 */
-	protected <S, R> R withService(Class<S> service, String filter, Operation< ? super S,R> operation)
-			throws Exception {
+	protected <S, R> R withService(Class<S> service, String filter, Operation<? super S, R> operation)
+		throws Exception {
 		return withService(service, filter, 0, operation);
 	}
 
@@ -119,7 +119,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 * </p>
 	 * 
 	 * <pre>
-	 * String reply = withService(HelloService.class, null, 0, new Operation&lt;HelloService,String&gt;() {
+	 * String reply = withService(HelloService.class, null, 0, new Operation&lt;HelloService, String&gt;() {
 	 * 	public String call(HelloService service) {
 	 * 		return service.sayHello();
 	 * 	}
@@ -137,15 +137,15 @@ public abstract class OSGiTestCase extends TestCase {
 	 * @param operation The operation to perform against the service.
 	 * @throws Exception
 	 */
-	protected <S, R> R withService(Class<S> service, String filter, long timeout, Operation< ? super S,R> operation)
-			throws Exception {
+	protected <S, R> R withService(Class<S> service, String filter, long timeout, Operation<? super S, R> operation)
+		throws Exception {
 		BundleContext context = getBundleContext();
 
 		ServiceTracker tracker = null;
 		if (filter != null) {
 			try {
 				Filter combined = FrameworkUtil
-						.createFilter("(" + Constants.OBJECTCLASS + "=" + service.getName() + ")");
+					.createFilter("(" + Constants.OBJECTCLASS + "=" + service.getName() + ")");
 				tracker = new ServiceTracker(context, combined, null);
 			} catch (InvalidSyntaxException e) {
 				fail("Invalid filter syntax.");

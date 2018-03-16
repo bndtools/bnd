@@ -16,22 +16,22 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
 import aQute.http.testservers.HttpTestServer;
-import aQute.http.testservers.Httpbin;
 import aQute.http.testservers.HttpTestServer.Config;
+import aQute.http.testservers.Httpbin;
 import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import junit.framework.TestCase;
 
 public class HttpTestServerTest extends TestCase {
-	final static TypeReference<Map<String, Object>> MAP_REF = new TypeReference<Map<String, Object>>() {
-	};
+	final static TypeReference<Map<String, Object>> MAP_REF = new TypeReference<Map<String, Object>>() {};
 
 	public void testSimple() throws Exception {
 		HttpTestServer http = getHttps();
 		System.out.println(http.getBaseURI());
 		System.out.println(Arrays.toString(http.getCertificateChain()));
-		assertFalse(0 == http.getAddress().getPort());
+		assertFalse(0 == http.getAddress()
+			.getPort());
 	}
 
 	static Pattern DN_P = Pattern.compile("(^|\\s)CN=(?<cn>[^, ]+)", Pattern.CASE_INSENSITIVE);
@@ -39,24 +39,29 @@ public class HttpTestServerTest extends TestCase {
 	public void testCorrectCommonName() throws Exception {
 		HttpTestServer http = getHttps();
 		X509Certificate cert = http.getCertificateChain()[0];
-		String name = cert.getSubjectDN().getName();
+		String name = cert.getSubjectDN()
+			.getName();
 		Matcher m = DN_P.matcher(name);
 		assertTrue(m.find());
-		assertEquals(m.group("cn"), http.getAddress().getHostName());
+		assertEquals(m.group("cn"), http.getAddress()
+			.getHostName());
 	}
 
 	public void testURI() throws Exception {
 		try (HttpTestServer http = getHttps();) {
 			URI uri = http.getBaseURI();
-			assertEquals(http.getAddress().getPort(), uri.getPort());
-			assertEquals(http.getAddress().getHostName(), uri.getHost());
+			assertEquals(http.getAddress()
+				.getPort(), uri.getPort());
+			assertEquals(http.getAddress()
+				.getHostName(), uri.getHost());
 			assertEquals("https", uri.getScheme());
 		}
 	}
 
 	public void testDefault() throws Exception {
 		try (HttpTestServer http = getHttp();) {
-			URL uri = http.getBaseURI().toURL();
+			URL uri = http.getBaseURI()
+				.toURL();
 			String s = aQute.lib.io.IO.collect(uri.openStream());
 			System.out.println(s);
 		}
@@ -93,7 +98,7 @@ public class HttpTestServerTest extends TestCase {
 			URL uri = new URL(http.getBaseURI() + "/basic-auth/john/doe");
 			HttpURLConnection hrc = (HttpURLConnection) uri.openConnection();
 			hrc.setRequestProperty("Authorization",
-					"Basic " + aQute.lib.base64.Base64.encodeBase64("john:doe".getBytes("UTF-8")));
+				"Basic " + aQute.lib.base64.Base64.encodeBase64("john:doe".getBytes("UTF-8")));
 			hrc.connect();
 			assertEquals(200, hrc.getResponseCode());
 		}
@@ -104,7 +109,7 @@ public class HttpTestServerTest extends TestCase {
 			URL uri = new URL(http.getBaseURI() + "/basic-auth/john/xxxxxxx");
 			HttpURLConnection hrc = (HttpURLConnection) uri.openConnection();
 			hrc.setRequestProperty("Authorization",
-					"Basic " + aQute.lib.base64.Base64.encodeBase64("john:doe".getBytes("UTF-8")));
+				"Basic " + aQute.lib.base64.Base64.encodeBase64("john:doe".getBytes("UTF-8")));
 			hrc.connect();
 			assertEquals(401, hrc.getResponseCode());
 		}
@@ -140,66 +145,65 @@ public class HttpTestServerTest extends TestCase {
 			assertEquals(9995, s.length());
 		}
 	}
-	
+
 	public void testGzip() throws Exception {
 		try (HttpTestServer http = getHttp();) {
-			URL url = new URL( http.getBaseURI()  +"/gzip");
+			URL url = new URL(http.getBaseURI() + "/gzip");
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestProperty("Accept-Encoding", "gzip");
 			byte data[] = IO.read(con.getInputStream());
-			
+
 			ByteArrayInputStream bin = new ByteArrayInputStream(data);
 			GZIPInputStream gzin = new GZIPInputStream(bin);
-			
+
 			String s = IO.collect(gzin, "UTF-8");
 			System.out.println(s);
-		}		
+		}
 	}
 
 	public void testDeflate() throws Exception {
 		try (HttpTestServer http = getHttp();) {
-			URL url = new URL( http.getBaseURI()  +"/deflate?abc=def&abc%24=12");
+			URL url = new URL(http.getBaseURI() + "/deflate?abc=def&abc%24=12");
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setRequestProperty("Accept-Encoding", "gzip");
 			byte data[] = IO.read(con.getInputStream());
-			
+
 			ByteArrayInputStream bin = new ByteArrayInputStream(data);
 			InflaterInputStream gzin = new InflaterInputStream(bin);
-			
+
 			String s = IO.collect(gzin, "UTF-8");
 			System.out.println(s);
-		}		
+		}
 	}
 
-	
 	public void testPut() throws IOException, Exception {
 		try (HttpTestServer http = getHttp();) {
-			URL url = new URL( http.getBaseURI()   + "/put");
+			URL url = new URL(http.getBaseURI() + "/put");
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setDoOutput(true);
 			con.setRequestMethod("PUT");
-			IO.copy( "ABC".getBytes(), con.getOutputStream());
-			assertEquals( 200, con.getResponseCode());
-			String s = IO.collect( con.getInputStream());
-			
-			assertEquals( "ABC", s);
+			IO.copy("ABC".getBytes(), con.getOutputStream());
+			assertEquals(200, con.getResponseCode());
+			String s = IO.collect(con.getInputStream());
+
+			assertEquals("ABC", s);
 		}
 	}
-	
+
 	public void testPost() throws IOException, Exception {
 		try (HttpTestServer http = getHttp();) {
-			URL url = new URL( http.getBaseURI()   + "/put");
+			URL url = new URL(http.getBaseURI() + "/put");
 			HttpURLConnection con = (HttpURLConnection) url.openConnection();
 			con.setDoOutput(true);
 			con.setRequestMethod("POST");
-			IO.copy( "ABC".getBytes(), con.getOutputStream());
-			assertEquals( 200, con.getResponseCode());
-			String s = IO.collect( con.getInputStream());
-			
-			assertEquals( "ABC", s);
+			IO.copy("ABC".getBytes(), con.getOutputStream());
+			assertEquals(200, con.getResponseCode());
+			String s = IO.collect(con.getInputStream());
+
+			assertEquals("ABC", s);
 		}
 	}
-	
+
 	private SortedMap<String, Object> toCaseInsensitive(Map<String, Object> map) {
 		TreeMap<String, Object> tm = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 		tm.putAll(map);
@@ -210,7 +214,9 @@ public class HttpTestServerTest extends TestCase {
 		URL uri = new URI(http.getBaseURI() + path).toURL();
 		HttpURLConnection connection = (HttpURLConnection) uri.openConnection();
 		String collect = IO.collect(connection.getInputStream());
-		return new JSONCodec().dec().from(collect).get(tref);
+		return new JSONCodec().dec()
+			.from(collect)
+			.get(tref);
 	}
 
 	public HttpTestServer getHttps() throws Exception {

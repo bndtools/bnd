@@ -43,10 +43,9 @@ public class RSA {
 		return create(new RSAPrivateKeySpec(m, e));
 	}
 
-	public static Pair<RSAPrivateKey,RSAPublicKey> generate() throws NoSuchAlgorithmException {
+	public static Pair<RSAPrivateKey, RSAPublicKey> generate() throws NoSuchAlgorithmException {
 		KeyPairGenerator kpg = KeyPairGenerator.getInstance(ALGORITHM);
 		KeyPair keypair = kpg.generateKeyPair();
-		return new Pair<RSAPrivateKey,RSAPublicKey>((RSAPrivateKey) keypair.getPrivate(),
-				(RSAPublicKey) keypair.getPublic());
+		return new Pair<>((RSAPrivateKey) keypair.getPrivate(), (RSAPublicKey) keypair.getPublic());
 	}
 }

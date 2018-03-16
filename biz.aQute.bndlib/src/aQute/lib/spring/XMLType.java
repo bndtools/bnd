@@ -38,7 +38,7 @@ public class XMLType {
 	}
 
 	public Set<String> analyze(InputStream in) throws Exception {
-		Set<String> refers = new HashSet<String>();
+		Set<String> refers = new HashSet<>();
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		Result r = new StreamResult(bout);
@@ -79,7 +79,8 @@ public class XMLType {
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
-		Map<String,Resource> dir = jar.getDirectories().get(root);
+		Map<String, Resource> dir = jar.getDirectories()
+			.get(root);
 		if (dir == null || dir.isEmpty()) {
 			Resource resource = jar.getResource(root);
 			if (resource != null)
@@ -87,11 +88,13 @@ public class XMLType {
 			return false;
 		}
 
-		for (Iterator<Map.Entry<String,Resource>> i = dir.entrySet().iterator(); i.hasNext();) {
-			Map.Entry<String,Resource> entry = i.next();
+		for (Iterator<Map.Entry<String, Resource>> i = dir.entrySet()
+			.iterator(); i.hasNext();) {
+			Map.Entry<String, Resource> entry = i.next();
 			String path = entry.getKey();
 			Resource resource = entry.getValue();
-			if (paths.matcher(path).matches()) {
+			if (paths.matcher(path)
+				.matches()) {
 				process(analyzer, path, resource);
 			}
 		}
@@ -106,10 +109,13 @@ public class XMLType {
 			}
 			for (Iterator<String> r = set.iterator(); r.hasNext();) {
 				PackageRef pack = analyzer.getPackageRef(r.next());
-				if (!QN.matcher(pack.getFQN()).matches())
+				if (!QN.matcher(pack.getFQN())
+					.matches())
 					analyzer.warning("Package does not seem a package in spring resource (%s): %s", path, pack);
-				if (!analyzer.getReferred().containsKey(pack))
-					analyzer.getReferred().put(pack);
+				if (!analyzer.getReferred()
+					.containsKey(pack))
+					analyzer.getReferred()
+						.put(pack);
 			}
 		} catch (Exception e) {
 			analyzer.error("Unexpected exception in processing spring resources(%s): %s", path, e);

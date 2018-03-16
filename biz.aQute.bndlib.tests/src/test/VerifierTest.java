@@ -29,7 +29,7 @@ public class VerifierTest extends TestCase {
 		b.setIncludeResource("foo;literal='foo'");
 		Jar inner = b.build();
 		assertTrue(b.check("The Require-Capability with namespace \\+\\+\\+ is not a symbolic name",
-				"The Provide-Capability with namespace === is not a symbolic name"));
+			"The Provide-Capability with namespace === is not a symbolic name"));
 	}
 
 	/**
@@ -47,7 +47,8 @@ public class VerifierTest extends TestCase {
 		Jar outer = new Jar("x");
 		outer.putResource("foo.jar", new JarResource(inner));
 		Manifest m = new Manifest();
-		m.getMainAttributes().putValue(Constants.META_PERSISTENCE, "foo.jar, foo.jar!/foo.xml, absent.xml");
+		m.getMainAttributes()
+			.putValue(Constants.META_PERSISTENCE, "foo.jar, foo.jar!/foo.xml, absent.xml");
 		outer.setManifest(m);
 		Verifier v = new Verifier(outer);
 		v.verifyMetaPersistence();
@@ -109,18 +110,17 @@ public class VerifierTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setExportPackage("org.osgi.framework");
-		b.setProperty("Require-Capability",
-				"test; filter:=\"(&(test=aName)(version>=1.1.0))\", "
-						+ " test; filter:=\"(&(version>=1.1)(string~=astring))\", "
-						+ " test; filter:=\"(&(version>=1.1)(long>=99))\", "
-						+ " test; filter:=\"(&(version>=1.1)(double>=1.0))\",  "
-						+ " test; filter:=\"(&(version>=1.1)(version.list=1.0)(version.list=1.1)(version.list=1.2))\", "
-						+ " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2)(long.list=3)(long.list=4))\", "
-						+ " test; filter:=\"(&(version>=1.1)(double.list=1.001)(double.list=1.002)(double.list=1.003)(double.list<=1.3))\", "
-						+ " test; filter:=\"(&(version>=1.1)(string.list~=astring)(string.list~=bstring)(string.list=cString))\", "
-						+ " test; filter:=\"(&(version>=1.1)(string.list2=a\\\"quote)(string.list2=a\\,comma)(string.list2= aSpace )(string.list2=\\\"start)(string.list2=\\,start)(string.list2=end\\\")(string.list2=end\\,))\", "
-						+ " test; filter:=\"(&(version>=1.1)(string.list3= aString )(string.list3= bString )(string.list3= cString ))\", "
-						+ " test.effective; effective:=\"active\"; filter:=\"(willResolve=false)\", test.no.attrs");
+		b.setProperty("Require-Capability", "test; filter:=\"(&(test=aName)(version>=1.1.0))\", "
+			+ " test; filter:=\"(&(version>=1.1)(string~=astring))\", "
+			+ " test; filter:=\"(&(version>=1.1)(long>=99))\", "
+			+ " test; filter:=\"(&(version>=1.1)(double>=1.0))\",  "
+			+ " test; filter:=\"(&(version>=1.1)(version.list=1.0)(version.list=1.1)(version.list=1.2))\", "
+			+ " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2)(long.list=3)(long.list=4))\", "
+			+ " test; filter:=\"(&(version>=1.1)(double.list=1.001)(double.list=1.002)(double.list=1.003)(double.list<=1.3))\", "
+			+ " test; filter:=\"(&(version>=1.1)(string.list~=astring)(string.list~=bstring)(string.list=cString))\", "
+			+ " test; filter:=\"(&(version>=1.1)(string.list2=a\\\"quote)(string.list2=a\\,comma)(string.list2= aSpace )(string.list2=\\\"start)(string.list2=\\,start)(string.list2=end\\\")(string.list2=end\\,))\", "
+			+ " test; filter:=\"(&(version>=1.1)(string.list3= aString )(string.list3= bString )(string.list3= cString ))\", "
+			+ " test.effective; effective:=\"active\"; filter:=\"(willResolve=false)\", test.no.attrs");
 
 		b.build();
 		assertTrue(b.check());
@@ -136,8 +136,9 @@ public class VerifierTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setExportPackage("org.osgi.framework");
-		b.setProperty("Require-Capability", "test; resolution:=mandatory, " + " test; resolution:=optional, "
-				+ " test; cardinality:=single, " + " test; cardinality:=multiple, " + " test; effective:=foo, "
+		b.setProperty("Require-Capability",
+			"test; resolution:=mandatory, " + " test; resolution:=optional, " + " test; cardinality:=single, "
+				+ " test; cardinality:=multiple, " + " test; effective:=foo, "
 				+ " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2))\", " + " test; x-custom:=bar, ");
 
 		b.build();
@@ -152,44 +153,52 @@ public class VerifierTest extends TestCase {
 		bmaker.addClasspath(IO.getFile("jar/osgi.jar"));
 		bmaker.addClasspath(new File("bin"));
 		bmaker.setProperty("Export-Package",
-				"org.osgi.service.eventadmin;version='[1,2)',org.osgi.framework;version=x13,test;-remove-attribute:=version,test.lib;specification-version=12,test.split");
+			"org.osgi.service.eventadmin;version='[1,2)',org.osgi.framework;version=x13,test;-remove-attribute:=version,test.lib;specification-version=12,test.split");
 		bmaker.setProperty("Import-Package",
-				"foo;version=1,bar;version='[1,x2)',baz;version='[2,1)',baz2;version='(1,1)',*");
+			"foo;version=1,bar;version='[1,x2)',baz;version='[2,1)',baz2;version='(1,1)',*");
 		bmaker.setProperty("-strict", "true");
 		bmaker.setProperty("-fixupmessages", "^Exception: ");
 		Jar jar = bmaker.build();
-		assertTrue(bmaker.check(
-"\\QInvalid syntax for version: x13, for cmd: range, arguments; [range, [==,+)]\\E",
-				"\\QImport Package org.osgi.framework has an invalid version range syntax ${range;[==,+)}\\E",
-				"\\QNo translation found for macro: range;[==,+)\\E",
-				"\\QExport-Package or -exportcontents refers to missing package 'org.osgi.service.eventadmin'\\E",
-				"Import Package clauses without version range \\(excluding javax\\.\\*\\):",
-				"Import Package bar has an invalid version range syntax \\[1,x2\\)",
-				"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
-				"Import Package baz has an invalid version range syntax \\[2,1\\): java.lang.IllegalArgumentException: Low Range is higher than High Range: 2.0.0-1.0.0",
-				"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: \\[foo\\]",
-				"Export Package org.osgi.framework version has invalid syntax: x13",
-				"Export Package test.lib uses deprecated specification-version instead of version",
-				"Export Package org.osgi.service.eventadmin version is a range: \\[1,2\\); Exports do not allow for ranges."));
+		assertTrue(bmaker.check("\\QInvalid syntax for version: x13, for cmd: range, arguments; [range, [==,+)]\\E",
+			"\\QImport Package org.osgi.framework has an invalid version range syntax ${range;[==,+)}\\E",
+			"\\QNo translation found for macro: range;[==,+)\\E",
+			"\\QExport-Package or -exportcontents refers to missing package 'org.osgi.service.eventadmin'\\E",
+			"Import Package clauses without version range \\(excluding javax\\.\\*\\):",
+			"Import Package bar has an invalid version range syntax \\[1,x2\\)",
+			"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
+			"Import Package baz has an invalid version range syntax \\[2,1\\): java.lang.IllegalArgumentException: Low Range is higher than High Range: 2.0.0-1.0.0",
+			"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: \\[foo\\]",
+			"Export Package org.osgi.framework version has invalid syntax: x13",
+			"Export Package test.lib uses deprecated specification-version instead of version",
+			"Export Package org.osgi.service.eventadmin version is a range: \\[1,2\\); Exports do not allow for ranges."));
 	}
 
 	public static void testCapability() throws Exception {
 
 		Parameters h = OSGiHeader.parseHeader(
-				"test; version.list:List < Version > = \"1.0, 1.1, 1.2\"; effective:=\"resolve\"; test =\"aName\";version : Version=\"1.0\"; long :Long=\"100\"; "
-						+ "double: Double=\"1.001\"; string:String =\"aString\";   "
-						+ "long.list : List <Long >=\"1, 2, 3, 4\";double.list: List< Double>= \"1.001, 1.002, 1.003\"; "
-						+ "string.list :List<String >= \"aString,bString,cString\"");
+			"test; version.list:List < Version > = \"1.0, 1.1, 1.2\"; effective:=\"resolve\"; test =\"aName\";version : Version=\"1.0\"; long :Long=\"100\"; "
+				+ "double: Double=\"1.001\"; string:String =\"aString\";   "
+				+ "long.list : List <Long >=\"1, 2, 3, 4\";double.list: List< Double>= \"1.001, 1.002, 1.003\"; "
+				+ "string.list :List<String >= \"aString,bString,cString\"");
 
-		assertEquals(Attrs.Type.VERSION, h.get("test").getType("version"));
-		assertEquals(Attrs.Type.LONG, h.get("test").getType("long"));
-		assertEquals(Attrs.Type.DOUBLE, h.get("test").getType("double"));
-		assertEquals(Attrs.Type.STRING, h.get("test").getType("string"));
-		assertEquals(Attrs.Type.STRING, h.get("test").getType("test"));
-		assertEquals(Attrs.Type.LONGS, h.get("test").getType("long.list"));
-		assertEquals(Attrs.Type.DOUBLES, h.get("test").getType("double.list"));
-		assertEquals(Attrs.Type.STRINGS, h.get("test").getType("string.list"));
-		assertEquals(Attrs.Type.VERSIONS, h.get("test").getType("version.list"));
+		assertEquals(Attrs.Type.VERSION, h.get("test")
+			.getType("version"));
+		assertEquals(Attrs.Type.LONG, h.get("test")
+			.getType("long"));
+		assertEquals(Attrs.Type.DOUBLE, h.get("test")
+			.getType("double"));
+		assertEquals(Attrs.Type.STRING, h.get("test")
+			.getType("string"));
+		assertEquals(Attrs.Type.STRING, h.get("test")
+			.getType("test"));
+		assertEquals(Attrs.Type.LONGS, h.get("test")
+			.getType("long.list"));
+		assertEquals(Attrs.Type.DOUBLES, h.get("test")
+			.getType("double.list"));
+		assertEquals(Attrs.Type.STRINGS, h.get("test")
+			.getType("string.list"));
+		assertEquals(Attrs.Type.VERSIONS, h.get("test")
+			.getType("version.list"));
 	}
 
 	public static void testFailedOSGiJar() throws Exception {
@@ -209,7 +218,8 @@ public class VerifierTest extends TestCase {
 
 		v.verifyNative();
 		System.err.println(v.getErrors());
-		assertEquals(0, v.getErrors().size());
+		assertEquals(0, v.getErrors()
+			.size());
 		v.close();
 		b.close();
 	}
@@ -383,8 +393,10 @@ public class VerifierTest extends TestCase {
 		analyzer.getProperties();
 		System.err.println("Errors   " + analyzer.getErrors());
 		System.err.println("Warnings " + analyzer.getWarnings());
-		assertEquals(0, analyzer.getErrors().size());
-		assertEquals(2, analyzer.getWarnings().size());
+		assertEquals(0, analyzer.getErrors()
+			.size());
+		assertEquals(2, analyzer.getWarnings()
+			.size());
 	}
 
 	public static void testSimple() throws Exception {
@@ -397,8 +409,12 @@ public class VerifierTest extends TestCase {
 
 		Manifest m = jar.getManifest();
 		m.write(System.err);
-		assertTrue(m.getMainAttributes().getValue("Import-Package").indexOf("org.slf4j") >= 0);
-		assertTrue(m.getMainAttributes().getValue("DynamicImport-Package").indexOf("org.slf4j") >= 0);
+		assertTrue(m.getMainAttributes()
+			.getValue("Import-Package")
+			.contains("org.slf4j"));
+		assertTrue(m.getMainAttributes()
+			.getValue("DynamicImport-Package")
+			.contains("org.slf4j"));
 	}
 
 }

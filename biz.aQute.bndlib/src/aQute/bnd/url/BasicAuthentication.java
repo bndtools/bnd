@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import aQute.lib.base64.Base64;
 import aQute.libg.cryptography.SHA1;
 import aQute.service.reporter.Reporter;
+
 /**
  * Provide Http Basic Authentication. This URL Connection Handler plugin will
  * add basic authentication to the matching URL Connections. The following
@@ -55,7 +56,8 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 		init(null);
 	}
 
-	public void setProperties(Map<String,String> map) throws Exception {
+	@Override
+	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
 		this.password = map.get(PASSWORD);
 		this.user = map.get(USER);
@@ -63,7 +65,7 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 		init(map);
 	}
 
-	void init(Map<String,String> map) {
+	void init(Map<String, String> map) {
 		if (this.password == null) {
 			error("No .password property set on this plugin %s", map);
 		}
@@ -74,17 +76,19 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 		try {
 			String encoded = Base64.encodeBase64(authString.getBytes(UTF_8));
 			this.authentication = PREFIX_BASIC_AUTH + encoded;
-			sha = SHA1.digest(password.getBytes()).asHex();
+			sha = SHA1.digest(password.getBytes())
+				.asHex();
 		} catch (Exception e) {
 			// cannot happen, UTF-8 is always present
 		}
 	}
 
+	@Override
 	public void handle(URLConnection connection) {
 		if (connection instanceof HttpURLConnection && matches(connection) && password != null && user != null) {
 			if (!(connection instanceof HttpsURLConnection))
 				logger.debug("using basic authentication with http instead of https, this is very insecure: {}",
-						connection.getURL());
+					connection.getURL());
 
 			connection.setRequestProperty(HEADER_AUTHORIZATION, authentication);
 		}

@@ -1,7 +1,10 @@
 package aQute.bnd.header;
 
+import static java.util.stream.Collectors.toList;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collector;
@@ -9,7 +12,7 @@ import java.util.stream.Collector;
 import aQute.lib.collections.SortedList;
 import aQute.service.reporter.Reporter;
 
-public class Parameters implements Map<String,Attrs> {
+public class Parameters implements Map<String, Attrs> {
 	private final Map<String, Attrs>	map;
 	private final boolean				allowDuplicateAttributes;
 
@@ -31,6 +34,7 @@ public class Parameters implements Map<String,Attrs> {
 		OSGiHeader.parseHeader(header, reporter, this);
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -45,6 +49,7 @@ public class Parameters implements Map<String,Attrs> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsKey(Object name) {
@@ -56,6 +61,7 @@ public class Parameters implements Map<String,Attrs> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public boolean containsValue(Object value) {
@@ -63,10 +69,12 @@ public class Parameters implements Map<String,Attrs> {
 		return map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<String,Attrs>> entrySet() {
+	@Override
+	public Set<java.util.Map.Entry<String, Attrs>> entrySet() {
 		return map.entrySet();
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public Attrs get(Object key) {
@@ -78,21 +86,31 @@ public class Parameters implements Map<String,Attrs> {
 		return map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map.isEmpty();
 	}
 
+	@Override
 	public Set<String> keySet() {
 		return map.keySet();
 	}
 
+	public List<String> keyList() {
+		return keySet().stream()
+			.map(this::removeDuplicateMarker)
+			.collect(toList());
+	}
+
+	@Override
 	public Attrs put(String key, Attrs value) {
 		assert key != null;
 		assert value != null;
 		return map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends String, ? extends Attrs> map) {
+	@Override
+	public void putAll(Map<? extends String, ? extends Attrs> map) {
 		this.map.putAll(map);
 	}
 
@@ -103,6 +121,7 @@ public class Parameters implements Map<String,Attrs> {
 		}
 	}
 
+	@Override
 	@SuppressWarnings("cast")
 	@Deprecated
 	public Attrs remove(Object var0) {
@@ -114,10 +133,12 @@ public class Parameters implements Map<String,Attrs> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		return map.size();
 	}
 
+	@Override
 	public Collection<Attrs> values() {
 		return map.values();
 	}
@@ -131,22 +152,26 @@ public class Parameters implements Map<String,Attrs> {
 
 	public void append(StringBuilder sb) {
 		String del = "";
-		for (Map.Entry<String,Attrs> s : entrySet()) {
+		for (Map.Entry<String, Attrs> s : entrySet()) {
 			sb.append(del);
 			sb.append(removeDuplicateMarker(s.getKey()));
-			if (!s.getValue().isEmpty()) {
+			if (!s.getValue()
+				.isEmpty()) {
 				sb.append(';');
-				s.getValue().append(sb);
+				s.getValue()
+					.append(sb);
 			}
 
 			del = ",";
 		}
 	}
 
-	private Object removeDuplicateMarker(String key) {
-		while (key.endsWith("~"))
-			key = key.substring(0, key.length() - 1);
-		return key;
+	private String removeDuplicateMarker(String key) {
+		int i = key.length() - 1;
+		while (i >= 0 && key.charAt(i) == '~')
+			--i;
+
+		return key.substring(0, i + 1);
 	}
 
 	@Override
@@ -171,8 +196,8 @@ public class Parameters implements Map<String,Attrs> {
 		if (isEmpty())
 			return true;
 
-		SortedList<String> l = new SortedList<String>(keySet());
-		SortedList<String> lo = new SortedList<String>(other.keySet());
+		SortedList<String> l = new SortedList<>(keySet());
+		SortedList<String> lo = new SortedList<>(other.keySet());
 		if (!l.isEqual(lo))
 			return false;
 
@@ -185,7 +210,7 @@ public class Parameters implements Map<String,Attrs> {
 		return true;
 	}
 
-	public Map<String, ? extends Map<String,String>> asMapMap() {
+	public Map<String, ? extends Map<String, String>> asMapMap() {
 		return this;
 	}
 
@@ -193,7 +218,7 @@ public class Parameters implements Map<String,Attrs> {
 	 * Merge all attributes of the given parameters with this
 	 */
 	public void mergeWith(Parameters other, boolean override) {
-		for (Map.Entry<String,Attrs> e : other.entrySet()) {
+		for (Map.Entry<String, Attrs> e : other.entrySet()) {
 			Attrs existing = get(e.getKey());
 			if (existing == null) {
 				put(e.getKey(), new Attrs(e.getValue()));
@@ -209,9 +234,11 @@ public class Parameters implements Map<String,Attrs> {
 	public static Collector<String, Parameters, Parameters> toParameters() {
 		return Collector.of(Parameters::new, Parameters::accumulator, Parameters::combiner);
 	}
+
 	private static void accumulator(Parameters p, String s) {
 		OSGiHeader.parseHeader(s, null, p);
 	}
+
 	private static Parameters combiner(Parameters t, Parameters u) {
 		t.mergeWith(u, true);
 		return t;

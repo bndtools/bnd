@@ -4,18 +4,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Version implements Comparable<Version> {
-	private static final String	HIGHESTCHAR	= "\uFFFF";
+	private static final String	HIGHESTCHAR		= "\uFFFF";
 	final int					major;
 	final int					minor;
 	final int					micro;
 	final String				qualifier;
-	final boolean	snapshot;
+	final boolean				snapshot;
 
 	public final static String	VERSION_STRING	= "(\\d{1,9})(\\.(\\d{1,9})(\\.(\\d{1,9})(\\.([-_\\da-zA-Z]+))?)?)?";
 	public final static Pattern	VERSION			= Pattern.compile(VERSION_STRING);
 	public final static Version	LOWEST			= new Version();
 	public final static Version	HIGHEST			= new Version(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE,
-			HIGHESTCHAR);
+		HIGHESTCHAR);
 
 	public static final Version	emptyVersion	= LOWEST;
 	public static final Version	ONE				= new Version(1, 0, 0);
@@ -67,7 +67,8 @@ public class Version implements Comparable<Version> {
 	}
 
 	private boolean isSnapshot(String qualifier) {
-		return qualifier != null && qualifier != HIGHESTCHAR && SNAPSHOT_P.matcher(qualifier).matches();
+		return qualifier != null && qualifier != HIGHESTCHAR && SNAPSHOT_P.matcher(qualifier)
+			.matches();
 	}
 
 	public int getMajor() {
@@ -86,27 +87,30 @@ public class Version implements Comparable<Version> {
 		return qualifier;
 	}
 
+	@Override
 	public int compareTo(Version other) {
 		if (other == this)
 			return 0;
 
 		Version o = other;
-		if (major != o.major)
-			return major - o.major;
+		int cmp = major - o.major;
+		if (cmp != 0)
+			return cmp;
 
-		if (minor != o.minor)
-			return minor - o.minor;
+		cmp = minor - o.minor;
+		if (cmp != 0)
+			return cmp;
 
-		if (micro != o.micro)
-			return micro - o.micro;
+		cmp = micro - o.micro;
+		if (cmp != 0)
+			return cmp;
 
-		int c = 0;
 		if (qualifier != null)
-			c = 1;
+			cmp = 1;
 		if (o.qualifier != null)
-			c += 2;
+			cmp += 2;
 
-		switch (c) {
+		switch (cmp) {
 			case 0 :
 				return 0;
 			case 1 :
@@ -129,6 +133,16 @@ public class Version implements Comparable<Version> {
 			sb.append(".");
 			sb.append(qualifier);
 		}
+		return sb.toString();
+	}
+
+	public String toStringWithoutQualifier() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(major);
+		sb.append(".");
+		sb.append(minor);
+		sb.append(".");
+		sb.append(micro);
 		return sb.toString();
 	}
 
@@ -180,7 +194,8 @@ public class Version implements Comparable<Version> {
 	}
 
 	public static boolean isVersion(String version) {
-		return version != null && VERSION.matcher(version).matches();
+		return version != null && VERSION.matcher(version)
+			.matches();
 	}
 
 	public boolean isSnapshot() {

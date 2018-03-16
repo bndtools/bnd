@@ -70,7 +70,8 @@ import aQute.service.reporter.Reporter;
  */
 public class HttpClient implements Closeable, URLConnector {
 	private final static Logger						logger				= LoggerFactory.getLogger(HttpClient.class);
-	public static final SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
+	public static final SimpleDateFormat			sdf					= new SimpleDateFormat(
+		"EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
 	private static final ThreadLocal<DateFormat>	HTTP_DATE_FORMATTER	= new ThreadLocal<>();
 
@@ -125,30 +126,35 @@ public class HttpClient implements Closeable, URLConnector {
 		return format;
 	}
 
+	@Override
 	public void close() {
 		Authenticator.setDefault(null);
 	}
 
 	@Override
 	public InputStream connect(URL url) throws Exception {
-		return build().get(InputStream.class).go(url);
+		return build().get(InputStream.class)
+			.go(url);
 	}
 
 	@Override
 	public TaggedData connectTagged(URL url) throws Exception {
-		return build().get(TaggedData.class).go(url);
+		return build().get(TaggedData.class)
+			.go(url);
 	}
 
 	@Override
 	public TaggedData connectTagged(URL url, String tag) throws Exception {
-		return build().get(TaggedData.class).ifNoneMatch(tag).go(url);
+		return build().get(TaggedData.class)
+			.ifNoneMatch(tag)
+			.go(url);
 	}
 
 	public HttpRequest<Object> build() {
-		return new HttpRequest<Object>(this);
+		return new HttpRequest<>(this);
 	}
 
-	public Object send(final HttpRequest< ? > request) throws Exception {
+	public Object send(final HttpRequest<?> request) throws Exception {
 		if (isOffline() || request.isCache()) {
 			return doCached(request);
 		} else {
@@ -173,7 +179,7 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 	}
 
-	Object doCached(final HttpRequest< ? > request) throws Exception, IOException {
+	Object doCached(final HttpRequest<?> request) throws Exception, IOException {
 		TaggedData tag = doCached0(request);
 		if (request.download == TaggedData.class)
 			return tag;
@@ -192,16 +198,15 @@ public class HttpClient implements Closeable, URLConnector {
 			case UPDATED :
 			default :
 				return convert(request.download, request.useCacheFile == null ? tag.getFile() : request.useCacheFile,
-						tag);
+					tag);
 
 		}
 	}
 
-	TaggedData doCached0(final HttpRequest< ? > request) throws Exception, IOException {
+	TaggedData doCached0(final HttpRequest<?> request) throws Exception, IOException {
 		logger.debug("cached {}", request.url);
 
 		URL url = request.url;
-
 
 		try (Info info = cache.get(request.useCacheFile, request.url.toURI())) {
 			//
@@ -214,7 +219,7 @@ public class HttpClient implements Closeable, URLConnector {
 					return new TaggedData(url.toURI(), 404, null);
 
 				if (info.file.isFile() && info.file.lastModified() == sourceFile.lastModified()
-						&& info.file.length() == sourceFile.length()) {
+					&& info.file.length() == sourceFile.length()) {
 					return new TaggedData(url.toURI(), 304, info.file);
 				}
 
@@ -231,7 +236,7 @@ public class HttpClient implements Closeable, URLConnector {
 				//
 
 				if (!isOffline() && (request.maxStale < 0
-						|| info.jsonFile.lastModified() + request.maxStale < System.currentTimeMillis())) {
+					|| info.jsonFile.lastModified() + request.maxStale < System.currentTimeMillis())) {
 
 					//
 					// Ok, expired. So check if there is a newer one on the
@@ -290,7 +295,7 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 	}
 
-	public TaggedData send0(final HttpRequest< ? > request) throws Exception {
+	public TaggedData send0(final HttpRequest<?> request) throws Exception {
 
 		final ProxySetup proxy = getProxySetup(request.url);
 		final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
@@ -333,12 +338,12 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 	}
 
-	ProgressPlugin.Task getTask(final HttpRequest< ? > request) {
+	ProgressPlugin.Task getTask(final HttpRequest<?> request) {
 		final String name = (request.upload == null ? "Download " : "Upload ") + request.url;
 		final int size = 100;
 		final ProgressPlugin.Task task;
 		final List<ProgressPlugin> progressPlugins = registry != null ? registry.getPlugins(ProgressPlugin.class)
-				: null;
+			: null;
 
 		if (progressPlugins != null && progressPlugins.size() > 1) {
 			final List<ProgressPlugin.Task> multiplexedTasks = new ArrayList<>();
@@ -373,7 +378,8 @@ public class HttpClient implements Closeable, URLConnector {
 				}
 			};
 		} else if (progressPlugins != null && progressPlugins.size() == 1) {
-			task = progressPlugins.get(0).startTask(name, size);
+			task = progressPlugins.get(0)
+				.startTask(name, size);
 		} else {
 			task = new ProgressPlugin.Task() {
 				@Override
@@ -384,7 +390,8 @@ public class HttpClient implements Closeable, URLConnector {
 
 				@Override
 				public boolean isCanceled() {
-					return Thread.currentThread().isInterrupted();
+					return Thread.currentThread()
+						.isInterrupted();
 				}
 			};
 		}
@@ -429,7 +436,6 @@ public class HttpClient implements Closeable, URLConnector {
 		if (matching == null)
 			return urlc;
 
-
 		matching.handle(urlc);
 
 		return urlc;
@@ -446,7 +452,7 @@ public class HttpClient implements Closeable, URLConnector {
 		return null;
 	}
 
-	private synchronized Collection< ? extends URLConnectionHandler> getURLConnectionHandlers() throws Exception {
+	private synchronized Collection<? extends URLConnectionHandler> getURLConnectionHandlers() throws Exception {
 		if (connectionHandlers.isEmpty() && registry != null) {
 			List<URLConnectionHandler> connectionHandlers = registry.getPlugins(URLConnectionHandler.class);
 			this.connectionHandlers.addAll(connectionHandlers);
@@ -455,17 +461,17 @@ public class HttpClient implements Closeable, URLConnector {
 		return connectionHandlers;
 	}
 
-	private synchronized Collection< ? extends ProxyHandler> getProxyHandlers() throws Exception {
+	private synchronized Collection<? extends ProxyHandler> getProxyHandlers() throws Exception {
 		if (proxyHandlers.isEmpty() && registry != null) {
 			List<ProxyHandler> proxyHandlers = registry.getPlugins(ProxyHandler.class);
-			proxyHandlers.addAll(proxyHandlers);
+			this.proxyHandlers.addAll(proxyHandlers);
 			logger.debug("Proxy handlers {}", proxyHandlers);
 		}
 		return proxyHandlers;
 	}
 
 	private InputStream createProgressWrappedStream(InputStream inputStream, String name, int size, Task task,
-			long timeout) {
+		long timeout) {
 		if (registry == null)
 			return inputStream;
 
@@ -473,7 +479,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	private TaggedData doConnect(Object put, Type ref, final URLConnection con, final HttpURLConnection hcon,
-			HttpRequest< ? > request, ProgressPlugin.Task task) throws IOException, Exception {
+		HttpRequest<?> request, ProgressPlugin.Task task) throws IOException, Exception {
 
 		if (put != null) {
 			task.worked(1);
@@ -498,7 +504,8 @@ public class HttpClient implements Closeable, URLConnector {
 					InputStream in = con.getInputStream();
 					return new TaggedData(con, in, request.useCacheFile);
 				} catch (FileNotFoundException e) {
-					URI uri = con.getURL().toURI();
+					URI uri = con.getURL()
+						.toURI();
 					task.done("File not found " + uri, e);
 					return new TaggedData(uri, 404, request.useCacheFile);
 				}
@@ -514,7 +521,7 @@ public class HttpClient implements Closeable, URLConnector {
 			// it does not do it for https <-> http :-(
 			//
 			if (code == HTTP_MOVED_TEMP || code == HTTP_MOVED_PERM || code == HTTP_SEE_OTHER
-					|| code == HTTP_TEMPORARY_REDIRECT || code == HTTP_PERMANENT_REDIRECT) {
+				|| code == HTTP_TEMPORARY_REDIRECT || code == HTTP_PERMANENT_REDIRECT) {
 				if (request.redirects-- > 0) {
 					String location = hcon.getHeaderField("Location");
 					request.url = new URL(request.url, location);
@@ -526,13 +533,15 @@ public class HttpClient implements Closeable, URLConnector {
 			if (isUpdateInfo(con, request, code)) {
 				File file = (File) request.upload;
 				String etag = con.getHeaderField("ETag");
-				try (Info info = cache.get(file, con.getURL().toURI())) {
+				try (Info info = cache.get(file, con.getURL()
+					.toURI())) {
 					info.update(etag);
 				}
 			}
 
 			if ((code / 100) != 2) {
-				task.done("Finished " + code + " " + con.getURL().toURI(), null);
+				task.done("Finished " + code + " " + con.getURL()
+					.toURI(), null);
 				return new TaggedData(con, null, request.useCacheFile);
 			}
 
@@ -551,9 +560,9 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 	}
 
-	boolean isUpdateInfo(final URLConnection con, HttpRequest< ? > request, int code) {
+	boolean isUpdateInfo(final URLConnection con, HttpRequest<?> request, int code) {
 		return request.upload instanceof File && request.updateTag && code == HTTP_CREATED
-				&& con.getHeaderField("ETag") != null;
+			&& con.getHeaderField("ETag") != null;
 	}
 
 	private Object convert(Type type, File in, TaggedData tag) throws IOException, Exception {
@@ -569,7 +578,7 @@ public class HttpClient implements Closeable, URLConnector {
 
 	private Object convert(Type ref, InputStream in) throws IOException, Exception {
 		if (ref instanceof Class) {
-			Class< ? > refc = (Class< ? >) ref;
+			Class<?> refc = (Class<?>) ref;
 			if (refc == byte[].class) {
 				return IO.read(in);
 			} else if (InputStream.class.isAssignableFrom((refc))) {
@@ -579,7 +588,9 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 		}
 		String s = IO.collect(in);
-		return codec.dec().from(s).get(ref);
+		return codec.dec()
+			.from(s)
+			.get(ref);
 	}
 
 	private InputStream handleContentEncoding(final HttpURLConnection con, InputStream in) throws IOException {
@@ -599,7 +610,7 @@ public class HttpClient implements Closeable, URLConnector {
 		return in;
 	}
 
-	private void doOutput(Object put, final URLConnection con, HttpRequest< ? > rq) throws IOException, Exception {
+	private void doOutput(Object put, final URLConnection con, HttpRequest<?> rq) throws IOException, Exception {
 		con.setDoOutput(true);
 		try (OutputStream out = con.getOutputStream()) {
 			if (put instanceof InputStream) {
@@ -616,7 +627,10 @@ public class HttpClient implements Closeable, URLConnector {
 				IO.copy((File) put, out);
 			} else {
 				logger.debug("out {} JSON {} {}", rq.verb, put, rq.url);
-				codec.enc().to(out).put(put).flush();
+				codec.enc()
+					.to(out)
+					.put(put)
+					.flush();
 			}
 		}
 	}
@@ -629,9 +643,9 @@ public class HttpClient implements Closeable, URLConnector {
 		}
 	}
 
-	private void setHeaders(Map<String,String> headers, final URLConnection con) {
+	private void setHeaders(Map<String, String> headers, final URLConnection con) {
 		if (headers != null) {
-			for (Entry<String,String> e : headers.entrySet()) {
+			for (Entry<String, String> e : headers.entrySet()) {
 				logger.debug("set header {}={}", e.getKey(), e.getValue());
 				con.setRequestProperty(e.getKey(), e.getValue());
 			}
@@ -691,11 +705,11 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public URI makeDir(URI uri) throws URISyntaxException {
-		if (uri.getPath() != null && uri.getPath().endsWith("/")) {
+		if (uri.getPath() != null && uri.getPath()
+			.endsWith("/")) {
 			String string = uri.toString();
 			return new URI(string.substring(0, string.length() - 1));
-		}
-		else
+		} else
 			return uri;
 	}
 

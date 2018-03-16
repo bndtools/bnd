@@ -61,7 +61,7 @@ class RemoteCommand extends Processor {
 	 * repository for the agent and handles the redirection. It also handles the
 	 * events.
 	 */
-	class LauncherSupervisor extends AgentSupervisor<Supervisor,Agent> implements Supervisor {
+	class LauncherSupervisor extends AgentSupervisor<Supervisor, Agent> implements Supervisor {
 
 		@Override
 		public boolean stdout(String out) throws Exception {
@@ -104,6 +104,7 @@ class RemoteCommand extends Processor {
 		agent = launcher.getAgent();
 	}
 
+	@Override
 	public void close() throws IOException {
 		launcher.close();
 	}
@@ -118,7 +119,7 @@ class RemoteCommand extends Processor {
 
 	@Description("Get the bundle revisions")
 	@Arguments(arg = {
-			"bundleid..."
+		"bundleid..."
 	})
 	interface RevisonOptions extends Options {}
 
@@ -145,7 +146,7 @@ class RemoteCommand extends Processor {
 
 	@Description("Create a distro jar from a remote agent")
 	@Arguments(arg = {
-			"bsn", "[version]"
+		"bsn", "[version]"
 	})
 	interface DistroOptions extends Options {
 		String vendor();
@@ -182,7 +183,8 @@ class RemoteCommand extends Processor {
 		}
 
 		File output = getFile(opts.output("distro.jar"));
-		if (output.getParentFile() == null || !output.getParentFile().isDirectory()) {
+		if (output.getParentFile() == null || !output.getParentFile()
+			.isDirectory()) {
 			error("Cannot write to %s because parent not a directory", output);
 		}
 
@@ -209,12 +211,13 @@ class RemoteCommand extends Processor {
 				// special
 				//
 
-				for (Entry<String,Object> e : c.attributes.entrySet()) {
+				for (Entry<String, Object> e : c.attributes.entrySet()) {
 					String key = e.getKey();
 					Object value = e.getValue();
 
 					if (key.equals("version")) {
-						if (value instanceof Collection || value.getClass().isArray())
+						if (value instanceof Collection || value.getClass()
+							.isArray())
 							value = Converter.cnv(tref, value);
 						else
 							value = new Version((String) value);
@@ -236,8 +239,9 @@ class RemoteCommand extends Processor {
 					logger.debug("P: {};{}", pname, attrs);
 				} else if (NativeNamespace.NATIVE_NAMESPACE.equals(c.namespace)) {
 					Attrs newAttrs = new Attrs();
-					for (Entry<String,String> entry : attrs.entrySet()) {
-						if (entry.getKey().startsWith(NativeNamespace.NATIVE_NAMESPACE)) {
+					for (Entry<String, String> entry : attrs.entrySet()) {
+						if (entry.getKey()
+							.startsWith(NativeNamespace.NATIVE_NAMESPACE)) {
 							newAttrs.put(entry.getKey(), entry.getValue());
 						}
 					}
@@ -266,7 +270,7 @@ class RemoteCommand extends Processor {
 
 			// Make distro unresolvable
 			Parameters unresolveable = new Parameters(
-					"osgi.unresolvable; filter:='(&(must.not.resolve=*)(!(must.not.resolve=*)))'");
+				"osgi.unresolvable; filter:='(&(must.not.resolve=*)(!(must.not.resolve=*)))'");
 			main.putValue(Constants.REQUIRE_CAPABILITY, unresolveable.toString());
 
 			provided.add(new Parameters("osgi.unresolvable"));
@@ -278,7 +282,8 @@ class RemoteCommand extends Processor {
 				sb.append(",");
 			}
 
-			String capabilities = sb.toString().substring(0, sb.length() - 1);
+			String capabilities = sb.toString()
+				.substring(0, sb.length() - 1);
 
 			main.putValue(Constants.PROVIDE_CAPABILITY, capabilities);
 
@@ -302,8 +307,7 @@ class RemoteCommand extends Processor {
 			if (isFailOk() || v.isOk()) {
 				jar.updateModified(System.currentTimeMillis(), "Writing distro jar");
 				jar.write(output);
-			}
-			else
+			} else
 				getInfo(v);
 		}
 

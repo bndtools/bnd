@@ -3,7 +3,10 @@ package aQute.bnd.maven.export.plugin;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 import java.io.File;
+import java.io.OutputStream;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -24,8 +27,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.exporter.executable.ExecutableJarExporter;
+import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
@@ -34,7 +41,7 @@ import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class ExportMojo extends AbstractMojo {
-	private static final Logger	logger	= LoggerFactory.getLogger(ExportMojo.class);
+	private static final Logger			logger	= LoggerFactory.getLogger(ExportMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject				project;
@@ -43,10 +50,10 @@ public class ExportMojo extends AbstractMojo {
 	private RepositorySystemSession		repositorySession;
 
 	@Parameter(readonly = true, required = true)
-	private List<File>	bndruns;
+	private List<File>					bndruns;
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	private File		targetDir;
+	private File						targetDir;
 
 	@Parameter(readonly = true, required = false)
 	private List<File>					bundles;
@@ -55,21 +62,24 @@ public class ExportMojo extends AbstractMojo {
 	private boolean						useMavenDependencies;
 
 	@Parameter(defaultValue = "false")
-	private boolean				resolve;
+	private boolean						resolve;
 
 	@Parameter(defaultValue = "true")
-	private boolean				failOnChanges;
+	private boolean						failOnChanges;
 
 	@Parameter(defaultValue = "false")
-	private boolean				bundlesOnly;
+	private boolean						bundlesOnly;
+
+	@Parameter(required = false)
+	private String						exporter;
 
 	@Parameter(defaultValue = "true")
 	private boolean						attach;
 
 	@Parameter(defaultValue = "${session}", readonly = true)
-	private MavenSession session;
+	private MavenSession				session;
 
-	private int					errors	= 0;
+	private int							errors	= 0;
 
 	@Component
 	private RepositorySystem			system;
@@ -77,14 +87,18 @@ public class ExportMojo extends AbstractMojo {
 	@Component
 	private ProjectDependenciesResolver	resolver;
 
+	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		try {
 			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
-					system);
+				system);
 
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
-					useMavenDependencies);
+				useMavenDependencies);
 
+			if (exporter == null) {
+				exporter = bundlesOnly ? RunbundlesExporter.RUNBUNDLES : ExecutableJarExporter.EXECUTABLE_JAR;
+			}
 			for (File runFile : bndruns) {
 				export(runFile, fileSetRepository);
 			}
@@ -110,7 +124,8 @@ public class ExportMojo extends AbstractMojo {
 			run.setBase(temporaryDir);
 			Workspace workspace = run.getWorkspace();
 			workspace.setBuildDir(cnf);
-			workspace.setOffline(session.getSettings().isOffline());
+			workspace.setOffline(session.getSettings()
+				.isOffline());
 			workspace.addBasicPlugin(fileSetRepository);
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
@@ -135,14 +150,24 @@ public class ExportMojo extends AbstractMojo {
 				}
 			}
 			try {
-				if (bundlesOnly) {
-					File runbundlesDir = new File(targetDir, "export/" + bndrun);
-					IO.mkdirs(runbundlesDir);
-					run.exportRunbundles(null, runbundlesDir);
-				} else {
-					File executableJar = new File(targetDir, bndrun + ".jar");
-					run.export(null, false, executableJar);
-					attach(executableJar, bndrun);
+				Entry<String, Resource> export = run.export(exporter, Collections.emptyMap());
+				if (export != null) {
+					if (exporter.equals(RunbundlesExporter.RUNBUNDLES)) {
+						try (JarResource r = (JarResource) export.getValue()) {
+							File runbundlesDir = new File(targetDir, "export/" + bndrun);
+							r.getJar()
+								.writeFolder(runbundlesDir);
+						}
+					} else {
+						try (Resource r = export.getValue()) {
+							File exported = new File(targetDir, export.getKey());
+							try (OutputStream out = IO.outputStream(exported)) {
+								r.write(out);
+							}
+							exported.setLastModified(r.lastModified());
+							attach(exported, bndrun);
+						}
+					}
 				}
 			} finally {
 				report(run);
@@ -168,18 +193,19 @@ public class ExportMojo extends AbstractMojo {
 
 	private void attach(File file, String classifier) {
 		if (!attach) {
-			logger.debug(
-					"The export plugin has been configured not to attach the generated application to the project.");
+			logger
+				.debug("The export plugin has been configured not to attach the generated application to the project.");
 			return;
-		} else if (bundlesOnly) {
-			logger.debug("The export plugin will not attach a bundles-only output to the project.");
+		} else if (!file.getName()
+			.endsWith(Constants.DEFAULT_JAR_EXTENSION)) {
+			logger.debug("The export plugin will not attach a non-jar output to the project.");
 			return;
 		}
 
 		DefaultArtifactHandler handler = new DefaultArtifactHandler("jar");
 		handler.setExtension("jar");
 		DefaultArtifact artifact = new DefaultArtifact(project.getGroupId(), project.getArtifactId(),
-				project.getVersion(), null, "jar", classifier, handler);
+			project.getVersion(), null, "jar", classifier, handler);
 		artifact.setFile(file);
 		project.addAttachedArtifact(artifact);
 	}

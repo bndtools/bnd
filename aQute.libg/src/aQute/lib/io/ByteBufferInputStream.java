@@ -1,6 +1,5 @@
 package aQute.lib.io;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
@@ -12,16 +11,24 @@ public class ByteBufferInputStream extends InputStream {
 		bb = buffer;
 	}
 
-	@Override
-	public int read() throws IOException {
-		if (!bb.hasRemaining()) {
-			return -1;
-		}
-		return 0xFF & bb.get();
+	public ByteBufferInputStream(byte[] b, int off, int len) {
+		this(ByteBuffer.wrap(b, off, len));
+	}
+
+	public ByteBufferInputStream(byte[] b) {
+		this(b, 0, b.length);
 	}
 
 	@Override
-	public int read(byte[] b, int off, int len) throws IOException {
+	public int read() {
+		if (!bb.hasRemaining()) {
+			return -1;
+		}
+		return Byte.toUnsignedInt(bb.get());
+	}
+
+	@Override
+	public int read(byte[] b, int off, int len) {
 		int remaining = bb.remaining();
 		if (remaining <= 0) {
 			return -1;
@@ -32,7 +39,7 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	@Override
-	public long skip(long n) throws IOException {
+	public long skip(long n) {
 		if (n <= 0L) {
 			return 0L;
 		}
@@ -42,12 +49,12 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	@Override
-	public int available() throws IOException {
+	public int available() {
 		return bb.remaining();
 	}
 
 	@Override
-	public void close() throws IOException {
+	public void close() {
 		bb.position(bb.limit());
 	}
 
@@ -57,12 +64,19 @@ public class ByteBufferInputStream extends InputStream {
 	}
 
 	@Override
-	public void reset() throws IOException {
+	public void reset() {
 		bb.reset();
 	}
 
 	@Override
 	public boolean markSupported() {
 		return true;
+	}
+
+	/**
+	 * For use by {@link ByteBufferOutputStream#write(InputStream)}
+	 */
+	ByteBuffer buffer() {
+		return bb;
 	}
 }

@@ -23,13 +23,13 @@ import aQute.lib.io.IO;
 public class LauncherTest {
 	File						base					= new File("").getAbsoluteFile();
 
-	private static final String GENERATED_PACKAGED_JAR = "generated/packaged.jar";
+	private static final String	GENERATED_PACKAGED_JAR	= "generated/packaged.jar";
 
 	/**
-	 * Testing the embedded launcher is quite tricky. This test uses a prefabricated
-	 * packaged jar. Notice that you need to reexport that jar for every change in
-	 * the launcher since it embeds the launcher. This jar is run twice to see if
-	 * the second run will not reinstall the bundles.
+	 * Testing the embedded launcher is quite tricky. This test uses a
+	 * prefabricated packaged jar. Notice that you need to reexport that jar for
+	 * every change in the launcher since it embeds the launcher. This jar is
+	 * run twice to see if the second run will not reinstall the bundles.
 	 */
 
 	@Test
@@ -64,16 +64,17 @@ public class LauncherTest {
 	}
 
 	private String runFramework(File file) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
-			InvocationTargetException, IOException, MalformedURLException {
+		InvocationTargetException, IOException, MalformedURLException {
 		PrintStream out = System.err;
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		PrintStream out2 = new PrintStream(bout);
 		System.setErr(out2);
 		try {
 			try (URLClassLoader l = new URLClassLoader(new URL[] {
-					file.toURI().toURL()
+				file.toURI()
+					.toURL()
 			}, null)) {
-				Class< ? > launcher = l.loadClass("aQute.launcher.pre.EmbeddedLauncher");
+				Class<?> launcher = l.loadClass("aQute.launcher.pre.EmbeddedLauncher");
 				Method main = launcher.getDeclaredMethod("main", String[].class);
 				main.invoke(null, (Object) new String[] {});
 			}

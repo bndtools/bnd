@@ -9,6 +9,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,17 +29,17 @@ import aQute.service.reporter.Reporter;
 public class Command {
 	private final static Logger	logger		= LoggerFactory.getLogger(Command.class);
 
-	boolean				trace;
-	Reporter			reporter;
-	List<String>		arguments	= new ArrayList<String>();
-	Map<String,String>	variables	= new LinkedHashMap<String,String>();
-	long				timeout		= 0;
-	File				cwd			= new File("").getAbsoluteFile();
-	static Timer		timer		= new Timer(Command.class.getName(), true);
-	Process				process;
-	volatile boolean	timedout;
-	String				fullCommand;
-	private boolean		useThreadForInput;
+	boolean						trace;
+	Reporter					reporter;
+	List<String>				arguments	= new ArrayList<>();
+	Map<String, String>			variables	= new LinkedHashMap<>();
+	long						timeout		= 0;
+	File						cwd			= new File("").getAbsoluteFile();
+	static Timer				timer		= new Timer(Command.class.getName(), true);
+	Process						process;
+	volatile boolean			timedout;
+	String						fullCommand;
+	private boolean				useThreadForInput;
 
 	public Command(String fullCommand) {
 		this.fullCommand = fullCommand;
@@ -91,8 +92,9 @@ public class Command {
 			// below junk
 			// http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6511002
 
-			if (System.getProperty("os.name").startsWith("Windows")) {
-				List<String> adjustedStrings = new LinkedList<String>();
+			if (System.getProperty("os.name")
+				.startsWith("Windows")) {
+				List<String> adjustedStrings = new LinkedList<>();
 				for (String a : arguments) {
 					adjustedStrings.add(windowsQuote(a));
 				}
@@ -102,8 +104,8 @@ public class Command {
 			}
 		}
 
-		Map<String,String> env = p.environment();
-		for (Entry<String,String> s : variables.entrySet()) {
+		Map<String, String> env = p.environment();
+		for (Entry<String, String> s : variables.entrySet()) {
 			env.put(s.getKey(), s.getValue());
 		}
 
@@ -114,12 +116,14 @@ public class Command {
 
 		// Make sure the command will not linger when we go
 		Runnable r = new Runnable() {
+			@Override
 			public void run() {
 				process.destroy();
 			}
 		};
 		Thread hook = new Thread(r, arguments.toString());
-		Runtime.getRuntime().addShutdownHook(hook);
+		Runtime.getRuntime()
+			.addShutdownHook(hook);
 		TimerTask timer = null;
 		final OutputStream stdin = process.getOutputStream();
 		Thread rdInThread = null;
@@ -128,6 +132,7 @@ public class Command {
 			timer = new TimerTask() {
 				// @Override TODO why did this not work? TimerTask implements
 				// Runnable
+				@Override
 				public void run() {
 					timedout = true;
 					process.destroy();
@@ -188,7 +193,8 @@ public class Command {
 		} finally {
 			if (timer != null)
 				timer.cancel();
-			Runtime.getRuntime().removeShutdownHook(hook);
+			Runtime.getRuntime()
+				.removeShutdownHook(hook);
 		}
 
 		byte exitValue = (byte) process.waitFor();
@@ -199,8 +205,8 @@ public class Command {
 			rdInThread.interrupt();
 		}
 
-		logger.debug("cmd {} executed with result={}, result: {}/{}, timedout={}", arguments, exitValue, stdout,
-					stderr, timedout);
+		logger.debug("cmd {} executed with result={}, result: {}/{}, timedout={}", arguments, exitValue, stdout, stderr,
+			timedout);
 
 		if (timedout)
 			return Integer.MIN_VALUE;
@@ -208,9 +214,12 @@ public class Command {
 		return exitValue;
 	}
 
+	public void add(String arg) {
+		arguments.add(arg);
+	}
+
 	public void add(String... args) {
-		for (String arg : args)
-			arguments.add(arg);
+		Collections.addAll(arguments, args);
 	}
 
 	public void addAll(Collection<String> args) {
@@ -276,6 +285,11 @@ public class Command {
 		return this;
 	}
 
+	public Command arg(String arg) {
+		add(arg);
+		return this;
+	}
+
 	public Command arg(String... args) {
 		add(args);
 		return this;
@@ -288,7 +302,8 @@ public class Command {
 
 	public void inherit() {
 		ProcessBuilder pb = new ProcessBuilder();
-		for (Entry<String,String> e : pb.environment().entrySet()) {
+		for (Entry<String, String> e : pb.environment()
+			.entrySet()) {
 			var(e.getKey(), e.getValue());
 		}
 	}
@@ -318,8 +333,8 @@ public class Command {
 		this.useThreadForInput = useThreadForInput;
 	}
 
-	public void var(Map<String,String> env) {
-		for (Map.Entry<String,String> e : env.entrySet()) {
+	public void var(Map<String, String> env) {
+		for (Map.Entry<String, String> e : env.entrySet()) {
 			var(e.getKey(), e.getValue());
 		}
 	}

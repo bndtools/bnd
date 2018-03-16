@@ -262,7 +262,7 @@
     </capability>
     <capability namespace="osgi.content">
       <attribute name="osgi.content" value="b4c23349d770e5d94591187801083dae366d730c52f04166805f44eebeb33a71"/>
-      <attribute name="url" value="http://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.framework/5.0.1/org.apache.felix.framework-5.0.1.jar"/>
+      <attribute name="url" value="https://repo.maven.apache.org/maven2/org/apache/felix/org.apache.felix.framework/5.0.1/org.apache.felix.framework-5.0.1.jar"/>
       <attribute name="size" type="Long" value="601333"/>
       <attribute name="mime" value="application/vnd.osgi.bundle"/>
     </capability>

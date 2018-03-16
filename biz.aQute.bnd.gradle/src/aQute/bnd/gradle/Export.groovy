@@ -10,25 +10,28 @@
  * import aQute.bnd.gradle.Export
  * task exportExecutable(type: Export) {
  *   bndrun file('my.bndrun')
+ *   exporter = 'bnd.executablejar'
  * }
  * task exportRunbundles(type: Export) {
  *   bndrun file('my.bndrun')
- *   bundlesOnly = true
+ *   exporter = 'bnd.runbundles'
  * }
  * </pre>
  *
  * <p>
  * Properties:
  * <ul>
- * <li>bundlesOnly - If true the task will export the -runbundles files
- * to desintationDir. Otherwise, an executable jar will be exported
- * to destinationDir. The default is false.</li>
+ * <li>exporter - The name of the exporter plugin to use.
+ * Bnd has two built-in exporter plugins. 'bnd.executablejar'
+ * exports an executable jar and 'bnd.runbundles' exports the
+ * -runbundles files. The default is 'bnd.executablejar'.</li>
  * <li>bndrun - This is the bndrun file to be resolved.
  * This property must be set.</li>
  * <li>destinationDir - This is the directory for the output.
  * The default for destinationDir is project.distsDir/'executable'
- * if bundlesOnly is false, and project.distsDir/'runbundles'/bndrun
- * if bundlesOnly is true.</li>
+ * if the exporter is 'bnd.executablejar', project.distsDir/'runbundles'/bndrun
+ * if the exporter is 'bnd.runbundles', and project.distsDir/task.name
+ * for all other exporters.</li>
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
@@ -38,6 +41,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
+import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
@@ -49,24 +54,28 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 
 public class Export extends DefaultTask {
   /**
-   * Whether only bundles should be exported instead
-   * of an executable jar.
+   * This property is replace by exporter.
+   * This property is only used when the exporter
+   * property is not specified.
    *
    * <p>
-   * If <code>true</code>, then the -runbundles
-   * will be exported. Otherwise an executable jar will be
-   * exporte. The default is  <code>false</code>.
+   * If <code>true</code>, then the exporter defaults to
+   * 'bnd.runbundles'. Otherwise the expoter defaults to
+   * 'bnd.executablejar'. The default is  <code>false</code>.
    */
   @Input
   boolean bundlesOnly
 
   private File bndrun
   private File destinationDir
+  private String exporter
+  private final Workspace bndWorkspace
 
   /**
    * Create a Export task.
@@ -74,8 +83,11 @@ public class Export extends DefaultTask {
    */
   public Export() {
     super()
+    bndWorkspace = project.findProperty('bndWorkspace')
     bundlesOnly = false
-    convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    if (bndWorkspace == null) {
+      convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    }
   }
 
   /**
@@ -103,19 +115,23 @@ public class Export extends DefaultTask {
    *
    * <p>
    * The default for destinationDir is project.distsDir/'executable'
-   * if bundlesOnly is false, and project.distsDir/'runbundles'/bndrun
-   * if bundlesOnly is true.</li>
+   * if the exporter is 'bnd.executablejar', project.distsDir/'runbundles'/bndrun
+   * if the exporter is 'bnd.runbundles', and project.distsDir/exporter
+   * for all other exporters.
    */
   @OutputDirectory
   public File getDestinationDir() {
     if (destinationDir != null) {
       return destinationDir
     }
-    if (bundlesOnly) {
-      String name = bndrun.name - '.bndrun'
-      destinationDir = new File(project.distsDir, "runbundles/${name}")
-    } else {
+    String exporterName = getExporter()
+    if (exporterName == RUNBUNDLES) {
+      String bndrunName = bndrun.name - '.bndrun'
+      destinationDir = new File(project.distsDir, "runbundles/${bndrunName}")
+    } else if (exporterName == EXECUTABLE_JAR) {
       destinationDir = new File(project.distsDir, 'executable')
+    } else {
+      destinationDir = new File(project.distsDir, exporterName)
     }
     return destinationDir
   }
@@ -132,38 +148,81 @@ public class Export extends DefaultTask {
   }
 
   /**
+   * Return the name of the exporter for this task.
+   *
+   * <p>
+   * Bnd has two built-in exporter plugins. 'bnd.executablejar'
+   * exports an executable jar and 'bnd.runbundles' exports the
+   * -runbundles files. The default is 'bnd.executablejar' unless
+   * bundlesOnly is false when the default is 'bnd.runbundles'.
+   */
+  @Input
+  @Optional
+  public String getExporter() {
+    if (exporter == null) {
+      exporter = bundlesOnly ? RUNBUNDLES : EXECUTABLE_JAR
+    }
+    return exporter
+  }
+
+  /**
+   * Set the name of the exporter for this task.
+   *
+   * <p>
+   * Bnd has two built-in exporter plugins. 'bnd.executablejar'
+   * exports an executable jar and 'bnd.runbundles' exports the
+   * -runbundles files.
+   * <p>
+   * The exporter plugin with the specified name must be an
+   * installed exporter plugin.
+   */
+  public void setExporter(String exporter) {
+    this.exporter = exporter
+  }
+
+  /**
    * Export the bndrun file.
    *
    */
   @TaskAction
   void export() {
-    File cnf = new File(temporaryDir, Workspace.CNFDIR)
-    project.mkdir(cnf)
-    Run.createRun(null, bndrun).withCloseable { Run run ->
+    Workspace workspace = bndWorkspace
+    Run.createRun(workspace, bndrun).withCloseable { Run run ->
+      Workspace runWorkspace = run.getWorkspace()
       run.setBase(temporaryDir)
-      Workspace workspace = run.getWorkspace()
-      workspace.setBuildDir(cnf)
-      workspace.setOffline(project.gradle.startParameter.offline)
-      workspace.addBasicPlugin(getFileSetRepository(name))
-      logger.info 'Exporting {} to {}', run.getPropertiesFile(), destinationDir.absolutePath
-      for (RepositoryPlugin repo : workspace.getRepositories()) {
-        repo.list(null)
+      if (run.isStandalone()) {
+        runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
+        File cnf = new File(temporaryDir, Workspace.CNFDIR)
+        project.mkdir(cnf)
+        runWorkspace.setBuildDir(cnf)
+        if (convention.findPlugin(FileSetRepositoryConvention)) {
+          runWorkspace.addBasicPlugin(getFileSetRepository(name))
+          for (RepositoryPlugin repo : runWorkspace.getRepositories()) {
+            repo.list(null)
+          }
+        }
       }
-      run.getInfo(workspace)
+      run.getInfo(runWorkspace)
       logReport(run, logger)
       if (!run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} standalone workspace errors")
+        throw new GradleException("${run.getPropertiesFile()} workspace errors")
       }
 
       try {
-        if (bundlesOnly) {
-          logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
-          run.exportRunbundles(null, destinationDir)
+        logger.info 'Exporting {} to {} with exporter {}', run.getPropertiesFile(), destinationDir, exporter
+        def export = run.export(exporter, [:])
+        if (exporter == RUNBUNDLES) {
+          export?.value.withCloseable { jr ->
+            jr.getJar().writeFolder(destinationDir)
+          }
         } else {
-          String name = bndrun.name - '.bndrun'
-          File executableJar = new File(destinationDir, "${name}.jar")
-          logger.info 'Creating an executable jar from {} to {}', run.getPropertiesFile(), executableJar.absolutePath
-          run.export(null, false, executableJar)
+          export?.value.withCloseable { r ->
+            File exported = new File(destinationDir, export.key)
+            exported.withOutputStream { out ->
+              r.write(out)
+            }
+            exported.setLastModified(r.lastModified())
+          }
         }
       } finally {
         logReport(run, logger)

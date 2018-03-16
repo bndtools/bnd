@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -8,7 +10,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
+import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,8 +24,13 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
@@ -37,7 +46,7 @@ import aQute.libg.generics.Create;
 public class Clazz {
 	private final static Logger	logger				= LoggerFactory.getLogger(Clazz.class);
 
-	static Pattern METHOD_DESCRIPTOR = Pattern.compile("(.*)\\)(.+)");
+	static Pattern				METHOD_DESCRIPTOR	= Pattern.compile("(.*)\\)(.+)");
 
 	public class ClassConstant {
 		int				cname;
@@ -51,6 +60,7 @@ public class Clazz {
 			return (String) pool[cname];
 		}
 
+		@Override
 		public String toString() {
 			return "ClassConstant[" + getName() + "]";
 		}
@@ -66,21 +76,20 @@ public class Clazz {
 		OpenJDK7(51, "JavaSE-1.7", "(&(osgi.ee=JavaSE)(version=1.7))"), //
 		OpenJDK8(52, "JavaSE-1.8", "(&(osgi.ee=JavaSE)(version=1.8))") {
 
-			Map<String,Set<String>> profiles;
+			Map<String, Set<String>> profiles;
 
-			public Map<String,Set<String>> getProfiles() throws IOException {
+			@Override
+			public Map<String, Set<String>> getProfiles() throws IOException {
 				if (profiles == null) {
 					Properties p = new UTF8Properties();
 					try (InputStream in = Clazz.class.getResourceAsStream("profiles-" + this + ".properties")) {
 						p.load(in);
 					}
-					profiles = new HashMap<String,Set<String>>();
-					for (Map.Entry<Object,Object> prop : p.entrySet()) {
+					profiles = new HashMap<>();
+					for (Map.Entry<Object, Object> prop : p.entrySet()) {
 						String list = (String) prop.getValue();
-						Set<String> set = new HashSet<String>();
-						for (String s : list.split("\\s*,\\s*")) {
-							set.add(s);
-						}
+						Set<String> set = new HashSet<>();
+						Collections.addAll(set, list.split("\\s*,\\s*"));
 						profiles.put((String) prop.getKey(), set);
 					}
 				}
@@ -88,6 +97,7 @@ public class Clazz {
 			}
 		}, //
 		OpenJDK9(53, "JavaSE-9", "(&(osgi.ee=JavaSE)(version=9.0))"), //
+		OpenJDK10(54, "JavaSE-10", "(&(osgi.ee=JavaSE)(version=10.0))"), //
 		UNKNOWN(Integer.MAX_VALUE, "<UNKNOWN>", "(osgi.ee=UNKNOWN)");
 
 		final int		major;
@@ -139,20 +149,51 @@ public class Clazz {
 			return filter;
 		}
 
-		public Map<String,Set<String>> getProfiles() throws IOException {
+		public Map<String, Set<String>> getProfiles() throws IOException {
 			return null;
 		}
 	}
 
 	public static enum QUERY {
-		IMPLEMENTS, EXTENDS, IMPORTS, NAMED, ANY, VERSION, CONCRETE, ABSTRACT, PUBLIC, ANNOTATED, RUNTIMEANNOTATIONS, CLASSANNOTATIONS, DEFAULT_CONSTRUCTOR;
+		IMPLEMENTS,
+		EXTENDS,
+		IMPORTS,
+		NAMED,
+		ANY,
+		VERSION,
+		CONCRETE,
+		ABSTRACT,
+		PUBLIC,
+		ANNOTATED,
+		INDIRECTLY_ANNOTATED,
+		RUNTIMEANNOTATIONS,
+		CLASSANNOTATIONS,
+		DEFAULT_CONSTRUCTOR;
 
 	}
 
 	static enum CONSTANT {
-		Zero(0), Utf8, Two, Integer(4), Float(4), Long(8), Double(8), Class(2), String(2), Fieldref(4), Methodref(
-				4), InterfaceMethodref(4), NameAndType(4), Thirteen, Fourteen, MethodHandle(3), MethodType(
-						2), Seventeen, InvokeDynamic(4), Module(2), Package(2);
+		Zero(0),
+		Utf8,
+		Two,
+		Integer(4),
+		Float(4),
+		Long(8),
+		Double(8),
+		Class(2),
+		String(2),
+		Fieldref(4),
+		Methodref(4),
+		InterfaceMethodref(4),
+		NameAndType(4),
+		Thirteen,
+		Fourteen,
+		MethodHandle(3),
+		MethodType(2),
+		Seventeen,
+		InvokeDynamic(4),
+		Module(2),
+		Package(2);
 		private final int skip;
 
 		CONSTANT(int skip) {
@@ -167,8 +208,9 @@ public class Clazz {
 			return skip;
 		}
 	}
+
 	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
-			QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED);
+		QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED, QUERY.INDIRECTLY_ANNOTATED);
 
 	/**
 	 * <pre>
@@ -178,7 +220,6 @@ public class Clazz {
 	 * invokespecial instruction. ACC_INTERFACE 0x0200 Is an interface, not a
 	 * class. ACC_ABSTRACT 0x0400 Declared abstract; may not be instantiated.
 	 * </pre>
-	 * 
 	 */
 
 	// Declared public; may be accessed from outside its package.
@@ -206,9 +247,10 @@ public class Clazz {
 		}
 
 		CONSTANT	tag;
-		int		a;
-		int		b;
+		int			a;
+		int			b;
 
+		@Override
 		public String toString() {
 			return "Assoc[" + tag + ", " + a + "," + b + "]";
 		}
@@ -278,7 +320,8 @@ public class Clazz {
 		void addAnnotation(Annotation a) {
 			if (annotations == null)
 				annotations = Create.set();
-			annotations.add(analyzer.getTypeRef(a.getName().getBinary()));
+			annotations.add(analyzer.getTypeRef(a.getName()
+				.getBinary()));
 		}
 
 		public Collection<TypeRef> getAnnotations() {
@@ -431,48 +474,49 @@ public class Clazz {
 		}
 	}
 
-	public static final Comparator<Clazz> NAME_COMPARATOR = new Comparator<Clazz>() {
+	public static final Comparator<Clazz>	NAME_COMPARATOR	= new Comparator<Clazz>() {
 
-		public int compare(Clazz a, Clazz b) {
-			return a.className.compareTo(b.className);
-		}
+																@Override
+																public int compare(Clazz a, Clazz b) {
+																	return a.className.compareTo(b.className);
+																}
 
-	};
+															};
 
-	boolean	hasRuntimeAnnotations;
-	boolean	hasClassAnnotations;
-	boolean	hasDefaultConstructor;
+	boolean									hasRuntimeAnnotations;
+	boolean									hasClassAnnotations;
+	boolean									hasDefaultConstructor;
 
-	int						depth		= 0;
-	Deque<ClassDataCollector> cds		= new LinkedList<>();
+	int										depth			= 0;
+	Deque<ClassDataCollector>				cds				= new LinkedList<>();
 
-	TypeRef				className;
-	Object				pool[];
-	int					intPool[];
-	Set<PackageRef>		imports		= Create.set();
-	String				path;
-	int					minor		= 0;
-	int					major		= 0;
-	int					innerAccess	= -1;
-	int					accessx		= 0;
-	String				sourceFile;
-	Set<TypeRef>		xref;
-	Set<TypeRef>		annotations;
-	int					forName		= 0;
-	int					class$		= 0;
-	TypeRef[]			interfaces;
-	TypeRef				zuper;
-	ClassDataCollector	cd			= null;
-	Resource			resource;
-	FieldDef			last		= null;
-	boolean				deprecated;
-	Set<PackageRef>		api;
-	final Analyzer		analyzer;
-	String				classSignature;
+	TypeRef									className;
+	Object									pool[];
+	int										intPool[];
+	Set<PackageRef>							imports			= Create.set();
+	String									path;
+	int										minor			= 0;
+	int										major			= 0;
+	int										innerAccess		= -1;
+	int										accessx			= 0;
+	String									sourceFile;
+	Set<TypeRef>							xref;
+	Set<TypeRef>							annotations;
+	int										forName			= 0;
+	int										class$			= 0;
+	TypeRef[]								interfaces;
+	TypeRef									zuper;
+	ClassDataCollector						cd				= null;
+	Resource								resource;
+	FieldDef								last			= null;
+	boolean									deprecated;
+	Set<PackageRef>							api;
+	final Analyzer							analyzer;
+	String									classSignature;
 
-	private boolean detectLdc;
+	private boolean							detectLdc;
 
-	private Map<String,Object> defaults;
+	private Map<String, Object>				defaults;
 
 	public Clazz(Analyzer analyzer, String path, Resource resource) {
 		this.path = path;
@@ -516,7 +560,7 @@ public class Clazz {
 		logger.debug("parseClassFile(): path={} resource={}", path, resource);
 
 		++depth;
-		xref = new HashSet<TypeRef>();
+		xref = new HashSet<>();
 
 		boolean crawl = cd != null; // Crawl the byte code if we have a
 		// collector
@@ -648,7 +692,7 @@ public class Clazz {
 
 		accessx = in.readUnsignedShort(); // access
 		if (Modifier.isPublic(accessx))
-			api = new HashSet<PackageRef>();
+			api = new HashSet<>();
 
 		int this_class = in.readUnsignedShort();
 		className = analyzer.getTypeRef((String) pool[intPool[this_class]]);
@@ -727,7 +771,7 @@ public class Clazz {
 				if (forName > 0) {
 					crawl = true;
 					class$ = findMethodReference(className.getBinary(), "class$",
-							"(Ljava/lang/String;)Ljava/lang/Class;");
+						"(Ljava/lang/String;)Ljava/lang/Class;");
 				}
 			}
 
@@ -959,8 +1003,7 @@ public class Clazz {
 	 * @param access_flags
 	 * @throws Exception
 	 */
-	private void doAttributes(DataInput in, ElementType member, boolean crawl, int access_flags)
-			throws Exception {
+	private void doAttributes(DataInput in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		int attributesCount = in.readUnsignedShort();
 		for (int j = 0; j < attributesCount; j++) {
 			// skip name CONSTANT_Utf8 pointer
@@ -978,7 +1021,7 @@ public class Clazz {
 	private void doAttribute(DataInput in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		final int attribute_name_index = in.readUnsignedShort();
 		final String attributeName = (String) pool[attribute_name_index];
-		final long attribute_length = 0xFFFFFFFFL & in.readInt();
+		final long attribute_length = Integer.toUnsignedLong(in.readInt());
 		switch (attributeName) {
 			case "Deprecated" :
 				if (cd != null)
@@ -1193,7 +1236,7 @@ public class Clazz {
 		/* int max_locals = */in.readUnsignedShort();
 		int code_length = in.readInt();
 		byte code[] = new byte[code_length];
-		in.readFully(code);
+		in.readFully(code, 0, code_length);
 		if (crawl)
 			crawl(code);
 		int exception_table_length = in.readUnsignedShort();
@@ -1214,19 +1257,18 @@ public class Clazz {
 	 */
 	private void crawl(byte[] code) {
 		ByteBuffer bb = ByteBuffer.wrap(code);
-		bb.order(ByteOrder.BIG_ENDIAN);
 		int lastReference = -1;
 
 		while (bb.remaining() > 0) {
-			int instruction = 0xFF & bb.get();
+			int instruction = Byte.toUnsignedInt(bb.get());
 			switch (instruction) {
 				case OpCodes.ldc :
-					lastReference = 0xFF & bb.get();
+					lastReference = Byte.toUnsignedInt(bb.get());
 					classConstRef(lastReference);
 					break;
 
 				case OpCodes.ldc_w :
-					lastReference = 0xFFFF & bb.getShort();
+					lastReference = Short.toUnsignedInt(bb.getShort());
 					classConstRef(lastReference);
 					break;
 
@@ -1234,14 +1276,14 @@ public class Clazz {
 				case OpCodes.checkcast :
 				case OpCodes.instanceof_ :
 				case OpCodes.new_ : {
-					int cref = 0xFFFF & bb.getShort();
+					int cref = Short.toUnsignedInt(bb.getShort());
 					classConstRef(cref);
 					lastReference = -1;
 					break;
 				}
 
 				case OpCodes.multianewarray : {
-					int cref = 0xFFFF & bb.getShort();
+					int cref = Short.toUnsignedInt(bb.getShort());
 					classConstRef(cref);
 					bb.get();
 					lastReference = -1;
@@ -1249,21 +1291,21 @@ public class Clazz {
 				}
 
 				case OpCodes.invokespecial : {
-					int mref = 0xFFFF & bb.getShort();
+					int mref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
 						getMethodDef(0, mref);
 					break;
 				}
 
 				case OpCodes.invokevirtual : {
-					int mref = 0xFFFF & bb.getShort();
+					int mref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
 						getMethodDef(0, mref);
 					break;
 				}
 
 				case OpCodes.invokeinterface : {
-					int mref = 0xFFFF & bb.getShort();
+					int mref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
 						getMethodDef(0, mref);
 					bb.get(); // read past the 'count' operand
@@ -1272,12 +1314,12 @@ public class Clazz {
 				}
 
 				case OpCodes.invokestatic : {
-					int methodref = 0xFFFF & bb.getShort();
+					int methodref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
 						getMethodDef(0, methodref);
 
 					if ((methodref == forName || methodref == class$) && lastReference != -1
-							&& pool[intPool[lastReference]] instanceof String) {
+						&& pool[intPool[lastReference]] instanceof String) {
 						String fqn = (String) pool[intPool[lastReference]];
 						if (!fqn.equals("class") && fqn.indexOf('.') > 0) {
 							TypeRef clazz = analyzer.getTypeRefFromFQN(fqn);
@@ -1288,12 +1330,12 @@ public class Clazz {
 					break;
 				}
 
-					/*
-					 * 3/5: opcode, indexbyte1, indexbyte2 or iinc, indexbyte1,
-					 * indexbyte2, countbyte1, countbyte2
-					 */
+				/*
+				 * 3/5: opcode, indexbyte1, indexbyte2 or iinc, indexbyte1,
+				 * indexbyte2, countbyte1, countbyte2
+				 */
 				case OpCodes.wide :
-					int opcode = 0xFF & bb.get();
+					int opcode = Byte.toUnsignedInt(bb.get());
 					bb.getShort(); // at least 3 bytes
 					if (opcode == OpCodes.iinc)
 						bb.getShort();
@@ -1307,12 +1349,7 @@ public class Clazz {
 					bb.getInt();
 					int low = bb.getInt();
 					int high = bb.getInt();
-					try {
-						bb.position(bb.position() + (high - low + 1) * 4);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					bb.position(bb.position() + (high - low + 1) * 4);
 					lastReference = -1;
 					break;
 
@@ -1341,8 +1378,8 @@ public class Clazz {
 		this.sourceFile = pool[sourcefile_index].toString();
 	}
 
-	private void doParameterAnnotations(DataInput in, ElementType member, RetentionPolicy policy,
-			int access_flags) throws Exception {
+	private void doParameterAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
+		throws Exception {
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
 			if (cd != null)
@@ -1352,7 +1389,7 @@ public class Clazz {
 	}
 
 	private void doTypeAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
-			throws Exception {
+		throws Exception {
 		int num_annotations = in.readUnsignedShort();
 		for (int p = 0; p < num_annotations; p++) {
 
@@ -1508,7 +1545,7 @@ public class Clazz {
 	}
 
 	private void doAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
-			throws Exception {
+		throws Exception {
 		int num_annotations = in.readUnsignedShort(); // # of annotations
 		for (int a = 0; a < num_annotations; a++) {
 			if (cd == null)
@@ -1530,10 +1567,10 @@ public class Clazz {
 	// }
 
 	private Annotation doAnnotation(DataInput in, ElementType member, RetentionPolicy policy, boolean collect,
-			int access_flags) throws IOException {
+		int access_flags) throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
-			annotations = new HashSet<TypeRef>();
+			annotations = new HashSet<>();
 
 		String typeName = (String) pool[type_index];
 		TypeRef typeRef = null;
@@ -1551,14 +1588,14 @@ public class Clazz {
 			}
 		}
 		int num_element_value_pairs = in.readUnsignedShort();
-		Map<String,Object> elements = null;
+		Map<String, Object> elements = null;
 		for (int v = 0; v < num_element_value_pairs; v++) {
 			int element_name_index = in.readUnsignedShort();
 			String element = (String) pool[element_name_index];
 			Object value = doElementValue(in, member, policy, collect, access_flags);
 			if (collect) {
 				if (elements == null)
-					elements = new LinkedHashMap<String,Object>();
+					elements = new LinkedHashMap<>();
 				elements.put(element, value);
 			}
 		}
@@ -1568,7 +1605,7 @@ public class Clazz {
 	}
 
 	private Object doElementValue(DataInput in, ElementType member, RetentionPolicy policy, boolean collect,
-			int access_flags) throws IOException {
+		int access_flags) throws IOException {
 		char tag = (char) in.readUnsignedByte();
 		switch (tag) {
 			case 'B' : // Byte
@@ -1888,36 +1925,138 @@ public class Clazz {
 		}
 	}
 
+	private Stream<Clazz> hierarchyStream(Analyzer analyzer) {
+		return StreamSupport.stream(new Spliterator<Clazz>() {
+			private Clazz clazz;
+			{
+				requireNonNull(analyzer);
+				clazz = Clazz.this;
+			}
+
+			@Override
+			public boolean tryAdvance(Consumer<? super Clazz> action) {
+				requireNonNull(action);
+				if (clazz == null) {
+					return false;
+				}
+				action.accept(clazz);
+				TypeRef type = clazz.zuper;
+				if (type == null) {
+					clazz = null;
+				} else {
+					try {
+						clazz = analyzer.findClass(type);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+					if (clazz == null) {
+						analyzer.warning("While traversing the type tree for %s cannot find class %s", Clazz.this,
+							type);
+					}
+				}
+				return true;
+			}
+
+			@Override
+			public Spliterator<Clazz> trySplit() {
+				return null;
+			}
+
+			@Override
+			public long estimateSize() {
+				return Long.MAX_VALUE;
+			}
+
+			@Override
+			public int characteristics() {
+				return Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL;
+			}
+		}, false);
+	}
+
+	private Stream<TypeRef> interfacesStream(Analyzer analyzer,
+		Function<? super Clazz, Collection<? extends TypeRef>> func,
+		Set<TypeRef> visited) {
+		return StreamSupport.stream(new Spliterator<TypeRef>() {
+			private final Deque<TypeRef>	queue;
+			private final Set<TypeRef>		done;
+			{
+				requireNonNull(analyzer);
+				// initialize queue from this class
+				queue = new ArrayDeque<>(requireNonNull(func).apply(Clazz.this));
+				done = (visited != null) ? visited : new HashSet<>();
+			}
+
+			@Override
+			public boolean tryAdvance(Consumer<? super TypeRef> action) {
+				requireNonNull(action);
+				TypeRef type;
+				do {
+					type = queue.poll();
+					if (type == null) {
+						return false;
+					}
+				} while (!done.add(type));
+				action.accept(type);
+				if (visited != null) {
+					Clazz clazz;
+					try {
+						clazz = analyzer.findClass(type);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+					if (clazz == null) {
+						analyzer.warning("While traversing the type tree for %s cannot find class %s", Clazz.this,
+							type);
+					} else {
+						queue.addAll(func.apply(clazz));
+					}
+				}
+				return true;
+			}
+
+			@Override
+			public Spliterator<TypeRef> trySplit() {
+				return null;
+			}
+
+			@Override
+			public long estimateSize() {
+				return Long.MAX_VALUE;
+			}
+
+			@Override
+			public int characteristics() {
+				return Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL;
+			}
+		}, false);
+	}
+
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {
 		switch (query) {
 			case ANY :
 				return true;
 
 			case NAMED :
-				if (instr.matches(getClassName().getDottedOnly()))
-					return !instr.isNegated();
-				return false;
+				return instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
 
 			case VERSION :
 				String v = major + "." + minor;
-				if (instr.matches(v))
-					return !instr.isNegated();
-				return false;
+				return instr.matches(v) ^ instr.isNegated();
 
-			case IMPLEMENTS :
-				for (int i = 0; interfaces != null && i < interfaces.length; i++) {
-					if (instr.matches(interfaces[i].getDottedOnly()))
-						return !instr.isNegated();
-				}
-				break;
+			case IMPLEMENTS : {
+				Set<TypeRef> visited = new HashSet<>();
+				return hierarchyStream(analyzer).anyMatch(c -> c
+					.interfacesStream(analyzer,
+						i -> (i.interfaces != null) ? Arrays.asList(i.interfaces) : Collections.emptyList(), visited)
+					.anyMatch(i -> instr.matches(i.getDottedOnly()))) ^ instr.isNegated();
+			}
 
 			case EXTENDS :
-				if (zuper == null)
-					return false;
-
-				if (instr.matches(zuper.getDottedOnly()))
-					return !instr.isNegated();
-				break;
+				return hierarchyStream(analyzer).skip(1) // skip this class
+					.anyMatch(c -> instr.matches(c.getClassName()
+						.getDottedOnly()))
+					^ instr.isNegated();
 
 			case PUBLIC :
 				return Modifier.isPublic(accessx);
@@ -1926,18 +2065,20 @@ public class Clazz {
 				return !Modifier.isAbstract(accessx);
 
 			case ANNOTATED :
-				if (annotations == null)
-					return false;
+				return interfacesStream(analyzer,
+					c -> (c.annotations != null) ? c.annotations : Collections.emptyList(), null)
+						.anyMatch(a -> instr.matches(a.getFQN()))
+					^ instr.isNegated();
 
-				for (TypeRef annotation : annotations) {
-					if (instr.matches(annotation.getFQN()))
-						return !instr.isNegated();
-				}
-
-				return false;
+			case INDIRECTLY_ANNOTATED :
+				return interfacesStream(analyzer,
+					c -> (c.annotations != null) ? c.annotations : Collections.emptyList(), new HashSet<>())
+						.anyMatch(a -> instr.matches(a.getFQN()))
+					^ instr.isNegated();
 
 			case RUNTIMEANNOTATIONS :
 				return hasRuntimeAnnotations;
+
 			case CLASSANNOTATIONS :
 				return hasClassAnnotations;
 
@@ -1945,26 +2086,14 @@ public class Clazz {
 				return Modifier.isAbstract(accessx);
 
 			case IMPORTS :
-				for (PackageRef imp : imports) {
-					if (instr.matches(imp.getFQN()))
-						return !instr.isNegated();
-				}
-				break;
+				return hierarchyStream(analyzer).flatMap(c -> c.imports.stream())
+					.anyMatch(pkg -> instr.matches(pkg.getFQN())) ^ instr.isNegated();
+
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
 		}
 
-		if (zuper == null)
-			return false;
-
-		Clazz clazz = analyzer.findClass(zuper);
-		if (clazz == null) {
-			analyzer.warning("While traversing the type tree while searching %s on %s cannot find class %s", query,
-					this, zuper);
-			return false;
-		}
-
-		return clazz.is(query, instr, analyzer);
+		return instr == null ? false : instr.isNegated();
 	}
 
 	@Override
@@ -1999,13 +2128,13 @@ public class Clazz {
 					cd.referenceMethod(access, className, method, descriptor);
 				} else
 					throw new IllegalArgumentException(
-							"Invalid class file (or parsing is wrong), assoc is not type + name (12)");
+						"Invalid class file (or parsing is wrong), assoc is not type + name (12)");
 			} else
 				throw new IllegalArgumentException(
-						"Invalid class file (or parsing is wrong), Assoc is not method ref! (10)");
+					"Invalid class file (or parsing is wrong), Assoc is not method ref! (10)");
 		} else
 			throw new IllegalArgumentException(
-					"Invalid class file (or parsing is wrong), Not an assoc at a method ref");
+				"Invalid class file (or parsing is wrong), Not an assoc at a method ref");
 	}
 
 	public boolean isPublic() {
@@ -2017,7 +2146,8 @@ public class Clazz {
 	}
 
 	public boolean isEnum() {
-		return zuper != null && zuper.getBinary().equals("java/lang/Enum");
+		return zuper != null && zuper.getBinary()
+			.equals("java/lang/Enum");
 	}
 
 	public boolean isSynthetic() {
@@ -2035,7 +2165,8 @@ public class Clazz {
 
 	public static String objectDescriptorToFQN(String string) {
 		if ((string.startsWith("L") || string.startsWith("T")) && string.endsWith(";"))
-			return string.substring(1, string.length() - 1).replace('/', '.');
+			return string.substring(1, string.length() - 1)
+				.replace('/', '.');
 
 		switch (string.charAt(0)) {
 			case 'V' :
@@ -2201,9 +2332,9 @@ public class Clazz {
 		return classSignature;
 	}
 
-	public Map<String,Object> getDefaults() throws Exception {
+	public Map<String, Object> getDefaults() throws Exception {
 		if (defaults == null) {
-			defaults = new HashMap<String,Object>();
+			defaults = new HashMap<>();
 
 			class DefaultReader extends ClassDataCollector {
 				@Override

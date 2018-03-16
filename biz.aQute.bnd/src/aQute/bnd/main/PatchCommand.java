@@ -20,7 +20,7 @@ import aQute.libg.generics.Create;
 
 public class PatchCommand {
 	private final static Logger	logger	= LoggerFactory.getLogger(PatchCommand.class);
-	bnd bnd;
+	bnd							bnd;
 
 	public PatchCommand(bnd bnd) {
 		this.bnd = bnd;
@@ -28,7 +28,7 @@ public class PatchCommand {
 
 	@Description("WIP")
 	@Arguments(arg = {
-			"<older>", "<newer>", "<patch>"
+		"<older>", "<newer>", "<patch>"
 	})
 	interface createOptions extends Options {
 
@@ -49,7 +49,8 @@ public class PatchCommand {
 
 		Set<String> delete = Create.set();
 
-		for (String path : a.getResources().keySet()) {
+		for (String path : a.getResources()
+			.keySet()) {
 			Resource br = b.getResource(path);
 			if (br == null) {
 				logger.debug("DELETE    {}", path);
@@ -64,8 +65,11 @@ public class PatchCommand {
 			}
 		}
 
-		bm.getMainAttributes().putValue("Patch-Delete", Processor.join(delete, ", "));
-		bm.getMainAttributes().putValue("Patch-Version", am.getMainAttributes().getValue(Constants.BUNDLE_VERSION));
+		bm.getMainAttributes()
+			.putValue("Patch-Delete", Processor.join(delete, ", "));
+		bm.getMainAttributes()
+			.putValue("Patch-Version", am.getMainAttributes()
+				.getValue(Constants.BUNDLE_VERSION));
 
 		b.write(patch);
 		a.close();
@@ -90,7 +94,7 @@ public class PatchCommand {
 
 	@Description("WIP")
 	@Arguments(arg = {
-			"<older>", "<newer>", "<patch>"
+		"<older>", "<newer>", "<patch>"
 	})
 	interface applyOptions {
 

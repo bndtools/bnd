@@ -39,19 +39,19 @@ public interface IPom {
 		@Override
 		public String toString() {
 			return String.format("Dependency [program=%s, version=%s, type=%s, classifier=%s, scope=%s, error=%s]",
-					program, version, type, classifier, scope, error);
+				program, version, type, classifier, scope, error);
 		}
 
 		public void bindToVersion(MavenRepository repo) throws Exception {
 			if (MavenVersionRange.isRange(version)) {
 				MavenVersionRange range = new MavenVersionRange(version);
 				repo.getRevisions(program)
-						.stream()
-						.filter(r -> range.includes(r.version))
-						.max(Comparator.naturalOrder())
-						.ifPresent(highest -> {
-							version = highest.version.toString();
-						});
+					.stream()
+					.filter(r -> range.includes(r.version))
+					.max(Comparator.naturalOrder())
+					.ifPresent(highest -> {
+						version = highest.version.toString();
+					});
 			}
 		}
 	}
@@ -64,5 +64,5 @@ public interface IPom {
 
 	Archive binaryArchive();
 
-	Map<Program,Dependency> getDependencies(MavenScope scope, boolean transitive) throws Exception;
+	Map<Program, Dependency> getDependencies(MavenScope scope, boolean transitive) throws Exception;
 }

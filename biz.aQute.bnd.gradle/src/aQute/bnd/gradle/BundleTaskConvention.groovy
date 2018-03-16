@@ -223,7 +223,7 @@ class BundleTaskConvention {
         builder.setProperty('project.output', project.buildDir.canonicalPath)
 
         // If no bundle to be built, we have nothing to do
-        if (Builder.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
+        if (builder.is(Constants.NOBUNDLES)) {
           return
         }
 
@@ -239,6 +239,8 @@ class BundleTaskConvention {
         }
         File archiveCopyFile = new File(temporaryDir, archiveName)
         Jar bundleJar = new Jar(archiveName, archiveCopyFile)
+        String reproducible = builder.getProperty(Constants.REPRODUCIBLE)
+        bundleJar.setReproducible((reproducible != null) ? Processor.isTrue(reproducible) : !task.preserveFileTimestamps)
         bundleJar.updateModified(archiveCopyFile.lastModified(), 'time of Jar task generated jar')
         bundleJar.setManifest(new Manifest())
         builder.setJar(bundleJar)

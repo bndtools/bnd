@@ -18,6 +18,7 @@ import aQute.maven.api.Release;
 import aQute.maven.api.Revision;
 import aQute.maven.provider.MetadataParser.ProgramMetadata;
 import aQute.maven.provider.MetadataParser.RevisionMetadata;
+import aQute.maven.provider.MetadataParser.SnapshotVersion;
 
 class Releaser implements Release {
 	final List<Archive>					upload			= new ArrayList<>();
@@ -32,7 +33,7 @@ class Releaser implements Release {
 	private Properties					context;
 
 	Releaser(MavenRepository home, Revision revision, MavenBackingRepository repo, Properties context)
-			throws Exception {
+		throws Exception {
 		this.home = home;
 		this.revision = revision;
 		this.repo = repo;
@@ -50,6 +51,10 @@ class Releaser implements Release {
 	public void close() throws IOException {
 		try {
 			if (!aborted) {
+				RevisionMetadata localMetadata = localMetadata();
+				File metafile = home.toLocalFile(revision.metadata("local"));
+				IO.mkdirs(metafile.getParentFile());
+				IO.store(localMetadata.toString(), metafile);
 
 				if (!localOnly) {
 					uploadAll(upload.iterator());
@@ -62,6 +67,26 @@ class Releaser implements Release {
 		} catch (Exception e) {
 			throw new IOException(e);
 		}
+	}
+
+	protected RevisionMetadata localMetadata() {
+		RevisionMetadata revisionMetadata = new RevisionMetadata();
+		revisionMetadata.group = revision.group;
+		revisionMetadata.artifact = revision.artifact;
+		revisionMetadata.version = revision.version;
+		revisionMetadata.lastUpdated = programMetadata.lastUpdated;
+		revisionMetadata.snapshot.buildNumber = null;
+		revisionMetadata.snapshot.localCopy = true;
+		revisionMetadata.snapshot.timestamp = null;
+		for (Archive archive : upload) {
+			SnapshotVersion snapshotVersion = new SnapshotVersion();
+			snapshotVersion.extension = archive.extension;
+			snapshotVersion.classifier = archive.classifier.isEmpty() ? null : archive.classifier;
+			snapshotVersion.updated = programMetadata.lastUpdated;
+			snapshotVersion.value = revision.version;
+			revisionMetadata.snapshotVersions.add(snapshotVersion);
+		}
+		return revisionMetadata;
 	}
 
 	protected void updateMetadata() throws Exception, InterruptedException {
@@ -98,7 +123,7 @@ class Releaser implements Release {
 						return;
 
 					throw new IllegalStateException(
-							"Revision already exists on remote system " + revision + " " + repo);
+						"Revision already exists on remote system " + revision + " " + repo);
 
 				} else {
 					metadata.versions.add(revision.version);
@@ -183,6 +208,7 @@ class Releaser implements Release {
 		aborted = true;
 	}
 
+	@Override
 	public void force() {
 		force = true;
 	}
@@ -223,7 +249,7 @@ class Releaser implements Release {
 			command.add("--passphrase", passphrase);
 		else
 			throw new IOException(
-					"gpg signing %s failed because no passphrase was set (either context, System property `gpg.passphrase`, or env var GPG_PASSPHRASE");
+				"gpg signing %s failed because no passphrase was set (either context, System property `gpg.passphrase`, or env var GPG_PASSPHRASE");
 
 		command.add("-ab", "--sign"); // not the -b!!
 		command.add(file.getAbsolutePath());
@@ -238,8 +264,8 @@ class Releaser implements Release {
 	}
 
 	private String getPassphrase() {
-		return context.getProperty("gpg.passphrase",
-				System.getProperties().getProperty("gpg.passphrase", System.getenv("GPG_PASSPHRASE")));
+		return context.getProperty("gpg.passphrase", System.getProperties()
+			.getProperty("gpg.passphrase", System.getenv("GPG_PASSPHRASE")));
 	}
 
 }

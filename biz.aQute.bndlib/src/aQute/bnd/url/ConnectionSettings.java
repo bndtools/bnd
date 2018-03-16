@@ -16,7 +16,7 @@ import aQute.lib.converter.Converter;
  */
 @aQute.bnd.annotation.plugin.BndPlugin(name = "url.settings", parameters = ConnectionSettings.Config.class)
 public class ConnectionSettings extends DefaultURLConnectionHandler {
-	final Map<String,String>	headers	= new HashMap<String,String>();
+	final Map<String, String>	headers	= new HashMap<>();
 	Config						config;
 
 	/**
@@ -37,6 +37,7 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 	/**
 	 * Handle the connection
 	 */
+	@Override
 	public void handle(URLConnection connection) throws Exception {
 		if (matches(connection)) {
 			if (config.connectTimeout() != 0)
@@ -44,8 +45,9 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 			if (config.readTimeout() != 0)
 				connection.setConnectTimeout(config.readTimeout());
 
-			for (Entry<String,String> entry : headers.entrySet()) {
-				if (Character.isUpperCase(entry.getKey().charAt(0)))
+			for (Entry<String, String> entry : headers.entrySet()) {
+				if (Character.isUpperCase(entry.getKey()
+					.charAt(0)))
 					connection.setRequestProperty(entry.getKey(), entry.getValue());
 			}
 
@@ -63,10 +65,12 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 	/**
 	 * Set the properties.
 	 */
-	public void setProperties(Map<String,String> map) throws Exception {
+	@Override
+	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
-		for (Entry<String,String> entry : headers.entrySet()) {
-			if (Character.isUpperCase(entry.getKey().charAt(0)))
+		for (Entry<String, String> entry : headers.entrySet()) {
+			if (Character.isUpperCase(entry.getKey()
+				.charAt(0)))
 				headers.put(entry.getKey(), entry.getValue());
 		}
 		config = Converter.cnv(Config.class, map);

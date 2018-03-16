@@ -9,10 +9,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -42,12 +40,12 @@ class Traverser {
 	private final static Logger				logger		= LoggerFactory.getLogger(Traverser.class);
 	static final Resource					DUMMY		= new ResourceBuilder().build();
 	static final String						ROOT		= "<>";
-	final ConcurrentMap<Archive,Resource>	resources	= new ConcurrentHashMap<>();
+	final ConcurrentMap<Archive, Resource>	resources	= new ConcurrentHashMap<>();
 	private final PromiseFactory			promiseFactory;
 	final List<Revision>					revisions;
 	final List<URI>							uris;
 	final AtomicInteger						count		= new AtomicInteger(-1);
-	final Deferred<Map<Archive,Resource>>	deferred;
+	final Deferred<Map<Archive, Resource>>	deferred;
 	final MavenRepository					repo;
 	final HttpClient						client;
 	final boolean							transitive;
@@ -72,7 +70,7 @@ class Traverser {
 		return this;
 	}
 
-	Promise<Map<Archive,Resource>> getResources() throws Exception {
+	Promise<Map<Archive, Resource>> getResources() throws Exception {
 		/*
 		 * We don't want to resolve until all the work is queued so we
 		 * initialize the count to 1 and call finish after queuing all the work.
@@ -81,7 +79,10 @@ class Traverser {
 			try {
 				if (!uris.isEmpty()) {
 					for (URI uri : uris) {
-						File in = client.build().useCache().age(1, TimeUnit.DAYS).go(uri);
+						File in = client.build()
+							.useCache()
+							.age(1, TimeUnit.DAYS)
+							.go(uri);
 						POM pom = new POM(repo, in);
 						parsePom(pom, ROOT);
 					}
@@ -123,22 +124,23 @@ class Traverser {
 			//
 
 			count.incrementAndGet();
-			promiseFactory.executor().execute(() -> {
-				try {
-					logger.debug("parse archive {}", archive);
-					parseArchive(archive);
-				} catch (Throwable throwable) {
-					logger.debug(" failed to parse archive {}: {}", archive, throwable);
-					ResourceBuilder rb = new ResourceBuilder();
-					String bsn = archive.revision.program.toString();
-					Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
-					addReserveIdentity(rb, bsn, version);
-					addInformationCapability(rb, archive.toString(), parent, throwable);
-					resources.put(archive, rb.build());
-				} finally {
-					finish();
-				}
-			});
+			promiseFactory.executor()
+				.execute(() -> {
+					try {
+						logger.debug("parse archive {}", archive);
+						parseArchive(archive);
+					} catch (Throwable throwable) {
+						logger.debug(" failed to parse archive {}: {}", archive, throwable);
+						ResourceBuilder rb = new ResourceBuilder();
+						String bsn = archive.revision.program.toString();
+						Version version = toFrameworkVersion(archive.revision.version.getOSGiVersion());
+						addReserveIdentity(rb, bsn, version);
+						addInformationCapability(rb, archive.toString(), parent, throwable);
+						resources.put(archive, rb.build());
+					} finally {
+						finish();
+					}
+				});
 		}
 	}
 
@@ -151,18 +153,16 @@ class Traverser {
 	 * @param resources the resources parsed
 	 * @return the pruned resources
 	 */
-	private Map<Archive,Resource> prune(Map<Archive,Resource> resources) {
-		for (Iterator<Entry<Archive,Resource>> e = resources.entrySet().iterator(); e.hasNext();) {
-			Entry<Archive,Resource> next = e.next();
-			if (next.getValue() == DUMMY)
-				e.remove();
-		}
+	private Map<Archive, Resource> prune(Map<Archive, Resource> resources) {
+		resources.entrySet()
+			.removeIf(next -> next.getValue() == DUMMY);
 		return resources;
 	}
 
 	private void parseArchive(Archive archive) throws Exception {
 		POM pom = repo.getPom(archive.getRevision());
-		String parent = archive.getRevision().toString();
+		String parent = archive.getRevision()
+			.toString();
 
 		if (pom == null) {
 			logger.debug("no pom found for archive {} ", archive);
@@ -178,8 +178,8 @@ class Traverser {
 
 	private void parsePom(POM pom, String parent) throws Exception {
 
-		Map<Program,Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
-				false);
+		Map<Program, Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
+			false);
 		for (Dependency d : dependencies.values()) {
 
 			d.bindToVersion(repo);
@@ -198,7 +198,8 @@ class Traverser {
 		String bsn = archive.revision.program.toString();
 
 		try {
-			File binary = repo.get(archive).getValue();
+			File binary = repo.get(archive)
+				.getValue();
 
 			if (!rb.addFile(binary, binary.toURI())) {
 				// no identity

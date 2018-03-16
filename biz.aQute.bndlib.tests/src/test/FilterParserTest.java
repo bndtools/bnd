@@ -20,13 +20,13 @@ public class FilterParserTest extends TestCase {
 
 	public void testNestedAnd() throws IOException {
 		aQute.bnd.osgi.resource.FilterParser.Expression exp = fp
-				.parse("(&(osgi.wiring.package=osgi.enroute.webserver)(&(version>=1.0.0)(!(version>=2.0.0))))");
+			.parse("(&(osgi.wiring.package=osgi.enroute.webserver)(&(version>=1.0.0)(!(version>=2.0.0))))");
 		System.out.println(exp);
 	}
 
 	public void testSimple() throws IOException {
 		aQute.bnd.osgi.resource.FilterParser.Expression exp = fp
-				.parse("(&(osgi.wiring.package=package)(|(|(c=4)))(!(version>=2.0.0))(!(a=3))(version>=1.0.0))");
+			.parse("(&(osgi.wiring.package=package)(|(|(c=4)))(!(version>=2.0.0))(!(a=3))(version>=1.0.0))");
 		System.out.println(exp);
 	}
 
@@ -43,13 +43,15 @@ public class FilterParserTest extends TestCase {
 	public void testPackageRange() throws Exception {
 		Expression expression = fp.parse("(&(osgi.wiring.package=A)(version>=1.0.0)(!(version>=2.0.0)))");
 		assertTrue(expression instanceof WithRangeExpression);
-		assertEquals("[1.0.0,2.0.0)", ((WithRangeExpression) expression).getRangeExpression().getRangeString());
+		assertEquals("[1.0.0,2.0.0)", ((WithRangeExpression) expression).getRangeExpression()
+			.getRangeString());
 	}
 
 	public void testBundleRange() throws Exception {
 		Expression expression = fp.parse("(&(osgi.wiring.bundle=B)(bundle-version>=1.0.0)(!(bundle-version>=2.0.0)))");
 		assertTrue(expression instanceof WithRangeExpression);
-		assertEquals("[1.0.0,2.0.0)", ((WithRangeExpression) expression).getRangeExpression().getRangeString());
+		assertEquals("[1.0.0,2.0.0)", ((WithRangeExpression) expression).getRangeExpression()
+			.getRangeString());
 	}
 
 	public void testIdentity() throws IOException {

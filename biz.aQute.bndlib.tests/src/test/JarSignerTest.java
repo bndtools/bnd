@@ -17,7 +17,7 @@ import aQute.libg.generics.Create;
 import junit.framework.TestCase;
 
 @SuppressWarnings({
-		"resource", "restriction"
+	"resource", "restriction"
 })
 public class JarSignerTest extends TestCase {
 
@@ -25,7 +25,7 @@ public class JarSignerTest extends TestCase {
 		Builder b = new Builder();
 		b.setProperty("-sign", "test");
 		b.setProperty(Constants.PLUGIN, JartoolSigner.class.getName()
-				+ ";keystore=testresources/keystore;keypass=testtest;storepass=testtest;sigfile=test");
+			+ ";keystore=testresources/keystore;keypass=testtest;storepass=testtest;sigfile=test");
 		b.setProperty("-nomanifest", "true");
 		b.setProperty("-resourceonly", "true");
 		b.setProperty("Include-Resource", "WEB-INF/classes=@jar/osgi.jar");
@@ -38,13 +38,14 @@ public class JarSignerTest extends TestCase {
 
 		Jar jar2 = new Jar(tmp);
 		Manifest manifest = jar2.getManifest();
-		assertEquals("1.0", manifest.getMainAttributes().getValue("Manifest-Version"));
+		assertEquals("1.0", manifest.getMainAttributes()
+			.getValue("Manifest-Version"));
 		assertNotNull(manifest.getAttributes("WEB-INF/classes/org/osgi/framework/BundleContext.class"));
 	}
 
 	public static void testError() throws Exception {
 		JartoolSigner signer = new JartoolSigner();
-		Map<String,String> properties = Create.map();
+		Map<String, String> properties = Create.map();
 		properties.put("keystore", "testresources/keystore");
 		properties.put("keypass", "testtest");
 		properties.put("storepass", "notvalid");
@@ -55,15 +56,17 @@ public class JarSignerTest extends TestCase {
 			Jar jar = new Jar(IO.getFile("testresources/test.jar"));
 			b.setJar(jar);
 			signer.sign(b, "test");
-			System.err.printf(Processor.join(b.getErrors(), "%n") + "%n");
-			assertEquals(1, b.getErrors().size());
-			assertEquals(0, b.getWarnings().size());
+			System.err.println(Processor.join(b.getErrors(), "\n"));
+			assertEquals(1, b.getErrors()
+				.size());
+			assertEquals(0, b.getWarnings()
+				.size());
 		}
 	}
 
 	public static void testSimple() throws Exception {
 		JartoolSigner signer = new JartoolSigner();
-		Map<String,String> properties = Create.map();
+		Map<String, String> properties = Create.map();
 		properties.put("keystore", "testresources/keystore");
 		properties.put("keypass", "testtest");
 		properties.put("storepass", "testtest");
@@ -72,20 +75,25 @@ public class JarSignerTest extends TestCase {
 		signer.setProperties(properties);
 
 		Jar jar = new Jar(IO.getFile("testresources/test.jar"));
-		Set<String> names = new HashSet<String>(jar.getResources().keySet());
+		Set<String> names = new HashSet<>(jar.getResources()
+			.keySet());
 		names.remove("META-INF/MANIFEST.MF");
 		try (Builder b = new Builder()) {
 			b.setJar(jar);
 			signer.sign(b, "test");
-			System.err.printf(Processor.join(b.getErrors(), "%n") + "%n");
-			System.err.printf(Processor.join(b.getWarnings(), "%n") + "%n");
-			assertEquals(0, b.getErrors().size());
-			assertEquals(0, b.getWarnings().size());
+			System.err.println(Processor.join(b.getErrors(), "\n"));
+			System.err.println(Processor.join(b.getWarnings(), "\n"));
+			assertEquals(0, b.getErrors()
+				.size());
+			assertEquals(0, b.getWarnings()
+				.size());
 			assertNotNull(jar.getResource("META-INF/TEST.SF"));
 			Manifest m = jar.getManifest();
 
 			// Should have added 2 new resources: TEST.SF and TEST.DSA/RSA
-			assertEquals(names.size(), b.getJar().getResources().size() - 3);
+			assertEquals(names.size(), b.getJar()
+				.getResources()
+				.size() - 3);
 
 			Attributes a = m.getAttributes("aQute/rendezvous/DNS.class");
 			assertNotNull(a);

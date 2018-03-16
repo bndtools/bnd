@@ -52,12 +52,13 @@ class ReleasePluginImpl {
 
 		if (p != indexProject)
 			throw new IllegalArgumentException(
-					"Different project that started the release plugin then that ended it " + indexProject + ":" + p);
+				"Different project that started the release plugin then that ended it " + indexProject + ":" + p);
 
 		if (master == null)
 			throw new IllegalArgumentException("The index project was never released so GAV is unknown for index");
 
-		Archive index = master.getRevision().archive("xml", "index");
+		Archive index = master.getRevision()
+			.archive("xml", "index");
 		String prefix = makeDots(index.remotePath);
 
 		ResourcesRepository repository = createIndex(releasedArtifacts, storage, prefix);
@@ -65,12 +66,13 @@ class ReleasePluginImpl {
 	}
 
 	private void saveToXml(Project p, IMavenRepo storage, Archive index, ResourcesRepository repository)
-			throws IOException, Exception {
+		throws IOException, Exception {
 		XMLResourceGenerator rg = new XMLResourceGenerator();
 		File tmpFile = File.createTempFile("index", ".xml");
 		try {
 
-			rg.name(master.getRevision().toString());
+			rg.name(master.getRevision()
+				.toString());
 			rg.repository(repository);
 			rg.save(tmpFile);
 
@@ -84,7 +86,7 @@ class ReleasePluginImpl {
 	}
 
 	private ResourcesRepository createIndex(List<IPom> releasedArtifacts, IMavenRepo storage, String prefix)
-			throws Exception {
+		throws Exception {
 		ResourcesRepository repo = new ResourcesRepository();
 
 		for (IPom pom : releasedArtifacts) {

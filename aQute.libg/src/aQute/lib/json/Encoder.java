@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.zip.DeflaterOutputStream;
 
 import aQute.lib.io.IO;
+
 public class Encoder implements Appendable, Closeable, Flushable {
 	final JSONCodec	codec;
 	Appendable		app;
@@ -38,7 +39,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		if (app == null)
 			to();
 
-		codec.encode(this, object, null, new IdentityHashMap<Object,Type>());
+		codec.encode(this, object, null, new IdentityHashMap<>());
 		flush();
 		if (!keepOpen)
 			close();
@@ -89,6 +90,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return this;
 	}
 
+	@Override
 	public Appendable append(char c) throws IOException {
 		if (digest != null) {
 			digest.update((byte) (c / 256));
@@ -98,10 +100,12 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return this;
 	}
 
+	@Override
 	public Appendable append(CharSequence sq) throws IOException {
 		return append(sq, 0, sq.length());
 	}
 
+	@Override
 	public Appendable append(CharSequence sq, int start, int length) throws IOException {
 		if (digest != null) {
 			for (int i = start; i < length; i++) {
@@ -119,6 +123,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return app.toString();
 	}
 
+	@Override
 	public void close() throws IOException {
 		if (app != null && app instanceof Closeable) {
 			((Closeable) app).close();
@@ -126,7 +131,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		}
 	}
 
-	void encode(Object object, Type type, Map<Object,Type> visited) throws Exception {
+	void encode(Object object, Type type, Map<Object, Type> visited) throws Exception {
 		codec.encode(this, object, type, visited);
 	}
 
@@ -135,6 +140,7 @@ public class Encoder implements Appendable, Closeable, Flushable {
 		return this;
 	}
 
+	@Override
 	public void flush() throws IOException {
 		if (closed)
 			return;

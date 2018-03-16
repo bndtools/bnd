@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import aQute.bnd.osgi.WriteResource;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
+
 public class TagResource extends WriteResource {
 	final Tag tag;
 

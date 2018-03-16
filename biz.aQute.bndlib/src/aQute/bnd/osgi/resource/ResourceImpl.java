@@ -27,23 +27,23 @@ import aQute.bnd.version.Version;
 class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
 
 	private volatile List<Capability>				allCapabilities;
-	private volatile Map<String,List<Capability>>	capabilityMap;
+	private volatile Map<String, List<Capability>>	capabilityMap;
 	private volatile List<Requirement>				allRequirements;
-	private volatile Map<String,List<Requirement>>	requirementMap;
+	private volatile Map<String, List<Requirement>>	requirementMap;
 
-	private transient Map<URI,String>				locations;
+	private transient Map<URI, String>				locations;
 
 	void setCapabilities(List<Capability> capabilities) {
-		Map<String,List<Capability>> prepare = new HashMap<>();
+		Map<String, List<Capability>> prepare = new HashMap<>();
 		for (Capability capability : capabilities) {
 			List<Capability> list = prepare.get(capability.getNamespace());
 			if (list == null) {
-				list = new LinkedList<Capability>();
+				list = new LinkedList<>();
 				prepare.put(capability.getNamespace(), list);
 			}
 			list.add(capability);
 		}
-		for (Map.Entry<String,List<Capability>> entry : prepare.entrySet()) {
+		for (Map.Entry<String, List<Capability>> entry : prepare.entrySet()) {
 			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
 		}
 
@@ -51,23 +51,24 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		capabilityMap = prepare;
 	}
 
+	@Override
 	public List<Capability> getCapabilities(String namespace) {
 		List<Capability> caps = (namespace != null) ? capabilityMap.get(namespace) : allCapabilities;
 
-		return (caps != null) ? caps : Collections.<Capability> emptyList();
+		return (caps != null) ? caps : Collections.emptyList();
 	}
 
 	void setRequirements(List<Requirement> requirements) {
-		Map<String,List<Requirement>> prepare = new HashMap<>();
+		Map<String, List<Requirement>> prepare = new HashMap<>();
 		for (Requirement requirement : requirements) {
 			List<Requirement> list = prepare.get(requirement.getNamespace());
 			if (list == null) {
-				list = new LinkedList<Requirement>();
+				list = new LinkedList<>();
 				prepare.put(requirement.getNamespace(), list);
 			}
 			list.add(requirement);
 		}
-		for (Map.Entry<String,List<Requirement>> entry : prepare.entrySet()) {
+		for (Map.Entry<String, List<Requirement>> entry : prepare.entrySet()) {
 			entry.setValue(unmodifiableList(new ArrayList<>(entry.getValue())));
 		}
 
@@ -75,10 +76,11 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		requirementMap = prepare;
 	}
 
+	@Override
 	public List<Requirement> getRequirements(String namespace) {
 		List<Requirement> reqs = (namespace != null) ? requirementMap.get(namespace) : allRequirements;
 
-		return (reqs != null) ? reqs : Collections.<Requirement> emptyList();
+		return (reqs != null) ? reqs : Collections.emptyList();
 	}
 
 	@Override
@@ -87,10 +89,16 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		List<Capability> identities = getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (identities.size() == 1) {
 			Capability idCap = identities.get(0);
-			Object id = idCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
-			Object version = idCap.getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			Object id = idCap.getAttributes()
+				.get(IdentityNamespace.IDENTITY_NAMESPACE);
+			builder.append(id);
 
-			builder.append(id).append(" version=").append(version);
+			Object version = idCap.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			if (version != null) {
+				builder.append(" version=")
+					.append(version);
+			}
 		} else {
 			// Generic toString
 			builder.append("ResourceImpl [caps=");
@@ -146,8 +154,8 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		if (other == null || !(other instanceof Resource))
 			return false;
 
-		Map<URI,String> thisLocations = getContentURIs();
-		Map<URI,String> otherLocations;
+		Map<URI, String> thisLocations = getContentURIs();
+		Map<URI, String> otherLocations;
 
 		if (other instanceof ResourceImpl) {
 			otherLocations = ((ResourceImpl) other).getContentURIs();
@@ -172,7 +180,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		return false;
 	}
 
-	public Map<URI,String> getContentURIs() {
+	public Map<URI, String> getContentURIs() {
 		if (locations == null) {
 			locations = ResourceUtils.getLocations(this);
 		}
@@ -189,7 +197,8 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		try {
 			ContentCapability c = ResourceUtils.getContentCapability(this);
 			URI url = c.url();
-			return url.toURL().openStream();
+			return url.toURL()
+				.openStream();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

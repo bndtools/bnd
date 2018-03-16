@@ -17,8 +17,8 @@ public interface RemoteRepositoryPlugin extends RepositoryPlugin {
 	 * @return a {@link ResourceHandle}
 	 * @throws Exception
 	 */
-	ResourceHandle getHandle(String bsn, String version, Strategy strategy, Map<String,String> properties)
-			throws Exception;
+	ResourceHandle getHandle(String bsn, String version, Strategy strategy, Map<String, String> properties)
+		throws Exception;
 
 	File getCacheDirectory();
 }

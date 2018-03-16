@@ -47,9 +47,11 @@ public class ExportedPackage extends HeaderClause {
 	public String toString() {
 		StringBuilder sb = new StringBuilder(getName());
 		if (isProvided())
-			sb.append(";").append("provided:=true");
+			sb.append(";")
+				.append("provided:=true");
 		if (getAttribs().containsKey("version"))
-			sb.append(";version=").append(getAttribs().get("version"));
+			sb.append(";version=")
+				.append(getAttribs().get("version"));
 
 		return sb.toString();
 	}

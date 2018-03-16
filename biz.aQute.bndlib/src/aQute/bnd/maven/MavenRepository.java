@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.osgi.Analyzer;
-import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Plugin;
@@ -26,9 +25,9 @@ import aQute.service.reporter.Reporter;
 
 @Deprecated
 public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath {
-	private final static Logger	logger	= LoggerFactory.getLogger(MavenRepository.class);
+	private final static Logger	logger				= LoggerFactory.getLogger(MavenRepository.class);
 
-	public final static String	NAME	= "name";
+	public final static String	NAME				= "name";
 	static final String			MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 
 	File						root;
@@ -40,6 +39,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return "maven:" + root;
 	}
 
+	@Override
 	public boolean canWrite() {
 		return false;
 	}
@@ -73,7 +73,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 
 		vsdir = Processor.getFile(vsdir, artifactId);
 
-		List<File> result = new ArrayList<File>();
+		List<File> result = new ArrayList<>();
 		if (vsdir.isDirectory()) {
 			String versions[] = vsdir.list();
 			for (String v : versions) {
@@ -89,8 +89,8 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 					}
 				} else {
 					reporter.warning(
-							"Expected a version directory in maven: dir=%s raw-version=%s cleaned-up-version=%s", vsdir,
-							vv, v);
+						"Expected a version directory in maven: dir=%s raw-version=%s cleaned-up-version=%s", vsdir, vv,
+						v);
 				}
 			}
 		} else
@@ -99,8 +99,9 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return result.toArray(new File[0]);
 	}
 
+	@Override
 	public List<String> list(String regex) {
-		List<String> bsns = new ArrayList<String>();
+		List<String> bsns = new ArrayList<>();
 		Pattern match = Pattern.compile(".*");
 		if (regex != null)
 			match = Pattern.compile(regex);
@@ -115,7 +116,8 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 			for (String entry : list) {
 				char c = entry.charAt(0);
 				if (c >= '0' && c <= '9') {
-					if (pattern.matcher(name).matches())
+					if (pattern.matcher(name)
+						.matches())
 						found = true;
 				} else {
 					String nextName = entry;
@@ -131,33 +133,38 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		}
 	}
 
+	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new UnsupportedOperationException("Maven does not support the put command");
 	}
 
+	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 
 		File files[] = get(bsn, null);
-		List<Version> versions = new ArrayList<Version>();
+		List<Version> versions = new ArrayList<>();
 		for (File f : files) {
-			String version = f.getParentFile().getName();
-			version = Builder.cleanupVersion(version);
+			String version = f.getParentFile()
+				.getName();
+			version = Analyzer.cleanupVersion(version);
 			Version v = new Version(version);
 			versions.add(v);
 		}
 		if (versions.isEmpty())
 			return SortedList.empty();
 
-		return new SortedList<Version>(versions);
+		return new SortedList<>(versions);
 	}
 
-	public void setProperties(Map<String,String> map) {
+	@Override
+	public void setProperties(Map<String, String> map) {
 		String root = map.get("root");
 		if (root == null) {
 			this.root = IO.getFile(MAVEN_REPO_LOCAL);
 		} else {
 			File home = new File("");
-			this.root = Processor.getFile(home, root).getAbsoluteFile();
+			this.root = Processor.getFile(home, root)
+				.getAbsoluteFile();
 		}
 
 		if (!this.root.isDirectory()) {
@@ -167,10 +174,12 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 
 	}
 
+	@Override
 	public void setReporter(Reporter processor) {
 		this.reporter = processor;
 	}
 
+	@Override
 	public String[] getGroupAndArtifact(String bsn) {
 		String groupId;
 		String artifactId;
@@ -184,7 +193,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 			File adir = new File(gdir, artifactId).getAbsoluteFile();
 			if (adir.isDirectory())
 				return new String[] {
-						groupId, artifactId
+					groupId, artifactId
 				};
 
 			n = bsn.indexOf('.', n + 1);
@@ -192,6 +201,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return null;
 	}
 
+	@Override
 	public String getName() {
 		if (name == null) {
 			return toString();
@@ -199,7 +209,7 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		return name;
 	}
 
-	public File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception {
+	public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
 		File[] files = get(bsn, range);
 		if (files.length >= 0) {
 			switch (strategy) {
@@ -219,12 +229,14 @@ public class MavenRepository implements RepositoryPlugin, Plugin, BsnToMavenPath
 		root = f;
 	}
 
+	@Override
 	public String getLocation() {
 		return root.toString();
 	}
 
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	@Override
+	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		File file = get(bsn, version.toString(), Strategy.EXACT, properties);
 		if (file == null)
 			return null;

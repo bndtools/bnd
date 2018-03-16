@@ -16,7 +16,7 @@ public class PropertiesTest extends TestCase {
 	public static void testBndEditModel() throws Exception {
 
 		Document doc = new Document("# Hello\nBundle-Description:\tTest \u2649\n"
-				+ "\n\nBundle-SymbolicName:\ttest.properties\n" + "Private-Package:\tpp1\n");
+			+ "\n\nBundle-SymbolicName:\ttest.properties\n" + "Private-Package:\tpp1\n");
 
 		BndEditModel model = new BndEditModel();
 

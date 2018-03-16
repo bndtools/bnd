@@ -34,7 +34,7 @@ public class ConcurrentInitializeTest extends Assert {
 				return "foo";
 			}
 		};
-		final Thread threads [] = new Thread[10];
+		final Thread threads[] = new Thread[10];
 
 		for (int i = 0; i < 10; i++) {
 			final int j = i;

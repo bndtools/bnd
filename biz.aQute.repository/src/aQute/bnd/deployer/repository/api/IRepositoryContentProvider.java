@@ -26,7 +26,7 @@ public interface IRepositoryContentProvider {
 	 * @param processor
 	 */
 	void parseIndex(InputStream stream, URI baseUri, IRepositoryIndexProcessor processor, LogService log)
-			throws Exception;
+		throws Exception;
 
 	/**
 	 * <p>
@@ -45,7 +45,6 @@ public interface IRepositoryContentProvider {
 
 	/**
 	 * Return whether the content provider supports index generation.
-	 *
 	 */
 	boolean supportsGeneration();
 
@@ -68,7 +67,7 @@ public interface IRepositoryContentProvider {
 	 * @throws Exception If any other error unrecoverable occurs.
 	 */
 	void generateIndex(Set<File> files, OutputStream output, String repoName, URI rootUri, boolean pretty,
-			Registry registry, LogService log) throws Exception;
+		Registry registry, LogService log) throws Exception;
 
 	/**
 	 * Get the default name for an index file supported by this provider;

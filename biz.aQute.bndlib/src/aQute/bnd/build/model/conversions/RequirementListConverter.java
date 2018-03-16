@@ -10,13 +10,15 @@ import aQute.bnd.osgi.resource.CapReqBuilder;
 public class RequirementListConverter extends HeaderClauseListConverter<Requirement> {
 
 	public RequirementListConverter() {
-		super(new Converter<Requirement,HeaderClause>() {
+		super(new Converter<Requirement, HeaderClause>() {
+			@Override
 			public Requirement convert(HeaderClause input) {
 				if (input == null)
 					return null;
 				String namespace = input.getName();
 				CapReqBuilder builder = new CapReqBuilder(namespace);
-				for (Entry<String,String> entry : input.getAttribs().entrySet()) {
+				for (Entry<String, String> entry : input.getAttribs()
+					.entrySet()) {
 					String key = entry.getKey();
 					if (key.endsWith(":")) {
 						key = key.substring(0, key.length() - 1);

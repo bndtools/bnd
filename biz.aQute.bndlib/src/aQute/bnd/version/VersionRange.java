@@ -6,15 +6,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class VersionRange {
 	final Version	high;
 	final Version	low;
 	char			start	= '[';
 	char			end		= ']';
 
-	static Pattern	RANGE	= Pattern.compile(
-			"(\\(|\\[)\\s*(" + Version.VERSION_STRING + ")\\s*,\\s*(" + Version.VERSION_STRING + ")\\s*(\\)|\\])");
+	static Pattern	RANGE	= Pattern
+		.compile("(\\(|\\[)\\s*(" + Version.VERSION_STRING + ")\\s*,\\s*(" + Version.VERSION_STRING + ")\\s*(\\)|\\])");
 
 	public VersionRange(String string) {
 		string = string.trim();
@@ -36,12 +35,14 @@ public class VersionRange {
 
 		Matcher m = RANGE.matcher(string);
 		if (m.matches()) {
-			start = m.group(1).charAt(0);
+			start = m.group(1)
+				.charAt(0);
 			String v1 = m.group(2);
 			String v2 = m.group(10);
 			low = new Version(v1);
 			high = new Version(v2);
-			end = m.group(18).charAt(0);
+			end = m.group(18)
+				.charAt(0);
 			if (low.compareTo(high) > 0)
 				throw new IllegalArgumentException("Low Range is higher than High Range: " + low + "-" + high);
 
@@ -145,7 +146,7 @@ public class VersionRange {
 	}
 
 	public Iterable<Version> filter(final Iterable<Version> versions) {
-		List<Version> list = new ArrayList<Version>();
+		List<Version> list = new ArrayList<>();
 		for (Version v : versions) {
 			if (includes(v))
 				list.add(v);
@@ -186,7 +187,8 @@ public class VersionRange {
 	}
 
 	public static boolean isVersionRange(String stringRange) {
-		return RANGE.matcher(stringRange).matches();
+		return RANGE.matcher(stringRange)
+			.matches();
 	}
 
 	/**

@@ -30,11 +30,9 @@ import java.util.StringTokenizer;
 import java.util.TreeMap;
 
 import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.impl.bundle.bindex.BundleIndexerImpl;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
-import org.osgi.service.bindex.BundleIndexer;
 import org.osgi.service.log.LogService;
 import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
@@ -43,7 +41,6 @@ import aQute.bnd.deployer.http.DefaultURLConnector;
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.bnd.deployer.repository.api.Referral;
-import aQute.bnd.deployer.repository.providers.ObrContentProvider;
 import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.repository.BaseRepository;
@@ -74,12 +71,12 @@ import aQute.service.reporter.Reporter;
  * The repository implementation is read-only by default. To implement a
  * writable repository, subclasses should override {@link #canWrite()} and
  * {@link #put(InputStream, aQute.bnd.service.RepositoryPlugin.PutOptions)}.
- * 
+ *
  * @author Neil Bartlett
  */
 @SuppressWarnings("synthetic-access")
 public abstract class AbstractIndexedRepo extends BaseRepository
-		implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository, Refreshable {
+	implements RegistryPlugin, Plugin, RemoteRepositoryPlugin, IndexProvider, Repository, Refreshable {
 
 	private static final String								SHA_256							= "SHA-256";
 
@@ -89,7 +86,6 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	public static final String								PROP_RESOLUTION_PHASE_ANY		= "any";
 
 	public static final String								REPO_TYPE_R5					= R5RepoContentProvider.NAME;
-	public static final String								REPO_TYPE_OBR					= ObrContentProvider.NAME;
 	public static final String								REPO_INDEX_SHA_EXTENSION		= ".sha";
 	public static final String								PROP_CACHE_TIMEOUT				= "timeout";
 	public static final String								PROP_ONLINE						= "online";
@@ -99,21 +95,20 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 
 	private final static int								DEFAULT_CACHE_TIMEOUT			= 5;
 
-	private final BundleIndexer								obrIndexer						= new BundleIndexerImpl();
-
 	/**
 	 * Make sure the content providers are always processed in the same order.
 	 */
-	protected final Map<String,IRepositoryContentProvider>	allContentProviders				= new TreeMap<String,IRepositoryContentProvider>();
+	protected final Map<String, IRepositoryContentProvider>	allContentProviders				= new TreeMap<>();
 
-	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<IRepositoryContentProvider>();
+	protected final List<IRepositoryContentProvider>		generatingProviders				= new LinkedList<>();
 
 	protected Registry										registry;
 	protected Reporter										reporter;
 	protected LogService									logService						= new NullLogService();
-	protected String										name							= this.getClass().getName();
+	protected String										name							= this.getClass()
+		.getName();
 	protected Set<ResolutionPhase>							supportedPhases					= EnumSet
-			.allOf(ResolutionPhase.class);
+		.allOf(ResolutionPhase.class);
 
 	private List<URI>										indexLocations;
 
@@ -128,7 +123,6 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 
 	protected AbstractIndexedRepo() {
 		allContentProviders.put(REPO_TYPE_R5, new R5RepoContentProvider());
-		allContentProviders.put(REPO_TYPE_OBR, new ObrContentProvider(obrIndexer));
 
 		generatingProviders.add(allContentProviders.get(REPO_TYPE_R5));
 	}
@@ -185,7 +179,8 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 				// Find the requested providers from the available ones.
 				StringTokenizer tokenizer = new StringTokenizer(requestedContentProviderList, "|");
 				while (tokenizer.hasMoreTokens()) {
-					String token = tokenizer.nextToken().trim();
+					String token = tokenizer.nextToken()
+						.trim();
 					IRepositoryContentProvider provider = allContentProviders.get(token);
 					if (provider == null) {
 						warning("Unknown repository content provider \"%s\".", token);
@@ -195,7 +190,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 				}
 				if (generatingProviders.isEmpty()) {
 					warning("No valid repository index generators were found, requested list was: [%s]",
-							requestedContentProviderList);
+						requestedContentProviderList);
 				}
 			}
 
@@ -206,30 +201,31 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			final URLConnector connector = getConnector();
 			IRepositoryIndexProcessor processor = new IRepositoryIndexProcessor() {
 
+				@Override
 				public void processResource(Resource resource) {
 					identityMap.put(resource);
 					capabilityIndex.addResource(resource);
 				}
 
+				@Override
 				public void processReferral(URI parentUri, Referral referral, int maxDepth, int currentDepth) {
 					try {
 						URI indexLocation = new URI(referral.getUrl());
 						try {
 							CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation,
-									getCacheDirectory(), connector, (String) null);
+								getCacheDirectory(), connector, null);
 							indexHandle.setReporter(reporter);
-							InputStream indexStream = GZipUtils
-									.detectCompression(IO.stream(indexHandle.request()));
+							InputStream indexStream = GZipUtils.detectCompression(IO.stream(indexHandle.request()));
 							readIndex(indexLocation.getPath(), indexLocation, indexStream, allContentProviders.values(),
-									this, logService);
+								this, logService);
 						} catch (Exception e) {
 							warning("Unable to read referral index at URL '%s' from parent index '%s': %s",
-									indexLocation, parentUri, e);
+								indexLocation, parentUri, e);
 						}
 
 					} catch (URISyntaxException e) {
 						warning("Invalid referral URL '%s' from parent index '%s': %s", referral.getUrl(), parentUri,
-								e);
+							e);
 					}
 				}
 
@@ -239,14 +235,14 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			for (URI indexLocation : indexLocations) {
 				try {
 					CachingUriResourceHandle indexHandle = new CachingUriResourceHandle(indexLocation,
-							getCacheDirectory(), connector, (String) null);
+						getCacheDirectory(), connector, null);
 					// If there is a cachedFile, then just use it IF
 					// 1) the cachedFile is within the timeout period
 					// OR 2) online is false
 					if (indexHandle.cachedFile != null && !ignoreCachedFile
-							&& ((System.currentTimeMillis()
-									- indexHandle.cachedFile.lastModified() < this.cacheTimeoutSeconds * 1000)
-									|| !this.online)) {
+						&& ((System.currentTimeMillis()
+							- indexHandle.cachedFile.lastModified() < this.cacheTimeoutSeconds * 1000)
+							|| !this.online)) {
 						indexHandle.sha = indexHandle.getCachedSHA();
 						if (indexHandle.sha != null && !this.online) {
 							System.out.println(String.format("Offline. Using cached %s.", indexLocation));
@@ -256,7 +252,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 					File indexFile = indexHandle.request();
 					InputStream indexStream = GZipUtils.detectCompression(IO.stream(indexFile));
 					readIndex(indexFile.getName(), indexLocation, indexStream, allContentProviders.values(), processor,
-							logService);
+						logService);
 				} catch (Exception e) {
 					error("Unable to read index at URL '%s': %s", indexLocation, e);
 				}
@@ -266,6 +262,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		}
 	}
 
+	@Override
 	public final List<URI> getIndexLocations() throws Exception {
 		init();
 		return Collections.unmodifiableList(indexLocations);
@@ -289,11 +286,13 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return connector;
 	}
 
+	@Override
 	public synchronized final void setRegistry(Registry registry) {
 		this.registry = registry;
 	}
 
-	public synchronized void setProperties(Map<String,String> map) {
+	@Override
+	public synchronized void setProperties(Map<String, String> map) {
 		if (map.containsKey(PROP_NAME))
 			name = map.get(PROP_NAME);
 
@@ -301,7 +300,8 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			supportedPhases = EnumSet.noneOf(ResolutionPhase.class);
 			StringTokenizer tokenizer = new StringTokenizer(map.get(PROP_RESOLUTION_PHASE), ",");
 			while (tokenizer.hasMoreTokens()) {
-				String token = tokenizer.nextToken().trim();
+				String token = tokenizer.nextToken()
+					.trim();
 				if (PROP_RESOLUTION_PHASE_ANY.equalsIgnoreCase(token))
 					supportedPhases = EnumSet.allOf(ResolutionPhase.class);
 				else {
@@ -361,18 +361,20 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return handles.toArray(new ResourceHandle[0]);
 	}
 
+	@Override
 	public synchronized void setReporter(Reporter reporter) {
 		this.reporter = reporter;
 		this.logService = new ReporterLogService(reporter);
 	}
 
-	public File get(String bsn, String range, Strategy strategy, Map<String,String> properties) throws Exception {
+	public File get(String bsn, String range, Strategy strategy, Map<String, String> properties) throws Exception {
 		ResourceHandle handle = getHandle(bsn, range, strategy, properties);
 		return handle != null ? handle.request() : null;
 	}
 
-	public ResourceHandle getHandle(String bsn, String range, Strategy strategy, Map<String,String> properties)
-			throws Exception {
+	@Override
+	public ResourceHandle getHandle(String bsn, String range, Strategy strategy, Map<String, String> properties)
+		throws Exception {
 		init();
 		ResourceHandle result;
 		if (bsn != null)
@@ -383,46 +385,53 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return result;
 	}
 
+	@Override
 	public boolean canWrite() {
 		return false;
 	}
 
+	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		throw new UnsupportedOperationException("Read-only repository.");
 	}
 
+	@Override
 	public List<String> list(String pattern) throws Exception {
 		init();
 		Glob glob = pattern != null ? new Glob(pattern) : null;
-		List<String> result = new LinkedList<String>();
+		List<String> result = new LinkedList<>();
 
 		for (String bsn : identityMap.getIdentities()) {
-			if (glob == null || glob.matcher(bsn).matches())
+			if (glob == null || glob.matcher(bsn)
+				.matches())
 				result.add(bsn);
 		}
 
 		return result;
 	}
 
+	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
 		return identityMap.getVersions(bsn);
 	}
 
+	@Override
 	public synchronized String getName() {
 		return name;
 	}
 
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+	@Override
+	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		try {
 			init();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 
-		Map<Requirement,Collection<Capability>> result = new HashMap<Requirement,Collection<Capability>>();
+		Map<Requirement, Collection<Capability>> result = new HashMap<>();
 		for (Requirement requirement : requirements) {
-			List<Capability> matches = new LinkedList<Capability>();
+			List<Capability> matches = new LinkedList<>();
 			result.put(requirement, matches);
 
 			capabilityIndex.appendMatchingCapabilities(requirement, matches);
@@ -430,15 +439,16 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return result;
 	}
 
-	static List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version,Resource> versionMap,
-			Filter filter) throws Exception {
-		List<Resource> result = new ArrayList<Resource>(versionMap.size());
+	static List<Resource> narrowVersionsByFilter(String pkgName, SortedMap<Version, Resource> versionMap, Filter filter)
+		throws Exception {
+		List<Resource> result = new ArrayList<>(versionMap.size());
 
-		Dictionary<String,String> dict = new Hashtable<String,String>();
+		Dictionary<String, String> dict = new Hashtable<>();
 		dict.put("package", pkgName);
 
-		for (Entry<Version,Resource> entry : versionMap.entrySet()) {
-			dict.put("version", entry.getKey().toString());
+		for (Entry<Version, Resource> entry : versionMap.entrySet()) {
+			dict.put("version", entry.getKey()
+				.toString());
 			if (filter.match(dict))
 				result.add(entry.getValue());
 		}
@@ -447,7 +457,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	}
 
 	List<ResourceHandle> mapResourcesToHandles(Collection<Resource> resources) throws Exception {
-		List<ResourceHandle> result = new ArrayList<ResourceHandle>(resources.size());
+		List<ResourceHandle> result = new ArrayList<>(resources.size());
 
 		for (Resource resource : resources) {
 			ResourceHandle handle = mapResourceToHandle(resource);
@@ -465,7 +475,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		try {
 			String contentSha = getContentSha(resource);
 			handle = new CachingUriResourceHandle(getContentUrl(resource), getCacheDirectory(), getConnector(),
-					contentSha);
+				contentSha);
 			if (contentSha == null) {
 				handle.sha = handle.getCachedSHA();
 			}
@@ -478,8 +488,8 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return result;
 	}
 
-	ResourceHandle resolveBundle(String bsn, String rangeStr, Strategy strategy, Map<String,String> properties)
-			throws Exception {
+	ResourceHandle resolveBundle(String bsn, String rangeStr, Strategy strategy, Map<String, String> properties)
+		throws Exception {
 		if (rangeStr == null)
 			rangeStr = "0.0.0";
 
@@ -507,7 +517,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return selected;
 	}
 
-	static String listToString(List< ? > list) {
+	static String listToString(List<?> list) {
 		StringBuilder builder = new StringBuilder();
 
 		int count = 0;
@@ -530,7 +540,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		return mapResourceToHandle(resource);
 	}
 
-	ResourceHandle findByHash(String bsn, Map<String,String> properties) throws Exception {
+	ResourceHandle findByHash(String bsn, Map<String, String> properties) throws Exception {
 		if (bsn == null)
 			throw new IllegalArgumentException("Bundle symbolic name must be specified");
 
@@ -538,7 +548,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		String hashStr = properties.get("hash");
 		if (hashStr == null)
 			throw new IllegalArgumentException(
-					"Content hash must be provided (using hash=<algo>:<hash>) when version=hash is specified");
+				"Content hash must be provided (using hash=<algo>:<hash>) when version=hash is specified");
 
 		// Parse into algo and hash
 		String algo = SHA_256;
@@ -555,7 +565,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 
 		String contentFilter = String.format("(%s=%s)", ContentNamespace.CONTENT_NAMESPACE, hashStr);
 		Requirement contentReq = new CapReqBuilder(ContentNamespace.CONTENT_NAMESPACE).filter(contentFilter)
-				.buildSyntheticRequirement();
+			.buildSyntheticRequirement();
 
 		List<Capability> caps = new LinkedList<>();
 		capabilityIndex.appendMatchingCapabilities(contentReq, caps);
@@ -563,20 +573,22 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 		if (caps.isEmpty())
 			return null;
 
-		Resource resource = caps.get(0).getResource();
+		Resource resource = caps.get(0)
+			.getResource();
 
 		Capability identityCap = getIdentityCapability(resource);
-		Object id = identityCap.getAttributes().get(IdentityNamespace.IDENTITY_NAMESPACE);
+		Object id = identityCap.getAttributes()
+			.get(IdentityNamespace.IDENTITY_NAMESPACE);
 		if (!bsn.equals(id))
 			throw new IllegalArgumentException(
-					String.format("Resource with requested hash does not match ID '%s' [hash: %s]", bsn, hashStr));
+				String.format("Resource with requested hash does not match ID '%s' [hash: %s]", bsn, hashStr));
 
 		return mapResourceToHandle(resource);
 	}
 
 	/**
 	 * Utility function for parsing lists of URLs.
-	 * 
+	 *
 	 * @param locationsStr Comma-separated list of URLs
 	 * @return a list of URIs
 	 * @throws MalformedURLException
@@ -584,14 +596,16 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	 */
 	protected static List<URI> parseLocations(String locationsStr) throws MalformedURLException, URISyntaxException {
 		StringTokenizer tok = new StringTokenizer(locationsStr, ",");
-		List<URI> urls = new ArrayList<URI>(tok.countTokens());
+		List<URI> urls = new ArrayList<>(tok.countTokens());
 		while (tok.hasMoreTokens()) {
-			String urlStr = tok.nextToken().trim();
+			String urlStr = tok.nextToken()
+				.trim();
 			urls.add(new URL(urlStr).toURI());
 		}
 		return urls;
 	}
 
+	@Override
 	public Set<ResolutionPhase> getSupportedPhases() {
 		return supportedPhases;
 	}
@@ -606,8 +620,9 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	 * Now just a quick hack to make it work. I actually think these classes
 	 * should extend FileRepo. TODO
 	 */
-	public File get(String bsn, Version version, Map<String,String> properties, DownloadListener... listeners)
-			throws Exception {
+	@Override
+	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
+		throws Exception {
 		init();
 
 		String versionStr;
@@ -647,6 +662,7 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 			System.err.println(Strings.format(format, args));
 	}
 
+	@Override
 	public boolean refresh() throws Exception {
 		initialised = false;
 		init(true);

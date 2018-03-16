@@ -36,11 +36,10 @@ import aQute.p2.api.Artifact;
 import aQute.p2.api.P2Index;
 
 public class P2Impl {
-	private static final Logger						logger		= LoggerFactory.getLogger(P2Impl.class);
-	private final HttpClient						client;
-	private final URI								base;
-	private final Set<URI>							defaults	= Collections
-			.newSetFromMap(new ConcurrentHashMap<URI,Boolean>());
+	private static final Logger		logger		= LoggerFactory.getLogger(P2Impl.class);
+	private final HttpClient		client;
+	private final URI				base;
+	private final Set<URI>			defaults	= Collections.newSetFromMap(new ConcurrentHashMap<URI, Boolean>());
 	private final PromiseFactory	promiseFactory;
 
 	public P2Impl(HttpClient c, URI base, PromiseFactory promiseFactory) throws Exception {
@@ -58,14 +57,14 @@ public class P2Impl {
 	}
 
 	public List<Artifact> getArtifacts() throws Exception {
-		Set<URI> cycles = Collections.newSetFromMap(new ConcurrentHashMap<URI,Boolean>());
+		Set<URI> cycles = Collections.newSetFromMap(new ConcurrentHashMap<URI, Boolean>());
 		return getArtifacts(cycles, base).getValue();
 	}
 
 	private Promise<List<Artifact>> getArtifacts(Set<URI> cycles, URI uri) {
 		if (!cycles.add(uri)) {
 			return promiseFactory
-					.failed(new IllegalStateException("There is a cycle in the p2 setup : " + cycles + " -> " + uri));
+				.failed(new IllegalStateException("There is a cycle in the p2 setup : " + cycles + " -> " + uri));
 		}
 
 		try {
@@ -110,7 +109,7 @@ public class P2Impl {
 	 * @throws XPathExpressionException
 	 */
 	private Promise<List<Artifact>> parseCompositeArtifacts(Set<URI> cycles, InputStream in, URI base)
-			throws Exception {
+		throws Exception {
 		if (in == null)
 			return promiseFactory.resolved(Collections.emptyList());
 
@@ -122,25 +121,30 @@ public class P2Impl {
 
 	private Promise<List<Artifact>> getArtifacts(Set<URI> cycles, final Collection<URI> uris) {
 		Deferred<List<Artifact>> deferred = promiseFactory.deferred();
-		promiseFactory.executor().execute(() -> {
-			try {
-				deferred.resolveWith(
-						uris.stream().map(uri -> getArtifacts(cycles, base.resolve(uri)).recover(failed -> {
+		promiseFactory.executor()
+			.execute(() -> {
+				try {
+					deferred.resolveWith(uris.stream()
+						.map(uri -> getArtifacts(cycles, base.resolve(uri)).recover(failed -> {
 							if (!defaults.contains(uri)) {
 								logger.info("Failed to get artifacts for %s", uri, failed.getFailure());
 							}
 							return Collections.emptyList();
-						})).collect(toPromise(promiseFactory)).map(
-								ll -> ll.stream().flatMap(List::stream).collect(toList())));
-			} catch (Throwable e) {
-				deferred.fail(e);
-			}
-		});
+						}))
+						.collect(toPromise(promiseFactory))
+						.map(ll -> ll.stream()
+							.flatMap(List::stream)
+							.collect(toList())));
+				} catch (Throwable e) {
+					deferred.fail(e);
+				}
+			});
 		return deferred.getPromise();
 	}
 
 	private InputStream hideAndSeek(URI uri) throws Exception {
-		if (uri.getPath().endsWith(".xz")) {
+		if (uri.getPath()
+			.endsWith(".xz")) {
 			File f = getFile(uri);
 			if (f != null)
 				return tzStream(f);
@@ -167,7 +171,9 @@ public class P2Impl {
 	}
 
 	private File getFile(URI xzname) throws Exception {
-		return client.build().useCache().go(xzname);
+		return client.build()
+			.useCache()
+			.go(xzname);
 	}
 
 	private InputStream jarStream(File f, String name) throws IOException {
@@ -204,7 +210,10 @@ public class P2Impl {
 	 * @throws Exception
 	 */
 	private Promise<List<Artifact>> parseIndexArtifacts(Set<URI> cycles, final URI uri) throws Exception {
-		Promise<File> file = client.build().useCache().get().async(uri.toURL());
+		Promise<File> file = client.build()
+			.useCache()
+			.get()
+			.async(uri.toURL());
 		return file.flatMap(f -> parseIndexArtifacts(cycles, uri, f));
 	}
 
@@ -228,7 +237,8 @@ public class P2Impl {
 			return;
 
 		for (URI uri : new ArrayList<>(artifacts)) {
-			if (uri.getPath().endsWith(".xml"))
+			if (uri.getPath()
+				.endsWith(".xml"))
 				artifacts.remove(new URI(uri.toString() + ".xz"));
 		}
 	}
@@ -253,7 +263,7 @@ public class P2Impl {
 		String version = p.getProperty("version");
 		if (version == null || Integer.parseInt(version) != 1)
 			throw new UnsupportedOperationException(
-					"The repository " + base + " specifies an index file with an incompatible version " + version);
+				"The repository " + base + " specifies an index file with an incompatible version " + version);
 
 		P2Index index = new P2Index();
 

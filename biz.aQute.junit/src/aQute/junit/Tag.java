@@ -28,11 +28,11 @@ public class Tag {
 																								// of
 																								// the
 																								// tag
-	Hashtable<String,String>		attributes	= new Hashtable<String,String>();				// Attributes
+	Hashtable<String, String>		attributes	= new Hashtable<>();							// Attributes
 																								// name
 																								// ->
 																								// value
-	Vector<Object>					content		= new Vector<Object>();							// Content
+	Vector<Object>					content		= new Vector<>();								// Content
 																								// elements
 	boolean							cdata;
 
@@ -48,7 +48,7 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Hashtable<String,String> attributes) {
+	public Tag(String name, Hashtable<String, String> attributes) {
 		this.name = name;
 		this.attributes = attributes;
 	}
@@ -149,7 +149,7 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Dictionary<String,String> getAttributes() {
+	public Dictionary<String, String> getAttributes() {
 		return attributes;
 	}
 
@@ -176,10 +176,11 @@ public class Tag {
 	 * name.
 	 */
 	public Vector<Object> getContents(String tag) {
-		Vector<Object> out = new Vector<Object>();
+		Vector<Object> out = new Vector<>();
 		for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
 			Object o = e.nextElement();
-			if (o instanceof Tag && ((Tag) o).getName().equals(tag))
+			if (o instanceof Tag && ((Tag) o).getName()
+				.equals(tag))
 				out.addElement(o);
 		}
 		return out;
@@ -223,7 +224,7 @@ public class Tag {
 			pw.print(key);
 			pw.print("=");
 			String quote = "'";
-			if (value.indexOf(quote) >= 0)
+			if (value.contains(quote))
 				quote = "\"";
 			pw.print(quote);
 			pw.print(value);
@@ -272,10 +273,11 @@ public class Tag {
 	private void copyURL(PrintWriter pw, URL url) {
 		try {
 			try (InputStream in = url.openStream();
-					BufferedReader rdr = new BufferedReader(new InputStreamReader(in, UTF_8))) {
+				BufferedReader rdr = new BufferedReader(new InputStreamReader(in, UTF_8))) {
 				String line = rdr.readLine();
 				if (line != null) {
-					while (line != null && line.trim().startsWith("<?"))
+					while (line != null && line.trim()
+						.startsWith("<?"))
 						line = rdr.readLine();
 
 					while (line != null) {
@@ -330,7 +332,7 @@ public class Tag {
 	 * Escape a string, do entity conversion.
 	 */
 	String escape(String s) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < s.length(); i++) {
 			char c = s.charAt(i);
 			switch (c) {
@@ -363,11 +365,11 @@ public class Tag {
 	 * root/preferences/native/os
 	 */
 	public Tag[] select(String path) {
-		return select(path, (Tag) null);
+		return select(path, null);
 	}
 
 	public Tag[] select(String path, Tag mapping) {
-		Vector<Tag> v = new Vector<Tag>();
+		Vector<Tag> v = new Vector<>();
 		select(path, v, mapping);
 		Tag[] result = new Tag[v.size()];
 		v.copyInto(result);
@@ -409,7 +411,8 @@ public class Tag {
 			Object o = e.nextElement();
 			if (o instanceof Tag) {
 				Tag child = (Tag) o;
-				if (child.getName().equals(elementName) || elementName.equals("*"))
+				if (child.getName()
+					.equals(elementName) || elementName.equals("*"))
 					child.select(remainder, results, mapping);
 			}
 		}
@@ -470,7 +473,7 @@ public class Tag {
 	}
 
 	public String getStringContent() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
 			Object c = e.nextElement();
 			if (!(c instanceof Tag))

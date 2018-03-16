@@ -22,7 +22,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 
 public class ProjectPom extends Pom {
 
-	final List<URI>		repositories	= new ArrayList<URI>();
+	final List<URI>		repositories	= new ArrayList<>();
 	final Properties	properties		= new UTF8Properties();
 	String				packaging;
 	String				url;
@@ -41,10 +41,14 @@ public class ProjectPom extends Pom {
 		if (parent != null && parent.hasChildNodes()) {
 			File parentFile = IO.getFile(getPomFile().getParentFile(), "../pom.xml");
 
-			String parentGroupId = xp.evaluate("groupId", parent).trim();
-			String parentArtifactId = xp.evaluate("artifactId", parent).trim();
-			String parentVersion = xp.evaluate("version", parent).trim();
-			String parentPath = xp.evaluate("relativePath", parent).trim();
+			String parentGroupId = xp.evaluate("groupId", parent)
+				.trim();
+			String parentArtifactId = xp.evaluate("artifactId", parent)
+				.trim();
+			String parentVersion = xp.evaluate("version", parent)
+				.trim();
+			String parentPath = xp.evaluate("relativePath", parent)
+				.trim();
 			if (parentPath != null && parentPath.length() != 0) {
 				parentFile = IO.getFile(getPomFile().getParentFile(), parentPath);
 			}
@@ -52,7 +56,7 @@ public class ProjectPom extends Pom {
 				ProjectPom parentPom = new ProjectPom(maven, parentFile);
 				parentPom.parse();
 				dependencies.addAll(parentPom.dependencies);
-				for (Enumeration< ? > e = parentPom.properties.propertyNames(); e.hasMoreElements();) {
+				for (Enumeration<?> e = parentPom.properties.propertyNames(); e.hasMoreElements();) {
 					String key = (String) e.nextElement();
 					if (!properties.contains(key))
 						properties.put(key, parentPom.properties.get(key));
@@ -83,10 +87,12 @@ public class ProjectPom extends Pom {
 		NodeList repos = (NodeList) xp.evaluate("project/repositories/repository/url", doc, XPathConstants.NODESET);
 		for (int i = 0; i < repos.getLength(); i++) {
 			Node node = repos.item(i);
-			String URIString = node.getTextContent().trim();
+			String URIString = node.getTextContent()
+				.trim();
 			URI uri = new URI(URIString);
 			if (uri.getScheme() == null)
-				uri = IO.getFile(pomFile.getParentFile(), URIString).toURI();
+				uri = IO.getFile(pomFile.getParentFile(), URIString)
+					.toURI();
 			repositories.add(uri);
 		}
 

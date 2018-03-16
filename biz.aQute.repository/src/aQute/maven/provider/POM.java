@@ -1,9 +1,11 @@
 package aQute.maven.provider;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -29,9 +31,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import aQute.bnd.version.MavenVersion;
+import aQute.lib.io.ByteBufferInputStream;
+import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
@@ -44,21 +47,21 @@ import aQute.maven.api.Revision;
  * Parser and placeholder for POM information.
  */
 public class POM implements IPom {
-	static Logger					l						= LoggerFactory.getLogger(POM.class);
+	static Logger						l						= LoggerFactory.getLogger(POM.class);
 
-	static DocumentBuilderFactory	dbf						= DocumentBuilderFactory.newInstance();
-	static XPathFactory				xpf						= XPathFactory.newInstance();
-	private Revision				revision;
-	private String					packaging;
-	private final Properties		properties;
-	private final POM				parent;
-	private Map<Program,Dependency>	dependencies			= new LinkedHashMap<>();
-	private Map<Program,Dependency>	dependencyManagement	= new LinkedHashMap<>();
-	private XPath					xp;
+	static DocumentBuilderFactory		dbf						= DocumentBuilderFactory.newInstance();
+	static XPathFactory					xpf						= XPathFactory.newInstance();
+	private Revision					revision;
+	private String						packaging;
+	private final Properties			properties;
+	private final POM					parent;
+	private Map<Program, Dependency>	dependencies			= new LinkedHashMap<>();
+	private Map<Program, Dependency>	dependencyManagement	= new LinkedHashMap<>();
+	private XPath						xp;
 
-	private MavenRepository			repo;
+	private MavenRepository				repo;
 
-	private boolean					ignoreParentIfAbsent;
+	private boolean						ignoreParentIfAbsent;
 
 	public static POM parse(MavenRepository repo, File file) throws Exception {
 		try {
@@ -75,12 +78,11 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, InputStream in) throws Exception {
-		this(repo, getDocBuilder().parse(processEntities(in)), false);
+		this(repo, in, false);
 	}
 
-	public POM(MavenRepository mavenRepository, InputStream pomFile, boolean ignoreParentIfAbsent)
-			throws SAXException, IOException, ParserConfigurationException, Exception {
-		this(mavenRepository, getDocBuilder().parse(processEntities(pomFile)), ignoreParentIfAbsent);
+	public POM(MavenRepository repo, InputStream in, boolean ignoreParentIfAbsent) throws Exception {
+		this(repo, IO.work, getDocBuilder().parse(processEntities(in)), ignoreParentIfAbsent);
 	}
 
 	private static DocumentBuilder getDocBuilder() throws ParserConfigurationException {
@@ -88,46 +90,62 @@ public class POM implements IPom {
 		return db;
 	}
 
-	final static Pattern ENTITY_CLEAN_UP = Pattern.compile("&([-a-z0-9_]+);");
-
 	private static InputStream processEntities(InputStream in) throws IOException {
-		byte[] read = IO.read(in);
-		int l = read.length;
-		outer: for (int i = 0; i < read.length; i++) {
-			if (read[i] == '&') {
+		ByteBuffer bb = IO.copy(in, new ByteBufferOutputStream(in.available() + 1))
+			.toByteBuffer();
+		return processEntities(bb);
+	}
 
-				StringBuilder sb = new StringBuilder();
-
-				for (int j = i + 1; j < read.length && read[j] != ';'; j++) {
-
-					if (j > i + 10)
-						continue outer;
-
-					char c = (char) read[j];
-					if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))
-						sb.append(c);
-					else
-						continue outer;
-				}
-
-				switch (sb.toString()) {
-					case "lt" :
-					case "gt" :
-					case "amp" :
-					case "quote" :
-					case "apos" :
+	private static InputStream processEntities(ByteBuffer bb) {
+		final byte[] array = bb.array();
+		final int offset = bb.arrayOffset();
+		final int limit = offset + bb.limit();
+		for (int i = offset; i < limit; i++) {
+			char c = (char) array[i];
+			if (c == '&') {
+				final int jlimit = Math.min(limit, i + 11);
+				for (int j = i + 1; j < jlimit; j++) {
+					c = (char) array[j];
+					if (c == ';') {
+						String entity = new String(array, i + 1, j - (i + 1), StandardCharsets.US_ASCII).toLowerCase();
+						switch (entity) {
+							case "lt" :
+							case "gt" :
+							case "amp" :
+							case "quot" :
+							case "apos" :
+								break;
+							default :
+								array[i] = '?';
+								break;
+						}
+						i = j;
 						break;
-					default :
-						read[i] = '?';
+					}
+					if (!(c >= 'A' && c <= 'Z') && !(c >= 'a' && c <= 'z')) {
 						break;
+					}
 				}
 			}
 		}
-		return new ByteArrayInputStream(read);
+		return new ByteBufferInputStream(bb);
 	}
 
 	public POM(MavenRepository repo, File file) throws Exception {
-		this(repo, IO.stream(file));
+		this(repo, file, false);
+	}
+
+	public POM(MavenRepository repo, File file, boolean ignoreIfParentAbsent) throws Exception {
+		this(repo, file.getParentFile(), getDocBuilder().parse(processEntities(file)), ignoreIfParentAbsent);
+	}
+
+	private static InputStream processEntities(File file) throws IOException {
+		try (FileChannel in = IO.readChannel(file.toPath())) {
+			ByteBuffer bb = ByteBuffer.allocate((int) in.size());
+			while (in.read(bb) > 0) {}
+			bb.flip();
+			return processEntities(bb);
+		}
 	}
 
 	public POM(MavenRepository repo, Document doc) throws Exception {
@@ -135,6 +153,10 @@ public class POM implements IPom {
 	}
 
 	public POM(MavenRepository repo, Document doc, boolean ignoreIfParentAbsent) throws Exception {
+		this(repo, IO.work, doc, ignoreIfParentAbsent);
+	}
+
+	private POM(MavenRepository repo, File base, Document doc, boolean ignoreIfParentAbsent) throws Exception {
 		this.repo = repo;
 		this.ignoreParentIfAbsent = ignoreIfParentAbsent;
 		xp = xpf.newXPath();
@@ -154,7 +176,7 @@ public class POM implements IPom {
 				throw new IllegalArgumentException("Invalid version for parent pom " + program + ":" + v);
 
 			File fp;
-			if (relativePath != null && !relativePath.isEmpty() && (fp = IO.getFile(relativePath)).isFile()) {
+			if (relativePath != null && !relativePath.isEmpty() && (fp = IO.getFile(base, relativePath)).isFile()) {
 				this.parent = new POM(repo, fp);
 			} else {
 				Revision revision = program.version(v);
@@ -207,7 +229,8 @@ public class POM implements IPom {
 		properties.put("pom.artifactId", artifact);
 		properties.put("pom.version", version);
 		if (parent.revision != null)
-			properties.put("parent.version", parent.getVersion().toString());
+			properties.put("parent.version", parent.getVersion()
+				.toString());
 		else
 			properties.put("parent.version", "parent version from " + revision + " but not parent?");
 		properties.put("version", version);
@@ -222,7 +245,7 @@ public class POM implements IPom {
 		}
 
 		NodeList dependencyManagement = (NodeList) xp.evaluate("project/dependencyManagement/dependencies/dependency",
-				doc, XPathConstants.NODESET);
+			doc, XPathConstants.NODESET);
 		for (int i = 0; i < dependencyManagement.getLength(); i++) {
 			Element dependency = (Element) dependencyManagement.item(i);
 			Dependency d = dependency(dependency);
@@ -249,7 +272,7 @@ public class POM implements IPom {
 		Program program = Program.valueOf(groupId, artifactId);
 		if (program == null)
 			throw new IllegalArgumentException(
-					"Invalid dependency in " + revision + " to " + groupId + ":" + artifactId);
+				"Invalid dependency in " + revision + " to " + groupId + ":" + artifactId);
 
 		d.program = program;
 		d.version = version;
@@ -309,7 +332,7 @@ public class POM implements IPom {
 	}
 
 	final static Pattern MACRO_P = Pattern.compile("\\$\\{(?<env>env\\.)?(?<key>[.a-z0-9$_-]+)\\}",
-			Pattern.CASE_INSENSITIVE);
+		Pattern.CASE_INSENSITIVE);
 
 	private String replaceMacros(String value) {
 		Matcher m = MACRO_P.matcher(value);
@@ -340,7 +363,10 @@ public class POM implements IPom {
 			StringBuilder sb = new StringBuilder("./*[");
 			String del = "name()=";
 			for (String name : names) {
-				sb.append(del).append('"').append(name).append('"');
+				sb.append(del)
+					.append('"')
+					.append(name)
+					.append('"');
 				del = " or name()=";
 			}
 			sb.append("]");
@@ -351,34 +377,35 @@ public class POM implements IPom {
 		for (int i = 0; i < childNodes.getLength(); i++) {
 			Node child = childNodes.item(i);
 			String key = child.getNodeName();
-			String value = child.getTextContent().trim();
+			String value = child.getTextContent()
+				.trim();
 			properties.put(prefix + key, value);
 		}
 	}
 
+	@Override
 	public Revision getRevision() {
 		return revision;
 	}
 
+	@Override
 	public String getPackaging() {
 		return packaging;
 	}
 
+	@Override
 	public Archive binaryArchive() {
-		return revision
-				.archive(
-						packaging == null || packaging.isEmpty() || packaging.equals("bundle")
-								|| packaging.equals("pom") || packaging.equals("eclipse-plugin") ? "jar" : packaging,
-						null);
+		return revision.archive(packaging == null || packaging.isEmpty() || packaging.equals("bundle")
+			|| packaging.equals("pom") || packaging.equals("eclipse-plugin") ? "jar" : packaging, null);
 	}
 
 	@Override
-	public Map<Program,Dependency> getDependencies(MavenScope scope, boolean transitive) throws Exception {
+	public Map<Program, Dependency> getDependencies(MavenScope scope, boolean transitive) throws Exception {
 		return getDependencies(EnumSet.of(scope), transitive);
 	}
 
-	public Map<Program,Dependency> getDependencies(EnumSet<MavenScope> scope, boolean transitive) throws Exception {
-		Map<Program,Dependency> deps = new LinkedHashMap<>();
+	public Map<Program, Dependency> getDependencies(EnumSet<MavenScope> scope, boolean transitive) throws Exception {
+		Map<Program, Dependency> deps = new LinkedHashMap<>();
 		Set<Program> visited = new HashSet<>();
 		getDependencies(deps, scope, transitive, visited);
 		return deps;
@@ -399,8 +426,8 @@ public class POM implements IPom {
 		}
 	}
 
-	private void getDependencies(Map<Program,Dependency> deps, EnumSet<MavenScope> scope, boolean transitive,
-			Set<Program> visited) throws Exception {
+	private void getDependencies(Map<Program, Dependency> deps, EnumSet<MavenScope> scope, boolean transitive,
+		Set<Program> visited) throws Exception {
 
 		if (revision == null)
 			return;
@@ -413,7 +440,7 @@ public class POM implements IPom {
 
 		List<Dependency> breadthFirst = new ArrayList<>();
 
-		for (Map.Entry<Program,Dependency> e : dependencies.entrySet()) {
+		for (Map.Entry<Program, Dependency> e : dependencies.entrySet()) {
 			Dependency d = e.getValue();
 
 			resolve(d);

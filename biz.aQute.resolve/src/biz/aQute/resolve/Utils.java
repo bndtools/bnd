@@ -24,7 +24,9 @@ public class Utils {
 		if (idCaps.size() > 1)
 			throw new IllegalArgumentException("Resource has more than one identity capability.");
 
-		Object versionObj = idCaps.get(0).getAttributes().get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+		Object versionObj = idCaps.get(0)
+			.getAttributes()
+			.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 		if (versionObj == null)
 			return Version.emptyVersion;
 
@@ -44,24 +46,25 @@ public class Utils {
 		public String	requirement;
 	}
 
-	public static Pattern	RESOLVE_MESSAGE_P		= Pattern.compile(							//
-			"(?:org.osgi.service.resolver.ResolutionException: )?"								//
-					+ "(?<msg>[^:]+): # prefix\n"												//
-					+ "(?<bsn>[^\\s]+)  # the bsn\n"											//
-					+ "(?<version>[^:]+): # version\n"											//
-					+ "missing requirement Require\\[ # upto the requirement\n"					//
-					+ "(?<ns>[^\\]]+)\\] # namespace\n"											//
-					+ "\\{(?<attrs>[^}]*)\\} # attrs\n"											//
-					+ "\\{(?<directives>[^}]*)\\} # dirs\n"										//
-					+ "(?<cause>\\[caused by:)?", Pattern.COMMENTS + Pattern.CASE_INSENSITIVE);
+	public static Pattern	RESOLVE_MESSAGE_P		= Pattern.compile(		//
+		"(?:org.osgi.service.resolver.ResolutionException: )?"				//
+			+ "(?<msg>[^:]+): # prefix\n"									//
+			+ "(?<bsn>[^\\s]+)  # the bsn\n"								//
+			+ "(?<version>[^:]+): # version\n"								//
+			+ "missing requirement Require\\[ # upto the requirement\n"		//
+			+ "(?<ns>[^\\]]+)\\] # namespace\n"								//
+			+ "\\{(?<attrs>[^}]*)\\} # attrs\n"								//
+			+ "\\{(?<directives>[^}]*)\\} # dirs\n"							//
+			+ "(?<cause>\\[caused by:)?",
+		Pattern.COMMENTS + Pattern.CASE_INSENSITIVE);
 
-	public static Pattern	RESOLVE_DIRECTIVES_P	= Pattern.compile(							//
-			"(?:^|.*,)filter=(?<filter>[^,]+)(?:$|,.*)",										//
-			Pattern.COMMENTS + Pattern.CASE_INSENSITIVE);
+	public static Pattern	RESOLVE_DIRECTIVES_P	= Pattern.compile(		//
+		"(?:^|.*,)filter=(?<filter>[^,]+)(?:$|,.*)",						//
+		Pattern.COMMENTS + Pattern.CASE_INSENSITIVE);
 
 	public static List<ResolveTrace> parseException(String message) {
 		Matcher m = RESOLVE_MESSAGE_P.matcher(message);
-		List<ResolveTrace> result = new ArrayList<Utils.ResolveTrace>();
+		List<ResolveTrace> result = new ArrayList<>();
 		while (m.lookingAt()) {
 			ResolveTrace rt = new ResolveTrace();
 			rt.bsn = m.group("bsn");

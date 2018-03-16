@@ -35,10 +35,12 @@ public class LineCollection implements Iterator<String>, Closeable {
 		next = reader.readLine();
 	}
 
+	@Override
 	public boolean hasNext() {
 		return next != null;
 	}
 
+	@Override
 	public String next() {
 		if (next == null)
 			throw new NoSuchElementException("Iterator has finished");
@@ -54,11 +56,13 @@ public class LineCollection implements Iterator<String>, Closeable {
 		}
 	}
 
+	@Override
 	public void remove() {
 		if (next == null)
 			throw new UnsupportedOperationException("Cannot remove");
 	}
 
+	@Override
 	public void close() throws IOException {
 		reader.close();
 	}

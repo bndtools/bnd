@@ -16,11 +16,11 @@ import aQute.lib.io.IO;
  */
 public class Maven {
 
-	final Map<String,MavenEntry>	entries		= new ConcurrentHashMap<String,MavenEntry>();
-	final static String[]			ALGORITHMS	= {
-														"md5", "sha1"
-													};
-	boolean							usecache	= false;
+	final Map<String, MavenEntry>	entries				= new ConcurrentHashMap<>();
+	final static String[]			ALGORITHMS			= {
+		"md5", "sha1"
+	};
+	boolean							usecache			= false;
 	final Executor					executor;
 	static final String				MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
 
@@ -33,7 +33,7 @@ public class Maven {
 			this.executor = executor;
 	}
 
-	// http://repo1.maven.org/maven2/junit/junit/maven-metadata.xml
+	// https://repo.maven.apache.org/maven2/junit/junit/maven-metadata.xml
 
 	static Pattern MAVEN_RANGE = Pattern.compile("(\\[|\\()(.+)(,(.+))(\\]|\\))");
 

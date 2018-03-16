@@ -15,14 +15,14 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.lib.io.IO;
 
-public class Instructions implements Map<Instruction,Attrs> {
-	private LinkedHashMap<Instruction,Attrs>	map;
+public class Instructions implements Map<Instruction, Attrs> {
+	private LinkedHashMap<Instruction, Attrs>	map;
 	public static Instructions					ALWAYS	= new Instructions();
-	static Map<Instruction,Attrs>				EMPTY	= Collections.emptyMap();
+	static Map<Instruction, Attrs>				EMPTY	= Collections.emptyMap();
 
 	public Instructions(Instructions other) {
 		if (other.map != null && !other.map.isEmpty()) {
-			map = new LinkedHashMap<Instruction,Attrs>(other.map);
+			map = new LinkedHashMap<>(other.map);
 		}
 	}
 
@@ -43,6 +43,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 		this(new Parameters(h));
 	}
 
+	@Override
 	public void clear() {
 		map.clear();
 	}
@@ -54,6 +55,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return map.containsKey(name);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsKey(Object name) {
 		assert name instanceof Instruction;
@@ -70,6 +72,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return map.containsValue(value);
 	}
 
+	@Override
 	@Deprecated
 	public boolean containsValue(Object value) {
 		assert value instanceof Attrs;
@@ -79,13 +82,15 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return map.containsValue(value);
 	}
 
-	public Set<java.util.Map.Entry<Instruction,Attrs>> entrySet() {
+	@Override
+	public Set<java.util.Map.Entry<Instruction, Attrs>> entrySet() {
 		if (map == null)
 			return EMPTY.entrySet();
 
 		return map.entrySet();
 	}
 
+	@Override
 	@Deprecated
 	public Attrs get(Object key) {
 		assert key instanceof Instruction;
@@ -102,10 +107,12 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return map.get(key);
 	}
 
+	@Override
 	public boolean isEmpty() {
 		return map == null || map.isEmpty();
 	}
 
+	@Override
 	public Set<Instruction> keySet() {
 		if (map == null)
 			return EMPTY.keySet();
@@ -113,22 +120,25 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return map.keySet();
 	}
 
+	@Override
 	public Attrs put(Instruction key, Attrs value) {
 		if (map == null)
-			map = new LinkedHashMap<Instruction,Attrs>();
+			map = new LinkedHashMap<>();
 
 		return map.put(key, value);
 	}
 
-	public void putAll(Map< ? extends Instruction, ? extends Attrs> map) {
+	@Override
+	public void putAll(Map<? extends Instruction, ? extends Attrs> map) {
 		if (this.map == null) {
 			if (map.isEmpty())
 				return;
-			this.map = new LinkedHashMap<Instruction,Attrs>();
+			this.map = new LinkedHashMap<>();
 		}
 		this.map.putAll(map);
 	}
 
+	@Override
 	@Deprecated
 	public Attrs remove(Object var0) {
 		assert var0 instanceof Instruction;
@@ -144,12 +154,14 @@ public class Instructions implements Map<Instruction,Attrs> {
 		return map.remove(var0);
 	}
 
+	@Override
 	public int size() {
 		if (map == null)
 			return 0;
 		return map.size();
 	}
 
+	@Override
 	public Collection<Attrs> values() {
 		if (map == null)
 			return EMPTY.values();
@@ -163,7 +175,7 @@ public class Instructions implements Map<Instruction,Attrs> {
 	}
 
 	public void append(Parameters other) {
-		for (Map.Entry<String,Attrs> e : other.entrySet()) {
+		for (Map.Entry<String, Attrs> e : other.entrySet()) {
 			put(new Instruction(e.getKey()), e.getValue());
 		}
 	}
@@ -173,11 +185,11 @@ public class Instructions implements Map<Instruction,Attrs> {
 	}
 
 	public <T> Collection<T> select(Collection<T> set, Set<Instruction> unused, boolean emptyIsAll) {
-		List<T> input = new ArrayList<T>(set);
+		List<T> input = new ArrayList<>(set);
 		if (emptyIsAll && isEmpty())
 			return input;
 
-		List<T> result = new ArrayList<T>();
+		List<T> result = new ArrayList<>();
 
 		for (Instruction instruction : keySet()) {
 			boolean used = false;
@@ -198,8 +210,8 @@ public class Instructions implements Map<Instruction,Attrs> {
 	}
 
 	public <T> Collection<T> reject(Collection<T> set) {
-		List<T> input = new ArrayList<T>(set);
-		List<T> result = new ArrayList<T>();
+		List<T> input = new ArrayList<>(set);
+		List<T> result = new ArrayList<>();
 
 		for (Instruction instruction : keySet()) {
 			for (Iterator<T> o = input.iterator(); o.hasNext();) {
@@ -254,18 +266,22 @@ public class Instructions implements Map<Instruction,Attrs> {
 	 * @param base The directory to list files from.
 	 * @return The map that links files to attributes
 	 */
-	public Map<File,Attrs> select(File base) {
+	public Map<File, Attrs> select(File base) {
 
-		Map<File,Attrs> result = new HashMap<File,Attrs>();
+		Map<File, Attrs> result = new HashMap<>();
 
 		//
 		// We allow literals to be specified so that we can actually include
 		// files from anywhere in the file system
 		//
 
-		for (java.util.Map.Entry<Instruction,Attrs> instr : entrySet()) {
-			if (instr.getKey().isLiteral() && !instr.getKey().isNegated()) {
-				File f = IO.getFile(base, instr.getKey().getLiteral());
+		for (java.util.Map.Entry<Instruction, Attrs> instr : entrySet()) {
+			if (instr.getKey()
+				.isLiteral()
+				&& !instr.getKey()
+					.isNegated()) {
+				File f = IO.getFile(base, instr.getKey()
+					.getLiteral());
 				if (f.isFile())
 					result.put(f, instr.getValue());
 			}
@@ -277,10 +293,12 @@ public class Instructions implements Map<Instruction,Attrs> {
 
 		if (base != null) {
 			nextFile: for (File f : base.listFiles()) {
-				for (Entry<Instruction,Attrs> instr : entrySet()) {
+				for (Entry<Instruction, Attrs> instr : entrySet()) {
 					String name = f.getName();
-					if (instr.getKey().matches(name)) {
-						if (!instr.getKey().isNegated())
+					if (instr.getKey()
+						.matches(name)) {
+						if (!instr.getKey()
+							.isNegated())
 							result.put(f, instr.getValue());
 						continue nextFile;
 					}

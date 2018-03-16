@@ -67,7 +67,7 @@ public class BaselineCommands {
 	final Baseline				baseline;
 	final DiffPluginImpl		differ				= new DiffPluginImpl();
 	final Collection<String>	SKIP_HEADERS		= Arrays.asList(Constants.CREATED_BY, Constants.BND_LASTMODIFIED,
-			Constants.BUNDLE_MANIFESTVERSION, "Manifest-Version", Constants.TOOL);
+		Constants.BUNDLE_MANIFESTVERSION, "Manifest-Version", Constants.TOOL);
 
 	BaselineCommands(bnd bnd) throws IOException {
 		this.bnd = bnd;
@@ -76,7 +76,7 @@ public class BaselineCommands {
 
 	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice")
 	@Arguments(arg = {
-			"[newer jar]", "[older jar]"
+		"[newer jar]", "[older jar]"
 	})
 	interface baseLineOptions extends Options {
 		@Description("Output file with fixup info")
@@ -103,7 +103,7 @@ public class BaselineCommands {
 	 */
 
 	@Description("Compare a newer bundle to a baselined bundle and provide versioning advice. If no parameters are given, and there "
-			+ "is a local project, then we use the projects current build and the baseline jar in the release repo.")
+		+ "is a local project, then we use the projects current build and the baseline jar in the release repo.")
 	public void _baseline(baseLineOptions opts) throws Exception {
 
 		List<String> args = opts._arguments();
@@ -128,7 +128,7 @@ public class BaselineCommands {
 							try (Jar newer = pb.build()) {
 								differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
 								baseline(opts, newer, older,
-										opts.packages() != null ? new Instructions(opts.packages()) : null);
+									opts.packages() != null ? new Instructions(opts.packages()) : null);
 								bnd.getInfo(b);
 							}
 						}
@@ -156,7 +156,7 @@ public class BaselineCommands {
 	}
 
 	private void baseline(baseLineOptions opts, Jar newer, Jar older, Instructions packages)
-			throws FileNotFoundException, UnsupportedEncodingException, IOException, Exception {
+		throws FileNotFoundException, UnsupportedEncodingException, IOException, Exception {
 		PrintStream out = null;
 
 		if (opts.fixup() != null) {
@@ -168,6 +168,7 @@ public class BaselineCommands {
 
 		Info[] sorted = infos.toArray(new Info[0]);
 		Arrays.sort(sorted, new Comparator<Info>() {
+			@Override
 			public int compare(Info o1, Info o2) {
 				return o1.packageName.compareTo(o2.packageName);
 			}
@@ -175,7 +176,7 @@ public class BaselineCommands {
 
 		if (!opts.quiet()) {
 			bnd.out.printf("===============================================================%n%s %s %s-%s",
-					bundleInfo.mismatch ? '*' : ' ', bundleInfo.bsn, newer.getVersion(), older.getVersion());
+				bundleInfo.mismatch ? '*' : ' ', bundleInfo.bsn, newer.getVersion(), older.getVersion());
 			if (bundleInfo.mismatch && bundleInfo.suggestedVersion != null)
 				bnd.out.printf(" suggests %s", bundleInfo.suggestedVersion);
 
@@ -186,18 +187,17 @@ public class BaselineCommands {
 				if (info.packageDiff.getDelta() != Delta.UNCHANGED || opts.all()) {
 					if (!hadHeader) {
 						bnd.out.printf("  %-50s %-10s %-10s %-10s %-10s %-10s%n", "Package", "Delta", "New", "Old",
-								"Suggest", "If Prov.");
+							"Suggest", "If Prov.");
 						hadHeader = true;
 					}
 					bnd.out.printf("%s %-50s %-10s %-10s %-10s %-10s %-10s%n", info.mismatch ? '*' : ' ',
-							info.packageName, //
-							info.packageDiff.getDelta(), //
-							info.newerVersion, //
-							info.olderVersion != null && info.olderVersion.equals(Version.LOWEST) ? "-"
-									: info.olderVersion, //
-							info.suggestedVersion != null && info.suggestedVersion.compareTo(info.newerVersion) <= 0
-									? "ok" : info.suggestedVersion, //
-							info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
+						info.packageName, //
+						info.packageDiff.getDelta(), //
+						info.newerVersion, //
+						info.olderVersion != null && info.olderVersion.equals(Version.LOWEST) ? "-" : info.olderVersion, //
+						info.suggestedVersion != null && info.suggestedVersion.compareTo(info.newerVersion) <= 0 ? "ok"
+							: info.suggestedVersion, //
+						info.suggestedIfProviders == null ? "-" : info.suggestedIfProviders);
 
 					if (info.packageDiff.getDelta() != Delta.UNCHANGED && opts.verbose()) {
 						doPackageDiff(info.packageDiff);
@@ -213,8 +213,10 @@ public class BaselineCommands {
 			if (manifest == null)
 				manifest = new Manifest();
 
-			for (Map.Entry<Object,Object> e : manifest.getMainAttributes().entrySet()) {
-				String key = e.getKey().toString();
+			for (Map.Entry<Object, Object> e : manifest.getMainAttributes()
+				.entrySet()) {
+				String key = e.getKey()
+					.toString();
 
 				if (!SKIP_HEADERS.contains(key)) {
 					if (!Constants.EXPORT_PACKAGE.equals(key)) {
@@ -248,7 +250,7 @@ public class BaselineCommands {
 		String type = String.valueOf(diff.getType());
 
 		String output = String.format("%s%-5s %-10s %s", sb, getShortDelta(diff.getDelta()), type.toLowerCase(),
-				diff.getName());
+			diff.getName());
 
 		bnd.out.println(output);
 
@@ -311,6 +313,7 @@ public class BaselineCommands {
 		public Tree		tree;
 		public Attrs	uses	= new Attrs();
 
+		@Override
 		public int compareTo(PSpec o) {
 			return version.compareTo(o.version);
 		}
@@ -331,7 +334,7 @@ public class BaselineCommands {
 	 * @throws Exception
 	 */
 	public void _schema(schemaOptions opts) throws Exception {
-		MultiMap<String,PSpec> map = new MultiMap<String,PSpec>();
+		MultiMap<String, PSpec> map = new MultiMap<>();
 
 		Tag top = new Tag("jschema");
 		int n = 1000;
@@ -358,14 +361,16 @@ public class BaselineCommands {
 				specTag.addAttribute("id", n);
 				specTag.addContent(main.getValue(Constants.BUNDLE_DESCRIPTION));
 
-				Parameters exports = OSGiHeader.parseHeader(m.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
+				Parameters exports = OSGiHeader.parseHeader(m.getMainAttributes()
+					.getValue(Constants.EXPORT_PACKAGE));
 
 				// Create a map with versions. Ensure import ranges overwrite
 				// the
 				// exported versions
 				Parameters versions = new Parameters();
 				versions.putAll(exports);
-				versions.putAll(OSGiHeader.parseHeader(m.getMainAttributes().getValue(Constants.IMPORT_PACKAGE)));
+				versions.putAll(OSGiHeader.parseHeader(m.getMainAttributes()
+					.getValue(Constants.IMPORT_PACKAGE)));
 
 				Analyzer analyzer = new Analyzer();
 				analyzer.setJar(jar);
@@ -373,7 +378,7 @@ public class BaselineCommands {
 
 				Tree tree = differ.tree(analyzer);
 
-				for (Entry<String,Attrs> entry : exports.entrySet()) {
+				for (Entry<String, Attrs> entry : exports.entrySet()) {
 
 					// For each exported package in the specification JAR
 
@@ -390,7 +395,8 @@ public class BaselineCommands {
 					pspec.attrs = attrs;
 					pspec.tree = tree;
 
-					Collection<PackageRef> uses = analyzer.getUses().get(packageRef);
+					Collection<PackageRef> uses = analyzer.getUses()
+						.get(packageRef);
 					if (uses != null) {
 						for (PackageRef x : uses) {
 							if (x.isJava())
@@ -402,7 +408,8 @@ public class BaselineCommands {
 								continue;
 							String v = null;
 							if (versions.containsKey(imp))
-								v = versions.get(imp).get(Constants.VERSION_ATTRIBUTE);
+								v = versions.get(imp)
+									.get(Constants.VERSION_ATTRIBUTE);
 							pspec.uses.put(imp, v);
 						}
 					}
@@ -417,7 +424,7 @@ public class BaselineCommands {
 		// Next phase is generating the XML. Sorting the packages is
 		// important because XSLT is brain dead.
 
-		SortedList<String> names = new SortedList<String>(map.keySet());
+		SortedList<String> names = new SortedList<>(map.keySet());
 
 		Tag packagesTag = new Tag(top, "packages");
 		Tag baselineTag = new Tag(top, "baseline");
@@ -426,7 +433,7 @@ public class BaselineCommands {
 
 			// For each distinct package name
 
-			SortedList<PSpec> specs = new SortedList<PSpec>(map.get(pname));
+			SortedList<PSpec> specs = new SortedList<>(map.get(pname));
 
 			PSpec older = null;
 			Parameters olderExport = null;
@@ -450,7 +457,7 @@ public class BaselineCommands {
 					logger.debug(" newer={} older={}", newerExport, olderExport);
 
 					Set<Info> infos = baseline.baseline(newer.tree, newerExport, older.tree, olderExport,
-							new Instructions(pname));
+						new Instructions(pname));
 
 					for (Info info : infos) {
 						Tag tag = getTag(info);
@@ -468,7 +475,7 @@ public class BaselineCommands {
 				// XRef, show the used packages for this package
 				//
 
-				for (Entry<String,String> uses : newer.uses.entrySet()) {
+				for (Entry<String, String> uses : newer.uses.entrySet()) {
 					Tag reference = new Tag(pack, "import");
 					reference.addAttribute("name", uses.getKey());
 					reference.addAttribute("version", uses.getValue());
@@ -489,7 +496,9 @@ public class BaselineCommands {
 		}
 
 		if (opts.xsl() != null) {
-			URL home = bnd.getBase().toURI().toURL();
+			URL home = bnd.getBase()
+				.toURI()
+				.toURL();
 			URL xslt = new URL(home, opts.xsl());
 			String path = of.getAbsolutePath();
 			if (path.endsWith(".xml"))
@@ -519,7 +528,8 @@ public class BaselineCommands {
 			tag.addAttribute("equals", "true");
 		else {
 			traverseTag(sb, info.packageDiff, "");
-			String s = sb.toString().trim();
+			String s = sb.toString()
+				.trim();
 			if (s.length() != 0) {
 				Tag d = new Tag(tag, "diff", s);
 				d.setCDATA();
@@ -535,7 +545,9 @@ public class BaselineCommands {
 
 	private void traverseTag(StringBuilder sb, Diff diff, String indent) {
 		sb.append(indent);
-		sb.append(diff.toString().trim().replace('\n', ' '));
+		sb.append(diff.toString()
+			.trim()
+			.replace('\n', ' '));
 		sb.append("\n");
 		if (diff.getDelta() == Delta.ADDED || diff.getDelta() == Delta.REMOVED)
 			return;
@@ -560,8 +572,9 @@ public class BaselineCommands {
 			out.printf("\\\n  ");
 			out.append(info.packageName);
 			info.attributes.put(Constants.VERSION_ATTRIBUTE, info.suggestedVersion.toString());
-			for (Map.Entry<String,String> clause : info.attributes.entrySet()) {
-				if (clause.getKey().equals(Constants.USES_DIRECTIVE))
+			for (Map.Entry<String, String> clause : info.attributes.entrySet()) {
+				if (clause.getKey()
+					.equals(Constants.USES_DIRECTIVE))
 					continue;
 
 				out.append(";\\\n    ");

@@ -30,13 +30,14 @@ import aQute.bnd.osgi.resource.ResourceUtils;
  * WARNING ! Not tested
  */
 public abstract class BaseRepository implements Repository {
-	private static final RequirementExpression[]	EMPTY	= new RequirementExpression[0];
+	private static final RequirementExpression[]	EMPTY			= new RequirementExpression[0];
 	static IdentityExpression						all;
-	private final PromiseFactory					promiseFactory	= new PromiseFactory(PromiseFactory.inlineExecutor());
+	private final PromiseFactory					promiseFactory	= new PromiseFactory(
+		PromiseFactory.inlineExecutor());
 
 	static {
 		aQute.bnd.osgi.resource.RequirementBuilder rb = new aQute.bnd.osgi.resource.RequirementBuilder(
-				IdentityNamespace.IDENTITY_NAMESPACE);
+			IdentityNamespace.IDENTITY_NAMESPACE);
 		rb.addFilter("(" + IdentityNamespace.IDENTITY_NAMESPACE + "=*)");
 		final Requirement requireAll = rb.synthetic();
 		all = new IdentityExpression() {
@@ -59,8 +60,8 @@ public abstract class BaseRepository implements Repository {
 
 	private void dispatch(RequirementExpression expression, Set<Resource> providers) {
 		if (expression instanceof IdentityExpression) {
-			Map<Requirement,Collection<Capability>> capabilities = findProviders(
-					Collections.singleton(((IdentityExpression) expression).getRequirement()));
+			Map<Requirement, Collection<Capability>> capabilities = findProviders(
+				Collections.singleton(((IdentityExpression) expression).getRequirement()));
 			for (Collection<Capability> caps : capabilities.values()) {
 				for (Capability c : caps)
 					providers.add(c.getResource());
@@ -70,7 +71,7 @@ public abstract class BaseRepository implements Repository {
 				dispatch(re, providers);
 		} else if (expression instanceof AndExpression) {
 			List<RequirementExpression> requirementExpressions = ((AndExpression) expression)
-					.getRequirementExpressions();
+				.getRequirementExpressions();
 
 			if (requirementExpressions.isEmpty())
 				return;
@@ -148,7 +149,7 @@ public abstract class BaseRepository implements Repository {
 
 			@Override
 			public OrExpression or(RequirementExpression expr1, RequirementExpression expr2,
-					RequirementExpression... moreExprs) {
+				RequirementExpression... moreExprs) {
 				final List<RequirementExpression> exprs = combine(expr1, expr2, moreExprs);
 				return new OrExpression() {
 
@@ -160,13 +161,12 @@ public abstract class BaseRepository implements Repository {
 			}
 
 			List<RequirementExpression> combine(RequirementExpression expr1, RequirementExpression expr2,
-					RequirementExpression... moreExprs) {
+				RequirementExpression... moreExprs) {
 				List<RequirementExpression> exprs = new ArrayList<>();
 				exprs = new ArrayList<>();
 				exprs.add(expr1);
 				exprs.add(expr2);
-				for (int i = 0; i < moreExprs.length; i++)
-					exprs.add(moreExprs[i]);
+				Collections.addAll(exprs, moreExprs);
 
 				return Collections.unmodifiableList(exprs);
 			}
@@ -200,7 +200,7 @@ public abstract class BaseRepository implements Repository {
 
 			@Override
 			public AndExpression and(RequirementExpression expr1, RequirementExpression expr2,
-					RequirementExpression... moreExprs) {
+				RequirementExpression... moreExprs) {
 
 				final List<RequirementExpression> exprs = combine(expr1, expr2, moreExprs);
 
@@ -233,13 +233,13 @@ public abstract class BaseRepository implements Repository {
 			}
 
 			@Override
-			public RequirementBuilder setDirectives(Map<String,String> directives) {
+			public RequirementBuilder setDirectives(Map<String, String> directives) {
 				rb.addDirectives(directives);
 				return this;
 			}
 
 			@Override
-			public RequirementBuilder setAttributes(Map<String,Object> attributes) {
+			public RequirementBuilder setAttributes(Map<String, Object> attributes) {
 				try {
 					rb.addAttributes(attributes);
 				} catch (Exception e) {
@@ -263,6 +263,8 @@ public abstract class BaseRepository implements Repository {
 
 			@Override
 			public Requirement build() {
+				if (rb.getResource() == null)
+					return rb.buildSyntheticRequirement();
 				return rb.build();
 			}
 

@@ -105,16 +105,18 @@ public class ClassReferenceTest extends TestCase {
 		Jar jar = builder.build();
 		assertTrue(builder.check());
 		JAVA highestEE = builder.getHighestEE();
-		Map<String,Set<String>> profiles = highestEE.getProfiles();
+		Map<String, Set<String>> profiles = highestEE.getProfiles();
 		if (profiles != null) {
 			System.out.println("profiles" + profiles);
-			jar.getManifest().write(System.out);
+			jar.getManifest()
+				.write(System.out);
 		}
 
 		assertTrue(builder.check());
 		Manifest manifest = jar.getManifest();
-		String imports = manifest.getMainAttributes().getValue("Import-Package");
-		assertTrue("Package " + p + "contains swing ref ", imports.indexOf("javax.swing") >= 0);
-		assertFalse("Package " + p + "should not contain ClassRef", imports.indexOf("ClassRef") >= 0);
+		String imports = manifest.getMainAttributes()
+			.getValue("Import-Package");
+		assertTrue("Package " + p + "contains swing ref ", imports.contains("javax.swing"));
+		assertFalse("Package " + p + "should not contain ClassRef", imports.contains("ClassRef"));
 	}
 }

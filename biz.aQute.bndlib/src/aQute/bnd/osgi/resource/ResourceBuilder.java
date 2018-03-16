@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
+import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
@@ -44,12 +45,12 @@ public class ResourceBuilder {
 
 	private final static String		BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
 	private final static String		JAR_MIME_TYPE		= "application/java-archive";
-	private final ResourceImpl		resource		= new ResourceImpl();
-	private final List<Capability>	capabilities	= new LinkedList<Capability>();
-	private final List<Requirement>	requirements	= new LinkedList<Requirement>();
-	private ReporterAdapter			reporter		= new ReporterAdapter();
+	private final ResourceImpl		resource			= new ResourceImpl();
+	private final List<Capability>	capabilities		= new LinkedList<>();
+	private final List<Requirement>	requirements		= new LinkedList<>();
+	private ReporterAdapter			reporter			= new ReporterAdapter();
 
-	private boolean built = false;
+	private boolean					built				= false;
 
 	public ResourceBuilder(Resource source) throws Exception {
 		addCapabilities(source.getCapabilities(null));
@@ -64,6 +65,9 @@ public class ResourceBuilder {
 	}
 
 	public ResourceBuilder addCapability(CapReqBuilder builder) {
+		if (builder == null)
+			return this;
+
 		if (built)
 			throw new IllegalStateException("Resource already built");
 
@@ -72,8 +76,13 @@ public class ResourceBuilder {
 		return this;
 	}
 
-	public Capability addCapability0(CapReqBuilder builder) {
-		Capability cap = builder.setResource(resource).buildCapability();
+	private Capability addCapability0(CapReqBuilder builder) {
+		Capability cap = builder.setResource(resource)
+			.buildCapability();
+		int i = capabilities.indexOf(cap);
+		if (i >= 0) {
+			return capabilities.get(i);
+		}
 		capabilities.add(cap);
 		return cap;
 	}
@@ -93,10 +102,20 @@ public class ResourceBuilder {
 		if (built)
 			throw new IllegalStateException("Resource already built");
 
-		Requirement req = builder.setResource(resource).buildRequirement();
-		requirements.add(req);
+		addRequirement0(builder);
 
 		return this;
+	}
+
+	private Requirement addRequirement0(CapReqBuilder builder) {
+		Requirement req = builder.setResource(resource)
+			.buildRequirement();
+		int i = requirements.indexOf(req);
+		if (i >= 0) {
+			return requirements.get(i);
+		}
+		requirements.add(req);
+		return req;
 	}
 
 	public Resource build() {
@@ -113,6 +132,10 @@ public class ResourceBuilder {
 		return capabilities;
 	}
 
+	public List<Requirement> getRequirements() {
+		return requirements;
+	}
+
 	/**
 	 * Parse the manifest and turn them into requirements & capabilities
 	 * 
@@ -127,14 +150,15 @@ public class ResourceBuilder {
 
 		int bundleManifestVersion = Integer.parseInt(manifest.get(Constants.BUNDLE_MANIFESTVERSION, "1"));
 
-		Entry<String,Attrs> bsn = manifest.getBundleSymbolicName();
+		Entry<String, Attrs> bsn = manifest.getBundleSymbolicName();
 
 		if (bsn == null) {
 			reporter.warning("No BSN set, not a bundle");
 			return false;
 		}
 
-		boolean singleton = "true".equals(bsn.getValue().get(Constants.SINGLETON_DIRECTIVE + ":"));
+		boolean singleton = "true".equals(bsn.getValue()
+			.get(Constants.SINGLETON_DIRECTIVE + ":"));
 		boolean fragment = manifest.getFragmentHost() != null;
 
 		String versionString = manifest.getBundleVersion();
@@ -151,7 +175,7 @@ public class ResourceBuilder {
 		CapReqBuilder identity = new CapReqBuilder(resource, IdentityNamespace.IDENTITY_NAMESPACE);
 		identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, bsn.getKey());
 		identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE,
-				fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
+			fragment ? IdentityNamespace.TYPE_FRAGMENT : IdentityNamespace.TYPE_BUNDLE);
 		identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
 
 		if (singleton) {
@@ -188,7 +212,7 @@ public class ResourceBuilder {
 			CapReqBuilder provideBundle = new CapReqBuilder(resource, BundleNamespace.BUNDLE_NAMESPACE);
 			provideBundle.addAttributesOrDirectives(bsn.getValue());
 			provideBundle.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, bsn.getKey());
-			provideBundle.addAttribute(BundleNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+			provideBundle.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
 			addCapability(provideBundle.buildCapability());
 		}
 
@@ -199,7 +223,6 @@ public class ResourceBuilder {
 		@SuppressWarnings("deprecation")
 		Parameters importServices = OSGiHeader.parseHeader(manifest.get(Constants.IMPORT_SERVICE));
 		addImportServices(importServices);
-
 
 		@SuppressWarnings("deprecation")
 		Parameters exportServices = OSGiHeader.parseHeader(manifest.get(Constants.EXPORT_SERVICE));
@@ -217,10 +240,9 @@ public class ResourceBuilder {
 		//
 
 		if (fragment) {
-			Entry<String,Attrs> fragmentHost = manifest.getFragmentHost();
+			Entry<String, Attrs> fragmentHost = manifest.getFragmentHost();
 			addFragmentHost(fragmentHost.getKey(), fragmentHost.getValue());
-		}
-		else {
+		} else {
 			addFragmentHostCap(bsn.getKey(), version);
 		}
 
@@ -260,7 +282,7 @@ public class ResourceBuilder {
 	}
 
 	public void addExportServices(Parameters exportServices) throws Exception {
-		for (Map.Entry<String,Attrs> e : exportServices.entrySet()) {
+		for (Map.Entry<String, Attrs> e : exportServices.entrySet()) {
 			String service = Processor.removeDuplicateMarker(e.getKey());
 			CapabilityBuilder cb = new CapabilityBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 
@@ -271,21 +293,27 @@ public class ResourceBuilder {
 	}
 
 	public void addImportServices(Parameters importServices) {
-		for (Map.Entry<String,Attrs> e : importServices.entrySet()) {
+		for (Map.Entry<String, Attrs> e : importServices.entrySet()) {
 			String service = Processor.removeDuplicateMarker(e.getKey());
-			boolean optional = Constants.RESOLUTION_OPTIONAL.equals(e.getValue().get("availability:"));
-			boolean multiple = "true".equalsIgnoreCase(e.getValue().get("multiple:"));
+			boolean optional = Constants.RESOLUTION_OPTIONAL.equals(e.getValue()
+				.get("availability:"));
+			boolean multiple = "true".equalsIgnoreCase(e.getValue()
+				.get("multiple:"));
 
 			StringBuilder filter = new StringBuilder();
-			filter.append('(').append(Constants.OBJECTCLASS).append('=').append(service).append(')');
+			filter.append('(')
+				.append(Constants.OBJECTCLASS)
+				.append('=')
+				.append(service)
+				.append(')');
 			RequirementBuilder rb = new RequirementBuilder(ServiceNamespace.SERVICE_NAMESPACE);
 			rb.addFilter(filter.toString());
 			rb.addDirective("effective", "active");
 			if (optional)
-				rb.addDirective(ServiceNamespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
+				rb.addDirective(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE, Constants.RESOLUTION_OPTIONAL);
 
-			rb.addDirective(ServiceNamespace.REQUIREMENT_CARDINALITY_DIRECTIVE,
-					multiple ? ServiceNamespace.CARDINALITY_MULTIPLE : ServiceNamespace.CARDINALITY_SINGLE);
+			rb.addDirective(Namespace.REQUIREMENT_CARDINALITY_DIRECTIVE,
+				multiple ? Namespace.CARDINALITY_MULTIPLE : Namespace.CARDINALITY_SINGLE);
 
 			addRequirement(rb);
 		}
@@ -307,13 +335,13 @@ public class ResourceBuilder {
 			return null;
 
 		boolean optional = false;
-		List<String> options = new LinkedList<String>();
+		List<String> options = new LinkedList<>();
 
 		RequirementBuilder rb = new RequirementBuilder(NativeNamespace.NATIVE_NAMESPACE);
 		FilterBuilder sb = new FilterBuilder();
 		sb.or();
 
-		for (Entry<String,Attrs> entry : bundleNative.entrySet()) {
+		for (Entry<String, Attrs> entry : bundleNative.entrySet()) {
 
 			String name = Processor.removeDuplicateMarker(entry.getKey());
 			if ("*".equals(name)) {
@@ -343,8 +371,10 @@ public class ResourceBuilder {
 			 */
 			doOr(sb, "language", NativeNamespace.CAPABILITY_LANGUAGE_ATTRIBUTE, entry.getValue());
 
-			for (String key : entry.getValue().keySet()) {
-				Object value = entry.getValue().getTyped(key);
+			for (String key : entry.getValue()
+				.keySet()) {
+				Object value = entry.getValue()
+					.getTyped(key);
 				key = Processor.removeDuplicateMarker(key);
 
 				switch (key) {
@@ -413,7 +443,7 @@ public class ResourceBuilder {
 	 */
 
 	public void addRequireBundles(Parameters requireBundle) throws Exception {
-		for (Entry<String,Attrs> clause : requireBundle.entrySet()) {
+		for (Entry<String, Attrs> clause : requireBundle.entrySet()) {
 			addRequireBundle(Processor.removeDuplicateMarker(clause.getKey()), clause.getValue());
 		}
 	}
@@ -429,9 +459,13 @@ public class ResourceBuilder {
 		rbb.addDirectives(attrs);
 
 		StringBuilder filter = new StringBuilder();
-		filter.append("(").append(BundleNamespace.BUNDLE_NAMESPACE).append("=").append(bsn).append(")");
+		filter.append("(")
+			.append(BundleNamespace.BUNDLE_NAMESPACE)
+			.append("=")
+			.append(bsn)
+			.append(")");
 
-		String v = attrs.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+		String v = attrs.get(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 		if (v != null && VersionRange.isOSGiVersionRange(v)) {
 			VersionRange range = VersionRange.parseOSGiVersionRange(v);
 			filter.insert(0, "(&");
@@ -445,14 +479,15 @@ public class ResourceBuilder {
 	}
 
 	Object toBundleVersionFilter(VersionRange range) {
-		return range.toFilter().replaceAll(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE,
-				HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+		return range.toFilter()
+			.replaceAll(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE,
+				AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 	}
 
 	void addFragmentHostCap(String bsn, aQute.bnd.version.Version version) throws Exception {
 		CapReqBuilder rbb = new CapReqBuilder(resource, HostNamespace.HOST_NAMESPACE);
 		rbb.addAttribute(HostNamespace.HOST_NAMESPACE, bsn);
-		rbb.addAttribute(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
+		rbb.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, version);
 		addCapability(rbb.buildCapability());
 	}
 
@@ -461,13 +496,17 @@ public class ResourceBuilder {
 		rbb.addDirectives(attrs);
 
 		StringBuilder filter = new StringBuilder();
-		filter.append("(").append(HostNamespace.HOST_NAMESPACE).append("=").append(bsn).append(")");
+		filter.append("(")
+			.append(HostNamespace.HOST_NAMESPACE)
+			.append("=")
+			.append(bsn)
+			.append(")");
 
-		String v = attrs.get(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
+		String v = attrs.get(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 		if (v != null && VersionRange.isOSGiVersionRange(v)) {
 			VersionRange range = VersionRange.parseOSGiVersionRange(v);
 			filter.insert(0, "(&");
-			filter.append(range.toFilter(HostNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
+			filter.append(range.toFilter(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE));
 			filter.append(")");
 		}
 		rbb.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString());
@@ -476,7 +515,7 @@ public class ResourceBuilder {
 	}
 
 	public void addRequireCapabilities(Parameters required) throws Exception {
-		for (Entry<String,Attrs> clause : required.entrySet()) {
+		for (Entry<String, Attrs> clause : required.entrySet()) {
 			String namespace = Processor.removeDuplicateMarker(clause.getKey());
 			addRequireCapability(namespace, Processor.removeDuplicateMarker(clause.getKey()), clause.getValue());
 		}
@@ -490,7 +529,7 @@ public class ResourceBuilder {
 
 	public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
 		List<Capability> added = new ArrayList<>();
-		for (Entry<String,Attrs> clause : capabilities.entrySet()) {
+		for (Entry<String, Attrs> clause : capabilities.entrySet()) {
 			String namespace = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
 
@@ -554,7 +593,7 @@ public class ResourceBuilder {
 	 * @throws Exception
 	 */
 	public void addImportPackages(Parameters imports) throws Exception {
-		for (Entry<String,Attrs> clause : imports.entrySet()) {
+		for (Entry<String, Attrs> clause : imports.entrySet()) {
 			String pname = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
 
@@ -577,7 +616,7 @@ public class ResourceBuilder {
 	public void addExecutionEnvironment(EE ee) throws Exception {
 
 		CapReqBuilder builder = new CapReqBuilder(resource,
-				ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
+			ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE);
 		builder.addAttribute(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, ee.getCapabilityName());
 		builder.addAttribute(ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE, ee.getCapabilityVersion());
 		addCapability(builder);
@@ -633,14 +672,14 @@ public class ResourceBuilder {
 		if (filter == null || capabilities.isEmpty())
 			return Collections.emptyList();
 
-		List<Capability> capabilities = new ArrayList<Capability>();
+		List<Capability> capabilities = new ArrayList<>();
 		Filter f = new Filter(filter);
 
 		for (Capability c : getCapabilities()) {
 			if (ns != null && !ns.equals(c.getNamespace()))
 				continue;
 
-			Map<String,Object> attributes = c.getAttributes();
+			Map<String, Object> attributes = c.getAttributes();
 			if (attributes != null) {
 				if (f.matchMap(attributes))
 					capabilities.add(c);
@@ -649,8 +688,8 @@ public class ResourceBuilder {
 		return capabilities;
 	}
 
-	public Map<Capability,Capability> from(Resource bundle) throws Exception {
-		Map<Capability,Capability> mapping = new HashMap<Capability,Capability>();
+	public Map<Capability, Capability> from(Resource bundle) throws Exception {
+		Map<Capability, Capability> mapping = new HashMap<>();
 
 		addRequirements(bundle.getRequirements(null));
 
@@ -692,8 +731,213 @@ public class ResourceBuilder {
 		else
 			mime = JAR_MIME_TYPE;
 
-		String sha256 = SHA256.digest(file).asHex();
+		String sha256 = SHA256.digest(file)
+			.asHex();
 		addContentCapability(uri, sha256, file.length(), mime);
 		return hasIdentity;
 	}
+
+	public ResourceBuilder safeResourceBuilder() {
+		return new SafeResourceBuilder();
+	}
+
+	private class SafeResourceBuilder extends ResourceBuilder {
+
+		@Override
+		public Resource build() {
+			return null;
+		}
+
+		@Override
+		public ResourceBuilder addCapability(Capability capability) throws Exception {
+			return ResourceBuilder.this.addCapability(capability);
+		}
+
+		@Override
+		public ResourceBuilder addCapability(CapReqBuilder builder) {
+			return ResourceBuilder.this.addCapability(builder);
+		}
+
+		@Override
+		public int hashCode() {
+			return ResourceBuilder.this.hashCode();
+		}
+
+		@Override
+		public ResourceBuilder addRequirement(Requirement requirement) throws Exception {
+			return ResourceBuilder.this.addRequirement(requirement);
+		}
+
+		@Override
+		public ResourceBuilder addRequirement(CapReqBuilder builder) {
+			return ResourceBuilder.this.addRequirement(builder);
+		}
+
+		@Override
+		public List<Capability> getCapabilities() {
+			return Collections.unmodifiableList(ResourceBuilder.this.getCapabilities());
+		}
+
+		@Override
+		public List<Requirement> getRequirements() {
+			return Collections.unmodifiableList(ResourceBuilder.this.getRequirements());
+		}
+
+		@Override
+		public boolean addManifest(Domain manifest) throws Exception {
+			return false;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			return ResourceBuilder.this.equals(obj);
+		}
+
+		@Override
+		public void addExportServices(Parameters exportServices) throws Exception {
+			ResourceBuilder.this.addExportServices(exportServices);
+		}
+
+		@Override
+		public void addImportServices(Parameters importServices) {
+			ResourceBuilder.this.addImportServices(importServices);
+		}
+
+		@Override
+		public RequirementBuilder getNativeCode(String header) throws Exception {
+			return ResourceBuilder.this.getNativeCode(header);
+		}
+
+		@Override
+		public String toString() {
+			return ResourceBuilder.this.toString();
+		}
+
+		@Override
+		public void addRequireBundles(Parameters requireBundle) throws Exception {
+			ResourceBuilder.this.addRequireBundles(requireBundle);
+		}
+
+		@Override
+		public void addRequireBundle(String bsn, VersionRange range) throws Exception {
+			ResourceBuilder.this.addRequireBundle(bsn, range);
+		}
+
+		@Override
+		public void addRequireBundle(String bsn, Attrs attrs) throws Exception {
+			ResourceBuilder.this.addRequireBundle(bsn, attrs);
+		}
+
+		@Override
+		public void addFragmentHost(String bsn, Attrs attrs) throws Exception {
+			ResourceBuilder.this.addFragmentHost(bsn, attrs);
+		}
+
+		@Override
+		public void addRequireCapabilities(Parameters required) throws Exception {
+			ResourceBuilder.this.addRequireCapabilities(required);
+		}
+
+		@Override
+		public void addRequireCapability(String namespace, String name, Attrs attrs) throws Exception {
+			ResourceBuilder.this.addRequireCapability(namespace, name, attrs);
+		}
+
+		@Override
+		public List<Capability> addProvideCapabilities(Parameters capabilities) throws Exception {
+			return ResourceBuilder.this.addProvideCapabilities(capabilities);
+		}
+
+		@Override
+		public List<Capability> addProvideCapabilities(String clauses) throws Exception {
+			return ResourceBuilder.this.addProvideCapabilities(clauses);
+		}
+
+		@Override
+		public Capability addProvideCapability(String namespace, Attrs attrs) throws Exception {
+			return ResourceBuilder.this.addProvideCapability(namespace, attrs);
+		}
+
+		@Override
+		public void addExportPackages(Parameters exports) throws Exception {
+			ResourceBuilder.this.addExportPackages(exports);
+		}
+
+		@Override
+		public void addEE(EE ee) throws Exception {
+			ResourceBuilder.this.addEE(ee);
+		}
+
+		@Override
+		public void addExportPackage(String packageName, Attrs attrs) throws Exception {
+			ResourceBuilder.this.addExportPackage(packageName, attrs);
+		}
+
+		@Override
+		public void addImportPackages(Parameters imports) throws Exception {
+			ResourceBuilder.this.addImportPackages(imports);
+		}
+
+		@Override
+		public Requirement addImportPackage(String pname, Attrs attrs) throws Exception {
+			return ResourceBuilder.this.addImportPackage(pname, attrs);
+		}
+
+		@Override
+		public void addExecutionEnvironment(EE ee) throws Exception {
+			ResourceBuilder.this.addExecutionEnvironment(ee);
+		}
+
+		@Override
+		public void addAllExecutionEnvironments(EE ee) throws Exception {
+			ResourceBuilder.this.addAllExecutionEnvironments(ee);
+		}
+
+		@Override
+		public void copyCapabilities(Set<String> ignoreNamespaces, Resource r) throws Exception {
+			ResourceBuilder.this.copyCapabilities(ignoreNamespaces, r);
+		}
+
+		@Override
+		public void addCapabilities(List<Capability> capabilities) throws Exception {
+			ResourceBuilder.this.addCapabilities(capabilities);
+		}
+
+		@Override
+		public void addRequirement(List<Requirement> requirements) throws Exception {
+			ResourceBuilder.this.addRequirement(requirements);
+		}
+
+		@Override
+		public void addRequirements(List<Requirement> requires) throws Exception {
+			ResourceBuilder.this.addRequirements(requires);
+		}
+
+		@Override
+		public List<Capability> findCapabilities(String ns, String filter) throws Exception {
+			return ResourceBuilder.this.findCapabilities(ns, filter);
+		}
+
+		@Override
+		public Map<Capability, Capability> from(Resource bundle) throws Exception {
+			return ResourceBuilder.this.from(bundle);
+		}
+
+		@Override
+		public Reporter getReporter() {
+			return ResourceBuilder.this.getReporter();
+		}
+
+		@Override
+		public void addContentCapability(URI uri, String sha256, long length, String mime) throws Exception {
+			ResourceBuilder.this.addContentCapability(uri, sha256, length, mime);
+		}
+
+		@Override
+		public boolean addFile(File file, URI uri) throws Exception {
+			return false;
+		}
+
+	}
+
 }

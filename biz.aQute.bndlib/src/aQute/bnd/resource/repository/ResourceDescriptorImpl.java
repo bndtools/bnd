@@ -9,12 +9,13 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 
 public class ResourceDescriptorImpl extends ResourceDescriptor implements Comparable<ResourceDescriptorImpl> {
 
-	public Set<String> repositories = new HashSet<String>();
+	public Set<String> repositories = new HashSet<>();
 
 	public ResourceDescriptorImpl() {}
 
 	public ResourceDescriptorImpl(ResourceDescriptor ref) throws IllegalAccessException {
-		for (Field f : ref.getClass().getFields()) {
+		for (Field f : ref.getClass()
+			.getFields()) {
 			f.set(this, f.get(ref));
 		}
 	}
@@ -38,6 +39,7 @@ public class ResourceDescriptorImpl extends ResourceDescriptor implements Compar
 		return true;
 	}
 
+	@Override
 	public int compareTo(ResourceDescriptorImpl var0) {
 		for (int i = 0; i < id.length; i++) {
 			if (i >= var0.id.length)
@@ -55,6 +57,7 @@ public class ResourceDescriptorImpl extends ResourceDescriptor implements Compar
 		return 0;
 	}
 
+	@Override
 	public String toString() {
 		return bsn + "-" + version;
 	}

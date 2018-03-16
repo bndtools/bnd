@@ -20,7 +20,8 @@ public class TestBndMain extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		version = About.CURRENT.getWithoutQualifier().toString();
+		version = About.CURRENT.getWithoutQualifier()
+			.toString();
 
 		capturedStdOut.reset();
 		originalStdOut = System.out;
@@ -40,7 +41,7 @@ public class TestBndMain extends TestCase {
 
 	public void testRunStandalone() throws Exception {
 		bnd.mainNoExit(new String[] {
-				"run", "testdata/standalone/standalone.bndrun"
+			"run", "testdata/standalone/standalone.bndrun"
 		});
 		expectNoError();
 		expectOutput("Gesundheit!");
@@ -48,7 +49,7 @@ public class TestBndMain extends TestCase {
 
 	public void testRunWorkspace() throws Exception {
 		bnd.mainNoExit(new String[] {
-				"run", "testdata/workspace/p/workspace.bndrun"
+			"run", "testdata/workspace/p/workspace.bndrun"
 		});
 		expectNoError();
 		expectOutput("Gesundheit!");
@@ -57,7 +58,7 @@ public class TestBndMain extends TestCase {
 	public void testPackageBndrunStandalone() throws Exception {
 		String output = "generated/tmp/export-standalone.jar";
 		bnd.mainNoExit(new String[] {
-				"package", "-o", output, "testdata/standalone/standalone.bndrun"
+			"package", "-o", output, "testdata/standalone/standalone.bndrun"
 		});
 		expectNoError();
 
@@ -72,7 +73,7 @@ public class TestBndMain extends TestCase {
 	public void testPackageBndrunWorkspace() throws Exception {
 		String output = "generated/tmp/export-workspace.jar";
 		bnd.mainNoExit(new String[] {
-				"package", "-o", output, "testdata/workspace/p/workspace.bndrun"
+			"package", "-o", output, "testdata/workspace/p/workspace.bndrun"
 		});
 		expectNoError();
 
@@ -87,7 +88,7 @@ public class TestBndMain extends TestCase {
 	public void testPackageProject() throws Exception {
 		String output = "generated/tmp/export-workspace-project.jar";
 		bnd.mainNoExit(new String[] {
-				"package", "-o", output, "testdata/workspace/p2"
+			"package", "-o", output, "testdata/workspace/p2"
 		});
 		expectNoError();
 
@@ -100,11 +101,13 @@ public class TestBndMain extends TestCase {
 	}
 
 	private void expectOutput(String expected) {
-		assertEquals("wrong output", expected, capturedStdOut.toString().trim());
+		assertEquals("wrong output", expected, capturedStdOut.toString()
+			.trim());
 	}
 
 	private void expectNoError() {
-		assertEquals("non-empty error output", "", capturedStdErr.toString().trim());
+		assertEquals("non-empty error output", "", capturedStdErr.toString()
+			.trim());
 	}
 
 	private void expectJarEntry(Jar jar, String path) {

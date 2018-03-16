@@ -22,14 +22,18 @@ public class ComponentOrderingTest extends TestCase {
 		builder.setProperty("Service-Component", "OSGI-INF/a.xml,OSGI-INF/b.xml,OSGI-INF/c.xml,OSGI-INF/d.xml");
 		Jar a = builder.build();
 
-		String exa = (String) a.getManifest().getMainAttributes().getValue(Constants.EXPORT_PACKAGE);
+		String exa = a.getManifest()
+			.getMainAttributes()
+			.getValue(Constants.EXPORT_PACKAGE);
 
 		builder = new Builder();
 		builder.addClasspath(new File("bin"));
 		builder.setProperty("Service-Component", "OSGI-INF/d.xml,OSGI-INF/b.xml,OSGI-INF/a.xml,OSGI-INF/c.xml");
 		Jar b = builder.build();
 
-		String exb = (String) b.getManifest().getMainAttributes().getValue("Service-Component");
+		String exb = b.getManifest()
+			.getMainAttributes()
+			.getValue("Service-Component");
 
 		Tree newer = differ.tree(b);
 		Tree older = differ.tree(a);

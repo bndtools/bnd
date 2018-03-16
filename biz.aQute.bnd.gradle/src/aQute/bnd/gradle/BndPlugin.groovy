@@ -14,6 +14,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
+import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.logReport
 import static aQute.bnd.osgi.Processor.isTrue
 
@@ -335,42 +337,24 @@ public class BndPlugin implements Plugin<Project> {
         group 'build'
       }
 
-      tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file to an executable jar.') { taskName ->
+      tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('export.')) {
-          String bndrun = taskName - 'export.'
-          File runFile = file("${bndrun}.bndrun")
+          String bndrunName = taskName - 'export.'
+          File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName) {
-              description "Export the ${bndrun}.bndrun file to an executable jar."
+            task(taskName, type: Export) {
+              description "Export the ${bndrunName}.bndrun file."
               dependsOn assemble
               group 'export'
-              ext.destinationDir = new File(distsDir, 'executable')
-              outputs.file({ new File(destinationDir, "${bndrun}.jar") }).withPropertyName('bndrunJar')
-              doFirst {
-                project.mkdir(destinationDir)
-              }
-              doLast {
-                File executableJar = new File(destinationDir, "${bndrun}.jar")
-                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  logger.info 'Exporting {} to {}', run.getPropertiesFile(), executableJar.absolutePath
-                  if (run.isStandalone()) {
-                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
-                  }
-                  try {
-                    run.export(null, false, executableJar)
-                  } catch (Exception e) {
-                    throw new GradleException("Export of ${run.getPropertiesFile()} to an executable jar failed", e)
-                  }
-                  checkErrors(logger)
-                }
-              }
+              bndrun = runFile
+              exporter = EXECUTABLE_JAR
             }
           }
         }
       }
 
       task('export') {
-        description 'Export all the bndrun files to runnable jars.'
+        description 'Export all the bndrun files.'
         group 'export'
         fileTree(projectDir) {
             include '*.bndrun'
@@ -381,33 +365,15 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: runbundles.<name>: Create a distribution of the runbundles in <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('runbundles.')) {
-          String bndrun = taskName - 'runbundles.'
-          File runFile = file("${bndrun}.bndrun")
+          String bndrunName = taskName - 'runbundles.'
+          File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName) {
-              description "Create a distribution of the runbundles in the ${bndrun}.bndrun file."
+            task(taskName, type: Export) {
+              description "Create a distribution of the runbundles in the ${bndrunName}.bndrun file."
               dependsOn assemble
               group 'export'
-              ext.destinationDir = new File(distsDir, "runbundles/${bndrun}")
-              outputs.dir({ destinationDir }).withPropertyName('destinationDir')
-              doFirst {
-                project.delete(destinationDir)
-                project.mkdir(destinationDir)
-              }
-              doLast {
-                Run.createRun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  logger.info 'Creating a distribution of the runbundles from {} in directory {}', run.getPropertiesFile(), destinationDir.absolutePath
-                  if (run.isStandalone()) {
-                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
-                  }
-                  try {
-                      run.exportRunbundles(null, destinationDir)
-                  } catch (Exception e) {
-                    throw new GradleException("Creating a distribution of the runbundles in ${run.getPropertiesFile()} failed", e)
-                  }
-                  checkErrors(logger)
-                }
-              }
+              bndrun = runFile
+              exporter = RUNBUNDLES
             }
           }
         }
@@ -425,32 +391,14 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: resolve.<name>: Resolve the required runbundles in the <name>.bndrun file.') { taskName ->
         if (taskName.startsWith('resolve.')) {
-          String bndrun = taskName - 'resolve.'
-          File runFile = file("${bndrun}.bndrun")
+          String bndrunName = taskName - 'resolve.'
+          File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName) {
-              description "Resolve the runbundles required for ${bndrun}.bndrun file."
+            task(taskName, type: Resolve) {
+              description "Resolve the runbundles required for ${bndrunName}.bndrun file."
               dependsOn assemble
               group 'export'
-              ext.failOnChanges = false
-              outputs.file(runFile).withPropertyName('runFile')
-              doLast {
-                Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  logger.info 'Resolving runbundles required for {}', run.getPropertiesFile()
-                  if (run.isStandalone()) {
-                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
-                  }
-                  try {
-                    def result = run.resolve(failOnChanges, true)
-                    logger.info '{}: {}', Constants.RUNBUNDLES, result
-                  } catch (ResolutionException e) {
-                    logger.error 'Unresolved requirements: {}', ResolveProcess.format(e.getUnresolvedRequirements())
-                    throw new GradleException("${run.getPropertiesFile()} resolution failure", e)
-                  } finally {
-                    checkProjectErrors(run, logger)
-                  }
-                }
-              }
+              bndrun = runFile
             }
           }
         }

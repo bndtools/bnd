@@ -23,7 +23,7 @@ public class URLClassLoaderWrapper {
 		}
 	}
 
-	public Class< ? > loadClass(String name) throws Exception {
+	public Class<?> loadClass(String name) throws Exception {
 		return loader.loadClass(name);
 	}
 }

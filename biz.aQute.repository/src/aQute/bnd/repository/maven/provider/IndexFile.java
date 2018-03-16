@@ -1,8 +1,6 @@
 package aQute.bnd.repository.maven.provider;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toCollection;
+import static aQute.bnd.osgi.repository.ResourcesRepository.toResourcesRepository;
 import static java.util.stream.Collectors.toSet;
 
 import java.io.BufferedReader;
@@ -21,7 +19,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -86,14 +83,14 @@ class IndexFile {
 		}
 	}
 
-	private final ConcurrentMap<Archive,Promise<File>>		promises	= new ConcurrentHashMap<>();
-	final ConcurrentMap<Archive,BundleDescriptor>		descriptors	= new ConcurrentHashMap<>();
+	private final ConcurrentMap<Archive, Promise<File>>	promises	= new ConcurrentHashMap<>();
+	final ConcurrentMap<Archive, BundleDescriptor>		descriptors	= new ConcurrentHashMap<>();
 	final File											indexFile;
 	final File											cacheDir;
-	private final IMavenRepo								repo;
-	private final Reporter									reporter;
-	private long									lastModified;
-	private AtomicBoolean							refresh		= new AtomicBoolean();
+	private final IMavenRepo							repo;
+	private final Reporter								reporter;
+	private long										lastModified;
+	private AtomicBoolean								refresh		= new AtomicBoolean();
 	private final ReadWriteLock							lock		= new ReentrantReadWriteLock();
 	private final PromiseFactory						promiseFactory;
 
@@ -112,19 +109,22 @@ class IndexFile {
 
 	private void sync() throws Exception {
 		List<Promise<File>> sync = new ArrayList<>(promises.size());
-		for (Iterator<Entry<Archive,Promise<File>>> i = promises.entrySet().iterator(); i.hasNext();) {
-			Entry<Archive,Promise<File>> entry = i.next();
+		for (Iterator<Entry<Archive, Promise<File>>> i = promises.entrySet()
+			.iterator(); i.hasNext();) {
+			Entry<Archive, Promise<File>> entry = i.next();
 			i.remove();
 			sync.add(entry.getValue()
-					.onFailure(failure -> reporter.exception(failure, "Failed to sync %s", entry.getKey())));
+				.onFailure(failure -> reporter.exception(failure, "Failed to sync %s", entry.getKey())));
 		}
-		promiseFactory.all(sync).getFailure(); // block until all promises resolved
+		promiseFactory.all(sync)
+			.getFailure(); // block until all promises resolved
 	}
 
 	BundleDescriptor add(Archive archive) throws Exception {
 		BundleDescriptor old = descriptors.putIfAbsent(archive, createInitialDescriptor(archive));
 		BundleDescriptor descriptor = descriptors.get(archive);
-		updateDescriptor(descriptor, repo.get(archive).getValue());
+		updateDescriptor(descriptor, repo.get(archive)
+			.getValue());
 		if (old == null || !Arrays.equals(descriptor.id, old.id)) {
 			saveIndexFile();
 			return descriptor;
@@ -141,23 +141,24 @@ class IndexFile {
 	}
 
 	public void remove(String bsn) throws Exception {
-		for (Iterator<BundleDescriptor> bd = descriptors.values().iterator(); bd.hasNext();) {
-			if (isBsn(bsn, bd.next()))
-				bd.remove();
-		}
+		descriptors.values()
+			.removeIf(bundleDescriptor -> isBsn(bsn, bundleDescriptor));
 		saveIndexFile();
 	}
 
 	Collection<String> list() {
-		return descriptors.values().stream().map(descriptor -> descriptor.bsn).collect(toSet());
+		return descriptors.values()
+			.stream()
+			.map(descriptor -> descriptor.bsn)
+			.collect(toSet());
 	}
 
 	Collection<Version> list(String bsn) {
 		return descriptors.values()
-				.stream()
-				.filter(descriptor -> isBsn(bsn, descriptor))
-				.map(descriptor -> descriptor.version)
-				.collect(toSet());
+			.stream()
+			.filter(descriptor -> isBsn(bsn, descriptor))
+			.map(descriptor -> descriptor.version)
+			.collect(toSet());
 	}
 
 	boolean isBsn(String bsn, BundleDescriptor descriptor) {
@@ -167,26 +168,26 @@ class IndexFile {
 	public synchronized BundleDescriptor getDescriptor(String bsn, Version version) throws Exception {
 		sync();
 		return descriptors.values()
-				.stream()
-				.filter(descriptor -> isBsn(bsn, descriptor) && version.equals(descriptor.version))
-				.findFirst()
-				.orElse(null);
+			.stream()
+			.filter(descriptor -> isBsn(bsn, descriptor) && version.equals(descriptor.version))
+			.findFirst()
+			.orElse(null);
 	}
 
 	int getErrors(String name) {
 		return (int) descriptors.values()
-				.stream()
-				.filter(descriptor -> name == null || name.equals(descriptor.bsn))
-				.filter(descriptor -> descriptor.error != null)
-				.count();
+			.stream()
+			.filter(descriptor -> name == null || name.equals(descriptor.bsn))
+			.filter(descriptor -> descriptor.error != null)
+			.count();
 	}
 
 	Set<Program> getProgramsForBsn(String name) {
 		return descriptors.values()
-				.stream()
-				.filter(descriptor -> name == null || name.equals(descriptor.bsn))
-				.map(descriptor -> descriptor.archive.revision.program)
-				.collect(toSet());
+			.stream()
+			.filter(descriptor -> name == null || name.equals(descriptor.bsn))
+			.map(descriptor -> descriptor.archive.revision.program)
+			.collect(toSet());
 	}
 
 	long last = 0L;
@@ -201,29 +202,31 @@ class IndexFile {
 			return true;
 		}
 		return descriptors.values()
-				.stream()
-				.filter(descriptor -> {
-					try {
-						if ((descriptor.promise != null) && descriptor.promise.isDone() && (descriptor.promise.getFailure() == null)) {
-							File f = descriptor.promise.getValue();
-							if ((f != null) && f.isFile() && (f.lastModified() != descriptor.lastModified)) {
-								updateDescriptor(descriptor, f);
-								return true;
-							}
+			.stream()
+			.filter(descriptor -> {
+				try {
+					if ((descriptor.promise != null) && descriptor.promise.isDone()
+						&& (descriptor.promise.getFailure() == null)) {
+						File f = descriptor.promise.getValue();
+						if ((f != null) && f.isFile() && (f.lastModified() != descriptor.lastModified)) {
+							updateDescriptor(descriptor, f);
+							return true;
 						}
-					} catch (InvocationTargetException | InterruptedException e) {
-						throw Exceptions.duck(e);
 					}
-					return false;
-				})
-				.count() > 0L;
+				} catch (InvocationTargetException | InterruptedException e) {
+					throw Exceptions.duck(e);
+				}
+				return false;
+			})
+			.count() > 0L;
 	}
 
 	private void loadIndexFile() throws Exception {
 		lastModified = indexFile.lastModified();
 		Set<Archive> toBeDeleted = new HashSet<>(descriptors.keySet());
 		if (indexFile.isFile()) {
-			lock.readLock().lock();
+			lock.readLock()
+				.lock();
 			try (BufferedReader rdr = IO.reader(indexFile)) {
 				String line;
 				while ((line = rdr.readLine()) != null) {
@@ -240,11 +243,14 @@ class IndexFile {
 					}
 				}
 			} finally {
-				lock.readLock().unlock();
+				lock.readLock()
+					.unlock();
 			}
 
-			this.descriptors.keySet().removeAll(toBeDeleted);
-			this.promises.keySet().removeAll(toBeDeleted);
+			this.descriptors.keySet()
+				.removeAll(toBeDeleted);
+			this.promises.keySet()
+				.removeAll(toBeDeleted);
 		}
 	}
 
@@ -265,12 +271,12 @@ class IndexFile {
 
 					Domain m = Domain.domain(file);
 					if (m == null)
-						m = Domain.domain(Collections.<String, String> emptyMap());
+						m = Domain.domain(Collections.emptyMap());
 
-					Entry<String,Attrs> bsn = m.getBundleSymbolicName();
+					Entry<String, Attrs> bsn = m.getBundleSymbolicName();
 					descriptor.bsn = bsn != null ? bsn.getKey() : null;
 					descriptor.version = m.getBundleVersion() == null ? null
-							: Version.parseVersion(m.getBundleVersion());
+						: Version.parseVersion(m.getBundleVersion());
 
 					if (descriptor.bsn == null) {
 						descriptor.bsn = descriptor.archive.getWithoutVersion();
@@ -278,10 +284,12 @@ class IndexFile {
 					} else if (descriptor.version == null)
 						descriptor.version = Version.LOWEST;
 					descriptor.description = m.getBundleDescription();
-					descriptor.id = SHA1.digest(file).digest();
+					descriptor.id = SHA1.digest(file)
+						.digest();
 					descriptor.included = false;
 					descriptor.lastModified = file.lastModified();
-					descriptor.sha256 = SHA256.digest(file).digest();
+					descriptor.sha256 = SHA256.digest(file)
+						.digest();
 					saveDescriptor(descriptor);
 					refresh.set(true);
 				}
@@ -299,7 +307,9 @@ class IndexFile {
 	private void saveDescriptor(BundleDescriptor descriptor) throws IOException, Exception {
 		File df = getDescriptorFile(descriptor.archive);
 		IO.mkdirs(df.getParentFile());
-		CODEC.enc().to(df).put(descriptor);
+		CODEC.enc()
+			.to(df)
+			.put(descriptor);
 	}
 
 	private void loadDescriptorAsync(final Archive archive) throws Exception {
@@ -315,7 +325,9 @@ class IndexFile {
 			File descriptorFile = getDescriptorFile(archive);
 			if (descriptorFile.isFile()) {
 				try {
-					BundleDescriptor descriptor = CODEC.dec().from(descriptorFile).get(BundleDescriptor.class);
+					BundleDescriptor descriptor = CODEC.dec()
+						.from(descriptorFile)
+						.get(BundleDescriptor.class);
 					descriptor.promise = promiseFactory.resolved(archiveFile);
 					descriptor.resource = null;
 					descriptors.put(archive, descriptor);
@@ -348,7 +360,8 @@ class IndexFile {
 	}
 
 	File getDescriptorFile(Archive archive) {
-		File dir = new File(repo.toLocalFile(archive).getParentFile(), ".bnd");
+		File dir = new File(repo.toLocalFile(archive)
+			.getParentFile(), ".bnd");
 		return new File(dir, archive.getName());
 	}
 
@@ -363,15 +376,20 @@ class IndexFile {
 	}
 
 	private void saveIndexFile() throws Exception {
-		lock.writeLock().lock();
+		lock.writeLock()
+			.lock();
 		try {
 			File tmp = File.createTempFile("index", null);
 			try (PrintWriter pw = new PrintWriter(tmp)) {
-				descriptors.keySet().stream().sorted().forEachOrdered(archive -> pw.println(archive));
+				descriptors.keySet()
+					.stream()
+					.sorted()
+					.forEachOrdered(archive -> pw.println(archive));
 			}
 			Files.move(tmp.toPath(), indexFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} finally {
-			lock.writeLock().unlock();
+			lock.writeLock()
+				.unlock();
 		}
 
 		lastModified = indexFile.lastModified();
@@ -385,34 +403,11 @@ class IndexFile {
 		return descriptors.keySet();
 	}
 
-	public Map<Requirement,Collection<Capability>> findProviders(Collection< ? extends Requirement> requirements) {
+	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		return descriptors.values()
-				.stream()
-				.map(BundleDescriptor::getResource)
-				.filter(Objects::nonNull)
-				.flatMap(res -> requirements.stream()
-						.flatMap(req -> res.getCapabilities(req.getNamespace())
-								.stream()
-								.filter(cap -> ResourceUtils.matches(req, cap))
-								.map(cap -> new ReqCap(req, cap))))
-				.collect(groupingBy(ReqCap::req, mapping(ReqCap::cap, toCollection(ArrayList::new))));
-	}
-
-	private static class ReqCap {
-		private final Requirement	req;
-		private final Capability	cap;
-
-		ReqCap(Requirement req, Capability cap) {
-			this.req = req;
-			this.cap = cap;
-		}
-
-		Requirement req() {
-			return req;
-		}
-
-		Capability cap() {
-			return cap;
-		}
+			.stream()
+			.map(BundleDescriptor::getResource)
+			.collect(toResourcesRepository())
+			.findProviders(requirements);
 	}
 }

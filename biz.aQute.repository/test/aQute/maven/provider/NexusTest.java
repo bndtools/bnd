@@ -2,8 +2,8 @@ package aQute.maven.provider;
 
 import java.io.File;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.url.BasicAuthentication;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
@@ -15,7 +15,7 @@ public class NexusTest extends TestCase {
 	String					tmpName;
 	File					local;
 	MavenRemoteRepository	repo;
-	ReporterAdapter	reporter	= new ReporterAdapter(System.err);
+	ReporterAdapter			reporter	= new ReporterAdapter(System.err);
 
 	@Override
 	protected void setUp() throws Exception {
@@ -27,9 +27,9 @@ public class NexusTest extends TestCase {
 		IO.delete(local);
 		local.mkdirs();
 		HttpClient httpClient = new HttpClient();
-		httpClient.addURLConnectionHandler(new BasicAuthentication("deployment", "deployment123", Workspace.log));
-		repo = new MavenRemoteRepository(local, httpClient, "http://localhost:8081/nexus/content/repositories/snapshots/",
-				reporter);
+		httpClient.addURLConnectionHandler(new BasicAuthentication("deployment", "deployment123", Processor.log));
+		repo = new MavenRemoteRepository(local, httpClient,
+			"http://localhost:8081/nexus/content/repositories/snapshots/", reporter);
 	}
 
 	@Override

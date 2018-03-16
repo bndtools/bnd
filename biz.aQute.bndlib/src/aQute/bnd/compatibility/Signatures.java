@@ -76,10 +76,10 @@ public class Signatures {
 	 * @throws Exception
 	 */
 	public String getSignature(Object c) throws Exception {
-		if (c instanceof Class< ? >)
-			return getSignature((Class< ? >) c);
-		if (c instanceof Constructor< ? >)
-			return getSignature((Constructor< ? >) c);
+		if (c instanceof Class<?>)
+			return getSignature((Class<?>) c);
+		if (c instanceof Constructor<?>)
+			return getSignature((Constructor<?>) c);
 		if (c instanceof Method)
 			return getSignature((Method) c);
 		if (c instanceof Field)
@@ -97,7 +97,7 @@ public class Signatures {
 	 * 
 	 * @throws Exception
 	 */
-	public String getSignature(Class< ? > c) throws Exception {
+	public String getSignature(Class<?> c) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		declaration(sb, c);
 		reference(sb, call(c, "getGenericSuperclass"));
@@ -139,7 +139,7 @@ public class Signatures {
 	 * @param c
 	 * @throws Exception
 	 */
-	public String getSignature(Constructor< ? > c) throws Exception {
+	public String getSignature(Constructor<?> c) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		declaration(sb, c);
 		sb.append('(');
@@ -213,7 +213,7 @@ public class Signatures {
 	 */
 	private boolean isInterface(Object type) throws Exception {
 		if (type instanceof Class)
-			return (((Class< ? >) type).isInterface());
+			return (((Class<?>) type).isInterface());
 
 		if (isInstance(type.getClass(), "java.lang.reflect.ParameterizedType"))
 			return isInterface(call(type, "getRawType"));
@@ -271,13 +271,14 @@ public class Signatures {
 			sb.append('T');
 			sb.append(call(t, "getName"));
 			sb.append(';');
-		} else if (t instanceof Class< ? >) {
-			Class< ? > c = (Class< ? >) t;
+		} else if (t instanceof Class<?>) {
+			Class<?> c = (Class<?>) t;
 			if (c.isPrimitive()) {
 				sb.append(primitive(c));
 			} else {
 				sb.append('L');
-				String name = c.getName().replace('.', '/');
+				String name = c.getName()
+					.replace('.', '/');
 				sb.append(name);
 				sb.append(';');
 			}
@@ -294,12 +295,14 @@ public class Signatures {
 	 */
 	private void parameterizedType(StringBuilder sb, Object pt) throws Exception {
 		Object owner = call(pt, "getOwnerType");
-		String name = ((Class< ? >) call(pt, "getRawType")).getName().replace('.', '/');
+		String name = ((Class<?>) call(pt, "getRawType")).getName()
+			.replace('.', '/');
 		if (owner != null) {
 			if (isInstance(owner.getClass(), "java.lang.reflect.ParameterizedType"))
 				parameterizedType(sb, owner);
 			else
-				sb.append(((Class< ? >) owner).getName().replace('.', '/'));
+				sb.append(((Class<?>) owner).getName()
+					.replace('.', '/'));
 			sb.append('.');
 			int n = name.lastIndexOf('$');
 			name = name.substring(n + 1);
@@ -320,7 +323,7 @@ public class Signatures {
 	 * @param type the primitive class
 	 * @return the single char associated with the primitive
 	 */
-	private char primitive(Class< ? > type) {
+	private char primitive(Class<?> type) {
 		if (type == byte.class)
 			return 'B';
 		else if (type == char.class)
@@ -354,7 +357,7 @@ public class Signatures {
 
 	public String normalize(String signature) {
 		StringBuilder sb = new StringBuilder();
-		Map<String,String> map = new HashMap<String,String>();
+		Map<String, String> map = new HashMap<>();
 		Rover rover = new Rover(signature);
 		declare(sb, map, rover);
 
@@ -385,7 +388,7 @@ public class Signatures {
 	 * @param rover
 	 * @param primitivesAllowed
 	 */
-	private void reference(StringBuilder sb, Map<String,String> map, Rover rover, boolean primitivesAllowed) {
+	private void reference(StringBuilder sb, Map<String, String> map, Rover rover, boolean primitivesAllowed) {
 
 		char type = rover.take();
 		sb.append(type);
@@ -421,7 +424,7 @@ public class Signatures {
 	 * @param map
 	 * @param rover
 	 */
-	private void body(StringBuilder sb, Map<String,String> map, Rover rover) {
+	private void body(StringBuilder sb, Map<String, String> map, Rover rover) {
 		if (rover.peek() == '<') {
 			sb.append(rover.take('<'));
 			while (rover.peek() != '>') {
@@ -462,7 +465,7 @@ public class Signatures {
 	 * @param map
 	 * @param rover
 	 */
-	private void declare(StringBuilder sb, Map<String,String> map, Rover rover) {
+	private void declare(StringBuilder sb, Map<String, String> map, Rover rover) {
 		char c = rover.peek();
 		if (c == '<') {
 			sb.append(rover.take('<'));
@@ -495,7 +498,7 @@ public class Signatures {
 	 * @param name The name of the variable
 	 * @return the index name, like _1
 	 */
-	private String assign(Map<String,String> map, String name) {
+	private String assign(Map<String, String> map, String name) {
 		if (map.containsKey(name))
 			return map.get(name);
 		int n = map.size();
@@ -503,17 +506,18 @@ public class Signatures {
 		return "_" + n;
 	}
 
-	private boolean isInstance(Class< ? > type, String string) {
+	private boolean isInstance(Class<?> type, String string) {
 		if (type == null)
 			return false;
 
-		if (type.getName().equals(string))
+		if (type.getName()
+			.equals(string))
 			return true;
 
 		if (isInstance(type.getSuperclass(), string))
 			return true;
 
-		for (Class< ? > intf : type.getInterfaces()) {
+		for (Class<?> intf : type.getInterfaces()) {
 			if (isInstance(intf, string))
 				return true;
 		}
@@ -521,7 +525,8 @@ public class Signatures {
 	}
 
 	private Object call(Object gd, String string) throws Exception {
-		Method m = gd.getClass().getMethod(string);
+		Method m = gd.getClass()
+			.getMethod(string);
 		return m.invoke(gd);
 	}
 

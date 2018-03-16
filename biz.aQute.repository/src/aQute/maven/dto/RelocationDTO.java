@@ -12,24 +12,24 @@ public class RelocationDTO extends DTO {
 	/**
 	 * The group ID the artifact has moved to.
 	 */
-	public String groupId;
+	public String		groupId;
 
 	/**
 	 * The new artifact ID of the artifact.
 	 */
 
-	public String artifactId;
+	public String		artifactId;
 
 	/**
 	 * The new version of the artifact.
 	 */
 
-	public MavenVersion version;
+	public MavenVersion	version;
 
 	/**
 	 * An additional message to show the user about the move, such as the
 	 * reason.
 	 */
 
-	public String message;
+	public String		message;
 }

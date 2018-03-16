@@ -86,7 +86,7 @@ import aQute.service.reporter.Reporter;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
 	private static final Logger	logger	= LoggerFactory.getLogger(Processor.class);
-	public static Reporter log;;
+	public static Reporter		log;;
 
 	static {
 		ReporterAdapter reporterAdapter = new ReporterAdapter(System.out);
@@ -99,72 +99,73 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	static final int								BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
 
 	static Pattern									PACKAGES_IGNORED	= Pattern
-			.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
+		.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
-	static ThreadLocal<Processor>					current				= new ThreadLocal<Processor>();
+	static ThreadLocal<Processor>					current				= new ThreadLocal<>();
 	private final static ScheduledExecutorService	sheduledExecutor;
 	private final static ExecutorService			executor;
 	static {
 		ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), threadFactory,
-				new RejectedExecutionHandler() {
-					/*
-					 * We are stealing another's thread because we have hit max
-					 * pool size, so we cannot let the runnable's exception
-					 * propagate back up this thread.
-					 */
-					@Override
-					public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-						if (executor.isShutdown()) {
-							return;
-						}
+		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactory,
+			new RejectedExecutionHandler() {
+				/*
+				 * We are stealing another's thread because we have hit max pool
+				 * size, so we cannot let the runnable's exception propagate
+				 * back up this thread.
+				 */
+				@Override
+				public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
+					if (executor.isShutdown()) {
+						return;
+					}
+					try {
+						r.run();
+					} catch (Throwable t) {
 						try {
-							r.run();
-						} catch (Throwable t) {
-							try {
-								Thread thread = Thread.currentThread();
-								thread.getUncaughtExceptionHandler().uncaughtException(thread, t);
-							} catch (Throwable for_real) {
-								// we will ignore this
-							}
+							Thread thread = Thread.currentThread();
+							thread.getUncaughtExceptionHandler()
+								.uncaughtException(thread, t);
+						} catch (Throwable for_real) {
+							// we will ignore this
 						}
 					}
-				});
+				}
+			});
 		sheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory);
 	}
-	static Random					random			= new Random();
+	static Random								random					= new Random();
 	// TODO handle include files out of date
-	// TODO make splitter skip eagerly whitespace so trim is not necessary
-	public final static String		LIST_SPLITTER	= "\\s*,\\s*";
-	final List<String>				errors			= new ArrayList<String>();
-	final List<String>				warnings		= new ArrayList<String>();
-	final Set<Object>				basicPlugins	= new HashSet<Object>();
-	private final Set<Closeable>	toBeClosed		= new HashSet<Closeable>();
-	private Set<Object>				plugins;
+	public final static String					LIST_SPLITTER			= "\\s*,\\s*";
+	private final static Pattern				LIST_SPLITTER_PATTERN	= Pattern.compile(LIST_SPLITTER);
+	final List<String>							errors					= new ArrayList<>();
+	final List<String>							warnings				= new ArrayList<>();
+	final Set<Object>							basicPlugins			= new HashSet<>();
+	private final Set<Closeable>				toBeClosed				= new HashSet<>();
+	private Set<Object>							plugins;
 
-	boolean							pedantic;
-	boolean							trace;
-	boolean							exceptions;
-	boolean							fileMustExist	= true;
+	boolean										pedantic;
+	boolean										trace;
+	boolean										exceptions;
+	boolean										fileMustExist			= true;
 
-	private File					base			= new File("").getAbsoluteFile();
-	private URI						baseURI			= base.toURI();
+	private File								base					= new File("").getAbsoluteFile();
+	private URI									baseURI					= base.toURI();
 
-	Properties						properties;
-	String							profile;
-	private Macro					replacer;
-	private long					lastModified;
-	private File					propertiesFile;
-	private boolean					fixup			= true;
-	long							modified;
-	Processor						parent;
-	private final CopyOnWriteArrayList<File>	included		= new CopyOnWriteArrayList<>();
+	Properties									properties;
+	String										profile;
+	private Macro								replacer;
+	private long								lastModified;
+	private File								propertiesFile;
+	private boolean								fixup					= true;
+	long										modified;
+	Processor									parent;
+	private final CopyOnWriteArrayList<File>	included				= new CopyOnWriteArrayList<>();
 
-	CL								pluginLoader;
-	Collection<String>				filter;
-	HashSet<String>					missingCommand;
-	Boolean							strict;
-	boolean							fixupMessages;
+	CL											pluginLoader;
+	Collection<String>							filter;
+	HashSet<String>								missingCommand;
+	Boolean										strict;
+	boolean										fixupMessages;
 
 	public static class FileLine {
 		public static final FileLine	DUMMY	= new FileLine(null, 0, 0);
@@ -238,8 +239,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			addAll(errors, processor.getErrors(), prefix, processor);
 		addAll(warnings, processor.getWarnings(), prefix, processor);
 
-		processor.getErrors().clear();
-		processor.getWarnings().clear();
+		processor.getErrors()
+			.clear();
+		processor.getWarnings()
+			.clear();
 
 	}
 
@@ -256,7 +259,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				Location location = reporter.getLocation(message);
 				if (location != null) {
 					SetLocation newer = location(newMessage);
-					for (Field f : newer.getClass().getFields()) {
+					for (Field f : newer.getClass()
+						.getFields()) {
 						if (!"message".equals(f.getName())) {
 							f.set(newer, f.get(location));
 						}
@@ -278,6 +282,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return p;
 	}
 
+	@Override
 	public SetLocation warning(String string, Object... args) {
 		fixupMessages = false;
 		Processor p = current();
@@ -288,6 +293,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return location(s);
 	}
 
+	@Override
 	public SetLocation error(String string, Object... args) {
 		fixupMessages = false;
 		Processor p = current();
@@ -308,6 +314,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
 	 *             instead.
 	 */
+	@Override
 	@Deprecated
 	public void progress(float progress, String format, Object... args) {
 		Logger l = getLogger();
@@ -332,9 +339,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public SetLocation exception(Throwable t, String format, Object... args) {
 		Processor p = current();
 		if (p.trace) {
-			p.getLogger().info("Reported exception", t);
+			p.getLogger()
+				.info("Reported exception", t);
 		} else {
-			p.getLogger().debug("Reported exception", t);
+			p.getLogger()
+				.debug("Reported exception", t);
 		}
 		if (p.exceptions) {
 			printExceptionSummary(t, System.err);
@@ -360,7 +369,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		int n = printExceptionSummary(e.getCause(), out);
 
 		if (n == 0) {
-			out.println("Root cause: " + e.getMessage() + "   :" + e.getClass().getName());
+			out.println("Root cause: " + e.getMessage() + "   :" + e.getClass()
+				.getName());
 			count = Integer.MAX_VALUE;
 		} else {
 			out.println("Rethrown from: " + e.toString());
@@ -377,11 +387,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public void signal() {}
 
+	@Override
 	public List<String> getWarnings() {
 		fixupMessages();
 		return warnings;
 	}
 
+	@Override
 	public List<String> getErrors() {
 		fixupMessages();
 		return errors;
@@ -410,6 +422,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		toBeClosed.remove(jar);
 	}
 
+	@Override
 	public boolean isPedantic() {
 		return current().pedantic;
 	}
@@ -439,8 +452,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param clazz Each returned plugin implements this class/interface
 	 * @return A list of plugins
 	 */
+	@Override
 	public <T> List<T> getPlugins(Class<T> clazz) {
-		List<T> l = new ArrayList<T>();
+		List<T> l = new ArrayList<>();
 		Set<Object> all = getPlugins();
 		for (Object plugin : all) {
 			if (clazz.isInstance(plugin))
@@ -455,6 +469,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param <T>
 	 * @param clazz
 	 */
+	@Override
 	public <T> T getPlugin(Class<T> clazz) {
 		Set<Object> all = getPlugins();
 		for (Object plugin : all) {
@@ -478,7 +493,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				return p;
 
 			plugins = p = new CopyOnWriteArraySet<>();
-			missingCommand = new HashSet<String>();
+			missingCommand = new HashSet<>();
 		}
 		// We only use plugins now when they are defined on our level
 		// and not if it is in our parent. We inherit from our parent
@@ -546,15 +561,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		CL loader = getLoader();
 
 		// First add the plugin-specific paths from their path: directives
-		for (Entry<String,Attrs> entry : plugins.entrySet()) {
+		for (Entry<String, Attrs> entry : plugins.entrySet()) {
 			String key = removeDuplicateMarker(entry.getKey());
-			String path = entry.getValue().get(PATH_DIRECTIVE);
+			String path = entry.getValue()
+				.get(PATH_DIRECTIVE);
 			if (path != null) {
 				String parts[] = path.split("\\s*,\\s*");
 				try {
 					for (String p : parts) {
 						File f = getFile(p).getAbsoluteFile();
-						loader.add(f.toURI().toURL());
+						loader.add(f.toURI()
+							.toURL());
 					}
 				} catch (Exception e) {
 					error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path, key, e);
@@ -571,8 +588,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		// model.
 		//
 
-		Set<String> loaded = new HashSet<String>();
-		for (Entry<String,Attrs> entry : plugins.entrySet()) {
+		Set<String> loaded = new HashSet<>();
+		for (Entry<String, Attrs> entry : plugins.entrySet()) {
 			String className = removeDuplicateMarker(entry.getKey());
 			Attrs attrs = entry.getValue();
 
@@ -590,7 +607,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		// Make sure we load each plugin only once
 		// by removing the entries that were successfully loaded
 		//
-		plugins.keySet().removeAll(loaded);
+		plugins.keySet()
+			.removeAll(loaded);
 
 		loadPluginPath(instances, pluginPathString, loader);
 
@@ -598,7 +616,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		// Load the remaining plugins
 		//
 
-		for (Entry<String,Attrs> entry : plugins.entrySet()) {
+		for (Entry<String, Attrs> entry : plugins.entrySet()) {
 			String className = removeDuplicateMarker(entry.getKey());
 			Attrs attrs = entry.getValue();
 
@@ -640,7 +658,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private void loadPluginPath(Set<Object> instances, String pluginPath, CL loader) {
 		Parameters pluginpath = new Parameters(pluginPath, this);
 
-		nextClause: for (Entry<String,Attrs> entry : pluginpath.entrySet()) {
+		nextClause: for (Entry<String, Attrs> entry : pluginpath.entrySet()) {
 
 			File f = getFile(entry.getKey()).getAbsoluteFile();
 			if (!f.isFile()) {
@@ -649,7 +667,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				// File does not exist! Check if we need to download
 				//
 
-				String url = entry.getValue().get(PLUGINPATH_URL_ATTR);
+				String url = entry.getValue()
+					.get(PLUGINPATH_URL_ATTR);
 				if (url != null) {
 					try {
 
@@ -681,18 +700,21 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						// of the
 						// the file.
 						//
-						String digest = entry.getValue().get(PLUGINPATH_SHA1_ATTR);
+						String digest = entry.getValue()
+							.get(PLUGINPATH_SHA1_ATTR);
 						if (digest != null) {
 							if (Hex.isHex(digest.trim())) {
 								byte[] sha1 = Hex.toByteArray(digest);
-								byte[] filesha1 = SHA1.digest(f).digest();
+								byte[] filesha1 = SHA1.digest(f)
+									.digest();
 								if (!Arrays.equals(sha1, filesha1)) {
-									error("Plugin path: %s, specified url %s and a sha1 but the file does not match the sha",
-											entry.getKey(), url);
+									error(
+										"Plugin path: %s, specified url %s and a sha1 but the file does not match the sha",
+										entry.getKey(), url);
 								}
 							} else {
 								error("Plugin path: %s, specified url %s and a sha1 '%s' but this is not a hexadecimal",
-										entry.getKey(), url, digest);
+									entry.getKey(), url, digest);
 							}
 						}
 					} catch (Exception e) {
@@ -701,13 +723,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					}
 				} else {
 					error("No such file %s from %s and no 'url' attribute on the path so it can be downloaded",
-							entry.getKey(), this);
+						entry.getKey(), this);
 					continue nextClause;
 				}
 			}
 			logger.debug("Adding {} to loader for plugins", f);
 			try {
-				loader.add(f.toURI().toURL());
+				loader.add(f.toURI()
+					.toURL());
 			} catch (MalformedURLException e) {
 				// Cannot happen since every file has a correct url
 			}
@@ -724,8 +747,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	private Object loadPlugin(ClassLoader loader, Attrs attrs, String className, boolean ignoreError) {
 		try {
-			Class< ? > c = loader.loadClass(className);
-			Object plugin = c.getConstructor().newInstance();
+			Class<?> c = loader.loadClass(className);
+			Object plugin = c.getConstructor()
+				.newInstance();
 			customize(plugin, attrs);
 			if (plugin instanceof Closeable) {
 				addClose((Closeable) plugin);
@@ -779,7 +803,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public boolean isFailOk() {
-		String v = getProperty(Analyzer.FAIL_OK, null);
+		String v = getProperty(Constants.FAIL_OK, null);
 		return v != null && v.equalsIgnoreCase("true");
 	}
 
@@ -810,6 +834,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
+	@Override
 	@Deprecated
 	public void trace(String msg, Object... parms) {
 		Processor p = current();
@@ -826,33 +851,34 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public <T> List<T> newList() {
-		return new ArrayList<T>();
+		return new ArrayList<>();
 	}
 
 	public <T> Set<T> newSet() {
-		return new TreeSet<T>();
+		return new TreeSet<>();
 	}
 
-	public static <K, V> Map<K,V> newMap() {
-		return new LinkedHashMap<K,V>();
+	public static <K, V> Map<K, V> newMap() {
+		return new LinkedHashMap<>();
 	}
 
-	public static <K, V> Map<K,V> newHashMap() {
-		return new LinkedHashMap<K,V>();
+	public static <K, V> Map<K, V> newHashMap() {
+		return new LinkedHashMap<>();
 	}
 
 	public <T> List<T> newList(Collection<T> t) {
-		return new ArrayList<T>(t);
+		return new ArrayList<>(t);
 	}
 
 	public <T> Set<T> newSet(Collection<T> t) {
-		return new TreeSet<T>(t);
+		return new TreeSet<>(t);
 	}
 
-	public <K, V> Map<K,V> newMap(Map<K,V> t) {
-		return new LinkedHashMap<K,V>(t);
+	public <K, V> Map<K, V> newMap(Map<K, V> t) {
+		return new LinkedHashMap<>(t);
 	}
 
+	@Override
 	public void close() throws IOException {
 		for (Closeable c : toBeClosed) {
 			IO.close(c);
@@ -892,7 +918,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (pf == null)
 			return "";
 
-		return pf.getParentFile().getAbsolutePath();
+		return pf.getParentFile()
+			.getAbsolutePath();
 	}
 
 	static String _uri = "${uri;<uri>[;<baseuri>]}, Resolve the uri against the baseuri. baseuri defaults to the processor base.";
@@ -901,7 +928,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Macro.verifyCommand(args, _uri, null, 2, 3);
 
 		URI uri = new URI(args[1]);
-		if (!uri.isAbsolute() || uri.getScheme().equals("file")) {
+		if (!uri.isAbsolute() || uri.getScheme()
+			.equals("file")) {
 			URI base;
 			if (args.length > 2) {
 				base = new URI(args[2]);
@@ -921,8 +949,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public String _fileuri(String args[]) throws Exception {
 		Macro.verifyCommand(args, _fileuri, null, 2, 2);
 
-		File f = IO.getFile(getBase(), args[1]).getCanonicalFile();
-		return f.toURI().toString();
+		File f = IO.getFile(getBase(), args[1])
+			.getCanonicalFile();
+		return f.toURI()
+			.toString();
 	}
 
 	/**
@@ -963,7 +993,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void mergeProperties(Properties properties, boolean override) {
-		for (Enumeration< ? > e = properties.propertyNames(); e.hasMoreElements();) {
+		for (Enumeration<?> e = properties.propertyNames(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			String value = properties.getProperty(key);
 			if (override || !getProperties().containsKey(key))
@@ -989,9 +1019,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		setProperties(p);
 	}
 
-	public void addProperties(Map< ? , ? > properties) {
-		for (Entry< ? , ? > entry : properties.entrySet()) {
-			setProperty(entry.getKey().toString(), entry.getValue() + "");
+	public void addProperties(Map<?, ?> properties) {
+		for (Entry<?, ?> entry : properties.entrySet()) {
+			setProperty(entry.getKey()
+				.toString(), entry.getValue() + "");
 		}
 	}
 
@@ -1032,11 +1063,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				while (true) {
 					if (value.startsWith("-")) {
 						fileMustExist = false;
-						value = value.substring(1).trim();
+						value = value.substring(1)
+							.trim();
 					} else if (value.startsWith("~")) {
 						// Overwrite properties!
 						overwrite = false;
-						value = value.substring(1).trim();
+						value = value.substring(1)
+							.trim();
 					} else
 						break;
 				}
@@ -1064,7 +1097,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						} catch (MalformedURLException mue) {
 							if (fileMustExist)
 								error("Included file %s %s", file,
-										(file.isDirectory() ? "is directory" : "does not exist"));
+									(file.isDirectory() ? "is directory" : "does not exist"));
 						} catch (Exception e) {
 							if (fileMustExist)
 								exception(e, "Error in processing included URL: %s", value);
@@ -1102,7 +1135,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 		updateModified(file.lastModified(), file.toString());
 		Properties sub;
-		if (file.getName().toLowerCase().endsWith(".mf")) {
+		if (file.getName()
+			.toLowerCase()
+			.endsWith(".mf")) {
 			try (InputStream in = IO.stream(file)) {
 				sub = getManifestAsProperties(in);
 			}
@@ -1111,7 +1146,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		doIncludes(file.getParentFile(), sub);
 		// make sure we do not override properties
-		for (Map.Entry< ? , ? > entry : sub.entrySet()) {
+		for (Map.Entry<?, ?> entry : sub.entrySet()) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
 
@@ -1256,6 +1291,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 
 	public String getUnprocessedProperty(String key, String deflt) {
+		if (filter != null && filter.contains(key)) {
+			return (String) getProperties().getOrDefault(key, deflt);
+		}
 		return getProperties().getProperty(key, deflt);
 	}
 
@@ -1305,8 +1343,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				if (raw instanceof String) {
 					value = (String) raw;
 				} else {
-					warning("Key '%s' has a non-String value: %s:%s", key, raw == null ? "" : raw.getClass().getName(),
-							raw);
+					warning("Key '%s' has a non-String value: %s:%s", key, raw == null ? ""
+						: raw.getClass()
+							.getName(),
+						raw);
 				}
 			}
 		} else {
@@ -1317,10 +1357,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					if (raw instanceof String) {
 						value = (String) raw;
 					} else {
-						warning("Key '%s' has a non-String value: %s:%s", key,
-							raw == null ? ""
-								: raw.getClass()
-									.getName(),
+						warning("Key '%s' has a non-String value: %s:%s", key, raw == null ? ""
+							: raw.getClass()
+								.getName(),
 							raw);
 					}
 					source = proc;
@@ -1369,7 +1408,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	UTF8Properties loadProperties0(File file) throws IOException {
-		String name = file.toURI().getPath();
+		String name = file.toURI()
+			.getPath();
 		int n = name.lastIndexOf('/');
 		if (n > 0)
 			name = name.substring(0, n);
@@ -1394,10 +1434,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public static Properties replaceAll(Properties p, String pattern, String replacement) {
 		UTF8Properties result = new UTF8Properties();
 		Pattern regex = Pattern.compile(pattern);
-		for (Map.Entry<Object,Object> entry : p.entrySet()) {
+		for (Map.Entry<Object, Object> entry : p.entrySet()) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
-			value = regex.matcher(value).replaceAll(replacement);
+			value = regex.matcher(value)
+				.replaceAll(replacement);
 			result.put(key, value);
 		}
 		return result;
@@ -1410,17 +1451,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @return the clauses
 	 * @throws IOException
 	 */
-	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports) throws IOException {
+	public static String printClauses(Map<?, ? extends Map<?, ?>> exports) throws IOException {
 		return printClauses(exports, false);
 	}
 
-	public static String printClauses(Map< ? , ? extends Map< ? , ? >> exports,
-			@SuppressWarnings("unused") boolean checkMultipleVersions) throws IOException {
+	public static String printClauses(Map<?, ? extends Map<?, ?>> exports,
+		@SuppressWarnings("unused") boolean checkMultipleVersions) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (Entry< ? , ? extends Map< ? , ? >> entry : exports.entrySet()) {
-			String name = entry.getKey().toString();
-			Map< ? , ? > clause = entry.getValue();
+		for (Entry<?, ? extends Map<?, ?>> entry : exports.entrySet()) {
+			String name = entry.getKey()
+				.toString();
+			Map<?, ?> clause = entry.getValue();
 
 			// We allow names to be duplicated in the input
 			// by ending them with '~'. This is necessary to use
@@ -1436,7 +1478,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return sb.toString();
 	}
 
-	public static void printClause(Map< ? , ? > map, StringBuilder sb) throws IOException {
+	public static void printClause(Map<?, ?> map, StringBuilder sb) throws IOException {
 		if (map instanceof Attrs) {
 			Attrs attrs = (Attrs) map;
 			for (Entry<String, String> entry : attrs.entrySet()) {
@@ -1573,9 +1615,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public static Properties getManifestAsProperties(InputStream in) throws IOException {
 		Properties p = new UTF8Properties();
 		Manifest manifest = new Manifest(in);
-		for (Iterator<Object> it = manifest.getMainAttributes().keySet().iterator(); it.hasNext();) {
+		for (Iterator<Object> it = manifest.getMainAttributes()
+			.keySet()
+			.iterator(); it.hasNext();) {
 			Attributes.Name key = (Attributes.Name) it.next();
-			String value = manifest.getMainAttributes().getValue(key);
+			String value = manifest.getMainAttributes()
+				.getValue(key);
 			p.put(key.toString(), value);
 		}
 		return p;
@@ -1596,27 +1641,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Join a list.
 	 */
-	public static String join(Collection< ? > list, String delimeter) {
-		return join(delimeter, list);
+	public static String join(Collection<?> list) {
+		return join(list, ",");
 	}
 
-	public static String join(String delimeter, Collection< ? >... list) {
-		StringBuilder sb = new StringBuilder();
-		String del = "";
-		if (list != null) {
-			for (Collection< ? > l : list) {
-				for (Object item : l) {
-					sb.append(del);
-					sb.append(item);
-					del = delimeter;
-				}
-			}
-		}
-		return sb.toString();
-	}
-
-	public static String join(Object[] list, String delimeter) {
-		if (list == null)
+	public static String join(Collection<?> list, String delimeter) {
+		if (list == null || list.isEmpty())
 			return "";
 		StringBuilder sb = new StringBuilder();
 		String del = "";
@@ -1628,38 +1658,65 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return sb.toString();
 	}
 
-	public static String join(Collection< ? >... list) {
-		return join(",", list);
+	public static String join(Collection<?>... lists) {
+		return join(",", lists);
 	}
 
-	public static <T> String join(T list[]) {
+	public static String join(String delimeter, Collection<?>... lists) {
+		if (lists == null || lists.length == 0)
+			return "";
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+		for (Collection<?> list : lists) {
+			for (Object item : list) {
+				sb.append(del);
+				sb.append(item);
+				del = delimeter;
+			}
+		}
+		return sb.toString();
+	}
+
+	public static String join(Object[] list, String delimeter) {
+		if (list == null || list.length == 0)
+			return "";
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+		for (Object item : list) {
+			sb.append(del);
+			sb.append(item);
+			del = delimeter;
+		}
+		return sb.toString();
+	}
+
+	public static <T> String join(T[] list) {
 		return join(list, ",");
 	}
 
 	public static void split(String s, Collection<String> set) {
-
-		String elements[] = s.trim().split(LIST_SPLITTER);
-		for (String element : elements) {
-			if (element.length() > 0)
+		if (s == null || (s = s.trim()).isEmpty())
+			return;
+		for (String element : LIST_SPLITTER_PATTERN.split(s, 0)) {
+			if (!element.isEmpty())
 				set.add(element);
 		}
 	}
 
 	public static Collection<String> split(String s) {
-		return split(s, LIST_SPLITTER);
+		if (s == null || (s = s.trim()).isEmpty())
+			return Collections.emptyList();
+		return Arrays.asList(LIST_SPLITTER_PATTERN.split(s, 0));
 	}
 
 	public static Collection<String> split(String s, String splitter) {
-		if (s != null)
-			s = s.trim();
-		if (s == null || s.trim().length() == 0)
+		if (s == null || (s = s.trim()).isEmpty())
 			return Collections.emptyList();
-
-		return Arrays.asList(s.split(splitter));
+		return Arrays.asList(s.split(splitter, 0));
 	}
 
 	public static String merge(String... strings) {
-		ArrayList<String> result = new ArrayList<String>();
+		ArrayList<String> result = new ArrayList<>();
 		for (String s : strings) {
 			if (s != null)
 				split(s, result);
@@ -1682,7 +1739,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public String normalize(String f) {
 		if (f.startsWith(base.getAbsolutePath() + "/"))
-			return f.substring(base.getAbsolutePath().length() + 1);
+			return f.substring(base.getAbsolutePath()
+				.length() + 1);
 		return f;
 	}
 
@@ -1709,7 +1767,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public static class CL extends URLClassLoader {
 
 		CL(Processor p) {
-			super(new URL[0], p.getClass().getClassLoader());
+			super(new URL[0], p.getClass()
+				.getClassLoader());
 		}
 
 		void closex() {
@@ -1719,7 +1778,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				//
 				// Java 7 is a good boy, it has a close method
 				//
-				clazz.getMethod("close").invoke(this);
+				clazz.getMethod("close")
+					.invoke(this);
 				return;
 			} catch (Exception e) {
 				// ignore
@@ -1735,12 +1795,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				Field ucpField = clazz.getDeclaredField("ucp");
 				ucpField.setAccessible(true);
 				Object cp = ucpField.get(this);
-				Field loadersField = cp.getClass().getDeclaredField("loaders");
+				Field loadersField = cp.getClass()
+					.getDeclaredField("loaders");
 				loadersField.setAccessible(true);
-				Collection< ? > loaders = (Collection< ? >) loadersField.get(cp);
+				Collection<?> loaders = (Collection<?>) loadersField.get(cp);
 				for (Object loader : loaders) {
 					try {
-						Field loaderField = loader.getClass().getDeclaredField("jar");
+						Field loaderField = loader.getClass()
+							.getDeclaredField("jar");
 						loaderField.setAccessible(true);
 						JarFile jarFile = (JarFile) loaderField.get(loader);
 						jarFile.close();
@@ -1764,9 +1826,9 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		@Override
-		public Class< ? > loadClass(String name) throws ClassNotFoundException {
+		public Class<?> loadClass(String name) throws ClassNotFoundException {
 			try {
-				Class< ? > c = super.loadClass(name);
+				Class<?> c = super.loadClass(name);
 				return c;
 			} catch (Throwable t) {
 				StringBuilder sb = new StringBuilder();
@@ -1796,6 +1858,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return base != null && base.isDirectory() && propertiesFile != null && propertiesFile.isFile();
 	}
 
+	@Override
 	public boolean isOk() {
 		return isFailOk() || (getErrors().size() == 0);
 	}
@@ -1873,13 +1936,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				boolean match = false;
 				Pattern pat = Pattern.compile(p);
 				for (Iterator<String> i = errors.iterator(); i.hasNext();) {
-					if (pat.matcher(i.next()).find()) {
+					if (pat.matcher(i.next())
+						.find()) {
 						i.remove();
 						match = true;
 					}
 				}
 				for (Iterator<String> i = warnings.iterator(); i.hasNext();) {
-					if (pat.matcher(i.next()).find()) {
+					if (pat.matcher(i.next())
+						.find()) {
 						i.remove();
 						match = true;
 					}
@@ -1991,7 +2056,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				map.put(attr.substring(0, n), macro.process(attr.substring(n + 1)));
 			} else
 				throw new IllegalArgumentException(formatArrays(
-						"Invalid attribute on package-info.java in %s , %s. Must be <key>=<name> ", clazz, attr));
+					"Invalid attribute on package-info.java in %s , %s. Must be <key>=<name> ", clazz, attr));
 		}
 		return map;
 	}
@@ -2018,7 +2083,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (object == null)
 			return null;
 
-		if (object.getClass().isArray()) {
+		if (object.getClass()
+			.isArray()) {
 			return Arrays.toString(makePrintableArray(object));
 		}
 		return object;
@@ -2041,9 +2107,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return join(result);
 	}
 
-	public synchronized Class< ? > getClass(String type, File jar) throws Exception {
+	public synchronized Class<?> getClass(String type, File jar) throws Exception {
 		CL cl = getLoader();
-		cl.add(jar.toURI().toURL());
+		cl.add(jar.toURI()
+			.toURL());
 		return cl.loadClass(type);
 	}
 
@@ -2058,7 +2125,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		tm = tm.toUpperCase();
 		TimeUnit unit = TimeUnit.MILLISECONDS;
 		Matcher m = Pattern.compile("\\s*(\\d+)\\s*(NANOSECONDS|MICROSECONDS|MILLISECONDS|SECONDS|MINUTES|HOURS|DAYS)?")
-				.matcher(tm);
+			.matcher(tm);
 		if (m.matches()) {
 			long duration = Long.parseLong(tm);
 			String u = m.group(2);
@@ -2233,8 +2300,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			second = parent.iterable(inherit);
 		}
 
-		Iterable<String> iterable = Iterables.distinct(first, second,
-			o -> (o instanceof String) ? (String) o : null);
+		Iterable<String> iterable = Iterables.distinct(first, second, o -> (o instanceof String) ? (String) o : null);
 		return iterable;
 	}
 
@@ -2274,52 +2340,61 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Create a location object and add it to the locations
 	 */
-	List<Location> locations = new ArrayList<Location>();
+	List<Location> locations = new ArrayList<>();
 
 	static class SetLocationImpl extends Location implements SetLocation {
 		public SetLocationImpl(String s) {
 			this.message = s;
 		}
 
+		@Override
 		public SetLocation file(String file) {
 			this.file = file;
 			return this;
 		}
 
+		@Override
 		public SetLocation header(String header) {
 			this.header = header;
 			return this;
 		}
 
+		@Override
 		public SetLocation context(String context) {
 			this.context = context;
 			return this;
 		}
 
+		@Override
 		public SetLocation method(String methodName) {
 			this.methodName = methodName;
 			return this;
 		}
 
+		@Override
 		public SetLocation line(int n) {
 			this.line = n;
 			return this;
 		}
 
+		@Override
 		public SetLocation reference(String reference) {
 			this.reference = reference;
 			return this;
 		}
 
+		@Override
 		public SetLocation details(Object details) {
 			this.details = details;
 			return this;
 		}
 
+		@Override
 		public Location location() {
 			return this;
 		}
 
+		@Override
 		public SetLocation length(int length) {
 			this.length = length;
 			return this;
@@ -2333,6 +2408,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return loc;
 	}
 
+	@Override
 	public Location getLocation(String msg) {
 		for (Location l : locations)
 			if ((l.message != null) && l.message.equals(msg))
@@ -2350,12 +2426,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public FileLine getHeader(String header) throws Exception {
 		return getHeader(
-				Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE));
+			Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE));
 	}
 
 	public static Pattern toFullHeaderPattern(String header) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("^[ \t]*(").append(header).append(")(\\.[^\\s:=]*)?[ \t]*[ \t:=][ \t]*");
+		sb.append("^[ \t]*(")
+			.append(header)
+			.append(")(\\.[^\\s:=]*)?[ \t]*[ \t:=][ \t]*");
 		sb.append("[^\\\\\n\r]*(\\\\\n[^\\\\\n\r]*)*");
 		try {
 			return Pattern.compile(sb.toString(), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE);
@@ -2429,7 +2507,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public static FileLine findHeader(File f, String header) throws IOException {
 		return findHeader(f,
-				Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE));
+			Pattern.compile("^[ \t]*" + Pattern.quote(header), Pattern.MULTILINE + Pattern.CASE_INSENSITIVE));
 	}
 
 	public static FileLine findHeader(File f, Pattern header) throws IOException {
@@ -2499,7 +2577,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				upto = Version.HIGHEST;
 				return true;
 			}
-			if (!Version.VERSION.matcher(uptov).matches()) {
+			if (!Version.VERSION.matcher(uptov)
+				.matches()) {
 				error("The %s given version is not a version: %s", UPTO, uptov);
 				upto = Version.HIGHEST;
 				return true;
@@ -2517,7 +2596,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws Exception
 	 */
 
-	public void report(Map<String,Object> table) throws Exception {
+	public void report(Map<String, Object> table) throws Exception {
 		table.put("Included Files", getIncluded());
 		table.put("Base", getBase());
 		table.put("Properties", getProperties0().entrySet());
@@ -2642,7 +2721,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return null;
 		}
 
-		return propertiesFile.getAbsolutePath().replaceAll("\\\\", "/");
+		return propertiesFile.getAbsolutePath()
+			.replaceAll("\\\\", "/");
 	}
 
 	/**
@@ -2679,7 +2759,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (Verifier.isVersion(v)) {
 			Version l = new Version(v);
 			Version h = isProvider ? new Version(l.getMajor(), l.getMinor() + 1, 0)
-					: new Version(l.getMajor() + 1, 0, 0);
+				: new Version(l.getMajor() + 1, 0, 0);
 			vr = new VersionRange(true, l, h, false);
 		} else if (Verifier.isVersionRange(v)) {
 			vr = new VersionRange(v);
@@ -2693,7 +2773,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public String _findfile(String args[]) {
 		File f = getFile(args[1]);
-		List<String> files = new ArrayList<String>();
+		List<String> files = new ArrayList<>();
 		tree(files, f, "", new Instruction(args[2]));
 		return join(files);
 	}

@@ -15,18 +15,19 @@ import org.osgi.resource.Resource;
 class CapReq {
 
 	static enum MODE {
-		Capability, Requirement
+		Capability,
+		Requirement
 	}
 
 	private final MODE					mode;
 	private final String				namespace;
 	private final Resource				resource;
-	private final Map<String,String>	directives;
-	private final Map<String,Object>	attributes;
+	private final Map<String, String>	directives;
+	private final Map<String, Object>	attributes;
 	private transient int				hashCode	= 0;
 
-	CapReq(MODE mode, String namespace, Resource resource, Map<String,String> directives,
-			Map<String,Object> attributes) {
+	CapReq(MODE mode, String namespace, Resource resource, Map<String, String> directives,
+		Map<String, Object> attributes) {
 		this.mode = requireNonNull(mode);
 		this.namespace = requireNonNull(namespace);
 		this.resource = resource;
@@ -38,11 +39,11 @@ class CapReq {
 		return namespace;
 	}
 
-	public Map<String,String> getDirectives() {
+	public Map<String, String> getDirectives() {
 		return directives;
 	}
 
-	public Map<String,Object> getAttributes() {
+	public Map<String, Object> getAttributes() {
 		return attributes;
 	}
 
@@ -74,35 +75,35 @@ class CapReq {
 	}
 
 	private boolean equalsCap(Capability other) {
-		if (!namespace.equals(other.getNamespace()))
+		if (!Objects.equals(namespace, other.getNamespace()))
 			return false;
-		if (!attributes.equals(other.getAttributes()))
+		if (!Objects.equals(attributes, other.getAttributes()))
 			return false;
-		if (!directives.equals(other.getDirectives()))
+		if (!Objects.equals(directives, other.getDirectives()))
 			return false;
-		return (resource == null) ? (other.getResource() == null) : resource.equals(other.getResource());
+		return Objects.equals(resource, other.getResource());
 	}
 
 	private boolean equalsNative(CapReq other) {
 		if (mode != other.mode)
 			return false;
-		if (!namespace.equals(other.namespace))
+		if (!Objects.equals(namespace, other.getNamespace()))
 			return false;
-		if (!attributes.equals(other.attributes))
+		if (!Objects.equals(attributes, other.getAttributes()))
 			return false;
-		if (!directives.equals(other.directives))
+		if (!Objects.equals(directives, other.getDirectives()))
 			return false;
-		return (resource == null) ? (other.resource == null) : resource.equals(other.resource);
+		return Objects.equals(resource, other.getResource());
 	}
 
 	private boolean equalsReq(Requirement other) {
-		if (!namespace.equals(other.getNamespace()))
+		if (!Objects.equals(namespace, other.getNamespace()))
 			return false;
-		if (!attributes.equals(other.getAttributes()))
+		if (!Objects.equals(attributes, other.getAttributes()))
 			return false;
-		if (!directives.equals(other.getDirectives()))
+		if (!Objects.equals(directives, other.getDirectives()))
 			return false;
-		return (resource == null) ? (other.getResource() == null) : resource.equals(other.getResource());
+		return Objects.equals(resource, other.getResource());
 	}
 
 	@Override
@@ -110,7 +111,9 @@ class CapReq {
 		StringBuilder builder = new StringBuilder();
 		if (mode == MODE.Capability) {
 			Object value = attributes.get(namespace);
-			builder.append(namespace).append('=').append(value);
+			builder.append(namespace)
+				.append('=')
+				.append(value);
 		} else {
 			String filter = directives.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 			builder.append(filter);
@@ -122,7 +125,9 @@ class CapReq {
 	}
 
 	protected void toString(StringBuilder sb) {
-		sb.append("[").append(namespace).append("]");
+		sb.append("[")
+			.append(namespace)
+			.append("]");
 		sb.append(attributes);
 		sb.append(directives);
 	}

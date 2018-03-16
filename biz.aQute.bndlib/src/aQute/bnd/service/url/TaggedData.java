@@ -52,11 +52,12 @@ public class TaggedData implements Closeable {
 	public TaggedData(URLConnection con, InputStream in, File file) throws Exception {
 		this.con = con;
 		this.responseCode = con instanceof HttpURLConnection ? ((HttpURLConnection) con).getResponseCode()
-				: (in != null ? 200 : -1);
+			: (in != null ? 200 : -1);
 		this.in = in == null && con != null && (responseCode / 100 == 2) ? con.getInputStream() : in;
 		this.file = file;
 		this.etag = con.getHeaderField("ETag");
-		this.url = con.getURL().toURI();
+		this.url = con.getURL()
+			.toURI();
 		this.message = getMessage(con);
 	}
 
@@ -95,11 +96,13 @@ public class TaggedData implements Closeable {
 	final static Pattern	HTML_TAGS_P	= Pattern.compile("<!--.*-->|<[^>]+>");
 	final static Pattern	NEWLINES_P	= Pattern.compile("(\\s*\n\r?\\s*)+");
 	final static Pattern	ENTITIES_P	= Pattern.compile("&(#(?<nr>[0-9]+))|(?<name>[a-z]+);",
-			Pattern.CASE_INSENSITIVE);
+		Pattern.CASE_INSENSITIVE);
 
 	private String cleanHtml(CharSequence sb) {
-		sb = HTML_TAGS_P.matcher(sb).replaceAll("");
-		sb = NEWLINES_P.matcher(sb).replaceAll("\n");
+		sb = HTML_TAGS_P.matcher(sb)
+			.replaceAll("");
+		sb = NEWLINES_P.matcher(sb)
+			.replaceAll("\n");
 		StringBuffer x = new StringBuffer();
 		Matcher m = ENTITIES_P.matcher(sb);
 		while (m.find()) {
@@ -206,7 +209,7 @@ public class TaggedData implements Closeable {
 	@Override
 	public String toString() {
 		return "TaggedData [tag=" + getTag() + ", code=" + getResponseCode() + ", modified=" + new Date(getModified())
-				+ ", url=" + getUrl() + ", state=" + getState() + (message == null ? "" : ", msg=" + message) + "]";
+			+ ", url=" + getUrl() + ", state=" + getState() + (message == null ? "" : ", msg=" + message) + "]";
 	}
 
 	public boolean isOk() {

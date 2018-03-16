@@ -21,14 +21,19 @@ import org.w3c.dom.NodeList;
 public class MavenDependencyGraph {
 	final static DocumentBuilderFactory	docFactory		= DocumentBuilderFactory.newInstance();
 	final static XPathFactory			xpathFactory	= XPathFactory.newInstance();
-	final List<Artifact>				dependencies	= new ArrayList<Artifact>();
-	final List<URL>						repositories	= new ArrayList<URL>();
+	final List<Artifact>				dependencies	= new ArrayList<>();
+	final List<URL>						repositories	= new ArrayList<>();
 	final XPath							xpath			= xpathFactory.newXPath();
-	final Map<URI,Artifact>				cache			= new HashMap<URI,Artifact>();
+	final Map<URI, Artifact>			cache			= new HashMap<>();
 	Artifact							root;
 
 	enum Scope {
-		COMPILE, RUNTIME, TEST, PROVIDED, SYSTEM, IMPORT,
+		COMPILE,
+		RUNTIME,
+		TEST,
+		PROVIDED,
+		SYSTEM,
+		IMPORT,
 	}
 
 	public class Artifact {
@@ -40,7 +45,7 @@ public class MavenDependencyGraph {
 		boolean			optional;
 		String			type;
 		URL				url;
-		List<Artifact>	dependencies	= new ArrayList<Artifact>();
+		List<Artifact>	dependencies	= new ArrayList<>();
 
 		public Artifact(URL url) throws Exception {
 			if (url != null) {
@@ -63,7 +68,7 @@ public class MavenDependencyGraph {
 				for (int i = 0; i < evaluate.getLength(); i++) {
 					Node childNode = evaluate.item(i);
 					Artifact artifact = getArtifact(xpath.evaluate("groupId", childNode),
-							xpath.evaluate("artifactId", childNode), xpath.evaluate("version", childNode));
+						xpath.evaluate("artifactId", childNode), xpath.evaluate("version", childNode));
 					add(artifact);
 				}
 			}

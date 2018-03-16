@@ -16,8 +16,8 @@ import aQute.service.reporter.Reporter;
  * more than necessary because different places began parsing on their own.
  */
 class ClassDataCollectors implements Closeable {
-	final List<ClassDataCollector>	delegates	= new ArrayList<ClassDataCollector>();
-	final List<ClassDataCollector>	shortlist	= new ArrayList<ClassDataCollector>();
+	final List<ClassDataCollector>	delegates	= new ArrayList<>();
+	final List<ClassDataCollector>	shortlist	= new ArrayList<>();
 	final Reporter					reporter;
 
 	ClassDataCollectors(Reporter reporter) {
@@ -41,6 +41,7 @@ class ClassDataCollectors implements Closeable {
 		}
 	}
 
+	@Override
 	public void close() {
 		for (ClassDataCollector cd : delegates)
 			try {
@@ -203,7 +204,7 @@ class ClassDataCollectors implements Closeable {
 
 		@Override
 		public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags)
-				throws Exception {
+			throws Exception {
 			for (ClassDataCollector cd : shortlist)
 				try {
 					cd.innerClass(innerClass, outerClass, innerName, innerClassAccessFlags);

@@ -17,9 +17,9 @@ import aQute.lib.io.IO;
 @BndPlugin(name = "ant")
 public class AntPlugin extends LifeCyclePlugin {
 	static String DEFAULT = "<?xml version='1.0' encoding='UTF-8'?>\n" + //
-			"<project name='project' default='build'>\n" + //
-			"        <import file='../cnf/build.xml' />\n" //
-			+ "</project>\n";
+		"<project name='project' default='build'>\n" + //
+		"        <import file='../cnf/build.xml' />\n" //
+		+ "</project>\n";
 
 	@Override
 	public void created(Project p) throws IOException {

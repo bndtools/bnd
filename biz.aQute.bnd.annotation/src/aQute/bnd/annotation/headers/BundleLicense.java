@@ -72,7 +72,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({
-		ElementType.ANNOTATION_TYPE, ElementType.TYPE
+	ElementType.ANNOTATION_TYPE, ElementType.TYPE
 })
 public @interface BundleLicense {
 	/**

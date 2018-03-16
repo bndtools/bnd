@@ -26,7 +26,7 @@ public class Activator extends Thread implements BundleActivator {
 	private File				cache;
 	private ServerSocket		server;
 	private BundleContext		context;
-	private List<AgentServer>	agents	= new CopyOnWriteArrayList<AgentServer>();
+	private List<AgentServer>	agents	= new CopyOnWriteArrayList<>();
 
 	@Override
 	public void start(final BundleContext context) throws Exception {
@@ -47,8 +47,7 @@ public class Activator extends Thread implements BundleActivator {
 		Matcher m = Agent.PORT_P.matcher(port);
 		if (!m.matches())
 			throw new IllegalArgumentException(
-					"Invalid port specification in property aQute.agent.server.port, expects [<host>:]<port> : "
-							+ port);
+				"Invalid port specification in property aQute.agent.server.port, expects [<host>:]<port> : " + port);
 
 		//
 		// See if the host was set, otherwise use localhost
@@ -79,6 +78,7 @@ public class Activator extends Thread implements BundleActivator {
 	/**
 	 * Main dispatcher loop
 	 */
+	@Override
 	public void run() {
 
 		try {
@@ -99,7 +99,8 @@ public class Activator extends Thread implements BundleActivator {
 
 					final AgentServer sa = new AgentServer("<>", context, cache);
 					agents.add(sa);
-					Link<Agent,Supervisor> link = new Link<Agent,Supervisor>(Supervisor.class, sa, socket) {
+					Link<Agent, Supervisor> link = new Link<Agent, Supervisor>(Supervisor.class, sa, socket) {
+						@Override
 						public void close() throws IOException {
 							agents.remove(sa);
 							super.close();

@@ -35,12 +35,13 @@ import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 @SuppressWarnings({
-		"resource", "restriction"
+	"resource", "restriction"
 })
 public class SpecMetatypeTest extends TestCase {
 
 	public enum Foo {
-		A, B
+		A,
+		B
 	}
 
 	/**
@@ -151,11 +152,14 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, Naming.class.getName());
 		b.build();
 		System.out.println(b.getErrors());
-		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getErrors()
+			.size());
 		System.out.println(b.getWarnings());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getWarnings()
+			.size());
 
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Naming.xml");
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Naming.xml");
 		IO.copy(r.openInputStream(), System.err);
 		XmlTester xt = xmlTester12(r);
 
@@ -200,13 +204,13 @@ public class SpecMetatypeTest extends TestCase {
 	/**
 	 * Test method naming options with '.' and reserved names
 	 */
-	
+
 	@ObjectClassDefinition
 	public static @interface Naming14 {
 		String PREFIX_ = "test.";
 
 		String a$_$b() default "foo"; // test.a-b
-	
+
 		@AttributeDefinition(name = "a-b")
 		String xa$_$b() default "foo"; // test.xa-b
 
@@ -224,11 +228,14 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, Naming14.class.getName());
 		b.build();
 		System.out.println(b.getErrors());
-		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getErrors()
+			.size());
 		System.out.println(b.getWarnings());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getWarnings()
+			.size());
 
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Naming14.xml");
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Naming14.xml");
 		IO.copy(r.openInputStream(), System.err);
 		XmlTester xt = xmlTester14(r);
 
@@ -252,7 +259,8 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, ADCollision.class.getName());
 		b.build();
 		System.out.println(b.getErrors());
-		assertEquals(1, b.getErrors().size());
+		assertEquals(1, b.getErrors()
+			.size());
 	}
 
 	@ObjectClassDefinition(id = "duplicate")
@@ -273,55 +281,56 @@ public class SpecMetatypeTest extends TestCase {
 
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "1".length()) + "*");
 		b.build();
-		assertEquals(1, b.getErrors().size());
+		assertEquals(1, b.getErrors()
+			.size());
 	}
 
 	@ObjectClassDefinition(pid = {
-			"1"
+		"1"
 	})
 	public static interface DupPid1 {
 
 	}
 
 	@ObjectClassDefinition(pid = {
-			"1"
+		"1"
 	})
 	public static interface DupPid2 {
 
 	}
 
 	@ObjectClassDefinition(factoryPid = {
-			"2"
+		"2"
 	})
 	public static interface DupPid3 {
 
 	}
 
 	@ObjectClassDefinition(factoryPid = {
-			"2"
+		"2"
 	})
 	public static interface DupPid4 {
 
 	}
 
 	@ObjectClassDefinition(pid = {
-			"3"
+		"3"
 	}, factoryPid = {
-			"3"
+		"3"
 	})
 	public static interface DupPid5 {
 
 	}
 
 	@ObjectClassDefinition(pid = {
-			"4"
+		"4"
 	})
 	public static interface DupPid6 {
 
 	}
 
 	@ObjectClassDefinition(factoryPid = {
-			"4"
+		"4"
 	})
 	public static interface DupPid7 {
 
@@ -336,7 +345,8 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "1".length()) + "*");
 		b.build();
 		System.err.println(b.getErrors());
-		assertEquals(4, b.getErrors().size());
+		assertEquals(4, b.getErrors()
+			.size());
 	}
 
 	/**
@@ -361,7 +371,7 @@ public class SpecMetatypeTest extends TestCase {
 		}
 
 		@Override
-		public boolean addAll(int arg0, Collection< ? extends T> arg1) {
+		public boolean addAll(int arg0, Collection<? extends T> arg1) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -421,7 +431,7 @@ public class SpecMetatypeTest extends TestCase {
 		}
 
 		@Override
-		public boolean addAll(Collection< ? extends T> arg0) {
+		public boolean addAll(Collection<? extends T> arg0) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -439,7 +449,7 @@ public class SpecMetatypeTest extends TestCase {
 		}
 
 		@Override
-		public boolean containsAll(Collection< ? > arg0) {
+		public boolean containsAll(Collection<?> arg0) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -463,13 +473,13 @@ public class SpecMetatypeTest extends TestCase {
 		}
 
 		@Override
-		public boolean removeAll(Collection< ? > arg0) {
+		public boolean removeAll(Collection<?> arg0) {
 			// TODO Auto-generated method stub
 			return false;
 		}
 
 		@Override
-		public boolean retainAll(Collection< ? > arg0) {
+		public boolean retainAll(Collection<?> arg0) {
 			// TODO Auto-generated method stub
 			return false;
 		}
@@ -525,11 +535,15 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, CollectionsTest.class.getName());
 		b.build();
 		System.out.println(b.getErrors());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 
-		System.err.println(b.getJar().getResources());
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$CollectionsTest.xml");
+		System.err.println(b.getJar()
+			.getResources());
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$CollectionsTest.xml");
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
@@ -552,7 +566,9 @@ public class SpecMetatypeTest extends TestCase {
 	@ObjectClassDefinition
 	public static interface Enums {
 		enum X {
-			requireConfiguration, optionalConfiguration, ignoreConfiguration
+			requireConfiguration,
+			optionalConfiguration,
+			ignoreConfiguration
 		}
 
 		X r();
@@ -563,13 +579,12 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	private static final String[]	optionLabels	= {
-															"requireConfiguration", "optionalConfiguration",
-															"ignoreConfiguration"
-														};
+		"requireConfiguration", "optionalConfiguration", "ignoreConfiguration"
+	};
 	private static final String[]	optionValues	= optionLabels;
 
 	private void assertAD(XmlTester xt, String id, String name, String[] optionLabels, String[] optionValues)
-			throws XPathExpressionException {
+		throws XPathExpressionException {
 		assertAD(xt, id, name, null, null, null, 0, "String", null, optionLabels, optionValues);
 	}
 
@@ -580,10 +595,13 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, Enums.class.getName() + "*");
 		b.build();
 		System.err.println(b.getErrors());
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Enums.xml");
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Enums.xml");
 		IO.copy(r.openInputStream(), System.err);
 
 		XmlTester xt = xmlTester12(r);
@@ -597,42 +615,42 @@ public class SpecMetatypeTest extends TestCase {
 	 * Test the OCD settings
 	 */
 	@ObjectClassDefinition(pid = {
-			"ocdEmptyPid"
+		"ocdEmptyPid"
 	})
 	public static interface OCDEmpty {}
 
 	@ObjectClassDefinition(description = "description", pid = {
-			"ocdDescriptionPid"
+		"ocdDescriptionPid"
 	})
 	public static interface OCDDescription {}
 
 	@ObjectClassDefinition(pid = {
-			"ocdDesignatePidOnlyPid"
+		"ocdDesignatePidOnlyPid"
 	})
 	public static interface OCDDesignatePidOnly {}
 
 	@ObjectClassDefinition(factoryPid = {
-			"ocdDesignatePidFactoryFactoryPid"
+		"ocdDesignatePidFactoryFactoryPid"
 	})
 	public static interface OCDDesignatePidFactory {}
 
 	@ObjectClassDefinition(id = "id", pid = {
-			"ocdIdPid"
+		"ocdIdPid"
 	})
 	public static interface OCDId {}
 
 	@ObjectClassDefinition(id = "id2", pid = {
-			"ocdId2Pid"
+		"ocdId2Pid"
 	})
 	public static interface OCDIdWithPid {}
 
 	@ObjectClassDefinition(localization = "localization", pid = {
-			"ocdLocalizationPid"
+		"ocdLocalizationPid"
 	})
 	public static interface OCDLocalization {}
 
 	@ObjectClassDefinition(name = "name", pid = {
-			"ocdNamePid"
+		"ocdNamePid"
 	})
 	public static interface OCDName {}
 
@@ -644,38 +662,43 @@ public class SpecMetatypeTest extends TestCase {
 
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, name.substring(0, name.length() - "Empty".length()) + "*");
 		b.build();
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
-		System.err.println(b.getJar().getResources().keySet());
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
 
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDEmpty", "test.metatype.SpecMetatypeTest$OCDEmpty",
-				"Test metatype spec metatype test OCDEmpty", null, "ocdEmptyPid", false, null);
+			"Test metatype spec metatype test OCDEmpty", null, "ocdEmptyPid", false, null);
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDName", "test.metatype.SpecMetatypeTest$OCDName", "name", null,
-				"ocdNamePid", false, null);
+			"ocdNamePid", false, null);
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDDescription", "test.metatype.SpecMetatypeTest$OCDDescription",
-				"Test metatype spec metatype test OCDDescription", "description", "ocdDescriptionPid", false, null);
+			"Test metatype spec metatype test OCDDescription", "description", "ocdDescriptionPid", false, null);
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDDesignatePidOnly",
-				"test.metatype.SpecMetatypeTest$OCDDesignatePidOnly",
-				"Test metatype spec metatype test OCDDesignate pid only", null, "ocdDesignatePidOnlyPid", false, null);
+			"test.metatype.SpecMetatypeTest$OCDDesignatePidOnly",
+			"Test metatype spec metatype test OCDDesignate pid only", null, "ocdDesignatePidOnlyPid", false, null);
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDDesignatePidFactory",
-				"test.metatype.SpecMetatypeTest$OCDDesignatePidFactory",
-				"Test metatype spec metatype test OCDDesignate pid factory", null, "ocdDesignatePidFactoryFactoryPid",
-				true, null);
+			"test.metatype.SpecMetatypeTest$OCDDesignatePidFactory",
+			"Test metatype spec metatype test OCDDesignate pid factory", null, "ocdDesignatePidFactoryFactoryPid", true,
+			null);
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDId", "id", "Id", // 5.2
 																			// name
 																			// is
 																			// derived
 																			// from
 																			// id
-				null, "ocdIdPid", false, null);
+			null, "ocdIdPid", false, null);
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDIdWithPid", "id2", "Id2", null, "ocdId2Pid", false, null);
 		assertOCD(b, "test.metatype.SpecMetatypeTest$OCDLocalization", "test.metatype.SpecMetatypeTest$OCDLocalization",
-				"Test metatype spec metatype test OCDLocalization", null, "ocdLocalizationPid", false, "localization");
+			"Test metatype spec metatype test OCDLocalization", null, "ocdLocalizationPid", false, "localization");
 	}
 
 	private void assertOCD(Builder b, String cname, String id, String name, String description, String designate,
-			boolean factory, String localization) throws Exception {
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/" + id + ".xml");
+		boolean factory, String localization) throws Exception {
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/" + id + ".xml");
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 		XmlTester xt = xmlTester13(r);
@@ -683,7 +706,7 @@ public class SpecMetatypeTest extends TestCase {
 		xt.assertExactAttribute(name, "metatype:MetaData/OCD/@name");
 		String expected = localization == null ? "OSGI-INF/I10n/" + cname : localization;
 		xt.assertExactAttribute(localization == null ? "OSGI-INF/l10n/" + cname : localization,
-				"metatype:MetaData/@localization");
+			"metatype:MetaData/@localization");
 		xt.assertExactAttribute(description == null ? "" : description, "metatype:MetaData/OCD/@description");
 
 		if (designate != null) {
@@ -718,7 +741,7 @@ public class SpecMetatypeTest extends TestCase {
 		String withMin();
 
 		@AttributeDefinition(defaultValue = {
-				"deflt"
+			"deflt"
 		})
 		String withDefault();
 
@@ -747,12 +770,12 @@ public class SpecMetatypeTest extends TestCase {
 		String a();
 
 		@AttributeDefinition(options = {
-				@Option(label = "a", value = "a"), @Option(label = "b", value = "b")
+			@Option(label = "a", value = "a"), @Option(label = "b", value = "b")
 		})
 		String valuesOnly();
 
 		@AttributeDefinition(options = {
-				@Option(label = "a", value = "A"), @Option(label = "b", value = "B")
+			@Option(label = "a", value = "A"), @Option(label = "b", value = "B")
 		})
 		String labelsAndValues();
 
@@ -769,10 +792,15 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestAD.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestAD.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
-		System.err.println(b.getJar().getResources().keySet());
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestAD.xml");
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
@@ -792,14 +820,14 @@ public class SpecMetatypeTest extends TestCase {
 		assertAD(xt, "withString", "With string", null, null, null, 0, "Integer", null, null, null);
 		assertAD(xt, "a", "A", null, null, null, 0, "String", "description_xxx\"xxx'xxx", null, null);
 		assertAD(xt, "valuesOnly", "Values only", null, null, null, 0, "String", null, new String[] {
-				"a", "b"
+			"a", "b"
 		}, new String[] {
-				"a", "b"
+			"a", "b"
 		});
 		assertAD(xt, "labelsAndValues", "Labels and values", null, null, null, 0, "String", null, new String[] {
-				"a", "b"
+			"a", "b"
 		}, new String[] {
-				"A", "B"
+			"A", "B"
 		});
 	}
 
@@ -839,7 +867,7 @@ public class SpecMetatypeTest extends TestCase {
 
 	@ObjectClassDefinition(description = "adinheritance-child")
 	public static interface TestADWithInheritanceChild
-			extends TestADWithInheritanceSuperOne, TestADWithInheritanceSuperTwo {
+		extends TestADWithInheritanceSuperOne, TestADWithInheritanceSuperTwo {
 		@AttributeDefinition
 		String fromChild();
 	}
@@ -848,17 +876,23 @@ public class SpecMetatypeTest extends TestCase {
 		Builder b = new Builder();
 		b.addClasspath(new File("bin"));
 		b.setProperty("Export-Package", "test.metatype");
-		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestADWithInheritanceChild.class.getName().substring(0,
-				TestADWithInheritanceChild.class.getName().length() - "Child".length()) + "*");
+		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestADWithInheritanceChild.class.getName()
+			.substring(0, TestADWithInheritanceChild.class.getName()
+				.length() - "Child".length())
+			+ "*");
 		// b.setProperty("-metatypeannotations-inherit", "true");
 		b.build();
 		Resource r = b.getJar()
-				.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestADWithInheritanceChild.xml");
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestADWithInheritanceChild.xml");
 		System.err.println(b.getErrors());
-		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getErrors()
+			.size());
 		System.err.println(b.getWarnings());
-		assertEquals(0, b.getWarnings().size());
-		System.err.println(b.getJar().getResources().keySet());
+		assertEquals(0, b.getWarnings()
+			.size());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
@@ -871,8 +905,7 @@ public class SpecMetatypeTest extends TestCase {
 
 	@SuppressWarnings("null")
 	private void assertAD(XmlTester xt, String id, String name, String min, String max, String deflt, int cardinality,
-			String type, String description, String[] optionLabels, String[] optionValues)
-					throws XPathExpressionException {
+		String type, String description, String[] optionLabels, String[] optionValues) throws XPathExpressionException {
 		xt.assertExactAttribute(name, "metatype:MetaData/OCD/AD[@id='" + id + "']/@name");
 		xt.assertExactAttribute(id, "metatype:MetaData/OCD/AD[@id='" + id + "']/@id");
 		xt.assertExactAttribute(min == null ? "" : min, "metatype:MetaData/OCD/AD[@id='" + id + "']/@min");
@@ -885,17 +918,17 @@ public class SpecMetatypeTest extends TestCase {
 		}
 		xt.assertExactAttribute(type, "metatype:MetaData/OCD/AD[@id='" + id + "']/@type");
 		xt.assertExactAttribute(description == null ? "" : description,
-				"metatype:MetaData/OCD/AD[@id='" + id + "']/@description");
+			"metatype:MetaData/OCD/AD[@id='" + id + "']/@description");
 		assertEquals(optionLabels == null, optionValues == null);
 		if (optionLabels != null) {
 			assertEquals(optionLabels.length, optionValues.length);
 
 			// option count is correct
 			xt.assertNumber(Double.valueOf(optionLabels.length),
-					"count(metatype:MetaData/OCD/AD[@id='" + id + "']/Option)");
+				"count(metatype:MetaData/OCD/AD[@id='" + id + "']/Option)");
 			for (int i = 0; i < optionLabels.length; i++) {
 				String expr = "metatype:MetaData/OCD/AD[@id='" + id + "']/Option[@label='" + optionLabels[i]
-						+ "']/@value";
+					+ "']/@value";
 				xt.assertExactAttribute(optionValues[i], expr);
 			}
 
@@ -1006,12 +1039,17 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestReturnTypes.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestReturnTypes.xml");
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestReturnTypes.xml");
 		System.err.println(b.getErrors());
-		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getErrors()
+			.size());
 		System.err.println(b.getWarnings());
-		assertEquals(0, b.getWarnings().size());
-		System.err.println(b.getJar().getResources().keySet());
+		assertEquals(0, b.getWarnings()
+			.size());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
@@ -1109,7 +1147,7 @@ public class SpecMetatypeTest extends TestCase {
 	 * @author aqute
 	 */
 	@ObjectClassDefinition(description = "simple", name = "TestSimple", pid = {
-			"simplePid", "$"
+		"simplePid", "$"
 	})
 	public static interface TestSimple {
 		@AttributeDefinition
@@ -1120,7 +1158,7 @@ public class SpecMetatypeTest extends TestCase {
 		Collection<String> stringCollection();
 
 		@AttributeDefinition(defaultValue = {
-				"true"
+			"true"
 		}, required = false)
 		boolean enabled();
 	}
@@ -1131,7 +1169,8 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestSimple.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestSimple.xml");
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestSimple.xml");
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
@@ -1147,7 +1186,8 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestSimple.class.getName());
 		b.setProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS, "version;minimum=1.3.0");
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestSimple.xml");
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestSimple.xml");
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
@@ -1157,10 +1197,16 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	private void testSimple(Builder b, XmlTester xt) throws XPathExpressionException {
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
-		System.err.println(b.getJar().getResources().keySet());
-		for (String res : b.getJar().getResources().keySet()) {
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
+		for (String res : b.getJar()
+			.getResources()
+			.keySet()) {
 			if (res.endsWith(".xml"))
 				System.err.println(res);
 		}
@@ -1184,35 +1230,37 @@ public class SpecMetatypeTest extends TestCase {
 		int integer() default 1;
 
 		int[] integers() default {
-				2, 3
+			2, 3
 		};
 
 		boolean bool() default true;
 
 		boolean[] bools() default {
-				true, false
+			true, false
 		};
 
-		Class< ? > clazz() default String.class;
+		Class<?> clazz() default String.class;
 
-		Class< ? >[] clazzs() default {
-				Integer.class, Double.class
+		Class<?>[] clazzs() default {
+			Integer.class, Double.class
 		};
 
 		enum L {
-			A, B, C
+			A,
+			B,
+			C
 		}
 
 		L l() default L.A;
 
 		L[] ls() default {
-				L.B, L.C
+			L.B, L.C
 		};
 
 		String string() default "foo";
 
 		String[] strings() default {
-				"bar", "baz"
+			"bar", "baz"
 		};
 	}
 
@@ -1222,12 +1270,17 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, AnnotationDefaults.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$AnnotationDefaults.xml");
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$AnnotationDefaults.xml");
 		System.err.println(b.getErrors());
-		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getErrors()
+			.size());
 		System.err.println(b.getWarnings());
-		assertEquals(0, b.getWarnings().size());
-		System.err.println(b.getJar().getResources().keySet());
+		assertEquals(0, b.getWarnings()
+			.size());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
@@ -1240,7 +1293,7 @@ public class SpecMetatypeTest extends TestCase {
 
 		xt.assertExactAttribute(String.class.getName(), "metatype:MetaData/OCD/AD[@id='clazz']/@default");
 		xt.assertExactAttribute(Integer.class.getName() + "," + Double.class.getName(),
-				"metatype:MetaData/OCD/AD[@id='clazzs']/@default");
+			"metatype:MetaData/OCD/AD[@id='clazzs']/@default");
 
 		xt.assertExactAttribute("A", "metatype:MetaData/OCD/AD[@id='l']/@default");
 		xt.assertExactAttribute("B,C", "metatype:MetaData/OCD/AD[@id='ls']/@default");
@@ -1261,8 +1314,10 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, Abstract.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Abstract.xml");
-		assertEquals(1, b.getErrors().size());
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Abstract.xml");
+		assertEquals(1, b.getErrors()
+			.size());
 		assertNull(r);
 	}
 
@@ -1282,23 +1337,30 @@ public class SpecMetatypeTest extends TestCase {
 			b.addClasspath(new File("bin"));
 			b.setProperty("Export-Package", "test.metatype");
 			b.setProperty(Constants.METATYPE_ANNOTATIONS,
-					NestedInner.class.getName() + "," + NestedOuter.class.getName());
+				NestedInner.class.getName() + "," + NestedOuter.class.getName());
 			b.build();
-			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$NestedOuter.xml");
-			assertEquals(1, b.getErrors().size());
+			Resource r = b.getJar()
+				.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$NestedOuter.xml");
+			assertEquals(1, b.getErrors()
+				.size());
 		}
 		{
 			Builder b = new Builder();
 			b.addClasspath(new File("bin"));
 			b.setProperty("Export-Package", "test.metatype");
 			b.setProperty(Constants.METATYPE_ANNOTATIONS,
-					NestedInner.class.getName() + "," + NestedOuter.class.getName());
+				NestedInner.class.getName() + "," + NestedOuter.class.getName());
 			b.setProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS, "nested");
 			b.build();
-			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$NestedOuter.xml");
-			assertEquals(0, b.getErrors().size());
-			assertEquals(0, b.getWarnings().size());
-			System.err.println(b.getJar().getResources().keySet());
+			Resource r = b.getJar()
+				.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$NestedOuter.xml");
+			assertEquals(0, b.getErrors()
+				.size());
+			assertEquals(0, b.getWarnings()
+				.size());
+			System.err.println(b.getJar()
+				.getResources()
+				.keySet());
 			assertNotNull(r);
 			IO.copy(r.openInputStream(), System.err);
 
@@ -1336,10 +1398,19 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty(Constants.DSANNOTATIONS, "test.metatype.SpecMetatypeTest$Designate*");
 		b.build();
 		{
-			Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$DesignateOCD.xml");
-			assertEquals(b.getErrors().toString(), 0, b.getErrors().size());
-			assertEquals(b.getWarnings().toString(), 0, b.getWarnings().size());
-			System.err.println(b.getJar().getResources().keySet());
+			Resource r = b.getJar()
+				.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$DesignateOCD.xml");
+			assertEquals(b.getErrors()
+				.toString(), 0,
+				b.getErrors()
+					.size());
+			assertEquals(b.getWarnings()
+				.toString(), 0,
+				b.getWarnings()
+					.size());
+			System.err.println(b.getJar()
+				.getResources()
+				.keySet());
 			assertNotNull(r);
 			IO.copy(r.openInputStream(), System.err);
 
@@ -1349,19 +1420,19 @@ public class SpecMetatypeTest extends TestCase {
 
 			xt.assertExactAttribute("simplePid", "metatype:MetaData/Designate[1]/@factoryPid");
 			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD",
-					"metatype:MetaData/Designate[1]/Object/@ocdref");
+				"metatype:MetaData/Designate[1]/Object/@ocdref");
 
 			xt.assertExactAttribute("simplePidName", "metatype:MetaData/Designate[2]/@factoryPid");
 			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD",
-					"metatype:MetaData/Designate[2]/Object/@ocdref");
+				"metatype:MetaData/Designate[2]/Object/@ocdref");
 
 			xt.assertExactAttribute(DesignateComponent3.class.getName(), "metatype:MetaData/Designate[3]/@factoryPid");
 			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD",
-					"metatype:MetaData/Designate[3]/Object/@ocdref");
+				"metatype:MetaData/Designate[3]/Object/@ocdref");
 
 			xt.assertExactAttribute(DesignateComponent4.class.getName(), "metatype:MetaData/Designate[4]/@factoryPid");
 			xt.assertExactAttribute("test.metatype.SpecMetatypeTest$DesignateOCD",
-					"metatype:MetaData/Designate[4]/Object/@ocdref");
+				"metatype:MetaData/Designate[4]/Object/@ocdref");
 		}
 	}
 
@@ -1390,15 +1461,15 @@ public class SpecMetatypeTest extends TestCase {
 
 		Foo fooAttr2();
 
-		Class< ? > classAttr2() default Object.class;
+		Class<?> classAttr2() default Object.class;
 
 	}
 
 	@ObjectClassDefinition
 	@OCDTestExtensions(stringAttr = "ocd", fooAttr = Foo.A, stringArrayAttr = {
-			"foo", "bar"
+		"foo", "bar"
 	}, intArrayAttr = {
-			1, 2, 3
+		1, 2, 3
 	})
 	public static interface TestExtensions {
 		@AttributeDefinition
@@ -1411,7 +1482,7 @@ public class SpecMetatypeTest extends TestCase {
 
 		@ADTestExtensions(stringAttr2 = "ad2", fooAttr2 = Foo.A)
 		@AttributeDefinition(defaultValue = {
-				"true"
+			"true"
 		}, required = false)
 		boolean enabled();
 	}
@@ -1423,15 +1494,20 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, TestExtensions.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestExtensions.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings().size());
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$TestExtensions.xml");
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings()
+			.size());
 
-		System.err.println(b.getJar().getResources().keySet());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace(), "foo",
-				"org.foo.extensions.v1");
+			"org.foo.extensions.v1");
 		xt.assertNamespace(version.getNamespace());
 		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$TestExtensions", "metatype:MetaData/OCD/@id");
 		xt.assertExactAttribute("simple", "metatype:MetaData/OCD/AD[@id='simple']/@id");
@@ -1467,11 +1543,11 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*", mapping = {
-			"value=simple"
+		"value=simple"
 	})
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-			ElementType.TYPE, ElementType.METHOD
+		ElementType.TYPE, ElementType.METHOD
 	})
 	@interface Simple {
 		String value() default "default";
@@ -1492,15 +1568,20 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, SimpleConfig.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$SimpleConfig.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings().size());
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$SimpleConfig.xml");
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings()
+			.size());
 
-		System.err.println(b.getJar().getResources().keySet());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace(), "foo",
-				"org.foo.extensions.v1");
+			"org.foo.extensions.v1");
 		xt.assertNamespace(version.getNamespace());
 		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$SimpleConfig", "metatype:MetaData/OCD/@id");
 
@@ -1512,11 +1593,11 @@ public class SpecMetatypeTest extends TestCase {
 	}
 
 	@XMLAttribute(namespace = "org.foo.extensions.v1", prefix = "foo", embedIn = "*", mapping = {
-			"a=first", "b=second"
+		"a=first", "b=second"
 	})
 	@Retention(RetentionPolicy.CLASS)
 	@Target({
-			ElementType.TYPE, ElementType.METHOD
+		ElementType.TYPE, ElementType.METHOD
 	})
 	@interface Mapping {
 		String a() default "A";
@@ -1539,15 +1620,20 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, MappingConfig.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$MappingConfig.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings().size());
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$MappingConfig.xml");
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals("warnings: " + b.getWarnings(), 0, b.getWarnings()
+			.size());
 
-		System.err.println(b.getJar().getResources().keySet());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "metatype", version.getNamespace(), "foo",
-				"org.foo.extensions.v1");
+			"org.foo.extensions.v1");
 		xt.assertNamespace(version.getNamespace());
 		xt.assertExactAttribute("test.metatype.SpecMetatypeTest$MappingConfig", "metatype:MetaData/OCD/@id");
 
@@ -1563,7 +1649,7 @@ public class SpecMetatypeTest extends TestCase {
 	@ObjectClassDefinition
 	@interface Escapes {
 		@AttributeDefinition(defaultValue = {
-				" , \\", "a,b", "c,d", "'apostrophe'", "\"quote\"&amp;"
+			" , \\", "a,b", "c,d", "'apostrophe'", "\"quote\"&amp;"
 		})
 		String[] escapes();
 	}
@@ -1574,17 +1660,22 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, Escapes.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Escapes.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
-		System.err.println(b.getJar().getResources().keySet());
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$Escapes.xml");
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
+		System.err.println(b.getJar()
+			.getResources()
+			.keySet());
 		assertNotNull(r);
 		IO.copy(r.openInputStream(), System.err);
 
 		XmlTester xt = xmlTester12(r);
 
 		assertAD(xt, "escapes", "Escapes", null, null, "\\ \\,\\ \\\\,a\\,b,c\\,d,'apostrophe',\"quote\"&amp;",
-				2147483647, "String", null, null, null);
+			2147483647, "String", null, null, null);
 
 	}
 
@@ -1602,9 +1693,12 @@ public class SpecMetatypeTest extends TestCase {
 		b.setProperty("Export-Package", "test.metatype");
 		b.setProperty(Constants.METATYPE_ANNOTATIONS, C.class.getName());
 		b.build();
-		Resource r = b.getJar().getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$C.xml");
-		assertEquals(0, b.getErrors().size());
-		assertEquals(0, b.getWarnings().size());
+		Resource r = b.getJar()
+			.getResource("OSGI-INF/metatype/test.metatype.SpecMetatypeTest$C.xml");
+		assertEquals(0, b.getErrors()
+			.size());
+		assertEquals(0, b.getWarnings()
+			.size());
 		assertNull(r);
 	}
 

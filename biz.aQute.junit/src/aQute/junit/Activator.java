@@ -52,19 +52,20 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	public Activator() {}
 
+	@Override
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
 		this.packageAdminTracker = new ServiceTracker(context, PackageAdmin.class.getName(), null);
 		this.packageAdminTracker.open();
 		active = true;
 		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD))
-				&& Boolean.valueOf(context.getProperty("launch.services"))) { // can't
-																				// register
-																				// services
-																				// on
-																				// mini
-																				// framework
-			Hashtable<String,String> ht = new Hashtable<String,String>();
+			&& Boolean.valueOf(context.getProperty("launch.services"))) { // can't
+																			// register
+																			// services
+																			// on
+																			// mini
+																			// framework
+			Hashtable<String, String> ht = new Hashtable<>();
 			ht.put("main.thread", "true");
 			ht.put(Constants.SERVICE_DESCRIPTION, "JUnit tester");
 			context.registerService(Runnable.class.getName(), this, ht);
@@ -74,6 +75,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 	}
 
+	@Override
 	public void stop(BundleContext context) throws Exception {
 		this.packageAdminTracker.close();
 		active = false;
@@ -90,6 +92,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		return active;
 	}
 
+	@Override
 	public void run() {
 
 		continuous = Boolean.valueOf(context.getProperty(TESTER_CONTINUOUS));
@@ -144,7 +147,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 			if (testBundle != null) {
 				for (Bundle b : context.getBundles()) {
-					String testcasesheader = (String) b.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES);
+					String testcasesheader = (String) b.getHeaders()
+						.get(aQute.bnd.osgi.Constants.TESTCASES);
 					if (testcasesheader != null) {
 						testBundle = b;
 						break;
@@ -153,7 +157,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				int err = 0;
 				try {
 					err = test(context.getBundle(), "aQute.junit.UnresolvedTester",
-							getReportWriter(reportDir, testBundle));
+						getReportWriter(reportDir, testBundle));
 				} catch (IOException e) {
 					// ignore
 				}
@@ -189,7 +193,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	void automatic(File reportDir) throws IOException {
-		final List<Bundle> queue = new Vector<Bundle>();
+		final List<Bundle> queue = new Vector<>();
 		if (!reportDir.exists() && !reportDir.mkdirs()) {
 			throw new IOException("Could not create directory " + reportDir);
 		}
@@ -197,11 +201,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 		trace("adding Bundle Listener for getting test bundle events");
 		context.addBundleListener(new SynchronousBundleListener() {
+			@Override
 			public void bundleChanged(BundleEvent event) {
 				switch (event.getType()) {
 					case BundleEvent.STARTED :
 					case BundleEvent.RESOLVED :
-					checkBundle(queue, event.getBundle());
+						checkBundle(queue, event.getBundle());
 						break;
 				}
 			}
@@ -231,8 +236,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				trace("received bundle to test: %s", bundle.getLocation());
 				try (Writer report = getReportWriter(reportDir, bundle)) {
 					trace("test will run");
-					result += test(bundle, (String) bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES),
-							report);
+					result += test(bundle, (String) bundle.getHeaders()
+						.get(aQute.bnd.osgi.Constants.TESTCASES), report);
 					trace("test ran");
 					if (queue.isEmpty() && !continuous) {
 						trace("queue " + queue);
@@ -249,7 +254,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	void checkBundle(List<Bundle> queue, Bundle bundle) {
 		Bundle host = findHost(bundle);
 		if (host.getState() == Bundle.ACTIVE) {
-			String testcases = (String) bundle.getHeaders().get(aQute.bnd.osgi.Constants.TESTCASES);
+			String testcases = (String) bundle.getHeaders()
+				.get(aQute.bnd.osgi.Constants.TESTCASES);
 			if (testcases != null) {
 				trace("found active bundle with test cases %s : %s", bundle, testcases);
 				synchronized (queue) {
@@ -264,7 +270,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		if (reportDir.isDirectory()) {
 			Version v = bundle.getVersion();
 			File f = new File(reportDir, "TEST-" + bundle.getSymbolicName() + "-" + v.getMajor() + "." + v.getMinor()
-					+ "." + v.getMicro() + ".xml");
+				+ "." + v.getMicro() + ".xml");
 			Writer writer = new OutputStreamWriter(Files.newOutputStream(f.toPath()), UTF_8);
 			writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			return writer;
@@ -287,7 +293,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 			bundle = findHost(bundle);
 
-			List<String> names = new ArrayList<String>();
+			List<String> names = new ArrayList<>();
 			StringTokenizer st = new StringTokenizer(testnames, " ,");
 
 			//
@@ -300,13 +306,15 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 					names.add(token);
 			}
 
-			List<TestReporter> reporters = new ArrayList<TestReporter>();
+			List<TestReporter> reporters = new ArrayList<>();
 			final TestResult result = new TestResult();
 
 			Tee systemOut = new Tee(System.err);
 			Tee systemErr = new Tee(System.err);
-			systemOut.capture(isTrace()).echo(true);
-			systemErr.capture(isTrace()).echo(true);
+			systemOut.capture(isTrace())
+				.echo(true);
+			systemErr.capture(isTrace())
+				.echo(true);
 			final PrintStream originalOut = System.out;
 			final PrintStream originalErr = System.err;
 			System.setOut(systemOut.getStream());
@@ -333,7 +341,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				TestSuite suite = createSuite(bundle, names, result);
 				try {
 					trace("created suite %s #%s", suite.getName(), suite.countTestCases());
-					List<Test> flattened = new ArrayList<Test>();
+					List<Test> flattened = new ArrayList<>();
 					int realcount = flatten(flattened, suite);
 
 					for (TestReporter tr : reporters) {
@@ -402,7 +410,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				if (fragment == bundle) {
 					if (found != null) {
 						trace("Have a test fragment but find multiple hosts. Fragment=%s, Previous=%s, Next=%s ",
-								bundle, found, fragment);
+							bundle, found, fragment);
 					} else
 						found = potentialFragmentHost;
 				}
@@ -426,23 +434,23 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			if (n > -1) {
 				String method = fqn.substring(n + 1);
 				fqn = fqn.substring(0, n);
-				Class< ? > clazz = loadClass(tfw, fqn);
+				Class<?> clazz = loadClass(tfw, fqn);
 				if (clazz != null)
 					addTest(suite, clazz, method);
 				else {
 					diagnoseNoClass(tfw, fqn);
 					testResult.addError(suite,
-							new Exception("Cannot load class " + fqn + ", was it included in the test bundle?"));
+						new Exception("Cannot load class " + fqn + ", was it included in the test bundle?"));
 				}
 
 			} else {
-				Class< ? > clazz = loadClass(tfw, fqn);
+				Class<?> clazz = loadClass(tfw, fqn);
 				if (clazz != null)
 					addTest(suite, clazz, null);
 				else {
 					diagnoseNoClass(tfw, fqn);
 					testResult.addError(suite,
-							new Exception("Cannot load class " + fqn + ", was it included in the test bundle?"));
+						new Exception("Cannot load class " + fqn + ", was it included in the test bundle?"));
 				}
 			}
 		} catch (Throwable e) {
@@ -456,7 +464,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			error("No class found: %s, target bundle: %s", fqn, tfw);
 			trace("Installed bundles:");
 			for (Bundle bundle : context.getBundles()) {
-				Class< ? > c = loadClass(bundle, fqn);
+				Class<?> c = loadClass(bundle, fqn);
 				String state;
 				switch (bundle.getState()) {
 					case Bundle.UNINSTALLED :
@@ -486,19 +494,20 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void addTest(TestSuite suite, Class< ? > clazz, final String method) {
+	private void addTest(TestSuite suite, Class<?> clazz, final String method) {
 
 		if (TestCase.class.isAssignableFrom(clazz)) {
 			if (hasJunit4Annotations(clazz)) {
-				error("The test class %s extends %s and it uses JUnit 4 annotations. This means that the annotations will be ignored.",
-						clazz.getName(), TestCase.class.getName());
+				error(
+					"The test class %s extends %s and it uses JUnit 4 annotations. This means that the annotations will be ignored.",
+					clazz.getName(), TestCase.class.getName());
 			}
 			trace("using JUnit 3");
 			if (method != null) {
 				suite.addTest(TestSuite.createTest(clazz, method));
 				return;
 			}
-			suite.addTestSuite((Class< ? extends TestCase>) clazz);
+			suite.addTestSuite((Class<? extends TestCase>) clazz);
 			return;
 		}
 
@@ -507,7 +516,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		JUnit4TestAdapter adapter = new JUnit4TestAdapter(clazz);
 		if (method != null) {
 			trace("method specified " + clazz + ":" + method);
-			final Pattern glob = Pattern.compile(method.replaceAll("\\*", ".*").replaceAll("\\?", ".?"));
+			final Pattern glob = Pattern.compile(method.replaceAll("\\*", ".*")
+				.replaceAll("\\?", ".?"));
 
 			try {
 				adapter.filter(new org.junit.runner.manipulation.Filter() {
@@ -519,7 +529,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 					@Override
 					public boolean shouldRun(Description description) {
-						if (glob.matcher(description.getMethodName()).lookingAt()) {
+						if (glob.matcher(description.getMethodName())
+							.lookingAt()) {
 							trace("accepted " + description.getMethodName());
 							return true;
 						}
@@ -534,7 +545,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		suite.addTest(adapter);
 	}
 
-	private boolean hasJunit4Annotations(Class< ? > clazz) {
+	private boolean hasJunit4Annotations(Class<?> clazz) {
 		if (hasAnnotations("org.junit.", clazz.getAnnotations()))
 			return true;
 
@@ -548,12 +559,14 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	private boolean hasAnnotations(String prefix, Annotation[] annotations) {
 		if (annotations != null)
 			for (Annotation a : annotations)
-				if (a.getClass().getName().startsWith(prefix))
+				if (a.getClass()
+					.getName()
+					.startsWith(prefix))
 					return true;
 		return false;
 	}
 
-	private Class< ? > loadClass(Bundle tfw, String fqn) {
+	private Class<?> loadClass(Bundle tfw, String fqn) {
 		try {
 			if (tfw != null) {
 				checkResolved(tfw);
@@ -578,8 +591,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 		} catch (Exception e) {
 			error("Exception during loading of class: %s. Exception %s and cause %s. This sometimes "
-					+ "happens when there is an error in the static initialization, the class has "
-					+ "no public constructor, it is an inner class, or it has no public access", fqn, e, e.getCause());
+				+ "happens when there is an error in the static initialization, the class has "
+				+ "no public constructor, it is an inner class, or it has no public access", fqn, e, e.getCause());
 		}
 		return null;
 	}
@@ -593,7 +606,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	public int flatten(List<Test> list, TestSuite suite) {
 		int realCount = 0;
-		for (Enumeration< ? > e = suite.tests(); e.hasMoreElements();) {
+		for (Enumeration<?> e = suite.tests(); e.hasMoreElements();) {
 			Test test = (Test) e.nextElement();
 
 			if (test instanceof JUnit4TestAdapter) {
@@ -626,7 +639,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	}
 
 	static public String replace(String source, String symbol, String replace) {
-		StringBuffer sb = new StringBuffer(source);
+		StringBuilder sb = new StringBuilder(source);
 		int n = sb.indexOf(symbol, 0);
 		while (n > 0) {
 			sb.replace(n, n + symbol.length(), replace);

@@ -42,7 +42,7 @@ public class MetadataParser {
 		public String	modelVersion	= "1.1.0";
 		public String	group;
 		public String	artifact;
-		public long		lastUpdated	= System.currentTimeMillis();
+		public long		lastUpdated		= System.currentTimeMillis();
 
 		public Tag toTag() {
 			Tag top = new Tag("metadata");
@@ -53,6 +53,7 @@ public class MetadataParser {
 			return top;
 		}
 
+		@Override
 		public String toString() {
 			Tag tag = toTag();
 			return tag.toString();
@@ -64,6 +65,7 @@ public class MetadataParser {
 		public MavenVersion			release;
 		public List<MavenVersion>	versions	= new ArrayList<>();
 
+		@Override
 		public Tag toTag() {
 			Tag top = super.toTag();
 
@@ -101,6 +103,7 @@ public class MetadataParser {
 		public Snapshot					snapshot			= new Snapshot();
 		public List<SnapshotVersion>	snapshotVersions	= new ArrayList<>();
 
+		@Override
 		public Tag toTag() {
 			Tag top = super.toTag();
 			new Tag(top, "version", version.toString());
@@ -108,11 +111,13 @@ public class MetadataParser {
 			Tag versioning = new Tag(top, "versioning");
 
 			Tag snapshot = new Tag(versioning, "snapshot");
-			new Tag(snapshot, "timestamp", this.snapshot.timestamp);
 
-			new Tag(snapshot, "buildNumber", this.snapshot.buildNumber);
-			if (this.snapshot.localCopy)
+			if (this.snapshot.localCopy) {
 				new Tag(snapshot, "localCopy", this.snapshot.localCopy);
+			} else {
+				new Tag(snapshot, "buildNumber", this.snapshot.buildNumber);
+				new Tag(snapshot, "timestamp", this.snapshot.timestamp);
+			}
 
 			new Tag(versioning, "lastUpdated", timestamp.format(new Date(lastUpdated)));
 
@@ -132,7 +137,7 @@ public class MetadataParser {
 
 	/**
 	 * Will return a Program Metadata
-	 * 
+	 *
 	 * @param in The inputstream that must point to XML or null of could not be
 	 *            parsed
 	 * @return A description of the XML
@@ -140,21 +145,21 @@ public class MetadataParser {
 	public static ProgramMetadata parseProgramMetadata(InputStream in) throws Exception {
 		XMLStreamReader sr = inputFactory.createXMLStreamReader(in);
 		sr.nextTag();
-		sr.require(XMLStreamReader.START_ELEMENT, null, "metadata");
+		sr.require(XMLStreamConstants.START_ELEMENT, null, "metadata");
 
 		return programMetadata(sr);
 	}
 
 	/**
 	 * Will return a Revision Metadata
-	 * 
+	 *
 	 * @param in the input stream
 	 * @return the representation
 	 */
 	public static RevisionMetadata parseRevisionMetadata(InputStream in) throws Exception {
 		XMLStreamReader sr = inputFactory.createXMLStreamReader(in);
 		sr.nextTag();
-		sr.require(XMLStreamReader.START_ELEMENT, null, "metadata");
+		sr.require(XMLStreamConstants.START_ELEMENT, null, "metadata");
 		return revisionMetadata(sr);
 	}
 
@@ -419,7 +424,8 @@ public class MetadataParser {
 
 	private static MavenVersion getVersion(XMLStreamReader sr) throws Exception {
 		String version = getText(sr);
-		if (version == null || version.trim().isEmpty())
+		if (version == null || version.trim()
+			.isEmpty())
 			return null;
 
 		return new MavenVersion(version);
@@ -429,7 +435,8 @@ public class MetadataParser {
 		for (int i = 0; i < sr.getAttributeCount(); i++) {
 			String name = sr.getAttributeLocalName(i);
 			if (name.equals("modelVersion")) {
-				return sr.getAttributeValue(i).trim();
+				return sr.getAttributeValue(i)
+					.trim();
 			}
 		}
 		return null;

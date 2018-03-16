@@ -11,49 +11,57 @@ public class FileSetTest extends TestCase {
 	public void testAllABC() {
 		FileSet fs = new FileSet(root, "**/*.abc");
 		System.out.println(fs.getFiles());
-		assertEquals(6, fs.getFiles().size());
+		assertEquals(6, fs.getFiles()
+			.size());
 	}
 
 	public void testOneA() {
 		FileSet fs = new FileSet(root, "*/*.abc");
 		System.out.println(fs.getFiles());
-		assertEquals(1, fs.getFiles().size());
+		assertEquals(1, fs.getFiles()
+			.size());
 	}
 
 	public void testDirMatch() {
 		FileSet fs = new FileSet(root, "*/?/?/**/a.abc");
 		System.out.println(fs.getFiles());
-		assertEquals(1, fs.getFiles().size());
+		assertEquals(1, fs.getFiles()
+			.size());
 	}
 
 	public void testAllA() {
 		FileSet fs = new FileSet(root, "**/a.*");
 		System.out.println(fs.getFiles());
-		assertEquals(2, fs.getFiles().size());
+		assertEquals(2, fs.getFiles()
+			.size());
 	}
 
 	public void testExact() {
 		FileSet fs = new FileSet(root, "a/b/c/d/e/f/a.abc");
 		System.out.println(fs.getFiles());
-		assertEquals(1, fs.getFiles().size());
+		assertEquals(1, fs.getFiles()
+			.size());
 	}
 
 	public void testSkipIntermediate() {
 		FileSet fs = new FileSet(root, "a/**/e/f/*.abc");
 		System.out.println(fs.getFiles());
-		assertEquals(3, fs.getFiles().size());
+		assertEquals(3, fs.getFiles()
+			.size());
 	}
 
 	public void testSkipLastDir() {
 		FileSet fs = new FileSet(root, "a/b/c/d/e/f/**/*.abc");
 		System.out.println(fs.getFiles());
-		assertEquals(3, fs.getFiles().size());
+		assertEquals(3, fs.getFiles()
+			.size());
 	}
 
 	public void testRootAll() {
 		FileSet fs = new FileSet(root, "*");
 		System.out.println(fs.getFiles());
-		assertEquals(1, fs.getFiles().size());
+		assertEquals(1, fs.getFiles()
+			.size());
 	}
 
 	public void testIncludeA() {

@@ -2,7 +2,6 @@ package aQute.bnd.build.model.clauses;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,13 +26,13 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	public final static String		COMPONENT_PROVIDE				= "provide:";
 	public final static String		COMPONENT_OPTIONAL				= "optional:";
 	public final static String		COMPONENT_PROPERTIES			= "properties:";
-																	// public
-																	// final
-																	// static
-																	// String
-																	// COMPONENT_IMPLEMENTATION
-																	// =
-																	// "implementation:";
+	// public
+	// final
+	// static
+	// String
+	// COMPONENT_IMPLEMENTATION
+	// =
+	// "implementation:";
 
 	// v1.1.0 attributes
 	public final static String		COMPONENT_VERSION				= "version:";
@@ -54,20 +53,23 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 
 	private Set<String> getStringSet(String attrib) {
 		List<String> list = getListAttrib(attrib);
-		return list != null ? new HashSet<String>(list) : new HashSet<String>();
+		return list != null ? new HashSet<>(list) : new HashSet<>();
 	}
 
-	public void setPropertiesMap(Map<String,String> properties) {
-		List<String> strings = new ArrayList<String>(properties.size());
-		for (Entry<String,String> entry : properties.entrySet()) {
-			String line = new StringBuilder().append(entry.getKey()).append("=").append(entry.getValue()).toString();
+	public void setPropertiesMap(Map<String, String> properties) {
+		List<String> strings = new ArrayList<>(properties.size());
+		for (Entry<String, String> entry : properties.entrySet()) {
+			String line = new StringBuilder().append(entry.getKey())
+				.append("=")
+				.append(entry.getValue())
+				.toString();
 			strings.add(line);
 		}
 		setListAttrib(COMPONENT_PROPERTIES, strings);
 	}
 
-	public Map<String,String> getPropertiesMap() {
-		Map<String,String> result = new LinkedHashMap<String,String>();
+	public Map<String, String> getPropertiesMap() {
+		Map<String, String> result = new LinkedHashMap<>();
 
 		List<String> list = getListAttrib(COMPONENT_PROPERTIES);
 		if (list != null) {
@@ -91,19 +93,15 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 		return result;
 	}
 
-	public void setSvcRefs(List< ? extends ComponentSvcReference> refs) {
+	public void setSvcRefs(List<? extends ComponentSvcReference> refs) {
 		// First remove all existing references, i.e. non-directives
-		for (Iterator<String> iter = attribs.keySet().iterator(); iter.hasNext();) {
-			String name = iter.next();
-			if (!name.endsWith(":")) {
-				iter.remove();
-			}
-		}
+		attribs.keySet()
+			.removeIf(name -> !name.endsWith(":"));
 
 		// Add in the references
-		Set<String> dynamic = new HashSet<String>();
-		Set<String> optional = new HashSet<String>();
-		Set<String> multiple = new HashSet<String>();
+		Set<String> dynamic = new HashSet<>();
+		Set<String> optional = new HashSet<>();
+		Set<String> multiple = new HashSet<>();
 		for (ComponentSvcReference ref : refs) {
 			// Build the reference name with bind and unbind
 			String expandedRefName = ref.getName();
@@ -120,7 +118,9 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 
 			// Add the target filter
 			if (ref.getTargetFilter() != null) {
-				buffer.append('(').append(ref.getTargetFilter()).append(')');
+				buffer.append('(')
+					.append(ref.getTargetFilter())
+					.append(')');
 			}
 
 			// Work out the cardinality suffix (i.e. *, +, ? org ~).
@@ -175,13 +175,13 @@ public class ServiceComponent extends HeaderClause implements Cloneable {
 	}
 
 	public List<ComponentSvcReference> getSvcRefs() {
-		List<ComponentSvcReference> result = new ArrayList<ComponentSvcReference>();
+		List<ComponentSvcReference> result = new ArrayList<>();
 
 		Set<String> dynamicSet = getStringSet(COMPONENT_DYNAMIC);
 		Set<String> optionalSet = getStringSet(COMPONENT_OPTIONAL);
 		Set<String> multipleSet = getStringSet(COMPONENT_MULTIPLE);
 
-		for (Entry<String,String> entry : attribs.entrySet()) {
+		for (Entry<String, String> entry : attribs.entrySet()) {
 			String referenceName = entry.getKey();
 
 			// Skip directives

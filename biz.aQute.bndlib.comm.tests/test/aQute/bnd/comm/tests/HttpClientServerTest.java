@@ -39,14 +39,16 @@ public class HttpClientServerTest extends TestCase {
 	private void assertOk(String password, boolean verify) throws Exception {
 		File log = new File(tmp, "log");
 		Processor p = new Processor();
-		p.setProperty("-connection-log", log.toURI().getPath());
+		p.setProperty("-connection-log", log.toURI()
+			.getPath());
 
 		HttpClient hc = new HttpClient();
 		hc.setLog(log);
 		ConnectionSettings cs = new ConnectionSettings(p, hc);
 
 		ServerDTO server = new ServerDTO();
-		server.id = httpServer.getBaseURI().toString();
+		server.id = httpServer.getBaseURI()
+			.toString();
 		server.verify = verify;
 		if (password != null) {
 			server.username = "user";
@@ -60,12 +62,13 @@ public class HttpClientServerTest extends TestCase {
 		System.out.println(httpServer.getBaseURI());
 
 		URL url = password == null ? new URL(httpServer.getBaseURI() + "/get")
-				: new URL(httpServer.getBaseURI() + "/basic-auth/user/good");
+			: new URL(httpServer.getBaseURI() + "/basic-auth/user/good");
 		TaggedData tag = hc.connectTagged(url);
 		assertNotNull(tag);
 		String s = IO.collect(tag.getInputStream());
 		assertNotNull(s);
-		assertTrue(s.trim().startsWith("{"));
+		assertTrue(s.trim()
+			.startsWith("{"));
 		IO.copy(log, System.out);
 	}
 

@@ -40,7 +40,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	}
 
 	private Parameters				runremote;
-	private List<RunSessionImpl>	sessions	= new ArrayList<RunSessionImpl>();
+	private List<RunSessionImpl>	sessions	= new ArrayList<>();
 	private boolean					prepared;
 
 	/**
@@ -94,7 +94,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 
 		updateFromProject();
 
-		Map<String,Object> properties = new HashMap<String,Object>(getRunProperties());
+		Map<String, Object> properties = new HashMap<>(getRunProperties());
 
 		calculatedProperties(properties);
 
@@ -103,11 +103,11 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			properties.put("biz.aQute.remote.embedded", Strings.join(embeddedActivators));
 		}
 
-		for (Entry<String,Attrs> entry : runremote.entrySet()) {
+		for (Entry<String, Attrs> entry : runremote.entrySet()) {
 			RunRemoteDTO dto = converter.convert(RunRemoteDTO.class, entry.getValue());
 			dto.name = entry.getKey();
 
-			Map<String,Object> sessionProperties = new HashMap<String,Object>(properties);
+			Map<String, Object> sessionProperties = new HashMap<>(properties);
 			sessionProperties.putAll(entry.getValue());
 			sessionProperties.put("session.name", dto.name);
 
@@ -167,6 +167,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	/**
 	 * Make sure all sessions are closed
 	 */
+	@Override
 	public void close() {
 		for (RunSessionImpl session : sessions)
 			try {
@@ -179,6 +180,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	/**
 	 * Kill!
 	 */
+	@Override
 	public void cancel() throws Exception {
 		for (RunSessionImpl session : sessions)
 			try {
@@ -200,7 +202,7 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 	 * Get the sessions
 	 */
 	@Override
-	public List< ? extends RunSession> getRunSessions() throws Exception {
+	public List<? extends RunSession> getRunSessions() throws Exception {
 		prepare();
 		return sessions;
 	}
@@ -231,12 +233,12 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 			for (String path : this.getRunpath()) {
 				File file = new File(path);
 				try (Jar jar = new Jar(file)) {
-						if (bsn.equals(jar.getBsn())) {
-							long bundleId = jmxBundleDeployer.deploy(bsn, file);
+					if (bsn.equals(jar.getBsn())) {
+						long bundleId = jmxBundleDeployer.deploy(bsn, file);
 
-							trace("agent installed with bundleId=%s", bundleId);
-							break;
-						}
+						trace("agent installed with bundleId=%s", bundleId);
+						break;
+					}
 				} catch (Exception e) {
 					//
 				}
@@ -253,11 +255,13 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		Collection<String> bsns = getProject().getBsns();
 		if (bsns.size() != 1)
 			throw new IllegalArgumentException("Can only handle a single bsn for a run configuration " + bsns);
-		String bsn = bsns.iterator().next();
+		String bsn = bsns.iterator()
+			.next();
 
 		Jar jar = new Jar(bsn);
 		String path = "aQute/remote/embedded/activator/EmbeddedActivator.class";
-		Resource resource = Resource.fromURL(getClass().getClassLoader().getResource(path));
+		Resource resource = Resource.fromURL(getClass().getClassLoader()
+			.getResource(path));
 		jar.putResource("aQute/remote/embedded/activator/EmbeddedActivator.class", resource);
 
 		Collection<Container> rb = getProject().getRunbundles();
@@ -284,7 +288,8 @@ public class RemoteProjectLauncherPlugin extends ProjectLauncher {
 		a.setJar(jar);
 
 		a.setBundleActivator(EmbeddedActivator.class.getName());
-		a.setProperty("Bnd-Embedded", attrs.toString().replace(';', ','));
+		a.setProperty("Bnd-Embedded", attrs.toString()
+			.replace(';', ','));
 		Manifest manifest = a.calcManifest();
 		jar.setManifest(manifest);
 		getProject().getInfo(a);

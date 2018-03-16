@@ -24,7 +24,7 @@ import aQute.libg.glob.Glob;
 
 public class Profiles extends Processor {
 	private final static Logger	logger	= LoggerFactory.getLogger(Profiles.class);
-	private bnd bnd;
+	private bnd					bnd;
 
 	// private ProfileOptions options;
 
@@ -66,14 +66,15 @@ public class Profiles extends Processor {
 			b.setProperty(Constants.BUNDLE_SYMBOLICNAME, options.bsn());
 
 		if (options.version() != null)
-			b.setProperty(Constants.BUNDLE_VERSION, options.version().toString());
+			b.setProperty(Constants.BUNDLE_VERSION, options.version()
+				.toString());
 
 		Instructions match = options.match();
 
 		Parameters packages = new Parameters();
 		Parameters capabilities = new Parameters();
 
-		Collection<String> paths = new ArrayList<String>(new Parameters(b.getProperty("-paths"), bnd).keySet());
+		Collection<String> paths = new ArrayList<>(new Parameters(b.getProperty("-paths"), bnd).keySet());
 		if (paths.isEmpty())
 			paths = options._arguments();
 
@@ -101,7 +102,8 @@ public class Profiles extends Processor {
 						continue;
 					}
 
-					String bsn = domain.getBundleSymbolicName().getKey();
+					String bsn = domain.getBundleSymbolicName()
+						.getKey();
 					if (bsn == null) {
 						error("Not a bundle because no manifest %s", file);
 						continue;

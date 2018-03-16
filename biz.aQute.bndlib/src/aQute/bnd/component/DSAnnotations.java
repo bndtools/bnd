@@ -32,7 +32,11 @@ import aQute.lib.strings.Strings;
 public class DSAnnotations implements AnalyzerPlugin {
 
 	public enum Options {
-		inherit, felixExtensions, extender, nocapabilities, norequirements,
+		inherit,
+		felixExtensions,
+		extender,
+		nocapabilities,
+		norequirements,
 
 		version {
 			@Override
@@ -57,7 +61,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 		}
 
-		static void parseOption(Map.Entry<String,Attrs> entry, EnumSet<Options> options, DSAnnotations state) {
+		static void parseOption(Map.Entry<String, Attrs> entry, EnumSet<Options> options, DSAnnotations state) {
 			String s = entry.getKey();
 			boolean negation = false;
 			if (s.startsWith("!")) {
@@ -81,6 +85,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 	Version minVersion;
 
+	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS, "*"));
 		if (header.size() == 0)
@@ -89,13 +94,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 		minVersion = AnnotationReader.V1_3;
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.mergeProperties(Constants.DSANNOTATIONS_OPTIONS));
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
-		for (Map.Entry<String,Attrs> entry : optionsHeader.entrySet()) {
+		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
 			try {
 				Options.parseOption(entry, options, this);
 			} catch (IllegalArgumentException e) {
 				analyzer.error("Unrecognized %s value %s with attributes %s, expected values are %s",
-						Constants.DSANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(),
-						EnumSet.allOf(Options.class));
+					Constants.DSANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(), EnumSet.allOf(Options.class));
 			}
 		}
 		// obsolete but backwards compatible, use the options instead
@@ -105,14 +109,16 @@ public class DSAnnotations implements AnalyzerPlugin {
 			options.add(Options.felixExtensions);
 
 		Instructions instructions = new Instructions(header);
-		Collection<Clazz> list = analyzer.getClassspace().values();
+		Collection<Clazz> list = analyzer.getClassspace()
+			.values();
 		String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT);
-		List<String> names = new ArrayList<String>();
-		if (sc != null && sc.trim().length() > 0)
+		List<String> names = new ArrayList<>();
+		if (sc != null && sc.trim()
+			.length() > 0)
 			names.add(sc);
 
-		TreeSet<String> provides = new TreeSet<String>();
-		TreeSet<String> requires = new TreeSet<String>();
+		TreeSet<String> provides = new TreeSet<>();
+		TreeSet<String> requires = new TreeSet<>();
 		Version maxVersion = AnnotationReader.V1_0;
 
 		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
@@ -130,9 +136,10 @@ public class DSAnnotations implements AnalyzerPlugin {
 						definition.prepare(analyzer);
 
 						String name = "OSGI-INF/"
-								+ analyzer.validResourcePath(definition.name, "Invalid component name") + ".xml";
+							+ analyzer.validResourcePath(definition.name, "Invalid component name") + ".xml";
 						names.add(name);
-						analyzer.getJar().putResource(name, new TagResource(definition.getTag()));
+						analyzer.getJar()
+							.putResource(name, new TagResource(definition.getTag()));
 
 						if (definition.service != null && !options.contains(Options.nocapabilities)) {
 							String[] objectClass = new String[definition.service.length];
@@ -158,7 +165,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 			}
 		}
 		if (componentProcessed
-				&& (options.contains(Options.extender) || (maxVersion.compareTo(AnnotationReader.V1_3) >= 0))) {
+			&& (options.contains(Options.extender) || (maxVersion.compareTo(AnnotationReader.V1_3) >= 0))) {
 			maxVersion = ComponentDef.max(maxVersion, AnnotationReader.V1_3);
 			addExtenderRequirement(requires, maxVersion);
 		}
@@ -176,7 +183,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 			StringBuilder sb = new StringBuilder();
 			String sep = "";
 			for (String oc : objectClass) {
-				sb.append(sep).append(oc);
+				sb.append(sep)
+					.append(oc);
 				sep = ",";
 			}
 			a.put("objectClass:List<String>", sb.toString());
@@ -191,7 +199,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		ReferenceCardinality cardinality = ref.cardinality;
 		boolean optional = cardinality == ReferenceCardinality.OPTIONAL || cardinality == ReferenceCardinality.MULTIPLE;
 		boolean multiple = cardinality == ReferenceCardinality.MULTIPLE
-				|| cardinality == ReferenceCardinality.AT_LEAST_ONE;
+			|| cardinality == ReferenceCardinality.AT_LEAST_ONE;
 
 		String filter = "(objectClass=" + objectClass + ")";
 		requires.put(filter, "active", optional, multiple);
@@ -202,7 +210,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		Parameters p = new Parameters();
 		Attrs a = new Attrs();
 		a.put(Constants.FILTER_DIRECTIVE,
-				"\"(&(osgi.extender=osgi.component)(version>=" + version + ")(!(version>=" + next + ")))\"");
+			"\"(&(osgi.extender=osgi.component)(version>=" + version + ")(!(version>=" + next + ")))\"");
 		p.put("osgi.extender", a);
 		String s = p.toString();
 		requires.add(s);
@@ -221,11 +229,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 			String value = analyzer.getProperty(name);
 			if (value != null) {
 				Parameters p = OSGiHeader.parseHeader(value);
-				for (Map.Entry<String,Attrs> entry : p.entrySet()) {
+				for (Map.Entry<String, Attrs> entry : p.entrySet()) {
 					StringBuilder sb = new StringBuilder(entry.getKey());
 					if (entry.getValue() != null) {
 						sb.append(";");
-						entry.getValue().append(sb);
+						entry.getValue()
+							.append(sb);
 					}
 					set.add(sb.toString());
 				}

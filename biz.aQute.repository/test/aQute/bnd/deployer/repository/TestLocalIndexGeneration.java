@@ -32,8 +32,9 @@ public class TestLocalIndexGeneration extends TestCase {
 	private Processor				reporter;
 	private LocalIndexedRepo		repo;
 	private File					outputDir;
-	private HashMap<String,String>	config;
+	private HashMap<String, String>	config;
 
+	@Override
 	protected void setUp() throws Exception {
 		// Ensure output directory exists and is empty
 		outputDir = IO.getFile("generated/tmp/test/" + getName());
@@ -45,7 +46,7 @@ public class TestLocalIndexGeneration extends TestCase {
 		// Setup the repo
 		reporter = new Processor();
 		repo = new LocalIndexedRepo();
-		config = new HashMap<String,String>();
+		config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "R5");
 		config.put("pretty", "true");
@@ -56,8 +57,10 @@ public class TestLocalIndexGeneration extends TestCase {
 	@Override
 	protected void tearDown() throws Exception {
 		IO.delete(outputDir);
-		assertEquals(0, reporter.getErrors().size());
-		assertEquals(0, reporter.getWarnings().size());
+		assertEquals(0, reporter.getErrors()
+			.size());
+		assertEquals(0, reporter.getWarnings()
+			.size());
 	}
 
 	public void testInitiallyEmpty() throws Exception {
@@ -68,15 +71,14 @@ public class TestLocalIndexGeneration extends TestCase {
 
 	public void testDeployBundle() throws Exception {
 		PutResult r = repo.put(
-				new BufferedInputStream(
-						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
-				new RepositoryPlugin.PutOptions());
+			new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+			new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
 		assertEquals(
-				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
-						.getAbsolutePath(),
-				deployedFile.getAbsolutePath());
+			IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
+				.getAbsolutePath(),
+			deployedFile.getAbsolutePath());
 
 		File indexFile = IO.getFile(outputDir, "index.xml");
 		assertTrue(indexFile.exists());
@@ -99,42 +101,42 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setProperties(config);
 
 		PutResult r = repo.put(
-				new BufferedInputStream(
-						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
-				new RepositoryPlugin.PutOptions());
+			new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+			new RepositoryPlugin.PutOptions());
 		File originalFile = new File(r.artifact);
 		assertEquals(
-				IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
-						.getAbsolutePath(),
-				originalFile.getAbsolutePath());
+			IO.getFile(outputDir, "name.njbartlett.osgi.emf.minimal/name.njbartlett.osgi.emf.minimal-2.6.1.jar")
+				.getAbsolutePath(),
+			originalFile.getAbsolutePath());
 
 		Jar newJar = new Jar(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar"));
 		Jar dummyJar = new Jar(IO.getFile("testdata/bundles/dummybundle.jar"));
 		newJar.putResource("testOverwrite/dummybundle.jar", new JarResource(dummyJar));
 		newJar.write("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar");
 		r = repo.put(
-				new BufferedInputStream(new FileInputStream(
-						"testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar")),
-				new RepositoryPlugin.PutOptions());
+			new BufferedInputStream(
+				new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar")),
+			new RepositoryPlugin.PutOptions());
 		IO.delete(IO.getFile("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1-testOverwrite.jar"));
 		assertNull(r.artifact);
 	}
 
 	public void testInvalidContentProvider() throws Exception {
 		LocalIndexedRepo repo = new LocalIndexedRepo();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "Rubbish");
 		repo.setProperties(config);
 		repo.setReporter(reporter);
 
 		repo.put(
-				new BufferedInputStream(
-						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
-				new RepositoryPlugin.PutOptions());
+			new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+			new RepositoryPlugin.PutOptions());
 
-		assertEquals(0, reporter.getErrors().size());
-		assertTrue(reporter.getWarnings().size() > 0);
+		assertEquals(0, reporter.getErrors()
+			.size());
+		assertTrue(reporter.getWarnings()
+			.size() > 0);
 		reporter.clear();
 	}
 
@@ -146,18 +148,19 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setRegistry(registry);
 		repo.setReporter(reporter);
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "Nongenerating");
 		repo.setProperties(config);
 
 		repo.put(
-				new BufferedInputStream(
-						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
-				new RepositoryPlugin.PutOptions());
+			new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+			new RepositoryPlugin.PutOptions());
 
-		assertEquals(0, reporter.getErrors().size());
-		assertTrue(reporter.getWarnings().size() > 0);
+		assertEquals(0, reporter.getErrors()
+			.size());
+		assertTrue(reporter.getWarnings()
+			.size() > 0);
 		reporter.clear();
 	}
 
@@ -169,18 +172,19 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setRegistry(registry);
 		repo.setReporter(reporter);
 
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "Fail");
 		repo.setProperties(config);
 
 		repo.put(
-				new BufferedInputStream(
-						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
-				new RepositoryPlugin.PutOptions());
+			new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+			new RepositoryPlugin.PutOptions());
 
-		assertTrue(reporter.getErrors().size() > 0);
-		assertEquals(0, reporter.getWarnings().size());
+		assertTrue(reporter.getErrors()
+			.size() > 0);
+		assertEquals(0, reporter.getWarnings()
+			.size());
 		reporter.clear();
 	}
 
@@ -206,7 +210,7 @@ public class TestLocalIndexGeneration extends TestCase {
 
 	public void testUncompressedIndexFile() throws Exception {
 		repo = new LocalIndexedRepo();
-		config = new HashMap<String,String>();
+		config = new HashMap<>();
 		config.put("local", outputDir.getAbsolutePath());
 		config.put("type", "R5");
 		config.put("pretty", "true");
@@ -215,9 +219,8 @@ public class TestLocalIndexGeneration extends TestCase {
 		repo.setReporter(reporter);
 
 		PutResult r = repo.put(
-				new BufferedInputStream(
-						new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
-				new RepositoryPlugin.PutOptions());
+			new BufferedInputStream(new FileInputStream("testdata/bundles/name.njbartlett.osgi.emf.minimal-2.6.1.jar")),
+			new RepositoryPlugin.PutOptions());
 		File deployedFile = new File(r.artifact);
 
 		File compressedIndexFile = IO.getFile(outputDir, "index.xml.gz");
@@ -240,8 +243,10 @@ public class TestLocalIndexGeneration extends TestCase {
 	private OSGiRepository createRepoForIndex(File index) throws Exception {
 		OSGiRepository repo = new OSGiRepository();
 		HttpClient httpClient = new HttpClient();
-		Map<String,String> map = new HashMap<>();
-		map.put("locations", index.getAbsoluteFile().toURI().toString());
+		Map<String, String> map = new HashMap<>();
+		map.put("locations", index.getAbsoluteFile()
+			.toURI()
+			.toString());
 		map.put("name", getName());
 		map.put("cache", new File("generated/tmp/test/cache/" + getName()).getAbsolutePath());
 		repo.setProperties(map);

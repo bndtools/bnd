@@ -66,6 +66,7 @@ public class RedirectInput extends InputStream {
 		}
 	}
 
+	@Override
 	public void close() {
 		// ignore
 	}

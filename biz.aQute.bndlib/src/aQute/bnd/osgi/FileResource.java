@@ -18,11 +18,11 @@ import aQute.lib.io.IOConstants;
  */
 public class FileResource implements Resource {
 	private static final int		THRESHOLD	= IOConstants.PAGE_SIZE * 16;
-	private static final ByteBuffer	CLOSED	= ByteBuffer.allocate(0);
-	private ByteBuffer	buffer;
+	private static final ByteBuffer	CLOSED		= ByteBuffer.allocate(0);
+	private ByteBuffer				buffer;
 	private final Path				file;
-	private String		extra;
-	private boolean		deleteOnClose;
+	private String					extra;
+	private boolean					deleteOnClose;
 	private final long				lastModified;
 	private final long				size;
 
@@ -37,7 +37,8 @@ public class FileResource implements Resource {
 	/* Used by Jar.buildFromDirectory */
 	FileResource(Path path, BasicFileAttributes attrs) throws IOException {
 		file = path.toAbsolutePath();
-		lastModified = attrs.lastModifiedTime().toMillis();
+		lastModified = attrs.lastModifiedTime()
+			.toMillis();
 		size = attrs.size();
 	}
 
@@ -51,7 +52,8 @@ public class FileResource implements Resource {
 	public FileResource(Resource r) throws Exception {
 		file = Files.createTempFile("fileresource", ".resource");
 		deleteOnClose(true);
-		file.toFile().deleteOnExit();
+		file.toFile()
+			.deleteOnExit();
 		try (OutputStream out = IO.outputStream(file)) {
 			r.write(out);
 		}
@@ -70,6 +72,7 @@ public class FileResource implements Resource {
 		return (buffer = IO.read(file)).duplicate();
 	}
 
+	@Override
 	public InputStream openInputStream() throws Exception {
 		if (buffer != null) {
 			return IO.stream(buffer());
@@ -83,6 +86,7 @@ public class FileResource implements Resource {
 		return file.toString();
 	}
 
+	@Override
 	public void write(OutputStream out) throws Exception {
 		if (buffer != null) {
 			IO.copy(buffer(), out);
@@ -91,22 +95,27 @@ public class FileResource implements Resource {
 		}
 	}
 
+	@Override
 	public long lastModified() {
 		return lastModified;
 	}
 
+	@Override
 	public String getExtra() {
 		return extra;
 	}
 
+	@Override
 	public void setExtra(String extra) {
 		this.extra = extra;
 	}
 
+	@Override
 	public long size() {
 		return size;
 	}
 
+	@Override
 	public void close() throws IOException {
 		/*
 		 * Allow original buffer to be garbage collected and prevent it being

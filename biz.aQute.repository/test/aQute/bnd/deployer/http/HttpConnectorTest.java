@@ -93,7 +93,7 @@ public class HttpConnectorTest extends TestCase {
 		Constraint constraint = new Constraint();
 		constraint.setName(Constraint.__BASIC_AUTH);
 		constraint.setRoles(new String[] {
-				REQUIRED_ROLE
+			REQUIRED_ROLE
 		});
 		constraint.setAuthenticate(true);
 
@@ -108,7 +108,7 @@ public class HttpConnectorTest extends TestCase {
 		securityHandler.setHandler(resourceHandler);
 		securityHandler.setLoginService(loginSvc);
 		securityHandler.setConstraintMappings(new ConstraintMapping[] {
-				cm
+			cm
 		});
 
 		// Finally!! Start the server
@@ -135,7 +135,8 @@ public class HttpConnectorTest extends TestCase {
 
 		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "bundles/dummybundle.jar"));
 		assertNotNull("Data should be non-null because ETag not provided", data);
-		data.getInputStream().close();
+		data.getInputStream()
+			.close();
 		assertEquals("ETag is incorrect", EXPECTED_ETAG, data.getTag());
 	}
 
@@ -151,13 +152,14 @@ public class HttpConnectorTest extends TestCase {
 
 		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "bundles/dummybundle.jar"), "00000000");
 		assertNotNull("Data should be non-null because ETag was different", data);
-		data.getInputStream().close();
+		data.getInputStream()
+			.close();
 		assertEquals("ETag is incorrect", EXPECTED_ETAG, data.getTag());
 	}
 
 	public static void testConnectHTTPS() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
 
@@ -183,13 +185,14 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectTaggedHTTPS() throws Exception {
 		DefaultURLConnector connector = new DefaultURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
 
 		TaggedData data = connector.connectTagged(new URL(getUrl(false) + "bundles/dummybundle.jar"));
 		assertNotNull(data);
-		data.getInputStream().close();
+		data.getInputStream()
+			.close();
 	}
 
 	public static void testConnectTaggedHTTPSBadCerficate() throws Exception {
@@ -209,7 +212,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectNoUserPass() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("configs", "");
 		connector.setProperties(config);
 
@@ -218,13 +221,14 @@ public class HttpConnectorTest extends TestCase {
 			fail("Should have thrown IOException due to missing auth");
 		} catch (IOException e) {
 			// expected
-			assertTrue(e.getMessage().startsWith("Server returned HTTP response code: 401"));
+			assertTrue(e.getMessage()
+				.startsWith("Server returned HTTP response code: 401"));
 		}
 	}
 
 	public static void testConnectWithUserPass() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth.properties");
 		connector.setProperties(config);
 
@@ -235,7 +239,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectHTTPSBadCertificate() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth.properties");
 		connector.setProperties(config);
 
@@ -250,7 +254,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectWithUserPassHTTPS() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth.properties");
 		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
@@ -262,7 +266,7 @@ public class HttpConnectorTest extends TestCase {
 
 	public static void testConnectWithWrongUserPass() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth_wrong.properties");
 		connector.setProperties(config);
 
@@ -271,13 +275,14 @@ public class HttpConnectorTest extends TestCase {
 			fail("Should have thrown IOException due to incorrect auth");
 		} catch (IOException e) {
 			// expected
-			assertTrue(e.getMessage().startsWith("Server returned HTTP response code: 401"));
+			assertTrue(e.getMessage()
+				.startsWith("Server returned HTTP response code: 401"));
 		}
 	}
 
 	public static void testConnectWithWrongUserPassHTTPS() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth_wrong.properties");
 		config.put(HttpsUtil.PROP_DISABLE_SERVER_CERT_VERIFY, "true");
 		connector.setProperties(config);
@@ -287,18 +292,19 @@ public class HttpConnectorTest extends TestCase {
 			fail("Should have thrown IOException due to incorrect auth");
 		} catch (IOException e) {
 			// expected
-			assertTrue(e.getMessage().startsWith("Server returned HTTP response code: 401"));
+			assertTrue(e.getMessage()
+				.startsWith("Server returned HTTP response code: 401"));
 		}
 	}
 
 	public static void testConnectWithUserPassAndTag() throws Exception {
 		HttpBasicAuthURLConnector connector = new HttpBasicAuthURLConnector();
-		Map<String,String> config = new HashMap<String,String>();
+		Map<String, String> config = new HashMap<>();
 		config.put("configs", "testdata/http_auth.properties");
 		connector.setProperties(config);
 
 		TaggedData data = connector.connectTagged(new URL(getUrl(true) + "securebundles/dummybundle.jar"),
-				EXPECTED_ETAG);
+			EXPECTED_ETAG);
 		assertNull("Data should be null because resource not modified", data);
 	}
 

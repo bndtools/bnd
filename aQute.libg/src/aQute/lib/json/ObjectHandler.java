@@ -18,10 +18,10 @@ public class ObjectHandler extends Handler {
 	final Object	defaults[];
 	final Field		extra;
 
-	ObjectHandler(JSONCodec codec, Class< ? > c) throws Exception {
+	ObjectHandler(JSONCodec codec, Class<?> c) throws Exception {
 		rawClass = c;
 
-		List<Field> fields = new ArrayList<Field>();
+		List<Field> fields = new ArrayList<>();
 		for (Field f : c.getFields()) {
 			if (Modifier.isStatic(f.getModifiers()))
 				continue;
@@ -32,8 +32,10 @@ public class ObjectHandler extends Handler {
 
 		// Sort the fields so the output is canonical
 		Arrays.sort(this.fields, new Comparator<Field>() {
+			@Override
 			public int compare(Field o1, Field o2) {
-				return o1.getName().compareTo(o2.getName());
+				return o1.getName()
+					.compareTo(o2.getName());
 			}
 		});
 
@@ -42,7 +44,8 @@ public class ObjectHandler extends Handler {
 
 		Field x = null;
 		for (int i = 0; i < this.fields.length; i++) {
-			if (this.fields[i].getName().equals("__extra"))
+			if (this.fields[i].getName()
+				.equals("__extra"))
 				x = this.fields[i];
 			types[i] = this.fields[i].getGenericType();
 		}
@@ -52,7 +55,8 @@ public class ObjectHandler extends Handler {
 			extra = null;
 
 		try {
-			Object template = c.getConstructor().newInstance();
+			Object template = c.getConstructor()
+				.newInstance();
 
 			for (int i = 0; i < this.fields.length; i++) {
 				defaults[i] = this.fields[i].get(template);
@@ -63,13 +67,14 @@ public class ObjectHandler extends Handler {
 	}
 
 	@Override
-	public void encode(Encoder app, Object object, Map<Object,Type> visited) throws Exception {
+	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws Exception {
 		app.append("{");
 		app.indent();
 		String del = "";
 		for (int i = 0; i < fields.length; i++)
 			try {
-				if (fields[i].getName().startsWith("__"))
+				if (fields[i].getName()
+					.startsWith("__"))
 					continue;
 
 				Object value = fields[i].get(object);
@@ -97,7 +102,8 @@ public class ObjectHandler extends Handler {
 	public Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
 		@SuppressWarnings("unchecked")
-		Object targetObject = rawClass.getConstructor().newInstance();
+		Object targetObject = rawClass.getConstructor()
+			.newInstance();
 
 		int c = r.next();
 		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {
@@ -130,13 +136,14 @@ public class ObjectHandler extends Handler {
 					if (r.strict)
 						throw new IllegalArgumentException("No such field " + key);
 					Object value = r.codec.decode(null, r);
-					r.getExtra().put(rawClass.getName() + "." + key, value);
+					r.getExtra()
+						.put(rawClass.getName() + "." + key, value);
 				} else {
 
 					@SuppressWarnings("unchecked")
-					Map<String,Object> map = (Map<String,Object>) extra.get(targetObject);
+					Map<String, Object> map = (Map<String, Object>) extra.get(targetObject);
 					if (map == null) {
-						map = new LinkedHashMap<String,Object>();
+						map = new LinkedHashMap<>();
 						extra.set(targetObject, map);
 					}
 					Object value = r.codec.decode(null, r);
@@ -155,7 +162,7 @@ public class ObjectHandler extends Handler {
 			}
 
 			throw new IllegalArgumentException(
-					"Invalid character in parsing object, expected } or , but found " + (char) c);
+				"Invalid character in parsing object, expected } or , but found " + (char) c);
 		}
 		assert r.current() == '}';
 		r.read(); // skip closing

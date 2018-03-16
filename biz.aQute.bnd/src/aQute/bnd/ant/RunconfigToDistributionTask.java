@@ -26,12 +26,12 @@ import aQute.lib.io.IO;
 
 public class RunconfigToDistributionTask extends BaseTask {
 
-	private File			rootDir;
-	private File			buildProject;
-	private String			outputDir;
-	private File			bndFile;
-	private boolean			allowSnapshots;
-	private Map<String,Jar>	snapshots;
+	private File				rootDir;
+	private File				buildProject;
+	private String				outputDir;
+	private File				bndFile;
+	private boolean				allowSnapshots;
+	private Map<String, Jar>	snapshots;
 
 	@Override
 	public void execute() throws BuildException {
@@ -63,8 +63,8 @@ public class RunconfigToDistributionTask extends BaseTask {
 						for (Version availableVersion : versions) {
 							VersionRange range = null;
 
-							if (runBundle.getVersionRange() != null
-									&& !runBundle.getVersionRange().equals(Constants.VERSION_ATTR_LATEST)) {
+							if (runBundle.getVersionRange() != null && !runBundle.getVersionRange()
+								.equals(Constants.VERSION_ATTR_LATEST)) {
 								range = new VersionRange(runBundle.getVersionRange());
 							}
 
@@ -113,8 +113,8 @@ public class RunconfigToDistributionTask extends BaseTask {
 		return releaseDir;
 	}
 
-	private Map<String,Jar> indexBundleSnapshots() {
-		Map<String,Jar> snapshots = new HashMap<String,Jar>();
+	private Map<String, Jar> indexBundleSnapshots() {
+		Map<String, Jar> snapshots = new HashMap<>();
 		File[] projectFolders = rootDir.listFiles(new NonTestProjectFileFilter());
 		for (File projectFolder : projectFolders) {
 			File[] generatedFiles = new File(projectFolder, "generated").listFiles(new JarFileFilter());
@@ -137,15 +137,18 @@ public class RunconfigToDistributionTask extends BaseTask {
 	private static class NonTestProjectFileFilter implements FileFilter {
 		public NonTestProjectFileFilter() {}
 
+		@Override
 		public boolean accept(File projectFolder) {
-			return !projectFolder.getName().endsWith(".test") && containsGeneratedFolder(projectFolder);
+			return !projectFolder.getName()
+				.endsWith(".test") && containsGeneratedFolder(projectFolder);
 		}
 
 		private boolean containsGeneratedFolder(File projectFolder) {
 			if (projectFolder.isDirectory()) {
 				List<File> files = Arrays.asList(projectFolder.listFiles());
 				for (File file : files) {
-					if (file.isDirectory() && file.getName().equals("generated")) {
+					if (file.isDirectory() && file.getName()
+						.equals("generated")) {
 						return true;
 					}
 				}
@@ -158,8 +161,10 @@ public class RunconfigToDistributionTask extends BaseTask {
 	private static class JarFileFilter implements FileFilter {
 		public JarFileFilter() {}
 
+		@Override
 		public boolean accept(File file) {
-			return file.getName().endsWith(".jar");
+			return file.getName()
+				.endsWith(".jar");
 		}
 	}
 

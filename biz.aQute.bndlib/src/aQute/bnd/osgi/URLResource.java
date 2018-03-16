@@ -14,14 +14,15 @@ import aQute.lib.io.IO;
 
 class URLResource implements Resource {
 	private static final ByteBuffer	CLOSED			= ByteBuffer.allocate(0);
-	private ByteBuffer		buffer;
-	private final URL		url;
-	private String			extra;
-	private long			lastModified	= -1L;
+	private ByteBuffer				buffer;
+	private final URL				url;
+	private String					extra;
+	private long					lastModified	= -1L;
 	private int						size			= -1;
 
 	/**
-	 * This constructor is not for use other than by {@link Resource#fromURL(URL)}.
+	 * This constructor is not for use other than by
+	 * {@link Resource#fromURL(URL)}.
 	 * 
 	 * @see Resource#fromURL(URL)
 	 */
@@ -58,6 +59,7 @@ class URLResource implements Resource {
 		return conn;
 	}
 
+	@Override
 	public InputStream openInputStream() throws Exception {
 		return IO.stream(buffer());
 	}
@@ -67,6 +69,7 @@ class URLResource implements Resource {
 		return ":" + url.toExternalForm() + ":";
 	}
 
+	@Override
 	public void write(OutputStream out) throws Exception {
 		if (buffer != null) {
 			IO.copy(buffer(), out);
@@ -75,6 +78,7 @@ class URLResource implements Resource {
 		}
 	}
 
+	@Override
 	public long lastModified() {
 		if (lastModified >= 0L) {
 			return lastModified;
@@ -87,14 +91,17 @@ class URLResource implements Resource {
 		return lastModified;
 	}
 
+	@Override
 	public String getExtra() {
 		return extra;
 	}
 
+	@Override
 	public void setExtra(String extra) {
 		this.extra = extra;
 	}
 
+	@Override
 	public long size() throws Exception {
 		if (size >= 0) {
 			return size;

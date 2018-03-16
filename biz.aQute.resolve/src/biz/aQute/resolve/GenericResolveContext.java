@@ -24,6 +24,7 @@ public class GenericResolveContext extends AbstractResolveContext {
 		super(log);
 	}
 
+	@Override
 	public synchronized void init() {
 		if (initialised)
 			return;

@@ -50,7 +50,7 @@ public abstract class ConcurrentInitialize<T> {
 				case CREATING : {
 					if (creatingThread == Thread.currentThread())
 						throw new IllegalStateException(
-								"Cycle:  ConcurrentInitialize's create returns to same instance");
+							"Cycle:  ConcurrentInitialize's create returns to same instance");
 					do {
 						lock.wait();
 					} while (state == State.CREATING);

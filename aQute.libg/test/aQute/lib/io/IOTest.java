@@ -46,7 +46,8 @@ public class IOTest extends TestCase {
 	public void testCopyURLToByteArray() throws Exception {
 		File src = new File("testresources/unzipped.dat");
 		byte[] file = IO.read(src);
-		byte[] result = IO.read(src.toURI().toURL());
+		byte[] result = IO.read(src.toURI()
+			.toURL());
 		assertEquals((int) src.length(), result.length);
 		assertEquals(file.length, result.length);
 		int length = file.length;
@@ -187,8 +188,7 @@ public class IOTest extends TestCase {
 			IO.copy(parentDir, childDir);
 
 			fail("Expected IllegalArgumentException");
-		} catch (IllegalArgumentException e) {
-		}
+		} catch (IllegalArgumentException e) {}
 	}
 
 	public void testIfCreateSymlinkOrCopyFileDependingOnOS() throws Exception {
@@ -257,7 +257,8 @@ public class IOTest extends TestCase {
 			assertEquals(link.length(), newSource.length());
 		} else {
 			assertTrue(IO.isSymbolicLink(link));
-			assertTrue(Files.readSymbolicLink(link.toPath()).equals(newSource.toPath()));
+			assertTrue(Files.readSymbolicLink(link.toPath())
+				.equals(newSource.toPath()));
 		}
 	}
 
@@ -266,15 +267,19 @@ public class IOTest extends TestCase {
 		IO.delete(rootDirectory);
 		rootDirectory = Files.createDirectories(rootDirectory);
 
-		Path target = Files.createDirectories(rootDirectory.resolve("target").toAbsolutePath());
-		assertTrue(target.toFile().exists());
+		Path target = Files.createDirectories(rootDirectory.resolve("target")
+			.toAbsolutePath());
+		assertTrue(target.toFile()
+			.exists());
 
-		Path link = Paths.get(rootDirectory.toAbsolutePath().toString(), "link");
+		Path link = Paths.get(rootDirectory.toAbsolutePath()
+			.toString(), "link");
 		Path symbolicLink = Files.createSymbolicLink(link, target);
 		assertTrue(IO.isSymbolicLink(symbolicLink));
 
 		IO.mkdirs(symbolicLink);
-		assertTrue(symbolicLink.toFile().exists());
+		assertTrue(symbolicLink.toFile()
+			.exists());
 	}
 
 	public void testCreateDirectory_SymlinkMissingTarget() throws Exception {
@@ -282,15 +287,19 @@ public class IOTest extends TestCase {
 		IO.delete(rootDirectory);
 		rootDirectory = Files.createDirectories(rootDirectory);
 
-		Path target = rootDirectory.resolve("target").toAbsolutePath();
-		assertFalse(target.toFile().exists());
+		Path target = rootDirectory.resolve("target")
+			.toAbsolutePath();
+		assertFalse(target.toFile()
+			.exists());
 
-		Path link = Paths.get(rootDirectory.toAbsolutePath().toString(), "link");
+		Path link = Paths.get(rootDirectory.toAbsolutePath()
+			.toString(), "link");
 		Path symbolicLink = Files.createSymbolicLink(link, target);
 		assertTrue(IO.isSymbolicLink(symbolicLink));
 
 		IO.mkdirs(symbolicLink);
-		assertTrue(symbolicLink.toFile().exists());
+		assertTrue(symbolicLink.toFile()
+			.exists());
 	}
 
 	public void testCollectEncoded() throws Exception {

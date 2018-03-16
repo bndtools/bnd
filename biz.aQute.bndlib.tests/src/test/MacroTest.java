@@ -16,23 +16,51 @@ import junit.framework.TestCase;
 @SuppressWarnings("resource")
 public class MacroTest extends TestCase {
 
+	public void testRemoveall() throws Exception {
+		try (Builder b = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("a", "${removeall;A,B,C,D,E,F;B,D,F,G}");
+			b.setProperties(p);
+			assertEquals("A,C,E", b.getProperty("a"));
+		}
+	}
+
+	public void testRetainall() throws Exception {
+		try (Builder b = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("a", "${retainall;A,B,C,D,E,F;B,D,F,G}");
+			b.setProperties(p);
+			assertEquals("B,D,F", b.getProperty("a"));
+		}
+	}
+
 	public void testFilterExpression() throws Exception {
 		Processor p = new Processor();
 		p.setProperty("a", "A");
 		p.setProperty("b", "1");
 
-		assertEquals("true", p.getReplacer().process("${if;(a=A)}"));
-		assertEquals("true", p.getReplacer().process("${if;(a>=A)}"));
-		assertEquals("true", p.getReplacer().process("${if;(a<=A)}"));
-		assertEquals("", p.getReplacer().process("${if;(a<A)}"));
-		assertEquals("", p.getReplacer().process("${if;(a>A)}"));
-		assertEquals("", p.getReplacer().process("${if;(a!=A)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a=A)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a>=A)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a<=A)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a<A)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a>A)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a!=A)}"));
 
-		assertEquals("true", p.getReplacer().process("${if;(a=${a})}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a=${a})}"));
 
-		assertEquals("true", p.getReplacer().process("${if;(a>=A)}"));
-		assertEquals("true", p.getReplacer().process("${if;(a<=A)}"));
-		assertEquals("", p.getReplacer().process("${if;(a<=${b})}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a>=A)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a<=A)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a<=${b})}"));
 
 	}
 
@@ -41,8 +69,10 @@ public class MacroTest extends TestCase {
 		p.setProperty("a", "A");
 		p.setProperty("b", "1");
 
-		assertEquals("true", p.getReplacer().process("${if;(&(a=A)(b=1))}"));
-		assertEquals("true", p.getReplacer().process("${if;(&(a=A)(b=1)(|(a!=A)(a=A)))}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(&(a=A)(b=1))}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(&(a=A)(b=1)(|(a!=A)(a=A)))}"));
 	}
 
 	public void testFilterWithArrays() throws Exception {
@@ -50,12 +80,18 @@ public class MacroTest extends TestCase {
 		p.setProperty("a", "A,B,C,D");
 		p.setProperty("b", "1");
 
-		assertEquals("", p.getReplacer().process("${if;(a=A)}"));
-		assertEquals("true", p.getReplacer().process("${if;(a[]=A)}"));
-		assertEquals("true", p.getReplacer().process("${if;(a[]=B)}"));
-		assertEquals("true", p.getReplacer().process("${if;(a[]=D)}"));
-		assertEquals("", p.getReplacer().process("${if;(a[]=E)}"));
-		assertEquals("", p.getReplacer().process("${if;(a[]!=E)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a=A)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a[]=A)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a[]=B)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a[]=D)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a[]=E)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a[]!=E)}"));
 	}
 
 	public void testFilterWithInheritance() throws Exception {
@@ -65,12 +101,18 @@ public class MacroTest extends TestCase {
 		p.setProperty("a", "A,B,C,D");
 		p.setProperty("b", "1");
 
-		assertEquals("", p.getReplacer().process("${if;(a=A)}"));
-		assertEquals("true", p.getReplacer().process("${if;(a[]=A)}"));
-		assertEquals("true", p.getReplacer().process("${if;(a[]=B)}"));
-		assertEquals("true", p.getReplacer().process("${if;(a[]=D)}"));
-		assertEquals("", p.getReplacer().process("${if;(a[]=E)}"));
-		assertEquals("", p.getReplacer().process("${if;(a[]!=E)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a=A)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a[]=A)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a[]=B)}"));
+		assertEquals("true", p.getReplacer()
+			.process("${if;(a[]=D)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a[]=E)}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a[]!=E)}"));
 	}
 
 	public void testFilterExpressionWithReplacement() throws Exception {
@@ -78,78 +120,97 @@ public class MacroTest extends TestCase {
 		p.setProperty("a", "A");
 		p.setProperty("b", "1");
 
-		assertEquals("YES", p.getReplacer().process("${if;(a=A);YES}"));
-		assertEquals("", p.getReplacer().process("${if;(a!=A);YES}"));
-		assertEquals("YES", p.getReplacer().process("${if;(a=A);YES;NO}"));
-		assertEquals("NO", p.getReplacer().process("${if;(a!=A);YES;NO}"));
+		assertEquals("YES", p.getReplacer()
+			.process("${if;(a=A);YES}"));
+		assertEquals("", p.getReplacer()
+			.process("${if;(a!=A);YES}"));
+		assertEquals("YES", p.getReplacer()
+			.process("${if;(a=A);YES;NO}"));
+		assertEquals("NO", p.getReplacer()
+			.process("${if;(a!=A);YES;NO}"));
 	}
 
 	public void testUnknownMacroDelimeters() throws IOException {
 		Processor p = new Processor();
-		assertEquals("${unknown}", p.getReplacer().process("${unknown}"));
-		assertEquals("$<unknown>", p.getReplacer().process("$<unknown>"));
-		assertEquals("$(unknown)", p.getReplacer().process("$(unknown)"));
-		assertEquals("$[unknown]", p.getReplacer().process("$[unknown]"));
-		assertEquals("$«unknown»", p.getReplacer().process("$«unknown»"));
-		assertEquals("$‹unknown›", p.getReplacer().process("$‹unknown›"));
+		assertEquals("${unknown}", p.getReplacer()
+			.process("${unknown}"));
+		assertEquals("$<unknown>", p.getReplacer()
+			.process("$<unknown>"));
+		assertEquals("$(unknown)", p.getReplacer()
+			.process("$(unknown)"));
+		assertEquals("$[unknown]", p.getReplacer()
+			.process("$[unknown]"));
+		assertEquals("$«unknown»", p.getReplacer()
+			.process("$«unknown»"));
+		assertEquals("$‹unknown›", p.getReplacer()
+			.process("$‹unknown›"));
 		assertTrue(p.check("No translation found for macro: unknown"));
 	}
 
 	public void testVersionMaskWithTarget() throws IOException {
 		Processor p = new Processor();
-		assertEquals("${version;===;$<@>}", p.getReplacer().process("${version;===;$<@>}"));
+		assertEquals("${version;===;$<@>}", p.getReplacer()
+			.process("${version;===;$<@>}"));
 		assertTrue(p.check());
 	}
 
 	public void testVersionMaskWithoutTarget() throws IOException {
 		Processor p = new Processor();
-		assertEquals("${version;===}", p.getReplacer().process("${version;===}"));
+		assertEquals("${version;===}", p.getReplacer()
+			.process("${version;===}"));
 		assertTrue(p.check());
 	}
 
 	public void testVersionMask() throws IOException {
 		Processor p = new Processor();
-		assertEquals("1.2.3", p.getReplacer().process("${version;===;1.2.3}"));
+		assertEquals("1.2.3", p.getReplacer()
+			.process("${version;===;1.2.3}"));
 		assertTrue(p.check());
 	}
 
 	public void testVersionMaskWithSetExplicitTarget() throws IOException {
 		Processor p = new Processor();
 		p.setProperty("@", "1.2.3");
-		assertEquals("1.2.3", p.getReplacer().process("${version;===;${@}}"));
+		assertEquals("1.2.3", p.getReplacer()
+			.process("${version;===;${@}}"));
 		assertTrue(p.check());
 	}
 
 	public void testVersionMaskWithSetTarget() throws IOException {
 		Processor p = new Processor();
 		p.setProperty("@", "1.2.3");
-		assertEquals("1.2.3", p.getReplacer().process("${version;===}"));
+		assertEquals("1.2.3", p.getReplacer()
+			.process("${version;===}"));
 		assertTrue(p.check());
 	}
 
 	public void testRangeWithSetTarget() throws IOException {
 		Processor p = new Processor();
 		p.setProperty("@", "1.2.3");
-		assertEquals("[1.2.3,2.2.3)", p.getReplacer().process("${range;[===,+===)}"));
+		assertEquals("[1.2.3,2.2.3)", p.getReplacer()
+			.process("${range;[===,+===)}"));
 		assertTrue(p.check());
 	}
 
 	public void testRangeWithSetExplicitTarget() throws IOException {
 		Processor p = new Processor();
 		p.setProperty("@", "1.2.3");
-		assertEquals("[1.2.3,2.2.3)", p.getReplacer().process("${range;[===,+===);${@}}"));
+		assertEquals("[1.2.3,2.2.3)", p.getReplacer()
+			.process("${range;[===,+===);${@}}"));
 		assertTrue(p.check());
 	}
 
 	public void testRangeWithTarget() throws IOException {
 		Processor p = new Processor();
-		assertEquals("${range;[===,+===)}", p.getReplacer().process("${range;[===,+===)}"));
+		assertEquals("${range;[===,+===)}", p.getReplacer()
+			.process("${range;[===,+===)}"));
 		assertTrue(p.check());
 	}
 
 	public void testRangeWithExplicitTarget() throws IOException {
 		Processor p = new Processor();
-		assertEquals("${range;[===,+===);${@}}", p.getReplacer().process("${range;[===,+===);${@}}"));
+		assertEquals("${range;[===,+===);${@}}", p.getReplacer()
+			.process("${range;[===,+===);${@}}"));
 		assertTrue(p.check());
 	}
 
@@ -175,10 +236,13 @@ public class MacroTest extends TestCase {
 		builder.build();
 		assertTrue(builder.check());
 
-		Manifest m = builder.getJar().getManifest();
-		String value = m.getMainAttributes().getValue("Header-Version");
+		Manifest m = builder.getJar()
+			.getManifest();
+		String value = m.getMainAttributes()
+			.getValue("Header-Version");
 		assertEquals("1.0.1", value);
-		value = m.getMainAttributes().getValue("Header-Foo");
+		value = m.getMainAttributes()
+			.getValue("Header-Foo");
 		assertNotNull(value);
 	}
 	/*
@@ -242,13 +306,15 @@ public class MacroTest extends TestCase {
 		File b = IO.getFile(processor._thisfile(new String[0]));
 		assertEquals(a, b);
 
-		assertEquals("properties", processor.getReplacer()._extension(new String[] {
+		assertEquals("properties", processor.getReplacer()
+			._extension(new String[] {
 				"", "testresources/testfilenamemacros.properties"
 		}));
 
-		assertEquals("testfilenamemacros.properties",
-				processor.getReplacer().process("${basename;testfilenamemacros.properties}"));
-		assertEquals("testfilenamemacros", processor.getReplacer().process("${stem;testfilenamemacros.properties}"));
+		assertEquals("testfilenamemacros.properties", processor.getReplacer()
+			.process("${basename;testfilenamemacros.properties}"));
+		assertEquals("testfilenamemacros", processor.getReplacer()
+			.process("${stem;testfilenamemacros.properties}"));
 	}
 
 	/**
@@ -257,53 +323,81 @@ public class MacroTest extends TestCase {
 	public void testMacroLists() throws Exception {
 		Processor processor = new Processor();
 
-		assertEquals("true", processor.getReplacer().process("${apply;isnumber;1,2,3,4}"));
-		assertEquals("10", processor.getReplacer().process("${apply;sum;1,2,3,4}"));
-		assertEquals("false", processor.getReplacer().process("${apply;isnumber;1,2,3,a,4}"));
+		assertEquals("true", processor.getReplacer()
+			.process("${apply;isnumber;1,2,3,4}"));
+		assertEquals("10", processor.getReplacer()
+			.process("${apply;sum;1,2,3,4}"));
+		assertEquals("false", processor.getReplacer()
+			.process("${apply;isnumber;1,2,3,a,4}"));
 
 		processor.setProperty("double", "${1}${1}");
 		processor.setProperty("mulbyindex", "${js;${1}*${2}}");
-		assertEquals("A,B,C,D,E,F", processor.getReplacer().process("${map;toupper;a, b, c, d, e, f}"));
-		assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer().process("${map;double;a, b, c, d, e, f}"));
-		assertEquals("0,2,6,12,20,30,42,56,72,90",
-				processor.getReplacer().process("${foreach;mulbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("A,B,C,D,E,F", processor.getReplacer()
+			.process("${map;toupper;a, b, c, d, e, f}"));
+		assertEquals("aa,bb,cc,dd,ee,ff", processor.getReplacer()
+			.process("${map;double;a, b, c, d, e, f}"));
+		assertEquals("0,2,6,12,20,30,42,56,72,90", processor.getReplacer()
+			.process("${foreach;mulbyindex;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 
-		assertEquals("6", processor.getReplacer().process("${size;a, b, c, d, e, f}"));
-		assertEquals("0", processor.getReplacer().process("${size;}"));
+		assertEquals("6", processor.getReplacer()
+			.process("${size;a, b, c, d, e, f}"));
+		assertEquals("0", processor.getReplacer()
+			.process("${size;}"));
 
-		assertEquals("d", processor.getReplacer().process("${get;3;a, b, c, d, e, f}"));
-		assertEquals("d", processor.getReplacer().process("${get;-3;a, b, c, d, e, f}"));
-		assertEquals("f", processor.getReplacer().process("${get;-1;a, b, c, d, e, f}"));
+		assertEquals("d", processor.getReplacer()
+			.process("${get;3;a, b, c, d, e, f}"));
+		assertEquals("d", processor.getReplacer()
+			.process("${get;-3;a, b, c, d, e, f}"));
+		assertEquals("f", processor.getReplacer()
+			.process("${get;-1;a, b, c, d, e, f}"));
 
-		assertEquals("b,c", processor.getReplacer().process("${sublist;1;3;a, b, c, d, e, f}"));
-		assertEquals("e,f", processor.getReplacer().process("${sublist;-1;-3;a, b, c, d, e, f}"));
+		assertEquals("b,c", processor.getReplacer()
+			.process("${sublist;1;3;a, b, c, d, e, f}"));
+		assertEquals("e,f", processor.getReplacer()
+			.process("${sublist;-1;-3;a, b, c, d, e, f}"));
 
-		assertEquals("a", processor.getReplacer().process("${first;a, b, c, d, e, f}"));
-		assertEquals("", processor.getReplacer().process("${first;}"));
-		assertEquals("f", processor.getReplacer().process("${last;a, b, c, d, e, f}"));
-		assertEquals("", processor.getReplacer().process("${last;}"));
+		assertEquals("a", processor.getReplacer()
+			.process("${first;a, b, c, d, e, f}"));
+		assertEquals("", processor.getReplacer()
+			.process("${first;}"));
+		assertEquals("f", processor.getReplacer()
+			.process("${last;a, b, c, d, e, f}"));
+		assertEquals("", processor.getReplacer()
+			.process("${last;}"));
 
-		assertEquals("5", processor.getReplacer().process("${indexof;6;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		assertEquals("-1", processor.getReplacer().process("${indexof;60;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("5", processor.getReplacer()
+			.process("${indexof;6;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("-1", processor.getReplacer()
+			.process("${indexof;60;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 
-		assertEquals("9", processor.getReplacer().process("${lastindexof;7;1, 2, 3, 4, 5, 6, 7, 7, 7, 10}"));
+		assertEquals("9", processor.getReplacer()
+			.process("${lastindexof;7;1, 2, 3, 4, 5, 6, 7, 7, 7, 10}"));
 
-		assertEquals("10,9,8,7,6,5,4,3,2,1",
-				processor.getReplacer().process("${reverse;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("10,9,8,7,6,5,4,3,2,1", processor.getReplacer()
+			.process("${reverse;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 
-		assertEquals("55", processor.getReplacer().process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
-		assertEquals("55", processor.getReplacer().process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("55", processor.getReplacer()
+			.process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("55", processor.getReplacer()
+			.process("${sum;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 
-		assertEquals("5.5", processor.getReplacer().process("${average;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
+		assertEquals("5.5", processor.getReplacer()
+			.process("${average;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 
-		assertEquals("-16", processor.getReplacer().process("${nmin;2, 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
-		assertEquals("-16", processor.getReplacer().process("${nmin;2; 0; -13; 40 ; 55 ; -16; 700; -8; 9; 10}"));
+		assertEquals("-16", processor.getReplacer()
+			.process("${nmin;2, 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+		assertEquals("-16", processor.getReplacer()
+			.process("${nmin;2; 0; -13; 40 ; 55 ; -16; 700; -8; 9; 10}"));
 
-		assertEquals("700", processor.getReplacer().process("${nmax;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
-		assertEquals("700", processor.getReplacer().process("${nmax;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
+		assertEquals("700", processor.getReplacer()
+			.process("${nmax;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+		assertEquals("700", processor.getReplacer()
+			.process("${nmax;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
 
-		assertEquals("-13", processor.getReplacer().process("${min;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
-		assertEquals("9", processor.getReplacer().process("${max;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
+		assertEquals("-13", processor.getReplacer()
+			.process("${min;2; 0; -13; 40; 55; -16; 700, -8, 9, 10}"));
+		assertEquals("9", processor.getReplacer()
+			.process("${max;2; 0, -13, 40, 55, -16, 700, -8, 9, 10}"));
 	}
 
 	/**
@@ -314,73 +408,124 @@ public class MacroTest extends TestCase {
 		Processor processor = new Processor();
 		processor.setProperty("empty", "");
 
-		assertEquals("6", processor.getReplacer().process("${length;abcdef}"));
+		assertEquals("6", processor.getReplacer()
+			.process("${length;abcdef}"));
 
-		assertEquals("true", processor.getReplacer().process("${is;1.3;1.3;1.3}"));
-		assertEquals("false", processor.getReplacer().process("${is;abc;1.3}"));
+		assertEquals("true", processor.getReplacer()
+			.process("${is;1.3;1.3;1.3}"));
+		assertEquals("false", processor.getReplacer()
+			.process("${is;abc;1.3}"));
 
-		assertEquals("true", processor.getReplacer().process("${isnumber;1.3}"));
-		assertEquals("false", processor.getReplacer().process("${isnumber;abc}"));
+		assertEquals("true", processor.getReplacer()
+			.process("${isnumber;1.3}"));
+		assertEquals("false", processor.getReplacer()
+			.process("${isnumber;abc}"));
 
-		assertEquals("true", processor.getReplacer().process("${isempty;${empty}}"));
-		assertEquals("true", processor.getReplacer().process("${isempty;${empty};${empty};${empty};${empty};}"));
-		assertEquals("false", processor.getReplacer().process("${isempty;abc}"));
+		assertEquals("true", processor.getReplacer()
+			.process("${isempty;${empty}}"));
+		assertEquals("true", processor.getReplacer()
+			.process("${isempty;${empty};${empty};${empty};${empty};}"));
+		assertEquals("false", processor.getReplacer()
+			.process("${isempty;abc}"));
 
-		assertEquals("\n000010", processor.getReplacer().process("${format;\n%06d;10}"));
-		assertEquals("000010", processor.getReplacer().process("${format;%1$06d;10}"));
-		assertEquals("2e C8 300 620", processor.getReplacer().process("${format;%x %X %d %o;46;200;300;400;500}"));
-		assertEquals("+00010", processor.getReplacer().process("${format;%+06d;10}"));
-		assertEquals(String.format("%,6d", 100000), processor.getReplacer().process("${format;%,6d;100000}"));
+		assertEquals("\n000010", processor.getReplacer()
+			.process("${format;\n%06d;10}"));
+		assertEquals("000010", processor.getReplacer()
+			.process("${format;%1$06d;10}"));
+		assertEquals("2e C8 300 620", processor.getReplacer()
+			.process("${format;%x %X %d %o;46;200;300;400;500}"));
+		assertEquals("+00010", processor.getReplacer()
+			.process("${format;%+06d;10}"));
+		assertEquals(String.format("%,6d", 100000), processor.getReplacer()
+			.process("${format;%,6d;100000}"));
 
-		assertEquals("xyz", processor.getReplacer().process("${trim; \txyz\t  }"));
+		assertEquals("xyz", processor.getReplacer()
+			.process("${trim; \txyz\t  }"));
 
-		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF}"));
-		assertEquals("DEFbacdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;1}"));
-		assertEquals("DEFbDEFcdaef", processor.getReplacer().process("${subst;abacdaef;a;DEF;2}"));
-		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF;3}"));
-		assertEquals("DEFbDEFcdDEFef", processor.getReplacer().process("${subst;abacdaef;a;DEF;300}"));
+		assertEquals("bcdef", processor.getReplacer()
+			.process("${subst;abacdaef;a}"));
+		assertEquals("DEFbDEFcdDEFef", processor.getReplacer()
+			.process("${subst;abacdaef;a;DEF}"));
+		assertEquals("DEFbacdaef", processor.getReplacer()
+			.process("${subst;abacdaef;a;DEF;1}"));
+		assertEquals("DEFbDEFcdaef", processor.getReplacer()
+			.process("${subst;abacdaef;a;DEF;2}"));
+		assertEquals("DEFbDEFcdDEFef", processor.getReplacer()
+			.process("${subst;abacdaef;a;DEF;3}"));
+		assertEquals("DEFbDEFcdDEFef", processor.getReplacer()
+			.process("${subst;abacdaef;a;DEF;300}"));
 
-		assertEquals("true", processor.getReplacer().process("${matches;aaaabcdef;[a]+bcdef}"));
-		assertEquals("false", processor.getReplacer().process("${matches;bcdef;[a]+bcdef}"));
+		assertEquals("true", processor.getReplacer()
+			.process("${matches;aaaabcdef;[a]+bcdef}"));
+		assertEquals("false", processor.getReplacer()
+			.process("${matches;bcdef;[a]+bcdef}"));
 
-		assertEquals("-1", processor.getReplacer().process("${ncompare;2;200}"));
-		assertEquals("1", processor.getReplacer().process("${ncompare;200;1}"));
-		assertEquals("0", processor.getReplacer().process("${ncompare;200;200}"));
+		assertEquals("-1", processor.getReplacer()
+			.process("${ncompare;2;200}"));
+		assertEquals("1", processor.getReplacer()
+			.process("${ncompare;200;1}"));
+		assertEquals("0", processor.getReplacer()
+			.process("${ncompare;200;200}"));
 
-		assertEquals("-1", processor.getReplacer().process("${compare;abc;def}"));
-		assertEquals("1", processor.getReplacer().process("${compare;def;abc}"));
-		assertEquals("0", processor.getReplacer().process("${compare;abc;abc}"));
+		assertEquals("-1", processor.getReplacer()
+			.process("${compare;abc;def}"));
+		assertEquals("1", processor.getReplacer()
+			.process("${compare;def;abc}"));
+		assertEquals("0", processor.getReplacer()
+			.process("${compare;abc;abc}"));
 
-		assertEquals("ABCDEF", processor.getReplacer().process("${toupper;abcdef}"));
-		assertEquals("abcdef", processor.getReplacer().process("${tolower;ABCDEF}"));
+		assertEquals("ABCDEF", processor.getReplacer()
+			.process("${toupper;abcdef}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${tolower;ABCDEF}"));
 
-		assertEquals("ab,efab,ef", processor.getReplacer().process("${split;cd;abcdefabcdef}"));
-		assertEquals("ab,d,fab,d,f", processor.getReplacer().process("${split;[ce];abcdefabcdef}"));
+		assertEquals("ab,efab,ef", processor.getReplacer()
+			.process("${split;cd;abcdefabcdef}"));
+		assertEquals("ab,d,fab,d,f", processor.getReplacer()
+			.process("${split;[ce];abcdefabcdef}"));
 
-		assertEquals("3", processor.getReplacer().process("${find;abcdef;def}"));
-		assertEquals("-1", processor.getReplacer().process("${find;abc;defxyz}"));
-		assertEquals("9", processor.getReplacer().process("${findlast;def;abcdefabcdef}"));
+		assertEquals("3", processor.getReplacer()
+			.process("${find;abcdef;def}"));
+		assertEquals("-1", processor.getReplacer()
+			.process("${find;abc;defxyz}"));
+		assertEquals("9", processor.getReplacer()
+			.process("${findlast;def;abcdefabcdef}"));
 
-		assertEquals("abcdef", processor.getReplacer().process("${startswith;abcdef;abc}"));
-		assertEquals("", processor.getReplacer().process("${startswith;abcdef;xyz}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${startswith;abcdef;abc}"));
+		assertEquals("", processor.getReplacer()
+			.process("${startswith;abcdef;xyz}"));
 
-		assertEquals("abcdef", processor.getReplacer().process("${endswith;abcdef;def}"));
-		assertEquals("", processor.getReplacer().process("${endswith;abcdef;xyz}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${endswith;abcdef;def}"));
+		assertEquals("", processor.getReplacer()
+			.process("${endswith;abcdef;xyz}"));
 
-		assertEquals("abcdef", processor.getReplacer().process("${endswith;abcdef;def}"));
-		assertEquals("", processor.getReplacer().process("${endswith;abcdef;xyz}"));
+		assertEquals("abcdef", processor.getReplacer()
+			.process("${endswith;abcdef;def}"));
+		assertEquals("", processor.getReplacer()
+			.process("${endswith;abcdef;xyz}"));
 
-		assertEquals("def", processor.getReplacer().process("${extension;abcdef.def}"));
-		assertEquals("", processor.getReplacer().process("${extension;abcdefxyz}"));
+		assertEquals("def", processor.getReplacer()
+			.process("${extension;abcdef.def}"));
+		assertEquals("", processor.getReplacer()
+			.process("${extension;abcdefxyz}"));
 
-		assertEquals("abc", processor.getReplacer().process("${substring;abcdef;0;3}"));
-		assertEquals("abc", processor.getReplacer().process("${substring;abcdef;;3}"));
-		assertEquals("def", processor.getReplacer().process("${substring;abcdef;-3}"));
-		assertEquals("de", processor.getReplacer().process("${substring;abcdef;-3;-1}"));
-		assertEquals("def", processor.getReplacer().process("${substring;abcdef;3}"));
+		assertEquals("abc", processor.getReplacer()
+			.process("${substring;abcdef;0;3}"));
+		assertEquals("abc", processor.getReplacer()
+			.process("${substring;abcdef;;3}"));
+		assertEquals("def", processor.getReplacer()
+			.process("${substring;abcdef;-3}"));
+		assertEquals("de", processor.getReplacer()
+			.process("${substring;abcdef;-3;-1}"));
+		assertEquals("def", processor.getReplacer()
+			.process("${substring;abcdef;3}"));
 
-		assertEquals("6", processor.getReplacer().process("${length;abcdef}"));
-		assertEquals("0", processor.getReplacer().process("${length;}"));
+		assertEquals("6", processor.getReplacer()
+			.process("${length;abcdef}"));
+		assertEquals("0", processor.getReplacer()
+			.process("${length;}"));
 
 	}
 
@@ -391,7 +536,8 @@ public class MacroTest extends TestCase {
 	public void testRan() {
 		Processor processor = new Processor();
 		for (int i = 0; i < 1000; i++) {
-			int value = Integer.parseInt(processor.getReplacer().process("${rand;-10;10}"));
+			int value = Integer.parseInt(processor.getReplacer()
+				.process("${rand;-10;10}"));
 			assertTrue(value >= -10 && value <= 10);
 		}
 	}
@@ -403,9 +549,12 @@ public class MacroTest extends TestCase {
 	public void testJSSimple() {
 		Processor processor = new Processor();
 		processor.setProperty("alpha", "25");
-		assertEquals("3", processor.getReplacer().process("${js;1+2;}"));
-		assertEquals("25", processor.getReplacer().process("${js;domain.get('alpha');}"));
-		assertEquals("5", processor.getReplacer().process("${js;domain.get('alpha')/5;}"));
+		assertEquals("3", processor.getReplacer()
+			.process("${js;1+2;}"));
+		assertEquals("25", processor.getReplacer()
+			.process("${js;domain.get('alpha');}"));
+		assertEquals("5", processor.getReplacer()
+			.process("${js;domain.get('alpha')/5;}"));
 
 	}
 
@@ -415,7 +564,8 @@ public class MacroTest extends TestCase {
 	public void testJSINit() {
 		Processor processor = new Processor();
 		processor.setProperty("javascript", "function top() { return 13; }");
-		assertEquals("16", processor.getReplacer().process("${js;1+2+top()}"));
+		assertEquals("16", processor.getReplacer()
+			.process("${js;1+2+top()}"));
 	}
 
 	/**
@@ -426,7 +576,8 @@ public class MacroTest extends TestCase {
 		processor.setProperty("javascript", "function top() { return 1; }");
 		processor.setProperty("javascript.1", "function top() { return 2; }");
 		processor.setProperty("javascript.2", "function top() { return 3; }");
-		assertEquals("3", processor.getReplacer().process("${js;top()}"));
+		assertEquals("3", processor.getReplacer()
+			.process("${js;top()}"));
 	}
 
 	/**
@@ -435,7 +586,8 @@ public class MacroTest extends TestCase {
 	public void testControlCharacters() throws Exception {
 		Processor p = new Processor();
 		p.setProperty("a", "a, b, c");
-		String s = p.getReplacer().process("${unescape;${replace;${a};(.+);$0;\\n}}\n");
+		String s = p.getReplacer()
+			.process("${unescape;${replace;${a};(.+);$0;\\n}}\n");
 		assertEquals("a\nb\nc\n", s);
 	}
 
@@ -446,12 +598,13 @@ public class MacroTest extends TestCase {
 	public void testCustomMacros() {
 		Processor x = new Processor();
 		x.setProperty("foo", "Hello ${1}");
-		assertEquals("Hello Peter", x.getReplacer().process("${foo;Peter}"));
+		assertEquals("Hello Peter", x.getReplacer()
+			.process("${foo;Peter}"));
 
 		assertTemplate("this is 1 abc, and this is def", "this is 1 ${1}, and this is ${2}", "abc;def");
 		assertTemplate("abc,def", "${#}", "abc;def");
 		assertTemplate("osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.6))'",
-				"osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.${1}))'", "6");
+			"osgi.ee;filter:='(&(osgi.ee=JavaSE)(version=1.${1}))'", "6");
 	}
 
 	void assertTemplate(String result, String template, String params) {
@@ -483,7 +636,8 @@ public class MacroTest extends TestCase {
 		top.setProperty("cwd.13", "|\r./|"); // empty
 		top.setProperty("cwd.14", "|\n./|"); // empty
 
-		String cwd = top.getBase().getAbsolutePath() + "/";
+		String cwd = top.getBase()
+			.getAbsolutePath() + "/";
 
 		assertEquals(" . ", top.getProperty("cwd.8"));
 		assertEquals(cwd, top.getProperty("cwd.1"));
@@ -539,16 +693,19 @@ public class MacroTest extends TestCase {
 
 	public static void testEnv() {
 		Processor proc = new Processor();
-		String s = proc.getReplacer().process("${env;PATH}");
+		String s = proc.getReplacer()
+			.process("${env;PATH}");
 		assertNotNull(s);
 		assertTrue(s.length() > 0);
 	}
 
 	public static void testEnvAlt() {
 		Processor proc = new Processor();
-		String s = proc.getReplacer().process("${env;FOOBAR;hello}");
+		String s = proc.getReplacer()
+			.process("${env;FOOBAR;hello}");
 		assertEquals("hello", s);
 	}
+
 	/**
 	 * Test the random macro
 	 */
@@ -564,7 +721,6 @@ public class MacroTest extends TestCase {
 		assertEquals(12, a12.length());
 		assertNotSame(a, a12);
 	}
-
 
 	/**
 	 * Testing an example with nesting that was supposd not to work
@@ -625,14 +781,16 @@ public class MacroTest extends TestCase {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		assertEquals("Hello World", macro.process("${system;echo Hello World}"));
-		assertTrue(macro.process("${system;wc;Hello World}").matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
+		assertTrue(macro.process("${system;wc;Hello World}")
+			.matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
 	}
 
 	public static void testSystemFail() throws Exception {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		String cmd = "${system;mostidioticcommandthatwillsurelyfail}";
-		assertTrue(macro.process(cmd).startsWith("${system;"));
+		assertTrue(macro.process(cmd)
+			.startsWith("${system;"));
 	}
 
 	/**
@@ -689,8 +847,10 @@ public class MacroTest extends TestCase {
 		assertEquals("1.3.0", macro.process("${version;=+0}"));
 		assertEquals("2.0.0", macro.process("${version;+00}"));
 
-		assertEquals(0, proc.getErrors().size());
-		assertEquals(0, proc.getWarnings().size());
+		assertEquals(0, proc.getErrors()
+			.size());
+		assertEquals(0, proc.getWarnings()
+			.size());
 
 		//
 		// Add the S modifier. If qualifier is SNAPSHOT, it will return a
@@ -716,21 +876,27 @@ public class MacroTest extends TestCase {
 		assertEquals("[0.1.0,0.1.2)", macro.process("${range;[=+0,=++);0.0.1}"));
 		assertEquals("[0.0.9,0.1.2)", macro.process("${range;[==9,=++);0.0.1}"));
 
-		assertEquals(0, proc.getErrors().size());
-		assertEquals(0, proc.getWarnings().size());
+		assertEquals(0, proc.getErrors()
+			.size());
+		assertEquals(0, proc.getWarnings()
+			.size());
 
 		proc.setProperty("@", "1.2.3");
 		assertEquals("[1.0.0,2)", macro.process("${range;[=00,+)}"));
 
 		proc.clear();
 		macro.process("${range;=+0,=++;0.0.1}");
-		assertEquals(1, proc.getErrors().size());
-		assertEquals(1, proc.getWarnings().size());
+		assertEquals(1, proc.getErrors()
+			.size());
+		assertEquals(1, proc.getWarnings()
+			.size());
 
 		proc.clear();
 		macro.process("${range;[+,=)}");
-		assertEquals(1, proc.getErrors().size());
-		assertEquals(1, proc.getWarnings().size());
+		assertEquals(1, proc.getErrors()
+			.size());
+		assertEquals(1, proc.getWarnings()
+			.size());
 	}
 
 	/**
@@ -851,7 +1017,8 @@ public class MacroTest extends TestCase {
 	public static void testParentFile() {
 		Processor p = new Processor();
 		Macro m = new Macro(p);
-		assertTrue(m.process("${dir;.project}").endsWith("biz.aQute.bndlib.tests"));
+		assertTrue(m.process("${dir;.project}")
+			.endsWith("biz.aQute.bndlib.tests"));
 	}
 
 	public static void testBasename() {
@@ -866,11 +1033,12 @@ public class MacroTest extends TestCase {
 		p.setProperty("Export-Package", "org.objectweb.*;version=1.5-SNAPSHOT");
 		builder.setProperties(p);
 		builder.setClasspath(new File[] {
-				IO.getFile("jar/asm.jar")
+			IO.getFile("jar/asm.jar")
 		});
 		Jar jar = builder.build();
 		Manifest manifest = jar.getManifest();
-		String export = manifest.getMainAttributes().getValue("Export-Package");
+		String export = manifest.getMainAttributes()
+			.getValue("Export-Package");
 		assertNotNull(export);
 		assertTrue("Test snapshot version", export.contains("1.5.0.SNAPSHOT"));
 	}
@@ -894,9 +1062,10 @@ public class MacroTest extends TestCase {
 	 */
 	public static void testReplace() {
 		Processor p = new Processor();
-		p.setProperty("specs", "a,b, c,    d");
+		p.setProperty("specs", "a0,b0, c0,    d0");
 		Macro m = new Macro(p);
-		assertEquals("xay, xby, xcy, xdy", m.process("${replace;${specs};([^\\s]+);x$1y}"));
+		assertEquals("xa0y, xb0y, xc0y, xd0y", m.process("${replace;${specs};([^\\s]+);x$1y}"));
+		assertEquals("a, b, c, d", m.process("${replace;${specs};0}"));
 	}
 
 	public static void testToClassName() {
@@ -916,12 +1085,14 @@ public class MacroTest extends TestCase {
 			analyzer.setJar(IO.getFile("jar/asm.jar"));
 			Macro m = new Macro(analyzer);
 
-			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("FieldVisitor.xyz,") >= 0);
-			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}").indexOf("MethodVisitor.xyz,") >= 0);
-			assertTrue(
-					m.process("${findpath;(.*)\\.class}").indexOf("org/objectweb/asm/AnnotationVisitor.class,") >= 0);
+			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}")
+				.contains("FieldVisitor.xyz,"));
+			assertTrue(m.process("${findname;(.*)\\.class;$1.xyz}")
+				.contains("MethodVisitor.xyz,"));
 			assertTrue(m.process("${findpath;(.*)\\.class}")
-					.indexOf("org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,") >= 0);
+				.contains("org/objectweb/asm/AnnotationVisitor.class,"));
+			assertTrue(m.process("${findpath;(.*)\\.class}")
+				.contains("org/objectweb/asm/ByteVector.class, org/objectweb/asm/ClassAdapter.class,"));
 			assertEquals("META-INF/MANIFEST.MF", m.process("${findpath;META-INF/MANIFEST.MF}"));
 			assertEquals("Label.class", m.process("${findname;Label\\..*}"));
 			assertEquals("Adapter, Visitor, Writer", m.process("${findname;Method(.*)\\.class;$1}"));
@@ -939,15 +1110,31 @@ public class MacroTest extends TestCase {
 		m.process("    ${error;xe;1;2;3 ${three}}");
 		m.process("    ${if;1;$<a>}");
 
-		assertTrue("xw", p.getWarnings().get(0).endsWith("xw"));
-		assertTrue("1", p.getWarnings().get(1).endsWith("1"));
-		assertTrue("2", p.getWarnings().get(2).endsWith("2"));
-		assertTrue("3 333", p.getWarnings().get(3).endsWith("3 333"));
+		assertTrue("xw", p.getWarnings()
+			.get(0)
+			.endsWith("xw"));
+		assertTrue("1", p.getWarnings()
+			.get(1)
+			.endsWith("1"));
+		assertTrue("2", p.getWarnings()
+			.get(2)
+			.endsWith("2"));
+		assertTrue("3 333", p.getWarnings()
+			.get(3)
+			.endsWith("3 333"));
 
-		assertTrue("xw", p.getErrors().get(0).endsWith("xe"));
-		assertTrue("1", p.getErrors().get(1).endsWith("1"));
-		assertTrue("2", p.getErrors().get(2).endsWith("2"));
-		assertTrue("3 333", p.getErrors().get(3).endsWith("3 333"));
+		assertTrue("xw", p.getErrors()
+			.get(0)
+			.endsWith("xe"));
+		assertTrue("1", p.getErrors()
+			.get(1)
+			.endsWith("1"));
+		assertTrue("2", p.getErrors()
+			.get(2)
+			.endsWith("2"));
+		assertTrue("3 333", p.getErrors()
+			.get(3)
+			.endsWith("3 333"));
 	}
 
 	public static void testNestedReplace() {
@@ -1054,10 +1241,10 @@ public class MacroTest extends TestCase {
 		String fwusers = b.getProperty("fwusers");
 		String foo = b.getProperty("foo");
 		assertTrue(fwusers.length() > foo.length());
-		assertTrue(fwusers.indexOf("org.osgi.framework.ServicePermission") >= 0);
-		assertTrue(fwusers.indexOf("org.eclipse.equinox.ds.instance.BuildDispose") >= 0);
-		assertFalse(foo.indexOf("org.osgi.framework.ServicePermission") >= 0);
-		assertTrue(foo.indexOf("org.eclipse.equinox.ds.instance.BuildDispose") >= 0);
+		assertTrue(fwusers.contains("org.osgi.framework.ServicePermission"));
+		assertTrue(fwusers.contains("org.eclipse.equinox.ds.instance.BuildDispose"));
+		assertFalse(foo.contains("org.osgi.framework.ServicePermission"));
+		assertTrue(foo.contains("org.eclipse.equinox.ds.instance.BuildDispose"));
 		System.err.println(b.getProperty("fwusers"));
 		System.err.println(b.getProperty("foo"));
 
@@ -1066,10 +1253,10 @@ public class MacroTest extends TestCase {
 	public static void testPackagesMacro() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new Jar[] {
-				new Jar(IO.getFile("bin"))
+			new Jar(IO.getFile("bin"))
 		});
 		b.setProperty("Private-Package",
-				"test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo,test.activator");
+			"test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo,test.activator");
 		b.setProperty("All-Packages", "${packages}");
 		b.setProperty("Annotated", "${packages;annotated;test.packageinfo.annotated.BlahAnnotation}");
 		b.setProperty("Named", "${packages;named;*.notannotated}");
@@ -1077,11 +1264,12 @@ public class MacroTest extends TestCase {
 		b.setProperty("Versioned", "${packages;versioned}");
 		b.build();
 
-		assertEquals(0, b.getErrors().size());
+		assertEquals(0, b.getErrors()
+			.size());
 
 		assertEquals(
-				"test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo,test.activator",
-				b.getProperty("All-Packages"));
+			"test.packageinfo.annotated,test.packageinfo.notannotated,test.packageinfo.nopackageinfo,test.activator",
+			b.getProperty("All-Packages"));
 		assertEquals("test.packageinfo.annotated", b.getProperty("Annotated"));
 		assertEquals("test.packageinfo.notannotated", b.getProperty("Named"));
 		assertEquals("test.packageinfo.annotated,test.activator", b.getProperty("Negated"));
@@ -1116,8 +1304,10 @@ public class MacroTest extends TestCase {
 	public void testNonStringValue() throws Exception {
 		try (Processor b = new Processor()) {
 			// getProperty will return null for non-String value
-			b.getProperties().put("tst", new StringBuilder("foo"));
-			b.getProperties().put("num", 2);
+			b.getProperties()
+				.put("tst", new StringBuilder("foo"));
+			b.getProperties()
+				.put("num", 2);
 			String tst = b.getProperty("tst");
 			assertNull(tst);
 			String num = b.getProperty("num");
@@ -1129,8 +1319,10 @@ public class MacroTest extends TestCase {
 	public void testNonStringFlattenedValue() throws Exception {
 		try (Processor b = new Processor()) {
 			// getProperty will return null for non-String value
-			b.getProperties().put("tst", new StringBuilder("foo"));
-			b.getProperties().put("num", 2);
+			b.getProperties()
+				.put("tst", new StringBuilder("foo"));
+			b.getProperties()
+				.put("num", 2);
 			Properties f = b.getFlattenedProperties();
 			String tst = f.getProperty("tst");
 			assertNull(tst);

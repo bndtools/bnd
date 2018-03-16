@@ -31,12 +31,12 @@ import aQute.lib.io.IO;
 public class Bndrun extends Run {
 
 	private static final Logger													logger						= LoggerFactory
-			.getLogger(Bndrun.class);
+		.getLogger(Bndrun.class);
 
-	private static final Converter<String,Collection< ? extends HeaderClause>>	runbundlesListFormatter		= new CollectionFormatter<HeaderClause>(
-			",", new HeaderClauseFormatter(), null, "", "");
-	private static final Converter<String,Collection< ? extends HeaderClause>> runbundlesWrappedFormatter = new CollectionFormatter<HeaderClause>(
-			",\\\n\t", new HeaderClauseFormatter(), null);
+	private static final Converter<String, Collection<? extends HeaderClause>>	runbundlesListFormatter		= new CollectionFormatter<>(
+		",", new HeaderClauseFormatter(), null, "", "");
+	private static final Converter<String, Collection<? extends HeaderClause>>	runbundlesWrappedFormatter	= new CollectionFormatter<>(
+		",\\\n\t", new HeaderClauseFormatter(), null);
 
 	/**
 	 * Create a Bndrun that will be stand alone if it contains -standalone. In
@@ -47,7 +47,8 @@ public class Bndrun extends Run {
 		Processor processor;
 		if (workspace != null) {
 			Bndrun run = new Bndrun(workspace, file);
-			if (run.getProperties().get(STANDALONE) == null) {
+			if (run.getProperties()
+				.get(STANDALONE) == null) {
 				return run;
 			}
 			// -standalone specified
@@ -88,10 +89,10 @@ public class Bndrun extends Run {
 	}
 
 	public <T> T resolve(boolean failOnChanges, boolean writeOnChanges,
-			Converter<T,Collection< ? extends HeaderClause>> runbundlesFormatter) throws Exception {
+		Converter<T, Collection<? extends HeaderClause>> runbundlesFormatter) throws Exception {
 		try (ProjectResolver projectResolver = new ProjectResolver(this)) {
 			try {
-				Map<Resource,List<Wire>> resolution = projectResolver.resolve();
+				Map<Resource, List<Wire>> resolution = projectResolver.resolve();
 				if (!projectResolver.isOk()) {
 					return runbundlesFormatter.convert(Collections.<VersionedClause> emptyList());
 				}
@@ -106,8 +107,11 @@ public class Bndrun extends Run {
 				Collections.sort(runBundles, new Comparator<VersionedClause>() {
 					@Override
 					public int compare(VersionedClause a, VersionedClause b) {
-						int diff = a.getName().compareTo(b.getName());
-						return (diff != 0) ? diff : a.getVersionRange().compareTo(b.getVersionRange());
+						int diff = a.getName()
+							.compareTo(b.getName());
+						return (diff != 0) ? diff
+							: a.getVersionRange()
+								.compareTo(b.getVersionRange());
 					}
 				});
 
@@ -134,12 +138,13 @@ public class Bndrun extends Run {
 				if (added || removed) {
 					if (failOnChanges && !bemRunBundles.isEmpty()) {
 						error("The runbundles have changed. Failing the build!\nWas: %s\nIs: %s",
-								originalRunbundlesString, runbundlesString);
+							originalRunbundlesString, runbundlesString);
 						return runbundlesFormatter.convert(Collections.<VersionedClause> emptyList());
 					}
 					if (writeOnChanges) {
 						bem.setRunBundles(bemRunBundles);
-						String runBundlesProperty = bem.getDocumentChanges().get(Constants.RUNBUNDLES);
+						String runBundlesProperty = bem.getDocumentChanges()
+							.get(Constants.RUNBUNDLES);
 						logger.debug("Writing changes to {}", runFile.getAbsolutePath());
 						logger.debug("{}:{}", Constants.RUNBUNDLES, runBundlesProperty);
 						bem.saveChangesTo(doc);

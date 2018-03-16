@@ -20,8 +20,8 @@ import aQute.maven.nexus.provider.Signer;
 public class NexusCommand extends Processor {
 	private final static Logger	logger	= LoggerFactory.getLogger(NexusCommand.class);
 
-	private NexusOptions	options;
-	private Nexus			nexus;
+	private NexusOptions		options;
+	private Nexus				nexus;
 
 	public interface NexusOptions extends Options {
 		URI url();
@@ -40,7 +40,7 @@ public class NexusCommand extends Processor {
 	}
 
 	@Arguments(arg = {
-			"path..."
+		"path..."
 	})
 	interface SignOptions extends Options {
 		String command(String s);
@@ -113,7 +113,8 @@ public class NexusCommand extends Processor {
 	}
 
 	public URI relative(URI uri) {
-		return this.options.url().relativize(uri);
+		return this.options.url()
+			.relativize(uri);
 	}
 
 	@Arguments(arg = {})

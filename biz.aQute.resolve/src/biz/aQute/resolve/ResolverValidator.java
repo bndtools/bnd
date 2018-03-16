@@ -39,10 +39,10 @@ import aQute.lib.strings.Strings;
 public class ResolverValidator extends Processor {
 	private final static Logger	logger			= LoggerFactory.getLogger(ResolverValidator.class);
 
-	LogReporter	reporter		= new LogReporter(this);
-	Resolver	resolver		= new BndResolver(reporter);
-	List<URI>	repositories	= new ArrayList<>();
-	Resource	system			= null;
+	LogReporter					reporter		= new LogReporter(this);
+	Resolver					resolver		= new BndResolver(reporter);
+	List<URI>					repositories	= new ArrayList<>();
+	Resource					system			= null;
 
 	public static class Resolution {
 		public Resource				resource;
@@ -73,7 +73,7 @@ public class ResolverValidator extends Processor {
 
 	public List<Resolution> validate() throws Exception {
 		try (OSGiRepository repository = new OSGiRepository(); HttpClient httpClient = new HttpClient()) {
-			Map<String,String> map = new HashMap<>();
+			Map<String, String> map = new HashMap<>();
 			map.put("locations", Strings.join(repositories));
 			map.put("name", "ResolverValidator");
 			repository.setProperties(map);
@@ -87,7 +87,7 @@ public class ResolverValidator extends Processor {
 	}
 
 	public List<Resolution> validate(Collection<Resource> toBeChecked) throws Exception {
-		Set<Resource> allResources = new LinkedHashSet<Resource>();
+		Set<Resource> allResources = new LinkedHashSet<>();
 		for (URI uri : repositories) {
 			allResources.addAll(XMLResourceParser.getResources(uri));
 		}
@@ -119,7 +119,7 @@ public class ResolverValidator extends Processor {
 	public static Set<Resource> getAllResources(Repository repository) {
 		Requirement r = createWildcardRequirement();
 
-		Map<Requirement,Collection<Capability>> providers = repository.findProviders(Collections.singleton(r));
+		Map<Requirement, Collection<Capability>> providers = repository.findProviders(Collections.singleton(r));
 		Set<Resource> resources = ResourceUtils.getResources(providers.get(r));
 		return resources;
 	}
@@ -153,7 +153,7 @@ public class ResolverValidator extends Processor {
 		resolution.resource = resource;
 
 		try {
-			Map<Resource,List<Wire>> resolve2 = resolver.resolve(context);
+			Map<Resource, List<Wire>> resolve2 = resolver.resolve(context);
 			resolution.succeeded = true;
 			resolution.resolved = resolve2.keySet();
 
@@ -180,7 +180,8 @@ public class ResolverValidator extends Processor {
 				if (missing) {
 
 					Set<Requirement> requirements = singleton(r);
-					caps = repository.findProviders(requirements).get(r);
+					caps = repository.findProviders(requirements)
+						.get(r);
 					missing = caps.isEmpty();
 
 					if (missing) {
@@ -202,7 +203,8 @@ public class ResolverValidator extends Processor {
 			error("resolving %s failed with %s", resource, resolution.message);
 		} catch (Exception e) {
 			e.printStackTrace();
-			error("resolving %s failed with %s", context.getInputResource().getRequirements(null), e);
+			error("resolving %s failed with %s", context.getInputResource()
+				.getRequirements(null), e);
 			resolution.message = e.getMessage();
 		}
 

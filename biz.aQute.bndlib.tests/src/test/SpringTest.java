@@ -46,7 +46,6 @@ public class SpringTest extends TestCase {
 	/**
 	 * See what happens if we put the spring file in the wrong place. We should
 	 * have no import packages.
-	 * 
 	 */
 	// public void testPluginWrongPlace() throws Exception {
 	// Builder b = new Builder();
@@ -78,8 +77,10 @@ public class SpringTest extends TestCase {
 	public static void checkMessages(Processor processor, int errors, int warnings) {
 		System.err.println("Errors:    " + processor.getErrors());
 		System.err.println("Warnings:  " + processor.getWarnings());
-		assertEquals(errors, processor.getErrors().size());
-		assertEquals(warnings, processor.getWarnings().size());
+		assertEquals(errors, processor.getErrors()
+			.size());
+		assertEquals(warnings, processor.getWarnings()
+			.size());
 
 	}
 }

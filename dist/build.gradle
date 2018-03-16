@@ -45,16 +45,15 @@ task('index') {
   outputs.file(index_compressed).withPropertyName('index_compressed')
 
   doLast {
-    /* indexer */
-    def repoindexJar = bnd.project.getBundle('org.osgi.impl.bundle.repoindex.cli', 'latest', null, ['strategy':'highest']).getFile()
+    def bndJar = bnd.project.getBundle('biz.aQute.bnd', 'latest', null, ['strategy':'highest']).getFile()
 
     def bundlesToIndex = bundles*.absolutePath.sort()
 
     /* index uncompressed. */
     javaexec {
       main = '-jar' // first arg must be the jar
-      args repoindexJar
-      args '--pretty'
+      args bndJar
+      args 'index'
       args '-r', index_uncompressed
       args '-d', releaserepo
       args '-n', 'bnd'
@@ -65,7 +64,8 @@ task('index') {
     /* index compressed. */
     javaexec {
       main = '-jar' // first arg must be the jar
-      args repoindexJar
+      args bndJar
+      args 'index'
       args '-r', index_compressed
       args '-d', releaserepo
       args '-n', 'bnd'

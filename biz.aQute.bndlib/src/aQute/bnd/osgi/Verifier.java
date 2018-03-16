@@ -50,6 +50,7 @@ public class Verifier extends Processor {
 	final static int		V1_7	= 51;
 	final static int		V1_8	= 52;
 	final static int		V9_0	= 53;
+	final static int		V10_0	= 54;
 
 	static class EE {
 		String	name;
@@ -67,69 +68,70 @@ public class Verifier extends Processor {
 	}
 
 	final static EE[]			ees								= {
-			new EE("CDC-1.0/Foundation-1.0", V1_3, V1_1),																					//
-			new EE("CDC-1.1/Foundation-1.1", V1_3, V1_2),																					//
-			new EE("OSGi/Minimum-1.0", V1_3, V1_1),																							//
-			new EE("OSGi/Minimum-1.1", V1_3, V1_2),																							//
-			new EE("OSGi/Minimum-1.2", V1_3, V1_2),																							//
-			new EE("JRE-1.1", V1_1, V1_1),																									//
-			new EE("J2SE-1.2", V1_2, V1_1),																									//
-			new EE("J2SE-1.3", V1_3, V1_1),																									//
-			new EE("J2SE-1.4", V1_3, V1_2),																									//
-			new EE("J2SE-1.5", V1_5, V1_5),																									//
-			new EE("JavaSE-1.6", V1_6, V1_6),																								//
-			new EE("JavaSE-1.7", V1_7, V1_7),																								//
-			new EE("JavaSE-1.8", V1_8, V1_8),																								//
-			new EE("JavaSE-9", V9_0, V9_0),																									//
-			new EE("PersonalJava-1.1", V1_1, V1_1),																							//
-			new EE("PersonalJava-1.2", V1_1, V1_1),																							//
-			new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),																				//
-			new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1),																					//
-			new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),																				//
-			new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)
-																};
+		new EE("CDC-1.0/Foundation-1.0", V1_3, V1_1),																						//
+		new EE("CDC-1.1/Foundation-1.1", V1_3, V1_2),																						//
+		new EE("OSGi/Minimum-1.0", V1_3, V1_1),																								//
+		new EE("OSGi/Minimum-1.1", V1_3, V1_2),																								//
+		new EE("OSGi/Minimum-1.2", V1_3, V1_2),																								//
+		new EE("JRE-1.1", V1_1, V1_1),																										//
+		new EE("J2SE-1.2", V1_2, V1_1),																										//
+		new EE("J2SE-1.3", V1_3, V1_1),																										//
+		new EE("J2SE-1.4", V1_3, V1_2),																										//
+		new EE("J2SE-1.5", V1_5, V1_5),																										//
+		new EE("JavaSE-1.6", V1_6, V1_6),																									//
+		new EE("JavaSE-1.7", V1_7, V1_7),																									//
+		new EE("JavaSE-1.8", V1_8, V1_8),																									//
+		new EE("JavaSE-9", V9_0, V9_0),																										//
+		new EE("JavaSE-10", V10_0, V10_0),																									//
+		new EE("PersonalJava-1.1", V1_1, V1_1),																								//
+		new EE("PersonalJava-1.2", V1_1, V1_1),																								//
+		new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),																					//
+		new EE("CDC-1.0/PersonalJava-1.0", V1_3, V1_1),																						//
+		new EE("CDC-1.1/PersonalBasis-1.1", V1_3, V1_2),																					//
+		new EE("CDC-1.1/PersonalJava-1.1", V1_3, V1_2)
+	};
 
 	final static Pattern		EENAME							= Pattern.compile(															//
-			"CDC-1\\.0/Foundation-1\\.0"																									//
-					+ "|CDC-1\\.1/Foundation-1\\.1"																							//
-					+ "|OSGi/Minimum-1\\.[0-2]"																								//
-					+ "|JRE-1\\.1"																											//
-					+ "|J2SE-1\\.[2-5]"																										//
-					+ "|JavaSE-1\\.[6-8]"																									//
-					+ "|JavaSE-9"																											//
-					+ "|PersonalJava-1\\.[12]"																								//
-					+ "|CDC-1\\.0/PersonalBasis-1\\.0"																						//
-					+ "|CDC-1\\.0/PersonalJava-1\\.0"																						//
-					+ "|CDC-1\\.1/PersonalBasis-1\\.1"																						//
-					+ "|CDC-1\\.1/PersonalJava-1\\.1");
+		"CDC-1\\.0/Foundation-1\\.0"																										//
+			+ "|CDC-1\\.1/Foundation-1\\.1"																									//
+			+ "|OSGi/Minimum-1\\.[0-2]"																										//
+			+ "|JRE-1\\.1"																													//
+			+ "|J2SE-1\\.[2-5]"																												//
+			+ "|JavaSE-1\\.[6-8]"																											//
+			+ "|JavaSE-9"																													//
+			+ "|JavaSE-10"																													//
+			+ "|PersonalJava-1\\.[12]"																										//
+			+ "|CDC-1\\.0/PersonalBasis-1\\.0"																								//
+			+ "|CDC-1\\.0/PersonalJava-1\\.0"																								//
+			+ "|CDC-1\\.1/PersonalBasis-1\\.1"																								//
+			+ "|CDC-1\\.1/PersonalJava-1\\.1");
 	public final static String	EES[]							= {																			//
-			"CDC-1.0/Foundation-1.0",																										//
-			"CDC-1.1/Foundation-1.1",																										//
-			"OSGi/Minimum-1.0",																												//
-			"OSGi/Minimum-1.1",																												//
-			"OSGi/Minimum-1.2",																												//
-			"JRE-1.1",																														//
-			"J2SE-1.2",																														//
-			"J2SE-1.3",																														//
-			"J2SE-1.4",																														//
-			"J2SE-1.5",																														//
-			"JavaSE-1.6",																													//
-			"JavaSE-1.7",																													//
-			"JavaSE-1.8",																													//
-			"JavaSE-9",																														//
-			"PersonalJava-1.1",																												//
-			"PersonalJava-1.2",																												//
-			"CDC-1.0/PersonalBasis-1.0",																									//
-			"CDC-1.0/PersonalJava-1.0",																										//
-			"CDC-1.1/PersonalBasis-1.1",																									//
-			"CDC-1.1/PersonalJava-1.1"
-														};
+		"CDC-1.0/Foundation-1.0",																											//
+		"CDC-1.1/Foundation-1.1",																											//
+		"OSGi/Minimum-1.0",																													//
+		"OSGi/Minimum-1.1",																													//
+		"OSGi/Minimum-1.2",																													//
+		"JRE-1.1",																															//
+		"J2SE-1.2",																															//
+		"J2SE-1.3",																															//
+		"J2SE-1.4",																															//
+		"J2SE-1.5",																															//
+		"JavaSE-1.6",																														//
+		"JavaSE-1.7",																														//
+		"JavaSE-1.8",																														//
+		"JavaSE-9",																															//
+		"JavaSE-10",																														//
+		"PersonalJava-1.1",																													//
+		"PersonalJava-1.2",																													//
+		"CDC-1.0/PersonalBasis-1.0",																										//
+		"CDC-1.0/PersonalJava-1.0",																											//
+		"CDC-1.1/PersonalBasis-1.1",																										//
+		"CDC-1.1/PersonalJava-1.1"
+	};
 	public final static Pattern	ReservedFileNames				= Pattern
-																		.compile(
-																				"CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK\\$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
-																						+ "\\$Mft|\\$MftMirr|\\$LogFile|\\$Volume|\\$AttrDef|\\$Bitmap|\\$Boot|\\$BadClus|\\$Secure|"
-																						+ "\\$Upcase|\\$Extend|\\$Quota|\\$ObjId|\\$Reparse",
-																				Pattern.CASE_INSENSITIVE);
+		.compile("CON(\\..+)?|PRN(\\..+)?|AUX(\\..+)?|CLOCK\\$|NUL(\\..+)?|COM[1-9](\\..+)?|LPT[1-9](\\..+)?|"
+			+ "\\$Mft|\\$MftMirr|\\$LogFile|\\$Volume|\\$AttrDef|\\$Bitmap|\\$Boot|\\$BadClus|\\$Secure|"
+			+ "\\$Upcase|\\$Extend|\\$Quota|\\$ObjId|\\$Reparse", Pattern.CASE_INSENSITIVE);
 
 	final static Pattern		CARDINALITY_PATTERN				= Pattern.compile("single|multiple");
 	final static Pattern		RESOLUTION_PATTERN				= Pattern.compile("optional|mandatory");
@@ -142,22 +144,21 @@ public class Verifier extends Processor {
 	final static Pattern		FILTEROP						= Pattern.compile("=|<=|>=|~=");
 	public final static Pattern	VERSIONRANGE					= Pattern.compile("((\\(|\\[)"
 
-																		+ VERSION_STRING + "," + VERSION_STRING
-																		+ "(\\]|\\)))|" + VERSION_STRING);
+		+ VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
 	final static Pattern		FILE							= Pattern
-			.compile("/?[^/\"\n\r\u0000]+(/[^/\"\n\r\u0000]+)*");
+		.compile("/?[^/\"\n\r\u0000]+(/[^/\"\n\r\u0000]+)*");
 	final static Pattern		WILDCARDPACKAGE					= Pattern
-			.compile("((\\p{Alnum}|_)+(\\.(\\p{Alnum}|_)+)*(\\.\\*)?)|\\*");
+		.compile("((\\p{Alnum}|_)+(\\.(\\p{Alnum}|_)+)*(\\.\\*)?)|\\*");
 	public final static Pattern	ISO639							= Pattern.compile("[A-Z][A-Z]");
 	public final static Pattern	HEADER_PATTERN					= Pattern.compile("[A-Za-z0-9][-a-zA-Z0-9_]+");
 	public final static Pattern	TOKEN							= Pattern.compile("[-a-zA-Z0-9_]+");
 
 	public final static Pattern	NUMBERPATTERN					= Pattern.compile("\\d+");
 	public final static Pattern	PACKAGEPATTERN					= Pattern.compile(
-			"\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
+		"\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
 	public final static Pattern	PACKAGEPATTERN_OR_EMPTY			= Pattern.compile(PACKAGEPATTERN + "|^$");
 	public final static Pattern	MULTIPACKAGEPATTERN				= Pattern
-			.compile("(\\s*" + PACKAGEPATTERN + ")(" + LIST_SPLITTER + PACKAGEPATTERN + ")*\\s*");
+		.compile("(\\s*" + PACKAGEPATTERN + ")(\\s*,\\s*" + PACKAGEPATTERN + ")*\\s*");
 	public final static Pattern	PATHPATTERN						= Pattern.compile(".*");
 	public final static Pattern	FQNPATTERN						= Pattern.compile(".*");
 	public final static Pattern	URLPATTERN						= Pattern.compile(".*");
@@ -170,7 +171,7 @@ public class Verifier extends Processor {
 	public final static String	VERSION_S						= "[0-9]{1,9}(:?\\.[0-9]{1,9}(:?\\.[0-9]{1,9}(:?\\.[0-9A-Za-z_-]+)?)?)?";
 	public final static Pattern	VERSION_P						= Pattern.compile(VERSION_S);
 	public final static String	VERSION_RANGE_S					= "(?:(:?\\(|\\[)" + VERSION_S + "," + VERSION_S
-			+ "(\\]|\\)))|" + VERSION_S;
+		+ "(\\]|\\)))|" + VERSION_S;
 	public final static Pattern	VERSIONRANGE_P					= VERSIONRANGE;
 	public static String		EXTENDED_S						= "[-a-zA-Z0-9_.]+";
 	public static Pattern		EXTENDED_P						= Pattern.compile(EXTENDED_S);
@@ -180,52 +181,116 @@ public class Verifier extends Processor {
 	public static Pattern		ARGUMENT_P						= Pattern.compile(ARGUMENT_S);
 
 	public final static String	OSNAMES[]						= {
-			"AIX", // IBM
-			"DigitalUnix", // Compaq
-			"Embos", // Segger Embedded Software Solutions
-			"Epoc32", // SymbianOS Symbian OS
-			"FreeBSD", // Free BSD
-			"HPUX", // hp-ux Hewlett Packard
-			"IRIX", // Silicon Graphics
-			"Linux", // Open source
-			"MacOS", // Apple
-			"NetBSD", // Open source
-			"Netware", // Novell
-			"OpenBSD", // Open source
-			"OS2", // OS/2 IBM
-			"QNX", // procnto QNX
-			"Solaris", // Sun (almost an alias of SunOS)
-			"SunOS", // Sun Microsystems
-			"VxWorks", // WindRiver Systems
-			"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000", // Win2000
-			"Windows2003", // Win2003
-			"WindowsXP", "WindowsVista",
-																};
+		"AIX",																																// IBM
+		"DigitalUnix",																														// Compaq
+		"Embos",																															// Segger
+																																			// Embedded
+																																			// Software
+																																			// Solutions
+		"Epoc32",																															// SymbianOS
+																																			// Symbian
+																																			// OS
+		"FreeBSD",																															// Free
+																																			// BSD
+		"HPUX",																																// hp-ux
+																																			// Hewlett
+																																			// Packard
+		"IRIX",																																// Silicon
+																																			// Graphics
+		"Linux",																															// Open
+																																			// source
+		"MacOS",																															// Apple
+		"NetBSD",																															// Open
+																																			// source
+		"Netware",																															// Novell
+		"OpenBSD",																															// Open
+																																			// source
+		"OS2",																																// OS/2
+																																			// IBM
+		"QNX",																																// procnto
+																																			// QNX
+		"Solaris",																															// Sun
+																																			// (almost
+																																			// an
+																																			// alias
+																																			// of
+																																			// SunOS)
+		"SunOS",																															// Sun
+																																			// Microsystems
+		"VxWorks",																															// WindRiver
+																																			// Systems
+		"Windows95", "Win32", "Windows98", "WindowsNT", "WindowsCE", "Windows2000",															// Win2000
+		"Windows2003",																														// Win2003
+		"WindowsXP", "WindowsVista",
+	};
 
-	public final static String	PROCESSORNAMES[]				= { //
-			//
-			"68k", // Motorola 68000
-			"ARM_LE", // Intel Strong ARM. Deprecated because it does not
-			// specify the endianness. See the following two rows.
-			"arm_le", // Intel Strong ARM Little Endian mode
-			"arm_be", // Intel String ARM Big Endian mode
-			"Alpha", //
-			"ia64n",// Hewlett Packard 32 bit
-			"ia64w",// Hewlett Packard 64 bit mode
-			"Ignite", // psc1k PTSC
-			"Mips", // SGI
-			"PArisc", // Hewlett Packard
-			"PowerPC", // power ppc Motorola/IBM Power PC
-			"Sh4", // Hitachi
-			"Sparc", // SUN
-			"Sparcv9", // SUN
-			"S390", // IBM Mainframe 31 bit
-			"S390x", // IBM Mainframe 64-bit
-			"V850E", // NEC V850E
-			"x86", // pentium i386
-			"i486", // i586 i686 Intel& AMD 32 bit
-			"x86-64",
-																};
+	public final static String	PROCESSORNAMES[]				= {																			//
+		//
+		"68k",																																// Motorola
+																																			// 68000
+		"ARM_LE",																															// Intel
+																																			// Strong
+																																			// ARM.
+																																			// Deprecated
+																																			// because
+																																			// it
+																																			// does
+																																			// not
+		// specify the endianness. See the following two rows.
+		"arm_le",																															// Intel
+																																			// Strong
+																																			// ARM
+																																			// Little
+																																			// Endian
+																																			// mode
+		"arm_be",																															// Intel
+																																			// String
+																																			// ARM
+																																			// Big
+																																			// Endian
+																																			// mode
+		"Alpha",																															//
+		"ia64n",																															// Hewlett
+																																			// Packard
+																																			// 32
+																																			// bit
+		"ia64w",																															// Hewlett
+																																			// Packard
+																																			// 64
+																																			// bit
+																																			// mode
+		"Ignite",																															// psc1k
+																																			// PTSC
+		"Mips",																																// SGI
+		"PArisc",																															// Hewlett
+																																			// Packard
+		"PowerPC",																															// power
+																																			// ppc
+																																			// Motorola/IBM
+																																			// Power
+																																			// PC
+		"Sh4",																																// Hitachi
+		"Sparc",																															// SUN
+		"Sparcv9",																															// SUN
+		"S390",																																// IBM
+																																			// Mainframe
+																																			// 31
+																																			// bit
+		"S390x",																															// IBM
+																																			// Mainframe
+																																			// 64-bit
+		"V850E",																															// NEC
+																																			// V850E
+		"x86",																																// pentium
+																																			// i386
+		"i486",																																// i586
+																																			// i686
+																																			// Intel&
+																																			// AMD
+																																			// 32
+																																			// bit
+		"x86-64",
+	};
 
 	final Analyzer				analyzer;
 	private Instructions		dynamicImports;
@@ -252,7 +317,8 @@ public class Verifier extends Processor {
 
 	private void verifyHeaders() {
 		for (String h : main) {
-			if (!HEADER_PATTERN.matcher(h).matches())
+			if (!HEADER_PATTERN.matcher(h)
+				.matches())
 				error("Invalid Manifest header: %s, pattern=%s", h, HEADER_PATTERN);
 		}
 	}
@@ -344,69 +410,82 @@ public class Verifier extends Processor {
 	}
 
 	public static enum ActivatorErrorType {
-		IS_INTERFACE, IS_ABSTRACT, NOT_PUBLIC, NO_SUITABLE_CONSTRUCTOR, NOT_AN_ACTIVATOR, DEFAULT_PACKAGE, NOT_ACCESSIBLE, IS_IMPORTED, NOT_SET, NO_RESULT_FROM_MACRO, MULTIPLE_TYPES, INVALID_TYPE_NAME;
+		IS_INTERFACE,
+		IS_ABSTRACT,
+		NOT_PUBLIC,
+		NO_SUITABLE_CONSTRUCTOR,
+		NOT_AN_ACTIVATOR,
+		DEFAULT_PACKAGE,
+		NOT_ACCESSIBLE,
+		IS_IMPORTED,
+		NOT_SET,
+		NO_RESULT_FROM_MACRO,
+		MULTIPLE_TYPES,
+		INVALID_TYPE_NAME;
 	}
 
 	private void verifyActivator() throws Exception {
 		String bactivator = main.get(Constants.BUNDLE_ACTIVATOR);
 		if (bactivator != null) {
-			if (!PACKAGEPATTERN.matcher(bactivator).matches()) {
+			if (!PACKAGEPATTERN.matcher(bactivator)
+				.matches()) {
 
 				boolean allElementsAreTypes = true;
 				for (String element : split(bactivator)) {
-					if (!PACKAGEPATTERN.matcher(element.trim()).matches()) {
+					if (!PACKAGEPATTERN.matcher(element.trim())
+						.matches()) {
 						allElementsAreTypes = false;
 						break;
 					}
 				}
 
 				if (allElementsAreTypes) {
-					registerActivatorErrorLocation(
-							error("The Bundle-Activator header only supports a single type. The following types were found: %s. This usually happens when a macro resolves to multiple types",
-									bactivator),
-							bactivator, ActivatorErrorType.MULTIPLE_TYPES);
+					registerActivatorErrorLocation(error(
+						"The Bundle-Activator header only supports a single type. The following types were found: %s. This usually happens when a macro resolves to multiple types",
+						bactivator), bactivator, ActivatorErrorType.MULTIPLE_TYPES);
 				} else {
 					registerActivatorErrorLocation(
-							error("A Bundle-Activator header is present and its value is not a valid type name %s",
-									bactivator),
-							bactivator, ActivatorErrorType.INVALID_TYPE_NAME);
+						error("A Bundle-Activator header is present and its value is not a valid type name %s",
+							bactivator),
+						bactivator, ActivatorErrorType.INVALID_TYPE_NAME);
 				}
 				return;
 			}
-			
+
 			TypeRef ref = analyzer.getTypeRefFromFQN(bactivator);
-			if (analyzer.getClassspace().containsKey(ref)) {
-				Clazz activatorClazz = analyzer.getClassspace().get(ref);
+			if (analyzer.getClassspace()
+				.containsKey(ref)) {
+				Clazz activatorClazz = analyzer.getClassspace()
+					.get(ref);
 
 				if (activatorClazz.isInterface()) {
 					registerActivatorErrorLocation(
-							error("The Bundle Activator %s is an interface and therefore cannot be instantiated.",
-									bactivator),
-							bactivator, ActivatorErrorType.IS_INTERFACE);
+						error("The Bundle Activator %s is an interface and therefore cannot be instantiated.",
+							bactivator),
+						bactivator, ActivatorErrorType.IS_INTERFACE);
 				} else {
 					if (activatorClazz.isAbstract()) {
 						registerActivatorErrorLocation(
-								error("The Bundle Activator %s is abstract and therefore cannot be instantiated.",
-										bactivator),
-								bactivator, ActivatorErrorType.IS_ABSTRACT);
+							error("The Bundle Activator %s is abstract and therefore cannot be instantiated.",
+								bactivator),
+							bactivator, ActivatorErrorType.IS_ABSTRACT);
 					}
 					if (!activatorClazz.isPublic()) {
 						registerActivatorErrorLocation(
-								error("Bundle Activator classes must be public, and %s is not.", bactivator),
-								bactivator, ActivatorErrorType.NOT_PUBLIC);
+							error("Bundle Activator classes must be public, and %s is not.", bactivator), bactivator,
+							ActivatorErrorType.NOT_PUBLIC);
 					}
 					if (!activatorClazz.hasPublicNoArgsConstructor()) {
-						registerActivatorErrorLocation(
-								error("Bundle Activator classes must have a public zero-argument constructor and %s does not.",
-										bactivator),
-								bactivator, ActivatorErrorType.NO_SUITABLE_CONSTRUCTOR);
+						registerActivatorErrorLocation(error(
+							"Bundle Activator classes must have a public zero-argument constructor and %s does not.",
+							bactivator), bactivator, ActivatorErrorType.NO_SUITABLE_CONSTRUCTOR);
 					}
 
-					if ( !analyzer.assignable(activatorClazz.getFQN() , "org.osgi.framework.BundleActivator")) {
-						
+					if (!analyzer.assignable(activatorClazz.getFQN(), "org.osgi.framework.BundleActivator")) {
+
 						registerActivatorErrorLocation(
-								error("The Bundle Activator %s does not implement BundleActivator.", bactivator),
-								bactivator, ActivatorErrorType.NOT_AN_ACTIVATOR);
+							error("The Bundle Activator %s does not implement BundleActivator.", bactivator),
+							bactivator, ActivatorErrorType.NOT_AN_ACTIVATOR);
 					}
 				}
 				return;
@@ -415,18 +494,17 @@ public class Verifier extends Processor {
 			PackageRef packageRef = ref.getPackageRef();
 			if (packageRef.isDefaultPackage())
 				registerActivatorErrorLocation(
-						error("The Bundle Activator is not in the bundle and it is in the default package "),
-						bactivator, ActivatorErrorType.DEFAULT_PACKAGE);
+					error("The Bundle Activator is not in the bundle and it is in the default package "), bactivator,
+					ActivatorErrorType.DEFAULT_PACKAGE);
 			else if (!analyzer.isImported(packageRef)) {
-				registerActivatorErrorLocation(error(Constants.BUNDLE_ACTIVATOR
-						+ " not found on the bundle class path nor in imports: %s", bactivator), bactivator,
-						ActivatorErrorType.NOT_ACCESSIBLE);
-			} else {
 				registerActivatorErrorLocation(
-						warning(Constants.BUNDLE_ACTIVATOR
-								+ " %s is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error",
-								bactivator),
-						bactivator, ActivatorErrorType.IS_IMPORTED);
+					error(Constants.BUNDLE_ACTIVATOR + " not found on the bundle class path nor in imports: %s",
+						bactivator),
+					bactivator, ActivatorErrorType.NOT_ACCESSIBLE);
+			} else {
+				registerActivatorErrorLocation(warning(Constants.BUNDLE_ACTIVATOR
+					+ " %s is being imported into the bundle rather than being contained inside it. This is usually a bundle packaging error",
+					bactivator), bactivator, ActivatorErrorType.IS_IMPORTED);
 			}
 		} else if (parent != null) {
 			// If we have access to the parent we can do deeper checking
@@ -435,13 +513,12 @@ public class Verifier extends Processor {
 				// The activator was specified, but nothing showed up.
 				if (raw.isEmpty()) {
 					registerActivatorErrorLocation(
-							warning("A Bundle-Activator header was present but no activator class was defined"), "",
-							ActivatorErrorType.NOT_SET);
+						warning("A Bundle-Activator header was present but no activator class was defined"), "",
+						ActivatorErrorType.NOT_SET);
 				} else {
-					registerActivatorErrorLocation(
-							error("A Bundle-Activator header is present but no activator class was found using the macro %s",
-									raw),
-							raw, ActivatorErrorType.NO_RESULT_FROM_MACRO);
+					registerActivatorErrorLocation(error(
+						"A Bundle-Activator header is present but no activator class was found using the macro %s",
+						raw), raw, ActivatorErrorType.NO_RESULT_FROM_MACRO);
 				}
 				return;
 			}
@@ -449,13 +526,13 @@ public class Verifier extends Processor {
 	}
 
 	private void registerActivatorErrorLocation(SetLocation location, String activator, ActivatorErrorType errorType)
-			throws Exception {
+		throws Exception {
 		FileLine fl = getHeader(Constants.BUNDLE_ACTIVATOR);
 		location.header(Constants.BUNDLE_ACTIVATOR)
-				.file(fl.file.getAbsolutePath())
-				.line(fl.line)
-				.length(fl.length)
-				.details(new BundleActivatorError(activator, errorType));
+			.file(fl.file.getAbsolutePath())
+			.line(fl.line)
+			.length(fl.length)
+			.details(new BundleActivatorError(activator, errorType));
 	}
 
 	private void verifyComponent() {
@@ -490,7 +567,8 @@ public class Verifier extends Processor {
 		if (isFrombuilder())
 			return;
 
-		Manifest m = analyzer.getJar().getManifest();
+		Manifest m = analyzer.getJar()
+			.getManifest();
 		if (m == null) {
 			error("No manifest");
 			return;
@@ -498,9 +576,12 @@ public class Verifier extends Processor {
 
 		Domain domain = Domain.domain(m);
 
-		Set<PackageRef> unresolvedReferences = new TreeSet<PackageRef>(analyzer.getReferred().keySet());
-		unresolvedReferences.removeAll(analyzer.getContained().keySet());
-		for (String pname : domain.getImportPackage().keySet()) {
+		Set<PackageRef> unresolvedReferences = new TreeSet<>(analyzer.getReferred()
+			.keySet());
+		unresolvedReferences.removeAll(analyzer.getContained()
+			.keySet());
+		for (String pname : domain.getImportPackage()
+			.keySet()) {
 			PackageRef pref = analyzer.getPackageRef(pname);
 			unresolvedReferences.remove(pref);
 		}
@@ -522,29 +603,36 @@ public class Verifier extends Processor {
 		// we cannot verify anything
 		//
 
-		if (domain.getRequireBundle().isEmpty() && domain.get("ExtensionBundle-Activator") == null
-				&& (domain.getFragmentHost() == null || domain.getFragmentHost().getKey().equals("system.bundle"))) {
+		if (domain.getRequireBundle()
+			.isEmpty()
+			&& domain.get("ExtensionBundle-Activator") == null
+			&& (domain.getFragmentHost() == null || domain.getFragmentHost()
+				.getKey()
+				.equals("system.bundle"))) {
 
 			if (!unresolvedReferences.isEmpty()) {
 				// Now we want to know the
 				// classes that are the culprits
-				Set<String> culprits = new HashSet<String>();
-				for (Clazz clazz : analyzer.getClassspace().values()) {
+				Set<String> culprits = new HashSet<>();
+				for (Clazz clazz : analyzer.getClassspace()
+					.values()) {
 					if (hasOverlap(unresolvedReferences, clazz.getReferred()))
 						culprits.add(clazz.getAbsolutePath());
 				}
 
 				if (analyzer instanceof Builder)
 					warning("Unresolved references to %s by class(es) %s on the " + Constants.BUNDLE_CLASSPATH + ": %s",
-							unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
+						unresolvedReferences, culprits, analyzer.getBundleClasspath()
+							.keySet());
 				else
 					error("Unresolved references to %s by class(es) %s on the " + Constants.BUNDLE_CLASSPATH + ": %s",
-							unresolvedReferences, culprits, analyzer.getBundleClasspath().keySet());
+						unresolvedReferences, culprits, analyzer.getBundleClasspath()
+							.keySet());
 				return;
 			}
 		} else if (isPedantic())
 			warning("Use of " + Constants.REQUIRE_BUNDLE
-					+ ", ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
+				+ ", ExtensionBundle-Activator, or a system bundle fragment makes it impossible to verify unresolved references");
 	}
 
 	/**
@@ -561,8 +649,8 @@ public class Verifier extends Processor {
 		return dynamicImports.matches(pack.getFQN());
 	}
 
-	private boolean hasOverlap(Set< ? > a, Set< ? > b) {
-		for (Iterator< ? > i = a.iterator(); i.hasNext();) {
+	private boolean hasOverlap(Set<?> a, Set<?> b) {
+		for (Iterator<?> i = a.iterator(); i.hasNext();) {
 			if (b.contains(i.next()))
 				return true;
 		}
@@ -572,14 +660,14 @@ public class Verifier extends Processor {
 	public void verify() throws Exception {
 		verifyHeaders();
 		verifyDirectives(Constants.EXPORT_PACKAGE, "uses:|mandatory:|include:|exclude:|" + IMPORT_DIRECTIVE,
-				PACKAGEPATTERN, "package");
+			PACKAGEPATTERN, "package");
 		verifyDirectives(Constants.IMPORT_PACKAGE, "resolution:", PACKAGEPATTERN, "package");
 		verifyDirectives(Constants.REQUIRE_BUNDLE, "visibility:|resolution:", SYMBOLICNAME, "bsn");
 		verifyDirectives(Constants.FRAGMENT_HOST, "extension:", SYMBOLICNAME, "bsn");
 		verifyDirectives(Constants.PROVIDE_CAPABILITY, "effective:|uses:", null, null);
 		verifyDirectives(Constants.REQUIRE_CAPABILITY, "effective:|resolution:|filter:|cardinality:", null, null);
 		verifyDirectives(Constants.BUNDLE_SYMBOLICNAME, "singleton:|fragment-attachment:|mandatory:", SYMBOLICNAME,
-				"bsn");
+			"bsn");
 
 		verifyManifestFirst();
 		verifyActivator();
@@ -600,7 +688,7 @@ public class Verifier extends Processor {
 		if (usesRequire) {
 			if (!getErrors().isEmpty()) {
 				getWarnings().add(0,
-						"Bundle uses Require Bundle, this can generate false errors because then not enough information is available without the required bundles");
+					"Bundle uses Require Bundle, this can generate false errors because then not enough information is available without the required bundles");
 			}
 		}
 
@@ -636,7 +724,7 @@ public class Verifier extends Processor {
 		if (!since(About._2_3))
 			return;
 
-		Set<String> invalidPaths = new HashSet<String>();
+		Set<String> invalidPaths = new HashSet<>();
 		Pattern pattern = ReservedFileNames;
 		setProperty("@", ReservedFileNames.pattern());
 		String p = getProperty(INVALIDFILENAMES);
@@ -646,16 +734,19 @@ public class Verifier extends Processor {
 				pattern = Pattern.compile(p, Pattern.CASE_INSENSITIVE);
 			} catch (Exception e) {
 				SetLocation error = exception(e, "%s is not a valid regular expression %s: %s", INVALIDFILENAMES, e, p);
-				error.context(p).header(INVALIDFILENAMES);
+				error.context(p)
+					.header(INVALIDFILENAMES);
 				return;
 			}
 		}
 
-		Set<String> segments = new HashSet<String>();
-		for (String path : dot.getResources().keySet()) {
+		Set<String> segments = new HashSet<>();
+		for (String path : dot.getResources()
+			.keySet()) {
 			String parts[] = path.split("/");
 			for (String part : parts) {
-				if (segments.add(part) && pattern.matcher(part).matches()) {
+				if (segments.add(part) && pattern.matcher(part)
+					.matches()) {
 					invalidPaths.add(path);
 				}
 			}
@@ -664,8 +755,9 @@ public class Verifier extends Processor {
 		if (invalidPaths.isEmpty())
 			return;
 
-		error("Invalid file/directory names for Windows in JAR: %s. You can set the regular expression used with %s, the default expression is %s",
-				invalidPaths, INVALIDFILENAMES, ReservedFileNames.pattern());
+		error(
+			"Invalid file/directory names for Windows in JAR: %s. You can set the regular expression used with %s, the default expression is %s",
+			invalidPaths, INVALIDFILENAMES, ReservedFileNames.pattern());
 	}
 
 	/**
@@ -673,20 +765,24 @@ public class Verifier extends Processor {
 	 */
 	private void verifyImports() {
 		if (isStrict()) {
-			Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.IMPORT_PACKAGE));
-			Set<String> noimports = new HashSet<String>();
-			Set<String> toobroadimports = new HashSet<String>();
+			Parameters map = parseHeader(manifest.getMainAttributes()
+				.getValue(Constants.IMPORT_PACKAGE));
+			Set<String> noimports = new HashSet<>();
+			Set<String> toobroadimports = new HashSet<>();
 
-			for (Entry<String,Attrs> e : map.entrySet()) {
-				String version = e.getValue().get(Constants.VERSION_ATTRIBUTE);
+			for (Entry<String, Attrs> e : map.entrySet()) {
+				String version = e.getValue()
+					.get(Constants.VERSION_ATTRIBUTE);
 				if (version == null) {
-					if (!e.getKey().startsWith("javax.")) {
+					if (!e.getKey()
+						.startsWith("javax.")) {
 						noimports.add(e.getKey());
 					}
 				} else {
-					if (!VERSIONRANGE.matcher(version).matches()) {
+					if (!VERSIONRANGE.matcher(version)
+						.matches()) {
 						Location location = error("Import Package %s has an invalid version range syntax %s",
-								e.getKey(), version).location();
+							e.getKey(), version).location();
 						location.header = Constants.IMPORT_PACKAGE;
 						location.context = e.getKey();
 					} else {
@@ -695,19 +791,19 @@ public class Verifier extends Processor {
 							if (!range.isRange()) {
 								toobroadimports.add(e.getKey());
 							}
-							if (range.includeHigh() == false && range.includeLow() == false
-									&& range.getLow().equals(range.getHigh())) {
+							if (range.includeHigh() == false && range.includeLow() == false && range.getLow()
+								.equals(range.getHigh())) {
 								Location location = error(
-										"Import Package %s has an empty version range syntax %s, likely want to use [%s,%s]",
-										e.getKey(), version, range.getLow(), range.getHigh()).location();
+									"Import Package %s has an empty version range syntax %s, likely want to use [%s,%s]",
+									e.getKey(), version, range.getLow(), range.getHigh()).location();
 								location.header = Constants.IMPORT_PACKAGE;
 								location.context = e.getKey();
 							}
 							// TODO check for exclude low, include high?
 						} catch (Exception ee) {
 							Location location = exception(ee,
-									"Import Package %s has an invalid version range syntax %s: %s", e.getKey(), version,
-									ee).location();
+								"Import Package %s has an invalid version range syntax %s: %s", e.getKey(), version, ee)
+									.location();
 							location.header = Constants.IMPORT_PACKAGE;
 							location.context = e.getKey();
 						}
@@ -717,13 +813,13 @@ public class Verifier extends Processor {
 
 			if (!noimports.isEmpty()) {
 				Location location = error("Import Package clauses without version range (excluding javax.*): %s",
-						noimports).location();
+					noimports).location();
 				location.header = Constants.IMPORT_PACKAGE;
 			}
 			if (!toobroadimports.isEmpty()) {
 				Location location = error(
-						"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: %s",
-						toobroadimports).location();
+					"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: %s",
+					toobroadimports).location();
 				location.header = Constants.IMPORT_PACKAGE;
 			}
 		}
@@ -734,52 +830,60 @@ public class Verifier extends Processor {
 	 */
 	private void verifyExports() {
 		if (isStrict()) {
-			Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.EXPORT_PACKAGE));
-			Set<String> noexports = new HashSet<String>();
+			Parameters map = parseHeader(manifest.getMainAttributes()
+				.getValue(Constants.EXPORT_PACKAGE));
+			Set<String> noexports = new HashSet<>();
 
-			for (Entry<String,Attrs> e : map.entrySet()) {
+			for (Entry<String, Attrs> e : map.entrySet()) {
 
-				if (!analyzer.getContained().containsFQN(e.getKey())) {
+				if (!analyzer.getContained()
+					.containsFQN(e.getKey())) {
 					SetLocation warning = warning("Export-Package or -exportcontents refers to missing package '%s'",
-							e.getKey());
+						e.getKey());
 					warning.header(Constants.EXPORT_PACKAGE + "|" + Constants.EXPORT_CONTENTS);
 					warning.context(e.getKey());
 				}
 
-				String version = e.getValue().get(Constants.VERSION_ATTRIBUTE);
+				String version = e.getValue()
+					.get(Constants.VERSION_ATTRIBUTE);
 				if (version == null) {
 					noexports.add(e.getKey());
 				} else {
-					if (!VERSION.matcher(version).matches()) {
+					if (!VERSION.matcher(version)
+						.matches()) {
 						Location location;
-						if (VERSIONRANGE.matcher(version).matches()) {
+						if (VERSIONRANGE.matcher(version)
+							.matches()) {
 							location = error(
-									"Export Package %s version is a range: %s; Exports do not allow for ranges.",
-									e.getKey(), version).location();
+								"Export Package %s version is a range: %s; Exports do not allow for ranges.",
+								e.getKey(), version).location();
 						} else {
 							location = error("Export Package %s version has invalid syntax: %s", e.getKey(), version)
-									.location();
+								.location();
 						}
 						location.header = Constants.EXPORT_PACKAGE;
 						location.context = e.getKey();
 					}
 				}
 
-				if (e.getValue().containsKey(Constants.SPECIFICATION_VERSION)) {
+				if (e.getValue()
+					.containsKey(Constants.SPECIFICATION_VERSION)) {
 					Location location = error(
-							"Export Package %s uses deprecated specification-version instead of version", e.getKey())
-									.location();
+						"Export Package %s uses deprecated specification-version instead of version", e.getKey())
+							.location();
 					location.header = Constants.EXPORT_PACKAGE;
 					location.context = e.getKey();
 				}
 
-				String mandatory = e.getValue().get(Constants.MANDATORY_DIRECTIVE);
+				String mandatory = e.getValue()
+					.get(Constants.MANDATORY_DIRECTIVE);
 				if (mandatory != null) {
-					Set<String> missing = new HashSet<String>(split(mandatory));
-					missing.removeAll(e.getValue().keySet());
+					Set<String> missing = new HashSet<>(split(mandatory));
+					missing.removeAll(e.getValue()
+						.keySet());
 					if (!missing.isEmpty()) {
 						Location location = error("Export Package %s misses mandatory attribute: %s", e.getKey(),
-								missing).location();
+							missing).location();
 						location.header = Constants.EXPORT_PACKAGE;
 						location.context = e.getKey();
 					}
@@ -794,12 +898,13 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyRequirements() throws IllegalArgumentException, Exception {
-		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.REQUIRE_CAPABILITY));
+		Parameters map = parseHeader(manifest.getMainAttributes()
+			.getValue(Constants.REQUIRE_CAPABILITY));
 		for (String key : map.keySet()) {
-
+			Attrs attrs = map.get(key);
+			key = Processor.removeDuplicateMarker(key);
 			verifyNamespace(key, "Require");
 
-			Attrs attrs = map.get(key);
 			verify(attrs, "filter:", FILTERPATTERN, false, "Requirement %s filter not correct", key);
 
 			String filter = attrs.get("filter:");
@@ -849,8 +954,9 @@ public class Verifier extends Processor {
 				Attrs.Type t = attrs.getType(a);
 				if ("version".equals(a)) {
 					if (t != Attrs.Type.VERSION && t != Attrs.Type.VERSIONS)
-						error("Version attributes should always be of type Version or List<Version>, it is version:%s=%s for %s",
-								t, v, key);
+						error(
+							"Version attributes should always be of type Version or List<Version>, it is version:%s=%s for %s",
+							t, v, key);
 				} else
 					verifyType(t, v);
 			}
@@ -858,28 +964,30 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyCapabilities() {
-		Parameters map = parseHeader(manifest.getMainAttributes().getValue(Constants.PROVIDE_CAPABILITY));
+		Parameters map = parseHeader(manifest.getMainAttributes()
+			.getValue(Constants.PROVIDE_CAPABILITY));
 		for (String key : map.keySet()) {
-			verifyNamespace(key, "Provide");
 			Attrs attrs = map.get(key);
+			key = Processor.removeDuplicateMarker(key);
+			verifyNamespace(key, "Provide");
 			verify(attrs, "cardinality:", CARDINALITY_PATTERN, false, "Capability %s cardinality not correct", key);
 			verify(attrs, "resolution:", RESOLUTION_PATTERN, false, "Capability %s resolution not correct", key);
 
 			if (key.equals("osgi.extender")) {
 				verify(attrs, "osgi.extender", SYMBOLICNAME, true, "%s must have the %s attribute set", key,
-						"osgi.extender");
+					"osgi.extender");
 				verify(attrs, "version", VERSION, true, "%s must have the %s attribute set", key, "version");
 			} else if (key.equals("osgi.serviceloader")) {
 				verify(attrs, "register:", PACKAGEPATTERN_OR_EMPTY, false,
-						"Service Loader extender register: directive not a fully qualified Java name");
+					"Service Loader extender register: directive not a fully qualified Java name");
 			} else if (key.equals("osgi.contract")) {
 				verify(attrs, "osgi.contract", SYMBOLICNAME, true, "%s must have the %s attribute set", key,
-						"osgi.contract");
+					"osgi.contract");
 			} else if (key.equals("osgi.service")) {
 				verify(attrs, "objectClass", MULTIPACKAGEPATTERN, true, "%s must have the %s attribute set", key,
-						"objectClass");
+					"objectClass");
 			} else if (key.startsWith("osgi.wiring.") || key.equals("osgi.identity") || key.equals("osgi.ee")
-					|| key.equals("osgi.native")) {
+				|| key.equals("osgi.native")) {
 				error("%s namespace must not be specified with generic capabilities", key);
 			}
 
@@ -895,7 +1003,7 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyNamespace(String ns, String type) {
-		if (!isBsn(Processor.removeDuplicateMarker(ns))) {
+		if (!isBsn(ns)) {
 			error("The %s-Capability with namespace %s is not a symbolic name", type, ns);
 		}
 	}
@@ -924,19 +1032,22 @@ public class Verifier extends Processor {
 	 */
 	private void verifyDirectives(String header, String directives, Pattern namePattern, String type) {
 		Pattern pattern = Pattern.compile(directives);
-		Parameters map = parseHeader(manifest.getMainAttributes().getValue(header));
-		for (Entry<String,Attrs> entry : map.entrySet()) {
+		Parameters map = parseHeader(manifest.getMainAttributes()
+			.getValue(header));
+		for (Entry<String, Attrs> entry : map.entrySet()) {
 			String pname = removeDuplicateMarker(entry.getKey());
 
 			if (namePattern != null) {
-				if (!namePattern.matcher(pname).matches())
+				if (!namePattern.matcher(pname)
+					.matches())
 					if (isPedantic())
 						error("Invalid %s name: '%s'", type, pname);
 					else
 						warning("Invalid %s name: '%s'", type, pname);
 			}
 
-			for (String key : entry.getValue().keySet()) {
+			for (String key : entry.getValue()
+				.keySet()) {
 				if (key.endsWith(":")) {
 					if (!key.startsWith("x-")) {
 						Matcher m = pattern.matcher(key);
@@ -944,7 +1055,7 @@ public class Verifier extends Processor {
 							continue;
 
 						warning("Unknown directive %s in %s, allowed directives are %s, and 'x-*'.", key, header,
-								directives.replace('|', ','));
+							directives.replace('|', ','));
 					}
 				}
 			}
@@ -985,7 +1096,7 @@ public class Verifier extends Processor {
 		else if (map.size() > 1)
 			warning(Constants.BUNDLE_ACTIVATIONPOLICY + " has too many arguments %s", policy);
 		else {
-			Map<String,String> s = map.get("lazy");
+			Map<String, String> s = map.get("lazy");
 			if (s == null)
 				warning(Constants.BUNDLE_ACTIVATIONPOLICY + " set but is not set to lazy: %s", policy);
 			else
@@ -1004,17 +1115,19 @@ public class Verifier extends Processor {
 			if (path.endsWith("/"))
 				error("A " + Constants.BUNDLE_CLASSPATH + " entry must not end with '/': %s", path);
 
-			if (dot.getDirectories().containsKey(path))
+			if (dot.getDirectories()
+				.containsKey(path))
 				// We assume that any classes are in a directory
 				// and therefore do not care when the bundle is included
 				return;
 		}
 
-		for (String path : dot.getResources().keySet()) {
+		for (String path : dot.getResources()
+			.keySet()) {
 			if (path.endsWith(".class")) {
 				warning("The " + Constants.BUNDLE_CLASSPATH
-						+ " does not contain the actual bundle JAR (as specified with '.' in the "
-						+ Constants.BUNDLE_CLASSPATH + ") but the JAR does contain classes. Is this intentional?");
+					+ " does not contain the actual bundle JAR (as specified with '.' in the "
+					+ Constants.BUNDLE_CLASSPATH + ") but the JAR does contain classes. Is this intentional?");
 				return;
 			}
 		}
@@ -1044,10 +1157,11 @@ public class Verifier extends Processor {
 			if (!verify(name, WILDCARDPACKAGE))
 				error(Constants.DYNAMICIMPORT_PACKAGE + " header contains an invalid package name: %s", name);
 
-			Map<String,String> sub = map.get(name);
+			Map<String, String> sub = map.get(name);
 			if (r3 && sub.size() != 0) {
-				error("DynamicPackage-Import has attributes on import: %s. This is however, an <=R3 bundle and attributes on this header were introduced in R4.",
-						name);
+				error(
+					"DynamicPackage-Import has attributes on import: %s. This is however, an <=R3 bundle and attributes on this header were introduced in R4.",
+					name);
 			}
 		}
 	}
@@ -1059,12 +1173,14 @@ public class Verifier extends Processor {
 	}
 
 	private void verifySymbolicName() {
-		Parameters bsn = parseHeader(main.get(Analyzer.BUNDLE_SYMBOLICNAME));
+		Parameters bsn = parseHeader(main.get(Constants.BUNDLE_SYMBOLICNAME));
 		if (!bsn.isEmpty()) {
 			if (bsn.size() > 1)
 				error("More than one BSN specified %s", bsn);
 
-			String name = bsn.keySet().iterator().next();
+			String name = bsn.keySet()
+				.iterator()
+				.next();
 			if (!isBsn(name)) {
 				error("Symbolic Name has invalid format: %s", name);
 			}
@@ -1077,7 +1193,8 @@ public class Verifier extends Processor {
 	 *         Name, otherwise {@code false}
 	 */
 	public static boolean isBsn(String name) {
-		return SYMBOLICNAME.matcher(name).matches();
+		return SYMBOLICNAME.matcher(name)
+			.matches();
 	}
 
 	/**
@@ -1131,7 +1248,7 @@ public class Verifier extends Processor {
 
 					if (expr.charAt(index) != '(')
 						throw new IllegalArgumentException(
-								"Filter mismatch: ! (not) must have one sub expression " + index + " : " + expr);
+							"Filter mismatch: ! (not) must have one sub expression " + index + " : " + expr);
 					while (Character.isWhitespace(expr.charAt(index)))
 						index++;
 
@@ -1140,7 +1257,7 @@ public class Verifier extends Processor {
 						index++;
 					if (expr.charAt(index) != ')')
 						throw new IllegalArgumentException(
-								"Filter mismatch: expected ) at position " + index + " : " + expr);
+							"Filter mismatch: expected ) at position " + index + " : " + expr);
 					return index + 1;
 
 				case '&' :
@@ -1156,14 +1273,14 @@ public class Verifier extends Processor {
 
 					if (expr.charAt(index) != ')')
 						throw new IllegalArgumentException(
-								"Filter mismatch: expected ) at position " + index + " : " + expr);
+							"Filter mismatch: expected ) at position " + index + " : " + expr);
 					return index + 1; // skip )
 
 				default :
 					index = verifyFilterOperation(expr, index);
 					if (expr.charAt(index) != ')')
 						throw new IllegalArgumentException(
-								"Filter mismatch: expected ) at position " + index + " : " + expr);
+							"Filter mismatch: expected ) at position " + index + " : " + expr);
 					return index + 1;
 			}
 		} catch (IndexOutOfBoundsException e) {
@@ -1176,7 +1293,8 @@ public class Verifier extends Processor {
 		while ("=><~()".indexOf(expr.charAt(index)) < 0) {
 			sb.append(expr.charAt(index++));
 		}
-		String attr = sb.toString().trim();
+		String attr = sb.toString()
+			.trim();
 		if (attr.length() == 0)
 			throw new IllegalArgumentException("Filter mismatch: attr at index " + index + " is 0");
 		sb = new StringBuilder();
@@ -1195,7 +1313,7 @@ public class Verifier extends Processor {
 						index++;
 					else
 						throw new IllegalArgumentException("Filter error, illegal use of backslash at index " + index
-								+ ". Backslash may only be used before * or () or \\");
+							+ ". Backslash may only be used before * or () or \\");
 			}
 			sb.append(expr.charAt(index++));
 		}
@@ -1203,12 +1321,14 @@ public class Verifier extends Processor {
 	}
 
 	private boolean verifyHeader(String name, Pattern regex, boolean error) {
-		String value = manifest.getMainAttributes().getValue(name);
+		String value = manifest.getMainAttributes()
+			.getValue(name);
 		if (value == null)
 			return false;
 
 		QuotedTokenizer st = new QuotedTokenizer(value.trim(), ",");
-		for (Iterator<String> i = st.getTokenSet().iterator(); i.hasNext();) {
+		for (Iterator<String> i = st.getTokenSet()
+			.iterator(); i.hasNext();) {
 			if (!verify(i.next(), regex)) {
 				if (error)
 					error("Invalid value for %s, %s does not match %s", name, value, regex.pattern());
@@ -1220,17 +1340,20 @@ public class Verifier extends Processor {
 	}
 
 	static private boolean verify(String value, Pattern regex) {
-		return regex.matcher(value).matches();
+		return regex.matcher(value)
+			.matches();
 	}
 
 	private boolean verifyListHeader(String name, Pattern regex, boolean error) {
-		String value = manifest.getMainAttributes().getValue(name);
+		String value = manifest.getMainAttributes()
+			.getValue(name);
 		if (value == null)
 			return false;
 
 		Parameters map = parseHeader(value);
 		for (String header : map.keySet()) {
-			if (!regex.matcher(header).matches()) {
+			if (!regex.matcher(header)
+				.matches()) {
 				if (error)
 					error("Invalid value for %s, %s does not match %s", name, value, regex.pattern());
 				else
@@ -1248,7 +1371,8 @@ public class Verifier extends Processor {
 	// }
 
 	public static boolean isVersion(String version) {
-		return version != null && VERSION.matcher(version).matches();
+		return version != null && VERSION.matcher(version)
+			.matches();
 	}
 
 	public static boolean isIdentifier(String value) {
@@ -1302,15 +1426,17 @@ public class Verifier extends Processor {
 	 */
 	public void verifyChecksums(boolean all) throws Exception {
 		Manifest m = dot.getManifest();
-		if (m == null || m.getEntries().isEmpty()) {
+		if (m == null || m.getEntries()
+			.isEmpty()) {
 			if (all)
 				error("Verify checksums with all but no digests");
 			return;
 		}
 
-		List<String> missingDigest = new ArrayList<String>();
+		List<String> missingDigest = new ArrayList<>();
 
-		for (String path : dot.getResources().keySet()) {
+		for (String path : dot.getResources()
+			.keySet()) {
 			if (path.equals("META-INF/MANIFEST.MF"))
 				continue;
 
@@ -1323,7 +1449,8 @@ public class Verifier extends Processor {
 				byte[] d = Base64.decodeBase64(digest);
 				SHA1 expected = new SHA1(d);
 				try (Digester<SHA1> digester = SHA1.getDigester();
-						InputStream in = dot.getResource(path).openInputStream()) {
+					InputStream in = dot.getResource(path)
+						.openInputStream()) {
 					IO.copy(in, digester);
 					digester.digest();
 					if (!expected.equals(digester.digest())) {
@@ -1348,7 +1475,8 @@ public class Verifier extends Processor {
 		if (key == null)
 			return false;
 
-		return EXTENDED_P.matcher(key).matches();
+		return EXTENDED_P.matcher(key)
+			.matches();
 	}
 
 	/**
@@ -1359,7 +1487,8 @@ public class Verifier extends Processor {
 	 *         syntax, otherwise {@code false}
 	 */
 	public static boolean isArgument(String arg) {
-		return arg != null && ARGUMENT_P.matcher(arg).matches();
+		return arg != null && ARGUMENT_P.matcher(arg)
+			.matches();
 	}
 
 	/**
@@ -1370,7 +1499,8 @@ public class Verifier extends Processor {
 	 *         syntax, otherwise {@code false}
 	 */
 	public static boolean isQuotedString(String s) {
-		return s != null && QUOTEDSTRING_P.matcher(s).matches();
+		return s != null && QUOTEDSTRING_P.matcher(s)
+			.matches();
 	}
 
 	/**
@@ -1381,7 +1511,8 @@ public class Verifier extends Processor {
 	 *         VERSION_RANGE_S syntax, otherwise {@code false}
 	 */
 	public static boolean isVersionRange(String range) {
-		return range != null && VERSIONRANGE_P.matcher(range).matches();
+		return range != null && VERSIONRANGE_P.matcher(range)
+			.matches();
 	}
 
 	/**
@@ -1391,9 +1522,12 @@ public class Verifier extends Processor {
 	 */
 
 	public void verifyMetaPersistence() throws Exception {
-		List<String> list = new ArrayList<String>();
-		String mp = dot.getManifest().getMainAttributes().getValue(META_PERSISTENCE);
-		for (String location : OSGiHeader.parseHeader(mp).keySet()) {
+		List<String> list = new ArrayList<>();
+		String mp = dot.getManifest()
+			.getMainAttributes()
+			.getValue(META_PERSISTENCE);
+		for (String location : OSGiHeader.parseHeader(mp)
+			.keySet()) {
 			String[] parts = location.split("!/");
 
 			Resource resource = dot.getResource(parts[0]);
@@ -1414,7 +1548,7 @@ public class Verifier extends Processor {
 			return;
 
 		error(Constants.META_PERSISTENCE + " refers to resources not in the bundle: %s", list)
-				.header(Constants.META_PERSISTENCE);
+			.header(Constants.META_PERSISTENCE);
 	}
 
 	/**

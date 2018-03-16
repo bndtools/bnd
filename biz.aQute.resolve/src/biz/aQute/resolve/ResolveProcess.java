@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -46,16 +45,16 @@ import aQute.libg.tuple.Pair;
 
 public class ResolveProcess {
 
-	private Map<Resource,List<Wire>>	required;
-	private Map<Resource,List<Wire>>	optional;
+	private Map<Resource, List<Wire>>	required;
+	private Map<Resource, List<Wire>>	optional;
 
 	private ResolutionException			resolutionException;
 
-	public Map<Resource,List<Wire>> resolveRequired(BndEditModel inputModel, Registry plugins, Resolver resolver,
-			Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
+	public Map<Resource, List<Wire>> resolveRequired(BndEditModel inputModel, Registry plugins, Resolver resolver,
+		Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
 		try {
 			return resolveRequired(inputModel.getProperties(), inputModel.getProject(), plugins, resolver, callbacks,
-					log);
+				log);
 		} catch (Exception e) {
 			if (e instanceof ResolutionException) {
 				throw (ResolutionException) e;
@@ -64,15 +63,15 @@ public class ResolveProcess {
 		}
 	}
 
-	public Map<Resource,List<Wire>> resolveRequired(Processor properties, Project project, Registry plugins,
-			Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
-		required = new HashMap<Resource,List<Wire>>();
-		optional = new HashMap<Resource,List<Wire>>();
+	public Map<Resource, List<Wire>> resolveRequired(Processor properties, Project project, Registry plugins,
+		Resolver resolver, Collection<ResolutionCallback> callbacks, LogService log) throws ResolutionException {
+		required = new HashMap<>();
+		optional = new HashMap<>();
 
 		BndrunResolveContext rc = new BndrunResolveContext(properties, project, plugins, log);
 		rc.addCallbacks(callbacks);
 		// 1. Resolve initial requirements
-		Map<Resource,List<Wire>> wirings;
+		Map<Resource, List<Wire>> wirings;
 		try {
 			wirings = resolver.resolve(rc);
 		} catch (ResolutionException re) {
@@ -80,37 +79,39 @@ public class ResolveProcess {
 		}
 
 		// 2. Save initial requirement resolution
-		Pair<Resource,List<Wire>> initialRequirement = null;
-		for (Map.Entry<Resource,List<Wire>> wiring : wirings.entrySet()) {
+		Pair<Resource, List<Wire>> initialRequirement = null;
+		for (Map.Entry<Resource, List<Wire>> wiring : wirings.entrySet()) {
 			if (rc.getInputResource() == wiring.getKey()) {
-				initialRequirement = new Pair<Resource,List<Wire>>(wiring.getKey(), wiring.getValue());
+				initialRequirement = new Pair<>(wiring.getKey(), wiring.getValue());
 				break;
 			}
 		}
 
 		// 3. Save the resolved root resources
-		final List<Resource> resources = new ArrayList<Resource>();
+		final List<Resource> resources = new ArrayList<>();
 		for (Resource r : rc.getMandatoryResources()) {
 			reqs: for (Requirement req : r.getRequirements(null)) {
 				for (Resource found : wirings.keySet()) {
-					String filterStr = req.getDirectives().get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+					String filterStr = req.getDirectives()
+						.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 					try {
 						org.osgi.framework.Filter filter = filterStr != null
-								? org.osgi.framework.FrameworkUtil.createFilter(filterStr) : null;
+							? org.osgi.framework.FrameworkUtil.createFilter(filterStr)
+							: null;
 
 						for (Capability c : found.getCapabilities(req.getNamespace())) {
 							if (filter != null && filter.matches(c.getAttributes())) {
 								resources.add(found);
 								continue reqs;
 							}
-								}
+						}
 					} catch (InvalidSyntaxException e) {}
 				}
 			}
 		}
 
 		// 4. Add any 'osgi.wiring.bundle' requirements
-		List<Resource> wiredBundles = new ArrayList<Resource>();
+		List<Resource> wiredBundles = new ArrayList<>();
 		for (Resource resource : resources) {
 			addWiredBundle(wirings, resource, wiredBundles);
 		}
@@ -120,7 +121,7 @@ public class ResolveProcess {
 			}
 		}
 
-		final Map<Resource,List<Wire>> discoveredOptional = new LinkedHashMap<Resource,List<Wire>>();
+		final Map<Resource, List<Wire>> discoveredOptional = new LinkedHashMap<>();
 
 		// 5. Resolve the rest
 		BndrunResolveContext rc2 = new BndrunResolveContext(properties, project, plugins, log) {
@@ -133,7 +134,7 @@ public class ResolveProcess {
 			@Override
 			public boolean isInputResource(Resource resource) {
 				for (Resource r : resources) {
-					if (GenericResolveContext.resourceIdentityEquals(r, resource)) {
+					if (AbstractResolveContext.resourceIdentityEquals(r, resource)) {
 						return true;
 					}
 				}
@@ -145,8 +146,9 @@ public class ResolveProcess {
 
 				List<Capability> toReturn = super.findProviders(requirement);
 
-				if (toReturn.isEmpty() && isEffective(requirement) && RESOLUTION_OPTIONAL
-						.equals(requirement.getDirectives().get(REQUIREMENT_RESOLUTION_DIRECTIVE))) {
+				if (toReturn.isEmpty() && isEffective(requirement)
+					&& RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
+						.get(REQUIREMENT_RESOLUTION_DIRECTIVE))) {
 					// We have an effective optional requirement that is
 					// unmatched
 					// AbstractResolveContext deliberately does not include
@@ -155,7 +157,7 @@ public class ResolveProcess {
 					// the optional
 					// map
 
-					for (Capability cap : findProvidersFromRepositories(requirement, new LinkedHashSet<Capability>())) {
+					for (Capability cap : findProvidersFromRepositories(requirement, new LinkedHashSet<>())) {
 
 						Resource optionalRes = cap.getResource();
 
@@ -186,7 +188,7 @@ public class ResolveProcess {
 			wirings.put(initialRequirement.getFirst(), initialRequirement.getSecond());
 		}
 
-		Map<Resource,List<Wire>> result = invertWirings(wirings, rc2);
+		Map<Resource, List<Wire>> result = invertWirings(wirings, rc2);
 		removeFrameworkAndInputResources(result, rc2);
 		required.putAll(result);
 		optional = tidyUpOptional(wirings, discoveredOptional, log);
@@ -207,7 +209,7 @@ public class ResolveProcess {
 	}
 
 	public static ResolutionException augment(ResolveContext context, ResolutionException re)
-			throws ResolutionException {
+		throws ResolutionException {
 		return augment(re.getUnresolvedRequirements(), context, re);
 	}
 
@@ -234,7 +236,8 @@ public class ResolveProcess {
 	}
 
 	private static boolean isOptional(Requirement req) {
-		String resolution = req.getDirectives().get(Constants.RESOLUTION);
+		String resolution = req.getDirectives()
+			.get(Constants.RESOLUTION);
 
 		if (resolution == null) {
 			return false;
@@ -244,7 +247,7 @@ public class ResolveProcess {
 	}
 
 	private static ResolutionException augment(Collection<Requirement> unresolved, ResolveContext context,
-			ResolutionException re) {
+		ResolutionException re) {
 		if (unresolved.isEmpty()) {
 			return re;
 		}
@@ -266,7 +269,7 @@ public class ResolveProcess {
 	 * Recursively traverse all requirement's resource requirement's
 	 */
 	private static Requirement missing(ResolveContext context, Requirement rq, Set<Resource> resources, long deadline)
-			throws TimeoutException {
+		throws TimeoutException {
 		resources.add(rq.getResource());
 
 		if (deadline < System.currentTimeMillis())
@@ -286,12 +289,13 @@ public class ResolveProcess {
 		// satisfies our requirement and its 1st level requirements.
 		//
 
-		Set<Resource> candidates = new HashSet<Resource>();
+		Set<Resource> candidates = new HashSet<>();
 
 		Requirement missing = null;
 		caps: for (Capability cap : providers) {
 
-			for (Requirement sub : cap.getResource().getRequirements(null)) {
+			for (Requirement sub : cap.getResource()
+				.getRequirements(null)) {
 				List<Capability> subProviders = context.findProviders(sub);
 				if (subProviders.isEmpty()) {
 					if (missing == null)
@@ -357,12 +361,13 @@ public class ResolveProcess {
 		return missing == null ? initialMissing : missing;
 	}
 
-	private void addWiredBundle(Map<Resource,List<Wire>> wirings, Resource resource, List<Resource> result) {
+	private void addWiredBundle(Map<Resource, List<Wire>> wirings, Resource resource, List<Resource> result) {
 		List<Requirement> reqs = resource.getRequirements(BUNDLE_NAMESPACE);
 		for (Requirement req : reqs) {
 			List<Wire> wrs = wirings.get(resource);
 			for (Wire w : wrs) {
-				if (w.getRequirement().equals(req)) {
+				if (w.getRequirement()
+					.equals(req)) {
 					Resource res = w.getProvider();
 					if (res != null) {
 						if (!result.contains(res)) {
@@ -398,13 +403,10 @@ public class ResolveProcess {
 	 * capRequirements.add(req); } } } } }
 	 */
 
-	private static void removeFrameworkAndInputResources(Map<Resource,List<Wire>> resourceMap,
-			AbstractResolveContext rc) {
-		for (Iterator<Resource> iter = resourceMap.keySet().iterator(); iter.hasNext();) {
-			Resource resource = iter.next();
-			if (rc.isSystemResource(resource))
-				iter.remove();
-		}
+	private static void removeFrameworkAndInputResources(Map<Resource, List<Wire>> resourceMap,
+		AbstractResolveContext rc) {
+		resourceMap.keySet()
+			.removeIf(rc::isSystemResource);
 	}
 
 	/**
@@ -413,9 +415,9 @@ public class ResolveProcess {
 	 * know the list of wirings TO that resource. This is in order to show the
 	 * user the reasons for each resource being present in the result.
 	 */
-	private static Map<Resource,List<Wire>> invertWirings(Map<Resource, ? extends Collection<Wire>> wirings,
-			AbstractResolveContext rc) {
-		Map<Resource,List<Wire>> inverted = new HashMap<Resource,List<Wire>>();
+	private static Map<Resource, List<Wire>> invertWirings(Map<Resource, ? extends Collection<Wire>> wirings,
+		AbstractResolveContext rc) {
+		Map<Resource, List<Wire>> inverted = new HashMap<>();
 		for (Entry<Resource, ? extends Collection<Wire>> entry : wirings.entrySet()) {
 			Resource requirer = entry.getKey();
 			for (Wire wire : entry.getValue()) {
@@ -428,7 +430,7 @@ public class ResolveProcess {
 
 				List<Wire> incoming = inverted.get(provider);
 				if (incoming == null) {
-					incoming = new LinkedList<Wire>();
+					incoming = new LinkedList<>();
 					inverted.put(provider, incoming);
 				}
 				incoming.add(wire);
@@ -458,16 +460,15 @@ public class ResolveProcess {
 		}
 
 		// It shouldn't be possible to arrive here!
-		throw new IllegalStateException(Strings.format(
-				"The capability for wire %s was not associated with a resource in the resolution",
-				wire));
+		throw new IllegalStateException(
+			Strings.format("The capability for wire %s was not associated with a resource in the resolution", wire));
 	}
 
-	private static Map<Resource,List<Wire>> tidyUpOptional(Map<Resource,List<Wire>> required,
-			Map<Resource,List<Wire>> discoveredOptional, LogService log) {
-		Map<Resource,List<Wire>> toReturn = new HashMap<Resource,List<Wire>>();
+	private static Map<Resource, List<Wire>> tidyUpOptional(Map<Resource, List<Wire>> required,
+		Map<Resource, List<Wire>> discoveredOptional, LogService log) {
+		Map<Resource, List<Wire>> toReturn = new HashMap<>();
 
-		Set<Capability> requiredIdentities = new HashSet<Capability>();
+		Set<Capability> requiredIdentities = new HashSet<>();
 		for (Resource r : required.keySet()) {
 			Capability normalisedIdentity = toPureIdentity(r, log);
 			if (normalisedIdentity != null) {
@@ -477,7 +478,7 @@ public class ResolveProcess {
 
 		Set<Capability> acceptedIdentities = new HashSet<>();
 
-		for (Entry<Resource,List<Wire>> entry : discoveredOptional.entrySet()) {
+		for (Entry<Resource, List<Wire>> entry : discoveredOptional.entrySet()) {
 			// If we're required we are not also optional
 			Resource optionalResource = entry.getKey();
 			if (required.containsKey(optionalResource)) {
@@ -492,7 +493,7 @@ public class ResolveProcess {
 			}
 
 			// Only wires to required resources should kept
-			List<Wire> validWires = new ArrayList<Wire>();
+			List<Wire> validWires = new ArrayList<>();
 			optional: for (Wire optionalWire : entry.getValue()) {
 				Resource requirer = optionalWire.getRequirer();
 				Capability requirerIdentity = toPureIdentity(requirer, log);
@@ -517,8 +518,8 @@ public class ResolveProcess {
 					toReturn.put(optionalResource, validWires);
 				} else {
 					log.log(LogService.LOG_INFO, "Discarding the optional resource " + optionalResource
-							+ " because another optional resource with the identity " + optionalIdentity
-							+ " has already been selected. This usually happens when the same bundle is present in multiple repositories.");
+						+ " because another optional resource with the identity " + optionalIdentity
+						+ " has already been selected. This usually happens when the same bundle is present in multiple repositories.");
 				}
 			}
 		}
@@ -530,7 +531,7 @@ public class ResolveProcess {
 		List<Capability> capabilities = r.getCapabilities(IDENTITY_NAMESPACE);
 		if (capabilities.size() != 1) {
 			log.log(LogService.LOG_WARNING,
-					"The resource " + r + " has the wrong number of identity capabilities " + capabilities.size());
+				"The resource " + r + " has the wrong number of identity capabilities " + capabilities.size());
 			return null;
 		}
 		try {

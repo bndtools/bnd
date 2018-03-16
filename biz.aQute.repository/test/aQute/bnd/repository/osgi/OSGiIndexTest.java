@@ -23,23 +23,27 @@ public class OSGiIndexTest extends TestCase {
 		super.setUp();
 		IO.delete(tmp);
 	}
+
 	public void testIndex() throws Exception {
 		HttpClient client = new HttpClient();
 		client.setCache(tmp);
 		OSGiIndex oi = getIndex(client);
 
-		List<String> list = oi.getBridge().list("osgi.enroute.*");
+		List<String> list = oi.getBridge()
+			.list("osgi.enroute.*");
 		assertNotNull(list);
 		assertEquals(32, list.size());
 
 		oi = getIndex(client);
-		list = oi.getBridge().list("osgi.enroute.*");
+		list = oi.getBridge()
+			.list("osgi.enroute.*");
 		assertNotNull(list);
 		assertEquals(32, list.size());
 
 		System.out.println(list);
 
-		SortedSet<Version> versions = oi.getBridge().versions("osgi.enroute.rest.simple.provider");
+		SortedSet<Version> versions = oi.getBridge()
+			.versions("osgi.enroute.rest.simple.provider");
 		assertEquals(1, versions.size());
 		System.out.println(versions);
 
@@ -52,10 +56,28 @@ public class OSGiIndexTest extends TestCase {
 		assertNotNull(promise);
 	}
 
+	public void testAggregateIndex() throws Exception {
+		HttpClient client = new HttpClient();
+		client.setCache(tmp);
+		OSGiIndex oi = new OSGiIndex("name", client, cache,
+			Collections.singletonList(IO.getFile("testdata/repo7/index-aggregate.xml")
+				.toURI()),
+			0, false);
+
+		List<String> list = oi.getBridge()
+			.list("org.eclipse.*");
+		assertNotNull(list);
+		assertEquals(9, list.size());
+
+		System.out.println(list);
+
+		SortedSet<Version> versions = oi.getBridge()
+			.versions("org.apache.geronimo.components.geronimo-transaction");
+		assertEquals(1, versions.size());
+	}
+
 	public OSGiIndex getIndex(HttpClient client) throws Exception, URISyntaxException {
-		return new OSGiIndex("name", client, cache,
-				Collections.singletonList(
-						new URI("https://raw.githubusercontent.com/osgi/osgi.enroute/v1.0.0/cnf/distro/index.xml")),
-				0, false);
+		return new OSGiIndex("name", client, cache, Collections.singletonList(
+			new URI("https://raw.githubusercontent.com/osgi/osgi.enroute/v1.0.0/cnf/distro/index.xml")), 0, false);
 	}
 }

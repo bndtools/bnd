@@ -11,9 +11,9 @@ import aQute.bnd.version.Version;
 public class RepositoryElement {
 
 	public static Element getTree(RepositoryPlugin repo) throws Exception {
-		List<Element> programs = new ArrayList<Element>();
+		List<Element> programs = new ArrayList<>();
 		for (String bsn : repo.list(null)) {
-			List<Element> versions = new ArrayList<Element>();
+			List<Element> versions = new ArrayList<>();
 			for (Version version : repo.versions(bsn)) {
 				versions.add(new Element(Type.VERSION, version.toString()));
 			}

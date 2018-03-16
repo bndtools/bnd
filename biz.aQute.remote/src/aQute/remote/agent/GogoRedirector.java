@@ -27,7 +27,7 @@ import org.osgi.util.tracker.ServiceTracker;
 public class GogoRedirector implements Redirector {
 
 	private AgentServer											agentServer;
-	private ServiceTracker<CommandProcessor,CommandProcessor>	tracker;
+	private ServiceTracker<CommandProcessor, CommandProcessor>	tracker;
 	private CommandProcessor									processor;
 	private CommandSession										session;
 	private Shell												stdin;
@@ -41,8 +41,8 @@ public class GogoRedirector implements Redirector {
 	 */
 	public GogoRedirector(AgentServer agentServer, BundleContext context) {
 		this.agentServer = agentServer;
-		tracker = new ServiceTracker<CommandProcessor,CommandProcessor>(context, CommandProcessor.class.getName(),
-				null) {
+		tracker = new ServiceTracker<CommandProcessor, CommandProcessor>(context, CommandProcessor.class.getName(),
+			null) {
 
 			@Override
 			public CommandProcessor addingService(ServiceReference<CommandProcessor> reference) {
@@ -93,7 +93,7 @@ public class GogoRedirector implements Redirector {
 	 */
 	@SuppressWarnings("unchecked")
 	<T> T proxy(final Class<T> clazz, final Object target) {
-		final Class< ? > targetClass = target.getClass();
+		final Class<?> targetClass = target.getClass();
 
 		//
 		// We could also be in the same class space, in that case we
@@ -103,16 +103,16 @@ public class GogoRedirector implements Redirector {
 		if (targetClass == clazz)
 			return clazz.cast(target);
 
-		return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class< ? >[] {
-				clazz
+		return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class<?>[] {
+			clazz
 		}, new InvocationHandler() {
 
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				Method targetMethod = targetClass.getMethod(method.getName(), method.getParameterTypes());
 				Object result = targetMethod.invoke(target, args);
-				if (result != null && method.getReturnType().isInterface()
-						&& targetMethod.getReturnType() != method.getReturnType())
+				if (result != null && method.getReturnType()
+					.isInterface() && targetMethod.getReturnType() != method.getReturnType())
 
 					try {
 						return proxy(method.getReturnType(), result);

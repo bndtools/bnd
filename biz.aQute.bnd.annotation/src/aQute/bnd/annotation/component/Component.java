@@ -23,7 +23,7 @@ public @interface Component {
 
 	String name() default "";
 
-	Class< ? >[] provide() default Object.class;
+	Class<?>[] provide() default Object.class;
 
 	String factory() default "";
 
@@ -37,7 +37,7 @@ public @interface Component {
 
 	String[] properties() default {};
 
-	Class< ? > designate() default Object.class;
+	Class<?> designate() default Object.class;
 
-	Class< ? > designateFactory() default Object.class;
+	Class<?> designateFactory() default Object.class;
 }

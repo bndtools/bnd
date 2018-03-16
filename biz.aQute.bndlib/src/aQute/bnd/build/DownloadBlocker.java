@@ -22,13 +22,15 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	private final static Logger logger = LoggerFactory.getLogger(DownloadBlocker.class);
 
 	public enum Stage {
-		INIT, SUCCESS, FAILURE
+		INIT,
+		SUCCESS,
+		FAILURE
 	};
 
-	private volatile Stage	stage	= Stage.INIT;
+	private volatile Stage			stage	= Stage.INIT;
 	private String					failure;
 	private File					file;
-	private final Reporter	reporter;
+	private final Reporter			reporter;
 	private final CountDownLatch	resolved;
 
 	public DownloadBlocker(Reporter reporter) {
@@ -41,6 +43,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * @see
 	 * aQute.bnd.service.RepositoryPlugin.DownloadListener#success(java.io.File)
 	 */
+	@Override
 	public void success(File file) throws Exception {
 		synchronized (resolved) {
 			if (resolved.getCount() == 0) {
@@ -60,6 +63,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * aQute.bnd.service.RepositoryPlugin.DownloadListener#failure(java.io.File,
 	 * java.lang.String)
 	 */
+	@Override
 	public void failure(File file, String reason) throws Exception {
 		synchronized (resolved) {
 			if (resolved.getCount() == 0) {
@@ -81,6 +85,7 @@ public class DownloadBlocker implements RepositoryPlugin.DownloadListener {
 	 * aQute.bnd.service.RepositoryPlugin.DownloadListener#progress(java.io.
 	 * File, int)
 	 */
+	@Override
 	public boolean progress(File file, int percentage) throws Exception {
 		assert stage == Stage.INIT;
 		return true;

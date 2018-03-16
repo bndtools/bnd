@@ -26,9 +26,9 @@ import aQute.libg.command.Command;
 class Makefile extends Processor {
 	private final static Logger	logger		= LoggerFactory.getLogger(Makefile.class);
 
-	private Parameters	parameters;
-	private List<Cmd>	commands	= new ArrayList<>();
-	private String		path;
+	private Parameters			parameters;
+	private List<Cmd>			commands	= new ArrayList<>();
+	private String				path;
 
 	class Cmd {
 
@@ -38,7 +38,7 @@ class Makefile extends Processor {
 		String				command;
 		String				name;
 		String				make;
-		Map<String,String>	env	= new HashMap<String,String>();;
+		Map<String, String>	env	= new HashMap<>();;
 
 		void execute() {
 
@@ -56,7 +56,7 @@ class Makefile extends Processor {
 			if (path != null)
 				cmd.var("PATH", path);
 
-			for (Map.Entry<String,String> e : env.entrySet()) {
+			for (Map.Entry<String, String> e : env.entrySet()) {
 				String key = e.getKey();
 				if (key.endsWith(":"))
 					continue;
@@ -89,7 +89,7 @@ class Makefile extends Processor {
 					}
 					if (!found) {
 						SetLocation location = error("%s: -prepare exit status = %s: %s", name, result,
-								stdout + "\n" + errors);
+							stdout + "\n" + errors);
 						FileLine fl = getParent().getHeader("-prepare", make);
 						if (fl != null) {
 							fl.set(location);
@@ -128,7 +128,7 @@ class Makefile extends Processor {
 				String type = getGroup(m, "type");
 
 				SetLocation location = "warning".equals(type) ? warning("%s: %s", name, m.group("message"))
-						: error("%s: %s", name, m.group("message"));
+					: error("%s: %s", name, m.group("message"));
 
 				String fileName = getGroup(m, "file");
 				if (fileName != null) {
@@ -161,7 +161,7 @@ class Makefile extends Processor {
 
 		this.parameters = new Parameters(mergeProperties("-prepare"), this);
 
-		for (Map.Entry<String,Attrs> e : parameters.entrySet())
+		for (Map.Entry<String, Attrs> e : parameters.entrySet())
 			try {
 				Cmd cmd = new Cmd();
 
@@ -173,7 +173,8 @@ class Makefile extends Processor {
 				if (attrs.containsKey("name:"))
 					cmd.name = attrs.get("name:");
 
-				String parts[] = cmd.make.trim().split("\\s*<=\\s*");
+				String parts[] = cmd.make.trim()
+					.split("\\s*<=\\s*");
 				if (parts.length > 2) {
 					error("Command with dep spec %s has too many <= separated parts", cmd.name);
 					continue;
