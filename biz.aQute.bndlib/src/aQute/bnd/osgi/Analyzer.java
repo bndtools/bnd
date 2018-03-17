@@ -60,7 +60,6 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.slf4j.Logger;
@@ -380,9 +379,10 @@ public class Analyzer extends Processor {
 			contained.keySet()
 				.stream()
 				.map(this::getPackageInfoClazz)
-				.filter(clz -> clz != null)
-				.filter(clz -> clz.annotations != null)
-				.filter(clz -> clz.annotations.contains(bndAnnotation))
+				.filter(Objects::nonNull)
+				.distinct()
+				.filter(clz -> clz.annotations()
+					.contains(bndAnnotation))
 				.map(Clazz::getClassName)
 				.map(TypeRef::getPackageRef)
 				.map(PackageRef::getFQN)
@@ -397,9 +397,10 @@ public class Analyzer extends Processor {
 		return contained.keySet()
 			.stream()
 			.map(this::getPackageInfoClazz)
-			.filter(clz -> clz != null)
-			.filter(clz -> clz.annotations != null)
-			.filter(clz -> clz.annotations.contains(exportAnnotation))
+			.filter(Objects::nonNull)
+			.distinct()
+			.filter(clz -> clz.annotations()
+				.contains(exportAnnotation))
 			.map(Clazz::getClassName)
 			.map(TypeRef::getPackageRef)
 			.map(PackageRef::getFQN)
@@ -1948,16 +1949,13 @@ public class Analyzer extends Processor {
 		Set<PackageRef> providers = classspace.values()
 			.stream()
 			.flatMap(c -> {
-				TypeRef[] interfaces = c.getInterfaces();
-				if (interfaces == null) {
-					return Stream.empty();
-				}
 				// filter out interfaces in the same package as the class
 				// implementing the
 				// interface.
 				PackageRef pkg = c.getClassName()
 					.getPackageRef();
-				return Arrays.stream(interfaces)
+				return c.interfaces()
+					.stream()
 					.filter(i -> !Objects.equals(pkg, i.getPackageRef()));
 			})
 			.distinct()
