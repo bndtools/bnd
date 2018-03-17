@@ -36,6 +36,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
 
+import biz.aQute.resolve.ResolveProcess;
 import bndtools.Plugin;
 import bndtools.model.obr.SorterComparatorAdapter;
 
@@ -125,7 +126,7 @@ public class ResolutionFailurePanel {
             // and only show the bottom one (the resolution result. The previous exception trace was
             // kind of silly
             //
-            String diagnostic = formatFailureStatus(resolutionResult.getStatus(), false, "").replaceAll(":", ":\n  ");
+            String diagnostic = ResolveProcess.format(resolutionException, false);
 
             processingErrorsText.setText(diagnostic);
             sectUnresolved.setExpanded(true);
