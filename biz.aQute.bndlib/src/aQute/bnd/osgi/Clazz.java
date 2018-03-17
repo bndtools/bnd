@@ -1980,12 +1980,12 @@ public class Clazz {
 		Set<TypeRef> visited) {
 		return StreamSupport.stream(new Spliterator<TypeRef>() {
 			private final Deque<TypeRef>	queue;
-			private final Set<TypeRef>		done;
+			private final Set<TypeRef>		seen;
 			{
 				requireNonNull(analyzer);
 				// initialize queue from this class
 				queue = new ArrayDeque<>(requireNonNull(func).apply(Clazz.this));
-				done = (visited != null) ? visited : new HashSet<>();
+				seen = (visited != null) ? visited : new HashSet<>();
 			}
 
 			@Override
@@ -1997,7 +1997,8 @@ public class Clazz {
 					if (type == null) {
 						return false;
 					}
-				} while (!done.add(type));
+				} while (seen.contains(type));
+				seen.add(type);
 				action.accept(type);
 				if (visited != null) {
 					Clazz clazz;
@@ -2041,9 +2042,10 @@ public class Clazz {
 			case NAMED :
 				return instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
 
-			case VERSION :
+			case VERSION : {
 				String v = major + "." + minor;
 				return instr.matches(v) ^ instr.isNegated();
+			}
 
 			case IMPLEMENTS : {
 				Set<TypeRef> visited = new HashSet<>();
@@ -2088,6 +2090,7 @@ public class Clazz {
 				return hierarchyStream(analyzer) //
 					.map(Clazz::getReferred)
 					.flatMap(Set::stream)
+					.distinct()
 					.map(PackageRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
 
@@ -2277,11 +2280,11 @@ public class Clazz {
 		return interfaces;
 	}
 
-	private List<TypeRef> interfaces() {
+	public List<TypeRef> interfaces() {
 		return (interfaces != null) ? Arrays.asList(interfaces) : Collections.emptyList();
 	}
 
-	private Set<TypeRef> annotations() {
+	public Set<TypeRef> annotations() {
 		return (annotations != null) ? annotations : Collections.emptySet();
 	}
 
