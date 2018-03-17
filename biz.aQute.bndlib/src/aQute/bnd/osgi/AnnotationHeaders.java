@@ -2,8 +2,10 @@ package aQute.bnd.osgi;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -808,9 +810,11 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			// Remove duplicates and sort
 			//
 			Set<String> set = new TreeSet<>(headers.get(name));
-			if (value != null)
-				set.add(value);
-			return Strings.join(set);
+			List<String> result = new ArrayList<>(set.size() + 1);
+			if (value != null && !set.contains(value))
+				result.add(value); // analyzer value at start of list
+			result.addAll(set);
+			return Strings.join(result);
 		}
 		return value;
 	}
