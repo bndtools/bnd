@@ -4,24 +4,28 @@ import org.bndtools.api.RunListener;
 import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.build.Run;
+import aQute.bnd.build.Workspace;
 
 @Component
 public class MavenWorkspaceRunListener implements RunListener {
 
     @Override
     public void create(Run run) throws Exception {
-        run.getWorkspace()
-            .addBasicPlugin(new MavenWorkspaceRepository());
+        Workspace workspace = run.getWorkspace();
+        MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
+
+        if (repo == null) {
+            workspace.addBasicPlugin(new MavenWorkspaceRepository());
+        }
     }
 
     @Override
     public void end(Run run) throws Exception {
-        MavenWorkspaceRepository repo = run.getWorkspace()
-            .getPlugin(MavenWorkspaceRepository.class);
+        Workspace workspace = run.getWorkspace();
+        MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
 
         if (repo != null) {
-            run.getWorkspace()
-                .removeBasicPlugin(repo);
+            workspace.removeBasicPlugin(repo);
             repo.cleanup();
         }
     }

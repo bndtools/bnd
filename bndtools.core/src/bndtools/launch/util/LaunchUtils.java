@@ -2,6 +2,7 @@ package bndtools.launch.util;
 
 import java.io.File;
 
+import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.RunListener;
@@ -67,8 +68,12 @@ public final class LaunchUtils {
 
     public static Run createRun(IResource targetResource) throws Exception {
         Run run;
+        Workspace ws = null;
 
-        Workspace ws = Central.getWorkspaceIfPresent();
+        if (isInBndWorkspaceProject(targetResource)) {
+            ws = Central.getWorkspaceIfPresent();
+        }
+
         if (targetResource.getType() == IResource.PROJECT) {
             // This is a bnd project --> find the bnd.bnd file
             IProject project = (IProject) targetResource;
@@ -135,5 +140,15 @@ public final class LaunchUtils {
         }
 
         return runListeners.getServices(new RunListener[0]);
+    }
+
+    public static boolean isInBndWorkspaceProject(IResource resource) throws CoreException {
+        if (resource == null) {
+            return false;
+        }
+
+        IProject project = resource.getProject();
+
+        return project.isOpen() && project.hasNature(BndtoolsConstants.NATURE_ID);
     }
 }
