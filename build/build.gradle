@@ -2,6 +2,8 @@
  * build Gradle build script
  */
 
+import aQute.bnd.gradle.Index
+
 def buildProject = project
 
 /* Configure the workspace project */
@@ -204,42 +206,17 @@ task p2 {
   }
 }
 
-task index {
+task('index', type: Index) {
   description 'Index the p2 repositories.'
   dependsOn p2
   group 'release'
-
-  /* indexer */
-  def bndJar = bnd.project.getBundle('biz.aQute.bnd', 'latest', null, ['strategy':'highest']).getFile()
-
-  /* Bundles to index. */
-  def p2_index_bundles = fileTree("${buildDir}/p2/plugins") {
+  repositoryName = "Bndtools ${version}"
+  destinationDir = "${buildDir}/p2"
+  gzip = true
+  bundles fileTree("${buildDir}/p2/plugins") {
     include '**/*.jar'
   }
-
-  inputs.files p2_index_bundles
-
-  /* Index files */
-  def p2_index = new File("${buildDir}/p2/index.xml.gz")
-
-  outputs.files p2_index
-
-  doLast {
-    /* p2 */
-    def bundlesToIndex = p2_index_bundles*.absolutePath
-    javaexec {
-      main = '-jar' // first arg must be the jar
-      args bndJar
-      args 'index'
-      args '-r', p2_index
-      args '-d', "${buildDir}/p2"
-      args '-n', 'Bndtools'
-      args bundlesToIndex
-    }.assertNormalExitValue()
-    logger.info 'Generated index {}.', p2_index
-  }
 }
-
 
 /*
  * Setup tasks (distribution)
