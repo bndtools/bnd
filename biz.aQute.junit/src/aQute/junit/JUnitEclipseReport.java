@@ -142,7 +142,12 @@ public class JUnitEclipseReport implements TestReporter {
 
 			}
 			sb.append(",");
-			sb.append(test.countTestCases());
+			if (test instanceof JUnit4TestAdapter) {
+				sb.append(((JUnit4TestAdapter) test).getTests()
+					.size());
+			} else {
+				sb.append(test.countTestCases());
+			}
 			message("%TSTTREE", sb.toString());
 		}
 	}
