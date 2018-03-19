@@ -3,6 +3,7 @@ package aQute.bnd.osgi.repository;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -122,13 +123,17 @@ public class SimpleIndexer {
 		Objects.requireNonNull(files, "'files' argument cannot be null");
 		Objects.requireNonNull(outputStream, "'outputStream' argument cannot be null");
 		Objects.requireNonNull(base, "'base' argument cannot be null");
-
+		Path basePath = base.getScheme()
+			.equalsIgnoreCase("file")
+				? new File(base).toPath()
+					.toAbsolutePath()
+				: null;
 		ResourcesRepository resourcesRepository = files.stream()
-			.filter(f -> f.exists() && !f.isDirectory() && !f.isHidden() && f.canRead())
+			.filter(f -> f.isFile() && !f.isHidden() && f.canRead())
 			.map(f -> {
 				try {
 					ResourceBuilder resourceBuilder = new ResourceBuilder();
-					if (resourceBuilder.addFile(f, base.relativize(f.toURI()))) {
+					if (resourceBuilder.addFile(f, relativize(basePath, f))) {
 						if (analyzer != null) {
 							analyzer.analyzeFile(f, resourceBuilder.safeResourceBuilder());
 						}
@@ -141,8 +146,7 @@ public class SimpleIndexer {
 			})
 			.collect(ResourcesRepository.toResourcesRepository());
 
-		XMLResourceGenerator xmlResourceGenerator = new XMLResourceGenerator();
-		XMLResourceGenerator repository = xmlResourceGenerator.repository(resourcesRepository);
+		XMLResourceGenerator repository = new XMLResourceGenerator().repository(resourcesRepository);
 
 		if (name != null) {
 			repository.name(name);
@@ -157,5 +161,21 @@ public class SimpleIndexer {
 		}
 
 		repository.save(outputStream);
+	}
+	
+	private static URI relativize(Path basePath, File file) {
+		if (basePath == null) {
+			return file.toURI();
+		}
+		Path filePath = file.toPath()
+			.toAbsolutePath();
+		Path relativePath = basePath.relativize(filePath);
+		// Note that relativePath.toURI() gives the wrong answer for us!
+		// We have to do some Windows related mashing here too :(
+		URI relativeURI = URI.create(relativePath.toString()
+			.replace(File.separatorChar, '/'));
+		logger.debug("Resolving {} relative to {}; Relative Path: {}, URI: {}", filePath, basePath, relativePath,
+			relativeURI);
+		return relativeURI;
 	}
 }

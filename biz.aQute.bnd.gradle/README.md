@@ -201,6 +201,7 @@ project and you can use the new task types:
 * `Resolve`
 * `Export`
 * `TestOSGi`
+* `Index`
 
 ## Using Bnd Builder Gradle Plugin
 
@@ -491,6 +492,52 @@ The directory for the test execution. The default is _${temporaryDir}_.
 The collection of files to use for locating bundles during the
 bndrun execution. The default is _${project.sourceSets.main.runtimeClasspath}_
 plus _${project.configurations.archives.artifacts.files}_.
+
+## Create a task of the `Index` type
+
+You can also create a new task of the `Index` type. This task type
+will generate an index for a set of bundles. For
+example:
+
+```groovy
+import aQute.bnd.gradle.Index
+ task index(type: Index) {
+   destination = file('bundles')
+   gzip = true
+   bundles = fileTree(destination) {
+    include '**/*.jar'
+    exclude '**/*-latest.jar'
+    exclude '**/*-sources.jar'
+    exclude '**/*-javadoc.jar'
+  }
+}
+```
+There are five properties which can be configured for an Index task:
+
+### gzip
+
+If `true`, then a gzip'd copy of the index will be made with a `.gz` extension.
+Otherwise, only the uncompressed index will be made. The default is
+`false`.
+
+### indexName
+
+The name of the index file. The file is created in the destinationDir.
+The default is`index.xml`.
+
+### repositoryName
+
+The name attribute in the generated index. The default is the name of the task.
+
+### destinationDir
+
+The destination directory for the index. This is used as the URI base of the
+generated index. The default value is _${project.buildDir}_.
+
+### bundles
+
+This is the bundles to be indexed. It can be anything that `Project.files(Object...)`
+can accept. This property must be set.
 
 ---
 
