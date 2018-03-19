@@ -58,6 +58,9 @@ public class ResolverMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${session}", readonly = true)
 	private MavenSession				session;
 
+	@Parameter(defaultValue = "true")
+	private boolean						reportOptional;
+
 	private int							errors	= 0;
 
 	@Component
@@ -114,7 +117,7 @@ public class ResolverMojo extends AbstractMojo {
 			try {
 				run.resolve(failOnChanges, true);
 			} catch (ResolutionException re) {
-				logger.error("Unresolved requirements: {}", ResolveProcess.format(re.getUnresolvedRequirements()));
+				logger.error(ResolveProcess.format(re, reportOptional));
 				throw re;
 			} finally {
 				report(run);

@@ -65,6 +65,9 @@ public class ExportMojo extends AbstractMojo {
 	private boolean						resolve;
 
 	@Parameter(defaultValue = "true")
+	private boolean						reportOptional;
+
+	@Parameter(defaultValue = "true")
 	private boolean						failOnChanges;
 
 	@Parameter(defaultValue = "false")
@@ -143,7 +146,7 @@ public class ExportMojo extends AbstractMojo {
 					}
 					run.setProperty(Constants.RUNBUNDLES, runBundles);
 				} catch (ResolutionException re) {
-					logger.error("Unresolved requirements: {}", ResolveProcess.format(re.getUnresolvedRequirements()));
+					logger.error(ResolveProcess.format(re, reportOptional));
 					throw re;
 				} finally {
 					report(run);

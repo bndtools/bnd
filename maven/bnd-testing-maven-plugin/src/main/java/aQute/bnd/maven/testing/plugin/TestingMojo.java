@@ -71,6 +71,9 @@ public class TestingMojo extends AbstractMojo {
 	private boolean						resolve;
 
 	@Parameter(defaultValue = "true")
+	private boolean						reportOptional;
+
+	@Parameter(defaultValue = "true")
 	private boolean						failOnChanges;
 
 	@Parameter(defaultValue = "${session}", readonly = true)
@@ -153,7 +156,7 @@ public class TestingMojo extends AbstractMojo {
 					}
 					run.setProperty(Constants.RUNBUNDLES, runBundles);
 				} catch (ResolutionException re) {
-					logger.error("Unresolved requirements: {}", ResolveProcess.format(re.getUnresolvedRequirements()));
+					logger.error(ResolveProcess.format(re, reportOptional));
 					throw re;
 				} finally {
 					report(run);
