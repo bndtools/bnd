@@ -290,7 +290,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (!p.warnings.contains(s))
 			p.warnings.add(s);
 		p.signal();
-		return location(s);
+		return p.location(s);
 	}
 
 	@Override
@@ -303,7 +303,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			String s = formatArrays(string, args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
-			return location(s);
+			return p.location(s);
 		} finally {
 			p.signal();
 		}

@@ -20,7 +20,8 @@
 	osgi.cmpn;version=@6,\
 	slf4j.api;version=latest,\
 	${junit},\
-	${mockito}
+	${mockito},\
+	${assertj}
 
 -testpath: \
     biz.aQute.repository;version=snapshot,\
