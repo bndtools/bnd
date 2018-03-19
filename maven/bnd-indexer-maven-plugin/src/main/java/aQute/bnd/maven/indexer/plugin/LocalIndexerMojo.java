@@ -4,7 +4,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PROCESS_RESOUR
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPOutputStream;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -21,9 +22,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.osgi.repository.ResourcesRepository;
-import aQute.bnd.osgi.repository.XMLResourceGenerator;
-import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.lib.io.IO;
 import aQute.libg.glob.AntGlob;
 
@@ -62,8 +61,6 @@ public class LocalIndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.name", defaultValue = "${project.artifactId}")
 	private String				indexName;
 
-	private boolean				fail;
-
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 
@@ -92,14 +89,13 @@ public class LocalIndexerMojo extends AbstractMojo {
 		logger.debug("URI paths will be relative to: {}", baseFile);
 
 		List<Pattern> includePatterns = includes.stream()
-			.map(s -> AntGlob.toPattern(s))
+			.map(AntGlob::toPattern)
 			.collect(Collectors.toList());
 		List<Pattern> excludePatterns = excludes.stream()
-			.map(s -> AntGlob.toPattern(s))
+			.map(AntGlob::toPattern)
 			.collect(Collectors.toList());
 
-		Set<File> toIndex;
-
+		List<File> toIndex;
 		try {
 			toIndex = Files.find(inputDir.toPath(), Integer.MAX_VALUE, (p, a) -> {
 				String path = p.toString();
@@ -111,70 +107,29 @@ public class LocalIndexerMojo extends AbstractMojo {
 						.anyMatch(e -> e.matcher(path)
 							.matches());
 			})
-				.map(p -> p.toFile())
-				.collect(Collectors.toSet());
+				.sorted()
+				.distinct()
+				.map(Path::toFile)
+				.collect(Collectors.toList());
 		} catch (IOException ioe) {
 			throw new MojoExecutionException(ioe.getMessage(), ioe);
 		}
 
 		logger.debug("Included files: {}", toIndex);
 
-		BaseFileURLResolver baseFileURLResolver = new BaseFileURLResolver();
-		ResourcesRepository resourcesRepository = new ResourcesRepository();
-		XMLResourceGenerator xmlResourceGenerator = new XMLResourceGenerator();
-
-		for (File file : toIndex) {
-			ResourceBuilder resourceBuilder = new ResourceBuilder();
-			try {
-				resourceBuilder.addFile(file, baseFileURLResolver.resolver(file));
-			} catch (Exception e) {
-				throw new MojoExecutionException(e.getMessage(), e);
-			}
-			resourcesRepository.add(resourceBuilder.build());
-		}
-
 		try {
 			IO.mkdirs(outputFile.getParentFile());
-			xmlResourceGenerator.name(indexName)
-				.repository(resourcesRepository)
-				.save(outputFile);
+			SimpleIndexer.index(toIndex, IO.outputStream(outputFile), baseFile.toURI(), false, indexName);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
-		if (fail) {
-			throw new MojoExecutionException("One or more URI lookups failed");
-		}
 
 		if (includeGzip) {
-			File gzipOutputFile = new File(outputFile.getPath() + ".gz");
-			try {
-				xmlResourceGenerator.save(gzipOutputFile);
+			File gzipOutputFile = new File(outputFile.getAbsolutePath() + ".gz");
+			try (OutputStream out = new GZIPOutputStream(IO.outputStream(gzipOutputFile))) {
+				IO.copy(outputFile, out);
 			} catch (Exception e) {
-				throw new MojoExecutionException("Unable to create the gzipped output file");
-			}
-		}
-
-	}
-
-	class BaseFileURLResolver {
-		public URI resolver(File file) throws Exception {
-			try {
-				logger.debug("Resolving {} relative to {}", file.getAbsolutePath(), baseFile.getAbsolutePath());
-				Path relativePath = baseFile.getAbsoluteFile()
-					.toPath()
-					.relativize(file.getAbsoluteFile()
-						.toPath());
-				logger.debug("Relative Path is: {}", relativePath);
-				// Note that relativePath.toURI() gives the wrong answer for us!
-				// We have to do some Windows related mashing here too :(
-				URI relativeURI = URI.create(relativePath.toString()
-					.replace(File.separatorChar, '/'));
-				logger.debug("Relative URI is: {}", relativeURI);
-				return relativeURI;
-			} catch (Exception e) {
-				logger.error("Exception resolving URI", e);
-				fail = true;
-				throw e;
+				throw new MojoExecutionException("Unable to create the gzipped output file", e);
 			}
 		}
 	}
