@@ -7,6 +7,8 @@ import aQute.lib.io.IO
 /* Configure the subprojects */
 subprojects {
   if (plugins.hasPlugin('biz.aQute.bnd')) {
+    group bnd('-groupid')
+    version bnd('base-version')
     /* test folders are not part of jar but used by unit tests  */
     def testfolders = ['testresources/', 'testdata/']
     jar {

@@ -54,6 +54,7 @@ Git-SHA:                  ${system-allow-fail;git rev-list -1 --no-abbrev-commit
 # Extra Headers
 build.version:            ${base-version}.${tstamp}
 Bundle-Version:           ${build.version}
+-groupid:                 org.bndtools
 Bundle-Vendor:            Bndtools http://bndtools.org/
 copyright:				  Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
 Bundle-Copyright:         ${copyright}
