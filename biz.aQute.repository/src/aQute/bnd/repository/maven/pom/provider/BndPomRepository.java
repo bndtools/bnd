@@ -62,6 +62,7 @@ public class BndPomRepository extends BaseRepository
 	private Registry			registry;
 	private String				name;
 	private Reporter			reporter			= new Slf4jReporter(BndPomRepository.class);
+	private File				localRepo;
 	private InnerRepository		repoImpl;
 	private List<Revision>		revisions;
 	private BridgeRepository	bridge;
@@ -78,7 +79,7 @@ public class BndPomRepository extends BaseRepository
 
 			Workspace workspace = registry.getPlugin(Workspace.class);
 			HttpClient client = registry.getPlugin(HttpClient.class);
-			File localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
+			localRepo = IO.getFile(configuration.local(MAVEN_REPO_LOCAL));
 			File location = workspace.getFile(getLocation());
 
 			List<MavenBackingRepository> release = MavenBackingRepository.create(configuration.releaseUrls(), reporter,
@@ -274,7 +275,8 @@ public class BndPomRepository extends BaseRepository
 
 	@Override
 	public String toString() {
-		return name;
+		return "BndPomRepository [name=" + getName() + ", localRepo=" + localRepo + ", location=" + getLocation()
+			+ ", inited=" + inited + "]";
 	}
 
 	@Override
