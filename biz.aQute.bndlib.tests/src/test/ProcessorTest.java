@@ -1,5 +1,7 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -15,6 +17,7 @@ import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.lib.strings.Strings;
+import aQute.service.reporter.Reporter.SetLocation;
 import junit.framework.TestCase;
 
 public class ProcessorTest extends TestCase {
@@ -185,6 +188,51 @@ public class ProcessorTest extends TestCase {
 			assertTrue(!found.isEmpty());
 
 			assertTrue(p.check(fixup));
+		}
+	}
+
+	// Thin wrapper around Processor in order to make some
+	// of the protected methods public to facilitate
+	// testing.
+	static class SeethroughProcessor extends Processor {
+		@Override
+		// This method is protected in the superclass,
+		// overriding only to make it public for testing.
+		public Processor beginHandleErrors(String message) {
+			return super.beginHandleErrors(message);
+		}
+
+		@Override
+		// This method is protected in the superclass,
+		// overriding only to make it public for testing.
+		public void endHandleErrors(Processor previous) {
+			super.endHandleErrors(previous);
+		}
+	}
+
+	public void testBeginEndHandleErrors() throws IOException {
+		try (Processor sub = new Processor(); SeethroughProcessor owner = new SeethroughProcessor()) {
+			Processor previous = owner.beginHandleErrors("dummy");
+			final String ERROR = "Error", WARNING = "Warning";
+			SetLocation eLoc = sub.error(ERROR);
+			SetLocation wLoc = sub.warning(WARNING);
+			owner.endHandleErrors(previous);
+			assertThat(owner.getErrors()).as("owner errors")
+				.containsExactly(ERROR);
+			assertThat(sub.getErrors()).as("sub errors")
+				.isEmpty();
+			assertThat(owner.getLocation(ERROR)).as("owner error loc")
+				.isSameAs(eLoc);
+			assertThat(sub.getLocation(ERROR)).as("sub error loc")
+				.isNull();
+			assertThat(owner.getWarnings()).as("owner warnings")
+				.containsExactly(WARNING);
+			assertThat(sub.getWarnings()).as("sub warnings")
+				.isEmpty();
+			assertThat(owner.getLocation(WARNING)).as("owner warning loc")
+				.isSameAs(wLoc);
+			assertThat(sub.getLocation(WARNING)).as("sub warning loc")
+				.isNull();
 		}
 	}
 
