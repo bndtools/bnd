@@ -59,6 +59,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,7 +103,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
 	static ThreadLocal<Processor>					current				= new ThreadLocal<>();
-	private final static ScheduledExecutorService	sheduledExecutor;
+	private final static ScheduledExecutorService	scheduledExecutor;
 	private final static ExecutorService			executor;
 	static {
 		ThreadFactory threadFactory = Executors.defaultThreadFactory();
@@ -131,8 +132,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					}
 				}
 			});
-		sheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory);
+		scheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory);
 	}
+	private static PromiseFactory				promiseFactory			= new PromiseFactory(executor,
+		scheduledExecutor);
 	static Random								random					= new Random();
 	// TODO handle include files out of date
 	public final static String					LIST_SPLITTER			= "\\s*,\\s*";
@@ -769,6 +772,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	protected void setTypeSpecificPlugins(Set<Object> list) {
 		list.add(getExecutor());
+		list.add(getPromiseFactory());
 		list.add(random);
 		list.addAll(basicPlugins);
 	}
@@ -2227,7 +2231,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static ScheduledExecutorService getScheduledExecutor() {
-		return sheduledExecutor;
+		return scheduledExecutor;
+	}
+
+	public static PromiseFactory getPromiseFactory() {
+		return promiseFactory;
 	}
 
 	/**
