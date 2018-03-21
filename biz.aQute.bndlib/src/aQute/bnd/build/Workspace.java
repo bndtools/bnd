@@ -614,7 +614,7 @@ public class Workspace extends Processor {
 			list.add(new RunbundlesExporter());
 
 			try {
-				HttpClient client = new HttpClient(getExecutor(), getScheduledExecutor());
+				HttpClient client = new HttpClient();
 				client.setOffline(getOffline());
 				client.setRegistry(this);
 				try (ConnectionSettings cs = new ConnectionSettings(this, client)) {
