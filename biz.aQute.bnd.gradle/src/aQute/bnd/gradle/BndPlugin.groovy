@@ -162,7 +162,7 @@ public class BndPlugin implements Plugin<Project> {
             compilerArgs.addAll(['-profile', javacProfile])
           }
           if (JavaVersion.current().isJava9Compatible()) {
-            if ((sourceCompatibility == targetCompatibility) && !bootClasspath && javacProfile.empty) {
+            if ((sourceCompatibility == targetCompatibility) && javacBootclasspath.empty && javacProfile.empty) {
               compilerArgs.addAll(['--release', JavaVersion.toVersion(sourceCompatibility).majorVersion])
             }
           }
@@ -176,8 +176,14 @@ public class BndPlugin implements Plugin<Project> {
               logger.info '-source {} -target {} {}', sourceCompatibility, targetCompatibility, options.compilerArgs.join(' ')
             }
             logger.info '-classpath {}', classpath.asPath
-            if (options.bootClasspath != null) {
-              logger.info '-bootclasspath {}', options.bootClasspath
+            if (options.hasProperty('bootstrapClasspath')) { // gradle 4.3
+              if (options.bootstrapClasspath != null) {
+                logger.info '-bootclasspath {}', options.bootstrapClasspath.asPath
+              }
+            } else {
+              if (options.bootClasspath != null) {
+                logger.info '-bootclasspath {}', options.bootClasspath
+              }
             }
           }
         }
