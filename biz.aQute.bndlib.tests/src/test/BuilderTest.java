@@ -886,6 +886,9 @@ public class BuilderTest extends BndTestCase {
 				"eclipse_1_8", "JavaSE-1.8", "1.8"
 			}, {
 				"eclipse_9_0", "JavaSE-9", "9.0"
+			// }, {
+				// TODO add JavaSE-10 test info for Eclipse
+				// "eclipse_10_0", "JavaSE-10", "10.0"
 			}, {
 				"sun_1_1", "JRE-1.1", "1.1"
 			}, {
@@ -904,8 +907,9 @@ public class BuilderTest extends BndTestCase {
 				"sun_1_8", "JavaSE-1.8", "1.8"
 			}, {
 				"jdk_9_0", "JavaSE-9", "9.0"
+			}, {
+				"jdk_10_0", "JavaSE-10", "10.0"
 			}
-			// TODO add JavaSE-10 test info for JDK and Eclipse
 		};
 		Pattern p = Pattern.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=(" + Version.VERSION_STRING + ")\\)\\)");
 		for (int i = 0; i < combos.length; i++) {
