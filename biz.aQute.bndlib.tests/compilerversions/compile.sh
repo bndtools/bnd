@@ -25,6 +25,7 @@
 # javac -target 1.7 -source 1.7 -cp src src/sun_1_7/*.java
 # javac -target 1.8 -source 1.8 -cp src src/sun_1_8/*.java
 # javac -target 9 -source 9 -cp src src/jdk_9_0/*.java
+# javac --release 10 -cp src src/jdk_10_0/*.java
 
 # java -jar ../jar/ecj_3.2.2.jar -target 1.1 -source 1.3 -cp src src/eclipse_1_1/*.java
 # java -jar ../jar/ecj_3.2.2.jar -target 1.2 -source 1.3 -cp src src/eclipse_1_2/*.java
