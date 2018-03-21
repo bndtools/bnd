@@ -182,7 +182,7 @@ public class ReposTemplateLoader implements TemplateLoader {
             repo.setRegistry(workspace);
         } else {
             Processor p = new Processor();
-            p.addBasicPlugin(new HttpClient(promiseFactory.executor(), promiseFactory.scheduledExecutor()));
+            p.addBasicPlugin(new HttpClient());
             repo.setRegistry(p);
         }
         Map<String, String> map = new HashMap<>();
