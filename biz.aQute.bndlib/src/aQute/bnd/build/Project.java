@@ -320,8 +320,21 @@ public class Project extends Processor {
 						continue;
 					}
 
-					if (!dir.isDirectory()) {
-						IO.mkdirs(dir);
+					if (!dir.exists()) {
+						try {
+							IO.mkdirs(dir);
+						} catch (Exception ex) {
+							exception(ex, "could not create src directory (in src property) %s", dir)
+								.header(Constants.DEFAULT_PROP_SRC_DIR)
+								.context(e.getKey());
+							continue;
+						}
+						if (!dir.exists()) {
+							error("could not create src directory (in src property) %s", dir)
+								.header(Constants.DEFAULT_PROP_SRC_DIR)
+								.context(e.getKey());
+							continue;
+						}
 					}
 
 					if (dir.isDirectory()) {
