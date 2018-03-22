@@ -6,11 +6,6 @@ jdk:
   - oraclejdk8
   - oraclejdk9
 
-matrix:
-  fast_finish: true
-  allow_failures:
-    - jdk: oraclejdk9
-
 before_install:
   - unset _JAVA_OPTIONS
   - rvm --version
