@@ -302,25 +302,12 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      task('testOSGi') {
+      task('testOSGi', type: TestOSGi) {
         description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
         group 'verification'
         enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
-        ext.ignoreFailures = false
         inputs.files jar
-        outputs.dir({ new File(testResultsDir, name) }).withPropertyName('testResults')
-        doLast {
-          try {
-            bndProject.test(new File(testResultsDir, name), null)
-          } catch (Exception e) {
-            throw new GradleException("Project ${bndProject.getName()} failed to test", e)
-          }
-          checkErrors(logger, ignoreFailures)
-        }
-      }
-
-      check {
-        dependsOn testOSGi
+        bndrun = bndProject.getPropertiesFile()
       }
 
       task('checkNeeded') {

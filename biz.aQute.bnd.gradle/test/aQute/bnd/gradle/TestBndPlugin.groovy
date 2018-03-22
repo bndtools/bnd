@@ -29,6 +29,7 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
+          result.task(':test.simple:jar').outcome == SUCCESS
           result.task(':test.simple:test').outcome == SUCCESS
           result.task(':test.simple:testOSGi').outcome == SUCCESS
           result.task(':test.simple:check').outcome == SUCCESS
@@ -208,6 +209,7 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
+          result.task(':test.simple:jar').outcome == SUCCESS
           result.task(':test.simple:test').outcome == SUCCESS
           result.task(':test.simple:testOSGi').outcome == SUCCESS
           result.task(':test.simple:check').outcome == SUCCESS
@@ -250,6 +252,7 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
+          result.task(':test.simple:jar').outcome == SUCCESS
           result.task(':test.simple:test').outcome == SUCCESS
           result.task(':test.simple:testOSGi').outcome == SUCCESS
           result.task(':test.simple:check').outcome == SUCCESS
@@ -294,6 +297,7 @@ class TestBndPlugin extends Specification {
         then:
           result.task(':build').outcome == SUCCESS
           result.task(':workspace:build').outcome == SUCCESS
+          result.task(':workspace:test.simple:jar').outcome == SUCCESS
           result.task(':workspace:test.simple:test').outcome == SUCCESS
           result.task(':workspace:test.simple:testOSGi').outcome == SUCCESS
           result.task(':workspace:test.simple:check').outcome == SUCCESS
