@@ -26,10 +26,12 @@
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'</li>
+ * 'configurations.archives.artifacts.files'.</li>
  * <li>resultsDir (read only) - This is the directory 
  * where the test case results are placed.
- * The value is project.testResultsDir/name</li>
+ * The value is project.testResultsDir/name.</li>
+ * <li>tests - The test class names to be run.
+ * If not set, all test classes are run.</li>
  * </ul>
  */
 
@@ -47,7 +49,9 @@ import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
 
 public class TestOSGi extends DefaultTask {
   /**
@@ -63,6 +67,7 @@ public class TestOSGi extends DefaultTask {
 
   private File workingDir
   private File bndrun
+  private List<String> tests
   private final Workspace bndWorkspace
 
   /**
@@ -127,6 +132,25 @@ public class TestOSGi extends DefaultTask {
     return new File(project.testResultsDir, name)
   }
 
+
+  /**
+   * Configures the test class names to be run.
+   */
+  @Option(option = "tests", description = "Configures the test class names to be run.")
+  public void setTests(List<String> tests) {
+      this.tests = tests
+  }
+
+  /**
+   * Return the test class names to be run.
+   * If not set, all test classes are run.
+   */
+  @Input
+  @Optional
+  public List<String> getTests() {
+      return tests;
+  }
+
   /**
    * Test the bndrun file.
    *
@@ -167,7 +191,7 @@ public class TestOSGi extends DefaultTask {
   void testWorker(Project run) {
     try {
       logger.info 'Running tests for {} in {}', run.getPropertiesFile(), run.getBase()
-      run.test(resultsDir, null);
+      run.test(resultsDir, tests);
     } finally {
       logReport(run, logger)
     }

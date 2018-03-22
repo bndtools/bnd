@@ -469,7 +469,7 @@ task testOSGi(type: TestOSGi) {
   bndrun 'my.bndrun'
 }
 ```
-There are four properties which can be configured for a TestOSGi task:
+There are five properties which can be configured for a TestOSGi task:
 
 ### ignoreFailures
 
@@ -492,6 +492,14 @@ The directory for the test execution. The default is _${temporaryDir}_.
 The collection of files to use for locating bundles during the
 bndrun execution. The default is _${project.sourceSets.main.runtimeClasspath}_
 plus _${project.configurations.archives.artifacts.files}_.
+
+### tests
+
+The list of fully qualified names of test classes to run. If not set, or empty,
+Then all the test classes listed in the `Test-Classes` manifest header are
+run. In Gradle 4.6 and later, the `--tests` command line option can be used
+to set the fully qualified name of a test class to run. This can be repeated
+multiple times to specify multiple test classes to run.
 
 ## Create a task of the `Index` type
 

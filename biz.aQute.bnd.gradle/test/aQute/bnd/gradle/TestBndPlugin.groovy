@@ -58,7 +58,7 @@ class TestBndPlugin extends Specification {
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
 
-          result.output =~ Pattern.quote('### Project workspaceplugin1 has BndWorkspacePlugin applied')
+          result.output =~ Pattern.quote("### Project ${testProject} has BndWorkspacePlugin applied")
           result.output =~ Pattern.quote('### Project test.simple has BndPlugin applied')
     }
 
@@ -325,8 +325,54 @@ class TestBndPlugin extends Specification {
           File release_jar = new File(testProjectDir, 'workspace/cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
 
-          result.output =~ Pattern.quote('### Project workspaceplugin8 : is rootProject')
+          result.output =~ Pattern.quote("### Project ${testProject} : is rootProject")
           result.output =~ Pattern.quote('### Project workspace :workspace Workspace [workspace]')
 
     }
+
+    def "Bnd Workspace Plugin TestOSGi tests option"() {
+        given:
+          String testProject = 'workspaceplugin9'
+          File testProjectDir = new File(testResources, testProject)
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = TestHelper.getGradleRunner()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--debug', 'check')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':test.simple:jar').outcome == SUCCESS
+          result.task(':test.simple:test').outcome == SUCCESS
+          result.task(':test.simple:testOSGi').outcome == SUCCESS
+          result.task(':test.simple:check').outcome == SUCCESS
+
+          File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
+          simple_bundle.isFile()
+
+          JarFile simple_jar = new JarFile(simple_bundle)
+          Attributes simple_manifest = simple_jar.getManifest().getMainAttributes()
+          simple_manifest.getValue('Bundle-SymbolicName') == 'test.simple'
+          simple_manifest.getValue('Bundle-Version') =~ /0\.0\.0\./
+          simple_manifest.getValue('Foo') == 'foo'
+          simple_manifest.getValue('Bar') == 'bar'
+          simple_manifest.getValue('Import-Package') =~ /junit\.framework/
+          simple_manifest.getValue('Test-Cases') =~ /test\.simple\.Test/
+          simple_manifest.getValue('Test-Cases') =~ /test\.simple\.FailingTest/
+          simple_jar.getEntry('test/simple/Simple.class')
+          simple_jar.getEntry('test/simple/Test.class')
+          simple_jar.getEntry('test/simple/FailingTest.class')
+          simple_jar.getEntry('OSGI-OPT/src/')
+          simple_jar.getEntry('test.txt')
+          simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a project resource/
+          simple_jar.getEntry('test/simple/test.txt')
+          simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a package resource/
+          simple_jar.close()
+
+          result.output =~ Pattern.quote("### Project ${testProject} has BndWorkspacePlugin applied")
+          result.output =~ Pattern.quote('### Project test.simple has BndPlugin applied')
+    }
+
 }

@@ -25,7 +25,7 @@
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'</li>
+ * 'configurations.archives.artifacts.files'.</li>
  * <li>reportOptional - If true failure reports will include
  * optional requirements. The default is true.</li>
  * </ul>
