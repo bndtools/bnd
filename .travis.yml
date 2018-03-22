@@ -4,19 +4,12 @@ language: java
 
 jdk:
   - oraclejdk8
+  - oraclejdk9
 
-# required for oraclejdk9
-#sudo: required
-#dist: trusty
-#group: edge
-#
-#matrix:
-#  fast_finish: true
-#  include:
-#    - jdk: oraclejdk9
-#      env: MAVEN_SKIP_RC=true
-#  allow_failures:
-#    - jdk: oraclejdk9
+matrix:
+  fast_finish: true
+  allow_failures:
+    - jdk: oraclejdk9
 
 before_install:
   - unset _JAVA_OPTIONS
