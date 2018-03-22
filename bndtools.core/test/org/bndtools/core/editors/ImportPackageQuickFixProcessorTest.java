@@ -376,8 +376,8 @@ public class ImportPackageQuickFixProcessorTest {
      *            number of elements in this array will match the number of "`'" pairs in the marked source.
      * @return The {@link List} of {@link IProblemLocation} objects that correspond to the markers in the source.
      */
-    private List<IProblemLocation> getProblems(String markedSource, int... problemIds) {
-        List<IProblemLocation> problems = new ArrayList<>(10);
+    private List<IProblemLocation> getProblems(String markedSource, IProblemLocation... srcProblems) {
+        List<IProblemLocation> problems = new ArrayList<>(srcProblems.length);
         StringBuilder source = new StringBuilder(markedSource.length());
         Deque<Integer> starts = new ArrayDeque<>();
 
@@ -392,8 +392,9 @@ public class ImportPackageQuickFixProcessorTest {
                 case '\'' :
                     int currentStart = starts.isEmpty() ? 0 : starts.pop();
                     assertThat(problemIndex).as("getProblems() problem count")
-                        .isLessThan(problemIds.length);
-                    problems.add(new ProblemLocation(currentStart, j - currentStart, problemIds[problemIndex++], new String[0], true, JDT_PROBLEM));
+                        .isLessThan(srcProblems.length);
+                    final IProblemLocation srcProb = srcProblems[problemIndex++];
+                    problems.add(new ProblemLocation(currentStart, j - currentStart, srcProb.getProblemId(), srcProb.getProblemArguments(), srcProb.isError(), srcProb.getMarkerType()));
                     break;
                 default :
                     source.append(current);
@@ -402,9 +403,17 @@ public class ImportPackageQuickFixProcessorTest {
             }
         }
         assertThat(problems).as("getProblems() array length")
-            .hasSize(problemIds.length);
+            .hasSize(srcProblems.length);
         setupAST(source.toString());
         return problems;
+    }
+
+    private List<IProblemLocation> getProblems(String markedSource, int... problemIds) {
+        IProblemLocation[] srcProblems = new IProblemLocation[problemIds.length];
+        for (int i = 0; i < problemIds.length; i++) {
+            srcProblems[i] = new ProblemLocation(0, 0, problemIds[i], new String[0], true, JDT_PROBLEM);
+        }
+        return getProblems(markedSource, srcProblems);
     }
 
     // If there are no markers in the source, wrap the whole string in a pair of markers.
@@ -462,6 +471,11 @@ public class ImportPackageQuickFixProcessorTest {
     @Test
     public void hasCorrections_withProblemIdUndefinedType_returnsTrue() {
         assertThat(sut.hasCorrections(null, UndefinedType)).isTrue();
+    }
+
+    @Test
+    public void hasCorrections_withProblemIdIsClassPathCorrect_returnsTrue() {
+        assertThat(sut.hasCorrections(null, IsClassPathCorrect)).isTrue();
     }
 
     @Test
@@ -812,6 +826,66 @@ public class ImportPackageQuickFixProcessorTest {
         AddBundleCompletionProposal[] props = proposalsForImport("`my.workspace.only.pkg'.*");
         assertThat(props).hasSize(1)
             .haveExactly(1, allOf(suggestsBundle("my.eclipse.bundle"), withRelevance(ADD_BUNDLE_WORKSPACE)));
+    }
+
+    @Test
+    public void getCorrections_forIsClassPath_suggestsBundle() {
+        List<IProblemLocation> locs = getProblems("public class Test { Test2 test = new `Test2()'; }", new ProblemLocation(0, 0, IsClassPathCorrect, new String[] {
+            "org.osgi.framework.Clazz"
+        }, true, JDT_PROBLEM));
+
+        assertThatContainsFrameworkBundles(proposalsFor(locs));
+    }
+
+    @Test
+    public void getCorrections_forIsClassPath_withLowerCaseClass_suggestsBundle() {
+        List<IProblemLocation> locs = getProblems("public class Test { Test2 test = new `Test2()'; }", new ProblemLocation(0, 0, IsClassPathCorrect, new String[] {
+            "org.osgi.framework.clazz"
+        }, true, JDT_PROBLEM));
+
+        assertThatContainsFrameworkBundles(proposalsFor(locs));
+    }
+
+    @Test
+    public void getCorrections_forIsClassPath_withClassInMainNamespace_returnsNull() {
+        List<IProblemLocation> locs = getProblems("package other; public class Test { Test2 test = new `Test2()'; }", new ProblemLocation(0, 0, IsClassPathCorrect, new String[] {
+            "Test"
+        }, true, JDT_PROBLEM));
+        assertThat(proposalsFor(locs)).isNull();
+    }
+
+    @Test
+    public void getCorrections_forIsClassPath_withLowerCaseClassInMainNamespace_returnsNull() {
+        List<IProblemLocation> locs = getProblems("package other; public class Test { Test2 test = new `Test2()'; }", new ProblemLocation(0, 0, IsClassPathCorrect, new String[] {
+            "test"
+        }, true, JDT_PROBLEM));
+        assertThat(proposalsFor(locs)).isNull();
+    }
+
+    // These next three types are paranoia checks, because I'm not quite sure how Eclipse will behave in all
+    // circumstances, so I'm being defensive.
+    @Test
+    public void getCorrections_forIsClassPath_withEmptyArgs_returnsNullGracefully() {
+        List<IProblemLocation> locs = getProblems("public class Test { Test2 test = new `Test2()'; }", new ProblemLocation(0, 0, IsClassPathCorrect, new String[0], true, JDT_PROBLEM));
+
+        assertThat(proposalsFor(locs)).isNull();
+    }
+
+    @Test
+    public void getCorrections_forIsClassPath_withBadType_returnsNullGracefully_andLogsWarning() {
+        List<IProblemLocation> locs = getProblems("package other; public class Test { Test2 test = new `Test2()'; }", new ProblemLocation(0, 0, IsClassPathCorrect, new String[] {
+            "invalid type/string"
+        }, true, JDT_PROBLEM));
+
+        assertThat(proposalsFor(locs)).isNull();
+        verify(logger).logWarning(eq("Illegal type 'invalid type/string'"), any(IllegalArgumentException.class));
+    }
+
+    @Test
+    public void getCorrections_forIsClassPath_withMissingArgs_returnsNullGracefully() {
+        List<IProblemLocation> locs = getProblems("public class Test { Test2 test = new `Test2()'; }", new ProblemLocation(0, 0, IsClassPathCorrect, null, true, JDT_PROBLEM));
+
+        assertThat(proposalsFor(locs)).isNull();
     }
 
     @Test
