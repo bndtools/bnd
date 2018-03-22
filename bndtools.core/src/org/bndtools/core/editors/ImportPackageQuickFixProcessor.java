@@ -79,8 +79,8 @@ public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
 
     @Override
     public boolean hasCorrections(ICompilationUnit unit, int problemId) {
-
         switch (problemId) {
+            case IProblem.IsClassPathCorrect :
             case IProblem.ImportNotFound :
             case IProblem.UndefinedType :
                 return true;
@@ -464,6 +464,27 @@ public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
         return skipClasses(name);
     }
 
+    private Name getPackageFromIsClassPathCorrect(IInvocationContext context, IProblemLocation location) {
+        String[] args = location.getProblemArguments();
+        if (args == null || args.length == 0) {
+            return null;
+        }
+        try {
+            Name name = context.getASTRoot()
+                .getAST()
+                .newName(args[0]);
+
+            if (name.isSimpleName()) {
+                return null;
+            }
+
+            return skipClasses(((QualifiedName) name).getQualifier());
+        } catch (IllegalArgumentException e) {
+            logger.logWarning(Strings.format("Illegal type '%s'", args[0]), e);
+            return null;
+        }
+    }
+
     @Override
     public IJavaCompletionProposal[] getCorrections(IInvocationContext context, IProblemLocation[] locations) throws CoreException {
         Set<String> pkgs = new HashSet<>(locations.length * 2 + 1);
@@ -471,6 +492,9 @@ public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
         for (IProblemLocation location : locations) {
             Name name;
             switch (location.getProblemId()) {
+                case IProblem.IsClassPathCorrect :
+                    name = getPackageFromIsClassPathCorrect(context, location);
+                    break;
                 case IProblem.ImportNotFound :
                     name = getPackageFromImportNotFound(context, location);
                     break;
