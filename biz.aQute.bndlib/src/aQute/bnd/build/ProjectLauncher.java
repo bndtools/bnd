@@ -288,6 +288,8 @@ public abstract class ProjectLauncher extends Processor {
 			java.add("-Xrunjdwp:server=y,transport=dt_socket,address=" + Math.abs(port) + ",suspend=" + suspend);
 		}
 
+		java.addAll(split(System.getenv("JAVA_OPTS"), "\\s+"));
+
 		java.add("-cp");
 		java.add(Processor.join(getClasspath(), File.pathSeparator));
 		java.addAll(getRunVM());
