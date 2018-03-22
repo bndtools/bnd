@@ -1,5 +1,8 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Offset.strictOffset;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -138,8 +141,8 @@ public class JarTest extends TestCase {
 		long now = System.currentTimeMillis();
 
 		// Sanity check
-		assertTrue(jarTime < fileTime);
-		assertTrue(fileTime <= now);
+		assertThat(jarTime).isLessThan(fileTime);
+		assertThat(fileTime).isLessThanOrEqualTo(now);
 
 		// TODO see if we can improve this test case
 		// // We should use the highest modification time
@@ -150,7 +153,12 @@ public class JarTest extends TestCase {
 		// Now add the file and check that
 		// the modification time has changed
 		jar.putResource("asm", new FileResource(file));
-		assertEquals(file.lastModified(), jar.lastModified());
+		assertThat(jarTime).isLessThan(jar.lastModified());
+
+		// On some file systems, File.lastModified and
+		// BasicFileAttributes.lastModifiedTime can produce values which vary in
+		// the sub-second milliseconds.
+		assertThat(jar.lastModified()).isCloseTo(file.lastModified(), strictOffset(1000L));
 	}
 
 	public static void testNewLine() throws Exception {
