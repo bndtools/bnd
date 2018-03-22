@@ -47,7 +47,6 @@ import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
-import aQute.bnd.osgi.Constants
 import aQute.bnd.service.RepositoryPlugin
 
 import org.gradle.api.DefaultTask

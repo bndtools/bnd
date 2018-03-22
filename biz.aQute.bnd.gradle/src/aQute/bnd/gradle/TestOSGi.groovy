@@ -38,8 +38,8 @@ package aQute.bnd.gradle
 import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
+import aQute.bnd.build.Project
 import aQute.bnd.build.Workspace
-import aQute.bnd.osgi.Constants
 import aQute.bnd.service.RepositoryPlugin
 
 import org.gradle.api.DefaultTask
@@ -63,6 +63,7 @@ public class TestOSGi extends DefaultTask {
 
   private File workingDir
   private File bndrun
+  private final Workspace bndWorkspace
 
   /**
    * Create a TestOSGi task.
@@ -70,9 +71,12 @@ public class TestOSGi extends DefaultTask {
    */
   public TestOSGi() {
     super()
+    bndWorkspace = project.findProperty('bndWorkspace')
     ignoreFailures = false
     workingDir = temporaryDir
-    convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    if (bndWorkspace == null) {
+      convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    }
     project.check.dependsOn this
   }
 
@@ -129,33 +133,46 @@ public class TestOSGi extends DefaultTask {
    */
   @TaskAction
   void testOSGi() {
-    project.mkdir(workingDir)
-    File cnf = new File(temporaryDir, Workspace.CNFDIR)
-    project.mkdir(cnf)
-    Run.createRun(null, bndrun).withCloseable { Run run ->
+    Workspace workspace = bndWorkspace
+    if (workspace != null && bndrun == project.bnd.project.getPropertiesFile()) {
+      testWorker(project.bnd.project)
+      return
+    }
+    Run.createRun(workspace, bndrun).withCloseable { Run run ->
+      Workspace runWorkspace = run.getWorkspace()
+      project.mkdir(workingDir)
       run.setBase(workingDir)
-      Workspace workspace = run.getWorkspace()
-      workspace.setBuildDir(cnf)
-      workspace.setOffline(project.gradle.startParameter.offline)
-      workspace.addBasicPlugin(getFileSetRepository(name))
-      logger.info 'Running tests for {} in {}', run.getPropertiesFile(), workingDir.absolutePath
-      for (RepositoryPlugin repo : workspace.getRepositories()) {
-        repo.list(null)
+      if (run.isStandalone()) {
+        runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
+        File cnf = new File(temporaryDir, Workspace.CNFDIR)
+        project.mkdir(cnf)
+        runWorkspace.setBuildDir(cnf)
+        if (convention.findPlugin(FileSetRepositoryConvention)) {
+          runWorkspace.addBasicPlugin(getFileSetRepository(name))
+          for (RepositoryPlugin repo : runWorkspace.getRepositories()) {
+            repo.list(null)
+          }
+        }
       }
-      run.getInfo(workspace)
+      run.getInfo(runWorkspace)
       logReport(run, logger)
       if (!run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} standalone workspace errors")
+        throw new GradleException("${run.getPropertiesFile()} workspace errors")
       }
 
-      try {
-        run.test(resultsDir, null);
-      } finally {
-        logReport(run, logger)
-      }
-      if (!ignoreFailures && !run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} test failure")
-      }
+      testWorker(run)
+    }
+  }
+
+  void testWorker(Project run) {
+    try {
+      logger.info 'Running tests for {} in {}', run.getPropertiesFile(), run.getBase()
+      run.test(resultsDir, null);
+    } finally {
+      logReport(run, logger)
+    }
+    if (!ignoreFailures && !run.isOk()) {
+      throw new GradleException("${run.getPropertiesFile()} test failure")
     }
   }
 }
