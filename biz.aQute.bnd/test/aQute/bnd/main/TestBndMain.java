@@ -65,7 +65,7 @@ public class TestBndMain extends TestCase {
 		// validate exported jar content
 		try (Jar result = new Jar(new File(output))) {
 			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
-			expectJarEntry(result, "jar/org.apache.felix.framework-5.2.0.jar");
+			expectJarEntry(result, "jar/org.apache.felix.framework-5.6.10.jar");
 			expectJarEntry(result, "jar/printAndExit-1.0.0.jar");
 		}
 	}
@@ -80,7 +80,7 @@ public class TestBndMain extends TestCase {
 		// validate exported jar content
 		try (Jar result = new Jar(new File(output))) {
 			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
-			expectJarEntry(result, "jar/org.apache.felix.framework-5.2.0.jar");
+			expectJarEntry(result, "jar/org.apache.felix.framework-5.6.10.jar");
 			expectJarEntry(result, "jar/printAndExit-1.0.0.jar");
 		}
 	}
@@ -95,7 +95,7 @@ public class TestBndMain extends TestCase {
 		// validate exported jar content
 		try (Jar result = new Jar(new File(output))) {
 			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
-			expectJarEntry(result, "jar/org.apache.felix.framework-5.2.0.jar");
+			expectJarEntry(result, "jar/org.apache.felix.framework-5.6.10.jar");
 			expectJarEntry(result, "jar/p2.jar");
 		}
 	}
