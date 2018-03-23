@@ -339,7 +339,7 @@ class TestBndPlugin extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'check')
+            .withArguments('--stacktrace', '--debug', 'check', '--exclude-task', 'testOSGi2')
             .forwardOutput()
             .build()
 
@@ -371,8 +371,27 @@ class TestBndPlugin extends Specification {
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a package resource/
           simple_jar.close()
 
-          result.output =~ Pattern.quote("### Project ${testProject} has BndWorkspacePlugin applied")
-          result.output =~ Pattern.quote('### Project test.simple has BndPlugin applied')
+        when:
+          result = TestHelper.getGradleRunner('4.6')
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--debug', 'testOSGi2')
+            .forwardOutput()
+            .buildAndFail()
+
+        then:
+          result.task(':test.simple:jar').outcome == SUCCESS
+          result.task(':test.simple:testOSGi2').outcome == FAILED
+
+        when:
+          result = TestHelper.getGradleRunner('4.6')
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--debug', 'testOSGi2', '--tests=test.simple.Test')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':test.simple:jar').outcome == UP_TO_DATE
+          result.task(':test.simple:testOSGi2').outcome == SUCCESS
     }
 
 }
