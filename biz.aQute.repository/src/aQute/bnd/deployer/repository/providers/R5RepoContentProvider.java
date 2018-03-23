@@ -269,6 +269,11 @@ public class R5RepoContentProvider implements IRepositoryContentProvider {
 			.max()
 			.orElse(-1L);
 
-		SimpleIndexer.index(files, output, baseUri, !pretty, repoName, modified, null);
+		new SimpleIndexer().files(files)
+			.base(baseUri)
+			.compress(!pretty)
+			.name(repoName)
+			.increment(modified)
+			.index(output);
 	}
 }

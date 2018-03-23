@@ -1,12 +1,18 @@
 package aQute.bnd.osgi.repository;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
 
+import org.osgi.resource.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,123 +64,135 @@ public class SimpleIndexer {
 
 	private static final Logger logger = LoggerFactory.getLogger(SimpleIndexer.class);
 
+	private final Set<File>	files		= new LinkedHashSet<>();
+	private Path			base;
+	private boolean			compress	= false;
+	private String			name;
+	private long			increment	= -1L;
+	private FileAnalyzer	analyzer;
+
+	public SimpleIndexer() {}
+
 	/**
+	 * Adds files to be indexed.
+	 * 
 	 * @param files the files to include in the index
-	 * @param out the output stream to write the index file
-	 * @param base the base URI from which the index urls are relative
-	 * @throws Exception if the file cannot be indexed
 	 */
-	public static void index(Collection<File> files, OutputStream out, URI base) throws Exception {
-		index(files, out, base, false, null, -1, null);
+	public SimpleIndexer files(Collection<File> files) {
+		this.files.addAll(requireNonNull(files));
+		return this;
 	}
 
 	/**
-	 * @param files the files to include in the index
-	 * @param out the output stream to write the index file
 	 * @param base the base URI from which the index urls are relative
-	 * @param compress compress with GZIP when true
-	 * @throws Exception if the file cannot be indexed
 	 */
-	public static void index(Collection<File> files, OutputStream out, URI base, boolean compress) throws Exception {
-		index(files, out, base, compress, null, -1, null);
-	}
-
-	/**
-	 * @param files the files to include in the index
-	 * @param out the output stream to write the index file
-	 * @param base the base URI from which the index urls are relative
-	 * @param compress compress with GZIP when true
-	 * @param name an optional name for the index
-	 * @throws Exception if the file cannot be indexed
-	 */
-	public static void index(Collection<File> files, OutputStream out, URI base, boolean compress, String name)
-		throws Exception {
-		index(files, out, base, compress, name, -1, null);
-	}
-
-	/**
-	 * @param files the files to include in the index
-	 * @param outputStream the output stream to write the index file
-	 * @param base the base URI from which the index urls are relative
-	 * @param compress compress with GZIP when true
-	 * @param name an optional name for the index
-	 * @param analyzer a resource analyzer
-	 * @throws Exception if the file cannot be indexed
-	 */
-	public static void index(Collection<File> files, OutputStream outputStream, URI base, boolean compress, String name,
-		FileAnalyzer analyzer) throws Exception {
-
-		index(files, outputStream, base, compress, name, -1, analyzer);
-	}
-
-	/**
-	 * @param files the files to include in the index
-	 * @param outputStream the output stream to write the index file
-	 * @param base the base URI from which the index urls are relative
-	 * @param compress compress with GZIP when true
-	 * @param name an optional name for the index
-	 * @param increment the timestamp of the index
-	 * @param analyzer a resource analyzer
-	 * @throws Exception if the file cannot be indexed
-	 */
-	public static void index(Collection<File> files, OutputStream outputStream, URI base, boolean compress, String name,
-		long increment, FileAnalyzer analyzer) throws Exception {
-
-		Objects.requireNonNull(files, "'files' argument cannot be null");
-		Objects.requireNonNull(outputStream, "'outputStream' argument cannot be null");
-		Objects.requireNonNull(base, "'base' argument cannot be null");
-		Path basePath = base.getScheme()
+	public SimpleIndexer base(URI base) {
+		this.base = requireNonNull(base).getScheme()
 			.equalsIgnoreCase("file")
 				? new File(base).toPath()
 					.toAbsolutePath()
 				: null;
-		ResourcesRepository resourcesRepository = files.stream()
+		return this;
+	}
+
+	/**
+	 * @param compress compress with GZIP when true
+	 */
+	public SimpleIndexer compress(boolean compress) {
+		this.compress = compress;
+		return this;
+	}
+
+	/**
+	 * @param name an optional name for the index
+	 */
+	public SimpleIndexer name(String name) {
+		this.name = name;
+		return this;
+	}
+
+	/**
+	 * @param analyzer a resource analyzer
+	 */
+	public SimpleIndexer analyzer(FileAnalyzer analyzer) {
+		this.analyzer = analyzer;
+		return this;
+	}
+
+	/**
+	 * @param increment the timestamp of the index
+	 */
+	public SimpleIndexer increment(long increment) {
+		this.increment = increment;
+		return this;
+	}
+
+	/**
+	 * Generate the index to the specified output stream.
+	 * 
+	 * @param outputStream the output stream to write the index file
+	 * @throws IOException if a file cannot be indexed
+	 */
+	public void index(OutputStream outputStream) throws IOException {
+		repository().save(requireNonNull(outputStream));
+	}
+
+	/**
+	 * Generate the index to the specified file.
+	 * 
+	 * @param file the file to write the index file
+	 * @throws IOException if a file cannot be indexed
+	 */
+	public void index(File file) throws IOException {
+		repository().save(requireNonNull(file));
+	}
+
+	private XMLResourceGenerator repository() {
+		XMLResourceGenerator repository = new XMLResourceGenerator();
+		files.stream()
 			.filter(f -> f.isFile() && !f.isHidden() && f.canRead())
-			.map(f -> {
-				try {
-					ResourceBuilder resourceBuilder = new ResourceBuilder();
-					if (resourceBuilder.addFile(f, relativize(basePath, f))) {
-						if (analyzer != null) {
-							analyzer.analyzeFile(f, resourceBuilder.safeResourceBuilder());
-						}
-						return resourceBuilder.build();
-					}
-				} catch (Exception e) {
-					logger.error("Could not index file {}", f, e);
-				}
-				return null;
-			})
-			.collect(ResourcesRepository.toResourcesRepository());
-
-		XMLResourceGenerator repository = new XMLResourceGenerator().repository(resourcesRepository);
-
+			.map(this::indexFile)
+			.filter(Objects::nonNull)
+			.forEachOrdered(repository::resource);
 		if (name != null) {
 			repository.name(name);
 		}
-
 		if (increment > -1) {
 			repository.increment(increment);
 		}
-
 		if (compress) {
 			repository.compress();
 		}
-
-		repository.save(outputStream);
+		return repository;
 	}
-	
-	private static URI relativize(Path basePath, File file) {
-		if (basePath == null) {
+
+	private Resource indexFile(File file) {
+		try {
+			ResourceBuilder resourceBuilder = new ResourceBuilder();
+			if (resourceBuilder.addFile(file, relativize(file))) {
+				if (analyzer != null) {
+					analyzer.analyzeFile(file, resourceBuilder.safeResourceBuilder());
+				}
+				return resourceBuilder.build();
+			}
+		} catch (Exception e) {
+			logger.error("Could not index file {}", file, e);
+		}
+		return null;
+	}
+
+	private URI relativize(File file) {
+		if (base == null) {
 			return file.toURI();
 		}
 		Path filePath = file.toPath()
 			.toAbsolutePath();
-		Path relativePath = basePath.relativize(filePath);
+		Path relativePath = base.relativize(filePath);
 		// Note that relativePath.toURI() gives the wrong answer for us!
 		// We have to do some Windows related mashing here too :(
 		URI relativeURI = URI.create(relativePath.toString()
 			.replace(File.separatorChar, '/'));
-		logger.debug("Resolving {} relative to {}; Relative Path: {}, URI: {}", filePath, basePath, relativePath,
+		logger.debug("Resolving {} relative to {}; Relative Path: {}, URI: {}", filePath, base, relativePath,
 			relativeURI);
 		return relativeURI;
 	}

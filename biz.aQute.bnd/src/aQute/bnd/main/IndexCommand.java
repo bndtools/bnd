@@ -1,8 +1,6 @@
 package aQute.bnd.main;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
@@ -81,9 +79,11 @@ public class IndexCommand extends Processor {
 			return;
 		}
 
-		try (OutputStream out = new FileOutputStream(repositoryFile)) {
-			SimpleIndexer.index(files, out, base, compress, name);
-		}
+		new SimpleIndexer().files(files)
+			.base(base)
+			.name(name)
+			.compress(compress)
+			.index(repositoryFile);
 	}
 
 }
