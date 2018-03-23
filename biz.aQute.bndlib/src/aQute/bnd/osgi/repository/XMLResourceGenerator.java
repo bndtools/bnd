@@ -109,7 +109,7 @@ public class XMLResourceGenerator {
 		return this;
 	}
 
-	public XMLResourceGenerator repository(Repository repository) throws Exception {
+	public XMLResourceGenerator repository(Repository repository) {
 		Requirement wildcard = ResourceUtils.createWildcardRequirement();
 		Map<Requirement, Collection<Capability>> findProviders = repository
 			.findProviders(Collections.singleton(wildcard));
@@ -119,14 +119,14 @@ public class XMLResourceGenerator {
 		return this;
 	}
 
-	public XMLResourceGenerator resources(Collection<? extends Resource> resources) throws Exception {
+	public XMLResourceGenerator resources(Collection<? extends Resource> resources) {
 		for (Resource resource : resources) {
 			resource(resource);
 		}
 		return this;
 	}
 
-	public XMLResourceGenerator resource(Resource resource) throws Exception {
+	public XMLResourceGenerator resource(Resource resource) {
 		if (!visited.contains(resource)) {
 			visited.add(resource);
 
@@ -156,7 +156,7 @@ public class XMLResourceGenerator {
 		}
 	}
 
-	private void attributes(Tag cr, Map<String, Object> atrributes) throws Exception {
+	private void attributes(Tag cr, Map<String, Object> atrributes) {
 		for (Entry<String, Object> e : atrributes.entrySet()) {
 			Object value = e.getValue();
 			if (value == null)
