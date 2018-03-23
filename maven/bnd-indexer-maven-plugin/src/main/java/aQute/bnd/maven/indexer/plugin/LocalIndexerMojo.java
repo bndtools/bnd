@@ -119,7 +119,10 @@ public class LocalIndexerMojo extends AbstractMojo {
 
 		try {
 			IO.mkdirs(outputFile.getParentFile());
-			SimpleIndexer.index(toIndex, IO.outputStream(outputFile), baseFile.toURI(), false, indexName);
+			new SimpleIndexer().files(toIndex)
+				.base(baseFile.toURI())
+				.name(indexName)
+				.index(outputFile);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}

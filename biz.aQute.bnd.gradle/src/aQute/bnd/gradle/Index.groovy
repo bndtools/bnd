@@ -182,9 +182,11 @@ public class Index extends DefaultTask {
    */
   @TaskAction
   void indexer() {
-    indexUncompressed.withOutputStream { out ->
-      SimpleIndexer.index(bundles.sort(), out, project.uri(destinationDir), false, repositoryName);
-    }
+    new SimpleIndexer()
+      .files(bundles.sort())
+      .base(project.uri(destinationDir))
+      .name(repositoryName)
+      .index(indexUncompressed)
     logger.info 'Generated index {}.', indexUncompressed
 
     if (gzip) {
