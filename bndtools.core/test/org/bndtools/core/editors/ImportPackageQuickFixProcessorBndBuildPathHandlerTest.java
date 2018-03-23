@@ -33,6 +33,24 @@ public class ImportPackageQuickFixProcessorBndBuildPathHandlerTest {
 
     private List<VersionedClause> bundles;
     private IFile fakeFile;
+    private final String BSN = "my.self.bundle";
+
+    void setBuildPath(List<VersionedClause> bundles) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("\n-buildpath: \\\n");
+
+        Iterator<VersionedClause> it = bundles.iterator();
+        VersionedClause value = it.next();
+        while (it.hasNext()) {
+            builder.append('\t')
+                .append(value)
+                .append(",\\\n");
+            value = it.next();
+        }
+        builder.append('\t')
+            .append(value);
+        setContents(fakeFile, builder.toString());
+    }
 
     @Before
     public void setUp() {
@@ -47,9 +65,13 @@ public class ImportPackageQuickFixProcessorBndBuildPathHandlerTest {
         IProject eclipse = mock(IProject.class, DO_NOT_CALL);
         doReturn(fakeFile).when(eclipse)
             .getFile(Project.BNDFILE);
+        doReturn(BSN).when(eclipse)
+            .getName();
         IJavaProject jProject = mock(IJavaProject.class, DO_NOT_CALL);
         doReturn(eclipse).when(jProject)
             .getProject();
+        doReturn(BSN).when(jProject)
+            .getElementName();
         ICompilationUnit unit = mock(ICompilationUnit.class, DO_NOT_CALL);
         doReturn(jProject).when(unit)
             .getJavaProject();
@@ -85,23 +107,6 @@ public class ImportPackageQuickFixProcessorBndBuildPathHandlerTest {
         assertThat(sut.getBuildPath()).isEmpty();
     }
 
-    void setBuildPath(List<VersionedClause> bundles) {
-        StringBuilder builder = new StringBuilder();
-        builder.append("-buildpath: \\\n");
-
-        Iterator<VersionedClause> it = bundles.iterator();
-        VersionedClause value = it.next();
-        while (it.hasNext()) {
-            builder.append('\t')
-                .append(value)
-                .append(",\\\n");
-            value = it.next();
-        }
-        builder.append('\t')
-            .append(value);
-        setContents(fakeFile, builder.toString());
-    }
-
     @Test
     public void getBuildPath_containsElements() throws Exception {
         assertThat(sut.getBuildPath()).isEqualTo(bundles);
@@ -123,6 +128,11 @@ public class ImportPackageQuickFixProcessorBndBuildPathHandlerTest {
             assertThat(sut.containsBundle(bundle)).as("bundle:[" + bundle + "]")
                 .isFalse();
         }
+    }
+
+    @Test
+    public void containsBundle_returnsTrue_whenBundleIsSelf() throws Exception {
+        assertThat(sut.containsBundle(BSN)).isTrue();
     }
 
     @Test
