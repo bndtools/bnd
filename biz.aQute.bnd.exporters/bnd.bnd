@@ -1,15 +1,15 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
+Private-Package:                \
+    aQute.bnd.exporter.subsystem
+
+Conditional-Package:                \
+    aQute.lib.*;-split-package:=first, \
+    aQute.libg.*;-split-package:=first
 
 -buildpath: \
-	biz.aQute.bndlib;version=latest;packages=*, \
-	osgi.core;version=@6
-
--sub: *.bnd
--runfw: org.apache.felix.framework;version='[4.2.1,4.2.1]'
--runee: JavaSE-1.8
-
-
--runbundles: \
-	biz.aQute.bnd.exporters.probe
-	
--runremote: karaf; jdb=5005; host=locahost
--runremote: biz.aQute.remote.launcher
+    aQute.libg;version=project, \
+	biz.aQute.bndlib;version=latest, \
+	osgi.core;version=@6, \
+	osgi.cmpn;version=@6

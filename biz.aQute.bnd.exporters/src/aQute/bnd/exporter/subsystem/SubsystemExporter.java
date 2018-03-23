@@ -2,8 +2,8 @@ package aQute.bnd.exporter.subsystem;
 
 import static aQute.bnd.osgi.Constants.REMOVEHEADERS;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+
+import org.osgi.service.subsystem.SubsystemConstants;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Container;
@@ -30,23 +32,18 @@ import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.service.export.Exporter;
 import aQute.lib.collections.MultiMap;
+import aQute.lib.io.ByteBufferOutputStream;
 
 @BndPlugin(name = "subsystem")
 public class SubsystemExporter implements Exporter {
 
 	private static final String	OSGI_INF_SUBSYSTEM_MF		= "OSGI-INF/SUBSYSTEM.MF";
-	private static final String	SUBSYSTEM_SYMBOLIC_NAME		= "Subsystem-SymbolicName";
-	private static final String	OSGI_SUBSYSTEM_APPLICATION	= "osgi.subsystem.application";
-	private static final String	OSGI_SUBSYSTEM_FEATURE		= "osgi.subsystem.feature";
-	private static final String	OSGI_SUBSYSTEM_COMPOSITE	= "osgi.subsystem.composite";
-	private static final String	SUBSYSTEM_TYPE				= "Subsystem-Type";
-	@SuppressWarnings("unused")
-	private static final String	SUBSYSTEM_CONTENT			= "Subsystem-Content";
 
 	@Override
 	public String[] getTypes() {
 		return new String[] {
-			OSGI_SUBSYSTEM_APPLICATION, OSGI_SUBSYSTEM_FEATURE, OSGI_SUBSYSTEM_COMPOSITE
+			SubsystemConstants.SUBSYSTEM_TYPE_APPLICATION, SubsystemConstants.SUBSYSTEM_TYPE_FEATURE,
+			SubsystemConstants.SUBSYSTEM_TYPE_COMPOSITE
 		};
 	}
 
@@ -68,8 +65,8 @@ public class SubsystemExporter implements Exporter {
 		List<File> distroFiles = getBundles(distro, project);
 		List<File> files = getBundles(project.getRunbundles(), project);
 
-		MultiMap<String, Attrs> imports = new MultiMap<String, Attrs>();
-		MultiMap<String, Attrs> exports = new MultiMap<String, Attrs>();
+		MultiMap<String, Attrs> imports = new MultiMap<>();
+		MultiMap<String, Attrs> exports = new MultiMap<>();
 		Parameters requirements = new Parameters();
 		Parameters capabilities = new Parameters();
 
@@ -95,7 +92,7 @@ public class SubsystemExporter implements Exporter {
 
 		headers(project, manifest.getMainAttributes());
 
-		set(manifest.getMainAttributes(), SUBSYSTEM_TYPE, OSGI_SUBSYSTEM_FEATURE);
+		set(manifest.getMainAttributes(), SubsystemConstants.SUBSYSTEM_TYPE, type);
 
 		String ssn = project.getName();
 
@@ -104,33 +101,17 @@ public class SubsystemExporter implements Exporter {
 			ssn = bsns.iterator()
 				.next();
 		}
-		set(manifest.getMainAttributes(), SUBSYSTEM_SYMBOLIC_NAME, ssn);
+		set(manifest.getMainAttributes(), SubsystemConstants.SUBSYSTEM_SYMBOLICNAME, ssn);
 
-		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		ByteBufferOutputStream bout = new ByteBufferOutputStream();
 		manifest.write(bout);
 
-		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new EmbeddedResource(bout.toByteArray(), 0));
+		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new EmbeddedResource(bout.toByteBuffer(), 0));
 
 		final JarResource jarResource = new JarResource(jar, true);
 		final String name = ssn + ".esa";
 
-		return new Map.Entry<String, Resource>() {
-
-			@Override
-			public String getKey() {
-				return name;
-			}
-
-			@Override
-			public Resource getValue() {
-				return jarResource;
-			}
-
-			@Override
-			public Resource setValue(Resource arg0) {
-				throw new UnsupportedOperationException();
-			}
-		};
+		return new SimpleEntry<>(name, jarResource);
 	}
 
 	private List<File> getBundles(Collection<Container> bundles, Processor reporter) throws Exception {

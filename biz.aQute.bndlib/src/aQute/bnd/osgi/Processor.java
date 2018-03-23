@@ -52,7 +52,6 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -573,7 +572,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				try {
 					for (String p : parts) {
 						File f = getFile(p).getAbsoluteFile();
-						loader.add(f.toURI()
+						loader.addURL(f.toURI()
 							.toURL());
 					}
 				} catch (Exception e) {
@@ -732,7 +731,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 			logger.debug("Adding {} to loader for plugins", f);
 			try {
-				loader.add(f.toURI()
+				loader.addURL(f.toURI()
 					.toURL());
 			} catch (MalformedURLException e) {
 				// Cannot happen since every file has a correct url
@@ -888,7 +887,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			IO.close(c);
 		}
 		if (pluginLoader != null)
-			pluginLoader.closex();
+			pluginLoader.close();
 
 		toBeClosed.clear();
 	}
@@ -1769,58 +1768,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static class CL extends URLClassLoader {
-
 		CL(Processor p) {
 			super(new URL[0], p.getClass()
 				.getClassLoader());
 		}
 
-		void closex() {
-			Class<URLClassLoader> clazz = URLClassLoader.class;
-
-			try {
-				//
-				// Java 7 is a good boy, it has a close method
-				//
-				clazz.getMethod("close")
-					.invoke(this);
-				return;
-			} catch (Exception e) {
-				// ignore
-			}
-
-			//
-			// On Java 6, we're screwed and have to much around
-			// This is best effort, likely fails on non-SUN vms
-			// :-(
-			//
-
-			try {
-				Field ucpField = clazz.getDeclaredField("ucp");
-				ucpField.setAccessible(true);
-				Object cp = ucpField.get(this);
-				Field loadersField = cp.getClass()
-					.getDeclaredField("loaders");
-				loadersField.setAccessible(true);
-				Collection<?> loaders = (Collection<?>) loadersField.get(cp);
-				for (Object loader : loaders) {
-					try {
-						Field loaderField = loader.getClass()
-							.getDeclaredField("jar");
-						loaderField.setAccessible(true);
-						JarFile jarFile = (JarFile) loaderField.get(loader);
-						jarFile.close();
-					} catch (Throwable t) {
-						// if we got this far, this is probably not a JAR loader
-						// so skip it
-					}
-				}
-			} catch (Throwable t) {
-				// probably not a SUN VM
-			}
-		}
-
-		void add(URL url) {
+		@Override
+		protected void addURL(URL url) {
 			URL urls[] = getURLs();
 			for (URL u : urls) {
 				if (u.equals(url))
@@ -2113,7 +2067,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public synchronized Class<?> getClass(String type, File jar) throws Exception {
 		CL cl = getLoader();
-		cl.add(jar.toURI()
+		cl.addURL(jar.toURI()
 			.toURL());
 		return cl.loadClass(type);
 	}
