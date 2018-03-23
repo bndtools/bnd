@@ -2,7 +2,6 @@ package org.bndtools.builder.indexer;
 
 import java.io.File;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.HashSet;
@@ -60,17 +59,19 @@ public class BuiltBundleIndexer extends AbstractBuildListener {
 
             IFile indexPath = wsroot.getFile(Central.toPath(indexFile));
 
-            try (OutputStream output = IO.outputStream(indexFile)) {
-                SimpleIndexer.index(files, output, project.getLocation()
+            new SimpleIndexer().files(files)
+                .base(project.getLocation()
                     .toFile()
-                    .toURI(), false, project.getName(), (f, rb) -> {
-                        Capability cap = new CapabilityBuilder("bndtools.workspace").addAttribute("bndtools.workspace", workspaceRootUri.toString())
-                            .addAttribute("project.path", project.getFullPath()
-                                .toString())
-                            .buildSyntheticCapability();
-                        rb.addCapability(cap);
-                    });
-            }
+                    .toURI())
+                .name(project.getName())
+                .analyzer((f, rb) -> {
+                    Capability cap = new CapabilityBuilder("bndtools.workspace").addAttribute("bndtools.workspace", workspaceRootUri.toString())
+                        .addAttribute("project.path", project.getFullPath()
+                            .toString())
+                        .buildSyntheticCapability();
+                    rb.addCapability(cap);
+                })
+                .index(indexFile);
             indexPath.refreshLocal(IResource.DEPTH_ZERO, null);
             if (indexPath.exists())
                 indexPath.setDerived(true, null);

@@ -1,7 +1,6 @@
 package org.bndtools.core.jobs;
 
 import java.io.File;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.Set;
 
@@ -18,7 +17,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.bnd.osgi.repository.SimpleIndexer;
-import aQute.lib.io.IO;
 import bndtools.Plugin;
 
 public class GenerateIndexJob extends Job {
@@ -43,8 +41,12 @@ public class GenerateIndexJob extends Job {
         SubMonitor progress = SubMonitor.convert(monitor);
 
         // Generate index
-        try (OutputStream outputStream = IO.outputStream(outputFile)) {
-            SimpleIndexer.index(files, outputStream, base, compress, name);
+        try {
+            new SimpleIndexer().files(files)
+                .base(base)
+                .compress(compress)
+                .name(name)
+                .index(outputFile);
         } catch (Exception e) {
             return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error indexing files.", e);
         }
