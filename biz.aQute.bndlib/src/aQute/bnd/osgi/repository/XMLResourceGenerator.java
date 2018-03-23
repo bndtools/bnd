@@ -35,7 +35,7 @@ public class XMLResourceGenerator {
 
 	private Tag				repository	= new Tag("repository");
 	private Set<Resource>	visited		= new HashSet<>();
-	private int				indent		= 2;
+	private int				indent		= 0;
 	private boolean			compress	= false;
 
 	public XMLResourceGenerator() {
