@@ -579,13 +579,15 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 @Override
                 public void running(IJobChangeEvent event) {
                     if (event.getJob() instanceof ResolveJob)
-                        handlerSvc.deactivateHandler(activation);
+                        Display.getDefault()
+                            .asyncExec(() -> handlerSvc.deactivateHandler(activation));
                 }
 
                 @Override
                 public void done(IJobChangeEvent event) {
                     if (event.getJob() instanceof ResolveJob)
-                        handlerSvc.activateHandler(activation);
+                        Display.getDefault()
+                            .asyncExec(() -> handlerSvc.activateHandler(activation));
                 }
             };
             Job.getJobManager()
