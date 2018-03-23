@@ -103,6 +103,7 @@ public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
 
     static class BndBuildPathHandler {
         private final IInvocationContext context;
+        private IProject eclipseProject;
         private IFile bndFile;
         private IDocument bndDoc;
         private BndEditModel bndModel;
@@ -130,8 +131,8 @@ public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
             }
             final ICompilationUnit compUnit = context.getCompilationUnit();
             final IJavaProject java = compUnit.getJavaProject();
-            final IProject eclipse = java.getProject();
-            bndFile = eclipse.getFile(Project.BNDFILE);
+            eclipseProject = java.getProject();
+            bndFile = eclipseProject.getFile(Project.BNDFILE);
         }
 
         Workspace getWorkspace() throws Exception {
@@ -200,7 +201,9 @@ public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
 
         public boolean containsBundle(String bundle) throws CoreException {
             loadModel();
-            return buildPathBundles.contains(bundle);
+            // TODO: This will need modification to handle sub-bundles as the BSN is derived differently.
+            final String bsn = eclipseProject.getName();
+            return bsn.equals(bundle) || buildPathBundles.contains(bundle);
         }
     }
 
