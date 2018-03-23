@@ -12,6 +12,11 @@ class TestHelper {
             .withGradleVersion(gradleVersion())
   }
 
+  public static GradleRunner getGradleRunner(String gradleVersion) {
+    return GradleRunner.create()
+            .withGradleVersion(gradleVersion)
+  }
+
   private static String gradleVersion() {
     if (JavaVersion.current().isJava10Compatible()) {
       return '4.5'
