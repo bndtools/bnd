@@ -9,6 +9,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import org.osgi.resource.Resource;
@@ -147,11 +148,12 @@ public class SimpleIndexer {
 	}
 
 	private XMLResourceGenerator repository() {
-		ResourcesRepository resourcesRepository = files.stream()
+		XMLResourceGenerator repository = new XMLResourceGenerator();
+		files.stream()
 			.filter(f -> f.isFile() && !f.isHidden() && f.canRead())
 			.map(this::indexFile)
-			.collect(ResourcesRepository.toResourcesRepository());
-		XMLResourceGenerator repository = new XMLResourceGenerator().repository(resourcesRepository);
+			.filter(Objects::nonNull)
+			.forEachOrdered(repository::resource);
 		if (name != null) {
 			repository.name(name);
 		}
