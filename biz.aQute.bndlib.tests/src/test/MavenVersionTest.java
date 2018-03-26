@@ -127,6 +127,10 @@ public class MavenVersionTest extends TestCase {
 	public void testMajorMinorMicro() {
 		MavenVersion mv = MavenVersion.parseString("1.2.3");
 		assertEquals(new Version(1, 2, 3), mv.getOSGiVersion());
+		mv = MavenVersion.parseString("1.0.2016062300");
+		assertEquals(new Version(1, 0, 2016062300), mv.getOSGiVersion());
+		mv = new MavenVersion("1.0.2016062300");
+		assertEquals(new Version(1, 0, 2016062300), mv.getOSGiVersion());
 	}
 
 	public void testMajorMinor() {
