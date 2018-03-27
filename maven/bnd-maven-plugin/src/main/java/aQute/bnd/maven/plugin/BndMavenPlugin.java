@@ -39,6 +39,7 @@ import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.PluginManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
@@ -373,13 +374,13 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	private Optional<Xpp3Dom> getConfiguration(List<Plugin> plugins) {
 		return plugins.stream()
-			.filter(p -> Objects.equals(p.getGroupId(), "biz.aQute.bnd")
-				&& Objects.equals(p.getArtifactId(), "bnd-maven-plugin"))
-			.flatMap(p -> p.getExecutions()
-				.stream())
+			.filter(p -> Objects.equals(p, mojoExecution.getPlugin()))
+			.map(Plugin::getExecutions)
+			.flatMap(List::stream)
 			.filter(e -> Objects.equals(e.getId(), mojoExecution.getExecutionId()))
 			.findFirst()
-			.map(e -> (Xpp3Dom) e.getConfiguration())
+			.map(PluginExecution::getConfiguration)
+			.map(Xpp3Dom.class::cast)
 			.map(Xpp3Dom::new);
 	}
 
