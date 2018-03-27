@@ -9,8 +9,6 @@ import java.util.Collections;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerSorter;
@@ -36,6 +34,7 @@ import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
 
+import biz.aQute.resolve.ResolveProcess;
 import bndtools.Plugin;
 import bndtools.model.obr.SorterComparatorAdapter;
 
@@ -69,13 +68,6 @@ public class ResolutionFailurePanel {
 
         processingErrorsText = toolkit.createText(sectProcessingErrors, "", SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.READ_ONLY | SWT.V_SCROLL);
         sectProcessingErrors.setClient(processingErrorsText);
-
-        ControlDecoration controlDecoration = new ControlDecoration(processingErrorsText, SWT.RIGHT | SWT.TOP);
-        controlDecoration.setMarginWidth(2);
-        controlDecoration.setDescriptionText("Double-click to view details");
-        controlDecoration.setImage(FieldDecorationRegistry.getDefault()
-            .getFieldDecoration(FieldDecorationRegistry.DEC_CONTENT_PROPOSAL)
-            .getImage());
 
         gd = new GridData(SWT.FILL, SWT.FILL, true, true);
         gd.widthHint = 600;
@@ -125,7 +117,7 @@ public class ResolutionFailurePanel {
             // and only show the bottom one (the resolution result. The previous exception trace was
             // kind of silly
             //
-            String diagnostic = formatFailureStatus(resolutionResult.getStatus(), false, "").replaceAll(":", ":\n  ");
+            String diagnostic = ResolveProcess.format(resolutionException, false);
 
             processingErrorsText.setText(diagnostic);
             sectUnresolved.setExpanded(true);
