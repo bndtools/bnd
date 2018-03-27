@@ -21,11 +21,14 @@ configure(parent) {
   defaultTasks = [build.path]
 }
 
+/* Configure this project */
+def releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
+
 task('indexonly', type: Index) {
   description 'Index the release repository only. (Does not depend on releaseNeeded).'
   group 'release'
   repositoryName = "Bnd ${version}"
-  destinationDir = file(bnd('releaserepo', 'bundles')) /* Release repository. */
+  destinationDir = releaserepo
   gzip = true
   bundles fileTree(destinationDir) {
     include '**/*.jar'
@@ -43,8 +46,5 @@ task('index') {
 }
 
 clean {
-  doLast {
-    project.delete(releaserepo)
-    project.mkdir(releaserepo)
-  }
+  delete releaserepo
 }

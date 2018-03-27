@@ -318,10 +318,7 @@ public class BndPlugin implements Plugin<Project> {
 
       clean {
         description 'Cleans the build and compiler output directories of the project.'
-        deleteAllActions() /* Replace the standard task actions */
-        doLast {
-          bndProject.clean()
-        }
+        delete buildDir, sourceSets.main.output, sourceSets.test.output
       }
 
       task('cleanNeeded') {

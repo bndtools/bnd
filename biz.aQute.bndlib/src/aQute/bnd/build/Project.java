@@ -2264,10 +2264,9 @@ public class Project extends Processor {
 	}
 
 	public void clean() throws Exception {
-		clean(getTarget(), "target");
+		clean(getTargetDir(), "target");
 		clean(getSrcOutput(), "source output");
 		clean(getTestOutput(), "test output");
-		clean(getOutput(), "output");
 	}
 
 	void clean(File dir, String type) throws IOException {
