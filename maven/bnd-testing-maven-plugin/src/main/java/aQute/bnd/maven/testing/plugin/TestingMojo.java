@@ -26,6 +26,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.Bndrun;
 import biz.aQute.resolve.ResolveProcess;
@@ -60,6 +61,9 @@ public class TestingMojo extends AbstractMojo {
 
 	@Parameter(defaultValue = "${testing}", readonly = true)
 	private String						testing;
+
+	@Parameter(property = "test")
+	private String						test;
 
 	@Parameter(readonly = true, required = false)
 	private List<File>					bundles;
@@ -123,6 +127,15 @@ public class TestingMojo extends AbstractMojo {
 			throw new MojoExecutionException(errors + " errors found");
 	}
 
+	private List<String> getTests() {
+		logger.debug("getTests: {}", test);
+		if (test == null || test.trim()
+			.isEmpty()) {
+			return null;
+		}
+		return Strings.split(test);
+	}
+
 	private void testing(File runFile, FileSetRepository fileSetRepository) throws Exception {
 		if (!runFile.exists()) {
 			logger.error("Could not find bnd run file {}", runFile);
@@ -163,7 +176,7 @@ public class TestingMojo extends AbstractMojo {
 				}
 			}
 			try {
-				run.test(new File(reportsDir, bndrun), null);
+				run.test(new File(reportsDir, bndrun), getTests());
 			} finally {
 				report(run);
 			}

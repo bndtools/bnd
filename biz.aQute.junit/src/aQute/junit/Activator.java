@@ -157,7 +157,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				int err = 0;
 				try {
 					err = test(context.getBundle(), "aQute.junit.UnresolvedTester",
-						getReportWriter(reportDir, testBundle));
+						getReportWriter(reportDir, bundleReportName(testBundle)));
 				} catch (IOException e) {
 					// ignore
 				}
@@ -167,13 +167,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 		}
 
-		if (testcases == null) {
-			// if ( !continuous) {
-			// System.err.println("\nThe -testcontinuous property must be set if
-			// invoked without arguments\n");
-			// System.exit(-1);
-			// }
+		if (!reportDir.exists() && !reportDir.mkdirs()) {
+			System.err.printf("Could not create directory %s%n", reportDir);
+		}
+		trace("using %s", reportDir);
 
+		if (testcases == null) {
 			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
 			try {
 				automatic(reportDir);
@@ -183,7 +182,10 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		} else {
 			trace("receivednames of classes to test %s", testcases);
 			try {
-				int errors = test(null, testcases, null);
+				int errors;
+				try (Writer report = getReportWriter(reportDir, reportDir.getName())) {
+					errors = test(null, testcases, report);
+				}
 				System.exit(errors);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -194,10 +196,6 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	void automatic(File reportDir) throws IOException {
 		final List<Bundle> queue = new Vector<>();
-		if (!reportDir.exists() && !reportDir.mkdirs()) {
-			throw new IOException("Could not create directory " + reportDir);
-		}
-		trace("using %s", reportDir);
 
 		trace("adding Bundle Listener for getting test bundle events");
 		context.addBundleListener(new SynchronousBundleListener() {
@@ -234,7 +232,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			try {
 				bundle = queue.remove(0);
 				trace("received bundle to test: %s", bundle.getLocation());
-				try (Writer report = getReportWriter(reportDir, bundle)) {
+				try (Writer report = getReportWriter(reportDir, bundleReportName(bundle))) {
 					trace("test will run");
 					result += test(bundle, (String) bundle.getHeaders()
 						.get(aQute.bnd.osgi.Constants.TESTCASES), report);
@@ -266,11 +264,9 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		}
 	}
 
-	private Writer getReportWriter(File reportDir, Bundle bundle) throws IOException {
+	private Writer getReportWriter(File reportDir, String name) throws IOException {
 		if (reportDir.isDirectory()) {
-			Version v = bundle.getVersion();
-			File f = new File(reportDir, "TEST-" + bundle.getSymbolicName() + "-" + v.getMajor() + "." + v.getMinor()
-				+ "." + v.getMicro() + ".xml");
+			File f = new File(reportDir, "TEST-" + name + ".xml");
 			Writer writer = new OutputStreamWriter(Files.newOutputStream(f.toPath()), UTF_8);
 			writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			return writer;
@@ -278,6 +274,10 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		return null;
 	}
 
+	private String bundleReportName(Bundle bundle) {
+		Version v = bundle.getVersion();
+		return bundle.getSymbolicName() + "-" + v.getMajor() + "." + v.getMinor() + "." + v.getMicro();
+	}
 	/**
 	 * The main test routine.
 	 *
