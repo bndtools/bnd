@@ -24,15 +24,34 @@ bem.loadFrom(doc)
 def bemRunBundles = bem.getRunBundles()
 assert null == bemRunBundles
 
-File build_log_file = new File("${basedir}/build.log")
-assert build_log_file.exists();
-def build_log = build_log_file.text
+File testsuite_xml = new File("${basedir}/test-no-resolve/target/test-reports/test/TEST-test-no-resolve-0.0.1.xml")
+assert testsuite_xml.isFile();
+def testsuite = new XmlSlurper().parse(testsuite_xml)
+assert testsuite.@name == 'test.test-no-resolve'
+assert testsuite.@tests == '1'
+assert testsuite.@errors == '0'
+assert testsuite.@failures == '0'
 
-// Simple test
-assert build_log =~ /Tests run\s*:\s*1\s*Passed\s*:\s*1\s*Errors\s*:\s*0\s*Failures\s*:\s*0/
+testsuite_xml = new File("${basedir}/test-with-resolve/target/test-reports/test/TEST-test-with-resolve-0.0.1.xml")
+assert testsuite_xml.isFile();
+testsuite = new XmlSlurper().parse(testsuite_xml)
+assert testsuite.@name == 'test.test-with-resolve'
+assert testsuite.@tests == '2'
+assert testsuite.@errors == '0'
+assert testsuite.@failures == '0'
 
-// Resolving test
-assert build_log =~ /Tests run\s*:\s*2\s*Passed\s*:\s*2\s*Errors\s*:\s*0\s*Failures\s*:\s*0/
+testsuite_xml = new File("${basedir}/test-with-resolve-from-dependencies/target/test-reports/test/TEST-test-with-resolve-from-dependencies-0.0.1.xml")
+assert testsuite_xml.isFile();
+testsuite = new XmlSlurper().parse(testsuite_xml)
+assert testsuite.@name == 'test.test-with-resolve-from-dependencies'
+assert testsuite.@tests == '3'
+assert testsuite.@errors == '0'
+assert testsuite.@failures == '0'
 
-// Resolve-from-dependencies test
-assert build_log =~ /Tests run\s*:\s*3\s*Passed\s*:\s*3\s*Errors\s*:\s*0\s*Failures\s*:\s*0/
+testsuite_xml = new File("${basedir}/test-single-test/target/test-reports/test/TEST-test.xml")
+assert testsuite_xml.isFile();
+testsuite = new XmlSlurper().parse(testsuite_xml)
+assert testsuite.@name == 'test.run'
+assert testsuite.@tests == '1'
+assert testsuite.@errors == '0'
+assert testsuite.@failures == '0'

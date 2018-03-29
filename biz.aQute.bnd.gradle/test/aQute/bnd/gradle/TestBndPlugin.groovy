@@ -58,6 +58,10 @@ class TestBndPlugin extends Specification {
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
 
+          File testReports = new File(testProjectDir, 'test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.JUnitTest.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-test.simple-0.0.0.xml').isFile()
+
           result.output =~ Pattern.quote("### Project ${testProject} has BndWorkspacePlugin applied")
           result.output =~ Pattern.quote('### Project test.simple has BndPlugin applied')
     }
@@ -236,6 +240,10 @@ class TestBndPlugin extends Specification {
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
+
+          File testReports = new File(testProjectDir, 'test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.Test.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-test.simple-0.0.0.xml').isFile()
     }
 
     def "Bnd Workspace Plugin Simple settings.gradle"() {
@@ -279,6 +287,10 @@ class TestBndPlugin extends Specification {
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
+
+          File testReports = new File(testProjectDir, 'test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.Test.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-test.simple-0.0.0.xml').isFile()
     }
 
     def "Bnd Plugin workspace not rootProject"() {
@@ -324,6 +336,10 @@ class TestBndPlugin extends Specification {
 
           File release_jar = new File(testProjectDir, 'workspace/cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
+
+          File testReports = new File(testProjectDir, 'workspace/test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.Test.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-test.simple-0.0.0.xml').isFile()
 
           result.output =~ Pattern.quote("### Project ${testProject} : is rootProject")
           result.output =~ Pattern.quote('### Project workspace :workspace Workspace [workspace]')
@@ -371,6 +387,10 @@ class TestBndPlugin extends Specification {
           simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a package resource/
           simple_jar.close()
 
+          File testReports = new File(testProjectDir, 'test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.JUnitTest.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-testOSGi.xml').isFile()
+
         when:
           result = TestHelper.getGradleRunner('4.6')
             .withProjectDir(testProjectDir)
@@ -392,6 +412,8 @@ class TestBndPlugin extends Specification {
         then:
           result.task(':test.simple:jar').outcome == UP_TO_DATE
           result.task(':test.simple:testOSGi2').outcome == SUCCESS
+
+          new File(testReports, 'testOSGi2/TEST-testOSGi2.xml').isFile()
     }
 
 }
