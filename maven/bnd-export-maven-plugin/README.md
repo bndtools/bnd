@@ -45,12 +45,12 @@ Here's an example setting the `bundles` used for resolution.
 
 |Configuration Property | Description |
 | ---                   | ---         |
-|`bndruns`              | Contains at least one `bndrun` child element, each element naming a bndrun file defining a runtime and tests to execute against it.|
+|`bndruns`              | Can contain `bndrun` child elements naming a bndrun file to export. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bndrun files. These are relative to the `${project.basedir}` directory. _Defaults to `<include>*.bndrun</include>`._|
 |`targetDir`            | The director into which to export the result. _Defaults to `${project.build.directory}`._|
 |`resolve`              | Whether to resolve the `-runbundles` required for a valid runtime. _Defaults to `false`._|
 |`failOnChanges`        | Whether to fail the build if any change in the resolved `-runbundles` is discovered. _Defaults to `true`._|
 |`exporter`          | The name of the exporter plugin to use. Bnd has two built-in exporter plugins. `bnd.executablejar` exports an executable jar and `bnd.runbundles` exports the -runbundles files. _Default to `bnd.executablejar`._|
-|`bundles`              | This is the collection of files to use for locating bundles during the bndrun resolution. Paths are relative to `${project.basedir}` by default. Absolute paths are allowed. _Defaults to dependencies in the `compile` and `runtime`, plus the current artifact (if any)._|
+|`bundles`              | This is the collection of files to use for locating bundles during the bndrun resolution. Can contain `bundle` child elements specifying the path to a bundle. These can be absolute paths. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bundles. These are relative to the `${project.basedir}` directory. _Defaults to dependencies in the `compile` and `runtime`, plus the current artifact (if any and `useMavenDependencies` is `true`)._|
 |`useMavenDependencies` | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._|
 |`attach` | If `true` then if the exported generates a jar file, the jar file will be attached as an output of the current artifact. _Defaults to `true`._|
 |`reportOptional`       | If `true`, resolution failure reports (see `resolve`) will include optional requirements. _Defaults to `true`._|
