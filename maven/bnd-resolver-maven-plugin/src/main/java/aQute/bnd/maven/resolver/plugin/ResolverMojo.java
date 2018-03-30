@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
@@ -40,8 +41,8 @@ public class ResolverMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		repositorySession;
 
-	@Parameter(readonly = true, required = true)
-	private List<File>					bndruns;
+	@Parameter(readonly = true)
+	private Bndruns						bndruns	= new Bndruns();
 
 	@Parameter(readonly = true, required = false)
 	private List<File>					bundles;
@@ -78,7 +79,7 @@ public class ResolverMojo extends AbstractMojo {
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
 				useMavenDependencies);
 
-			for (File runFile : bndruns) {
+			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
 				resolve(runFile, fileSetRepository);
 			}
 		} catch (Exception e) {

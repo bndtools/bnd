@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.fileset.FileSetRepository;
@@ -47,8 +48,8 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(property = "maven.test.skip", defaultValue = "false")
 	private boolean						skip;
 
-	@Parameter(readonly = true, required = true)
-	private List<File>					bndruns;
+	@Parameter(readonly = true)
+	private Bndruns						bndruns	= new Bndruns();
 
 	@Parameter(defaultValue = "${project.build.directory}/test", readonly = true)
 	private File						cwd;
@@ -111,7 +112,7 @@ public class TestingMojo extends AbstractMojo {
 				Glob g = new Glob(testing == null ? "*" : testing);
 				logger.info("Matching glob {}", g);
 
-				for (File runFile : bndruns) {
+				for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
 					if (g.matcher(runFile.getName())
 						.matches())
 						testing(runFile, fileSetRepository);
