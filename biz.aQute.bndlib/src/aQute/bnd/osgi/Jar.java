@@ -22,7 +22,6 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -39,8 +38,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
@@ -88,7 +85,6 @@ public class Jar implements Closeable {
 	private String												manifestName			= DEFAULT_MANIFEST_NAME;
 	private String												name;
 	private File												source;
-	private ZipFile												zipFile;
 	private long												lastModified;
 	private String												lastModifiedReason;
 	private boolean												doNotTouchManifest;
@@ -195,21 +191,8 @@ public class Jar implements Closeable {
 	}
 
 	private Jar buildFromZip(File file) throws IOException {
-		try {
-			zipFile = new ZipFile(file);
-			for (Enumeration<? extends ZipEntry> e = zipFile.entries(); e.hasMoreElements();) {
-				ZipEntry entry = e.nextElement();
-				if (entry.isDirectory()) {
-					continue;
-				}
-				putResource(entry.getName(), new ZipResource(zipFile, entry), true);
-			}
-			return this;
-		} catch (ZipException e) {
-			ZipException ze = new ZipException(
-				"The JAR/ZIP file (" + file.getAbsolutePath() + ") seems corrupted, error: " + e.getMessage());
-			ze.initCause(e);
-			throw ze;
+		try (InputStream in = IO.stream(file)) {
+			return buildFromInputStream(in, file.lastModified());
 		} catch (FileNotFoundException e) {
 			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath());
 		}
@@ -228,7 +211,8 @@ public class Jar implements Closeable {
 				int size = (int) entry.getSize();
 				try (ByteBufferOutputStream bbos = new ByteBufferOutputStream((size == -1) ? BUFFER_SIZE : size + 1)) {
 					bbos.write(jin);
-					putResource(entry.getName(), new EmbeddedResource(bbos.toByteBuffer(), lastModified), true);
+					long modifiedTime = ZipUtil.getModifiedTime(entry);
+					putResource(entry.getName(), new EmbeddedResource(bbos.toByteBuffer(), modifiedTime), true);
 				}
 			}
 		}
@@ -793,7 +777,6 @@ public class Jar implements Closeable {
 	@Override
 	public void close() {
 		this.closed = true;
-		IO.close(zipFile);
 		for (Resource r : resources.values()) {
 			IO.close(r);
 		}
