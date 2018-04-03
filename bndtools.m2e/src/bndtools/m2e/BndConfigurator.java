@@ -16,6 +16,7 @@ import org.bndtools.api.Logger;
 import org.bndtools.build.api.IProjectDecorator;
 import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.WorkspaceJob;
@@ -27,6 +28,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IJavaModelMarker;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.embedder.ICallable;
 import org.eclipse.m2e.core.embedder.IMaven;
@@ -62,13 +64,13 @@ public class BndConfigurator extends AbstractProjectConfigurator {
 
         public MavenProjectInfo(MavenProject project) throws Exception {
             this.project = project;
-            File file = project.getArtifact()
-                .getFile();
-            if (file == null) {
-                throw new IllegalStateException("The output file for project " + project.getName() + " does not exist");
+            File file = new File(project.getBuild()
+                .getOutputDirectory());
+            if (!file.exists()) {
+                throw new IllegalStateException("The output directory for project " + project.getName() + " does not exist");
             }
 
-            try (Analyzer analyzer = new Analyzer(new Jar(file))) {
+            try (Jar jar = new Jar(file); Analyzer analyzer = new Analyzer(jar)) {
                 analyzer.analyze();
                 exports = analyzer.getExports();
                 imports = analyzer.getImports();
@@ -118,9 +120,18 @@ public class BndConfigurator extends AbstractProjectConfigurator {
                     return build;
                 }
 
+                final IProject project = projectFacade.getProject();
+                IMarker[] imarkers = project.findMarkers(IJavaModelMarker.JAVA_MODEL_PROBLEM_MARKER, false, IResource.DEPTH_INFINITE);
+
+                if (imarkers != null && Arrays.stream(imarkers)
+                    .map(m -> m.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO))
+                    .anyMatch(s -> s == IMarker.SEVERITY_ERROR)) {
+                    // there are compile errors, don't build jar
+                    return build;
+                }
+
                 // now we make sure jar is built in separate job, doing this during maven builder will throw lifecycle
                 // errors
-                final IProject project = projectFacade.getProject();
 
                 Job job = new WorkspaceJob("Executing " + project.getName() + " jar:jar goal") {
                     @Override
