@@ -152,6 +152,7 @@ calculation then this can be configured as follows:
 
 |Configuration Property | Description |
 | ---                   | ---         |
+|`base`                 | See [Changing the baseline search parameters](#changing-the-baseline-search-parameters). _Defaults to the highest version of the project's artifact that is less than the version of the project's artifact._|
 |`failOnMissing`        | See [Fail on missing baseline](#fail-on-missing-baseline). _Defaults to `true`._ Override with property `bnd.baseline.fail.on.missing`.|
 |`includeDistributionManagement`| See [Include Distribution Management](#include-distribution-management). _Defaults to `true`._ Override with property `bnd.baseline.include.distribution.management`.|
 |`fullReport`           | See [Full Reporting](#full-reporting). _Defaults to `false`._ Override with property `bnd.baseline.full.report`.|

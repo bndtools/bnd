@@ -48,7 +48,7 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(property = "maven.test.skip", defaultValue = "false")
 	private boolean						skip;
 
-	@Parameter(readonly = true)
+	@Parameter
 	private Bndruns						bndruns	= new Bndruns();
 
 	@Parameter(defaultValue = "${project.build.directory}/test", readonly = true)
@@ -66,7 +66,7 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(property = "test")
 	private String						test;
 
-	@Parameter(readonly = true, required = false)
+	@Parameter(required = false)
 	private List<File>					bundles;
 
 	@Parameter(defaultValue = "true")

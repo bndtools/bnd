@@ -41,10 +41,10 @@ public class ResolverMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		repositorySession;
 
-	@Parameter(readonly = true)
+	@Parameter
 	private Bndruns						bndruns	= new Bndruns();
 
-	@Parameter(readonly = true, required = false)
+	@Parameter
 	private List<File>					bundles;
 
 	@Parameter(defaultValue = "true")

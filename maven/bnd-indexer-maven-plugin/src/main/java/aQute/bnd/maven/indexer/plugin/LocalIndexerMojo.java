@@ -35,7 +35,7 @@ public class LocalIndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.base.file")
 	private File				baseFile;
 
-	@Parameter(readonly = true)
+	@Parameter
 	private FileTree			indexFiles	= new FileTree();
 
 	@Parameter(property = "bnd.indexer.include.gzip", defaultValue = "true")

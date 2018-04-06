@@ -50,13 +50,13 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		repositorySession;
 
-	@Parameter(readonly = true)
+	@Parameter
 	private Bndruns						bndruns	= new Bndruns();
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File						targetDir;
 
-	@Parameter(readonly = true, required = false)
+	@Parameter
 	private Bundles						bundles	= new Bundles();
 
 	@Parameter(defaultValue = "true")
@@ -74,7 +74,7 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(defaultValue = "false")
 	private boolean						bundlesOnly;
 
-	@Parameter(required = false)
+	@Parameter
 	private String						exporter;
 
 	@Parameter(defaultValue = "true")

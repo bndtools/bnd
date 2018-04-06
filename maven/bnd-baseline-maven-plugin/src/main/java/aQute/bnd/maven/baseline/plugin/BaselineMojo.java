@@ -65,7 +65,7 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(property = "bnd.baseline.continue.on.error", defaultValue = "false")
 	private boolean					continueOnError;
 
-	@Parameter(readonly = true)
+	@Parameter
 	private Base					base;
 
 	@Parameter(property = "bnd.baseline.skip", defaultValue = "false")

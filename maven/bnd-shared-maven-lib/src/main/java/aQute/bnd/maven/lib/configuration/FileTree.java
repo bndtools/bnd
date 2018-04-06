@@ -31,7 +31,9 @@ public class FileTree {
 	 *            {@link #getFiles(File, String)}.
 	 */
 	protected void addFile(File file) {
-		files.add(file);
+		if (!files.contains(file)) {
+			files.add(file);
+		}
 	}
 
 	/**
