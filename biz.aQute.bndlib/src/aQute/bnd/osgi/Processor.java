@@ -1411,20 +1411,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	UTF8Properties loadProperties0(File file) throws IOException {
-		String name = file.toURI()
-			.getPath();
-		int n = name.lastIndexOf('/');
-		if (n > 0)
-			name = name.substring(0, n);
-		if (name.length() == 0)
-			name = ".";
-
 		try {
 			UTF8Properties p = new UTF8Properties();
 			p.load(file, this);
-			return p.replaceAll("\\$\\{\\.\\}", Matcher.quoteReplacement(name));
+			return p.replaceHere(file.getParentFile());
 		} catch (Exception e) {
-			error("Error during loading properties file: %s, error: %s", name, e);
+			error("Error during loading properties file: %s, error: %s", file, e);
 			return new UTF8Properties();
 		}
 	}
