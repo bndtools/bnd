@@ -67,7 +67,7 @@ class TestBundlePlugin extends Specification {
           jartask_manifest.getValue('Gradle-Task-Prop') == 'prop.task'
           jartask_manifest.getValue('Gradle-Task-Project-Prop') == 'prop.project'
           jartask_manifest.getValue('Gradle-Missing-Prop') == '${task.projectprop}'
-          jartask_manifest.getValue('Here') == testProjectDir.toURI().path[0..-2]
+          jartask_manifest.getValue('Here').replace('/' as char, File.separatorChar) == testProjectDir.getAbsolutePath()
           jartask_jar.getEntry('doubler/Doubler.class')
           jartask_jar.getEntry('doubler/packageinfo')
           jartask_jar.getEntry('doubler/impl/DoublerImpl.class')
@@ -100,7 +100,7 @@ class TestBundlePlugin extends Specification {
           bundletask_manifest.getValue('Project-Sourcepath')
           bundletask_manifest.getValue('Project-Buildpath')
           bundletask_manifest.getValue('Bundle-ClassPath') =~ /commons-lang-2\.6\.jar/
-          bundletask_manifest.getValue('Here') == testProjectDir.toURI().path[0..-2]
+          bundletask_manifest.getValue('Here').replace('/' as char, File.separatorChar) == testProjectDir.getAbsolutePath()
           !bundletask_jar.getEntry('doubler/Doubler.class')
           !bundletask_jar.getEntry('doubler/impl/DoublerImpl.class')
           bundletask_jar.getEntry('doubler/impl/DoublerImplTest.class')

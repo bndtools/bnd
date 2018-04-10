@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -360,14 +359,8 @@ public class BndMavenPlugin extends AbstractMojo {
 			logger.debug("loading bnd properties from bnd element in pom: {}", pomProject);
 			UTF8Properties properties = new UTF8Properties();
 			properties.load(bndElement.getValue(), pomFile, builder);
-			if (baseDir != null) {
-				String here = baseDir.toURI()
-					.getPath();
-				here = Matcher.quoteReplacement(here.substring(0, here.length() - 1));
-				properties = properties.replaceAll("\\$\\{\\.\\}", here);
-			}
 			// we use setProperties to handle -include
-			builder.setProperties(baseDir, properties);
+			builder.setProperties(baseDir, properties.replaceHere(baseDir));
 		}
 		return pomFile;
 	}

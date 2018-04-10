@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
@@ -76,7 +77,7 @@ public class UTF8Properties extends Properties {
 		load(source, null, null);
 	}
 
-	private String decode(byte[] buffer) throws IOException {
+	private String decode(byte[] buffer) {
 		ByteBuffer bb = ByteBuffer.wrap(buffer);
 		CharBuffer cb = CharBuffer.allocate(buffer.length * 4);
 		for (ThreadLocal<CharsetDecoder> tl : decoders) {
@@ -143,8 +144,11 @@ public class UTF8Properties extends Properties {
 	 * @return A new UTF8Properties with the replacement.
 	 */
 	public UTF8Properties replaceAll(String pattern, String replacement) {
+		return replaceAll(Pattern.compile(pattern), replacement);
+	}
+
+	private UTF8Properties replaceAll(Pattern regex, String replacement) {
 		UTF8Properties result = new UTF8Properties(defaults);
-		Pattern regex = Pattern.compile(pattern);
 		for (Map.Entry<Object, Object> entry : entrySet()) {
 			String key = (String) entry.getKey();
 			String value = (String) entry.getValue();
@@ -153,5 +157,24 @@ public class UTF8Properties extends Properties {
 			result.put(key, value);
 		}
 		return result;
+	}
+
+	private static final Pattern HERE_PATTERN = Pattern.compile(Pattern.quote("${.}"));
+
+	/**
+	 * Replace the string "${.}" in all the values with the path of the
+	 * specified file.
+	 * 
+	 * @return A new UTF8Properties with the replacement.
+	 */
+	public UTF8Properties replaceHere(File file) {
+		String here = (file == null) ? "." : file.getAbsolutePath();
+		if (here.endsWith(File.separator)) {
+			here += ".";
+		}
+		if (File.separatorChar != '/') {
+			here = here.replace(File.separatorChar, '/');
+		}
+		return replaceAll(HERE_PATTERN, Matcher.quoteReplacement(here));
 	}
 }
