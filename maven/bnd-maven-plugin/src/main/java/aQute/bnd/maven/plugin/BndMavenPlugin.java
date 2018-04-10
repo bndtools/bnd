@@ -91,7 +91,7 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
 	private File									classesDir;
 
-	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF", readonly = true)
+	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF")
 	private File									manifestPath;
 
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)

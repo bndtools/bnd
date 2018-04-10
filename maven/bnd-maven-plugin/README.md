@@ -31,8 +31,8 @@ It is not executed by default, therefore at least one explicit execution needs t
 </plugin>
 ```
 
-All Bnd instructions must be declared in a bnd file. By default, this is `bnd.bnd`
-in the base directory of the project. This can be configured to specify an alternate
+Bnd instructions may be declared in a bnd file or in this plugin's configuration in the pom.
+The default bnd file is named `bnd.bnd` in the base directory of the project. This can be configured to specify an alternate
 path which can be absolute or relative to the base directory of the project.
 In the following example, the `project.bnd` file in the `bnd` folder of the project
 will be used.
@@ -83,12 +83,8 @@ For further usage information, see the integration test projects under the inclu
 | ---                   | ---         |
 |`bndfile`              | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.|
 |`bnd`                  | Bnd instructions for this project specified directly in the pom file. This is generally be done using a {@code <![CDATA[]]>} section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
-|`targetDir`            | The director into which to export the result. _Defaults to `${project.build.directory}`._|
-|`sourceDir`            | Specify an alternative source directory. _Defaults to `${project.build.sourceDirectory}`._|
-|`resources`            | Specify an alternative resources directory. _Defaults to `${project.build.resources}`._|
-|`classesDir`           | Specify an alternative classes directory. _Defaults to `${project.build.outputDirectory}`._|
 |`manifestPath`         | Specify the path to a manifest file to use. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._|
-|`skip`                 | Skip the index process altogether. _Defaults to `false`._ Override with property `bnd.skip`.|
+|`skip`                 | Skip the project. _Defaults to `false`._ Override with property `bnd.skip`.|
 
 ## Bnd Instruction Inheritance
 
@@ -106,7 +102,7 @@ is evaluated in the context of the current project.
 The `maven-jar-plugin` will NOT currently use the data from the generated 
 MANIFEST.MF file when using its default configuration. We anticipate a [patch][1] 
 to the JAR plugin that will do this.
-In the meantime it is necessary to configure the plugin as follows:
+In the meantime it is necessary to configure the `maven-jar-plugin` plugin as follows:
 
 ```xml
 <plugin>
