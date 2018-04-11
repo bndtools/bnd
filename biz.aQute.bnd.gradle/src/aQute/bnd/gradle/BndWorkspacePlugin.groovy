@@ -89,6 +89,11 @@ public class BndWorkspacePlugin implements Plugin<Object> {
         }
       }
 
+      /* Add any projects which must always be included */
+      try {
+        projectNames.addAll bnd_include.trim().split(/\s*,\s*/)
+      } catch (MissingPropertyException mpe) {}
+
       /* Initialize the Bnd workspace */
       Workspace.setDriver(Constants.BNDDRIVER_GRADLE)
       Workspace.addGestalt(Constants.GESTALT_BATCH, null)
