@@ -37,5 +37,6 @@
 # java -jar ../jar/ecj_4.2.2.jar -target 1.7 -source 1.7 -cp src src/eclipse_1_7/*.java
 # java -jar ../jar/ecj-4.7.1.jar -target 1.8 -source 1.8 -cp src src/eclipse_1_8/*.java
 # java -jar ../jar/ecj-4.7.1.50.jar -9 -cp src src/eclipse_9_0/*.java
+# java -jar ../jar/ecj-4.7.3a.jar -10 -cp src src/eclipse_10_0/*.java
 
 

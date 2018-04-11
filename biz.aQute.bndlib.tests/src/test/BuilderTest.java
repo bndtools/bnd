@@ -886,9 +886,8 @@ public class BuilderTest extends BndTestCase {
 				"eclipse_1_8", "JavaSE-1.8", "1.8"
 			}, {
 				"eclipse_9_0", "JavaSE-9", "9.0"
-			// }, {
-				// TODO add JavaSE-10 test info for Eclipse
-				// "eclipse_10_0", "JavaSE-10", "10.0"
+			}, {
+				"eclipse_10_0", "JavaSE-10", "10.0"
 			}, {
 				"sun_1_1", "JRE-1.1", "1.1"
 			}, {
