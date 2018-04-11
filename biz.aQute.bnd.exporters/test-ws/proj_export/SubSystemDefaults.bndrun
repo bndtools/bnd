@@ -1,0 +1,6 @@
+-runrequires: bnd.identity;id='proj_bundle_1'
+
+-runbundles: \
+	proj_bundle_1;version='[0.0.1,1.0.0)',\
+	proj_bundle_2;version='[0.0.1,1.0.0)',\
+	proj_subsys;version='[0.0.1,1.0.0)'
