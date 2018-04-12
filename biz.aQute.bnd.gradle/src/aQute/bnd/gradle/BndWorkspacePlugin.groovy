@@ -50,7 +50,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       String defaultProjectName = build
 
       /* If in a subproject, use the subproject name */
-      for (File currentDir = startParameter.currentDir; currentDir != settings.rootDir; currentDir = currentDir.parentFile) {
+      for (File currentDir = startParameter.currentDir; currentDir != rootDir; currentDir = currentDir.parentFile) {
         defaultProjectName = currentDir.name
       }
 
