@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
@@ -54,8 +55,13 @@ public class Strings {
 
 	public static Collector<CharSequence, ?, String> joining(CharSequence delimiter, CharSequence prefix,
 		CharSequence suffix, CharSequence emptyValue) {
-		return Collector.of(() -> new StringJoiner(delimiter, prefix, suffix).setEmptyValue(emptyValue),
-			StringJoiner::add, StringJoiner::merge, StringJoiner::toString);
+		CharSequence deflt = (emptyValue != null) ? emptyValue : new String();
+		Function<StringJoiner, String> finisher = (emptyValue != null) ? StringJoiner::toString : j -> {
+			String r = j.toString();
+			return (r != deflt) ? r : null;
+		};
+		return Collector.of(() -> new StringJoiner(delimiter, prefix, suffix).setEmptyValue(deflt),
+			StringJoiner::add, StringJoiner::merge, finisher);
 	}
 
 	public static String display(Object o, Object... ifNull) {

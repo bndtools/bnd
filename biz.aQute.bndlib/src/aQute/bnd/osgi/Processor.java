@@ -2,7 +2,6 @@ package aQute.bnd.osgi;
 
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
@@ -1331,8 +1330,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			.sorted()
 			.map(k -> getLiteralProperty(k, null, this, inherit))
 			.filter(v -> (v != null) && !v.isEmpty())
-			.collect(joining(separator));
-		return result.isEmpty() ? deflt : result;
+			.collect(Strings.joining(separator, "", "", deflt));
+		return result;
 	}
 
 	private String getLiteralProperty(String key, String deflt, Processor source, boolean inherit) {
