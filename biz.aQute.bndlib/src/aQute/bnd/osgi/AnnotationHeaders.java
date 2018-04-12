@@ -711,7 +711,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				.map(TypeRef::getPackageRef)
 				.map(PackageRef::getFQN)
 				.distinct()
-				.collect(joining(",", ";uses:=\"", "\"", "")));
+				.collect(Strings.joining(",", ";uses:=\"", "\"", "")));
 		}
 
 		if (a.containsKey("effective")) {

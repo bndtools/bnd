@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collector;
 
 public class Strings {
 
@@ -48,6 +50,12 @@ public class Strings {
 
 	public static String join(String middle, Object[] segments) {
 		return join(middle, Arrays.asList(segments));
+	}
+
+	public static Collector<CharSequence, ?, String> joining(CharSequence delimiter, CharSequence prefix,
+		CharSequence suffix, CharSequence emptyValue) {
+		return Collector.of(() -> new StringJoiner(delimiter, prefix, suffix).setEmptyValue(emptyValue),
+			StringJoiner::add, StringJoiner::merge, StringJoiner::toString);
 	}
 
 	public static String display(Object o, Object... ifNull) {
