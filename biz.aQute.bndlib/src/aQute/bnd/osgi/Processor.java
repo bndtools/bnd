@@ -884,8 +884,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		for (Closeable c : toBeClosed) {
 			IO.close(c);
 		}
-		if (pluginLoader != null)
-			pluginLoader.close();
+		synchronized (this) {
+			plugins = null;
+		}
+		if (pluginLoader != null) {
+			IO.close(pluginLoader);
+			pluginLoader = null;
+		}
 
 		toBeClosed.clear();
 	}
@@ -1169,6 +1174,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public boolean refresh() {
 		synchronized (this) {
 			plugins = null; // We always refresh our plugins
+		}
+		if (pluginLoader != null) {
+			IO.close(pluginLoader);
+			pluginLoader = null;
 		}
 
 		if (propertiesFile == null)
