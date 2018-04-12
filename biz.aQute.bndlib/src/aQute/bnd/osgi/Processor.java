@@ -2,7 +2,7 @@ package aQute.bnd.osgi;
 
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
 import java.io.File;
@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -456,13 +457,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public <T> List<T> getPlugins(Class<T> clazz) {
-		List<T> l = new ArrayList<>();
-		Set<Object> all = getPlugins();
-		for (Object plugin : all) {
-			if (clazz.isInstance(plugin))
-				l.add(clazz.cast(plugin));
-		}
-		return l;
+		List<T> plugins = getPlugins().stream()
+			.filter(clazz::isInstance)
+			.map(clazz::cast)
+			.collect(toList());
+		return plugins;
 	}
 
 	/**
@@ -473,12 +472,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public <T> T getPlugin(Class<T> clazz) {
-		Set<Object> all = getPlugins();
-		for (Object plugin : all) {
-			if (clazz.isInstance(plugin))
-				return clazz.cast(plugin);
-		}
-		return null;
+		Optional<T> plugin = getPlugins().stream()
+			.filter(clazz::isInstance)
+			.map(clazz::cast)
+			.findFirst();
+		return plugin.orElse(null);
 	}
 
 	/**
@@ -1332,8 +1330,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			.sorted()
 			.map(k -> getLiteralProperty(k, null, this, inherit))
 			.filter(v -> (v != null) && !v.isEmpty())
-			.collect(joining(separator));
-		return result.isEmpty() ? deflt : result;
+			.collect(Strings.joining(separator, "", "", deflt));
+		return result;
 	}
 
 	private String getLiteralProperty(String key, String deflt, Processor source, boolean inherit) {
