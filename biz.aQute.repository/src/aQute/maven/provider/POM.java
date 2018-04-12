@@ -193,7 +193,7 @@ public class POM implements IPom {
 					if (this.ignoreParentIfAbsent)
 						pom = new POM(); // not found
 					else
-						throw new IllegalArgumentException("No parent for pom " + pom);
+						throw new IllegalArgumentException("No parent for pom. Missing parent: " + revision);
 				}
 				this.parent = pom;
 			}
