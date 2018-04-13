@@ -116,8 +116,14 @@ public class ResolutionWizard extends Wizard {
                 runBundles.add(runBundle);
 
                 if (pathsStream != null) {
+                    URI uri;
+                    try {
+                        uri = ResourceUtils.getURI(ResourceUtils.getContentCapability(resource));
+                    } catch (IllegalArgumentException e) {
+                        logger.logError("Resource has no content capability: " + ResourceUtils.getIdentity(resource), e);
+                        continue;
+                    }
                     VersionedClause runBundleWithUri = runBundle.clone();
-                    URI uri = ResourceUtils.getURI(ResourceUtils.getContentCapability(resource));
                     runBundleWithUri.getAttribs()
                         .put(BndConstants.RESOLUTION_URI_ATTRIBUTE, uri.toString());
 
