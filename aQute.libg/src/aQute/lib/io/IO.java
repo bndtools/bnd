@@ -968,6 +968,10 @@ public class IO {
 		return writer(file.toPath(), encoding);
 	}
 
+	public static PrintWriter writer(Path path) throws IOException {
+		return writer(path, UTF_8);
+	}
+
 	public static PrintWriter writer(Path path, Charset encoding) throws IOException {
 		return writer(writeChannel(path), encoding);
 	}

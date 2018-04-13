@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -379,14 +379,15 @@ class IndexFile {
 		lock.writeLock()
 			.lock();
 		try {
-			File tmp = File.createTempFile("index", null);
-			try (PrintWriter pw = new PrintWriter(tmp)) {
+			Path index = indexFile.toPath();
+			Path tmp = Files.createTempFile(index.getParent(), "index", null);
+			try (PrintWriter pw = IO.writer(tmp)) {
 				descriptors.keySet()
 					.stream()
 					.sorted()
 					.forEachOrdered(archive -> pw.println(archive));
 			}
-			Files.move(tmp.toPath(), indexFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			IO.rename(tmp, index);
 		} finally {
 			lock.writeLock()
 				.unlock();
