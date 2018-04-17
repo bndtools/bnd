@@ -899,7 +899,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (base == null)
 			throw new IllegalArgumentException("No base dir set");
 
-		return base.getAbsolutePath();
+		return base.getAbsolutePath()
+			.replace('\\', '/');
 	}
 
 	public String _propertiesname(String[] args) {
@@ -925,7 +926,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return "";
 
 		return pf.getParentFile()
-			.getAbsolutePath();
+			.getAbsolutePath()
+			.replace('\\', '/');
 	}
 
 	static String _uri = "${uri;<uri>[;<baseuri>]}, Resolve the uri against the baseuri. baseuri defaults to the processor base.";
@@ -2683,7 +2685,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		return propertiesFile.getAbsolutePath()
-			.replaceAll("\\\\", "/");
+			.replace('\\', '/');
 	}
 
 	/**
