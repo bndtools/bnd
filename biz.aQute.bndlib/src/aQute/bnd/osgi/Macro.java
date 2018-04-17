@@ -719,7 +719,8 @@ public class Macro {
 				.exists()) {
 				sb.append(del);
 				sb.append(f.getParentFile()
-					.getAbsolutePath());
+					.getAbsolutePath()
+					.replace('\\', '/'));
 				del = ",";
 			}
 		}
@@ -1306,7 +1307,8 @@ public class Macro {
 		verifyCommand(args, _fileHelp, null, 3, 3);
 		File base = new File(args[1]);
 		File f = Processor.getFile(base, args[2]);
-		return f.getAbsolutePath();
+		return f.getAbsolutePath()
+			.replace('\\', '/');
 	}
 
 	public String _path(String args[]) {

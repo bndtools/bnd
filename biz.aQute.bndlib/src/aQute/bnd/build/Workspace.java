@@ -378,7 +378,8 @@ public class Workspace extends Processor {
 	}
 
 	public String _workspace(@SuppressWarnings("unused") String args[]) {
-		return getBase().getAbsolutePath();
+		return getBase().getAbsolutePath()
+			.replace('\\', '/');
 	}
 
 	public void addCommand(String menu, Action action) {
