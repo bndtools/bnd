@@ -599,6 +599,26 @@ public class IO {
 		return File.createTempFile(pattern, suffix, directory);
 	}
 
+	public static String absolutePath(File file) {
+		return normalizePath(file.getAbsolutePath());
+	}
+
+	public static String absolutePath(Path path) {
+		return normalizePath(path.toAbsolutePath());
+	}
+
+	public static String normalizePath(Path path) {
+		return normalizePath(path.toString());
+	}
+
+	public static String normalizePath(File file) {
+		return normalizePath(file.getPath());
+	}
+
+	public static String normalizePath(String path) {
+		return path.replace(File.separatorChar, '/');
+	}
+
 	public static File getFile(String filename) {
 		return getFile(work, filename);
 	}
