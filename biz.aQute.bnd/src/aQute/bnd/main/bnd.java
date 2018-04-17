@@ -469,7 +469,7 @@ public class bnd extends Processor {
 			add(jar, dir, ".", options.verbose());
 		else
 			for (String f : options._arguments()) {
-				f = f.replace(File.separatorChar, '/');
+				f = IO.normalizePath(f);
 				add(jar, dir, f, options.verbose());
 			}
 

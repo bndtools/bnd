@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.annotation.ConsumerType;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.io.IO;
 
 /**
  * Simple program to generate an index from a set of bundles.
@@ -190,8 +191,7 @@ public class SimpleIndexer {
 		Path relativePath = base.relativize(filePath);
 		// Note that relativePath.toURI() gives the wrong answer for us!
 		// We have to do some Windows related mashing here too :(
-		URI relativeURI = URI.create(relativePath.toString()
-			.replace(File.separatorChar, '/'));
+		URI relativeURI = URI.create(IO.normalizePath(relativePath));
 		logger.debug("Resolving {} relative to {}; Relative Path: {}, URI: {}", filePath, base, relativePath,
 			relativeURI);
 		return relativeURI;

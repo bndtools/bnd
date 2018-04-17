@@ -168,12 +168,9 @@ public class UTF8Properties extends Properties {
 	 * @return A new UTF8Properties with the replacement.
 	 */
 	public UTF8Properties replaceHere(File file) {
-		String here = (file == null) ? "." : file.getAbsolutePath();
-		if (here.endsWith(File.separator)) {
+		String here = (file == null) ? "." : IO.absolutePath(file);
+		if (here.endsWith("/")) {
 			here += ".";
-		}
-		if (File.separatorChar != '/') {
-			here = here.replace(File.separatorChar, '/');
 		}
 		return replaceAll(HERE_PATTERN, Matcher.quoteReplacement(here));
 	}

@@ -787,8 +787,7 @@ public class NanoHTTPD {
 
 		if (res == null) {
 			// Remove URL arguments
-			uri = uri.trim()
-				.replace(File.separatorChar, '/');
+			uri = IO.normalizePath(uri.trim());
 			if (uri.indexOf('?') >= 0)
 				uri = uri.substring(0, uri.indexOf('?'));
 

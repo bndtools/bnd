@@ -107,7 +107,7 @@ public class JUnitFramework implements AutoCloseable {
 			File storage = IO.getFile(p.getTarget(), "fw");
 			IO.delete(storage);
 
-			props.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
+			props.put(Constants.FRAMEWORK_STORAGE, IO.absolutePath(storage));
 			props.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 
 			FrameworkFactory factory = getFactory();

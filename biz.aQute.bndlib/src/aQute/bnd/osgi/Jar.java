@@ -182,11 +182,7 @@ public class Jar implements Closeable {
 
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					String relativePath = baseDir.relativize(file)
-						.toString();
-					if (File.separatorChar != '/') {
-						relativePath = relativePath.replace(File.separatorChar, '/');
-					}
+					String relativePath = IO.normalizePath(baseDir.relativize(file));
 					putResource(relativePath, new FileResource(file, attrs), true);
 					return FileVisitResult.CONTINUE;
 				}

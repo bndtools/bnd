@@ -156,10 +156,7 @@ public class Tool extends Processor {
 	}
 
 	private String fileName(File f) {
-		String result = f.getAbsolutePath();
-		if (File.separatorChar != '/') {
-			result = result.replace(File.separatorChar, '/');
-		}
+		String result = IO.absolutePath(f);
 		return result;
 	}
 

@@ -380,7 +380,7 @@ class IndexFile {
 			.lock();
 		try {
 			Path index = indexFile.toPath();
-			Path tmp = Files.createTempFile(index.getParent(), "index", null);
+			Path tmp = Files.createTempFile(IO.mkdirs(index.getParent()), "index", null);
 			try (PrintWriter pw = IO.writer(tmp)) {
 				descriptors.keySet()
 					.stream()

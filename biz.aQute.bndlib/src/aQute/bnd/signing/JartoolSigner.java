@@ -109,7 +109,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 		command.add(path);
 		if (keystore != null) {
 			command.add("-keystore");
-			command.add(f.getAbsolutePath());
+			command.add(IO.absolutePath(f));
 		}
 
 		if (storetype != null) {
@@ -152,7 +152,7 @@ public class JartoolSigner implements Plugin, SignerPlugin {
 			command.add(tsapolicyid);
 		}
 
-		command.add(tmp.getAbsolutePath());
+		command.add(IO.absolutePath(tmp));
 		command.add(alias);
 		logger.debug("Jarsigner command: {}", command);
 		command.setTimeout(20, TimeUnit.SECONDS);
