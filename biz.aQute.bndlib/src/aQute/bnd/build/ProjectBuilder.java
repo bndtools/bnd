@@ -250,7 +250,7 @@ public class ProjectBuilder extends Builder {
 		if (attrs != null && attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
 			FileLine fl = getHeader(PATTERN_EXPORT_PACKAGE);
 			if (fl != null) {
-				location.file = fl.file.getAbsolutePath();
+				location.file = IO.absolutePath(fl.file);
 				location.line = fl.line;
 				location.length = fl.length;
 				return;
@@ -262,7 +262,7 @@ public class ProjectBuilder extends Builder {
 		if (attrs != null && attrs.containsKey(Constants.VERSION_ATTRIBUTE)) {
 			FileLine fl = getHeader(PATTERN_EXPORT_CONTENTS);
 			if (fl != null) {
-				location.file = fl.file.getAbsolutePath();
+				location.file = IO.absolutePath(fl.file);
 				location.line = fl.line;
 				location.length = fl.length;
 				return;
@@ -276,7 +276,7 @@ public class ProjectBuilder extends Builder {
 			if (pi.isFile()) {
 				FileLine fl = findHeader(pi, PATTERN_VERSION_ANNOTATION);
 				if (fl != null) {
-					location.file = fl.file.getAbsolutePath();
+					location.file = IO.absolutePath(fl.file);
 					location.line = fl.line;
 					location.length = fl.length;
 					return;
@@ -286,7 +286,7 @@ public class ProjectBuilder extends Builder {
 			if (pi.isFile()) {
 				FileLine fl = findHeader(pi, PATTERN_VERSION_PACKAGEINFO);
 				if (fl != null) {
-					location.file = fl.file.getAbsolutePath();
+					location.file = IO.absolutePath(fl.file);
 					location.line = fl.line;
 					location.length = fl.length;
 					return;

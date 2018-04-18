@@ -245,14 +245,13 @@ public class ProjectTest extends TestCase {
 
 		top.setProperty("a", "${repo;org.apache.felix.configadmin;latest}");
 		System.out.println("a= '" + top.getProperty("a") + "'");
-		assertTrue(top.getProperty("a")
-			.endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar".replace('/',
-				File.separatorChar)));
+		assertThat(top.getProperty("a"))
+			.endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar");
 
 		top.setProperty("a", "${repo;IdoNotExist;latest}");
 		top.getProperty("a");
 		assertTrue(top.check("macro refers to an artifact IdoNotExist-latest.*that has an error"));
-		assertEquals("", top.getProperty("a"));
+		assertThat(top.getProperty("a")).isEmpty();
 	}
 
 	/**
@@ -573,19 +572,19 @@ public class ProjectTest extends TestCase {
 		String s = project.getReplacer()
 			.process(("${repo;libtest}"));
 		System.err.println(s);
-		assertTrue(s.contains("org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.8.8"));
-		assertTrue(s.contains("org.apache.felix.ipojo" + File.separator + "org.apache.felix.ipojo-1.0.0.jar"));
+		assertThat(s).contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8",
+			"org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar");
 
 		s = project.getReplacer()
 			.process(("${repo;libtestxyz}"));
-		assertTrue(s.matches(""));
+		assertThat(s).matches("");
 
 		s = project.getReplacer()
 			.process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
-		assertTrue(s.endsWith("org.apache.felix.configadmin-1.8.8.jar"));
+		assertThat(s).endsWith("org.apache.felix.configadmin-1.8.8.jar");
 		s = project.getReplacer()
 			.process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
-		assertTrue(s.endsWith("org.apache.felix.configadmin-1.0.1.jar"));
+		assertThat(s).endsWith("org.apache.felix.configadmin-1.0.1.jar");
 	}
 
 	public void testClasspath() throws Exception {

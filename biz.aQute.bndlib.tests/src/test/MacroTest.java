@@ -636,8 +636,7 @@ public class MacroTest extends TestCase {
 		top.setProperty("cwd.13", "|\r./|"); // empty
 		top.setProperty("cwd.14", "|\n./|"); // empty
 
-		String cwd = top.getBase()
-			.getAbsolutePath() + "/";
+		String cwd = IO.absolutePath(top.getBase()) + "/";
 
 		assertEquals(" . ", top.getProperty("cwd.8"));
 		assertEquals(cwd, top.getProperty("cwd.1"));

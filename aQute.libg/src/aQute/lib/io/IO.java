@@ -599,6 +599,26 @@ public class IO {
 		return File.createTempFile(pattern, suffix, directory);
 	}
 
+	public static String absolutePath(File file) {
+		return normalizePath(file.getAbsolutePath());
+	}
+
+	public static String absolutePath(Path path) {
+		return normalizePath(path.toAbsolutePath());
+	}
+
+	public static String normalizePath(Path path) {
+		return normalizePath(path.toString());
+	}
+
+	public static String normalizePath(File file) {
+		return normalizePath(file.getPath());
+	}
+
+	public static String normalizePath(String path) {
+		return path.replace(File.separatorChar, '/');
+	}
+
 	public static File getFile(String filename) {
 		return getFile(work, filename);
 	}
@@ -742,8 +762,8 @@ public class IO {
 	 * @param to destination file
 	 * @throws IOException if the rename operation fails
 	 */
-	public static void rename(File from, File to) throws IOException {
-		rename(from.toPath(), to.toPath());
+	public static File rename(File from, File to) throws IOException {
+		return rename(from.toPath(), to.toPath()).toFile();
 	}
 
 	/**
@@ -754,20 +774,19 @@ public class IO {
 	 * @param to destination path
 	 * @throws IOException if the rename operation fails
 	 */
-	public static void rename(Path from, Path to) throws IOException {
-		Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
+	public static Path rename(Path from, Path to) throws IOException {
+		return Files.move(from, to, StandardCopyOption.REPLACE_EXISTING);
 	}
 
-	public static void mkdirs(File dir) throws IOException {
-		mkdirs(dir.toPath());
+	public static File mkdirs(File dir) throws IOException {
+		return mkdirs(dir.toPath()).toFile();
 	}
 
-	public static void mkdirs(Path dir) throws IOException {
+	public static Path mkdirs(Path dir) throws IOException {
 		if (Files.isSymbolicLink(dir)) {
-			mkdirs(Files.readSymbolicLink(dir));
-		} else {
-			Files.createDirectories(dir);
+			return mkdirs(Files.readSymbolicLink(dir));
 		}
+		return Files.createDirectories(dir);
 	}
 
 	public static long drain(InputStream in) throws IOException {

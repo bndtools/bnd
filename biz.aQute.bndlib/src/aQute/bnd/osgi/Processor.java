@@ -190,7 +190,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		public void set(SetLocation sl) {
-			sl.file(file.getAbsolutePath());
+			sl.file(IO.absolutePath(file));
 			sl.line(line);
 			sl.length(length);
 		}
@@ -817,8 +817,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void setBase(File base) {
-		this.base = base;
-		baseURI = (base == null) ? null : base.toURI();
+		if (base == null) {
+			this.base = null;
+			baseURI = null;
+		} else {
+			this.base = base.getAbsoluteFile();
+			baseURI = base.toURI();
+		}
 	}
 
 	public void clear() {
@@ -899,8 +904,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (base == null)
 			throw new IllegalArgumentException("No base dir set");
 
-		return base.getAbsolutePath()
-			.replace('\\', '/');
+		return IO.absolutePath(base);
 	}
 
 	public String _propertiesname(String[] args) {
@@ -925,9 +929,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (pf == null)
 			return "";
 
-		return pf.getParentFile()
-			.getAbsolutePath()
-			.replace('\\', '/');
+		return IO.absolutePath(pf.getParentFile());
 	}
 
 	static String _uri = "${uri;<uri>[;<baseuri>]}, Resolve the uri against the baseuri. baseuri defaults to the processor base.";
@@ -1739,17 +1741,20 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Make the file short if it is inside our base directory, otherwise long.
 	 *
-	 * @param f
+	 * @param file
 	 */
-	public String normalize(String f) {
-		if (f.startsWith(base.getAbsolutePath() + "/"))
-			return f.substring(base.getAbsolutePath()
-				.length() + 1);
-		return f;
+	public String normalize(String file) {
+		file = IO.normalizePath(file);
+		String path = IO.absolutePath(base);
+		int len = path.length();
+		if (file.startsWith(path) && file.charAt(len) == '/') {
+			return file.substring(len + 1);
+		}
+		return file;
 	}
 
-	public String normalize(File f) {
-		return normalize(f.getAbsolutePath());
+	public String normalize(File file) {
+		return normalize(file.getAbsolutePath());
 	}
 
 	public static String removeDuplicateMarker(String key) {
@@ -2312,7 +2317,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		@Override
 		public SetLocation file(String file) {
-			this.file = file;
+			this.file = (file != null) ? IO.normalizePath(file) : null;
 			return this;
 		}
 
@@ -2684,8 +2689,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return null;
 		}
 
-		return propertiesFile.getAbsolutePath()
-			.replace('\\', '/');
+		return IO.absolutePath(propertiesFile);
 	}
 
 	/**

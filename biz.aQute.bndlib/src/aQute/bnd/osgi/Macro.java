@@ -138,8 +138,7 @@ public class Macro {
 				if (index == 1 || Character.isWhitespace(line.charAt(index - 2))) {
 					// make sure it is preceded by whitespace or starts at begin
 					index++;
-					variable.append(domain.getBase()
-						.getAbsolutePath());
+					variable.append(IO.absolutePath(domain.getBase()));
 					variable.append('/');
 					continue outer;
 				}
@@ -718,9 +717,7 @@ public class Macro {
 			if (f.exists() && f.getParentFile()
 				.exists()) {
 				sb.append(del);
-				sb.append(f.getParentFile()
-					.getAbsolutePath()
-					.replace('\\', '/'));
+				sb.append(IO.absolutePath(f.getParentFile()));
 				del = ",";
 			}
 		}
@@ -860,8 +857,7 @@ public class Macro {
 		List<String> result = new ArrayList<>();
 		for (File file : files)
 			result.add(relative ? file.getName()
-				: file.getAbsolutePath()
-					.replace(File.separatorChar, '/'));
+				: IO.absolutePath(file));
 
 		return Processor.join(result, ",");
 	}
@@ -1307,8 +1303,7 @@ public class Macro {
 		verifyCommand(args, _fileHelp, null, 3, 3);
 		File base = new File(args[1]);
 		File f = Processor.getFile(base, args[2]);
-		return f.getAbsolutePath()
-			.replace('\\', '/');
+		return IO.absolutePath(f);
 	}
 
 	public String _path(String args[]) {

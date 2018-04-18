@@ -164,14 +164,15 @@ public class MavenDeployCmd extends Processor {
 		command.setTrace();
 		command.add(b.getProperty("mvn", "mvn"));
 		command.add("gpg:sign-and-deploy-file", "-DreleaseInfo=true", "-DpomFile=pom.xml");
-		command.add("-Dfile=" + file.getAbsolutePath());
+		command.add("-Dfile=" + IO.absolutePath(file));
 		command.add("-DrepositoryId=" + repository);
 		command.add("-Durl=" + url);
 		optional(command, "passphrase", passphrase);
 		optional(command, "keyname", keyname);
 		optional(command, "homedir", homedir);
 		optional(command, "classifier", classifier);
-		optional(command, "pomFile", pomFile == null ? null : pomFile.getAbsolutePath());
+		optional(command, "pomFile", pomFile == null ? null
+			: IO.absolutePath(pomFile));
 
 		StringBuilder stdout = new StringBuilder();
 		StringBuilder stderr = new StringBuilder();
@@ -195,7 +196,7 @@ public class MavenDeployCmd extends Processor {
 
 		command.add(b.getProperty("javadoc", "javadoc"));
 		command.add("-d");
-		command.add(tmp.getAbsolutePath());
+		command.add(IO.absolutePath(tmp));
 		command.add("-sourcepath");
 		command.add(Processor.join(b.getSourcePath(), File.pathSeparator));
 

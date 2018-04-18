@@ -1,5 +1,7 @@
 package aQute.bnd.connection.settings;
 
+import static java.util.stream.Collectors.joining;
+
 import java.io.File;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -106,7 +108,7 @@ public class ConnectionSettings extends Processor {
 							if (value != null) {
 								tmp = File.createTempFile("tmp", ".bnd");
 								IO.store(value, tmp);
-								key = tmp.getAbsolutePath();
+								key = IO.absolutePath(tmp);
 							} else
 								getParent().error(
 									"Specified -connection-settings: %s, but no such environment variable %s is found",
@@ -481,17 +483,10 @@ public class ConnectionSettings extends Processor {
 	public static String makeAbsolute(File cwd, String trust) {
 		if (trust == null)
 			return null;
-		StringBuilder sb = new StringBuilder();
-		String del = "";
-
-		String[] parts = trust.split("\\s*,\\s*");
-		for (String part : parts) {
-			File file = new File(cwd, part).getAbsoluteFile();
-			sb.append(del);
-			del = ",";
-			sb.append(file.getAbsolutePath());
-		}
-		return sb.toString();
+		return split(trust).stream()
+			.map(part -> new File(cwd, part))
+			.map(IO::absolutePath)
+			.collect(joining(","));
 	}
 
 	public void add(ServerDTO server) {

@@ -1,7 +1,5 @@
 package aQute.bnd.resource.repository;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,6 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -500,15 +500,13 @@ public class ResourceRepositoryImpl implements ResourceRepository {
 		if (!dirty)
 			return;
 
-		File tmp = new File(indexFile.getAbsolutePath() + ".tmp");
-		IO.mkdirs(tmp.getParentFile());
+		Path index = indexFile.toPath();
+		Path tmp = Files.createTempFile(IO.mkdirs(index.getParent()), "index", null);
 
-		try (PrintWriter ps = IO.writer(tmp, UTF_8)) {
-			Formatter frm = new Formatter(ps);
+		try (PrintWriter ps = IO.writer(tmp); Formatter frm = new Formatter(ps)) {
 			getIndex().write(frm);
-			frm.close();
 		}
-		IO.rename(tmp, indexFile);
+		IO.rename(tmp, index);
 	}
 
 	/**

@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import java.util.zip.ZipException;
 
 import org.slf4j.Logger;
@@ -1053,7 +1054,7 @@ public class Builder extends Analyzer {
 				traverse(paths, sub);
 			}
 		} else if (item.isFile())
-			paths.add(item.getAbsolutePath());
+			paths.add(IO.absolutePath(item));
 		else
 			paths.add(item.getName());
 	}
@@ -1473,7 +1474,7 @@ public class Builder extends Analyzer {
 			clauses.putAll(parseHeader(mergeProperties(Constants.TESTPACKAGES, "test;presence:=optional")));
 		}
 
-		Collection<String> ir = getIncludedResourcePrefixes();
+		Stream<String> ir = getIncludedResourcePrefixes();
 
 		Instructions instructions = new Instructions(clauses);
 
@@ -1493,11 +1494,8 @@ public class Builder extends Analyzer {
 
 			// Check if this resource starts with one of the I-C header
 			// paths.
-			String path = r.getAbsolutePath();
-			for (String p : ir) {
-				if (path.startsWith(p))
-					return true;
-			}
+			String path = IO.absolutePath(r);
+			return ir.anyMatch(path::startsWith);
 		}
 		return false;
 	}
@@ -1506,20 +1504,17 @@ public class Builder extends Analyzer {
 	 * Extra the paths for the directories and files that are used in the
 	 * Include-Resource header.
 	 */
-	private Collection<String> getIncludedResourcePrefixes() {
-		List<String> prefixes = new ArrayList<>();
-		Parameters includeResource = getIncludeResource();
-		for (Entry<String, Attrs> p : includeResource.entrySet()) {
-			if (p.getValue()
+	private Stream<String> getIncludedResourcePrefixes() {
+		Stream<String> prefixes = getIncludeResource().entrySet()
+			.stream()
+			.filter(e -> !e.getValue()
 				.containsKey("literal"))
-				continue;
-
-			Matcher m = IR_PATTERN.matcher(p.getKey());
-			if (m.matches()) {
-				File f = getFile(m.group(1));
-				prefixes.add(f.getAbsolutePath());
-			}
-		}
+			.map(Entry::getKey)
+			.map(IR_PATTERN::matcher)
+			.filter(Matcher::matches)
+			.map(m -> m.group(1))
+			.map(this::getFile)
+			.map(IO::absolutePath);
 		return prefixes;
 	}
 
@@ -1538,9 +1533,8 @@ public class Builder extends Analyzer {
 			File source = jar.getSource();
 			if (source != null) {
 
-				source = source.getCanonicalFile();
-				String sourcePath = source.getAbsolutePath();
-				String resourcePath = resource.getAbsolutePath();
+				String sourcePath = IO.absolutePath(source);
+				String resourcePath = IO.absolutePath(resource);
 				if (sourcePath.equals(resourcePath))
 					return ""; // Matches a classpath entry
 
@@ -1549,7 +1543,7 @@ public class Builder extends Analyzer {
 					// i.e. on Windows the \ must be translated to /
 					String filePath = resourcePath.substring(sourcePath.length() + 1);
 
-					return filePath.replace(File.separatorChar, '/');
+					return filePath;
 				}
 			}
 		}

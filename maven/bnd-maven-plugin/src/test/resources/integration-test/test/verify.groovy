@@ -68,9 +68,9 @@ assert impl_manifest.getValue('SomeParentVar') == 'parentValue'
 assert api_manifest.getValue('Project-Name') == 'Test API Bundle'
 assert impl_manifest.getValue('Project-Name') == 'test-impl-bundle'
 assert wrapper_manifest.getValue('Project-Name') == 'test-wrapper-bundle'
-assert api_manifest.getValue('Project-Dir') == new File(basedir, 'test-api-bundle').absolutePath
-assert impl_manifest.getValue('Project-Dir') == new File(basedir, 'test-impl-bundle').absolutePath
-assert wrapper_manifest.getValue('Project-Dir') == new File(basedir, 'test-wrapper-bundle').absolutePath
+assert api_manifest.getValue('Project-Dir') == new File(basedir, 'test-api-bundle').absolutePath.replace(File.separatorChar, '/' as char)
+assert impl_manifest.getValue('Project-Dir') == new File(basedir, 'test-impl-bundle').absolutePath.replace(File.separatorChar, '/' as char)
+assert wrapper_manifest.getValue('Project-Dir') == new File(basedir, 'test-wrapper-bundle').absolutePath.replace(File.separatorChar, '/' as char)
 assert api_manifest.getValue('Project-Output') == new File(basedir, 'test-api-bundle/target').absolutePath
 assert impl_manifest.getValue('Project-Output') == new File(basedir, 'test-impl-bundle/target').absolutePath
 assert wrapper_manifest.getValue('Project-Output') == new File(basedir, 'test-wrapper-bundle/target').absolutePath
@@ -80,10 +80,10 @@ assert wrapper_manifest.getValue('Project-Buildpath')
 assert api_manifest.getValue('Project-Sourcepath')
 assert impl_manifest.getValue('Project-Sourcepath')
 assert !wrapper_manifest.getValue('Project-Sourcepath')
-assert api_manifest.getValue('Here').replace('/' as char, File.separatorChar) == new File(basedir, 'test-api-bundle').getAbsolutePath()
-assert api_manifest.getValue('Parent-Here').replace('/' as char, File.separatorChar) == basedir.getAbsolutePath()
-assert impl_manifest.getValue('Parent-Here').replace('/' as char, File.separatorChar) == basedir.getAbsolutePath()
-assert wrapper_manifest.getValue('Parent-Here').replace('/' as char, File.separatorChar) == basedir.getAbsolutePath()
+assert api_manifest.getValue('Here') == new File(basedir, 'test-api-bundle').absolutePath.replace(File.separatorChar, '/' as char)
+assert api_manifest.getValue('Parent-Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
+assert impl_manifest.getValue('Parent-Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
+assert wrapper_manifest.getValue('Parent-Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
 
 // Check contents
 assert api_jar.getEntry('org/example/api/') != null

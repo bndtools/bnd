@@ -271,7 +271,7 @@ public class Project extends Processor {
 				throw new CircularDependencyException(workspace.trail.toString() + "," + this);
 			}
 			try {
-				String basePath = getBase().getAbsolutePath();
+				String basePath = IO.absolutePath(getBase());
 
 				dependenciesFull.clear();
 				dependenciesBuild.clear();
@@ -312,7 +312,7 @@ public class Project extends Processor {
 
 					File dir = getFile(removeDuplicateMarker(e.getKey()));
 
-					if (!dir.getAbsolutePath()
+					if (!IO.absolutePath(dir)
 						.startsWith(basePath)) {
 						error("The source directory lies outside the project %s directory: %s", this, dir)
 							.header(Constants.DEFAULT_PROP_SRC_DIR)
@@ -632,7 +632,7 @@ public class Project extends Processor {
 						File f = getFile(bsn);
 						String error = null;
 						if (!f.exists())
-							error = "File does not exist: " + f.getAbsolutePath();
+							error = "File does not exist: " + IO.absolutePath(f);
 						if (f.getName()
 							.endsWith(".lib")) {
 							found = new Container(this, bsn, "file", Container.TYPE.LIBRARY, f, error, attrs, null);
@@ -1036,7 +1036,7 @@ public class Project extends Processor {
 	public String _p_output(String args[]) throws Exception {
 		if (args.length != 1)
 			throw new IllegalArgumentException("${output} should not have arguments");
-		return getOutput().getAbsolutePath();
+		return IO.absolutePath(getOutput());
 	}
 
 	private String list(String[] args, Collection<?> list) {
@@ -1626,8 +1626,7 @@ public class Project extends Processor {
 			}
 		} else {
 			if (container.getError() == null)
-				paths.add(container.getFile()
-					.getAbsolutePath());
+				paths.add(IO.absolutePath(container.getFile()));
 			else {
 				paths.add("<<${repo} = " + container.getBundleSymbolicName() + "-" + container.getVersion() + " : "
 					+ container.getError() + ">>");
@@ -1889,7 +1888,7 @@ public class Project extends Processor {
 			if (bfsWrite) {
 				try (PrintWriter fw = IO.writer(bfs)) {
 					for (File f : builtFiles) {
-						fw.write(f.getAbsolutePath());
+						fw.write(IO.absolutePath(f));
 						fw.write('\n');
 					}
 				}
@@ -2212,7 +2211,7 @@ public class Project extends Processor {
 			File runFile = IO.getFile(getBase(), runFilePath);
 			if (!runFile.isFile())
 				throw new IOException(
-					String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
+					String.format("Run file %s does not exist (or is not a file).", IO.absolutePath(runFile)));
 			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
 				export = run.export(ExecutableJarExporter.EXECUTABLE_JAR, options);
 				getInfo(run);
@@ -2239,7 +2238,7 @@ public class Project extends Processor {
 			File runFile = IO.getFile(getBase(), runFilePath);
 			if (!runFile.isFile())
 				throw new IOException(
-					String.format("Run file %s does not exist (or is not a file).", runFile.getAbsolutePath()));
+					String.format("Run file %s does not exist (or is not a file).", IO.absolutePath(runFile)));
 			try (Run run = new Run(getWorkspace(), getBase(), runFile)) {
 				export = run.export(RunbundlesExporter.RUNBUNDLES, options);
 				getInfo(run);
@@ -2385,7 +2384,7 @@ public class Project extends Processor {
 	 */
 	public Jar getValidJar(File f) throws Exception {
 		Jar jar = new Jar(f);
-		return getValidJar(jar, f.getAbsolutePath());
+		return getValidJar(jar, IO.absolutePath(f));
 	}
 
 	public Jar getValidJar(URL url) throws Exception {
@@ -2431,7 +2430,7 @@ public class Project extends Processor {
 	}
 
 	public String _project(@SuppressWarnings("unused") String args[]) {
-		return getBase().getAbsolutePath();
+		return IO.absolutePath(getBase());
 	}
 
 	/**
@@ -2639,12 +2638,11 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public Builder getSubBuilder(File bndFile) throws Exception {
-		bndFile = bndFile.getCanonicalFile();
+		bndFile = bndFile.getAbsoluteFile();
 
 		// Verify that we are inside the project.
-		File base = getBase().getCanonicalFile();
-		if (!bndFile.getAbsolutePath()
-			.startsWith(base.getAbsolutePath()))
+		if (!bndFile.toPath()
+			.startsWith(getBase().toPath()))
 			return null;
 
 		ProjectBuilder pb = getBuilder(null);
@@ -2653,8 +2651,7 @@ public class Project extends Processor {
 			for (Builder b : pb.getSubBuilders()) {
 				File propertiesFile = b.getPropertiesFile();
 				if (propertiesFile != null) {
-					if (propertiesFile.getCanonicalFile()
-						.equals(bndFile)) {
+					if (propertiesFile.equals(bndFile)) {
 						// Found it!
 						// disconnect from its parent life cycle
 						if (b == pb) {
@@ -3054,7 +3051,7 @@ public class Project extends Processor {
 	public void compile(boolean test) throws Exception {
 
 		Command javac = getCommonJavac(false);
-		javac.add("-d", getOutput().getAbsolutePath());
+		javac.add("-d", IO.absolutePath(getOutput()));
 
 		StringBuilder buildpath = new StringBuilder();
 
@@ -3063,8 +3060,7 @@ public class Project extends Processor {
 		logger.debug("buildpath {}", getBuildpath());
 		for (Container c : bp) {
 			buildpath.append(buildpathDel)
-				.append(c.getFile()
-					.getAbsolutePath());
+				.append(IO.absolutePath(c.getFile()));
 			buildpathDel = File.pathSeparator;
 		}
 
@@ -3078,7 +3074,7 @@ public class Project extends Processor {
 
 		for (File sourceDir : sp) {
 			sourcepath.append(sourcepathDel)
-				.append(sourceDir.getAbsolutePath());
+				.append(IO.absolutePath(sourceDir));
 			sourcepathDel = File.pathSeparator;
 		}
 
@@ -3088,7 +3084,7 @@ public class Project extends Processor {
 		List<File> files = javaFiles.getFiles(getSrc(), true, false);
 
 		for (File file : files) {
-			javac.add(file.getAbsolutePath());
+			javac.add(IO.absolutePath(file));
 		}
 
 		if (files.isEmpty()) {
@@ -3098,13 +3094,12 @@ public class Project extends Processor {
 
 		if (test) {
 			javac = getCommonJavac(true);
-			javac.add("-d", getTestOutput().getAbsolutePath());
+			javac.add("-d", IO.absolutePath(getTestOutput()));
 
 			Collection<Container> tp = Container.flatten(getTestpath());
 			for (Container c : tp) {
 				buildpath.append(buildpathDel)
-					.append(c.getFile()
-						.getAbsolutePath());
+					.append(IO.absolutePath(c.getFile()));
 				buildpathDel = File.pathSeparator;
 			}
 			if (buildpath.length() != 0) {
@@ -3112,12 +3107,12 @@ public class Project extends Processor {
 			}
 
 			sourcepath.append(sourcepathDel)
-				.append(getTestSrc().getAbsolutePath());
+				.append(IO.absolutePath(getTestSrc()));
 			javac.add("-sourcepath", sourcepath.toString());
 
 			javaFiles.getFiles(getTestSrc(), files, true, false);
 			for (File file : files) {
-				javac.add(file.getAbsolutePath());
+				javac.add(IO.absolutePath(file));
 			}
 			if (files.isEmpty()) {
 				logger.debug("Not compiled for test, no test src files");
@@ -3181,8 +3176,7 @@ public class Project extends Processor {
 		Collection<Container> bcp = Container.flatten(getBootclasspath());
 		for (Container c : bcp) {
 			bootclasspath.append(bootclasspathDel)
-				.append(c.getFile()
-					.getAbsolutePath());
+				.append(IO.absolutePath(c.getFile()));
 			bootclasspathDel = File.pathSeparator;
 		}
 

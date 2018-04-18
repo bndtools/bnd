@@ -1426,7 +1426,7 @@ public class Analyzer extends Processor {
 	@Override
 	public void setBase(File file) {
 		super.setBase(file);
-		getProperties().put("project.dir", getBase().getAbsolutePath());
+		getProperties().put("project.dir", IO.absolutePath(getBase()));
 	}
 
 	/**
@@ -1442,8 +1442,7 @@ public class Analyzer extends Processor {
 			} else if (cpe instanceof File) {
 				File f = (File) cpe;
 				if (!f.exists()) {
-					error("Missing file on classpath: %s", f.getAbsolutePath()
-						.replace(File.separatorChar, '/'));
+					error("Missing file on classpath: %s", IO.absolutePath(f));
 					continue;
 				}
 				addClasspath(f);
@@ -1466,8 +1465,7 @@ public class Analyzer extends Processor {
 				Jar current = new Jar(classpath[i]);
 				list.add(current);
 			} else {
-				error("Missing file on classpath: %s", classpath[i].getAbsolutePath()
-					.replace(File.separatorChar, '/'));
+				error("Missing file on classpath: %s", IO.absolutePath(classpath[i]));
 			}
 		}
 		for (Iterator<Jar> i = list.iterator(); i.hasNext();) {
@@ -3521,11 +3519,7 @@ public class Analyzer extends Processor {
 
 			File file = IO.getFile(srcDir, path);
 			if (file.isFile()) {
-				String abspath = file.getAbsolutePath();
-				if (File.separatorChar == '/')
-					return abspath;
-
-				return abspath.replace(File.separatorChar, '/');
+				return IO.absolutePath(file);
 			}
 
 		}
