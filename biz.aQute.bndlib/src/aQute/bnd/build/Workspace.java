@@ -5,7 +5,6 @@ import static java.util.stream.Collectors.toList;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
@@ -13,6 +12,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,10 +77,10 @@ import aQute.lib.deployer.FileRepo;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
+import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
-import aQute.lib.zip.ZipUtil;
 import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
@@ -482,7 +482,7 @@ public class Workspace extends Processor {
 
 					try (InputStream in = getClass().getResourceAsStream(EMBEDDED_REPO)) {
 						if (in != null) {
-							unzip(in, root);
+							unzip(in, root.toPath());
 							return true;
 						}
 					}
@@ -497,7 +497,7 @@ public class Workspace extends Processor {
 						if (EMBEDDED_REPO_TESTING_PATTERN.matcher(classPathEntry)
 							.matches()) {
 							try (InputStream in = IO.stream(Paths.get(classPathEntry))) {
-								unzip(in, root);
+								unzip(in, root.toPath());
 								return true;
 							}
 						}
@@ -511,9 +511,20 @@ public class Workspace extends Processor {
 			}
 		}
 
-		private void unzip(InputStream in, File dir) throws Exception {
+		private void unzip(InputStream in, Path dir) throws Exception {
 			try (JarInputStream jin = new JarInputStream(in)) {
-				byte[] data = new byte[BUFFER_SIZE];
+				FileTime modifiedTime = FileTime.fromMillis(System.currentTimeMillis());
+				Manifest manifest = jin.getManifest();
+				if (manifest != null) {
+					String timestamp = manifest.getMainAttributes()
+						.getValue("Timestamp");
+					if (timestamp != null) {
+						// truncate to seconds since file system can discard
+						// milliseconds
+						long seconds = TimeUnit.MILLISECONDS.toSeconds(Long.parseLong(timestamp));
+						modifiedTime = FileTime.from(seconds, TimeUnit.SECONDS);
+					}
+				}
 				for (JarEntry jentry = jin.getNextJarEntry(); jentry != null; jentry = jin.getNextJarEntry()) {
 					if (jentry.isDirectory()) {
 						continue;
@@ -522,16 +533,12 @@ public class Workspace extends Processor {
 					if (jentryName.startsWith("META-INF/")) {
 						continue;
 					}
-					File dest = getFile(dir, jentryName);
-					long modifiedTime = ZipUtil.getModifiedTime(jentry);
-					if (!dest.isFile() || dest.lastModified() < modifiedTime || modifiedTime <= 0) {
-						File dp = dest.getParentFile();
-						IO.mkdirs(dp);
-						try (OutputStream out = IO.outputStream(dest)) {
-							for (int size = jin.read(data); size > 0; size = jin.read(data)) {
-								out.write(data, 0, size);
-							}
-						}
+					Path dest = dir.resolve(jentryName);
+					if (!Files.isRegularFile(dest) || Files.getLastModifiedTime(dest)
+						.compareTo(modifiedTime) < 0) {
+						IO.mkdirs(dest.getParent());
+						IO.copy(new NonClosingInputStream(jin), dest);
+						Files.setLastModifiedTime(dest, modifiedTime);
 					}
 				}
 			}
