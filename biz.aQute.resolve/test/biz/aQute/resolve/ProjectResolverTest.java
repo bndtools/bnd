@@ -98,7 +98,7 @@ public class ProjectResolverTest extends TestCase {
 			b.setProperty("Provide-Capability", "bnd.augment;path=augments.bnd");
 			Jar build = b.build();
 			String augm = "-augment.a: osgi.promise;capability:='foo;bar=1'";
-			build.putResource("augments.bnd", new EmbeddedResource(augm.getBytes(), 10000));
+			build.putResource("augments.bnd", new EmbeddedResource(augm, 10000L));
 
 			//
 			// Store it in the repo
