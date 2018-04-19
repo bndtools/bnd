@@ -4,6 +4,8 @@
 -resourceonly: true
 
 Bundle-Description: Embedded Repo for bnd workspace.
+Timestamp: ${_@tstamp}
+
 -includeresource: \
 	biz.aQute.launcher/biz.aQute.launcher-${base.version}.jar=${repo;biz.aQute.launcher;snapshot}, \
 	biz.aQute.remote.launcher/biz.aQute.remote.launcher-${base.version}.jar=${repo;biz.aQute.remote.launcher;snapshot}, \

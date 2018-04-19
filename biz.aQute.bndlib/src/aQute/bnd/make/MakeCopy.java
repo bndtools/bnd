@@ -1,7 +1,5 @@
 package aQute.bnd.make;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -26,7 +24,7 @@ public class MakeCopy implements MakePlugin {
 			String content = argumentsOnMake.get("content");
 			if (content == null)
 				throw new IllegalArgumentException("No 'from' or 'content' field in copy " + argumentsOnMake);
-			return new EmbeddedResource(content.getBytes(UTF_8), 0);
+			return new EmbeddedResource(content, 0L);
 		}
 		File f = builder.getFile(from);
 		if (f.isFile())

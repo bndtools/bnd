@@ -27,7 +27,7 @@ public class EmbeddedResource implements Resource {
 		this.lastModified = lastModified;
 	}
 
-	public EmbeddedResource(String pc, int lastModified) {
+	public EmbeddedResource(String pc, long lastModified) {
 		this(pc.getBytes(UTF_8), lastModified);
 	}
 

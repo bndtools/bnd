@@ -1375,13 +1375,13 @@ public class BuilderTest extends BndTestCase {
 			fromManifest.setManifest(mms);
 
 			fromPackageInfo.putResource("org/osgi/service/event/packageinfo",
-				new EmbeddedResource("version 99".getBytes(), 0));
+				new EmbeddedResource("version 99", 0L));
 
 			Manifest mboth = new Manifest();
 			mboth.getMainAttributes()
 				.putValue("Export-Package", "org.osgi.service.event; version=101");
 			fromBoth.putResource("org/osgi/service/event/packageinfo",
-				new EmbeddedResource("version 199".getBytes(), 0));
+				new EmbeddedResource("version 199", 0L));
 			fromBoth.setManifest(mboth);
 
 			// Only version in manifest

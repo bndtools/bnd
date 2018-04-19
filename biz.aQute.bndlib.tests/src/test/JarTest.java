@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 public class JarTest extends TestCase {
 
 	public void testDeletePrefix() {
-		Resource r = new EmbeddedResource(new byte[1], 0);
+		Resource r = new EmbeddedResource(new byte[1], 0L);
 
 		Jar jar = new Jar("test");
 		jar.putResource("META-INF/maven/org/osgi/test/test.pom", r);
@@ -95,7 +95,7 @@ public class JarTest extends TestCase {
 		jar.setDoNotTouchManifest();
 		jar.putResource("a/b", new FileResource(IO.getFile("testresources/bnd.jar")));
 		jar.putResource("META-INF/MANIFEST.MF",
-			new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n".getBytes(), 0));
+			new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n", 0L));
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		jar.write(bout);

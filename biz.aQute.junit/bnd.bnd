@@ -6,23 +6,33 @@
 	osgi.cmpn;version=4.2,\
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
-    ${junit}
+    ${junit},\
+    ${assertj}
 	
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
 
-Private-Package: aQute.junit.*
+Private-Package: aQute.junit.*, \
+				org.assertj.core.*
+
 
 Export-Package: junit.*;version="3.8.2", \
 				org.junit.*, \
-				org.hamcrest.*
--fixupmessages: Version for package junit.*3.8.2
+				org.hamcrest.*, \
+				!org.assertj.core.internal.*, \
+				org.assertj.core.*
+
+-fixupmessages.junit: Version for package junit.*3.8.2
+-fixupmessages.assertj: Export org.assertj.core.* private references
+
 
 # The dependency on aQute packages is only for the 
 # master side. When launched, those dependencies
 # are not necessary
 Import-Package: \
     aQute.*;resolution:=optional, \
+    net.sf.cglib.proxy;resolution:=optional, \
+    org.apache.tools.ant.*;resolution:=optional, \
     junit.*;version="[3.8,5)",\
     *
 
