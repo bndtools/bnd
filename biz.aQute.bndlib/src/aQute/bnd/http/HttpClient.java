@@ -317,12 +317,8 @@ public class HttpClient implements Closeable, URLConnector {
 		final ProgressPlugin.Task task = getTask(request);
 		try {
 
-			TaggedData td = connectWithProxy(proxy, new Callable<TaggedData>() {
-				@Override
-				public TaggedData call() throws Exception {
-					return doConnect(request.upload, request.download, con, hcon, request, task);
-				}
-			});
+			TaggedData td = connectWithProxy(proxy,
+				() -> doConnect(request.upload, request.download, con, hcon, request, task));
 			logger.debug("result {}", td);
 			return td;
 		} catch (Throwable t) {

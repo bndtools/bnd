@@ -262,9 +262,8 @@ public class HttpRequest<T> {
 		return this;
 	}
 
-	// TODO
 	public HttpRequest<T> timeout(long timeout, TimeUnit unit) {
-		this.timeout = timeout;
+		this.timeout = unit.toMillis(timeout);
 		return this;
 	}
 
