@@ -15,10 +15,10 @@ public class MavenWorkspaceRunListener implements RunListener {
         MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
 
         if (repo == null) {
-            MavenWorkspaceRepository mavenWorkspaceRepository = new MavenWorkspaceRepository();
-            workspace.addBasicPlugin(mavenWorkspaceRepository);
+            repo = new MavenWorkspaceRepository();
             workspace.getRepositories()
-                .add(0, mavenWorkspaceRepository);
+                .add(0, repo);
+            workspace.addBasicPlugin(repo);
         }
     }
 
@@ -28,6 +28,8 @@ public class MavenWorkspaceRunListener implements RunListener {
         MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
 
         if (repo != null) {
+            workspace.getRepositories()
+                .remove(repo);
             workspace.removeBasicPlugin(repo);
             repo.cleanup();
         }
