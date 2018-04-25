@@ -218,7 +218,7 @@ public class BndPlugin implements Plugin<Project> {
 
       jar {
         description 'Assemble the project bundles.'
-        deleteAllActions() /* Replace the standard task actions */
+        actions.clear() /* Replace the standard task actions */
         enabled !bndProject.isNoBundles()
         configurations.archives.artifacts.files.find {
           archiveName = it.name /* use first artifact as archiveName */
