@@ -5,6 +5,7 @@ import static org.osgi.annotation.bundle.Requirement.Resolution.OPTIONAL;
 
 import org.osgi.annotation.bundle.Attribute;
 import org.osgi.annotation.bundle.Capability;
+import org.osgi.annotation.bundle.Directive;
 import org.osgi.annotation.bundle.Header;
 import org.osgi.annotation.bundle.Requirement;
 
@@ -29,4 +30,14 @@ public @interface AnnotatedAnnotation {
 
 	@Attribute
 	int number();
+
+	@Directive("x-open")
+	String anotherIgnoredName();
+
+	@Directive("x-anotherUsedName")
+	String[] x_anotherUsedName();
+
+	@Directive("x-anotherNumber")
+	int x_anotherNumber();
+
 }
