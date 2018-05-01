@@ -148,6 +148,14 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("number:Long"));
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			p = req.get("require" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
 			assertNotNull(p);
@@ -164,6 +172,14 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
 			assertEquals("meta", p.get("foo"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			p = req.get("maybe");
 			assertNotNull(p);
@@ -178,6 +194,14 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("number:Long"));
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			// These two values are out of order with respect to the annotations
 			// due to the TreeSet sorting we do on the values. This has been
@@ -195,6 +219,14 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
 			assertEquals("meta", p.get("foo"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			p = cap.get("provide" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
 			assertNotNull(p);
@@ -207,6 +239,14 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("number:Long"));
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			assertEquals("Indirectly-bar", mainAttributes.getValue("Foo2"));
 			assertEquals("Indirectly-buzz", mainAttributes.getValue("Fizz2"));
