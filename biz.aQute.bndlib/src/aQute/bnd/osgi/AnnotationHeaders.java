@@ -1,11 +1,17 @@
 package aQute.bnd.osgi;
 
+import static java.util.Arrays.stream;
+import static java.util.stream.Stream.concat;
+
 import java.io.Closeable;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -289,9 +295,11 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			}
 			if (scanThisType) {
 				c.parseClassFileWithCollector(new ClassDataCollector() {
-					private MethodDef	lastMethodSeen;
+					private String				lastMethodSeen;
 
 					private Attrs		attributesAndDirectives	= new Attrs();
+
+					private Map<String, Object>	members					= new HashMap<>();
 
 					@Override
 					public void annotation(Annotation a) throws Exception {
@@ -312,10 +320,17 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 								a.merge(annotation);
 								a.addDefaults(c);
 							} else if (isRequirementOrCapability(a)) {
+								overrideMembers(a);
 								mergeAttributesAndDirectives(a);
 							}
 							AnnotationHeaders.this.annotation(a);
 						}
+					}
+
+					private void overrideMembers(Annotation a) {
+						members.entrySet()
+							.stream()
+							.forEach(e -> a.put(e.getKey(), e.getValue()));
 					}
 
 					private void mergeAttributesAndDirectives(Annotation a) {
@@ -342,12 +357,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 					}
 
 					private void handleAttributeOrDirective(Annotation a) {
-						Object o = annotation.get(lastMethodSeen.getName());
+						Object o = annotation.get(lastMethodSeen);
 
 						if (o != null) {
 							String attributeName = a.get("value");
 							if (attributeName == null) {
-								attributeName = lastMethodSeen.getName();
+								attributeName = lastMethodSeen;
 							}
 							if (STD_ATTRIBUTE.equals(a.getName()
 								.getFQN())) {
@@ -360,7 +375,22 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 					@Override
 					public void method(MethodDef defined) {
-						lastMethodSeen = defined;
+						lastMethodSeen = defined.getName();
+
+						boolean possibleOverride = concat(stream(Capability.class.getMethods()),
+							stream(Requirement.class.getMethods())).map(Method::getName)
+								.anyMatch(m -> m.equals(lastMethodSeen));
+
+						boolean isAttrOrDirective = defined.annotations != null && defined.annotations.stream()
+							.map(TypeRef::getFQN)
+							.anyMatch(a -> STD_ATTRIBUTE.equals(a) || STD_DIRECTIVE.equals(a));
+
+						if (possibleOverride && !isAttrOrDirective) {
+							Object value = annotation.get(lastMethodSeen);
+							if (value != null) {
+								members.put(lastMethodSeen, value);
+							}
+						}
 					}
 				});
 			}
