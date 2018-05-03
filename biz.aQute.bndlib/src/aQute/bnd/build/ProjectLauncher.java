@@ -279,7 +279,7 @@ public abstract class ProjectLauncher extends Processor {
 		if (jdb != null) {
 			int port = 1044;
 			try {
-				port = Integer.parseInt(project.getProperty(Constants.RUNJDB));
+				port = Integer.parseInt(jdb);
 			} catch (Exception e) {
 				// ok, value can also be ok, or on, or true
 			}
