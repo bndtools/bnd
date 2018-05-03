@@ -64,6 +64,18 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("'y", s);
 	}
 
+	public static void testLongEscapedQuote() {
+		QuotedTokenizer qt = new QuotedTokenizer(
+			"\"{\\\":configurator:resource-version\\\": 1, \\\":configurator:version\\\":\\\"1\\\", \\\":configurator:symbolic-name\\\":\\\"dummy\\\", \\\"org.apache.aries.rsa.discovery.zookeeper\\\" : {}, \\\"org.apache.aries.rsa.discovery.zookeeper.server\\\" : {}}\",'{\":configurator:resource-version\": 1, \":configurator:version\":\"1\", \":configurator:symbolic-name\":\"dummy\", \"org.apache.aries.rsa.discovery.zookeeper\" : {}, \"org.apache.aries.rsa.discovery.zookeeper.server\" : {}}'",
+			",");
+		String s[] = qt.getTokens();
+		assertEquals("Length", 2, s.length);
+		assertEquals(
+			"{\":configurator:resource-version\": 1, \":configurator:version\":\"1\", \":configurator:symbolic-name\":\"dummy\", \"org.apache.aries.rsa.discovery.zookeeper\" : {}, \"org.apache.aries.rsa.discovery.zookeeper.server\" : {}}",
+			s[0]);
+		assertEquals(s[0], s[1]);
+	}
+
 	public static void testExplicitEmptyString() {
 		QuotedTokenizer qt = new QuotedTokenizer("literal=''", ";=,");
 		qt.nextToken();
