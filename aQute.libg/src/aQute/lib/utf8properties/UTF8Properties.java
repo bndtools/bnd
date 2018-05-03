@@ -106,12 +106,13 @@ public class UTF8Properties extends Properties {
 		String[] lines = sw.toString()
 			.split("\n\r?");
 
+		byte[] newline = "\n".getBytes(UTF_8);
 		for (String line : lines) {
 			if (line.startsWith("#"))
 				continue;
 
 			out.write(line.getBytes(UTF_8));
-			out.write("\n".getBytes(UTF_8));
+			out.write(newline);
 		}
 	}
 
@@ -128,7 +129,7 @@ public class UTF8Properties extends Properties {
 				continue;
 
 			out.write(line);
-			out.write("\n");
+			out.write('\n');
 		}
 	}
 
