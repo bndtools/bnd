@@ -3,7 +3,7 @@ Bundle-Description: \
 	it will add itself to the -runbundles at the end. At startup, this bundle will then \
 	run the tests. This bundle does NOT contain JUnit itself. It will import JUnit just \
 	like any other bundle.
-   
+
 
 # The dependency on aQute packages is only for the 
 # master side. When launched, those dependencies
@@ -21,7 +21,7 @@ Private-Package: \
 	aQute.junit.constants, \
 	aQute.junit.runtime, \
 	aQute.tester.plugin
-	
+-includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
 Tester-Plugin: \
 	aQute.tester.plugin.ProjectTesterImpl
