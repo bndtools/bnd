@@ -14,7 +14,7 @@ Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
 Private-Package: aQute.junit.*, \
 				org.assertj.core.*
-
+-includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
 Export-Package: junit.*;version="3.8.2", \
 				org.junit.*, \
