@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
@@ -597,6 +598,7 @@ public class Central implements IStartupParticipant {
      */
     private static final ReentrantLock bndLock = new ReentrantLock();
     private static final AtomicLong bndLockProgress = new AtomicLong();
+    private static final AtomicReference<Throwable> bndLockOwner = new AtomicReference<>();
 
     /**
      * Used to serialize access to bnd code which is not thread safe.
@@ -628,7 +630,7 @@ public class Central implements IStartupParticipant {
             long progress = bndLockProgress.get();
             for (int i = 0; i < 120; i++) {
                 if ((monitor != null) && monitor.isCanceled()) {
-                    throw new CancellationException("Cancelled waiting to acquire bndLock; has waiters: " + bndLock.getQueueLength());
+                    throw (CancellationException) new CancellationException("Cancelled waiting to acquire bndLock[" + bndLock + "]; has waiters: " + bndLock.getQueueLength()).initCause(bndLockOwner.get());
                 }
                 boolean locked = false;
                 try {
@@ -638,11 +640,14 @@ public class Central implements IStartupParticipant {
                     throw e;
                 }
                 if (locked) {
+                    final Throwable owner = new AssertionError("This throwable holds the caller stacktrace of the bndLock owner");
+                    bndLockOwner.set(owner);
                     try {
                         return callable.call();
                     } finally {
                         bndLockProgress.incrementAndGet();
                         bndLock.unlock();
+                        bndLockOwner.compareAndSet(owner, null);
                     }
                 }
                 long currentProgress = bndLockProgress.get();
@@ -651,7 +656,7 @@ public class Central implements IStartupParticipant {
                     i = 0;
                 }
             }
-            throw new TimeoutException("Unable to acquire bndLock; has waiters: " + bndLock.getQueueLength());
+            throw (TimeoutException) new TimeoutException("Unable to acquire bndLock[" + bndLock + "]; has waiters: " + bndLock.getQueueLength()).initCause(bndLockOwner.get());
         } finally {
             if (interrupted) {
                 Thread.currentThread()
