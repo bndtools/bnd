@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Stream;
 
@@ -596,9 +595,32 @@ public class Central implements IStartupParticipant {
     /**
      * Reentrant lock for serializing access to bnd code.
      */
-    private static final ReentrantLock bndLock = new ReentrantLock();
-    private static final AtomicLong bndLockProgress = new AtomicLong();
-    private static final AtomicReference<Throwable> bndLockOwner = new AtomicReference<>();
+    private static final class BndLock extends ReentrantLock {
+        private static final long serialVersionUID = 1L;
+        private final AtomicLong progress = new AtomicLong();
+
+        long progress() {
+            return progress.get();
+        }
+
+        @Override
+        public void unlock() {
+            progress.incrementAndGet();
+            super.unlock();
+        }
+
+        Throwable getOwnerCause() {
+            final Thread owner = getOwner();
+            if (owner == null) {
+                return null;
+            }
+            final Throwable cause = new Throwable("This throwable holds the stacktrace of the thread owning the bndLock");
+            cause.setStackTrace(owner.getStackTrace());
+            return cause;
+        }
+    }
+
+    private static final BndLock bndLock = new BndLock();
 
     /**
      * Used to serialize access to bnd code which is not thread safe.
@@ -627,10 +649,10 @@ public class Central implements IStartupParticipant {
     public static <V> V bndCall(Callable<V> callable, IProgressMonitor monitor) throws Exception {
         boolean interrupted = Thread.interrupted();
         try {
-            long progress = bndLockProgress.get();
+            long progress = bndLock.progress();
             for (int i = 0; i < 120; i++) {
                 if ((monitor != null) && monitor.isCanceled()) {
-                    throw (CancellationException) new CancellationException("Cancelled waiting to acquire bndLock[" + bndLock + "]; has waiters: " + bndLock.getQueueLength()).initCause(bndLockOwner.get());
+                    throw (CancellationException) new CancellationException("Cancelled waiting to acquire bndLock[" + bndLock + "]; has waiters: " + bndLock.getQueueLength()).initCause(bndLock.getOwnerCause());
                 }
                 boolean locked = false;
                 try {
@@ -640,23 +662,19 @@ public class Central implements IStartupParticipant {
                     throw e;
                 }
                 if (locked) {
-                    final Throwable owner = new AssertionError("This throwable holds the caller stacktrace of the bndLock owner");
-                    bndLockOwner.set(owner);
                     try {
                         return callable.call();
                     } finally {
-                        bndLockProgress.incrementAndGet();
                         bndLock.unlock();
-                        bndLockOwner.compareAndSet(owner, null);
                     }
                 }
-                long currentProgress = bndLockProgress.get();
+                long currentProgress = bndLock.progress();
                 if (progress != currentProgress) {
                     progress = currentProgress;
                     i = 0;
                 }
             }
-            throw (TimeoutException) new TimeoutException("Unable to acquire bndLock[" + bndLock + "]; has waiters: " + bndLock.getQueueLength()).initCause(bndLockOwner.get());
+            throw (TimeoutException) new TimeoutException("Unable to acquire bndLock[" + bndLock + "]; has waiters: " + bndLock.getQueueLength()).initCause(bndLock.getOwnerCause());
         } finally {
             if (interrupted) {
                 Thread.currentThread()
