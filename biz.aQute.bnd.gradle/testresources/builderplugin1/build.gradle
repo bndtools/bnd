@@ -40,7 +40,6 @@ task bundle(type: Bundle) {
    group 'build'
    from sourceSets.test.output
    baseName = baseName+'_bundle'
-   bndfile = file('bundle.bnd')
    bnd = '''
 -exportcontents: doubler.impl
 -sources: true
