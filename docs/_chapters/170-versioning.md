@@ -7,7 +7,7 @@ requires: 1.15
 
 Versioning is probably the most painful part of developing real software. Where toys and prototypes can be developed ignoring evolution, real software requires a migration path to an unknown future.
 
-The OSGi has defined a versioning policy that is described in the [Semantic Versioning whitepaper](http://www.osgi.org/wiki/uploads/Links/SemanticVersioning.pdf). bnd fully supports this model and provides many shortcuts. The goal of bnd is remove any manual work from versioning bundles as well as packages.
+The OSGi has defined a versioning policy that is described in the [Semantic Versioning whitepaper](https://www.osgi.org/wp-content/uploads/SemanticVersioning.pdf). bnd fully supports this model and provides many shortcuts. The goal of bnd is remove any manual work from versioning bundles as well as packages.
 
 The key concept to version in OSGi is the ''package''. Bundles are an ''aggregate'' and therefore must move as fast as the fastest moving exported packages they contain. For example, if a bundle contains two exported packages `foo` and `bar` and `foo` is not changed but `bar` has a major change, then the bundle version needs to also have a major change. This requires an unnecessary update for a bundle that only depended on `foo`. Aggregating dependencies increases the fan out of the transitive dependencies. The result is that systems can only evolve when everything is updated simultaneously. The result is that the system as a whole becomes brittle.
 
