@@ -1,19 +1,13 @@
 package aQute.bnd.osgi;
 
-import static java.util.Arrays.stream;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
-import static java.util.stream.Stream.concat;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -252,7 +246,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				}
 				break;
 			default :
-				doAnnotatedAnnotation(annotation, name, emptySet(), new Attrs(), emptyMap());
+				doAnnotatedAnnotation(annotation, name, emptySet(), new Attrs());
 				break;
 		}
 	}
@@ -265,8 +259,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * @param name
 	 * @throws Exception
 	 */
-	void doAnnotatedAnnotation(final Annotation annotation, TypeRef name, Set<String> processed, Attrs baseAttrs,
-		Map<String, Object> baseMembers) throws Exception {
+	void doAnnotatedAnnotation(final Annotation annotation, TypeRef name, Set<String> processed, Attrs baseAttrs)
+		throws Exception {
 
 		final String fqn = name.getFQN();
 		if (processed.contains(fqn)) {
@@ -287,7 +281,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		if (c != null && c.annotations != null) {
 			c.parseClassFileWithCollector(
-				new MetaAnnotationCollector(c, annotation, processed, baseAttrs, baseMembers));
+				new MetaAnnotationCollector(c, annotation, processed, baseAttrs));
 			// }
 		} else if (c == null) {
 			// Don't repeatedly log for the same missing annotation
@@ -312,15 +306,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		private String				lastMethodSeen;
 		private Set<String>			processed;
 		private Attrs				attributesAndDirectives	= new Attrs();
-		private Map<String, Object>	members					= new HashMap<>();
 
-		private MetaAnnotationCollector(Clazz c, Annotation annotation, Set<String> processed, Attrs baseAttrs,
-			Map<String, Object> baseMembers) {
+		private MetaAnnotationCollector(Clazz c, Annotation annotation, Set<String> processed, Attrs baseAttrs) {
 			this.c = c;
 			this.annotation = annotation;
 			this.processed = processed;
 			this.attributesAndDirectives = new Attrs(baseAttrs);
-			this.members = new HashMap<>(baseMembers);
 		}
 
 		@Override
@@ -340,21 +331,14 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 					a.merge(annotation);
 					a.addDefaults(c);
 				} else if (isRequirementOrCapability(a)) {
-					overrideMembers(a);
 					mergeAttributesAndDirectives(a);
 				}
 				AnnotationHeaders.this.annotation(a);
 			} else {
 				Set<String> processed = new HashSet<>(this.processed);
 				processed.add(c.getFQN());
-				doAnnotatedAnnotation(a, a.getName(), processed, attributesAndDirectives, members);
+				doAnnotatedAnnotation(a, a.getName(), processed, attributesAndDirectives);
 			}
-		}
-
-		private void overrideMembers(Annotation a) {
-			members.entrySet()
-				.stream()
-				.forEach(e -> a.put(e.getKey(), e.getValue()));
 		}
 
 		private void mergeAttributesAndDirectives(Annotation a) {
@@ -401,21 +385,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		@Override
 		public void method(MethodDef defined) {
 			lastMethodSeen = defined.getName();
-
-			boolean possibleOverride = concat(stream(Capability.class.getMethods()),
-				stream(Requirement.class.getMethods())).map(Method::getName)
-					.anyMatch(m -> m.equals(lastMethodSeen));
-
-			boolean isAttrOrDirective = defined.annotations != null && defined.annotations.stream()
-				.map(TypeRef::getFQN)
-				.anyMatch(a -> STD_ATTRIBUTE.equals(a) || STD_DIRECTIVE.equals(a));
-
-			if (possibleOverride && !isAttrOrDirective) {
-				Object value = annotation.get(lastMethodSeen);
-				if (value != null) {
-					members.putIfAbsent(lastMethodSeen, value);
-				}
-			}
 		}
 	}
 

@@ -12,7 +12,7 @@ import org.osgi.annotation.bundle.Requirement;
  * <li>x-top-name:=fizzbuzz</li>
  * <li>name=Steve</li>
  * <li>x-name:=Dave</li>
- * <li>overriding=Chris</li>
+ * <li>overriding=foo</li>
  * </ul>
  */
 @FinalAnnotation(name = "Chris")
@@ -21,7 +21,9 @@ public class AttributeDirectiveOverriding {}
 @BottomAnnotation(foo = "foobar")
 @interface FinalAnnotation {
 
-	// This overrides the name from the req/cap of Top
+	// This does *not* override the name from the req/cap of Top
+	// as that part of the spec was changed (it caused breakages
+	// in DS and metatype)
 	String name();
 
 }
