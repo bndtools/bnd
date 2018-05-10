@@ -86,14 +86,16 @@ public class SimplePermissionPolicy implements SynchronousBundleListener {
 		if (info == null) {
 			launcher.trace("Using default permissions for %s", bundle.getLocation());
 			info = defaultPermissions;
-		} else
+		} else {
 			launcher.trace("For permissions inside bundle %s", bundle.getLocation());
+		}
 
 		if (info != null && info.length > 0) {
 			bundles.add(bundle);
 			permissionAdmin.setPermissions(bundle.getLocation(), info);
-		} else
+		} else {
 			launcher.trace("No permissions for %s", bundle.getLocation());
+		}
 	}
 
 	/**

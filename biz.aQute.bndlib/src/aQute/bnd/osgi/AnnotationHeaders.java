@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.util.Collections.emptySet;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -126,10 +128,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	// Class we're currently processing
 	Clazz							current;
 
-	// The meta annotations we have processed, used to avoid infinite loops
-	// This Set must be cleared for each #classStart(Clazz)
-	final Set<String>				processed			= new HashSet<>();
-
 	// The annotations we could not load. used to avoid repeatedly logging the
 	// same missing annotation for the same project. Note that this should not
 	// be reset for each #classStart(Clazz).
@@ -167,9 +165,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	@Override
 	public boolean classStart(Clazz c) {
-		processed.clear();
 		//
-		// Parse any classes except annotations
+		// Parse any annotated classes except annotations
 		//
 		if (!c.isAnnotation() && c.annotations != null) {
 
@@ -249,7 +246,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				}
 				break;
 			default :
-				doAnnotatedAnnotation(annotation, name);
+				doAnnotatedAnnotation(annotation, name, emptySet(), new Attrs());
 				break;
 		}
 	}
@@ -262,7 +259,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * @param name
 	 * @throws Exception
 	 */
-	void doAnnotatedAnnotation(final Annotation annotation, TypeRef name) throws Exception {
+	void doAnnotatedAnnotation(final Annotation annotation, TypeRef name, Set<String> processed, Attrs baseAttrs)
+		throws Exception {
+
 		final String fqn = name.getFQN();
 		if (processed.contains(fqn)) {
 			analyzer.getLogger()
@@ -270,100 +269,20 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 					current.getFQN(), fqn);
 			return;
 		}
+
+		// No point scanning types that definitely aren't going anywhere
+		if (name.isJava() || DO_NOT_SCAN.contains(fqn)) {
+			return;
+		}
+
 		final Clazz c = analyzer.findClass(name);
+
+		// If this annotation has meta-annotations then it may be relevant to us
+
 		if (c != null && c.annotations != null) {
-			boolean scanThisType = false;
-			for (TypeRef tr : c.annotations) {
-				String trName = tr.getFQN();
-				// No point in scanning core Java annotations
-				if (tr.isJava() || DO_NOT_SCAN.contains(trName)) {
-					continue;
-				}
-
-				if (interesting.contains(trName)) {
-					scanThisType = true;
-				} else {
-					processed.add(fqn);
-					doAnnotatedAnnotation(annotation, tr);
-				}
-			}
-			if (scanThisType) {
-				c.parseClassFileWithCollector(new ClassDataCollector() {
-					private MethodDef	lastMethodSeen;
-
-					private Attrs		attributesAndDirectives	= new Attrs();
-
-					@Override
-					public void annotation(Annotation a) throws Exception {
-						if (STD_ATTRIBUTE.equals(a.getName()
-							.getFQN()) || STD_DIRECTIVE.equals(
-								a.getName()
-									.getFQN())) {
-							handleAttributeOrDirective(a);
-						}
-
-						if (interesting.contains(a.getName()
-							.getFQN())) {
-							// Bnd annotations support merging of child
-							// properties,
-							// but this is not in the specification as far as I
-							// can tell
-							if (isBndAnnotation(a)) {
-								a.merge(annotation);
-								a.addDefaults(c);
-							} else if (isRequirementOrCapability(a)) {
-								mergeAttributesAndDirectives(a);
-							}
-							AnnotationHeaders.this.annotation(a);
-						}
-					}
-
-					private void mergeAttributesAndDirectives(Annotation a) {
-						if (STD_CAPABILITIES.equals(a.getName()
-							.getFQN()) || STD_REQUIREMENTS.equals(
-								a.getName()
-									.getFQN())) {
-							Object[] annotations = a.get("value");
-							for (int i = 0; i < annotations.length; i++) {
-								mergeAttributesAndDirectives((Annotation) annotations[i]);
-							}
-						} else if (!attributesAndDirectives.isEmpty()) {
-							Object[] original = a.get("attribute");
-							int length = (original != null) ? original.length : 0;
-							Object[] updated = new Object[length + attributesAndDirectives.size()];
-							if (length > 0) {
-								System.arraycopy(original, 0, updated, 0, length);
-							}
-							for (String key : attributesAndDirectives.keySet()) {
-								updated[length++] = attributesAndDirectives.toString(key);
-							}
-							a.put("attribute", updated);
-						}
-					}
-
-					private void handleAttributeOrDirective(Annotation a) {
-						Object o = annotation.get(lastMethodSeen.getName());
-
-						if (o != null) {
-							String attributeName = a.get("value");
-							if (attributeName == null) {
-								attributeName = lastMethodSeen.getName();
-							}
-							if (STD_ATTRIBUTE.equals(a.getName()
-								.getFQN())) {
-								attributesAndDirectives.putTyped(attributeName, o);
-							} else {
-								attributesAndDirectives.putTyped(attributeName + ":", o);
-							}
-						}
-					}
-
-					@Override
-					public void method(MethodDef defined) {
-						lastMethodSeen = defined;
-					}
-				});
-			}
+			c.parseClassFileWithCollector(
+				new MetaAnnotationCollector(c, annotation, processed, baseAttrs));
+			// }
 		} else if (c == null) {
 			// Don't repeatedly log for the same missing annotation
 			if (loggedMissing.add(fqn)) {
@@ -378,6 +297,94 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 						fqn, current.getFQN());
 				}
 			}
+		}
+	}
+
+	private final class MetaAnnotationCollector extends ClassDataCollector {
+		private final Clazz			c;
+		private final Annotation	annotation;
+		private String				lastMethodSeen;
+		private Set<String>			processed;
+		private Attrs				attributesAndDirectives	= new Attrs();
+
+		private MetaAnnotationCollector(Clazz c, Annotation annotation, Set<String> processed, Attrs baseAttrs) {
+			this.c = c;
+			this.annotation = annotation;
+			this.processed = processed;
+			this.attributesAndDirectives = new Attrs(baseAttrs);
+		}
+
+		@Override
+		public void annotation(Annotation a) throws Exception {
+			if (STD_ATTRIBUTE.equals(a.getName()
+				.getFQN()) || STD_DIRECTIVE.equals(
+					a.getName()
+						.getFQN())) {
+				handleAttributeOrDirective(a);
+			} else if (interesting.contains(a.getName()
+				.getFQN())) {
+				// Bnd annotations support merging of child
+				// properties,
+				// but this is not in the specification as far as I
+				// can tell
+				if (isBndAnnotation(a)) {
+					a.merge(annotation);
+					a.addDefaults(c);
+				} else if (isRequirementOrCapability(a)) {
+					mergeAttributesAndDirectives(a);
+				}
+				AnnotationHeaders.this.annotation(a);
+			} else {
+				Set<String> processed = new HashSet<>(this.processed);
+				processed.add(c.getFQN());
+				doAnnotatedAnnotation(a, a.getName(), processed, attributesAndDirectives);
+			}
+		}
+
+		private void mergeAttributesAndDirectives(Annotation a) {
+			if (STD_CAPABILITIES.equals(a.getName()
+				.getFQN()) || STD_REQUIREMENTS.equals(
+					a.getName()
+						.getFQN())) {
+				Object[] annotations = a.get("value");
+				for (int i = 0; i < annotations.length; i++) {
+					mergeAttributesAndDirectives((Annotation) annotations[i]);
+				}
+			} else if (!attributesAndDirectives.isEmpty()) {
+				Object[] original = a.get("attribute");
+				int length = (original != null) ? original.length : 0;
+				Object[] updated = new Object[length + attributesAndDirectives.size()];
+				if (length > 0) {
+					System.arraycopy(original, 0, updated, 0, length);
+				}
+				for (String key : attributesAndDirectives.keySet()) {
+					updated[length++] = attributesAndDirectives.toString(key);
+				}
+				a.put("attribute", updated);
+			}
+		}
+
+		private void handleAttributeOrDirective(Annotation a) {
+			Object o = annotation.get(lastMethodSeen);
+
+			if (o != null) {
+				String attributeName = a.get("value");
+				if (attributeName == null) {
+					attributeName = lastMethodSeen;
+				}
+				if (STD_DIRECTIVE.equals(a.getName()
+					.getFQN())) {
+					attributeName += ":";
+				}
+				if (!attributesAndDirectives.containsKey(attributeName)) {
+					attributesAndDirectives.putTyped(attributeName, o);
+				}
+			}
+		}
+
+		@Override
+		public void method(MethodDef defined) {
+			lastMethodSeen = defined.getName();
 		}
 	}
 

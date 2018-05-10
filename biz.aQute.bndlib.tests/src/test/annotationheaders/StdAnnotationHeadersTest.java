@@ -148,6 +148,14 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("number:Long"));
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			p = req.get("require" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
 			assertNotNull(p);
@@ -164,6 +172,14 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
 			assertEquals("meta", p.get("foo"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			p = req.get("maybe");
 			assertNotNull(p);
@@ -178,6 +194,14 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("number:Long"));
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			// These two values are out of order with respect to the annotations
 			// due to the TreeSet sorting we do on the values. This has been
@@ -195,6 +219,14 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
 			assertEquals("meta", p.get("foo"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			p = cap.get("provide" + DUPLICATE_MARKER + DUPLICATE_MARKER + DUPLICATE_MARKER);
 			assertNotNull(p);
@@ -207,9 +239,70 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("number:Long"));
 			assertEquals("42", p.get("number:Long"));
 			assertFalse(p.containsKey("ignoredName"));
+			assertTrue(p.containsKey("x-open:"));
+			assertEquals("seed", p.get("x-open:"));
+			assertTrue(p.containsKey("x-anotherUsedName:"));
+			assertEquals("foo,bar", p.get("x-anotherUsedName:"));
+			assertTrue(p.containsKey("x-anotherNumber:"));
+			assertEquals("17", p.get("x-anotherNumber:"));
+			assertFalse(p.containsKey("anotherIgnoredName"));
+			assertFalse(p.containsKey("anotherIgnoredName:"));
 
 			assertEquals("Indirectly-bar", mainAttributes.getValue("Foo2"));
 			assertEquals("Indirectly-buzz", mainAttributes.getValue("Fizz2"));
+		}
+	}
+
+	/**
+	 * Overriding directives and attributes at many levels for the Requirement
+	 * and Capability annotation
+	 * 
+	 * @throws Exception
+	 */
+	public void testStdAnnotationsOverrideAttrsAndDirectives() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin"));
+			b.setPrivatePackage("test.annotationheaders.attrs.std");
+			b.build();
+			assertTrue(b.check());
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			Props p = req.get("overriding");
+			assertNotNull(p);
+			assertTrue(p.containsKey("filter:"));
+			assertEquals("(&(overriding=foo)(&(version>=1.0.0)(!(version>=2.0.0))))", p.get("filter:"));
+			assertTrue(p.containsKey("foo:List<String>"));
+			assertEquals("foobar", p.get("foo:List<String>"));
+			assertTrue(p.containsKey("x-top-name:"));
+			assertEquals("fizzbuzz", p.get("x-top-name:"));
+			assertTrue(p.containsKey("name"));
+			assertEquals("Steve", p.get("name"));
+			assertTrue(p.containsKey("x-name:"));
+			assertEquals("Dave", p.get("x-name:"));
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			p = cap.get("overriding");
+			assertNotNull(p);
+			assertTrue(p.containsKey("overriding"));
+			assertEquals("foo", p.get("overriding"));
+			assertTrue(p.containsKey("version:Version"));
+			assertEquals("1", p.get("version:Version"));
+			assertTrue(p.containsKey("foo:List<String>"));
+			assertEquals("foobar", p.get("foo:List<String>"));
+			assertTrue(p.containsKey("x-top-name:"));
+			assertEquals("fizzbuzz", p.get("x-top-name:"));
+			assertTrue(p.containsKey("name"));
+			assertEquals("Steve", p.get("name"));
+			assertTrue(p.containsKey("x-name:"));
+			assertEquals("Dave", p.get("x-name:"));
+
 		}
 	}
 
