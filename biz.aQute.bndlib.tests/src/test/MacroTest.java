@@ -20,8 +20,19 @@ public class MacroTest extends TestCase {
 		try (Builder b = new Builder()) {
 			Properties p = new Properties();
 			p.setProperty("a", "${removeall;A,B,C,D,E,F;B,D,F,G}");
+			p.setProperty("empty", "");
+			p.setProperty("b", "${removeall;${empty};${empty}}");
+			p.setProperty("c", "${removeall;A,B,C,D,E,F;${empty}}");
+			p.setProperty("d", "${removeall}");
+			p.setProperty("e", "${removeall;A,B,C,D,E,F}");
+			p.setProperty("f", "${removeall;not-empty,${empty};not-empty,${empty}}");
 			b.setProperties(p);
 			assertEquals("A,C,E", b.getProperty("a"));
+			assertEquals("", b.getProperty("b"));
+			assertEquals("A,B,C,D,E,F", b.getProperty("c"));
+			assertEquals("", b.getProperty("d"));
+			assertEquals("A,B,C,D,E,F", b.getProperty("e"));
+			assertEquals("", b.getProperty("f"));
 		}
 	}
 
@@ -29,8 +40,19 @@ public class MacroTest extends TestCase {
 		try (Builder b = new Builder()) {
 			Properties p = new Properties();
 			p.setProperty("a", "${retainall;A,B,C,D,E,F;B,D,F,G}");
+			p.setProperty("empty", "");
+			p.setProperty("b", "${retainall;${empty};${empty}}");
+			p.setProperty("c", "${retainall;A,B,C,D,E,F;${empty}}");
+			p.setProperty("d", "${retainall}");
+			p.setProperty("e", "${retainall;A,B,C,D,E,F}");
+			p.setProperty("f", "${retainall;not-empty1,${empty};not-empty2,${empty}}");
 			b.setProperties(p);
 			assertEquals("B,D,F", b.getProperty("a"));
+			assertEquals("", b.getProperty("b"));
+			assertEquals("", b.getProperty("c"));
+			assertEquals("", b.getProperty("d"));
+			assertEquals("", b.getProperty("e"));
+			assertEquals("", b.getProperty("f"));
 		}
 	}
 
