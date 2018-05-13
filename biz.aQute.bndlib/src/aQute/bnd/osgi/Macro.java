@@ -385,11 +385,15 @@ public class Macro {
 	static String _removeall = "${removeall;<list>;<list>}";
 
 	public String _removeall(String args[]) {
-		verifyCommand(args, _removeall, null, 3, 3);
+		verifyCommand(args, _removeall, null, 1, 3);
 		List<String> result = new ArrayList<>();
-		Processor.split(args[1], result);
+		if (args.length > 1) {
+			Processor.split(args[1], result);
+		}
 		List<String> remove = new ArrayList<>();
-		Processor.split(args[2], remove);
+		if (args.length > 2) {
+			Processor.split(args[2], remove);
+		}
 		result.removeAll(remove);
 		return Processor.join(result, ",");
 	}
@@ -400,11 +404,15 @@ public class Macro {
 	static String _retainall = "${retainall;<list>;<list>}";
 
 	public String _retainall(String args[]) {
-		verifyCommand(args, _retainall, null, 3, 3);
+		verifyCommand(args, _retainall, null, 1, 3);
 		List<String> result = new ArrayList<>();
-		Processor.split(args[1], result);
+		if (args.length > 1) {
+			Processor.split(args[1], result);
+		}
 		List<String> retain = new ArrayList<>();
-		Processor.split(args[2], retain);
+		if (args.length > 2) {
+			Processor.split(args[2], retain);
+		}
 		result.retainAll(retain);
 		return Processor.join(result, ",");
 	}

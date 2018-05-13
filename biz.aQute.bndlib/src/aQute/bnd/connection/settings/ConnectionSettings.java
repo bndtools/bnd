@@ -70,9 +70,9 @@ public class ConnectionSettings extends Processor {
 			Parameters connectionSettings = new Parameters(mergeProperties(CONNECTION_SETTINGS), getParent());
 			if (connectionSettings.isEmpty()) {
 
-				File file = aQute.lib.io.IO.getFile(BND_CONNECTION_SETTINGS_XML);
+				File file = IO.getFile(BND_CONNECTION_SETTINGS_XML);
 				if (!file.isFile()) {
-					file = aQute.lib.io.IO.getFile(M2_SETTINGS_XML);
+					file = IO.getFile(M2_SETTINGS_XML);
 					if (!file.isFile()) {
 						return;
 					}
