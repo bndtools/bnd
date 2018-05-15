@@ -189,8 +189,10 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	public void progress(float progress, String s, Object... args) {
 		if (out != null) {
 			out.format(s, args);
-			if (!s.endsWith(String.format("%n")))
+			if (!s.endsWith(String.format("%n"))) {
 				out.format("%n");
+			}
+			out.flush();
 		}
 	}
 
