@@ -18,9 +18,10 @@ public class SettingsParserTest extends TestCase {
 	public void testMavenEncryptedPassword() throws Exception {
 
 		System.setProperty(ConnectionSettings.M2_SETTINGS_SECURITY_PROPERTY, "testresources/settings-security.xml");
-		Processor proc = new Processor();
-		proc.setProperty("-connection-settings", "testresources/server-maven-encrypted-selection.xml");
-		try (ConnectionSettings cs = new ConnectionSettings(proc, new HttpClient());) {
+
+		try (Processor proc = new Processor(); HttpClient hc = new HttpClient()) {
+			proc.setProperty("-connection-settings", "testresources/server-maven-encrypted-selection.xml");
+			ConnectionSettings cs = new ConnectionSettings(proc, hc);
 			cs.readSettings();
 			List<ServerDTO> serverDTOs = cs.getServerDTOs();
 			assertEquals(1, serverDTOs.size());
@@ -49,6 +50,17 @@ public class SettingsParserTest extends TestCase {
 		assertEquals(null, p.privateKey);
 		assertEquals("user", p.username);
 		assertEquals("passwd", p.password);
+	}
+
+	public void testServerSelectionOAuth2() throws Exception {
+		SettingsDTO settings = getSettings("server-selection-oauth2.xml");
+		assertEquals(1, settings.servers.size());
+		ServerDTO p = settings.servers.get(0);
+		assertEquals("httpbin.org", p.id);
+		assertEquals(null, p.passphrase);
+		assertEquals(null, p.privateKey);
+		assertEquals(null, p.username);
+		assertEquals("token", p.password);
 	}
 
 	public void testProxies() throws Exception {

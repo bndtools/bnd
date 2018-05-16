@@ -24,6 +24,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 
@@ -132,8 +133,8 @@ public class HttpsVerification extends DefaultURLConnectionHandler {
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
-
-		certificatesPath = map.get("trusted");
+		Config config = Converter.cnv(Config.class, map);
+		certificatesPath = config.trusted();
 	}
 
 	List<X509Certificate> createCertificates(String paths)

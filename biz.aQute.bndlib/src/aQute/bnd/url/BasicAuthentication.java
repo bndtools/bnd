@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.lib.base64.Base64;
+import aQute.lib.converter.Converter;
 import aQute.libg.cryptography.SHA1;
 import aQute.service.reporter.Reporter;
 
@@ -32,12 +33,9 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 
 	interface Config extends DefaultURLConnectionHandler.Config {
 		String user();
-
 		String _password();
 	}
 
-	private static final String	USER					= "user";
-	private static final String	PASSWORD				= ".password";
 	private static final String	HEADER_AUTHORIZATION	= "Authorization";
 	private static final String	PREFIX_BASIC_AUTH		= "Basic ";
 	private String				password;
@@ -59,17 +57,18 @@ public class BasicAuthentication extends DefaultURLConnectionHandler {
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
-		this.password = map.get(PASSWORD);
-		this.user = map.get(USER);
+		Config config = Converter.cnv(Config.class, map);
+		this.password = config._password();
+		this.user = config.user();
 
 		init(map);
 	}
 
-	void init(Map<String, String> map) {
+	private void init(Map<String, String> map) {
 		if (this.password == null) {
 			error("No .password property set on this plugin %s", map);
 		}
-		if (this.password == null) {
+		if (this.user == null) {
 			error("No user property set on this plugin %s", map);
 		}
 		String authString = user + ":" + password;

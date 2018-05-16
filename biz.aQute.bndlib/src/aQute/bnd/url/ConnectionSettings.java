@@ -46,9 +46,7 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 				connection.setConnectTimeout(config.readTimeout());
 
 			for (Entry<String, String> entry : headers.entrySet()) {
-				if (Character.isUpperCase(entry.getKey()
-					.charAt(0)))
-					connection.setRequestProperty(entry.getKey(), entry.getValue());
+				connection.setRequestProperty(entry.getKey(), entry.getValue());
 			}
 
 			if (connection instanceof HttpURLConnection) {
@@ -68,10 +66,11 @@ public class ConnectionSettings extends DefaultURLConnectionHandler {
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
 		super.setProperties(map);
-		for (Entry<String, String> entry : headers.entrySet()) {
+		for (Entry<String, String> entry : map.entrySet()) {
 			if (Character.isUpperCase(entry.getKey()
-				.charAt(0)))
+				.charAt(0))) {
 				headers.put(entry.getKey(), entry.getValue());
+			}
 		}
 		config = Converter.cnv(Config.class, map);
 	}
