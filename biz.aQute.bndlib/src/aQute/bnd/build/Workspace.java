@@ -48,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
-import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
@@ -624,9 +623,7 @@ public class Workspace extends Processor {
 				HttpClient client = new HttpClient();
 				client.setOffline(getOffline());
 				client.setRegistry(this);
-				try (ConnectionSettings cs = new ConnectionSettings(this, client)) {
-					cs.readSettings();
-				}
+				client.readSettings(this);
 
 				list.add(client);
 			} catch (Exception e) {

@@ -1,6 +1,8 @@
 package aQute.bnd.connection.settings;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -19,6 +21,7 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -28,9 +31,11 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.service.url.ProxyHandler;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.BasicAuthentication;
+import aQute.bnd.url.BearerAuthentication;
 import aQute.bnd.url.HttpsVerification;
 import aQute.lib.concurrentinit.ConcurrentInitialize;
 import aQute.lib.converter.Converter;
@@ -38,8 +43,9 @@ import aQute.lib.io.IO;
 import aQute.lib.mavenpasswordobfuscator.MavenPasswordObfuscator;
 import aQute.lib.xpath.XPathParser;
 import aQute.libg.glob.Glob;
+import aQute.service.reporter.Reporter.SetLocation;
 
-public class ConnectionSettings extends Processor {
+public class ConnectionSettings {
 	final static Logger						logger							= LoggerFactory
 		.getLogger(ConnectionSettings.class);
 	public static final String				M2_SETTINGS_SECURITY_XML		= "~/.m2/settings-security.xml";
@@ -47,45 +53,75 @@ public class ConnectionSettings extends Processor {
 	private static final String				M2_SETTINGS_XML					= "~/.m2/settings.xml";
 	private static final String				BND_CONNECTION_SETTINGS_XML		= "~/.bnd/connection-settings.xml";
 	private static final String				CONNECTION_SETTINGS				= "-connection-settings";
-	private HttpClient						client;
-	private List<ServerDTO>					servers							= new ArrayList<>();
-	private ConcurrentInitialize<String>	mavenMasterPassphrase			= new ConcurrentInitialize<String>() {
-
-																				@Override
-																				public String create()
-																					throws Exception {
-																					return readMavenMasterPassphrase();
-																				}
-
-																			};
+	private final Processor					processor;
+	private final HttpClient					client;
+	private final List<ServerDTO>				servers							= new ArrayList<>();
+	private final ConcurrentInitialize<String>	mavenMasterPassphrase;
 
 	public ConnectionSettings(Processor processor, HttpClient client) throws Exception {
-		super(processor);
+		this.processor = Objects.requireNonNull(processor);
 		this.client = client;
+		mavenMasterPassphrase = new MasterPassphrase(processor);
+	}
+
+	private static final class MasterPassphrase extends ConcurrentInitialize<String> {
+		private final Processor processor;
+
+		MasterPassphrase(Processor processor) {
+			this.processor = processor;
+		}
+
+		@Override
+		public String create() throws Exception {
+			String path = System.getProperty(M2_SETTINGS_SECURITY_PROPERTY, M2_SETTINGS_SECURITY_XML);
+			File file = IO.getFile(path);
+			if (!file.isFile()) {
+				logger.info("No Maven security settings file {}", path);
+				return null;
+			}
+
+			XPathParser sp = new XPathParser(file);
+			String master = sp.parse("/settingsSecurity/master");
+			if (master == null || master.isEmpty()) {
+				processor.warning("Found Maven security settings file %s but not master password in it", path);
+				return null;
+			} else {
+				if (!MavenPasswordObfuscator.isObfuscatedPassword(master)) {
+					processor.warning("Master password in %s was not obfuscated, using actual value", path);
+					return master;
+				}
+				try {
+					return MavenPasswordObfuscator.decrypt(master, M2_SETTINGS_SECURITY_PROPERTY);
+				} catch (Exception e) {
+					processor.exception(e, "Could not decrypt the master password from %s with key %s", path,
+						M2_SETTINGS_SECURITY_PROPERTY);
+					return null;
+				}
+			}
+		}
 	}
 
 	public void readSettings() throws Exception {
-		File tmp = null;
-		try {
-			Parameters connectionSettings = new Parameters(mergeProperties(CONNECTION_SETTINGS), getParent());
-			if (connectionSettings.isEmpty()) {
-
-				File file = IO.getFile(BND_CONNECTION_SETTINGS_XML);
+		Parameters connectionSettings = new Parameters(processor.mergeProperties(CONNECTION_SETTINGS), processor);
+		if (connectionSettings.isEmpty()) {
+			File file = IO.getFile(BND_CONNECTION_SETTINGS_XML);
+			if (!file.isFile()) {
+				file = IO.getFile(M2_SETTINGS_XML);
 				if (!file.isFile()) {
-					file = IO.getFile(M2_SETTINGS_XML);
-					if (!file.isFile()) {
-						return;
-					}
+					return;
 				}
-				parse(file);
-				return;
 			}
+			parse(file);
+			return;
+		}
 
+		List<File> tmps = new ArrayList<>();
+		try {
 			for (Map.Entry<String, Attrs> entry : connectionSettings.entrySet()) {
-
 				String key = entry.getKey();
-				if ("false".equalsIgnoreCase(key))
+				if ("false".equalsIgnoreCase(key)) {
 					continue;
+				}
 
 				switch (key) {
 					case "maven" :
@@ -100,19 +136,21 @@ public class ConnectionSettings extends Processor {
 						Attrs attrs = entry.getValue();
 						String variable = attrs.get("var");
 						if (variable == null) {
-							getParent().error(
-								"Specified -connection-settings: %s, with 'env' but the 'var' parameter is no found",
+							processor.error(
+								"Specified -connection-settings: %s, with 'env' but the 'var' parameter was not found",
 								connectionSettings);
 						} else {
-							String value = System.getenv(key);
+							String value = System.getenv(variable);
 							if (value != null) {
-								tmp = File.createTempFile("tmp", ".bnd");
+								File tmp = File.createTempFile(variable, ".xml");
 								IO.store(value, tmp);
 								key = IO.absolutePath(tmp);
-							} else
-								getParent().error(
+								tmps.add(tmp);
+							} else {
+								processor.error(
 									"Specified -connection-settings: %s, but no such environment variable %s is found",
-									connectionSettings, key);
+									connectionSettings, variable);
+							}
 						}
 						break;
 				}
@@ -127,24 +165,22 @@ public class ConnectionSettings extends Processor {
 				if ("server".equals(key)) {
 					parseServer(entry.getValue());
 				} else {
-
-					File file = getParent() != null ? IO.getFile(key) : getParent().getFile(key);
+					File file = processor.getFile(key);
 					if (!file.isFile()) {
-
 						if (!ignoreError) {
-							SetLocation error = getParent()
+							SetLocation error = processor
 								.error("Specified -connection-settings: %s, but no such file or is directory", file);
-							FileLine header = getParent().getHeader(CONNECTION_SETTINGS, key);
+							FileLine header = processor.getHeader(CONNECTION_SETTINGS, key);
 							if (header != null)
 								header.set(error);
 						}
-					} else
+					} else {
 						parse(file);
+					}
 				}
 			}
 		} finally {
-			if (tmp != null)
-				IO.delete(tmp);
+			tmps.forEach(IO::delete);
 		}
 
 	}
@@ -158,7 +194,7 @@ public class ConnectionSettings extends Processor {
 	 */
 	private void parseServer(Attrs value) throws Exception {
 		ServerDTO server = Converter.cnv(ServerDTO.class, value);
-		if (isPassword(server) || isPrivateKey(server)) {
+		if (isBasicAuth(server) || isBearerAuth(server) || isPrivateKey(server) || isHttpsVerification(server)) {
 
 			if (server.id == null)
 				server.id = "*";
@@ -174,173 +210,190 @@ public class ConnectionSettings extends Processor {
 			return true;
 	}
 
-	private boolean isPassword(ServerDTO server) {
+	private boolean isBasicAuth(ServerDTO server) {
 		if (isEmpty(server.username) || isEmpty(server.password))
 			return false;
 		else
 			return true;
 	}
 
+	private boolean isBearerAuth(ServerDTO server) {
+		if (isEmpty(server.username) && !isEmpty(server.password))
+			return true;
+		else
+			return false;
+	}
+
+	private boolean isHttpsVerification(ServerDTO server) {
+		if (isEmpty(server.trust))
+			return false;
+		else
+			return true;
+	}
+	
 	private boolean isEmpty(String s) {
 		return s == null || s.trim()
 			.isEmpty();
 	}
 
-	public URLConnectionHandler createUrlConnectionHandler(ServerDTO serverDTO) {
-
-		final Glob match = new Glob(serverDTO.match == null ? serverDTO.id : serverDTO.match);
-		final BasicAuthentication basic = getBasicAuthentication(serverDTO.username, serverDTO.password);
-		final HttpsVerification https = new HttpsVerification(serverDTO.trust, serverDTO.verify, getParent());
-
-		return new URLConnectionHandler() {
-
-			@Override
-			public boolean matches(URL url) {
-				String scheme = url.getProtocol()
-					.toLowerCase();
-
-				StringBuilder address = new StringBuilder();
-				address.append(scheme)
-					.append("://")
-					.append(url.getHost());
-
-				if (url.getPort() > 0 && url.getPort() != url.getDefaultPort())
-					address.append(":")
-						.append(url.getPort());
-
-				return match.matcher(address)
-					.matches();
-			}
-
-			@Override
-			public void handle(URLConnection connection) throws Exception {
-				if (basic != null)
-					basic.handle(connection);
-
-				if (isHttps(connection) && https != null) {
-					https.handle(connection);
-				}
-
-			}
-
-			boolean isHttps(URLConnection connection) {
-				return "https".equalsIgnoreCase(connection.getURL()
-					.getProtocol());
-			}
-
-			@Override
-			public String toString() {
-				return "Server [ match=" + match + ", basic=" + basic + ", https=" + https + "]";
-			}
-		};
+	public URLConnectionHandler createURLConnectionHandler(ServerDTO serverDTO) {
+		return new SettingsURLConnectionHandler(serverDTO, processor);
 	}
 
-	public BasicAuthentication getBasicAuthentication(String username, String password) {
-		if (username != null && password != null) {
-			return new BasicAuthentication(username, password, getParent());
+	private static final class SettingsURLConnectionHandler implements URLConnectionHandler {
+		private final Glob					match;
+		private final URLConnectionHandler	handler;
+		private final URLConnectionHandler	https;
+
+		SettingsURLConnectionHandler(ServerDTO serverDTO, Processor processor) {
+			match = new Glob(serverDTO.match != null ? serverDTO.match : serverDTO.id);
+			if (serverDTO.password == null) {
+				handler = null;
+			} else if (serverDTO.username != null) {
+				handler = new BasicAuthentication(serverDTO.username, serverDTO.password, processor);
+			} else {
+				handler = new BearerAuthentication(serverDTO.password, processor);
+			}
+			https = new HttpsVerification(serverDTO.trust, serverDTO.verify, processor);
 		}
-		return null;
+
+		@Override
+		public boolean matches(URL url) {
+			String scheme = url.getProtocol()
+				.toLowerCase();
+
+			StringBuilder address = new StringBuilder();
+			address.append(scheme)
+				.append("://")
+				.append(url.getHost());
+
+			if (url.getPort() > 0 && url.getPort() != url.getDefaultPort())
+				address.append(":")
+					.append(url.getPort());
+
+			return match.matcher(address)
+				.matches();
+		}
+
+		@Override
+		public void handle(URLConnection connection) throws Exception {
+			if (handler != null) {
+				handler.handle(connection);
+			}
+
+			if ((https != null) && isHttps(connection)) {
+				https.handle(connection);
+			}
+		}
+
+		private boolean isHttps(URLConnection connection) {
+			return "https".equalsIgnoreCase(connection.getURL()
+				.getProtocol());
+		}
+
+		@Override
+		public String toString() {
+			return "Server [ match=" + match + ", handler=" + handler + ", https=" + https + "]";
+		}
 	}
 
 	/**
 	 * Create Proxy Handler from ProxyDTO
 	 */
-	public static ProxyHandler createProxyHandler(final ProxyDTO proxyDTO) {
-		return new ProxyHandler() {
-			Glob				globs[];
-			private ProxySetup	proxySetup;
+	public ProxyHandler createProxyHandler(ProxyDTO proxyDTO) {
+		return new SettingsProxyHandler(proxyDTO);
+	}
 
-			@Override
-			public ProxySetup forURL(URL url) throws Exception {
+	private static final class SettingsProxyHandler implements ProxyHandler {
+		private final ProxyDTO	proxyDTO;
+		private List<Glob>	globs;
+		private ProxySetup	proxySetup;
 
-				Proxy.Type type;
+		SettingsProxyHandler(ProxyDTO proxyDTO) {
+			this.proxyDTO = proxyDTO;
+		}
 
-				switch (proxyDTO.protocol.toUpperCase()) {
+		@Override
+		public ProxySetup forURL(URL url) throws Exception {
+			Proxy.Type type;
 
-					case "DIRECT" :
-						type = Type.DIRECT;
-						break;
+			switch (proxyDTO.protocol.toUpperCase()) {
 
-					case "HTTP" :
-						type = Type.HTTP;
-						if (url.getProtocol()
-							.equalsIgnoreCase("http")) {
-							// ok
-						} else
-							return null;
+				case "DIRECT" :
+					type = Type.DIRECT;
+					break;
 
-						break;
-					case "HTTPS" :
-						type = Type.HTTP;
-						if (url.getProtocol()
-							.equalsIgnoreCase("https")) {
-							// ok
-						} else
-							return null;
-						break;
-
-					case "SOCKS" :
-						type = Type.SOCKS;
-						break;
-
-					default :
-						type = Type.HTTP;
-						break;
-				}
-
-				String host = url.getHost();
-				if (host != null) {
-
-					if (isNonProxyHost(host))
+				case "HTTP" :
+					type = Type.HTTP;
+					if (url.getProtocol()
+						.equalsIgnoreCase("http")) {
+						// ok
+					} else
 						return null;
 
-				}
-				// not synchronized because conflicts only do some double work
+					break;
+				case "HTTPS" :
+					type = Type.HTTP;
+					if (url.getProtocol()
+						.equalsIgnoreCase("https")) {
+						// ok
+					} else
+						return null;
+					break;
 
-				if (proxySetup == null) {
-					proxySetup = new ProxySetup();
-					if (proxyDTO.username != null && proxyDTO.password != null)
-						proxySetup.authentication = new PasswordAuthentication(proxyDTO.username,
-							proxyDTO.password.toCharArray());
+				case "SOCKS" :
+					type = Type.SOCKS;
+					break;
 
-					SocketAddress socketAddress;
-					if (proxyDTO.host != null)
-						socketAddress = new InetSocketAddress(proxyDTO.host, proxyDTO.port);
-					else
-						socketAddress = new InetSocketAddress(proxyDTO.port);
-
-					proxySetup.proxy = new Proxy(type, socketAddress);
-				}
-				return proxySetup;
+				default :
+					type = Type.HTTP;
+					break;
 			}
 
-			public boolean isNonProxyHost(String host) {
+			if (isNonProxyHost(url.getHost())) {
+				return null;
+			}
 
-				Glob[] globs = getNonProxyHosts(proxyDTO);
+			// not synchronized because conflicts only do some double work
+			if (proxySetup == null) {
+				proxySetup = new ProxySetup();
+				if (proxyDTO.username != null && proxyDTO.password != null)
+					proxySetup.authentication = new PasswordAuthentication(proxyDTO.username,
+						proxyDTO.password.toCharArray());
 
-				for (Glob glob : globs) {
-					if (glob.matcher(host)
-						.matches())
-						return true;
-				}
+				SocketAddress socketAddress;
+				if (proxyDTO.host != null)
+					socketAddress = new InetSocketAddress(proxyDTO.host, proxyDTO.port);
+				else
+					socketAddress = new InetSocketAddress(proxyDTO.port);
+
+				proxySetup.proxy = new Proxy(type, socketAddress);
+			}
+			return proxySetup;
+		}
+
+		private boolean isNonProxyHost(String host) {
+			if (host == null) {
 				return false;
 			}
+			return getNonProxyHosts().stream()
+				.anyMatch(g -> g.matcher(host)
+					.matches());
+		}
 
-			public Glob[] getNonProxyHosts(final ProxyDTO proxyDTO) {
-				// not synchronized because conflicts only do some double work
-				if (globs == null) {
-					if (proxyDTO.nonProxyHosts == null)
-						globs = new Glob[0];
-					else {
-						String parts[] = proxyDTO.nonProxyHosts.split("\\s*\\|\\s*");
-						globs = new Glob[parts.length];
-						for (int i = 0; i < parts.length; i++)
-							globs[i] = new Glob(parts[i]);
-					}
-				}
+		private List<Glob> getNonProxyHosts() {
+			// not synchronized because conflicts only do some double work
+			if (globs != null) {
 				return globs;
 			}
-		};
+			if (proxyDTO.nonProxyHosts == null) {
+				return globs = emptyList();
+			}
+			return globs = Processor.split(proxyDTO.nonProxyHosts, "\\s*\\|\\s*")
+				.stream()
+				.map(Glob::new)
+				.collect(toList());
+		}
 	}
 
 	private void parse(File file) throws Exception {
@@ -376,35 +429,6 @@ public class ConnectionSettings extends Processor {
 		if (deflt != null)
 			add(deflt);
 
-	}
-
-	private String readMavenMasterPassphrase() throws Exception {
-		String path = System.getProperty(M2_SETTINGS_SECURITY_PROPERTY, M2_SETTINGS_SECURITY_XML);
-		File file = IO.getFile(path);
-		if (!file.isFile()) {
-			logger.info("No Maven security settings file {}", path);
-			return null;
-		}
-
-		XPathParser sp = new XPathParser(file);
-		String master = sp.parse("/settingsSecurity/master");
-		if (master == null || master.isEmpty()) {
-			warning("Found Maven security settings file %s but not master password in it", path);
-			return null;
-		} else {
-
-			if (!MavenPasswordObfuscator.isObfuscatedPassword(master)) {
-				warning("Master password in %s was not obfuscated, using actual value", path);
-				return master;
-			}
-			try {
-				return MavenPasswordObfuscator.decrypt(master, M2_SETTINGS_SECURITY_PROPERTY);
-			} catch (Exception e) {
-				exception(e, "Could not decrypt the master password from %s with key %s", path,
-					M2_SETTINGS_SECURITY_PROPERTY);
-				return null;
-			}
-		}
 	}
 
 	final static String	IPNR_PART_S	= "([01]\\d\\d)|(2[0-4]\\d)|(25[0-5])";
@@ -474,7 +498,7 @@ public class ConnectionSettings extends Processor {
 				}
 
 			} catch (Exception e) {
-				exception(e, "Failed to parse proxy 'mask' clause in settings: %s", clause);
+				processor.exception(e, "Failed to parse proxy 'mask' clause in settings: %s", clause);
 			}
 
 		return false;
@@ -483,7 +507,8 @@ public class ConnectionSettings extends Processor {
 	public static String makeAbsolute(File cwd, String trust) {
 		if (trust == null)
 			return null;
-		return split(trust).stream()
+		return Processor.split(trust)
+			.stream()
 			.map(part -> new File(cwd, part))
 			.map(IO::absolutePath)
 			.collect(joining(","));
@@ -492,7 +517,7 @@ public class ConnectionSettings extends Processor {
 	public void add(ServerDTO server) {
 		servers.add(server);
 		if (client != null)
-			client.addURLConnectionHandler(createUrlConnectionHandler(server));
+			client.addURLConnectionHandler(createURLConnectionHandler(server));
 	}
 
 	public void add(ProxyDTO proxy) {

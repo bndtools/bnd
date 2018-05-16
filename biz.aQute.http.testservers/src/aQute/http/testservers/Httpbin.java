@@ -129,6 +129,7 @@ public class Httpbin extends HttpTestServer {
 	}
 
 	static Pattern BASIC_AUTH_P = Pattern.compile("Basic\\s+(?<auth>[^\\s]+)\\s*", Pattern.CASE_INSENSITIVE);
+	static Pattern	BEARER_AUTH_P	= Pattern.compile("Bearer\\s+(?<auth>[^\\s]+)\\s*", Pattern.CASE_INSENSITIVE);
 
 	public Request _basic$2dauth(Request req, Response response, String user, String passwrd)
 		throws UnsupportedEncodingException {
@@ -145,6 +146,22 @@ public class Httpbin extends HttpTestServer {
 		}
 		response.code = 401;
 		response.headers.put("WWW-Authenticate", "Basic realm=\"Test\"");
+		return null;
+	}
+
+	public Request _bearer$2dauth(Request req, Response response, String token) throws UnsupportedEncodingException {
+
+		String authorization = req.headers.get("Authorization");
+		if (authorization != null) {
+			Matcher m = BEARER_AUTH_P.matcher(authorization);
+			if (m.matches()) {
+				if (token.equals(m.group("auth"))) {
+					return req;
+				}
+			}
+		}
+		response.code = 401;
+		response.headers.put("WWW-Authenticate", "Bearer realm=\"Test\"");
 		return null;
 	}
 

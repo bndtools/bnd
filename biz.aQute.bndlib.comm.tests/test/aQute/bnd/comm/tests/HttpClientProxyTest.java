@@ -423,87 +423,88 @@ public class HttpClientProxyTest extends TestCase {
 	@SuppressWarnings("resource")
 	void assertHttpProxy(String password, String protocol, boolean proxyCalled, boolean authenticationCalled)
 		throws MalformedURLException, Exception {
-		Processor p = new Processor();
-		p.setProperty("-connectionsettings", "" + false);
-		HttpClient hc = new HttpClient();
-		ConnectionSettings cs = new ConnectionSettings(p, hc);
+		try (Processor p = new Processor(); HttpClient hc = new HttpClient()) {
+			p.setProperty("-connectionsettings", "" + false);
+			ConnectionSettings cs = new ConnectionSettings(p, hc);
 
-		if (httpProxy != null) {
-			ProxyDTO proxy = new ProxyDTO();
-			proxy.active = true;
-			proxy.host = "localhost";
-			proxy.port = httpProxyPort;
-			proxy.protocol = protocol;
-			if (password != null) {
-				proxy.username = "proxyuser";
-				proxy.password = password;
+			if (httpProxy != null) {
+				ProxyDTO proxy = new ProxyDTO();
+				proxy.active = true;
+				proxy.host = "localhost";
+				proxy.port = httpProxyPort;
+				proxy.protocol = protocol;
+				if (password != null) {
+					proxy.username = "proxyuser";
+					proxy.password = password;
+				}
+				proxy.nonProxyHosts = "nonproxy.com|nonproxy.org";
+				hc.addProxyHandler(cs.createProxyHandler(proxy));
+
+				if ("HTTPS".equals(protocol)) {
+
+				}
 			}
-			hc.addProxyHandler(ConnectionSettings.createProxyHandler(proxy));
 
-			if ("HTTPS".equals(protocol)) {
+			ServerDTO server = new ServerDTO();
+			server.id = httpTestServer.getBaseURI()
+				.toString();
+			server.verify = false;
+			server.trust = Strings.join(httpTestServer.getTrustedCertificateFiles(IO.getFile("generated")));
+			cs.add(server);
 
-			}
+			URL url = new URL(httpTestServer.getBaseURI() + "/get-tag/ABCDEFGH");
+			TaggedData tag = hc.connectTagged(url);
+			assertNotNull(tag);
+			if (tag.getState() != State.OTHER)
+				assertEquals("ABCDEFGH", tag.getTag());
+			String s = IO.collect(tag.getInputStream());
+			assertNotNull(s);
+			assertTrue(s.trim()
+				.startsWith("{"));
+			assertEquals(proxyCalled, this.proxyCalled.get());
+			assertEquals(authenticationCalled, this.authenticationCalled.get());
 		}
-
-		ServerDTO server = new ServerDTO();
-		server.id = httpTestServer.getBaseURI()
-			.toString();
-		server.verify = false;
-		server.trust = Strings.join(httpTestServer.getTrustedCertificateFiles(IO.getFile("generated")));
-		cs.add(server);
-
-		URL url = new URL(httpTestServer.getBaseURI() + "/get-tag/ABCDEFGH");
-		TaggedData tag = hc.connectTagged(url);
-		assertNotNull(tag);
-		if (tag.getState() != State.OTHER)
-			assertEquals("ABCDEFGH", tag.getTag());
-		String s = IO.collect(tag.getInputStream());
-		assertNotNull(s);
-		assertTrue(s.trim()
-			.startsWith("{"));
-		assertEquals(proxyCalled, this.proxyCalled.get());
-		assertEquals(authenticationCalled, this.authenticationCalled.get());
-
 	}
 
 	@SuppressWarnings("resource")
 	void assertSocks5Proxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
-		Processor p = new Processor();
-		p.setProperty("-connectionsettings", "" + false);
-		HttpClient hc = new HttpClient();
-		ConnectionSettings cs = new ConnectionSettings(p, hc);
+		try (Processor p = new Processor(); HttpClient hc = new HttpClient()) {
+			p.setProperty("-connectionsettings", "" + false);
+			ConnectionSettings cs = new ConnectionSettings(p, hc);
 
-		if (socks5Proxy != null) {
-			ProxyDTO proxy = new ProxyDTO();
-			proxy.active = true;
-			proxy.host = "localhost";
-			proxy.port = socksProxyPort;
-			proxy.protocol = Type.SOCKS.name();
-			if (password != null) {
-				proxy.username = "proxyuser";
-				proxy.password = password;
+			if (socks5Proxy != null) {
+				ProxyDTO proxy = new ProxyDTO();
+				proxy.active = true;
+				proxy.host = "localhost";
+				proxy.port = socksProxyPort;
+				proxy.protocol = Type.SOCKS.name();
+				if (password != null) {
+					proxy.username = "proxyuser";
+					proxy.password = password;
+				}
+				proxy.nonProxyHosts = "nonproxy.com|nonproxy.org";
+				hc.addProxyHandler(cs.createProxyHandler(proxy));
 			}
-			hc.addProxyHandler(ConnectionSettings.createProxyHandler(proxy));
+
+			ServerDTO server = new ServerDTO();
+			server.id = httpTestServer.getBaseURI()
+				.toString();
+			server.verify = false;
+			server.trust = Strings.join(httpTestServer.getTrustedCertificateFiles(IO.getFile("generated")));
+			cs.add(server);
+
+			URL url = new URL(httpTestServer.getBaseURI() + "/get-tag/ABCDEFGH");
+			TaggedData tag = hc.connectTagged(url);
+			assertNotNull(tag);
+			assertEquals("ABCDEFGH", tag.getTag());
+			String s = IO.collect(tag.getInputStream());
+			assertNotNull(s);
+			assertTrue(s.trim()
+				.startsWith("{"));
+			assertTrue(proxyCalled.get());
+			// assertTrue(this.authenticationCalled.get() ==
+			// authenticationCalled);
 		}
-
-		ServerDTO server = new ServerDTO();
-		server.id = httpTestServer.getBaseURI()
-			.toString();
-		server.verify = false;
-		server.trust = Strings.join(httpTestServer.getTrustedCertificateFiles(IO.getFile("generated")));
-		cs.add(server);
-
-		URL url = new URL(httpTestServer.getBaseURI() + "/get-tag/ABCDEFGH");
-		TaggedData tag = hc.connectTagged(url);
-		assertNotNull(tag);
-		assertEquals("ABCDEFGH", tag.getTag());
-		String s = IO.collect(tag.getInputStream());
-		assertNotNull(s);
-		assertTrue(s.trim()
-			.startsWith("{"));
-		assertTrue(proxyCalled.get());
-		// assertTrue(this.authenticationCalled.get() == authenticationCalled);
-
 	}
 
 }

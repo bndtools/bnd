@@ -688,9 +688,8 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public void readSettings(Processor processor) throws IOException, Exception {
-		try (ConnectionSettings cs = new ConnectionSettings(processor, this)) {
-			cs.readSettings();
-		}
+		ConnectionSettings cs = new ConnectionSettings(processor, this);
+		cs.readSettings();
 	}
 
 	public URI makeDir(URI uri) throws URISyntaxException {
