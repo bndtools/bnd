@@ -35,6 +35,7 @@ import aQute.bnd.osgi.Processor.FileLine;
 import aQute.bnd.service.url.ProxyHandler;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.BasicAuthentication;
+import aQute.bnd.url.BearerAuthentication;
 import aQute.bnd.url.HttpsVerification;
 import aQute.lib.concurrentinit.ConcurrentInitialize;
 import aQute.lib.converter.Converter;
@@ -193,7 +194,7 @@ public class ConnectionSettings {
 	 */
 	private void parseServer(Attrs value) throws Exception {
 		ServerDTO server = Converter.cnv(ServerDTO.class, value);
-		if (isBasicAuth(server) || isPrivateKey(server) || isHttpsVerification(server)) {
+		if (isBasicAuth(server) || isBearerAuth(server) || isPrivateKey(server) || isHttpsVerification(server)) {
 
 			if (server.id == null)
 				server.id = "*";
@@ -214,6 +215,13 @@ public class ConnectionSettings {
 			return false;
 		else
 			return true;
+	}
+
+	private boolean isBearerAuth(ServerDTO server) {
+		if (isEmpty(server.username) && !isEmpty(server.password))
+			return true;
+		else
+			return false;
 	}
 
 	private boolean isHttpsVerification(ServerDTO server) {
@@ -244,7 +252,7 @@ public class ConnectionSettings {
 			} else if (serverDTO.username != null) {
 				handler = new BasicAuthentication(serverDTO.username, serverDTO.password, processor);
 			} else {
-				handler = null;
+				handler = new BearerAuthentication(serverDTO.password, processor);
 			}
 			https = new HttpsVerification(serverDTO.trust, serverDTO.verify, processor);
 		}

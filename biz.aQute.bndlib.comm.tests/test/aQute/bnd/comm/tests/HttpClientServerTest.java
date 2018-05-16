@@ -49,6 +49,10 @@ public class HttpClientServerTest extends TestCase {
 		assertOk("user", "good", true);
 	}
 
+	public void testSimpleSecureVerifyBearer() throws Exception {
+		assertOk(null, "token", true);
+	}
+
 	@SuppressWarnings("resource")
 	private void assertOk(String username, String password, boolean verify) throws Exception {
 		File log = new File(tmp, "log");
@@ -61,9 +65,12 @@ public class HttpClientServerTest extends TestCase {
 			URL url;
 			if (password == null) {
 				url = new URL(httpServer.getBaseURI() + "/get");
-			} else {
+			} else if (username != null) {
 				url = new URL(httpServer.getBaseURI() + "/basic-auth/" + username + "/" + password);
 				settings += ";username=\"" + username + "\";password=\"" + password + "\"";
+			} else {
+				url = new URL(httpServer.getBaseURI() + "/bearer-auth/" + password);
+				settings += ";password=\"" + password + "\"";
 			}
 
 			p.setProperty("-connection-log", log.toURI()
