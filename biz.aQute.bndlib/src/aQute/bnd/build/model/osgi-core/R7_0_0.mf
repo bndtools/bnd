@@ -1,0 +1,51 @@
+Manifest-Version: 1.0
+Bnd-LastModified: 1517519183310
+Bundle-Copyright: Copyright (c) OSGi Alliance (2000, 2018). All Rights
+  Reserved.
+Bundle-Description: OSGi Core Release 7, Interfaces and Classes for us
+ e in compiling bundles
+Bundle-Developers: osgi; email=info@osgi.org; name="OSGi Alliance"; or
+ ganization="OSGi Alliance"; organizationUrl=https://www.osgi.org/
+Bundle-DocURL: https://www.osgi.org/
+Bundle-License: Apache-2.0; link="http://www.apache.org/licenses/LICEN
+ SE-2.0"; description="Apache License, Version 2.0"
+Bundle-ManifestVersion: 2
+Bundle-Name: org.osgi:osgi.core
+Bundle-SCM: url=https://osgi.org/gitweb/build.git, connection=scm:git:
+ https://osgi.org/git/build.git, developerConnection=scm:git:https://o
+ sgi.org/git/build.git, tag=hudson-build.core-1432
+Bundle-SymbolicName: osgi.core
+Bundle-Vendor: OSGi Alliance https://www.osgi.org/
+Bundle-Version: 7.0.0.201802012106
+Created-By: 1.8.0_152 (Oracle Corporation)
+Export-Package: org.osgi.dto;version="1.1",org.osgi.resource;version="
+ 1.0",org.osgi.resource.dto;version="1.0";uses:="org.osgi.dto",org.osg
+ i.framework;version="1.9",org.osgi.framework.dto;version="1.8";uses:=
+ "org.osgi.dto",org.osgi.framework.hooks.bundle;version="1.1";uses:="o
+ rg.osgi.framework",org.osgi.framework.hooks.resolver;version="1.0";us
+ es:="org.osgi.framework.wiring",org.osgi.framework.hooks.service;vers
+ ion="1.1";uses:="org.osgi.framework",org.osgi.framework.hooks.weaving
+ ;version="1.1";uses:="org.osgi.framework.wiring",org.osgi.framework.l
+ aunch;version="1.2";uses:="org.osgi.framework",org.osgi.framework.nam
+ espace;version="1.1";uses:="org.osgi.resource",org.osgi.framework.sta
+ rtlevel;version="1.0";uses:="org.osgi.framework",org.osgi.framework.s
+ tartlevel.dto;version="1.0";uses:="org.osgi.dto",org.osgi.framework.w
+ iring;version="1.2";uses:="org.osgi.framework,org.osgi.resource",org.
+ osgi.framework.wiring.dto;version="1.3";uses:="org.osgi.dto,org.osgi.
+ resource.dto",org.osgi.service.permissionadmin;version="1.2",org.osgi
+ .service.condpermadmin;version="1.1.1";uses:="org.osgi.framework,org.
+ osgi.service.permissionadmin",org.osgi.service.packageadmin;version="
+ 1.2";uses:="org.osgi.framework",org.osgi.service.startlevel;version="
+ 1.1";uses:="org.osgi.framework",org.osgi.service.resolver;version="1.
+ 1";uses:="org.osgi.resource",org.osgi.service.url;version="1.0",org.o
+ sgi.util.tracker;version="1.5.2";uses:="org.osgi.framework"
+Git-Descriptor: hudson-build.core-1432
+Git-SHA: ac877b9fdaa36e26adb939cf9dd425e77243f449
+Import-Package: javax.security.auth.x500;resolution:=optional,org.osgi
+ .dto;resolution:=optional;version="[1.1,2)",org.osgi.framework;resolu
+ tion:=optional;version="[1.9,1.10)",org.osgi.framework.wiring;resolut
+ ion:=optional;version="[1.2,2)",org.osgi.resource;resolution:=optiona
+ l;version="[1.0,2)",org.osgi.resource.dto;resolution:=optional;versio
+ n="[1.0,2)",org.osgi.service.permissionadmin;resolution:=optional;ver
+ sion="[1.2,2)"
+Tool: Bnd-3.5.0.201709291849

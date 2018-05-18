@@ -37,7 +37,7 @@ public class ValidatorTest extends TestCase {
 
 			system.addCapability(b3.buildSyntheticCapability());
 
-			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
+			system.addManifest(OSGI_CORE.R7_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
 			validator.addRepository(IO.getFile("testdata/repo1.index.xml")
@@ -51,7 +51,7 @@ public class ValidatorTest extends TestCase {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
 			system.addEE(EE.JavaSE_1_8);
-			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
+			system.addManifest(OSGI_CORE.R7_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
 			validator.addRepository(IO.getFile("testdata/repo1.index.xml")
@@ -67,7 +67,7 @@ public class ValidatorTest extends TestCase {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
 			system.addEE(EE.JavaSE_1_8);
-			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
+			system.addManifest(OSGI_CORE.R7_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
 			validator.addRepository(IO.getFile("testdata/repo1.index.xml")
@@ -81,7 +81,7 @@ public class ValidatorTest extends TestCase {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
 			system.addEE(EE.JavaSE_1_8);
-			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
+			system.addManifest(OSGI_CORE.R7_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
 			validator.addRepository(IO.getFile("testdata/repo5-broken.index.xml")
@@ -100,7 +100,7 @@ public class ValidatorTest extends TestCase {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
 			system.addEE(EE.JavaSE_1_8);
-			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
+			system.addManifest(OSGI_CORE.R7_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
 			List<Resource> resources = XMLResourceParser.getResources(IO.getFile("testdata/repo5-broken.index.xml")
@@ -119,7 +119,7 @@ public class ValidatorTest extends TestCase {
 		try (ResolverValidator validator = new ResolverValidator();) {
 			ResourceBuilder system = new ResourceBuilder();
 			system.addEE(EE.JavaSE_1_8);
-			system.addManifest(OSGI_CORE.R6_0_0.getManifest());
+			system.addManifest(OSGI_CORE.R7_0_0.getManifest());
 			validator.setSystem(system.build());
 			validator.setTrace(true);
 
