@@ -2,11 +2,13 @@ package aQute.lib.collections;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -139,5 +141,107 @@ public class Iterables {
 	public static <T, R> Iterable<R> distinct(Set<? extends T> first, Iterable<? extends T> second,
 		Function<? super T, ? extends R> mapper, Predicate<? super R> filter) {
 		return new Distinct<>(first, second, mapper, filter);
+	}
+
+	private static class IterableEnumeration<T, R> implements Iterable<R> {
+		private final Enumeration<? extends T>			enumeration;
+		private final Function<? super T, ? extends R>	mapper;
+		private final Predicate<? super R>				filter;
+		private final AtomicBoolean						consume	= new AtomicBoolean();
+
+		IterableEnumeration(Enumeration<? extends T> enumeration, Function<? super T, ? extends R> mapper,
+			Predicate<? super R> filter) {
+			this.enumeration = requireNonNull(enumeration);
+			this.mapper = requireNonNull(mapper);
+			this.filter = requireNonNull(filter);
+		}
+
+		private void consume() {
+			if (consume.compareAndSet(false, true)) {
+				return;
+			}
+			throw new IllegalStateException("enumeration already consumed");
+		}
+
+		@Override
+		public void forEach(Consumer<? super R> action) {
+			consume();
+			requireNonNull(action);
+			while (enumeration.hasMoreElements()) {
+				T t = enumeration.nextElement();
+				R r = mapper.apply(t);
+				if (filter.test(r)) {
+					action.accept(r);
+				}
+			}
+		}
+
+		@Override
+		public Iterator<R> iterator() {
+			consume();
+			return new Iterator<R>() {
+				private R next = null;
+
+				@Override
+				public boolean hasNext() {
+					if (next != null) {
+						return true;
+					}
+					while (enumeration.hasMoreElements()) {
+						T t = enumeration.nextElement();
+						R r = mapper.apply(t);
+						if (filter.test(r)) {
+							next = r;
+							return true;
+						}
+					}
+					return false;
+				}
+
+				@Override
+				public R next() {
+					if (hasNext()) {
+						R r = next;
+						next = null;
+						return r;
+					}
+					throw new NoSuchElementException();
+				}
+			};
+		}
+
+		@Override
+		public Spliterator<R> spliterator() {
+			consume();
+			return new AbstractSpliterator<R>(Long.MAX_VALUE, Spliterator.ORDERED) {
+				@Override
+				public boolean tryAdvance(Consumer<? super R> action) {
+					requireNonNull(action);
+					if (enumeration.hasMoreElements()) {
+						T t = enumeration.nextElement();
+						R r = mapper.apply(t);
+						if (filter.test(r)) {
+							action.accept(r);
+						}
+						return true;
+					}
+					return false;
+				}
+			};
+		}
+	}
+
+	public static <T> Iterable<T> iterable(Enumeration<? extends T> enumeration) {
+		return new IterableEnumeration<>(enumeration, t -> t, t -> true);
+	}
+
+	public static <T, R> Iterable<R> iterable(Enumeration<? extends T> enumeration,
+		Function<? super T, ? extends R> mapper) {
+		return new IterableEnumeration<>(enumeration, mapper, r -> true);
+	}
+
+	public static <T, R> Iterable<R> iterable(Enumeration<? extends T> enumeration,
+		Function<? super T, ? extends R> mapper, Predicate<? super R> filter) {
+		return new IterableEnumeration<>(enumeration, mapper, filter);
 	}
 }
