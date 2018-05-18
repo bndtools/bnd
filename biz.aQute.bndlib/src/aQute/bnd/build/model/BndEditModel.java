@@ -1,5 +1,7 @@
 package aQute.bnd.build.model;
 
+import static java.util.stream.Collectors.toList;
+
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
@@ -11,7 +13,6 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
+import java.util.stream.StreamSupport;
 
 import org.osgi.resource.Requirement;
 
@@ -53,6 +55,7 @@ import aQute.bnd.properties.IRegion;
 import aQute.bnd.properties.LineType;
 import aQute.bnd.properties.PropertiesLineReader;
 import aQute.bnd.version.Version;
+import aQute.lib.collections.Iterables;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 
@@ -513,16 +516,10 @@ public class BndEditModel {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<String> getAllPropertyNames() {
-		List<String> result = new ArrayList<>(properties.size());
-
-		Enumeration<String> names = (Enumeration<String>) properties.propertyNames();
-
-		while (names.hasMoreElements()) {
-			result.add(names.nextElement());
-		}
-		return result;
+		return StreamSupport.stream(Iterables.iterable(properties.propertyNames(), String.class::cast)
+			.spliterator(), false)
+			.collect(toList());
 	}
 
 	public Converter<Object, String> lookupConverter(String propertyName) {

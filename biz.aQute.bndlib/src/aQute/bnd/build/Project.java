@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -91,6 +90,7 @@ import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.ExtList;
+import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -173,8 +173,7 @@ public class Project extends Processor {
 			File f = getFile("build.properties");
 			if (f.isFile()) {
 				Properties p = loadProperties(f);
-				for (Enumeration<?> e = p.propertyNames(); e.hasMoreElements();) {
-					String key = (String) e.nextElement();
+				for (String key : Iterables.iterable(p.propertyNames(), String.class::cast)) {
 					String newkey = key;
 					if (key.indexOf('$') >= 0) {
 						newkey = getReplacer().process(key);

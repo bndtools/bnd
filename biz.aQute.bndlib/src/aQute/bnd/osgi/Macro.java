@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,6 +44,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.ExtList;
+import aQute.lib.collections.Iterables;
 import aQute.lib.collections.SortedList;
 import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.filter.Get;
@@ -1281,8 +1281,7 @@ public class Macro {
 		try {
 			Properties flattened = new UTF8Properties();
 			Properties source = domain.getProperties();
-			for (Enumeration<?> e = source.propertyNames(); e.hasMoreElements();) {
-				String key = (String) e.nextElement();
+			for (String key : Iterables.iterable(source.propertyNames(), String.class::cast)) {
 				if (!key.startsWith("_")) {
 					String value = source.getProperty(key);
 					if (value == null) {

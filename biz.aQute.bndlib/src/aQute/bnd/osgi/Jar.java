@@ -22,7 +22,6 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +45,7 @@ import java.util.zip.ZipOutputStream;
 
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
+import aQute.lib.collections.Iterables;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
@@ -193,8 +193,7 @@ public class Jar implements Closeable {
 	private Jar buildFromZip(File file) throws IOException {
 		try {
 			zipFile = new ZipFile(file);
-			for (Enumeration<? extends ZipEntry> e = zipFile.entries(); e.hasMoreElements();) {
-				ZipEntry entry = e.nextElement();
+			for (ZipEntry entry : Iterables.iterable(zipFile.entries())) {
 				if (entry.isDirectory()) {
 					continue;
 				}

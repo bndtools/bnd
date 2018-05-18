@@ -27,13 +27,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
@@ -1003,8 +1003,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void mergeProperties(Properties properties, boolean override) {
-		for (Enumeration<?> e = properties.propertyNames(); e.hasMoreElements();) {
-			String key = (String) e.nextElement();
+		for (String key : Iterables.iterable(properties.propertyNames(), String.class::cast)) {
 			String value = properties.getProperty(key);
 			if (override || !getProperties().containsKey(key))
 				setProperty(key, value);

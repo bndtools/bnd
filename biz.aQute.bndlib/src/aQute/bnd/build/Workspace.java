@@ -16,7 +16,6 @@ import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -72,6 +71,7 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.url.MultiURLConnectionHandler;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.collections.Iterables;
 import aQute.lib.deployer.FileRepo;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
@@ -697,10 +697,8 @@ public class Workspace extends Processor {
 						.toURI()
 						.toURL()
 				}, getClass().getClassLoader());
-				Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
-				while (manifests.hasMoreElements()) {
-					try (InputStream is = manifests.nextElement()
-						.openStream()) {
+				for (URL manifest : Iterables.iterable(cl.getResources("META-INF/MANIFEST.MF"))) {
+					try (InputStream is = manifest.openStream()) {
 						Manifest m = new Manifest(is);
 						Parameters activators = new Parameters(m.getMainAttributes()
 							.getValue("Extension-Activator"), this);
