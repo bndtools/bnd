@@ -6,8 +6,10 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class Iterables {
 	private Iterables() {}
@@ -16,11 +18,33 @@ public class Iterables {
 		private final Set<? extends T>					first;
 		private final Iterable<? extends T>				second;
 		private final Function<? super T, ? extends R>	mapper;
+		private final Predicate<? super R>				filter;
 
-		Distinct(Set<? extends T> first, Iterable<? extends T> second, Function<? super T, ? extends R> mapper) {
+		Distinct(Set<? extends T> first, Iterable<? extends T> second, Function<? super T, ? extends R> mapper,
+			Predicate<? super R> filter) {
 			this.first = requireNonNull(first);
 			this.second = requireNonNull(second);
 			this.mapper = requireNonNull(mapper);
+			this.filter = requireNonNull(filter);
+		}
+
+		@Override
+		public void forEach(Consumer<? super R> action) {
+			requireNonNull(action);
+			Iterator<? extends T> it1 = first.iterator();
+			Iterator<? extends T> it2 = second.iterator();
+			it1.forEachRemaining((T t) -> {
+				R r = mapper.apply(t);
+				if (filter.test(r)) {
+					action.accept(r);
+				}
+			});
+			it2.forEachRemaining((T t) -> {
+				R r = mapper.apply(t);
+				if (filter.test(r) && !first.contains(t)) {
+					action.accept(r);
+				}
+			});
 		}
 
 		@Override
@@ -38,7 +62,7 @@ public class Iterables {
 					while (it1.hasNext()) {
 						T t = it1.next();
 						R r = mapper.apply(t);
-						if (r != null) {
+						if (filter.test(r)) {
 							next = r;
 							return true;
 						}
@@ -46,7 +70,7 @@ public class Iterables {
 					while (it2.hasNext()) {
 						T t = it2.next();
 						R r = mapper.apply(t);
-						if ((r != null) && !first.contains(t)) {
+						if (filter.test(r) && !first.contains(t)) {
 							next = r;
 							return true;
 						}
@@ -68,16 +92,25 @@ public class Iterables {
 
 		@Override
 		public Spliterator<R> spliterator() {
-			return new Spliterator<R>() {
-				private final Spliterator<? extends T>	it1	= first.spliterator();
-				private final Spliterator<? extends T>	it2	= second.spliterator();
-
+			Spliterator<? extends T> it1 = first.spliterator();
+			Spliterator<? extends T> it2 = second.spliterator();
+			long est = it1.estimateSize() + it2.estimateSize();
+			int characteristics = Spliterator.DISTINCT;
+			if (est < 0) {
+				est = Long.MAX_VALUE;
+			} else {
+				characteristics |= Spliterator.SIZED;
+			}
+			if (it1.hasCharacteristics(Spliterator.ORDERED)) {
+				characteristics |= Spliterator.ORDERED;
+			}
+			return new AbstractSpliterator<R>(est, characteristics) {
 				@Override
 				public boolean tryAdvance(Consumer<? super R> action) {
 					requireNonNull(action);
 					if (it1.tryAdvance((T t) -> {
 						R r = mapper.apply(t);
-						if (r != null) {
+						if (filter.test(r)) {
 							action.accept(r);
 						}
 					})) {
@@ -85,36 +118,26 @@ public class Iterables {
 					}
 					return it2.tryAdvance((T t) -> {
 						R r = mapper.apply(t);
-						if ((r != null) && !first.contains(t)) {
+						if (filter.test(r) && !first.contains(t)) {
 							action.accept(r);
 						}
 					});
-				}
-
-				@Override
-				public Spliterator<R> trySplit() {
-					return null;
-				}
-
-				@Override
-				public long estimateSize() {
-					return it1.estimateSize() + it2.estimateSize();
-				}
-
-				@Override
-				public int characteristics() {
-					return Spliterator.DISTINCT | Spliterator.SIZED;
 				}
 			};
 		}
 	}
 
 	public static <T> Iterable<T> distinct(Set<? extends T> first, Iterable<? extends T> second) {
-		return new Distinct<>(first, second, Function.identity());
+		return new Distinct<>(first, second, t -> t, t -> true);
 	}
 
 	public static <T, R> Iterable<R> distinct(Set<? extends T> first, Iterable<? extends T> second,
 		Function<? super T, ? extends R> mapper) {
-		return new Distinct<>(first, second, mapper);
+		return new Distinct<>(first, second, mapper, r -> true);
+	}
+
+	public static <T, R> Iterable<R> distinct(Set<? extends T> first, Iterable<? extends T> second,
+		Function<? super T, ? extends R> mapper, Predicate<? super R> filter) {
+		return new Distinct<>(first, second, mapper, filter);
 	}
 }

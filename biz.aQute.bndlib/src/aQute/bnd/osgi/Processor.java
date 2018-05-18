@@ -2268,7 +2268,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			second = parent.iterable(inherit);
 		}
 
-		Iterable<String> iterable = Iterables.distinct(first, second, o -> (o instanceof String) ? (String) o : null);
+		Iterable<String> iterable = Iterables.distinct(first, second, o -> (o instanceof String) ? (String) o : null,
+			Objects::nonNull);
 		return iterable;
 	}
 
