@@ -110,6 +110,8 @@ public class Baseline {
 		newerVersion = getVersion(n);
 		olderVersion = getVersion(o);
 
+		final boolean binfoMismatch = mismatch(olderVersion, newerVersion);
+
 		boolean firstRelease = false;
 		if (o.get("<manifest>") == null) {
 			firstRelease = true;
@@ -157,10 +159,8 @@ public class Baseline {
 				info.suggestedVersion = bump(pdiff.getDelta(), info.olderVersion, 1, 0);
 
 				if (info.newerVersion.compareTo(info.suggestedVersion) < 0) {
-					info.mismatch = true; // our suggested version is smaller
-											// than
-											// the
-											// old version!
+					// our suggested version is smaller than the old version!
+					info.mismatch = mismatch(info.olderVersion, info.newerVersion);
 
 					// We can fix some major problems by assuming
 					// that an interface is a provider interface
@@ -172,8 +172,7 @@ public class Baseline {
 								.addAll(Processor.split(info.attributes.get(Constants.PROVIDER_TYPE_DIRECTIVE)));
 
 						// Calculate the new delta assuming we fix all the major
-						// interfaces
-						// by making them providers
+						// interfaces by making them providers
 						Delta tryDelta = pdiff.getDelta(new Ignore() {
 							@Override
 							public boolean contains(Diff diff) {
@@ -226,10 +225,9 @@ public class Baseline {
 			}
 		}
 		// If this is a first release, or the base has a different symbolic
-		// name,
-		// then the newer version must be ok. Otherwise the version bump for
-		// bundles with the same symbolic name should be at least as big as the
-		// biggest semantic change
+		// name, then the newer version must be ok. Otherwise the version bump
+		// for bundles with the same symbolic name should be at least as big as
+		// the biggest semantic change
 		if (firstRelease || !bsn.equals(getBsn(o))) {
 			suggestedVersion = newerVersion;
 		} else {
@@ -256,11 +254,21 @@ public class Baseline {
 		// Ok, now our bundle version must be >= the suggestedVersion
 		if (newerVersion.getWithoutQualifier()
 			.compareTo(getSuggestedVersion()) < 0) {
-			binfo.mismatch = true;
+			binfo.mismatch = binfoMismatch;
 			binfo.reason = getRootCauses(apiDiff);
 		}
 
 		return infos;
+	}
+
+	/**
+	 * "Major version zero (0.y.z) is for initial development. Anything may
+	 * change at any time. The public API should not be considered stable."
+	 * 
+	 * @see <a href="https://semver.org/#spec-item-4">SemVer</a>
+	 */
+	private boolean mismatch(Version older, Version newer) {
+		return older.getMajor() > 0 && newer.getMajor() > 0;
 	}
 
 	private String getRootCauses(Diff apiDiff) {
