@@ -23,6 +23,7 @@ import aQute.bnd.build.Container
 import aQute.bnd.build.Container.TYPE
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
+import aQute.bnd.osgi.About
 import aQute.bnd.osgi.Constants
 import biz.aQute.resolve.Bndrun
 import biz.aQute.resolve.ResolveProcess
@@ -435,7 +436,7 @@ public class BndPlugin implements Plugin<Project> {
         doLast {
           println """
 ------------------------------------------------------------
-Project ${project.name}
+Project ${project.name} // Bnd version ${About.CURRENT}
 ------------------------------------------------------------
 
 project.workspace:      ${parent.projectDir}
