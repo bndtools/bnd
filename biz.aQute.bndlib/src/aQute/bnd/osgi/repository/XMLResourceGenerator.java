@@ -11,8 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
 
@@ -113,16 +113,15 @@ public class XMLResourceGenerator {
 		Requirement wildcard = ResourceUtils.createWildcardRequirement();
 		Map<Requirement, Collection<Capability>> findProviders = repository
 			.findProviders(Collections.singleton(wildcard));
-		for (Capability capability : findProviders.get(wildcard)) {
-			resource(capability.getResource());
-		}
+		findProviders.get(wildcard)
+			.stream()
+			.map(Capability::getResource)
+			.forEach(this::resource);
 		return this;
 	}
 
 	public XMLResourceGenerator resources(Collection<? extends Resource> resources) {
-		for (Resource resource : resources) {
-			resource(resource);
-		}
+		resources.forEach(this::resource);
 		return this;
 	}
 
@@ -131,48 +130,51 @@ public class XMLResourceGenerator {
 			visited.add(resource);
 
 			Tag r = new Tag(repository, "resource");
-			for (Capability cap : resource.getCapabilities(null)) {
+			List<Capability> caps = resource.getCapabilities(null);
+			caps.forEach(cap -> {
 				Tag cr = new Tag(r, "capability");
 				cr.addAttribute("namespace", cap.getNamespace());
 				directives(cr, cap.getDirectives());
 				attributes(cr, cap.getAttributes());
-			}
+			});
 
-			for (Requirement req : resource.getRequirements(null)) {
+			List<Requirement> reqs = resource.getRequirements(null);
+			reqs.forEach(req -> {
 				Tag cr = new Tag(r, "requirement");
 				cr.addAttribute("namespace", req.getNamespace());
 				directives(cr, req.getDirectives());
 				attributes(cr, req.getAttributes());
-			}
+			});
 		}
 		return this;
 	}
 
 	private void directives(Tag cr, Map<String, String> directives) {
-		for (Entry<String, String> e : directives.entrySet()) {
+		directives.entrySet()
+			.forEach(e -> {
 			Tag d = new Tag(cr, "directive");
 			d.addAttribute("name", e.getKey());
 			d.addAttribute("value", e.getValue());
-		}
+		});
 	}
 
-	private void attributes(Tag cr, Map<String, Object> atrributes) {
-		for (Entry<String, Object> e : atrributes.entrySet()) {
+	private void attributes(Tag cr, Map<String, Object> attributes) {
+		attributes.entrySet()
+			.forEach(e -> {
 			Object value = e.getValue();
 			if (value == null)
-				continue;
+					return;
 
 			TypedAttribute ta = TypedAttribute.getTypedAttribute(value);
 			if (ta == null)
-				continue;
+					return;
 
 			Tag d = new Tag(cr, "attribute");
 			d.addAttribute("name", e.getKey());
 			d.addAttribute("value", ta.value);
 			if (ta.type != null)
 				d.addAttribute("type", ta.type);
-
-		}
+			});
 	}
 
 	public XMLResourceGenerator indent(int n) {

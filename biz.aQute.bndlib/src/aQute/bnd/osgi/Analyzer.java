@@ -36,7 +36,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -78,6 +77,7 @@ import aQute.bnd.service.classparser.ClassParser;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
+import aQute.lib.collections.Iterables;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
 import aQute.lib.filter.Filter;
@@ -545,9 +545,7 @@ public class Analyzer extends Processor {
 
 			Attrs attrs = new Attrs();
 
-			for (@SuppressWarnings("unchecked")
-			Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
-				String key = t.nextElement();
+			for (String key : Iterables.iterable(p.propertyNames(), String.class::cast)) {
 				String propvalue = p.getProperty(key);
 
 				if (key.equalsIgnoreCase("include")) {
@@ -921,9 +919,7 @@ public class Analyzer extends Processor {
 			// -----
 
 			doNamesection(dot, manifest);
-
-			for (Enumeration<?> h = getProperties().propertyNames(); h.hasMoreElements();) {
-				String header = (String) h.nextElement();
+			for (String header : Iterables.iterable(getProperties().propertyNames(), String.class::cast)) {
 				if (header.trim()
 					.length() == 0) {
 					warning("Empty property set with value: %s", getProperties().getProperty(header));
