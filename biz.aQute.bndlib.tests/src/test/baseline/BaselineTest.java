@@ -115,9 +115,9 @@ public class BaselineTest extends TestCase {
 	public void testJava8DefaultMethods() throws Exception {
 		try (Builder older = new Builder(); Builder newer = new Builder();) {
 			older.addClasspath(IO.getFile("java8/older/bin"));
-			older.setExportPackage("*");
+			older.setExportPackage("*;version=1.0");
 			newer.addClasspath(IO.getFile("java8/newer/bin"));
-			newer.setExportPackage("*");
+			newer.setExportPackage("*;version=1.0");
 			try (Jar o = older.build(); Jar n = newer.build();) {
 				assertTrue(older.check());
 				assertTrue(newer.check());
@@ -129,7 +129,31 @@ public class BaselineTest extends TestCase {
 				assertEquals(1, infoSet.size());
 				for (Info info : infoSet) {
 					assertTrue(info.mismatch);
-					assertEquals(new Version(0, 1, 0), info.suggestedVersion);
+					assertEquals(new Version(1, 1, 0), info.suggestedVersion);
+					assertEquals(info.packageName, "api_default_methods");
+				}
+			}
+		}
+	}
+
+	public void testNoMismatchForZeroMajor() throws Exception {
+		try (Builder older = new Builder(); Builder newer = new Builder();) {
+			older.addClasspath(IO.getFile("java8/older/bin"));
+			older.setExportPackage("*;version=0.1");
+			newer.addClasspath(IO.getFile("java8/newer/bin"));
+			newer.setExportPackage("*;version=0.1");
+			try (Jar o = older.build(); Jar n = newer.build();) {
+				assertTrue(older.check());
+				assertTrue(newer.check());
+
+				DiffPluginImpl differ = new DiffPluginImpl();
+				Baseline baseline = new Baseline(older, differ);
+
+				Set<Info> infoSet = baseline.baseline(n, o, null);
+				assertEquals(1, infoSet.size());
+				for (Info info : infoSet) {
+					assertFalse(info.mismatch);
+					assertEquals(new Version(0, 2, 0), info.suggestedVersion);
 					assertEquals(info.packageName, "api_default_methods");
 				}
 			}
