@@ -497,7 +497,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		return manifestPath.lastModified() != manifestLastModified;
 	}
 
-	private static final Pattern KEY_P = Pattern.compile("((?<name>[^\\.\\[]+)(\\[(?<index>\\d+)\\])?)(\\.)?");
+	private static final Pattern KEY_P = Pattern.compile("(?<name>[^\\.\\[]+)(?:\\[(?<index>\\d+)\\])?\\.?");
 	private class BeanProperties extends Properties {
 		private static final long serialVersionUID = 1L;
 
@@ -511,22 +511,20 @@ public class BndMavenPlugin extends AbstractMojo {
 			if (!m.find()) {
 				return null;
 			}
-			final String name = m.group("name");
+			String name = m.group("name");
 			Object value = value(name, get(name), m.group("index"));
-			value = getField(value, m);
+			while ((value != null) && m.find()) {
+				name = m.group("name");
+				value = value(name, getField(value, name), m.group("index"));
+			}
 			if (value == null) {
 				return null;
 			}
 			return value.toString();
 		}
 
-		private Object getField(Object target, Matcher m) {
-			if (target == null || !m.find()) {
-				return target;
-			}
-			final String fieldName = m.group("name");
-			final String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-			Object value = null;
+		private Object getField(Object target, String fieldName) {
+			String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 			try {
 				Class<?> targetClass = target.getClass();
 				while (!Modifier.isPublic(targetClass.getModifiers())) {
@@ -538,11 +536,11 @@ public class BndMavenPlugin extends AbstractMojo {
 				} catch (NoSuchMethodException nsme) {
 					getter = targetClass.getMethod("is" + getterSuffix);
 				}
-				value = value(fieldName, getter.invoke(target), m.group("index"));
+				return getter.invoke(target);
 			} catch (Exception e) {
 				logger.debug("Could not find getter method for field {}", fieldName, e);
 			}
-			return getField(value, m);
+			return null;
 		}
 
 		private Object value(String name, Object value, String index) {
