@@ -13,7 +13,7 @@ task deploy(type:Exec) {
   tasks.getByPath("${parent.absoluteProjectPath('dist')}:index").mustRunAfter it
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
-    args '/c', rootProject.file('mvnw.cmd')
+    args '/c', 'mvn'
   } else {
     executable rootProject.file('mvnw')
   }

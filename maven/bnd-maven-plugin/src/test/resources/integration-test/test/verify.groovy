@@ -84,6 +84,7 @@ assert api_manifest.getValue('Here') == new File(basedir, 'test-api-bundle').abs
 assert api_manifest.getValue('Parent-Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
 assert impl_manifest.getValue('Parent-Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
 assert wrapper_manifest.getValue('Parent-Here') == basedir.absolutePath.replace(File.separatorChar, '/' as char)
+assert impl_manifest.getValue('Project-License') == 'Apache License, Version 2.0'
 
 // Check contents
 assert api_jar.getEntry('org/example/api/') != null
