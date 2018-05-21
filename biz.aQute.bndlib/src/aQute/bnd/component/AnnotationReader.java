@@ -550,13 +550,13 @@ public class AnnotationReader extends ClassDataCollector {
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
 
-		private ComponentPropertyTypeDataCollector(String methodDescriptor,
+		ComponentPropertyTypeDataCollector(String methodDescriptor,
 			DeclarativeServicesAnnotationError details) {
 			this.methodDescriptor = methodDescriptor;
 			this.details = details;
 		}
 
-		private ComponentPropertyTypeDataCollector(Annotation componentPropertyAnnotation,
+		ComponentPropertyTypeDataCollector(Annotation componentPropertyAnnotation,
 			DeclarativeServicesAnnotationError details) {
 			// Component Property annotations added in 1.4, but they just map to
 			// normal DS properties, so there's not really a need to require DS
@@ -643,7 +643,9 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 			if (value != null) {
 				String name = defined.getName();
-				handleValue(name, value, isClass, typeClass);
+				if (!props.containsKey(name)) {
+					handleValue(name, value, isClass, typeClass);
+				}
 			}
 		}
 
