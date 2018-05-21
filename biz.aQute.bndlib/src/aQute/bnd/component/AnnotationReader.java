@@ -25,6 +25,8 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferenceScope;
 import org.osgi.service.component.annotations.ServiceScope;
 import org.osgi.service.metatype.annotations.Designate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.xml.XMLAttribute;
 import aQute.bnd.component.DSAnnotations.Options;
@@ -48,6 +50,8 @@ import aQute.lib.collections.MultiMap;
  * Processes spec DS annotations into xml.
  */
 public class AnnotationReader extends ClassDataCollector {
+	private static final Logger			logger						= LoggerFactory.getLogger(AnnotationReader.class);
+
 	final static TypeRef[]				EMPTY						= new TypeRef[0];
 	final static Pattern				PROPERTY_PATTERN			= Pattern.compile(
 		"\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
@@ -337,9 +341,8 @@ public class AnnotationReader extends ClassDataCollector {
 			if (clazz.is(ANNOTATED, COMPONENT_PROPERTY_INSTR, analyzer)) {
 				clazz.parseClassFileWithCollector(new ComponentPropertyTypeDataCollector(annotation, details));
 			} else {
-				analyzer.getLogger()
-					.debug(
-						"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
+				logger.debug(
+					"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
 						clazz.getFQN(), className.getFQN());
 				return;
 			}
