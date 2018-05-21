@@ -76,7 +76,7 @@ import aQute.lib.strings.Strings;
  */
 class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
-	private static final Logger	LOGGER					= LoggerFactory.getLogger(AnnotationHeaders.class);
+	private static final Logger	logger					= LoggerFactory.getLogger(AnnotationHeaders.class);
 
 	static final Pattern		SIMPLE_PARAM_PATTERN	= Pattern
 		.compile("\\$\\{(\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)\\}");
@@ -264,8 +264,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		final String fqn = name.getFQN();
 		if (processed.contains(fqn)) {
-			analyzer.getLogger()
-				.debug("Detected an annotation cycle when processing %s. The cycled annotation was %s",
+			logger.debug("Detected an annotation cycle when processing %s. The cycled annotation was %s",
 					current.getFQN(), fqn);
 			return;
 		}
@@ -292,7 +291,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 						"Unable to determine whether the meta annotation %s applied to type %s provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
 						fqn, current.getFQN());
 				} else {
-					LOGGER.info(
+					logger.info(
 						"Unable to determine whether the meta annotation {} applied to type {} provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
 						fqn, current.getFQN());
 				}

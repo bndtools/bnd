@@ -524,8 +524,8 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 
 		private Object getField(Object target, String fieldName) {
-			String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 			try {
+				String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 				Class<?> targetClass = target.getClass();
 				while (!Modifier.isPublic(targetClass.getModifiers())) {
 					targetClass = targetClass.getSuperclass();
