@@ -2,6 +2,8 @@
  * dist Gradle build script
  */
 
+import aQute.bnd.gradle.Index
+
 def buildProject = project
 
 /* Configure the workspace project */
@@ -22,62 +24,27 @@ configure(parent) {
 /* Configure this project */
 def releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
 
-task('index') {
-  description 'Index the release repository.'
-  dependsOn releaseNeeded
+task('indexonly', type: Index) {
+  description 'Index the release repository only. (Does not depend on releaseNeeded).'
   group 'release'
-
-  /* Bundles to index. */
-  def bundles = fileTree(releaserepo) {
+  repositoryName = "Bnd ${version}"
+  destinationDir = releaserepo
+  gzip = true
+  bundles fileTree(destinationDir) {
     include '**/*.jar'
     exclude '**/*-latest.jar'
     exclude '**/*-sources.jar'
     exclude '**/*-javadoc.jar'
   }
+}
 
-  inputs.files({ bundles.files }).withPropertyName('bundles')
-
-  /* Index files */
-  def index_uncompressed = new File(releaserepo, 'index.xml')
-  def index_compressed = new File(releaserepo, 'index.xml.gz')
-
-  outputs.file(index_uncompressed).withPropertyName('index_uncompressed')
-  outputs.file(index_compressed).withPropertyName('index_compressed')
-
-  doLast {
-    def bndJar = bnd.project.getBundle('biz.aQute.bnd', 'latest', null, ['strategy':'highest']).getFile()
-
-    def bundlesToIndex = bundles*.absolutePath.sort()
-
-    /* index uncompressed. */
-    javaexec {
-      main = '-jar' // first arg must be the jar
-      args bndJar
-      args 'index'
-      args '-r', index_uncompressed
-      args '-d', releaserepo
-      args '-n', 'bnd'
-      args bundlesToIndex
-    }.assertNormalExitValue()
-    logger.info 'Generated index {}.', index_uncompressed
-
-    /* index compressed. */
-    javaexec {
-      main = '-jar' // first arg must be the jar
-      args bndJar
-      args 'index'
-      args '-r', index_compressed
-      args '-d', releaserepo
-      args '-n', 'bnd'
-      args bundlesToIndex
-    }.assertNormalExitValue()
-    logger.info 'Generated index {}.', index_compressed
-  }
+task('index') {
+  description 'Index the release repository.'
+  group 'release'
+  dependsOn releaseNeeded
+  finalizedBy indexonly
 }
 
 clean {
-  doLast {
-    project.delete(releaserepo)
-    project.mkdir(releaserepo)
-  }
+  delete releaserepo
 }

@@ -73,7 +73,7 @@ class BundleTaskConvention {
     classpathModified = false
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
     task.inputs.files(classpathCollection).withPropertyName('classpath')
-    task.inputs.file({ getBndfile() }).withPropertyName('bndfile')
+    task.inputs.file({ getBndfile() ?: project.buildFile }).withPropertyName('bndfile')
     task.inputs.property('bnd', { getBnd() })
   }
 
@@ -201,14 +201,13 @@ class BundleTaskConvention {
         // load bnd properties
         File temporaryBndFile = File.createTempFile('bnd', '.bnd', temporaryDir)
         temporaryBndFile.withWriter('UTF-8') { writer ->
-          String here = Matcher.quoteReplacement(project.projectDir.toURI().path[0..-2])
           // write any task manifest entries into the tmp bnd file
           manifest.effectiveManifest.attributes.inject(new UTF8Properties()) { properties, key, value ->
             if (key != 'Manifest-Version') {
               properties.setProperty(key, value.toString())
             }
             return properties
-          }.replaceAll(/\$\{\.\}/, here).store(writer, null)
+          }.replaceHere(project.projectDir).store(writer, null)
 
           // if the bnd file exists, add its contents to the tmp bnd file
           if (bndfile?.isFile()) {
@@ -216,7 +215,7 @@ class BundleTaskConvention {
           } else if (!bnd.empty) {
             UTF8Properties props = new UTF8Properties()
             props.load(bnd, project.buildFile, builder)
-            props.replaceAll(/\$\{\.\}/, here).store(writer, null)
+            props.replaceHere(project.projectDir).store(writer, null)
           }
         }
         builder.setProperties(temporaryBndFile, project.projectDir) // this will cause project.dir property to be set
@@ -263,13 +262,13 @@ class BundleTaskConvention {
           return true
         })
         builder.setProperty('project.buildpath', buildpath.asPath)
-        builder.setClasspath(buildpath as File[])
+        builder.setClasspath(buildpath.files as File[])
         logger.debug 'builder classpath: {}', builder.getClasspath()*.getSource()
 
         // set builder sourcepath
         ConfigurableFileCollection sourcepath = project.files(sourceSet.allSource.srcDirs.findAll{it.exists()})
         builder.setProperty('project.sourcepath', sourcepath.asPath)
-        builder.setSourcepath(sourcepath as File[])
+        builder.setSourcepath(sourcepath.files as File[])
         logger.debug 'builder sourcepath: {}', builder.getSourcePath()
 
 

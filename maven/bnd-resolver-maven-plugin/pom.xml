@@ -92,6 +92,8 @@
                     <postBuildHookScript>verify.groovy</postBuildHookScript>
                     <properties>
                       <jsse.enableSNIExtension>false</jsse.enableSNIExtension>
+                      <maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+                      <maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
                     </properties>
                     <goals>
                         <goal>package</goal>

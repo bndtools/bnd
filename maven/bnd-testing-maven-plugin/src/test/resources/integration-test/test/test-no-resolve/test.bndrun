@@ -1,6 +1,6 @@
 -standalone: target/index.xml
 
--runfw: 		org.apache.felix.framework;version='[5.6.1,5.6.1]'
+-runfw: 		org.apache.felix.framework;version='[5.6.10,5.6.10]'
 -runee: 		JavaSE-1.8
 
 -runbundles: osgi.enroute.junit.wrapper;version='[4.12.0,4.12.1)',\

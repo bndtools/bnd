@@ -12,10 +12,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.url.URLConnectionHandler;
+import aQute.lib.converter.Converter;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import aQute.service.reporter.Reporter;
@@ -86,11 +88,9 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 
 	@Override
 	public void setProperties(Map<String, String> map) throws Exception {
-		String matches = map.get(MATCH);
-		if (matches != null) {
-			for (String p : matches.split("\\s*,\\s*")) {
-				matchers.add(new Glob(p));
-			}
+		Config config = Converter.cnv(Config.class, map);
+		for (String p : Processor.split(config.match())) {
+			matchers.add(new Glob(p));
 		}
 	}
 

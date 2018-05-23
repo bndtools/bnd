@@ -35,7 +35,7 @@
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'</li>
+ * 'configurations.archives.artifacts.files'.</li>
  * </ul>
  */
 
@@ -47,7 +47,6 @@ import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
-import aQute.bnd.osgi.Constants
 import aQute.bnd.service.RepositoryPlugin
 
 import org.gradle.api.DefaultTask

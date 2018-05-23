@@ -887,6 +887,8 @@ public class BuilderTest extends BndTestCase {
 			}, {
 				"eclipse_9_0", "JavaSE-9", "9.0"
 			}, {
+				"eclipse_10_0", "JavaSE-10", "10.0"
+			}, {
 				"sun_1_1", "JRE-1.1", "1.1"
 			}, {
 				"sun_1_2", "J2SE-1.2", "1.2"
@@ -904,8 +906,9 @@ public class BuilderTest extends BndTestCase {
 				"sun_1_8", "JavaSE-1.8", "1.8"
 			}, {
 				"jdk_9_0", "JavaSE-9", "9.0"
+			}, {
+				"jdk_10_0", "JavaSE-10", "10.0"
 			}
-			// TODO add JavaSE-10 test info for JDK and Eclipse
 		};
 		Pattern p = Pattern.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=(" + Version.VERSION_STRING + ")\\)\\)");
 		for (int i = 0; i < combos.length; i++) {
@@ -1372,13 +1375,13 @@ public class BuilderTest extends BndTestCase {
 			fromManifest.setManifest(mms);
 
 			fromPackageInfo.putResource("org/osgi/service/event/packageinfo",
-				new EmbeddedResource("version 99".getBytes(), 0));
+				new EmbeddedResource("version 99", 0L));
 
 			Manifest mboth = new Manifest();
 			mboth.getMainAttributes()
 				.putValue("Export-Package", "org.osgi.service.event; version=101");
 			fromBoth.putResource("org/osgi/service/event/packageinfo",
-				new EmbeddedResource("version 199".getBytes(), 0));
+				new EmbeddedResource("version 199", 0L));
 			fromBoth.setManifest(mboth);
 
 			// Only version in manifest

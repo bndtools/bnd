@@ -90,8 +90,6 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	private final Project							project;
 	private Map<Resource, List<Wire>>				resolution;
 	private final ReporterLogger					log			= new ReporterLogger(0);
-	private final Resolver							resolver	= new BndResolver(new ReporterLogger(0));
-	private final ResolveProcess					resolve		= new ResolveProcess();
 	private final Collection<ResolutionCallback>	cbs			= new ArrayList<>();
 
 	public ProjectResolver(Project project) {
@@ -101,7 +99,12 @@ public class ProjectResolver extends Processor implements ResolutionCallback {
 	}
 
 	public Map<Resource, List<Wire>> resolve() throws ResolutionException {
-		return resolution = resolve.resolveRequired(this, project, this, resolver, cbs, log);
+		try (ResolverLogger logger = new ResolverLogger()) {
+			ResolveProcess resolve = new ResolveProcess();
+			Resolver resolver = new BndResolver(logger);
+			resolution = resolve.resolveRequired(this, project, this, resolver, cbs, log);
+			return resolution;
+		}
 	}
 
 	@Override

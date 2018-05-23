@@ -29,6 +29,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.map.MAP;
 import aQute.service.reporter.Reporter;
@@ -291,12 +292,12 @@ public class OBRFragment {
 			content.addAttribute(ContentNamespace.CAPABILITY_MIME_ATTRIBUTE, MIME_TYPE_OSGI_BUNDLE);
 
 			if (base != null) {
-				String path = file.getAbsolutePath();
+				base = IO.normalizePath(base);
+				String path = IO.absolutePath(file);
 				if (base.startsWith(path)) {
-					content.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, path.substring(base.length())
-						.replace(File.separatorChar, '/'));
+					content.addAttribute(ContentNamespace.CAPABILITY_URL_ATTRIBUTE, path.substring(base.length()));
 				} else {
-					reporter.error("Base path %s is not parent of file path: %s", base, file.getAbsolutePath());
+					reporter.error("Base path %s is not parent of file path: %s", base, path);
 				}
 			}
 

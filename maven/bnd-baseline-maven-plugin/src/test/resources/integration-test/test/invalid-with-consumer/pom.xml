@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>test</artifactId>
-		<version>0.0.1</version>
+		<version>1.0.1</version>
 	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
 	<artifactId>invalid-with-consumer</artifactId>
-	<version>0.0.2</version>
+	<version>1.0.2</version>
 	<packaging>jar</packaging>
 
 	<dependencies>

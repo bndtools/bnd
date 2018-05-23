@@ -22,7 +22,6 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +45,7 @@ import java.util.zip.ZipOutputStream;
 
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
+import aQute.lib.collections.Iterables;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
@@ -182,11 +182,7 @@ public class Jar implements Closeable {
 
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-					String relativePath = baseDir.relativize(file)
-						.toString();
-					if (File.separatorChar != '/') {
-						relativePath = relativePath.replace(File.separatorChar, '/');
-					}
+					String relativePath = IO.normalizePath(baseDir.relativize(file));
 					putResource(relativePath, new FileResource(file, attrs), true);
 					return FileVisitResult.CONTINUE;
 				}
@@ -197,8 +193,7 @@ public class Jar implements Closeable {
 	private Jar buildFromZip(File file) throws IOException {
 		try {
 			zipFile = new ZipFile(file);
-			for (Enumeration<? extends ZipEntry> e = zipFile.entries(); e.hasMoreElements();) {
-				ZipEntry entry = e.nextElement();
+			for (ZipEntry entry : Iterables.iterable(zipFile.entries())) {
 				if (entry.isDirectory()) {
 					continue;
 				}

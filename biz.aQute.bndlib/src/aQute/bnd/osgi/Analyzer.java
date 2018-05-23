@@ -36,7 +36,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -60,7 +59,6 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.slf4j.Logger;
@@ -79,6 +77,7 @@ import aQute.bnd.service.classparser.ClassParser;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
+import aQute.lib.collections.Iterables;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
 import aQute.lib.filter.Filter;
@@ -380,9 +379,10 @@ public class Analyzer extends Processor {
 			contained.keySet()
 				.stream()
 				.map(this::getPackageInfoClazz)
-				.filter(clz -> clz != null)
-				.filter(clz -> clz.annotations != null)
-				.filter(clz -> clz.annotations.contains(bndAnnotation))
+				.filter(Objects::nonNull)
+				.distinct()
+				.filter(clz -> clz.annotations()
+					.contains(bndAnnotation))
 				.map(Clazz::getClassName)
 				.map(TypeRef::getPackageRef)
 				.map(PackageRef::getFQN)
@@ -397,9 +397,10 @@ public class Analyzer extends Processor {
 		return contained.keySet()
 			.stream()
 			.map(this::getPackageInfoClazz)
-			.filter(clz -> clz != null)
-			.filter(clz -> clz.annotations != null)
-			.filter(clz -> clz.annotations.contains(exportAnnotation))
+			.filter(Objects::nonNull)
+			.distinct()
+			.filter(clz -> clz.annotations()
+				.contains(exportAnnotation))
 			.map(Clazz::getClassName)
 			.map(TypeRef::getPackageRef)
 			.map(PackageRef::getFQN)
@@ -544,9 +545,7 @@ public class Analyzer extends Processor {
 
 			Attrs attrs = new Attrs();
 
-			for (@SuppressWarnings("unchecked")
-			Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
-				String key = t.nextElement();
+			for (String key : Iterables.iterable(p.propertyNames(), String.class::cast)) {
 				String propvalue = p.getProperty(key);
 
 				if (key.equalsIgnoreCase("include")) {
@@ -920,9 +919,7 @@ public class Analyzer extends Processor {
 			// -----
 
 			doNamesection(dot, manifest);
-
-			for (Enumeration<?> h = getProperties().propertyNames(); h.hasMoreElements();) {
-				String header = (String) h.nextElement();
+			for (String header : Iterables.iterable(getProperties().propertyNames(), String.class::cast)) {
 				if (header.trim()
 					.length() == 0) {
 					warning("Empty property set with value: %s", getProperties().getProperty(header));
@@ -1425,7 +1422,7 @@ public class Analyzer extends Processor {
 	@Override
 	public void setBase(File file) {
 		super.setBase(file);
-		getProperties().put("project.dir", getBase().getAbsolutePath());
+		getProperties().put("project.dir", IO.absolutePath(getBase()));
 	}
 
 	/**
@@ -1441,8 +1438,7 @@ public class Analyzer extends Processor {
 			} else if (cpe instanceof File) {
 				File f = (File) cpe;
 				if (!f.exists()) {
-					error("Missing file on classpath: %s", f.getAbsolutePath()
-						.replace(File.separatorChar, '/'));
+					error("Missing file on classpath: %s", IO.absolutePath(f));
 					continue;
 				}
 				addClasspath(f);
@@ -1465,8 +1461,7 @@ public class Analyzer extends Processor {
 				Jar current = new Jar(classpath[i]);
 				list.add(current);
 			} else {
-				error("Missing file on classpath: %s", classpath[i].getAbsolutePath()
-					.replace(File.separatorChar, '/'));
+				error("Missing file on classpath: %s", IO.absolutePath(classpath[i]));
 			}
 		}
 		for (Iterator<Jar> i = list.iterator(); i.hasNext();) {
@@ -1948,16 +1943,13 @@ public class Analyzer extends Processor {
 		Set<PackageRef> providers = classspace.values()
 			.stream()
 			.flatMap(c -> {
-				TypeRef[] interfaces = c.getInterfaces();
-				if (interfaces == null) {
-					return Stream.empty();
-				}
 				// filter out interfaces in the same package as the class
 				// implementing the
 				// interface.
 				PackageRef pkg = c.getClassName()
 					.getPackageRef();
-				return Arrays.stream(interfaces)
+				return c.interfaces()
+					.stream()
 					.filter(i -> !Objects.equals(pkg, i.getPackageRef()));
 			})
 			.distinct()
@@ -2704,13 +2696,10 @@ public class Analyzer extends Processor {
 	 * that extend a base class.
 	 */
 
-	static String _classesHelp = "${classes;'implementing'|'extending'|'importing'|'named'|'version'|'any';<pattern>}, Return a list of class fully qualified class names that extend/implement/import any of the contained classes matching the pattern\n";
+	static final String _classesHelp = "${classes[;<query>;<pattern>]*}, Return a list of fully qualified class names of the contained classes matching the queries.\n"
+		+ "A query must be one of " + join(Clazz.QUERY.values());
 
 	public String _classes(String... args) throws Exception {
-		// Macro.verifyCommand(args, _classesHelp, new
-		// Pattern[]{null,Pattern.compile("(implementing|implements|extending|extends|importing|imports|any)"),
-		// null}, 3,3);
-
 		Collection<Clazz> matched = getClasses(args);
 		if (matched.isEmpty())
 			return "";
@@ -2722,28 +2711,33 @@ public class Analyzer extends Processor {
 
 		Set<Clazz> matched = new HashSet<>(classspace.values());
 		for (int i = 1; i < args.length; i++) {
-			if (args.length < i + 1)
-				throw new IllegalArgumentException(
-					"${classes} macro must have odd number of arguments. " + _classesHelp);
-
-			String typeName = args[i];
-			if (typeName.equalsIgnoreCase("extending"))
-				typeName = "extends";
-			else if (typeName.equalsIgnoreCase("importing"))
-				typeName = "imports";
-			else if (typeName.equalsIgnoreCase("annotation"))
-				typeName = "annotated";
-			else if (typeName.equalsIgnoreCase("implementing"))
-				typeName = "implements";
-
-			Clazz.QUERY type = Clazz.QUERY.valueOf(typeName.toUpperCase());
-
-			if (type == null)
-				throw new IllegalArgumentException("${classes} has invalid type: " + typeName + ". " + _classesHelp);
+			String typeName = args[i].toUpperCase();
+			Clazz.QUERY type;
+			switch (typeName) {
+				case "EXTENDING" :
+					type = Clazz.QUERY.EXTENDS;
+					break;
+				case "IMPORTING" :
+					type = Clazz.QUERY.IMPORTS;
+					break;
+				case "ANNOTATION" :
+					type = Clazz.QUERY.ANNOTATED;
+					break;
+				case "IMPLEMENTING" :
+					type = Clazz.QUERY.IMPLEMENTS;
+					break;
+				default :
+					type = Clazz.QUERY.valueOf(typeName);
+					break;
+			}
 
 			Instruction instr = null;
 			if (Clazz.HAS_ARGUMENT.contains(type)) {
-				String s = args[++i];
+				if (++i == args.length) {
+					throw new IllegalArgumentException(
+						"${classes} query " + type + " must have a pattern argument. " + _classesHelp);
+				}
+				String s = args[i];
 				instr = new Instruction(s);
 			}
 			for (Iterator<Clazz> c = matched.iterator(); c.hasNext();) {
@@ -2756,7 +2750,8 @@ public class Analyzer extends Processor {
 		return new SortedList<>(matched, Clazz.NAME_COMPARATOR);
 	}
 
-	static String _packagesHelp = "${packages;'named'|'annotated'|'any'|'versioned'|'conditional';<pattern>}, Return a list of packages contained in the bundle that match the pattern\n";
+	static final String _packagesHelp = "${packages[;<query>;<pattern>]}, Return a list of packages contained in the bundle matching the query.\n"
+		+ "A query must be one of " + join(Packages.QUERY.values());
 
 	public String _packages(String... args) throws Exception {
 		Collection<PackageRef> matched = getPackages(contained, args);
@@ -3520,11 +3515,7 @@ public class Analyzer extends Processor {
 
 			File file = IO.getFile(srcDir, path);
 			if (file.isFile()) {
-				String abspath = file.getAbsolutePath();
-				if (File.separatorChar == '/')
-					return abspath;
-
-				return abspath.replace(File.separatorChar, '/');
+				return IO.absolutePath(file);
 			}
 
 		}

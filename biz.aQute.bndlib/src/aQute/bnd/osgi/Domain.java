@@ -467,8 +467,22 @@ public abstract class Domain implements Iterable<String> {
 		// default & last. Assume JAR
 		try (JarInputStream jin = new JarInputStream(IO.stream(file))) {
 			Manifest m = jin.getManifest();
-			if (m != null)
-				return domain(m);
+			if (m != null) {
+				Domain domain = domain(m);
+				String path = domain.get(Constants.BUNDLE_LOCALIZATION,
+					org.osgi.framework.Constants.BUNDLE_LOCALIZATION_DEFAULT_BASENAME) + ".properties";
+				for (ZipEntry entry; (entry = jin.getNextEntry()) != null;) {
+					if (entry.isDirectory()) {
+						continue;
+					}
+					if (entry.getName()
+						.equals(path)) {
+						domain.translation.load(jin);
+						break;
+					}
+				}
+				return domain;
+			}
 		}
 
 		// BUT WAIT! Maybe it's just a zip file (bad jar, bad jar...)

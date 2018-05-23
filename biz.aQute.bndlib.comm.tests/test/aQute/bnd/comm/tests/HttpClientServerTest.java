@@ -1,10 +1,10 @@
 package aQute.bnd.comm.tests;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URL;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
-import aQute.bnd.connection.settings.ServerDTO;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.url.TaggedData;
@@ -17,75 +17,81 @@ import junit.framework.TestCase;
 /**
  */
 public class HttpClientServerTest extends TestCase {
-	File tmp = IO.getFile("generated/tmp");
-
-	{
-		IO.delete(tmp);
-		tmp.mkdirs();
-
-	}
-
-	public void testSimpleSecureNoVerify() throws Exception {
-		createSecureServer();
-		assertOk(null, false);
-	}
-
-	public void testSimpleSecureVerify() throws Exception {
-		createSecureServer();
-		assertOk(null, true);
-	}
-
-	@SuppressWarnings("resource")
-	private void assertOk(String password, boolean verify) throws Exception {
-		File log = new File(tmp, "log");
-		Processor p = new Processor();
-		p.setProperty("-connection-log", log.toURI()
-			.getPath());
-
-		HttpClient hc = new HttpClient();
-		hc.setLog(log);
-		ConnectionSettings cs = new ConnectionSettings(p, hc);
-
-		ServerDTO server = new ServerDTO();
-		server.id = httpServer.getBaseURI()
-			.toString();
-		server.verify = verify;
-		if (password != null) {
-			server.username = "user";
-			server.password = password;
-		}
-
-		server.trust = Strings.join(httpServer.getTrustedCertificateFiles(IO.getFile("generated")));
-
-		cs.add(server);
-
-		System.out.println(httpServer.getBaseURI());
-
-		URL url = password == null ? new URL(httpServer.getBaseURI() + "/get")
-			: new URL(httpServer.getBaseURI() + "/basic-auth/user/good");
-		TaggedData tag = hc.connectTagged(url);
-		assertNotNull(tag);
-		String s = IO.collect(tag.getInputStream());
-		assertNotNull(s);
-		assertTrue(s.trim()
-			.startsWith("{"));
-		IO.copy(log, System.out);
-	}
-
+	private File	tmp;
 	private Httpbin httpServer;
 
 	@Override
-	protected void tearDown() throws Exception {
-		super.tearDown();
-		if (httpServer != null)
-			httpServer.close();
-	}
-
-	public void createSecureServer() throws Exception {
+	protected void setUp() throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + getName());
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
 		Config config = new Config();
 		config.https = true;
 		httpServer = new Httpbin(config);
 		httpServer.start();
 	}
 
+	@Override
+	protected void tearDown() throws Exception {
+		IO.close(httpServer);
+		super.tearDown();
+	}
+
+	public void testSimpleSecureNoVerify() throws Exception {
+		assertOk(null, null, false);
+	}
+
+	public void testSimpleSecureVerify() throws Exception {
+		assertOk(null, null, true);
+	}
+
+	public void testSimpleSecureVerifyBasic() throws Exception {
+		assertOk("user", "good", true);
+	}
+
+	public void testSimpleSecureVerifyBearer() throws Exception {
+		assertOk(null, "token", true);
+	}
+
+	@SuppressWarnings("resource")
+	private void assertOk(String username, String password, boolean verify) throws Exception {
+		File log = new File(tmp, "log");
+		try (Processor p = new Processor(); HttpClient hc = new HttpClient()) {
+			System.out.println(httpServer.getBaseURI());
+
+			String settings = "server;id=\"" + httpServer.getBaseURI() + "\";verify=" + verify + ";trust=\""
+				+ Strings.join(httpServer.getTrustedCertificateFiles(tmp)) + "\"";
+
+			URL url;
+			if (password == null) {
+				url = new URL(httpServer.getBaseURI() + "/get");
+			} else if (username != null) {
+				url = new URL(httpServer.getBaseURI() + "/basic-auth/" + username + "/" + password);
+				settings += ";username=\"" + username + "\";password=\"" + password + "\"";
+			} else {
+				url = new URL(httpServer.getBaseURI() + "/bearer-auth/" + password);
+				settings += ";password=\"" + password + "\"";
+			}
+
+			p.setProperty("-connection-log", log.toURI()
+				.getPath());
+			p.setProperty("-connection-settings", settings);
+			hc.setLog(log);
+
+			ConnectionSettings cs = new ConnectionSettings(p, hc);
+			cs.readSettings();
+
+			TaggedData tag = hc.connectTagged(url);
+			assertNotNull(tag);
+			assertEquals(200, tag.getResponseCode());
+			InputStream in = tag.getInputStream();
+			assertNotNull(in);
+			String s = IO.collect(in);
+			assertNotNull(s);
+			System.out.println(s);
+			assertTrue(s.trim()
+				.startsWith("{"));
+		}
+		IO.copy(log, System.out);
+	}
 }

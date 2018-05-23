@@ -85,5 +85,4 @@ public class ClassDataCollector {
 	public void annotationDefault(Clazz.MethodDef last, Object value) {
 		annotationDefault(last);
 	}
-
 }

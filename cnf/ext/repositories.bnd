@@ -8,12 +8,6 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
         name='Maven Central';\
         readOnly=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
-        releaseUrl="https://oss.sonatype.org/content/groups/osgi/";\
-        snapshotUrl="https://oss.sonatype.org/content/groups/osgi/";\
-        index=${.}/osgi-snapshots.mvn;\
-        name='OSGi Snapshots';\
-        readOnly=true,\
-    aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name='Local';\
         noupdateOnRelease=true,\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\

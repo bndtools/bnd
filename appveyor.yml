@@ -8,7 +8,7 @@ environment:
 
 install:
   - gradlew.bat --version
-  - mvnw.cmd --version
+  - mvn --version
 
 build_script:
   - gradlew.bat -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy

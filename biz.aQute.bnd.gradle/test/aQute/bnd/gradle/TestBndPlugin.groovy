@@ -29,6 +29,7 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
+          result.task(':test.simple:jar').outcome == SUCCESS
           result.task(':test.simple:test').outcome == SUCCESS
           result.task(':test.simple:testOSGi').outcome == SUCCESS
           result.task(':test.simple:check').outcome == SUCCESS
@@ -57,7 +58,11 @@ class TestBndPlugin extends Specification {
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
 
-          result.output =~ Pattern.quote('### Project workspaceplugin1 has BndWorkspacePlugin applied')
+          File testReports = new File(testProjectDir, 'test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.JUnitTest.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-test.simple-0.0.0.xml').isFile()
+
+          result.output =~ Pattern.quote("### Project ${testProject} has BndWorkspacePlugin applied")
           result.output =~ Pattern.quote('### Project test.simple has BndPlugin applied')
     }
 
@@ -123,7 +128,7 @@ class TestBndPlugin extends Specification {
           bndrun.isFile()
           props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
           props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper/
-          result.output =~ '(?s)Unresolved requirements:(.*)test.simple'
+          result.output =~ '(?s)Resolution failed. Capabilities satisfying the following requirements could not be found:(.*)test.simple'
 
         when:
           bndrun = new File(testProjectDir, 'test.simple/resolvechange.bndrun')
@@ -163,13 +168,13 @@ class TestBndPlugin extends Specification {
           JarFile executable_jar = new JarFile(executable)
           Attributes executable_manifest = executable_jar.getManifest().getMainAttributes()
           def runpath = executable_manifest.getValue('Embedded-Runpath')
-          runpath =~ /jar\/org\.eclipse\.osgi-3\.11\.0\.v20160603-1336\.jar/
+          runpath =~ /jar\/org\.eclipse\.osgi-3\.12\.50\.v20170928-1321\.jar/
           def launcher = runpath =~ /jar\/biz\.aQute\.launcher.*?\.jar/
           launcher.find()
           executable_jar.getEntry(launcher.group(0))
           executable_jar.getEntry('jar/test.simple.jar')
           executable_jar.getEntry('jar/osgi.enroute.junit.wrapper-4.12.0.201507311000.jar')
-          executable_jar.getEntry('jar/org.eclipse.osgi-3.11.0.v20160603-1336.jar')
+          executable_jar.getEntry('jar/org.eclipse.osgi-3.12.50.v20170928-1321.jar')
           executable_jar.getEntry('launcher.properties')
           UTF8Properties props = new UTF8Properties()
           props.load(executable_jar.getInputStream(executable_jar.getEntry('launcher.properties')), null, new Slf4jReporter(TestBndPlugin.class))
@@ -208,6 +213,7 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
+          result.task(':test.simple:jar').outcome == SUCCESS
           result.task(':test.simple:test').outcome == SUCCESS
           result.task(':test.simple:testOSGi').outcome == SUCCESS
           result.task(':test.simple:check').outcome == SUCCESS
@@ -234,6 +240,10 @@ class TestBndPlugin extends Specification {
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
+
+          File testReports = new File(testProjectDir, 'test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.Test.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-test.simple-0.0.0.xml').isFile()
     }
 
     def "Bnd Workspace Plugin Simple settings.gradle"() {
@@ -250,6 +260,7 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
+          result.task(':test.simple:jar').outcome == SUCCESS
           result.task(':test.simple:test').outcome == SUCCESS
           result.task(':test.simple:testOSGi').outcome == SUCCESS
           result.task(':test.simple:check').outcome == SUCCESS
@@ -276,6 +287,10 @@ class TestBndPlugin extends Specification {
 
           File release_jar = new File(testProjectDir, 'cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
+
+          File testReports = new File(testProjectDir, 'test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.Test.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-test.simple-0.0.0.xml').isFile()
     }
 
     def "Bnd Plugin workspace not rootProject"() {
@@ -294,6 +309,7 @@ class TestBndPlugin extends Specification {
         then:
           result.task(':build').outcome == SUCCESS
           result.task(':workspace:build').outcome == SUCCESS
+          result.task(':workspace:test.simple:jar').outcome == SUCCESS
           result.task(':workspace:test.simple:test').outcome == SUCCESS
           result.task(':workspace:test.simple:testOSGi').outcome == SUCCESS
           result.task(':workspace:test.simple:check').outcome == SUCCESS
@@ -321,8 +337,83 @@ class TestBndPlugin extends Specification {
           File release_jar = new File(testProjectDir, 'workspace/cnf/releaserepo/test.simple/test.simple-0.0.0.jar')
           release_jar.isFile()
 
-          result.output =~ Pattern.quote('### Project workspaceplugin8 : is rootProject')
+          File testReports = new File(testProjectDir, 'workspace/test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.Test.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-test.simple-0.0.0.xml').isFile()
+
+          result.output =~ Pattern.quote("### Project ${testProject} : is rootProject")
           result.output =~ Pattern.quote('### Project workspace :workspace Workspace [workspace]')
 
     }
+
+    def "Bnd Workspace Plugin TestOSGi tests option"() {
+        given:
+          String testProject = 'workspaceplugin9'
+          File testProjectDir = new File(testResources, testProject)
+          assert testProjectDir.isDirectory()
+
+        when:
+          def result = TestHelper.getGradleRunner()
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--debug', 'check', '--exclude-task', 'testOSGi2')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':test.simple:jar').outcome == SUCCESS
+          result.task(':test.simple:test').outcome == SUCCESS
+          result.task(':test.simple:testOSGi').outcome == SUCCESS
+          result.task(':test.simple:check').outcome == SUCCESS
+
+          File simple_bundle = new File(testProjectDir, 'test.simple/generated/test.simple.jar')
+          simple_bundle.isFile()
+
+          JarFile simple_jar = new JarFile(simple_bundle)
+          Attributes simple_manifest = simple_jar.getManifest().getMainAttributes()
+          simple_manifest.getValue('Bundle-SymbolicName') == 'test.simple'
+          simple_manifest.getValue('Bundle-Version') =~ /0\.0\.0\./
+          simple_manifest.getValue('Foo') == 'foo'
+          simple_manifest.getValue('Bar') == 'bar'
+          simple_manifest.getValue('Import-Package') =~ /junit\.framework/
+          simple_manifest.getValue('Test-Cases') =~ /test\.simple\.Test/
+          simple_manifest.getValue('Test-Cases') =~ /test\.simple\.FailingTest/
+          simple_jar.getEntry('test/simple/Simple.class')
+          simple_jar.getEntry('test/simple/Test.class')
+          simple_jar.getEntry('test/simple/FailingTest.class')
+          simple_jar.getEntry('OSGI-OPT/src/')
+          simple_jar.getEntry('test.txt')
+          simple_jar.getInputStream(simple_jar.getEntry('test.txt')).text =~ /This is a project resource/
+          simple_jar.getEntry('test/simple/test.txt')
+          simple_jar.getInputStream(simple_jar.getEntry('test/simple/test.txt')).text =~ /This is a package resource/
+          simple_jar.close()
+
+          File testReports = new File(testProjectDir, 'test.simple/generated/test-reports')
+          new File(testReports, 'test/TEST-test.simple.JUnitTest.xml').isFile()
+          new File(testReports, 'testOSGi/TEST-testOSGi.xml').isFile()
+
+        when:
+          result = TestHelper.getGradleRunner('4.6')
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--debug', 'testOSGi2')
+            .forwardOutput()
+            .buildAndFail()
+
+        then:
+          result.task(':test.simple:jar').outcome == SUCCESS
+          result.task(':test.simple:testOSGi2').outcome == FAILED
+
+        when:
+          result = TestHelper.getGradleRunner('4.6')
+            .withProjectDir(testProjectDir)
+            .withArguments('--stacktrace', '--debug', 'testOSGi2', '--tests=test.simple.Test')
+            .forwardOutput()
+            .build()
+
+        then:
+          result.task(':test.simple:jar').outcome == UP_TO_DATE
+          result.task(':test.simple:testOSGi2').outcome == SUCCESS
+
+          new File(testReports, 'testOSGi2/TEST-testOSGi2.xml').isFile()
+    }
+
 }

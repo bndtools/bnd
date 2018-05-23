@@ -96,7 +96,7 @@ summary: Specifies that a bundle requires other bundles to provide a capability
 			 * Requirements without an effective directive or effective:=resolve. Other
 			 * Requirements can be considered by an external agent. Additional names for
 			 * the effective directive should be registered with the OSGi Alliance. See
-			 * <a href="http://www.osgi.org/Specifications/Reference">OSGi Reference
+			 * <a href="https://www.osgi.org/developer/specifications/reference/">OSGi Reference
 			 * Page</a>
 			 */
 			String effective() default "resolve";

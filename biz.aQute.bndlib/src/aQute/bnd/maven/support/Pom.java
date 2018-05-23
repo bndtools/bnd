@@ -149,7 +149,6 @@ public abstract class Pom {
 
 	void parse() throws Exception {
 		DocumentBuilder db = dbf.newDocumentBuilder();
-		System.err.println("Parsing " + pomFile.getAbsolutePath());
 		Document doc = db.parse(pomFile);
 		XPath xp = xpf.newXPath();
 		parse(doc, xp);
@@ -324,8 +323,7 @@ public abstract class Pom {
 			return version;
 
 		if ("${basedir}".equals(in))
-			return pomFile.getParentFile()
-				.getAbsolutePath();
+			return IO.absolutePath(pomFile.getParentFile());
 
 		if ("${pom.name}".equals(in) || "${project.name}".equals(in))
 			return name;

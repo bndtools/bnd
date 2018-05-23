@@ -11,6 +11,14 @@ public class ByteBufferInputStream extends InputStream {
 		bb = buffer;
 	}
 
+	public ByteBufferInputStream(byte[] b, int off, int len) {
+		this(ByteBuffer.wrap(b, off, len));
+	}
+
+	public ByteBufferInputStream(byte[] b) {
+		this(b, 0, b.length);
+	}
+
 	@Override
 	public int read() {
 		if (!bb.hasRemaining()) {

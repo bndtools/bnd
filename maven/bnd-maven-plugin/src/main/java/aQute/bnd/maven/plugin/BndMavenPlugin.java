@@ -20,12 +20,14 @@ import static aQute.lib.io.IO.getFile;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -34,11 +36,13 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.PluginManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
@@ -90,7 +94,7 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
 	private File									classesDir;
 
-	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF", readonly = true)
+	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF")
 	private File									manifestPath;
 
 	@Parameter(defaultValue = "${project}", required = true, readonly = true)
@@ -359,27 +363,21 @@ public class BndMavenPlugin extends AbstractMojo {
 			logger.debug("loading bnd properties from bnd element in pom: {}", pomProject);
 			UTF8Properties properties = new UTF8Properties();
 			properties.load(bndElement.getValue(), pomFile, builder);
-			if (baseDir != null) {
-				String here = baseDir.toURI()
-					.getPath();
-				here = Matcher.quoteReplacement(here.substring(0, here.length() - 1));
-				properties = properties.replaceAll("\\$\\{\\.\\}", here);
-			}
 			// we use setProperties to handle -include
-			builder.setProperties(baseDir, properties);
+			builder.setProperties(baseDir, properties.replaceHere(baseDir));
 		}
 		return pomFile;
 	}
 
 	private Optional<Xpp3Dom> getConfiguration(List<Plugin> plugins) {
 		return plugins.stream()
-			.filter(p -> Objects.equals(p.getGroupId(), "biz.aQute.bnd")
-				&& Objects.equals(p.getArtifactId(), "bnd-maven-plugin"))
-			.flatMap(p -> p.getExecutions()
-				.stream())
+			.filter(p -> Objects.equals(p, mojoExecution.getPlugin()))
+			.map(Plugin::getExecutions)
+			.flatMap(List::stream)
 			.filter(e -> Objects.equals(e.getId(), mojoExecution.getExecutionId()))
 			.findFirst()
-			.map(e -> (Xpp3Dom) e.getConfiguration())
+			.map(PluginExecution::getConfiguration)
+			.map(Xpp3Dom.class::cast)
 			.map(Xpp3Dom::new);
 	}
 
@@ -499,6 +497,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		return manifestPath.lastModified() != manifestLastModified;
 	}
 
+	private static final Pattern KEY_P = Pattern.compile("(?<name>[^\\.\\[]+)(?:\\[(?<index>\\d+)\\])?\\.?");
 	private class BeanProperties extends Properties {
 		private static final long serialVersionUID = 1L;
 
@@ -508,11 +507,15 @@ public class BndMavenPlugin extends AbstractMojo {
 
 		@Override
 		public String getProperty(String key) {
-			final int i = key.indexOf('.');
-			final String name = (i > 0) ? key.substring(0, i) : key;
-			Object value = get(name);
-			if ((value != null) && (i > 0)) {
-				value = getField(value, key.substring(i + 1));
+			final Matcher m = KEY_P.matcher(key);
+			if (!m.find()) {
+				return null;
+			}
+			String name = m.group("name");
+			Object value = value(name, get(name), m.group("index"));
+			while ((value != null) && m.find()) {
+				name = m.group("name");
+				value = value(name, getField(value, name), m.group("index"));
 			}
 			if (value == null) {
 				return null;
@@ -520,12 +523,9 @@ public class BndMavenPlugin extends AbstractMojo {
 			return value.toString();
 		}
 
-		private Object getField(Object target, String key) {
-			final int i = key.indexOf('.');
-			final String fieldName = (i > 0) ? key.substring(0, i) : key;
-			final String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-			Object value = null;
+		private Object getField(Object target, String fieldName) {
 			try {
+				String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 				Class<?> targetClass = target.getClass();
 				while (!Modifier.isPublic(targetClass.getModifiers())) {
 					targetClass = targetClass.getSuperclass();
@@ -536,12 +536,36 @@ public class BndMavenPlugin extends AbstractMojo {
 				} catch (NoSuchMethodException nsme) {
 					getter = targetClass.getMethod("is" + getterSuffix);
 				}
-				value = getter.invoke(target);
+				return getter.invoke(target);
 			} catch (Exception e) {
-				logger.debug("Could not find getter method for field: {}", fieldName, e);
+				logger.debug("Could not find getter method for field {}", fieldName, e);
 			}
-			if ((value != null) && (i > 0)) {
-				value = getField(value, key.substring(i + 1));
+			return null;
+		}
+
+		private Object value(String name, Object value, String index) {
+			if ((value == null) || (index == null)) {
+				return value;
+			}
+			try {
+				int i = Integer.parseInt(index);
+				if (value instanceof List) {
+					return ((List<?>) value).get(i);
+				} else if (value instanceof Iterable) {
+					if (i < 0) {
+						throw new IndexOutOfBoundsException("index < 0");
+					}
+					Iterator<?> iter = ((Iterable<?>) value).iterator();
+					for (; i > 0; i--) {
+						iter.next();
+					}
+					return iter.next();
+				} else if (value.getClass()
+					.isArray()) {
+					return Array.get(value, i);
+				}
+			} catch (Exception e) {
+				logger.debug("Could not find field {}[{}]", name, index, e);
 			}
 			return value;
 		}

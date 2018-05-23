@@ -32,6 +32,8 @@ public class URIUtilsTest extends TestCase {
 		if (isWindows()) {
 			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jimbob/base.txt"), "C:\\Users\\sub dir\\foo.txt");
 			assertEquals("file:/C:/Users/sub%20dir/foo.txt", result.toString());
+			result = URIUtil.resolve(URI.create("file:/C:/Users/jimbob/base.txt"), "C:/Users/sub dir/bar.txt");
+			assertEquals("file:/C:/Users/sub%20dir/bar.txt", result.toString());
 		}
 	}
 
@@ -39,6 +41,15 @@ public class URIUtilsTest extends TestCase {
 		if (isWindows()) {
 			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "sub dir\\foo.txt");
 			assertEquals("file:/C:/Users/jim/sub%20dir/foo.txt", result.toString());
+		}
+	}
+
+	public void testResolveUNCWindowsPath() throws Exception {
+		if (isWindows()) {
+			URI result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "\\\\server\\share\\foo.txt");
+			assertEquals("file:////server/share/foo.txt", result.toString());
+			result = URIUtil.resolve(URI.create("file:/C:/Users/jim/base.txt"), "//server/share/foo.txt");
+			assertEquals("file:////server/share/foo.txt", result.toString());
 		}
 	}
 

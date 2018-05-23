@@ -52,7 +52,7 @@ The `-pom` instruction will also attempt to convert the following headers to the
     url                        The URL for a web front end to your SCM system.     
 
 	  Bundle-SCM: 
-	    url=http://github.com/bndtools,
+	    url=https://github.com/bndtools,
 	    connection=scm:git:https://github.com/bndtools/bnd,
 	    developerConnection=scm:git:git@github.com/bndtools/bnd
 
@@ -84,7 +84,7 @@ You can override the different parts of the Maven coordinates:
 	  name="Peter Kriens";
 	  organization=aQute;
 	  roles="programmer,gopher"
-	Bundle-SCM: url=http://github.com/bndtools,
+	Bundle-SCM: url=https://github.com/bndtools,
 	  connection=scm:git:https://github.com/bndtools/bnd,
 	  developerConnection=scm:git:git@github.com/bndtools/bnd
 	-pom: groupid=com.example,
@@ -104,7 +104,7 @@ Generates the following pom in `META-INF/maven/pom.xml`:
   	  <version>1.2</version>
   	  <name>com.example.foo</name>
 	  <scm>
-	    <url>http://github.com/bndtools</url>
+	    <url>https://github.com/bndtools</url>
 	    <connection>scm:git:https://github.com/bndtools/bnd</connection>
 	    <developerConnection>scm:git:git@github.com/bndtools/bnd</developerConnection>
 	  </scm>

@@ -23,6 +23,7 @@ import aQute.bnd.build.Container
 import aQute.bnd.build.Container.TYPE
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
+import aQute.bnd.osgi.About
 import aQute.bnd.osgi.Constants
 import biz.aQute.resolve.Bndrun
 import biz.aQute.resolve.ResolveProcess
@@ -163,7 +164,7 @@ public class BndPlugin implements Plugin<Project> {
             compilerArgs.addAll(['-profile', javacProfile])
           }
           if (JavaVersion.current().isJava9Compatible()) {
-            if ((sourceCompatibility == targetCompatibility) && !bootClasspath && javacProfile.empty) {
+            if ((sourceCompatibility == targetCompatibility) && javacBootclasspath.empty && javacProfile.empty) {
               compilerArgs.addAll(['--release', JavaVersion.toVersion(sourceCompatibility).majorVersion])
             }
           }
@@ -177,8 +178,14 @@ public class BndPlugin implements Plugin<Project> {
               logger.info '-source {} -target {} {}', sourceCompatibility, targetCompatibility, options.compilerArgs.join(' ')
             }
             logger.info '-classpath {}', classpath.asPath
-            if (options.bootClasspath != null) {
-              logger.info '-bootclasspath {}', options.bootClasspath
+            if (options.hasProperty('bootstrapClasspath')) { // gradle 4.3
+              if (options.bootstrapClasspath != null) {
+                logger.info '-bootclasspath {}', options.bootstrapClasspath.asPath
+              }
+            } else {
+              if (options.bootClasspath != null) {
+                logger.info '-bootclasspath {}', options.bootClasspath
+              }
             }
           }
         }
@@ -213,7 +220,7 @@ public class BndPlugin implements Plugin<Project> {
 
       jar {
         description 'Assemble the project bundles.'
-        deleteAllActions() /* Replace the standard task actions */
+        actions.clear() /* Replace the standard task actions */
         enabled !bndProject.isNoBundles()
         configurations.archives.artifacts.files.find {
           archiveName = it.name /* use first artifact as archiveName */
@@ -297,25 +304,12 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      task('testOSGi') {
+      task('testOSGi', type: TestOSGi) {
         description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
         group 'verification'
         enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
-        ext.ignoreFailures = false
         inputs.files jar
-        outputs.dir({ new File(testResultsDir, name) }).withPropertyName('testResults')
-        doLast {
-          try {
-            bndProject.test(new File(testResultsDir, name), null)
-          } catch (Exception e) {
-            throw new GradleException("Project ${bndProject.getName()} failed to test", e)
-          }
-          checkErrors(logger, ignoreFailures)
-        }
-      }
-
-      check {
-        dependsOn testOSGi
+        bndrun = bndProject.getPropertiesFile()
       }
 
       task('checkNeeded') {
@@ -326,10 +320,7 @@ public class BndPlugin implements Plugin<Project> {
 
       clean {
         description 'Cleans the build and compiler output directories of the project.'
-        deleteAllActions() /* Replace the standard task actions */
-        doLast {
-          bndProject.clean()
-        }
+        delete buildDir, sourceSets.main.output, sourceSets.test.output
       }
 
       task('cleanNeeded') {
@@ -486,7 +477,7 @@ public class BndPlugin implements Plugin<Project> {
         doLast {
           println """
 ------------------------------------------------------------
-Project ${project.name}
+Project ${project.name} // Bnd version ${About.CURRENT}
 ------------------------------------------------------------
 
 project.workspace:      ${parent.projectDir}

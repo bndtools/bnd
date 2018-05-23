@@ -78,7 +78,7 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.add.mvn.urls", defaultValue = "false")
 	private boolean						addMvnURLs;
 
-	@Parameter(property = "bnd.indexer.scopes", readonly = true)
+	@Parameter(property = "bnd.indexer.scopes")
 	private List<String>				scopes;
 
 	@Parameter(property = "bnd.indexer.include.gzip", defaultValue = "true")

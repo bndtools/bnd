@@ -100,7 +100,7 @@ class OSGiIndex {
 
 		URI url = content.url();
 		if (url == null) {
-			logger.warn("{}: No content capability for {}", name, resource);
+			logger.warn("{}: No content URL for {}", name, resource);
 			return null;
 		}
 

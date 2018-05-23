@@ -14,9 +14,11 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.FileResource;
+import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.io.IO;
@@ -212,6 +214,71 @@ public class ClazzTest extends TestCase {
 				.put(clazz.getClassName(), clazz);
 			AnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class),
 				new XMLAttributeFinder(analyzer), AnnotationReader.V1_3);
+		}
+	}
+
+	@RecursiveAnno
+	public @interface MetaAnnotated {}
+
+	public void testMetaAnnotated() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertTrue(clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertFalse(
+				clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+		}
+	}
+
+	public void testAnnotated() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertTrue(clazz.is(QUERY.ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertFalse(clazz.is(QUERY.ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+		}
+	}
+
+	@MetaAnnotated
+	public void testMetaAnnotated_b() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertTrue(clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertFalse(
+				clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+		}
+	}
+
+	public void testAnnotated_b() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertFalse(clazz.is(QUERY.ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertTrue(clazz.is(QUERY.ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+		}
+	}
+
+	public void testNamed() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertTrue(clazz.is(QUERY.NAMED, new Instruction("test.*"), analyzer));
+		}
+	}
+
+	public void testMultipleInstructions() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertTrue(clazz.is(QUERY.EXTENDS, new Instruction("junit.framework.TestCase"), analyzer));
+			assertTrue(clazz.is(QUERY.NAMED, new Instruction("!junit.framework.*"), analyzer));
 		}
 	}
 }

@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -8,6 +10,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
+import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,11 +21,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
@@ -155,6 +166,7 @@ public class Clazz {
 		ABSTRACT,
 		PUBLIC,
 		ANNOTATED,
+		INDIRECTLY_ANNOTATED,
 		RUNTIMEANNOTATIONS,
 		CLASSANNOTATIONS,
 		DEFAULT_CONSTRUCTOR;
@@ -199,7 +211,7 @@ public class Clazz {
 	}
 
 	public final static EnumSet<QUERY>	HAS_ARGUMENT	= EnumSet.of(QUERY.IMPLEMENTS, QUERY.EXTENDS, QUERY.IMPORTS,
-		QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED);
+		QUERY.NAMED, QUERY.VERSION, QUERY.ANNOTATED, QUERY.INDIRECTLY_ANNOTATED);
 
 	/**
 	 * <pre>
@@ -1914,36 +1926,140 @@ public class Clazz {
 		}
 	}
 
+	private Stream<Clazz> hierarchyStream(Analyzer analyzer) {
+		return StreamSupport.stream(new Spliterator<Clazz>() {
+			private Clazz clazz;
+			{
+				requireNonNull(analyzer);
+				clazz = Clazz.this;
+			}
+
+			@Override
+			public boolean tryAdvance(Consumer<? super Clazz> action) {
+				requireNonNull(action);
+				if (clazz == null) {
+					return false;
+				}
+				action.accept(clazz);
+				TypeRef type = clazz.zuper;
+				if (type == null) {
+					clazz = null;
+				} else {
+					try {
+						clazz = analyzer.findClass(type);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+					if (clazz == null) {
+						analyzer.warning("While traversing the type tree for %s cannot find class %s", Clazz.this,
+							type);
+					}
+				}
+				return true;
+			}
+
+			@Override
+			public Spliterator<Clazz> trySplit() {
+				return null;
+			}
+
+			@Override
+			public long estimateSize() {
+				return Long.MAX_VALUE;
+			}
+
+			@Override
+			public int characteristics() {
+				return Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL;
+			}
+		}, false);
+	}
+
+	private Stream<TypeRef> typeStream(Analyzer analyzer,
+		Function<? super Clazz, Collection<? extends TypeRef>> func,
+		Set<TypeRef> visited) {
+		return StreamSupport.stream(new Spliterator<TypeRef>() {
+			private final Deque<TypeRef>	queue;
+			private final Set<TypeRef>		seen;
+			{
+				requireNonNull(analyzer);
+				// initialize queue from this class
+				queue = new ArrayDeque<>(requireNonNull(func).apply(Clazz.this));
+				seen = (visited != null) ? visited : new HashSet<>();
+			}
+
+			@Override
+			public boolean tryAdvance(Consumer<? super TypeRef> action) {
+				requireNonNull(action);
+				TypeRef type;
+				do {
+					type = queue.poll();
+					if (type == null) {
+						return false;
+					}
+				} while (seen.contains(type));
+				seen.add(type);
+				action.accept(type);
+				if (visited != null) {
+					Clazz clazz;
+					try {
+						clazz = analyzer.findClass(type);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
+					if (clazz == null) {
+						analyzer.warning("While traversing the type tree for %s cannot find class %s", Clazz.this,
+							type);
+					} else {
+						queue.addAll(func.apply(clazz));
+					}
+				}
+				return true;
+			}
+
+			@Override
+			public Spliterator<TypeRef> trySplit() {
+				return null;
+			}
+
+			@Override
+			public long estimateSize() {
+				return Long.MAX_VALUE;
+			}
+
+			@Override
+			public int characteristics() {
+				return Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL;
+			}
+		}, false);
+	}
+
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {
 		switch (query) {
 			case ANY :
 				return true;
 
 			case NAMED :
-				if (instr.matches(getClassName().getDottedOnly()))
-					return !instr.isNegated();
-				return false;
+				return instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
 
-			case VERSION :
+			case VERSION : {
 				String v = major + "." + minor;
-				if (instr.matches(v))
-					return !instr.isNegated();
-				return false;
+				return instr.matches(v) ^ instr.isNegated();
+			}
 
-			case IMPLEMENTS :
-				for (int i = 0; interfaces != null && i < interfaces.length; i++) {
-					if (instr.matches(interfaces[i].getDottedOnly()))
-						return !instr.isNegated();
-				}
-				break;
+			case IMPLEMENTS : {
+				Set<TypeRef> visited = new HashSet<>();
+				return hierarchyStream(analyzer)
+					.flatMap(c -> c.typeStream(analyzer, Clazz::interfaces, visited))
+					.map(TypeRef::getDottedOnly)
+					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
 			case EXTENDS :
-				if (zuper == null)
-					return false;
-
-				if (instr.matches(zuper.getDottedOnly()))
-					return !instr.isNegated();
-				break;
+				return hierarchyStream(analyzer).skip(1) // skip this class
+					.map(Clazz::getClassName)
+					.map(TypeRef::getDottedOnly)
+					.anyMatch(instr::matches) ^ instr.isNegated();
 
 			case PUBLIC :
 				return Modifier.isPublic(accessx);
@@ -1952,18 +2068,18 @@ public class Clazz {
 				return !Modifier.isAbstract(accessx);
 
 			case ANNOTATED :
-				if (annotations == null)
-					return false;
+				return typeStream(analyzer, Clazz::annotations, null) //
+					.map(TypeRef::getFQN)
+					.anyMatch(instr::matches) ^ instr.isNegated();
 
-				for (TypeRef annotation : annotations) {
-					if (instr.matches(annotation.getFQN()))
-						return !instr.isNegated();
-				}
-
-				return false;
+			case INDIRECTLY_ANNOTATED :
+				return typeStream(analyzer, Clazz::annotations, new HashSet<>()) //
+					.map(TypeRef::getFQN)
+					.anyMatch(instr::matches) ^ instr.isNegated();
 
 			case RUNTIMEANNOTATIONS :
 				return hasRuntimeAnnotations;
+
 			case CLASSANNOTATIONS :
 				return hasClassAnnotations;
 
@@ -1971,26 +2087,18 @@ public class Clazz {
 				return Modifier.isAbstract(accessx);
 
 			case IMPORTS :
-				for (PackageRef imp : imports) {
-					if (instr.matches(imp.getFQN()))
-						return !instr.isNegated();
-				}
-				break;
+				return hierarchyStream(analyzer) //
+					.map(Clazz::getReferred)
+					.flatMap(Set::stream)
+					.distinct()
+					.map(PackageRef::getFQN)
+					.anyMatch(instr::matches) ^ instr.isNegated();
+
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
 		}
 
-		if (zuper == null)
-			return false;
-
-		Clazz clazz = analyzer.findClass(zuper);
-		if (clazz == null) {
-			analyzer.warning("While traversing the type tree while searching %s on %s cannot find class %s", query,
-				this, zuper);
-			return false;
-		}
-
-		return clazz.is(query, instr, analyzer);
+		return instr == null ? false : instr.isNegated();
 	}
 
 	@Override
@@ -2170,6 +2278,14 @@ public class Clazz {
 
 	public TypeRef[] getInterfaces() {
 		return interfaces;
+	}
+
+	public List<TypeRef> interfaces() {
+		return (interfaces != null) ? Arrays.asList(interfaces) : Collections.emptyList();
+	}
+
+	public Set<TypeRef> annotations() {
+		return (annotations != null) ? annotations : Collections.emptySet();
 	}
 
 	public void setInnerAccess(int access) {

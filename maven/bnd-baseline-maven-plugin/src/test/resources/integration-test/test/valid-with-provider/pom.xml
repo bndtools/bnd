@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>biz.aQute.bnd-test</groupId>
 		<artifactId>test</artifactId>
-		<version>0.0.1</version>
+		<version>1.0.1</version>
 	</parent>
 
 	<groupId>biz.aQute.bnd-test</groupId>
 	<artifactId>valid-with-provider</artifactId>
-	<version>0.0.2</version>
+	<version>1.0.2</version>
 	<packaging>jar</packaging>
 
 	<dependencies>
@@ -28,7 +28,7 @@
 				<configuration>
 					<base>
 						<artifactId>valid-no-previous</artifactId>
-						<version>0.0.1</version>
+						<version>1.0.1</version>
 					</base>
 					<includeDistributionManagement>true</includeDistributionManagement>
 				</configuration>

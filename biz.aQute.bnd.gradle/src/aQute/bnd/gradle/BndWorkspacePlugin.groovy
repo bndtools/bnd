@@ -47,13 +47,6 @@ public class BndWorkspacePlugin implements Plugin<Object> {
 
   Closure configureSettings() {
     return { Settings settings ->
-      /* Add cnf project to the graph */
-      String cnf = 'cnf'
-      try {
-        cnf = bnd_cnf
-      } catch (MissingPropertyException mpe) {}
-      include cnf
-
       /* Start with the declared build project name */
       String build = ''
       try {
@@ -62,7 +55,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       String defaultProjectName = build
 
       /* If in a subproject, use the subproject name */
-      for (File currentDir = startParameter.currentDir; currentDir != settings.rootDir; currentDir = currentDir.parentFile) {
+      for (File currentDir = startParameter.currentDir; currentDir != rootDir; currentDir = currentDir.parentFile) {
         defaultProjectName = currentDir.name
       }
 
@@ -93,6 +86,18 @@ public class BndWorkspacePlugin implements Plugin<Object> {
           }
         }
       }
+
+      /* Add cnf project to the graph */
+      String cnf = 'cnf'
+      try {
+        cnf = bnd_cnf.trim()
+      } catch (MissingPropertyException mpe) {}
+      projectNames.add(cnf)
+
+      /* Add any projects which must always be included */
+      try {
+        projectNames.addAll(bnd_include.trim().split(/\s*,\s*/))
+      } catch (MissingPropertyException mpe) {}
 
       /* Initialize the Bnd workspace */
       Workspace.setDriver(Constants.BNDDRIVER_GRADLE)

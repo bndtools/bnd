@@ -26,10 +26,12 @@
  * <li>bundles - This is the collection of files to use for locating
  * bundles during the bndrun execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
- * 'configurations.archives.artifacts.files'</li>
+ * 'configurations.archives.artifacts.files'.</li>
  * <li>resultsDir (read only) - This is the directory 
  * where the test case results are placed.
- * The value is project.testResultsDir/name</li>
+ * The value is project.testResultsDir/name.</li>
+ * <li>tests - The test class names to be run.
+ * If not set, all test classes are run.</li>
  * </ul>
  */
 
@@ -38,8 +40,8 @@ package aQute.bnd.gradle
 import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
+import aQute.bnd.build.Project
 import aQute.bnd.build.Workspace
-import aQute.bnd.osgi.Constants
 import aQute.bnd.service.RepositoryPlugin
 
 import org.gradle.api.DefaultTask
@@ -47,7 +49,9 @@ import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFile
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.options.Option
 
 public class TestOSGi extends DefaultTask {
   /**
@@ -63,6 +67,8 @@ public class TestOSGi extends DefaultTask {
 
   private File workingDir
   private File bndrun
+  private List<String> tests
+  private final Workspace bndWorkspace
 
   /**
    * Create a TestOSGi task.
@@ -70,9 +76,12 @@ public class TestOSGi extends DefaultTask {
    */
   public TestOSGi() {
     super()
+    bndWorkspace = project.findProperty('bndWorkspace')
     ignoreFailures = false
     workingDir = temporaryDir
-    convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    if (bndWorkspace == null) {
+      convention.plugins.bundles = new FileSetRepositoryConvention(this)
+    }
     project.check.dependsOn this
   }
 
@@ -123,39 +132,71 @@ public class TestOSGi extends DefaultTask {
     return new File(project.testResultsDir, name)
   }
 
+
+  /**
+   * Configures the test class names to be run.
+   */
+  @Option(option = "tests", description = "Configures the test class names to be run.")
+  public void setTests(List<String> tests) {
+      this.tests = tests
+  }
+
+  /**
+   * Return the test class names to be run.
+   * If not set, all test classes are run.
+   */
+  @Input
+  @Optional
+  public List<String> getTests() {
+      return tests;
+  }
+
   /**
    * Test the bndrun file.
    *
    */
   @TaskAction
   void testOSGi() {
-    project.mkdir(workingDir)
-    File cnf = new File(temporaryDir, Workspace.CNFDIR)
-    project.mkdir(cnf)
-    Run.createRun(null, bndrun).withCloseable { Run run ->
+    Workspace workspace = bndWorkspace
+    if (workspace != null && bndrun == project.bnd.project.getPropertiesFile()) {
+      testWorker(project.bnd.project)
+      return
+    }
+    Run.createRun(workspace, bndrun).withCloseable { Run run ->
+      Workspace runWorkspace = run.getWorkspace()
+      project.mkdir(workingDir)
       run.setBase(workingDir)
-      Workspace workspace = run.getWorkspace()
-      workspace.setBuildDir(cnf)
-      workspace.setOffline(project.gradle.startParameter.offline)
-      workspace.addBasicPlugin(getFileSetRepository(name))
-      logger.info 'Running tests for {} in {}', run.getPropertiesFile(), workingDir.absolutePath
-      for (RepositoryPlugin repo : workspace.getRepositories()) {
-        repo.list(null)
+      if (run.isStandalone()) {
+        runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
+        File cnf = new File(temporaryDir, Workspace.CNFDIR)
+        project.mkdir(cnf)
+        runWorkspace.setBuildDir(cnf)
+        if (convention.findPlugin(FileSetRepositoryConvention)) {
+          runWorkspace.addBasicPlugin(getFileSetRepository(name))
+          for (RepositoryPlugin repo : runWorkspace.getRepositories()) {
+            repo.list(null)
+          }
+        }
       }
-      run.getInfo(workspace)
+      run.getInfo(runWorkspace)
       logReport(run, logger)
       if (!run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} standalone workspace errors")
+        throw new GradleException("${run.getPropertiesFile()} workspace errors")
       }
 
-      try {
-        run.test(resultsDir, null);
-      } finally {
-        logReport(run, logger)
-      }
-      if (!ignoreFailures && !run.isOk()) {
-        throw new GradleException("${run.getPropertiesFile()} test failure")
-      }
+      testWorker(run)
+    }
+  }
+
+  void testWorker(Project run) {
+    try {
+      logger.info 'Running tests for {} in {}', run.getPropertiesFile(), run.getBase()
+      run.test(resultsDir, tests);
+    } finally {
+      logReport(run, logger)
+    }
+    if (!ignoreFailures && !run.isOk()) {
+      throw new GradleException("${run.getPropertiesFile()} test failure")
     }
   }
 }

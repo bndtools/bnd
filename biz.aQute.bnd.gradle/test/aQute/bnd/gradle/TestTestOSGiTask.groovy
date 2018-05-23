@@ -69,15 +69,27 @@ class TestTestOSGiTask extends Specification {
 
         when:
           File testxml = new File(testProjectBuildDir, 'test-results/test/TEST-doubler.impl.DoublerImplUnitTest.xml')
+          assert testxml.isFile()
+          def testsuite = new XmlSlurper().parse(testxml)
         then:
-          testxml.isFile()
-          testxml.text =~ /<testcase name=['"]testIt["'].*classname=['"]doubler.impl.DoublerImplUnitTest["']/
+          testsuite.@tests == 1
+          testsuite.@errors == 0
+          testsuite.@failures == 0
+          testsuite.testcase.size() == 1
+          testsuite.testcase[0].@name == 'testIt'
+          testsuite.testcase[0].@classname == 'doubler.impl.DoublerImplUnitTest'
 
         when:
           testxml = new File(testProjectBuildDir, "test-results/${taskname}/TEST-${testProject}-1.0.0.xml")
+          assert testxml.isFile()
+          testsuite = new XmlSlurper().parse(testxml)
         then:
-          testxml.isFile()
-          testxml.text =~ /<testcase name=['"]testIt["'].*classname=['"]doubler.impl.DoublerImplOSGiTest["']/
+          testsuite.@tests == 1
+          testsuite.@errors == 0
+          testsuite.@failures == 0
+          testsuite.testcase.size() == 1
+          testsuite.testcase[0].@name == 'testIt'
+          testsuite.testcase[0].@classname == 'doubler.impl.DoublerImplOSGiTest'
     }
 
     def "Bnd TestOSGi Task Working Dir Test"() {
@@ -106,15 +118,27 @@ class TestTestOSGiTask extends Specification {
 
         when:
           File testxml = new File(testProjectBuildDir, 'test-results/test/TEST-doubler.impl.DoublerImplUnitTest.xml')
+          assert testxml.isFile()
+          def testsuite = new XmlSlurper().parse(testxml)
         then:
-          testxml.isFile()
-          testxml.text =~ /<testcase name=['"]testIt["'].*classname=['"]doubler.impl.DoublerImplUnitTest["']/
+          testsuite.@tests == 1
+          testsuite.@errors == 0
+          testsuite.@failures == 0
+          testsuite.testcase.size() == 1
+          testsuite.testcase[0].@name == 'testIt'
+          testsuite.testcase[0].@classname == 'doubler.impl.DoublerImplUnitTest'
 
         when:
           testxml = new File(testProjectBuildDir, "test-results/${taskname}/TEST-${testProject}-1.0.0.xml")
+          assert testxml.isFile()
+          testsuite = new XmlSlurper().parse(testxml)
         then:
-          testxml.isFile()
-          testxml.text =~ /<testcase name=['"]testIt["'].*classname=['"]doubler.impl.DoublerImplOSGiTest["']/
+          testsuite.@tests == 1
+          testsuite.@errors == 0
+          testsuite.@failures == 0
+          testsuite.testcase.size() == 1
+          testsuite.testcase[0].@name == 'testIt'
+          testsuite.testcase[0].@classname == 'doubler.impl.DoublerImplOSGiTest'
     }
 
     def "Bnd TestOSGi Task Replace bundles Test"() {
@@ -142,15 +166,27 @@ class TestTestOSGiTask extends Specification {
 
         when:
           File testxml = new File(testProjectBuildDir, 'test-results/test/TEST-doubler.impl.DoublerImplUnitTest.xml')
+          assert testxml.isFile()
+          def testsuite = new XmlSlurper().parse(testxml)
         then:
-          testxml.isFile()
-          testxml.text =~ /<testcase name=['"]testIt["'].*classname=['"]doubler.impl.DoublerImplUnitTest["']/
+          testsuite.@tests == 1
+          testsuite.@errors == 0
+          testsuite.@failures == 0
+          testsuite.testcase.size() == 1
+          testsuite.testcase[0].@name == 'testIt'
+          testsuite.testcase[0].@classname == 'doubler.impl.DoublerImplUnitTest'
 
         when:
           testxml = new File(testProjectBuildDir, "test-results/${taskname}/TEST-${testProject}-1.0.0.xml")
+          assert testxml.isFile()
+          testsuite = new XmlSlurper().parse(testxml)
         then:
-          testxml.isFile()
-          testxml.text =~ /<testcase name=['"]testIt["'].*classname=['"]doubler.impl.DoublerImplOSGiTest["']/
+          testsuite.@tests == 1
+          testsuite.@errors == 0
+          testsuite.@failures == 0
+          testsuite.testcase.size() == 1
+          testsuite.testcase[0].@name == 'testIt'
+          testsuite.testcase[0].@classname == 'doubler.impl.DoublerImplOSGiTest'
     }
 
     def "Bnd TestOSGi Task ignore failure Test"() {
@@ -175,17 +211,29 @@ class TestTestOSGiTask extends Specification {
         when:
           String taskname = 'testosgiIgnoreFail'
           File testxml = new File(testProjectBuildDir, "test-results/${taskname}/TEST-${testProject}-1.0.0.xml")
+          assert testxml.isFile()
+          def testsuite = new XmlSlurper().parse(testxml)
         then:
           result.task(":${taskname}").outcome == SUCCESS
-          testxml.isFile()
-          testxml.text =~ /<testcase name=['"]testIt["'].*classname=['"]doubler.impl.DoublerImplOSGiTest["']/
+          testsuite.@tests == 1
+          testsuite.@errors == 1
+          testsuite.@failures == 0
+          testsuite.testcase.size() == 1
+          testsuite.testcase[0].@name == 'testIt'
+          testsuite.testcase[0].@classname == 'doubler.impl.DoublerImplOSGiTest'
 
         when:
           taskname = 'testosgiFail'
           testxml = new File(testProjectBuildDir, "test-results/${taskname}/TEST-${testProject}-1.0.0.xml")
+          assert testxml.isFile()
+          testsuite = new XmlSlurper().parse(testxml)
         then:
           result.task(":${taskname}").outcome == FAILED
-          testxml.isFile()
-          testxml.text =~ /<testcase name=['"]testIt["'].*classname=['"]doubler.impl.DoublerImplOSGiTest["']/
+          testsuite.@tests == 1
+          testsuite.@errors == 1
+          testsuite.@failures == 0
+          testsuite.testcase.size() == 1
+          testsuite.testcase[0].@name == 'testIt'
+          testsuite.testcase[0].@classname == 'doubler.impl.DoublerImplOSGiTest'
     }
 }

@@ -124,7 +124,7 @@ public class JUnitFrameworkTest extends Assert {
 	public void demoResourceInBundle() throws Exception {
 		BundleBuilder bundle = framework.bundle();
 
-		bundle.addResource("foo", new EmbeddedResource("Hello World".getBytes(), 0L));
+		bundle.addResource("foo", new EmbeddedResource("Hello World", 0L));
 		Bundle b = bundle.install();
 		b.start();
 

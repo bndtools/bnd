@@ -20,6 +20,7 @@ import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.SortedList;
+import aQute.lib.io.IO;
 import aQute.libg.glob.Glob;
 
 public class WorkspaceRepository implements RepositoryPlugin, Actionable {
@@ -166,8 +167,7 @@ public class WorkspaceRepository implements RepositoryPlugin, Actionable {
 
 	@Override
 	public String getLocation() {
-		return workspace.getBase()
-			.getAbsolutePath();
+		return IO.absolutePath(workspace.getBase());
 	}
 
 	@Override

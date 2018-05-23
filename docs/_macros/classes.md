@@ -65,7 +65,11 @@ PUBLIC
 
 ANNOTATION
 <td>PATTERN</td>
-<td>The class must have an annotation that matches the pattern. The set of annotations is all annotations in the class, also the annotations on fields and methods.</td>
+<td>The class must be directly annotated with an annotation that matches the pattern. The set of annotations is all annotations in the class, also the annotations on fields and methods.</td>
+
+INDIRECTLY_ANNOTATED
+<td>PATTERN</td>
+<td>The class must be directly or indirectly annotated with an annotation that matches the pattern. The set of annotations is all annotations in the class, the annotations on fields and methods, and all the annotations on those annotations recursively.</td>
 (:tableend:)
 
 ###Caveat

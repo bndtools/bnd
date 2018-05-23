@@ -1,7 +1,7 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
--dependson: biz.aQute.launcher, biz.aQute.junit, demo, demo-fragment, biz.aQute.tester, biz.aQute.remote
+-dependson: biz.aQute.bnd.embedded-repo, demo, demo-fragment
 -nobundles: true
 
 -buildpath: \
@@ -12,15 +12,15 @@
 	org.osgi.service.component;version=latest,\
 	org.osgi.service.component.annotations;version=latest,\
 	org.osgi.service.metatype.annotations;version=latest,\
-	org.osgi.annotation.bundle;version=latest,\
     org.osgi.util.function;version=latest,\
     org.osgi.util.promise;version=latest,\
-    osgi.annotation;version=6.0.1,\
+    osgi.annotation;version=latest,\
 	osgi.core;version=@6,\
 	osgi.cmpn;version=@6,\
 	slf4j.api;version=latest,\
 	${junit},\
-	${mockito}
+	${mockito},\
+	${assertj}
 
 -testpath: \
     biz.aQute.repository;version=snapshot,\

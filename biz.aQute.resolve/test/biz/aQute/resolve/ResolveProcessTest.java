@@ -19,6 +19,7 @@ import java.util.TreeSet;
 import org.osgi.framework.Version;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
+import org.osgi.service.resolver.ResolutionException;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
@@ -141,6 +142,181 @@ public class ResolveProcessTest extends TestCase {
 				"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
 			checkOptionalResource(process, it.next(), "osgi.enterprise", parseVersion("4.2.0.201003190513"),
 				"org.osgi.service.cm", "org.osgi.service.log", "org.osgi.service.metatype");
+		}
+	}
+
+	public void testResolveFailure_1() throws Exception {
+		ResolveProcess process = new ResolveProcess();
+		try (ResolverLogger logger = new ResolverLogger()) {
+			MockRegistry registry = new MockRegistry();
+
+			registry.addPlugin(getIndex("testdata/repo7/index.xml"));
+
+			Processor model = new Processor();
+
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires",
+				"osgi.wiring.package;filter:='(osgi.wiring.package=aQute.lib.io)'");
+
+			try {
+				process.resolveRequired(model, null, registry, new BndResolver(logger),
+					Collections.emptyList(), logger);
+			} catch (ResolutionException re) {
+				assertNotNull(re.getCause());
+
+				String output = ResolveProcess.format(re);
+
+				System.out.println(output);
+
+				String expected = "osgi.wiring.package: (osgi.wiring.package=aQute.lib.io)";
+				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+
+				return;
+			}
+
+			fail("Should have failed to resolve.");
+		}
+	}
+
+	public void testResolveFailure_2() throws Exception {
+		ResolveProcess process = new ResolveProcess();
+		try (ResolverLogger logger = new ResolverLogger()) {
+			MockRegistry registry = new MockRegistry();
+
+			registry.addPlugin(getIndex("testdata/repo7/index.xml"));
+
+			Processor model = new Processor();
+
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires", "osgi.service;filter:='(objectClass=java.util.concurrent.Executor)'");
+
+			try {
+				process.resolveRequired(model, null, registry, new BndResolver(logger), Collections.emptyList(),
+					logger);
+			} catch (ResolutionException re) {
+				assertNotNull(re.getCause());
+
+				String output = ResolveProcess.format(re);
+
+				System.out.println(output);
+
+				String expected = "osgi.service: (objectClass=java.util.concurrent.Executor)";
+				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+
+				return;
+			}
+
+			fail("Should have failed to resolve.");
+		}
+	}
+
+	public void testResolveFailure_3() throws Exception {
+		ResolveProcess process = new ResolveProcess();
+		try (ResolverLogger logger = new ResolverLogger()) {
+			MockRegistry registry = new MockRegistry();
+
+			registry.addPlugin(getIndex("testdata/repo7/index.xml"));
+
+			Processor model = new Processor();
+
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires",
+				"osgi.enroute.endpoint;filter:='(&(osgi.enroute.endpoint=/sse/1)(&(version>=1.1.0)(!(version>=2.0.0))))'");
+
+			try {
+				process.resolveRequired(model, null, registry, new BndResolver(logger), Collections.emptyList(),
+					logger);
+			} catch (ResolutionException re) {
+				assertNotNull(re.getCause());
+
+				String output = ResolveProcess.format(re);
+
+				System.out.println(output);
+
+				String expected = "osgi.enroute.endpoint: (&(osgi.enroute.endpoint=/sse/1)(&(version>=1.1.0)(!(version>=2.0.0))))";
+				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+
+				return;
+			}
+
+			fail("Should have failed to resolve.");
+		}
+	}
+
+	// transitive failure
+	public void testResolveFailure_4() throws Exception {
+		ResolveProcess process = new ResolveProcess();
+		try (ResolverLogger logger = new ResolverLogger()) {
+			MockRegistry registry = new MockRegistry();
+
+			registry.addPlugin(getIndex("testdata/repo7/index-aggregate.xml"));
+
+			Processor model = new Processor();
+
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires", "osgi.identity;filter:='(osgi.identity=biz.aQute.bnd)'");
+
+			try {
+				process.resolveRequired(model, null, registry, new BndResolver(logger), Collections.emptyList(),
+					logger);
+			} catch (ResolutionException re) {
+				assertNotNull(re.getCause());
+
+				String output = ResolveProcess.format(re);
+
+				System.out.println(output);
+
+				String expected = "osgi.wiring.package=org.apache.tools.ant.types";
+				assertTrue("Doesn't contain " + expected + ": <" + output + ">",
+					output.contains(expected));
+
+				expected = "Capabilities satisfying the following requirements could not be found:";
+				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				expected = "The following requirements are optional:";
+				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+
+				return;
+			}
+
+			fail("Should have failed to resolve.");
+		}
+	}
+
+	// transitive failure, no optional requirements
+	public void testResolveFailure_5() throws Exception {
+		ResolveProcess process = new ResolveProcess();
+		try (ResolverLogger logger = new ResolverLogger()) {
+			MockRegistry registry = new MockRegistry();
+
+			registry.addPlugin(getIndex("testdata/repo7/index-aggregate.xml"));
+
+			Processor model = new Processor();
+
+			model.setProperty("-runfw", "org.apache.felix.framework");
+			model.setProperty("-runrequires", "osgi.identity;filter:='(osgi.identity=biz.aQute.bnd)'");
+
+			try {
+				process.resolveRequired(model, null, registry, new BndResolver(logger), Collections.emptyList(),
+					logger);
+			} catch (ResolutionException re) {
+				assertNotNull(re.getCause());
+
+				String output = ResolveProcess.format(re, false);
+
+				System.out.println(output);
+
+				String expected = "osgi.wiring.package=org.apache.tools.ant.types";
+				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+
+				expected = "Capabilities satisfying the following requirements could not be found:";
+				assertTrue("Doesn't contain " + expected + ": <" + output + ">", output.contains(expected));
+				expected = "The following requirements are optional:";
+				assertFalse("Contains " + expected + ": <" + output + ">", output.contains(expected));
+
+				return;
+			}
+
+			fail("Should have failed to resolve.");
 		}
 	}
 

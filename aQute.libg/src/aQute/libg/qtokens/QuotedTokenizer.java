@@ -1,8 +1,7 @@
 package aQute.libg.qtokens;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import aQute.libg.generics.Create;
 
 public class QuotedTokenizer {
 	String	string;
@@ -124,11 +123,9 @@ public class QuotedTokenizer {
 	}
 
 	public List<String> getTokenSet() {
-		List<String> list = Create.list();
-		String token = nextToken();
-		while (token != null) {
+		List<String> list = new ArrayList<>();
+		for (String token = nextToken(); token != null; token = nextToken()) {
 			list.add(token);
-			token = nextToken();
 		}
 		return list;
 	}

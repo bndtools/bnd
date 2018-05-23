@@ -6,7 +6,6 @@ import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
 import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
-import static java.util.Objects.requireNonNull;
 
 import java.io.Closeable;
 import java.io.File;
@@ -36,8 +35,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -94,11 +91,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private final PromiseFactory				promiseFactory;
 
 	public HttpClient() {
-		this(Processor.getExecutor(), Processor.getScheduledExecutor());
-	}
-
-	public HttpClient(Executor executor, ScheduledExecutorService scheduledExecutor) {
-		promiseFactory = new PromiseFactory(requireNonNull(executor), requireNonNull(scheduledExecutor));
+		promiseFactory = Processor.getPromiseFactory();
 	}
 
 	synchronized void init() {
@@ -324,12 +317,8 @@ public class HttpClient implements Closeable, URLConnector {
 		final ProgressPlugin.Task task = getTask(request);
 		try {
 
-			TaggedData td = connectWithProxy(proxy, new Callable<TaggedData>() {
-				@Override
-				public TaggedData call() throws Exception {
-					return doConnect(request.upload, request.download, con, hcon, request, task);
-				}
-			});
+			TaggedData td = connectWithProxy(proxy,
+				() -> doConnect(request.upload, request.download, con, hcon, request, task));
 			logger.debug("result {}", td);
 			return td;
 		} catch (Throwable t) {
@@ -699,9 +688,8 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public void readSettings(Processor processor) throws IOException, Exception {
-		try (ConnectionSettings cs = new ConnectionSettings(processor, this)) {
-			cs.readSettings();
-		}
+		ConnectionSettings cs = new ConnectionSettings(processor, this);
+		cs.readSettings();
 	}
 
 	public URI makeDir(URI uri) throws URISyntaxException {

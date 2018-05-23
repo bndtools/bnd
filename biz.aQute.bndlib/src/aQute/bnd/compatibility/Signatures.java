@@ -2,33 +2,25 @@ package aQute.bnd.compatibility;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
+import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class is compiled against 1.5 or later to provide access to the generic
- * signatures. It can convert a Class, Field, Method or constructor to a generic
+ * This class can convert a Class, Field, Method or constructor to a generic
  * signature and it can normalize a signature. Both are methods. Normalized
  * signatures can be string compared and match even if the type variable names
- * differ. @version $Id$
+ * differ.
+ * 
+ * @version $Id$
  */
 public class Signatures {
-
-	/**
-	 * Check if the environment has generics, i.e. later than Java 5 VM.
-	 * 
-	 * @return true if generics are supported
-	 * @throws Exception
-	 */
-	public boolean hasGenerics() throws Exception {
-		try {
-			call(Signatures.class, "getGenericSuperClass");
-			return true;
-		} catch (NoSuchMethodException mnfe) {
-			return false;
-		}
-	}
 
 	/**
 	 * Helper class to track an index in a string.
@@ -100,8 +92,8 @@ public class Signatures {
 	public String getSignature(Class<?> c) throws Exception {
 		StringBuilder sb = new StringBuilder();
 		declaration(sb, c);
-		reference(sb, call(c, "getGenericSuperclass"));
-		for (Object type : (Object[]) call(c, "getGenericInterfaces")) {
+		reference(sb, c.getGenericSuperclass());
+		for (Type type : c.getGenericInterfaces()) {
 			reference(sb, type);
 		}
 		return sb.toString();
@@ -120,11 +112,11 @@ public class Signatures {
 		StringBuilder sb = new StringBuilder();
 		declaration(sb, m);
 		sb.append('(');
-		for (Object type : (Object[]) call(m, "getGenericParameterTypes")) {
+		for (Type type : m.getGenericParameterTypes()) {
 			reference(sb, type);
 		}
 		sb.append(')');
-		reference(sb, call(m, "getGenericReturnType"));
+		reference(sb, m.getGenericReturnType());
 		return sb.toString();
 	}
 
@@ -143,7 +135,7 @@ public class Signatures {
 		StringBuilder sb = new StringBuilder();
 		declaration(sb, c);
 		sb.append('(');
-		for (Object type : (Object[]) call(c, "getGenericParameterTypes")) {
+		for (Type type : c.getGenericParameterTypes()) {
 			reference(sb, type);
 		}
 		sb.append(')');
@@ -162,7 +154,7 @@ public class Signatures {
 	 */
 	public String getSignature(Field f) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		Object t = call(f, "getGenericType");
+		Type t = f.getGenericType();
 		reference(sb, t);
 		return sb.toString();
 	}
@@ -183,20 +175,20 @@ public class Signatures {
 	 * @param gd
 	 * @throws Exception
 	 */
-	private void declaration(StringBuilder sb, Object gd) throws Exception {
-		Object[] typeParameters = (Object[]) call(gd, "getTypeParameters");
+	private void declaration(StringBuilder sb, GenericDeclaration gd) throws Exception {
+		TypeVariable<?>[] typeParameters = gd.getTypeParameters();
 		if (typeParameters.length > 0) {
 			sb.append('<');
-			for (Object tv : typeParameters) {
-				sb.append(call(tv, "getName"));
+			for (TypeVariable<?> tv : typeParameters) {
+				sb.append(tv.getName());
 
-				Object[] bounds = (Object[]) call(tv, "getBounds");
+				Type[] bounds = tv.getBounds();
 				if (bounds.length > 0 && isInterface(bounds[0])) {
 					sb.append(':');
 				}
-				for (int i = 0; i < bounds.length; i++) {
+				for (Type bound : bounds) {
 					sb.append(':');
-					reference(sb, bounds[i]);
+					reference(sb, bound);
 				}
 			}
 			sb.append('>');
@@ -211,12 +203,12 @@ public class Signatures {
 	 *         Type that is an interface
 	 * @throws Exception
 	 */
-	private boolean isInterface(Object type) throws Exception {
+	private boolean isInterface(Type type) throws Exception {
 		if (type instanceof Class)
-			return (((Class<?>) type).isInterface());
+			return ((Class<?>) type).isInterface();
 
-		if (isInstance(type.getClass(), "java.lang.reflect.ParameterizedType"))
-			return isInterface(call(type, "getRawType"));
+		if (type instanceof ParameterizedType)
+			return isInterface(((ParameterizedType) type).getRawType());
 
 		return false;
 	}
@@ -236,40 +228,43 @@ public class Signatures {
 	 * @param t
 	 * @throws Exception
 	 */
-	private void reference(StringBuilder sb, Object t) throws Exception {
-
-		if (isInstance(t.getClass(), "java.lang.reflect.ParameterizedType")) {
+	private void reference(StringBuilder sb, Type t) throws Exception {
+		if (t instanceof ParameterizedType) {
+			ParameterizedType pt = (ParameterizedType) t;
 			sb.append('L');
-			parameterizedType(sb, t);
+			parameterizedType(sb, pt);
 			sb.append(';');
 			return;
-		} else if (isInstance(t.getClass(), "java.lang.reflect.GenericArrayType")) {
+		} else if (t instanceof GenericArrayType) {
+			GenericArrayType gat = (GenericArrayType) t;
 			sb.append('[');
-			reference(sb, call(t, "getGenericComponentType"));
-		} else if (isInstance(t.getClass(), "java.lang.reflect.WildcardType")) {
-			Object[] lowerBounds = (Object[]) call(t, "getLowerBounds");
-			Object[] upperBounds = (Object[]) call(t, "getUpperBounds");
+			reference(sb, gat.getGenericComponentType());
+		} else if (t instanceof WildcardType) {
+			WildcardType wt = (WildcardType) t;
+			Type[] lowerBounds = wt.getLowerBounds();
+			Type[] upperBounds = wt.getUpperBounds();
 
 			if (upperBounds.length == 1 && upperBounds[0] == Object.class)
-				upperBounds = new Object[0];
+				upperBounds = new Type[0];
 
 			if (upperBounds.length != 0) {
 				// extend
-				for (Object upper : upperBounds) {
+				for (Type upper : upperBounds) {
 					sb.append('+');
 					reference(sb, upper);
 				}
 			} else if (lowerBounds.length != 0) {
 				// super, can only be one by the language
-				for (Object lower : lowerBounds) {
+				for (Type lower : lowerBounds) {
 					sb.append('-');
 					reference(sb, lower);
 				}
 			} else
 				sb.append('*');
-		} else if (isInstance(t.getClass(), "java.lang.reflect.TypeVariable")) {
+		} else if (t instanceof TypeVariable) {
+			TypeVariable<?> tv = (TypeVariable<?>) t;
 			sb.append('T');
-			sb.append(call(t, "getName"));
+			sb.append(tv.getName());
 			sb.append(';');
 		} else if (t instanceof Class<?>) {
 			Class<?> c = (Class<?>) t;
@@ -293,13 +288,13 @@ public class Signatures {
 	 * @param pt
 	 * @throws Exception
 	 */
-	private void parameterizedType(StringBuilder sb, Object pt) throws Exception {
-		Object owner = call(pt, "getOwnerType");
-		String name = ((Class<?>) call(pt, "getRawType")).getName()
+	private void parameterizedType(StringBuilder sb, ParameterizedType pt) throws Exception {
+		String name = ((Class<?>) pt.getRawType()).getName()
 			.replace('.', '/');
+		Type owner = pt.getOwnerType();
 		if (owner != null) {
-			if (isInstance(owner.getClass(), "java.lang.reflect.ParameterizedType"))
-				parameterizedType(sb, owner);
+			if (owner instanceof ParameterizedType)
+				parameterizedType(sb, (ParameterizedType) owner);
 			else
 				sb.append(((Class<?>) owner).getName()
 					.replace('.', '/'));
@@ -310,7 +305,7 @@ public class Signatures {
 		sb.append(name);
 
 		sb.append('<');
-		for (Object parameterType : (Object[]) call(pt, "getActualTypeArguments")) {
+		for (Type parameterType : pt.getActualTypeArguments()) {
 			reference(sb, parameterType);
 		}
 		sb.append('>');
@@ -505,29 +500,4 @@ public class Signatures {
 		map.put(name, "_" + n);
 		return "_" + n;
 	}
-
-	private boolean isInstance(Class<?> type, String string) {
-		if (type == null)
-			return false;
-
-		if (type.getName()
-			.equals(string))
-			return true;
-
-		if (isInstance(type.getSuperclass(), string))
-			return true;
-
-		for (Class<?> intf : type.getInterfaces()) {
-			if (isInstance(intf, string))
-				return true;
-		}
-		return false;
-	}
-
-	private Object call(Object gd, String string) throws Exception {
-		Method m = gd.getClass()
-			.getMethod(string);
-		return m.invoke(gd);
-	}
-
 }

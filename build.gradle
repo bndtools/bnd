@@ -7,16 +7,34 @@
 
 import aQute.lib.io.IO
 
+if (JavaVersion.current().isJava9Compatible()) {
+  ext.java9options = [
+    '--add-opens=java.base/java.lang=ALL-UNNAMED', 
+    '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED', 
+    '--add-opens=java.base/java.io=ALL-UNNAMED',
+    '--add-opens=java.base/java.net=ALL-UNNAMED',
+    '--add-opens=java.base/java.nio=ALL-UNNAMED',
+    '--add-opens=java.base/java.util=ALL-UNNAMED',
+    '--add-opens=java.base/java.util.jar=ALL-UNNAMED',
+    '--add-opens=java.base/java.util.regex=ALL-UNNAMED',
+    '--add-opens=java.base/java.util.zip=ALL-UNNAMED',
+    '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
+  ]
+}
+
 /* Configure the subprojects */
 subprojects {
   if (plugins.hasPlugin('biz.aQute.bnd')) {
     group bnd('-groupid')
     version bnd('base.version')
-    javadoc.options.tags = [
-      'Immutable:t:',
-      'ThreadSafe:t:',
-      'NotThreadSafe:t:',
-      'GuardedBy:mf:"Guarded By:"']
+    javadoc {
+      options.tags = [
+        'Immutable:t:',
+        'ThreadSafe:t:',
+        'NotThreadSafe:t:',
+        'GuardedBy:mf:"Guarded By:"'
+      ]
+    }
     /* test folders are not part of jar but used by unit tests  */
     def testfolders = ['testresources/', 'testdata/']
     jar {
@@ -26,6 +44,10 @@ subprojects {
     test {
       testLogging {
         exceptionFormat 'full'
+      }
+      if (JavaVersion.current().isJava9Compatible()) {
+        jvmArgs java9options
+        environment 'JAVA_OPTS': java9options.join(' ')
       }
       inputs.files(fileTree(projectDir) {
         include testfolders

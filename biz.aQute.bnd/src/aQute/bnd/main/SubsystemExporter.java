@@ -109,7 +109,7 @@ public class SubsystemExporter implements Exporter {
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		manifest.write(bout);
 
-		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new EmbeddedResource(bout.toByteArray(), 0));
+		jar.putResource(OSGI_INF_SUBSYSTEM_MF, new EmbeddedResource(bout.toByteArray(), 0L));
 
 		final JarResource jarResource = new JarResource(jar, true);
 		final String name = ssn + ".esa";

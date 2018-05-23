@@ -7,6 +7,7 @@ summary: Includes resources, see -includeresource
 
 The resources will be copied into the target jar file. The iclause can have the following forms:
 
+```
   iclause    ::= inline | copy
   copy       ::= '{' process '}' | process
   process    ::= assignment | simple
@@ -14,6 +15,7 @@ The resources will be copied into the target jar file. The iclause can have the 
   simple     ::= PATH parameter*
   inline     ::= '@' PATH ( '!/' PATH? ('/**' | '/*')? )?
   parameters ::= 'flatten' | 'recursive' | 'filter'
+```
 
 In the case of `assignment` or `simple`, the PATH parameter can point to a file or directory. It is also possible to use the name.ext path of a JAR file on the classpath, that is, ignoring the directory. The `simple` form will place the resource in the target JAR with only the file name, therefore without any path components. That is, including src/a/b.c will result in a resource b.c in the root of the target JAR. 
 

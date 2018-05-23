@@ -94,14 +94,12 @@ public class DesignateReader extends ClassDataCollector {
 	}
 
 	void doComponent(Annotation a, Component c) {
-		pids = a.keySet()
-			.contains("configurationPid") ? c.configurationPid() : null;
+		pids = a.containsKey("configurationPid") ? c.configurationPid() : null;
 		if (pids != null) {
 			pid = pids[0];
 		}
 		if (pids == null || "$".equals(pid)) {
-			pid = a.keySet()
-				.contains("name") ? c.name()
+			pid = a.containsKey("name") ? c.name()
 					: clazz.getClassName()
 						.getFQN();
 		}

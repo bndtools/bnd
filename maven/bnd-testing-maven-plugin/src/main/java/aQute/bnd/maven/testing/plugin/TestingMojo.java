@@ -21,11 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import biz.aQute.resolve.Bndrun;
 import biz.aQute.resolve.ResolveProcess;
@@ -46,8 +48,8 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(property = "maven.test.skip", defaultValue = "false")
 	private boolean						skip;
 
-	@Parameter(readonly = true, required = true)
-	private List<File>					bndruns;
+	@Parameter
+	private Bndruns						bndruns	= new Bndruns();
 
 	@Parameter(defaultValue = "${project.build.directory}/test", readonly = true)
 	private File						cwd;
@@ -61,7 +63,10 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${testing}", readonly = true)
 	private String						testing;
 
-	@Parameter(readonly = true, required = false)
+	@Parameter(property = "test")
+	private String						test;
+
+	@Parameter(required = false)
 	private List<File>					bundles;
 
 	@Parameter(defaultValue = "true")
@@ -69,6 +74,9 @@ public class TestingMojo extends AbstractMojo {
 
 	@Parameter(defaultValue = "false")
 	private boolean						resolve;
+
+	@Parameter(defaultValue = "true")
+	private boolean						reportOptional;
 
 	@Parameter(defaultValue = "true")
 	private boolean						failOnChanges;
@@ -104,7 +112,7 @@ public class TestingMojo extends AbstractMojo {
 				Glob g = new Glob(testing == null ? "*" : testing);
 				logger.info("Matching glob {}", g);
 
-				for (File runFile : bndruns) {
+				for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
 					if (g.matcher(runFile.getName())
 						.matches())
 						testing(runFile, fileSetRepository);
@@ -118,6 +126,15 @@ public class TestingMojo extends AbstractMojo {
 
 		if (errors > 0)
 			throw new MojoExecutionException(errors + " errors found");
+	}
+
+	private List<String> getTests() {
+		logger.debug("getTests: {}", test);
+		if (test == null || test.trim()
+			.isEmpty()) {
+			return null;
+		}
+		return Strings.split(test);
 	}
 
 	private void testing(File runFile, FileSetRepository fileSetRepository) throws Exception {
@@ -153,14 +170,14 @@ public class TestingMojo extends AbstractMojo {
 					}
 					run.setProperty(Constants.RUNBUNDLES, runBundles);
 				} catch (ResolutionException re) {
-					logger.error("Unresolved requirements: {}", ResolveProcess.format(re.getUnresolvedRequirements()));
+					logger.error(ResolveProcess.format(re, reportOptional));
 					throw re;
 				} finally {
 					report(run);
 				}
 			}
 			try {
-				run.test(new File(reportsDir, bndrun), null);
+				run.test(new File(reportsDir, bndrun), getTests());
 			} finally {
 				report(run);
 			}
