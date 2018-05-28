@@ -12,15 +12,20 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.logReport
+
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
+import biz.aQute.bnd.reporter.generator.WorkspaceReportGenerator
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.logging.Logger
 import org.gradle.api.initialization.Settings
 import org.gradle.api.tasks.Delete
+import groovy.lang.MissingPropertyException
 
 public class BndWorkspacePlugin implements Plugin<Object> {
   public static final String PLUGINID = 'biz.aQute.bnd.workspace'
@@ -173,6 +178,72 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       subprojects {
         if (bndWorkspace.getProject(name) != null) {
           apply plugin: BndPlugin.class
+        }
+      }
+      
+      task('listReport') {
+        description 'Displays the list of documents that can be generated.'
+        group 'help'
+        doLast {
+        	WorkspaceReportGenerator g;
+        	try {
+        		g = new WorkspaceReportGenerator(bndWorkspace) 
+				g.getAvailableReports().each { r ->
+	            	println "${r}"
+          		}  
+        	} catch (Exception e) {
+	        	throw new GradleException("report failure", e)
+        	} finally {
+	        	bndWorkspace.getInfo(g)
+    			boolean failed = !bndWorkspace.isOk()
+    			int errorCount = bndWorkspace.getErrors().size()
+    			logReport(bndWorkspace, logger)
+    			bndWorkspace.getWarnings().clear()
+   				bndWorkspace.getErrors().clear()
+    			if (failed) {
+      				String str = ' even though no errors were reported'
+      				if (errorCount == 1) {
+        				str = ', one error was reported'
+      				} else if (errorCount > 1) {
+        				str = ", ${errorCount} errors were reported"
+      				}
+      				throw new GradleException("${bndWorkspace} has errors${str}")
+    			}
+        		g.close()
+        	}
+        }
+      }
+      
+      task('report') {
+        description "Generates the documents that match the given glob expression. Use -Pglob='<glob expression>'"
+        group 'export'
+        doLast {
+        	WorkspaceReportGenerator g;
+        	try {
+        		g = new WorkspaceReportGenerator(bndWorkspace) 
+				g.generateReports("$glob"); 
+        	} catch (MissingPropertyException e) {
+	        	throw new GradleException("Missing glob expression, use -Pglob='<glob expression>'", e)
+        	} catch (Exception e) {
+	        	throw new GradleException("report failure", e)
+        	} finally {
+	        	bndWorkspace.getInfo(g)
+    			boolean failed = !bndWorkspace.isOk()
+    			int errorCount = bndWorkspace.getErrors().size()
+    			logReport(bndWorkspace, logger)
+    			bndWorkspace.getWarnings().clear()
+   				bndWorkspace.getErrors().clear()
+    			if (failed) {
+      				String str = ' even though no errors were reported'
+      				if (errorCount == 1) {
+        				str = ', one error was reported'
+      				} else if (errorCount > 1) {
+        				str = ", ${errorCount} errors were reported"
+      				}
+      				throw new GradleException("${bndWorkspace} has errors${str}")
+    			}
+        		g.close()
+        	}
         }
       }
     }

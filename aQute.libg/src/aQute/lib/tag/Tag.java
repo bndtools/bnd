@@ -1,7 +1,15 @@
 package aQute.lib.tag;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,9 +17,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Pattern;
+
+import aQute.lib.exceptions.Exceptions;
 
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element
@@ -129,6 +142,84 @@ public class Tag {
 		content.add(tag);
 		tag.parent = this;
 		return this;
+	}
+
+	/**
+	 * Add new content tags derived from the DTO value.
+	 */
+	public Tag addContent(String name, Object dto) {
+		if (dto != null) {
+			if (isComplex(dto)) {
+				List<Object> flattedDtos = new LinkedList<>();
+
+				if (flatCollection(dto, flattedDtos, true)) {
+					for (Object d : flattedDtos) {
+						addContent(name, d);
+					}
+				} else if (dto instanceof Map) {
+					Tag tag = new Tag(name);
+					for (Entry< ? , ? > entry : ((Map< ? , ? >) dto).entrySet()) {
+						tag.addContent(Objects.toString(entry.getKey()), entry.getValue());
+					}
+					if (!tag.content.isEmpty()) {
+						addContent(tag);
+					}
+				} else {
+					Tag tag = new Tag(name);
+					for (Field field : getFields(dto.getClass())) {
+						try {
+							tag.addContent(field.getName(), field.get(dto));
+						} catch (IllegalAccessException bug) {
+							/* should not be thrown if input respect dto spec */
+							throw new RuntimeException(bug);
+						}
+					}
+					addContent(tag);
+				}
+			} else {
+				addContent(new Tag(name, dto.toString()));
+			}
+		}
+		return this;
+	}
+
+	private boolean flatCollection(Object dto, List<Object> result, boolean topLevel) {
+		if (dto != null) {
+			if (dto.getClass().isArray()) {
+				int length = Array.getLength(dto);
+				for (int i = 0; i < length; i++) {
+					flatCollection(Array.get(dto, i), result, false);
+				}
+
+				return true;
+			} else if (dto instanceof Collection) {
+				for (Object d : (Collection< ? >) dto) {
+					flatCollection(d, result, false);
+				}
+
+				return true;
+			} else if (!topLevel) {
+				result.add(dto);
+			}
+		}
+		return false;
+	}
+
+	private boolean isComplex(Object a) {
+		return a instanceof Map || a instanceof Collection || a.getClass().isArray()
+				|| getFields(a.getClass()).length > 0;
+	}
+
+	private Field[] getFields(Class< ? > c) {
+		List<Field> publicFields = new ArrayList<>();
+
+		for (Field field : c.getFields()) {
+			if (field.isEnumConstant() || field.isSynthetic() || Modifier.isStatic(field.getModifiers()))
+				continue;
+			publicFields.add(field);
+		}
+
+		return publicFields.toArray(new Field[publicFields.size()]);
 	}
 
 	/**
@@ -497,5 +588,18 @@ public class Tag {
 			return name;
 		else
 			return parent.getPath() + "/" + name;
+	}
+
+	public InputStream toInputStream() {
+		try {
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			PrintWriter pw = new PrintWriter(new OutputStreamWriter(bout, "UTF-8"));
+			this.print(2, pw);
+			pw.flush();
+			return new ByteArrayInputStream(bout.toByteArray());
+		} catch (UnsupportedEncodingException e) {
+			// impossible
+			throw Exceptions.duck(e);
+		}
 	}
 }

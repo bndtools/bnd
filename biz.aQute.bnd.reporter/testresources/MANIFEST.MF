@@ -1,0 +1,146 @@
+Manifest-Version: 1.0
+Automatic-Module-Name: biz.aQute.bndlib
+Bnd-LastModified: 1508533087523
+Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huber
+ ts@pelagic.nl, bj@bjhargrave.com
+Bundle-Copyright: Copyright (c) aQute SARL (2000, 2017) and others. Al
+ l Rights Reserved.
+Bundle-Description: A Swiss Army Knife for OSGi
+Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
+Bundle-DocURL: http://bnd.bndtools.org/
+Bundle-Icon: img/bnd-64.png;size=64
+Bundle-License: Apache-2.0; description="Apache License, Version 2.0";
+  link="http://www.apache.org/licenses/LICENSE-2.0",Apache-2.0; description="Apache License, Version 2.0";description="Apache License, Version 2.0"
+Bundle-ManifestVersion: 2
+Bundle-Unknow: 
+Bundle-Name: bndlib
+Bundle-SCM: url=https://github.com/bndtools/bnd, connection=scm:git:ht
+ tps://github.com/bndtools/bnd.git, developerConnection=scm:git:git@gi
+ thub.com:bndtools/bnd.git, tag=4.0.0.DEV-62-g7f05be04e-dirty
+Bundle-SymbolicName: biz.aQute.bndlib
+Bundle-Vendor: Bndtools http://bndtools.org/
+Bundle-Version: 4.0.0.201710202058-SNAPSHOT
+Conditional-Package: aQute.service.*, aQute.configurable
+Created-By: 1.8.0_131 (Oracle Corporation)
+Export-Package: aQute.bnd.annotation;version="1.44.0",aQute.bnd.annota
+ tion.component;version="1.43.1",aQute.bnd.annotation.headers;version=
+ "1.1",aQute.bnd.annotation.licenses;version="1.0",aQute.bnd.annotatio
+ n.metatype;version="1.45.0",aQute.bnd.annotation.plugin;version="1.0.
+ 0",aQute.bnd.annotation.xml;version="1.1.0",aQute.bnd.osgi;version="4
+ .0";uses:="aQute.bnd.header,aQute.bnd.service,aQute.bnd.util.dto,aQut
+ e.bnd.version,aQute.service.reporter,org.slf4j",aQute.bnd.service.lif
+ ecycle;version="1.0.0";uses:="aQute.bnd.build",aQute.bnd.osgi.resourc
+ e;version="2.2.0";uses:="aQute.bnd.build.model,aQute.bnd.build.model.
+ clauses,aQute.bnd.header,aQute.bnd.osgi,aQute.bnd.util.dto,aQute.bnd.
+ version,aQute.service.reporter,org.osgi.framework,org.osgi.resource",
+ aQute.bnd.maven;version="1.4.0";uses:="aQute.bnd.build,aQute.bnd.osgi
+ ,aQute.bnd.service,aQute.bnd.version,aQute.service.reporter",aQute.bn
+ d.build;version="2.10.0";uses:="aQute.bnd.header,aQute.bnd.maven.supp
+ ort,aQute.bnd.osgi,aQute.bnd.service,aQute.bnd.service.action,aQute.b
+ nd.service.progress,aQute.bnd.version,aQute.service.reporter",aQute.b
+ nd.osgi.eclipse;version="1.0.0";uses:="aQute.service.reporter",aQute.
+ bnd.http;version="1.2.0";uses:="aQute.bnd.osgi,aQute.bnd.service,aQut
+ e.bnd.service.progress,aQute.bnd.service.url,aQute.service.reporter,o
+ rg.osgi.util.promise",aQute.bnd.differ;version="1.2.0";uses:="aQute.b
+ nd.header,aQute.bnd.osgi,aQute.bnd.service,aQute.bnd.service.diff,aQu
+ te.bnd.version,aQute.service.reporter",aQute.bnd.service;version="4.3
+ .0";uses:="aQute.bnd.build,aQute.bnd.osgi,aQute.bnd.version,aQute.ser
+ vice.reporter",aQute.bnd.service.action;version="2.0.1";uses:="aQute.
+ bnd.build",aQute.bnd.service.buildevents;version="1.0";uses:="aQute.b
+ nd.osgi",aQute.bnd.service.classparser;version="1.0";uses:="aQute.bnd
+ .osgi",aQute.bnd.service.diff;version="1.0";uses:="aQute.bnd.osgi",aQ
+ ute.bnd.service.export;version="1.0.0";uses:="aQute.bnd.build,aQute.b
+ nd.osgi",aQute.bnd.service.extension;version="1.0";uses:="aQute.bnd.b
+ uild",aQute.bnd.service.maven;version="1.0.0";uses:="aQute.bnd.util.d
+ to",aQute.bnd.service.message;version="1.0.0";uses:="aQute.service.re
+ porter,org.osgi.util.promise",aQute.bnd.service.progress;version="1.1
+ .0",aQute.bnd.service.release;version="1.0.0";uses:="aQute.bnd.build"
+ ,aQute.bnd.service.remotelaunch;version="1.0.0",aQute.bnd.service.rep
+ orter;version="1.0";uses:="aQute.bnd.osgi,aQute.service.reporter",aQu
+ te.bnd.service.repository;version="1.4";uses:="aQute.bnd.service,aQut
+ e.bnd.util.dto,aQute.bnd.version,aQute.service.reporter,org.osgi.reso
+ urce",aQute.bnd.service.resolve.hook;version="1.0";uses:="org.osgi.re
+ source",aQute.bnd.service.url;version="1.4.0",aQute.bnd.service.verif
+ ier;version="1.0.0";uses:="aQute.bnd.osgi",aQute.bnd.help;version="1.
+ 1";uses:="aQute.bnd.osgi",aQute.bnd.header;version="1.6";uses:="aQute
+ .bnd.version,aQute.service.reporter",aQute.bnd.version;version="1.6.0
+ ",aQute.bnd.filerepo;version="1.0";uses:="aQute.bnd.version",aQute.li
+ b.deployer;version="1.0.0";uses:="aQute.bnd.annotation.plugin,aQute.b
+ nd.service,aQute.bnd.service.repository,aQute.bnd.version,aQute.servi
+ ce.reporter",aQute.bnd.junit;version="1.1.0";uses:="aQute.bnd.build,a
+ Qute.bnd.osgi,org.osgi.framework,org.osgi.framework.launch,org.osgi.s
+ ervice.log,org.osgi.util.promise,org.osgi.util.tracker",aQute.bnd.pro
+ perties;version="2.0",aQute.bnd.build.model;version="3.0.0";uses:="aQ
+ ute.bnd.build,aQute.bnd.build.model.clauses,aQute.bnd.build.model.con
+ versions,aQute.bnd.header,aQute.bnd.osgi,aQute.bnd.properties,aQute.b
+ nd.version,org.osgi.resource",aQute.bnd.build.model.clauses;version="
+ 2.1";uses:="aQute.bnd.header",aQute.bnd.build.model.conversions;versi
+ on="1.0.0";uses:="aQute.bnd.build.model,aQute.bnd.build.model.clauses
+ ,org.osgi.resource",aQute.service.reporter;version="1.0.1",aQute.bnd.
+ testing;version="1.0";uses:="org.osgi.framework,org.osgi.service.log"
+ ,aQute.bnd.osgi.repository;version="1.5.0";uses:="aQute.bnd.header,aQ
+ ute.bnd.osgi,aQute.bnd.osgi.resource,aQute.bnd.version,javax.xml.stre
+ am,org.osgi.resource,org.osgi.service.repository,org.osgi.util.promis
+ e",aQute.bnd.maven.support;version="3.0";uses:="aQute.bnd.service,aQu
+ te.bnd.version,aQute.service.reporter,javax.xml.xpath,org.w3c.dom",aQ
+ ute.bnd.url;version="1.2";uses:="aQute.bnd.annotation.plugin,aQute.bn
+ d.service,aQute.bnd.service.url,aQute.service.reporter",aQute.bnd.uti
+ l.dto;version="1.0",aQute.bnd.util.repository;version="1.0.0";uses:="
+ aQute.bnd.service,aQute.service.reporter,org.osgi.util.promise",aQute
+ .bnd.component.error;version="1.2.0",org.osgi.service.repository;vers
+ ion="1.1";uses:="org.osgi.resource,org.osgi.util.promise",org.osgi.re
+ source;version="1.0",org.osgi.util.promise;version="1.0";uses:="org.o
+ sgi.util.function",org.osgi.util.function;version="1.0"
+Git-Descriptor: 4.0.0.DEV-62-g7f05be04e-dirty
+Git-SHA: 7f05be04ea7aa35c194053ed2da055473144fdd5
+Import-Package: org.osgi.resource;resolution:=optional;version="[1.0,2
+ )",org.osgi.framework;version="[1.5,2)",javax.crypto,javax.crypto.spe
+ c,javax.naming,javax.net.ssl,javax.script,javax.xml.namespace,javax.x
+ ml.parsers,javax.xml.stream,javax.xml.transform,javax.xml.transform.s
+ ax,javax.xml.transform.stream,javax.xml.xpath,org.osgi.framework.laun
+ ch;version="[1.2,2)",org.osgi.service.log;version="[1.3,2)",org.osgi.
+ service.repository;version="[1.1,1.2)",org.osgi.util.function;version
+ ="[1.0,2)",org.osgi.util.promise;version="[1.0,1.1)",org.osgi.util.tr
+ acker;version="[1.5,2)",org.slf4j;version="[1.7,2)",org.w3c.dom,org.x
+ ml.sax,junit.framework;resolution:=optional
+Private-Package: aQute.bnd.plugin.gradle,aQute.bnd.component,aQute.bnd
+ .make,aQute.bnd.metatype,aQute.bnd.exporter.subsystem,aQute.bnd.make.
+ coverage,aQute.bnd.plugin.maven,aQute.bnd.plugin.eclipse,aQute.bnd.ma
+ ke.calltree,aQute.bnd.make.component,aQute.bnd.resource.repository;ve
+ rsion="1.0.0",aQute.bnd.compatibility,aQute.bnd.plugin.git,aQute.bnd.
+ plugin.ant,aQute.bnd.connection.settings,aQute.bnd.make.metatype,aQut
+ e.bnd.signing,aQute.bnd.obr,aQute.bnd.xmlattribute,aQute.bnd.build.mo
+ del.osgi-core,aQute.lib.data;version="1.0.0",aQute.lib.getopt;version
+ ="3.0.0",aQute.lib.io;version="2.0",aQute.lib.fileset;version="3.2.0"
+ ,aQute.lib.collections;version="3.1.0",aQute.lib.mavenpasswordobfusca
+ tor,aQute.lib.properties;version="3.2.0",aQute.lib.tag;version="1.4",
+ aQute.lib.strings;version="1.5.0",aQute.lib.index;version="1.0",aQute
+ .lib.utf8properties;version="3.3.0",aQute.lib.exceptions;version="2.0
+ ",aQute.lib.hex;version="1.2.0",aQute.lib.concurrentinit,aQute.lib.zi
+ p;version="1.0",aQute.lib.persistentmap;version="1.1.0",aQute.lib.con
+ soleapp;version="4.0.0",aQute.lib.env;version="3.2.0",aQute.lib.putja
+ r;version="1.0",aQute.lib.codec;version="1.0",aQute.lib.spring,aQute.
+ lib.filter;version="1.2.0",aQute.lib.justif;version="1.1.0",aQute.lib
+ .xpath,aQute.lib.json;version="3.3.0",aQute.lib.promise;version="1.1.
+ 0",aQute.lib.converter;version="2.0.1",aQute.lib.settings;version="1.
+ 2.0",aQute.lib.markdown;version="3.2.0",aQute.lib.log2reporter;versio
+ n="3.2.0",aQute.lib.base64;version="1.3.0",aQute.libg.tuple;version="
+ 1.0",aQute.libg.remote.source;version="3.2.0",aQute.libg.clauses;vers
+ ion="1.0",aQute.libg.command;version="3.2.0",aQute.libg.generics;vers
+ ion="1.0.1",aQute.libg.log;version="1.0",aQute.libg.shacache;version=
+ "1.0.0",aQute.libg.remote;version="3.2.0",aQute.libg.map;version="1.2
+ .0",aQute.libg.slf4j;version="1.0",aQute.libg.uri;version="3.2.0",aQu
+ te.libg.reporter;version="1.5.1",aQute.libg.asn1;version="1.0",aQute.
+ libg.fileiterator;version="1.0",aQute.libg.filters;version="1.0",aQut
+ e.libg.classdump;version="1.0",aQute.libg.cryptography;version="1.1.0
+ ",aQute.libg.tarjan;version="1.0",aQute.libg.classloaders;version="1.
+ 0.0",aQute.libg.filelock;version="1.0.0",aQute.libg.sax;version="1.0"
+ ,aQute.libg.forker;version="1.0",aQute.libg.cafs;version="1.0",aQute.
+ libg.xslt;version="1.0",aQute.libg.gzip;version="1.0.0",aQute.libg.re
+ mote.sink;version="3.2.0",aQute.libg.reporter.slf4j;version="1.5.1",a
+ Qute.libg.sed;version="1.2.0",aQute.libg.qtokens;version="1.0",aQute.
+ libg.glob;version="1.2.0",aQute.libg.sax.filters;version="1.0",org.os
+ gi.service.component.annotations;version="1.3",org.osgi.service.metat
+ ype.annotations;version="1.3",img,aQute.configurable;version="1.1.0"
+Require-Capability: osgi.ee;filter:="(&(osgi.ee=JavaSE)(version=1.8))"
+Tool: Bnd-3.4.0.201707252008

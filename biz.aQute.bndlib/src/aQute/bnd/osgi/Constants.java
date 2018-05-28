@@ -184,6 +184,12 @@ public interface Constants {
 	String								SOURCEPATH									= "-sourcepath";
 	String								STRICT										= "-strict";
 	String								SUB											= "-sub";
+	String								REPORT_BUNDLE								= "-report.bundle";
+	String								REPORT_PROJECT								= "-report.project";
+	String								REPORT_WORKSPACE							= "-report.workspace";
+	String								REPORT_MODEL_BUNDLE							= "-report.model.bundle";
+	String								REPORT_MODEL_PROJECT						= "-report.model.project";
+	String								REPORT_MODEL_WORKSPACE						= "-report.model.workspace";
 	String								REPRODUCIBLE								= "-reproducible";
 	String								RUNNOREFERENCES								= "-runnoreferences";
 	String								RUNPROPERTIES								= "-runproperties";
@@ -263,8 +269,7 @@ public interface Constants {
 		METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE, JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA,
 		JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE,
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
-		REPRODUCIBLE
-
+		REPRODUCIBLE, REPORT_MODEL_BUNDLE, REPORT_MODEL_PROJECT, REPORT_MODEL_WORKSPACE
 	};
 
 	// Ignore bundle specific headers. These bundles do not make

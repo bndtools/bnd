@@ -657,6 +657,8 @@ public class ProjectBuilder extends Builder {
 	 */
 	@Override
 	protected void doneBuild(Builder builder) throws Exception {
+		super.doneBuild(builder);
+
 		project.exportedPackages.putAll(builder.getExports());
 		project.importedPackages.putAll(builder.getImports());
 		project.containedPackages.putAll(builder.getContained());
@@ -673,7 +675,6 @@ public class ProjectBuilder extends Builder {
 
 		Version version = new Version(cleanupVersion(builder.getVersion()));
 		project.versionMap.put(builder.getBsn(), version);
-		super.doneBuild(builder);
 	}
 
 	private void xrefClasspath(Map<String, Container> unreferencedClasspathEntries, Packages packages) {

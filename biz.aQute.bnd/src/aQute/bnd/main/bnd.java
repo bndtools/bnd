@@ -4377,6 +4377,14 @@ public class bnd extends Processor {
 		}
 	}
 
+	@Description("Extract and generate documents of a workspace, a project or a jar.")
+	public void _report(ReporterCommand.ReporterOptions options) throws Exception {
+		ReporterCommand mc = new ReporterCommand(this);
+		mc.use(this);
+		mc.run(options);
+		getInfo(mc);
+  }
+
 	/**
 	 * Index command
 	 *
