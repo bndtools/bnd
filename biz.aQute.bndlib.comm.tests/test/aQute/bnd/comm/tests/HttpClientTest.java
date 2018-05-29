@@ -79,7 +79,7 @@ public class HttpClientTest extends TestCase {
 				TaggedData tag = hc.build()
 					.asTag()
 					.timeout(1000)
-					.go(httpServer.getBaseURI("timeout/10"));
+					.go(httpServer.getBaseURI("timeout/60"));
 				assertNotNull(tag);
 				assertEquals(200, tag.getResponseCode());
 				IO.collect(tag.getInputStream());

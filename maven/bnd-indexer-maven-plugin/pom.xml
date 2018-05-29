@@ -90,6 +90,8 @@
                       <jsse.enableSNIExtension>false</jsse.enableSNIExtension>
                       <!-- Used in the "no-dist-mgmt" deploy test -->
                       <altSnapshotDeploymentRepository>LocalSnapshotDeploy::default::file://${project.build.directory}/integration-test/projects/test/localsnapshotdeployrepo</altSnapshotDeploymentRepository>
+                      <maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+                      <maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
                     </properties>
 					<goals>
 						<goal>package</goal>

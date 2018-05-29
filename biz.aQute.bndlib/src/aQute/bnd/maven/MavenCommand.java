@@ -417,8 +417,7 @@ public class MavenCommand extends Processor {
 		if (passphrase != null)
 			command.add("--passphrase", passphrase);
 		command.add("-ab", "--sign"); // not the -b!!
-		command.add(file.getAbsolutePath());
-		System.err.println(command);
+		command.add(IO.absolutePath(file));
 		StringBuilder stdout = new StringBuilder();
 		StringBuilder stderr = new StringBuilder();
 		int result = command.execute(stdout, stderr);
@@ -436,13 +435,13 @@ public class MavenCommand extends Processor {
 		command.add("-quiet");
 		command.add("-protected");
 		// command.add("-classpath");
-		// command.add(binary.getAbsolutePath());
+		// command.add(IO.absolutePath(binary));
 		command.add("-d");
-		command.add(tmp.getAbsolutePath());
+		command.add(IO.absolutePath(tmp));
 		command.add("-charset");
 		command.add("UTF-8");
 		command.add("-sourcepath");
-		command.add(source.getAbsolutePath());
+		command.add(IO.absolutePath(source));
 
 		Attributes attr = m.getMainAttributes();
 		Properties pp = new UTF8Properties(p);

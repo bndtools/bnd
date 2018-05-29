@@ -25,6 +25,8 @@ import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferenceScope;
 import org.osgi.service.component.annotations.ServiceScope;
 import org.osgi.service.metatype.annotations.Designate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.xml.XMLAttribute;
 import aQute.bnd.component.DSAnnotations.Options;
@@ -48,6 +50,8 @@ import aQute.lib.collections.MultiMap;
  * Processes spec DS annotations into xml.
  */
 public class AnnotationReader extends ClassDataCollector {
+	private static final Logger			logger						= LoggerFactory.getLogger(AnnotationReader.class);
+
 	final static TypeRef[]				EMPTY						= new TypeRef[0];
 	final static Pattern				PROPERTY_PATTERN			= Pattern.compile(
 		"\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
@@ -337,9 +341,8 @@ public class AnnotationReader extends ClassDataCollector {
 			if (clazz.is(ANNOTATED, COMPONENT_PROPERTY_INSTR, analyzer)) {
 				clazz.parseClassFileWithCollector(new ComponentPropertyTypeDataCollector(annotation, details));
 			} else {
-				analyzer.getLogger()
-					.debug(
-						"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
+				logger.debug(
+					"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
 						clazz.getFQN(), className.getFQN());
 				return;
 			}
@@ -547,13 +550,13 @@ public class AnnotationReader extends ClassDataCollector {
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
 
-		private ComponentPropertyTypeDataCollector(String methodDescriptor,
+		ComponentPropertyTypeDataCollector(String methodDescriptor,
 			DeclarativeServicesAnnotationError details) {
 			this.methodDescriptor = methodDescriptor;
 			this.details = details;
 		}
 
-		private ComponentPropertyTypeDataCollector(Annotation componentPropertyAnnotation,
+		ComponentPropertyTypeDataCollector(Annotation componentPropertyAnnotation,
 			DeclarativeServicesAnnotationError details) {
 			// Component Property annotations added in 1.4, but they just map to
 			// normal DS properties, so there's not really a need to require DS
@@ -640,7 +643,9 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 			if (value != null) {
 				String name = defined.getName();
-				handleValue(name, value, isClass, typeClass);
+				if (!props.containsKey(name)) {
+					handleValue(name, value, isClass, typeClass);
+				}
 			}
 		}
 
@@ -1103,8 +1108,7 @@ public class AnnotationReader extends ClassDataCollector {
 	@SuppressWarnings("deprecation")
 	protected void doComponent(Component comp, Annotation annotation) throws Exception {
 
-		String componentName = (annotation.keySet()
-			.contains("name")) ? comp.name() : className.getFQN();
+		String componentName = annotation.containsKey("name") ? comp.name() : className.getFQN();
 
 		if (!mismatchedAnnotations.isEmpty()) {
 			for (Entry<String, List<DeclarativeServicesAnnotationError>> e : mismatchedAnnotations.entrySet()) {

@@ -2,10 +2,12 @@ package aQute.bnd.osgi;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.lib.converter.Converter;
@@ -75,11 +77,31 @@ public class Annotation {
 		return (T) elements.get(string);
 	}
 
+	public <T> Stream<T> stream(String key, Class<? extends T> type) {
+		Object v = get(key);
+		if (v == null) {
+			return Stream.empty();
+		}
+		if (v.getClass()
+			.isArray()) {
+			return Arrays.stream((Object[]) v)
+				.map(type::cast);
+		}
+		return Stream.of(v)
+			.map(type::cast);
+	}
+
 	public <T> void put(String string, Object v) {
 		if (elements == null)
 			elements = new LinkedHashMap<>();
 
 		elements.put(string, v);
+	}
+
+	public boolean containsKey(String key) {
+		if (elements == null)
+			return false;
+		return elements.containsKey(key);
 	}
 
 	public Set<String> keySet() {

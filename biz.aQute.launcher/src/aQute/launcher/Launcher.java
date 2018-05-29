@@ -1310,42 +1310,45 @@ public class Launcher implements ServiceListener {
 	public synchronized void serviceChanged(ServiceEvent event) {
 		if (event.getType() == ServiceEvent.REGISTERED) {
 			trace("service event %s", event);
-			final Object service = systemBundle.getBundleContext()
-				.getService(event.getServiceReference());
-			String[] objectclasses = (String[]) event.getServiceReference()
-				.getProperty(Constants.OBJECTCLASS);
+			if (mainThread != null) {
+				return;
+			}
+			try {
+				final Object service = systemBundle.getBundleContext()
+					.getService(event.getServiceReference());
+				String[] objectclasses = (String[]) event.getServiceReference()
+					.getProperty(Constants.OBJECTCLASS);
 
-			// This looks a bit more complicated than necessary but for backward
-			// compatibility reasons we require the Callable or Runnable to be
-			// registered as such. Under that condition, we prefer the Callable.
-
-			for (String objectclass : objectclasses) {
-				if (Callable.class.getName()
-					.equals(objectclass)) {
-					Method m;
-					try {
-						m = service.getClass()
-							.getMethod("call");
-						if (m.getReturnType() != Integer.class)
-							throw new IllegalArgumentException(
-								"Found a main thread service which is Callable<" + m.getReturnType()
+				// This looks a bit more complicated than necessary but for
+				// backward compatibility reasons we require the Callable or
+				// Runnable to be registered as such. Under that
+				// condition, we prefer the Callable.
+				for (String objectclass : objectclasses) {
+					if (Callable.class.getName()
+						.equals(objectclass)) {
+						try {
+							Method m = service.getClass()
+								.getMethod("call");
+							if (m.getReturnType() != Integer.class)
+								throw new IllegalArgumentException("Found a main thread service which is Callable<"
+									+ m.getReturnType()
 									.getName() + "> which should be Callable<Integer> " + event.getServiceReference());
-						mainThread = (Callable<Integer>) service;
-					} catch (NoSuchMethodException e) {
-						assert false;
+							mainThread = (Callable<Integer>) service;
+							return;
+						} catch (NoSuchMethodException e) {
+							assert false;
+						}
 					}
 				}
-			}
-			if (mainThread == null) {
-				mainThread = new Callable<Integer>() {
-					@Override
-					public Integer call() throws Exception {
-						((Runnable) service).run();
-						return 0;
-					}
+
+				mainThread = () -> {
+					((Runnable) service).run();
+					return 0;
 				};
+			} finally {
+				trace("selected main thread %s", event);
+				notifyAll();
 			}
-			notifyAll();
 		}
 	}
 

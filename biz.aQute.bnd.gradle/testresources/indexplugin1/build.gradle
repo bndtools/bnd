@@ -1,0 +1,93 @@
+/*
+ *
+ */
+
+import aQute.bnd.gradle.Bundle
+import aQute.bnd.gradle.Index
+
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+ext.projectprop = 'prop.project'
+group = 'test.bnd.gradle'
+version = '1.0.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'commons-codec:commons-codec:1.5'
+    compile 'commons-lang:commons-lang:2.6'
+    testCompile 'junit:junit:4.9'
+}
+
+jar {
+  ext.taskprop = 'prop.task'
+  manifest {
+    attributes('Implementation-Title': baseName,
+               'Implementation-Version': version,
+               '-includeresource': '{${.}/bar.txt}',
+               '-include': '${.}/other.bnd',
+               'Override': 'This should be overridden by the bnd file'
+              )
+  }
+}
+
+task bundle(type: Bundle) {
+   description 'Bundle'
+   group 'build'
+   from sourceSets.test.output
+   baseName = baseName+'_bundle'
+   bndfile = file('bundle.bnd')
+   bnd = '''
+-exportcontents: doubler.impl
+-sources: true
+My-Header: my-value
+text: TEXT
+Bundle-Name: ${project.group}:${task.baseName}
+Project-Name: ${project.name}
+Project-Dir: ${project.dir}
+Project-Output: ${project.output}
+Project-Sourcepath: ${project.sourcepath}
+Project-Buildpath: ${project.buildpath}
+'''
+   bnd 'Here: ${.}'
+   bnd '-includeresource.lib': 'commons-lang-2.6.jar;lib:=true'
+   sourceSet = sourceSets.test
+   classpath = configurations.compileClasspath
+   classpath jar
+   version = '1.1.0'
+}
+
+artifacts {
+  runtime bundle
+  archives bundle
+}
+
+task indexer(type: Index) {
+   description 'Indexer'
+   group 'build'
+   repositoryName = project.name
+   bundles fileTree(new File(destinationDir, 'libs')) {
+    include '**/*.jar'
+    exclude '**/*-latest.jar'
+    exclude '**/*-sources.jar'
+    exclude '**/*-javadoc.jar'
+  }
+}
+
+task indexer2(type: Index) {
+   description 'Indexer'
+   group 'build'
+   indexName = 'index2.xml'
+   gzip = true
+   bundles fileTree(new File(destinationDir, 'libs')) {
+    include '**/*.jar'
+    exclude '**/*_bundle*.jar'
+    exclude '**/*-latest.jar'
+    exclude '**/*-sources.jar'
+    exclude '**/*-javadoc.jar'
+  }
+}

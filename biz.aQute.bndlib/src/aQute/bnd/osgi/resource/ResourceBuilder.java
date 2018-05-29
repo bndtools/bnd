@@ -182,12 +182,12 @@ public class ResourceBuilder {
 			identity.addDirective(IdentityNamespace.CAPABILITY_SINGLETON_DIRECTIVE, "true");
 		}
 
-		String copyright = manifest.get(Constants.BUNDLE_COPYRIGHT);
+		String copyright = manifest.translate(Constants.BUNDLE_COPYRIGHT);
 		if (copyright != null) {
 			identity.addAttribute(IdentityNamespace.CAPABILITY_COPYRIGHT_ATTRIBUTE, copyright);
 		}
 
-		String description = manifest.get(Constants.BUNDLE_DESCRIPTION);
+		String description = manifest.translate(Constants.BUNDLE_DESCRIPTION);
 		if (description != null) {
 			identity.addAttribute(IdentityNamespace.CAPABILITY_DESCRIPTION_ATTRIBUTE, description);
 		}

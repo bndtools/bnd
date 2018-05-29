@@ -1,15 +1,16 @@
 package test.baseline;
 
 import static aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -21,7 +22,6 @@ import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
-import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -115,9 +115,9 @@ public class BaselineTest extends TestCase {
 	public void testJava8DefaultMethods() throws Exception {
 		try (Builder older = new Builder(); Builder newer = new Builder();) {
 			older.addClasspath(IO.getFile("java8/older/bin"));
-			older.setExportPackage("*");
+			older.setExportPackage("*;version=1.0");
 			newer.addClasspath(IO.getFile("java8/newer/bin"));
-			newer.setExportPackage("*");
+			newer.setExportPackage("*;version=1.0");
 			try (Jar o = older.build(); Jar n = newer.build();) {
 				assertTrue(older.check());
 				assertTrue(newer.check());
@@ -129,7 +129,31 @@ public class BaselineTest extends TestCase {
 				assertEquals(1, infoSet.size());
 				for (Info info : infoSet) {
 					assertTrue(info.mismatch);
-					assertEquals(new Version(0, 1, 0), info.suggestedVersion);
+					assertEquals(new Version(1, 1, 0), info.suggestedVersion);
+					assertEquals(info.packageName, "api_default_methods");
+				}
+			}
+		}
+	}
+
+	public void testNoMismatchForZeroMajor() throws Exception {
+		try (Builder older = new Builder(); Builder newer = new Builder();) {
+			older.addClasspath(IO.getFile("java8/older/bin"));
+			older.setExportPackage("*;version=0.1");
+			newer.addClasspath(IO.getFile("java8/newer/bin"));
+			newer.setExportPackage("*;version=0.1");
+			try (Jar o = older.build(); Jar n = newer.build();) {
+				assertTrue(older.check());
+				assertTrue(newer.check());
+
+				DiffPluginImpl differ = new DiffPluginImpl();
+				Baseline baseline = new Baseline(older, differ);
+
+				Set<Info> infoSet = baseline.baseline(n, o, null);
+				assertEquals(1, infoSet.size());
+				for (Info info : infoSet) {
+					assertFalse(info.mismatch);
+					assertEquals(new Version(0, 2, 0), info.suggestedVersion);
 					assertEquals(info.packageName, "api_default_methods");
 				}
 			}
@@ -281,17 +305,15 @@ public class BaselineTest extends TestCase {
 		when(v1_2_0_a.getBsn()).thenReturn("p3");
 
 		RepositoryPlugin repo = mock(RepositoryPlugin.class);
-		getWorkspace().addBasicPlugin(repo);
-		@SuppressWarnings("unchecked")
-		Map<String, String> map = any(Map.class);
-		when(repo.get(anyString(), any(Version.class), map))
+		when(repo.get(anyString(), any(Version.class), anyMap()))
 			.thenReturn(IO.getFile("testresources/ws/cnf/releaserepo/p3/p3-1.2.0.jar"));
-		System.out.println(repo.get("p3", new Version("1.2.0.b"), new Attrs()));
+		System.out.printf("get %s%n", repo.get("p3", new Version("1.2.0.b"), new HashMap<>()));
 
 		when(repo.canWrite()).thenReturn(true);
 		when(repo.getName()).thenReturn("Baseline");
 		when(repo.versions("p3")).thenReturn(new SortedList<>(new Version("1.1.0.a"), new Version("1.1.0.b"),
 			new Version("1.2.0.a"), new Version("1.2.0.b")));
+		getWorkspace().addBasicPlugin(repo);
 
 		Project p3 = getWorkspace().getProject("p3");
 		p3.setBundleVersion("1.3.0");

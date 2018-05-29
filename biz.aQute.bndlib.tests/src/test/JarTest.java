@@ -1,5 +1,8 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.data.Offset.strictOffset;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -24,7 +27,7 @@ import junit.framework.TestCase;
 public class JarTest extends TestCase {
 
 	public void testDeletePrefix() {
-		Resource r = new EmbeddedResource(new byte[1], 0);
+		Resource r = new EmbeddedResource(new byte[1], 0L);
 
 		Jar jar = new Jar("test");
 		jar.putResource("META-INF/maven/org/osgi/test/test.pom", r);
@@ -92,7 +95,7 @@ public class JarTest extends TestCase {
 		jar.setDoNotTouchManifest();
 		jar.putResource("a/b", new FileResource(IO.getFile("testresources/bnd.jar")));
 		jar.putResource("META-INF/MANIFEST.MF",
-			new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n".getBytes(), 0));
+			new EmbeddedResource("Manifest-Version: 1\r\nX: 1\r\n\r\n", 0L));
 
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		jar.write(bout);
@@ -138,8 +141,8 @@ public class JarTest extends TestCase {
 		long now = System.currentTimeMillis();
 
 		// Sanity check
-		assertTrue(jarTime < fileTime);
-		assertTrue(fileTime <= now);
+		assertThat(jarTime).isLessThan(fileTime);
+		assertThat(fileTime).isLessThanOrEqualTo(now);
 
 		// TODO see if we can improve this test case
 		// // We should use the highest modification time
@@ -150,7 +153,12 @@ public class JarTest extends TestCase {
 		// Now add the file and check that
 		// the modification time has changed
 		jar.putResource("asm", new FileResource(file));
-		assertEquals(file.lastModified(), jar.lastModified());
+		assertThat(jarTime).isLessThan(jar.lastModified());
+
+		// On some file systems, File.lastModified and
+		// BasicFileAttributes.lastModifiedTime can produce values which vary in
+		// the sub-second milliseconds.
+		assertThat(jar.lastModified()).isCloseTo(file.lastModified(), strictOffset(1000L));
 	}
 
 	public static void testNewLine() throws Exception {

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -1974,17 +1975,17 @@ public class Clazz {
 		}, false);
 	}
 
-	private Stream<TypeRef> interfacesStream(Analyzer analyzer,
+	private Stream<TypeRef> typeStream(Analyzer analyzer,
 		Function<? super Clazz, Collection<? extends TypeRef>> func,
 		Set<TypeRef> visited) {
 		return StreamSupport.stream(new Spliterator<TypeRef>() {
 			private final Deque<TypeRef>	queue;
-			private final Set<TypeRef>		done;
+			private final Set<TypeRef>		seen;
 			{
 				requireNonNull(analyzer);
 				// initialize queue from this class
 				queue = new ArrayDeque<>(requireNonNull(func).apply(Clazz.this));
-				done = (visited != null) ? visited : new HashSet<>();
+				seen = (visited != null) ? visited : new HashSet<>();
 			}
 
 			@Override
@@ -1996,7 +1997,8 @@ public class Clazz {
 					if (type == null) {
 						return false;
 					}
-				} while (!done.add(type));
+				} while (seen.contains(type));
+				seen.add(type);
 				action.accept(type);
 				if (visited != null) {
 					Clazz clazz;
@@ -2040,23 +2042,24 @@ public class Clazz {
 			case NAMED :
 				return instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
 
-			case VERSION :
+			case VERSION : {
 				String v = major + "." + minor;
 				return instr.matches(v) ^ instr.isNegated();
+			}
 
 			case IMPLEMENTS : {
 				Set<TypeRef> visited = new HashSet<>();
-				return hierarchyStream(analyzer).anyMatch(c -> c
-					.interfacesStream(analyzer,
-						i -> (i.interfaces != null) ? Arrays.asList(i.interfaces) : Collections.emptyList(), visited)
-					.anyMatch(i -> instr.matches(i.getDottedOnly()))) ^ instr.isNegated();
+				return hierarchyStream(analyzer)
+					.flatMap(c -> c.typeStream(analyzer, Clazz::interfaces, visited))
+					.map(TypeRef::getDottedOnly)
+					.anyMatch(instr::matches) ^ instr.isNegated();
 			}
 
 			case EXTENDS :
 				return hierarchyStream(analyzer).skip(1) // skip this class
-					.anyMatch(c -> instr.matches(c.getClassName()
-						.getDottedOnly()))
-					^ instr.isNegated();
+					.map(Clazz::getClassName)
+					.map(TypeRef::getDottedOnly)
+					.anyMatch(instr::matches) ^ instr.isNegated();
 
 			case PUBLIC :
 				return Modifier.isPublic(accessx);
@@ -2065,16 +2068,14 @@ public class Clazz {
 				return !Modifier.isAbstract(accessx);
 
 			case ANNOTATED :
-				return interfacesStream(analyzer,
-					c -> (c.annotations != null) ? c.annotations : Collections.emptyList(), null)
-						.anyMatch(a -> instr.matches(a.getFQN()))
-					^ instr.isNegated();
+				return typeStream(analyzer, Clazz::annotations, null) //
+					.map(TypeRef::getFQN)
+					.anyMatch(instr::matches) ^ instr.isNegated();
 
 			case INDIRECTLY_ANNOTATED :
-				return interfacesStream(analyzer,
-					c -> (c.annotations != null) ? c.annotations : Collections.emptyList(), new HashSet<>())
-						.anyMatch(a -> instr.matches(a.getFQN()))
-					^ instr.isNegated();
+				return typeStream(analyzer, Clazz::annotations, new HashSet<>()) //
+					.map(TypeRef::getFQN)
+					.anyMatch(instr::matches) ^ instr.isNegated();
 
 			case RUNTIMEANNOTATIONS :
 				return hasRuntimeAnnotations;
@@ -2086,8 +2087,12 @@ public class Clazz {
 				return Modifier.isAbstract(accessx);
 
 			case IMPORTS :
-				return hierarchyStream(analyzer).flatMap(c -> c.imports.stream())
-					.anyMatch(pkg -> instr.matches(pkg.getFQN())) ^ instr.isNegated();
+				return hierarchyStream(analyzer) //
+					.map(Clazz::getReferred)
+					.flatMap(Set::stream)
+					.distinct()
+					.map(PackageRef::getFQN)
+					.anyMatch(instr::matches) ^ instr.isNegated();
 
 			case DEFAULT_CONSTRUCTOR :
 				return hasPublicNoArgsConstructor();
@@ -2273,6 +2278,14 @@ public class Clazz {
 
 	public TypeRef[] getInterfaces() {
 		return interfaces;
+	}
+
+	public List<TypeRef> interfaces() {
+		return (interfaces != null) ? Arrays.asList(interfaces) : Collections.emptyList();
+	}
+
+	public Set<TypeRef> annotations() {
+		return (annotations != null) ? annotations : Collections.emptySet();
 	}
 
 	public void setInnerAccess(int access) {

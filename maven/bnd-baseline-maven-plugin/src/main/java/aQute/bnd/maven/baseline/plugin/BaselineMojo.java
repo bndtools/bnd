@@ -46,6 +46,7 @@ import aQute.service.reporter.Reporter;
 @Mojo(name = "baseline", defaultPhase = VERIFY)
 public class BaselineMojo extends AbstractMojo {
 	private static final Logger		logger	= LoggerFactory.getLogger(BaselineMojo.class);
+	private static final String		PACKAGING_POM	= "pom";
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject			project;
@@ -65,7 +66,7 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter(property = "bnd.baseline.continue.on.error", defaultValue = "false")
 	private boolean					continueOnError;
 
-	@Parameter(readonly = true)
+	@Parameter
 	private Base					base;
 
 	@Parameter(property = "bnd.baseline.skip", defaultValue = "false")
@@ -78,6 +79,13 @@ public class BaselineMojo extends AbstractMojo {
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
 			logger.debug("skip project as configured");
+			return;
+		}
+
+		// Exit without generating anything if this is a pom-packaging project.
+		// Probably it's just a parent project.
+		if (PACKAGING_POM.equals(project.getPackaging())) {
+			logger.info("skip project with packaging=pom");
 			return;
 		}
 

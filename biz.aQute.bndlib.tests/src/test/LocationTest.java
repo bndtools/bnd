@@ -110,8 +110,7 @@ public class LocationTest extends TestCase {
 		Pattern pattern = Pattern.compile("^" + what, Pattern.MULTILINE);
 		Processor.FileLine fl = p.getHeader(pattern);
 		assertNotNull(fl);
-		assertTrue(fl.file.getAbsolutePath()
-			.replace(File.separatorChar, '/')
+		assertTrue(IO.absolutePath(fl.file)
 			.endsWith(file));
 		assertEquals(line, fl.line);
 		return true;

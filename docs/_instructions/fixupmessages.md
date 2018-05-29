@@ -72,4 +72,4 @@ The `-fixupmessages` instruction is a _merged property_. This means that you can
 	  "Found \\<whitespace>";
 	    is:=warning
 	    
-[1]: http://bnd.bndtools.org/chapters/820-instructions.html#selector
+[1]: https://bnd.bndtools.org/chapters/820-instructions.html#selector

@@ -12,7 +12,8 @@ public enum OSGI_CORE {
 	R4_3_0,
 	R4_3_1,
 	R5_0_0,
-	R6_0_0;
+	R6_0_0,
+	R7_0_0;
 
 	private Domain manifest;
 

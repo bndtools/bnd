@@ -1,5 +1,6 @@
 package aQute.libg.reporter;
 
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -30,7 +31,7 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 
 		@Override
 		public SetLocation file(String file) {
-			this.file = file;
+			this.file = (file != null) ? file.replace(File.separatorChar, '/') : null;
 			return this;
 		}
 
@@ -188,8 +189,10 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	public void progress(float progress, String s, Object... args) {
 		if (out != null) {
 			out.format(s, args);
-			if (!s.endsWith(String.format("%n")))
+			if (!s.endsWith(String.format("%n"))) {
 				out.format("%n");
+			}
+			out.flush();
 		}
 	}
 

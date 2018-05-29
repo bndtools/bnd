@@ -2,7 +2,7 @@ package aQute.bnd.osgi;
 
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
 import java.io.File;
@@ -27,13 +27,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -52,13 +53,13 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Attributes;
-import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,7 +103,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
 	static ThreadLocal<Processor>					current				= new ThreadLocal<>();
-	private final static ScheduledExecutorService	sheduledExecutor;
+	private final static ScheduledExecutorService	scheduledExecutor;
 	private final static ExecutorService			executor;
 	static {
 		ThreadFactory threadFactory = Executors.defaultThreadFactory();
@@ -131,8 +132,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					}
 				}
 			});
-		sheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory);
+		scheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory);
 	}
+	private static PromiseFactory				promiseFactory			= new PromiseFactory(executor,
+		scheduledExecutor);
 	static Random								random					= new Random();
 	// TODO handle include files out of date
 	public final static String					LIST_SPLITTER			= "\\s*,\\s*";
@@ -187,7 +190,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 
 		public void set(SetLocation sl) {
-			sl.file(file.getAbsolutePath());
+			sl.file(IO.absolutePath(file));
 			sl.line(line);
 			sl.length(length);
 		}
@@ -290,7 +293,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (!p.warnings.contains(s))
 			p.warnings.add(s);
 		p.signal();
-		return location(s);
+		return p.location(s);
 	}
 
 	@Override
@@ -303,7 +306,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			String s = formatArrays(string, args);
 			if (!p.errors.contains(s))
 				p.errors.add(s);
-			return location(s);
+			return p.location(s);
 		} finally {
 			p.signal();
 		}
@@ -454,13 +457,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public <T> List<T> getPlugins(Class<T> clazz) {
-		List<T> l = new ArrayList<>();
-		Set<Object> all = getPlugins();
-		for (Object plugin : all) {
-			if (clazz.isInstance(plugin))
-				l.add(clazz.cast(plugin));
-		}
-		return l;
+		List<T> plugins = getPlugins().stream()
+			.filter(clazz::isInstance)
+			.map(clazz::cast)
+			.collect(toList());
+		return plugins;
 	}
 
 	/**
@@ -471,12 +472,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	@Override
 	public <T> T getPlugin(Class<T> clazz) {
-		Set<Object> all = getPlugins();
-		for (Object plugin : all) {
-			if (clazz.isInstance(plugin))
-				return clazz.cast(plugin);
-		}
-		return null;
+		Optional<T> plugin = getPlugins().stream()
+			.filter(clazz::isInstance)
+			.map(clazz::cast)
+			.findFirst();
+		return plugin.orElse(null);
 	}
 
 	/**
@@ -570,7 +570,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				try {
 					for (String p : parts) {
 						File f = getFile(p).getAbsoluteFile();
-						loader.add(f.toURI()
+						loader.addURL(f.toURI()
 							.toURL());
 					}
 				} catch (Exception e) {
@@ -729,7 +729,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 			logger.debug("Adding {} to loader for plugins", f);
 			try {
-				loader.add(f.toURI()
+				loader.addURL(f.toURI()
 					.toURL());
 			} catch (MalformedURLException e) {
 				// Cannot happen since every file has a correct url
@@ -769,6 +769,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	protected void setTypeSpecificPlugins(Set<Object> list) {
 		list.add(getExecutor());
+		list.add(getPromiseFactory());
 		list.add(random);
 		list.addAll(basicPlugins);
 	}
@@ -816,8 +817,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void setBase(File base) {
-		this.base = base;
-		baseURI = (base == null) ? null : base.toURI();
+		if (base == null) {
+			this.base = null;
+			baseURI = null;
+		} else {
+			this.base = base.getAbsoluteFile();
+			baseURI = base.toURI();
+		}
 	}
 
 	public void clear() {
@@ -883,8 +889,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		for (Closeable c : toBeClosed) {
 			IO.close(c);
 		}
-		if (pluginLoader != null)
-			pluginLoader.closex();
+		synchronized (this) {
+			plugins = null;
+		}
+		if (pluginLoader != null) {
+			IO.close(pluginLoader);
+			pluginLoader = null;
+		}
 
 		toBeClosed.clear();
 	}
@@ -893,7 +904,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (base == null)
 			throw new IllegalArgumentException("No base dir set");
 
-		return base.getAbsolutePath();
+		return IO.absolutePath(base);
 	}
 
 	public String _propertiesname(String[] args) {
@@ -918,8 +929,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (pf == null)
 			return "";
 
-		return pf.getParentFile()
-			.getAbsolutePath();
+		return IO.absolutePath(pf.getParentFile());
 	}
 
 	static String _uri = "${uri;<uri>[;<baseuri>]}, Resolve the uri against the baseuri. baseuri defaults to the processor base.";
@@ -993,8 +1003,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public void mergeProperties(Properties properties, boolean override) {
-		for (Enumeration<?> e = properties.propertyNames(); e.hasMoreElements();) {
-			String key = (String) e.nextElement();
+		for (String key : Iterables.iterable(properties.propertyNames(), String.class::cast)) {
 			String value = properties.getProperty(key);
 			if (override || !getProperties().containsKey(key))
 				setProperty(key, value);
@@ -1169,6 +1178,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		synchronized (this) {
 			plugins = null; // We always refresh our plugins
 		}
+		if (pluginLoader != null) {
+			IO.close(pluginLoader);
+			pluginLoader = null;
+		}
 
 		if (propertiesFile == null)
 			return false;
@@ -1329,8 +1342,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			.sorted()
 			.map(k -> getLiteralProperty(k, null, this, inherit))
 			.filter(v -> (v != null) && !v.isEmpty())
-			.collect(joining(separator));
-		return result.isEmpty() ? deflt : result;
+			.collect(Strings.joining(separator, "", "", deflt));
+		return result;
 	}
 
 	private String getLiteralProperty(String key, String deflt, Processor source, boolean inherit) {
@@ -1408,20 +1421,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @throws IOException
 	 */
 	UTF8Properties loadProperties0(File file) throws IOException {
-		String name = file.toURI()
-			.getPath();
-		int n = name.lastIndexOf('/');
-		if (n > 0)
-			name = name.substring(0, n);
-		if (name.length() == 0)
-			name = ".";
-
 		try {
 			UTF8Properties p = new UTF8Properties();
 			p.load(file, this);
-			return p.replaceAll("\\$\\{\\.\\}", Matcher.quoteReplacement(name));
+			return p.replaceHere(file.getParentFile());
 		} catch (Exception e) {
-			error("Error during loading properties file: %s, error: %s", name, e);
+			error("Error during loading properties file: %s, error: %s", file, e);
 			return new UTF8Properties();
 		}
 	}
@@ -1735,17 +1740,20 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	/**
 	 * Make the file short if it is inside our base directory, otherwise long.
 	 *
-	 * @param f
+	 * @param file
 	 */
-	public String normalize(String f) {
-		if (f.startsWith(base.getAbsolutePath() + "/"))
-			return f.substring(base.getAbsolutePath()
-				.length() + 1);
-		return f;
+	public String normalize(String file) {
+		file = IO.normalizePath(file);
+		String path = IO.absolutePath(base);
+		int len = path.length();
+		if (file.startsWith(path) && file.charAt(len) == '/') {
+			return file.substring(len + 1);
+		}
+		return file;
 	}
 
-	public String normalize(File f) {
-		return normalize(f.getAbsolutePath());
+	public String normalize(File file) {
+		return normalize(file.getAbsolutePath());
 	}
 
 	public static String removeDuplicateMarker(String key) {
@@ -1765,58 +1773,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static class CL extends URLClassLoader {
-
 		CL(Processor p) {
 			super(new URL[0], p.getClass()
 				.getClassLoader());
 		}
 
-		void closex() {
-			Class<URLClassLoader> clazz = URLClassLoader.class;
-
-			try {
-				//
-				// Java 7 is a good boy, it has a close method
-				//
-				clazz.getMethod("close")
-					.invoke(this);
-				return;
-			} catch (Exception e) {
-				// ignore
-			}
-
-			//
-			// On Java 6, we're screwed and have to much around
-			// This is best effort, likely fails on non-SUN vms
-			// :-(
-			//
-
-			try {
-				Field ucpField = clazz.getDeclaredField("ucp");
-				ucpField.setAccessible(true);
-				Object cp = ucpField.get(this);
-				Field loadersField = cp.getClass()
-					.getDeclaredField("loaders");
-				loadersField.setAccessible(true);
-				Collection<?> loaders = (Collection<?>) loadersField.get(cp);
-				for (Object loader : loaders) {
-					try {
-						Field loaderField = loader.getClass()
-							.getDeclaredField("jar");
-						loaderField.setAccessible(true);
-						JarFile jarFile = (JarFile) loaderField.get(loader);
-						jarFile.close();
-					} catch (Throwable t) {
-						// if we got this far, this is probably not a JAR loader
-						// so skip it
-					}
-				}
-			} catch (Throwable t) {
-				// probably not a SUN VM
-			}
-		}
-
-		void add(URL url) {
+		@Override
+		protected void addURL(URL url) {
 			URL urls[] = getURLs();
 			for (URL u : urls) {
 				if (u.equals(url))
@@ -2109,7 +2072,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public synchronized Class<?> getClass(String type, File jar) throws Exception {
 		CL cl = getLoader();
-		cl.add(jar.toURI()
+		cl.addURL(jar.toURI()
 			.toURL());
 		return cl.loadClass(type);
 	}
@@ -2227,7 +2190,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public static ScheduledExecutorService getScheduledExecutor() {
-		return sheduledExecutor;
+		return scheduledExecutor;
+	}
+
+	public static PromiseFactory getPromiseFactory() {
+		return promiseFactory;
 	}
 
 	/**
@@ -2300,7 +2267,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			second = parent.iterable(inherit);
 		}
 
-		Iterable<String> iterable = Iterables.distinct(first, second, o -> (o instanceof String) ? (String) o : null);
+		Iterable<String> iterable = Iterables.distinct(first, second, o -> (o instanceof String) ? (String) o : null,
+			Objects::nonNull);
 		return iterable;
 	}
 
@@ -2349,7 +2317,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		@Override
 		public SetLocation file(String file) {
-			this.file = file;
+			this.file = (file != null) ? IO.normalizePath(file) : null;
 			return this;
 		}
 
@@ -2721,8 +2689,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return null;
 		}
 
-		return propertiesFile.getAbsolutePath()
-			.replaceAll("\\\\", "/");
+		return IO.absolutePath(propertiesFile);
 	}
 
 	/**

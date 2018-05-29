@@ -21,7 +21,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.Formatter;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,6 +44,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.ExtList;
+import aQute.lib.collections.Iterables;
 import aQute.lib.collections.SortedList;
 import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.filter.Get;
@@ -138,8 +138,7 @@ public class Macro {
 				if (index == 1 || Character.isWhitespace(line.charAt(index - 2))) {
 					// make sure it is preceded by whitespace or starts at begin
 					index++;
-					variable.append(domain.getBase()
-						.getAbsolutePath());
+					variable.append(IO.absolutePath(domain.getBase()));
 					variable.append('/');
 					continue outer;
 				}
@@ -386,11 +385,15 @@ public class Macro {
 	static String _removeall = "${removeall;<list>;<list>}";
 
 	public String _removeall(String args[]) {
-		verifyCommand(args, _removeall, null, 3, 3);
+		verifyCommand(args, _removeall, null, 1, 3);
 		List<String> result = new ArrayList<>();
-		Processor.split(args[1], result);
+		if (args.length > 1) {
+			Processor.split(args[1], result);
+		}
 		List<String> remove = new ArrayList<>();
-		Processor.split(args[2], remove);
+		if (args.length > 2) {
+			Processor.split(args[2], remove);
+		}
 		result.removeAll(remove);
 		return Processor.join(result, ",");
 	}
@@ -401,11 +404,15 @@ public class Macro {
 	static String _retainall = "${retainall;<list>;<list>}";
 
 	public String _retainall(String args[]) {
-		verifyCommand(args, _retainall, null, 3, 3);
+		verifyCommand(args, _retainall, null, 1, 3);
 		List<String> result = new ArrayList<>();
-		Processor.split(args[1], result);
+		if (args.length > 1) {
+			Processor.split(args[1], result);
+		}
 		List<String> retain = new ArrayList<>();
-		Processor.split(args[2], retain);
+		if (args.length > 2) {
+			Processor.split(args[2], retain);
+		}
 		result.retainAll(retain);
 		return Processor.join(result, ",");
 	}
@@ -718,8 +725,7 @@ public class Macro {
 			if (f.exists() && f.getParentFile()
 				.exists()) {
 				sb.append(del);
-				sb.append(f.getParentFile()
-					.getAbsolutePath());
+				sb.append(IO.absolutePath(f.getParentFile()));
 				del = ",";
 			}
 		}
@@ -859,8 +865,7 @@ public class Macro {
 		List<String> result = new ArrayList<>();
 		for (File file : files)
 			result.add(relative ? file.getName()
-				: file.getAbsolutePath()
-					.replace(File.separatorChar, '/'));
+				: IO.absolutePath(file));
 
 		return Processor.join(result, ",");
 	}
@@ -1276,8 +1281,7 @@ public class Macro {
 		try {
 			Properties flattened = new UTF8Properties();
 			Properties source = domain.getProperties();
-			for (Enumeration<?> e = source.propertyNames(); e.hasMoreElements();) {
-				String key = (String) e.nextElement();
+			for (String key : Iterables.iterable(source.propertyNames(), String.class::cast)) {
 				if (!key.startsWith("_")) {
 					String value = source.getProperty(key);
 					if (value == null) {
@@ -1306,7 +1310,7 @@ public class Macro {
 		verifyCommand(args, _fileHelp, null, 3, 3);
 		File base = new File(args[1]);
 		File f = Processor.getFile(base, args[2]);
-		return f.getAbsolutePath();
+		return IO.absolutePath(f);
 	}
 
 	public String _path(String args[]) {

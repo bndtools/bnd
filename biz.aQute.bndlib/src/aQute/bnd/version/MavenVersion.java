@@ -14,7 +14,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	private static final Pattern			fuzzyVersionRange	= Pattern
 		.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
 	private static final Pattern			fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
-	private static final String				VERSION_STRING		= "(\\d{1,15})(\\.(\\d{1,9})(\\.(\\d{1,9}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
+	private static final String				VERSION_STRING		= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
 	private static final SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
 	private static final Pattern			VERSIONRANGE		= Pattern
 		.compile("((\\(|\\[)" + VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);

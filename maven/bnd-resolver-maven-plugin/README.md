@@ -54,7 +54,8 @@ mvn bnd-resolver:resolve
 
 |Configuration Property | Description |
 | ---                   | ---         |
-|`bndruns`              | Contains at least one `bndrun` child element, each element naming a bndrun file defining a runtime and tests to execute against it.|
+|`bndruns`              | Can contain `bndrun` child elements naming a bndrun file to resolv. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bndrun files. These are relative to the `${project.basedir}` directory. _Defaults to `<include>*.bndrun</include>`._|
 |`failOnChanges`        | Whether to fail the build if any change in the resolved `-runbundles` is discovered. _Defaults to `true`._|
-|`bundles`              | This is the collection of files to use for locating bundles during the bndrun resolution. Paths are relative to `${project.basedir}` by default. Absolute paths are allowed. _Defaults to dependencies in the `compile` and `runtime`, plus the current artifact (if any)._|
+|`bundles`              | This is the collection of files to use for locating bundles during the bndrun resolution. Can contain `bundle` child elements specifying the path to a bundle. These can be absolute paths. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bundles. These are relative to the `${project.basedir}` directory. _Defaults to dependencies in the `compile` and `runtime`, plus the current artifact (if any and `useMavenDependencies` is `true`)._|
 |`useMavenDependencies` | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._|
+|`reportOptional`       | If `true`, resolution failure reports will include optional requirements. _Defaults to `true`._|

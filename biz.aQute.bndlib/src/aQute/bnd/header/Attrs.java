@@ -18,67 +18,6 @@ import java.util.regex.Pattern;
 import aQute.bnd.version.Version;
 
 public class Attrs implements Map<String, String> {
-	public interface DataType<T> {
-		Type type();
-	}
-
-	public static final DataType<String>		STRING			= new DataType<String>() {
-
-																	@Override
-																	public Type type() {
-																		return Type.STRING;
-																	}
-																};
-	public static final DataType<Long>			LONG			= new DataType<Long>() {
-
-																	@Override
-																	public Type type() {
-																		return Type.LONG;
-																	}
-																};;
-	public static final DataType<Double>		DOUBLE			= new DataType<Double>() {
-
-																	@Override
-																	public Type type() {
-																		return Type.DOUBLE;
-																	}
-																};;
-	public static final DataType<Version>		VERSION			= new DataType<Version>() {
-
-																	@Override
-																	public Type type() {
-																		return Type.VERSION;
-																	}
-																};;
-	public static final DataType<List<String>>	LIST_STRING		= new DataType<List<String>>() {
-
-																	@Override
-																	public Type type() {
-																		return Type.STRINGS;
-																	}
-																};;
-	public static final DataType<List<Long>>	LIST_LONG		= new DataType<List<Long>>() {
-
-																	@Override
-																	public Type type() {
-																		return Type.LONGS;
-																	}
-																};;
-	public static final DataType<List<Double>>	LIST_DOUBLE		= new DataType<List<Double>>() {
-
-																	@Override
-																	public Type type() {
-																		return Type.DOUBLES;
-																	}
-																};;
-	public static final DataType<List<Version>>	LIST_VERSION	= new DataType<List<Version>>() {
-
-																	@Override
-																	public Type type() {
-																		return Type.VERSIONS;
-																	}
-																};;
-
 	public enum Type {
 		STRING(null, "String"),
 		LONG(null, "Long"),
@@ -89,8 +28,8 @@ public class Attrs implements Map<String, String> {
 		VERSIONS(VERSION, "List<Version>"),
 		DOUBLES(DOUBLE, "List<Double>");
 
-		Type	sub;
-		String	toString;
+		final Type		sub;
+		final String	toString;
 
 		Type(Type sub, String toString) {
 			this.sub = sub;
@@ -106,7 +45,6 @@ public class Attrs implements Map<String, String> {
 			switch (this) {
 				case DOUBLE :
 					return DOUBLES;
-
 				case LONG :
 					return LONGS;
 				case STRING :
@@ -118,6 +56,19 @@ public class Attrs implements Map<String, String> {
 			}
 		}
 	}
+
+	public interface DataType<T> {
+		Type type();
+	}
+
+	public static final DataType<String>		STRING			= () -> Type.STRING;
+	public static final DataType<Long>			LONG			= () -> Type.LONG;
+	public static final DataType<Double>		DOUBLE			= () -> Type.DOUBLE;
+	public static final DataType<Version>		VERSION			= () -> Type.VERSION;
+	public static final DataType<List<String>>	LIST_STRING		= () -> Type.STRINGS;
+	public static final DataType<List<Long>>	LIST_LONG		= () -> Type.LONGS;
+	public static final DataType<List<Double>>	LIST_DOUBLE		= () -> Type.DOUBLES;
+	public static final DataType<List<Version>>	LIST_VERSION	= () -> Type.VERSIONS;
 
 	/**
 	 * <pre>
@@ -214,7 +165,9 @@ public class Attrs implements Map<String, String> {
 			} else {
 				type = getObjectType(value);
 			}
-			key += ":" + type.toString();
+			if (!key.endsWith(":")) { // directives are only String type
+				key += ":" + type.toString();
+			}
 		}
 		put(key, value.toString());
 
@@ -301,7 +254,7 @@ public class Attrs implements Map<String, String> {
 			return null;
 
 		Matcher m = TYPED.matcher(key);
-		if (m.matches()) {
+		if (m.matches()) { // typed-attr
 			key = m.group(1);
 			String type = m.group(2);
 			Type t = Type.STRING;
@@ -333,6 +286,8 @@ public class Attrs implements Map<String, String> {
 			}
 
 			// TODO verify value?
+		} else {
+			types.remove(key); // default String type
 		}
 
 		return map.put(key, value);

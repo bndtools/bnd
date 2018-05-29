@@ -67,6 +67,10 @@
                     <streamLogs>true</streamLogs>
 					<localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
 					<postBuildHookScript>verify.groovy</postBuildHookScript>
+          <properties>
+            <maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+            <maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+          </properties>
 					<goals>
 						<goal>package</goal>
 					</goals>

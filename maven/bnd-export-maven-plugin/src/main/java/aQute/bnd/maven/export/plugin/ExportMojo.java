@@ -5,7 +5,6 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.maven.artifact.DefaultArtifact;
@@ -29,6 +28,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
+import aQute.bnd.maven.lib.configuration.Bndruns;
+import aQute.bnd.maven.lib.configuration.Bundles;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JarResource;
@@ -49,14 +50,14 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		repositorySession;
 
-	@Parameter(readonly = true, required = true)
-	private List<File>					bndruns;
+	@Parameter
+	private Bndruns						bndruns	= new Bndruns();
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
 	private File						targetDir;
 
-	@Parameter(readonly = true, required = false)
-	private List<File>					bundles;
+	@Parameter
+	private Bundles						bundles	= new Bundles();
 
 	@Parameter(defaultValue = "true")
 	private boolean						useMavenDependencies;
@@ -65,12 +66,15 @@ public class ExportMojo extends AbstractMojo {
 	private boolean						resolve;
 
 	@Parameter(defaultValue = "true")
+	private boolean						reportOptional;
+
+	@Parameter(defaultValue = "true")
 	private boolean						failOnChanges;
 
 	@Parameter(defaultValue = "false")
 	private boolean						bundlesOnly;
 
-	@Parameter(required = false)
+	@Parameter
 	private String						exporter;
 
 	@Parameter(defaultValue = "true")
@@ -93,13 +97,14 @@ public class ExportMojo extends AbstractMojo {
 			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
 				system);
 
-			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
+			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(),
+				bundles.getFiles(project.getBasedir(), null),
 				useMavenDependencies);
 
 			if (exporter == null) {
 				exporter = bundlesOnly ? RunbundlesExporter.RUNBUNDLES : ExecutableJarExporter.EXECUTABLE_JAR;
 			}
-			for (File runFile : bndruns) {
+			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
 				export(runFile, fileSetRepository);
 			}
 		} catch (Exception e) {
@@ -143,7 +148,7 @@ public class ExportMojo extends AbstractMojo {
 					}
 					run.setProperty(Constants.RUNBUNDLES, runBundles);
 				} catch (ResolutionException re) {
-					logger.error("Unresolved requirements: {}", ResolveProcess.format(re.getUnresolvedRequirements()));
+					logger.error(ResolveProcess.format(re, reportOptional));
 					throw re;
 				} finally {
 					report(run);

@@ -1,5 +1,7 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -11,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -242,14 +245,13 @@ public class ProjectTest extends TestCase {
 
 		top.setProperty("a", "${repo;org.apache.felix.configadmin;latest}");
 		System.out.println("a= '" + top.getProperty("a") + "'");
-		assertTrue(top.getProperty("a")
-			.endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar".replace('/',
-				File.separatorChar)));
+		assertThat(top.getProperty("a"))
+			.endsWith("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8.jar");
 
 		top.setProperty("a", "${repo;IdoNotExist;latest}");
 		top.getProperty("a");
 		assertTrue(top.check("macro refers to an artifact IdoNotExist-latest.*that has an error"));
-		assertEquals("", top.getProperty("a"));
+		assertThat(top.getProperty("a")).isEmpty();
 	}
 
 	/**
@@ -570,19 +572,19 @@ public class ProjectTest extends TestCase {
 		String s = project.getReplacer()
 			.process(("${repo;libtest}"));
 		System.err.println(s);
-		assertTrue(s.contains("org.apache.felix.configadmin" + File.separator + "org.apache.felix.configadmin-1.8.8"));
-		assertTrue(s.contains("org.apache.felix.ipojo" + File.separator + "org.apache.felix.ipojo-1.0.0.jar"));
+		assertThat(s).contains("org.apache.felix.configadmin/org.apache.felix.configadmin-1.8.8",
+			"org.apache.felix.ipojo/org.apache.felix.ipojo-1.0.0.jar");
 
 		s = project.getReplacer()
 			.process(("${repo;libtestxyz}"));
-		assertTrue(s.matches(""));
+		assertThat(s).matches("");
 
 		s = project.getReplacer()
 			.process("${repo;org.apache.felix.configadmin;1.0.0;highest}");
-		assertTrue(s.endsWith("org.apache.felix.configadmin-1.8.8.jar"));
+		assertThat(s).endsWith("org.apache.felix.configadmin-1.8.8.jar");
 		s = project.getReplacer()
 			.process("${repo;org.apache.felix.configadmin;1.0.0;lowest}");
-		assertTrue(s.endsWith("org.apache.felix.configadmin-1.0.1.jar"));
+		assertThat(s).endsWith("org.apache.felix.configadmin-1.0.1.jar");
 	}
 
 	public void testClasspath() throws Exception {
@@ -763,6 +765,19 @@ public class ProjectTest extends TestCase {
 	}
 
 	/*
+	 * Verify that this also works when you have multiple directories
+	 */
+	public void testSrcPointsToFile() throws Exception {
+		Workspace ws = getWorkspace("testresources/ws");
+		Project p = ws.getProject("pfilesrc");
+		Collection<File> sourcePath = p.getSourcePath();
+		File a = p.getFile("a");
+		File b = p.getFile("b");
+		assertThat(sourcePath).containsExactly(a);
+		assertThat(p.check("src.*" + Pattern.quote(b.getName()))).isTrue();
+	}
+
+	/*
 	 * Verify that that -versionannotations works. We can be osgi, bnd,
 	 * packageinfo, or an annotation. When not set, we are packageinfo
 	 */
@@ -834,8 +849,8 @@ public class ProjectTest extends TestCase {
 	}
 
 	public void testBuildAll() throws Exception {
-		assertTrue(testBuildAll("*", 19).check()); // there are 14 projects
-		assertTrue(testBuildAll("p*", 11).check()); // 7 begin with p
+		assertTrue(testBuildAll("*", 20).check()); // there are 20 projects
+		assertTrue(testBuildAll("p*", 12).check()); // 12 begin with p
 		assertTrue(testBuildAll("!p*, *", 8).check()); // negation: 6 don't
 														// begin with p
 		assertTrue(testBuildAll("*-*", 6).check()); // more than one wildcard: 7
@@ -848,7 +863,7 @@ public class ProjectTest extends TestCase {
 																					// is
 																					// an
 																					// error
-		assertTrue(testBuildAll("p*, !*-*, *", 17).check()); // check that
+		assertTrue(testBuildAll("p*, !*-*, *", 18).check()); // check that
 																// negation
 																// works after
 																// some projects

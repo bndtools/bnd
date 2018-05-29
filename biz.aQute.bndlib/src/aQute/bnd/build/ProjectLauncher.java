@@ -26,6 +26,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Strategy;
+import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 import aQute.libg.generics.Create;
 
@@ -103,7 +104,7 @@ public abstract class ProjectLauncher extends Processor {
 		for (Container container : run) {
 			File file = container.getFile();
 			if (file != null && (file.isFile() || file.isDirectory())) {
-				runbundles.add(file.getAbsolutePath());
+				runbundles.add(IO.absolutePath(file));
 			} else {
 				project.error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
 			}
@@ -113,7 +114,7 @@ public abstract class ProjectLauncher extends Processor {
 			File[] builds = project.getBuildFiles(true);
 			if (builds != null)
 				for (File file : builds)
-					runbundles.add(file.getAbsolutePath());
+					runbundles.add(IO.absolutePath(file));
 		}
 
 		Collection<Container> runpath = project.getRunpath();
@@ -154,8 +155,7 @@ public abstract class ProjectLauncher extends Processor {
 		} else {
 			Collection<Container> members = container.getMembers();
 			for (Container m : members) {
-				String path = m.getFile()
-					.getAbsolutePath();
+				String path = IO.absolutePath(m.getFile());
 				if (!classpath.contains(path)) {
 
 					Manifest manifest = m.getManifest();
@@ -279,7 +279,7 @@ public abstract class ProjectLauncher extends Processor {
 		if (jdb != null) {
 			int port = 1044;
 			try {
-				port = Integer.parseInt(project.getProperty(Constants.RUNJDB));
+				port = Integer.parseInt(jdb);
 			} catch (Exception e) {
 				// ok, value can also be ok, or on, or true
 			}
@@ -287,6 +287,8 @@ public abstract class ProjectLauncher extends Processor {
 
 			java.add("-Xrunjdwp:server=y,transport=dt_socket,address=" + Math.abs(port) + ",suspend=" + suspend);
 		}
+
+		java.addAll(split(System.getenv("JAVA_OPTS"), "\\s+"));
 
 		java.add("-cp");
 		java.add(Processor.join(getClasspath(), File.pathSeparator));
@@ -319,7 +321,7 @@ public abstract class ProjectLauncher extends Processor {
 			return "java";
 		}
 		File java = new File(javaHome, "bin/java");
-		return java.getAbsolutePath();
+		return IO.absolutePath(java);
 	}
 
 	/**

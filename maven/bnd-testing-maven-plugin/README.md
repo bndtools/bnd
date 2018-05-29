@@ -50,7 +50,7 @@ Here's an example setting the `bundles` used for resolution.
 
 |Configuration Property          | Description |
 | ---                            | ---         |
-|`bndruns`                       | Contains at least one `bndrun` child element, each element naming a bndrun file defining a runtime and tests to execute against it.|
+|`bndruns`              | Can contain `bndrun` child elements naming a bndrun file defining a runtime and tests to execute against it. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bndrun files. These are relative to the `${project.basedir}` directory. _Defaults to `<include>*.bndrun</include>`._|
 |`resolve`                       | Whether to resolve the `-runbundles` required for a valid runtime. _Defaults to `false`._|
 |`failOnChanges`                 | Whether to fail the build if any change in the resolved `-runbundles` is discovered. _Defaults to `true`._|
 |`reportsDir`                    | The output directory for test reports. A subdirectory of `${bndrun}` will be created for each bndrun file supplied. _Defaults to `${project.build.directory}/test-reports`._|
@@ -58,5 +58,7 @@ Here's an example setting the `bundles` used for resolution.
 |`skipTests` OR `maven.test.skip`| Does not execute any tests. Used from the command line via `-D`. _Defaults to `false`._|
 |`testingSelect`                 | A file path to a test file, overrides anything else. _Defaults to `${testing.select}`._ Override with property `testing.select`.|
 |`testing`                       | A glob expression that is matched against the file name of the listed bndrun files. _Defaults to `${testing}`._ Override with property `testing`.|
-|`bundles`                       | This is the collection of files to use for locating bundles during the bndrun resolution. Paths are relative to `${project.basedir}` by default. Absolute paths are allowed. _Defaults to dependencies in the `compile` and `runtime`, plus the current artifact (if any)._|
+|`test`                          | A comma separated list of the fully qualified names of test classes to run. If not set, or empty, then all the test classes listed in the `Test-Classes` manifest header are run. Override with property `test`.|
+|`bundles`              | This is the collection of files to use for locating bundles during the bndrun resolution. Can contain `bundle` child elements specifying the path to a bundle. These can be absolute paths. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bundles. These are relative to the `${project.basedir}` directory. _Defaults to dependencies in the `compile` and `runtime`, plus the current artifact (if any and `useMavenDependencies` is `true`)._|
 |`useMavenDependencies`          | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._|
+|`reportOptional`                | If `true`, resolution failure reports (see `resolve`) will include optional requirements. _Defaults to `true`._|

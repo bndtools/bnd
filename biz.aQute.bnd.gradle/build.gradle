@@ -13,6 +13,12 @@ dependencies {
     }
 }
 
+if (JavaVersion.current().isJava9Compatible()) {
+    tasks.withType(GroovyCompile) {
+        groovyOptions.fork 'jvmArgs': java9options
+    }
+}
+
 test {
     dependsOn jar
     def source = file('testresources')

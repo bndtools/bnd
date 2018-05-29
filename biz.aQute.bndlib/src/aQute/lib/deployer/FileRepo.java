@@ -291,7 +291,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			if (!root.isDirectory())
 				throw new IllegalArgumentException("Location cannot be turned into a directory " + root);
 
-			exec(init, root.getAbsolutePath());
+			exec(init, IO.absolutePath(root));
 		}
 
 		if (hasIndex)
@@ -557,7 +557,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 
 	@Override
 	public String toString() {
-		return String.format("%s [%-40s r/w=%s]", getName(), getRoot().getAbsolutePath(), canWrite());
+		return String.format("%s [%-40s r/w=%s]", getName(), IO.absolutePath(getRoot()), canWrite());
 	}
 
 	@Override
@@ -687,7 +687,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 				s = descriptor.description + "\n";
 			}
 
-			s += String.format("Path: %s\nSize: %s\nSHA1: %s", f.getAbsolutePath(), readable(f.length(), 0),
+			s += String.format("Path: %s\nSize: %s\nSHA1: %s", IO.absolutePath(f), readable(f.length(), 0),
 				SHA1.digest(f)
 					.asHex());
 			if (f.getName()
@@ -803,30 +803,30 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	@Override
 	public void close() throws IOException {
 		if (inited) {
-			exec(close, root.getAbsolutePath());
+			exec(close, IO.absolutePath(getRoot()));
 			if (hasIndex)
 				index.close();
 		}
 	}
 
 	protected void open() {
-		exec(open, root.getAbsolutePath());
+		exec(open, IO.absolutePath(getRoot()));
 	}
 
 	protected void beforePut(File tmp) {
-		exec(beforePut, root.getAbsolutePath(), tmp.getAbsolutePath());
+		exec(beforePut, IO.absolutePath(getRoot()), IO.absolutePath(tmp));
 	}
 
 	protected void afterPut(File file, String bsn, Version version, String sha) {
-		exec(afterPut, root.getAbsolutePath(), file.getAbsolutePath(), sha);
+		exec(afterPut, IO.absolutePath(getRoot()), IO.absolutePath(file), sha);
 	}
 
 	protected void abortPut(File tmpFile) {
-		exec(abortPut, root.getAbsolutePath(), tmpFile.getAbsolutePath());
+		exec(abortPut, IO.absolutePath(getRoot()), IO.absolutePath(tmpFile));
 	}
 
 	protected void beforeGet(String bsn, Version version) {
-		exec(beforeGet, root.getAbsolutePath(), bsn, version);
+		exec(beforeGet, IO.absolutePath(getRoot()), bsn, version);
 	}
 
 	protected void fireBundleAdded(File file) throws Exception {

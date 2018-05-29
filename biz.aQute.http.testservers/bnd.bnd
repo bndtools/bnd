@@ -12,7 +12,7 @@ Private-Package: aQute.http.testservers.www
 Conditional-Package: aQute.lib*, fi.*, org.bouncycastle.*
 
 -buildpath: \
-    osgi.annotation;version=6.0.1,\
+    osgi.annotation;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	biz.aQute.bndlib;version=latest;packages=*,\

@@ -344,8 +344,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	void doStart(Jar jar, String fqn) throws UnsupportedEncodingException {
 		String nix = "#!/bin/sh\njava -cp . " + fqn + "\n";
 		String pc = "java -cp . " + fqn + "\r\n";
-		jar.putResource("start", new EmbeddedResource(nix, 0));
-		jar.putResource("start.bat", new EmbeddedResource(pc, 0));
+		jar.putResource("start", new EmbeddedResource(nix, 0L));
+		jar.putResource("start.bat", new EmbeddedResource(pc, 0L));
 	}
 
 }

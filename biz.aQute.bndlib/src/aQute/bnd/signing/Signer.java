@@ -73,13 +73,13 @@ public class Signer extends Processor {
 			doManifest(jar, digestNames, digestAlgorithms, o);
 			o.flush();
 			byte newManifestBytes[] = o.toByteArray();
-			jar.putResource("META-INF/MANIFEST.MF", new EmbeddedResource(newManifestBytes, 0));
+			jar.putResource("META-INF/MANIFEST.MF", new EmbeddedResource(newManifestBytes, 0L));
 
 			// Use the bytes from the new manifest to create
 			// a signature file
 
 			byte[] signatureFileBytes = doSignatureFile(digestNames, digestAlgorithms, newManifestBytes);
-			jar.putResource("META-INF/BND.SF", new EmbeddedResource(signatureFileBytes, 0));
+			jar.putResource("META-INF/BND.SF", new EmbeddedResource(signatureFileBytes, 0L));
 
 			// Now we must create an RSA signature
 			// this requires the private key from the keystore
@@ -114,7 +114,7 @@ public class Signer extends Processor {
 			// encoding ...
 
 			try (ByteBufferOutputStream tmpStream = new ByteBufferOutputStream()) {
-				jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteArray(), 0));
+				jar.putResource("META-INF/BND.RSA", new EmbeddedResource(tmpStream.toByteArray(), 0L));
 			}
 		} catch (Exception e) {
 			exception(e, "During signing: %s", e);

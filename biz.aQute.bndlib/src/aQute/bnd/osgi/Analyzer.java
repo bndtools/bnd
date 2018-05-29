@@ -36,7 +36,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
@@ -60,7 +59,6 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.slf4j.Logger;
@@ -79,6 +77,7 @@ import aQute.bnd.service.classparser.ClassParser;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
+import aQute.lib.collections.Iterables;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
 import aQute.lib.filter.Filter;
@@ -380,9 +379,10 @@ public class Analyzer extends Processor {
 			contained.keySet()
 				.stream()
 				.map(this::getPackageInfoClazz)
-				.filter(clz -> clz != null)
-				.filter(clz -> clz.annotations != null)
-				.filter(clz -> clz.annotations.contains(bndAnnotation))
+				.filter(Objects::nonNull)
+				.distinct()
+				.filter(clz -> clz.annotations()
+					.contains(bndAnnotation))
 				.map(Clazz::getClassName)
 				.map(TypeRef::getPackageRef)
 				.map(PackageRef::getFQN)
@@ -397,9 +397,10 @@ public class Analyzer extends Processor {
 		return contained.keySet()
 			.stream()
 			.map(this::getPackageInfoClazz)
-			.filter(clz -> clz != null)
-			.filter(clz -> clz.annotations != null)
-			.filter(clz -> clz.annotations.contains(exportAnnotation))
+			.filter(Objects::nonNull)
+			.distinct()
+			.filter(clz -> clz.annotations()
+				.contains(exportAnnotation))
 			.map(Clazz::getClassName)
 			.map(TypeRef::getPackageRef)
 			.map(PackageRef::getFQN)
@@ -544,9 +545,7 @@ public class Analyzer extends Processor {
 
 			Attrs attrs = new Attrs();
 
-			for (@SuppressWarnings("unchecked")
-			Enumeration<String> t = (Enumeration<String>) p.propertyNames(); t.hasMoreElements();) {
-				String key = t.nextElement();
+			for (String key : Iterables.iterable(p.propertyNames(), String.class::cast)) {
 				String propvalue = p.getProperty(key);
 
 				if (key.equalsIgnoreCase("include")) {
@@ -920,9 +919,7 @@ public class Analyzer extends Processor {
 			// -----
 
 			doNamesection(dot, manifest);
-
-			for (Enumeration<?> h = getProperties().propertyNames(); h.hasMoreElements();) {
-				String header = (String) h.nextElement();
+			for (String header : Iterables.iterable(getProperties().propertyNames(), String.class::cast)) {
 				if (header.trim()
 					.length() == 0) {
 					warning("Empty property set with value: %s", getProperties().getProperty(header));
@@ -1425,7 +1422,7 @@ public class Analyzer extends Processor {
 	@Override
 	public void setBase(File file) {
 		super.setBase(file);
-		getProperties().put("project.dir", getBase().getAbsolutePath());
+		getProperties().put("project.dir", IO.absolutePath(getBase()));
 	}
 
 	/**
@@ -1441,8 +1438,7 @@ public class Analyzer extends Processor {
 			} else if (cpe instanceof File) {
 				File f = (File) cpe;
 				if (!f.exists()) {
-					error("Missing file on classpath: %s", f.getAbsolutePath()
-						.replace(File.separatorChar, '/'));
+					error("Missing file on classpath: %s", IO.absolutePath(f));
 					continue;
 				}
 				addClasspath(f);
@@ -1465,8 +1461,7 @@ public class Analyzer extends Processor {
 				Jar current = new Jar(classpath[i]);
 				list.add(current);
 			} else {
-				error("Missing file on classpath: %s", classpath[i].getAbsolutePath()
-					.replace(File.separatorChar, '/'));
+				error("Missing file on classpath: %s", IO.absolutePath(classpath[i]));
 			}
 		}
 		for (Iterator<Jar> i = list.iterator(); i.hasNext();) {
@@ -1948,16 +1943,13 @@ public class Analyzer extends Processor {
 		Set<PackageRef> providers = classspace.values()
 			.stream()
 			.flatMap(c -> {
-				TypeRef[] interfaces = c.getInterfaces();
-				if (interfaces == null) {
-					return Stream.empty();
-				}
 				// filter out interfaces in the same package as the class
 				// implementing the
 				// interface.
 				PackageRef pkg = c.getClassName()
 					.getPackageRef();
-				return Arrays.stream(interfaces)
+				return c.interfaces()
+					.stream()
 					.filter(i -> !Objects.equals(pkg, i.getPackageRef()));
 			})
 			.distinct()
@@ -3523,11 +3515,7 @@ public class Analyzer extends Processor {
 
 			File file = IO.getFile(srcDir, path);
 			if (file.isFile()) {
-				String abspath = file.getAbsolutePath();
-				if (File.separatorChar == '/')
-					return abspath;
-
-				return abspath.replace(File.separatorChar, '/');
+				return IO.absolutePath(file);
 			}
 
 		}

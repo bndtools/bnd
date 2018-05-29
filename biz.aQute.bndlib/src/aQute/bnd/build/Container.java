@@ -50,7 +50,7 @@ public class Container {
 		this.version = version;
 		this.type = type;
 		this.file = source != null ? source : new File("/" + bsn + ":" + version + ":" + type);
-		this.path = file.getAbsolutePath();
+		this.path = IO.absolutePath(file);
 
 		this.project = project;
 		this.error = error;
@@ -183,8 +183,7 @@ public class Container {
 	public String toString() {
 		if (getError() != null)
 			return "/error/" + getError();
-		return getFile().getAbsolutePath()
-			.replace(File.separatorChar, '/');
+		return IO.absolutePath(getFile());
 	}
 
 	public Map<String, String> getAttributes() {

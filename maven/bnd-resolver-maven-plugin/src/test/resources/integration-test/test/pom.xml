@@ -21,9 +21,11 @@
                     <version>@project.version@</version>
                     <configuration>
                         <failOnChanges>false</failOnChanges>
+                        <!-- Default to including *.bndrun
                         <bndruns>
                             <bndrun>test.bndrun</bndrun>
                         </bndruns>
+                        -->
                     </configuration>
                     <executions>
                         <execution>

@@ -1,0 +1,10 @@
+import aQute.bnd.gradle.TestOSGi
+
+testOSGi {
+  tests = ['test.simple.Test']
+}
+
+task('testOSGi2', type: TestOSGi) {
+  inputs.files jar
+  bndrun = testOSGi.bndrun
+}

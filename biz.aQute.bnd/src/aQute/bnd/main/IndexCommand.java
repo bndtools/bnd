@@ -1,13 +1,9 @@
 package aQute.bnd.main;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.net.URI;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import aQute.bnd.osgi.Processor;
@@ -83,11 +79,11 @@ public class IndexCommand extends Processor {
 			return;
 		}
 
-		Map<String, String> config = new HashMap<>();
-
-		try (OutputStream out = new FileOutputStream(repositoryFile)) {
-			SimpleIndexer.index(files, out, base, compress, name);
-		}
+		new SimpleIndexer().files(files)
+			.base(base)
+			.name(name)
+			.compress(compress)
+			.index(repositoryFile);
 	}
 
 }

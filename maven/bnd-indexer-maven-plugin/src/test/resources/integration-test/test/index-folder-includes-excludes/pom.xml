@@ -61,12 +61,10 @@
 						</goals>
 						<configuration>
 							<inputDir>${project.build.directory}/repo</inputDir>
-							<includes>
+							<indexFiles>
 								<include>**/org.apache.felix.*.jar</include>
-							</includes>
-							<excludes>
 								<exclude>**/*e-3.0.0*</exclude>
-							</excludes>
+							</indexFiles>
 							<outputFile>${project.build.directory}/META-INF/index.xml</outputFile>
 						</configuration>
 					</execution>
