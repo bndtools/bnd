@@ -64,6 +64,9 @@ public class BndrunResolveContext extends AbstractResolveContext {
 	public static final String	RUN_EFFECTIVE_INSTRUCTION	= "-resolve.effective";
 	public static final String	PROP_RESOLVE_PREFERENCES	= "-resolve.preferences";
 
+	private static final String	SYSTEM_BUNDLE_BSN			= "system.bundle";
+	private static final String	SYSTEM_BUNDLE_VERSION		= Version.emptyVersion.toString();
+
 	private Registry			registry;
 	private Parameters			resolvePrefs;
 	private final Processor		properties;
@@ -179,7 +182,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				EE tmp = EE.parse(properties.getProperty(Constants.RUNEE));
 				EE ee = (tmp != null) ? tmp : EE.JavaSE_1_6;
 
-				system.addAllExecutionEnvironments(ee);
+				system.addAllExecutionEnvironments(ee, SYSTEM_BUNDLE_BSN, SYSTEM_BUNDLE_VERSION);
 
 				//
 				// We make the system packages as coming from the system
@@ -187,8 +190,8 @@ public class BndrunResolveContext extends AbstractResolveContext {
 				//
 
 				Parameters systemPackages = new Parameters(properties.mergeProperties(Constants.RUNSYSTEMPACKAGES),
-					project);
-				system.addExportPackages(systemPackages);
+						project);
+				system.addExportPackages(systemPackages, SYSTEM_BUNDLE_BSN, SYSTEM_BUNDLE_VERSION);
 
 				//
 				// We make the system capabilities as coming from the system

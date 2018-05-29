@@ -55,8 +55,8 @@ public class GenericResolveContext extends AbstractResolveContext {
 		setFramework(system, r);
 	}
 
-	public void addEE(EE ee) throws Exception {
-		system.addAllExecutionEnvironments(ee);
+	public void addEE(EE ee, String bsn, String bundleVersion) throws Exception {
+		system.addAllExecutionEnvironments(ee, bsn, bundleVersion);
 	}
 
 	public void addRequireBundle(String bsn, VersionRange versionRange) throws Exception {

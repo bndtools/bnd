@@ -42,6 +42,7 @@ import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
 public class ResourceBuilder {
+
 	private final static String		BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
 	private final static String		JAR_MIME_TYPE		= "application/java-archive";
 	private final ResourceImpl		resource			= new ResourceImpl();
@@ -250,7 +251,7 @@ public class ResourceBuilder {
 		// to be converted to osgi.wiring.package ns
 		//
 
-		addExportPackages(manifest.getExportPackage());
+		addExportPackages(manifest.getExportPackage(), bsn.getKey(), version.toString());
 
 		//
 		// Add the imported package. These need
@@ -553,17 +554,22 @@ public class ResourceBuilder {
 	 * 
 	 * @throws Exception
 	 */
-	public void addExportPackages(Parameters exports) throws Exception {
-		for (Entry<String, Attrs> clause : exports.entrySet()) {
+	public void addExportPackages(Parameters exports, String bsn, String bundleVersion)
+		throws Exception {
+		for (Entry<String,Attrs> clause : exports.entrySet()) {
 			String pname = Processor.removeDuplicateMarker(clause.getKey());
 			Attrs attrs = clause.getValue();
+
+			attrs.put(PackageNamespace.CAPABILITY_BUNDLE_SYMBOLICNAME_ATTRIBUTE, bsn);
+			attrs.put(PackageNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE,
+				bundleVersion != null ? bundleVersion : Version.emptyVersion.toString());
 
 			addExportPackage(pname, attrs);
 		}
 	}
 
-	public void addEE(EE ee) throws Exception {
-		addExportPackages(ee.getPackages());
+	public void addEE(EE ee, String bsn, String bundleVersion) throws Exception {
+		addExportPackages(ee.getPackages(), bsn, bundleVersion);
 		EE[] compatibles = ee.getCompatible();
 		addExecutionEnvironment(ee);
 		for (EE compatible : compatibles) {
@@ -621,8 +627,8 @@ public class ResourceBuilder {
 		addCapability(builder);
 	}
 
-	public void addAllExecutionEnvironments(EE ee) throws Exception {
-		addExportPackages(ee.getPackages());
+	public void addAllExecutionEnvironments(EE ee, String bsn, String bundleVersion) throws Exception {
+		addExportPackages(ee.getPackages(), bsn, bundleVersion);
 		addExecutionEnvironment(ee);
 		for (EE compatibleEE : ee.getCompatible()) {
 			addExecutionEnvironment(compatibleEE);

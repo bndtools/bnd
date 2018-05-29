@@ -37,6 +37,7 @@ public class XMLResourceGenerator {
 	private Set<Resource>	visited		= new HashSet<>();
 	private int				indent		= 0;
 	private boolean			compress	= false;
+	private final CapabilityValidation	validation	= new CapabilityValidation();
 
 	public XMLResourceGenerator() {
 		repository.addAttribute("xmlns", "http://www.osgi.org/xmlns/repository/v1.0.0");
@@ -132,10 +133,11 @@ public class XMLResourceGenerator {
 			Tag r = new Tag(repository, "resource");
 			List<Capability> caps = resource.getCapabilities(null);
 			caps.forEach(cap -> {
+				Capability validated = validation.validate(cap);
 				Tag cr = new Tag(r, "capability");
-				cr.addAttribute("namespace", cap.getNamespace());
-				directives(cr, cap.getDirectives());
-				attributes(cr, cap.getAttributes());
+				cr.addAttribute("namespace", validated.getNamespace());
+				directives(cr, validated.getDirectives());
+				attributes(cr, validated.getAttributes());
 			});
 
 			List<Requirement> reqs = resource.getRequirements(null);

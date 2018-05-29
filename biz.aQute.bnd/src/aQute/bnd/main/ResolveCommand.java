@@ -33,6 +33,7 @@ import aQute.bnd.osgi.resource.FilterParser;
 import aQute.bnd.osgi.resource.FilterParser.Expression;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
+import aQute.bnd.version.Version;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
@@ -177,13 +178,13 @@ public class ResolveCommand extends Processor {
 
 		ResourceBuilder system = new ResourceBuilder();
 
-		system.addEE(options.ee(EE.JavaSE_1_8));
+		system.addEE(options.ee(EE.JavaSE_1_8), "system.bundle", Version.emptyVersion.toString());
 		if (options.core() != null)
 			system.addManifest(options.core()
 				.getManifest());
 
 		if (options.packages() != null)
-			system.addExportPackages(options.packages());
+			system.addExportPackages(options.packages(), "system.bundle", Version.emptyVersion.toString());
 
 		if (options.capabilities() != null)
 			system.addProvideCapabilities(options.capabilities());

@@ -38,7 +38,7 @@ public class GenericResolveContextResolveTest extends TestCase {
 		grc.addRepository(repository);
 
 		grc.addFramework("org.apache.felix.framework", null);
-		grc.addEE(EE.JavaSE_1_7);
+		grc.addEE(EE.JavaSE_1_7, "system.bundle", "0.0.0");
 		grc.addRequireBundle("org.apache.felix.gogo.shell", new VersionRange("[0,1]"));
 		grc.done();
 		try (ResolverLogger logger = new ResolverLogger(4)) {
