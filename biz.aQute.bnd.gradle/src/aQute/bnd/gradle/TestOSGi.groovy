@@ -82,7 +82,6 @@ public class TestOSGi extends DefaultTask {
     if (bndWorkspace == null) {
       convention.plugins.bundles = new FileSetRepositoryConvention(this)
     }
-    project.check.dependsOn this
   }
 
   /**

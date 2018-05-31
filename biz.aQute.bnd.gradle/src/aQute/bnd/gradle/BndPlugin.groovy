@@ -311,6 +311,10 @@ public class BndPlugin implements Plugin<Project> {
         bndrun = bndProject.getPropertiesFile()
       }
 
+      check {
+        dependsOn testOSGi
+      }
+
       task('checkNeeded') {
         description 'Runs all checks on the project and all projects it depends on.'
         dependsOn testDependencies(name), check

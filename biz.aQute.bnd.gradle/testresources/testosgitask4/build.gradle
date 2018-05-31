@@ -33,3 +33,7 @@ task testosgiFail(type: TestOSGi) {
    bndrun "${name}.bndrun"
    ignoreFailures = false
 }
+
+check {
+  dependsOn testosgiIgnoreFail, testosgiFail
+}
