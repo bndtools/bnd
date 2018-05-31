@@ -202,6 +202,7 @@ project and you can use the new task types:
 * `Export`
 * `TestOSGi`
 * `Index`
+* `Bndrun`
 
 ## Using Bnd Builder Gradle Plugin
 
@@ -546,6 +547,42 @@ generated index. The default value is _${project.buildDir}_.
 
 This is the bundles to be indexed. It can be anything that `Project.files(Object...)`
 can accept. This property must be set.
+
+## Create a task of the `Bndrun` type
+
+You can also create a new task of the `Bndrun` type. This task type
+will execute a standalone bndrun file. For example:
+
+```groovy
+import aQute.bnd.gradle.Bndrun
+
+task run(type: Bndrun) {
+  bndrun 'my.bndrun'
+}
+```
+There are four properties which can be configured for a Bndrun task:
+
+### ignoreFailures
+
+If `true` the task will not fail due to execution failures; instead an
+error message will be logged. Otherwise, the task will fail. The
+default is `false`.
+
+### bndrun
+
+The bndrun to be executed. It can be anything that `Project.file(Object)`
+can accept. This property must be set. The bndrun file must be a standalone bndrun
+file since this is not a Workspace Build.
+
+### workingDir
+
+The directory for the execution. The default is _${temporaryDir}_.
+
+### bundles
+
+The collection of files to use for locating bundles during the
+bndrun execution. The default is _${project.sourceSets.main.runtimeClasspath}_
+plus _${project.configurations.archives.artifacts.files}_.
 
 ---
 
