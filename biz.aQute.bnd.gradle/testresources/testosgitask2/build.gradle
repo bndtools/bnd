@@ -31,3 +31,7 @@ task testosgi(type: TestOSGi) {
    bundles configurations.framework
    workingDir new File(temporaryDir, 'temptemp')
 }
+
+check {
+  dependsOn testosgi
+}

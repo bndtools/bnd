@@ -32,3 +32,7 @@ task testosgi(type: TestOSGi) {
    bndrun "${name}.bndrun"
    bundles = [configurations.bundles, jar.archivePath]
 }
+
+check {
+  dependsOn testosgi
+}

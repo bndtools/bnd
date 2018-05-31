@@ -25,3 +25,7 @@ task testosgi(type: TestOSGi) {
    group 'test'
    bndrun "${name}.bndrun"
 }
+
+check {
+  dependsOn testosgi
+}

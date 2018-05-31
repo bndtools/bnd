@@ -21,12 +21,9 @@ import static aQute.bnd.osgi.Processor.isTrue
 
 import aQute.bnd.build.Container
 import aQute.bnd.build.Container.TYPE
-import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.About
 import aQute.bnd.osgi.Constants
-import biz.aQute.resolve.Bndrun
-import biz.aQute.resolve.ResolveProcess
 
 import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
@@ -35,8 +32,6 @@ import org.gradle.api.Project
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.compile.JavaCompile
-
-import org.osgi.service.resolver.ResolutionException
 
 public class BndPlugin implements Plugin<Project> {
   public static final String PLUGINID = 'biz.aQute.bnd'
@@ -311,6 +306,10 @@ public class BndPlugin implements Plugin<Project> {
         bndrun = bndProject.getPropertiesFile()
       }
 
+      check {
+        dependsOn testOSGi
+      }
+
       task('checkNeeded') {
         description 'Runs all checks on the project and all projects it depends on.'
         dependsOn testDependencies(name), check
@@ -410,21 +409,11 @@ public class BndPlugin implements Plugin<Project> {
           String bndrun = taskName - 'run.'
           File runFile = file("${bndrun}.bndrun")
           if (runFile.isFile()) {
-            task(taskName) {
+            task(taskName, type: Bndrun) {
               description "Run the bndrun file ${bndrun}.bndrun."
               dependsOn assemble
               group 'export'
-              doLast {
-                Bndrun.createBndrun(bndProject.getWorkspace(), runFile).withCloseable { run ->
-                  run.setBase(temporaryDir)
-                  logger.lifecycle 'Running {} with vm args: {}', run.getPropertiesFile(), run.mergeProperties(Constants.RUNVM)
-                  if (run.isStandalone()) {
-                    run.getWorkspace().setOffline(bndProject.getWorkspace().isOffline())
-                  }
-                  run.run()
-                  checkProjectErrors(run, logger)
-                }
-              }
+              bndrun = runFile
             }
           }
         }

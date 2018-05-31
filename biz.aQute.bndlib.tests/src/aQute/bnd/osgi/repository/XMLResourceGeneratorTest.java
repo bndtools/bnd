@@ -1,5 +1,7 @@
 package aQute.bnd.osgi.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -42,11 +44,9 @@ public class XMLResourceGeneratorTest extends TestCase {
 		assertEquals(1, resources.size());
 		Resource r = resources.iterator()
 			.next();
-		assertEquals(
-			"http://macbadge-updates.s3.amazonaws.com/plugins/name.njbartlett.eclipse.macbadge_1.0.0.201110100042.jar",
-			ResourceUtils.getContentCapability(r)
-				.url()
-				.toString());
+		assertThat(ResourceUtils.getContentCapability(r)
+			.url()
+			.toString()).endsWith("/name.njbartlett.eclipse.macbadge_1.0.0.201110100042.jar");
 	}
 
 	private Repository getTestRepository() throws URISyntaxException, Exception {

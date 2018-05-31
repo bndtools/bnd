@@ -1,52 +1,56 @@
 <?xml version='1.0' encoding='UTF-8'?>
-  <repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="test" increment="1464342896531">
-    <resource>
-      <capability namespace="osgi.wiring.bundle">
-        <directive name="singleton" value="true"/>
-      </capability>
-      <capability namespace="osgi.identity">
-        <attribute name="osgi.identity" value="name.njbartlett.eclipse.macbadge"/>
-        <attribute name="type" value="osgi.bundle"/>
-        <attribute name="version" value="1.0.0.201110100042" type="Version"/>
-      </capability>
-      <capability namespace="osgi.content">
-        <attribute name="osgi.content" value="0CFDF2F1A2DC897005A4FB6729BE3C2EA016140CDCBABD316DA1B7EF3E250370"/>
-        <attribute name="mime" value="application/vnd.osgi.bundle"/>
-        <attribute name="url" value="http://macbadge-updates.s3.amazonaws.com/plugins/name.njbartlett.eclipse.macbadge_1.0.0.201110100042.jar"/>
-        <attribute name="size" value="4672" type="Long"/>
-      </capability>
-      <requirement namespace="osgi.wiring.bundle">
-        <directive name="filter" value="(osgi.wiring.bundle=org.eclipse.swt)"/>
-        <attribute name="bundle-version" value="3.7.0"/>
-      </requirement>
-      <requirement namespace="osgi.wiring.package">
-        <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.core.resources))"/>
-      </requirement>
-      <requirement namespace="osgi.wiring.package">
-        <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.core.runtime)(version&gt;=3.4.0))"/>
-        <directive name="version" value="3.4.0"/>
-      </requirement>
-      <requirement namespace="osgi.wiring.package">
-        <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.core.runtime.preferences)(version&gt;=3.3.0))"/>
-        <directive name="version" value="3.3.0"/>
-      </requirement>
-      <requirement namespace="osgi.wiring.package">
-        <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.jface.preference))"/>
-      </requirement>
-      <requirement namespace="osgi.wiring.package">
-        <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.swt.internal.cocoa))"/>
-      </requirement>
-      <requirement namespace="osgi.wiring.package">
-        <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.ui))"/>
-      </requirement>
-      <requirement namespace="osgi.wiring.package">
-        <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.ui.preferences))"/>
-      </requirement>
-      <requirement namespace="osgi.wiring.package">
-        <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.ui.progress))"/>
-      </requirement>
-      <requirement namespace="osgi.wiring.package">
-        <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.core.runtime.jobs))"/>
-      </requirement>
-    </resource>
-  </repository>
+<repository xmlns="http://www.osgi.org/xmlns/repository/v1.0.0" name="data" increment="1527798498703">
+  <resource>
+    <capability namespace="osgi.identity">
+      <directive name="singleton" value="true"/>
+      <attribute name="osgi.identity" value="name.njbartlett.eclipse.macbadge"/>
+      <attribute name="type" value="osgi.bundle"/>
+      <attribute name="version" value="1.0.0.201110100042" type="Version"/>
+    </capability>
+    <capability namespace="osgi.wiring.bundle">
+      <directive name="singleton" value="true"/>
+      <attribute name="bundle-version" value="1.0.0.201110100042" type="Version"/>
+      <attribute name="osgi.wiring.bundle" value="name.njbartlett.eclipse.macbadge"/>
+    </capability>
+    <capability namespace="osgi.wiring.host">
+      <attribute name="bundle-version" value="1.0.0.201110100042" type="Version"/>
+      <attribute name="osgi.wiring.host" value="name.njbartlett.eclipse.macbadge"/>
+    </capability>
+    <capability namespace="osgi.content">
+      <attribute name="size" value="4672" type="Long"/>
+      <attribute name="url" value="../../../../../../../biz.aQute.repository/testdata/p2/macbadge/plugins/name.njbartlett.eclipse.macbadge_1.0.0.201110100042.jar"/>
+      <attribute name="mime" value="application/vnd.osgi.bundle"/>
+      <attribute name="osgi.content" value="0CFDF2F1A2DC897005A4FB6729BE3C2EA016140CDCBABD316DA1B7EF3E250370"/>
+    </capability>
+    <requirement namespace="osgi.wiring.bundle">
+      <directive name="filter" value="(&amp;(osgi.wiring.bundle=org.eclipse.swt)(bundle-version&gt;=3.7.0))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.core.resources))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.core.runtime)(version&gt;=3.4.0))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.core.runtime.preferences)(version&gt;=3.3.0))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.jface.preference))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.swt.internal.cocoa))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.ui))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.ui.preferences))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.ui.progress))"/>
+    </requirement>
+    <requirement namespace="osgi.wiring.package">
+      <directive name="filter" value="(&amp;(osgi.wiring.package=org.eclipse.core.runtime.jobs))"/>
+    </requirement>
+  </resource>
+</repository>
