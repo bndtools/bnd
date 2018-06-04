@@ -94,7 +94,7 @@ class TestBndPlugin extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--continue', ':test.simple:resolve')
+            .withArguments('--stacktrace', '--continue', ':test.simple:resolve', ':test.simple:resolve2')
             .forwardOutput()
             .buildAndFail()
 
@@ -104,6 +104,7 @@ class TestBndPlugin extends Specification {
           result.task(':test.simple:resolve.resolvenochange').outcome == SUCCESS
           result.task(':test.simple:resolve.resolveerror').outcome == FAILED
           result.task(':test.simple:resolve.resolvechange').outcome == FAILED
+          result.task(':test.simple:resolve2').outcome == SUCCESS
 
         when:
           File bndrun = new File(testProjectDir, 'test.simple/resolve.bndrun')
@@ -137,6 +138,14 @@ class TestBndPlugin extends Specification {
           bndrun.isFile()
           props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
           props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper/
+
+        when:
+          bndrun = new File(testProjectDir, 'test.simple/resolve2.bndrun')
+          props = new UTF8Properties()
+        then:
+          bndrun.isFile()
+          props.load(bndrun, new Slf4jReporter(TestBndPlugin.class))
+          props.getProperty('-runbundles') =~ /osgi\.enroute\.junit\.wrapper\s*;\s*version='\[4\.12\.0,4\.12\.1\)'\s*,\s*test\.simple\s*;\s*version=snapshot/
     }
 
     def "Bnd Workspace Plugin export Test"() {
@@ -148,7 +157,7 @@ class TestBndPlugin extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--continue', ':test.simple:export', ':test.simple:runbundles')
+            .withArguments('--stacktrace', '--continue', ':test.simple:export', ':test.simple:runbundles', ':test.simple:export2')
             .forwardOutput()
             .build()
 
@@ -158,6 +167,7 @@ class TestBndPlugin extends Specification {
           result.task(':test.simple:export.export').outcome == SUCCESS
           result.task(':test.simple:runbundles').outcome == SUCCESS
           result.task(':test.simple:runbundles.export').outcome == SUCCESS
+          result.task(':test.simple:export2').outcome == SUCCESS
 
           File distributions = new File(testProjectDir, 'test.simple/generated/distributions')
           new File(distributions, 'runbundles/export/test.simple.jar').isFile()
@@ -180,6 +190,11 @@ class TestBndPlugin extends Specification {
           props.load(executable_jar.getInputStream(executable_jar.getEntry('launcher.properties')), null, new Slf4jReporter(TestBndPlugin.class))
           props.getProperty('launch.bundles') =~ /jar\/osgi\.enroute\.junit\.wrapper-4\.12\.0\.201507311000\.jar\s*,\s*jar\/test\.simple\.jar/
           executable_jar.close()
+
+        when:
+          executable = new File(distributions, 'executable/export2.jar')
+        then:
+          executable.isFile()
     }
 
     def "Bnd Workspace Plugin extra properties/extensions Test"() {

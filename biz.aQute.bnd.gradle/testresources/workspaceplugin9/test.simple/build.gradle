@@ -6,5 +6,5 @@ testOSGi {
 
 task('testOSGi2', type: TestOSGi) {
   inputs.files jar
-  bndrun = testOSGi.bndrun
+  bndrun = 'testOSGi2.bndrun'
 }

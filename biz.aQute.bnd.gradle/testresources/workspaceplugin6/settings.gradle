@@ -7,6 +7,15 @@ buildscript {
   dependencies {
     classpath files(new File(bnd_plugin).canonicalFile)
   }
+  /* Pass bnd gradle plugin classpath to rootProject once created */
+  def bndPlugin = files(configurations.classpath.files)
+  gradle.rootProject {
+    buildscript {
+      dependencies {
+        classpath bndPlugin
+      }
+    }
+  }
 }
 
 apply plugin: 'biz.aQute.bnd.workspace'

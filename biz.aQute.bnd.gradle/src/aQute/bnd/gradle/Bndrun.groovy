@@ -33,10 +33,8 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
 
-import aQute.bnd.build.Project
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
-import aQute.bnd.service.RepositoryPlugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -58,7 +56,7 @@ public class Bndrun extends DefaultTask {
 
   private File workingDir
   private File bndrun
-  private final Workspace bndWorkspace
+  private final def bndWorkspace
 
   /**
    * Create a Bndrun task.
@@ -119,13 +117,14 @@ public class Bndrun extends DefaultTask {
    */
   @TaskAction
   void bndrun() {
-    Workspace workspace = bndWorkspace
+    def workspace = bndWorkspace
     if (workspace != null && bndrun == project.bnd.project.getPropertiesFile()) {
       worker(project.bnd.project)
       return
     }
-    Run.createRun(workspace, bndrun).withCloseable { Run run ->
-      Workspace runWorkspace = run.getWorkspace()
+    Class runClass = workspace ? Class.forName(Run.class.getName(), true, workspace.getClass().getClassLoader()) : Run.class
+    runClass.createRun(workspace, bndrun).withCloseable { run ->
+      def runWorkspace = run.getWorkspace()
       project.mkdir(workingDir)
       run.setBase(workingDir)
       if (run.isStandalone()) {
@@ -135,7 +134,7 @@ public class Bndrun extends DefaultTask {
         runWorkspace.setBuildDir(cnf)
         if (convention.findPlugin(FileSetRepositoryConvention)) {
           runWorkspace.addBasicPlugin(getFileSetRepository(name))
-          for (RepositoryPlugin repo : runWorkspace.getRepositories()) {
+          runWorkspace.getRepositories().each { repo ->
             repo.list(null)
           }
         }
@@ -150,7 +149,7 @@ public class Bndrun extends DefaultTask {
     }
   }
 
-  protected void worker(Project run) {
+  protected void worker(def run) {
     try {
       logger.info 'Running {} in {}', run.getPropertiesFile(), run.getBase()
       run.run();
