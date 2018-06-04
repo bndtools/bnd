@@ -37,7 +37,6 @@ import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
-import aQute.bnd.service.RepositoryPlugin
 import biz.aQute.resolve.Bndrun
 import biz.aQute.resolve.ResolveProcess
 
@@ -73,7 +72,7 @@ public class Resolve extends DefaultTask {
   boolean reportOptional = true
 
   private File bndrun
-  private final Workspace bndWorkspace
+  private final def bndWorkspace
 
   /**
    * Create a Resolve task.
@@ -114,9 +113,10 @@ public class Resolve extends DefaultTask {
    */
   @TaskAction
   void resolve() {
-    Workspace workspace = bndWorkspace
-    Bndrun.createBndrun(workspace, bndrun).withCloseable { Bndrun run ->
-      Workspace runWorkspace = run.getWorkspace()
+    def workspace = bndWorkspace
+    Class runClass = workspace ? Class.forName(Bndrun.class.getName(), true, workspace.getClass().getClassLoader()) : Bndrun.class
+    runClass.createBndrun(workspace, bndrun).withCloseable { run ->
+      def runWorkspace = run.getWorkspace()
       run.setBase(temporaryDir)
       if (run.isStandalone()) {
         runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
@@ -125,7 +125,7 @@ public class Resolve extends DefaultTask {
         runWorkspace.setBuildDir(cnf)
         if (convention.findPlugin(FileSetRepositoryConvention)) {
           runWorkspace.addBasicPlugin(getFileSetRepository(name))
-          for (RepositoryPlugin repo : runWorkspace.getRepositories()) {
+          runWorkspace.getRepositories().each { repo ->
             repo.list(null)
           }
         }

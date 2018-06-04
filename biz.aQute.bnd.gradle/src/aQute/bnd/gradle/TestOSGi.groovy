@@ -39,8 +39,6 @@ package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
 
-import aQute.bnd.build.Project
-
 import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputDirectory
@@ -86,7 +84,7 @@ public class TestOSGi extends Bndrun {
   }
 
   @Override
-  protected void worker(Project run) {
+  protected void worker(def run) {
     try {
       logger.info 'Running tests for {} in {}', run.getPropertiesFile(), run.getBase()
       run.test(resultsDir, tests);

@@ -47,7 +47,6 @@ import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
-import aQute.bnd.service.RepositoryPlugin
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -74,7 +73,7 @@ public class Export extends DefaultTask {
   private File bndrun
   private File destinationDir
   private String exporter
-  private final Workspace bndWorkspace
+  private final def bndWorkspace
 
   /**
    * Create a Export task.
@@ -185,9 +184,10 @@ public class Export extends DefaultTask {
    */
   @TaskAction
   void export() {
-    Workspace workspace = bndWorkspace
-    Run.createRun(workspace, bndrun).withCloseable { Run run ->
-      Workspace runWorkspace = run.getWorkspace()
+    def workspace = bndWorkspace
+    Class runClass = workspace ? Class.forName(Run.class.getName(), true, workspace.getClass().getClassLoader()) : Run.class
+    runClass.createRun(workspace, bndrun).withCloseable { run ->
+      def runWorkspace = run.getWorkspace()
       run.setBase(temporaryDir)
       if (run.isStandalone()) {
         runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
@@ -196,7 +196,7 @@ public class Export extends DefaultTask {
         runWorkspace.setBuildDir(cnf)
         if (convention.findPlugin(FileSetRepositoryConvention)) {
           runWorkspace.addBasicPlugin(getFileSetRepository(name))
-          for (RepositoryPlugin repo : runWorkspace.getRepositories()) {
+          runWorkspace.getRepositories().each { repo ->
             repo.list(null)
           }
         }

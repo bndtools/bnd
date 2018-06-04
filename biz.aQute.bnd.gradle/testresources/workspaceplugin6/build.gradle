@@ -1,0 +1,8 @@
+buildscript {
+    repositories {
+        mavenCentral() 
+    }
+    dependencies {
+        classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.4.3'
+    }
+}
