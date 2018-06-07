@@ -415,7 +415,14 @@ public class BndEditModel {
 	public void loadFrom(InputStream inputStream) throws IOException {
 		try {
 			// Clear and load
-			if (this.workspace != null) {
+			// Do not use the properties of the workspace if the
+			// workspace is standalone. In that case, the properties
+			// of the workspace are a copy of the edit (original) 
+			// edit file which makes it impossible to propertly
+			// edit since removing a project/run property
+			// you get it back from the parent.
+			
+			if (this.workspace != null && this.workspace.getLayout() != WorkspaceLayout.STANDALONE) {
 				properties = (Properties) this.workspace.getProperties()
 					.clone();
 			} else {
