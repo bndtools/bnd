@@ -26,6 +26,7 @@ import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.WorkspaceLayout;
 import aQute.bnd.build.model.clauses.ExportedPackage;
 import aQute.bnd.build.model.clauses.HeaderClause;
 import aQute.bnd.build.model.clauses.ImportPattern;
@@ -50,6 +51,7 @@ import aQute.bnd.build.model.conversions.SimpleListConverter;
 import aQute.bnd.build.model.conversions.VersionedClauseConverter;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.properties.Document;
 import aQute.bnd.properties.IDocument;
 import aQute.bnd.properties.IRegion;
 import aQute.bnd.properties.LineType;
@@ -379,6 +381,11 @@ public class BndEditModel {
 		this.workspace = workspace;
 	}
 
+	public BndEditModel(Document document) throws IOException {
+		this();
+		loadFrom(document);
+	}
+
 	public void loadFrom(IDocument document) throws IOException {
 		try (InputStream in = toEscaped(document.get())) {
 			loadFrom(in);
@@ -415,12 +422,10 @@ public class BndEditModel {
 	public void loadFrom(InputStream inputStream) throws IOException {
 		try {
 			// Clear and load
-			// Do not use the properties of the workspace if the
-			// workspace is standalone. In that case, the properties
-			// of the workspace are a copy of the edit (original) 
-			// edit file which makes it impossible to propertly
-			// edit since removing a project/run property
-			// you get it back from the parent.
+			// The reason we skip standalone workspace properties
+			// as parent is that they are copy of the Run file.
+			// and confuse this edit model when you remove a 
+			// property.
 			
 			if (this.workspace != null && this.workspace.getLayout() != WorkspaceLayout.STANDALONE) {
 				properties = (Properties) this.workspace.getProperties()
@@ -770,9 +775,18 @@ public class BndEditModel {
 		return doGetObject(aQute.bnd.osgi.Constants.BUILDPATH, buildPathConverter);
 	}
 
-	public void setBuildPath(List<? extends VersionedClause> paths) {
+	public List<VersionedClause> getTestPath() {
+		return doGetObject(aQute.bnd.osgi.Constants.TESTPATH, buildPathConverter);
+	}
+
+	public void setBuildPath(List< ? extends VersionedClause> paths) {
 		List<VersionedClause> oldValue = getBuildPath();
 		doSetObject(aQute.bnd.osgi.Constants.BUILDPATH, oldValue, paths, headerClauseListFormatter);
+	}
+
+	public void setTestPath(List< ? extends VersionedClause> paths) {
+		List<VersionedClause> oldValue = getBuildPath();
+		doSetObject(aQute.bnd.osgi.Constants.TESTPATH, oldValue, paths, headerClauseListFormatter);
 	}
 
 	@Deprecated
