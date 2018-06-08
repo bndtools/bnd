@@ -20,14 +20,10 @@ import static aQute.lib.io.IO.getFile;
 
 import java.io.File;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -35,8 +31,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -60,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
@@ -495,79 +490,5 @@ public class BndMavenPlugin extends AbstractMojo {
 			manifestLastModified = (Long) buildContext.getValue(MANIFEST_LAST_MODIFIED);
 		}
 		return manifestPath.lastModified() != manifestLastModified;
-	}
-
-	private static final Pattern KEY_P = Pattern.compile("(?<name>[^\\.\\[]+)(?:\\[(?<index>\\d+)\\])?\\.?");
-	private class BeanProperties extends Properties {
-		private static final long serialVersionUID = 1L;
-
-		BeanProperties() {
-			super();
-		}
-
-		@Override
-		public String getProperty(String key) {
-			final Matcher m = KEY_P.matcher(key);
-			if (!m.find()) {
-				return null;
-			}
-			String name = m.group("name");
-			Object value = value(name, get(name), m.group("index"));
-			while ((value != null) && m.find()) {
-				name = m.group("name");
-				value = value(name, getField(value, name), m.group("index"));
-			}
-			if (value == null) {
-				return null;
-			}
-			return value.toString();
-		}
-
-		private Object getField(Object target, String fieldName) {
-			try {
-				String getterSuffix = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
-				Class<?> targetClass = target.getClass();
-				while (!Modifier.isPublic(targetClass.getModifiers())) {
-					targetClass = targetClass.getSuperclass();
-				}
-				Method getter;
-				try {
-					getter = targetClass.getMethod("get" + getterSuffix);
-				} catch (NoSuchMethodException nsme) {
-					getter = targetClass.getMethod("is" + getterSuffix);
-				}
-				return getter.invoke(target);
-			} catch (Exception e) {
-				logger.debug("Could not find getter method for field {}", fieldName, e);
-			}
-			return null;
-		}
-
-		private Object value(String name, Object value, String index) {
-			if ((value == null) || (index == null)) {
-				return value;
-			}
-			try {
-				int i = Integer.parseInt(index);
-				if (value instanceof List) {
-					return ((List<?>) value).get(i);
-				} else if (value instanceof Iterable) {
-					if (i < 0) {
-						throw new IndexOutOfBoundsException("index < 0");
-					}
-					Iterator<?> iter = ((Iterable<?>) value).iterator();
-					for (; i > 0; i--) {
-						iter.next();
-					}
-					return iter.next();
-				} else if (value.getClass()
-					.isArray()) {
-					return Array.get(value, i);
-				}
-			} catch (Exception e) {
-				logger.debug("Could not find field {}[{}]", name, index, e);
-			}
-			return value;
-		}
 	}
 }

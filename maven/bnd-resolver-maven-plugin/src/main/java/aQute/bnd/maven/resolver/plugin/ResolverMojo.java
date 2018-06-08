@@ -2,6 +2,7 @@ package aQute.bnd.maven.resolver.plugin;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -13,6 +14,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.osgi.service.resolver.ResolutionException;
@@ -20,8 +22,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
@@ -37,6 +41,9 @@ public class ResolverMojo extends AbstractMojo {
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject				project;
+
+	@Parameter(defaultValue = "${settings}", readonly = true)
+	private Settings					settings;
 
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		repositorySession;
@@ -79,8 +86,15 @@ public class ResolverMojo extends AbstractMojo {
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
 				useMavenDependencies);
 
+			Properties beanProperties = new BeanProperties();
+			beanProperties.put("project", project);
+			beanProperties.put("settings", settings);
+			Properties mavenProperties = new Properties(beanProperties);
+			mavenProperties.putAll(project.getProperties());
+			Processor processor = new Processor(mavenProperties, false);
+
 			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
-				resolve(runFile, fileSetRepository);
+				resolve(runFile, fileSetRepository, processor);
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -90,7 +104,7 @@ public class ResolverMojo extends AbstractMojo {
 			throw new MojoExecutionException(errors + " errors found");
 	}
 
-	private void resolve(File runFile, FileSetRepository fileSetRepository) throws Exception {
+	private void resolve(File runFile, FileSetRepository fileSetRepository, Processor processor) throws Exception {
 		if (!runFile.exists()) {
 			logger.error("Could not find bnd run file {}", runFile);
 			errors++;
@@ -103,6 +117,7 @@ public class ResolverMojo extends AbstractMojo {
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			run.setBase(temporaryDir);
 			Workspace workspace = run.getWorkspace();
+			workspace.setParent(processor);
 			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings()
 				.isOffline());
