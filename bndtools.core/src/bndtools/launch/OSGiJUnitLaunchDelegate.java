@@ -92,7 +92,7 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
                 .getBundleContext(), JDT_JUNIT_BSN, null);
             if (jdtJUnitBundle == null)
                 throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Bundle \"{0}\" was not found. Cannot report JUnit results via the Workbench.", JDT_JUNIT_BSN), null));
-            jdtJUnitBundle.start();
+            jdtJUnitBundle.start(Bundle.START_TRANSIENT);
         } catch (BundleException e) {
             throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Error starting bundle \"{0}\". Cannot report JUnit results via the Workbench.", JDT_JUNIT_BSN), null));
         }
