@@ -1205,8 +1205,23 @@ public class Workspace extends Processor {
 			int counter = 1;
 			for (Map.Entry<String, Attrs> e : standalone.entrySet()) {
 				String locationStr = e.getKey();
-				if ("true".equalsIgnoreCase(locationStr))
+				if ("true".equalsIgnoreCase(locationStr)) {
+
+					//
+					// Copy all properties except the type we will add
+					//
+
+					for (Entry<Object, Object> entry : run.getProperties()
+						.entrySet()) {
+						String key = (String) entry.getKey();
+						if (!key.startsWith(PLUGIN_STANDALONE)) {
+							ws.getProperties()
+								.put(key, entry.getValue());
+						}
+					}
+
 					break;
+				}
 
 				URI resolvedLocation = URIUtil.resolve(base, locationStr);
 
