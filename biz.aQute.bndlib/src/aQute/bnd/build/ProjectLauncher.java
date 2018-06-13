@@ -173,7 +173,7 @@ public abstract class ProjectLauncher extends Processor {
 								agent += "=" + container.getAttributes()
 									.get("agent");
 							}
-							agents.add(path);
+							agents.add(agent);
 						}
 
 						Parameters exports = project.parseHeader(manifest.getMainAttributes()
