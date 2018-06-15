@@ -39,12 +39,21 @@ Export-Package: \
 	aQute.bnd.util.dto;-noimport:=true,\
 	aQute.bnd.util.repository;-noimport:=true,\
 	aQute.bnd.component.error;-noimport:=true,\
-	org.osgi.service.repository,\
-	org.osgi.resource, \
+	org.osgi.service.log;-split-package:=first,\
+	org.osgi.service.repository;-split-package:=first,\
 	org.osgi.util.promise;-split-package:=first, \
 	org.osgi.util.function;-split-package:=first
 
-Conditional-Package:	        aQute.service.*, aQute.configurable
+-conditionalpackage:	 aQute.service.*,\
+ aQute.configurable,\
+ org.osgi.*
+
+Import-Package: junit.framework;resolution:=optional,\
+    org.osgi.service.repository,\
+    org.osgi.service.log,\
+    ${replace;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\
+	*
+
 -includeresource: 				${workspace}/LICENSE, img/=img/, {readme.md}
 
 -buildpath:  \
@@ -59,15 +68,11 @@ Conditional-Package:	        aQute.service.*, aQute.configurable
 	biz.aQute.bnd.annotation;version=project,\
 	slf4j.api;version=latest
 
-Import-Package: junit.framework;resolution:=optional,\
-	org.osgi.resource;resolution:=optional,\
-	org.osgi.framework;version='[1.5,2)',\
-	*
-
 Bundle-Icon: img/bnd-64.png;size=64
 Bundle-Developers: peter.kriens@aQute.biz, njbartlett@gmail.com
 Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic.nl, bj@bjhargrave.com
 
 -baseline: *
 
--fixupmessages: "Export aQute.bnd.http*aQute.lib.converter"
+-fixupmessages.converter: "Export aQute.bnd.http,* private references \\[aQute.lib.converter\\]"
+-fixupmessages.bundleversion: "The bundle version \\(4.0.0/4.1.0\\) is too low, must be at least 5.0.0"

@@ -31,10 +31,6 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 	biz.aQute.http.testservers;version=latest,\
 	slf4j.simple;version=latest
 
-repoindex-pkgs: \
-	aQute.bnd.osgi.resource,\
-	org.osgi.resource;-split-package:=first
-
 Export-Package: \
 	aQute.bnd.deployer.http;bnd-plugins=true,\
 	aQute.p2.api,\
@@ -52,30 +48,22 @@ Export-Package: \
 	aQute.bnd.repository.fileset;bnd-plugins=true,  \
 	aQute.maven.*, \
 
-
-# NB: `org.osgi.*` API is included in Private-Package for running outside of OSGi.
 Private-Package: \
-	aQute.p2.provider,\
-	${repoindex-pkgs},\
-	org.osgi.service.log;-split-package:=first,\
-	org.osgi.framework;-split-package:=first
+	aQute.p2.provider
 
-Conditional-Package:\
+-conditionalpackage:\
 	aQute.lib.*;-split-package:=first,\
 	aQute.libg.*;-split-package:=first, \
 	org.tukaani.xz.*, \
 	aQute.configurable.*
 
-# We must also explicitly import `org.osgi.framework` etc. for when we *are* running in OSGi.
 Import-Package:\
-	org.osgi.framework;version='[1.5,2)',\
-	org.osgi.service.repository,\
-	org.osgi.resource,\
-	org.osgi.service.log,\
 	aQute.bnd.osgi.resource,\
 	org.osgi.service.coordinator; resolution:=optional,\
 	*
 
--fixupmessages: "private references"
+-fixupmessages.tag: "Export aQute.maven.provider,* private references \\[aQute.lib.tag\\]"
+-fixupmessages.getopts: "Export aQute.bnd.repository.maven.provider,* private references \\[aQute.lib.getopt\\]"
+-fixupmessages.configurable: "Export aQute.bnd.repository.osgi,* private references \\[aQute.configurable\\]"
 
 -baseline: *
