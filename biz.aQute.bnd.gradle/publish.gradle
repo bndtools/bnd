@@ -1,0 +1,88 @@
+// ../gradlew -b publish.gradle displayArtifacts publishPlugins
+
+buildscript {
+  repositories {
+    maven {
+      url 'https://plugins.gradle.org/m2/'
+    }
+  }
+  dependencies {
+    classpath 'com.gradle.publish:plugin-publish-plugin:0.9.10'
+  }
+}
+
+apply plugin: 'com.gradle.plugin-publish'
+apply plugin: 'java'
+
+ext.groupId = 'biz.aQute.bnd'
+ext.artifactId = 'biz.aQute.bnd.gradle'
+ext.artifactVersion = '4.0.0'
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  archives.artifacts.clear()
+  plugin
+}
+
+dependencies {
+  plugin "${groupId}:${artifactId}:${artifactVersion}"
+  plugin "${groupId}:${artifactId}:${artifactVersion}:javadoc"
+  plugin "${groupId}:${artifactId}:${artifactVersion}:sources"
+}
+
+artifacts {
+  configurations.plugin.resolvedConfiguration.resolvedArtifacts.each { artifact ->
+    archives(artifact.file) {
+      classifier = artifact.classifier
+    }
+  }
+}
+
+task displayArtifacts {
+  doLast {
+    println "gradle.publish.key: ${project.findProperty('gradle.publish.key')}"
+    println "gradle.publish.secret: ${project.findProperty('gradle.publish.secret')}"
+    println()
+    configurations.archives.artifacts.each { artifact ->
+      println "${artifact} ${artifact.file}"
+    }
+  }
+}
+
+pluginBundle {
+  website = 'https://github.com/bndtools/bnd'
+  vcsUrl = 'https://github.com/bndtools/bnd.git'
+
+  description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/master/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
+  tags = ['osgi', 'bnd']
+
+  plugins {
+    bndProjectPlugin {
+      id = 'biz.aQute.bnd'
+      displayName = 'Bnd Project Plugin'
+      description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${project.artifactVersion}.REL/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
+      version = project.artifactVersion
+    }
+    bndBuilderPlugin {
+      id = 'biz.aQute.bnd.builder'
+      displayName = 'Bnd Builder Plugin'
+      description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${project.artifactVersion}.REL/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
+      version = project.artifactVersion
+    }
+    bndWorkspacePlugin {
+      id = 'biz.aQute.bnd.workspace'
+      displayName = 'Bnd Workspace Plugin'
+      description = "Gradle Plugin for developing OSGi bundles with Bnd. Bnd is the premiere tool for creating OSGi bundles. This gradle plugin is from the team that develops Bnd and is used by the Bnd team to build Bnd itself. See https://github.com/bndtools/bnd/blob/${project.artifactVersion}.REL/biz.aQute.bnd.gradle/README.md for information on using in a Bnd Workspace and a typical Gradle build."
+      version = project.artifactVersion
+    }
+  }
+
+  mavenCoordinates {
+    groupId = project.groupId
+    artifactId = project.artifactId
+    version = project.artifactVersion
+  }
+}

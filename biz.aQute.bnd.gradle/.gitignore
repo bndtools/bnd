@@ -1,3 +1,5 @@
 /bin/
 /bin_test/
 /generated/
+/.gradle/
+/build/
