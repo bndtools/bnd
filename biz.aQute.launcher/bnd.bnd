@@ -3,9 +3,10 @@
 
 -dependson: demo
 
--buildpath: aQute.libg;version=project,\
-    biz.aQute.bndlib;version=latest,\
+-buildpath: \
 	osgi.core;version=4.2,\
+    aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest
 
 -testpath: \
