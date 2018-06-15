@@ -2,6 +2,7 @@ package aQute.libg.glob;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -140,5 +141,21 @@ public class Glob {
 			} else if (recursive && sub.isDirectory())
 				getFiles(sub, result, recursive, usePath);
 		}
+	}
+
+	public static boolean in(Glob[] globs, String key) {
+		for (Glob g : globs) {
+			if (g.matcher(key).matches())
+				return true;
+		}
+		return false;
+	}
+
+	public static boolean in(Collection< ? extends Glob> globs, String key) {
+		for (Glob g : globs) {
+			if (g.matcher(key).matches())
+				return true;
+		}
+		return false;
 	}
 }

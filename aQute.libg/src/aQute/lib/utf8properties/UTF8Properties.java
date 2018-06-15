@@ -44,8 +44,17 @@ public class UTF8Properties extends Properties {
 	private static final List<ThreadLocal<CharsetDecoder>>	decoders			= Collections.unmodifiableList(
 		Arrays.asList(ThreadLocal.withInitial(UTF_8::newDecoder), ThreadLocal.withInitial(ISO_8859_1::newDecoder)));
 
+
 	public UTF8Properties(Properties p) {
 		super(p);
+	}
+
+	public UTF8Properties(File file) throws Exception {
+		this(file, null);
+	}
+
+	public UTF8Properties(File file, Reporter reporter) throws Exception {
+		load(file, reporter);
 	}
 
 	public UTF8Properties() {}
@@ -131,6 +140,12 @@ public class UTF8Properties extends Properties {
 			out.write(line);
 			out.write('\n');
 		}
+	}
+
+	public void store(File out) throws IOException {
+		StringWriter sw = new StringWriter();
+		super.store(sw, null);
+		IO.store(sw.toString(), out);
 	}
 
 	public void store(OutputStream out) throws IOException {
