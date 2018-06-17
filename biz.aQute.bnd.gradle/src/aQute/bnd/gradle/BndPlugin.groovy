@@ -29,6 +29,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.compile.JavaCompile
@@ -92,21 +93,54 @@ public class BndPlugin implements Plugin<Project> {
       sourceSets {
         /* bnd uses the same directory for java and resources. */
         main {
-          java.srcDirs = resources.srcDirs = files(bndProject.getSourcePath())
-          java.outputDir = output.resourcesDir = bndProject.getSrcOutput()
+          FileCollection srcDirs = files(bndProject.getSourcePath())
+          java.srcDirs = srcDirs
+          resources.srcDirs = srcDirs
+          File destinationDir = bndProject.getSrcOutput()
+          Task compileTask = tasks.getByName(compileJavaTaskName)
+          java.outputDir = destinationDir
+          output.resourcesDir = destinationDir
+          compileTask.destinationDir = destinationDir
+          output.dir(destinationDir, builtBy: compileTask)
         }
         test {
-          java.srcDirs = resources.srcDirs = files(bndProject.getTestSrc())
-          java.outputDir = output.resourcesDir = bndProject.getTestOutput()
+          FileCollection srcDirs = files(bndProject.getTestSrc())
+          java.srcDirs = srcDirs
+          resources.srcDirs = srcDirs
+          File destinationDir = bndProject.getTestOutput()
+          Task compileTask = tasks.getByName(compileJavaTaskName)
+          java.outputDir = destinationDir
+          output.resourcesDir = destinationDir
+          compileTask.destinationDir = destinationDir
+          output.dir(destinationDir, builtBy: compileTask)
         }
       }
       /* Configure srcDirs for any additional languages */
       afterEvaluate {
         sourceSets {
-          main.convention?.plugins.each { lang, object ->
-            main[lang]?.srcDirs = main.java.srcDirs
-            main[lang]?.outputDir = main.java.outputDir
-            test[lang]?.srcDirs = test.java.srcDirs
+          main {
+            File destinationDir = tasks.getByName(compileJavaTaskName).destinationDir
+            convention.plugins.each { lang, sourceSet ->
+              Task compileTask = tasks.findByName(getCompileTaskName(lang))
+              if (compileTask) {
+                sourceSet[lang].srcDirs = java.srcDirs
+                sourceSet[lang].outputDir = destinationDir
+                compileTask.destinationDir = destinationDir
+                output.dir(destinationDir, builtBy: compileTask)
+              }
+            }
+          }
+          test {
+            File destinationDir = tasks.getByName(compileJavaTaskName).destinationDir
+            convention.plugins.each { lang, sourceSet ->
+              Task compileTask = tasks.findByName(getCompileTaskName(lang))
+              if (compileTask) {
+                sourceSet[lang].srcDirs = java.srcDirs
+                sourceSet[lang].outputDir = destinationDir
+                compileTask.destinationDir = destinationDir
+                output.dir(destinationDir, builtBy: compileTask)
+              }
+            }
           }
         }
       }
