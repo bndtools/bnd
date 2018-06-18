@@ -567,20 +567,44 @@ public class Converter {
 	}
 
 	public static String mangleMethodName(String id) {
-		StringBuilder sb = new StringBuilder(id);
-		for (int i = 0; i < sb.length(); i++) {
-			char c = sb.charAt(i);
-			boolean twice = i < sb.length() - 1 && sb.charAt(i + 1) == c;
-			if (c == '$' || c == '_') {
-				if (twice)
-					sb.deleteCharAt(i + 1);
-				else if (c == '$')
-					sb.deleteCharAt(i--); // Remove dollars
-				else
-					sb.setCharAt(i, '.'); // Make _ into .
+		char[] array = id.toCharArray();
+		int out = 0;
+
+		boolean changed = false;
+		for (int i = 0; i < array.length; i++) {
+			if (match("$$", array, i) || match("__", array, i)) {
+				array[out++] = array[i++];
+				changed = true;
+			} else if (match("$_$", array, i)) {
+				array[out++] = '-';
+				i += 2;
+			} else {
+				char c = array[i];
+				if (c == '_') {
+					array[out++] = '.';
+					changed = true;
+				} else if (c == '$') {
+					changed = true;
+				} else {
+					array[out++] = c;
+				}
 			}
 		}
-		return sb.toString();
+		if (id.length() != out || changed)
+			return new String(array, 0, out);
+
+		return id;
+	}
+
+	private static boolean match(String pattern, char[] array, int i) {
+		for (int j = 0; j < pattern.length(); j++, i++) {
+			if (i >= array.length)
+				return false;
+
+			if (pattern.charAt(j) != array[i])
+				return false;
+		}
+		return true;
 	}
 
 	public static <T> T cnv(TypeReference<T> tr, Object source) throws Exception {

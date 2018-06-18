@@ -3,7 +3,8 @@ package aQute.libg.glob;
 import junit.framework.TestCase;
 
 public class GlobTest extends TestCase {
-	public void testSimple() {
+
+	public static void testSimple() {
 		Glob glob = new Glob("*foo*");
 		assertTrue(glob.matcher("foo")
 			.matches());
@@ -17,7 +18,15 @@ public class GlobTest extends TestCase {
 			.matches());
 	}
 
-	public void testUrl() {
+	public static void testCurlies() {
+		Glob glob = new Glob("xx{abc,def,ghi}xx");
+		assertTrue(glob.matcher("xxabcxx").find());
+		Glob g2 = new Glob("*.{groovy,java}");
+		assertTrue(g2.matcher("FooBar.java").find());
+		assertTrue(g2.matcher("FooBar.groovy").find());
+	}
+
+	public static void testUrl() {
 		Glob glob;
 
 		glob = new Glob("http://www.example.com/*");

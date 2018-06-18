@@ -22,6 +22,12 @@ public class FileSetTest extends TestCase {
 			.size());
 	}
 
+	public void testOr() {
+		FileSet fs = new FileSet(root, "a/*.abc,a/b/b.abc");
+		System.out.println(fs.getFiles());
+		assertEquals(2, fs.getFiles().size());
+	}
+
 	public void testDirMatch() {
 		FileSet fs = new FileSet(root, "*/?/?/**/a.abc");
 		System.out.println(fs.getFiles());

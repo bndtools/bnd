@@ -37,6 +37,21 @@ public class FileSet {
 		this.base = base;
 	}
 
+	public FileSet(File base, String filematch, Collection<String> allsourcepath) {
+		StringBuilder sb = new StringBuilder();
+		String del = "";
+		for (String f : allsourcepath) {
+			if (f.endsWith("/"))
+				f = f.substring(0, f.length() - 1);
+
+			sb.append(del).append(f).append("/**/" + filematch);
+			del = ",";
+		}
+		this.source = sb.toString();
+		this.dfa = compile(this.source);
+		this.base = base;
+	}
+
 	/*
 	 * Compile the file set specification to a DFA
 	 */
@@ -85,9 +100,11 @@ public class FileSet {
 	}
 
 	public Set<File> getFiles() {
-		Set<File> files = new HashSet<>();
-		for (File sub : base.listFiles()) {
-			dfa.match(files, sub);
+		Set<File> files = new HashSet<File>();
+		if (base.isDirectory()) {
+			for (File sub : base.listFiles()) {
+				dfa.match(files, sub);
+			}
 		}
 		return files;
 	}

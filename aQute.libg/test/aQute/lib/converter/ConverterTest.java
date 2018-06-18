@@ -42,6 +42,45 @@ import junit.framework.TestCase;
 public class ConverterTest extends TestCase {
 	Converter converter = new Converter();
 
+	public void testMangling() {
+
+		assertMangle("", "");
+		assertMangle("a", "a");
+		assertMangle("ab", "ab");
+		assertMangle("abc", "abc");
+		assertMangle("a\u0008bc", "a\bbc");
+
+		assertMangle("$_$", "-");
+		assertMangle("$_", ".");
+		assertMangle("_$", ".");
+		assertMangle("x$_$", "x-");
+		assertMangle("$_$x", "-x");
+		assertMangle("abc$_$abc", "abc-abc");
+		assertMangle("$$_$x", "$.x");
+		assertMangle("$_$$", "-");
+		assertMangle("$_$$$", "-$");
+		assertMangle("$", "");
+		assertMangle("$$", "$");
+		assertMangle("_", ".");
+		assertMangle("$_", ".");
+
+		assertMangle("myProperty143", "myProperty143");
+		assertMangle("$new", "new");
+		assertMangle("n$ew", "new");
+		assertMangle("new$", "new");
+		assertMangle("my$$prop", "my$prop");
+		assertMangle("dot_prop", "dot.prop");
+		assertMangle("_secret", ".secret");
+		assertMangle("another__prop", "another_prop");
+		assertMangle("three___prop", "three_.prop");
+		assertMangle("four_$__prop", "four._prop");
+		assertMangle("five_$_prop", "five..prop");
+	}
+
+	private void assertMangle(String methodName, String key) {
+		assertEquals(Converter.mangleMethodName(methodName), key);
+	}
+
 	interface M {
 		String a();
 
