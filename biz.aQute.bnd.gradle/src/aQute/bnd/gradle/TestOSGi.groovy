@@ -27,11 +27,12 @@
  * bundles during the bndrun execution. The default is
  * 'sourceSets.main.runtimeClasspath' plus
  * 'configurations.archives.artifacts.files'.</li>
- * <li>resultsDir (read only) - This is the directory 
+ * <li>resultsDir (read only) - This is the directory
  * where the test case results are placed.
  * The value is project.testResultsDir/name.</li>
  * <li>tests - The test class names to be run.
- * If not set, all test classes are run.</li>
+ * If not set, all test classes are run.
+ * Use a colon (:) to specify a test method to run on the specified test class.</li>
  * </ul>
  */
 

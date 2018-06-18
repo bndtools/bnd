@@ -502,6 +502,8 @@ run. In Gradle 4.6 and later, the `--tests` command line option can be used
 to set the fully qualified name of a test class to run. This can be repeated
 multiple times to specify multiple test classes to run.
 
+Use a colon (`:`) to specify a test method to run on the specified test class.
+
 ## Create a task of the `Index` type
 
 You can also create a new task of the `Index` type. This task type
