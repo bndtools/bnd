@@ -21,9 +21,11 @@
 					<id>local.central</id>
 					<url>@localRepositoryUrl@</url>
 					<releases>
+						<checksumPolicy>ignore</checksumPolicy>
 						<enabled>true</enabled>
 					</releases>
 					<snapshots>
+						<checksumPolicy>ignore</checksumPolicy>
 						<enabled>true</enabled>
 					</snapshots>
 				</repository>
@@ -33,9 +35,11 @@
 					<id>local.central</id>
 					<url>@localRepositoryUrl@</url>
 					<releases>
+						<checksumPolicy>ignore</checksumPolicy>
 						<enabled>true</enabled>
 					</releases>
 					<snapshots>
+						<checksumPolicy>ignore</checksumPolicy>
 						<enabled>true</enabled>
 					</snapshots>
 				</pluginRepository>

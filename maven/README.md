@@ -12,7 +12,7 @@ very hard to build a Maven plugin unless you use Maven to do it!
 
 ## [bnd-maven-plugin][1]
 
-The core plugin, used to generate manifest and other metadata for 
+The core plugin, used to generate manifest and other metadata for
 projects that build an OSGi bundle.
 
 ## [bnd-indexer-maven-plugin][2]
@@ -26,7 +26,7 @@ the bundles in the remote repositories to which they have been deployed.
 A plugin used to validate that a bundle correctly uses semantic versioning
 as described by the OSGi Alliance. This plugin will verify that the bundle
 and package versions of a module's output artifact are correct based on:
- 
+
 * The bundle and package versions declared by the previously released
 version of the module.
 * Any changes that have been made to the packages exported by the bundle.
@@ -34,7 +34,15 @@ version of the module.
 
 ## [bnd-export-maven-plugin][4]
 
-A plugin to export and optionally resolve bndrun files.
+A plugin to export bndrun files.
+
+## [bnd-resolver-maven-plugin][7]
+
+A plugin to resolve bndrun files.
+
+## [bnd-testing-maven-plugin][8]
+
+A plugin to run integration tests from bndrun files.
 
 # Building the Maven Plugins
 
@@ -49,4 +57,6 @@ run Maven to build the Maven plugins.
 [4]: bnd-export-maven-plugin/README.md
 [5]: ../.travis.yml
 [6]: https://maven.apache.org/maven-logging.html
+[7]: bnd-resolver-maven-plugin/README.md
+[8]: bnd-testing-maven-plugin/README.md
 

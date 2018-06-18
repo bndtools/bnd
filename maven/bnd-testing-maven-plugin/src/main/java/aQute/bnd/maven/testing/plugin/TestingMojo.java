@@ -2,6 +2,7 @@ package aQute.bnd.maven.testing.plugin;
 
 import java.io.File;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -14,6 +15,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.osgi.service.resolver.ResolutionException;
@@ -21,9 +23,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
@@ -38,6 +42,9 @@ public class TestingMojo extends AbstractMojo {
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject				project;
+
+	@Parameter(defaultValue = "${settings}", readonly = true)
+	private Settings					settings;
 
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		repositorySession;
@@ -104,9 +111,16 @@ public class TestingMojo extends AbstractMojo {
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
 				useMavenDependencies);
 
+			Properties beanProperties = new BeanProperties();
+			beanProperties.put("project", project);
+			beanProperties.put("settings", settings);
+			Properties mavenProperties = new Properties(beanProperties);
+			mavenProperties.putAll(project.getProperties());
+			Processor processor = new Processor(mavenProperties, false);
+
 			if (testingSelect != null) {
 				logger.info("Using selected testing file {}", testingSelect);
-				testing(testingSelect, fileSetRepository);
+				testing(testingSelect, fileSetRepository, processor);
 			} else {
 
 				Glob g = new Glob(testing == null ? "*" : testing);
@@ -115,7 +129,7 @@ public class TestingMojo extends AbstractMojo {
 				for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
 					if (g.matcher(runFile.getName())
 						.matches())
-						testing(runFile, fileSetRepository);
+						testing(runFile, fileSetRepository, processor);
 					else
 						logger.info("Skipping {}", g);
 				}
@@ -137,7 +151,7 @@ public class TestingMojo extends AbstractMojo {
 		return Strings.split(test);
 	}
 
-	private void testing(File runFile, FileSetRepository fileSetRepository) throws Exception {
+	private void testing(File runFile, FileSetRepository fileSetRepository, Processor processor) throws Exception {
 		if (!runFile.exists()) {
 			logger.error("Could not find bnd run file {}", runFile);
 			errors++;
@@ -150,6 +164,7 @@ public class TestingMojo extends AbstractMojo {
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			run.setBase(workingDir);
 			Workspace workspace = run.getWorkspace();
+			workspace.setParent(processor);
 			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings()
 				.isOffline());

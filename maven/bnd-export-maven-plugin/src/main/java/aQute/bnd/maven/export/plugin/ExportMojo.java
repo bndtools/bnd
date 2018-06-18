@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -19,6 +20,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
+import org.apache.maven.settings.Settings;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.osgi.service.resolver.ResolutionException;
@@ -28,11 +30,13 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
+import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.configuration.Bundles;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JarResource;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
@@ -46,6 +50,9 @@ public class ExportMojo extends AbstractMojo {
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
 	private MavenProject				project;
+
+	@Parameter(defaultValue = "${settings}", readonly = true)
+	private Settings					settings;
 
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
 	private RepositorySystemSession		repositorySession;
@@ -104,8 +111,16 @@ public class ExportMojo extends AbstractMojo {
 			if (exporter == null) {
 				exporter = bundlesOnly ? RunbundlesExporter.RUNBUNDLES : ExecutableJarExporter.EXECUTABLE_JAR;
 			}
+
+			Properties beanProperties = new BeanProperties();
+			beanProperties.put("project", project);
+			beanProperties.put("settings", settings);
+			Properties mavenProperties = new Properties(beanProperties);
+			mavenProperties.putAll(project.getProperties());
+			Processor processor = new Processor(mavenProperties, false);
+
 			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
-				export(runFile, fileSetRepository);
+				export(runFile, fileSetRepository, processor);
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -115,7 +130,7 @@ public class ExportMojo extends AbstractMojo {
 			throw new MojoExecutionException(errors + " errors found");
 	}
 
-	private void export(File runFile, FileSetRepository fileSetRepository) throws Exception {
+	private void export(File runFile, FileSetRepository fileSetRepository, Processor processor) throws Exception {
 		if (!runFile.exists()) {
 			logger.error("Could not find bnd run file {}", runFile);
 			errors++;
@@ -128,6 +143,7 @@ public class ExportMojo extends AbstractMojo {
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			run.setBase(temporaryDir);
 			Workspace workspace = run.getWorkspace();
+			workspace.setParent(processor);
 			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings()
 				.isOffline());

@@ -44,7 +44,9 @@ assert jar.getEntry('launcher.properties') != null
 assert jar.getEntry("jar/biz.aQute.launcher-${baseVersion}.jar") != null
 assert jar.getEntry('jar/org.apache.felix.eventadmin-1.4.6.jar') != null
 assert jar.getEntry('jar/org.apache.felix.framework-5.4.0.jar') != null
-assert jar.getInputStream(jar.getEntry('launcher.properties')).text =~ /launch\.bundles=jar\/org\.apache\.felix\.eventadmin-1\.4\.6\.jar/
+String launcherProperties = jar.getInputStream(jar.getEntry('launcher.properties')).text
+assert launcherProperties =~ /launch\.bundles=jar\/org\.apache\.felix\.eventadmin-1\.4\.6\.jar/
+assert launcherProperties =~ /project\.artifactId=export/
 
 //
 // The export-bundles-only case
