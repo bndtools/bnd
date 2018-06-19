@@ -416,7 +416,11 @@ public class ConnectionSettings {
 			if (MavenPasswordObfuscator.isObfuscatedPassword(serverDTO.password)) {
 				String masterPassphrase = mavenMasterPassphrase.get();
 				if (masterPassphrase != null) {
-					serverDTO.password = MavenPasswordObfuscator.decrypt(serverDTO.password, masterPassphrase);
+					try {
+						serverDTO.password = MavenPasswordObfuscator.decrypt(serverDTO.password, masterPassphrase);
+					} catch (Exception e) {
+						processor.exception(e, "Could not decrypt the password for server %s", serverDTO.id);
+					}
 				}
 			}
 			if ("default".equals(serverDTO.id))
