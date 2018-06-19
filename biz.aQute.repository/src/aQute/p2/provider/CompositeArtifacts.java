@@ -32,17 +32,20 @@ import aQute.lib.strings.Strings;
 
 class CompositeArtifacts extends XML {
 	final List<URI> uris = new ArrayList<>();
+	final URI		base;
 
-	CompositeArtifacts(InputStream in) throws Exception {
+	CompositeArtifacts(InputStream in, URI base) throws Exception {
 		super(getDocument(in));
+		this.base = base;
 	}
+
 
 	void parse() throws Exception {
 		NodeList nodes = getNodes("repository/children/child");
 		for (int i = 0; i < nodes.getLength(); i++) {
 			Node child = nodes.item(i);
 			String textContent = Strings.trim(getAttribute(child, "location"));
-			URI uri = new URI(textContent);
+			URI uri = base.resolve(textContent);
 			uris.add(uri);
 		}
 	}

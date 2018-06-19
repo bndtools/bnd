@@ -129,7 +129,10 @@ public class MavenRepository implements IMavenRepo, Closeable {
 		return promiseFactory.submit(() -> {
 			File f = getFile(archive, file);
 			if (thrw && f == null) {
-				throw new FileNotFoundException("For Maven artifact " + archive);
+				if (archive.isSnapshot())
+					throw new FileNotFoundException("For Maven artifact " + archive + " from " + snapshot);
+				else
+					throw new FileNotFoundException("For Maven artifact " + archive + " from " + release);
 			}
 			return f;
 		});
@@ -189,7 +192,8 @@ public class MavenRepository implements IMavenRepo, Closeable {
 					break;
 				case OTHER :
 					error = State.OTHER;
-					logger.error("Fetching artifact gives error {}", remotePath);
+					logger.error("Fetching artifact gives error {} : {} {}", remotePath, fetch.getResponseCode(),
+							fetch);
 					break;
 
 				case UNMODIFIED :

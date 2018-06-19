@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde?>
+<!-- generated with https://github.com/mbarbero/fr.obeo.releng.targetplatform -->
+<target name="Combined" sequenceNumber="1527063730">
+  <locations>
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="true" type="InstallableUnit">
+      <unit id="org.jmdns.feature.feature.group" version="3.5.4"/>
+      <repository location="http://www.jmdns.org/update-site/3.5.4/"/>
+    </location>
+  </locations>
+</target>
