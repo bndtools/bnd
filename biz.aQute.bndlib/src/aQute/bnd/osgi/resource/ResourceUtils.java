@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
@@ -32,6 +33,7 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
+import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
@@ -371,15 +373,29 @@ public class ResourceUtils {
 		String name = method.getName()
 			.replace('_', '.');
 
+		Object value = get0(name, attrs, directives, args);
+		if (value == null) {
+			value = get0(name.replace('_', '.'), attrs, directives, args);
+		}
+
+		if (value == null) {
+			value = get0(name.replace('_', '-'), attrs, directives, args);
+		}
+
+		return (T) cnv.convert(method.getGenericReturnType(), value);
+	}
+
+	static Object get0(String name, Map<String, Object> attrs, Map<String, String> directives, Object[] args) {
 		Object value;
 		if (name.startsWith("$"))
 			value = directives.get(name.substring(1));
-		else
+		else {
 			value = attrs.get(name);
+		}
 		if (value == null && args != null && args.length == 1)
 			value = args[0];
 
-		return (T) cnv.convert(method.getGenericReturnType(), value);
+		return value;
 	}
 
 	public static Set<Resource> getResources(Collection<? extends Capability> providers) {
@@ -577,5 +593,24 @@ public class ResourceUtils {
 			return obj;
 		}
 		throw new NullPointerException();
+	}
+
+	static Collection<Requirement> all = Collections.singleton(createWildcardRequirement());
+
+	/**
+	 * Return all resources from a repository as returned by the wildcard
+	 * requirement, see {@link #createWildcardRequirement()}
+	 * 
+	 * @param repository the repository to use
+	 * @return a set of resources from the repository.
+	 */
+	public static Set<Resource> getAllResources(Repository repository) {
+		Set<Capability> capabilities = repository.findProviders(all)
+			.values()
+			.stream()
+			.flatMap(l -> l.stream())
+			.collect(Collectors.toSet());
+		return getResources(capabilities);
+
 	}
 }

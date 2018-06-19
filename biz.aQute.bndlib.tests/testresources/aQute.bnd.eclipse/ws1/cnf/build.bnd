@@ -1,0 +1,23 @@
+src:                    src/main/java, src/main/resources
+bin:                    target/classes
+testsrc:                src/test/java
+testsrc.resources:          src/test/resources
+testbin:                target/test-classes
+target-dir:             target
+
+javac.source:           1.8
+javac.target:           ${javac.source}
+javac.compliance:       ${javac.source}
+javac.debug:            on
+
+-plugin.lifecycle = aQute.bnd.plugin.git.GitPlugin
+
+
+Bundle-Vendor:          Google Gson Project
+
+pde.extensions = \
+    groovy; -buildpath="some.groovy.lib", \
+    xtend; -buildpath="some.xtend.lib"
+    
+pde.transitives = \
+    com.google.gson; -buildpath="some.gson.lib"

@@ -73,6 +73,8 @@ public class Descriptors {
 
 		String getDottedOnly();
 
+		boolean isArray();
+
 	}
 
 	public static class PackageRef implements Comparable<PackageRef> {
@@ -276,6 +278,11 @@ public class Descriptors {
 			return super.hashCode();
 		}
 
+		@Override
+		public boolean isArray() {
+			return false;
+		}
+
 	}
 
 	private static class ArrayRef implements TypeRef {
@@ -379,6 +386,11 @@ public class Descriptors {
 				return name;
 
 			return name.substring(n + 1);
+		}
+
+		@Override
+		public boolean isArray() {
+			return true;
 		}
 
 	}

@@ -76,7 +76,7 @@ public class Instruction {
 		int start = 0;
 		int end = s.length();
 
-		if (s.charAt(start) == '!') {
+		if (s.startsWith("!") || s.startsWith("~")) {
 			negated = true;
 			start++;
 		} else {

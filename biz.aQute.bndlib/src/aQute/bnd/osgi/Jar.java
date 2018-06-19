@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.EnumSet;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,8 @@ import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.glob.Glob;
+import aQute.service.reporter.Reporter;
 
 public class Jar implements Closeable {
 	private static final int	BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
@@ -97,6 +100,7 @@ public class Jar implements Closeable {
 	private Compression											compression				= Compression.DEFLATE;
 	private boolean												closed;
 	private String[]											algorithms;
+	Reporter									reporter;
 
 	public Jar(String name) {
 		this.name = name;
@@ -850,12 +854,13 @@ public class Jar implements Closeable {
 	public Resource remove(String path) {
 		check();
 		Resource resource = resources.remove(path);
-		if (resource != null) {
-			String dir = getDirectory(path);
-			Map<String, Resource> mdir = directories.get(dir);
-			// must be != null
-			mdir.remove(path);
-		}
+		if (resource == null)
+			return resource;
+
+		String dir = getDirectory(path);
+		Map<String,Resource> mdir = directories.get(dir);
+		// must be != null
+		mdir.remove(path);
 		return resource;
 	}
 
@@ -988,6 +993,22 @@ public class Jar implements Closeable {
 	 */
 	public void expand(File dir) throws Exception {
 		writeFolder(dir);
+		check();
+		dir = dir.getAbsoluteFile();
+		IO.mkdirs(dir);
+		if (!dir.isDirectory()) {
+			throw new IllegalArgumentException("Not a dir: " + dir.getAbsolutePath());
+		}
+
+		for (Map.Entry<String,Resource> entry : getResources().entrySet()) {
+			File f = IO.getFile(dir, entry.getKey());
+			File fp = f.getParentFile();
+			if (fp.isFile()) {
+				throw new IOException("Huh");
+			}
+			IO.mkdirs(fp);
+			IO.copy(entry.getValue().openInputStream(), f);
+		}
 	}
 
 	/**
@@ -1067,7 +1088,6 @@ public class Jar implements Closeable {
 
 		MessageDigest md = MessageDigest.getInstance("SHA1");
 		OutputStream dout = new DigestOutputStream(IO.nullStream, md);
-		// dout = System.out;
 
 		Manifest m = getManifest();
 
@@ -1118,4 +1138,65 @@ public class Jar implements Closeable {
 		directories.subMap(prefixLow, prefixHigh)
 			.clear();
 	}
+
+	public int move(String from, String to) {
+		int n = 0;
+		Glob match = Glob.ALL;
+		boolean isWildcard;
+
+		if (!from.endsWith("/") && !from.isEmpty()) {
+			int index = from.lastIndexOf('/');
+			String suffix = from.substring(index + 1);
+			isWildcard = suffix.contains("*");
+			if (isWildcard && !to.endsWith("/")) {
+
+				int index2 = to.lastIndexOf('/');
+				String toName = to.substring(index2 + 1);
+				if (toName.equals(suffix)) {
+					to = to.substring(0, index2);
+				} else {
+					if (reporter != null) {
+						reporter.error(
+						        "If wildcards are used to copy resources then the to must be a directory, it is a file: %s->%s",
+						        from, to);
+					}
+				}
+			}
+
+			match = new Glob(suffix);
+			from = index > 0 ? from.substring(0, index + 1) : "";
+		} else
+			isWildcard = false;
+
+		boolean ignored = false;
+		Map<String,Resource> temp = new HashMap<>();
+		for (Map.Entry<String,Resource> e : getResources().entrySet()) {
+			if (e.getKey().startsWith(from)) {
+				String rest = e.getKey().substring(from.length());
+				if (match.matcher(rest).matches())
+					temp.put(e.getKey(), e.getValue());
+				else
+					ignored = true;
+			}
+		}
+
+		if (ignored && reporter != null && isWildcard) {
+			reporter.warning("Wildcard expression in 'from' restricted copy: from='%s/%s' to='%s'", from, match, to);
+		}
+
+		for (Map.Entry<String,Resource> e : temp.entrySet()) {
+			remove(e.getKey());
+		}
+
+		for (Map.Entry<String,Resource> e : temp.entrySet()) {
+			String out = to.endsWith("/") ? to + e.getKey().substring(from.length()) : to;
+			putResource(out, e.getValue());
+		}
+		return temp.size();
+	}
+
+	public void setReporter(Reporter reporter) {
+		this.reporter = reporter;
+	}
+
 }

@@ -13,6 +13,9 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleException;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.util.tracker.BundleTracker;
 
 import aQute.bnd.junit.JUnitFramework.BundleBuilder;
@@ -25,6 +28,7 @@ public class JUnitFrameworkTest extends Assert {
 	@Before
 	public void setUp() throws Exception {
 		framework = new JUnitFramework(new File("").getAbsoluteFile());
+		framework.addBundle("org.apache.felix.scr");
 	}
 
 	@After
@@ -94,6 +98,32 @@ public class JUnitFrameworkTest extends Assert {
 		b.uninstall();
 
 		assertEquals("Only the framework left", length, framework.context.getBundles().length);
+	}
+
+	static class Foo {}
+
+	@Component
+	public static class C {
+		@Activate
+		void act() {
+			System.out.println("Hello World");
+		}
+
+		@Reference
+		Foo foo;
+	}
+
+	@Test
+	public void testComponent() throws Exception {
+		int length = framework.context.getBundles().length;
+		BundleBuilder bundle = framework.bundle();
+
+		bundle.setPrivatePackage(C.class.getPackage().getName());
+
+		Bundle b = bundle.install();
+		b.start();
+		framework.context.registerService(Foo.class, new Foo(), null);
+		b.uninstall();
 	}
 
 	static class MyClass {

@@ -3,22 +3,27 @@ package aQute.bnd.junit;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ServiceLoader;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
+import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
@@ -68,15 +73,16 @@ import aQute.lib.io.IO;
  * JUnit code runs. This is normally a separately started VM.
  */
 public class JUnitFramework implements AutoCloseable {
-	final ExecutorService					executor		= Executors.newCachedThreadPool();
-	final PromiseFactory					promiseFactory	= new PromiseFactory(executor);
-	public final List<ServiceTracker<?, ?>>	trackers		= new ArrayList<>();
-	public final Jar						bin_test;
-	public final Framework					framework;
-	public final BundleContext				context;
-	public final File						projectDir;
-	public Workspace						workspace;
-	public Project							project;
+	final ExecutorService								executor		= Executors.newCachedThreadPool();
+    final PromiseFactory                    promiseFactory  = new PromiseFactory(executor);
+	public final List<ServiceTracker< ? , ? >>	trackers		= new ArrayList<>();
+	public final Jar							bin_test;
+	public final Framework						framework;
+	public final BundleContext					context;
+	public final File							projectDir;
+	public Workspace							workspace;
+	public Project								project;
+	public List<FrameworkEvent>					frameworkEvents	= new CopyOnWriteArrayList<FrameworkEvent>();
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -114,8 +120,9 @@ public class JUnitFramework implements AutoCloseable {
 
 			framework = factory.newFramework(props);
 			framework.init();
+			context = framework.getBundleContext();
+			context.addFrameworkListener(frameworkEvents::add);
 			framework.start();
-			this.context = framework.getBundleContext();
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -345,5 +352,55 @@ public class JUnitFramework implements AutoCloseable {
 			return ff;
 		}
 		throw new FileNotFoundException("No Framework found on classpath");
+	}
+
+	public void report() throws InvalidSyntaxException {
+		reportBundles(System.out);
+		reportServices(System.out);
+		reportEvents(System.out);
+		System.out.flush();
+	}
+
+	void reportEvents(PrintStream out) {
+		try (Formatter f = new Formatter(out)) {
+			frameworkEvents.forEach(fe -> {
+				f.format("%s\n", fe);
+			});
+		}
+	}
+
+	public void reportBundles(Appendable out) {
+		try (Formatter f = new Formatter(out)) {
+			Stream.of(context.getBundles()).forEach(bb -> {
+				f.format("%4s %s\n", bundleStateToString(bb.getState()), bb);
+			});
+		}
+	}
+
+	public void reportServices(Appendable out) throws InvalidSyntaxException {
+		try (Formatter f = new Formatter(out)) {
+			Stream.of(context.getAllServiceReferences(null, null)).forEach(sref -> {
+				System.out.format("%s\n", sref);
+			});
+		}
+	}
+
+	private String bundleStateToString(int state) {
+		switch (state) {
+			case Bundle.UNINSTALLED :
+				return "UNIN";
+			case Bundle.INSTALLED :
+				return "INST";
+			case Bundle.RESOLVED :
+				return "RSLV";
+			case Bundle.STARTING :
+				return "STAR";
+			case Bundle.ACTIVE :
+				return "ACTV";
+			case Bundle.STOPPING :
+				return "STOP";
+			default :
+				return "UNKN";
+		}
 	}
 }

@@ -156,11 +156,18 @@ public class Verifier extends Processor {
 	public final static Pattern	NUMBERPATTERN					= Pattern.compile("\\d+");
 	public final static Pattern	PACKAGEPATTERN					= Pattern.compile(
 		"\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
+	public final static String	JAVA_SIMPLE_NAME_S				= "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
+	public final static String	PACKAGE_PATTERN_S				= JAVA_SIMPLE_NAME_S + "(\\." + JAVA_SIMPLE_NAME_S
+			+ ")*";
+	public final static String	CLASSNAME_PATTERN_S				= "(" + PACKAGE_PATTERN_S + "\\." + ")?"
+			+ JAVA_SIMPLE_NAME_S;
+	public final static Pattern	FQNPATTERN						= Pattern
+			.compile(PACKAGE_PATTERN_S + "\\." + CLASSNAME_PATTERN_S);
+
 	public final static Pattern	PACKAGEPATTERN_OR_EMPTY			= Pattern.compile(PACKAGEPATTERN + "|^$");
 	public final static Pattern	MULTIPACKAGEPATTERN				= Pattern
 		.compile("(\\s*" + PACKAGEPATTERN + ")(\\s*,\\s*" + PACKAGEPATTERN + ")*\\s*");
 	public final static Pattern	PATHPATTERN						= Pattern.compile(".*");
-	public final static Pattern	FQNPATTERN						= Pattern.compile(".*");
 	public final static Pattern	URLPATTERN						= Pattern.compile(".*");
 	public final static Pattern	ANYPATTERN						= Pattern.compile(".*");
 	public final static Pattern	FILTERPATTERN					= Pattern.compile(".*");

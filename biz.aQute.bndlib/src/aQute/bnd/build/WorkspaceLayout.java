@@ -13,5 +13,5 @@ public enum WorkspaceLayout {
 	 * A standalone workspace based on a single bnd or bndrun file, which must
 	 * contain the -standalone instruction.
 	 */
-	STANDALONE
+	STANDALONE;
 }

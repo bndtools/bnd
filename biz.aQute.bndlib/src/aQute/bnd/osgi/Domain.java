@@ -436,8 +436,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public static Domain domain(File file) throws IOException {
-		if (file.getName()
-			.endsWith(".mf")) {
+		if (file.getName().toLowerCase().endsWith(".mf")) {
 			try (InputStream in = IO.stream(file)) {
 				Manifest m = new Manifest(in);
 				return domain(m);
