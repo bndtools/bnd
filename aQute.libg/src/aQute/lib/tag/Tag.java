@@ -2,6 +2,9 @@ package aQute.lib.tag;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,8 +13,12 @@ import java.util.Date;
 import java.util.Formatter;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element
@@ -21,16 +28,19 @@ import java.util.regex.Pattern;
  */
 public class Tag {
 
-	final static String				NameStartChar	= ":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]\uFDF0-\uFFFD";
-	final static String				NameChar		= "[" + NameStartChar + "0-9.\u00B7\u0300-\u036F\u203F-\u2040\\-]";
-	final static String				Name			= "[" + NameStartChar + "]" + NameChar + "*";
-	final public static Pattern		NAME_P			= Pattern.compile(Name);
+	final private static String		ARRAY_ELEMENT_NAME	= "element";
 
-	Tag								parent;																																											// Parent
-	String							name;																																											// Name
-	final Map<String, String>		attributes		= new LinkedHashMap<>();
-	final List<Object>				content			= new ArrayList<>();																																			// Content
-	final static SimpleDateFormat	format			= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
+	final static String				NameStartChar		= ":A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF]\uFDF0-\uFFFD";
+	final static String				NameChar			= "[" + NameStartChar
+		+ "0-9.\u00B7\u0300-\u036F\u203F-\u2040\\-]";
+	final static String				Name				= "[" + NameStartChar + "]" + NameChar + "*";
+	final public static Pattern		NAME_P				= Pattern.compile(Name);
+
+	Tag								parent;																																												// Parent
+	String							name;																																												// Name
+	final Map<String, String>		attributes			= new LinkedHashMap<>();
+	final List<Object>				content				= new ArrayList<>();																																			// Content
+	final static SimpleDateFormat	format				= new SimpleDateFormat("yyyyMMddHHmmss.SSS");
 	boolean							cdata;
 
 	/**
@@ -129,6 +139,207 @@ public class Tag {
 		content.add(tag);
 		tag.parent = this;
 		return this;
+	}
+
+	/**
+	 * Convert the DTO object in arguments to a Tag object with {@code rootName}
+	 * as name.
+	 * <p>
+	 * Keys in {@link Map} and public fields' name are used to name tags.<br/>
+	 * Objects in {@link Collection} or {@code array} are converted to
+	 * {@code XML} elements and tags names are computed as follow:
+	 * <ul>
+	 * <li>If the parent element tag does not have a defined name,
+	 * {@code arrayElementName} will be used.</li>
+	 * <li>If the parent element tag name ends with a 's' or 'S', the
+	 * depluralized version will be used.</li>
+	 * <li>Otherwise, the first letter of {@code arrayElementName} is
+	 * capitalized and appended to the parent element tag name to name the tag
+	 * (If the parent element tag name does not end with a lowercase letter,
+	 * {@code arrayElementName} is entirely capitalized and an '_' is first
+	 * appended to to it)</li>
+	 * </ul>
+	 * <h3>Example:</h3>
+	 * 
+	 * <pre>
+	 * fromDTO("things", "element", `[{"FRIEND": ["Amy"]},{"children": ["Emily"]},["Bob", "Bill"]]`)
+	 * </pre>
+	 * 
+	 * gives
+	 * 
+	 * <pre>
+	 * {@code
+	 * <things>
+	 *    <thing>
+	 *       <FRIEND>
+	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>               
+	 *       </FRIEND>
+	 *       <children>
+	 *          <childrenElement>Emily</childrenElement>               
+	 *       </children>
+	 *    </thing>
+	 *    <thing>
+	 *       <element>Bob</element>
+	 *       <element>Bill</element>
+	 *    </thing>
+	 * </things>
+	 * }
+	 * </pre>
+	 * <p>
+	 * {@code null} values are ignored.
+	 * 
+	 * @param rootName the name of the root tag, may be {@code null}.
+	 * @param arrayElementName a generic name for elements in lists, if
+	 *            {@code null} or empty, the default value "element" will be
+	 *            used.
+	 * @param dto the DTO to convert, if {@code null} an empty element is
+	 *            returned.
+	 * @return the corresponding Tag, never {@code null}.
+	 */
+	public static Tag fromDTO(String rootName, String arrayElementName, Object dto) {
+		if (arrayElementName != null && !arrayElementName.isEmpty() && dto != null) {
+			return convertDTO(rootName, arrayElementName, dto, true);
+		} else {
+			return fromDTO(rootName, dto);
+		}
+	}
+
+	/**
+	 * Convert the DTO object in arguments to a Tag object with {@code rootName}
+	 * as name.
+	 * <p>
+	 * Keys in {@link Map} and public fields' name are used to name tags.<br/>
+	 * Objects in {@link Collection} or {@code array} are converted to
+	 * {@code XML} elements and tags names are computed as follow:
+	 * <ul>
+	 * <li>If the parent element tag does not have a defined name, "element"
+	 * will be used.</li>
+	 * <li>If the parent element tag name ends with a 's' or 'S', the
+	 * depluralized version will be used.</li>
+	 * <li>Otherwise, the first letter of "element" is capitalized and appended
+	 * to the parent element tag name to name the tag (If the parent element tag
+	 * name does not end with a lowercase letter, "element" is entirely
+	 * capitalized and an '_' is first appended to to it)</li>
+	 * </ul>
+	 * <h3>Example:</h3>
+	 * 
+	 * <pre>
+	 * fromDTO("things", "element", `[{"FRIEND": ["Amy"]},{"children": ["Emily"]},["Bob", "Bill"]]`)
+	 * </pre>
+	 * 
+	 * gives
+	 * 
+	 * <pre>
+	 * {@code
+	 * <things>
+	 *    <thing>
+	 *       <FRIEND>
+	 *          <FRIEND_ELEMENT>Amy</FRIEND_ELEMENT>               
+	 *       </FRIEND>
+	 *       <children>
+	 *          <childrenElement>Emily</childrenElement>               
+	 *       </children>
+	 *    </thing>
+	 *    <thing>
+	 *       <element>Bob</element>
+	 *       <element>Bill</element>
+	 *    </thing>
+	 * </things>
+	 * }
+	 * </pre>
+	 * <p>
+	 * {@code null} values are ignored.
+	 * 
+	 * @param rootName the name of the root tag, may be {@code null}.
+	 * @param dto the DTO to convert, if {@code null} an empty element is
+	 *            returned.
+	 * @return the corresponding Tag, never {@code null}.
+	 */
+	public static Tag fromDTO(String rootName, Object dto) {
+		if (dto == null) {
+			return new Tag(rootName);
+		} else {
+			return convertDTO(rootName, Tag.ARRAY_ELEMENT_NAME, dto, true);
+		}
+	}
+
+	private static Tag convertDTO(String rootName, String arrayElementName, Object dto, boolean suffix) {
+		final Tag result = new Tag(rootName);
+
+		if (isComplex(dto)) {
+			if (dto.getClass()
+				.isArray()) {
+				int length = Array.getLength(dto);
+				for (int i = 0; i < length; i++) {
+					Object nextDTO = Array.get(dto, i);
+					if (nextDTO != null) {
+						result.addContent(Tag.convertDTO(
+							suffix ? computeArrayElementName(rootName, arrayElementName) : arrayElementName,
+							arrayElementName, nextDTO, false));
+					}
+				}
+			} else if (dto instanceof Collection) {
+				for (Object d : (Collection<?>) dto) {
+					if (d != null) {
+						result.addContent(Tag.convertDTO(
+							suffix ? computeArrayElementName(rootName, arrayElementName) : arrayElementName,
+							arrayElementName, d, false));
+					}
+				}
+			} else if (dto instanceof Map) {
+				for (Entry<?, ?> entry : ((Map<?, ?>) dto).entrySet()) {
+					if (entry.getValue() != null && entry.getKey() != null) {
+						result.addContent(
+							Tag.convertDTO(Objects.toString(entry.getKey()), arrayElementName, entry.getValue(), true));
+					}
+				}
+			} else {
+				getFields(dto.getClass()).forEach(field -> {
+					try {
+						Object nextDTO = field.get(dto);
+						if (nextDTO != null) {
+							result.addContent(Tag.convertDTO(field.getName(), arrayElementName, nextDTO, true));
+						}
+					} catch (IllegalAccessException bug) {
+						/* should not be thrown if input respect dto spec */
+						throw new RuntimeException(bug);
+					}
+				});
+			}
+		} else {
+			result.addContent(dto.toString());
+		}
+
+		return result;
+	}
+
+	private static String computeArrayElementName(String name, String arrayElementName) {
+		if (name != null && name.length() > 0) {
+			final char lastChar = name.charAt(name.length() - 1);
+			if (lastChar == 's' || lastChar == 'S') {
+				return name.substring(0, name.length() - 1);
+			} else if (lastChar >= 'a' && lastChar <= 'z') {
+				return name + arrayElementName.substring(0, 1)
+					.toUpperCase(Locale.ROOT) + arrayElementName.substring(1);
+			} else {
+				return name + "_" + arrayElementName.toUpperCase(Locale.ROOT);
+			}
+		} else {
+			return arrayElementName;
+		}
+	}
+
+	private static boolean isComplex(Object a) {
+		return a instanceof Map || a instanceof Collection || a.getClass()
+			.isArray()
+			|| getFields(a.getClass()).findAny()
+				.isPresent();
+	}
+
+	private static Stream<Field> getFields(Class<?> c) {
+		return Stream.of(c.getFields())
+			.filter(
+				field -> !(field.isEnumConstant() || field.isSynthetic() || Modifier.isStatic(field.getModifiers())));
 	}
 
 	/**
