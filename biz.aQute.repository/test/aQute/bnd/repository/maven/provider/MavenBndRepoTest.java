@@ -531,7 +531,61 @@ public class MavenBndRepoTest extends TestCase {
 
 		File f = IO.getFile("testdata/plainjar/olingo-odata2-api-1.2.0.jar");
 		try (FileInputStream in = new FileInputStream(f)) {
-			repo.put(in, null);
+			PutResult put = repo.put(in, null);
 		}
+		File file = repo.get("org.apache.olingo:olingo-odata2-api", Version.parseVersion("1.2.0"), null);
+		assertNotNull(file);
 	}
+
+	public void testPutPlainJarAndNoMetaInfMaven() throws Exception {
+
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		map.put("ignore.metainf.maven", "true");
+		config(map);
+
+		File f = IO.getFile("testdata/plainjar/olingo-odata2-api-1.2.0.jar");
+		try (FileInputStream in = new FileInputStream(f)) {
+			PutResult put = repo.put(in, null);
+			System.out.println(put.artifact);
+		}
+		File file = repo.get("osgi-bundle:olingo-odata2-api", Version.parseVersion("1.2.0"), null);
+		assertNotNull(file);
+	}
+
+	public void testPutBundledNoMetaInfMaven() throws Exception {
+
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		map.put("ignore.metainf.maven", "true");
+		config(map);
+
+		File f = IO.getFile("testresources/demo.jar");
+		try (FileInputStream in = new FileInputStream(f)) {
+			PutResult put = repo.put(in, null);
+			System.out.println(put.artifact);
+		}
+		File file = repo.get("osgi-bundle:demo", Version.parseVersion("1.0.0"), null);
+		assertNotNull(file);
+	}
+
+	public void testPutBundledWithMetaInfMaven() throws Exception {
+
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		map.put("ignore.metainf.maven", "false");
+		config(map);
+
+		File f = IO.getFile("testresources/demo.jar");
+		try (FileInputStream in = new FileInputStream(f)) {
+			PutResult put = repo.put(in, null);
+			System.out.println(put.artifact);
+		}
+		File file = repo.get("biz.aQute.bnd:demo", Version.parseVersion("1.0.0"), null);
+		assertNotNull(file);
+	}
+
 }

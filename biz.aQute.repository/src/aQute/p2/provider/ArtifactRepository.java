@@ -16,6 +16,7 @@ import aQute.lib.filter.Filter;
 import aQute.libg.sed.Domain;
 import aQute.libg.sed.ReplacerAdapter;
 import aQute.p2.api.Artifact;
+import aQute.p2.api.Classifier;
 
 /**
  * @formatter:off
@@ -113,7 +114,15 @@ class ArtifactRepository extends XML {
 			final XMLArtifact xmlArtifact = getFromType(artifactNode, XMLArtifact.class);
 			final Map<String, String> map = Converter.cnv(new TypeReference<Map<String, String>>() {}, xmlArtifact);
 
-			if ("osgi.bundle".equals(xmlArtifact.classifier)) {
+			Classifier classifier = null;
+
+			if (Classifier.BUNDLE.name.equals(xmlArtifact.classifier)) {
+				classifier = Classifier.BUNDLE;
+			} else if (Classifier.FEATURE.name.equals(xmlArtifact.classifier)) {
+				classifier = Classifier.FEATURE;
+			}
+
+			if (classifier != null) {
 				Domain domain = new Domain() {
 
 					@Override
@@ -135,6 +144,7 @@ class ArtifactRepository extends XML {
 						URI uri = new URI(s).normalize();
 
 						Artifact artifact = new Artifact();
+						artifact.classifier = classifier;
 						artifact.uri = uri;
 						artifact.id = xmlArtifact.id;
 						artifact.version = new Version(xmlArtifact.version);
