@@ -105,16 +105,15 @@ class Traverser {
 	}
 
 	private void parse(final Archive archive, final String parent) {
-		//
-		// Prune duplicates by adding the archive to a set. We
-		// use a dummy for the resource, the resource is set later
-		//
-
-		Resource prev = resources.putIfAbsent(archive, DUMMY);
-		if (prev != null)
-			return;
-
 		if (transitive || parent == ROOT) {
+			//
+			// Prune duplicates by adding the archive to a set. We
+			// use a dummy for the resource, the resource is set later
+			//
+
+			Resource prev = resources.putIfAbsent(archive, DUMMY);
+			if (prev != null)
+				return;
 
 			//
 			// Every parse must be matched by a background
