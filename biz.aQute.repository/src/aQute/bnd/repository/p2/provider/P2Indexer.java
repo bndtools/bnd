@@ -46,15 +46,9 @@ import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.p2.api.Artifact;
-import aQute.p2.api.ArtifactProvider;
 import aQute.p2.provider.P2Impl;
-import aQute.p2.provider.TargetImpl;
 import aQute.service.reporter.Reporter;
 
-/**
- * This class maintains an OBR index but gets its sources from a P2 or
- * TargetPlatform.
- */
 class P2Indexer implements Closeable {
 	private final static Logger			logger					= LoggerFactory.getLogger(P2Indexer.class);
 	private static final long			MAX_STALE				= TimeUnit.DAYS.toMillis(100);
@@ -156,14 +150,8 @@ class P2Indexer implements Closeable {
 					.get(MD5_ATTRIBUTE));
 			}, Capability::getResource, (u, v) -> v)) : new HashMap<>();
 
-		ArtifactProvider p2;
-		if (this.url.getPath()
-			.endsWith(".target"))
-			p2 = new TargetImpl(client, this.url, promiseFactory);
-		else
-			p2 = new P2Impl(client, this.url, promiseFactory);
-
-		List<Artifact> artifacts = p2.getBundles();
+		P2Impl p2 = new P2Impl(client, this.url, promiseFactory);
+		List<Artifact> artifacts = p2.getArtifacts();
 		Set<ArtifactID> visitedArtifacts = new HashSet<>(artifacts.size());
 		Set<URI> visitedURIs = new HashSet<>(artifacts.size());
 

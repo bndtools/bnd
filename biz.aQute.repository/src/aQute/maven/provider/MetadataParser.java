@@ -85,13 +85,13 @@ public class MetadataParser {
 		}
 	}
 
-	public static class Snapshot extends DTO {
+	public static class Snapshot {
 		public String	timestamp;
 		public String	buildNumber	= "0";
 		public boolean	localCopy	= false;
 	}
 
-	public static class SnapshotVersion extends DTO {
+	public static class SnapshotVersion {
 		public String		classifier;
 		public String		extension;
 		public MavenVersion	value;

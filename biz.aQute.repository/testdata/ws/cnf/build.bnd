@@ -9,7 +9,3 @@
 		location="generated/tmp/test/cache/wrapper"; \
 		augments=augments.properties; \
 		reset.cache=true
-		
--runblacklist: osgi.identity;filter:='(osgi.identity=*.x)'
--runbundles: fooo
--runproperties: bar=2342
