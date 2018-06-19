@@ -224,7 +224,6 @@ class IndexFile {
 	private void loadIndexFile() throws Exception {
 		lastModified = indexFile.lastModified();
 		Set<Archive> toBeDeleted = new HashSet<>(descriptors.keySet());
-
 		if (indexFile.isFile()) {
 			lock.readLock()
 				.lock();

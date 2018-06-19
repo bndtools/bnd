@@ -29,7 +29,7 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
     ${assertj},\
 	${jetty.libs},\
 	biz.aQute.http.testservers;version=latest,\
-    slf4j.simple;version=latest
+	slf4j.simple;version=latest
 
 Export-Package: \
 	aQute.bnd.deployer.http;bnd-plugins=true,\

@@ -35,16 +35,4 @@ public interface Configuration {
 	 */
 	// default: 5 seconds
 	int poll_time(int pollTimeInSecs);
-
-	/**
-	 * Allow redeploy
-	 */
-	boolean redeploy();
-
-	/**
-	 * Ignore maven information in META-INF/maven/....
-	 */
-
-	boolean ignore_metainf_maven();
-
 }

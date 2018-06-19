@@ -128,13 +128,9 @@ import aQute.bnd.util.dto.DTO;
  * </pre>
  */
 public class Artifact extends DTO {
-
-	@Deprecated
-	public String		type;
-	public Classifier	classifier;
+	public String	type	= "osgi.bundle";
 	public URI		uri;
 	public String	id;
 	public Version	version;
 	public String	md5;
-
 }

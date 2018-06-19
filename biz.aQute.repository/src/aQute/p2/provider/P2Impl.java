@@ -33,10 +33,9 @@ import aQute.bnd.http.HttpClient;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.p2.api.Artifact;
-import aQute.p2.api.ArtifactProvider;
 import aQute.p2.api.P2Index;
 
-public class P2Impl implements ArtifactProvider {
+public class P2Impl {
 	private static final Logger		logger		= LoggerFactory.getLogger(P2Impl.class);
 	private final HttpClient		client;
 	private final URI				base;
@@ -51,35 +50,25 @@ public class P2Impl implements ArtifactProvider {
 
 	private URI normalize(URI base) throws Exception {
 		String path = base.getPath();
-		if (path == null || path.endsWith("/"))
+		if (path.endsWith("/"))
 			return base;
 
 		return new URI(base.toString() + "/");
 	}
 
-	@Override
-	public List<Artifact> getAllArtifacts() throws Exception {
-		Set<URI> cycles = Collections.newSetFromMap(new ConcurrentHashMap<URI, Boolean>());
-		List<Artifact> value = getArtifacts(cycles, base).getValue();
-		return value;
-	}
-
-	// For backward compatibility reasons
-	// this method is now called getBundles(), it ignores non osgi.bundle
-	// artifacts
-
 	public List<Artifact> getArtifacts() throws Exception {
-		return getBundles();
+		Set<URI> cycles = Collections.newSetFromMap(new ConcurrentHashMap<URI, Boolean>());
+		return getArtifacts(cycles, base).getValue();
 	}
 
 	private Promise<List<Artifact>> getArtifacts(Set<URI> cycles, URI uri) {
 		if (!cycles.add(uri)) {
-			return promiseFactory.resolved(Collections.emptyList());
+			return promiseFactory
+				.failed(new IllegalStateException("There is a cycle in the p2 setup : " + cycles + " -> " + uri));
 		}
 
 		try {
 			String type = uri.getPath();
-			logger.info("getArtifacts type={}", uri);
 			if (type.endsWith("/compositeArtifacts.xml")) {
 				return parseCompositeArtifacts(cycles, hideAndSeek(uri), uri);
 			} else if (type.endsWith("/artifacts.xml.xz")) {
@@ -93,16 +82,13 @@ public class P2Impl implements ArtifactProvider {
 			defaults.add(uri);
 			return parseIndexArtifacts(cycles, uri);
 		} catch (Exception e) {
-			logger.error("getArtifacts", e);
 			return promiseFactory.failed(e);
 		}
 	}
 
 	private Promise<List<Artifact>> parseArtifacts(InputStream in, URI uri) throws Exception {
-		if (in == null) {
-			logger.info("No content for {}", uri);
+		if (in == null)
 			return promiseFactory.resolved(Collections.emptyList());
-		}
 
 		return promiseFactory.submit(() -> {
 			try {
@@ -124,12 +110,10 @@ public class P2Impl implements ArtifactProvider {
 	 */
 	private Promise<List<Artifact>> parseCompositeArtifacts(Set<URI> cycles, InputStream in, URI base)
 		throws Exception {
-		if (in == null) {
-			logger.info("No such composite {}", base);
+		if (in == null)
 			return promiseFactory.resolved(Collections.emptyList());
-		}
 
-		CompositeArtifacts ca = new CompositeArtifacts(in, base);
+		CompositeArtifacts ca = new CompositeArtifacts(in);
 		ca.parse();
 
 		return getArtifacts(cycles, ca.uris);
