@@ -54,8 +54,11 @@ public class PomResource extends WriteResource {
 		this.processor = b;
 
 		Domain domain = Domain.domain(manifest);
-		String bsn = domain.getBundleSymbolicName()
-			.getKey();
+		Entry<String, Attrs> bundleSymbolicName = domain.getBundleSymbolicName();
+		if (bundleSymbolicName == null) {
+			throw new RuntimeException("Cannot create POM unless bsn is set");
+		}
+		String bsn = bundleSymbolicName.getKey();
 		if (bsn == null) {
 			throw new RuntimeException("Cannot create POM unless bsn is set");
 		}
@@ -72,8 +75,15 @@ public class PomResource extends WriteResource {
 			groupId = processor.get(Constants.GROUPID);
 		}
 
+		if (groupId == null) {
+			groupId = processor.get("groupId");
+		}
+
 		if (groupId != null) {
 			artifactId = processor.get(ARTIFACTID);
+			if (artifactId == null)
+				artifactId = processor.get("artifactId");
+
 			if (artifactId == null)
 				artifactId = bsn;
 			if (where == null) {
@@ -103,6 +113,15 @@ public class PomResource extends WriteResource {
 		if (version == null)
 			version = "0";
 
+	}
+
+	public PomResource(Processor p, Manifest m, String groupId, String artifactId, String version, String where) {
+		this.processor = p;
+		this.manifest = m;
+		this.groupId = groupId;
+		this.artifactId = artifactId;
+		this.version = version;
+		this.where = where;
 	}
 
 	public String augmentManifest(Domain domain, String bsn) {

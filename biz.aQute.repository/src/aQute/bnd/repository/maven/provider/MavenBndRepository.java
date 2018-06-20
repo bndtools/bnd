@@ -62,6 +62,7 @@ import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 import aQute.maven.api.Archive;
@@ -119,6 +120,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				result.options = options;
 			}
 
+			if (options.context == null) {
+
+				options.context = registry.getPlugin(Workspace.class);
+
+				if (options.context == null)
+					options.context = new Processor();
+			}
+
 			IO.copy(stream, binaryFile);
 
 			if (options.digest != null) {
@@ -128,42 +137,22 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					throw new IllegalArgumentException("The given sha-1 does not match the contents sha-1");
 			}
 
-			if (options.context == null) {
-
-				options.context = registry.getPlugin(Workspace.class);
-
-				if (options.context == null)
-					options.context = new Processor();
-			}
-
 			ReleaseDTO instructions = getReleaseDTO(options.context);
 
 			try (Jar binary = new Jar(binaryFile)) {
-				Resource pomResource;
 
-				if (instructions.pom.path != null) {
-					File f = options.context.getFile(instructions.pom.path);
-					if (!f.isFile())
-						throw new IllegalArgumentException(
-							"-maven-release specifies " + f + " as pom file but this file is not found");
-
-					pomResource = new FileResource(f);
-				} else {
-
-					pomResource = getPomResource(binary);
-					if (pomResource == null) {
-						pomResource = createPomResource(binary, options.context);
-						if (pomResource == null)
-							throw new IllegalArgumentException(
-								"No POM resource in META-INF/maven/... The Maven Bnd Repository requires this pom.");
-					}
+				Resource resource = getPom(options, instructions, binary);
+				if (resource == null) {
+					throw new IllegalArgumentException(
+						"Could not create a pom from Maven metainfo properties nor manifest information");
 				}
 
-				IO.copy(pomResource.openInputStream(), pomFile);
-				IPom pom;
-				try (InputStream fin = IO.stream(pomFile)) {
-					pom = storage.getPom(fin);
+				IPom pom = storage.getPom(resource.openInputStream());
+				if (pom == null || !pom.hasValidGAV()) {
+					throw new IllegalArgumentException("Could not create a pom");
 				}
+				IO.copy(resource.openInputStream(), pomFile);
+
 				Archive binaryArchive = pom.binaryArchive();
 
 				checkRemotePossible(instructions, binaryArchive.isSnapshot());
@@ -171,9 +160,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				if (!binaryArchive.isSnapshot()) {
 					releasePlugin.add(options.context, pom);
 					if (storage.exists(binaryArchive)) {
-						logger.debug("Already released {} to {}", pom.getRevision(), this);
 						result.alreadyReleased = true;
-						return result;
+						if (!configuration.redeploy()) {
+							logger.debug("Already released {} to {}", pom.getRevision(), this);
+							return result;
+						}
+						logger.debug("Redeploying {}", pom.getRevision(), this);
 					}
 				}
 
@@ -232,6 +224,27 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			IO.delete(pomFile);
 		}
 
+	}
+
+	private Resource getPom(PutOptions options, ReleaseDTO instructions, Jar binary) throws Exception, IOException {
+		Resource pom = null;
+
+		if (instructions.pom.path != null) {
+			pom = createPomFromFile(options.context.getFile(instructions.pom.path));
+		} else {
+
+			if (!configuration.ignore_metainf_maven()) {
+				pom = createPomFromFirstMavenPropertiesInJar(binary, options.context);
+			}
+			if (pom == null) {
+				logger.info("No properties in binary or invalid GAV");
+				pom = createPomFromContextAndManifest(binary.getManifest(), options.context);
+			}
+			if (pom == null) {
+				pom = createPomFromFirstMavenPropertiesInJar(binary, options.context);
+			}
+		}
+		return pom;
 	}
 
 	void checkRemotePossible(ReleaseDTO instructions, boolean snapshot) {
@@ -353,23 +366,37 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return release;
 	}
 
-	private Resource getPomResource(Jar jar) {
+	private Resource createPomFromFile(File file) throws Exception {
+		if (!file.isFile())
+			return null;
+
+		return new FileResource(file);
+	}
+
+	private PomResource createPomFromFirstMavenPropertiesInJar(Jar jar, Processor context)
+		throws IOException, Exception {
 		for (Map.Entry<String, Resource> e : jar.getResources()
 			.entrySet()) {
 			String path = e.getKey();
 
-			if (path.startsWith("META-INF/maven/") && path.endsWith("/pom.xml")) {
-				return e.getValue();
+			if (path.startsWith("META-INF/maven/") && path.endsWith("/pom.properties")) {
+				Resource r = e.getValue();
+				UTF8Properties utf8p = new UTF8Properties();
+				utf8p.load(r.openInputStream());
+				String version = utf8p.getProperty("version");
+				String artifactId = utf8p.getProperty("artifactId");
+				String groupId = utf8p.getProperty("groupId");
+
+				try (Processor ctx = new Processor(context)) {
+					ctx.addProperties(utf8p);
+					return new PomResource(ctx, jar.getManifest(), groupId, artifactId, version, path);
+				}
 			}
 		}
 		return null;
 	}
 
-	private Resource createPomResource(Jar binary, Processor context) throws Exception {
-		Manifest manifest = binary.getManifest();
-		if (manifest == null)
-			return null;
-
+	private PomResource createPomFromContextAndManifest(Manifest manifest, Processor context) throws Exception {
 		try (Processor scoped = context == null ? new Processor() : new Processor(context)) {
 			if (scoped.getProperty(Constants.GROUPID) == null)
 				scoped.setProperty(Constants.GROUPID, "osgi-bundle");
@@ -598,7 +625,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public String toString() {
-		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + getName() + ", inited=" + inited + "]";
+		return "MavenBndRepository [localRepo=" + localRepo + ", storage=" + getName() + ", inited=" + inited
+			+ ", redeploy=" + configuration.redeploy() + "]";
 	}
 
 	@Override

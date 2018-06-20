@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.6"?>
+<target name="macbadge" sequenceNumber="0">
+    <locations>
+        <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+            <unit id="name.njbartlett.eclipse.macbadge" version="0.0.0"/>
+            <repository location="${repo}"/>
+        </location>
+    </locations>
+</target>
+
+

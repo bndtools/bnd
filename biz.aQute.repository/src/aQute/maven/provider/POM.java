@@ -58,6 +58,9 @@ public class POM implements IPom {
 	private Map<Program, Dependency>	dependencies			= new LinkedHashMap<>();
 	private Map<Program, Dependency>	dependencyManagement	= new LinkedHashMap<>();
 	private XPath						xp;
+	private String[]					JAR_PACKAGING			= {
+		"bundle", "eclipse-plugin", "eclipse-test-plugin", "pom"
+	};
 
 	private MavenRepository				repo;
 
@@ -347,7 +350,7 @@ public class POM implements IPom {
 					property = replaceMacros(property);
 
 				if (property == null) {
-					System.out.println("?? prop: " + key);
+					l.info("Undefined property in {} : key {}", this, key);
 					m.appendReplacement(sb, Matcher.quoteReplacement("${" + key + "}"));
 				} else
 					m.appendReplacement(sb, Matcher.quoteReplacement(property));
@@ -395,8 +398,8 @@ public class POM implements IPom {
 
 	@Override
 	public Archive binaryArchive() {
-		return revision.archive(packaging == null || packaging.isEmpty() || packaging.equals("bundle")
-			|| packaging.equals("pom") || packaging.equals("eclipse-plugin") ? "jar" : packaging, null);
+		return revision.archive(
+			packaging == null || packaging.isEmpty() || Strings.in(JAR_PACKAGING, packaging) ? "jar" : packaging, null);
 	}
 
 	@Override
@@ -505,6 +508,21 @@ public class POM implements IPom {
 
 	public boolean isPomOnly() {
 		return "pom".equals(packaging);
+	}
+
+	@Override
+	public boolean hasValidGAV() {
+		return isOk(properties.getProperty("project.version")) && isOk(properties.getProperty("project.groupId"))
+			&& isOk(properties.getProperty("project.artifactId"));
+
+	}
+
+	private boolean isOk(String property) {
+		// check for macros
+		if (property != null && property.indexOf('$') >= 0)
+			return false;
+
+		return true;
 	}
 
 }
