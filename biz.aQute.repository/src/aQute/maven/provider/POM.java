@@ -414,6 +414,19 @@ public class POM implements IPom {
 		return deps;
 	}
 
+	public Map<Program, Dependency> getDependencyManagementDependencies(MavenScope scope, boolean transitive)
+		throws Exception {
+		return getDependencyManagementDependencies(EnumSet.of(scope), transitive);
+	}
+
+	public Map<Program, Dependency> getDependencyManagementDependencies(EnumSet<MavenScope> scope, boolean transitive)
+		throws Exception {
+		Map<Program, Dependency> deps = new LinkedHashMap<>();
+		Set<Program> visited = new HashSet<>();
+		getDependencyManagementDependencies(deps, scope, transitive, visited);
+		return deps;
+	}
+
 	private void resolve(Dependency d) {
 		if (d.version == null) {
 			Dependency dependency = dependencyManagement.get(d.program);
@@ -426,7 +439,53 @@ public class POM implements IPom {
 				d.error = "Cannot resolve ...";
 			} else
 				d.version = directDependency.version;
+
 		}
+	}
+
+	private void getDependencyManagementDependencies(Map<Program, Dependency> deps, EnumSet<MavenScope> scope,
+		boolean transitive, Set<Program> visited) throws Exception {
+
+		if (revision == null)
+			return;
+
+		if (!visited.add(revision.program))
+			return;
+
+		if (parent != null)
+			parent.getDependencies(deps, scope, transitive, visited);
+
+		List<Dependency> breadthFirst = new ArrayList<>();
+
+		for (Map.Entry<Program, Dependency> e : dependencyManagement.entrySet()) {
+			Dependency d = e.getValue();
+
+			resolve(d);
+
+			if (deps.containsKey(d.program))
+				continue;
+
+			if (scope.contains(d.scope)) {
+				d.bindToVersion(repo);
+				deps.put(e.getKey(), d);
+				if (transitive && d.scope.isTransitive())
+					breadthFirst.add(d);
+			}
+		}
+
+		for (Dependency d : breadthFirst)
+			try {
+				POM pom = repo.getPom(d.getRevision());
+				if (pom == null) {
+					continue;
+				}
+				pom.getDependencies(deps, scope, transitive, visited);
+				if ("pom".equals(pom.getPackaging())) {
+					pom.getDependencyManagementDependencies(deps, scope, transitive, visited);
+				}
+			} catch (Exception ee) {
+				d.error = ee.toString();
+			}
 	}
 
 	private void getDependencies(Map<Program, Dependency> deps, EnumSet<MavenScope> scope, boolean transitive,

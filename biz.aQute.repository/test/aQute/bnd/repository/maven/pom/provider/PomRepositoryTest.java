@@ -157,6 +157,25 @@ public class PomRepositoryTest extends TestCase {
 		}
 	}
 
+	public void testBndPomRepoBOMFile() throws Exception {
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("pom", "testdata/pomrepo/bom.xml");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			List<String> list = bpr.list(null);
+			assertNotNull(list);
+			assertEquals(1, list.size());
+		}
+	}
+
 	public void testBndPomRepoFileExistingParent() throws Exception {
 		try (BndPomRepository bpr = new BndPomRepository()) {
 			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());

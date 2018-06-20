@@ -179,6 +179,12 @@ class Traverser {
 
 		Map<Program, Dependency> dependencies = pom.getDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime),
 			false);
+
+		if ("pom".equals(pom.getPackaging())) {
+			dependencies.putAll(
+				pom.getDependencyManagementDependencies(EnumSet.of(MavenScope.compile, MavenScope.runtime), false));
+		}
+
 		for (Dependency d : dependencies.values()) {
 
 			d.bindToVersion(repo);
