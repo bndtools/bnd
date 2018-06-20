@@ -561,6 +561,7 @@ public class Jar implements Closeable {
 	public static void outputManifest(Manifest manifest, OutputStream out) throws IOException {
 		writeEntry(out, "Manifest-Version", "1.0");
 		attributes(manifest.getMainAttributes(), out);
+		out.write(EOL);
 
 		TreeSet<String> keys = new TreeSet<>();
 		for (Object o : manifest.getEntries()
@@ -568,9 +569,9 @@ public class Jar implements Closeable {
 			keys.add(o.toString());
 
 		for (String key : keys) {
-			out.write(EOL);
 			writeEntry(out, "Name", key);
 			attributes(manifest.getAttributes(key), out);
+			out.write(EOL);
 		}
 		out.flush();
 	}
