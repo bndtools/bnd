@@ -3,10 +3,13 @@ package aQute.maven.api;
 import java.util.Comparator;
 import java.util.Map;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 import aQute.bnd.util.dto.DTO;
 import aQute.bnd.version.MavenVersionRange;
 import aQute.maven.provider.MavenRepository;
 
+@ProviderType
 public interface IPom {
 	class Dependency extends DTO {
 		public boolean		optional;
@@ -65,4 +68,6 @@ public interface IPom {
 	Archive binaryArchive();
 
 	Map<Program, Dependency> getDependencies(MavenScope scope, boolean transitive) throws Exception;
+
+	boolean hasValidGAV();
 }
