@@ -48,7 +48,7 @@ A workspace so created is quite empty. However, if we look in the `cnf` director
 
 ## Plugins
 
-And important aspect of the workspace is that it hosts _plugins_. A plugin is an extension to bndlib that gets loaded when the workspace is opened. Plugins provide a lot of different functions in bndlib. You can see the currently loaded plugins with bnd:
+An important aspect of the workspace is that it hosts _plugins_. A plugin is an extension to bndlib that gets loaded when the workspace is opened. Plugins provide a lot of different functions in bndlib. You can see the currently loaded plugins with bnd:
 
 	$ bnd plugins
 	000 Workspace [com.acme.prime]
