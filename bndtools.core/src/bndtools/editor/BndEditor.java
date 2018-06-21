@@ -39,7 +39,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IPath;
@@ -100,6 +99,8 @@ import bndtools.editor.pages.ProjectRunPage;
 import bndtools.editor.pages.TestSuitesPage;
 import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
+import bndtools.launch.util.LaunchUtils;
+import bndtools.launch.util.LaunchUtils.Mode;
 import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 
@@ -131,6 +132,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     private BndSourceEditorPage sourcePage;
     private Promise<Workspace> modelReady;
 
+    private IResource inputResource;
     private File inputFile;
 
     static Pair<String, String> getFileAndProject(IEditorInput input) {
@@ -517,26 +519,14 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         try {
 
             // Work out our input file and subscribe to resource changes
-            final String resourceName;
-            IResource inputResource = ResourceUtil.getResource(input);
-            if (inputResource != null) {
-                inputResource.getWorkspace()
-                    .addResourceChangeListener(this);
-                resourceName = inputResource.getName();
-                inputFile = inputResource.getLocation()
-                    .toFile();
-            } else {
-                IStorage storage = (IStorage) input.getAdapter(IStorage.class);
-                if (storage != null) {
-                    resourceName = storage.getName();
-                } else {
-                    resourceName = input.getName();
-                }
-                inputFile = null;
-            }
-            model.setBndResourceName(resourceName);
+            this.inputResource = ResourceUtil.getResource(input);
+            inputResource.getWorkspace()
+                .addResourceChangeListener(this);
+            inputFile = inputResource.getLocation()
+                .toFile();
+            model.setBndResourceName(inputResource.getName());
 
-            // Initialise pages and title
+            // Initialize pages and title
             initPages(site, input);
             setSourcePage(sourcePage);
             setPartNameForInput(input);
@@ -598,8 +588,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private Promise<Workspace> loadEditModel() throws Exception {
         // Create the bnd edit model and workspace
-        Workspace ws = Central.getWorkspaceIfPresent();
-        Project bndProject = Run.createRun(ws, inputFile);
+        Project bndProject = LaunchUtils.createRun(inputResource, Mode.EDIT);
         model.setWorkspace(bndProject.getWorkspace());
         model.setProject(bndProject);
 
@@ -615,7 +604,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                         IDocument document = docProvider.getDocument(getEditorInput());
                         model.loadFrom(new IDocumentWrapper(document));
                         model.setBndResource(inputFile);
-                        completed.resolve(ws);
+                        completed.resolve(model.getWorkspace());
                     } catch (IOException e) {
                         logger.logError("Unable to load edit model", e);
                         completed.fail(e);
@@ -699,6 +688,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
             resource.getWorkspace()
                 .removeResourceChangeListener(this);
         }
+
+        LaunchUtils.endRun((Run) model.getProject());
 
         buildFileImg.dispose();
         if (resolveHandlerActivation != null) {

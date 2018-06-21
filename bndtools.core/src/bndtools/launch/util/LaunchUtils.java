@@ -1,6 +1,7 @@
 package bndtools.launch.util;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
@@ -22,6 +23,39 @@ import bndtools.central.Central;
 import bndtools.launch.LaunchConstants;
 
 public final class LaunchUtils {
+
+    public static enum Mode {
+        /*
+         * Mode used when editing the run
+         */
+        EDIT,
+        /*
+         * Mode used when exporting the run
+         */
+        EXPORT,
+        /*
+         * Mode used when launching the run
+         */
+        LAUNCH,
+        /*
+         * This mode when locating source containers from the run
+         */
+        SOURCES,
+        /*
+         * Mode was not set on the run
+         */
+        UNSET;
+
+        public static Mode getMode(Run run) {
+            return Optional.ofNullable(run.get(LaunchUtils.Mode.class.getName()))
+                .map(Mode::valueOf)
+                .orElse(UNSET);
+        }
+
+        public static void setMode(Run run, Mode mode) {
+            run.set(LaunchUtils.Mode.class.getName(), mode.name());
+        }
+    }
 
     private static final ILogger logger = Logger.getLogger(LaunchUtils.class);
 
@@ -56,17 +90,17 @@ public final class LaunchUtils {
         return result;
     }
 
-    public static Run createRun(ILaunchConfiguration configuration) throws Exception {
+    public static Run createRun(ILaunchConfiguration configuration, Mode mode) throws Exception {
         IResource targetResource = getTargetResource(configuration);
         if (targetResource == null) {
             String target = getTargetName(configuration);
             throw new IllegalArgumentException(String.format("The run descriptor '%s' could not be found.", target));
         }
 
-        return createRun(targetResource);
+        return createRun(targetResource, mode);
     }
 
-    public static Run createRun(IResource targetResource) throws Exception {
+    public static Run createRun(IResource targetResource, Mode mode) throws Exception {
         Run run;
         Workspace ws = null;
 
@@ -105,6 +139,8 @@ public final class LaunchUtils {
             }
         }
 
+        Mode.setMode(run, mode);
+
         return run;
     }
 
@@ -139,7 +175,9 @@ public final class LaunchUtils {
             runListeners.open();
         }
 
-        return runListeners.getServices(new RunListener[0]);
+        return runListeners.getTracked()
+            .values()
+            .toArray(new RunListener[0]);
     }
 
     public static boolean isInBndWorkspaceProject(IResource resource) throws CoreException {

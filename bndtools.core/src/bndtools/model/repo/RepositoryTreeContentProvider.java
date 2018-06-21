@@ -123,9 +123,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
         if (viewer instanceof StructuredViewer) {
             this.structuredViewer = (StructuredViewer) viewer;
 
-            // check to make sure there are actual changes to repo lists
-            // before clearing cache
-            if (oldInput != null && (!oldInput.equals(newInput))) {
+            // only clear during subsequent updates
+            if (oldInput != null) {
                 repoPluginListResults.clear();
             }
         }
@@ -318,7 +317,9 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                             .asyncExec(new Runnable() {
                                 @Override
                                 public void run() {
-                                    structuredViewer.refresh(repoPlugin, true);
+                                    if (!structuredViewer.getControl()
+                                        .isDisposed())
+                                        structuredViewer.refresh(repoPlugin, true);
                                 }
                             });
                     }

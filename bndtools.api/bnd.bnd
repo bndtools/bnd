@@ -6,6 +6,7 @@
 	osgi.annotation; version=6.0.1,\
 	osgi.core;version=${osgi.core.version}, \
 	org.eclipse.equinox.common, \
+	org.eclipse.core.resources,\
 	org.eclipse.core.runtime,\
 	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
 	org.eclipse.jface
