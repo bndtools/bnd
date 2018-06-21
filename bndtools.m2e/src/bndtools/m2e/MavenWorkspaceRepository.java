@@ -2,7 +2,6 @@ package bndtools.m2e;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,35 +16,20 @@ import org.apache.maven.project.MavenProject;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.m2e.core.MavenPlugin;
-import org.eclipse.m2e.core.embedder.ArtifactKey;
-import org.eclipse.m2e.core.project.IMavenProjectChangedListener;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
-import org.eclipse.m2e.core.project.IMavenProjectRegistry;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
-import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
-import org.osgi.service.repository.Repository;
-
 import aQute.bnd.osgi.Domain;
-import aQute.bnd.osgi.repository.BaseRepository;
-import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 
-public class MavenWorkspaceRepository extends BaseRepository implements Repository, RepositoryPlugin, IMavenProjectChangedListener {
+public class MavenWorkspaceRepository extends AbstractMavenRepository {
 
     private final static ILogger logger = Logger.getLogger(MavenWorkspaceRepository.class);
-
-    private final IMavenProjectRegistry mavenProjectRegistry = MavenPlugin.getMavenProjectRegistry();
 
     private boolean inited = false;
 
@@ -54,11 +38,6 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
     @Override
     public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
         return Collections.emptyMap();
-    }
-
-    @Override
-    public PutResult put(InputStream stream, PutOptions options) throws Exception {
-        throw new IllegalStateException(getName() + " is read-only");
     }
 
     @Override
@@ -107,44 +86,6 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
         }
 
         return bundleFile;
-    }
-
-    private File guessBundleFile(IMavenProjectFacade projectFacade) {
-        String buildDirectoryGuess;
-
-        IProject project = projectFacade.getProject();
-        IPath outputLocation = projectFacade.getOutputLocation();
-
-        if (outputLocation.segment(0)
-            .equals(project.getFullPath()
-                .segment(0))) {
-            outputLocation = outputLocation.removeFirstSegments(1);
-        }
-
-        IFolder folder = project.getFolder(outputLocation.toString());
-
-        if (folder.exists()) {
-            outputLocation = folder.getLocation();
-        }
-
-        if (outputLocation != null) {
-            if (outputLocation.lastSegment()
-                .equals("classes")) {
-                outputLocation = outputLocation.removeLastSegments(1);
-            }
-
-            buildDirectoryGuess = outputLocation.toOSString();
-        } else {
-            buildDirectoryGuess = projectFacade.getProject()
-                .getLocation()
-                .toOSString() + "/target";
-        }
-
-        ArtifactKey artifactKey = projectFacade.getArtifactKey();
-
-        String finalNameGuess = buildDirectoryGuess + "/" + artifactKey.getArtifactId() + "-" + artifactKey.getVersion() + ".jar";
-
-        return new File(finalNameGuess);
     }
 
     private File getBundleFile(final MavenProject mavenProject) {
@@ -242,11 +183,6 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
     }
 
     @Override
-    public boolean canWrite() {
-        return false;
-    }
-
-    @Override
     public List<String> list(String pattern) throws Exception {
         return Collections.emptyList();
     }
@@ -288,18 +224,6 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
     }
 
     @Override
-    public String getLocation() {
-        Location location = Platform.getInstanceLocation();
-
-        if (location != null) {
-            return location.getURL()
-                .toString();
-        }
-
-        return null;
-    }
-
-    @Override
     public void mavenProjectChanged(MavenProjectChangedEvent[] events, IProgressMonitor monitor) {
         if (events == null)
             return;
@@ -322,10 +246,6 @@ public class MavenWorkspaceRepository extends BaseRepository implements Reposito
                 }
             }
         }
-    }
-
-    void cleanup() {
-        mavenProjectRegistry.removeMavenProjectChangedListener(this);
     }
 
 }

@@ -35,6 +35,7 @@ import aQute.bnd.build.Run;
 import bndtools.Plugin;
 import bndtools.StatusCode;
 import bndtools.launch.util.LaunchUtils;
+import bndtools.launch.util.LaunchUtils.Mode;
 import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
@@ -129,7 +130,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         boolean result = !prefs.getBuildBeforeLaunch() || super.buildForLaunch(configuration, mode, monitor);
 
         try {
-            run = LaunchUtils.createRun(configuration);
+            run = LaunchUtils.createRun(configuration, Mode.LAUNCH);
 
             initialiseBndLauncher(configuration, run);
         } catch (Exception e) {

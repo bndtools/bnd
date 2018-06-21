@@ -22,6 +22,7 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.model.BndEditModel;
 import bndtools.Plugin;
 import bndtools.launch.util.LaunchUtils;
+import bndtools.launch.util.LaunchUtils.Mode;
 import bndtools.wizards.bndfile.RunExportSelectionWizard;
 
 public class ExportAction extends Action {
@@ -73,7 +74,7 @@ public class ExportAction extends Action {
 
         IFile targetResource = ResourceUtil.getFile(editor.getEditorInput());
         try {
-            Run run = LaunchUtils.createRun(targetResource);
+            Run run = LaunchUtils.createRun(targetResource, Mode.EXPORT);
 
             RunExportSelectionWizard wizard = new RunExportSelectionWizard(configElems, model, run);
             WizardDialog dialog = new WizardDialog(parentShell, wizard);
