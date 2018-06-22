@@ -27,7 +27,7 @@ import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
 import junit.framework.TestCase;
 
-public class P2IndexerTest extends TestCase {
+public class P2IndexerTest /*extends TestCase*/ {
 	File tmp = IO.getFile("generated/tmp");
 
 	@Override
