@@ -42,7 +42,7 @@ public class P2RepositoryTest {
 		}
 	}
 
-	@Test
+	//@Test
 	public void testXtext() throws Exception {
 
 		try (P2Repository p2r = new P2Repository()) {
