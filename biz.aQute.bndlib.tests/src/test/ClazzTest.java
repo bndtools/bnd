@@ -220,7 +220,7 @@ public class ClazzTest extends TestCase {
 	@RecursiveAnno
 	public @interface MetaAnnotated {}
 
-	public void testMetaAnnotated() throws Exception {
+	public void testIndirectlyAnnotated() throws Exception {
 		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated.class");
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
@@ -241,9 +241,34 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	public void testHierarchyAnnotated() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertTrue(clazz.is(QUERY.HIERARCHY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertFalse(
+				clazz.is(QUERY.HIERARCHY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+		}
+	}
+
+	public void testHierarchyIndirectlyAnnotated() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertTrue(clazz.is(QUERY.HIERARCHY_INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"),
+				analyzer));
+			assertFalse(clazz.is(QUERY.HIERARCHY_INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"),
+				analyzer));
+		}
+	}
+
 	@MetaAnnotated
-	public void testMetaAnnotated_b() throws Exception {
-		File file = IO.getFile("bin/test/ClazzTest.class");
+	public static class MetaAnnotated_b {}
+
+	public void testIndirectlyAnnotated_b() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated_b.class");
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
@@ -254,12 +279,87 @@ public class ClazzTest extends TestCase {
 	}
 
 	public void testAnnotated_b() throws Exception {
-		File file = IO.getFile("bin/test/ClazzTest.class");
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated_b.class");
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFile();
 			assertFalse(clazz.is(QUERY.ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
 			assertTrue(clazz.is(QUERY.ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+		}
+	}
+
+	public void testHierarchyAnnotated_b() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated_b.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertFalse(clazz.is(QUERY.HIERARCHY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertTrue(clazz.is(QUERY.HIERARCHY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+		}
+	}
+
+	public void testHierarchyIndirectlyAnnotated_b() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated_b.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertTrue(clazz.is(QUERY.HIERARCHY_INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"),
+				analyzer));
+			assertFalse(clazz.is(QUERY.HIERARCHY_INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"),
+				analyzer));
+		}
+	}
+
+	public static class MetaAnnotated_c extends MetaAnnotated_b {}
+
+	public void testIndirectlyAnnotated_c() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated_c.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertFalse(
+				clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertTrue(
+				clazz.is(QUERY.INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+		}
+	}
+
+	public void testAnnotated_c() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated_c.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertFalse(clazz.is(QUERY.ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertTrue(clazz.is(QUERY.ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+		}
+	}
+
+	public void testHierarchyAnnotated_c() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated_c.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertFalse(clazz.is(QUERY.HIERARCHY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"), analyzer));
+			assertTrue(clazz.is(QUERY.HIERARCHY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"), analyzer));
+			assertTrue(clazz.is(QUERY.HIERARCHY_ANNOTATED, new Instruction("test.ClazzTest$MetaAnnotated"), analyzer));
+			assertFalse(
+				clazz.is(QUERY.HIERARCHY_ANNOTATED, new Instruction("!test.ClazzTest$MetaAnnotated"), analyzer));
+		}
+	}
+
+	public void testHierarchyIndirectlyAnnotated_c() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$MetaAnnotated_c.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertTrue(clazz.is(QUERY.HIERARCHY_INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest$RecursiveAnno"),
+				analyzer));
+			assertFalse(clazz.is(QUERY.HIERARCHY_INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest$RecursiveAnno"),
+				analyzer));
+			assertTrue(clazz.is(QUERY.HIERARCHY_INDIRECTLY_ANNOTATED, new Instruction("test.ClazzTest$MetaAnnotated"),
+				analyzer));
+			assertFalse(clazz.is(QUERY.HIERARCHY_INDIRECTLY_ANNOTATED, new Instruction("!test.ClazzTest$MetaAnnotated"),
+				analyzer));
 		}
 	}
 
