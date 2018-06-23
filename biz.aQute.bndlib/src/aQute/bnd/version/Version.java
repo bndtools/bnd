@@ -202,4 +202,11 @@ public class Version implements Comparable<Version> {
 		return snapshot;
 	}
 
+	public Version bumpMajor() {
+		return new Version(major + 1);
+	}
+
+	public Version bumpMinor() {
+		return new Version(major, minor + 1);
+	}
 }

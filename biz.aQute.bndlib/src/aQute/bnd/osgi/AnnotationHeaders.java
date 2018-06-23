@@ -40,6 +40,7 @@ import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.version.Version;
+import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.strings.Strings;
 
@@ -599,12 +600,14 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		String filter = getFilter(a, annotation);
 
-		if (filter.isEmpty()) {
-			analyzer.error(
-				"The Requirement annotation with namespace %s applied to class %s did not define any filter information.",
-				annotation.namespace(), current.getFQN());
-			return;
-		} else {
+		if (!filter.isEmpty()) {
+			try {
+				Verifier.verifyFilter(filter, 0);
+			} catch (Exception e) {
+				analyzer.exception(e,
+					"The Requirement annotation with namespace %s applied to class %s has invalid filter information.",
+					annotation.namespace(), current.getFQN());
+			}
 			req.append(";filter:='")
 				.append(filter)
 				.append('\'');
@@ -658,23 +661,29 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		if (a.containsKey("version")) {
-			Version floor = Version.parseVersion(annotation.version());
-			Version max = new Version(floor.getMajor() + 1);
+			Version floor;
+			try {
+				floor = Version.parseVersion(annotation.version());
+			} catch (Exception e) {
+				floor = null;
+				analyzer.exception(e,
+					"The version declared by the Requirement annotation attached to type %s is invalid",
+					current.getFQN());
+			}
 
-			int current = filter.lastIndexOf(")");
+			if (floor != null) {
+				int current = filter.lastIndexOf(")");
 
-			filter.append("(&(version>=")
-				.append(floor)
-				.append(")(!(version>=")
-				.append(max)
-				.append(")))");
+				VersionRange range = new VersionRange(floor, floor.bumpMajor());
+				filter.append(range.toFilter());
 
-			if (andAdded) {
-				filter.deleteCharAt(current)
+				if (andAdded) {
+					filter.deleteCharAt(current)
 					.append(')');
-			} else if (addAnd) {
-				filter.insert(0, "(&")
+				} else if (addAnd) {
+					filter.insert(0, "(&")
 					.append(')');
+				}
 			}
 		}
 		return filter.toString();
@@ -699,12 +708,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		if (a.containsKey("version")) {
 			try {
 				Version.parseVersion(annotation.version());
-				cap.append(";version:Version=")
-					.append(annotation.version());
 			} catch (Exception e) {
-				analyzer.error("The version declared by the Capability annotation attached to type %s is invalid",
+				analyzer.exception(e,
+					"The version declared by the Capability annotation attached to type %s is invalid",
 					current.getFQN());
 			}
+			cap.append(";version:Version=")
+				.append(annotation.version());
 		}
 
 		for (String attr : annotation.attribute()) {
