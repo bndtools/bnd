@@ -167,6 +167,8 @@ public class Clazz {
 		PUBLIC,
 		ANNOTATED,
 		INDIRECTLY_ANNOTATED,
+		HIERARCHY_ANNOTATED,
+		HIERARCHY_INDIRECTLY_ANNOTATED,
 		RUNTIMEANNOTATIONS,
 		CLASSANNOTATIONS,
 		DEFAULT_CONSTRUCTOR;
@@ -2076,6 +2078,20 @@ public class Clazz {
 				return typeStream(analyzer, Clazz::annotations, new HashSet<>()) //
 					.map(TypeRef::getFQN)
 					.anyMatch(instr::matches) ^ instr.isNegated();
+
+			case HIERARCHY_ANNOTATED :
+				return hierarchyStream(analyzer) //
+					.flatMap(c -> c.typeStream(analyzer, Clazz::annotations, null))
+					.map(TypeRef::getFQN)
+					.anyMatch(instr::matches) ^ instr.isNegated();
+
+			case HIERARCHY_INDIRECTLY_ANNOTATED : {
+				Set<TypeRef> visited = new HashSet<>();
+				return hierarchyStream(analyzer) //
+					.flatMap(c -> c.typeStream(analyzer, Clazz::annotations, visited))
+					.map(TypeRef::getFQN)
+					.anyMatch(instr::matches) ^ instr.isNegated();
+			}
 
 			case RUNTIMEANNOTATIONS :
 				return hasRuntimeAnnotations;
