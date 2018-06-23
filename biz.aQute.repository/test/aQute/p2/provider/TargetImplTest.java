@@ -12,16 +12,17 @@ import aQute.p2.api.Artifact;
 
 public class TargetImplTest {
 
-	@Test
-	public void test() throws Exception {
-		TargetImpl impl = new TargetImpl(new HttpClient(), TargetImplTest.class.getResource("target.platform")
-			.toURI(), Processor.getPromiseFactory());
-
-		List<Artifact> artifacts = impl.getAllArtifacts();
-		artifacts.stream()
-			.map(a -> a.id + ":" + a.classifier + ":" + a.version)
-			.forEach(System.out::println);
-	}
+	// @Test
+	// public void test() throws Exception {
+	// TargetImpl impl = new TargetImpl(new HttpClient(),
+	// TargetImplTest.class.getResource("target.platform")
+	// .toURI(), Processor.getPromiseFactory());
+	//
+	// List<Artifact> artifacts = impl.getAllArtifacts();
+	// artifacts.stream()
+	// .map(a -> a.id + ":" + a.classifier + ":" + a.version)
+	// .forEach(System.out::println);
+	// }
 
 	@Test
 	public void jmdns() throws Exception {
