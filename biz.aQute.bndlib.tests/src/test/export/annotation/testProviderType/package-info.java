@@ -1,9 +1,7 @@
-@Export(attribute = {
-	"fizz=buzz", "foobar:=fizzbuzz"
-}, substitution = Substitution.PROVIDER)
+@Export(substitution = Substitution.CALCULATED)
 @Version("1.0.0")
 @org.osgi.annotation.versioning.ProviderType
-package test.export.annotation.testProvider;
+package test.export.annotation.testProviderType;
 
 import org.osgi.annotation.bundle.Export;
 import org.osgi.annotation.bundle.Export.Substitution;
