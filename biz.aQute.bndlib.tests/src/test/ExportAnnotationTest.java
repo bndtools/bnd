@@ -85,6 +85,36 @@ public class ExportAnnotationTest extends TestCase {
 		}
 	}
 
+	public void testProviderType() throws Exception {
+		try (Builder builder = new Builder()) {
+			Jar bin = new Jar(new File("bin"));
+			builder.setClasspath(new Jar[] {
+				bin
+			});
+			Properties p = new Properties();
+			p.setProperty("Private-Package", "test.export.annotation." + getName() + "*");
+			builder.setProperties(p);
+			Jar jar = builder.build();
+			Manifest manifest = jar.getManifest();
+
+			String exported = manifest.getMainAttributes()
+				.getValue("Export-Package");
+			assertNotNull(exported);
+			Parameters e = OSGiHeader.parseHeader(exported);
+			Attrs a = e.get("test.export.annotation." + getName());
+			assertNotNull(a);
+			assertEquals(Version.valueOf("1.0.0"), Version.valueOf(a.get("version")));
+
+			String imported = manifest.getMainAttributes()
+				.getValue("Import-Package");
+			assertNotNull(imported);
+			Parameters i = OSGiHeader.parseHeader(imported);
+			a = i.get("test.export.annotation." + getName());
+			assertNotNull(a);
+			assertEquals(VersionRange.valueOf("[1.0.0,1.1.0)"), VersionRange.valueOf(a.get("version")));
+		}
+	}
+
 	public void testConsumer() throws Exception {
 		try (Builder builder = new Builder()) {
 			Jar bin = new Jar(new File("bin"));

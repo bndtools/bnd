@@ -1,3 +1,4 @@
+@org.osgi.annotation.versioning.ProviderType
 @Export(attribute = {
 	"fizz=buzz", "foobar:=fizzbuzz"
 }, substitution = Substitution.CONSUMER)

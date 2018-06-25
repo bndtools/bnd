@@ -625,6 +625,12 @@ public class Analyzer extends Processor {
 							}
 						}
 						break;
+					case "org.osgi.annotation.versioning.ProviderType" :
+						if (!info.containsKey(PROVIDE_DIRECTIVE)) {
+							// let Export.substitution override ProviderType
+							info.put(PROVIDE_DIRECTIVE, "true");
+						}
+						break;
 					case "org.osgi.annotation.bundle.Export" :
 						Object[] usesClauses = a.get("uses");
 						if (usesClauses != null) {
@@ -1969,14 +1975,9 @@ public class Analyzer extends Processor {
 		if (c == null)
 			return false;
 
-		if (c.annotations == null)
-			return false;
-
-		TypeRef r6pt = getTypeRef("org/osgi/annotation/versioning/ProviderType");
-		if (c.annotations.contains(r6pt)) {
-			return true;
-		}
-		return false;
+		TypeRef providerType = getTypeRef("org/osgi/annotation/versioning/ProviderType");
+		return c.annotations()
+			.contains(providerType);
 	}
 
 	/**
