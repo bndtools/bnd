@@ -14,11 +14,13 @@ Private-Package: 				\
 Export-Package: \
 	aQute.bnd.annotation.*;-noimport:=true,\
 	aQute.bnd.osgi;-noimport:=true,\
+	aQute.bnd.eclipse;-noimport:=true,\
 	aQute.bnd.service.lifecycle;-noimport:=true,\
 	aQute.bnd.osgi.resource;-noimport:=true,\
 	aQute.bnd.maven;-noimport:=true,\
 	aQute.bnd.build;-noimport:=true,\
 	aQute.bnd.osgi.eclipse;-noimport:=true,\
+	aQute.bnd.build.util,\
 	aQute.bnd.http;-noimport:=true,\
 	aQute.bnd.differ;-noimport:=true,\
 	aQute.bnd.service.*;-noimport:=true,\
@@ -39,9 +41,11 @@ Export-Package: \
 	aQute.bnd.util.dto;-noimport:=true,\
 	aQute.bnd.util.repository;-noimport:=true,\
 	aQute.bnd.component.error;-noimport:=true,\
+	org.osgi.resource;-split-package:=first,\
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.repository;-split-package:=first,\
 	org.osgi.util.promise;-split-package:=first, \
+	org.osgi.util.promise;-split-package:=first,\
 	org.osgi.util.function;-split-package:=first
 
 -conditionalpackage:	 aQute.service.*,\

@@ -1,5 +1,10 @@
 package aQute.bnd.properties;
 
+import java.io.IOException;
+
+import aQute.bnd.build.Project;
+import aQute.lib.io.IO;
+
 public class Document implements IDocument {
 
 	public final static String[]	DELIMITERS	= {
@@ -11,6 +16,10 @@ public class Document implements IDocument {
 
 	public Document(String text) {
 		setText(text);
+	}
+
+	public Document(Project p) throws IOException {
+		this(IO.collect(p.getFile("bnd.bnd")));
 	}
 
 	@Override

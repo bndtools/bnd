@@ -209,7 +209,25 @@ public class TaggedData implements Closeable {
 	@Override
 	public String toString() {
 		return "TaggedData [tag=" + getTag() + ", code=" + getResponseCode() + ", modified=" + new Date(getModified())
-			+ ", url=" + getUrl() + ", state=" + getState() + (message == null ? "" : ", msg=" + message) + "]";
+			+ ", url=" + getUrl() + ", state=" + getState() + (message == null ? "" : ", msg=" + visible(message))
+			+ "]";
+	}
+
+	private String visible(String message2) {
+		StringBuilder sb = new StringBuilder(message2);
+		if (sb.length() > 100) {
+			sb.delete(50, sb.length() - 50);
+			sb.insert(50, "..");
+		}
+		for (int i = 0; i < sb.length(); i++) {
+			char c = sb.charAt(i);
+			if (Character.isAlphabetic(c) || Character.isDigit(c) || (c >= ' ' && c <= 0x7E)) {
+				// ok
+			} else {
+				sb.setCharAt(i, '?');
+			}
+		}
+		return sb.toString();
 	}
 
 	public boolean isOk() {

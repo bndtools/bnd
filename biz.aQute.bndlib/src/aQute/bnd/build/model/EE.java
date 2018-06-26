@@ -101,6 +101,14 @@ public enum EE {
 		return null;
 	}
 
+	public static EE byVersion(Version str) {
+		for (EE ee : values()) {
+			if (ee.capabilityVersion.equals(str))
+				return ee;
+		}
+		return null;
+	}
+
 	/**
 	 * Return the list of packages
 	 * 
@@ -118,5 +126,38 @@ public enum EE {
 			}
 		}
 		return packages;
+	}
+
+	public static EE fromVersion(String property) {
+		if (property == null)
+			property = "1.8";
+
+		switch (property) {
+			case "1.4" :
+				return EE.J2SE_1_4;
+
+			case "1.5" :
+				return EE.J2SE_1_5;
+
+			case "1.6" :
+				return EE.JavaSE_1_6;
+
+			case "1.7" :
+				return EE.JavaSE_1_7;
+
+			case "1.8" :
+				return EE.JavaSE_1_8;
+
+			case "1.9" :
+			case "9" :
+			case "9.0" :
+				return EE.JavaSE_9_0;
+
+			default :
+				EE ee = EE.fromVersion(property);
+				if (ee != null)
+					return ee;
+				return EE.JavaSE_1_8;
+		}
 	}
 }

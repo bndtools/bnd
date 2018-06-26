@@ -1054,10 +1054,22 @@ public class Workspace extends Processor {
 			.replace('.', ' ') + "\n#\n", getFile(pdir, Project.BNDFILE));
 		Project p = new Project(this, pdir);
 
-		IO.mkdirs(p.getTarget());
-		IO.mkdirs(p.getOutput());
-		IO.mkdirs(p.getTestOutput());
+		// These should be created on demand
+		// IO.mkdirs(p.getTarget());
+		// IO.mkdirs(p.getOutput());
+		// IO.mkdirs(p.getTestOutput());
+
 		for (File dir : p.getSourcePath()) {
+			IO.mkdirs(dir);
+		}
+
+		for (String path : new Parameters(p.getProperty(Constants.DEFAULT_PROP_RESOURCES_DIR)).keySet()) {
+			File dir = p.getFile(path);
+			IO.mkdirs(dir);
+		}
+
+		for (String path : new Parameters(p.getProperty(Constants.DEFAULT_PROP_TESTRESOURCES_DIR)).keySet()) {
+			File dir = p.getFile(path);
 			IO.mkdirs(dir);
 		}
 		IO.mkdirs(p.getTestSrc());

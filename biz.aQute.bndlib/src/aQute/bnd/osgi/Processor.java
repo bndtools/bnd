@@ -98,7 +98,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	static final int								BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
-
 	static Pattern									PACKAGES_IGNORED	= Pattern
 		.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
@@ -838,7 +837,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
 	@Override
 	@Deprecated
@@ -846,13 +844,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Processor p = current();
 		Logger l = p.getLogger();
 		if (p.trace) {
-			if (l.isInfoEnabled()) {
-				l.info("{}", formatArrays(msg, parms));
-			}
-		} else {
-			if (l.isDebugEnabled()) {
-				l.debug("{}", formatArrays(msg, parms));
-			}
+			System.err.println("# " + formatArrays(msg, parms));
 		}
 	}
 
@@ -2378,9 +2370,13 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	@Override
 	public Location getLocation(String msg) {
-		for (Location l : locations)
-			if ((l.message != null) && l.message.equals(msg))
+		for (Location l : locations) {
+			if (l == null) {
+				return null;
+			}
+			if (l.message != null && l.message.equals(msg))
 				return l;
+		}
 
 		return null;
 	}
@@ -2760,6 +2756,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 					tree(list, f, path + sub, instr);
 			}
 		}
+	}
+
+	public File findFile(String key) throws IOException {
+		@SuppressWarnings("resource")
+		Processor rover = this;
+		while (rover != null) {
+			File f = rover.getFile(key);
+			if (f.isFile())
+				return f;
+
+			rover = rover.getParent();
+		}
+		return null;
 	}
 
 }

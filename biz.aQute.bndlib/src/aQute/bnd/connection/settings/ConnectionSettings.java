@@ -104,6 +104,7 @@ public class ConnectionSettings {
 	public void readSettings() throws Exception {
 		Parameters connectionSettings = new Parameters(processor.mergeProperties(CONNECTION_SETTINGS), processor);
 		if (connectionSettings.isEmpty()) {
+
 			File file = IO.getFile(BND_CONNECTION_SETTINGS_XML);
 			if (!file.isFile()) {
 				file = IO.getFile(M2_SETTINGS_XML);
@@ -111,6 +112,7 @@ public class ConnectionSettings {
 					return;
 				}
 			}
+			logger.info("empty connection settings, using defaults {} {}", processor, file);
 			parse(file);
 			return;
 		}
@@ -162,11 +164,21 @@ public class ConnectionSettings {
 				}
 
 				key = Processor.removeDuplicateMarker(key);
+				logger.info("key={}, ignore={}", key, ignoreError);
+
 				if ("server".equals(key)) {
 					parseServer(entry.getValue());
 				} else {
-					File file = processor.getFile(key);
+					logger.info("external file");
+
+					File file = processor.findFile(key);
+					if (file == null) {
+						logger.info("no such external file  {} relative to {}", key, processor.getBase());
+						return;
+					}
 					if (!file.isFile()) {
+						logger.info("external file does not exist {}", file);
+
 						if (!ignoreError) {
 							SetLocation error = processor
 								.error("Specified -connection-settings: %s, but no such file or is directory", file);
@@ -175,6 +187,7 @@ public class ConnectionSettings {
 								header.set(error);
 						}
 					} else {
+						logger.info("Reading settings from {}", file);
 						parse(file);
 					}
 				}
@@ -199,7 +212,11 @@ public class ConnectionSettings {
 			if (server.id == null)
 				server.id = "*";
 
+			logger.info("pw/key server={}", server.id);
+
 			add(server);
+		} else {
+			logger.info("ignore because no pw or key server={}", server.id);
 		}
 	}
 
@@ -412,8 +429,9 @@ public class ConnectionSettings {
 		ServerDTO deflt = null;
 		for (ServerDTO serverDTO : settings.servers) {
 			serverDTO.trust = makeAbsolute(file, serverDTO.trust);
-
+			logger.info("server = {}", toString(serverDTO));
 			if (MavenPasswordObfuscator.isObfuscatedPassword(serverDTO.password)) {
+				logger.info("use maven obfuscated password");
 				String masterPassphrase = mavenMasterPassphrase.get();
 				if (masterPassphrase != null) {
 					try {
@@ -430,9 +448,18 @@ public class ConnectionSettings {
 			}
 		}
 
-		if (deflt != null)
+		if (deflt != null) {
+			logger.info("default = {}", toString(deflt));
 			add(deflt);
+		}
 
+	}
+
+	private String toString(ServerDTO serverDTO) {
+		if (serverDTO == null || serverDTO.password == null) {
+			return "????";
+		}
+		return serverDTO.toString().replaceAll(Pattern.quote(serverDTO.password), "********");
 	}
 
 	final static String	IPNR_PART_S	= "([01]\\d\\d)|(2[0-4]\\d)|(25[0-5])";

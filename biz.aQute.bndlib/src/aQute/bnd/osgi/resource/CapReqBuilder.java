@@ -314,6 +314,24 @@ public class CapReqBuilder {
 	public static Requirement getRequirementFrom(String namespace, Attrs attrs) throws Exception {
 		return getRequirementFrom(namespace, attrs, true);
 	}
+	
+	public static RequirementBuilder createRequirement(String namespace, String filter) throws Exception {
+		RequirementBuilder rb = new RequirementBuilder(namespace);
+		rb.addFilter(filter);
+		return rb;
+	}
+
+	public static RequirementBuilder createRequirement(String namespace, FilterBuilder filter) throws Exception {
+		RequirementBuilder rb = new RequirementBuilder(namespace);
+		rb.addFilter(filter);
+		return rb;
+	}
+
+	public static Requirement getRequirementFrom(String namespace, FilterBuilder filter) throws Exception {
+		Attrs attrs = new Attrs();
+		attrs.put("filter:", filter.toString());
+		return getRequirementFrom(namespace, attrs, true);
+	}
 
 	public static Requirement getRequirementFrom(String namespace, Attrs attrs, boolean unalias) throws Exception {
 		CapReqBuilder builder = createCapReqBuilder(namespace, attrs);

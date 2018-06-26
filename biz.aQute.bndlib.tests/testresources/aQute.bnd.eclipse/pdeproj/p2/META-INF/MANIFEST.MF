@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ClassPath: lib/bcpg-jdk15on-149.jar, lib/bcprov-jdk15on-149.jar, .
+Built-By: jleitch
+Created-By: Apache Maven 3.0.4
+Bundle-RequiredExecutionEnvironment: J2SE-1.5
+Bundle-Vendor: Google Gson Project
+Bundle-ContactAddress: http://code.google.com/p/google-gson/
+Build-Jdk: 1.6.0_27
+Bundle-Version: 2.2.5.qualifier
+Bundle-ManifestVersion: 2
+Bundle-Description: Google Gson library
+Bundle-SymbolicName: com.foo.bar
+Bundle-Localization: plugin
+Archiver-Version: Plexus Archiver

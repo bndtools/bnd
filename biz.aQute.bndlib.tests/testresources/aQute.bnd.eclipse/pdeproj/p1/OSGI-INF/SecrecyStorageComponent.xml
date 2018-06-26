@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.1.0"
+        name="com.qivicon.backendclient.secrecy.SecrecyStorage" immediate="true">
+
+    <service>
+        <provide interface="com.qivicon.backendclient.secrecy.SecrecyStorage" />
+    </service>
+
+    <implementation class="com.qivicon.backendclient.secrecy.impl.SecrecyStorageImpl" />
+ 
+    <reference bind="setServiceGatewayInfo" unbind="unsetServiceGatewayInfo" cardinality="1..1"
+            interface="com.qivicon.runtime.service.ServiceGatewayInfo"
+            name="ServiceGatewayInfo" policy="static" />
+
+    <reference bind="setBackendHttpClient" unbind="unsetBackendHttpClient" cardinality="1..1"
+            interface="com.qivicon.backendclient.httpclient.BackendHttpClient"
+            name="BackendHttpClient" policy="static" />
+
+</scr:component>

@@ -34,6 +34,13 @@ public class Parameters implements Map<String, Attrs> {
 		OSGiHeader.parseHeader(header, reporter, this);
 	}
 
+	public Parameters(Collection<String> keys) {
+		this(false);
+		for (String key : keys) {
+			put(key, new Attrs());
+		}
+	}
+
 	@Override
 	public void clear() {
 		map.clear();

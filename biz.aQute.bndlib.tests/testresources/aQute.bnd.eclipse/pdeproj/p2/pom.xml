@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<inceptionYear>2008</inceptionYear>
+	<name>QIVICON GSON Library</name>
+	<parent>
+		<groupId>com.qivicon.system.apps</groupId>
+		<artifactId>bundle-parent</artifactId>
+		<version>1.154.0-SNAPSHOT</version>
+		<relativePath>../../../../build/bundle-parent</relativePath>
+	</parent>
+	
+	<groupId>com.qivicon.runtime.google</groupId>
+	<artifactId>com.google.gson</artifactId>
+	
+	<packaging>eclipse-plugin</packaging>
+	<version>2.2.5-SNAPSHOT</version>
+	<url>http://code.google.com/p/google-gson/</url>
+	<description>Google Gson library (patched for a managed environment with custom Security Manager)</description>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

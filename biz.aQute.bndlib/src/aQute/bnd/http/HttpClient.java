@@ -435,9 +435,9 @@ public class HttpClient implements Closeable, URLConnector {
 			if (urlh.matches(url)) {
 				logger.debug("Decorate {} with handler {}", url, urlh);
 				return urlh;
-			} else
-				logger.debug("No match for {}, handler {}", url, urlh);
+			}
 		}
+		logger.debug("No match for {}, handler {}", url);
 		return null;
 	}
 
@@ -688,6 +688,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public void readSettings(Processor processor) throws IOException, Exception {
+		logger.debug("read settings {}", processor);
 		ConnectionSettings cs = new ConnectionSettings(processor, this);
 		cs.readSettings();
 	}
