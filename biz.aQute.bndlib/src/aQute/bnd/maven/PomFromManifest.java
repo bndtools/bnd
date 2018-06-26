@@ -130,7 +130,7 @@ public class PomFromManifest extends WriteResource {
 			new Tag(project, "url").addContent("http://no-url");
 
 		String scmheader = manifest.getMainAttributes()
-			.getValue("Bundle-SCM");
+			.getValue(Constants.BUNDLE_SCM);
 		if (scmheader != null)
 			scm.add(scmheader);
 
