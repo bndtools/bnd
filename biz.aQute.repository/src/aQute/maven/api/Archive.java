@@ -11,7 +11,7 @@ public class Archive implements Comparable<Archive> {
 																																																								// whitespace
 			+ "(?<program>[^:]+:[^:]+)         # program\n"																																										//
 			+ "(:(?<extension>[^:]+)         # optional extension\n"																																							//
-			+ "    (:(?<classifier>[^:]+))?  # optional classifer (must be preceded by extension)\n"																															//
+			+ "    (:(?<classifier>[^:]*))?  # optional classifer (must be preceded by extension)\n"																																			//
 			+ ")?                            # end of extension\n"																																								//
 			+ ":(?<version>[^:]+)           # version is last\n"																																								//
 			+ "\\s*",																																																			// skip
@@ -34,7 +34,7 @@ public class Archive implements Comparable<Archive> {
 		this.remotePath = v.remotePath;
 	}
 
-	Archive(Revision revision, MavenVersion snapshot, String extension, String classifier) {
+	public Archive(Revision revision, MavenVersion snapshot, String extension, String classifier) {
 		this.revision = revision;
 		this.extension = extension == null || extension.isEmpty() ? "jar" : extension;
 		this.classifier = classifier == null || classifier.isEmpty() ? "" : classifier;

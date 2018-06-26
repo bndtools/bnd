@@ -8,7 +8,6 @@ import java.util.Map;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.repository.maven.provider.IndexFile.BundleDescriptor;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
@@ -28,29 +27,31 @@ class RepoActions {
 
 	Map<String, Runnable> getProgramActions(final String bsn) throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
-		map.put("Delete All from Index", new Runnable() {
 
-			@Override
-			public void run() {
-				try {
-					repo.index.remove(bsn);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
+		if (bsn.indexOf(':') < 0) {
+			map.put("Delete All from Index", new Runnable() {
+
+				@Override
+				public void run() {
+					try {
+						repo.index.remove(bsn);
+					} catch (Exception e) {
+						throw Exceptions.duck(e);
+					}
 				}
-			}
 
-		});
-
+			});
+		}
 		return map;
 	}
 
-	Map<String, Runnable> getRevisionActions(final BundleDescriptor bd) throws Exception {
+	Map<String, Runnable> getRevisionActions(final Archive archive) throws Exception {
 		Map<String, Runnable> map = new LinkedHashMap<>();
 		map.put("Clear from Cache", new Runnable() {
 
 			@Override
 			public void run() {
-				File dir = repo.storage.toLocalFile(bd.archive)
+				File dir = repo.storage.toLocalFile(archive)
 					.getParentFile();
 				IO.delete(dir);
 			}
@@ -61,7 +62,7 @@ class RepoActions {
 			@Override
 			public void run() {
 				try {
-					repo.index.remove(bd.archive);
+					repo.index.remove(archive);
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
@@ -73,7 +74,7 @@ class RepoActions {
 			@Override
 			public void run() {
 				try {
-					addDependency(bd.archive, MavenScope.compile);
+					addDependency(archive, MavenScope.compile);
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
@@ -85,7 +86,7 @@ class RepoActions {
 			@Override
 			public void run() {
 				try {
-					addDependency(bd.archive, MavenScope.runtime);
+					addDependency(archive, MavenScope.runtime);
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}
@@ -93,33 +94,20 @@ class RepoActions {
 
 		});
 
-		map.put("Refresh", new Runnable() {
+		addUpdate(archive, map);
 
-			@Override
-			public void run() {
-				try {
-					repo.index.updateAsync(bd.archive);
-				} catch (Exception e) {
-					throw Exceptions.duck(e);
-				}
-			}
-
-		});
-
-		addUpdate(bd, map);
-
-		addSources(bd, map);
+		addSources(archive, map);
 
 		return map;
 	}
 
-	void addSources(final BundleDescriptor bd, Map<String, Runnable> map) throws Exception {
-		Promise<File> pBinary = repo.storage.get(bd.archive);
+	void addSources(final Archive archive, Map<String, Runnable> map) throws Exception {
+		Promise<File> pBinary = repo.storage.get(archive);
 		if (pBinary.getFailure() == null) {
 			final File binary = pBinary.getValue();
 			final File out = new File(binary.getParentFile(), "+" + binary.getName());
 			if (!out.isFile()) {
-				Archive a = bd.archive.revision.archive("jar", "sources");
+				Archive a = archive.revision.archive("jar", "sources");
 				Promise<File> pSources = repo.storage.get(a);
 				if (pSources.getFailure() == null) {
 					final File sources = pSources.getValue();
@@ -152,9 +140,9 @@ class RepoActions {
 		map.put("-Add Sources", null);
 	}
 
-	void addUpdate(final BundleDescriptor bd, Map<String, Runnable> map) throws Exception {
+	void addUpdate(final Archive archive, Map<String, Runnable> map) throws Exception {
 		try {
-			Revision rev = bd.archive.revision;
+			Revision rev = archive.revision;
 			Program prog = rev.program;
 
 			List<Revision> revisions = repo.storage.getRevisions(prog);
@@ -167,9 +155,9 @@ class RepoActions {
 						@Override
 						public void run() {
 							try {
-								repo.index.remove(bd.archive);
-								repo.index.add(last.archive(bd.archive.extension, bd.archive.classifier));
-								addDependency(bd.archive, MavenScope.runtime);
+								repo.index.remove(archive);
+								repo.index.add(last.archive(archive.extension, archive.classifier));
+								addDependency(archive, MavenScope.runtime);
 							} catch (Exception e) {
 								throw Exceptions.duck(e);
 							}
@@ -189,10 +177,8 @@ class RepoActions {
 		Map<Program, Dependency> dependencies = pom.getDependencies(scope, false);
 		for (Dependency d : dependencies.values()) {
 
-			BundleDescriptor add = repo.index.add(d.program.version(d.version)
+			repo.index.add(d.program.version(d.version)
 				.archive("jar", null));
-			if (d.error != null)
-				add.error = d.error;
 		}
 	}
 }

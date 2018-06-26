@@ -6,12 +6,12 @@ import org.osgi.annotation.versioning.ProviderType;
 public interface Configuration {
 
 	/**
-	 * The url to the remote release repository.
+	 * The urls to the remote release repository.
 	 */
 	String releaseUrl();
 
 	/**
-	 * The url to the remote snapshot repository.
+	 * The urls to the remote snapshot repository.
 	 */
 	String snapshotUrl();
 
@@ -24,10 +24,23 @@ public interface Configuration {
 	// default false
 	boolean readOnly();
 
+	/**
+	 * The name of this repository
+	 * 
+	 * @param deflt
+	 */
 	String name(String deflt);
 
+	/**
+	 * The path to the index file
+	 * 
+	 * @param deflt
+	 */
 	String index(String deflt);
 
+	/**
+	 * Do not update the index when a file is released
+	 */
 	boolean noupdateOnRelease();
 
 	/**
@@ -47,4 +60,9 @@ public interface Configuration {
 
 	boolean ignore_metainf_maven();
 
+	/**
+	 * Extensions for files that contain multiple JARs
+	 * 
+	 */
+	String multi();
 }

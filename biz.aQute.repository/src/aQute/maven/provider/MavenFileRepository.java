@@ -24,6 +24,7 @@ public class MavenFileRepository extends MavenBackingRepository {
 		File source = getFile(path);
 		if (source.isFile()) {
 			IO.mkdirs(dest.getParentFile());
+			IO.delete(dest);
 			IO.copy(source, dest);
 			return new TaggedData(toURI(path), 200, dest);
 		} else {

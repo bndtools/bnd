@@ -204,7 +204,7 @@ class Traverser {
 				// no identity
 				addReserveIdentity(rb, bsn, frameworkVersion);
 			}
-			addInformationCapability(rb, archive.toString(), parent, null);
+			addInformationCapability(rb, archive.toString(), parent);
 		} catch (Exception e) {
 			addReserveIdentity(rb, bsn, frameworkVersion);
 			addInformationCapability(rb, archive.toString(), parent, e);

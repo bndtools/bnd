@@ -39,6 +39,7 @@ import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.version.Version;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.lib.io.IO;
+import aQute.maven.api.Archive;
 import aQute.maven.api.IPom;
 import aQute.maven.api.MavenScope;
 import aQute.maven.api.Revision;
@@ -48,6 +49,10 @@ import aQute.maven.provider.POM;
 import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
+/*
+ * Create a remote and local repository with a lot of bad stuff. The repo contains:
+ * 
+ */
 public class MavenBndRepoTest extends TestCase {
 	final static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	final static XPathFactory			xpf	= XPathFactory.newInstance();
@@ -79,6 +84,94 @@ public class MavenBndRepoTest extends TestCase {
 		Config config = new Config();
 		fnx = new FakeNexus(config, remote);
 		fnx.start();
+	}
+
+	@Override
+	protected void tearDown() throws IOException {
+		reporter.close();
+		repo.close();
+		fnx.close();
+	}
+
+	public void testProgramRemoveFromIndex() throws Exception {
+		config(null);
+		assertNotNull(repo.get("org.apache.commons.cli", Version.parseVersion("1.2"), null));
+
+		Map<String, Runnable> actions = repo.actions("org.apache.commons.cli");
+		assertNotNull(actions);
+		actions.get("Delete All from Index")
+			.run();
+		assertNull(repo.get("org.apache.commons.cli", Version.parseVersion("1.2"), null));
+
+	}
+
+	public void testRevisionRemoveFromIndex() throws Exception {
+		config(null);
+		assertNotNull(repo.get("org.apache.commons.cli", Version.parseVersion("1.2"), null));
+
+		Map<String, Runnable> actions = repo.actions("org.apache.commons.cli", new Version("1.2"));
+		assertNotNull(actions);
+		actions.get("Delete from Index")
+			.run();
+		assertNull(repo.get("org.apache.commons.cli", Version.parseVersion("1.2"), null));
+
+	}
+
+	public void testTooltiEtAlp() throws Exception {
+		config(null);
+		String tooltip = repo.tooltip();
+		assertNotNull(tooltip);
+
+		String title = repo.title("org.apache.commons.cli");
+		assertEquals("org.apache.commons.cli", title);
+
+		tooltip = repo.tooltip("org.apache.commons.cli", new Version("1.2"));
+		assertNotNull(tooltip);
+		System.out.println(tooltip);
+		title = repo.title("org.apache.commons.cli", new Version("1.2"));
+		assertEquals("1.2.0", title);
+		tooltip = repo.tooltip("commons-cli:commons-cli", new Version("1.0"));
+		assertNotNull(tooltip);
+		System.out.println(tooltip);
+
+		title = repo.title("commons-cli:commons-cli");
+		assertEquals("commons-cli:commons-cli [!]", title);
+
+		title = repo.title("commons-cli:commons-cli", new Version("1.0"));
+		assertEquals("1.0.0 [Not a bundle]", title);
+
+		title = repo.title("commons-cli:commons-cli", new Version("1.4.0.SNAPSHOT"));
+		assertEquals("1.4.0.SNAPSHOT [Not found]", title);
+		
+		
+	}
+
+	public void testZipFileWithContents() throws Exception {
+		IO.copy(IO.getFile("testresources/mavenrepo2"), remote);
+		IO.copy(IO.getFile("testresources/mavenrepo2/index.maven"), index);
+		Map<String, String> config = new HashMap<>();
+		config.put("index", index.getAbsolutePath());
+		config.put("multi", " zip , par, foo");
+		config(config);
+		File file = repo.get("group:artifact:zip:", Version.parseVersion("1.0.0"), null);
+		assertNotNull(file);
+		assertTrue(file.isFile());
+
+		File file2 = repo.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
+		assertNotNull(file2);
+
+		File file3 = repo.get("group:artifact:jar:1003", Version.parseVersion("1.0.0"), null);
+		assertNotNull(file3);
+		assertTrue(file3.isFile());
+
+		assertTrue(file2.equals(file3));
+
+		repo.index.remove(Archive.valueOf("group:artifact:zip:1.0.0"));
+
+		file2 = repo.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
+		assertNull(file2);
+		file3 = repo.get("group:artifact:jar:1003", Version.parseVersion("1.0.0"), null);
+		assertNull(file3);
 	}
 
 	public void testPut() throws Exception {
@@ -153,18 +246,6 @@ public class MavenBndRepoTest extends TestCase {
 		assertEquals(3, pom.getDependencies(EnumSet.of(MavenScope.runtime), false)
 			.size());
 		System.out.println(new String(bout.toByteArray(), StandardCharsets.UTF_8));
-	}
-
-	public void testSnapshotGetInRelease() {
-
-	}
-
-	public void testReleaseGetInSnapshot() {
-
-	}
-
-	public void testNoLocalCacheSpecfiied() {
-
 	}
 
 	public void testPutLocalTwiceNoSnapshot() throws Exception {
