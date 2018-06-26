@@ -2972,7 +2972,7 @@ public class bnd extends Processor {
 				out.printf("%-40s %s\n", "Copyright", attrs.getValue(Constants.BUNDLE_COPYRIGHT));
 				out.printf("%-40s %s\n", "Git-SHA", attrs.getValue("Git-SHA"));
 				out.printf("%-40s %s\n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
-				out.printf("%-40s %s\n", "Sources", attrs.getValue("Bundle-SCM"));
+				out.printf("%-40s %s\n", "Sources", attrs.getValue(Constants.BUNDLE_SCM));
 				return;
 			}
 		}

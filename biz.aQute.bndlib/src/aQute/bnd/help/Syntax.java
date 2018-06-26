@@ -73,6 +73,9 @@ public class Syntax implements Constants {
 		new Syntax(BUNDLE_DEVELOPERS, "Defines the primary developers of this bundle", BUNDLE_DEVELOPERS
 			+ ": Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1",
 			null, null),
+		new Syntax(BUNDLE_SCM, "Defines the information about the source code of the bundle", BUNDLE_SCM
+			+ ": url=https://github.com/bndtools/bnd, connection=scm:git:https://github.com/bndtools/bnd.git, developerConnection=scm:git:git@github.com:bndtools/bnd.git",
+			null, null),
 		new Syntax(BUNDLE_CONTRIBUTORS, "Defines the people that contrbuted to this bundle", BUNDLE_CONTRIBUTORS
 			+ ": Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1",
 			null, null, new Syntax("name", "The display name of the developer", "name='Peter Kriens'", null, null),
