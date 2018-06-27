@@ -42,7 +42,7 @@ public class JUnitEclipseReport implements TestReporter {
 		}
 		if (socket == null) {
 			System.err.println("Cannot open the JUnit Port: " + port + " " + e);
-			System.exit(-2);
+			System.exit(254);
 			return;
 		}
 

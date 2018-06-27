@@ -319,7 +319,7 @@ public class NanoHTTPD {
 			new NanoHTTPD(port, wwwroot, ssl, keyStoreFile, keyStorePass);
 		} catch (Exception ioe) {
 			System.err.printf("Couldn't start server:%n%s%n", ioe);
-			System.exit(-1);
+			System.exit(255);
 		}
 
 		myOut.printf("Now serving files in port %d from \"%s\"%n", port, wwwroot);

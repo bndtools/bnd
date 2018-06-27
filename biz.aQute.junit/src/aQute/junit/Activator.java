@@ -113,7 +113,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				jUnitEclipseReport = new JUnitEclipseReport(port);
 			} catch (Exception e) {
 				System.err.println("Cannot create link Eclipse JUnit on port " + port);
-				System.exit(-2);
+				System.exit(254);
 			}
 		}
 
@@ -189,7 +189,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				System.exit(errors);
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.exit(-2);
+				System.exit(254);
 			}
 		}
 	}
@@ -244,7 +244,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				}
 			} catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
-				System.exit(-2);
+				System.exit(254);
 			}
 		}
 	}

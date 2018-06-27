@@ -178,7 +178,7 @@ summary: Do not exit after running the test suites but keep watching the bundles
 			}
 			catch (Exception e) {
 				System.err.println("Cannot create link Eclipse JUnit on port " + port);
-				System.exit(-2);
+				System.exit(254);
 			}
 		}
 
@@ -215,7 +215,7 @@ summary: Do not exit after running the test suites but keep watching the bundles
 		if (testcases == null) {
 //			if ( !continuous) {
 //				System.err.println("\nThe -testcontinuous property must be set if invoked without arguments\n");
-//				System.exit(-1);
+//				System.exit(255);
 //			}
 				
 			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
@@ -233,7 +233,7 @@ summary: Do not exit after running the test suites but keep watching the bundles
 			}
 			catch (Exception e) {
 				e.printStackTrace();
-				System.exit(-2);
+				System.exit(254);
 			}
 		}
 	}

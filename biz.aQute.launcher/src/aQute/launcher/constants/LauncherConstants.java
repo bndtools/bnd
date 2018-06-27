@@ -19,19 +19,16 @@ public class LauncherConstants {
 	// MUST BE ALIGNED WITH ProjectLauncher! Do not want to create coupling
 	// so cannot refer.
 	public final static int			OK							= 0;
-	public final static int			ERROR						= -2;
-	public final static int			WARNING						= -1;
-	public final static int			TIMEDOUT					= -3;
-	public final static int			UPDATE_NEEDED				= -4;
-	public final static int			CANCELED					= -5;
-	public final static int			DUPLICATE_BUNDLE			= -6;
-	public final static int			RESOLVE_ERROR				= -7;
-	public final static int			ACTIVATOR_ERROR				= -8;
-	public static final int			STOPPED						= -9;
+	public final static int			WARNING						= 126 - 1;
+	public final static int			ERROR						= 126 - 2;
+	public final static int			TIMEDOUT					= 126 - 3;
+	public final static int			UPDATE_NEEDED				= 126 - 4;
+	public final static int			CANCELED					= 126 - 5;
+	public final static int			DUPLICATE_BUNDLE			= 126 - 6;
+	public final static int			RESOLVE_ERROR				= 126 - 7;
+	public final static int			ACTIVATOR_ERROR				= 126 - 8;
+	public static final int			STOPPED						= 126 - 9;
 	public static final int			RETURN_INSTEAD_OF_EXIT		= 197;
-
-	// Start custom errors from here
-	public final static int			CUSTOM_LAUNCHER				= -128;
 
 	// Local names
 	final static String				LAUNCH_SERVICES				= "launch.services";

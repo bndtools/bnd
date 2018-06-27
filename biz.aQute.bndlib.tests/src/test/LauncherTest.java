@@ -239,7 +239,7 @@ public class LauncherTest extends TestCase {
 		l.setTrace(true);
 		l.getRunProperties()
 			.put("test.cmd", "getpersistence");
-		assertEquals(-2, l.launch());
+		assertEquals(254, l.launch());
 
 		//
 		// We now try to set the state again with a cleared framework
@@ -541,7 +541,7 @@ public class LauncherTest extends TestCase {
 	}
 
 	public static void testFrameworkStop() throws Exception {
-		assertExitCode("framework.stop", -9);
+		assertExitCode("framework.stop", ProjectLauncher.STOPPED);
 	}
 
 	private static void assertExitCode(String cmd, int rv) throws Exception {
