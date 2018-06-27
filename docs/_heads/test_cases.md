@@ -118,7 +118,7 @@ summary: Header to automatically execute tests in the bnd JUnit tester
 			}
 			catch (Exception e) {
 				error("Not sure what happened anymore %s", e);
-				System.exit(-2);
+				System.exit(254);
 			}
 		}
 	}
@@ -143,7 +143,7 @@ summary: Header to automatically execute tests in the bnd JUnit tester
 		if (testcases == null) {
 //			if ( !continuous) {
 //				System.err.println("\nThe -testcontinuous property must be set if invoked without arguments\n");
-//				System.exit(-1);
+//				System.exit(255);
 //			}
 				
 			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");

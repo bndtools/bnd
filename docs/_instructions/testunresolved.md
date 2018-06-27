@@ -70,7 +70,7 @@ summary:  Will execute a JUnit testcase ahead of any other test case that will a
 			}
 			catch (Exception e) {
 				System.err.println("Cannot create link Eclipse JUnit on port " + port);
-				System.exit(-2);
+				System.exit(254);
 			}
 		}
 
@@ -107,7 +107,7 @@ summary:  Will execute a JUnit testcase ahead of any other test case that will a
 		if (testcases == null) {
 //			if ( !continuous) {
 //				System.err.println("\nThe -testcontinuous property must be set if invoked without arguments\n");
-//				System.exit(-1);
+//				System.exit(255);
 //			}
 				
 			trace("automatic testing of all bundles with " + aQute.bnd.osgi.Constants.TESTCASES + " header");
@@ -125,7 +125,7 @@ summary:  Will execute a JUnit testcase ahead of any other test case that will a
 			}
 			catch (Exception e) {
 				e.printStackTrace();
-				System.exit(-2);
+				System.exit(254);
 			}
 		}
 	}

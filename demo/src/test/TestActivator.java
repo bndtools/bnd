@@ -43,7 +43,7 @@ public class TestActivator implements BundleActivator {
 			File file = context.getDataFile("test.file");
 			if (!file.isFile()) {
 				System.err.println("test.file does not exist");
-				System.exit(-2);
+				System.exit(254);
 			}
 
 			DataInputStream din = new DataInputStream(new FileInputStream(file));
@@ -54,7 +54,7 @@ public class TestActivator implements BundleActivator {
 				System.exit(65);
 			} else {
 				System.err.println("test.file exists & not found text");
-				System.exit(-1);
+				System.exit(255);
 			}
 
 		} else if ("env".equals(p)) {
@@ -63,14 +63,14 @@ public class TestActivator implements BundleActivator {
 				System.err.println("ANSWER=" + answer);
 				System.exit(Integer.parseInt(answer));
 			} catch (NumberFormatException e) {
-				System.exit(-1);
+				System.exit(255);
 			}
 		} else if ("noreference".equals(p)) {
 			String location = context.getBundle()
 				.getLocation();
 
 			if (location.startsWith("reference:"))
-				System.exit(-1);
+				System.exit(255);
 			else
 				System.exit(15);
 

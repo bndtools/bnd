@@ -28,6 +28,7 @@ import aQute.service.reporter.Reporter;
 
 public class Command {
 	private final static Logger	logger		= LoggerFactory.getLogger(Command.class);
+	private final static int	TIMEDOUT	= 126 - 3;
 
 	boolean						trace;
 	Reporter					reporter;
@@ -197,7 +198,7 @@ public class Command {
 				.removeShutdownHook(hook);
 		}
 
-		byte exitValue = (byte) process.waitFor();
+		int exitValue = process.waitFor();
 		finished.set(true);
 		if (rdInThread != null) {
 			if (in != System.in)
@@ -209,7 +210,7 @@ public class Command {
 			timedout);
 
 		if (timedout)
-			return Integer.MIN_VALUE;
+			return TIMEDOUT;
 
 		return exitValue;
 	}
