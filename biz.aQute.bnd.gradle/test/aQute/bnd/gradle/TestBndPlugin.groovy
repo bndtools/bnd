@@ -370,7 +370,7 @@ class TestBndPlugin extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'check', '--exclude-task', 'testOSGi2')
+            .withArguments('--stacktrace', '--debug', 'check', '--exclude-task', 'testrun.testOSGi2')
             .forwardOutput()
             .build()
 
@@ -409,26 +409,26 @@ class TestBndPlugin extends Specification {
         when:
           result = TestHelper.getGradleRunner('4.6')
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'testOSGi2')
+            .withArguments('--stacktrace', '--debug', 'testrun.testOSGi2')
             .forwardOutput()
             .buildAndFail()
 
         then:
           result.task(':test.simple:jar').outcome == SUCCESS
-          result.task(':test.simple:testOSGi2').outcome == FAILED
+          result.task(':test.simple:testrun.testOSGi2').outcome == FAILED
 
         when:
           result = TestHelper.getGradleRunner('4.6')
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'testOSGi2', '--tests=test.simple.Test')
+            .withArguments('--stacktrace', '--debug', 'testrun.testOSGi2', '--tests=test.simple.Test')
             .forwardOutput()
             .build()
 
         then:
           result.task(':test.simple:jar').outcome == UP_TO_DATE
-          result.task(':test.simple:testOSGi2').outcome == SUCCESS
+          result.task(':test.simple:testrun.testOSGi2').outcome == SUCCESS
 
-          new File(testReports, 'testOSGi2/TEST-testOSGi2.xml').isFile()
+          new File(testReports, 'testrun.testOSGi2/TEST-testrun.testOSGi2.xml').isFile()
     }
 
 }
