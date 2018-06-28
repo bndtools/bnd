@@ -432,7 +432,7 @@ public class Jar implements Closeable {
 				done.add(manifestName);
 			}
 		} else {
-			File file = IO.getFile(dir, manifestName);
+			File file = IO.getBasedFile(dir, manifestName);
 			IO.mkdirs(file.getParentFile());
 			try (OutputStream fout = IO.outputStream(file)) {
 				writeManifest(fout);
@@ -451,7 +451,7 @@ public class Jar implements Closeable {
 	}
 
 	private void copyResource(File dir, String path, Resource resource) throws Exception {
-		File to = IO.getFile(dir, path);
+		File to = IO.getBasedFile(dir, path);
 		IO.mkdirs(to.getParentFile());
 		IO.copy(resource.openInputStream(), to);
 	}

@@ -47,6 +47,7 @@ import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
+import aQute.lib.io.IO
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -216,7 +217,7 @@ public class Export extends DefaultTask {
           }
         } else {
           export?.value.withCloseable { r ->
-            File exported = new File(destinationDir, export.key)
+            File exported = IO.getBasedFile(destinationDir, export.key)
             exported.withOutputStream { out ->
               r.write(out)
             }

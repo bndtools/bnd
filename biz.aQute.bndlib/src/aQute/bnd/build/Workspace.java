@@ -532,7 +532,7 @@ public class Workspace extends Processor {
 					if (jentryName.startsWith("META-INF/")) {
 						continue;
 					}
-					Path dest = dir.resolve(jentryName);
+					Path dest = IO.getBasedPath(dir, jentryName);
 					if (!Files.isRegularFile(dest) || Files.getLastModifiedTime(dest)
 						.compareTo(modifiedTime) < 0) {
 						IO.mkdirs(dest.getParent());
