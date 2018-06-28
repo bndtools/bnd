@@ -8,7 +8,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -24,6 +23,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.lib.collections.Iterables;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
@@ -236,9 +236,10 @@ public class NexusCommand extends Processor {
 		String base = jar.toString() + "!/";
 		IO.copy(jar.toURL(), go);
 		try (ZipFile zip = new ZipFile(go)) {
-			for (ZipEntry entry : Collections.list(zip.entries())) {
-				if (entry.getName().endsWith(".jar")) {
-					parse(repo, new URI(base + entry.getName()));
+			for (ZipEntry entry : Iterables.iterable(zip.entries())) {
+				String entryName = entry.getName();
+				if (entryName.endsWith(".jar")) {
+					parse(repo, new URI(base + entryName));
 				}
 			}
 		} catch (javax.net.ssl.SSLHandshakeException e) {

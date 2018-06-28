@@ -201,12 +201,17 @@ public class Jar implements Closeable {
 			}
 			return this;
 		} catch (ZipException e) {
+			IO.close(zipFile);
 			ZipException ze = new ZipException(
 				"The JAR/ZIP file (" + file.getAbsolutePath() + ") seems corrupted, error: " + e.getMessage());
 			ze.initCause(e);
 			throw ze;
 		} catch (FileNotFoundException e) {
-			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath());
+			IO.close(zipFile);
+			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath(), e);
+		} catch (IOException e) {
+			IO.close(zipFile);
+			throw e;
 		}
 	}
 
@@ -427,7 +432,7 @@ public class Jar implements Closeable {
 				done.add(manifestName);
 			}
 		} else {
-			File file = IO.getFile(dir, manifestName);
+			File file = IO.getBasedFile(dir, manifestName);
 			IO.mkdirs(file.getParentFile());
 			try (OutputStream fout = IO.outputStream(file)) {
 				writeManifest(fout);
@@ -446,7 +451,7 @@ public class Jar implements Closeable {
 	}
 
 	private void copyResource(File dir, String path, Resource resource) throws Exception {
-		File to = IO.getFile(dir, path);
+		File to = IO.getBasedFile(dir, path);
 		IO.mkdirs(to.getParentFile());
 		IO.copy(resource.openInputStream(), to);
 	}

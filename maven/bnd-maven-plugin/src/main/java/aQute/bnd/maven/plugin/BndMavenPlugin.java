@@ -16,8 +16,6 @@ package aQute.bnd.maven.plugin;
  * limitations under the License.
  */
 
-import static aQute.lib.io.IO.getFile;
-
 import java.io.File;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -437,7 +435,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 		for (Map.Entry<String, Resource> entry : jar.getResources()
 			.entrySet()) {
-			File outFile = getFile(dir, entry.getKey());
+			File outFile = IO.getBasedFile(dir, entry.getKey());
 			Resource resource = entry.getValue();
 			// Skip the copy if the source and target are the same file
 			if (resource instanceof FileResource) {

@@ -1,5 +1,7 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -1111,8 +1113,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 
 	public void testDoNotCopy() throws Exception {
-		Builder b = new Builder();
-		try {
+		try (Builder b = new Builder()) {
 			b.setProperty("-resourceonly", "true");
 			b.setProperty("-donotcopy", ".*\\.jar|\\..*");
 			b.setProperty("Include-Resource", "jar");
@@ -1122,15 +1123,9 @@ public class BuilderTest extends BndTestCase {
 			Set<String> names = b.getJar()
 				.getResources()
 				.keySet();
-			assertEquals(13, names.size());
-			assertTrue(names.contains("AnnotationWithJSR14.jclass"));
-			assertTrue(names.contains("mandatorynoversion.bnd"));
-			assertTrue(names.contains("mina.bar"));
-			assertTrue(names.contains("minax.bnd"));
-			assertTrue(names.contains("rox.bnd"));
-			assertTrue(names.contains("WithAnnotations.jclass"));
-		} finally {
-			b.close();
+			assertThat(names).hasSize(14)
+				.contains("AnnotationWithJSR14.jclass", "mandatorynoversion.bnd", "mina.bar", "minax.bnd", "rox.bnd",
+					"WithAnnotations.jclass");
 		}
 	}
 

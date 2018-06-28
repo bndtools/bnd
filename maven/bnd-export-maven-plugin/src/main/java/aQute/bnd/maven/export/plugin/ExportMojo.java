@@ -181,7 +181,7 @@ public class ExportMojo extends AbstractMojo {
 						}
 					} else {
 						try (Resource r = export.getValue()) {
-							File exported = new File(targetDir, export.getKey());
+							File exported = IO.getBasedFile(targetDir, export.getKey());
 							try (OutputStream out = IO.outputStream(exported)) {
 								r.write(out);
 							}

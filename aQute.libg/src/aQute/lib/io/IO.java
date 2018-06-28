@@ -619,8 +619,8 @@ public class IO {
 		return path.replace(File.separatorChar, '/');
 	}
 
-	public static File getFile(String filename) {
-		return getFile(work, filename);
+	public static File getFile(String file) {
+		return getFile(work, file);
 	}
 
 	public static File getFile(File base, String file) {
@@ -636,25 +636,105 @@ public class IO {
 		}
 
 		File f = new File(file);
-		if (f.isAbsolute())
+		if (f.isAbsolute()) {
 			return f;
-
-		if (base == null)
-			base = work;
-
-		f = base.getAbsoluteFile();
-
-		for (int n; (n = file.indexOf('/')) > 0;) {
-			String first = file.substring(0, n);
-			file = file.substring(n + 1);
-			if (first.equals(".."))
-				f = f.getParentFile();
-			else
-				f = new File(f, first);
 		}
-		if (file.equals(".."))
-			return f.getParentFile();
-		return new File(f, file).getAbsoluteFile();
+
+		if (base == null) {
+			base = work;
+		}
+
+		for (f = base.getAbsoluteFile(); !file.isEmpty();) {
+			String first;
+			int n = file.indexOf('/');
+			if (n != -1) {
+				first = file.substring(0, n);
+				file = file.substring(n + 1);
+			} else {
+				first = file;
+				file = "";
+			}
+			switch (first) {
+				case "" :
+				case "." :
+					break;
+				case ".." :
+					File parent = f.getParentFile();
+					if (parent != null) {
+						f = parent;
+					}
+					break;
+				default :
+					f = new File(f, first);
+					break;
+			}
+		}
+
+		return f.getAbsoluteFile();
+	}
+
+	public static File getBasedFile(File base, String file) throws IOException {
+		base = base.getCanonicalFile();
+		File child = getFile(base, file);
+		if (child.getCanonicalPath()
+			.startsWith(base.getCanonicalPath())) {
+			return child;
+		}
+		throw new IOException("The file " + child + " is outside of the base " + base);
+	}
+
+	public static Path getPath(String file) {
+		return getPath(work.toPath(), file);
+	}
+
+	public static Path getPath(Path base, String file) {
+		if (file.startsWith("~/")) {
+			file = file.substring(2);
+			if (!file.startsWith("~/")) {
+				return getPath(home.toPath(), file);
+			}
+		}
+		if (file.startsWith("~")) {
+			file = file.substring(1);
+			return getPath(home.toPath()
+				.getParent(), file);
+		}
+
+		Path f = new File(file).toPath();
+		if (f.isAbsolute()) {
+			return f;
+		}
+
+		if (base == null) {
+			base = work.toPath();
+		}
+
+		for (f = base.normalize()
+			.toAbsolutePath(); !file.isEmpty();) {
+			String first;
+			int n = file.indexOf('/');
+			if (n != -1) {
+				first = file.substring(0, n);
+				file = file.substring(n + 1);
+			} else {
+				first = file;
+				file = "";
+			}
+			f = f.resolve(first)
+				.normalize();
+		}
+
+		return f.toAbsolutePath();
+	}
+
+	public static Path getBasedPath(Path base, String file) throws IOException {
+		base = base.normalize()
+			.toAbsolutePath();
+		Path child = getPath(base, file);
+		if (child.startsWith(base)) {
+			return child;
+		}
+		throw new IOException("The file " + child + " is outside of the base " + base);
 	}
 
 	/**
