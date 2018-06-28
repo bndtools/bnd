@@ -117,7 +117,8 @@ public class AnnotationSetterTest {
 		as.set(as.a().abooleanarray(), new boolean[] {
 				false
 		});
-		as.set(as.a().abytearray(), new int[] {
+		as.set(as.a()
+			.abytearray(), new byte[] {
 				1, 2
 		});
 		as.set(as.a().achararray(), new char[] {
