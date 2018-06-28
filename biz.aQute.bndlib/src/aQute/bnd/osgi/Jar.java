@@ -201,12 +201,17 @@ public class Jar implements Closeable {
 			}
 			return this;
 		} catch (ZipException e) {
+			IO.close(zipFile);
 			ZipException ze = new ZipException(
 				"The JAR/ZIP file (" + file.getAbsolutePath() + ") seems corrupted, error: " + e.getMessage());
 			ze.initCause(e);
 			throw ze;
 		} catch (FileNotFoundException e) {
-			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath());
+			IO.close(zipFile);
+			throw new IllegalArgumentException("Problem opening JAR: " + file.getAbsolutePath(), e);
+		} catch (IOException e) {
+			IO.close(zipFile);
+			throw e;
 		}
 	}
 
