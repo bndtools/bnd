@@ -440,13 +440,28 @@ public class BndPlugin implements Plugin<Project> {
 
       tasks.addRule('Pattern: run.<name>: Run the bndrun file <name>.bndrun.') { taskName ->
         if (taskName.startsWith('run.')) {
-          String bndrun = taskName - 'run.'
-          File runFile = file("${bndrun}.bndrun")
+          String bndrunName = taskName - 'run.'
+          File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
             task(taskName, type: Bndrun) {
-              description "Run the bndrun file ${bndrun}.bndrun."
+              description "Run the bndrun file ${bndrunName}.bndrun."
               dependsOn assemble
               group 'export'
+              bndrun = runFile
+            }
+          }
+        }
+      }
+
+      tasks.addRule('Pattern: testrun.<name>: Runs the OSGi JUnit tests in the bndrun file <name>.bndrun.') { taskName ->
+        if (taskName.startsWith('testrun.')) {
+          String bndrunName = taskName - 'testrun.'
+          File runFile = file("${bndrunName}.bndrun")
+          if (runFile.isFile()) {
+            task(taskName, type: TestOSGi) {
+              description "Runs the OSGi JUnit tests in the bndrun file ${bndrunName}.bndrun."
+              dependsOn assemble
+              group 'verification'
               bndrun = runFile
             }
           }

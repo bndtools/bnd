@@ -134,8 +134,11 @@ The `release` task releases the project's bundles to the
 The `releaseNeeded` task releases the project and all projects it
 depends on.
 
-The `testOSGi` task runs any OSGi JUnit tests in the project by launching a
-framework and running the tests in the launched framework.
+The `testOSGi` task runs any OSGi JUnit tests in the project's `bnd.bnd`
+file by launching a framework and running the tests in the launched
+framework. This means the `bnd.bnd` file must have the necessary
+`-runfw` and `-runbundles` to support the test bundles built by
+the project. The `check` task depends on the `testOSGi` task.
 
 The `checkNeeded` task runs the `check` task on the project and all
 projects it depends on.
@@ -164,6 +167,9 @@ instruction in each bndrun file.
 
 The `run.`_name_ tasks, one per bndrun file in the project, runs
 the _name_`.bndrun` file.
+
+The `testrun.`_name_ tasks, one per bndrun file in the project, runs
+the OSGi JUnit tests in the _name_`.bndrun` file.
 
 The `echo` task will display some help information on the dependencies,
 paths and configuration of the project.
