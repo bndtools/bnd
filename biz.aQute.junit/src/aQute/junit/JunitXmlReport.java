@@ -9,7 +9,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -66,11 +65,14 @@ public class JunitXmlReport implements TestReporter {
 		Tag properties = new Tag("properties");
 		testsuite.addContent(properties);
 
-		for (Map.Entry<Object, Object> entry : System.getProperties()
-			.entrySet()) {
-			Tag property = new Tag(properties, "property");
-			property.addAttribute("name", entry.getKey());
-			property.addAttribute("value", entry.getValue());
+		for (String prop : System.getProperties()
+			.stringPropertyNames()) {
+			String value = System.getProperty(prop);
+			if (value != null) {
+				Tag property = new Tag(properties, "property");
+				property.addAttribute("name", prop);
+				property.addAttribute("value", value);
+			}
 		}
 
 		if (targetBundle != null) {
