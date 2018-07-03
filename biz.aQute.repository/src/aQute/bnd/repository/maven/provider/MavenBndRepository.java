@@ -9,17 +9,13 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,7 +23,6 @@ import java.util.jar.Manifest;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
-import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +39,6 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.repository.BaseRepository;
-import aQute.bnd.repository.maven.provider.IndexFile.BundleDescriptor;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.JavadocPackages;
 import aQute.bnd.repository.maven.provider.ReleaseDTO.ReleaseType;
 import aQute.bnd.service.Actionable;
@@ -60,11 +54,9 @@ import aQute.bnd.service.release.ReleaseBracketingPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
-import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
-import aQute.libg.glob.Glob;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.IPom;
@@ -99,6 +91,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private HttpClient			client;
 	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
 
+	/**
+	 * Put result
+	 */
 	static class LocalPutResult extends PutResult {
 		Archive			binaryArchive;
 		PutOptions		options;
@@ -106,6 +101,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		public Archive	pomArchive;
 	}
 
+	/**
+	 * Put a bundle
+	 */
 	@Override
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		init();
@@ -247,7 +245,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return pom;
 	}
 
-	void checkRemotePossible(ReleaseDTO instructions, boolean snapshot) {
+	private void checkRemotePossible(ReleaseDTO instructions, boolean snapshot) {
 		if (instructions.type == ReleaseType.REMOTE) {
 			if (snapshot) {
 				if (this.storage.getSnapshotRepositories()
@@ -261,7 +259,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 	}
 
-	boolean isLocal(ReleaseDTO instructions) {
+	private boolean isLocal(ReleaseDTO instructions) {
 		return instructions.type == ReleaseType.LOCAL;
 	}
 
@@ -404,62 +402,38 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 	}
 
+	/**
+	 * Get a bundle
+	 */
+
 	@Override
 	public File get(String bsn, Version version, Map<String, String> properties, final DownloadListener... listeners)
 		throws Exception {
 		init();
+		index.sync(); // make sure all is downloaded & parsed
 
-		BundleDescriptor descriptor = index.getDescriptor(bsn, version);
-		if (descriptor == null)
+		Archive archive = index.find(bsn, version);
+		if (archive == null) {
 			return null;
-
-		Archive archive = descriptor.archive;
-
-		if (archive != null) {
-			final File file = storage.toLocalFile(archive);
-
-			final File withSources = new File(file.getParentFile(), "+" + file.getName());
-			if (withSources.isFile() && withSources.lastModified() > file.lastModified()) {
-
-				if (listeners.length == 0)
-					return withSources;
-
-				for (DownloadListener dl : listeners)
-					dl.success(withSources);
-
-				return withSources;
-			}
-
-			Promise<File> promise = index.updateAsync(descriptor, storage.get(archive));
-
-			if (listeners.length == 0)
-				return promise.getValue();
-
-			promise.thenAccept(value -> {
-				if (value == null) {
-					throw new FileNotFoundException("Download failed");
-				}
-				for (DownloadListener dl : listeners) {
-					try {
-						dl.success(value);
-					} catch (Exception e) {
-						reporter.exception(e, "Download listener failed in success callback %s", dl);
-					}
-				}
-			})
-				.onFailure(failure -> {
-					String reason = Exceptions.toString(failure);
-					for (DownloadListener dl : listeners) {
-						try {
-							dl.failure(file, reason);
-						} catch (Exception e) {
-							reporter.exception(e, "Download listener failed in failure callback %s", dl);
-						}
-					}
-				});
-			return file;
 		}
-		return null;
+
+		File f = storage.toLocalFile(archive);
+		File withSources = new File(f.getParentFile(), "+" + f.getName());
+		if (withSources.isFile() && withSources.lastModified() > f.lastModified())
+			f = withSources;
+
+		if (listeners.length == 0) {
+			return f;
+		}
+
+		for (DownloadListener dl : listeners) {
+			try {
+				dl.success(f);
+			} catch (Exception e) {
+				logger.warn("updating listener has error", e);
+			}
+		}
+		return f;
 	}
 
 	@Override
@@ -470,28 +444,14 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public List<String> list(String pattern) throws Exception {
 		init();
-		Glob g = pattern == null ? null : new Glob(pattern);
-
-		List<String> bsns = new ArrayList<>();
-
-		for (String bsn : index.list()) {
-			if (g == null || g.matcher(bsn)
-				.matches())
-				bsns.add(bsn);
-		}
-		return bsns;
+		return index.getBridge()
+			.list(pattern);
 	}
 
 	@Override
 	public SortedSet<Version> versions(String bsn) throws Exception {
 		init();
-		TreeSet<Version> versions = new TreeSet<>();
-
-		for (Version version : index.list(bsn)) {
-			versions.add(version);
-		}
-
-		return versions;
+		return index.versions(bsn);
 	}
 
 	@Override
@@ -526,9 +486,16 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			}
 
 			File indexFile = IO.getFile(base, configuration.index(name.toLowerCase() + ".mvn"));
-			IndexFile ixf = new IndexFile(reporter, indexFile, storage, client.promiseFactory());
-			ixf.open();
-			this.index = ixf;
+			String tmp = configuration.multi();
+			String[] multi;
+			if (tmp == null) {
+				multi = new String[0];
+			} else {
+				multi = tmp.trim()
+					.split("\\s*,\\s*");
+			}
+			this.index = new IndexFile(reporter, indexFile, storage, client.promiseFactory(), multi);
+			this.index.open();
 
 			startPoll();
 			logger.debug("initing {}", this);
@@ -566,7 +533,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 	}
 
-	void poll() throws Exception {
+	private void poll() throws Exception {
 		refresh();
 	}
 
@@ -601,8 +568,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public boolean refresh() throws Exception {
 		init();
-		boolean refreshed = index.refresh();
-		if (refreshed) {
+
+		if (!index.refresh()) {
+			return false;
+		}
+
+		index.bridge.onResolve(() -> {
 			for (RepositoryListenerPlugin listener : registry.getPlugins(RepositoryListenerPlugin.class)) {
 				try {
 					listener.repositoryRefreshed(this);
@@ -610,17 +581,13 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					reporter.exception(e, "Updating listener plugin %s", listener);
 				}
 			}
-		}
-		return refreshed;
+		});
+		return true;
 	}
 
 	@Override
 	public File getRoot() throws Exception {
 		return localRepo;
-	}
-
-	public BundleDescriptor getDescriptor(String bsn, Version version) throws Exception {
-		return index.getDescriptor(bsn, version);
 	}
 
 	@Override
@@ -631,14 +598,15 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public Map<String, Runnable> actions(Object... target) throws Exception {
+		init();
 		switch (target.length) {
 			case 0 :
 				return null;
 			case 1 :
 				return actions.getProgramActions((String) target[0]);
 			case 2 :
-				BundleDescriptor bd = getBundleDescriptor(target);
-				return actions.getRevisionActions(bd);
+				Archive archive = getArchive(target);
+				return actions.getRevisionActions(archive);
 			default :
 		}
 		return null;
@@ -646,47 +614,23 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public String tooltip(Object... target) throws Exception {
+		init();
 		switch (target.length) {
 			case 0 :
 				try (Formatter f = new Formatter()) {
-					f.format("%s\n", getName());
-					f.format("Revisions %s\n", index.descriptors.size());
+					f.format("%s (MavenBndRepository)\n", getName());
+					f.format("Revisions %s\n", index.archives.size());
 					for (MavenBackingRepository mbr : storage.getReleaseRepositories())
 						f.format("Release %s  (%s)\n", mbr, getUser(mbr));
 					for (MavenBackingRepository mbr : storage.getSnapshotRepositories())
 						f.format("Snapshot %s (%s)\n", mbr, getUser(mbr));
 					f.format("Storage %s\n", localRepo);
 					f.format("Index %s\n", index.indexFile);
-					f.format("Index Cache %s\n", index.cacheDir);
-					return f.toString();
-				}
-			case 1 :
-
-				try (Formatter f = new Formatter()) {
-					String name = (String) target[0];
-					Set<aQute.maven.api.Program> programs = index.getProgramsForBsn(name);
-					return programs.toString();
-				}
-			case 2 :
-				BundleDescriptor bd = getBundleDescriptor(target);
-				try (Formatter f = new Formatter()) {
-					f.format("%s\n", bd.archive);
-					f.format("Bundle-Version %s\n", bd.version);
-					f.format("Last Modified %s\n", new Date(bd.lastModified));
-					f.format("URL %s\n", bd.url);
-					f.format("SHA-1 %s\n", Hex.toHexString(bd.id)
-						.toLowerCase());
-					f.format("SHA-256 %s\n", Hex.toHexString(bd.sha256)
-						.toLowerCase());
-					File localFile = storage.toLocalFile(bd.archive);
-					f.format("Local %s%s\n", localFile, localFile.isFile() ? "" : " ?");
-					if (bd.description != null)
-						f.format("Description\n%s", bd.description);
 					return f.toString();
 				}
 			default :
+				return index.tooltip(target);
 		}
-		return null;
 	}
 
 	private Object getUser(MavenBackingRepository remote) {
@@ -700,50 +644,21 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 	}
 
-	BundleDescriptor getBundleDescriptor(Object... target) throws Exception {
+	Archive getArchive(Object... target) throws Exception {
 		String bsn = (String) target[0];
 		Version version = (Version) target[1];
-		BundleDescriptor bd = getDescriptor(bsn, version);
-		return bd;
+		return index.find(bsn, version);
 	}
 
 	@Override
 	public String title(Object... target) throws Exception {
-		switch (target.length) {
-			case 0 :
-				String name = getName();
-				int n = index.getErrors(null);
-				if (n > 0)
-					return name += " [" + n + "!]";
-				return name;
-
-			case 1 :
-				name = (String) target[0];
-				n = index.getErrors(name);
-				if (n > 0)
-					name += " [!]";
-
-				return name;
-			case 2 :
-				BundleDescriptor bd = getBundleDescriptor(target);
-				if (bd.error != null)
-					return bd.version + " [" + bd.error + "]";
-				else if (isLocal(bd.archive)) {
-					return bd.version.toString();
-				} else
-					return bd.version.toString() + " [?]";
-
-			default :
-		}
-		return null;
-	}
-
-	private boolean isLocal(Archive archive) {
-		return storage.toLocalFile(archive)
-			.isFile();
+		init();
+		return index.getBridge()
+			.title(target);
 	}
 
 	public boolean dropTarget(URI uri) throws Exception {
+		init();
 
 		String t = uri.toString()
 			.trim();
@@ -787,7 +702,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		}
 	}
 
-	boolean doSearchMaven(URI uri) throws UnsupportedEncodingException, Exception {
+	private boolean doSearchMaven(URI uri) throws UnsupportedEncodingException, Exception {
 		Map<String, String> map = getMapFromQuery(uri);
 		String filePath = map.get("filepath");
 		if (filePath != null) {
@@ -802,7 +717,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return false;
 	}
 
-	Map<String, String> getMapFromQuery(URI uri) throws UnsupportedEncodingException {
+	private Map<String, String> getMapFromQuery(URI uri) throws UnsupportedEncodingException {
 		String rawQuery = uri.getRawQuery();
 		Map<String, String> map = new HashMap<>();
 		if (rawQuery != null) {
@@ -834,7 +749,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Override
 	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
 		init();
-		return index.findProviders(requirements);
+		return index.getBridge()
+			.getRepository()
+			.findProviders(requirements);
 	}
 
 	@Override
@@ -851,6 +768,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			e.printStackTrace();
 			p.error("Could not end the release", e);
 		}
+	}
+
+	@Deprecated
+	public IndexFile.BundleDescriptor getDescriptor(String bsn, aQute.bnd.version.Version version) {
+		throw new UnsupportedOperationException();
 	}
 
 }

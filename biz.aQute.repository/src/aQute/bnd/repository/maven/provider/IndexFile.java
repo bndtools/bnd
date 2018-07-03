@@ -1,11 +1,10 @@
 package aQute.bnd.repository.maven.provider;
 
-import static aQute.bnd.osgi.repository.ResourcesRepository.toResourcesRepository;
-import static java.util.stream.Collectors.toSet;
-
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -13,403 +12,515 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
-import org.osgi.resource.Capability;
-import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import aQute.bnd.header.Attrs;
-import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.repository.BridgeRepository;
+import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
+import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
-import aQute.bnd.service.repository.Phase;
+import aQute.bnd.osgi.resource.ResourceUtils.BundleCap;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
-import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
-import aQute.lib.json.JSONCodec;
 import aQute.lib.strings.Strings;
-import aQute.libg.cryptography.SHA1;
-import aQute.libg.cryptography.SHA256;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.Program;
 import aQute.service.reporter.Reporter;
 
 /**
- * Maintains an index of descriptors of archives. These descriptors are stored
- * in the maven repository
+ * Represents the index list that contains Maven GAVs. It maps the entries in
+ * this file to an internal map and uses a BridgeRepository to do the OSGi and
+ * bnd repo stuff.
+ * <p>
+ * Asynchronous refreshes are handled y replacing a Promise with a
+ * BridgeRepository. This is a nice way to block any later comers when they need
+ * results without having to wait for the operation to be done.
  */
 class IndexFile {
+	private final static Logger			logger		= LoggerFactory.getLogger(IndexFile.class);
 
-	private static final JSONCodec CODEC = new JSONCodec();
+	final File							indexFile;
+	final IMavenRepo					repo;
+	final Reporter						reporter;
+	final PromiseFactory				promiseFactory;
+	final Map<Archive, Resource>		archives	= new ConcurrentHashMap<>();
+	final String[]						multi;
 
-	public class BundleDescriptor extends ResourceDescriptor {
-		public long		lastModified;
-		public Archive	archive;
-		public boolean	merged;
-		String			error;
-		Promise<File>	promise;
-		Resource		resource;
+	private long						lastModified;
+	private long						last		= 0L;
+	volatile Promise<BridgeRepository>	bridge;
 
-		public synchronized Resource getResource() {
-			if (resource == null) {
-
-				try {
-					File f = promise.getValue();
-					ResourceBuilder rb = new ResourceBuilder();
-					rb.addFile(f, f.toURI());
-					resource = rb.build();
-				} catch (Exception e) {
-					reporter.exception(e, "Failed to get file for %s", archive);
-					resource = ResourceUtils.DUMMY_RESOURCE;
-				}
-			}
-			return resource;
-		}
-	}
-
-	private final ConcurrentMap<Archive, Promise<File>>	promises	= new ConcurrentHashMap<>();
-	final ConcurrentMap<Archive, BundleDescriptor>		descriptors	= new ConcurrentHashMap<>();
-	final File											indexFile;
-	final File											cacheDir;
-	private final IMavenRepo							repo;
-	private final Reporter								reporter;
-	private long										lastModified;
-	private AtomicBoolean								refresh		= new AtomicBoolean();
-	private final ReadWriteLock							lock		= new ReentrantReadWriteLock();
-	private final PromiseFactory						promiseFactory;
-
-	IndexFile(Reporter reporter, File file, IMavenRepo repo, PromiseFactory promiseFactory) throws Exception {
+	/*
+	 * Constructor
+	 */
+	IndexFile(Reporter reporter, File file, IMavenRepo repo, PromiseFactory promiseFactory, String... multi)
+		throws Exception {
 		this.reporter = reporter;
 		this.indexFile = file;
 		this.repo = repo;
-		this.cacheDir = new File(indexFile.getParentFile(), indexFile.getName() + ".info");
 		this.promiseFactory = promiseFactory;
+		this.multi = multi;
+		bridge = null;
 	}
 
+	/*
+	 * Open, will refresh this repository, which will load the file
+	 */
 	void open() throws Exception {
-		loadIndexFile();
-		sync();
+		this.bridge = load();
 	}
 
-	private void sync() throws Exception {
-		List<Promise<File>> sync = new ArrayList<>(promises.size());
-		for (Iterator<Entry<Archive, Promise<File>>> i = promises.entrySet()
-			.iterator(); i.hasNext();) {
-			Entry<Archive, Promise<File>> entry = i.next();
-			i.remove();
-			sync.add(entry.getValue()
-				.onFailure(failure -> reporter.exception(failure, "Failed to sync %s", entry.getKey())));
-		}
-		promiseFactory.all(sync)
-			.getFailure(); // block until all promises resolved
-	}
-
-	BundleDescriptor add(Archive archive) throws Exception {
-		BundleDescriptor old = descriptors.putIfAbsent(archive, createInitialDescriptor(archive));
-		BundleDescriptor descriptor = descriptors.get(archive);
-		updateDescriptor(descriptor, repo.get(archive)
-			.getValue());
-		if (old == null || !Arrays.equals(descriptor.id, old.id)) {
-			saveIndexFile();
-			return descriptor;
-		}
-		return null;
-	}
-
-	BundleDescriptor remove(Archive archive) throws Exception {
-		BundleDescriptor descriptor = descriptors.remove(archive);
-		if (descriptor != null) {
-			saveIndexFile();
-		}
-		return descriptor;
-	}
-
-	public void remove(String bsn) throws Exception {
-		descriptors.values()
-			.removeIf(bundleDescriptor -> isBsn(bsn, bundleDescriptor));
-		saveIndexFile();
-	}
-
-	Collection<String> list() {
-		return descriptors.values()
-			.stream()
-			.map(descriptor -> descriptor.bsn)
-			.collect(toSet());
-	}
-
-	Collection<Version> list(String bsn) {
-		return descriptors.values()
-			.stream()
-			.filter(descriptor -> isBsn(bsn, descriptor))
-			.map(descriptor -> descriptor.version)
-			.collect(toSet());
-	}
-
-	boolean isBsn(String bsn, BundleDescriptor descriptor) {
-		return bsn.equals(descriptor.bsn) || bsn.equals(descriptor.archive.getWithoutVersion());
-	}
-
-	public synchronized BundleDescriptor getDescriptor(String bsn, Version version) throws Exception {
-		sync();
-		return descriptors.values()
-			.stream()
-			.filter(descriptor -> isBsn(bsn, descriptor) && version.equals(descriptor.version))
-			.findFirst()
-			.orElse(null);
-	}
-
-	int getErrors(String name) {
-		return (int) descriptors.values()
-			.stream()
-			.filter(descriptor -> name == null || name.equals(descriptor.bsn))
-			.filter(descriptor -> descriptor.error != null)
-			.count();
-	}
-
-	Set<Program> getProgramsForBsn(String name) {
-		return descriptors.values()
-			.stream()
-			.filter(descriptor -> name == null || name.equals(descriptor.bsn))
-			.map(descriptor -> descriptor.archive.revision.program)
-			.collect(toSet());
-	}
-
-	long last = 0L;
-
-	boolean refresh() throws Exception {
-
-		refresh.getAndSet(false);
-
-		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
-			loadIndexFile();
-			last = System.currentTimeMillis();
-			return true;
-		}
-		return descriptors.values()
-			.stream()
-			.filter(descriptor -> {
-				try {
-					if ((descriptor.promise != null) && descriptor.promise.isDone()
-						&& (descriptor.promise.getFailure() == null)) {
-						File f = descriptor.promise.getValue();
-						if ((f != null) && f.isFile() && (f.lastModified() != descriptor.lastModified)) {
-							updateDescriptor(descriptor, f);
-							return true;
-						}
-					}
-				} catch (InvocationTargetException | InterruptedException e) {
-					throw Exceptions.duck(e);
-				}
-				return false;
-			})
-			.count() > 0L;
-	}
-
-	private void loadIndexFile() throws Exception {
-		lastModified = indexFile.lastModified();
-		Set<Archive> toBeDeleted = new HashSet<>(descriptors.keySet());
-
-		if (indexFile.isFile()) {
-			lock.readLock()
-				.lock();
-			try (BufferedReader rdr = IO.reader(indexFile)) {
-				String line;
-				while ((line = rdr.readLine()) != null) {
-					line = Strings.trim(line);
-					if (line.startsWith("#") || line.isEmpty())
-						continue;
-
-					Archive a = Archive.valueOf(line);
-					if (a == null) {
-						reporter.error("MavenBndRepository: invalid entry %s in file %s", line, indexFile);
-					} else {
-						toBeDeleted.remove(a);
-						loadDescriptorAsync(a);
-					}
-				}
-			} finally {
-				lock.readLock()
-					.unlock();
-			}
-
-			this.descriptors.keySet()
-				.removeAll(toBeDeleted);
-			this.promises.keySet()
-				.removeAll(toBeDeleted);
-		}
-	}
-
-	void updateDescriptor(final Archive archive, File file) {
-		BundleDescriptor descriptor = descriptors.get(archive);
-		updateDescriptor(descriptor, file);
-	}
-
-	void updateDescriptor(BundleDescriptor descriptor, File file) {
-		try {
-			if (file == null || !file.isFile()) {
-				File descriptorFile = getDescriptorFile(descriptor.archive);
-				IO.delete(descriptorFile);
-				reporter.error("Could not find file %s", descriptor.archive);
-				descriptor.error = "File not found";
-			} else {
-				if (descriptor.lastModified != file.lastModified()) {
-
-					Domain m = Domain.domain(file);
-					if (m == null)
-						m = Domain.domain(Collections.emptyMap());
-
-					Entry<String, Attrs> bsn = m.getBundleSymbolicName();
-					descriptor.bsn = bsn != null ? bsn.getKey() : null;
-					descriptor.version = m.getBundleVersion() == null ? null
-						: Version.parseVersion(m.getBundleVersion());
-
-					if (descriptor.bsn == null) {
-						descriptor.bsn = descriptor.archive.getWithoutVersion();
-						descriptor.version = descriptor.archive.revision.version.getOSGiVersion();
-					} else if (descriptor.version == null)
-						descriptor.version = Version.LOWEST;
-					descriptor.description = m.getBundleDescription();
-					descriptor.id = SHA1.digest(file)
-						.digest();
-					descriptor.included = false;
-					descriptor.lastModified = file.lastModified();
-					descriptor.sha256 = SHA256.digest(file)
-						.digest();
-					saveDescriptor(descriptor);
-					refresh.set(true);
-				}
-				if (descriptor.promise == null && file != null)
-					descriptor.promise = promiseFactory.resolved(file);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			descriptor.error = e.toString();
-			refresh.set(true);
-
-		}
-	}
-
-	private void saveDescriptor(BundleDescriptor descriptor) throws IOException, Exception {
-		File df = getDescriptorFile(descriptor.archive);
-		IO.mkdirs(df.getParentFile());
-		CODEC.enc()
-			.to(df)
-			.put(descriptor);
-	}
-
-	private void loadDescriptorAsync(final Archive archive) throws Exception {
-		if (updateLocal(archive))
+	/*
+	 * Persistently add an archive to the index file and refresh. If the archive
+	 * is not kept then this is a noop
+	 */
+	synchronized void add(Archive archive) throws Exception {
+		if (archives.containsKey(archive))
 			return;
 
-		updateAsync(archive);
+		logger.debug("adding {}", archive);
+		this.bridge = update(Arrays.asList(archive));
+		save();
 	}
 
-	private boolean updateLocal(final Archive archive) {
-		File archiveFile = repo.toLocalFile(archive);
-		if (archiveFile.isFile()) {
-			File descriptorFile = getDescriptorFile(archive);
-			if (descriptorFile.isFile()) {
-				try {
-					BundleDescriptor descriptor = CODEC.dec()
-						.from(descriptorFile)
-						.get(BundleDescriptor.class);
-					descriptor.promise = promiseFactory.resolved(archiveFile);
-					descriptor.resource = null;
-					descriptors.put(archive, descriptor);
-					return true;
-				} catch (Exception e) {
-					// ignore
-				}
-			}
+	/*
+	 * Remove an archive from the index file and refresh. If the archive is not
+	 * kept then this is a noop
+	 */
+	synchronized void remove(Archive archive) throws Exception {
+		if (removeWithDerived(archive)) {
+			logger.debug("remove {}", archive);
+			this.bridge = update(null);
+			save();
+		}
+	}
+
+	/*
+	 * Remove all resources with a given bsn. This function does not recognize
+	 * GAV bsns. If the primary BSN has derived resources then they are also
+	 * removed.
+	 */
+	synchronized void remove(String bsn) throws Exception {
+		logger.debug("remove bsn {}", bsn);
+
+		List<Archive> toRemove = archives.entrySet()
+			.stream()
+			.filter(entry -> {
+				return isBsn(bsn, entry.getValue());
+			})
+			.map(entry -> {
+				return entry.getKey();
+			})
+			.collect(Collectors.toList());
+
+		boolean changed = false;
+
+		for (Archive archive : toRemove) {
+			changed |= removeWithDerived(archive);
+		}
+
+		if (changed) {
+			this.bridge = update(null);
+			save();
+		}
+	}
+
+	/*
+	 * Remove an archive and aby derived archive.
+	 */
+	private boolean removeWithDerived(Archive archive) {
+		Resource remove = archives.remove(archive);
+		if (remove != null) {
+			archives.keySet()
+				.removeIf(target -> isDerived(target, archive));
+			return true;
 		}
 		return false;
 	}
 
-	Promise<File> updateAsync(Archive archive) throws Exception {
-		Promise<File> promise = repo.get(archive);
-		return updateAsync(archive, promise);
+	/*
+	 * A derived archive has the same revision but different classifier. We
+	 * exclude the default resource. I.e. the one with an empty classifier.
+	 */
+	private boolean isDerived(Archive inMap, Archive parent) {
+		boolean match = inMap.revision.equals(parent.revision) && !"".equals(inMap.classifier);
+		return match;
 	}
 
-	private Promise<File> updateAsync(Archive archive, Promise<File> promise) throws Exception {
-		BundleDescriptor descriptor = createInitialDescriptor(archive);
-		promise = updateAsync(descriptor, promise);
-		descriptors.put(archive, descriptor);
-		return promise;
-	}
+	/*
+	 * Load the index file file. This method ensures the bridge
+	 * @throws Exception
+	 */
+	private synchronized Promise<BridgeRepository> load() throws Exception {
+		lastModified = indexFile.lastModified();
+		if (indexFile.isFile()) {
 
-	Promise<File> updateAsync(final BundleDescriptor descriptor, Promise<File> promise) throws Exception {
-		descriptor.promise = promise.thenAccept(file -> updateDescriptor(descriptor, file));
-		descriptor.resource = null;
-		promises.put(descriptor.archive, descriptor.promise);
-		return descriptor.promise;
-	}
+			Set<Archive> toBeAdded = read(indexFile);
+			Set<Archive> older = this.archives.keySet();
 
-	File getDescriptorFile(Archive archive) {
-		File dir = new File(repo.toLocalFile(archive)
-			.getParentFile(), ".bnd");
-		return new File(dir, archive.getName());
-	}
+			Set<Archive> toBeDeleted = new HashSet<>(older);
+			toBeDeleted.removeAll(toBeAdded);
+			toBeAdded.removeAll(older);
 
-	private BundleDescriptor createInitialDescriptor(Archive archive) throws Exception {
-		BundleDescriptor descriptor = new BundleDescriptor();
-		descriptor.archive = archive;
-		descriptor.phase = archive.isSnapshot() ? Phase.STAGING : Phase.MASTER;
-		descriptor.url = repo.toRemoteURI(archive);
-		descriptor.bsn = archive.getWithoutVersion();
-		descriptor.version = archive.revision.version.getOSGiVersion();
-		return descriptor;
-	}
-
-	private void saveIndexFile() throws Exception {
-		lock.writeLock()
-			.lock();
-		try {
-			Path index = indexFile.toPath();
-			Path tmp = Files.createTempFile(IO.mkdirs(index.getParent()), "index", null);
-			try (PrintWriter pw = IO.writer(tmp)) {
-				descriptors.keySet()
-					.stream()
-					.sorted()
-					.forEachOrdered(archive -> pw.println(archive));
-			}
-			IO.rename(tmp, index);
-		} finally {
-			lock.writeLock()
-				.unlock();
+			archives.keySet()
+				.removeAll(toBeDeleted);
+			return update(toBeAdded);
+		} else {
+			return promiseFactory.resolved(new BridgeRepository());
 		}
 
+	}
+
+	/*
+	 * Update the set of archives. This will add the given archives and then
+	 * create a new bridge promise. All newly added archives are scheduled to be
+	 * download and after downloaded are parsed. This method should only be
+	 * called when synchronized.
+	 */
+	private Promise<BridgeRepository> update(Collection<Archive> toAdd) throws Exception {
+
+		List<Promise<Boolean>> results = new ArrayList<>();
+		if (toAdd != null) {
+			for (Archive a : toAdd) {
+				put(a, info(a, "Loading ..."));
+
+				if (!a.isSnapshot()) {
+					File localFile = repo.toLocalFile(a);
+					if (localFile.isFile() && localFile.length() > 0) {
+						parseSingleOrMultiFile(a, localFile);
+						continue;
+					}
+				}
+
+				Promise<Boolean> promise = repo.get(a)
+					.map(file -> {
+						if (file == null) {
+							return failed(a, "Not found");
+
+						} else {
+							parseSingleOrMultiFile(a, file);
+							return true;
+						}
+					})
+					.recover(p -> {
+						// TODO log
+						return failed(a, getMessage(p.getFailure()));
+					});
+
+				results.add(promise);
+			}
+		}
+
+		Collection<Resource> snapshot = archives.values();
+
+		return promiseFactory.all(results)
+			.map(ignore -> {
+				return new BridgeRepository(new ResourcesRepository(snapshot));
+			});
+	}
+
+	private Boolean failed(Archive a, String msg) throws InterruptedException {
+		put(a, info(a, msg));
+		return false;
+	}
+
+	private void put(Archive a, Resource resource) {
+		archives.put(a, resource);
+	}
+
+	private String getMessage(Throwable failure) {
+		if (failure instanceof InvocationTargetException) {
+			Throwable targetException = ((InvocationTargetException) failure).getTargetException();
+			if (targetException == null)
+				return failure.toString();
+
+			return getMessage(targetException);
+		}
+		if (failure instanceof FileNotFoundException) {
+			return "Not found";
+		}
+		return failure.getMessage();
+	}
+
+	private void parseSingleOrMultiFile(Archive archive, File file) {
+		try {
+			if (isMulti(file.getName())) {
+				parseMulti(archive, file);
+			} else {
+				parseSingle(archive, file);
+			}
+		} catch (Exception e) {
+			logger.warn("parse ", e);
+		}
+	}
+
+	private boolean isMulti(String name) {
+		if (multi == null)
+			return false;
+
+		String[] extension = Strings.extension(name.toLowerCase());
+		return extension.length == 2 && Strings.in(multi, extension[1]);
+	}
+
+	private void parseSingle(Archive archive, File single) throws Exception {
+		ResourceBuilder rb = new ResourceBuilder();
+		boolean hasIdentity = rb.addFile(single, single.toURI());
+
+		if (!hasIdentity) {
+			String name = archive.getWithoutVersion();
+			MavenVersion version = archive.revision.version;
+
+			BridgeRepository.addInformationCapability(rb, name, version.getOSGiVersion(), repo.toString(),
+				"Not a bundle");
+		}
+
+		Resource resource = rb.build();
+		put(archive, resource);
+	}
+
+	private void parseMulti(Archive archive, File multi) throws Exception {
+		try (Jar jar = new Jar(multi)) {
+			int n = 1000;
+			for (Entry<String, aQute.bnd.osgi.Resource> entry : jar.getResources()
+				.entrySet()) {
+				String path = entry.getKey()
+					.toLowerCase();
+				if (path.endsWith(".jar")) {
+					Archive nextArchive = new Archive(archive.revision, null, "jar",
+						String.format("%s%04d", archive.classifier, n));
+					n++;
+					File dest = repo.toLocalFile(nextArchive);
+					if (!dest.isFile() || dest.lastModified() < multi.lastModified()) {
+						try (OutputStream out = IO.outputStream(dest)) {
+							entry.getValue()
+								.write(out);
+						}
+						dest.setLastModified(multi.lastModified());
+					}
+					parseSingleOrMultiFile(nextArchive, dest);
+				}
+			}
+		}
+	}
+
+	boolean refresh() throws Exception {
+		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
+			last = System.currentTimeMillis();
+			this.bridge = load();
+			return true;
+		}
+		return false;
+	}
+
+	private Set<Archive> read(File file) throws IOException {
+
+		assert file.isFile();
+
+		Set<Archive> archives = new HashSet<>();
+		try (BufferedReader rdr = IO.reader(indexFile)) {
+			String line;
+			while ((line = rdr.readLine()) != null) {
+				line = Strings.trim(line);
+				if (line.startsWith("#") || line.isEmpty())
+					continue;
+
+				Archive a = Archive.valueOf(line);
+				if (a == null) {
+					reporter.error("MavenBndRepository: invalid entry %s in file %s", line, indexFile);
+				} else {
+					archives.add(a);
+				}
+			}
+		}
+		logger.debug("loaded index {}", archives);
+		return archives;
+	}
+
+	private boolean isBsn(String bsn, Resource resource) {
+		BundleCap bundle = ResourceUtils.getBundleCapability(resource);
+		if (bundle == null)
+			return false;
+
+		String osgi_wiring_bundle = bundle.osgi_wiring_bundle();
+		return bsn.equals(osgi_wiring_bundle);
+	}
+
+	private synchronized void save() throws Exception {
+		Path index = indexFile.toPath();
+		Path tmp = Files.createTempFile(IO.mkdirs(index.getParent()), "index", null);
+		try (PrintWriter pw = IO.writer(tmp)) {
+			archives.keySet()
+				.stream()
+				.sorted()
+				.forEachOrdered(archive -> pw.println(archive));
+		}
+		IO.rename(tmp, index);
 		lastModified = indexFile.lastModified();
 	}
 
-	public void save() throws Exception {
-		saveIndexFile();
+	BridgeRepository getBridge() {
+		try {
+			return bridge.getValue();
+		} catch (InvocationTargetException e) {
+			reporter.exception(e.getTargetException(), "Getting bridge failed");
+		} catch (InterruptedException e) {
+			logger.info("Interrupted");
+			Thread.currentThread()
+				.interrupt();
+		}
+		return new BridgeRepository();
 	}
 
-	public Collection<Archive> getArchives() {
-		return descriptors.keySet();
+	/*
+	 * Create a resource with error information
+	 */
+	private Resource info(Archive a, String msg) {
+		ResourceBuilder rb = new ResourceBuilder();
+		String bsn = a.getWithoutVersion();
+		MavenVersion version = a.revision.version;
+		BridgeRepository.addInformationCapability(rb, bsn, version.getOSGiVersion(), repo.toString(), msg);
+		return rb.build();
 	}
 
-	public Map<Requirement, Collection<Capability>> findProviders(Collection<? extends Requirement> requirements) {
-		return descriptors.values()
+	Collection<Archive> getArchives() {
+		return archives.keySet();
+	}
+
+	Archive find(String bsn, Version version) throws Exception {
+
+		//
+		// First try if this is a BSN, not a GAV
+		//
+
+		String[] parts = bsn.split(":");
+		if (parts.length == 1) {
+			ResourceInfo info = getBridge().getInfo(bsn, version);
+			if (info == null)
+				return null;
+
+			Resource resource = info.getResource();
+			return getArchive(resource);
+		}
+
+		//
+		// Handle the GAV. Notice that the GAV can also contain extension +
+		// classifier
+		//
+
+		Archive tmp = Archive.valueOf(bsn + ":" + version);
+		if (tmp == null)
+			return null;
+
+		return archives.keySet()
 			.stream()
-			.map(BundleDescriptor::getResource)
-			.collect(toResourcesRepository())
-			.findProviders(requirements);
+			.filter(archive -> archive.revision.program.equals(tmp.revision.program)
+				&& archive.revision.version.getOSGiVersion()
+					.equals(version)
+				&& tmp.classifier.equals(archive.classifier))
+			.findFirst()
+			.orElse(null);
 	}
+
+	/*
+	 * Answer the versions of a bsn If the bsn is a GA then we get the versions
+	 * from the archives we have in our index. Otherwise, we use the repository
+	 * bridge
+	 */
+
+	SortedSet<Version> versions(String bsn) throws Exception {
+
+		if (bsn.indexOf(':') > 0) {
+
+			//
+			// Is a GAV
+			//
+
+			String[] parts = bsn.split(":");
+
+			if (parts.length >= 2) {
+				String classifier = parts.length > 2 ? parts[parts.length - 1] : "";
+
+				Program p = Program.valueOf(parts[0], parts[1]);
+				if (p != null) {
+					Set<Version> collect = archives.keySet()
+						.stream()
+						.filter(archive -> archive.revision.program.equals(p) && archive.classifier.equals(classifier))
+						.map(archive -> archive.revision.version.getOSGiVersion())
+						.collect(Collectors.toSet());
+					return new TreeSet<>(collect);
+				}
+			}
+		}
+
+		//
+		// Non GAVs are left to the bridge
+		//
+
+		return getBridge().versions(bsn);
+	}
+
+	String tooltip(Object[] target) throws Exception {
+
+		String tooltip = getBridge().tooltip(target);
+		switch (target.length) {
+			case 2 :
+				ResourceInfo info = getBridge().getInfo((String) target[0], (Version) target[1]);
+
+				Archive archive = getArchive(info.getResource());
+				if (archive != null) {
+					tooltip += "Coordinates: " + archive + "\n";
+				}
+		}
+		return tooltip;
+	}
+
+	private Archive getArchive(Resource resource) {
+		if (resource == null)
+			return null;
+
+		Archive archive = archives.entrySet()
+			.stream()
+			.filter((Map.Entry<Archive, Resource> e) -> e.getValue() == resource)
+			.map(Map.Entry::getKey)
+			.findFirst()
+			.orElse(null);
+		return archive;
+	}
+
+	void sync() {
+		getBridge();
+	}
+
+	//
+	// Deprecated to not have to increase the version with major
+	//
+	@Deprecated
+	public class BundleDescriptor extends ResourceDescriptor {
+		public long		lastModified;
+		public Archive	archive;
+		public boolean	merged;
+
+		public Resource getResource() {
+			throw new UnsupportedOperationException();
+		}
+	}
+
 }

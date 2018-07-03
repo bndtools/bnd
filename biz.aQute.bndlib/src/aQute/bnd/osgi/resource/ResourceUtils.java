@@ -198,8 +198,8 @@ public class ResourceUtils {
 
 	public static List<ContentCapability> getContentCapabilities(Resource resource) {
 		List<ContentCapability> result = new ArrayList<>();
-
-		for (Capability c : resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE)) {
+		List<Capability> capabilities = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
+		for (Capability c : capabilities) {
 			result.add(as(c, ContentCapability.class));
 		}
 		return result;
@@ -389,7 +389,8 @@ public class ResourceUtils {
 		Set<Resource> resources = new TreeSet<>(RESOURCE_COMPARATOR);
 
 		for (Capability c : providers) {
-			resources.add(c.getResource());
+			Resource r = c.getResource();
+			resources.add(r);
 		}
 
 		return resources;

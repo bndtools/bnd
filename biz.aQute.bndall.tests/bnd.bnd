@@ -10,12 +10,12 @@
 -nobundles: true
 
 -testpath: \
-  aQute.libg;version=latest, \
-  biz.aQute.bndlib;version=latest, \
-  biz.aQute.resolve;version=latest, \
-  biz.aQute.repository;version=latest, \
-	osgi.core;version=6.0,\
-	osgi.cmpn;version=6.0,\
+    aQute.libg;version=latest, \
+    biz.aQute.bndlib;version=latest, \
+    osgi.cmpn;version=6.0, \
+    osgi.core;version=6.0, \
+    biz.aQute.resolve;version=latest, \
+    biz.aQute.repository;version=latest, \
     biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.remote.api;version=latest,\
 	${junit},\
