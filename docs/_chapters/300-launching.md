@@ -125,6 +125,26 @@ For example, if you want to run your executable in trace mode:
 
     $ java -Dlaunch.trace=true xyz.jar
 
+### Expanding Executable JARs
+
+An executable JAR can be unzipped in a directory. It will then include a Windows and Linuxy shell script to start the executable in expanded form. In the expanded form, the framework will try to use `reference:` URLs to install bundles when not on Windows. (Windows and reference URLs do not work well because Windows keeps files locked.)
+
+If no reference URLs should be used, the `-runnoreferences=true` instruction can be set.
+
+### Properties
+
+Framework properties can be set using the `-runproperties` instruction.	 Framework properties do not include the system properties but any property set using `-runproperties` can be overridden with a system property. That is, it is impossible to set a property using the `-D` on the Java command line unless it was prior given a default in the bndrun file.
+
+For example:
+
+	bndrun:
+	-runproperties: foo=3
+	
+	
+	$ java -Dfoo=4 -Dbar=1 xyz.jar
+
+In this example, the xyz app will see `foo=4` but `bar` will not be a framework property.
+
 ### Exit codes
 
 If the framework stops the launcher will exit. It will set a system exit code that reflects the event type from that the framework returned. The shell script that started the launcher can take the system exit code into account to restart the framework in certain cases.
