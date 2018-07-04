@@ -3,9 +3,14 @@ package test;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
+import org.assertj.core.util.Files;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
@@ -30,6 +35,34 @@ public class LauncherTest extends TestCase {
 		if (project != null) {
 			project.close();
 			workspace.close();
+		}
+	}
+
+	/**
+	 * Create an executable JAR, expand it in a directory and run the demo test
+	 * command that quits but does not call System.exit(). That is, if this
+	 * returns normally all went ok.
+	 */
+
+	public static void testExpandedJarLauncher() throws Exception {
+		Project project = getProject();
+		project.setProperty(Constants.RUNPROPERTIES, "test.cmd=quit.no.exit");
+		ProjectLauncher l = project.getProjectLauncher();
+		File temporaryFolder = Files.temporaryFolder();
+		try {
+			try (Jar executable = l.executable()) {
+				executable.expand(temporaryFolder);
+			}
+			try (URLClassLoader loader = new URLClassLoader(new URL[] {
+				temporaryFolder.toURI()
+					.toURL()
+			}, null)) {
+				Class<?> launcher = loader.loadClass("aQute.launcher.pre.EmbeddedLauncher");
+				Method method = launcher.getMethod("main", String[].class);
+				method.invoke(null, (Object) new String[0]);
+			}
+		} finally {
+			IO.delete(temporaryFolder);
 		}
 	}
 

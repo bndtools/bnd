@@ -23,6 +23,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.security.AllPermission;
@@ -49,6 +50,7 @@ import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -690,47 +692,67 @@ public class Launcher implements ServiceListener {
 		Manifest m = EmbeddedLauncher.MANIFEST;
 		if (m != null) {
 			for (String name : DIGESTS) {
-				String digest = m.getAttributes(path)
-					.getValue(name);
-				if (digest != null) {
-					return digest;
+				Attributes attributes = m.getAttributes(path);
+				if (attributes != null) {
+					String digest = attributes.getValue(name);
+					if (digest != null) {
+						return digest;
+					}
 				}
 			}
 		}
 		return null;
 	}
 
-	/**
+	/*
 	 * Install/Update the bundles from the current jar.
-	 * 
-	 * @param tobestarted
-	 * @throws BundleException
-	 * @throws IOException
 	 */
-	void installEmbedded(List<Bundle> tobestarted) throws BundleException, IOException {
+	void installEmbedded(List<Bundle> tobestarted) throws Exception {
 		trace("starting in embedded mode");
 		BundleContext context = systemBundle.getBundleContext();
 		for (Object o : parms.runbundles) {
 			String path = (String) o;
 			String digest = getDigest(path);
-			try (InputStream in = getClass().getClassLoader()
-				.getResourceAsStream(path)) {
-				Bundle bundle = getBundleByLocation(path);
-				if (bundle == null) {
-					trace("installing %s", path);
-					bundle = context.installBundle(path, in);
-					updateDigest(digest, bundle);
-				} else {
-					if (mustUpdate(digest, bundle)) {
-						trace("updating %s, digest=%s", path, digest);
-						bundle.stop();
-						bundle.update(in);
+
+			URL resource = getClass().getClassLoader()
+				.getResource(path);
+			if (useReferences() && resource.getProtocol()
+				.equalsIgnoreCase("file")) {
+
+				//
+				// Install by reference
+				//
+
+				File file = new File(resource.toURI());
+				Bundle bundle = context.installBundle(getReferenceUrl(file));
+				updateDigest(digest, bundle);
+				tobestarted.add(bundle);
+
+			} else {
+
+				//
+				// Install by copying since the URL we got
+				// is not a file url.
+				//
+
+				try (InputStream in = resource.openStream()) {
+					Bundle bundle = getBundleByLocation(path);
+					if (bundle == null) {
+						trace("installing %s", path);
+						bundle = context.installBundle(path, in);
 						updateDigest(digest, bundle);
 					} else {
-						trace("not updating %s because identical digest=%s", path, digest);
+						if (mustUpdate(digest, bundle)) {
+							trace("updating %s, digest=%s", path, digest);
+							bundle.stop();
+							bundle.update(in);
+							updateDigest(digest, bundle);
+						} else {
+							trace("not updating %s because identical digest=%s", path, digest);
+						}
 					}
+					tobestarted.add(bundle);
 				}
-				tobestarted.add(bundle);
 			}
 		}
 	}
@@ -787,18 +809,16 @@ public class Launcher implements ServiceListener {
 	Bundle install(File f) throws Exception {
 		BundleContext context = systemBundle.getBundleContext();
 		try {
-			String reference;
-			if (isWindows() || parms.noreferences) {
+			String location;
+			if (!useReferences()) {
 				trace("no reference: url %s", parms.noreferences);
-				reference = f.toURI()
+				location = f.toURI()
 					.toURL()
 					.toExternalForm();
 			} else
-				reference = "reference:" + f.toURI()
-					.toURL()
-					.toExternalForm();
+				location = getReferenceUrl(f);
 
-			Bundle b = context.installBundle(reference);
+			Bundle b = context.installBundle(location);
 			if (b.getLastModified() < f.lastModified()) {
 				b.update();
 			}
@@ -812,6 +832,16 @@ public class Launcher implements ServiceListener {
 				return context.installBundle(reference, in);
 			}
 		}
+	}
+
+	private boolean useReferences() {
+		return !isWindows() && !parms.noreferences;
+	}
+
+	private String getReferenceUrl(File f) throws MalformedURLException {
+		return "reference:" + f.toURI()
+			.toURL()
+			.toExternalForm();
 	}
 
 	private boolean isWindows() {
@@ -1332,7 +1362,8 @@ public class Launcher implements ServiceListener {
 							if (m.getReturnType() != Integer.class)
 								throw new IllegalArgumentException("Found a main thread service which is Callable<"
 									+ m.getReturnType()
-									.getName() + "> which should be Callable<Integer> " + event.getServiceReference());
+										.getName()
+									+ "> which should be Callable<Integer> " + event.getServiceReference());
 							mainThread = (Callable<Integer>) service;
 							return;
 						} catch (NoSuchMethodException e) {
