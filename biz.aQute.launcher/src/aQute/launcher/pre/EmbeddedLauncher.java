@@ -54,6 +54,17 @@ public class EmbeddedLauncher {
 	}
 
 	private static URL toFileURL(URL resource) throws IOException {
+		//
+		// Don't bother copying file urls
+		//
+		if (resource.getProtocol()
+			.equalsIgnoreCase("file"))
+			return resource;
+
+		//
+		// Need to make a copy to a temp file
+		//
+
 		File f = File.createTempFile("resource", ".jar");
 		Files.createDirectories(f.getParentFile()
 			.toPath());
