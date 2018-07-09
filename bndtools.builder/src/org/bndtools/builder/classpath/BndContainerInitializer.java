@@ -186,6 +186,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         private static final IClasspathAttribute EMPTY_INDEX = JavaCore.newClasspathAttribute(IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
             "platform:/plugin/" + BndtoolsBuilder.PLUGIN_ID + "/org/bndtools/builder/classpath/empty.index");
         private static final IClasspathAttribute TEST = JavaCore.newClasspathAttribute("test", Boolean.TRUE.toString());
+        private static final IClasspathAttribute WITHOUT_TEST_CODE = JavaCore.newClasspathAttribute("without_test_code", Boolean.TRUE.toString());
         private static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
         private static final Map<File, JarInfo> jarInfo = Collections.synchronizedMap(new WeakHashMap<File, JarInfo>());
 
@@ -297,6 +298,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         private void calculateContainersClasspath(String header, Collection<Container> containers, List<IClasspathEntry> classpath, List<IResource> filesToRefresh) {
+            final boolean testpath = header.equals(Constants.TESTPATH);
             for (Container c : containers) {
                 File file = c.getFile();
                 assert file.isAbsolute();
@@ -333,13 +335,16 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
 
                 List<IClasspathAttribute> extraAttrs = calculateContainerAttributes(c);
-                if (header.equals(Constants.TESTPATH)) {
+                if (testpath) {
                     extraAttrs.add(TEST);
                 }
                 List<IAccessRule> accessRules = calculateContainerAccessRules(c);
 
                 switch (c.getType()) {
                     case PROJECT :
+                        if (testpath) {
+                            extraAttrs.add(WITHOUT_TEST_CODE);
+                        }
                         IPath projectPath = root.getFile(path)
                             .getProject()
                             .getFullPath();
