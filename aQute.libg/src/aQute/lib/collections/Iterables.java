@@ -165,8 +165,8 @@ public class Iterables {
 
 		@Override
 		public void forEach(Consumer<? super R> action) {
-			consume();
 			requireNonNull(action);
+			consume();
 			while (enumeration.hasMoreElements()) {
 				T t = enumeration.nextElement();
 				R r = mapper.apply(t);
