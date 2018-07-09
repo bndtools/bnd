@@ -185,6 +185,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         private static final IAccessRule DISCOURAGED = JavaCore.newAccessRule(new Path("**"), IAccessRule.K_DISCOURAGED | IAccessRule.IGNORE_IF_BETTER);
         private static final IClasspathAttribute EMPTY_INDEX = JavaCore.newClasspathAttribute(IClasspathAttribute.INDEX_LOCATION_ATTRIBUTE_NAME,
             "platform:/plugin/" + BndtoolsBuilder.PLUGIN_ID + "/org/bndtools/builder/classpath/empty.index");
+        private static final IClasspathAttribute TEST = JavaCore.newClasspathAttribute("test", Boolean.TRUE.toString());
         private static final Pattern packagePattern = Pattern.compile("(?<=^|\\.)\\*(?=\\.|$)|\\.");
         private static final Map<File, JarInfo> jarInfo = Collections.synchronizedMap(new WeakHashMap<File, JarInfo>());
 
@@ -332,6 +333,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 }
 
                 List<IClasspathAttribute> extraAttrs = calculateContainerAttributes(c);
+                if (header.equals(Constants.TESTPATH)) {
+                    extraAttrs.add(TEST);
+                }
                 List<IAccessRule> accessRules = calculateContainerAccessRules(c);
 
                 switch (c.getType()) {
