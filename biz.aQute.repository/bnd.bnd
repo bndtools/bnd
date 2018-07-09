@@ -26,7 +26,6 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 -testpath: \
 	${junit},\
 	${mockito},\
-    ${assertj},\
 	${jetty.libs},\
 	biz.aQute.http.testservers;version=latest,\
     slf4j.simple;version=latest

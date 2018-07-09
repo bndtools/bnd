@@ -6,11 +6,9 @@
 	osgi.cmpn;version=4.2,\
 	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
-    ${junit},\
-    ${assertj}
-	
-Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
+    ${junit}
 
+Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
 Private-Package: aQute.junit.*, \
 				org.assertj.core.*
