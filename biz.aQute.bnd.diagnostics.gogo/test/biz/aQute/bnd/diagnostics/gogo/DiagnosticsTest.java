@@ -1,11 +1,6 @@
 package biz.aQute.bnd.diagnostics.gogo;
 
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
@@ -55,14 +50,14 @@ public class DiagnosticsTest {
 	@Test
 	public void testSimple() {
 		Bundle[] bundles = fw.context.getBundles();
-		assertEquals(4, bundles.length);
+		assertThat(bundles).hasSize(4);
 
 		ServiceReference<LogService> serviceReference = fw.context.getServiceReference(LogService.class);
-		assertNotNull(serviceReference);
-		assertEquals(0L, serviceReference.getBundle()
-			.getBundleId());
+		assertThat(serviceReference).isNotNull();
+		assertThat(serviceReference.getBundle()
+			.getBundleId()).isEqualTo(0L);
 		LogService service = fw.context.getService(serviceReference);
-		assertTrue(service instanceof ConsoleLogger.Facade);
+		assertThat(service).isInstanceOf(ConsoleLogger.Facade.class);
 
 		service.log(LogService.LOG_DEBUG, "Hello World");
 	}
@@ -125,13 +120,13 @@ public class DiagnosticsTest {
 		boolean foundFooClassDiagnostic = false;
 		for (Search s : wanted) {
 			if (s.serviceName.equals(Foo.class.getName())) {
-				assertThat(s.mismatched.isEmpty(), is(true));
-				assertThat(s.matched.isEmpty(), is(true));
+				assertThat(s.mismatched).isEmpty();
+				assertThat(s.matched).isEmpty();
 				foundFooClassDiagnostic = true;
 			}
 		}
 
-		assertThat(foundFooClassDiagnostic, is(true));
+		assertThat(foundFooClassDiagnostic).isEqualTo(true);
 
 		//
 		// register service Foo, exported package with Foo
@@ -149,12 +144,12 @@ public class DiagnosticsTest {
 		foundFooClassDiagnostic = false;
 		for (Search s : wanted) {
 			if (s.serviceName.equals(Foo.class.getName())) {
-				assertThat(s.mismatched, hasItem(b.getBundleId()));
-				assertThat(s.matched.isEmpty(), is(true));
+				assertThat(s.mismatched).contains(b.getBundleId());
+				assertThat(s.matched).isEmpty();
 				foundFooClassDiagnostic = true;
 			}
 		}
-		assertThat(foundFooClassDiagnostic, is(true));
+		assertThat(foundFooClassDiagnostic).isEqualTo(true);
 
 		a.uninstall();
 		b.uninstall();

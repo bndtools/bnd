@@ -15,8 +15,7 @@ Bundle-Activator: biz.aQute.bnd.diagnostics.gogo.osgi.Activator
 -testpath: \
 	biz.aQute.bnd;version=latest,\
 	org.apache.felix.framework;version=5,  \
-	${junit}, \
-	osgi.enroute.hamcrest.wrapper
+	${junit}
 
 -conditionalpackage: aQute.lib*, aQute.bnd.*, aQute.service.*, org.osgi.service.repository.*
 
