@@ -27,8 +27,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.eclipse.jdt.ui.wizards.NewJavaProjectWizardPageOne;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -150,6 +152,8 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         return result.toArray(new IClasspathEntry[0]);
     }
 
+    private static final IClasspathAttribute TEST = JavaCore.newClasspathAttribute("test", Boolean.TRUE.toString());
+
     @Override
     public IClasspathEntry[] getSourceClasspathEntries() {
         IPath projectPath = new Path(getProjectName()).makeAbsolute();
@@ -157,7 +161,7 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
         ProjectPaths projectPaths = ProjectPaths.DEFAULT;
 
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
-        newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getSrc()), null, projectPath.append(projectPaths.getBin())));
+        newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getSrc()), ClasspathEntry.INCLUDE_ALL, ClasspathEntry.EXCLUDE_NONE, projectPath.append(projectPaths.getBin()), ClasspathEntry.NO_EXTRA_ATTRIBUTES));
 
         boolean enableTestSrcDir;
         try {
@@ -174,7 +178,9 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
             enableTestSrcDir = true;
         }
         if (enableTestSrcDir)
-            newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getTestSrc()), null, projectPath.append(projectPaths.getTestBin())));
+            newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getTestSrc()), ClasspathEntry.INCLUDE_ALL, ClasspathEntry.EXCLUDE_NONE, projectPath.append(projectPaths.getTestBin()), new IClasspathAttribute[] {
+                TEST
+            }));
 
         return newEntries.toArray(new IClasspathEntry[0]);
     }

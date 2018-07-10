@@ -109,7 +109,7 @@ public class RunDescriptorTargetLocation extends BndTargetLocation {
 
             monitor.done();
 
-            return bundles.toArray(new TargetBundle[bundles.size()]);
+            return bundles.toArray(new TargetBundle[0]);
         } catch (CoreException e) {
             throw e;
         } catch (Exception e) {

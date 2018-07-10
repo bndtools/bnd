@@ -33,11 +33,13 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.ClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jdt.launching.environments.IExecutionEnvironment;
 import org.eclipse.jface.dialogs.ErrorDialog;
@@ -261,6 +263,8 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
         importSourceAndOutputFolders(bndProject, project, javaProject, monitor);
     }
 
+    private static final IClasspathAttribute TEST = JavaCore.newClasspathAttribute("test", Boolean.TRUE.toString());
+
     private void importSourceAndOutputFolders(Project bndProject, IProject workspaceProject, IJavaProject javaProject, IProgressMonitor monitor) throws Exception {
         // remove defaults
         removeClasspathDefaults(javaProject);
@@ -279,8 +283,8 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
             // will fail
             IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(source);
             List<IClasspathEntry> entries = new ArrayList<>(Arrays.asList(javaProject.getRawClasspath()));
-            entries.add(JavaCore.newSourceEntry(root.getPath(), null, outputRoot.getPath()));
-            javaProject.setRawClasspath(entries.toArray(new IClasspathEntry[entries.size()]), monitor);
+            entries.add(JavaCore.newSourceEntry(root.getPath(), ClasspathEntry.INCLUDE_ALL, ClasspathEntry.EXCLUDE_NONE, outputRoot.getPath(), ClasspathEntry.NO_EXTRA_ATTRIBUTES));
+            javaProject.setRawClasspath(entries.toArray(new IClasspathEntry[0]), monitor);
             createFolderIfNecessary(source, monitor);
         }
         // Test-Source
@@ -298,8 +302,10 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
             // will fail
             IPackageFragmentRoot root = javaProject.getPackageFragmentRoot(testSource);
             List<IClasspathEntry> entries = new ArrayList<>(Arrays.asList(javaProject.getRawClasspath()));
-            entries.add(JavaCore.newSourceEntry(root.getPath(), null, testOutputRoot.getPath()));
-            javaProject.setRawClasspath(entries.toArray(new IClasspathEntry[entries.size()]), monitor);
+            entries.add(JavaCore.newSourceEntry(root.getPath(), ClasspathEntry.INCLUDE_ALL, ClasspathEntry.EXCLUDE_NONE, testOutputRoot.getPath(), new IClasspathAttribute[] {
+                TEST
+            }));
+            javaProject.setRawClasspath(entries.toArray(new IClasspathEntry[0]), monitor);
             createFolderIfNecessary(testSource, monitor);
         }
 
@@ -365,7 +371,7 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
             } else {
                 entries.add(defaultJREContainerEntry);
             }
-            javaProject.setRawClasspath(entries.toArray(new IClasspathEntry[entries.size()]), monitor);
+            javaProject.setRawClasspath(entries.toArray(new IClasspathEntry[0]), monitor);
         }
     }
 
