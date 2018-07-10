@@ -101,7 +101,7 @@ public class WorkingSetTracker {
 
     static private void updateWorkingSet(final IWorkingSet wset, final List<IAdaptable> members) {
         IAdaptable[] elements;
-        elements = members.toArray(new IAdaptable[members.size()]);
+        elements = members.toArray(new IAdaptable[0]);
         wset.setElements(elements);
     }
 

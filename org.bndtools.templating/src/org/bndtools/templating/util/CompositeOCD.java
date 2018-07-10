@@ -37,7 +37,7 @@ public class CompositeOCD extends BaseOCD {
             }
         }
         return ads.values()
-            .toArray(new AttributeDefinition[ads.size()]);
+            .toArray(new AttributeDefinition[0]);
     }
 
 }
