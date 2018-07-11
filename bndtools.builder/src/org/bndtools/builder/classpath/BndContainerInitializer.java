@@ -8,11 +8,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.bndtools.api.BndtoolsConstants;
 import org.bndtools.api.ILogger;
@@ -298,7 +300,17 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         }
 
         private void calculateContainersClasspath(String header, Collection<Container> containers, List<IClasspathEntry> classpath, List<IResource> filesToRefresh) {
-            final boolean testpath = header.equals(Constants.TESTPATH);
+            boolean testpath = false;
+            if (header.equals(Constants.TESTPATH)) {
+                try {
+                    testpath = Stream.of(javaProject.getRawClasspath())
+                        .filter(cpe -> cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE)
+                        .map(IClasspathEntry::getExtraAttributes)
+                        .filter(Objects::nonNull)
+                        .flatMap(Stream::of)
+                        .anyMatch(attr -> Objects.equals(attr.getName(), "test") && Boolean.parseBoolean(attr.getValue()));
+                } catch (JavaModelException e) {}
+            }
             for (Container c : containers) {
                 File file = c.getFile();
                 assert file.isAbsolute();
