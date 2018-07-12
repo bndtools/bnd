@@ -36,5 +36,8 @@ In this text `bnd` is used as if it is a command line program. This should be se
 <div>
 <dl class="property-index">
 
-{% for c in site.commands %}<dt><a href="{{ c.url | prepend: site.baseurl }}">{{c.title}}</a></dt><dd>{{c.summary}}</dd>
+{% for c in site.commands %}<dt><a href="{{ c.url | prepend: site.baseurl }}">{{c.title | escape}}</a></dt><dd>{{c.summary | escape}}</dd>
 {% endfor %}
+
+</dl>
+</div>
