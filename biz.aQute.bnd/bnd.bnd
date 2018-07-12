@@ -3,6 +3,7 @@
 #
 # This is not a bundle ...
 #
+-sources: false
 
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
