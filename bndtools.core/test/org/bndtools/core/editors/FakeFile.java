@@ -19,7 +19,6 @@ import aQute.lib.io.ByteBufferOutputStream;
 
 import static org.bndtools.core.editors.ImportPackageQuickFixProcessorTest.*;
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
 
 public class FakeFile {
@@ -198,7 +197,7 @@ public class FakeFile {
             doAnswer(new Answer<Void>() {
                 @Override
                 public Void answer(InvocationOnMock invocation) {
-                    String charset = invocation.getArgumentAt(0, String.class);
+                    String charset = invocation.getArgument(0);
                     info.setCharset(charset);
                     return null;
                 }
@@ -211,7 +210,7 @@ public class FakeFile {
                 public Void answer(InvocationOnMock invocation) throws Throwable {
                     // public void setContents(InputStream source, int updateFlags, IProgressMonitor monitor) throws
                     // CoreException {
-                    final InputStream source = invocation.getArgumentAt(0, InputStream.class);
+                    final InputStream source = invocation.getArgument(0);
                     info.setContents(source);
                     return null;
                 }
@@ -225,7 +224,7 @@ public class FakeFile {
                 public Void answer(InvocationOnMock invocation) throws Throwable {
                     // public void setContents(InputStream source, boolean force, boolean keepHistory, IProgressMonitor
                     // monitor) throws CoreException {
-                    final InputStream source = invocation.getArgumentAt(0, InputStream.class);
+                    final InputStream source = invocation.getArgument(0);
                     info.setContents(source);
                     return null;
                 }

@@ -121,7 +121,7 @@ public class ImportPackageQuickFixProcessorTest {
             @Override
             public Map<Requirement, Collection<Capability>> answer(InvocationOnMock invocation) throws Throwable {
                 @SuppressWarnings("unchecked")
-                Collection<? extends Requirement> reqs = invocation.getArgumentAt(0, Collection.class);
+                Collection<? extends Requirement> reqs = invocation.getArgument(0);
                 final Map<String, Collection<Capability>> thisRepoMap = getRepoMapFor(name);
                 Map<Requirement, Collection<Capability>> retval = new HashMap<>();
                 int i = 0;

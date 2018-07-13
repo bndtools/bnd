@@ -106,7 +106,6 @@ eclipse.deps: \
 -testpath: \
 	slf4j.api,\
 	slf4j.simple,\
-	org.assertj.core,\
-	org.mockito.mockito-core,\
-	org.objenesis,\
-	${junit}
+	${junit},\
+	${mockito}
+	
