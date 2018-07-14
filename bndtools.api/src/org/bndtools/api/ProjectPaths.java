@@ -1,8 +1,11 @@
 package org.bndtools.api;
 
+import java.util.List;
+
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.lib.strings.Strings;
 
 public class ProjectPaths {
 
@@ -14,13 +17,7 @@ public class ProjectPaths {
     static {
         /* This call MUST NOT access any remotes */
         Processor defaults = Workspace.getDefaults();
-        DEFAULT = new ProjectPaths( //
-            "bnd", //
-            defaults.getProperty(Constants.DEFAULT_PROP_SRC_DIR), //
-            defaults.getProperty(Constants.DEFAULT_PROP_BIN_DIR), //
-            defaults.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR), //
-            defaults.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR), //
-            defaults.getProperty(Constants.DEFAULT_PROP_TARGET_DIR));
+        DEFAULT = new ProjectPaths("bnd", defaults);
     }
 
     /*
@@ -28,18 +25,18 @@ public class ProjectPaths {
      */
 
     private final String title;
-    private final String src;
+    private final List<String> srcs;
     private final String bin;
-    private final String testSrc;
+    private final List<String> testSrcs;
     private final String testBin;
     private final String targetDir;
     private final String toolTip;
 
     private ProjectPaths(String title, String src, String bin, String testSrc, String testBin, String targetDir) {
         this.title = title;
-        this.src = src;
+        this.srcs = Strings.split(src);
         this.bin = bin;
-        this.testSrc = testSrc;
+        this.testSrcs = Strings.split(testSrc);
         this.testBin = testBin;
         this.targetDir = targetDir;
 
@@ -53,18 +50,37 @@ public class ProjectPaths {
     }
 
     private String constructToolTip() {
-        return String.format("Main sources directory: %s (%s)%n" + "Test sources directory: %s (%s)%n" + "Target directory: %s", src, bin, testSrc, testBin, targetDir);
+        return String.format("Main sources directory: %s (%s)%n" + "Test sources directory: %s (%s)%n" + "Target directory: %s", srcs, bin, testSrcs, testBin, targetDir);
+    }
+
+    public ProjectPaths(String title, Processor workspace) {
+        this(title, //
+            workspace.getProperty(Constants.DEFAULT_PROP_SRC_DIR), //
+            workspace.getProperty(Constants.DEFAULT_PROP_BIN_DIR), //
+            workspace.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR), //
+            workspace.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR), //
+            workspace.getProperty(Constants.DEFAULT_PROP_TARGET_DIR));
     }
 
     private void validate() throws Exception {
         if (title == null || title.length() == 0)
             throw new Exception("Invalid title");
-        if (src == null || src.length() == 0)
-            throw new Exception("Invalid source dir");
+
+        if (srcs.isEmpty())
+            throw new IllegalArgumentException("No source dir specified macro is ${src}");
+
+        srcs.forEach(src -> {
+            if (src == null || src.length() == 0)
+                throw new IllegalArgumentException("Invalid source dir " + src);
+        });
+
         if (bin == null || bin.length() == 0)
             throw new Exception("Invalid bin dir");
-        if (testSrc == null || testSrc.length() == 0)
-            throw new Exception("Invalid test source dir");
+
+        testSrcs.forEach(testSrc -> {
+            if (testSrc == null || testSrc.length() == 0)
+                throw new IllegalArgumentException("Invalid test source dir " + testSrc);
+        });
         if (testBin == null || testBin.length() == 0)
             throw new Exception("Invalid test bin dir");
         if (targetDir == null || targetDir.length() == 0)
@@ -75,16 +91,26 @@ public class ProjectPaths {
         return title;
     }
 
+    @Deprecated
     public String getSrc() {
-        return src;
+        return srcs.get(0);
+    }
+
+    public List<String> getSrcs() {
+        return srcs;
     }
 
     public String getBin() {
         return bin;
     }
 
+    @Deprecated
     public String getTestSrc() {
-        return testSrc;
+        return testSrcs.isEmpty() ? null : testSrcs.get(0);
+    }
+
+    public List<String> getTestSrcs() {
+        return testSrcs;
     }
 
     public String getTestBin() {

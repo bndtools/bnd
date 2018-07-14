@@ -40,7 +40,9 @@ import org.eclipse.swt.widgets.Control;
 import org.osgi.service.metatype.AttributeDefinition;
 import org.osgi.service.metatype.ObjectClassDefinition;
 
+import aQute.bnd.build.Workspace;
 import bndtools.Plugin;
+import bndtools.central.Central;
 
 public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
@@ -154,14 +156,33 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
 
     private static final IClasspathAttribute TEST = JavaCore.newClasspathAttribute("test", Boolean.TRUE.toString());
 
+    public ProjectPaths getProjectsPaths() {
+        try {
+            Workspace workspace = Central.getWorkspace();
+            return new ProjectPaths(workspace.toString(), workspace);
+        } catch (Exception e) {
+            return ProjectPaths.DEFAULT;
+        }
+    }
+
     @Override
     public IClasspathEntry[] getSourceClasspathEntries() {
         IPath projectPath = new Path(getProjectName()).makeAbsolute();
 
-        ProjectPaths projectPaths = ProjectPaths.DEFAULT;
+        ProjectPaths projectPaths = getProjectsPaths();
 
         List<IClasspathEntry> newEntries = new ArrayList<IClasspathEntry>(2);
-        newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getSrc()), ClasspathEntry.INCLUDE_ALL, ClasspathEntry.EXCLUDE_NONE, projectPath.append(projectPaths.getBin()), ClasspathEntry.NO_EXTRA_ATTRIBUTES));
+
+        for (String src : projectPaths.getSrcs()) {
+            IPath srcPath = projectPath.append(src);
+            IPath binPath = projectPath.append(projectPaths.getBin());
+            IClasspathEntry newSourceEntry = JavaCore.newSourceEntry(srcPath, //
+                ClasspathEntry.INCLUDE_ALL, //
+                ClasspathEntry.EXCLUDE_NONE, //
+                binPath, //
+                ClasspathEntry.NO_EXTRA_ATTRIBUTES);
+            newEntries.add(newSourceEntry);
+        }
 
         boolean enableTestSrcDir;
         try {
@@ -177,11 +198,20 @@ public class NewBndProjectWizardPageOne extends NewJavaProjectWizardPageOne {
                 .log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error accessing template parameters", e));
             enableTestSrcDir = true;
         }
-        if (enableTestSrcDir)
-            newEntries.add(JavaCore.newSourceEntry(projectPath.append(projectPaths.getTestSrc()), ClasspathEntry.INCLUDE_ALL, ClasspathEntry.EXCLUDE_NONE, projectPath.append(projectPaths.getTestBin()), new IClasspathAttribute[] {
-                TEST
-            }));
-
+        if (enableTestSrcDir) {
+            for (String testSrc : projectPaths.getTestSrcs()) {
+                IPath testSrcPath = projectPath.append(testSrc);
+                IPath testBinPath = projectPath.append(projectPaths.getTestBin());
+                IClasspathEntry newSourceEntry = JavaCore.newSourceEntry(testSrcPath, //
+                    ClasspathEntry.INCLUDE_ALL, //
+                    ClasspathEntry.EXCLUDE_NONE, //
+                    testBinPath, //
+                    new IClasspathAttribute[] {
+                        TEST
+                    });
+                newEntries.add(newSourceEntry);
+            }
+        }
         return newEntries.toArray(new IClasspathEntry[0]);
     }
 
