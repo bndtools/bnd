@@ -98,6 +98,6 @@ public class NewBndProjectWizardPageTwo extends NewJavaProjectWizardPageTwo {
         // we're okay if we have exactly at most two valid source paths
         // most templates use 2 source sets (main + test) but some do not
         // have the test source set
-        return resultFromSuperClass && (1 <= nr) && (nr <= 2);
+        return resultFromSuperClass && nr >= 1;
     }
 }

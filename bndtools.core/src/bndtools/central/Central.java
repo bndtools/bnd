@@ -62,9 +62,7 @@ import bndtools.preferences.BndPreferences;
 public class Central implements IStartupParticipant {
 
     private static final ILogger logger = Logger.getLogger(Central.class);
-
     private static volatile Central instance = null;
-
     private static volatile Workspace workspace = null;
     private static final PromiseFactory promiseFactory = new PromiseFactory(Processor.getExecutor(), Processor.getScheduledExecutor());
     private static final Deferred<Workspace> workspaceQueue = promiseFactory.deferred();
