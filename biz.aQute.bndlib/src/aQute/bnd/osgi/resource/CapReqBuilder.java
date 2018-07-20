@@ -1,5 +1,7 @@
 package aQute.bnd.osgi.resource;
 
+import static java.util.Objects.requireNonNull;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -55,11 +57,11 @@ public class CapReqBuilder {
 	private final Map<String, String>	directives							= new HashMap<>();
 
 	public CapReqBuilder(String namespace) {
-		this.namespace = namespace;
+		this.namespace = requireNonNull(namespace);
 	}
 
-	public CapReqBuilder(String ns, Attrs attrs) throws Exception {
-		this.namespace = ns;
+	public CapReqBuilder(String namespace, Attrs attrs) throws Exception {
+		this(namespace);
 		for (Entry<String, String> entry : attrs.entrySet()) {
 			String key = entry.getKey();
 			if (key.endsWith(":"))
