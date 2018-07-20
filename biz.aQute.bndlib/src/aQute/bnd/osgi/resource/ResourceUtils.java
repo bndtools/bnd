@@ -198,7 +198,6 @@ public class ResourceUtils {
 		return capabilityStream(resource, IdentityNamespace.IDENTITY_NAMESPACE, IdentityCapability.class).findFirst()
 			.map(c -> c.getAttributes()
 				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE))
-			.filter(Objects::nonNull)
 			.map(Object::toString)
 			.orElse(null);
 	}
