@@ -1,7 +1,10 @@
 package biz.aQute.resolve;
 
 import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
+import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
+import static org.osgi.namespace.contract.ContractNamespace.CONTRACT_NAMESPACE;
+import static org.osgi.service.repository.ContentNamespace.CONTENT_NAMESPACE;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,18 +31,15 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
-import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
-import org.osgi.namespace.contract.ContractNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wiring;
 import org.osgi.service.log.LogService;
-import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
 import org.osgi.service.resolver.HostedCapability;
 import org.osgi.service.resolver.ResolveContext;
@@ -79,9 +79,9 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	static {
 		// TODO BJ?
-		// IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(BundleNamespace.BUNDLE_NAMESPACE);
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(IdentityNamespace.IDENTITY_NAMESPACE);
-		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(ContentNamespace.CONTENT_NAMESPACE);
+		// IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(BUNDLE_NAMESPACE);
+		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(IDENTITY_NAMESPACE);
+		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(CONTENT_NAMESPACE);
 		// IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(HostNamespace.HOST_NAMESPACE);
 	}
 
@@ -393,7 +393,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		}
 
 		// Remove osgi.core and any ee JAR
-		List<Capability> idCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+		List<Capability> idCaps = resource.getCapabilities(IDENTITY_NAMESPACE);
 		if (idCaps == null || idCaps.isEmpty()) {
 			log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");
 			return false;
@@ -404,7 +404,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		}
 		String identity = (String) idCaps.get(0)
 			.getAttributes()
-			.get(IdentityNamespace.IDENTITY_NAMESPACE);
+			.get(IDENTITY_NAMESPACE);
 		if (identity == null) {
 			log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");
 			return false;
@@ -420,11 +420,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	protected static Capability findFrameworkContractCapability(Resource resource) {
-		List<Capability> contractCaps = resource.getCapabilities(ContractNamespace.CONTRACT_NAMESPACE);
+		List<Capability> contractCaps = resource.getCapabilities(CONTRACT_NAMESPACE);
 		if (contractCaps != null)
 			for (Capability cap : contractCaps) {
 				if (CONTRACT_OSGI_FRAMEWORK.equals(cap.getAttributes()
-					.get(ContractNamespace.CONTRACT_NAMESPACE)))
+					.get(CONTRACT_NAMESPACE)))
 					return cap;
 			}
 		return null;
@@ -574,8 +574,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 				Version v2 = getVersion(o2, AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE);
 				if (!v1.equals(v2))
 					return v2.compareTo(v1);
-			} else if (IdentityNamespace.IDENTITY_NAMESPACE.equals(ns1)
-				&& IdentityNamespace.IDENTITY_NAMESPACE.equals(ns2)) {
+			} else if (IDENTITY_NAMESPACE.equals(ns1) && IDENTITY_NAMESPACE.equals(ns2)) {
 				Version v1 = getVersion(o1, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 				Version v2 = getVersion(o2, IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
 				if (!v1.equals(v2))
@@ -677,11 +676,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 
 	public static Requirement createIdentityRequirement(String identity, String versionRange) {
 		// Construct a filter & requirement to find matches
-		Filter filter = new SimpleFilter(IdentityNamespace.IDENTITY_NAMESPACE, identity);
+		Filter filter = new SimpleFilter(IDENTITY_NAMESPACE, identity);
 		if (versionRange != null)
 			filter = new AndFilter().addChild(filter)
 				.addChild(new LiteralFilter(Filters.fromVersionRange(versionRange)));
-		Requirement frameworkReq = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE)
+		Requirement frameworkReq = new CapReqBuilder(IDENTITY_NAMESPACE)
 			.addDirective(Namespace.REQUIREMENT_FILTER_DIRECTIVE, filter.toString())
 			.buildSyntheticRequirement();
 		return frameworkReq;
@@ -828,7 +827,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		if (resource == null) {
 			return null;
 		}
-		List<Capability> identityCaps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
+		List<Capability> identityCaps = resource.getCapabilities(IDENTITY_NAMESPACE);
 		if (identityCaps == null || identityCaps.isEmpty()) {
 			return null;
 		}
@@ -842,7 +841,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			return null;
 		}
 		return (String) cap.getAttributes()
-			.get(IdentityNamespace.IDENTITY_NAMESPACE);
+			.get(IDENTITY_NAMESPACE);
 	}
 
 	public static Version getResourceVersion(Resource resource) {
