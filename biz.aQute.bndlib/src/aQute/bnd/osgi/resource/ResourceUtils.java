@@ -1,31 +1,37 @@
 package aQute.bnd.osgi.resource;
 
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collector;
+import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.AbstractWiringNamespace;
 import org.osgi.framework.namespace.BundleNamespace;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
+import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.namespace.contract.ContractNamespace;
 import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.namespace.implementation.ImplementationNamespace;
 import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Namespace;
@@ -40,7 +46,6 @@ import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
-import aQute.lib.converter.Converter.Hook;
 import aQute.lib.filter.Filter;
 import aQute.lib.strings.Strings;
 
@@ -49,97 +54,72 @@ public class ResourceUtils {
 	/**
 	 * A comparator that compares the identity versions
 	 */
-	public static final Comparator<Resource>			IDENTITY_VERSION_COMPARATOR	= new Comparator<Resource>() {
+	public static final Comparator<? super Resource>	IDENTITY_VERSION_COMPARATOR	=								//
+		(o1, o2) -> {
+			if (o1 == o2)
+				return 0;
 
-																						@Override
-																						public int compare(Resource o1,
-																							Resource o2) {
-																							if (o1 == o2)
-																								return 0;
+			if (o1 == null)
+				return -1;
 
-																							if (o1 == null)
-																								return -1;
+			if (o2 == null)
+				return 1;
 
-																							if (o2 == null)
-																								return 1;
+			if (o1.equals(o2))
+				return 0;
 
-																							if (o1.equals(o2))
-																								return 0;
+			String v1 = getIdentityVersion(o1);
+			String v2 = getIdentityVersion(o2);
 
-																							String v1 = getIdentityVersion(
-																								o1);
-																							String v2 = getIdentityVersion(
-																								o2);
+			if (v1 == v2)
+				return 0;
 
-																							if (v1 == v2)
-																								return 0;
+			if (v1 == null)
+				return -1;
 
-																							if (v1 == null)
-																								return -1;
+			if (v2 == null)
+				return 1;
 
-																							if (v2 == null)
-																								return 1;
+			return new Version(v1).compareTo(new Version(v2));
+		};
 
-																							return new Version(v1)
-																								.compareTo(
-																									new Version(v2));
-																						}
+	private static final Comparator<? super Resource>	RESOURCE_COMPARATOR			=								//
+		(o1, o2) -> {
+			if (o1 == o2)
+				return 0;
 
-																					};
+			if (o1 == null)
+				return -1;
+			if (o2 == null)
+				return 1;
 
-	private static final Comparator<? super Resource>	RESOURCE_COMPARATOR			= new Comparator<Resource>() {
+			if (o1.equals(o2))
+				return 0;
 
-																						@Override
-																						public int compare(Resource o1,
-																							Resource o2) {
-																							if (o1 == o2)
-																								return 0;
+			if (o1 instanceof ResourceImpl && o2 instanceof ResourceImpl) {
+				return ((ResourceImpl) o1).compareTo(o2);
+			}
 
-																							if (o1 == null)
-																								return -1;
-																							if (o2 == null)
-																								return 1;
-
-																							if (o1.equals(o2))
-																								return 0;
-
-																							if (o1 instanceof ResourceImpl
-																								&& o2 instanceof ResourceImpl) {
-																								return ((ResourceImpl) o1)
-																									.compareTo(o2);
-																							}
-
-																							return o1.toString()
-																								.compareTo(
-																									o2.toString());
-																						}
-																					};
+			return o1.toString()
+				.compareTo(o2.toString());
+		};
 
 	public static final Resource						DUMMY_RESOURCE				= new ResourceBuilder().build();
 	public static final String							WORKSPACE_NAMESPACE			= "bnd.workspace.project";
 
-	static Converter									cnv							= new Converter();
+	private static final Converter						cnv							= new Converter();
 
 	static {
-		cnv.hook(Version.class, new Hook() {
-
-			@Override
-			public Object convert(java.lang.reflect.Type dest, Object o) throws Exception {
-				if (o instanceof org.osgi.framework.Version)
-					return new Version(o.toString());
-
-				return null;
-			}
-
-		});
+		cnv.hook(Version.class,
+			(dest, o) -> (o instanceof org.osgi.framework.Version) ? new Version(o.toString()) : null);
 	}
 
 	public static interface IdentityCapability extends Capability {
 		public enum Type {
 			bundle(IdentityNamespace.TYPE_BUNDLE),
 			fragment(IdentityNamespace.TYPE_FRAGMENT),
-			unknown(IdentityNamespace.TYPE_UNKNOWN),;
-			private String s;
+			unknown(IdentityNamespace.TYPE_UNKNOWN);
+			private final String s;
 
 			private Type(String s) {
 				this.s = s;
@@ -189,49 +169,43 @@ public class ResourceUtils {
 		Version bundle_version();
 	}
 
+	private static Stream<Capability> capabilityStream(Resource resource, String namespace) {
+		return resource.getCapabilities(namespace)
+			.stream();
+	}
+
+	private static <T extends Capability> Stream<T> capabilityStream(Resource resource, String namespace,
+		Class<T> type) {
+		return capabilityStream(resource, namespace).map(c -> as(c, type));
+	}
+
 	public static ContentCapability getContentCapability(Resource resource) {
-		List<ContentCapability> caps = getContentCapabilities(resource);
-		if (caps.isEmpty())
-			return null;
-		return caps.get(0);
+		return capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE, ContentCapability.class).findFirst()
+			.orElse(null);
 	}
 
 	public static List<ContentCapability> getContentCapabilities(Resource resource) {
-		List<ContentCapability> result = new ArrayList<>();
-		List<Capability> capabilities = resource.getCapabilities(ContentNamespace.CONTENT_NAMESPACE);
-		for (Capability c : capabilities) {
-			result.add(as(c, ContentCapability.class));
-		}
-		return result;
+		return capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE, ContentCapability.class)
+			.collect(toList());
 	}
 
 	public static IdentityCapability getIdentityCapability(Resource resource) {
-		List<Capability> caps = resource.getCapabilities(IdentityNamespace.IDENTITY_NAMESPACE);
-		if (caps.isEmpty())
-			return null;
-
-		return as(caps.get(0), IdentityCapability.class);
+		return capabilityStream(resource, IdentityNamespace.IDENTITY_NAMESPACE, IdentityCapability.class).findFirst()
+			.orElse(null);
 	}
 
 	public static String getIdentityVersion(Resource resource) {
-		IdentityCapability cap = getIdentityCapability(resource);
-		if (cap == null)
-			return null;
-
-		Object v = cap.getAttributes()
-			.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-		if (v == null)
-			return null;
-
-		return v.toString();
+		return capabilityStream(resource, IdentityNamespace.IDENTITY_NAMESPACE, IdentityCapability.class).findFirst()
+			.map(c -> c.getAttributes()
+				.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE))
+			.filter(Objects::nonNull)
+			.map(Object::toString)
+			.orElse(null);
 	}
 
 	public static BundleCap getBundleCapability(Resource resource) {
-		List<Capability> caps = resource.getCapabilities(BundleNamespace.BUNDLE_NAMESPACE);
-		if (caps.isEmpty())
-			return null;
-
-		return as(caps.get(0), BundleCap.class);
+		return capabilityStream(resource, BundleNamespace.BUNDLE_NAMESPACE, BundleCap.class).findFirst()
+			.orElse(null);
 	}
 
 	public static Version toVersion(Object v) {
@@ -256,8 +230,11 @@ public class ResourceUtils {
 	}
 
 	public static final Version getVersion(Capability cap) {
+		String attr = getVersionAttributeForNamespace(cap.getNamespace());
+		if (attr == null)
+			return null;
 		Object v = cap.getAttributes()
-			.get(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE);
+			.get(attr);
 		if (v == null)
 			return null;
 
@@ -308,65 +285,48 @@ public class ResourceUtils {
 		return null;
 	}
 
-	public static String getVersionAttributeForNamespace(String ns) {
-		String name;
-
-		if (IdentityNamespace.IDENTITY_NAMESPACE.equals(ns))
-			name = IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-		else if (BundleNamespace.BUNDLE_NAMESPACE.equals(ns))
-			name = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
-		else if (HostNamespace.HOST_NAMESPACE.equals(ns))
-			name = AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
-		else if (PackageNamespace.PACKAGE_NAMESPACE.equals(ns))
-			name = PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-		else if (ServiceNamespace.SERVICE_NAMESPACE.equals(ns))
-			name = null;
-		else if (ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE.equals(ns))
-			name = ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-		else if (ExtenderNamespace.EXTENDER_NAMESPACE.equals(ns))
-			name = ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-		else if (ContractNamespace.CONTRACT_NAMESPACE.equals(ns))
-			name = ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE;
-		else
-			name = null;
-
-		return name;
+	public static String getVersionAttributeForNamespace(String namespace) {
+		switch (namespace) {
+			case IdentityNamespace.IDENTITY_NAMESPACE :
+				return IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case BundleNamespace.BUNDLE_NAMESPACE :
+			case HostNamespace.HOST_NAMESPACE :
+				return AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE;
+			case PackageNamespace.PACKAGE_NAMESPACE :
+				return PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE :
+				return ExecutionEnvironmentNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case NativeNamespace.NATIVE_NAMESPACE :
+				return NativeNamespace.CAPABILITY_OSVERSION_ATTRIBUTE;
+			case ExtenderNamespace.EXTENDER_NAMESPACE :
+				return ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case ContractNamespace.CONTRACT_NAMESPACE :
+				return ContractNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case ImplementationNamespace.IMPLEMENTATION_NAMESPACE :
+				return ImplementationNamespace.CAPABILITY_VERSION_ATTRIBUTE;
+			case ServiceNamespace.SERVICE_NAMESPACE :
+			default :
+				return null;
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Capability> T as(final Capability cap, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
 			type
-		}, new InvocationHandler() {
-
-			@Override
-			public Object invoke(Object target, Method method, Object[] args) throws Throwable {
-				if (Capability.class == method.getDeclaringClass())
-					return method.invoke(cap, args);
-
-				return get(method, cap.getAttributes(), cap.getDirectives(), args);
-			}
-		});
+		}, (target, method, args) -> (Capability.class == method.getDeclaringClass()) ? method.invoke(cap, args)
+			: get(method, cap.getAttributes(), cap.getDirectives(), args));
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Requirement> T as(final Requirement req, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
 			type
-		}, new InvocationHandler() {
-
-			@Override
-			public Object invoke(Object target, Method method, Object[] args) throws Throwable {
-				if (Requirement.class == method.getDeclaringClass())
-					return method.invoke(req, args);
-
-				return get(method, req.getAttributes(), req.getDirectives(), args);
-			}
-		});
+		}, (target, method, args) -> (Requirement.class == method.getDeclaringClass()) ? method.invoke(req, args)
+			: get(method, req.getAttributes(), req.getDirectives(), args));
 	}
 
-	@SuppressWarnings("unchecked")
-	static <T> T get(Method method, Map<String, Object> attrs, Map<String, String> directives, Object[] args)
+	private static Object get(Method method, Map<String, Object> attrs, Map<String, String> directives, Object[] args)
 		throws Exception {
 		String name = method.getName()
 			.replace('_', '.');
@@ -379,21 +339,16 @@ public class ResourceUtils {
 		if (value == null && args != null && args.length == 1)
 			value = args[0];
 
-		return (T) cnv.convert(method.getGenericReturnType(), value);
+		return cnv.convert(method.getGenericReturnType(), value);
 	}
 
 	public static Set<Resource> getResources(Collection<? extends Capability> providers) {
 		if (providers == null || providers.isEmpty())
 			return Collections.emptySet();
 
-		Set<Resource> resources = new TreeSet<>(RESOURCE_COMPARATOR);
-
-		for (Capability c : providers) {
-			Resource r = c.getResource();
-			resources.add(r);
-		}
-
-		return resources;
+		return providers.stream()
+			.map(Capability::getResource)
+			.collect(toCollection(() -> new TreeSet<>(RESOURCE_COMPARATOR)));
 	}
 
 	public static Requirement createWildcardRequirement() {
@@ -429,30 +384,26 @@ public class ResourceUtils {
 		return capabilityEffective.equals(requirementEffective);
 	}
 
-	public static boolean matches(Requirement r, Resource resource) {
-		for (Capability c : resource.getCapabilities(r.getNamespace())) {
-			if (matches(r, c))
-				return true;
-		}
-		return false;
+	public static boolean matches(Requirement requirement, Resource resource) {
+		return capabilityStream(resource, requirement.getNamespace()).anyMatch(c -> matches(requirement, c));
 	}
 
-	public static boolean matches(Requirement r, Capability c) {
-		if (!r.getNamespace()
-			.equals(c.getNamespace()))
+	public static boolean matches(Requirement requirement, Capability capability) {
+		if (!requirement.getNamespace()
+			.equals(capability.getNamespace()))
 			return false;
 
-		if (!isEffective(r, c))
+		if (!isEffective(requirement, capability))
 			return false;
 
-		String filter = r.getDirectives()
+		String filter = requirement.getDirectives()
 			.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
 		if (filter == null)
 			return true;
 
 		try {
 			Filter f = new Filter(filter);
-			return f.matchMap(c.getAttributes());
+			return f.matchMap(capability.getAttributes());
 		} catch (Exception e) {
 			return false;
 		}
@@ -466,8 +417,8 @@ public class ResourceUtils {
 			return effective;
 	}
 
-	public static ResolutionDirective getResolution(Requirement r) {
-		String resolution = r.getDirectives()
+	public static ResolutionDirective getResolution(Requirement requirement) {
+		String resolution = requirement.getDirectives()
 			.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE);
 		if (resolution == null || resolution.equals(Namespace.RESOLUTION_MANDATORY))
 			return ResolutionDirective.mandatory;
@@ -478,26 +429,26 @@ public class ResourceUtils {
 		return null;
 	}
 
-	public static String toRequireCapability(Requirement req) throws Exception {
+	public static String toRequireCapability(Requirement requirement) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(req.getNamespace());
+		sb.append(requirement.getNamespace());
 
-		CapReqBuilder r = new CapReqBuilder(req.getNamespace());
-		r.addAttributes(req.getAttributes());
-		r.addDirectives(req.getDirectives());
+		CapReqBuilder r = new CapReqBuilder(requirement.getNamespace());
+		r.addAttributes(requirement.getAttributes());
+		r.addDirectives(requirement.getDirectives());
 		Attrs attrs = r.toAttrs();
 		sb.append(";")
 			.append(attrs);
 		return sb.toString();
 	}
 
-	public static String toProvideCapability(Capability cap) throws Exception {
+	public static String toProvideCapability(Capability capability) throws Exception {
 		StringBuilder sb = new StringBuilder();
-		sb.append(cap.getNamespace());
+		sb.append(capability.getNamespace());
 
-		CapReqBuilder r = new CapReqBuilder(cap.getNamespace());
-		r.addAttributes(cap.getAttributes());
-		r.addDirectives(cap.getDirectives());
+		CapReqBuilder r = new CapReqBuilder(capability.getNamespace());
+		r.addAttributes(capability.getAttributes());
+		r.addDirectives(capability.getDirectives());
 		Attrs attrs = r.toAttrs();
 		sb.append(";")
 			.append(attrs);
@@ -505,24 +456,23 @@ public class ResourceUtils {
 	}
 
 	public static Map<URI, String> getLocations(Resource resource) {
-		Map<URI, String> locations = new HashMap<>();
-		for (ContentCapability c : getContentCapabilities(resource)) {
-			URI uri = c.url();
-			String sha = c.osgi_content();
-
-			if (uri != null)
-				locations.put(uri, sha);
-		}
-		return locations;
+		return capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE, ContentCapability.class)
+			.filter(c -> Objects.nonNull(c.url()))
+			// We can't use Collectors.toMap since we must handle null
+			// ContentCapability::osgi_content values.
+			// .collect(toMap(ContentCapability::url,
+			// ContentCapability::osgi_content));
+			.collect(Collector.of(HashMap::new, (m, c) -> m.put(c.url(), c.osgi_content()), (m1, m2) -> {
+				m1.putAll(m2);
+				return m1;
+			}));
 	}
 
 	public static List<Capability> findProviders(Requirement requirement,
 		Collection<? extends Capability> capabilities) {
-		List<Capability> result = new ArrayList<>();
-		for (Capability capability : capabilities)
-			if (matches(requirement, capability))
-				result.add(capability);
-		return result;
+		return capabilities.stream()
+			.filter(c -> matches(requirement, c))
+			.collect(toList());
 	}
 
 	public static boolean isFragment(Resource resource) {
@@ -571,12 +521,5 @@ public class ResourceUtils {
 		Attrs attribs = new Attrs();
 		attribs.put(Constants.VERSION_ATTRIBUTE, versionString);
 		return new VersionedClause(identity, attribs);
-	}
-
-	static <T> T requireNonNull(T obj) {
-		if (obj != null) {
-			return obj;
-		}
-		throw new NullPointerException();
 	}
 }

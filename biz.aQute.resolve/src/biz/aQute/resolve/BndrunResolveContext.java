@@ -18,9 +18,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
 
-import org.osgi.framework.Version;
 import org.osgi.framework.namespace.IdentityNamespace;
-import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -224,25 +222,6 @@ public class BndrunResolveContext extends AbstractResolveContext {
 			// We've not gathered all the capabilities of the system
 			// so we can create the resource and set it as the system resource
 			//
-
-			//
-			// TODO Add osgi.wiring.bundle + osgi.wiring.host
-			// filed a bug about using the impl version for the system
-			// capabilities
-			//
-			List<Capability> frameworkPackages = system.findCapabilities(PackageNamespace.PACKAGE_NAMESPACE,
-				"(" + PackageNamespace.PACKAGE_NAMESPACE + "=org.osgi.framework)");
-			if (!frameworkPackages.isEmpty()) {
-				Capability c = frameworkPackages.get(0);
-				Version version = (Version) c.getAttributes()
-					.get(PackageNamespace.CAPABILITY_VERSION_ATTRIBUTE);
-
-				CapReqBuilder crb = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
-				crb.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, "system.bundle");
-
-				crb.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
-				system.addCapability(crb);
-			}
 
 			setSystemResource(system.build());
 		} catch (Exception e) {
