@@ -110,7 +110,7 @@ public class CapReqBuilder {
 			value = Converter.cnv(List.class, value);
 		}
 
-		if ("version".equals(name)) {
+		if (name.equals(ResourceUtils.getVersionAttributeForNamespace(namespace))) {
 			value = toVersions(value);
 		}
 
