@@ -1,6 +1,8 @@
 package biz.aQute.resolve;
 
+import static java.util.Objects.requireNonNull;
 import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
+import static org.osgi.framework.namespace.HostNamespace.HOST_NAMESPACE;
 import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
 import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
 import static org.osgi.namespace.contract.ContractNamespace.CONTRACT_NAMESPACE;
@@ -31,7 +33,6 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
-import org.osgi.framework.namespace.HostNamespace;
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Capability;
@@ -735,6 +736,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 */
 
 	protected void setFramework(ResourceBuilder system, Resource framework) throws Exception {
+		this.framework = requireNonNull(framework);
 
 		//
 		// We copy the framework capabilities
@@ -742,37 +744,26 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		system.addCapabilities(framework.getCapabilities(null));
 
 		//
-		// Add system.bundle alias. This is mandated by the spec that a
-		// framework has a bundle namespace capability.
-		//
-
-		CapReqBuilder cap = new CapReqBuilder(BundleNamespace.BUNDLE_NAMESPACE);
-		cap.addAttribute(BundleNamespace.BUNDLE_NAMESPACE, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
-
-		//
-		// TODO BJ is this right? Use the version of the provider framework?
+		// Add system.bundle alias. This is mandated by the spec.
 		//
 
 		String frameworkVersion = ResourceUtils.getIdentityVersion(framework);
-		cap.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion);
 
+		CapReqBuilder cap = new CapReqBuilder(BUNDLE_NAMESPACE);
+		cap.addAttribute(cap.getNamespace(), Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
+		cap.addAttribute(ResourceUtils.getVersionAttributeForNamespace(cap.getNamespace()), frameworkVersion);
 		system.addCapability(cap);
 
-		//
-		// Add a HOST namespace capability for fragments
-		//
-
-		cap = new CapReqBuilder(HostNamespace.HOST_NAMESPACE);
-		cap.addAttribute(HostNamespace.HOST_NAMESPACE, Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
-
-		//
-		// TODO BJ is this right? Use the version of the provider framework?
-		//
-
-		cap.addAttribute(AbstractWiringNamespace.CAPABILITY_BUNDLE_VERSION_ATTRIBUTE, frameworkVersion);
+		cap = new CapReqBuilder(HOST_NAMESPACE);
+		cap.addAttribute(cap.getNamespace(), Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
+		cap.addAttribute(ResourceUtils.getVersionAttributeForNamespace(cap.getNamespace()), frameworkVersion);
 		system.addCapability(cap);
 
-		this.framework = framework;
+		cap = new CapReqBuilder(IDENTITY_NAMESPACE);
+		cap.addAttribute(cap.getNamespace(), Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
+		cap.addAttribute(ResourceUtils.getVersionAttributeForNamespace(cap.getNamespace()), frameworkVersion);
+		cap.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE);
+		system.addCapability(cap);
 	}
 
 	/*
