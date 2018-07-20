@@ -572,11 +572,4 @@ public class ResourceUtils {
 		attribs.put(Constants.VERSION_ATTRIBUTE, versionString);
 		return new VersionedClause(identity, attribs);
 	}
-
-	static <T> T requireNonNull(T obj) {
-		if (obj != null) {
-			return obj;
-		}
-		throw new NullPointerException();
-	}
 }
