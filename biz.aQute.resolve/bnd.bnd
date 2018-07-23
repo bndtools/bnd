@@ -2,6 +2,7 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: osgi.core;version=@5,\
+	org.osgi.service.resolver;version=1.1.0, \
 	osgi.cmpn;version=@5, \
     aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\

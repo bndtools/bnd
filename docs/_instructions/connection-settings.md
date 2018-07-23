@@ -55,7 +55,7 @@ The settings files have the following structure:
 		  <username>username</username>
 	      <password>password</password>
 		  <verify> true | false </verify>
-		  <trust> comma separated paths to X509 certificates </trus>
+		  <trust> comma separated paths to X509 certificates </trust>
 	    </server>
 	  </servers>
 	</settings> 

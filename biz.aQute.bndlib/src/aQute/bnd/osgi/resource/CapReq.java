@@ -1,7 +1,7 @@
 package aQute.bnd.osgi.resource;
 
-import static aQute.bnd.osgi.resource.ResourceUtils.requireNonNull;
 import static java.util.Collections.unmodifiableMap;
+import static java.util.Objects.requireNonNull;
 
 import java.util.HashMap;
 import java.util.Map;
