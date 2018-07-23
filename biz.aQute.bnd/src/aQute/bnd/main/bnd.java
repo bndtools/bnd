@@ -835,7 +835,7 @@ public class bnd extends Processor {
 			if (list.isEmpty()) {
 				out.println("No projects");
 			}
-			return;
+
 		} else {
 			list = Arrays.asList(project);
 		}
@@ -1016,20 +1016,19 @@ public class bnd extends Processor {
 	}
 
 	@Description("Clean a project")
-	interface cleanOptions extends Options {
-		@Description("Path to another project than the current project")
-		String project();
+	interface cleanOptions extends projectOptions {
+
 	}
 
-	@Description("Clean a project")
+	@Description("Clean a project or workspace")
 	public void _clean(cleanOptions opts) throws Exception {
-		Project project = getProject(opts.project());
-		if (project == null) {
-			messages.NoProject();
-			return;
-		}
-		project.clean();
-		getInfo(project);
+		perProject(opts, new PerProject() {
+
+			@Override
+			public void doit(Project p) throws Exception {
+				p.clean();
+			}
+		});
 	}
 
 	@Description("Access the internal bnd database of keywords and options")
@@ -1313,7 +1312,9 @@ public class bnd extends Processor {
 			}
 			p.release(options.test());
 		}
-		getInfo(project);
+		if (project != null) {
+			getInfo(project);
+		}
 	}
 
 	@Description("Show a cross references for all classes in a set of jars.")
