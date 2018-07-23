@@ -49,3 +49,5 @@ Export-Package: \
 -runproperties.testlauncher2: in.bndrun=project
 
 -exporttype: bnd.executablejar;foo=bnd, bnd.runbundles;bar=bnd
+
+-includeresource: x.bndrun

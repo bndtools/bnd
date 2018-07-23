@@ -13,10 +13,12 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -28,31 +30,39 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.help.instructions.BuilderInstructions;
+import aQute.bnd.help.instructions.LauncherInstructions;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Jar.Compression;
+import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.launcher.constants.LauncherConstants;
 import aQute.launcher.pre.EmbeddedLauncher;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.glob.Glob;
 
 public class ProjectLauncherImpl extends ProjectLauncher {
-	private final static Logger	logger					= LoggerFactory.getLogger(ProjectLauncherImpl.class);
-	private static final String	EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
-	private static final String	EMBEDDED_LAUNCHER		= "aQute/launcher/pre/EmbeddedLauncher.class";
+	private final static Logger		logger					= LoggerFactory.getLogger(ProjectLauncherImpl.class);
+	private static final String		EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
+	private static final String		EMBEDDED_LAUNCHER		= "aQute/launcher/pre/EmbeddedLauncher.class";
+	private BuilderInstructions		builderInstrs			= getInstructions(BuilderInstructions.class);
+	private LauncherInstructions	launcherInstrs			= getInstructions(LauncherInstructions.class);
 
-	final private File			launchPropertiesFile;
-	boolean						prepared;
+	final private File				launchPropertiesFile;
+	boolean							prepared;
 
-	DatagramSocket				listenerComms;
+	DatagramSocket					listenerComms;
 
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);
@@ -213,16 +223,22 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * Create a standalone executable. All entries on the runpath are rolled out
 	 * into the JAR and the runbundles are copied to a directory in the jar. The
 	 * launcher will see that it starts in embedded mode and will automatically
-	 * detect that it should load the bundles from inside. This is drive by the
+	 * detect that it should load the bundles from inside. This is driven by the
 	 * launcher.embedded flag.
-	 * 
-	 * @throws Exception
 	 */
 
 	@Override
 	public Jar executable() throws Exception {
 
+		Optional<Compression> rejar = launcherInstrs.executable()
+			.rejar();
+		Map<Glob, List<Glob>> strip = extractStripMapping(launcherInstrs.executable()
+			.strip());
+
 		Jar jar = new Jar(getProject().getName());
+
+		builderInstrs.compression()
+			.ifPresent(jar::setCompression);
 
 		Parameters ir = getProject().getIncludeResource();
 		if (!ir.isEmpty()) {
@@ -253,7 +269,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			File file = new File(path);
 			if (file.isFile()) {
 				String newPath = nonCollidingPath(file, jar);
-				jar.putResource(newPath, new FileResource(file));
+				jar.putResource(newPath, getJarFileResource(file, rejar, strip));
 				classpath.add(newPath);
 			}
 		}
@@ -270,7 +286,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				getProject().error("Invalid entry in -runbundles %s", file);
 			else {
 				String newPath = nonCollidingPath(file, jar);
-				jar.putResource(newPath, new FileResource(file));
+				jar.putResource(newPath, getJarFileResource(file, rejar, strip));
 				actualPaths.add(newPath);
 			}
 		}
@@ -320,6 +336,59 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		jar.setManifest(m);
 		cleanup();
 		return jar;
+	}
+
+	private Map<Glob, List<Glob>> extractStripMapping(List<String> strip) {
+		MultiMap<Glob, Glob> map = new MultiMap<>();
+
+		for (String s : strip) {
+			int n = s.indexOf(':');
+			Glob key = Glob.ALL;
+			if (n > 0) {
+				key = new Glob(s.substring(0, n));
+			}
+			Glob value = new Glob(s.substring(n + 1));
+			map.add(key, value);
+		}
+		return map;
+	}
+
+	private Resource getJarFileResource(File file, Optional<Compression> compression, Map<Glob, List<Glob>> strip)
+		throws IOException {
+		if (strip.isEmpty() && !compression.isPresent())
+			return new FileResource(file);
+
+		Jar jar = new Jar(file);
+		jar.setDoNotTouchManifest();
+
+		compression.ifPresent(jar::setCompression);
+
+		stripContent(strip, jar);
+
+		JarResource resource = new JarResource(jar, true);
+		return resource;
+	}
+
+	private void stripContent(Map<Glob, List<Glob>> strip, Jar jar) {
+		Set<String> remove = new HashSet<>();
+
+		for (Map.Entry<Glob, List<Glob>> e : strip.entrySet()) {
+			Glob fileMatch = e.getKey();
+			if (!fileMatch.matcher(jar.getName())
+				.matches()) {
+				continue;
+			}
+
+			List<Glob> value = e.getValue();
+
+			for (String path : jar.getResources()
+				.keySet()) {
+				if (Glob.in(value, path)) {
+					remove.add(path);
+				}
+			}
+		}
+		remove.forEach(jar::remove);
 	}
 
 	String nonCollidingPath(File file, Jar jar) {

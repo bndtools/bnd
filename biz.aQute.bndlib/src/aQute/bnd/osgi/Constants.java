@@ -103,6 +103,7 @@ public interface Constants {
 	String								CACHEDIR									= "-cachedir";
 	String								CONDITIONALPACKAGE							= "-conditionalpackage";
 	String								CONNECTION_SETTINGS							= "-connection-settings";
+	String								COMPRESSION									= "-compression";
 	String								DIFFIGNORE									= "-diffignore";
 	String								DIFFPACKAGES								= "-diffpackages";
 	String								DEPENDSON									= "-dependson";
@@ -120,6 +121,7 @@ public interface Constants {
 	String								EXPORT_CONTENTS								= "-exportcontents";
 	String								EXTENSION									= "-extension";
 	String								EEPROFILE									= "-eeprofile";
+	String								EXECUTABLE									= "-executable";
 	String								EXPORT										= "-export";
 	String								EXPORTTYPE									= "-exporttype";
 	String								FAIL_OK										= "-failok";
@@ -165,7 +167,7 @@ public interface Constants {
 	String								NOBUNDLES									= "-nobundles";
 	String								OUTPUTMASK									= "-outputmask";																																						// default
 																																																															// ${@bsn}.jar
-	String								PACKAGE										= "-package";
+
 	String								PEDANTIC									= "-pedantic";
 	String								PACKAGEINFOTYPE								= "-packageinfotype";
 	String								PLUGIN										= "-plugin";
@@ -250,13 +252,13 @@ public interface Constants {
 	String								OUTPUT										= "-output";
 
 	String								options[]									= {
-		BASELINE, BUILDPATH, BUMPPOLICY, CONDUIT, CLASSPATH, CONSUMER_POLICY, DEPENDSON, DONOTCOPY, EXPORT_CONTENTS,
-		FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES, PEDANTIC, PLUGIN, POM,
-		PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES, SOURCEPATH, SUB, RUNBUNDLES,
-		RUNPATH, RUNSYSTEMPACKAGES, RUNSYSTEMCAPABILITIES, RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH,
+		BASELINE, BUILDPATH, BUMPPOLICY, CONDUIT, CLASSPATH, COMPRESSION, CONSUMER_POLICY, DEPENDSON, DONOTCOPY,
+		EXPORT_CONTENTS, FAIL_OK, INCLUDE, INCLUDERESOURCE, MAKE, MANIFEST, NOEXTRAHEADERS, NOUSES, NOBUNDLES, PEDANTIC,
+		PLUGIN, POM, PROVIDER_POLICY, REMOVEHEADERS, RESOURCEONLY, SOURCES, SOURCEPATH, SOURCES, SOURCEPATH, SUB,
+		RUNBUNDLES, RUNPATH, RUNSYSTEMPACKAGES, RUNSYSTEMCAPABILITIES, RUNPROPERTIES, REPORTNEWER, UNDERTEST, TESTPATH,
 		TESTPACKAGES, NOMANIFEST, DEPLOYREPO, RELEASEREPO, SAVEMANIFEST, RUNVM, RUNPROGRAMARGS, WAB, WABLIB,
 		RUNFRAMEWORK, RUNFW, RUNKEEP, RUNTRACE, RUNBLACKLIST, TESTCONTINUOUS, SNAPSHOT, NAMESECTION, DIGESTS,
-		DSANNOTATIONS, DSANNOTATIONS_OPTIONS, BASELINE, BASELINEREPO, PROFILE, PACKAGE, RUNNOREFERENCES, JAVAAGENT,
+		DSANNOTATIONS, DSANNOTATIONS_OPTIONS, BASELINE, BASELINEREPO, PROFILE, EXECUTABLE, RUNNOREFERENCES, JAVAAGENT,
 		STRICT, DIFFIGNORE, DIFFPACKAGES, CONTRACT, NOBUILDINCACHE, EXTENSION, NOJUNIT, NOJUNITOSGI, PREPROCESSMATCHERS,
 		UPTO, INVALIDFILENAMES, FIXUPMESSAGES, PRIVATEPACKAGE, CONDITIONALPACKAGE, NOEE, OUTPUTMASK, TESTUNRESOLVED,
 		RUNJDB, RUNENV, RUNEE, EEPROFILE, RUNREQUIRES, EXPORT, GESTALT, BNDDRIVER, CHECK, DISTRO, METATYPE_ANNOTATIONS,
@@ -379,7 +381,7 @@ public interface Constants {
 	String								DEFAULT_LAUNCHER_BSN						= "biz.aQute.launcher";
 	String								DEFAULT_TESTER_BSN							= "biz.aQute.junit";
 
-	String								DEFAULT_DO_NOT_COPY							= "CVS|\\.svn|\\.git|\\.DS_Store";
+	String								DEFAULT_DO_NOT_COPY							= "CVS|\\.svn|\\.git|\\.DS_Store|\\.gitignore";
 
 	Charset								DEFAULT_CHARSET								= StandardCharsets.UTF_8;
 	String								VERSION_FILTER								= "version";
@@ -490,5 +492,11 @@ public interface Constants {
 	String								RUNPATH_MAIN_DIRECTIVE						= "main:";
 	@Deprecated
 	String								RUNPATH_LAUNCHER_DIRECTIVE					= "launcher:";
+
+	/*
+	 * Was unused and had a bad name
+	 */
+	@Deprecated
+	String								PACKAGE										= "-package";
 
 }

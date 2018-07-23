@@ -66,6 +66,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.help.Syntax;
+import aQute.bnd.help.SyntaxAnnotation;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryDonePlugin;
@@ -2762,4 +2764,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		}
 	}
 
+	/**
+	 * Return an instance of an interface where each method is mapped to an
+	 * instruction available from this Processor. See {@link SyntaxAnnotation}
+	 * for how to annotate this interface.
+	 */
+	public <T> T getInstructions(Class<T> type) {
+		return Syntax.getInstructions(this, type);
+	}
 }
