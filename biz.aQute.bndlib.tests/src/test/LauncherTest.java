@@ -1,5 +1,7 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,6 +25,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
+import aQute.libg.command.Command;
 import junit.framework.TestCase;
 
 public class LauncherTest extends TestCase {
@@ -35,6 +38,115 @@ public class LauncherTest extends TestCase {
 		if (project != null) {
 			project.close();
 			workspace.close();
+		}
+	}
+
+	public void testExecutableJarWithStripping() throws Exception {
+		Project project = getProject();
+		ProjectLauncher l = project.getProjectLauncher();
+
+		long full = make(l, null);
+		long optStripped = make(l, "strip='OSGI-OPT/*'");
+		long optStrippedAndNoBndrun = make(l, "strip='OSGI-OPT/*,*.bndrun'");
+		long optNoBndrun = make(l, "strip='*.bndrun'");
+
+		assertThat(full > optStripped).isTrue();
+		assertThat(optStripped > optStrippedAndNoBndrun).isTrue();
+		assertThat(optStrippedAndNoBndrun < optNoBndrun).isTrue();
+
+	}
+
+	private long make(ProjectLauncher l, String option) throws Exception {
+		if (option != null)
+			l.setProperty(Constants.EXECUTABLE, option);
+		try (Jar executable = l.executable()) {
+			File tmp = Files.newTemporaryFile();
+			try {
+				executable.write(tmp);
+				return tmp.length();
+			} finally {
+				IO.delete(tmp);
+			}
+		}
+	}
+
+	/**
+	 * Test the rejar and strip properties of the -executable instruction
+	 */
+
+	public void testExecutableWithRejarringAndStripping() throws Exception {
+
+		long storedStored = makeExec(false, false, false);
+		long storedDeflate = makeExec(false, false, true);
+		long deflateDeflate = makeExec(false, true, true);
+		long deflateStored = makeExec(false, true, false);
+		long stripStoredStored = makeExec(true, false, false);
+		long stripStoredDeflate = makeExec(true, false, true);
+		long stripDeflateDeflate = makeExec(true, true, true);
+		long stripDeflateStored = makeExec(true, true, false);
+
+		assertTrue(deflateStored < deflateDeflate);
+		assertTrue(deflateDeflate < storedDeflate);
+		assertTrue(storedDeflate < storedStored);
+
+		assertTrue(stripStoredStored < storedStored);
+		assertTrue(stripStoredDeflate < storedDeflate);
+		assertTrue(stripDeflateDeflate < deflateDeflate);
+		assertTrue(stripDeflateStored < deflateStored);
+	}
+
+	private long makeExec(boolean strip, boolean outer, boolean inner) throws Exception {
+		Project project = getProject();
+		project.setProperty(Constants.RUNPROPERTIES, "test.cmd=exit");
+		project.setProperty(Constants.RUNTRACE, "false");
+		ProjectLauncher l = project.getProjectLauncher();
+		if (outer) {
+			l.setProperty(Constants.COMPRESSION, "DEFLATE");
+			System.out.println("outer deflate");
+		} else {
+			l.setProperty(Constants.COMPRESSION, "STORE");
+			System.out.println("outer store");
+		}
+
+		if (inner) {
+			if (strip) {
+				l.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE,strip='OSGI-OPT/*,META-INF/maven/*'");
+				System.out.println("inner deflate & strip");
+			} else {
+				l.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE");
+				System.out.println("inner deflate & no strip");
+			}
+		} else {
+			if (strip) {
+				l.setProperty(Constants.EXECUTABLE, "rejar=STORE,strip='OSGI-OPT/*,META-INF/maven/*'");
+				System.out.println("inner store & strip");
+			} else {
+				l.setProperty(Constants.EXECUTABLE, "rejar=STORE");
+				System.out.println("inner store & no strip");
+			}
+		}
+
+		try (Jar executable = l.executable()) {
+			File tmp = Files.newTemporaryFile();
+			try {
+				executable.write(tmp);
+				System.out.println("size " + tmp.length());
+				System.out.println();
+
+				Command cmd = new Command();
+				String java = System.getProperty("java", "java");
+				cmd.add(java);
+				cmd.add("-jar");
+				cmd.add(tmp.getAbsolutePath());
+
+				int execute = cmd.execute(System.out, System.err);
+
+				assertThat(execute).isEqualTo(42);
+
+				return tmp.length();
+			} finally {
+				IO.delete(tmp);
+			}
 		}
 	}
 
@@ -51,7 +163,7 @@ public class LauncherTest extends TestCase {
 		File temporaryFolder = Files.temporaryFolder();
 		try {
 			try (Jar executable = l.executable()) {
-				executable.expand(temporaryFolder);
+				executable.writeFolder(temporaryFolder);
 			}
 			try (URLClassLoader loader = new URLClassLoader(new URL[] {
 				temporaryFolder.toURI()
