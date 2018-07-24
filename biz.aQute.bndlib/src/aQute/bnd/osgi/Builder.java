@@ -30,6 +30,7 @@ import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.help.instructions.BuilderInstructions;
 import aQute.bnd.make.Make;
 import aQute.bnd.make.MakeBnd;
 import aQute.bnd.make.MakeCopy;
@@ -68,6 +69,7 @@ public class Builder extends Analyzer {
 	private final List<File>		sourcePath					= new ArrayList<>();
 	private final Make				make						= new Make(this);
 	private Instructions			defaultPreProcessMatcher	= null;
+	private BuilderInstructions		buildInstrs					= getInstructions(BuilderInstructions.class);
 
 	public Builder(Processor parent) {
 		super(parent);
@@ -87,6 +89,10 @@ public class Builder extends Analyzer {
 		Jar dot = getJar();
 		if (dot == null) {
 			dot = new Jar("dot");
+
+			buildInstrs.compression()
+				.ifPresent(dot::setCompression);
+
 			dot.setReproducible(is(REPRODUCIBLE));
 			setJar(dot);
 		}
@@ -267,6 +273,9 @@ public class Builder extends Analyzer {
 		if (f.exists()) {
 			Jar jar = new Jar(f);
 			jar.setDoNotTouchManifest();
+			buildInstrs.compression()
+				.ifPresent(jar::setCompression);
+
 			addClose(jar);
 			String path = "WEB-INF/lib/" + f.getName();
 			dot.putResource(path, new JarResource(jar));
@@ -1297,6 +1306,10 @@ public class Builder extends Analyzer {
 			int n = 0;
 			for (String file : map.keySet()) {
 				Jar c = new Jar(getFile(file));
+
+				buildInstrs.compression()
+					.ifPresent(c::setCompression);
+
 				addClose(c);
 				String name = map.get(file)
 					.get("name");

@@ -37,6 +37,7 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -381,7 +382,7 @@ public class Jar implements Closeable {
 
 		switch (compression) {
 			case STORE :
-				jout.setMethod(ZipOutputStream.DEFLATED);
+				jout.setMethod(ZipOutputStream.STORED);
 				break;
 
 			default :
@@ -472,6 +473,7 @@ public class Jar implements Closeable {
 			File f = File.createTempFile(padString(getName(), 3, '_'), ".jar");
 			write(f);
 			try (Jar tmp = new Jar(f)) {
+				tmp.setCompression(compression);
 				tmp.calcChecksums(algorithms);
 				tmp.write(out);
 			} finally {
@@ -504,8 +506,37 @@ public class Jar implements Closeable {
 		} else {
 			ZipUtil.setModifiedTime(ze, lastModified);
 		}
-		jout.putNextEntry(ze);
-		writeManifest(jout);
+		Resource r = new WriteResource() {
+
+			@Override
+			public void write(OutputStream out) throws Exception {
+				writeManifest(out);
+			}
+
+			@Override
+			public long lastModified() {
+				return 0; // a manifest should not change the date
+			}
+		};
+		putEntry(jout, ze, r);
+	}
+
+	private void putEntry(ZipOutputStream jout, ZipEntry entry, Resource r) throws Exception {
+
+		if (compression == Compression.STORE) {
+			byte[] content = IO.read(r.openInputStream());
+			entry.setMethod(ZipOutputStream.STORED);
+			CRC32 crc = new CRC32();
+			crc.update(content);
+			entry.setCrc(crc.getValue());
+			entry.setSize(content.length);
+			entry.setCompressedSize(content.length);
+			jout.putNextEntry(entry);
+			jout.write(content);
+		} else {
+			jout.putNextEntry(entry);
+			r.write(jout);
+		}
 		jout.closeEntry();
 	}
 
@@ -730,9 +761,7 @@ public class Jar implements Closeable {
 			if (resource.getExtra() != null)
 				ze.setExtra(resource.getExtra()
 					.getBytes(UTF_8));
-			jout.putNextEntry(ze);
-			resource.write(jout);
-			jout.closeEntry();
+			putEntry(jout, ze, resource);
 		} catch (Exception e) {
 			throw new Exception("Problem writing resource " + path, e);
 		}
@@ -750,6 +779,11 @@ public class Jar implements Closeable {
 				ze.setTime(ZIP_ENTRY_CONSTANT_TIME);
 			} else {
 				ZipUtil.setModifiedTime(ze, lastModified);
+			}
+			if (compression == Compression.STORE) {
+				ze.setCrc(0L);
+				ze.setSize(0);
+				ze.setCompressedSize(0);
 			}
 			zip.putNextEntry(ze);
 			zip.closeEntry();

@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
@@ -41,6 +42,16 @@ import junit.framework.TestCase;
 })
 public class ConverterTest extends TestCase {
 	Converter converter = new Converter();
+
+	public void testOptional() throws Exception {
+
+		Optional<String> opt = converter.convert(new TypeReference<Optional<String>>() {}, 1);
+		assertTrue(opt.isPresent());
+		assertEquals("1", opt.get());
+
+		opt = converter.convert(new TypeReference<Optional<String>>() {}, null);
+		assertFalse(opt.isPresent());
+	}
 
 	public void testMangling() {
 

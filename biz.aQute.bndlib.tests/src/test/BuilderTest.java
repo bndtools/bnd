@@ -50,6 +50,32 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * Test if the compression flag is set properly
+	 */
+
+	public void testCompressionSet() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setIncludeResource("foo;literal='x'");
+			Jar build = b.build();
+			assertEquals(Jar.Compression.DEFLATE, build.hasCompression());
+		}
+
+		try (Builder b = new Builder()) {
+			b.setIncludeResource("foo;literal='x'");
+			b.setProperty(Constants.COMPRESSION, "STORE");
+			Jar build = b.build();
+			assertEquals(Jar.Compression.STORE, build.hasCompression());
+		}
+
+		try (Builder b = new Builder()) {
+			b.setIncludeResource("foo;literal='x'");
+			b.setProperty(Constants.COMPRESSION, "DEFLATE");
+			Jar build = b.build();
+			assertEquals(Jar.Compression.DEFLATE, build.hasCompression());
+		}
+	}
+
+	/**
 	 * In the bnd file for bndlib, we include DS annotations 1.3 and osgi.cmpn 5
 	 * (which includes DS annotations 1.2) on the -buildpath. We use a
 	 * -split-package directive to select the first package (DS annotations 1.3)

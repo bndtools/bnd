@@ -154,6 +154,10 @@ public class Verifier extends Processor {
 	public final static Pattern	TOKEN							= Pattern.compile("[-a-zA-Z0-9_]+");
 
 	public final static Pattern	NUMBERPATTERN					= Pattern.compile("\\d+");
+	public final static Pattern	FLOATPATTERN					= Pattern
+		.compile("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?");
+	public final static Pattern	BOOLEANPATTERN					= Pattern.compile("true|false",
+		Pattern.CASE_INSENSITIVE);
 	public final static Pattern	PACKAGEPATTERN					= Pattern.compile(
 		"\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*(\\.\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)*");
 	public final static Pattern	PACKAGEPATTERN_OR_EMPTY			= Pattern.compile(PACKAGEPATTERN + "|^$");

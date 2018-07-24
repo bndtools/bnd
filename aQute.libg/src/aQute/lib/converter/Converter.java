@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -42,6 +43,7 @@ import aQute.lib.base64.Base64;
 	"unchecked", "rawtypes"
 })
 public class Converter {
+
 	public interface Hook {
 		Object convert(Type dest, Object o) throws Exception;
 	}
@@ -54,7 +56,7 @@ public class Converter {
 		// Is it a compatible type?
 		if (o != null && type.isAssignableFrom(o.getClass()))
 			return (T) o;
-		return (T) convert((Type) type, o);
+		return (T) convertT(type, o);
 	}
 
 	public <T> T convert(TypeReference<T> type, Object o) throws Exception {
@@ -62,7 +64,20 @@ public class Converter {
 	}
 
 	public Object convert(Type type, Object o) throws Exception {
+		return convertT(type, o);
+	}
+
+	Object convertT(Type type, Object o) throws Exception {
 		Class resultType = getRawClass(type);
+
+		if (resultType == Optional.class) {
+			if (o == null)
+				return Optional.empty();
+
+			Object oo = convert(((ParameterizedType) type).getActualTypeArguments()[0], o);
+			return Optional.ofNullable(oo);
+		}
+
 		if (o == null) {
 			if (resultType.isPrimitive() || Number.class.isAssignableFrom(resultType))
 				return convert(type, 0);
@@ -548,6 +563,11 @@ public class Converter {
 
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+
+				if (Object.class == method.getDeclaringClass()) {
+					return method.invoke(this, args);
+				}
+
 				Object o = properties.get(method.getName());
 				if (o == null)
 					o = properties.get(mangleMethodName(method.getName()));
@@ -563,6 +583,9 @@ public class Converter {
 				return convert(method.getGenericReturnType(), o);
 			}
 
+			public String toString() {
+				return properties + "'";
+			}
 		});
 	}
 

@@ -1,13 +1,24 @@
 package aQute.bnd.help;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import aQute.bnd.help.instructions.BuilderInstructions;
+import aQute.bnd.help.instructions.LauncherInstructions;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
+import aQute.lib.strings.Strings;
 
 public class Syntax implements Constants {
 	final String							header;
@@ -163,6 +174,9 @@ public class Syntax implements Constants {
 
 		new Syntax(BUNDLE_VERSION, "The " + BUNDLE_VERSION + " header specifies the version of this bundle.",
 			BUNDLE_VERSION + ": 1.23.4.build200903221000", null, Verifier.VERSION),
+
+		new Syntax(COMPRESSION, "Set the compression for writing JARs. Default is deflate", COMPRESSION + "=store",
+			"deflate,store", Pattern.compile("deflate|store")),
 
 		new Syntax(DYNAMICIMPORT_PACKAGE, "The " + DYNAMICIMPORT_PACKAGE
 			+ " header contains a comma-separated list of package names that should be dynamically imported when needed.",
@@ -395,16 +409,154 @@ public class Syntax implements Constants {
 		new Syntax(STANDALONE,
 			"Used in bndrun files. Disconnects the bndrun file from the workspace and defines its own Capabilities repositories.",
 			STANDALONE + "=index.html;name=..., ...", null, null),
-		new Syntax(PACKAGE, "Defines the options for packaging", PACKAGE + "=<packaging-type>", null, null), new Syntax(
-			UPTO, "Limit bnd's behavior like it was up to the given version", "-upto: 2.3.1", null, Version.VERSION)
+
+		// Upto
+		new Syntax(UPTO, "Limit bnd's behavior like it was up to the given version", "-upto: 2.3.1", null,
+			Version.VERSION)
 	};
 
 	public final static Map<String, Syntax>	HELP					= new HashMap<>();
 
+	final static Map<Class<?>, Pattern>		BASE_PATTERNS			= new HashMap<>();
+
 	static {
+		BASE_PATTERNS.put(Byte.class, Verifier.NUMBERPATTERN);
+		BASE_PATTERNS.put(byte.class, Verifier.NUMBERPATTERN);
+		BASE_PATTERNS.put(Short.class, Verifier.NUMBERPATTERN);
+		BASE_PATTERNS.put(short.class, Verifier.NUMBERPATTERN);
+		BASE_PATTERNS.put(Integer.class, Verifier.NUMBERPATTERN);
+		BASE_PATTERNS.put(int.class, Verifier.NUMBERPATTERN);
+		BASE_PATTERNS.put(Long.class, Verifier.NUMBERPATTERN);
+		BASE_PATTERNS.put(long.class, Verifier.NUMBERPATTERN);
+		BASE_PATTERNS.put(Float.class, Verifier.FLOATPATTERN);
+		BASE_PATTERNS.put(float.class, Verifier.FLOATPATTERN);
+		BASE_PATTERNS.put(Double.class, Verifier.FLOATPATTERN);
+		BASE_PATTERNS.put(double.class, Verifier.FLOATPATTERN);
+		BASE_PATTERNS.put(Boolean.class, Verifier.BOOLEANPATTERN);
+		BASE_PATTERNS.put(boolean.class, Verifier.BOOLEANPATTERN);
+
 		for (Syntax s : syntaxes) {
-			HELP.put(s.header, s);
+			add(s);
 		}
+		add(BuilderInstructions.class);
+		add(LauncherInstructions.class);
+	}
+
+	private static void add(Syntax s) {
+		HELP.put(s.header, s);
+	}
+
+	private static void add(Class<?> class1) {
+		for (Syntax syntax : create(class1, Syntax::toInstruction, true)) {
+			add(syntax);
+		}
+	}
+
+	private static Syntax[] create(Class<?> class1, Function<Method, String> naming, boolean instruction) {
+		List<Syntax> syntaxes = new ArrayList<>();
+		for (Method m : class1.getMethods()) {
+
+			if (Modifier.isStatic(m.getModifiers()))
+				continue;
+
+			if (m.getDeclaringClass() == Object.class)
+				continue;
+
+			String name = naming.apply(m);
+
+			SyntaxAnnotation ann = m.getAnnotation(SyntaxAnnotation.class);
+			String lead = null;
+			String example = null;
+			Pattern pattern = null;
+			String values = null;
+
+			if (ann != null) {
+				if (!ann.lead()
+					.isEmpty())
+					lead = ann.lead();
+				if (!ann.example()
+					.isEmpty()) {
+					example = ann.example();
+					if (instruction) {
+						example = name + ": " + ann.example();
+					} else {
+						example = name + "=" + ann.example();
+					}
+				}
+				if (!ann.pattern()
+					.isEmpty())
+					pattern = Pattern.compile(ann.pattern());
+			}
+
+			Class<?> rtype = m.getReturnType();
+			if (rtype == Optional.class) {
+				Type optionalType = ((ParameterizedType) m.getGenericReturnType()).getActualTypeArguments()[0];
+				assert optionalType instanceof Class : "Generic types in optional not supported";
+				rtype = (Class<?>) optionalType;
+			}
+			if (rtype
+				.isEnum()) {
+				Object[] enumConstants = rtype
+					.getEnumConstants();
+				values = Strings.join(enumConstants);
+			} else if (Boolean.class.isAssignableFrom(rtype)) {
+				values = "true,false";
+			}
+
+			if (pattern == null) {
+				pattern = BASE_PATTERNS.get(rtype);
+			}
+
+			if (rtype == Map.class) {
+				// parameters
+				ParameterizedType mapType = (ParameterizedType) m.getGenericReturnType();
+				Type valueType = mapType.getActualTypeArguments()[1];
+
+				assert valueType instanceof Class : "The type of the value of a parameters must be a class, not a generic type";
+
+				Syntax[] clauses = create((Class<?>) valueType, Syntax::toProperty, false);
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, clauses));
+			} else if (Iterable.class.isAssignableFrom(rtype)) {
+				// list
+				syntaxes.add(new Syntax(name, lead, example, values, pattern));
+			} else if (rtype
+				.isInterface()) {
+				// properties
+				Syntax[] clauses = create(rtype, Syntax::toProperty, false);
+				syntaxes.add(new Syntax(name, lead, example, values, pattern, clauses));
+			} else {
+				// simple value
+				syntaxes.add(new Syntax(name, lead, example, values, pattern));
+			}
+
+		}
+
+		return syntaxes.toArray(new Syntax[0]);
+	}
+
+	static String toInstruction(Method m) {
+		SyntaxAnnotation ann = m.getAnnotation(SyntaxAnnotation.class);
+		if (ann != null && !ann.name()
+			.isEmpty()) {
+			return ann.name();
+		}
+
+		return "-" + preferDashes(m);
+	}
+
+	static String toProperty(Method m) {
+		SyntaxAnnotation ann = m.getAnnotation(SyntaxAnnotation.class);
+		if (ann != null && !ann.name()
+			.isEmpty()) {
+			return ann.name();
+		}
+
+		return preferDashes(m);
+	}
+
+	private static String preferDashes(Method m) {
+		return m.getName()
+			.replace('_', '-');
 	}
 
 	public Syntax(String header, String lead, String example, String values, Pattern pattern, Syntax... children) {
@@ -441,6 +593,14 @@ public class Syntax implements Constants {
 
 	public String getHeader() {
 		return header;
+	}
+
+	public String toString() {
+		return header;
+	}
+
+	public static <T> T getInstructions(Processor processor, Class<T> type) {
+		return ProcessorHandler.getInstructions(processor, type);
 	}
 
 }
