@@ -259,8 +259,20 @@ public class Analyzer extends Processor {
 				Set<Instruction> unused = Create.set();
 
 				Instructions filter = new Instructions(getExportPackage());
-				filter.append(getExportContents());
-				filter.append(getExportedByAnnotation());
+				filter.appendIfAbsent(getExportContents());
+
+				//
+				// get the packages exported by the annotation. However,
+				// we remove any explicitly explicitly named private package so
+				// that
+				// you can always override an annotation
+				//
+
+				Parameters exportedByAnnotation = getExportedByAnnotation();
+				exportedByAnnotation.keySet()
+					.removeAll(getPrivatePackage().keySet());
+
+				filter.appendIfAbsent(exportedByAnnotation);
 
 				exports = filter(filter, contained, unused);
 
