@@ -23,16 +23,12 @@ public class Annotation {
 	static {
 		CONVERTER = new Converter();
 		CONVERTER.hook(null, (t, o) -> {
-			if (t instanceof Class<?> && ((Class<?>) t).isAnnotation()) {
-				// Suitable target
-				if (o instanceof Annotation) {
-					Annotation a = (Annotation) o;
-					return a.getName()
-						.getFQN()
-						.equals(((Class<?>) t).getName()) ? a.getAnnotation() : null;
-				}
+			if (o instanceof Annotation && t instanceof Class<?> && ((Class<?>) t).isAnnotation()) {
+				Annotation a = (Annotation) o;
+				@SuppressWarnings("unchecked")
+				Class<java.lang.annotation.Annotation> c = (Class<java.lang.annotation.Annotation>) t;
+				return a.getAnnotation(c);
 			}
-
 			return null;
 		});
 	}
