@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.util.Objects.requireNonNull;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
@@ -33,19 +35,16 @@ public class Annotation {
 		});
 	}
 
-	private TypeRef				name;
-	private Map<String, Object>	elements;
-	private ElementType			member;
-	private RetentionPolicy		policy;
+	private final TypeRef			name;
+	private Map<String, Object>		elements;
+	private final ElementType		member;
+	private final RetentionPolicy	policy;
 
 	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy) {
-		this.name = name;
-		if (elements == null)
-			this.elements = null;
-		else
-			this.elements = elements;
-		this.member = member;
-		this.policy = policy;
+		this.name = requireNonNull(name);
+		this.elements = elements;
+		this.member = requireNonNull(member);
+		this.policy = requireNonNull(policy);
 	}
 
 	public TypeRef getName() {
@@ -67,9 +66,9 @@ public class Annotation {
 
 	@SuppressWarnings("unchecked")
 	public <T> T get(String string) {
-		if (elements == null)
+		if (elements == null) {
 			return null;
-
+		}
 		return (T) elements.get(string);
 	}
 
@@ -87,23 +86,24 @@ public class Annotation {
 			.map(type::cast);
 	}
 
-	public <T> void put(String string, Object v) {
-		if (elements == null)
+	public void put(String string, Object v) {
+		if (elements == null) {
 			elements = new LinkedHashMap<>();
-
+		}
 		elements.put(string, v);
 	}
 
 	public boolean containsKey(String key) {
-		if (elements == null)
+		if (elements == null) {
 			return false;
+		}
 		return elements.containsKey(key);
 	}
 
 	public Set<String> keySet() {
-		if (elements == null)
+		if (elements == null) {
 			return Collections.emptySet();
-
+		}
 		return elements.keySet();
 	}
 
@@ -117,37 +117,39 @@ public class Annotation {
 			@SuppressWarnings("unchecked")
 			Class<T> c = (Class<T>) cl.loadClass(cname);
 			return getAnnotation(c);
-		} catch (ClassNotFoundException e) {} catch (NoClassDefFoundError e) {}
-		return null;
+		} catch (ClassNotFoundException | NoClassDefFoundError e) {
+			return null;
+		}
 	}
 
 	public <T extends java.lang.annotation.Annotation> T getAnnotation(Class<T> c) throws Exception {
 		String cname = name.getFQN();
 		if (!c.getName()
-			.equals(cname))
+			.equals(cname)) {
 			return null;
-		return CONVERTER.convert(c, elements == null ? elements = new LinkedHashMap<>() : elements);
+		}
+		if (elements == null) {
+			elements = new LinkedHashMap<>();
+		}
+		return CONVERTER.convert(c, elements);
 	}
 
 	public void merge(Annotation annotation) {
-		if (annotation.elements == null)
-			return;
-
-		for (Map.Entry<String, Object> e : annotation.elements.entrySet()) {
-			if (!elements.containsKey(e.getKey()))
-				elements.put(e.getKey(), e.getValue());
-		}
+		merge(annotation.elements);
 	}
 
 	public void addDefaults(Clazz c) throws Exception {
-		Map<String, Object> defaults = c.getDefaults();
-		if (defaults == null || defaults.isEmpty())
-			return;
+		merge(c.getDefaults());
+	}
 
-		for (Map.Entry<String, Object> e : defaults.entrySet()) {
-			if (elements == null || !elements.containsKey(e.getKey())) {
-				put(e.getKey(), e.getValue());
-			}
+	private void merge(Map<String, Object> map) {
+		if (map == null || map.isEmpty()) {
+			return;
+		}
+		if (elements == null) {
+			elements = new LinkedHashMap<>(map);
+		} else {
+			map.forEach((k, v) -> elements.putIfAbsent(k, v));
 		}
 	}
 }
