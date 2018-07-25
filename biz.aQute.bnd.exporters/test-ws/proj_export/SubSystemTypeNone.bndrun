@@ -1,0 +1,9 @@
+-runrequires: bnd.identity;id='proj_bundle_1'
+-archiveContentType: None
+
+-runbundles: \
+	proj_bundle_1;version='[0.0.1,1.0.0)',\
+	proj_bundle_2;version='[0.0.1,1.0.0)'
+
+# 	cant handle nested subsystems at the moment	
+#	subsystem_a;version='[0.0.1,1.0.0)'

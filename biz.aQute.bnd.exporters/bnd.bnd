@@ -9,7 +9,10 @@ Conditional-Package:                \
     aQute.libg.*;-split-package:=first
 
 -buildpath: \
-    aQute.libg;version=project, \
-	biz.aQute.bndlib;version=latest, \
-	osgi.core;version=@6, \
+	aQute.libg;version=project,\
+	biz.aQute.bndlib;version=latest,\
+	osgi.core;version=@6,\
 	osgi.cmpn;version=@6
+
+-testpath: \
+    ${junit}

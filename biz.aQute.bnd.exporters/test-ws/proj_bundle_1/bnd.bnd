@@ -1,0 +1,13 @@
+Bundle-Version: 0.0.1
+Private-Package: \
+	privatep.a,\
+	privatep.b
+	
+Export-Package: exportp.a,\
+				exportp.b
+
+Import-Package: importp.a,\
+				importp.b
+				
+Require-Capability: some.namespace;filter:="(somenamespace=hello)"
+Provide-Capability: some.namespace;somenamespace=world;version:Version=1.0.0
