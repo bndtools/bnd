@@ -69,13 +69,13 @@ public class SubsystemExporter implements Exporter {
 
 		project.addClose(jar);
 
-		EsaArchivType esaArchivType = null;
+		EsaArchiveType esaArchiveType = null;
 		Boolean storeBundles = null;
 		String archiveContent = project.get(ARCHIVE_CONTENT_TYPE);
 
-		esaArchivType = EsaArchivType.byParameter(archiveContent);
-		if (esaArchivType == null) {
-			project.error("Unknown EsaArchivType. Use [NONE,CONTENT,ALL]");
+		esaArchiveType = EsaArchiveType.byParameter(archiveContent);
+		if (esaArchiveType == null) {
+			project.error("Unknown EsaArchiveType. Use [NONE,CONTENT,ALL]");
 			return null;
 		}
 
@@ -84,7 +84,7 @@ public class SubsystemExporter implements Exporter {
 		Collection<Container> runBundles = project.getRunbundles();
 
 		Collection<Container> bundles = null;
-		switch (esaArchivType) {
+		switch (esaArchiveType) {
 			case NONE :
 				bundles = requireBundles;
 				storeBundles = false;
@@ -103,7 +103,7 @@ public class SubsystemExporter implements Exporter {
 				break;
 
 			default :
-				project.error("Unsupported EsaArchivType. Use [NONE,CONTENT,ALL]");
+				project.error("Unsupported EsaArchiveType. Use [NONE,CONTENT,ALL]");
 				return null;
 		}
 
