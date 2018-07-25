@@ -1,0 +1,13 @@
+Bundle-Version: 0.0.1
+Private-Package: \
+	privatep.c,\
+	privatep.d
+	
+Export-Package: exportp.c,\
+				exportp.d
+
+Import-Package: importp.c,\
+				importp.d
+
+Require-Capability: some.namespace;filter:="(somenamespace=foo)"
+Provide-Capability: some.namespace;somenamespace=bar;version:Version=1.0.0
