@@ -125,42 +125,44 @@ public class DSAnnotations implements AnalyzerPlugin {
 		boolean componentProcessed = false;
 		for (Clazz c : list) {
 			for (Instruction instruction : instructions.keySet()) {
-
 				if (instruction.matches(c.getFQN())) {
-					if (instruction.isNegated())
+					if (instruction.isNegated()) {
 						break;
-					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options, finder, minVersion);
-					if (definition != null) {
-						componentProcessed = true;
-						definition.sortReferences();
-						definition.prepare(analyzer);
-
-						String name = "OSGI-INF/"
-							+ analyzer.validResourcePath(definition.name, "Invalid component name") + ".xml";
-						names.add(name);
-						analyzer.getJar()
-							.putResource(name, new TagResource(definition.getTag()));
-
-						if (definition.service != null && !options.contains(Options.nocapabilities)) {
-							String[] objectClass = new String[definition.service.length];
-
-							for (int i = 0; i < definition.service.length; i++) {
-								Descriptors.TypeRef tr = definition.service[i];
-								objectClass[i] = tr.getFQN();
-							}
-							Arrays.sort(objectClass);
-							addServiceCapability(objectClass, provides);
-						}
-
-						if (!options.contains(Options.norequirements)) {
-							MergedRequirement serviceReqMerge = new MergedRequirement("osgi.service");
-							for (ReferenceDef ref : definition.references.values()) {
-								addServiceRequirement(ref, serviceReqMerge);
-							}
-							requires.addAll(serviceReqMerge.toStringList());
-						}
-						maxVersion = ComponentDef.max(maxVersion, definition.version);
 					}
+					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options, finder, minVersion);
+					if (definition == null) {
+						break;
+					}
+					componentProcessed = true;
+					definition.sortReferences();
+					definition.prepare(analyzer);
+
+					String name = "OSGI-INF/" + analyzer.validResourcePath(definition.name, "Invalid component name")
+						+ ".xml";
+					names.add(name);
+					analyzer.getJar()
+						.putResource(name, new TagResource(definition.getTag()));
+
+					if (definition.service != null && !options.contains(Options.nocapabilities)) {
+						String[] objectClass = new String[definition.service.length];
+
+						for (int i = 0; i < definition.service.length; i++) {
+							Descriptors.TypeRef tr = definition.service[i];
+							objectClass[i] = tr.getFQN();
+						}
+						Arrays.sort(objectClass);
+						addServiceCapability(objectClass, provides);
+					}
+
+					if (!options.contains(Options.norequirements)) {
+						MergedRequirement serviceReqMerge = new MergedRequirement("osgi.service");
+						for (ReferenceDef ref : definition.references.values()) {
+							addServiceRequirement(ref, serviceReqMerge);
+						}
+						requires.addAll(serviceReqMerge.toStringList());
+					}
+					maxVersion = ComponentDef.max(maxVersion, definition.version);
+					break;
 				}
 			}
 		}

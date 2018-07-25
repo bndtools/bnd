@@ -108,12 +108,13 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 			.values()) {
 			for (Instruction instruction : instructions.keySet()) {
 				if (instruction.matches(c.getFQN())) {
-					if (!instruction.isNegated()) {
-						list.add(c);
-						OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder, minVersion);
-						if (definition != null) {
-							classToOCDMap.put(c.getClassName(), definition);
-						}
+					if (instruction.isNegated()) {
+						break;
+					}
+					list.add(c);
+					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder, minVersion);
+					if (definition != null) {
+						classToOCDMap.put(c.getClassName(), definition);
 					}
 					break;
 				}
