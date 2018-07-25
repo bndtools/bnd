@@ -819,7 +819,7 @@ public class Jar implements Closeable {
 			if (manifestName.equals(name))
 				continue;
 
-			if (filter == null || filter.matches(name) != filter.isNegated())
+			if (filter == null || filter.matches(name) ^ filter.isNegated())
 				dupl |= putResource(Processor.appendPath(destination, name), sub.getResource(name), true);
 		}
 		return dupl;

@@ -3245,15 +3245,19 @@ public class DSAnnotationTest extends BndTestCase {
 	static class MixedStdBnd {
 
 		@aQute.bnd.annotation.component.Reference
+		@SuppressWarnings("deprecation")
 		protected void setLog(@SuppressWarnings("unused") LogService log) {}
 
 		@aQute.bnd.annotation.component.Activate
+		@SuppressWarnings("deprecation")
 		void start() {}
 
 		@aQute.bnd.annotation.component.Modified
+		@SuppressWarnings("deprecation")
 		void update(Map<String, Object> map) {}
 
 		@aQute.bnd.annotation.component.Deactivate
+		@SuppressWarnings("deprecation")
 		void stop() {}
 	}
 

@@ -1,5 +1,0 @@
-# Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
-
--buildpath: org.apache.geronimo.specs.geronimo-servlet_3.0_spec;version=latest
-Private-Package: biz.aQute.demo.subsys.provider

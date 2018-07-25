@@ -41,7 +41,7 @@ public class Instruction {
 			if (instruction == null) {
 				return true;
 			}
-			return !instruction.isNegated() == instruction.matches(pathname.getName());
+			return instruction.matches(pathname.getName()) ^ instruction.isNegated();
 		}
 	}
 

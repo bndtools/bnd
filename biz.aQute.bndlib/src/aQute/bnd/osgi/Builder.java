@@ -819,7 +819,7 @@ public class Builder extends Analyzer {
 				.get(FROM_DIRECTIVE);
 			if (from != null) {
 				Instruction f = new Instruction(from);
-				if (!f.matches(source) || f.isNegated())
+				if (!(f.matches(source) ^ f.isNegated()))
 					continue;
 			}
 
@@ -1231,7 +1231,7 @@ public class Builder extends Analyzer {
 			if ("META-INF/MANIFEST.MF".equals(name))
 				continue;
 
-			if (filter == null || filter.matches(name) != filter.isNegated())
+			if (filter == null || filter.matches(name) ^ filter.isNegated())
 				dupl |= to.putResource(Processor.appendPath(destination, name), sub.getResource(name), true);
 		}
 		return dupl;
