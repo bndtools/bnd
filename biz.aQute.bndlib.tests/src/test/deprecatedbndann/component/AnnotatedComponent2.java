@@ -1,9 +1,7 @@
 package test.deprecatedbndann.component;
 
-import aQute.bnd.annotation.component.Component;
-
 @SuppressWarnings("deprecation")
-@Component
+@aQute.bnd.annotation.component.Component
 public class AnnotatedComponent2 {
 
 }

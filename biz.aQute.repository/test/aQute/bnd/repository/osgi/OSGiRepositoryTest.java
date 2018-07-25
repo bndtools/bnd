@@ -10,7 +10,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.deployer.repository.FixedIndexedRepo;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -55,7 +54,7 @@ public class OSGiRepositoryTest extends TestCase {
 
 	@SuppressWarnings("deprecation")
 	public void testCompatibilityWithFixedIndexedRepo() throws Exception {
-		try (FixedIndexedRepo r = new FixedIndexedRepo();) {
+		try (aQute.bnd.deployer.repository.FixedIndexedRepo r = new aQute.bnd.deployer.repository.FixedIndexedRepo();) {
 			assertTrue(testRepo(r)
 				.check("FixedIndexedRepository is deprecated, please use aQute.bnd.repository.osgi.OSGiRepository"));
 		}
