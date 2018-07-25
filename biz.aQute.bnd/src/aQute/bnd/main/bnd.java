@@ -75,6 +75,7 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.enroute.commands.EnrouteCommand;
 import aQute.bnd.enroute.commands.EnrouteOptions;
+import aQute.bnd.exporter.subsystem.SubsystemExporter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
