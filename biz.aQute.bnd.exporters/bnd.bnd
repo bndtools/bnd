@@ -12,7 +12,9 @@ Conditional-Package:                \
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	osgi.core;version=@6,\
-	osgi.cmpn;version=@6
+	osgi.cmpn;version=@6,\
+    slf4j.api;version=latest
 
 -testpath: \
-    ${junit}
+    ${junit},\
+    slf4j.simple;version=latest
