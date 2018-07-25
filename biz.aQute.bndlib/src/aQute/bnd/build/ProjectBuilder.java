@@ -623,25 +623,26 @@ public class ProjectBuilder extends Builder {
 		 * During discussion on bndtools/bndtools#1270, @rotty3000 raised the
 		 * issue that, in a workspace build, bnd will not include anything in a
 		 * bundle by default. One must specify Private-Package, Export-Package,
-		 * Include-Resource, or -includeresource to put any content in a bundle.
-		 * And new users make mistakes and end up with empty bundles which will
-		 * be unexpected. This is different than the non-workspace modes such as
-		 * the bnd gradle plugin or the bnd-maven-plugin which always include
-		 * default content (gradle: normal jar task content, maven:
-		 * target/classes folder). So we change ProjectBuilder (not Builder
-		 * which is used by non-workspace builds) to use the source output
-		 * folder (e.g. bin folder) as the default contents if the bundle's bnd
-		 * file does not specify any of the following instructions:
-		 * Private-Package, Export-Package, Include-Resource, -includeresource,
-		 * or -resourceonly. If the bnd file specifies any of these
-		 * instructions, then they will fully control the contents of the
-		 * bundle.
+		 * Include-Resource, -includepackage, or -includeresource to put any
+		 * content in a bundle. And new users make mistakes and end up with
+		 * empty bundles which will be unexpected. This is different than the
+		 * non-workspace modes such as the bnd gradle plugin or the
+		 * bnd-maven-plugin which always include default content (gradle: normal
+		 * jar task content, maven: target/classes folder). So we change
+		 * ProjectBuilder (not Builder which is used by non-workspace builds) to
+		 * use the source output folder (e.g. bin folder) as the default
+		 * contents if the bundle's bnd file does not specify any of the
+		 * following instructions: Private-Package, Export-Package,
+		 * Include-Resource, -includeresource, or -resourceonly. If the bnd file
+		 * specifies any of these instructions, then they will fully control the
+		 * contents of the bundle.
 		 */
 		if (!project.isNoBundles() && (builder.getJar() == null)
 			&& (builder.getProperty(Constants.RESOURCEONLY) == null)
 			&& (builder.getProperty(Constants.PRIVATE_PACKAGE) == null)
 			&& (builder.getProperty(Constants.EXPORT_PACKAGE) == null)
 			&& (builder.getProperty(Constants.INCLUDE_RESOURCE) == null)
+			&& (builder.getProperty(Constants.INCLUDEPACKAGE) == null)
 			&& (builder.getProperty(Constants.INCLUDERESOURCE) == null) && project.getOutput()
 				.isDirectory()) {
 			Jar outputDirJar = new Jar(project.getName(), project.getOutput());

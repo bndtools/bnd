@@ -26,6 +26,7 @@ public class ExportAnnotationTest extends TestCase {
 
 			builder.setExportPackage("test.export.annotation.testCalculated;version=42");
 			builder.build();
+			builder.check();
 			Packages exports = builder.getExports();
 			assertThat(exports.size()).isEqualTo(1);
 			Attrs attrs = exports.getByFQN("test.export.annotation.testCalculated");
@@ -37,6 +38,18 @@ public class ExportAnnotationTest extends TestCase {
 			// annotation
 			assertThat(attrs.get("fizz")).isEqualTo("buzz");
 
+		}
+	}
+
+	public void testAutoExportAnnotation() throws Exception {
+		try (Builder builder = new Builder()) {
+			builder.addClasspath(new File("bin"));
+
+			builder.setIncludePackage("test.export.annotation.testCalculated");
+			builder.build();
+			builder.check();
+			Packages exports = builder.getExports();
+			assertThat(exports.size()).isEqualTo(1);
 		}
 	}
 
