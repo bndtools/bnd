@@ -3,7 +3,7 @@
 
 Bundle-Name:            bnd Test Library
 Bundle-Description:     Contains only the test functions for bnd.
-Export-Package:         aQute.bnd.test.*
+-exportcontents:        aQute.bnd.test.*
 
 
 -buildpath: \

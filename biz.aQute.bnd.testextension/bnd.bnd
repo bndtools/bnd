@@ -1,7 +1,6 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
-Private-Package: aQute.bnd.ext.test
 Extension-Activator: aQute.bnd.ext.test.TestExtension
 
 -buildpath: \

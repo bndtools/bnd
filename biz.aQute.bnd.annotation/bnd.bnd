@@ -4,5 +4,5 @@
 Bundle-Name:            bnd Annotations Library
 Bundle-Description:     Contains only the annotations for bnd.
 Bundle-DocURL:          http://www.aQute.biz/Code/Bnd
-Export-Package:         aQute.bnd.annotation.*
+-exportcontents:        aQute.bnd.annotation.*
 

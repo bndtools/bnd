@@ -1,5 +1,7 @@
 package aQute.bnd.deployer.http;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,7 +19,6 @@ import java.util.regex.Matcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.deployer.Constants;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.service.url.URLConnector;
@@ -166,7 +167,7 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 		// Add the authorization string using HTTP Basic Auth
 		if (user != null && pass != null) {
 			String authString = user + ":" + pass;
-			String encoded = Base64.encodeBase64(authString.getBytes(Constants.UTF8));
+			String encoded = Base64.encodeBase64(authString.getBytes(UTF_8));
 			connection.setRequestProperty(HEADER_AUTHORIZATION, PREFIX_BASIC_AUTH + encoded);
 		}
 

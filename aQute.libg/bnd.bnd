@@ -7,9 +7,11 @@
 	org.osgi.util.promise;version=latest
 
 -testpath: \
-    ${junit}
+    ${junit},\
+    slf4j.simple;version=latest
 
-Export-Package: aQute.lib.*, aQute.libg.*, aQute.configurable, aQute.service.*
+-exportcontents: *
+
 Bundle-Description: A library to be statically linked. Contains many small utilities. This bundle \
  should not be installed in a framework, it is compile only.
 

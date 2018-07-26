@@ -3,7 +3,7 @@
 
 -dependson: biz.aQute.bnd.embedded-repo
 
-Private-Package: \
+-includepackage: \
     aQute.bnd.gradle.*
 
 -digests: MD5, SHA1

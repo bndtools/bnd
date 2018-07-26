@@ -1,10 +1,10 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
-Export-Package:                \
+-exportcontents: \
     aQute.bnd.exporter.subsystem
 
-Conditional-Package:                \
+-conditionalpackage: \
     aQute.lib.*;-split-package:=first, \
     aQute.libg.*;-split-package:=first
 

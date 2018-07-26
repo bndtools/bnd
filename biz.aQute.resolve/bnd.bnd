@@ -20,11 +20,11 @@ Export-Package:  \
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.resolver;-split-package:=first
 
-Private-Package: \
+-includepackage: \
 	biz.aQute.resolve.*,\
 	org.apache.felix.resolver.*
 
-Conditional-Package: aQute.lib*
+-conditionalpackage: aQute.lib*
 
 -fixupmessages.private: private references
 

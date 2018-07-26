@@ -16,7 +16,7 @@ Import-Package: \
 Bundle-Activator: \
 	aQute.junit.Activator
 
-Private-Package: \
+-includepackage: \
 	aQute.junit, \
 	aQute.junit.constants, \
 	aQute.junit.runtime, \
@@ -26,7 +26,7 @@ Private-Package: \
 Tester-Plugin: \
 	aQute.tester.plugin.ProjectTesterImpl
 
-Conditional-Package: aQute.lib*
+-conditionalpackage: aQute.lib*
 
 
 # Set javac settings from JDT prefs

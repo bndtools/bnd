@@ -10,7 +10,7 @@ Bundle-Description: \
 	for JPM called bndremote. In JPM, it will start up with debug enabled. This JAR does some highly complicated \
 	class loading wizardy to ensure that it does not enforce any constraints on the -runpath.
 
-Private-Package: \
+-includepackage: \
 	aQute.remote.util,\
 	aQute.remote.main
 

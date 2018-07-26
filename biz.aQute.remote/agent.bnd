@@ -18,7 +18,7 @@ Bundle-Description: \
 Bundle-Activator: 		aQute.remote.agent.Activator
 Embedded-Activator: 		aQute.remote.agent.Activator
 
-Private-Package: \
+-includepackage: \
 	aQute.remote.api,\
 	aQute.remote.agent,\
 	org.apache.felix.service.command,\
