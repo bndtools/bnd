@@ -9,7 +9,7 @@ Bundle-Description: \
 
 Private-Package: aQute.http.testservers.www
 
-Conditional-Package: aQute.lib*, fi.*, org.bouncycastle.*
+-conditionalpackage: aQute.lib*, fi.*, org.bouncycastle.*
 
 -buildpath: \
     osgi.annotation;version=latest,\

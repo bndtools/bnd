@@ -24,7 +24,7 @@ Private-Package: \
 	biz.aQute.resolve.*,\
 	org.apache.felix.resolver.*
 
-Conditional-Package: aQute.lib*
+-conditionalpackage: aQute.lib*
 
 -fixupmessages.private: private references
 

@@ -4,7 +4,7 @@
 Export-Package:                \
     aQute.bnd.exporter.subsystem
 
-Conditional-Package:                \
+-conditionalpackage: \
     aQute.lib.*;-split-package:=first, \
     aQute.libg.*;-split-package:=first
 
