@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -176,6 +177,21 @@ public class Instructions implements Map<Instruction, Attrs> {
 
 	public void append(Parameters other) {
 		for (Map.Entry<String, Attrs> e : other.entrySet()) {
+			put(new Instruction(e.getKey()), e.getValue());
+		}
+	}
+
+	public void appendIfAbsent(Parameters other) {
+		Set<String> present = keySet().stream()
+			.map(instr -> instr.input)
+			.collect(Collectors.toSet());
+
+		for (Map.Entry<String, Attrs> e : other.entrySet()) {
+
+			String k = e.getKey();
+			if (present.contains(k))
+				continue;
+
 			put(new Instruction(e.getKey()), e.getValue());
 		}
 	}

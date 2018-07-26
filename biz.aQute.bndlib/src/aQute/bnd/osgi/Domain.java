@@ -535,4 +535,8 @@ public abstract class Domain implements Iterable<String> {
 			set(key, domain.get(key));
 		}
 	}
+
+	public void setIncludePackage(String value) {
+		set(Constants.INCLUDEPACKAGE, value);
+	}
 }

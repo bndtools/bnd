@@ -570,14 +570,17 @@ public class Builder extends Analyzer {
 			}
 		}
 
-		Parameters privatePackages = getPrivatePackage();
-		if (isTrue(getProperty(Constants.UNDERTEST))) {
+		Parameters includedPackages = getPrivatePackage();
+		if (buildInstrs.undertest()) {
 			String h = mergeProperties(Constants.TESTPACKAGES, "test;presence:=optional");
-			privatePackages.putAll(parseHeader(h));
+			includedPackages.putAll(parseHeader(h));
 		}
 
-		if (!privatePackages.isEmpty()) {
-			Instructions privateFilter = new Instructions(privatePackages);
+		Parameters limboPackages = buildInstrs.includepackage();
+		includedPackages.putAll(limboPackages);
+
+		if (!includedPackages.isEmpty()) {
+			Instructions privateFilter = new Instructions(includedPackages);
 			Set<Instruction> unused = doExpand(dot, packages, privateFilter);
 
 			if (!unused.isEmpty()) {
@@ -1815,5 +1818,6 @@ public class Builder extends Analyzer {
 			"githead"
 		}));
 	}
+
 
 }

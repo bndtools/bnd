@@ -23,6 +23,7 @@ import aQute.lib.io.IO;
 import aQute.maven.provider.FakeNexus;
 import junit.framework.TestCase;
 
+@SuppressWarnings("deprecation")
 public class OSGiRepositoryTest extends TestCase {
 	File				tmp;
 	File				cache;
@@ -48,78 +49,82 @@ public class OSGiRepositoryTest extends TestCase {
 
 	public void testSimple() throws Exception {
 		try (OSGiRepository r = new OSGiRepository();) {
-			assertTrue(testRepo(r).check());
+			assertTrue(testRepo(r));
 		}
 	}
 
 	@SuppressWarnings("deprecation")
 	public void testCompatibilityWithFixedIndexedRepo() throws Exception {
 		try (aQute.bnd.deployer.repository.FixedIndexedRepo r = new aQute.bnd.deployer.repository.FixedIndexedRepo();) {
-			assertTrue(testRepo(r)
-				.check("FixedIndexedRepository is deprecated, please use aQute.bnd.repository.osgi.OSGiRepository"));
+			assertTrue(testRepo(r,
+				"FixedIndexedRepository is deprecated, please use aQute.bnd.repository.osgi.OSGiRepository"));
 		}
 	}
 
-	private Processor testRepo(OSGiRepository r) throws URISyntaxException, Exception {
+	private boolean testRepo(OSGiRepository r, String... checks) throws URISyntaxException, Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("locations", fnx.getBaseURI("/repo/minir5.xml")
 			.toString());
 		map.put("cache", cache.getPath());
 		map.put("max.stale", "10000");
 		r.setProperties(map);
-		Processor p = new Processor();
-		HttpClient httpClient = new HttpClient();
-		httpClient.setCache(cache);
-		httpClient.setRegistry(p);
-		p.addBasicPlugin(httpClient);
-		p.setBase(ws);
-		Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI());
-		p.addBasicPlugin(workspace);
-		r.setRegistry(p);
+		try (Processor p = new Processor()) {
+			HttpClient httpClient = new HttpClient();
+			httpClient.setCache(cache);
+			httpClient.setRegistry(p);
+			p.addBasicPlugin(httpClient);
+			p.setBase(ws);
+			try (Workspace workspace = Workspace.createStandaloneWorkspace(p, ws.toURI())) {
+				p.addBasicPlugin(workspace);
+				r.setRegistry(p);
 
-		final AtomicInteger tasks = new AtomicInteger();
+				final AtomicInteger tasks = new AtomicInteger();
 
-		p.addBasicPlugin(new ProgressPlugin() {
-
-			@Override
-			public Task startTask(final String name, int size) {
-				System.out.println("Starting " + name);
-				tasks.incrementAndGet();
-				return new Task() {
+				p.addBasicPlugin(new ProgressPlugin() {
 
 					@Override
-					public void worked(int units) {
-						System.out.println("Worked " + name + " " + units);
-					}
+					public Task startTask(final String name, int size) {
+						System.out.println("Starting " + name);
+						tasks.incrementAndGet();
+						return new Task() {
 
-					@Override
-					public void done(String message, Throwable e) {
-						System.out.println("Done " + name + " " + message);
-					}
+							@Override
+							public void worked(int units) {
+								System.out.println("Worked " + name + " " + units);
+							}
 
-					@Override
-					public boolean isCanceled() {
-						return false;
+							@Override
+							public void done(String message, Throwable e) {
+								System.out.println("Done " + name + " " + message);
+							}
+
+							@Override
+							public boolean isCanceled() {
+								return false;
+							}
+						};
 					}
-				};
+				});
+
+				assertEquals(0, tasks.get());
+				File file = r.get("dummybundle", new Version("0"), null);
+				assertNotNull(file);
+				assertEquals(2, tasks.get()); // 2 = index + file
+				File file2 = r.get("dummybundle", new Version("0"), null);
+				assertNotNull(file2);
+				// second one should not have downloaded
+				assertEquals(2, tasks.get());
+
+				r.refresh();
+				File file3 = r.get("dummybundle", new Version("0"), null);
+				assertNotNull(file3);
+				// second one should not have downloaded
+				assertEquals(2, tasks.get());
+
+				p.getInfo(workspace);
+				return p.check(checks);
 			}
-		});
-
-		assertEquals(0, tasks.get());
-		File file = r.get("dummybundle", new Version("0"), null);
-		assertNotNull(file);
-		assertEquals(2, tasks.get()); // 2 = index + file
-		File file2 = r.get("dummybundle", new Version("0"), null);
-		assertNotNull(file2);
-		// second one should not have downloaded
-		assertEquals(2, tasks.get());
-
-		r.refresh();
-		File file3 = r.get("dummybundle", new Version("0"), null);
-		assertNotNull(file3);
-		// second one should not have downloaded
-		assertEquals(2, tasks.get());
-		return workspace;
+		}
 	}
 
 	public void testNoPolling() throws Exception {

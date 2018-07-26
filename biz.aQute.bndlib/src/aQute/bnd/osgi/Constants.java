@@ -135,6 +135,7 @@ public interface Constants {
 	String								GROUPID										= "-groupid";
 	String								INCLUDE										= "-include";
 	String								INCLUDERESOURCE								= "-includeresource";
+	String								INCLUDEPACKAGE								= "-includepackage";
 	String								INVALIDFILENAMES							= "-invalidfilenames";
 	String								INIT										= "-init";
 	String								BUILDREPO									= "-buildrepo";
@@ -265,7 +266,7 @@ public interface Constants {
 		METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE, JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA,
 		JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE,
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
-		REPRODUCIBLE
+		REPRODUCIBLE, INCLUDEPACKAGE
 
 	};
 
