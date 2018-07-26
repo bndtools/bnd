@@ -56,8 +56,8 @@ public class OSGiRepositoryTest extends TestCase {
 	@SuppressWarnings("deprecation")
 	public void testCompatibilityWithFixedIndexedRepo() throws Exception {
 		try (aQute.bnd.deployer.repository.FixedIndexedRepo r = new aQute.bnd.deployer.repository.FixedIndexedRepo();) {
-			assertTrue(testRepo(r)
-				.check("FixedIndexedRepository is deprecated, please use aQute.bnd.repository.osgi.OSGiRepository"));
+			assertTrue(testRepo(r,
+				"FixedIndexedRepository is deprecated, please use aQute.bnd.repository.osgi.OSGiRepository"));
 		}
 	}
 
