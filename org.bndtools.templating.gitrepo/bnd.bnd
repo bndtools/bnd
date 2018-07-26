@@ -1,6 +1,7 @@
 # This bundle separated from core as it has a dependency on JGit.
 
 -buildpath: \
+	osgi.annotation;version=${osgi.annotation.version},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
@@ -17,10 +18,13 @@
 	org.eclipse.equinox.common,\
 	org.eclipse.core.commands
 
--privatepackage: org.bndtools.templating.jgit.*
+-includepackage: org.bndtools.templating.jgit.*
 -includeresource: /=resources/unprocessed,\
     {/=resources/processed}
 -conditionalpackage: aQute.lib.*, aQute.libg.*, org.bndtools.utils.*, org.eclipse.jgit.*, com.googlecode.javaewah
 
 Bundle-ActivationPolicy: lazy
 Bundle-SymbolicName: org.bndtools.templating.gitrepo; singleton:=true
+# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: \
+	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!

@@ -10,15 +10,14 @@ Bundle-Localization: plugin
 Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
-Private-Package: \
-	bndtools.release,\
-	bndtools.release.nl,\
-	bndtools.release.ui,\
-	org.bndtools.utils.swt;-split-package:=first
+-includepackage: \
+	bndtools.release*
 
-Conditional-Package: aQute.lib.*,aQute.libg.*
+-conditionalpackage: aQute.lib.*,\
+    aQute.libg.*,\
+	org.bndtools.utils.*;-split-package:=first
 
-Include-Resource: 	plugin.xml=_plugin.xml,\
+-includeresource: 	plugin.xml=_plugin.xml,\
 					/=resources
 
 -buildpath:\
@@ -26,6 +25,7 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	bndtools.utils;version=project;packages=*,\
 	bndtools.api;version=latest, \
 	bndtools.core;version=latest, \
+	osgi.annotation;version=${osgi.annotation.version},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	org.eclipse.core.runtime,\
@@ -60,5 +60,3 @@ Include-Resource: 	plugin.xml=_plugin.xml,\
 	
 -testpath: \
 	${junit}
-
-Export-Package: bndtools.release.api

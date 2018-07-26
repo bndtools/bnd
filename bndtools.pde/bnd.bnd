@@ -18,6 +18,7 @@
 	org.eclipse.ui.workbench,\
 	org.eclipse.ui.ide,\
 	org.eclipse.osgi,\
+	osgi.annotation;version=${osgi.annotation.version},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.core.version}
 
@@ -28,9 +29,9 @@ Bundle-ActivationPolicy: lazy
 Import-Package: \
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
-Conditional-Package: aQute.lib*;-split-package:=first
+-conditionalpackage: aQute.lib*;-split-package:=first
 
-Private-Package: bndtools.pde.*
+-includepackage: bndtools.pde.*
 
-Include-Resource: \
+-includeresource: \
 	plugin.xml=_plugin.xml

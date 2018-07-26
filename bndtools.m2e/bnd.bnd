@@ -2,6 +2,7 @@
 
 -buildpath: \
 	org.slf4j.api;version=latest,\
+	osgi.annotation;version=${osgi.annotation.version},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.core.version},\
 	${bndlib},\
@@ -37,10 +38,10 @@ Import-Package: \
 	org.codehaus.plexus.util.xml;provider=m2e,\
 	*
 
-Conditional-Package: aQute.lib*;-split-package:=first
+-conditionalpackage: aQute.lib*;-split-package:=first
 
-Private-Package: bndtools.m2e.*
+-includepackage: bndtools.m2e.*
 
-Include-Resource: \
+-includeresource: \
 	lifecycle-mapping-metadata.xml,\
 	plugin.xml=_plugin.xml

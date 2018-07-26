@@ -4,6 +4,7 @@
 -buildpath: \
 	${bndlib},\
 	${aQute-repository},\
+	osgi.annotation; version=${osgi.annotation.version},\
 	com.jcraft.jsch,\
 	org.eclipse.jgit
 

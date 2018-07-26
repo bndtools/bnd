@@ -18,9 +18,6 @@
 	${junit},\
 	bndtools.utils;version=project;packages=*
 
-
--privatepackage: org.bndtools.templating.*
-Export-Package: ${packages;ANNOTATED;org.osgi.annotation.versioning.Version}
 -conditionalpackage: \
 	org.stringtemplate.*, \
 	st4hidden.*, \
@@ -30,4 +27,7 @@ Export-Package: ${packages;ANNOTATED;org.osgi.annotation.versioning.Version}
 	com.google.common.*
 Bundle-ActivationPolicy: lazy
 
-Import-Package: sun.misc; resolution:=optional, *
+# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: sun.misc; resolution:=optional,\
+	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+
