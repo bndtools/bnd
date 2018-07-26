@@ -12,7 +12,6 @@
 # we really need this, otherwise Eclipse will not start our bundles
 Bundle-ActivationPolicy: lazy
 
-Private-Package:  \
-	org.bndtools.versioncontrol.ignores.manager
-Export-Package:  \
-	org.bndtools.versioncontrol.ignores.manager.api;provide:=true
+# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: \
+	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!

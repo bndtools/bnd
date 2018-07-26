@@ -3,7 +3,7 @@
 
 -buildpath: \
 	${bndlib}, \
-	osgi.annotation; version=6.0.1,\
+	osgi.annotation; version=${osgi.annotation.version},\
 	osgi.core;version=${osgi.core.version}, \
 	org.eclipse.equinox.common, \
 	org.eclipse.core.resources,\
@@ -11,8 +11,6 @@
 	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
 	org.eclipse.jface
 
--privatepackage: org.bndtools.api.*
--exportcontents: ${packages;ANNOTATED;org.osgi.annotation.versioning.Version}
 Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 -conditionalpackage: aQute.lib*

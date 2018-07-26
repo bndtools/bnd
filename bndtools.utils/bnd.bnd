@@ -4,6 +4,7 @@
 -buildpath: \
     ${bndlib}, \
     bndtools.api; version=latest, \
+	osgi.annotation;version=${osgi.annotation.version},\
     osgi.core;version=${osgi.core.version}, \
     osgi.cmpn;version=${osgi.cmpn.version}, \
     org.eclipse.osgi, \
@@ -25,4 +26,7 @@
     ${junit}
 
 # No exports. This is bundle is not intended for runtime use.
-Private-Package: org.bndtools.utils.*
+
+# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: \
+	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!

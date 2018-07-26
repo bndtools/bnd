@@ -16,30 +16,20 @@ Import-Package: junit.framework;resolution:=optional,\
 
 # Bundle Content
 
-Private-Package:  \
+-includepackage: \
 	bndtools.*,\
+	org.bndtools.build.api.*,\
 	org.bndtools.core.*
 
-Conditional-Package:\
+-conditionalpackage: \
 	aQute.lib.*;-split-package:=merge-first,\
 	aQute.libg.*;-split-package:=merge-first, \
 	org.bndtools.utils.*,\
-	org.apache.felix.metatype, org.kxml2.*, org.xmlpull.v1
+	org.apache.felix.metatype,\
+	org.kxml2.*,\
+	org.xmlpull.v1
 
-Export-Package: \
-	bndtools.central, \
-	bndtools.types,\
-	bndtools.editor.model,\
-	bndtools.launch.ui,\
-	bndtools.model.clauses,\
-	bndtools.preferences,\
-	org.bndtools.build.api,\
-	org.bndtools.core.ui,\
-	bndtools.launch.util,\
-	bndtools.launch.api,\
-	bndtools.wizards.workspace
-
-Include-Resource: {plugin.xml=_plugin.xml},\
+-includeresource: {plugin.xml=_plugin.xml},\
 	icons.properties,\
     /=resources/unprocessed,\
     {/=resources/processed}

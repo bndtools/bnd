@@ -2,10 +2,11 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 Bundle-SymbolicName: bndtools.jareditor;singleton:=true
-Include-Resource: resources
+-includeresource: resources
 
 -buildpath:  \
 	${bndlib};packages=*,\
+	osgi.annotation;version=${osgi.annotation.version},\
 	osgi.core;version=${osgi.core.version},\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
@@ -25,17 +26,14 @@ Include-Resource: resources
 	org.eclipse.core.jobs,\
 	org.eclipse.text
 
-Private-Package: bndtools.jareditor.internal,\
-	bndtools.jareditor.internal.utils
+-includepackage: bndtools.jareditor.*,\
+	bndtools.test.plugin
 	
-Conditional-Package: \
+-conditionalpackage: \
 	aQute.libg.*,\
 	aQute.lib.*
 
-Import-Package: org.eclipse.ui*;texteditor=!;ui.workbench=!,\
-	*
+# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 Bundle-Activator: bndtools.jareditor.internal.Plugin
-
-Export-Package: \
-	bndtools.test.plugin;bnd-plugins=true

@@ -2,6 +2,7 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
+	osgi.annotation;version=${osgi.annotation.version},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	${bndlib},\
@@ -17,9 +18,9 @@
 # we really need this, otherwise Eclipse will not start our bundles
 Bundle-ActivationPolicy: lazy
 
-Conditional-Package: \
+-conditionalpackage: \
 	org.bndtools.utils.copy.bundleresource,\
 	aQute.lib.*;-split-package:=merge-first, \
 	aQute.libg.*;-split-package:=merge-first
-Private-Package: \
-	org.bndtools.headless.build.plugin.gradle
+-includepackage: \
+	org.bndtools.headless.build.plugin.gradle.*

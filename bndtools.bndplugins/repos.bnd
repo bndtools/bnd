@@ -1,2 +1,1 @@
-Private-Package: bndtools.bndplugins.repo.*,com.jcraft.jsch*,org.eclipse.jgit*
-Export-Package: bndtools.bndplugins.repo
+-includepackage: bndtools.bndplugins.repo.*,com.jcraft.jsch*,org.eclipse.jgit*

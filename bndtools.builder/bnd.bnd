@@ -7,6 +7,7 @@
 	bndtools.api;version=latest,\
 	bndtools.utils;version=project;packages=*,\
 	bndtools.core;version=snapshot, \
+	osgi.annotation; version=${osgi.annotation.version},\
 	osgi.core;version=${osgi.core.version},\
 	osgi.cmpn;version=${osgi.cmpn.version},\
 	javax.xml,\
@@ -38,14 +39,14 @@ Bundle-ActivationPolicy: lazy
 # Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
 Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
-Private-Package: \
+-includepackage: \
 	org.bndtools.builder.*
 
-Conditional-Package: \
+-conditionalpackage: \
 	aQute.lib.*;-split-package:=merge-first, \
 	aQute.libg.*;-split-package:=merge-first, \
 	org.bndtools.utils.*
 
-Include-Resource: \
+-includeresource: \
 	plugin.xml=_plugin.xml, \
 	resources
