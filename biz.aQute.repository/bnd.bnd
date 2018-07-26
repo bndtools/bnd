@@ -47,7 +47,7 @@ Export-Package: \
 	aQute.bnd.repository.fileset;bnd-plugins=true,  \
 	aQute.maven.*, \
 
-Private-Package: \
+-includepackage: \
 	aQute.p2.provider
 
 -conditionalpackage:\

@@ -16,7 +16,7 @@ Import-Package: \
 Bundle-Activator: \
 	aQute.junit.Activator
 
-Private-Package: \
+-includepackage: \
 	aQute.junit, \
 	aQute.junit.constants, \
 	aQute.junit.runtime, \

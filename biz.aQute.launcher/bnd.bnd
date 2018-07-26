@@ -17,7 +17,6 @@
 
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
-Private-Package: aQute.launcher.*
 -conditionalpackage: aQute.lib*
 
 Premain-Class: aQute.launcher.agent.LauncherAgent

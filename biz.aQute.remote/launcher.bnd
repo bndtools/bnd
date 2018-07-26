@@ -12,7 +12,7 @@ Bundle-Description: \
 
 Launcher-Plugin: aQute.remote.plugin.RemoteProjectLauncherPlugin
 
-Private-Package: \
+-includepackage: \
 	aQute.remote.agent,\
 	aQute.remote.api,\
 	aQute.remote.plugin,\

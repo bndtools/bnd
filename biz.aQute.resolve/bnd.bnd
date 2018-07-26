@@ -20,7 +20,7 @@ Export-Package:  \
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.resolver;-split-package:=first
 
-Private-Package: \
+-includepackage: \
 	biz.aQute.resolve.*,\
 	org.apache.felix.resolver.*
 

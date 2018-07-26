@@ -7,8 +7,6 @@ Bundle-Description: \
 	path and parameters are mapped to the method. See Httpbin as an example. This example implements a lot \
 	of methods that are very useful to test HTTP communication.
 
-Private-Package: aQute.http.testservers.www
-
 -conditionalpackage: aQute.lib*, fi.*, org.bouncycastle.*
 
 -buildpath: \
@@ -29,7 +27,7 @@ Private-Package: aQute.http.testservers.www
 	org.apache.commons.lang3;version=latest, \
 	org.apache.commons.codec;version=latest
 
-Export-Package: aQute.http.testservers
+-exportcontents: aQute.http.testservers
 
 -buildrepo:
 -releaserepo:
