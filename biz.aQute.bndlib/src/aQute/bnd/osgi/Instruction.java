@@ -142,6 +142,20 @@ public class Instruction {
 		}
 	}
 
+	public Instruction(Pattern pattern) {
+		this(pattern, false);
+	}
+
+	public Instruction(Pattern pattern, boolean negated) {
+		this.pattern = pattern;
+		this.negated = negated;
+		input = match = pattern.pattern();
+		matchFlags = pattern.flags();
+		any = false;
+		literal = false;
+		duplicate = false;
+	}
+
 	public boolean matches(String value) {
 		if (any)
 			return true;
