@@ -6,6 +6,7 @@
              biz.aQute.bnd.annotation, \
              biz.aQute.bnd.test, \
              biz.aQute.bnd.testextension, \
+             biz.aQute.bnd.exporters, \
              biz.aQute.bnd.gradle, \
              biz.aQute.bndlib, \
              biz.aQute.bndlib.tests, \
