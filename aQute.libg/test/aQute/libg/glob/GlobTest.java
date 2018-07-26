@@ -4,7 +4,7 @@ import junit.framework.TestCase;
 
 public class GlobTest extends TestCase {
 
-	public static void testSimple() {
+	public void testSimple() {
 		Glob glob = new Glob("*foo*");
 		assertTrue(glob.matcher("foo")
 			.matches());
@@ -18,7 +18,7 @@ public class GlobTest extends TestCase {
 			.matches());
 	}
 
-	public static void testCurlies() {
+	public void testCurlies() {
 		Glob glob = new Glob("xx{abc,def,ghi}xx");
 		assertTrue(glob.matcher("xxabcxx").find());
 		Glob g2 = new Glob("*.{groovy,java}");
@@ -26,7 +26,7 @@ public class GlobTest extends TestCase {
 		assertTrue(g2.matcher("FooBar.groovy").find());
 	}
 
-	public static void testUrl() {
+	public void testUrl() {
 		Glob glob;
 
 		glob = new Glob("http://www.example.com/*");

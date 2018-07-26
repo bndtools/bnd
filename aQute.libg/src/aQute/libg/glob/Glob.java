@@ -50,18 +50,6 @@ public class Glob {
 				case '?' :
 					sb.append('.');
 					break;
-				case '.' :
-				case '(' :
-				case ')' :
-				case '+' :
-				case '|' :
-				case '^' :
-				case '$' :
-				case '@' :
-				case '%' :
-					sb.append('\\');
-					sb.append(currentChar);
-					break;
 				case '\\' :
 					sb.append('\\');
 					if (i + 1 < strLen) {
@@ -87,8 +75,20 @@ public class Glob {
 						sb.append(',');
 					}
 					break;
+				case '.' :
+				case '(' :
+				case ')' :
+				case '+' :
+				case '|' :
+				case '^' :
+				case '$' :
+				case '@' :
+				case '%' :
+					sb.append('\\');
+					// FALL THROUGH
 				default :
 					sb.append(currentChar);
+					break;
 			}
 		}
 		return sb.toString();
