@@ -39,47 +39,61 @@ public class Glob {
 	private static String convertGlobToRegEx(String line) {
 		line = line.trim();
 		int strLen = line.length();
-		StringBuilder sb = new StringBuilder(strLen);
+		StringBuilder sb = new StringBuilder(strLen << 2);
 		int inCurlies = 0;
+		char previousChar = 0;
 		for (int i = 0; i < strLen; i++) {
 			char currentChar = line.charAt(i);
 			switch (currentChar) {
 				case '*' :
-					sb.append(".*");
+					if (!isEnd(previousChar)) {
+						sb.append('.');
+					}
+					sb.append(currentChar);
 					break;
 				case '?' :
-					sb.append('.');
+					if (!isStart(previousChar) && !isEnd(previousChar)) {
+						sb.append('.');
+					} else {
+						sb.append(currentChar);
+					}
+					break;
+				case '+' :
+					if (!isEnd(previousChar)) {
+						sb.append('\\');
+					}
+					sb.append(currentChar);
 					break;
 				case '\\' :
-					sb.append('\\');
+					sb.append(currentChar);
 					if (i + 1 < strLen) {
 						sb.append(line.charAt(++i));
 					}
 					break;
 				case '{' :
-					sb.append("(?:");
-					inCurlies++;
+					if (!isEnd(previousChar)) {
+						sb.append("(?:");
+						inCurlies++;
+					} else {
+						sb.append(currentChar);
+					}
 					break;
 				case '}' :
 					if (inCurlies > 0) {
 						sb.append(')');
 						inCurlies--;
 					} else {
-						sb.append('}');
+						sb.append(currentChar);
 					}
 					break;
 				case ',' :
 					if (inCurlies > 0) {
 						sb.append('|');
 					} else {
-						sb.append(',');
+						sb.append(currentChar);
 					}
 					break;
 				case '.' :
-				case '(' :
-				case ')' :
-				case '+' :
-				case '|' :
 				case '^' :
 				case '$' :
 				case '@' :
@@ -90,8 +104,17 @@ public class Glob {
 					sb.append(currentChar);
 					break;
 			}
+			previousChar = currentChar;
 		}
 		return sb.toString();
+	}
+
+	private static boolean isStart(char c) {
+		return c == '(';
+	}
+
+	private static boolean isEnd(char c) {
+		return c == ')' || c == ']';
 	}
 
 	public void select(List<?> objects) {
