@@ -168,18 +168,23 @@ public class Macro {
 	}
 
 	protected String getMacro(String key, Link link) {
-		return getMacro(key, link, '{', '}');
+		return getMacro(key, link, '{', '}', null);
 	}
 
-	private String getMacro(String key, Link link, char begin, char end) {
+	private String getMacro(String key, Link link, char begin, char end, String profile) {
 		if (link != null && link.contains(key))
 			return "${infinite:" + link.toString() + "}";
 
 		if (key != null) {
 			key = key.trim();
 			if (!key.isEmpty()) {
+				String keyins = key;
+				if (profile != null) {
+					key = "[" + profile + "]" + key;
+					keyins = "\\[" + profile + "\\]" + keyins;
+				}
 				if (key.indexOf(';') < 0) {
-					Instruction ins = new Instruction(key);
+					Instruction ins = new Instruction(keyins);
 					if (!ins.isLiteral()) {
 						String keyname = key;
 						return domain.stream()
@@ -189,6 +194,7 @@ public class Macro {
 							.filter(Objects::nonNull)
 							.collect(joining(","));
 					}
+					key = ins.getLiteral();
 				}
 
 				for (Processor source = domain; source != null; source = source.getParent()) {
@@ -254,7 +260,7 @@ public class Macro {
 			if (profile == null)
 				profile = domain.get(Constants.PROFILE);
 			if (profile != null) {
-				String replace = getMacro("[" + profile + "]" + key, link, begin, end);
+				String replace = getMacro(key, link, begin, end, profile);
 				if (replace != null)
 					return replace;
 			}
@@ -267,7 +273,7 @@ public class Macro {
 	}
 
 	private String replace(String key, Link link, char begin, char end) {
-		String value = getMacro(key, link, begin, end);
+		String value = getMacro(key, link, begin, end, null);
 		if (value != LITERALVALUE) {
 			if (value != null)
 				return value;

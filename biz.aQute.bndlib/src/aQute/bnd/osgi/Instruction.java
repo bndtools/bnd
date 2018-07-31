@@ -5,6 +5,8 @@ import java.io.FileFilter;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.libg.glob.Glob;
+
 public class Instruction {
 
 	public static class Filter implements FileFilter {
@@ -45,16 +47,21 @@ public class Instruction {
 		}
 	}
 
-	transient Pattern	pattern;
-	transient boolean	optional;
+	// Handle up to 4 sequential backslashes in the negative lookbehind.
+	private static final String		ESCAPING	= "(?<!(?<!(?<!(?<!\\\\)\\\\)\\\\)\\\\)";
+	private static final Pattern	WILDCARD	= Pattern.compile(ESCAPING + "[*?|({\\[]");
+	private static final Pattern	BACKSLASH	= Pattern.compile(ESCAPING + "\\\\");
+	private static final Pattern	ANY			= Pattern.compile(".*");
 
-	final String		input;
-	final String		match;
-	final boolean		negated;
-	final boolean		duplicate;
-	final boolean		literal;
-	final boolean		any;
-	private final int	matchFlags;
+	private final String			input;
+	private final String			match;
+	private final boolean			negated;
+	private final boolean			duplicate;
+	private final boolean			literal;
+	private final boolean			any;
+	private final int				matchFlags;
+	private Pattern					pattern;
+	private boolean					optional;
 
 	public Instruction(String input) {
 		this.input = input;
@@ -83,17 +90,69 @@ public class Instruction {
 			negated = false;
 		}
 
+		int flags = 0;
 		if (s.endsWith(":i")) {
-			matchFlags = Pattern.CASE_INSENSITIVE;
+			flags = Pattern.CASE_INSENSITIVE;
 			end -= 2;
-		} else {
-			matchFlags = 0;
 		}
 
 		if (s.charAt(start) == '=') {
 			match = s.substring(start + 1, end);
 			literal = true;
+			matchFlags = flags | Pattern.LITERAL;
 			return;
+		}
+
+		// If we end in a wildcard .* then we need to
+		// also include the last full package. I.e.
+		// com.foo.* includes com.foo (unlike OSGi)
+		if (s.regionMatches(end - 2, ".*", 0, 2)) {
+			s = s.substring(start, end - 2) + "(?:.*)?";
+			literal = false;
+		} else {
+			s = s.substring(start, end);
+			literal = !WILDCARD.matcher(s)
+				.find();
+		}
+
+		if (literal) {
+			match = (s.indexOf('\\') < 0) ? s
+				: BACKSLASH.matcher(s)
+					.replaceAll("");
+			matchFlags = flags | Pattern.LITERAL;
+		} else {
+			match = s;
+			matchFlags = flags;
+			pattern = Glob.toPattern(match, matchFlags);
+		}
+	}
+
+	public static Instruction legacy(String input) {
+		if (input.equals("*")) {
+			return new Instruction(input, null, null, false, 0, true, false, false);
+		}
+
+		String s = Processor.removeDuplicateMarker(input);
+		boolean duplicate = !s.equals(input);
+
+		int start = 0;
+		int end = s.length();
+
+		boolean negated = false;
+		if (s.charAt(start) == '!') {
+			negated = true;
+			start++;
+		}
+
+		int matchFlags = 0;
+		if (s.endsWith(":i")) {
+			matchFlags = Pattern.CASE_INSENSITIVE;
+			end -= 2;
+		}
+
+		if (s.charAt(start) == '=') {
+			return new Instruction(input, s.substring(start + 1, end), null, negated, matchFlags, false, true,
+				duplicate);
 		}
 
 		boolean wildcards = false;
@@ -134,11 +193,9 @@ public class Instruction {
 		}
 
 		if (wildcards) {
-			literal = false;
-			match = sb.toString();
+			return new Instruction(input, sb.toString(), null, negated, matchFlags, false, false, duplicate);
 		} else {
-			literal = true;
-			match = s.substring(start, end);
+			return new Instruction(input, s.substring(start, end), null, negated, matchFlags, false, true, duplicate);
 		}
 	}
 
@@ -147,21 +204,32 @@ public class Instruction {
 	}
 
 	public Instruction(Pattern pattern, boolean negated) {
+		this(pattern.pattern(), pattern.pattern(), pattern, negated, pattern.flags(), false, false, false);
+	}
+
+	private Instruction(String input, String match, Pattern pattern, boolean negated, int matchFlags, boolean any,
+		boolean literal, boolean duplicate) {
+		this.input = input;
+		this.match = match;
 		this.pattern = pattern;
 		this.negated = negated;
-		input = match = pattern.pattern();
-		matchFlags = pattern.flags();
-		any = false;
-		literal = false;
-		duplicate = false;
+		this.matchFlags = matchFlags;
+		this.any = any;
+		this.literal = literal;
+		this.duplicate = duplicate;
 	}
 
 	public boolean matches(String value) {
 		if (any)
 			return true;
 
-		if (literal)
+		if (literal) {
+			if ((matchFlags & Pattern.CASE_INSENSITIVE) != 0) {
+				return match.equalsIgnoreCase(value);
+			}
 			return match.equals(value);
+		}
+
 		return getMatcher(value).matches();
 	}
 
@@ -182,12 +250,19 @@ public class Instruction {
 		return input;
 	}
 
-	public Matcher getMatcher(String value) {
+	private Pattern pattern() {
 		if (pattern == null) {
-			String m = match == null ? ".*" : match;
-			pattern = Pattern.compile(m, matchFlags);
+			if (match == null) {
+				pattern = ANY;
+			} else {
+				pattern = Pattern.compile(match, matchFlags);
+			}
 		}
-		return pattern.matcher(value);
+		return pattern;
+	}
+
+	public Matcher getMatcher(String value) {
+		return pattern().matcher(value);
 	}
 
 	public void setOptional() {

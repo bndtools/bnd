@@ -1330,11 +1330,11 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private String getProperty(String key, String deflt, String separator, boolean inherit) {
 
 		Instruction ins = new Instruction(key);
-		if (!ins.isLiteral()) {
-			return getWildcardProperty(deflt, separator, inherit, ins);
+		if (ins.isLiteral()) {
+			return getLiteralProperty(ins.getLiteral(), deflt, this, inherit);
 		}
 
-		return getLiteralProperty(key, deflt, this, inherit);
+		return getWildcardProperty(deflt, separator, inherit, ins);
 	}
 
 	private String getWildcardProperty(String deflt, String separator, boolean inherit, Instruction ins) {
@@ -1840,7 +1840,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (fixup.isEmpty())
 			return;
 
-		Instructions instrs = new Instructions(fixup);
+		Instructions instrs = new Instructions();
+		fixup.forEach((k, v) -> instrs.put(Instruction.legacy(k), v));
 
 		doFixup(instrs, errors, warnings, FIXUPMESSAGES_IS_ERROR);
 		doFixup(instrs, warnings, errors, FIXUPMESSAGES_IS_WARNING);

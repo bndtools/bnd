@@ -70,7 +70,7 @@ public class BeanPropertiesTest {
 		assertThat(beanProperties.getProperty("project.licenses[0]")).isNotNull();
 		assertThat(beanProperties.getProperty("project.licenses[0].name")).isEqualTo("Test License");
 
-		processor.setProperty("Project-License", "${project.licenses[0].name}");
+		processor.setProperty("Project-License", "${project.licenses\\[0\\].name}");
 		assertThat(processor.getProperty("Project-License")).isEqualTo("Test License");
 	}
 
