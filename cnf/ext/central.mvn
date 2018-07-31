@@ -11,7 +11,7 @@ org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
 org.mockito:mockito-core:2.16.0
 net.bytebuddy:byte-buddy:1.7.9
 org.objenesis:objenesis:2.6
-org.assertj:assertj-core:3.9.0
+org.assertj:assertj-core:3.10.0
 
 com.google.guava:guava:16.0.1
 
