@@ -20,10 +20,76 @@ public class GlobTest extends TestCase {
 
 	public void testCurlies() {
 		Glob glob = new Glob("xx{abc,def,ghi}xx");
-		assertTrue(glob.matcher("xxabcxx").find());
-		Glob g2 = new Glob("*.{groovy,java}");
-		assertTrue(g2.matcher("FooBar.java").find());
-		assertTrue(g2.matcher("FooBar.groovy").find());
+		assertTrue(glob.matcher("xxabcxx")
+			.matches());
+
+		glob = new Glob("*{.groovy,.java}");
+		assertTrue(glob.matcher("FooBar.java")
+			.matches());
+		assertTrue(glob.matcher("FooBar.groovy")
+			.matches());
+	}
+
+	public void testOr() {
+		Glob glob = new Glob("abc|def|ghi");
+		assertTrue(glob.matcher("abc")
+			.matches());
+	}
+
+	public void testGroups() {
+		Glob glob = new Glob("xx(abc|def|ghi)xx");
+		assertTrue(glob.matcher("xxabcxx")
+			.matches());
+
+		glob = new Glob("*(?:.groovy|.java)");
+		assertTrue(glob.matcher("FooBar.java")
+			.matches());
+		assertTrue(glob.matcher("FooBar.groovy")
+			.matches());
+	}
+
+	public void testChar() {
+		Glob glob = new Glob("xx[abc]xx");
+		assertTrue(glob.matcher("xxbxx")
+			.matches());
+		assertTrue(glob.matcher("xxcxx")
+			.matches());
+
+		glob = new Glob("xx[abc]{2}xx");
+		assertTrue(glob.matcher("xxbbxx")
+			.matches());
+		assertTrue(glob.matcher("xxcaxx")
+			.matches());
+		assertFalse(glob.matcher("xxcxx")
+			.matches());
+
+		glob = new Glob("xx[abc]?xx");
+		assertTrue(glob.matcher("xxbxx")
+			.matches());
+		assertTrue(glob.matcher("xxxx")
+			.matches());
+		assertFalse(glob.matcher("xxacxx")
+			.matches());
+	}
+
+	public void testGroupQuantifier() {
+		Glob glob = new Glob("xx(abc|def|ghi){2}xx");
+		assertFalse(glob.matcher("xxabcxx")
+			.matches());
+		assertTrue(glob.matcher("xxabcabcxx")
+			.matches());
+		assertTrue(glob.matcher("xxabcdefxx")
+			.matches());
+		assertFalse(glob.matcher("xxabcdefghixx")
+			.matches());
+
+		glob = new Glob("*(.groovy|.java)?");
+		assertTrue(glob.matcher("FooBar.java")
+			.matches());
+		assertTrue(glob.matcher("FooBar.groovy")
+			.matches());
+		assertTrue(glob.matcher("FooBar")
+			.matches());
 	}
 
 	public void testUrl() {

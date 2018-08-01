@@ -1,7 +1,7 @@
 Project-Build-SourceEncoding: ${project.build.sourceEncoding}
 Project-GroupId-ArtifactId: ${project.groupId}:${project.artifactId}
 Project-Build-OutputDirectory: ${project.build.outputDirectory}
-Project-License: ${project.licenses[0].name}
+Project-License: ${project.licenses\\[0\\].name}
 Project-NoSuchProperty: ${project.nosuchproperty}
 Project: ${project}
 Settings-InteractiveMode: ${settings.interactiveMode}

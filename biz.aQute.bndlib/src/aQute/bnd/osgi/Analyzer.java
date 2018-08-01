@@ -280,7 +280,8 @@ public class Analyzer extends Processor {
 					warning("Unused " + Constants.EXPORT_PACKAGE + " instructions: %s ", unused)
 						.header(Constants.EXPORT_PACKAGE)
 						.context(unused.iterator()
-							.next().input);
+							.next()
+							.getInput());
 				}
 
 				// See what information we can find to augment the
@@ -325,7 +326,8 @@ public class Analyzer extends Processor {
 						warning("Unused " + Constants.IMPORT_PACKAGE + " instructions: %s ", unused)
 							.header(Constants.IMPORT_PACKAGE)
 							.context(unused.iterator()
-								.next().input);
+								.next()
+								.getInput());
 				}
 
 				// See what information we can find to augment the

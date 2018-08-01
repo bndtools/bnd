@@ -2,17 +2,16 @@ package aQute.bnd.make;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.Attrs;
-import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instruction;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.MakePlugin;
@@ -20,17 +19,17 @@ import aQute.bnd.service.MakePlugin;
 public class Make {
 	private final static Logger				logger	= LoggerFactory.getLogger(Make.class);
 	Builder									builder;
-	Map<Instruction, Map<String, String>>	make;
+	Instructions				make;
 
 	public Make(Builder builder) {
 		this.builder = builder;
 	}
 
 	public Resource process(String source) {
-		Map<Instruction, Map<String, String>> make = getMakeHeader();
+		Instructions make = getMakeHeader();
 		logger.debug("make {}", source);
 
-		for (Map.Entry<Instruction, Map<String, String>> entry : make.entrySet()) {
+		for (Map.Entry<Instruction, Attrs> entry : make.entrySet()) {
 			Instruction instr = entry.getKey();
 			Matcher m = instr.getMatcher(source);
 			if (m.matches() || instr.isNegated()) {
@@ -86,20 +85,12 @@ public class Make {
 		return sb.toString();
 	}
 
-	Map<Instruction, Map<String, String>> getMakeHeader() {
-		if (make != null)
-			return make;
-		make = Processor.newMap();
-
-		Parameters make = builder.getMergedParameters(Constants.MAKE);
-
-		for (Entry<String, Attrs> entry : make.entrySet()) {
-			String pattern = Processor.removeDuplicateMarker(entry.getKey());
-
-			Instruction instr = new Instruction(pattern);
-			this.make.put(instr, entry.getValue());
+	Instructions getMakeHeader() {
+		if (make == null) {
+			make = new Instructions();
+			builder.getMergedParameters(Constants.MAKE)
+				.forEach((k, v) -> make.put(Instruction.legacy(k), v));
 		}
-
-		return this.make;
+		return make;
 	}
 }

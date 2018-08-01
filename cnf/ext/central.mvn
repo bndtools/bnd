@@ -48,7 +48,7 @@ org.eclipse.jetty:jetty-util:7.6.3.v20120416
 org.mockito:mockito-core:2.16.0
 net.bytebuddy:byte-buddy:1.7.9
 org.objenesis:objenesis:2.6
-org.assertj:assertj-core:3.9.0
+org.assertj:assertj-core:3.10.0
 
 args4j:args4j:2.0.26
 

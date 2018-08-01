@@ -588,7 +588,8 @@ public class Builder extends Analyzer {
 					"Unused " + Constants.PRIVATE_PACKAGE + " instructions, no such package(s) on the class path: %s",
 					unused).header(Constants.PRIVATE_PACKAGE)
 						.context(unused.iterator()
-							.next().input);
+							.next()
+							.getInput());
 			}
 		}
 
