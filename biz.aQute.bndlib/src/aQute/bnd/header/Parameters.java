@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collector;
 
+import aQute.bnd.osgi.Constants;
 import aQute.lib.collections.SortedList;
 import aQute.service.reporter.Reporter;
 
@@ -98,7 +99,7 @@ public class Parameters implements Map<String, Attrs> {
 
 	public List<String> keyList() {
 		return keySet().stream()
-			.map(this::removeDuplicateMarker)
+			.map(Parameters::removeDuplicateMarker)
 			.collect(toList());
 	}
 
@@ -153,25 +154,28 @@ public class Parameters implements Map<String, Attrs> {
 	public void append(StringBuilder sb) {
 		String del = "";
 		for (Map.Entry<String, Attrs> s : entrySet()) {
+			String key = s.getKey();
+			Attrs value = s.getValue();
 			sb.append(del);
-			sb.append(removeDuplicateMarker(s.getKey()));
-			if (!s.getValue()
-				.isEmpty()) {
+			sb.append(key, 0, keyLength(key));
+			if (!value.isEmpty()) {
 				sb.append(';');
-				s.getValue()
-					.append(sb);
+				value.append(sb);
 			}
 
 			del = ",";
 		}
 	}
 
-	private String removeDuplicateMarker(String key) {
-		int i = key.length() - 1;
-		while (i >= 0 && key.charAt(i) == '~')
-			--i;
+	private static String removeDuplicateMarker(String key) {
+		return key.substring(0, keyLength(key));
+	}
 
-		return key.substring(0, i + 1);
+	private static int keyLength(String key) {
+		int i = key.length() - 1;
+		while (i >= 0 && key.charAt(i) == Constants.DUPLICATE_MARKER)
+			--i;
+		return i + 1;
 	}
 
 	@Override
