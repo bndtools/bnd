@@ -91,8 +91,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS, "*"));
-		if (header.size() == 0)
+		if (header.size() == 0) {
 			return false;
+		}
 
 		minVersion = V1_3;
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.mergeProperties(Constants.DSANNOTATIONS_OPTIONS));
@@ -106,10 +107,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 			}
 		}
 		// obsolete but backwards compatible, use the options instead
-		if (Processor.isTrue(analyzer.getProperty("-dsannotations-inherit")))
+		if (analyzer.is("-dsannotations-inherit")) {
 			options.add(Options.inherit);
-		if (Processor.isTrue(analyzer.getProperty("-ds-felix-extensions")))
+		}
+		if (analyzer.is("-ds-felix-extensions")) {
 			options.add(Options.felixExtensions);
+		}
 
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace()
@@ -117,8 +120,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 		String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT);
 		List<String> names = new ArrayList<>();
 		if (sc != null && sc.trim()
-			.length() > 0)
+			.length() > 0) {
 			names.add(sc);
+		}
 
 		TreeSet<String> provides = new TreeSet<>();
 		TreeSet<String> requires = new TreeSet<>();
@@ -171,8 +175,14 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 		if (componentProcessed
 			&& (options.contains(Options.extender) || (maxVersion.compareTo(V1_3) >= 0))) {
-			maxVersion = ComponentDef.max(maxVersion, V1_3);
-			addExtenderRequirement(requires, maxVersion);
+			Clazz componentAnnotation = analyzer
+				.findClass(analyzer.getTypeRef("org/osgi/service/component/annotations/Component"));
+			if ((componentAnnotation == null) || !componentAnnotation.annotations()
+					.contains(
+					analyzer.getTypeRef("org/osgi/service/component/annotations/RequireServiceComponentRuntime"))) {
+				maxVersion = ComponentDef.max(maxVersion, V1_3);
+				addExtenderRequirement(requires, maxVersion);
+			}
 		}
 		names = removeOverlapInServiceComponentHeader(names);
 		sc = Processor.append(names.toArray(new String[0]));

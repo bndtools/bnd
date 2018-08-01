@@ -1,5 +1,7 @@
 package test.component;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -26,6 +28,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.component.ComponentConstants;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.ComponentServiceObjects;
 import org.osgi.service.component.annotations.Activate;
@@ -57,6 +60,8 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
+import aQute.bnd.version.Version;
+import aQute.lib.filter.Filter;
 import junit.framework.AssertionFailedError;
 
 /**
@@ -106,6 +111,25 @@ public class DSAnnotationTest extends BndTestCase {
 		r.write(System.err);
 	}
 
+	public void testDuplicateExtender() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
+			b.setProperty("-includepackage", "test.component.ds14");
+			b.addClasspath(new File("bin"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			String reqcap = jar.getManifest()
+				.getMainAttributes()
+				.getValue(Constants.REQUIRE_CAPABILITY);
+			Parameters reqs = new Parameters(reqcap);
+			System.out.println(reqs);
+			assertThat(reqs).containsOnlyKeys("osgi.extender", "osgi.ee");
+			assertThat(reqs.get("osgi.extender")).containsOnlyKeys("filter:");
+			checkExtenderVersion(reqs, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
+		}
+	}
 	/**
 	 * Property test
 	 */
@@ -769,7 +793,8 @@ public class DSAnnotationTest extends BndTestCase {
 		// n.b. we should merge the 2 logService requires, so when we fix that
 		// we'll need to update this test.
 		// one is plain, other has cardinality multiple.
-		checkRequires(a, "1.3.0", LogService.class.getName(), LogService.class.getName());
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName(),
+			LogService.class.getName());
 	}
 
 	private void verifyDS11VeryBasic(Jar jar, Class<?> clazz) throws Exception, XPathExpressionException {
@@ -1254,7 +1279,8 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	public void testInheritanceExtenderFlag() throws Exception {
-		testInheritance(Constants.DSANNOTATIONS_OPTIONS, "inherit,extender", "1.3.0");
+		testInheritance(Constants.DSANNOTATIONS_OPTIONS, "inherit,extender",
+			ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 	}
 
 	public void testInheritance(String key, String value, String extender) throws Exception {
@@ -1406,7 +1432,7 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	public void testBindsExtender() throws Exception {
-		testBinds("1.3.0");
+		testBinds(ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 	}
 
 	public void testBinds(String extender) throws Exception {
@@ -1500,7 +1526,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a);
-		checkRequires(a, "1.3.0", LogService.class.getName());
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/" + CheckBinds13.class.getName() + ".xml");
 		assertNotNull(r);
@@ -1655,7 +1681,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a, SERIALIZABLE_RUNNABLE);
-		checkRequires(a, "1.3.0", LogService.class.getName());
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ref_on_comp.xml");
 		System.err.println(Processor.join(jar.getResources()
@@ -2058,9 +2084,9 @@ public class DSAnnotationTest extends BndTestCase {
 			checkProvides(a, provides);
 		}
 		if (requires == null) {
-			checkRequires(a, "1.3.0");
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 		} else {
-			checkRequires(a, "1.3.0", requires);
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, requires);
 		}
 		return jar;
 	}
@@ -2172,7 +2198,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a, SERIALIZABLE_RUNNABLE);
-		checkRequires(a, "1.3.0", LogService.class.getName());
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName());
 	}
 
 	public enum Foo {
@@ -2299,7 +2325,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a, SERIALIZABLE_RUNNABLE);
-		checkRequires(a, "1.3.0");
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 
 		// // Test 1.3 signature methods give 1.3 namespace
 		checkDS13Anno(jar, DS13anno_configTypes_activate.class.getName(), "");
@@ -2437,7 +2463,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a, SERIALIZABLE_RUNNABLE);
-		checkRequires(a, "1.3.0");
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 
 		checkDS13AnnoConfigNames(jar, DS13annoNames_config.class.getName());
 	}
@@ -2734,7 +2760,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a, SERIALIZABLE_RUNNABLE);
-		checkRequires(a, "1.3.0");
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
 
 		checkDS13AnnoOverride(jar, DS13annoOverride_a_a.class.getName());
 		checkDS13AnnoOverride(jar, DS13annoOverride_a_d.class.getName());
@@ -2817,7 +2843,7 @@ public class DSAnnotationTest extends BndTestCase {
 		assertOk(b);
 		Attributes a = getAttr(jar);
 		checkProvides(a);
-		checkRequires(a, "1.3.0", LogService.class.getName());
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/" + TestFieldInjection.class.getName() + ".xml");
 		assertNotNull(r);
@@ -2897,7 +2923,8 @@ public class DSAnnotationTest extends BndTestCase {
 			assertOk(b);
 			Attributes a = getAttr(jar);
 			checkProvides(a, SERIALIZABLE_RUNNABLE);
-			checkRequires(a, "1.3.0", LogService.class.getName(), Map.class.getName());
+			checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName(),
+				Map.class.getName());
 
 			Resource r = jar.getResource("OSGI-INF/" + TestFieldCollectionType.class.getName() + ".xml");
 			assertNotNull(r);
@@ -2972,11 +2999,29 @@ public class DSAnnotationTest extends BndTestCase {
 			assertTrue("objectClass not found: " + o, found);
 		}
 
+		checkExtenderVersion(header, extender);
+	}
+
+	private void checkExtenderVersion(Parameters header, String extender) {
 		if (extender != null) {
 			Attrs attr = header.get("osgi.extender");
-			assertNotNull(attr);
-			assertEquals("(&(osgi.extender=osgi.component)(version>=" + extender + ")(!(version>=2.0.0)))",
-				attr.get("filter:"));
+			assertThat(attr).as("osgi.extender namespace")
+				.isNotNull();
+			String filterString = attr.get("filter:");
+			assertThat(filterString).as("osgi.extender namespace filter directive")
+				.isNotNull();
+			Filter filter = new Filter(filterString);
+			Map<String, Object> map = new HashMap<>();
+			map.put("osgi.extender", "osgi.component");
+			map.put("version", Version.parseVersion(extender));
+			boolean matches = false;
+			try {
+				matches = filter.matchMap(map);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+			assertThat(matches).as("filter %s matches version %s", filter, extender)
+				.isTrue();
 		}
 	}
 
@@ -3440,7 +3485,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Jar jar = b.build();
 		assertOk(b);
 		Attributes a = getAttr(jar);
-		checkRequires(a, "1.3.0", LogService.class.getName());
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$VolatileField.xml");
 		System.err.println(Processor.join(jar.getResources()
@@ -3480,7 +3525,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Jar jar = b.build();
 		assertOk(b);
 		Attributes a = getAttr(jar);
-		checkRequires(a, "1.3.0", LogService.class.getName());
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FinalDynamicCollectionField.xml");
 		System.err.println(Processor.join(jar.getResources()
@@ -3527,7 +3572,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Jar jar = b.build();
 		assertOk(b);
 		Attributes a = getAttr(jar);
-		checkRequires(a, "1.3.0", LogService.class.getName());
+		checkRequires(a, ComponentConstants.COMPONENT_SPECIFICATION_VERSION, LogService.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FieldCardinality.xml");
 		System.err.println(Processor.join(jar.getResources()
