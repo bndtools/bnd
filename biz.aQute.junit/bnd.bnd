@@ -21,8 +21,7 @@ Export-Package: junit.*;version="3.8.2", \
 				org.assertj.core.*
 
 -fixupmessages.junit: Version for package junit.*3.8.2
--fixupmessages.assertj: Export org.assertj.core.* private references, Baseline mismatch for package org.assertj.core*
--fixupmessages.bundleversion: "The bundle version \\(4.0.0/4.1.0\\) is too low, must be at least 5.0.0"
+-fixupmessages.assertj: Export org.assertj.core.* private references
 
 # The dependency on aQute packages is only for the 
 # master side. When launched, those dependencies
@@ -37,4 +36,4 @@ Embedded-Activator: aQute.junit.Activator
 Bundle-Release: Use main thread for testing, optionally allowing old separate thread model
 
 -baseline: *
--diffpackages: !org.junit.*, *
+-diffpackages: !org.junit.*, !org.assertj.core.*, !org.hamcrest.*, *

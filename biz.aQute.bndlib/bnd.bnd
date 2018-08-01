@@ -6,6 +6,7 @@ Bundle-Description:				A Swiss Army Knife for OSGi
 
 -includepackage: \
 	aQute.bnd.*,\
+	aQute.lib.spring,\
     org.osgi.annotation.bundle;-split-package:=first,\
     org.osgi.service.*.annotations.*;-split-package:=first
 
