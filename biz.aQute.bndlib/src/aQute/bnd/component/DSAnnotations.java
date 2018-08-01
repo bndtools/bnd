@@ -208,7 +208,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 	}
 
 	private void addExtenderRequirement(Set<String> requires, Version version) {
-		Version next = new Version(version.getMajor() + 1);
+		Version next = version.bumpMajor();
 		Parameters p = new Parameters();
 		Attrs a = new Attrs();
 		a.put(Constants.FILTER_DIRECTIVE,

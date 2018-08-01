@@ -55,7 +55,7 @@ public class VersionRange {
 				high = v;
 			} else if (auto != 0) {
 				low = v;
-				high = auto == 1 ? new Version(v.getMajor() + 1, 0, 0) : new Version(v.getMajor(), v.getMinor() + 1, 0);
+				high = auto == 1 ? v.bumpMajor() : v.bumpMinor();
 				start = '[';
 				end = ')';
 			} else {
