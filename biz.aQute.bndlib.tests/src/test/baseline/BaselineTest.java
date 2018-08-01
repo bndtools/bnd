@@ -1,11 +1,11 @@
 package test.baseline;
 
-import static aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME;
 
 import java.io.File;
 import java.util.Collection;
@@ -241,7 +241,7 @@ public class BaselineTest extends TestCase {
 		File file = IO.getFile(new File(""), "jar/osgi.jar");
 		try (Builder b1 = new Builder(); Builder b2 = new Builder();) {
 			b1.addClasspath(file);
-			b1.setProperty(Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
+			b1.setProperty(org.osgi.framework.Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
 			b1.setExportPackage("org.osgi.service.event");
 			try (Jar j1 = b1.build();) {
 				assertTrue(b1.check());
@@ -252,7 +252,7 @@ public class BaselineTest extends TestCase {
 					Thread.sleep(2000);
 
 					b2.addClasspath(file);
-					b2.setProperty(Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
+					b2.setProperty(org.osgi.framework.Constants.BUNDLE_VERSION, "1.0.0.${tstamp}");
 					b2.setExportPackage("org.osgi.service.event");
 
 					try (Jar j2 = b2.build();) {

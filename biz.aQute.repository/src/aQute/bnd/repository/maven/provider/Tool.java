@@ -12,8 +12,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;

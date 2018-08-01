@@ -2402,11 +2402,11 @@ public class Project extends Processor {
 			this.addClose(b);
 			b.addClasspath(jar);
 			b.setProperty("Bnd-Message", "Wrapped from " + id + "because lacked manifest");
-			b.setProperty(Constants.EXPORT_PACKAGE, "*");
-			b.setProperty(Constants.IMPORT_PACKAGE, "*;resolution:=optional");
+			b.setProperty(org.osgi.framework.Constants.EXPORT_PACKAGE, "*");
+			b.setProperty(org.osgi.framework.Constants.IMPORT_PACKAGE, "*;resolution:=optional");
 			jar = b.build();
 		} else if (manifest.getMainAttributes()
-			.getValue(Constants.BUNDLE_MANIFESTVERSION) == null) {
+			.getValue(org.osgi.framework.Constants.BUNDLE_MANIFESTVERSION) == null) {
 			logger.debug("Not a release 4 bundle, wrapping with manifest as source");
 			Builder b = new Builder(this);
 			this.addClose(b);
@@ -2414,14 +2414,14 @@ public class Project extends Processor {
 			b.setProperty(Constants.PRIVATE_PACKAGE, "*");
 			b.mergeManifest(manifest);
 			String imprts = manifest.getMainAttributes()
-				.getValue(Constants.IMPORT_PACKAGE);
+				.getValue(org.osgi.framework.Constants.IMPORT_PACKAGE);
 			if (imprts == null)
 				imprts = "";
 			else
 				imprts += ",";
 			imprts += "*;resolution=optional";
 
-			b.setProperty(Constants.IMPORT_PACKAGE, imprts);
+			b.setProperty(org.osgi.framework.Constants.IMPORT_PACKAGE, imprts);
 			b.setProperty("Bnd-Message", "Wrapped from " + id + "because had incomplete manifest");
 			jar = b.build();
 		}
@@ -2442,7 +2442,8 @@ public class Project extends Processor {
 	 * @throws Exception
 	 */
 	public void bump(String mask) throws Exception {
-		String pattern = "(" + Constants.BUNDLE_VERSION + "\\s*(:|=)\\s*)(([0-9]+(\\.[0-9]+(\\.[0-9]+)?)?))";
+		String pattern = "(" + org.osgi.framework.Constants.BUNDLE_VERSION
+			+ "\\s*(:|=)\\s*)(([0-9]+(\\.[0-9]+(\\.[0-9]+)?)?))";
 		String replace = "$1${version;" + mask + ";$3}";
 		try {
 			// First try our main bnd file
@@ -2474,7 +2475,7 @@ public class Project extends Processor {
 			if (!found) {
 				logger.debug("no version in sub builders, add it to bnd.bnd");
 				String bndfile = IO.collect(getPropertiesFile());
-				bndfile += "\n# Added by by bump\n" + Constants.BUNDLE_VERSION + ": 0.0.0\n";
+				bndfile += "\n# Added by by bump\n" + org.osgi.framework.Constants.BUNDLE_VERSION + ": 0.0.0\n";
 				IO.store(bndfile, getPropertiesFile());
 			}
 		} finally {
@@ -2904,8 +2905,8 @@ public class Project extends Processor {
 			Builder b = subBuilders.iterator()
 				.next();
 
-			ignore.remove(BUNDLE_SYMBOLICNAME);
-			ignore.remove(BUNDLE_VERSION);
+			ignore.remove(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME);
+			ignore.remove(org.osgi.framework.Constants.BUNDLE_VERSION);
 			ignore.add(SERVICE_COMPONENT);
 
 			try (ProjectLauncher launcher = getProjectLauncher()) {
@@ -2933,14 +2934,14 @@ public class Project extends Processor {
 					}
 				}
 
-				if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-					main.putValue(BUNDLE_SYMBOLICNAME, b.getBsn());
+				if (main.getValue(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME) == null)
+					main.putValue(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME, b.getBsn());
 
-				if (main.getValue(BUNDLE_SYMBOLICNAME) == null)
-					main.putValue(BUNDLE_SYMBOLICNAME, getName());
+				if (main.getValue(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME) == null)
+					main.putValue(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME, getName());
 
-				if (main.getValue(BUNDLE_VERSION) == null) {
-					main.putValue(BUNDLE_VERSION, Version.LOWEST.toString());
+				if (main.getValue(org.osgi.framework.Constants.BUNDLE_VERSION) == null) {
+					main.putValue(org.osgi.framework.Constants.BUNDLE_VERSION, Version.LOWEST.toString());
 					warning("No version set, uses 0.0.0");
 				}
 

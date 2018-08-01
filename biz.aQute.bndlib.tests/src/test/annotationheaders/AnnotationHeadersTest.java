@@ -10,6 +10,8 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.annotation.headers.BundleCategory;
 import aQute.bnd.annotation.headers.BundleContributors;
 import aQute.bnd.annotation.headers.BundleCopyright;
@@ -22,7 +24,6 @@ import aQute.bnd.annotation.licenses.ASL_2_0;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
@@ -296,13 +297,13 @@ public class AnnotationHeadersTest extends TestCase {
 		assertFalse(bl.contains("GPL"));
 
 		String dv = manifest.getMainAttributes()
-			.getValue(Constants.BUNDLE_DEVELOPERS);
+			.getValue(aQute.bnd.osgi.Constants.BUNDLE_DEVELOPERS);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("Peter Kriens"));
 
 		dv = manifest.getMainAttributes()
-			.getValue(Constants.BUNDLE_CONTRIBUTORS);
+			.getValue(aQute.bnd.osgi.Constants.BUNDLE_CONTRIBUTORS);
 		assertNotNull(dv);
 		System.out.println(dv);
 		assertTrue(dv.contains("Mieke Kriens"));

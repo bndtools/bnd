@@ -816,7 +816,7 @@ public class bnd extends Processor {
 			project.bump(mask);
 
 		getInfo(project);
-		err.println(project.getProperty(BUNDLE_VERSION, "No version found"));
+		err.println(project.getProperty(org.osgi.framework.Constants.BUNDLE_VERSION, "No version found"));
 	}
 
 	interface PerProject {
@@ -2012,8 +2012,8 @@ public class bnd extends Processor {
 						}
 					}
 				}
-				print(Constants.IMPORT_PACKAGE, new TreeMap<>(imports));
-				print(Constants.EXPORT_PACKAGE, new TreeMap<>(exports));
+				print(org.osgi.framework.Constants.IMPORT_PACKAGE, new TreeMap<>(imports));
+				print(org.osgi.framework.Constants.EXPORT_PACKAGE, new TreeMap<>(exports));
 			} else
 				warning("File has no manifest");
 		}
@@ -2025,8 +2025,8 @@ public class bnd extends Processor {
 			if (m != null) {
 				Parameters provide = domain.getProvideCapability();
 				Parameters require = domain.getRequireCapability();
-				print(Constants.PROVIDE_CAPABILITY, new TreeMap<>(provide));
-				print(Constants.REQUIRE_CAPABILITY, new TreeMap<>(require));
+				print(org.osgi.framework.Constants.PROVIDE_CAPABILITY, new TreeMap<>(provide));
+				print(org.osgi.framework.Constants.REQUIRE_CAPABILITY, new TreeMap<>(require));
 			} else
 				warning("File has no manifest");
 		}
@@ -2038,7 +2038,7 @@ public class bnd extends Processor {
 				Manifest m = jar.getManifest();
 				if (m != null) {
 					String s = m.getMainAttributes()
-						.getValue(Constants.EXPORT_PACKAGE);
+						.getValue(org.osgi.framework.Constants.EXPORT_PACKAGE);
 					if (s != null)
 						analyzer.setExportPackage(s);
 				}
@@ -2804,7 +2804,7 @@ public class bnd extends Processor {
 		"<jar-path>", "[...]"
 	})
 	interface selectOptions extends Options {
-		@Description("A simple assertion on a manifest header (e.g. " + Constants.BUNDLE_VERSION
+		@Description("A simple assertion on a manifest header (e.g. " + org.osgi.framework.Constants.BUNDLE_VERSION
 			+ "=1.0.1) or an OSGi filter that is asserted on all manifest headers. Comparisons are case insensitive. The key 'resources' holds the pathnames of all resources and can also be asserted to check for the presence of a header.")
 		String where();
 
@@ -2954,7 +2954,7 @@ public class bnd extends Processor {
 
 			Manifest m = new Manifest(u.openStream());
 			String bsn = m.getMainAttributes()
-				.getValue(Constants.BUNDLE_SYMBOLICNAME);
+				.getValue(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME);
 			if (bsn != null && bsn.equals("biz.aQute.bnd")) {
 				Attributes attrs = m.getMainAttributes();
 
@@ -2964,14 +2964,14 @@ public class bnd extends Processor {
 				} catch (Exception ee) {
 					// Ignore
 				}
-				out.printf("%-40s %s\n", "Version", attrs.getValue(Constants.BUNDLE_VERSION));
+				out.printf("%-40s %s\n", "Version", attrs.getValue(org.osgi.framework.Constants.BUNDLE_VERSION));
 				if (lastModified > 0)
 					out.printf("%-40s %s\n", "From", new Date(lastModified));
-				Parameters p = OSGiHeader.parseHeader(attrs.getValue(Constants.BUNDLE_LICENSE));
+				Parameters p = OSGiHeader.parseHeader(attrs.getValue(org.osgi.framework.Constants.BUNDLE_LICENSE));
 				for (String l : p.keySet())
 					out.printf("%-40s %s\n", "License", p.get(l)
 						.get("description"));
-				out.printf("%-40s %s\n", "Copyright", attrs.getValue(Constants.BUNDLE_COPYRIGHT));
+				out.printf("%-40s %s\n", "Copyright", attrs.getValue(org.osgi.framework.Constants.BUNDLE_COPYRIGHT));
 				out.printf("%-40s %s\n", "Git-SHA", attrs.getValue("Git-SHA"));
 				out.printf("%-40s %s\n", "Git-Descriptor", attrs.getValue("Git-Descriptor"));
 				out.printf("%-40s %s\n", "Sources", attrs.getValue(Constants.BUNDLE_SCM));
@@ -3084,11 +3084,11 @@ public class bnd extends Processor {
 			headers = new TreeSet<>();
 
 		if (opts.exports())
-			headers.add(Constants.EXPORT_PACKAGE);
+			headers.add(org.osgi.framework.Constants.EXPORT_PACKAGE);
 		if (opts.bsn())
-			headers.add(Constants.BUNDLE_SYMBOLICNAME);
+			headers.add(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME);
 		if (opts.imports())
-			headers.add(Constants.IMPORT_PACKAGE);
+			headers.add(org.osgi.framework.Constants.IMPORT_PACKAGE);
 
 		Instructions instructions = new Instructions(headers);
 

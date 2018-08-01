@@ -44,6 +44,8 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
@@ -79,7 +81,7 @@ public class Jar implements Closeable {
 
 	private static final String									DEFAULT_MANIFEST_NAME	= "META-INF/MANIFEST.MF";
 	private static final Pattern								DEFAULT_DO_NOT_COPY		= Pattern
-		.compile(Constants.DEFAULT_DO_NOT_COPY);
+		.compile(aQute.bnd.osgi.Constants.DEFAULT_DO_NOT_COPY);
 
 	public static final Object[]								EMPTY_ARRAY				= new Jar[0];
 	private final NavigableMap<String, Resource>				resources				= new TreeMap<>();
@@ -745,7 +747,7 @@ public class Jar implements Closeable {
 			return;
 		try {
 			createDirectories(directories, jout, path);
-			if (path.endsWith(Constants.EMPTY_HEADER))
+			if (path.endsWith(aQute.bnd.osgi.Constants.EMPTY_HEADER))
 				return;
 			ZipEntry ze = new ZipEntry(path);
 			ze.setMethod(ZipEntry.DEFLATED);
@@ -1114,7 +1116,7 @@ public class Jar implements Closeable {
 		if (m != null) {
 			Manifest m2 = new Manifest(m);
 			Attributes main = m2.getMainAttributes();
-			String lastmodified = (String) main.remove(new Attributes.Name(Constants.BND_LASTMODIFIED));
+			String lastmodified = (String) main.remove(new Attributes.Name(aQute.bnd.osgi.Constants.BND_LASTMODIFIED));
 			String version = main.getValue(new Attributes.Name(Constants.BUNDLE_VERSION));
 			if (version != null && Verifier.isVersion(version)) {
 				Version v = new Version(version);

@@ -60,6 +60,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.osgi.framework.Constants;
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,8 +154,8 @@ public class Analyzer extends Processor {
 		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(dirOrJar);
 			Properties properties = new UTF8Properties();
-			properties.put(IMPORT_PACKAGE, "*");
-			properties.put(EXPORT_PACKAGE, "*");
+			properties.put(Constants.IMPORT_PACKAGE, "*");
+			properties.put(Constants.EXPORT_PACKAGE, "*");
 			analyzer.setProperties(properties);
 			Manifest m = analyzer.calcManifest();
 			Properties result = new UTF8Properties();
@@ -208,7 +209,7 @@ public class Analyzer extends Processor {
 
 			// Handle the bundle activator
 
-			String s = getProperty(BUNDLE_ACTIVATOR);
+			String s = getProperty(Constants.BUNDLE_ACTIVATOR);
 			if (s != null && !s.isEmpty()) {
 				activator = getTypeRefFromFQN(s);
 				referTo(activator);
@@ -307,7 +308,7 @@ public class Analyzer extends Processor {
 					.removeIf(PackageRef::isJava);
 
 				Set<Instruction> unused = Create.set();
-				String h = getProperty(IMPORT_PACKAGE);
+				String h = getProperty(Constants.IMPORT_PACKAGE);
 				if (h == null) // If not set use a default
 					h = "*";
 
@@ -819,7 +820,7 @@ public class Analyzer extends Processor {
 			Attributes main = manifest.getMainAttributes();
 
 			main.put(Attributes.Name.MANIFEST_VERSION, "1.0");
-			main.putValue(BUNDLE_MANIFESTVERSION, "2");
+			main.putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
 
 			boolean noExtraHeaders = "true".equalsIgnoreCase(getProperty(NOEXTRAHEADERS));
 
@@ -835,9 +836,9 @@ public class Analyzer extends Processor {
 			String exportHeader = printClauses(exports, true);
 
 			if (exportHeader.length() > 0)
-				main.putValue(EXPORT_PACKAGE, exportHeader);
+				main.putValue(Constants.EXPORT_PACKAGE, exportHeader);
 			else
-				main.remove(new Name(EXPORT_PACKAGE));
+				main.remove(new Name(Constants.EXPORT_PACKAGE));
 
 			// Divide imports with resolution:=dynamic to DynamicImport-Package
 			// and add them to the existing DynamicImport-Package instruction
@@ -845,16 +846,16 @@ public class Analyzer extends Processor {
 			Packages regularImports = regularAndDynamicImports.getFirst();
 
 			if (!regularImports.isEmpty()) {
-				main.putValue(IMPORT_PACKAGE, printClauses(regularImports));
+				main.putValue(Constants.IMPORT_PACKAGE, printClauses(regularImports));
 			} else {
-				main.remove(new Name(IMPORT_PACKAGE));
+				main.remove(new Name(Constants.IMPORT_PACKAGE));
 			}
 
 			Parameters dynamicImports = regularAndDynamicImports.getSecond();
 			if (!dynamicImports.isEmpty()) {
-				main.putValue(DYNAMICIMPORT_PACKAGE, printClauses(dynamicImports));
+				main.putValue(Constants.DYNAMICIMPORT_PACKAGE, printClauses(dynamicImports));
 			} else {
-				main.remove(new Name(DYNAMICIMPORT_PACKAGE));
+				main.remove(new Name(Constants.DYNAMICIMPORT_PACKAGE));
 			}
 
 			Packages temp = new Packages(contained);
@@ -883,14 +884,14 @@ public class Analyzer extends Processor {
 
 			Parameters bcp = getBundleClasspath();
 			if (bcp.isEmpty() || (bcp.containsKey(".") && bcp.size() == 1))
-				main.remove(new Name(BUNDLE_CLASSPATH));
+				main.remove(new Name(Constants.BUNDLE_CLASSPATH));
 			else
-				main.putValue(BUNDLE_CLASSPATH, printClauses(bcp));
+				main.putValue(Constants.BUNDLE_CLASSPATH, printClauses(bcp));
 
 			// ----- Require/Capabilities section
 
-			Parameters requirements = new Parameters(annotationHeaders.getHeader(REQUIRE_CAPABILITY), this);
-			Parameters capabilities = new Parameters(annotationHeaders.getHeader(PROVIDE_CAPABILITY), this);
+			Parameters requirements = new Parameters(annotationHeaders.getHeader(Constants.REQUIRE_CAPABILITY), this);
+			Parameters capabilities = new Parameters(annotationHeaders.getHeader(Constants.PROVIDE_CAPABILITY), this);
 
 			//
 			// Do any contracts contracts
@@ -931,10 +932,10 @@ public class Analyzer extends Processor {
 			}
 
 			if (!requirements.isEmpty())
-				main.putValue(REQUIRE_CAPABILITY, requirements.toString());
+				main.putValue(Constants.REQUIRE_CAPABILITY, requirements.toString());
 
 			if (!capabilities.isEmpty())
-				main.putValue(PROVIDE_CAPABILITY, capabilities.toString());
+				main.putValue(Constants.PROVIDE_CAPABILITY, capabilities.toString());
 
 			// -----
 
@@ -955,9 +956,9 @@ public class Analyzer extends Processor {
 					continue;
 				}
 
-				if (header.equals(BUNDLE_CLASSPATH) || header.equals(EXPORT_PACKAGE) || header.equals(IMPORT_PACKAGE)
-					|| header.equals(DYNAMICIMPORT_PACKAGE) || header.equals(REQUIRE_CAPABILITY)
-					|| header.equals(PROVIDE_CAPABILITY))
+				if (header.equals(Constants.BUNDLE_CLASSPATH) || header.equals(Constants.EXPORT_PACKAGE)
+					|| header.equals(Constants.IMPORT_PACKAGE) || header.equals(Constants.DYNAMICIMPORT_PACKAGE)
+					|| header.equals(Constants.REQUIRE_CAPABILITY) || header.equals(Constants.PROVIDE_CAPABILITY))
 					continue;
 
 				if (header.equalsIgnoreCase("Name")) {
@@ -986,20 +987,20 @@ public class Analyzer extends Processor {
 			// 3. name of directory, which is usualy project name
 			//
 			String bsn = getBsn();
-			if (main.getValue(BUNDLE_SYMBOLICNAME) == null) {
-				main.putValue(BUNDLE_SYMBOLICNAME, bsn);
+			if (main.getValue(Constants.BUNDLE_SYMBOLICNAME) == null) {
+				main.putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
 			}
 
 			//
 			// Use the same name for the bundle name as BSN when
 			// the bundle name is not set
 			//
-			if (main.getValue(BUNDLE_NAME) == null) {
-				main.putValue(BUNDLE_NAME, bsn);
+			if (main.getValue(Constants.BUNDLE_NAME) == null) {
+				main.putValue(Constants.BUNDLE_NAME, bsn);
 			}
 
-			if (main.getValue(BUNDLE_VERSION) == null)
-				main.putValue(BUNDLE_VERSION, "0");
+			if (main.getValue(Constants.BUNDLE_VERSION) == null)
+				main.putValue(Constants.BUNDLE_VERSION, "0");
 
 			// Remove all the headers mentioned in -removeheaders
 			Instructions instructions = new Instructions(mergeProperties(REMOVEHEADERS));
@@ -1229,7 +1230,7 @@ public class Analyzer extends Processor {
 	 * Clear the key part of a header. I.e. remove everything from the first ';'
 	 */
 	public String getBsn() {
-		String value = getProperty(BUNDLE_SYMBOLICNAME);
+		String value = getProperty(Constants.BUNDLE_SYMBOLICNAME);
 		if (value == null) {
 			if (getPropertiesFile() != null)
 				value = getPropertiesFile().getName();
@@ -1606,7 +1607,7 @@ public class Analyzer extends Processor {
 				Attributes.Name name = (Attributes.Name) entry.getKey();
 				String value = (String) entry.getValue();
 				if (name.toString()
-					.equalsIgnoreCase(Constants.CREATED_BY))
+					.equalsIgnoreCase(aQute.bnd.osgi.Constants.CREATED_BY))
 					name = new Attributes.Name("Originally-Created-By");
 				if (!result.getMainAttributes()
 					.containsKey(name))
@@ -1774,7 +1775,8 @@ public class Analyzer extends Processor {
 					PackageRef ref = getPackageRef(e.getKey());
 					if (!classpathExports.containsKey(ref)) {
 						e.getValue()
-							.put(Constants.INTERNAL_EXPORTED_DIRECTIVE, jar.getBsn() + "-" + jar.getVersion());
+							.put(aQute.bnd.osgi.Constants.INTERNAL_EXPORTED_DIRECTIVE,
+								jar.getBsn() + "-" + jar.getVersion());
 						Attrs attrs = e.getValue();
 
 						//
@@ -1927,7 +1929,7 @@ public class Analyzer extends Processor {
 			PackageRef packageRef = packageEntry.getKey();
 			Attrs attrs = packageEntry.getValue();
 			String resolution = attrs.get(Constants.RESOLUTION_DIRECTIVE);
-			if (Constants.RESOLUTION_DYNAMIC.equals(resolution)) {
+			if (aQute.bnd.osgi.Constants.RESOLUTION_DYNAMIC.equals(resolution)) {
 				attrs.remove(Constants.RESOLUTION_DIRECTIVE);
 				dynamicImports.put(packageRef.fqn, attrs);
 				regularImportsIterator.remove();
@@ -2039,7 +2041,7 @@ public class Analyzer extends Processor {
 													packageName, attributes.get(key), exporterAttributes.get(key));
 												if (getPropertiesFile() != null)
 													location.file(getPropertiesFile().getAbsolutePath());
-												location.header(EXPORT_PACKAGE);
+												location.header(Constants.EXPORT_PACKAGE);
 												location.context(packageName);
 											}
 										} catch (Exception e) {
@@ -2932,7 +2934,7 @@ public class Analyzer extends Processor {
 	 * Answer the bundle version.
 	 */
 	public String getVersion() {
-		String version = getProperty(BUNDLE_VERSION);
+		String version = getProperty(Constants.BUNDLE_VERSION);
 		if (version == null)
 			version = "0.0.0";
 		return version;
@@ -2962,7 +2964,7 @@ public class Analyzer extends Processor {
 			return;
 
 		Hashtable<String, String> map = new Hashtable<>();
-		map.put(Constants.VERSION_FILTER, getBndVersion());
+		map.put(aQute.bnd.osgi.Constants.VERSION_FILTER, getBndVersion());
 
 		for (String filter : require.keySet()) {
 			try {
@@ -3198,7 +3200,7 @@ public class Analyzer extends Processor {
 	public File getOutputFile(String output) {
 
 		if (output == null)
-			output = get(Constants.OUTPUT);
+			output = get(aQute.bnd.osgi.Constants.OUTPUT);
 
 		File outputDir;
 
@@ -3216,7 +3218,8 @@ public class Analyzer extends Processor {
 			String bsn = name.getKey();
 			String version = getBundleVersion();
 			Version v = Version.parseVersion(version);
-			String outputName = bsn + "-" + v.toStringWithoutQualifier() + Constants.DEFAULT_JAR_EXTENSION;
+			String outputName = bsn + "-" + v.toStringWithoutQualifier()
+				+ aQute.bnd.osgi.Constants.DEFAULT_JAR_EXTENSION;
 			return new File(outputDir, outputName);
 		}
 
@@ -3228,9 +3231,9 @@ public class Analyzer extends Processor {
 
 		if (getPropertiesFile() != null) {
 			String nm = getPropertiesFile().getName();
-			if (nm.endsWith(Constants.DEFAULT_BND_EXTENSION)) {
-				nm = nm.substring(0, nm.length() - Constants.DEFAULT_BND_EXTENSION.length())
-					+ Constants.DEFAULT_JAR_EXTENSION;
+			if (nm.endsWith(aQute.bnd.osgi.Constants.DEFAULT_BND_EXTENSION)) {
+				nm = nm.substring(0, nm.length() - aQute.bnd.osgi.Constants.DEFAULT_BND_EXTENSION.length())
+					+ aQute.bnd.osgi.Constants.DEFAULT_JAR_EXTENSION;
 				logger.debug("name is {}", nm);
 				return new File(outputDir, nm);
 			}
@@ -3514,7 +3517,7 @@ public class Analyzer extends Processor {
 		Clazz clazz = findClass(type);
 		if (clazz == null) {
 			Attrs attrs = classpathExports.get(type.getPackageRef());
-			String from = attrs.get(Constants.FROM_DIRECTIVE);
+			String from = attrs.get(aQute.bnd.osgi.Constants.FROM_DIRECTIVE);
 			if (from != null) {
 				return from;
 			}

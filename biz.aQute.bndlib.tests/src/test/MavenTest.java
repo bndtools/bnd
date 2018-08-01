@@ -396,7 +396,7 @@ public class MavenTest extends TestCase {
 			b.setProperty(Constants.BUNDLE_SCM, scm);
 
 		if (license != null)
-			b.setProperty(Constants.BUNDLE_LICENSE, license);
+			b.setProperty(org.osgi.framework.Constants.BUNDLE_LICENSE, license);
 
 		Jar jar = b.build();
 		assertTrue(b.check());

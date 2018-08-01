@@ -15,13 +15,14 @@ import java.util.TreeSet;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instructions;
@@ -74,12 +75,12 @@ public class DiffPluginImpl implements Differ {
 		MAJOR_HEADERS.add(Constants.DYNAMICIMPORT_PACKAGE);
 		MAJOR_HEADERS.add(Constants.BUNDLE_VERSION);
 
-		IGNORE_HEADERS.add(Constants.TOOL);
-		IGNORE_HEADERS.add(Constants.BND_LASTMODIFIED);
-		IGNORE_HEADERS.add(Constants.CREATED_BY);
+		IGNORE_HEADERS.add(aQute.bnd.osgi.Constants.TOOL);
+		IGNORE_HEADERS.add(aQute.bnd.osgi.Constants.BND_LASTMODIFIED);
+		IGNORE_HEADERS.add(aQute.bnd.osgi.Constants.CREATED_BY);
 
-		ORDERED_HEADERS.add(Constants.SERVICE_COMPONENT);
-		ORDERED_HEADERS.add(Constants.TESTCASES);
+		ORDERED_HEADERS.add(aQute.bnd.osgi.Constants.SERVICE_COMPONENT);
+		ORDERED_HEADERS.add(aQute.bnd.osgi.Constants.TESTCASES);
 	}
 
 	Instructions localIgnore = null;
@@ -166,7 +167,7 @@ public class DiffPluginImpl implements Differ {
 
 			String path = entry.getKey();
 
-			if (path.endsWith(Constants.EMPTY_HEADER))
+			if (path.endsWith(aQute.bnd.osgi.Constants.EMPTY_HEADER))
 				continue;
 
 			if (analyzer.since(About._3_0)) {

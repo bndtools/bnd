@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Constants;
 import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
@@ -23,7 +24,6 @@ import org.yaml.snakeyaml.Yaml;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
@@ -229,8 +229,8 @@ class RemoteCommand extends Processor {
 				Attrs attrs = cb.toAttrs();
 
 				if (cb.isPackage()) {
-					attrs.remove(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
-					attrs.remove(Constants.BUNDLE_VERSION_ATTRIBUTE);
+					attrs.remove(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
+					attrs.remove(aQute.bnd.osgi.Constants.BUNDLE_VERSION_ATTRIBUTE);
 					String pname = attrs.remove(PackageNamespace.PACKAGE_NAMESPACE);
 					if (pname == null) {
 						warning("Invalid package capability found %s", c);
@@ -300,7 +300,8 @@ class RemoteCommand extends Processor {
 			jar.setManifest(m);
 
 			Verifier v = new Verifier(jar);
-			v.setProperty(Constants.FIXUPMESSAGES, "osgi.* namespace must not be specified with generic capabilities");
+			v.setProperty(aQute.bnd.osgi.Constants.FIXUPMESSAGES,
+				"osgi.* namespace must not be specified with generic capabilities");
 			v.verify();
 			v.getErrors();
 

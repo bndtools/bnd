@@ -9,10 +9,11 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
@@ -72,7 +73,7 @@ public class PomResource extends WriteResource {
 			groupId = processor.get(GROUPID);
 
 		if (groupId == null) {
-			groupId = processor.get(Constants.GROUPID);
+			groupId = processor.get(aQute.bnd.osgi.Constants.GROUPID);
 		}
 
 		if (groupId == null) {
@@ -264,7 +265,7 @@ public class PomResource extends WriteResource {
 		}
 
 		String scm = manifest.getMainAttributes()
-			.getValue(Constants.BUNDLE_SCM);
+			.getValue(aQute.bnd.osgi.Constants.BUNDLE_SCM);
 		if (scm != null && scm.length() > 0) {
 			Attrs pscm = OSGiHeader.parseProperties(scm);
 
@@ -275,7 +276,7 @@ public class PomResource extends WriteResource {
 		}
 
 		Parameters developers = new Parameters(manifest.getMainAttributes()
-			.getValue(Constants.BUNDLE_DEVELOPERS), processor);
+			.getValue(aQute.bnd.osgi.Constants.BUNDLE_DEVELOPERS), processor);
 
 		if (developers.size() > 0) {
 

@@ -14,8 +14,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;

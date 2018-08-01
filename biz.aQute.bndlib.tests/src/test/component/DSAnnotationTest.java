@@ -2803,8 +2803,8 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	private void checkProvides(Attributes a, String[]... objectClass) {
-		String p = a.getValue(Constants.PROVIDE_CAPABILITY);
-		System.err.println(Constants.PROVIDE_CAPABILITY + ":" + p);
+		String p = a.getValue(org.osgi.framework.Constants.PROVIDE_CAPABILITY);
+		System.err.println(org.osgi.framework.Constants.PROVIDE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
 		List<Attrs> attrs = getAll(header, "osgi.service");
 		assertEquals(objectClass.length, attrs.size());
@@ -2822,8 +2822,8 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	private void checkRequires(Attributes a, String extender, String... objectClass) {
-		String p = a.getValue(Constants.REQUIRE_CAPABILITY);
-		System.err.println(Constants.REQUIRE_CAPABILITY + ":" + p);
+		String p = a.getValue(org.osgi.framework.Constants.REQUIRE_CAPABILITY);
+		System.err.println(org.osgi.framework.Constants.REQUIRE_CAPABILITY + ":" + p);
 		Parameters header = new Parameters(p);
 		List<Attrs> attrs = getAll(header, "osgi.service");
 		assertEquals("osgi.service attributes: " + attrs, objectClass.length, attrs.size());

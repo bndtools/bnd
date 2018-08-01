@@ -15,11 +15,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;

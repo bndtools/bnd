@@ -4,12 +4,13 @@ import java.io.File;
 import java.util.Properties;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Verifier;
@@ -48,7 +49,7 @@ public class VerifierTest extends TestCase {
 		outer.putResource("foo.jar", new JarResource(inner));
 		Manifest m = new Manifest();
 		m.getMainAttributes()
-			.putValue(Constants.META_PERSISTENCE, "foo.jar, foo.jar!/foo.xml, absent.xml");
+			.putValue(aQute.bnd.osgi.Constants.META_PERSISTENCE, "foo.jar, foo.jar!/foo.xml, absent.xml");
 		outer.setManifest(m);
 		Verifier v = new Verifier(outer);
 		v.verifyMetaPersistence();
@@ -88,7 +89,7 @@ public class VerifierTest extends TestCase {
 		try {
 			b.setProperty("-includeresource", path + ";literal='x'");
 			if (pattern != null)
-				b.setProperty(Constants.INVALIDFILENAMES, pattern);
+				b.setProperty(aQute.bnd.osgi.Constants.INVALIDFILENAMES, pattern);
 
 			b.build();
 			if (good)

@@ -4,13 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.main.bnd.ProfileOptions;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;

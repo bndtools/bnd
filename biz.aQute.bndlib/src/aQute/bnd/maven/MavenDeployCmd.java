@@ -115,7 +115,7 @@ public class MavenDeployCmd extends Processor {
 			try (Jar main = new Jar("main"); Jar src = new Jar("src")) {
 				split(original, main, src);
 				Parameters exports = project.parseHeader(manifest.getMainAttributes()
-					.getValue(Constants.EXPORT_PACKAGE));
+					.getValue(org.osgi.framework.Constants.EXPORT_PACKAGE));
 				File jdoc = new File(tmp, "jdoc");
 				IO.mkdirs(jdoc);
 				logger.info(LIFECYCLE, "Generating Javadoc for: {}", exports.keySet());

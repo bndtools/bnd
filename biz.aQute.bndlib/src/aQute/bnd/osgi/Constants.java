@@ -20,39 +20,149 @@ public interface Constants {
 	 * </pre>
 	 */
 	String								BND_ADDXMLTOTEST							= "Bnd-AddXMLToTest";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_ACTIVATIONPOLICY						= "Bundle-ActivationPolicy";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_ACTIVATOR							= "Bundle-Activator";
 	String								BUNDLE_BLUEPRINT							= "Bundle-Blueprint";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_CATEGORY								= "Bundle-Category";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_CLASSPATH							= "Bundle-ClassPath";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_CONTACTADDRESS						= "Bundle-ContactAddress";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_COPYRIGHT							= "Bundle-Copyright";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_DESCRIPTION							= "Bundle-Description";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_DOCURL								= "Bundle-DocURL";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_ICON									= "Bundle-Icon";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_LICENSE								= "Bundle-License";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_LOCALIZATION							= "Bundle-Localization";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_MANIFESTVERSION						= "Bundle-ManifestVersion";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_NAME									= "Bundle-Name";
+
 	String								BUNDLE_NATIVECODE							= "Bundle-NativeCode";
+	/**
+	 * @deprecated As of 1.6. Replaced by the {@code osgi.ee} capability.
+	 */
+	@Deprecated
 	String								BUNDLE_REQUIREDEXECUTIONENVIRONMENT			= "Bundle-RequiredExecutionEnvironment";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_SYMBOLICNAME							= "Bundle-SymbolicName";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_UPDATELOCATION						= "Bundle-UpdateLocation";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_VENDOR								= "Bundle-Vendor";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								BUNDLE_VERSION								= "Bundle-Version";
+
 	String								BUNDLE_DEVELOPERS							= "Bundle-Developers";
 	String								BUNDLE_CONTRIBUTORS							= "Bundle-Contributors";
 	String								BUNDLE_SCM									= "Bundle-SCM";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								DYNAMICIMPORT_PACKAGE						= "DynamicImport-Package";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								EXPORT_PACKAGE								= "Export-Package";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								EXPORT_SERVICE								= "Export-Service";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								FRAGMENT_HOST								= "Fragment-Host";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								IMPORT_PACKAGE								= "Import-Package";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								IMPORT_SERVICE								= "Import-Service";
 	String								LAUNCHER_PLUGIN								= "Launcher-Plugin";
 	String								META_PERSISTENCE							= "Meta-Persistence";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								PROVIDE_CAPABILITY							= "Provide-Capability";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								REQUIRE_BUNDLE								= "Require-Bundle";
+	/**
+	 * @deprecated Use {@code org.osgi.framework.Constants}.
+	 */
+	@Deprecated
 	String								REQUIRE_CAPABILITY							= "Require-Capability";
 	String								SERVICE_COMPONENT							= "Service-Component";
 	String								TESTER_PLUGIN								= "Tester-Plugin";

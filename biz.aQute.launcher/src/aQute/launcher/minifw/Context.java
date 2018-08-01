@@ -25,6 +25,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.BundleReference;
+import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.InvalidSyntaxException;
@@ -240,13 +241,13 @@ public class Context extends URLClassLoader implements Bundle, BundleContext, Bu
 
 	@Override
 	public String getSymbolicName() {
-		return getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME)
+		return getHeaders().get(Constants.BUNDLE_SYMBOLICNAME)
 			.trim();
 	}
 
 	@Override
 	public Version getVersion() {
-		String v = getHeaders().get(aQute.bnd.osgi.Constants.BUNDLE_VERSION)
+		String v = getHeaders().get(Constants.BUNDLE_VERSION)
 			.trim();
 		if (v == null)
 			return new Version("0");

@@ -177,7 +177,7 @@ public abstract class ProjectLauncher extends Processor {
 						}
 
 						Parameters exports = project.parseHeader(manifest.getMainAttributes()
-							.getValue(Constants.EXPORT_PACKAGE));
+							.getValue(org.osgi.framework.Constants.EXPORT_PACKAGE));
 						for (Entry<String, Attrs> e : exports.entrySet()) {
 							if (!runsystempackages.containsKey(e.getKey()))
 								runsystempackages.put(e.getKey(), e.getValue());

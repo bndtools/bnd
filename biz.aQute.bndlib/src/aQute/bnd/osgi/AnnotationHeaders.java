@@ -22,6 +22,7 @@ import org.osgi.annotation.bundle.Header;
 import org.osgi.annotation.bundle.Headers;
 import org.osgi.annotation.bundle.Requirement;
 import org.osgi.annotation.bundle.Requirements;
+import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -437,7 +438,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			sb.append(";timezone=")
 				.append(annotation.timezone());
 
-		add(Constants.BUNDLE_DEVELOPERS, sb.toString());
+		add(aQute.bnd.osgi.Constants.BUNDLE_DEVELOPERS, sb.toString());
 	}
 
 	/*
@@ -469,7 +470,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		if (annotation.timezone() != 0)
 			sb.append(";timezone=")
 				.append(annotation.timezone());
-		add(Constants.BUNDLE_CONTRIBUTORS, sb.toString());
+		add(aQute.bnd.osgi.Constants.BUNDLE_CONTRIBUTORS, sb.toString());
 	}
 
 	/*

@@ -11,10 +11,11 @@ import java.util.Map;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.build.DownloadBlocker.Stage;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -212,7 +213,7 @@ public class Container {
 			// basically a specification clause per line.
 			// I.e. you can do bsn; version, bsn2; version. But also
 			// spread it out over lines.
-			try (BufferedReader rd = IO.reader(getFile(), Constants.DEFAULT_CHARSET)) {
+			try (BufferedReader rd = IO.reader(getFile(), aQute.bnd.osgi.Constants.DEFAULT_CHARSET)) {
 				String line;
 				while ((line = rd.readLine()) != null) {
 					line = line.trim();
