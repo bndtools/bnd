@@ -751,7 +751,7 @@ public class RepoCommand {
 
 	private DownloadBlocker findMatchingVersion(RepositoryPlugin dest, String bsn, Version version) throws Exception {
 		Version floor = version.getWithoutQualifier();
-		Version ceiling = new Version(floor.getMajor() + 1, 0, 0);
+		Version ceiling = floor.bumpMajor();
 		VersionRange range = new VersionRange(true, floor, ceiling, false);
 		SortedSet<Version> versions = dest.versions(bsn);
 		if (versions == null || versions.isEmpty())

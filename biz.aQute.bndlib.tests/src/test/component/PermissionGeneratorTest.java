@@ -1,5 +1,7 @@
 package test.component;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
@@ -80,27 +82,25 @@ public class PermissionGeneratorTest extends BndTestCase {
 			"^\\(org.osgi.framework.PackagePermission \"([^\"]+)\" \"export\"\\)$");
 
 		/* @formatter:off */
-		assertEquals("Imported packages",
-			     new TreeSet<>(Arrays.asList("aQute.bnd.differ",
-			                                 "aQute.bnd.header",
-			                                 "aQute.bnd.osgi", 
-			                                 "aQute.bnd.service.diff", 
-			                                 "aQute.bnd.test", 
-			                                 "aQute.lib.io", 
-			                                 "aQute.service.reporter", 
-			                                 "javax.xml.namespace", 
-			                                 "javax.xml.parsers", 
-			                                 "javax.xml.xpath", 
-			                                 "junit.framework", 
-			                                 "org.osgi.framework", 
-			                                 "org.osgi.service.component", 
-			                                 "org.osgi.service.log", 
-			                                 "org.w3c.dom",
-			                                 "org.xml.sax")),
-			     importedPackages);
-		assertEquals("Exported packages",
-			     new TreeSet<>(Arrays.asList("test.api")), 
-			     exportedPackages);
+		assertThat(importedPackages).containsExactly(
+			"aQute.bnd.differ",
+            "aQute.bnd.header",
+            "aQute.bnd.osgi",
+            "aQute.bnd.service.diff",
+            "aQute.bnd.test",
+            "aQute.lib.io",
+            "aQute.service.reporter",
+            "javax.xml.namespace",
+            "javax.xml.parsers",
+            "javax.xml.xpath",
+            "junit.framework",
+            "org.assertj.core.api",
+            "org.osgi.framework",
+            "org.osgi.service.component",
+            "org.osgi.service.log",
+            "org.w3c.dom",
+            "org.xml.sax");
+		assertThat(exportedPackages).containsExactly("test.api");
 		/* @formatter:on */
 	}
 

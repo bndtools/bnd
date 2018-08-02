@@ -2728,8 +2728,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 		if (Verifier.isVersion(v)) {
 			Version l = new Version(v);
-			Version h = isProvider ? new Version(l.getMajor(), l.getMinor() + 1, 0)
-				: new Version(l.getMajor() + 1, 0, 0);
+			Version h = isProvider ? l.bumpMinor() : l.bumpMajor();
 			vr = new VersionRange(true, l, h, false);
 		} else if (Verifier.isVersionRange(v)) {
 			vr = new VersionRange(v);

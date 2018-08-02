@@ -99,7 +99,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	}
 
 	final Analyzer					analyzer;
-	final Set<String>				interesting			= new HashSet<>();
 	final MultiMap<String, String>	headers				= new MultiMap<>();
 
 	//
@@ -142,26 +141,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 */
 	AnnotationHeaders(Analyzer analyzer) {
 		this.analyzer = analyzer;
-
-		//
-		// The analyser has its own domain of type refs, so we need to get our
-		// standard set to do fast comparisons
-		//
-
-		interesting.add(BUNDLE_LICENSE);
-		interesting.add(REQUIRE_CAPABILITY);
-		interesting.add(PROVIDE_CAPABILITY);
-		interesting.add(BUNDLE_CATEGORY);
-		interesting.add(BUNDLE_DOC_URL);
-		interesting.add(BUNDLE_DEVELOPERS);
-		interesting.add(BUNDLE_CONTRIBUTORS);
-		interesting.add(BUNDLE_COPYRIGHT);
-		interesting.add(STD_REQUIREMENT);
-		interesting.add(STD_REQUIREMENTS);
-		interesting.add(STD_CAPABILITY);
-		interesting.add(STD_CAPABILITIES);
-		interesting.add(STD_HEADER);
-		interesting.add(STD_HEADERS);
 	}
 
 	@Override
@@ -190,29 +169,50 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 			return;
 
 		switch (fqn) {
-			case BUNDLE_LICENSE :
-				doLicense(annotation);
-				break;
-			case REQUIRE_CAPABILITY :
-				doRequireCapability(annotation);
-				break;
-			case PROVIDE_CAPABILITY :
-				doProvideCapability(annotation);
-				break;
 			case BUNDLE_CATEGORY :
 				doBundleCategory(annotation.getAnnotation(BundleCategory.class));
-				break;
-			case BUNDLE_DOC_URL :
-				doBundleDocURL(annotation.getAnnotation(BundleDocURL.class));
-				break;
-			case BUNDLE_DEVELOPERS :
-				doBundleDevelopers(annotation.getAnnotation(BundleDevelopers.class));
 				break;
 			case BUNDLE_CONTRIBUTORS :
 				doBundleContributors(annotation.getAnnotation(BundleContributors.class));
 				break;
 			case BUNDLE_COPYRIGHT :
 				doBundeCopyright(annotation.getAnnotation(BundleCopyright.class));
+				break;
+			case BUNDLE_DEVELOPERS :
+				doBundleDevelopers(annotation.getAnnotation(BundleDevelopers.class));
+				break;
+			case BUNDLE_DOC_URL :
+				doBundleDocURL(annotation.getAnnotation(BundleDocURL.class));
+				break;
+			case BUNDLE_LICENSE :
+				doLicense(annotation);
+				break;
+			case PROVIDE_CAPABILITY :
+				doProvideCapability(annotation);
+				break;
+			case REQUIRE_CAPABILITY :
+				doRequireCapability(annotation);
+				break;
+			case STD_CAPABILITIES :
+				Capability[] capabilities = annotation.getAnnotation(Capabilities.class)
+					.value();
+				Object[] capAnnotations = annotation.get("value");
+				for (int i = 0; i < capabilities.length; i++) {
+					doCapability((Annotation) capAnnotations[i], capabilities[i]);
+				}
+				break;
+			case STD_CAPABILITY :
+				doCapability(annotation, annotation.getAnnotation(Capability.class));
+				break;
+			case STD_HEADER :
+				Header header = annotation.getAnnotation(Header.class);
+				add(header.name(), header.value());
+				break;
+			case STD_HEADERS :
+				for (Header h : annotation.getAnnotation(Headers.class)
+					.value()) {
+					add(h.name(), h.value());
+				}
 				break;
 			case STD_REQUIREMENT :
 				doRequirement(annotation, annotation.getAnnotation(Requirement.class));
@@ -223,27 +223,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				Object[] reqAnnotations = annotation.get("value");
 				for (int i = 0; i < requirements.length; i++) {
 					doRequirement((Annotation) reqAnnotations[i], requirements[i]);
-				}
-				break;
-			case STD_CAPABILITY :
-				doCapability(annotation, annotation.getAnnotation(Capability.class));
-				break;
-			case STD_CAPABILITIES :
-				Capability[] capabilities = annotation.getAnnotation(Capabilities.class)
-					.value();
-				Object[] capAnnotations = annotation.get("value");
-				for (int i = 0; i < capabilities.length; i++) {
-					doCapability((Annotation) capAnnotations[i], capabilities[i]);
-				}
-				break;
-			case STD_HEADER :
-				Header header = annotation.getAnnotation(Header.class);
-				add(header.name(), header.value());
-				break;
-			case STD_HEADERS :
-				for (Header h : annotation.getAnnotation(Headers.class)
-					.value()) {
-					add(h.name(), h.value());
 				}
 				break;
 			default :
@@ -316,51 +295,73 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		@Override
 		public void annotation(Annotation a) throws Exception {
-			if (STD_ATTRIBUTE.equals(a.getName()
-				.getFQN()) || STD_DIRECTIVE.equals(
-					a.getName()
-						.getFQN())) {
-				handleAttributeOrDirective(a);
-			} else if (interesting.contains(a.getName()
-				.getFQN())) {
-				// Bnd annotations support merging of child
-				// properties,
-				// but this is not in the specification as far as I
-				// can tell
-				if (isBndAnnotation(a)) {
+			String fqn = a.getName()
+				.getFQN();
+			switch (fqn) {
+				case BUNDLE_CATEGORY :
+				case BUNDLE_CONTRIBUTORS :
+				case BUNDLE_COPYRIGHT :
+				case BUNDLE_DEVELOPERS :
+				case BUNDLE_DOC_URL :
+				case BUNDLE_LICENSE :
+				case PROVIDE_CAPABILITY :
+				case REQUIRE_CAPABILITY :
+					// Bnd annotations support merging of child
+					// properties,
+					// but this is not in the specification as far as I
+					// can tell
 					a.merge(annotation);
 					a.addDefaults(c);
-				} else if (isRequirementOrCapability(a)) {
+					AnnotationHeaders.this.annotation(a);
+					break;
+				case STD_CAPABILITIES :
+				case STD_CAPABILITY :
+				case STD_REQUIREMENT :
+				case STD_REQUIREMENTS :
 					mergeAttributesAndDirectives(a);
-				}
-				AnnotationHeaders.this.annotation(a);
-			} else {
-				Set<String> processed = new HashSet<>(this.processed);
-				processed.add(c.getFQN());
-				doAnnotatedAnnotation(a, a.getName(), processed, attributesAndDirectives);
+					AnnotationHeaders.this.annotation(a);
+					break;
+				case STD_HEADER :
+				case STD_HEADERS :
+					AnnotationHeaders.this.annotation(a);
+					break;
+				case STD_ATTRIBUTE :
+				case STD_DIRECTIVE :
+					handleAttributeOrDirective(a);
+					break;
+				default :
+					Set<String> processed = new HashSet<>(this.processed);
+					processed.add(c.getFQN());
+					doAnnotatedAnnotation(a, a.getName(), processed, attributesAndDirectives);
+					break;
 			}
 		}
 
 		private void mergeAttributesAndDirectives(Annotation a) {
-			if (STD_CAPABILITIES.equals(a.getName()
-				.getFQN()) || STD_REQUIREMENTS.equals(
-					a.getName()
-						.getFQN())) {
-				Object[] annotations = a.get("value");
-				for (int i = 0; i < annotations.length; i++) {
-					mergeAttributesAndDirectives((Annotation) annotations[i]);
-				}
-			} else if (!attributesAndDirectives.isEmpty()) {
-				Object[] original = a.get("attribute");
-				int length = (original != null) ? original.length : 0;
-				Object[] updated = new Object[length + attributesAndDirectives.size()];
-				if (length > 0) {
-					System.arraycopy(original, 0, updated, 0, length);
-				}
-				for (String key : attributesAndDirectives.keySet()) {
-					updated[length++] = attributesAndDirectives.toString(key);
-				}
-				a.put("attribute", updated);
+			String fqn = a.getName()
+				.getFQN();
+			switch (fqn) {
+				case STD_CAPABILITIES :
+				case STD_REQUIREMENTS :
+					Object[] annotations = a.get("value");
+					for (int i = 0; i < annotations.length; i++) {
+						mergeAttributesAndDirectives((Annotation) annotations[i]);
+					}
+					break;
+				default :
+					if (!attributesAndDirectives.isEmpty()) {
+						Object[] original = a.get("attribute");
+						int length = (original != null) ? original.length : 0;
+						Object[] updated = new Object[length + attributesAndDirectives.size()];
+						if (length > 0) {
+							System.arraycopy(original, 0, updated, 0, length);
+						}
+						for (String key : attributesAndDirectives.keySet()) {
+							updated[length++] = attributesAndDirectives.toString(key);
+						}
+						a.put("attribute", updated);
+					}
+					break;
 			}
 		}
 
@@ -386,19 +387,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		public void method(MethodDef defined) {
 			lastMethodSeen = defined.getName();
 		}
-	}
-
-	private boolean isBndAnnotation(Annotation a) {
-		return a.getName()
-			.getFQN()
-			.startsWith("aQute.bnd.annotation.headers");
-	}
-
-	private boolean isRequirementOrCapability(Annotation a) {
-		String name = a.getName()
-			.getFQN();
-		return STD_CAPABILITIES.equals(name) || STD_CAPABILITY.equals(name) || STD_REQUIREMENTS.equals(name)
-			|| STD_REQUIREMENT.equals(name);
 	}
 
 	/*
