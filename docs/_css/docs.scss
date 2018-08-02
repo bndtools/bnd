@@ -1,0 +1,38 @@
+.top-bar .name {
+     max-height:45px;
+    height:45px;
+    margin:0
+}
+.top-bar .name img{
+    margin:-5px 0 0
+}
+.main-container{
+    margin-top:10px
+}
+.hero h1{
+    font-size:4em;
+    font-weight:bold
+}
+.hero h1 img.logo{
+    padding:5px
+}
+.sidebar{
+    background:#fafafa;
+    padding:32px 20px
+}
+.side-nav .heading{
+    text-transform:uppercase
+}
+a.external-left{
+    background:url(/images/external-link.png) 1px center no-repeat;
+    padding-left:14px
+}
+a.external{
+    background:url(/images/external-link.png) right center no-repeat;
+    padding-right:14px
+}
+pre{
+    background:#fafafa;
+    margin-bottom:1.25rem;
+    color:#bb260d
+}

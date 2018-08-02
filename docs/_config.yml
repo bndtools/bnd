@@ -1,0 +1,27 @@
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+markdown: kramdown
+
+collections:
+  chapters:
+    output: true
+
+defaults:
+  -
+    scope:
+      path: ""
+    values:
+      layout: default
+
+exclude:
+  - 'Gemfile'
+  - 'Gemfile.lock'
+  - 'README.md'
+  - 'CONTRIBUTING.md'
+  - 'LICENSE'
+  - '.gitignore'
+  - '.project'
+  - 'build.sh'
+  - '/examples'
+  - '/bundler'

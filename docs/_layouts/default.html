@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="jpm">
+
+	{% include head.htm %}
+
+<body>
+
+	{% include nav.htm %}
+
+					
+        <div class="row main-container">
+            <!-- Sidebar -->
+            <div class="large-3 medium-4 small-4 columns">
+                <div class="sidebar">
+                    <nav>
+                        {% include sidebar.htm %}
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="large-9 medium-8 small-8 columns">
+                <div class="hero">
+                    <h1>{{ page.title }}</h1>
+                    <p>{{page.description}}</p>
+                </div>
+                {{content}}
+            </div>
+
+        </div>
+        <div class="row main-container">
+            <div class="large-12 medium-4 small-4 columns">
+                {% include footer.htm %}
+            </div>
+        </div>
+
+</body>
+</html>
