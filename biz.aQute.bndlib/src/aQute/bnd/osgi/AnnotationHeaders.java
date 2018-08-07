@@ -30,6 +30,7 @@ import aQute.bnd.annotation.headers.BundleContributors;
 import aQute.bnd.annotation.headers.BundleCopyright;
 import aQute.bnd.annotation.headers.BundleDevelopers;
 import aQute.bnd.annotation.headers.BundleDocURL;
+import aQute.bnd.annotation.headers.BundleHeader;
 import aQute.bnd.annotation.headers.BundleLicense;
 import aQute.bnd.annotation.headers.Category;
 import aQute.bnd.annotation.headers.ProvideCapability;
@@ -113,6 +114,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	static final String				BUNDLE_DEVELOPERS	= "aQute.bnd.annotation.headers.BundleDevelopers";
 	static final String				BUNDLE_CONTRIBUTORS	= "aQute.bnd.annotation.headers.BundleContributors";
 	static final String				BUNDLE_COPYRIGHT	= "aQute.bnd.annotation.headers.BundleCopyright";
+	static final String				BUNDLE_HEADER		= "aQute.bnd.annotation.headers.BundleHeader";
 	static final String				STD_REQUIREMENT		= "org.osgi.annotation.bundle.Requirement";
 	static final String				STD_REQUIREMENTS	= "org.osgi.annotation.bundle.Requirements";
 	static final String				STD_CAPABILITY		= "org.osgi.annotation.bundle.Capability";
@@ -192,6 +194,9 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				break;
 			case REQUIRE_CAPABILITY :
 				doRequireCapability(annotation);
+				break;
+			case BUNDLE_HEADER :
+				doBundleHeader(annotation);
 				break;
 			case STD_CAPABILITIES :
 				Capability[] capabilities = annotation.getAnnotation(Capabilities.class)
@@ -304,6 +309,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				case BUNDLE_DEVELOPERS :
 				case BUNDLE_DOC_URL :
 				case BUNDLE_LICENSE :
+				case BUNDLE_HEADER :
 				case PROVIDE_CAPABILITY :
 				case REQUIRE_CAPABILITY :
 					// Bnd annotations support merging of child
@@ -538,6 +544,21 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		add(Constants.REQUIRE_CAPABILITY, s);
+	}
+
+	/*
+	 * Arbitrary bundle header annotation
+	 */
+	private void doBundleHeader(Annotation a) throws Exception {
+		final BundleHeader annotation = a.getAnnotation(BundleHeader.class);
+		String headerName = annotation.name()
+			.trim();
+		if (headerName.isEmpty())
+			throw new IllegalArgumentException("Bundle header name may not be empty, on type " + current);
+		if (annotation.singleton() && headers.containsKey(headerName))
+			throw new IllegalArgumentException(
+				"Repeated use of singleton header " + headerName + " on type " + current);
+		add(headerName, annotation.value());
 	}
 
 	private void replaceParameters(Attrs attrs) throws IllegalArgumentException {
