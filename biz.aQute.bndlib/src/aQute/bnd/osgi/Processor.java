@@ -59,6 +59,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1793,9 +1795,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		@Override
 		public Class<?> loadClass(String name) throws ClassNotFoundException {
 			try {
-				Class<?> c = super.loadClass(name);
-				return c;
+				try {
+					Class<?> c = super.loadClass(name);
+					return c;
+				} catch (ClassNotFoundException nfe) {
+					Bundle bundle = FrameworkUtil.getBundle(CL.class);
+					if (bundle == null)
+						throw nfe;
+					Bundle system = bundle.getBundleContext()
+						.getBundle(0);
+					return system.loadClass(name);
+				}
 			} catch (Throwable t) {
+
 				StringBuilder sb = new StringBuilder();
 				sb.append(name);
 				sb.append(" not found, parent: ");
