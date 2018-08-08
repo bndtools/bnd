@@ -11,7 +11,7 @@ Since Maven support is quite widespread we've tried to align the communication s
 	`~/.bnd/connection-settings.xml`
 	`~/.m2/settings.xml`
 
-If you want to disable the use of these mechanisms from the workspace then you can use the `-connection-settings` instruction. If you set this to `false` then it will not look for the aforementioned files. 
+If you want to disable the use of these mechanisms from the workspace then you can use the `-connection-settings` instruction. If you set this to `false` then it will not look for the aforementioned files.
 
 	-connection-settings: false
 
@@ -22,6 +22,10 @@ In this setting, you can also list additional files to parse that must be of the
 Only the `proxy` and `server` elements are looked at and only the in here defined fields.
 
 We provide a number of additional features over the maven syntax.
+
+In addition, you could also specify the maven settings inline.
+
+	-connection-settings: server;id="http://server";username="myUser";password="myPass"
 
 ## Logging out
 
@@ -46,19 +50,19 @@ The settings files have the following structure:
 	      <username>      user name to use for the proxy </username>
 	      <password>      password to use for the proxy </password>
 	      <verify> true | false </verify>
-	      <nonProxyHosts> glob ( '|' glob )* </nonProxyHosts> 
+	      <nonProxyHosts> glob ( '|' glob )* </nonProxyHosts>
 	    </proxy>
 	  </proxies>
 	  <servers>
 	    <server>
 	      <id>default</id>
-		  <username>username</username>
+		    <username>username</username>
 	      <password>password</password>
-		  <verify> true | false </verify>
-		  <trust> comma separated paths to X509 certificates </trust>
+		    <verify> true | false </verify>
+		    <trust> comma separated paths to X509 certificates </trust>
 	    </server>
 	  </servers>
-	</settings> 
+	</settings>
 
 Any additional elements are ignored.
 
@@ -97,4 +101,16 @@ In maven, the servers are identified by an id; when you define a repository you 
 | `verify`          |  `true`      | `false | true` | Enable/disable the verification of the host name against a certificate for HTTPS |
 | `trust`           |              |                | Provide paths to certificate that provide trus to the host certificate |
 
-	
+### oAuth2 authentication
+
+It also supports Bearer (OAuth2) authentication. If the `<server>` configuration has only a password and no username, then Bearer authentication is in effect with the password used as the token.
+
+    -connection-settings: server;id="https://*.server.com";password="oauth2token"
+
+will cause
+
+    Authorization: Bearer oauth2token
+
+request header to be sent to servers matching the glob https://*.server.com.
+
+See https://github.github.com/maven-plugins/site-plugin/authentication.html for an example of a `<server>` configuration for OAuth2.
