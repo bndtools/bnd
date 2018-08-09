@@ -26,12 +26,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Jar;
@@ -95,14 +96,14 @@ public class BuilderTest extends BndTestCase {
 
 		try (Builder b = new Builder()) {
 			b.setIncludeResource("foo;literal='x'");
-			b.setProperty(Constants.COMPRESSION, "STORE");
+			b.setProperty(aQute.bnd.osgi.Constants.COMPRESSION, "STORE");
 			Jar build = b.build();
 			assertEquals(Jar.Compression.STORE, build.hasCompression());
 		}
 
 		try (Builder b = new Builder()) {
 			b.setIncludeResource("foo;literal='x'");
-			b.setProperty(Constants.COMPRESSION, "DEFLATE");
+			b.setProperty(aQute.bnd.osgi.Constants.COMPRESSION, "DEFLATE");
 			Jar build = b.build();
 			assertEquals(Jar.Compression.DEFLATE, build.hasCompression());
 		}
@@ -300,7 +301,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testNegationInPrivatePackage_840() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.STRICT, "true");
+		b.setProperty(aQute.bnd.osgi.Constants.STRICT, "true");
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setPrivatePackage("!org.osgi.service.event,org.osgi.service.*");
 		b.build();
@@ -313,7 +314,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testWarnAboutMissingExports() throws Exception {
 		Builder b = new Builder();
-		b.setProperty(Constants.STRICT, "true");
+		b.setProperty(aQute.bnd.osgi.Constants.STRICT, "true");
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.setIncludeResource("foo;literal='bla'"); // get rid of warningt
 		b.setExportPackage("bar");
@@ -832,7 +833,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			b.addClasspath(IO.getFile(new File(""), "jar/osgi.jar"));
 			b.setExportPackage("org.osgi.framework");
-			b.setProperty(Constants.DIGESTS, "MD5, SHA1");
+			b.setProperty(aQute.bnd.osgi.Constants.DIGESTS, "MD5, SHA1");
 			Jar jar = b.build();
 			assertTrue(b.check());
 			File f = File.createTempFile("test", ".jar");
@@ -1042,9 +1043,9 @@ public class BuilderTest extends BndTestCase {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
-			b.setProperty(Constants.NAMESECTION,
+			b.setProperty(aQute.bnd.osgi.Constants.NAMESECTION,
 				"org/osgi/service/event/*;MD5='${md5;${@}}';SHA1='${sha1;${@}}';MD5H='${md5;${@};hex}'");
-			b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.event");
+			b.setProperty(aQute.bnd.osgi.Constants.PRIVATEPACKAGE, "org.osgi.service.event");
 			Jar build = b.build();
 			assertOk(b);
 			build.calcChecksums(new String[] {
@@ -1239,7 +1240,8 @@ public class BuilderTest extends BndTestCase {
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.addClasspath(IO.getFile("jar/osgi.core.jar"));
-			b.setProperty(Constants.PRIVATEPACKAGE, "org.osgi.service.packageadmin;-split-package:=first");
+			b.setProperty(aQute.bnd.osgi.Constants.PRIVATEPACKAGE,
+				"org.osgi.service.packageadmin;-split-package:=first");
 			b.build();
 			assertTrue(b.check());
 			String version = b.getImports()
@@ -1268,7 +1270,7 @@ public class BuilderTest extends BndTestCase {
 				.get("version"));
 			assertEquals("osgi", b.getExports()
 				.getByFQN("org.osgi.framework")
-				.get(Constants.FROM_DIRECTIVE));
+				.get(aQute.bnd.osgi.Constants.FROM_DIRECTIVE));
 		} finally {
 			b.close();
 		}
@@ -2313,7 +2315,8 @@ public class BuilderTest extends BndTestCase {
 	public void testExportContents() throws Exception {
 		Builder builder = new Builder();
 		try {
-			builder.setProperty(Constants.INCLUDE_RESOURCE, "test/activator/inherits=src/test/activator/inherits");
+			builder.setProperty(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE,
+				"test/activator/inherits=src/test/activator/inherits");
 			builder.setProperty("-exportcontents", "*;x=true;version=1");
 			builder.build();
 			assertTrue(builder.check());
@@ -2339,8 +2342,8 @@ public class BuilderTest extends BndTestCase {
 	public void testConditionalBaseSuper() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.setProperty(Constants.CONDITIONALPACKAGE, "test.top.*");
-			b.setProperty(Constants.PRIVATEPACKAGE, "test.top.middle.bottom");
+			b.setProperty(aQute.bnd.osgi.Constants.CONDITIONALPACKAGE, "test.top.*");
+			b.setProperty(aQute.bnd.osgi.Constants.PRIVATEPACKAGE, "test.top.middle.bottom");
 			b.addClasspath(new File("bin"));
 			Jar dot = b.build();
 			assertTrue(b.check());
@@ -2367,7 +2370,7 @@ public class BuilderTest extends BndTestCase {
 	public void testConditional2() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.EXPORT_PACKAGE, "org.osgi.service.log");
-		base.put(Constants.CONDITIONAL_PACKAGE, "org.osgi.*");
+		base.put(aQute.bnd.osgi.Constants.CONDITIONAL_PACKAGE, "org.osgi.*");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setProperties(base);
@@ -2473,7 +2476,7 @@ public class BuilderTest extends BndTestCase {
 	public void testResourceNotFound() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.EXPORT_PACKAGE, "*;x-test:=true");
-		base.put(Constants.INCLUDE_RESOURCE, "does_not_exist");
+		base.put(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, "does_not_exist");
 		Builder analyzer = new Builder();
 		try {
 			analyzer.setClasspath(new File[] {
@@ -2493,7 +2496,7 @@ public class BuilderTest extends BndTestCase {
 
 	public void testFindPathInBundleClasspath() throws Exception {
 		Properties base = new Properties();
-		base.put(Constants.INCLUDE_RESOURCE, "jar=jar");
+		base.put(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, "jar=jar");
 		base.put(Constants.BUNDLE_CLASSPATH, "${findpath;jar/.{1,4}\\.jar}");
 		Builder analyzer = new Builder();
 		try {

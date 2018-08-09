@@ -2,9 +2,10 @@ package test.component;
 
 import java.io.File;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;

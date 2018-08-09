@@ -4,8 +4,9 @@ import static aQute.lib.env.Header.DUPLICATE_MARKER;
 
 import java.util.jar.Attributes;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.lib.env.Header;
 import aQute.lib.env.Props;
 import aQute.lib.io.IO;

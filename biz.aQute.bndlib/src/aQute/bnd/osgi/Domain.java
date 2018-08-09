@@ -1,23 +1,23 @@
 package aQute.bnd.osgi;
 
-import static aQute.bnd.osgi.Constants.BUNDLE_ACTIVATOR;
-import static aQute.bnd.osgi.Constants.BUNDLE_CLASSPATH;
-import static aQute.bnd.osgi.Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT;
-import static aQute.bnd.osgi.Constants.BUNDLE_SYMBOLICNAME;
-import static aQute.bnd.osgi.Constants.BUNDLE_VERSION;
 import static aQute.bnd.osgi.Constants.CONDITIONAL_PACKAGE;
-import static aQute.bnd.osgi.Constants.DYNAMICIMPORT_PACKAGE;
 import static aQute.bnd.osgi.Constants.EXPORT_CONTENTS;
-import static aQute.bnd.osgi.Constants.EXPORT_PACKAGE;
 import static aQute.bnd.osgi.Constants.FAIL_OK;
-import static aQute.bnd.osgi.Constants.FRAGMENT_HOST;
-import static aQute.bnd.osgi.Constants.IMPORT_PACKAGE;
 import static aQute.bnd.osgi.Constants.INCLUDERESOURCE;
 import static aQute.bnd.osgi.Constants.INCLUDE_RESOURCE;
 import static aQute.bnd.osgi.Constants.PRIVATEPACKAGE;
 import static aQute.bnd.osgi.Constants.PRIVATE_PACKAGE;
 import static aQute.bnd.osgi.Constants.SOURCES;
 import static aQute.bnd.osgi.Constants.WAB;
+import static org.osgi.framework.Constants.BUNDLE_ACTIVATOR;
+import static org.osgi.framework.Constants.BUNDLE_CLASSPATH;
+import static org.osgi.framework.Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT;
+import static org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME;
+import static org.osgi.framework.Constants.BUNDLE_VERSION;
+import static org.osgi.framework.Constants.DYNAMICIMPORT_PACKAGE;
+import static org.osgi.framework.Constants.EXPORT_PACKAGE;
+import static org.osgi.framework.Constants.FRAGMENT_HOST;
+import static org.osgi.framework.Constants.IMPORT_PACKAGE;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,6 +32,8 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+
+import org.osgi.framework.Constants;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -331,15 +333,15 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public void setRunfw(String runfw) {
-		set(Constants.RUNFW, runfw);
+		set(aQute.bnd.osgi.Constants.RUNFW, runfw);
 	}
 
 	public void setRunRequires(String runRq) {
-		set(Constants.RUNREQUIRES, runRq);
+		set(aQute.bnd.osgi.Constants.RUNREQUIRES, runRq);
 	}
 
 	public void setAugment(String augments) {
-		set(Constants.AUGMENT, augments);
+		set(aQute.bnd.osgi.Constants.AUGMENT, augments);
 	}
 
 	/**
@@ -391,19 +393,19 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public void setRunblacklist(String blacklist) {
-		set(Constants.RUNBLACKLIST, blacklist);
+		set(aQute.bnd.osgi.Constants.RUNBLACKLIST, blacklist);
 	}
 
 	public String getRunblacklist() {
-		return get(Constants.RUNBLACKLIST);
+		return get(aQute.bnd.osgi.Constants.RUNBLACKLIST);
 	}
 
 	public void setRunee(String string) {
-		set(Constants.RUNEE, string);
+		set(aQute.bnd.osgi.Constants.RUNEE, string);
 	}
 
 	public String getRunee() {
-		return get(Constants.RUNEE);
+		return get(aQute.bnd.osgi.Constants.RUNEE);
 	}
 
 	public void setTranslation(Jar jar) throws Exception {
@@ -537,6 +539,6 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public void setIncludePackage(String value) {
-		set(Constants.INCLUDEPACKAGE, value);
+		set(aQute.bnd.osgi.Constants.INCLUDEPACKAGE, value);
 	}
 }

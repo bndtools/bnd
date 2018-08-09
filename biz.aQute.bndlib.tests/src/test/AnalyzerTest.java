@@ -13,12 +13,13 @@ import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
@@ -178,7 +179,7 @@ public class AnalyzerTest extends BndTestCase {
 			b.setImportPackage("something");
 			b.set("Foo", "Foo");
 			b.set("Bar", "Bar");
-			b.set(Constants.REMOVEHEADERS, "!Bundle-*,!*-Package,!Service-Component,*");
+			b.set(aQute.bnd.osgi.Constants.REMOVEHEADERS, "!Bundle-*,!*-Package,!Service-Component,*");
 			b.build();
 			assertTrue(b.check());
 			Manifest m = b.getJar()
@@ -230,8 +231,8 @@ public class AnalyzerTest extends BndTestCase {
 		Builder b = new Builder();
 		try {
 			b.setProperty(Constants.BUNDLE_CLASSPATH, "foo");
-			b.setProperty(Constants.INCLUDE_RESOURCE, "foo/test/refer=bin/test/refer");
-			b.setProperty(Constants.EXPORT_CONTENTS, "test.refer");
+			b.setProperty(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, "foo/test/refer=bin/test/refer");
+			b.setProperty(aQute.bnd.osgi.Constants.EXPORT_CONTENTS, "test.refer");
 			Jar jar = b.build();
 			Manifest m = jar.getManifest();
 			assertTrue(b.check());
@@ -247,7 +248,8 @@ public class AnalyzerTest extends BndTestCase {
 		try {
 			b.setBundleClasspath("foo");
 			b.setIncludeResource("foo/test/refer_versioned=bin/test/refer_versioned");
-			b.setProperty(Constants.EXPORT_CONTENTS, "${packages;ANNOTATED;org.osgi.annotation.versioning.Version}");
+			b.setProperty(aQute.bnd.osgi.Constants.EXPORT_CONTENTS,
+				"${packages;ANNOTATED;org.osgi.annotation.versioning.Version}");
 			Jar jar = b.build();
 			Manifest m = jar.getManifest();
 			assertTrue(b.check());

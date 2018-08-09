@@ -14,6 +14,8 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -27,7 +29,6 @@ import aQute.lib.io.IO;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.qtokens.QuotedTokenizer;
-
 //
 // TODO check that component XML that refer to a properties file actually have such a file
 //
@@ -512,7 +513,7 @@ public class Verifier extends Processor {
 			}
 		} else if (parent != null) {
 			// If we have access to the parent we can do deeper checking
-			String raw = parent.getUnprocessedProperty(BUNDLE_ACTIVATOR, null);
+			String raw = parent.getUnprocessedProperty(Constants.BUNDLE_ACTIVATOR, null);
 			if (raw != null) {
 				// The activator was specified, but nothing showed up.
 				if (raw.isEmpty()) {
@@ -540,12 +541,13 @@ public class Verifier extends Processor {
 	}
 
 	private void verifyComponent() {
-		String serviceComponent = main.get(Constants.SERVICE_COMPONENT);
+		String serviceComponent = main.get(aQute.bnd.osgi.Constants.SERVICE_COMPONENT);
 		if (serviceComponent != null) {
 			Parameters map = parseHeader(serviceComponent);
 			for (String component : map.keySet()) {
 				if (component.indexOf('*') < 0 && !dot.exists(component)) {
-					error(Constants.SERVICE_COMPONENT + " entry can not be located in JAR: %s", component);
+					error(aQute.bnd.osgi.Constants.SERVICE_COMPONENT + " entry can not be located in JAR: %s",
+						component);
 				} else {
 					// validate component ...
 				}
@@ -844,7 +846,7 @@ public class Verifier extends Processor {
 					.containsFQN(e.getKey())) {
 					SetLocation warning = warning("Export-Package or -exportcontents refers to missing package '%s'",
 						e.getKey());
-					warning.header(Constants.EXPORT_PACKAGE + "|" + Constants.EXPORT_CONTENTS);
+					warning.header(Constants.EXPORT_PACKAGE + "|" + aQute.bnd.osgi.Constants.EXPORT_CONTENTS);
 					warning.context(e.getKey());
 				}
 
@@ -871,7 +873,7 @@ public class Verifier extends Processor {
 				}
 
 				if (e.getValue()
-					.containsKey(Constants.SPECIFICATION_VERSION)) {
+					.containsKey(aQute.bnd.osgi.Constants.SPECIFICATION_VERSION)) {
 					Location location = error(
 						"Export Package %s uses deprecated specification-version instead of version", e.getKey())
 							.location();
@@ -1551,8 +1553,8 @@ public class Verifier extends Processor {
 		if (list.isEmpty())
 			return;
 
-		error(Constants.META_PERSISTENCE + " refers to resources not in the bundle: %s", list)
-			.header(Constants.META_PERSISTENCE);
+		error(aQute.bnd.osgi.Constants.META_PERSISTENCE + " refers to resources not in the bundle: %s", list)
+			.header(aQute.bnd.osgi.Constants.META_PERSISTENCE);
 	}
 
 	/**

@@ -22,6 +22,7 @@ import java.util.Properties;
 import java.util.TreeMap;
 import java.util.stream.StreamSupport;
 
+import org.osgi.framework.Constants;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.Project;
@@ -49,7 +50,6 @@ import aQute.bnd.build.model.conversions.RequirementFormatter;
 import aQute.bnd.build.model.conversions.RequirementListConverter;
 import aQute.bnd.build.model.conversions.SimpleListConverter;
 import aQute.bnd.build.model.conversions.VersionedClauseConverter;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.IDocument;
 import aQute.bnd.properties.IRegion;
@@ -86,8 +86,8 @@ public class BndEditModel {
 		// BndConstants.TESTSUITES,
 		aQute.bnd.osgi.Constants.TESTCASES, aQute.bnd.osgi.Constants.PLUGIN, aQute.bnd.osgi.Constants.PLUGINPATH,
 		aQute.bnd.osgi.Constants.RUNREPOS, aQute.bnd.osgi.Constants.RUNREQUIRES, aQute.bnd.osgi.Constants.RUNEE,
-		aQute.bnd.osgi.Constants.RUNBLACKLIST, Constants.BUNDLE_BLUEPRINT, Constants.INCLUDE_RESOURCE,
-		Constants.STANDALONE
+		aQute.bnd.osgi.Constants.RUNBLACKLIST, aQute.bnd.osgi.Constants.BUNDLE_BLUEPRINT,
+		aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, aQute.bnd.osgi.Constants.STANDALONE
 	};
 
 	public static final String										PROP_WORKSPACE				= "_workspace";
@@ -321,9 +321,9 @@ public class BndEditModel {
 		converters.put(aQute.bnd.osgi.Constants.RUNEE, eeConverter);
 		converters.put(aQute.bnd.osgi.Constants.RUNREPOS, listConverter);
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
-		converters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListConverter);
-		converters.put(Constants.INCLUDE_RESOURCE, listConverter);
-		converters.put(Constants.STANDALONE, headerClauseListConverter);
+		converters.put(aQute.bnd.osgi.Constants.BUNDLE_BLUEPRINT, headerClauseListConverter);
+		converters.put(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, listConverter);
+		converters.put(aQute.bnd.osgi.Constants.STANDALONE, headerClauseListConverter);
 
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_LICENSE, newlineEscapeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_CATEGORY, newlineEscapeFormatter);
@@ -362,9 +362,9 @@ public class BndEditModel {
 		formatters.put(aQute.bnd.osgi.Constants.RUNEE, eeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.RUNREPOS, runReposFormatter);
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
-		formatters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
-		formatters.put(Constants.INCLUDE_RESOURCE, stringListFormatter);
-		formatters.put(Constants.STANDALONE, standaloneLinkListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, stringListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.STANDALONE, standaloneLinkListFormatter);
 	}
 
 	public BndEditModel(BndEditModel model) {
@@ -956,8 +956,8 @@ public class BndEditModel {
 	}
 
 	public void setRunFramework(String clause) {
-		assert (Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase()
-			.trim()) || Constants.RUNFRAMEWORK_NONE.equals(
+		assert (aQute.bnd.osgi.Constants.RUNFRAMEWORK_SERVICES.equals(clause.toLowerCase()
+			.trim()) || aQute.bnd.osgi.Constants.RUNFRAMEWORK_NONE.equals(
 				clause.toLowerCase()
 					.trim()));
 		String oldValue = getRunFramework();
@@ -988,16 +988,16 @@ public class BndEditModel {
 	}
 
 	public List<HeaderClause> getStandaloneLinks() {
-		return doGetObject(Constants.STANDALONE, headerClauseListConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.STANDALONE, headerClauseListConverter);
 	}
 
 	public void setStandaloneLinks(List<HeaderClause> headers) {
 		List<HeaderClause> old = getStandaloneLinks();
-		doSetObject(Constants.STANDALONE, old, headers, standaloneLinkListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.STANDALONE, old, headers, standaloneLinkListFormatter);
 	}
 
 	public List<HeaderClause> getIgnoreStandalone() {
-		List<HeaderClause> v = doGetObject(Constants.IGNORE_STANDALONE, headerClauseListConverter);
+		List<HeaderClause> v = doGetObject(aQute.bnd.osgi.Constants.IGNORE_STANDALONE, headerClauseListConverter);
 		if (v != null)
 			return v;
 
@@ -1010,12 +1010,12 @@ public class BndEditModel {
 		setIgnoreStandalone(v);
 		doSetObject("x-ignore-standalone", v, null, standaloneLinkListFormatter);
 
-		return doGetObject(Constants.IGNORE_STANDALONE, headerClauseListConverter);
+		return doGetObject(aQute.bnd.osgi.Constants.IGNORE_STANDALONE, headerClauseListConverter);
 	}
 
 	public void setIgnoreStandalone(List<HeaderClause> headers) {
 		List<HeaderClause> old = getIgnoreStandalone();
-		doSetObject(Constants.IGNORE_STANDALONE, old, headers, standaloneLinkListFormatter);
+		doSetObject(aQute.bnd.osgi.Constants.IGNORE_STANDALONE, old, headers, standaloneLinkListFormatter);
 	}
 
 	private <R> R doGetObject(String name, Converter<? extends R, ? super String> converter) {
@@ -1054,7 +1054,7 @@ public class BndEditModel {
 	}
 
 	public boolean isBndrun() {
-		return getBndResourceName().endsWith(Constants.DEFAULT_BNDRUN_EXTENSION);
+		return getBndResourceName().endsWith(aQute.bnd.osgi.Constants.DEFAULT_BNDRUN_EXTENSION);
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {

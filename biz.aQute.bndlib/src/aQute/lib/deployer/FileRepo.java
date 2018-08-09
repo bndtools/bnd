@@ -1053,7 +1053,7 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 			rd.bsn = bsn;
 			rd.version = version;
 			rd.description = m.getMainAttributes()
-				.getValue(Constants.BUNDLE_DESCRIPTION);
+				.getValue(org.osgi.framework.Constants.BUNDLE_DESCRIPTION);
 			rd.id = digest;
 			if (rd.id == null)
 				rd.id = SHA1.digest(f)

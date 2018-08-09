@@ -7,9 +7,10 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Map;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.properties.Document;
 import aQute.lib.io.IO;
@@ -104,8 +105,8 @@ public class BndModelTest extends TestCase {
 
 		Processor p = model.getProperties();
 
-		assertEquals("Set in file, refers to macro", "a, b, c", p.getProperty(Constants.RUNBUNDLES));
-		assertEquals("Changes, refers to macro", "framework", p.getProperty(Constants.RUNFW));
+		assertEquals("Set in file, refers to macro", "a, b, c", p.getProperty(aQute.bnd.osgi.Constants.RUNBUNDLES));
+		assertEquals("Changes, refers to macro", "framework", p.getProperty(aQute.bnd.osgi.Constants.RUNFW));
 
 	}
 

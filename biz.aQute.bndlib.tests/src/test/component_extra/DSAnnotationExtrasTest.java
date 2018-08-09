@@ -56,7 +56,7 @@ public class DSAnnotationExtrasTest extends BndTestCase {
 		Attributes attrs = jar.getManifest()
 			.getMainAttributes();
 
-		Parameters requires = new Parameters(attrs.getValue(Constants.REQUIRE_CAPABILITY));
+		Parameters requires = new Parameters(attrs.getValue(org.osgi.framework.Constants.REQUIRE_CAPABILITY));
 		List<Attrs> serviceRequires = getAll(requires, "osgi.service");
 		assertEquals(4, serviceRequires.size());
 		checkServiceRequirements(serviceRequires, LogService.class, false, false);

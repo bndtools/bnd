@@ -36,6 +36,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.osgi.Analyzer;
@@ -44,7 +46,6 @@ import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Clazz.MethodDef;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instructions;
@@ -139,7 +140,7 @@ class JavaElement {
 
 		for (Entry<PackageRef, Attrs> entry : exports.entrySet()) {
 			String value = entry.getValue()
-				.get(Constants.PROVIDER_TYPE_DIRECTIVE);
+				.get(aQute.bnd.osgi.Constants.PROVIDER_TYPE_DIRECTIVE);
 			if (value != null) {
 				providerMatcher.put(entry.getKey(), new Instructions(value));
 			}

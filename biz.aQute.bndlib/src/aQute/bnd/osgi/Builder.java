@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipException;
 
+import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -224,9 +225,11 @@ public class Builder extends Analyzer {
 
 		// Check if we have sensible setup
 
-		if (getClasspath().size() == 0 && (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null
+		if (getClasspath().size() == 0
+			&& (getProperty(Constants.EXPORT_PACKAGE) != null || getProperty(Constants.EXPORT_PACKAGE) != null
 			|| getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
-			warning("Classpath is empty. " + Constants.PRIVATE_PACKAGE + " (-privatepackage) and " + EXPORT_PACKAGE
+			warning("Classpath is empty. " + aQute.bnd.osgi.Constants.PRIVATE_PACKAGE + " (-privatepackage) and "
+				+ Constants.EXPORT_PACKAGE
 				+ " can only expand from the classpath when there is one");
 
 	}
@@ -243,7 +246,7 @@ public class Builder extends Analyzer {
 			return dot;
 
 		logger.debug("wab {} {}", wab, wablib);
-		setBundleClasspath(append("WEB-INF/classes", getProperty(BUNDLE_CLASSPATH)));
+		setBundleClasspath(append("WEB-INF/classes", getProperty(Constants.BUNDLE_CLASSPATH)));
 
 		Set<String> paths = new HashSet<>(dot.getResources()
 			.keySet());
@@ -279,7 +282,7 @@ public class Builder extends Analyzer {
 			addClose(jar);
 			String path = "WEB-INF/lib/" + f.getName();
 			dot.putResource(path, new JarResource(jar));
-			setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH), path));
+			setProperty(Constants.BUNDLE_CLASSPATH, append(getProperty(Constants.BUNDLE_CLASSPATH), path));
 
 			Manifest m = jar.getManifest();
 			if (m != null) {
@@ -405,11 +408,11 @@ public class Builder extends Analyzer {
 		super.analyze();
 		cleanupVersion(getImports(), null);
 		cleanupVersion(getExports(), getVersion());
-		String version = getProperty(BUNDLE_VERSION);
+		String version = getProperty(Constants.BUNDLE_VERSION);
 		if (version != null) {
 			version = cleanupVersion(version);
 			version = doSnapshot(version);
-			setProperty(BUNDLE_VERSION, version);
+			setProperty(Constants.BUNDLE_VERSION, version);
 		}
 	}
 
@@ -454,7 +457,7 @@ public class Builder extends Analyzer {
 			Attrs attributes = entry.getValue();
 			String v = attributes.get(Constants.VERSION_ATTRIBUTE);
 			if (v == null && defaultVersion != null) {
-				if (!isTrue(getProperty(Constants.NODEFAULTVERSION))) {
+				if (!isTrue(getProperty(aQute.bnd.osgi.Constants.NODEFAULTVERSION))) {
 					v = defaultVersion;
 					if (isPedantic())
 						warning("Used bundle version %s for exported package %s", v, entry.getKey());
@@ -572,7 +575,7 @@ public class Builder extends Analyzer {
 
 		Parameters includedPackages = getPrivatePackage();
 		if (buildInstrs.undertest()) {
-			String h = mergeProperties(Constants.TESTPACKAGES, "test;presence:=optional");
+			String h = mergeProperties(aQute.bnd.osgi.Constants.TESTPACKAGES, "test;presence:=optional");
 			includedPackages.putAll(parseHeader(h));
 		}
 
@@ -585,8 +588,9 @@ public class Builder extends Analyzer {
 
 			if (!unused.isEmpty()) {
 				warning(
-					"Unused " + Constants.PRIVATE_PACKAGE + " instructions, no such package(s) on the class path: %s",
-					unused).header(Constants.PRIVATE_PACKAGE)
+					"Unused " + aQute.bnd.osgi.Constants.PRIVATE_PACKAGE
+						+ " instructions, no such package(s) on the class path: %s",
+					unused).header(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE)
 						.context(unused.iterator()
 							.next()
 							.getInput());
@@ -850,7 +854,7 @@ public class Builder extends Analyzer {
 		if (includes == null) {
 			includes = mergeProperties(INCLUDERESOURCE);
 			if (includes == null || includes.length() == 0)
-				includes = mergeProperties(Constants.INCLUDE_RESOURCE);
+				includes = mergeProperties(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE);
 		} else
 			warning("Please use -includeresource instead of Bundle-Includes");
 
@@ -943,7 +947,7 @@ public class Builder extends Analyzer {
 			String preprocessmatchers = mergeProperties(PREPROCESSMATCHERS);
 			if (preprocessmatchers == null || preprocessmatchers.trim()
 				.length() == 0)
-				preprocessmatchers = Constants.DEFAULT_PREPROCESSS_MATCHERS;
+				preprocessmatchers = aQute.bnd.osgi.Constants.DEFAULT_PREPROCESSS_MATCHERS;
 
 			defaultPreProcessMatcher = new Instructions(preprocessmatchers);
 		}
@@ -990,7 +994,8 @@ public class Builder extends Analyzer {
 		for (String required : requires) {
 			File file = getFile(required);
 			if (!file.exists()) {
-				error(Constants.INCLUDE_RESOURCE + ".cmd for %s, requires %s, but no such file %s", source, required,
+				error(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE + ".cmd for %s, requires %s, but no such file %s",
+					source, required,
 					file.getAbsoluteFile()).header(INCLUDERESOURCE + "|" + INCLUDE_RESOURCE);
 			} else
 				lastModified = findLastModifiedWhileOlder(file, lastModified());
@@ -1055,7 +1060,7 @@ public class Builder extends Analyzer {
 		if (cr != null)
 			jar.putResource(destination, cr);
 
-		updateModified(lastModified, Constants.INCLUDE_RESOURCE + ": cmd");
+		updateModified(lastModified, aQute.bnd.osgi.Constants.INCLUDE_RESOURCE + ": cmd");
 	}
 
 	private void traverse(List<String> paths, File item) {
@@ -1140,19 +1145,19 @@ public class Builder extends Analyzer {
 			} else {
 				String p = appendPath(path, file.getName());
 				if (files.containsKey(p))
-					warning(Constants.INCLUDE_RESOURCE + " overwrites entry %s from file %s", p, file);
+					warning(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE + " overwrites entry %s from file %s", p, file);
 				files.put(p, file);
 			}
 		}
 		if (fs.length == 0) {
-			File empty = new File(dir, Constants.EMPTY_HEADER);
+			File empty = new File(dir, aQute.bnd.osgi.Constants.EMPTY_HEADER);
 			files.put(appendPath(path, empty.getName()), empty);
 		}
 	}
 
 	private void noSuchFile(Jar jar, String clause, Map<String, String> extra, String source, String destinationPath)
 		throws Exception {
-		List<Jar> src = getJarsFromName(source, Constants.INCLUDE_RESOURCE + " " + source);
+		List<Jar> src = getJarsFromName(source, aQute.bnd.osgi.Constants.INCLUDE_RESOURCE + " " + source);
 		if (!src.isEmpty()) {
 			for (Jar j : src) {
 				String quoted = j.getSource() != null ? j.getSource()
@@ -1266,7 +1271,7 @@ public class Builder extends Analyzer {
 					path = path + from.getName();
 				copy(jar, path, resource, extra);
 			} else if (from.getName()
-				.equals(Constants.EMPTY_HEADER)) {
+				.equals(aQute.bnd.osgi.Constants.EMPTY_HEADER)) {
 				jar.putResource(path, new EmbeddedResource(new byte[0], 0L));
 			} else {
 				error("Input file does not exist: %s", from).header(INCLUDERESOURCE + "|" + INCLUDE_RESOURCE);
@@ -1277,7 +1282,7 @@ public class Builder extends Analyzer {
 	private void copy(Jar jar, String path, Resource resource, Map<String, String> extra) {
 		jar.putResource(path, resource);
 		if (isTrue(extra.get(LIB_DIRECTIVE))) {
-			setProperty(BUNDLE_CLASSPATH, append(getProperty(BUNDLE_CLASSPATH, "."), path));
+			setProperty(Constants.BUNDLE_CLASSPATH, append(getProperty(Constants.BUNDLE_CLASSPATH, "."), path));
 		}
 	}
 
@@ -1483,10 +1488,11 @@ public class Builder extends Analyzer {
 	 */
 	public boolean isInScope(Collection<File> resources) throws Exception {
 		Parameters clauses = parseHeader(mergeProperties(Constants.EXPORT_PACKAGE));
-		clauses.putAll(parseHeader(mergeProperties(Constants.PRIVATE_PACKAGE)));
-		clauses.putAll(parseHeader(mergeProperties(Constants.PRIVATEPACKAGE)));
-		if (isTrue(getProperty(Constants.UNDERTEST))) {
-			clauses.putAll(parseHeader(mergeProperties(Constants.TESTPACKAGES, "test;presence:=optional")));
+		clauses.putAll(parseHeader(mergeProperties(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE)));
+		clauses.putAll(parseHeader(mergeProperties(aQute.bnd.osgi.Constants.PRIVATEPACKAGE)));
+		if (isTrue(getProperty(aQute.bnd.osgi.Constants.UNDERTEST))) {
+			clauses
+				.putAll(parseHeader(mergeProperties(aQute.bnd.osgi.Constants.TESTPACKAGES, "test;presence:=optional")));
 		}
 
 		Stream<String> ir = getIncludedResourcePrefixes();
@@ -1568,7 +1574,7 @@ public class Builder extends Analyzer {
 	/**
 	 * doNotCopy The doNotCopy variable maintains a patter for files that should
 	 * not be copied. There is a default {@link #DEFAULT_DO_NOT_COPY} but this
-	 * ca be overridden with the {@link Constants#DONOTCOPY} property.
+	 * ca be overridden with the {@link #DONOTCOPY} property.
 	 */
 
 	public boolean doNotCopy(String v) {

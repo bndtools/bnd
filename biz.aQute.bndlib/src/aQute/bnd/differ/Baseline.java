@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
@@ -169,7 +169,8 @@ public class Baseline {
 						info.providers = Create.set();
 						if (info.attributes != null)
 							info.providers
-								.addAll(Processor.split(info.attributes.get(Constants.PROVIDER_TYPE_DIRECTIVE)));
+								.addAll(Processor
+									.split(info.attributes.get(aQute.bnd.osgi.Constants.PROVIDER_TYPE_DIRECTIVE)));
 
 						// Calculate the new delta assuming we fix all the major
 						// interfaces by making them providers

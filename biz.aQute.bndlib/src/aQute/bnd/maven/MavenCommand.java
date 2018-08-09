@@ -25,6 +25,7 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +37,6 @@ import aQute.bnd.maven.support.Maven;
 import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.Pom.Scope;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -606,7 +606,7 @@ public class MavenCommand extends Processor {
 					CachedPom pom = maven.getPom(group, artifact, version, urls2);
 
 					try (Builder a = new Builder()) {
-						a.setProperty(Constants.PRIVATEPACKAGE, "*");
+						a.setProperty(aQute.bnd.osgi.Constants.PRIVATEPACKAGE, "*");
 						Set<Pom> dependencies = pom.getDependencies(Scope.compile, urls2);
 						for (Pom dep : dependencies) {
 							System.err.printf("%20s %-20s %10s%n", dep.getGroupId(), dep.getArtifactId(),

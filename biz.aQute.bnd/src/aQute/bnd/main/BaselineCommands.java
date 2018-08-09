@@ -26,6 +26,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +41,6 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
@@ -66,8 +66,9 @@ public class BaselineCommands {
 	final bnd					bnd;
 	final Baseline				baseline;
 	final DiffPluginImpl		differ				= new DiffPluginImpl();
-	final Collection<String>	SKIP_HEADERS		= Arrays.asList(Constants.CREATED_BY, Constants.BND_LASTMODIFIED,
-		Constants.BUNDLE_MANIFESTVERSION, "Manifest-Version", Constants.TOOL);
+	final Collection<String>	SKIP_HEADERS		= Arrays.asList(aQute.bnd.osgi.Constants.CREATED_BY,
+		aQute.bnd.osgi.Constants.BND_LASTMODIFIED, Constants.BUNDLE_MANIFESTVERSION, "Manifest-Version",
+		aQute.bnd.osgi.Constants.TOOL);
 
 	BaselineCommands(bnd bnd) throws IOException {
 		this.bnd = bnd;
@@ -115,10 +116,13 @@ public class BaselineCommands {
 						ProjectBuilder pb = (ProjectBuilder) b;
 						try (Jar older = pb.getBaselineJar()) {
 							if (older == null) {
-								bnd.error("No baseline JAR available. Did you set " + Constants.BASELINE);
+								bnd.error(
+									"No baseline JAR available. Did you set " + aQute.bnd.osgi.Constants.BASELINE);
 								return;
 							}
-							pb.setProperty(Constants.BASELINE, ""); // do not do
+							pb.setProperty(aQute.bnd.osgi.Constants.BASELINE, ""); // do
+																					// not
+																					// do
 																	// baselining
 																	// in
 																	// build
@@ -126,7 +130,7 @@ public class BaselineCommands {
 							// jar
 
 							try (Jar newer = pb.build()) {
-								differ.setIgnore(pb.getProperty(Constants.DIFFIGNORE));
+								differ.setIgnore(pb.getProperty(aQute.bnd.osgi.Constants.DIFFIGNORE));
 								baseline(opts, newer, older,
 									opts.packages() != null ? new Instructions(opts.packages()) : null);
 								bnd.getInfo(b);
@@ -584,7 +588,7 @@ public class BaselineCommands {
 			}
 
 			if (info.providers != null && !info.providers.isEmpty()) {
-				out.append(";\\\n    " + Constants.PROVIDER_TYPE_DIRECTIVE + "=\"");
+				out.append(";\\\n    " + aQute.bnd.osgi.Constants.PROVIDER_TYPE_DIRECTIVE + "=\"");
 				String del2 = "";
 				for (String part : info.providers) {
 					out.append(del2);

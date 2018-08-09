@@ -4,11 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.diff.Delta;

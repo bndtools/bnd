@@ -12,9 +12,10 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
 import aQute.bnd.version.Version;
@@ -130,7 +131,7 @@ public class PomFromManifest extends WriteResource {
 			new Tag(project, "url").addContent("http://no-url");
 
 		String scmheader = manifest.getMainAttributes()
-			.getValue(Constants.BUNDLE_SCM);
+			.getValue(aQute.bnd.osgi.Constants.BUNDLE_SCM);
 		if (scmheader != null)
 			scm.add(scmheader);
 

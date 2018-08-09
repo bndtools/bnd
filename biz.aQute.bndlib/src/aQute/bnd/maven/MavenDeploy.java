@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
@@ -59,7 +59,7 @@ public class MavenDeploy implements Deploy, Plugin {
 	 */
 	@Override
 	public boolean deploy(Project project, String jarName, InputStream jarStream) throws Exception {
-		Parameters deploy = project.parseHeader(project.getProperty(Constants.DEPLOY));
+		Parameters deploy = project.parseHeader(project.getProperty(aQute.bnd.osgi.Constants.DEPLOY));
 
 		Map<String, String> maven = deploy.get(repository);
 		if (maven == null)

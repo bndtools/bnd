@@ -4,10 +4,11 @@ import java.io.File;
 import java.util.Map;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -74,7 +75,7 @@ public class VersionPolicyTest extends TestCase {
 		Manifest m = jar.getManifest();
 		String imports = m.getMainAttributes()
 			.getValue(Constants.IMPORT_PACKAGE);
-		assertFalse(imports.contains(Constants.PROVIDE_DIRECTIVE));
+		assertFalse(imports.contains(aQute.bnd.osgi.Constants.PROVIDE_DIRECTIVE));
 	}
 
 	/**
@@ -97,7 +98,7 @@ public class VersionPolicyTest extends TestCase {
 		Manifest m = jar.getManifest();
 		String imports = m.getMainAttributes()
 			.getValue(Constants.IMPORT_PACKAGE);
-		assertFalse(imports.contains(Constants.PROVIDE_DIRECTIVE));
+		assertFalse(imports.contains(aQute.bnd.osgi.Constants.PROVIDE_DIRECTIVE));
 	}
 
 	/**

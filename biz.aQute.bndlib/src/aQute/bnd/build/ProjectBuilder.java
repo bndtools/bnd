@@ -222,9 +222,10 @@ public class ProjectBuilder extends Builder {
 						binfo.newerVersion, binfo.suggestedVersion, baseliner.getDiff());
 					SetLocation error = error("%s", f.toString());
 					error.context("Baselining");
-					error.header(Constants.BUNDLE_VERSION);
+					error.header(org.osgi.framework.Constants.BUNDLE_VERSION);
 					error.details(binfo);
-					FileLine fl = getHeader(Pattern.compile("^" + Constants.BUNDLE_VERSION, Pattern.MULTILINE));
+					FileLine fl = getHeader(
+						Pattern.compile("^" + org.osgi.framework.Constants.BUNDLE_VERSION, Pattern.MULTILINE));
 					if (fl != null) {
 						error.file(fl.file.getAbsolutePath());
 						error.line(fl.line);
@@ -237,7 +238,7 @@ public class ProjectBuilder extends Builder {
 
 	// *
 	private static final Pattern	PATTERN_EXPORT_PACKAGE		= Pattern
-		.compile(Pattern.quote(Constants.EXPORT_PACKAGE), Pattern.CASE_INSENSITIVE);
+		.compile(Pattern.quote(org.osgi.framework.Constants.EXPORT_PACKAGE), Pattern.CASE_INSENSITIVE);
 	private static final Pattern	PATTERN_EXPORT_CONTENTS		= Pattern
 		.compile(Pattern.quote(Constants.EXPORT_CONTENTS), Pattern.CASE_INSENSITIVE);
 	private static final Pattern	PATTERN_VERSION_ANNOTATION	= Pattern
@@ -596,8 +597,8 @@ public class ProjectBuilder extends Builder {
 		if (isOk()) {
 			for (Run export : getExportedRuns()) {
 				addClose(export);
-				if (export.getProperty(BUNDLE_SYMBOLICNAME) == null) {
-					export.setProperty(BUNDLE_SYMBOLICNAME, getBsn() + ".run");
+				if (export.getProperty(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME) == null) {
+					export.setProperty(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME, getBsn() + ".run");
 				}
 				Jar pack = export.pack(getProperty(PROFILE));
 				getInfo(export);
@@ -640,7 +641,7 @@ public class ProjectBuilder extends Builder {
 		if (!project.isNoBundles() && (builder.getJar() == null)
 			&& (builder.getProperty(Constants.RESOURCEONLY) == null)
 			&& (builder.getProperty(Constants.PRIVATE_PACKAGE) == null)
-			&& (builder.getProperty(Constants.EXPORT_PACKAGE) == null)
+			&& (builder.getProperty(org.osgi.framework.Constants.EXPORT_PACKAGE) == null)
 			&& (builder.getProperty(Constants.INCLUDE_RESOURCE) == null)
 			&& (builder.getProperty(Constants.INCLUDEPACKAGE) == null)
 			&& (builder.getProperty(Constants.INCLUDERESOURCE) == null) && project.getOutput()

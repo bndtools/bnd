@@ -63,24 +63,29 @@ public class Syntax implements Constants {
 				"Directory with sha artifacts. The sha is the name of the "
 					+ "directory, it contains the artifact with a normal bsn-version.jar name",
 				null, null, null)),
-		new Syntax(BUNDLE_ACTIVATIONPOLICY,
-			"The " + BUNDLE_ACTIVATIONPOLICY
+		new Syntax(org.osgi.framework.Constants.BUNDLE_ACTIVATIONPOLICY,
+			"The " + org.osgi.framework.Constants.BUNDLE_ACTIVATIONPOLICY
 				+ " header specifies how the framework should activate the bundle once started.",
-			BUNDLE_ACTIVATIONPOLICY + ": lazy", "lazy", Pattern.compile("lazy")),
+			org.osgi.framework.Constants.BUNDLE_ACTIVATIONPOLICY + ": lazy", "lazy", Pattern.compile("lazy")),
 
-		new Syntax(BUNDLE_ACTIVATOR,
-			"The " + BUNDLE_ACTIVATOR + " header specifies the name of the class used to start and stop the bundle.",
-			BUNDLE_ACTIVATOR + ": com.acme.foo.Activator", "${classes;implementing;org.osgi.framework.BundleActivator}",
+		new Syntax(org.osgi.framework.Constants.BUNDLE_ACTIVATOR,
+			"The " + org.osgi.framework.Constants.BUNDLE_ACTIVATOR
+				+ " header specifies the name of the class used to start and stop the bundle.",
+			org.osgi.framework.Constants.BUNDLE_ACTIVATOR + ": com.acme.foo.Activator",
+			"${classes;implementing;org.osgi.framework.BundleActivator}",
 			Verifier.FQNPATTERN),
-		new Syntax(BUNDLE_CATEGORY,
-			"The " + BUNDLE_CATEGORY + " header holds a comma-separated list of category names.",
-			BUNDLE_CATEGORY + ": test", "osgi,test,game,util,eclipse,netbeans,jdk,specification", null),
-		new Syntax(BUNDLE_CLASSPATH, "The " + BUNDLE_CLASSPATH
+		new Syntax(org.osgi.framework.Constants.BUNDLE_CATEGORY,
+			"The " + org.osgi.framework.Constants.BUNDLE_CATEGORY
+				+ " header holds a comma-separated list of category names.",
+			org.osgi.framework.Constants.BUNDLE_CATEGORY + ": test",
+			"osgi,test,game,util,eclipse,netbeans,jdk,specification", null),
+		new Syntax(org.osgi.framework.Constants.BUNDLE_CLASSPATH, "The " + org.osgi.framework.Constants.BUNDLE_CLASSPATH
 			+ " header defines a comma-separated list of JAR file path names or directories (inside the bundle) containing classes and resources. The period (’.’) specifies the root directory of the bundle’s JAR. The period is also the default.",
-			BUNDLE_CLASSPATH + ": /lib/libnewgen.so, .", null, Verifier.PATHPATTERN),
-		new Syntax(BUNDLE_CONTACTADDRESS,
-			"The " + BUNDLE_CONTACTADDRESS + " header provides the contact address of the vendor.",
-			BUNDLE_CONTACTADDRESS + ": 2400 Oswego Road, Austin, TX 74563", null, null),
+			org.osgi.framework.Constants.BUNDLE_CLASSPATH + ": /lib/libnewgen.so, .", null, Verifier.PATHPATTERN),
+		new Syntax(org.osgi.framework.Constants.BUNDLE_CONTACTADDRESS,
+			"The " + org.osgi.framework.Constants.BUNDLE_CONTACTADDRESS
+				+ " header provides the contact address of the vendor.",
+			org.osgi.framework.Constants.BUNDLE_CONTACTADDRESS + ": 2400 Oswego Road, Austin, TX 74563", null, null),
 		new Syntax(BUNDLE_DEVELOPERS, "Defines the primary developers of this bundle", BUNDLE_DEVELOPERS
 			+ ": Peter.Kriens@aQute.biz;name='Peter Kriens Ing';organization=aQute;organizationUrl='http://www.aQute.biz';roles=ceo;timezone=+1",
 			null, null),
@@ -98,41 +103,48 @@ public class Syntax implements Constants {
 				null),																																																																																																																		//
 			new Syntax("organizationUrl", "The URL of the developer's organization",
 				"organizationURL='http://www.aQute.biz'", null, null)),
-		new Syntax(BUNDLE_COPYRIGHT,
-			"The " + BUNDLE_COPYRIGHT + " header contains the copyright specification for this bundle.",
-			BUNDLE_COPYRIGHT + ": OSGi (c) 2002", null, null),
-		new Syntax(BUNDLE_DESCRIPTION,
-			"The " + BUNDLE_DESCRIPTION + " header defines a short description of this bundle.",
-			BUNDLE_DESCRIPTION + ": Ceci ce n'est pas une bundle", null, null),
+		new Syntax(org.osgi.framework.Constants.BUNDLE_COPYRIGHT,
+			"The " + org.osgi.framework.Constants.BUNDLE_COPYRIGHT
+				+ " header contains the copyright specification for this bundle.",
+			org.osgi.framework.Constants.BUNDLE_COPYRIGHT + ": OSGi (c) 2002", null, null),
+		new Syntax(org.osgi.framework.Constants.BUNDLE_DESCRIPTION,
+			"The " + org.osgi.framework.Constants.BUNDLE_DESCRIPTION
+				+ " header defines a short description of this bundle.",
+			org.osgi.framework.Constants.BUNDLE_DESCRIPTION + ": Ceci ce n'est pas une bundle", null, null),
 
-		new Syntax(BUNDLE_DOCURL,
-			"The " + BUNDLE_DOCURL + " header must contain a URL pointing to documentation about this bundle.",
-			BUNDLE_DOCURL + ": http://www.aQute.biz/Code/Bnd", null, Verifier.URLPATTERN),
+		new Syntax(org.osgi.framework.Constants.BUNDLE_DOCURL,
+			"The " + org.osgi.framework.Constants.BUNDLE_DOCURL
+				+ " header must contain a URL pointing to documentation about this bundle.",
+			org.osgi.framework.Constants.BUNDLE_DOCURL + ": http://www.aQute.biz/Code/Bnd", null, Verifier.URLPATTERN),
 
-		new Syntax(BUNDLE_ICON,
-			"The optional " + BUNDLE_ICON
+		new Syntax(org.osgi.framework.Constants.BUNDLE_ICON, "The optional " + org.osgi.framework.Constants.BUNDLE_ICON
 				+ " header provides a list of (relative) URLs to icons representing this bundle in different sizes.",
-			BUNDLE_ICON + ": /icons/bnd.png;size=64", "/icons/bundle.png", Verifier.URLPATTERN,
+			org.osgi.framework.Constants.BUNDLE_ICON + ": /icons/bnd.png;size=64", "/icons/bundle.png",
+			Verifier.URLPATTERN,
 			new Syntax("size", "Icons size in pixels, e.g. 64.", "size=64", "16,32,48,64,128", Verifier.NUMBERPATTERN)),
 
-		new Syntax(BUNDLE_LICENSE, "The " + BUNDLE_LICENSE
+		new Syntax(org.osgi.framework.Constants.BUNDLE_LICENSE, "The " + org.osgi.framework.Constants.BUNDLE_LICENSE
 			+ " header provides an optional machine readable form of license information. The purpose of this header is to automate some of the license processing required by many organizations.",
-			BUNDLE_LICENSE + ": http://www.opensource.org/licenses/jabberpl.php",
+			org.osgi.framework.Constants.BUNDLE_LICENSE + ": http://www.opensource.org/licenses/jabberpl.php",
 			"http://www.apache.org/licenses/LICENSE-2.0,<<EXTERNAL>>",
 			Pattern.compile("(" + Verifier.URLPATTERN + "|<<EXTERNAL>>)"),
 			new Syntax(DESCRIPTION_ATTRIBUTE, "Human readable description of the license.",
 				DESCRIPTION_ATTRIBUTE + "=\"Describe the license here\"", null, Verifier.ANYPATTERN),
 			new Syntax(LINK_ATTRIBUTE, "", "", null, Verifier.URLPATTERN)),
-		new Syntax(BUNDLE_LOCALIZATION, "The " + BUNDLE_LOCALIZATION
+		new Syntax(org.osgi.framework.Constants.BUNDLE_LOCALIZATION, "The "
+			+ org.osgi.framework.Constants.BUNDLE_LOCALIZATION
 			+ " header contains the location in the bundle where localization files can be found. The default value is OSGI-INF/l10n/bundle. Translations are by default therefore OSGI-INF/l10n/bundle_de.properties, OSGI-INF/l10n/bundle_nl.properties, etc.",
-			BUNDLE_LOCALIZATION + ": OSGI-INF/l10n/bundle", "OSGI-INF/l10n/bundle", Verifier.URLPATTERN),
-		new Syntax(BUNDLE_MANIFESTVERSION, "The " + BUNDLE_MANIFESTVERSION
+			org.osgi.framework.Constants.BUNDLE_LOCALIZATION + ": OSGI-INF/l10n/bundle", "OSGI-INF/l10n/bundle",
+			Verifier.URLPATTERN),
+		new Syntax(org.osgi.framework.Constants.BUNDLE_MANIFESTVERSION, "The "
+			+ org.osgi.framework.Constants.BUNDLE_MANIFESTVERSION
 			+ " header is set by bnd automatically to 2. The header defines that the bundle follows the rules of this specification.",
-			"# " + BUNDLE_MANIFESTVERSION + ": 2", "2", Verifier.NUMBERPATTERN),
-		new Syntax(BUNDLE_NAME, "The " + BUNDLE_NAME + " header will be derived from the " + BUNDLE_SYMBOLICNAME
-			+ " header if not set. The " + BUNDLE_NAME
+			"# " + org.osgi.framework.Constants.BUNDLE_MANIFESTVERSION + ": 2", "2", Verifier.NUMBERPATTERN),
+		new Syntax(org.osgi.framework.Constants.BUNDLE_NAME, "The " + org.osgi.framework.Constants.BUNDLE_NAME
+			+ " header will be derived from the " + org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME
+			+ " header if not set. The " + org.osgi.framework.Constants.BUNDLE_NAME
 			+ " header defines a readable name for this bundle. This should be a short, human-readable name that can contain spaces.",
-			BUNDLE_NAME + ": My Bundle", null, Verifier.ANYPATTERN),
+			org.osgi.framework.Constants.BUNDLE_NAME + ": My Bundle", null, Verifier.ANYPATTERN),
 		new Syntax(BUNDLE_NATIVECODE,
 			"The " + BUNDLE_NATIVECODE
 				+ " header contains a specification of native code libraries contained in this bundle.",
@@ -147,14 +159,18 @@ public class Syntax implements Constants {
 			new Syntax(SELECTION_FILTER_ATTRIBUTE,
 				"The value of this attribute must be a filter expression that indicates if the native code clause should be selected or not.",
 				SELECTION_FILTER_ATTRIBUTE + "=\"(com.acme.windowing=win32)\"", null, Verifier.FILTERPATTERN)),
-		new Syntax(BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "The " + BUNDLE_REQUIREDEXECUTIONENVIRONMENT
+		new Syntax(org.osgi.framework.Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "The "
+			+ org.osgi.framework.Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT
 			+ " contains a comma-separated list of execution environments that must be present on the Service Platform.",
-			BUNDLE_REQUIREDEXECUTIONENVIRONMENT + ": CDC-1.0/Foundation-1.0", Processor.join(Verifier.EES, ","),
+			org.osgi.framework.Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT + ": CDC-1.0/Foundation-1.0",
+			Processor.join(Verifier.EES, ","),
 			Verifier.ANYPATTERN),
 
-		new Syntax(BUNDLE_SYMBOLICNAME, "The " + BUNDLE_SYMBOLICNAME
+		new Syntax(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME, "The "
+			+ org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME
 			+ " header specifies a non-localizable name for this bundle. The bundle symbolic name together with a version must identify a unique bundle. The bundle symbolic name should be based on the reverse domain name convention.",
-			BUNDLE_SYMBOLICNAME + ": com.acme.foo.daffy;singleton:=true", "${p}", Verifier.SYMBOLICNAME,
+			org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME + ": com.acme.foo.daffy;singleton:=true", "${p}",
+			Verifier.SYMBOLICNAME,
 			new Syntax(SINGLETON_DIRECTIVE,
 				"Indicates that the bundle can only have a single version resolved. A value of true indicates that the bundle is a singleton bundle. The default value is false. The Framework must resolve at most one bundle when multiple versions of a singleton bundle with the same symbolic name are installed. Singleton bundles do not affect the resolution of non-singleton bundles with the same symbolic name.",
 				SINGLETON_DIRECTIVE + "=false", "true,false", Verifier.TRUEORFALSEPATTERN),
@@ -164,27 +180,35 @@ public class Syntax implements Constants {
 			new Syntax(BLUEPRINT_WAIT_FOR_DEPENDENCIES_ATTRIBUTE, "", "", "true,false", Verifier.TRUEORFALSEPATTERN),
 			new Syntax(BLUEPRINT_TIMEOUT_ATTRIBUTE, "", "", "30000,60000,300000", Verifier.NUMBERPATTERN)),
 
-		new Syntax(BUNDLE_UPDATELOCATION, "The " + BUNDLE_UPDATELOCATION
+		new Syntax(org.osgi.framework.Constants.BUNDLE_UPDATELOCATION, "The "
+			+ org.osgi.framework.Constants.BUNDLE_UPDATELOCATION
 			+ " header specifies a URL where an update for this bundle should come from. If the bundle is updated, this location should be used, if present, to retrieve the updated JAR file.",
-			BUNDLE_UPDATELOCATION + ": http://www.acme.com/Firewall/bundle.jar", null, Verifier.URLPATTERN),
+			org.osgi.framework.Constants.BUNDLE_UPDATELOCATION + ": http://www.acme.com/Firewall/bundle.jar", null,
+			Verifier.URLPATTERN),
 
-		new Syntax(BUNDLE_VENDOR,
-			"The " + BUNDLE_VENDOR + " header contains a human-readable description of the bundle vendor.",
-			BUNDLE_VENDOR + ": OSGi Alliance", null, null),
+		new Syntax(org.osgi.framework.Constants.BUNDLE_VENDOR,
+			"The " + org.osgi.framework.Constants.BUNDLE_VENDOR
+				+ " header contains a human-readable description of the bundle vendor.",
+			org.osgi.framework.Constants.BUNDLE_VENDOR + ": OSGi Alliance", null, null),
 
-		new Syntax(BUNDLE_VERSION, "The " + BUNDLE_VERSION + " header specifies the version of this bundle.",
-			BUNDLE_VERSION + ": 1.23.4.build200903221000", null, Verifier.VERSION),
+		new Syntax(org.osgi.framework.Constants.BUNDLE_VERSION,
+			"The " + org.osgi.framework.Constants.BUNDLE_VERSION + " header specifies the version of this bundle.",
+			org.osgi.framework.Constants.BUNDLE_VERSION + ": 1.23.4.build200903221000", null, Verifier.VERSION),
 
 		new Syntax(COMPRESSION, "Set the compression for writing JARs. Default is deflate", COMPRESSION + "=store",
 			"deflate,store", Pattern.compile("deflate|store")),
 
-		new Syntax(DYNAMICIMPORT_PACKAGE, "The " + DYNAMICIMPORT_PACKAGE
+		new Syntax(org.osgi.framework.Constants.DYNAMICIMPORT_PACKAGE, "The "
+			+ org.osgi.framework.Constants.DYNAMICIMPORT_PACKAGE
 			+ " header contains a comma-separated list of package names that should be dynamically imported when needed.",
-			DYNAMICIMPORT_PACKAGE + ": com.acme.plugin.*", "", Verifier.WILDCARDNAMEPATTERN, version,
+			org.osgi.framework.Constants.DYNAMICIMPORT_PACKAGE + ": com.acme.plugin.*", "",
+			Verifier.WILDCARDNAMEPATTERN, version,
 			bundle_symbolic_name, bundle_version),
 
-		new Syntax(EXPORT_PACKAGE, "The " + EXPORT_PACKAGE + " header contains a declaration of exported packages.",
-			EXPORT_PACKAGE + ": org.osgi.util.tracker;version=1.3", "${packages}", null,
+		new Syntax(org.osgi.framework.Constants.EXPORT_PACKAGE,
+			"The " + org.osgi.framework.Constants.EXPORT_PACKAGE
+				+ " header contains a declaration of exported packages.",
+			org.osgi.framework.Constants.EXPORT_PACKAGE + ": org.osgi.util.tracker;version=1.3", "${packages}", null,
 			new Syntax(NO_IMPORT_DIRECTIVE,
 				"By default, bnd makes all exports also imports. Adding a " + NO_IMPORT_DIRECTIVE
 					+ " to an exported package will make it export only.",
@@ -215,19 +239,23 @@ public class Syntax implements Constants {
 		new Syntax(PRIVATEPACKAGE, "The " + PRIVATEPACKAGE
 			+ " header contains a declaration of packages to be included in the resulting bundle, the only difference is, is that these packages will not be exported.",
 			PRIVATEPACKAGE + ": com.*", "${packages}", null),
-		new Syntax(EXPORT_SERVICE, "Deprecated.", EXPORT_SERVICE + ": org.osgi.service.log.LogService",
+		new Syntax(org.osgi.framework.Constants.EXPORT_SERVICE, "Deprecated.",
+			org.osgi.framework.Constants.EXPORT_SERVICE + ": org.osgi.service.log.LogService",
 			"${classes;implementing;*}", null),
-		new Syntax(FRAGMENT_HOST, "The " + FRAGMENT_HOST + " header defines the host bundle for this fragment.",
-			FRAGMENT_HOST + ": org.eclipse.swt; bundle-version=\"[3.0.0,4.0.0)\"", null, null,
+		new Syntax(org.osgi.framework.Constants.FRAGMENT_HOST,
+			"The " + org.osgi.framework.Constants.FRAGMENT_HOST + " header defines the host bundle for this fragment.",
+			org.osgi.framework.Constants.FRAGMENT_HOST + ": org.eclipse.swt; bundle-version=\"[3.0.0,4.0.0)\"", null,
+			null,
 			new Syntax(EXTENSION_DIRECTIVE,
 				"Indicates this extension is a system or boot class path extension. It is only applicable when the "
-					+ Constants.FRAGMENT_HOST + " is the System Bundle.",
+					+ org.osgi.framework.Constants.FRAGMENT_HOST + " is the System Bundle.",
 				EXTENSION_DIRECTIVE + "=framework", "framework,bootclasspath",
 				Pattern.compile("framework|bootclasspath")),
 			bundle_version),
-		new Syntax(IMPORT_PACKAGE, "The " + IMPORT_PACKAGE
+		new Syntax(org.osgi.framework.Constants.IMPORT_PACKAGE, "The " + org.osgi.framework.Constants.IMPORT_PACKAGE
 			+ " header is normally calculated by bnd, however, you can decorate packages or skip packages. The header declares the imported packages for this bundle.",
-			IMPORT_PACKAGE + ": !com.exotic.*, com.acme.foo;vendor=ACME, *", "${exported_packages}",
+			org.osgi.framework.Constants.IMPORT_PACKAGE + ": !com.exotic.*, com.acme.foo;vendor=ACME, *",
+			"${exported_packages}",
 			Verifier.WILDCARDNAMEPATTERN,
 			new Syntax(REMOVE_ATTRIBUTE_DIRECTIVE, "Remove the given attributes from matching imported packages.",
 				REMOVE_ATTRIBUTE_DIRECTIVE + "=foo.*", null, Verifier.WILDCARDNAMEPATTERN),
@@ -237,9 +265,10 @@ public class Syntax implements Constants {
 
 			), version, bundle_symbolic_name, bundle_version),
 
-		new Syntax(REQUIRE_BUNDLE,
-			"The " + REQUIRE_BUNDLE + " header specifies the required exports from another bundle.",
-			REQUIRE_BUNDLE + ": com.acme.chess", null, Verifier.WILDCARDNAMEPATTERN,
+		new Syntax(org.osgi.framework.Constants.REQUIRE_BUNDLE,
+			"The " + org.osgi.framework.Constants.REQUIRE_BUNDLE
+				+ " header specifies the required exports from another bundle.",
+			org.osgi.framework.Constants.REQUIRE_BUNDLE + ": com.acme.chess", null, Verifier.WILDCARDNAMEPATTERN,
 
 			new Syntax(VISIBILITY_DIRECTIVE,
 				"If the value is private (Default), then all visible packages from the required bundles are not re-exported. If the value is reexport then bundles that require this bundle will transitively have access to these required bundle’s exported packages.",
@@ -256,11 +285,13 @@ public class Syntax implements Constants {
 			bundle_version
 
 		),
-		new Syntax(PROVIDE_CAPABILITY,
-			"The " + PROVIDE_CAPABILITY
+		new Syntax(org.osgi.framework.Constants.PROVIDE_CAPABILITY,
+			"The " + org.osgi.framework.Constants.PROVIDE_CAPABILITY
 				+ " header specifies that a bundle provides a set of Capabilities, other bundles can use "
-				+ REQUIRE_CAPABILITY + " to match this capability.",
-			PROVIDE_CAPABILITY + ": com.acme.dictionary; from:String=nl; to=de; version:Version=3.4", null,
+				+ org.osgi.framework.Constants.REQUIRE_CAPABILITY + " to match this capability.",
+			org.osgi.framework.Constants.PROVIDE_CAPABILITY
+				+ ": com.acme.dictionary; from:String=nl; to=de; version:Version=3.4",
+			null,
 			Verifier.WILDCARDNAMEPATTERN,
 
 			new Syntax(EFFECTIVE_DIRECTIVE,
@@ -270,11 +301,12 @@ public class Syntax implements Constants {
 			new Syntax(USES_DIRECTIVE,
 				"The uses directive lists package names that are used by this Capability. This information is intended to be used for uses constraints.",
 				USES_DIRECTIVE + "='foo,bar,baz'", null, null)),
-		new Syntax(REQUIRE_CAPABILITY,
-			"The " + REQUIRE_CAPABILITY
+		new Syntax(org.osgi.framework.Constants.REQUIRE_CAPABILITY,
+			"The " + org.osgi.framework.Constants.REQUIRE_CAPABILITY
 				+ " header specifies that a bundle requires other bundles to provide a Capability, see "
-				+ PROVIDE_CAPABILITY,
-			REQUIRE_CAPABILITY + ": com.microsoft; filter:='(&(api=win32)(version=7))'", null,
+				+ org.osgi.framework.Constants.PROVIDE_CAPABILITY,
+			org.osgi.framework.Constants.REQUIRE_CAPABILITY + ": com.microsoft; filter:='(&(api=win32)(version=7))'",
+			null,
 			Verifier.WILDCARDNAMEPATTERN,
 
 			new Syntax(EFFECTIVE_DIRECTIVE,
@@ -308,7 +340,7 @@ public class Syntax implements Constants {
 			DONOTCOPY + "=(CVS|\\.svn)", null, null),
 
 		new Syntax(EXPORT_CONTENTS,
-			"Build the JAR in the normal way but use this header for the " + EXPORT_PACKAGE
+			"Build the JAR in the normal way but use this header for the " + org.osgi.framework.Constants.EXPORT_PACKAGE
 				+ " header manifest generation, same format.",
 			EXPORT_CONTENTS + "=!*impl*,*;version=3.0", null, null),
 

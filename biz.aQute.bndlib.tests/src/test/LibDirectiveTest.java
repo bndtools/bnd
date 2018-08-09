@@ -2,8 +2,9 @@ package test;
 
 import java.util.jar.Manifest;
 
+import org.osgi.framework.Constants;
+
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Constants;
 import junit.framework.TestCase;
 
 public class LibDirectiveTest extends TestCase {

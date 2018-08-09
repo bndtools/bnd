@@ -173,8 +173,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 		sc = Processor.append(names.toArray(new String[0]));
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, sc);
-		updateHeader(analyzer, Constants.REQUIRE_CAPABILITY, requires);
-		updateHeader(analyzer, Constants.PROVIDE_CAPABILITY, provides);
+		updateHeader(analyzer, org.osgi.framework.Constants.REQUIRE_CAPABILITY, requires);
+		updateHeader(analyzer, org.osgi.framework.Constants.PROVIDE_CAPABILITY, provides);
 		return false;
 	}
 
