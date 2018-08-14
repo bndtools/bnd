@@ -1,10 +1,10 @@
 ---
 title: Maven Bnd Repository Plugin
 layout: default
-summary: A plugin to use and release to Maven repositories 
+summary: A plugin to use and release to Maven repositories
 ---
 
-The Maven Bnd Repository plugin provides a full interface to the Maven local repository in `~/.m2/repository` and remote repositories like [Nexus] or [Artifactory]. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving. 
+The Maven Bnd Repository plugin provides a full interface to the Maven local repository in `~/.m2/repository` and remote repositories like [Nexus] or [Artifactory]. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving.
 
 ## Use Cases
 
@@ -26,7 +26,7 @@ To use your local Maven repository (`~/.m2/repository`) you can define the follo
 		aQute.bnd.repository.maven.provider.MavenBndRepository; \
 			index=${.}/local.maven; \
 			name="Local"
- 
+
 ### Artifactory or Nexus Repository
 
 To use a remote release repository based on Nexus or Artifactory you can define the following plugin:
@@ -61,16 +61,17 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 
 | Property         | Type  | Default | Description |
 |------------------|-------|---------|-------------|
-| `releaseUrl`     | `URI` |         | Comma separated list of URLs to the repositories of released artifacts.| 
+| `releaseUrl`     | `URI` |         | Comma separated list of URLs to the repositories of released artifacts.|
 | `snapshotUrl`    | `URI` |         | Comma separated list of URLs to the repositories of snapshot artifacts.|
 | `local`          | `PATH`| `~/.m2/repository` | The file path to the local Maven repository.  |
 |                  |       |                    | If specified, it should use forward slashes. If the directory does not exist, the plugin will attempt to create it.|
 |                  |       |         | The default can be overridden with the `maven.repo.local` System property.|
 | `readOnly`       | `true|false` | `false` | If set to _truthy_ then this repository is read only.|
 | `name`           | `NAME`| `Maven` | The name of the repository.|
-| `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_.| 
+| `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_.|
 | `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
 | `poll.time`      | `integer` | 5 seconds | Number of seconds between checks for changes to the `index` file. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
+| `multi`          | `NAME`|        | Comma separated list of extensions to be searched for indexing containing bundles. For example, a zip file could comprise further bundles. Hence, this zip artifact can be referenced in this plugin for indexing the internal JARs. |
 
 If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _local only_. For finding archives, both URLs are used, first `releaseUrl`.
 
@@ -99,17 +100,17 @@ Maven supports a local repository in `~/.m2/repository`. All repositories will i
 
 It is possible to define a Maven Bnd Repository without a `releaseUrl` or `snapshotUrl`. In that case only access to the local repository is provided. Trying to release remotely will be an error for such a repository.
 
-The [-buildrepo] instruction can be pointed to such a local repository; it will then store a JAR in the local repository after every build. This can be useful if there are Maven projects that consume the output of a bnd workspace. 
+The [-buildrepo] instruction can be pointed to such a local repository; it will then store a JAR in the local repository after every build. This can be useful if there are Maven projects that consume the output of a bnd workspace.
 
 ## Releasing
 
-In bnd, releasing is done by moving the JARs into a special release repository after they've been approved. That is, the location of a JAR defines if it is released, there is no need to reflect the release status in the version. 
+In bnd, releasing is done by moving the JARs into a special release repository after they've been approved. That is, the location of a JAR defines if it is released, there is no need to reflect the release status in the version.
 
 In Maven, the release status is modeled in the version. To support the  staging model, versions can end in `-SNAPSHOT`. Snapshots are treated very differently in the release process. The most important difference is that snapshot versions can overwrite previous versions.
 
-In the release cycle, a JAR is `put` to  _release_ repository. The project of the released JAR is provided as _context_, this means it can inherit from the project and workspace. This plugin will read the [-maven-release] instruction from the context. This can result in generating source and javadoc jars. By default, a local only release only installs the actual binary. 
+In the release cycle, a JAR is `put` to  _release_ repository. The project of the released JAR is provided as _context_, this means it can inherit from the project and workspace. This plugin will read the [-maven-release] instruction from the context. This can result in generating source and javadoc jars. By default, a local only release only installs the actual binary.
 
-To properly release the revision we need to know Maven specific information that is normally specified in the Maven _pom_. The bnd build can construct a pom using the [-pom] instruction. This instruction creates a pom in the JAR at `META-INF/group/artifact/pom.xml`. This plugin requires such a pom to be present. If it is not present, the [-maven-release] instruction must provide a PATH to an alternative pom. If no pom can be found then this is aborts the release. 
+To properly release the revision we need to know Maven specific information that is normally specified in the Maven _pom_. The bnd build can construct a pom using the [-pom] instruction. This instruction creates a pom in the JAR at `META-INF/group/artifact/pom.xml`. This plugin requires such a pom to be present. If it is not present, the [-maven-release] instruction must provide a PATH to an alternative pom. If no pom can be found then this is aborts the release.
 
 In general, the plugin will first _install_ the JARs and its constituents into the `local` revision directory, using the Maven naming rules. If this is successful, it uploads the files to the remote repository using the remote naming rules. It will then update the `maven-metadata` to reflect the new release.
 
@@ -121,7 +122,7 @@ The Maven Bnd Repository uses the bnd Http Client. See the [-connection-settings
 
 ## IDEs
 
-The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry. 
+The repository view in the IDE will show detailed information when you hover the mouse over the the repository entry, the program entry, or the revision entry.
 
 You can add new entries by:
 
