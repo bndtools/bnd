@@ -41,7 +41,21 @@ public class InstructionTest extends TestCase {
 		assertTrue(new Instruction("com.foo.*~").isDuplicate());
 		assertTrue(new Instruction("!com.foo.*~").isDuplicate());
 		assertTrue(new Instruction("!com.foo.*~").isNegated());
+	}
 
+	public void testAdvancedPatterns() {
+		assertThat(new Instruction("ab*").getPattern()).isEqualTo("ab.*");
+		assertThat(new Instruction("ab?").getPattern()).isEqualTo("ab.");
+		assertThat(new Instruction("(ab)?").getPattern()).isEqualTo("(ab)?");
+		assertTrue(new Instruction("(a){3}").matches("aaa"));
+		assertFalse(new Instruction("a{3}").matches("aa"));
+		assertTrue(new Instruction("[a]+").matches("aaa"));
+		assertFalse(new Instruction("[a]+").matches("x"));
+
+		assertThat(new Instruction("[ab]?").getPattern()).isEqualTo("[ab]?");
+		assertThat(new Instruction("[ab]*").getPattern()).isEqualTo("[ab]*");
+		assertThat(new Instruction("[ab]+").getPattern()).isEqualTo("[ab]+");
+		assertThat(new Instruction("(ab)+").getPattern()).isEqualTo("(ab)+");
 	}
 
 	public void testLiteral() {

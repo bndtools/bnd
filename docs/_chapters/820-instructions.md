@@ -94,13 +94,13 @@ This will result in a buildpath of (when debug is not false) of: `com.example.fo
 
 ## SELECTOR
 
-If a value in an instrucion has a _scope_ then you will be able to use a _selector_. A scope is a well defined, finite, set. For example, if you use the '-exportcontents' instruction you can specify the packages that can be exported. Since you can only export the packages that are inside your bundle, the scope is the set of package names that were collected so far.
+If a value in an instruction has a _scope_ then you will be able to use a _selector_. A scope is a well defined, finite, set. For example, if you use the '-exportcontents' instruction you can specify the packages that can be exported. Since you can only export the packages that are inside your bundle, the scope is the set of package names that were collected so far.
 
 The syntax for a selector is:
 
 	selector ::= '!' ? 
 	             '=' ?  
-	                  '*' | ( '.' | '?' | '|' | '*' | '$' | . ) * 
+	                  '*' | ( '.' | '?' | '|' | '$' | . | other ) * 
 	             ( '.*' ) ? 
 	             ( ':i' ) ? 
 
@@ -190,24 +190,130 @@ A PATH defines a number of bundles with its _entries_. Each entry is either a FI
 
 ## GLOB
 
-A _globbing_ expression is a simplified form of a regular expression. It was made popular in the Unix shells for file name matching. 
+A _glob_ is a pattern that can be matched against a candidate to see if it _matches_. To match multiple candidates with
+one pattern, the pattern is allowed to contain _wildcard_ characters. A wildcard character is a stand in for zero or 
+more other characters. For example, a glob like `*.xml` matches any name that ends with `.xml`, the asterisk `*` stands 
+in for zero or more characters. Therefore, it matches `foo.xml`, `xml.xml.xml`, but also just `.xml`. The other 
+wildchar is the question mark (`?`) which matches exactly one character. For example, `???.xml` matches `abc.xml` but not `a.xml` 
+or `.xml`.
 
-The syntax is as follows:
+Sometimes it is necessary to match against a number of strings. The vertical bar (`|`) can separate these strings. For
+example, `abc|def|ghi` matches any of `abc`, `def`, or `ghi`.
 
-	GLOB      ::=  ( wildcard | question | subexpr | character )*
-	wildcard  ::= '*'
-	question  ::= '?'
-	subexpr   ::= '{' GLOB ( ',' GLOB )* '}'
-	character ::= <unicode>
+It is also possible to _group_ strings inside the pattern using parentheses. For example, `foo(a|b)bar` matches `fooabar` 
+or `foobbar`.
 
-A `wildcard` matches any number of characters in the input. A `question` matches a single character. A `subexpr` matches the comma separated set of alternatives. Anything else is matched directly,
+The glob also supports character classes with the square brackets `[` and `]`. Characters between the square brackets
+literally match to any character at that position. These character classes also form a group. For example, `foo[abc]bar` matches
+`fooabar`, `foobbar`, or `foocbar`.
 
-To match a literal character that is in `[*?{},]`, prefix it with a backslash ('\');
+Groups can be repeated using a question mark (cardinality 0..1), the asterisk (cardinality 0..n), or the plus sign (cardinality 1..n). For example, `(a)*` 
+matches `aaaa` but also the empty string. If the standard _cardinalities_ do not suffice, then a group can be suffixed by a 
+cardinality specification using the curly braces (`{` and `}`). Inside the curly braces the lower bound and the optional upper
+bound can be specified. If no upper bound is specified then the lower bound is also the upper bound. 
+For example, `(?i)([0-9A-F][0-9A-F]){20}` matches a 40 digit SHA digest in hex regardless of case.
+
+There are some special characters that get special treatment:
+
+    special ::= '{' | '}' | '|' | '+' | '*' | '?' | '(' | ')' | '[' | ']'
+
+These characters can be escaped with a reverse solidus (`\`) to override their special meaning, they will then be matched literally. To
+escape a long string,  it is possible to place `\Q` at the beginning of a block that needs to be escaped and `\E` at the end. 
+For example, `foo\Q*****\Ebar`
 
 Some examples:
 
-    abc.ts                   abc.ts
-	*.ts                     abc.ts, def.ts
-	foo*****bar              foobar, fooXbar, fooXXXXbar
-	foo{A,B,C}bar            fooAbar, fooBbar,fooCbar
-    foo\{\}bar               foo{}bar
++--------------------+--------------------------------------+--------------------------------------+
+| Glob               | Regular Expression                   | Matches                              |
++--------------------+--------------------------------------+--------------------------------------+
+| `abc.ts`           | `abc\.ts`                            | `abc.ts`                             |
++--------------------+--------------------------------------+--------------------------------------+
+| `*.ts`             | `.*\.ts`                             | `abc.ts, def.ts`                     |
++--------------------+--------------------------------------+--------------------------------------+
+| `foo***bar`        | `foo.*.*.*bar`                       | `foobar, fooXbar, fooXXXXbar`        |
++--------------------+--------------------------------------+--------------------------------------+
+| `foo(A|B|C)*bar`   | `foo(A|B|C)*bar`                     | `fooAbar, fooBBBAbar,fooCbar`        |
++--------------------+--------------------------------------+--------------------------------------+
+| `foo\{\}bar`       |  `foo\{\}bar`                        | `foo{}bar`                           |
++--------------------+--------------------------------------+--------------------------------------+
+| `xx(?i)xx`         |  `xx(?i)xx`                          | `xxXx`, `xxXX`, `xxxx`               |
++--------------------+--------------------------------------+--------------------------------------+
+
+## Special Cases
+
+Some instruction use the GLOB but provide some convenience. For example, the package selectors of Export-Package et. al. 
+detect a case like `com.example.*` and turn it into a regular expression that matches `com.example.foo` but also matches 
+`com.example`. This is generally explained in the instruction.  
+
+## Mapping a Glob to a Regular Expression
+
+This section defines how globs are mapped to regular expressions. Although the globs are quite intuitive to use, 
+they do expose all regular expression capabilities. A strong advice is to keep it simple. The mapping itself
+is actually non-trivial and takes a number of heuristics that can easily go wrong. Basically, if you need this
+section you're likely doing something that is too complex. 
+
+For backward compatibility reasons, we support the unix like glob style for or'ing like `{a,b,c}`. However, it is
+recommended to use the form using the vertical bar since it is more flexible and closer to regular expressions. 
+
+A glob is mapped to a regular expression character by character. During this traversal the following states are kept:
+
+* `SIMPLE` – Basic simple glob form. This is the default. 
+* `CURLIES`– Inside a curly braces group that is not a cardinality specification. Curly braces can be nested.
+* `QUOTED` – Inside a `\Q...\E` block (cannot be nested) 
+* `BRACKETS` – Inside a character group enclosed by square brackets (cannot be nested).
+
+Character sets:
+
+    escaped     ::= `.` | `$` | `^` | `@` | `%`
+    special     ::= `?` | `*` | `+`
+    end         ::= ')' | ']' | '}'
+    start       ::= '('
+    
+Escaped characters are escaped in SIMPLE mode and CURLIES mode. In QUOTED or BRACKETS mode no escaping is done. For example 
+`^$` becomes `\^\$` matching literally `^$`. However, `[^$]` becomes `[^$]`, matching anything but a dollar sign. In QUOTED
+and BRACKETS mode, also the `special`, `end`, and `start` sets are directly inserted without any special handling.
+
+In the SIMPLE and CURLIES mode the `special` characters require special handling. For these remaining mappings it is important 
+to realize that there are _groups_. There are parenthesized groups, bracketed group, and curly braces groups. For 
+example, `(a|b)`, `[abcd]`, or `{a,b,c}` respectively. If curly braces are used after a group then it is a quantifier and *not* considered a group. That is, `{a,b}` is
+considered a group but `[a,b]{1,2}` then the `{1,2}` is a quantifier and not a group.
+
+
+So when a `special` character is preceded with a group, it is inserted without any special processing. If it is not
+preceded then the following rules apply:
+
+* `*` – mapped to `.*`, this matches any number of characters
+* `?` – mapped to `.`, this matches one character
+* `+` – mapped to `\+`, matches a plus sign!
+   
+Some examples:
+
++-----------+---------------------+
+| Glob      | Regular Expression  |
++-----------+---------------------+
+| `*`       | `.*`                | 
++-----------+---------------------+
+| `(a)*`    | `(a)*`              | 
++-----------+---------------------+
+| `[abc]+`  | `[abc]+`            | 
++-----------+---------------------+
+| `.`       | `\.`                |
++-----------+---------------------+
+| `[.*+|]`  | `[.*+|]`            |
++-----------+---------------------+
+| `+`       | `\+`                |
++-----------+---------------------+
+| `(x|y)+`  | `(x|y)+`            |
++-----------+---------------------+
+| `{x,y}`   | `(?:x|y)`           |
++-----------+---------------------+
+| `{[xa],y}`| `(?:[xa]|y)`        |
++-----------+---------------------+
+| `(?:foo)` | `(?:foo)`           |
++-----------+---------------------+
+| `{foo}`   | `(?:foo)`           |
++-----------+---------------------+
+| `[\p{Lower}]`| `[\p{Lower}]`    |
++-----------+---------------------+
+| `[a-z&&[^bc]]`| `[a-z&&[^bc]]`  |
++-----------+---------------------+
