@@ -175,41 +175,53 @@ public class Clazz {
 		DEFAULT_CONSTRUCTOR;
 
 	}
+	
+	interface ConstantInfo {
+		void accept(Clazz c, CONSTANT tag, DataInput in, int poolIndex) throws IOException;
+	}
 
 	static enum CONSTANT {
-		Zero(0),
-		Utf8,
-		Two,
-		Integer(4),
-		Float(4),
-		Long(8),
-		Double(8),
-		Class(2),
-		String(2),
-		Fieldref(4),
-		Methodref(4),
-		InterfaceMethodref(4),
-		NameAndType(4),
-		Thirteen,
-		Fourteen,
-		MethodHandle(3),
-		MethodType(2),
-		Seventeen,
-		InvokeDynamic(4),
-		Module(2),
-		Package(2);
-		private final int skip;
+		Zero(CONSTANT::invalid),
+		Utf8(Clazz::doUtf8_info),
+		Two(CONSTANT::invalid),
+		Integer(Clazz::doInteger_info),
+		Float(Clazz::doFloat_info),
+		Long(Clazz::doLong_info),
+		Double(Clazz::doDouble_info),
+		Class(Clazz::doClass_info),
+		String(Clazz::doString_info),
+		Fieldref(Clazz::doFieldref_info),
+		Methodref(Clazz::doMethodref_info),
+		InterfaceMethodref(Clazz::doInterfaceMethodref_info),
+		NameAndType(Clazz::doNameAndType_info),
+		Thirteen(CONSTANT::invalid),
+		Fourteen(CONSTANT::invalid),
+		MethodHandle(Clazz::doMethodHandle_info),
+		MethodType(Clazz::doMethodType_info),
+		Seventeen(CONSTANT::invalid),
+		InvokeDynamic(Clazz::doInvokeDynamic_info),
+		Module(Clazz::doModule_info),
+		Package(Clazz::doPackage_info);
 
-		CONSTANT(int skip) {
-			this.skip = skip;
+		private final ConstantInfo info;
+		private final int			width;
+
+		CONSTANT(ConstantInfo info) {
+			this.info = requireNonNull(info);
+			// For some insane optimization reason,
+			// the Long(5) and Double(6) entries take two slots in the
+			// constant pool. See 4.4.5
+			int value = ordinal();
+			width = ((value == 5) || (value == 6)) ? 2 : 1;
 		}
 
-		CONSTANT() {
-			this.skip = -1;
+		int parse(Clazz c, DataInput in, int poolIndex) throws IOException {
+			info.accept(c, this, in, poolIndex);
+			return width;
 		}
 
-		public int skip() {
-			return skip;
+		private static void invalid(Clazz c, CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+			throw new IOException("Invalid constant pool tag " + tag.ordinal());
 		}
 	}
 
@@ -486,8 +498,8 @@ public class Clazz {
 	Deque<ClassDataCollector>				cds				= new LinkedList<>();
 
 	TypeRef									className;
-	Object									pool[];
-	int										intPool[];
+	Object[]								pool;
+	int[]									intPool;
 	Set<PackageRef>							imports			= Create.set();
 	String									path;
 	int										minor			= 0;
@@ -572,66 +584,13 @@ public class Clazz {
 		intPool = new int[count];
 
 		CONSTANT[] tags = CONSTANT.values();
-		process: for (int poolIndex = 1; poolIndex < count; poolIndex++) {
+		for (int poolIndex = 1; poolIndex < count;) {
 			int tagValue = in.readUnsignedByte();
 			if (tagValue >= tags.length) {
 				throw new IOException("Unrecognized constant pool tag value " + tagValue);
 			}
 			CONSTANT tag = tags[tagValue];
-			switch (tag) {
-				case Zero :
-					break process;
-				case Utf8 :
-					constantUtf8(in, poolIndex);
-					break;
-				case Integer :
-					constantInteger(in, poolIndex);
-					break;
-				case Float :
-					constantFloat(in, poolIndex);
-					break;
-				// For some insane optimization reason,
-				// the long and double entries take two slots in the
-				// constant pool. See 4.4.5
-				case Long :
-					constantLong(in, poolIndex);
-					poolIndex++;
-					break;
-				case Double :
-					constantDouble(in, poolIndex);
-					poolIndex++;
-					break;
-				case Class :
-					constantClass(in, poolIndex);
-					break;
-				case String :
-					constantString(in, poolIndex);
-					break;
-				case Fieldref :
-				case Methodref :
-				case InterfaceMethodref :
-					ref(in, poolIndex);
-					break;
-				case NameAndType :
-					nameAndType(in, poolIndex, tag);
-					break;
-				case MethodHandle :
-					methodHandle(in, poolIndex, tag);
-					break;
-				case MethodType :
-					methodType(in, poolIndex, tag);
-					break;
-				case InvokeDynamic :
-					invokeDynamic(in, poolIndex, tag);
-					break;
-				default :
-					int skip = tag.skip();
-					if (skip == -1) {
-						throw new IOException("Invalid tag " + tag);
-					}
-					in.skipBytes(skip);
-					break;
-			}
+			poolIndex += tag.parse(this, in, poolIndex);
 		}
 
 		pool(pool, intPool);
@@ -825,133 +784,99 @@ public class Clazz {
 		}
 	}
 
-	private void constantFloat(DataInput in, int poolIndex) throws IOException {
+	private void pool(@SuppressWarnings("unused") Object[] pool, @SuppressWarnings("unused") int[] intPool) {}
+
+	void doUtf8_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		String name = in.readUTF();
+		pool[poolIndex] = name;
+	}
+
+	void doInteger_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		intPool[poolIndex] = in.readInt();
+		if (cd != null)
+			pool[poolIndex] = intPool[poolIndex];
+	}
+
+	void doFloat_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
 		if (cd != null)
 			pool[poolIndex] = in.readFloat(); // ALU
 		else
 			in.skipBytes(4);
 	}
 
-	private void constantInteger(DataInput in, int poolIndex) throws IOException {
-		intPool[poolIndex] = in.readInt();
-		if (cd != null)
-			pool[poolIndex] = intPool[poolIndex];
-	}
-
-	private void pool(@SuppressWarnings("unused") Object[] pool, @SuppressWarnings("unused") int[] intPool) {}
-
-	/**
-	 * @param in
-	 * @param poolIndex
-	 * @param tag
-	 * @throws IOException
-	 */
-	private void nameAndType(DataInput in, int poolIndex, CONSTANT tag) throws IOException {
-		int name_index = in.readUnsignedShort();
-		int descriptor_index = in.readUnsignedShort();
-		pool[poolIndex] = new Assoc(tag, name_index, descriptor_index);
-	}
-
-	/**
-	 * @param in
-	 * @param poolIndex
-	 * @param tag
-	 * @throws IOException
-	 */
-	private void methodType(DataInput in, int poolIndex, CONSTANT tag) throws IOException {
-		int descriptor_index = in.readUnsignedShort();
-		pool[poolIndex] = new Assoc(tag, 0, descriptor_index);
-	}
-
-	/**
-	 * @param in
-	 * @param poolIndex
-	 * @param tag
-	 * @throws IOException
-	 */
-	private void methodHandle(DataInput in, int poolIndex, CONSTANT tag) throws IOException {
-		int reference_kind = in.readUnsignedByte();
-		int reference_index = in.readUnsignedShort();
-		pool[poolIndex] = new Assoc(tag, reference_kind, reference_index);
-	}
-
-	/**
-	 * @param in
-	 * @param poolIndex
-	 * @param tag
-	 * @throws IOException
-	 */
-	private void invokeDynamic(DataInput in, int poolIndex, CONSTANT tag) throws IOException {
-		int bootstrap_method_attr_index = in.readUnsignedShort();
-		int name_and_type_index = in.readUnsignedShort();
-		pool[poolIndex] = new Assoc(tag, bootstrap_method_attr_index, name_and_type_index);
-	}
-
-	/**
-	 * @param in
-	 * @param poolIndex
-	 * @throws IOException
-	 */
-	private void ref(DataInput in, int poolIndex) throws IOException {
-		int class_index = in.readUnsignedShort();
-		int name_and_type_index = in.readUnsignedShort();
-		pool[poolIndex] = new Assoc(CONSTANT.Methodref, class_index, name_and_type_index);
-	}
-
-	/**
-	 * @param in
-	 * @param poolIndex
-	 * @throws IOException
-	 */
-	private void constantString(DataInput in, int poolIndex) throws IOException {
-		int string_index = in.readUnsignedShort();
-		intPool[poolIndex] = string_index;
-	}
-
-	/**
-	 * @param in
-	 * @param poolIndex
-	 * @throws IOException
-	 */
-	private void constantClass(DataInput in, int poolIndex) throws IOException {
-		int class_index = in.readUnsignedShort();
-		intPool[poolIndex] = class_index;
-		ClassConstant c = new ClassConstant(class_index);
-		pool[poolIndex] = c;
-	}
-
-	/**
-	 * @param in
-	 * @throws IOException
-	 */
-	private void constantDouble(DataInput in, int poolIndex) throws IOException {
-		if (cd != null)
-			pool[poolIndex] = in.readDouble();
-		else
-			in.skipBytes(8);
-	}
-
-	/**
-	 * @param in
-	 * @throws IOException
-	 */
-	private void constantLong(DataInput in, int poolIndex) throws IOException {
+	void doLong_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
 		if (cd != null) {
 			pool[poolIndex] = in.readLong();
 		} else
 			in.skipBytes(8);
 	}
 
-	/**
-	 * @param in
-	 * @param poolIndex
-	 * @throws IOException
-	 */
-	private void constantUtf8(DataInput in, int poolIndex) throws IOException {
-		// CONSTANT_Utf8
+	void doDouble_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		if (cd != null)
+			pool[poolIndex] = in.readDouble();
+		else
+			in.skipBytes(8);
+	}
 
-		String name = in.readUTF();
-		pool[poolIndex] = name;
+	void doClass_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int class_index = in.readUnsignedShort();
+		intPool[poolIndex] = class_index;
+		ClassConstant c = new ClassConstant(class_index);
+		pool[poolIndex] = c;
+	}
+
+	void doString_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int string_index = in.readUnsignedShort();
+		intPool[poolIndex] = string_index;
+	}
+
+	void doFieldref_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int class_index = in.readUnsignedShort();
+		int name_and_type_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, class_index, name_and_type_index);
+	}
+
+	void doMethodref_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int class_index = in.readUnsignedShort();
+		int name_and_type_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, class_index, name_and_type_index);
+	}
+
+	void doInterfaceMethodref_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int class_index = in.readUnsignedShort();
+		int name_and_type_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, class_index, name_and_type_index);
+	}
+
+	void doNameAndType_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int name_index = in.readUnsignedShort();
+		int descriptor_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, name_index, descriptor_index);
+	}
+
+	void doMethodHandle_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int reference_kind = in.readUnsignedByte();
+		int reference_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, reference_kind, reference_index);
+	}
+
+	void doMethodType_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int descriptor_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, 0, descriptor_index);
+	}
+
+	void doInvokeDynamic_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int bootstrap_method_attr_index = in.readUnsignedShort();
+		int name_and_type_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, bootstrap_method_attr_index, name_and_type_index);
+	}
+
+	void doModule_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		in.skipBytes(2);
+	}
+
+	void doPackage_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		in.skipBytes(2);
 	}
 
 	/**
@@ -1006,7 +931,6 @@ public class Clazz {
 	private void doAttributes(DataInput in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		int attributesCount = in.readUnsignedShort();
 		for (int j = 0; j < attributesCount; j++) {
-			// skip name CONSTANT_Utf8 pointer
 			doAttribute(in, member, crawl, access_flags);
 		}
 	}
