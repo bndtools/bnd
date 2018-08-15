@@ -967,24 +967,29 @@ public class Clazz {
 		for (int i = 1; i < pool.length; i++) {
 			if (pool[i] instanceof Assoc) {
 				Assoc methodref = (Assoc) pool[i];
-				if (methodref.tag == CONSTANT.Methodref) {
-					// Method ref
-					int class_index = methodref.a;
-					int class_name_index = intPool[class_index];
-					if (clazz.equals(pool[class_name_index])) {
-						int name_and_type_index = methodref.b;
-						Assoc name_and_type = (Assoc) pool[name_and_type_index];
-						if (name_and_type.tag == CONSTANT.NameAndType) {
-							// Name and Type
-							int name_index = name_and_type.a;
-							int type_index = name_and_type.b;
-							if (methodname.equals(pool[name_index])) {
-								if (descriptor.equals(pool[type_index])) {
-									return i;
+				switch (methodref.tag) {
+					case Methodref :
+					case InterfaceMethodref :
+						// Method ref
+						int class_index = methodref.a;
+						int class_name_index = intPool[class_index];
+						if (clazz.equals(pool[class_name_index])) {
+							int name_and_type_index = methodref.b;
+							Assoc name_and_type = (Assoc) pool[name_and_type_index];
+							if (name_and_type.tag == CONSTANT.NameAndType) {
+								// Name and Type
+								int name_index = name_and_type.a;
+								int type_index = name_and_type.b;
+								if (methodname.equals(pool[name_index])) {
+									if (descriptor.equals(pool[type_index])) {
+										return i;
+									}
 								}
 							}
 						}
-					}
+						break;
+					default :
+						break;
 				}
 			}
 		}
@@ -2127,24 +2132,29 @@ public class Clazz {
 		Object o = pool[methodRefPoolIndex];
 		if (o instanceof Assoc) {
 			Assoc assoc = (Assoc) o;
-			if (assoc.tag == CONSTANT.Methodref) {
-				int string_index = intPool[assoc.a];
-				TypeRef className = analyzer.getTypeRef((String) pool[string_index]);
-				int name_and_type_index = assoc.b;
-				Assoc name_and_type = (Assoc) pool[name_and_type_index];
-				if (name_and_type.tag == CONSTANT.NameAndType) {
-					// Name and Type
-					int name_index = name_and_type.a;
-					int type_index = name_and_type.b;
-					String method = (String) pool[name_index];
-					String descriptor = (String) pool[type_index];
-					cd.referenceMethod(access, className, method, descriptor);
-				} else
+			switch (assoc.tag) {
+				case Methodref :
+				case InterfaceMethodref :
+					int string_index = intPool[assoc.a];
+					TypeRef className = analyzer.getTypeRef((String) pool[string_index]);
+					int name_and_type_index = assoc.b;
+					Assoc name_and_type = (Assoc) pool[name_and_type_index];
+					if (name_and_type.tag == CONSTANT.NameAndType) {
+						// Name and Type
+						int name_index = name_and_type.a;
+						int type_index = name_and_type.b;
+						String method = (String) pool[name_index];
+						String descriptor = (String) pool[type_index];
+						cd.referenceMethod(access, className, method, descriptor);
+					} else {
+						throw new IllegalArgumentException(
+							"Invalid class file (or parsing is wrong), assoc is not type + name (12)");
+					}
+					break;
+				default :
 					throw new IllegalArgumentException(
-						"Invalid class file (or parsing is wrong), assoc is not type + name (12)");
-			} else
-				throw new IllegalArgumentException(
-					"Invalid class file (or parsing is wrong), Assoc is not method ref! (10)");
+						"Invalid class file (or parsing is wrong), Assoc is not method ref! (10)");
+			}
 		} else
 			throw new IllegalArgumentException(
 				"Invalid class file (or parsing is wrong), Not an assoc at a method ref");
