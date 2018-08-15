@@ -1,5 +1,4 @@
 -runfw: org.apache.felix.framework
 -runee: JavaSE-1.8
--runbundles: printAndExit
+
 -runrequires: osgi.identity;filter:='(osgi.identity=printAndExit)'
-Bundle-Version: 1.0.0

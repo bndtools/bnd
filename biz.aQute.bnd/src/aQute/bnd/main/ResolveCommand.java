@@ -1,6 +1,7 @@
 package aQute.bnd.main;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,6 +27,8 @@ import aQute.bnd.build.model.conversions.CollectionFormatter;
 import aQute.bnd.build.model.conversions.Converter;
 import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.main.bnd.HandledProjectWorkspaceOptions;
+import aQute.bnd.main.bnd.ProjectWorkspaceOptions;
 import aQute.bnd.main.bnd.projectOptions;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
@@ -245,49 +248,30 @@ public class ResolveCommand extends Processor {
 		"\n  ", new HeaderClauseFormatter(), "", "  ", "");
 
 	@Arguments(arg = "<path>...")
-	interface ResolveOptions extends Options {
-		@Description("Use the following workspace")
-		String workspace();
-
-		@Description("Specify the project directory if not in a project directory")
-		String project();
+	interface ResolveOptions extends ProjectWorkspaceOptions {
 
 		@Description("Print out the bundles")
 		boolean bundles();
 
 		@Description("Write -runbundles instruction to the file")
 		boolean write();
+
 	}
 
 	@Description("Resolve a bndrun file")
 	public void _resolve(ResolveOptions options) throws Exception {
-		Project project = bnd.getProject(options.project());
-		Workspace ws = null;
 
-		if (options.workspace() != null) {
-			File file = bnd.getFile(options.workspace());
-			if (file.isDirectory()) {
-				ws = Workspace.getWorkspace(file);
-				if (!ws.isValid()) {
-					error("Invalid workspace %s", file);
-					return;
-				}
-			} else {
-				error("Workspace directory %s is not a directory", file);
-				return;
+		HandledProjectWorkspaceOptions hwpo = bnd.handleOptions(options, Arrays.asList(aQute.bnd.main.bnd.BNDRUN_ALL));
+
+		for (File f : hwpo.files()) {
+			if (options.verbose()) {
+				System.out.println("resolve " + f);
 			}
-		} else {
-			if (project != null)
-				ws = project.getWorkspace();
-		}
-
-		List<String> paths = options._arguments();
-		for (String path : paths) {
-			File f = getFile(path);
 			if (!f.isFile()) {
+				System.out.println("nofile " + f);
 				error("Missing bndrun file: %s", f);
 			} else {
-				try (Bndrun bndrun = Bndrun.createBndrun(ws, f)) {
+				try (Bndrun bndrun = Bndrun.createBndrun(hwpo.workspace(), f)) {
 					try {
 						String runbundles = bndrun.resolve(false, options.write(), runbundlesFormatter);
 						if (bndrun.isOk()) {
@@ -301,6 +285,7 @@ public class ResolveCommand extends Processor {
 						exception(e, "Failed to resolve %s: %s", f, e);
 					}
 					getInfo(bndrun);
+
 				}
 			}
 		}
