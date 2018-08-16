@@ -515,8 +515,6 @@ public class Clazz {
 	final Analyzer							analyzer;
 	String									classSignature;
 
-	private boolean							detectLdc;
-
 	private Map<String, Object>				defaults;
 
 	public Clazz(Analyzer analyzer, String path, Resource resource) {
@@ -590,14 +588,8 @@ public class Clazz {
 		pool(pool, intPool);
 
 		// All name& type and class constant records contain descriptors we must
-		// treat
-		// as references, though not API
-		int index = -1;
+		// treat as references, though not API
 		for (Object o : pool) {
-			index++;
-			if (o == null)
-				continue;
-
 			if (o instanceof Assoc) {
 				Assoc assoc = (Assoc) o;
 				switch (assoc.tag) {
@@ -614,22 +606,6 @@ public class Clazz {
 					default :
 						break;
 				}
-			}
-		}
-
-		//
-		// There is a bug in J8 compiler that leaves an
-		// orphan class constant. So when we have a CC that
-		// is not referenced by fieldrefs, method refs, or other
-		// refs then we need to crawl the byte code.
-		//
-		index = -1;
-		for (Object o : pool) {
-			index++;
-			if (o instanceof ClassConstant) {
-				ClassConstant cc = (ClassConstant) o;
-				if (cc.referred == false)
-					detectLdc = true;
 			}
 		}
 
@@ -699,8 +675,9 @@ public class Clazz {
 					crawl = true;
 				}
 				if (cd != null) {
-					last = new FieldDef(access_flags, name, pool[descriptor_index].toString());
-					cd.field(last);
+					FieldDef fdef = new FieldDef(access_flags, name, pool[descriptor_index].toString());
+					last = fdef;
+					cd.field(fdef);
 				}
 
 				referTo(descriptor_index, access_flags);
@@ -716,7 +693,7 @@ public class Clazz {
 			if (crawl) {
 				forName = findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
 				class$ = findMethodReference(className.getBinary(), "class$", "(Ljava/lang/String;)Ljava/lang/Class;");
-			} else if (major == 48) {
+			} else if (major == JAVA.JDK1_4.major) {
 				forName = findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
 				if (forName > 0) {
 					crawl = true;
@@ -730,9 +707,20 @@ public class Clazz {
 			// it has also become less important
 			// however, jDK8 has a bug that leaves an orphan ClassConstnat
 			// so if we have those, we need to also crawl the byte codes.
-			// if (major >= JAVA.OpenJDK7.major)
-
-			crawl |= detectLdc;
+			if (!crawl) {
+				// This loop is overeager since we have not processed exceptions
+				// and bootstrap method arguments, so we may crawl when we do
+				// not need to.
+				for (Object o : pool) {
+					if (o instanceof ClassConstant) {
+						ClassConstant cc = (ClassConstant) o;
+						if (cc.referred == false) {
+							crawl = true;
+							break;
+						}
+					}
+				}
+			}
 
 			//
 			// Handle the methods
@@ -947,7 +935,7 @@ public class Clazz {
 	private void doAttribute(DataInput in, ElementType member, boolean crawl, int access_flags) throws Exception {
 		final int attribute_name_index = in.readUnsignedShort();
 		final String attributeName = (String) pool[attribute_name_index];
-		final long attribute_length = Integer.toUnsignedLong(in.readInt());
+		final int attribute_length = in.readInt();
 		switch (attributeName) {
 			case "Deprecated" :
 				if (cd != null)
@@ -1012,10 +1000,10 @@ public class Clazz {
 				doNestMembers(in);
 				break;
 			default :
-				if (attribute_length > Integer.MAX_VALUE) {
+				if (attribute_length < 0) {
 					throw new IllegalArgumentException("Attribute > 2Gb");
 				}
-				in.skipBytes((int) attribute_length);
+				in.skipBytes(attribute_length);
 				break;
 		}
 	}
@@ -1167,10 +1155,20 @@ public class Clazz {
 		/* int max_stack = */in.readUnsignedShort();
 		/* int max_locals = */in.readUnsignedShort();
 		int code_length = in.readInt();
-		byte code[] = new byte[code_length];
-		in.readFully(code, 0, code_length);
-		if (crawl)
+		if (crawl) {
+			ByteBuffer code;
+			if (in instanceof ByteBufferDataInput) {
+				ByteBufferDataInput bbin = (ByteBufferDataInput) in;
+				code = bbin.slice(code_length);
+			} else {
+				byte array[] = new byte[code_length];
+				in.readFully(array, 0, code_length);
+				code = ByteBuffer.wrap(array, 0, code_length);
+			}
 			crawl(code);
+		} else {
+			in.skipBytes(code_length);
+		}
 		int exception_table_length = in.readUnsignedShort();
 		for (int i = 0; i < exception_table_length; i++) {
 			int start_pc = in.readUnsignedShort();
@@ -1187,23 +1185,22 @@ public class Clazz {
 	 * 
 	 * @param code
 	 */
-	private void crawl(byte[] code) {
-		ByteBuffer bb = ByteBuffer.wrap(code);
+	private void crawl(ByteBuffer bb) {
 		int lastReference = -1;
 
 		while (bb.hasRemaining()) {
 			int instruction = Byte.toUnsignedInt(bb.get());
 			switch (instruction) {
-				case OpCodes.ldc :
+				case OpCodes.ldc : {
 					lastReference = Byte.toUnsignedInt(bb.get());
 					classConstRef(lastReference);
 					break;
-
-				case OpCodes.ldc_w :
+				}
+				case OpCodes.ldc_w : {
 					lastReference = Short.toUnsignedInt(bb.getShort());
 					classConstRef(lastReference);
 					break;
-
+				}
 				case OpCodes.anewarray :
 				case OpCodes.checkcast :
 				case OpCodes.instanceof_ :
@@ -1225,21 +1222,21 @@ public class Clazz {
 				case OpCodes.invokespecial : {
 					int mref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
-						getMethodDef(0, mref);
+						referenceMethod(0, mref);
 					break;
 				}
 
 				case OpCodes.invokevirtual : {
 					int mref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
-						getMethodDef(0, mref);
+						referenceMethod(0, mref);
 					break;
 				}
 
 				case OpCodes.invokeinterface : {
 					int mref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
-						getMethodDef(0, mref);
+						referenceMethod(0, mref);
 					bb.get(); // read past the 'count' operand
 					bb.get(); // read past the reserved space for future operand
 					break;
@@ -1248,7 +1245,7 @@ public class Clazz {
 				case OpCodes.invokestatic : {
 					int methodref = Short.toUnsignedInt(bb.getShort());
 					if (cd != null)
-						getMethodDef(0, methodref);
+						referenceMethod(0, methodref);
 
 					if ((methodref == forName || methodref == class$) && lastReference != -1
 						&& pool[intPool[lastReference]] instanceof String) {
@@ -1266,41 +1263,40 @@ public class Clazz {
 				 * 3/5: opcode, indexbyte1, indexbyte2 or iinc, indexbyte1,
 				 * indexbyte2, countbyte1, countbyte2
 				 */
-				case OpCodes.wide :
+				case OpCodes.wide : {
 					int opcode = Byte.toUnsignedInt(bb.get());
-					bb.getShort(); // at least 3 bytes
-					if (opcode == OpCodes.iinc)
-						bb.getShort();
+					bb.position(bb.position() + (opcode == OpCodes.iinc ? 4 : 2));
 					break;
-
-				case OpCodes.tableswitch :
+				}
+				case OpCodes.tableswitch : {
 					// Skip to place divisible by 4
-					while ((bb.position() & 0x3) != 0)
-						bb.get();
-					/* int deflt = */
-					bb.getInt();
+					int rem = bb.position() % 4;
+					if (rem != 0) {
+						bb.position(bb.position() + 4 - rem);
+					}
+					int deflt = bb.getInt();
 					int low = bb.getInt();
 					int high = bb.getInt();
 					bb.position(bb.position() + (high - low + 1) * 4);
 					lastReference = -1;
 					break;
-
-				case OpCodes.lookupswitch :
+				}
+				case OpCodes.lookupswitch : {
 					// Skip to place divisible by 4
-					while ((bb.position() & 0x3) != 0) {
-						int n = bb.get();
-						assert n == 0; // x
+					int rem = bb.position() % 4;
+					if (rem != 0) {
+						bb.position(bb.position() + 4 - rem);
 					}
-					/* deflt = */
 					int deflt = bb.getInt();
 					int npairs = bb.getInt();
 					bb.position(bb.position() + npairs * 8);
 					lastReference = -1;
 					break;
-
-				default :
+				}
+				default : {
 					lastReference = -1;
 					bb.position(bb.position() + OpCodes.OFFSETS[instruction]);
+				}
 			}
 		}
 	}
@@ -1668,7 +1664,7 @@ public class Clazz {
 
 	/*
 	 * Nest class references are only used during access checks. So we do not
-	 * need to record then as class references here.
+	 * need to record them as class references here.
 	 */
 	private void doNestHost(DataInput in) throws IOException {
 		final int host_class_index = in.readUnsignedShort();
@@ -1676,7 +1672,7 @@ public class Clazz {
 
 	/*
 	 * Nest class references are only used during access checks. So we do not
-	 * need to record then as class references here.
+	 * need to record them as class references here.
 	 */
 	private void doNestMembers(DataInput in) throws IOException {
 		final int number_of_classes = in.readUnsignedShort();
@@ -2043,7 +2039,7 @@ public class Clazz {
 	/**
 	 * Called when crawling the byte code and a method reference is found
 	 */
-	void getMethodDef(int access, int methodRefPoolIndex) {
+	private void referenceMethod(int access, int methodRefPoolIndex) {
 		if (methodRefPoolIndex == 0)
 			return;
 
@@ -2054,7 +2050,7 @@ public class Clazz {
 				case Methodref :
 				case InterfaceMethodref : {
 					int string_index = intPool[assoc.a];
-					TypeRef className = analyzer.getTypeRef((String) pool[string_index]);
+					TypeRef class_name = analyzer.getTypeRef((String) pool[string_index]);
 					int name_and_type_index = assoc.b;
 					Assoc name_and_type = (Assoc) pool[name_and_type_index];
 					if (name_and_type.tag == CONSTANT.NameAndType) {
@@ -2063,7 +2059,7 @@ public class Clazz {
 						int type_index = name_and_type.b;
 						String method = (String) pool[name_index];
 						String descriptor = (String) pool[type_index];
-						cd.referenceMethod(access, className, method, descriptor);
+						cd.referenceMethod(access, class_name, method, descriptor);
 					} else {
 						throw new IllegalArgumentException(
 							"Invalid class file (or parsing is wrong), assoc is not type + name (12)");
@@ -2284,15 +2280,13 @@ public class Clazz {
 
 	public Map<String, Object> getDefaults() throws Exception {
 		if (defaults == null) {
-			defaults = new HashMap<>();
-
-			class DefaultReader extends ClassDataCollector {
+			Map<String, Object> map = defaults = new HashMap<>();
+			parseClassFileWithCollector(new ClassDataCollector() {
 				@Override
 				public void annotationDefault(MethodDef last, Object value) {
-					defaults.put(last.name, value);
+					map.put(last.name, value);
 				}
-			}
-			this.parseClassFileWithCollector(new DefaultReader());
+			});
 		}
 		return defaults;
 	}
