@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Spliterator;
+import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -50,7 +51,7 @@ public class Clazz {
 	static Pattern				METHOD_DESCRIPTOR	= Pattern.compile("(.*)\\)(.+)");
 
 	public class ClassConstant {
-		int				cname;
+		final int		cname;
 		public boolean	referred;
 
 		public ClassConstant(int class_index) {
@@ -247,15 +248,15 @@ public class Clazz {
 	final static int					ACC_MODULE		= 0x8000;
 
 	static protected class Assoc {
+		final CONSTANT	tag;
+		final int		a;
+		final int		b;
+
 		Assoc(CONSTANT tag, int a, int b) {
 			this.tag = tag;
 			this.a = a;
 			this.b = b;
 		}
-
-		CONSTANT	tag;
-		int			a;
-		int			b;
 
 		@Override
 		public String toString() {
@@ -446,8 +447,8 @@ public class Clazz {
 	}
 
 	public class TypeDef extends Def {
-		TypeRef	type;
-		boolean	interf;
+		final TypeRef	type;
+		final boolean	interf;
 
 		public TypeDef(TypeRef type, boolean interf) {
 			super(Modifier.PUBLIC);
@@ -481,14 +482,7 @@ public class Clazz {
 		}
 	}
 
-	public static final Comparator<Clazz>	NAME_COMPARATOR	= new Comparator<Clazz>() {
-
-																@Override
-																public int compare(Clazz a, Clazz b) {
-																	return a.className.compareTo(b.className);
-																}
-
-															};
+	public static final Comparator<Clazz>	NAME_COMPARATOR	= (Clazz a, Clazz b) -> a.className.compareTo(b.className);
 
 	boolean									hasRuntimeAnnotations;
 	boolean									hasClassAnnotations;
@@ -704,8 +698,10 @@ public class Clazz {
 				if (name.startsWith("class$") || name.startsWith("$class$")) {
 					crawl = true;
 				}
-				if (cd != null)
-					cd.field(last = new FieldDef(access_flags, name, pool[descriptor_index].toString()));
+				if (cd != null) {
+					last = new FieldDef(access_flags, name, pool[descriptor_index].toString());
+					cd.field(last);
+				}
 
 				referTo(descriptor_index, access_flags);
 				doAttributes(in, ElementType.FIELD, false, access_flags);
@@ -748,9 +744,8 @@ public class Clazz {
 				int descriptor_index = in.readUnsignedShort();
 				String name = pool[name_index].toString();
 				String descriptor = pool[descriptor_index].toString();
-				MethodDef mdef = null;
 				if (cd != null) {
-					mdef = new MethodDef(access_flags, name, descriptor);
+					MethodDef mdef = new MethodDef(access_flags, name, descriptor);
 					last = mdef;
 					cd.method(mdef);
 				}
@@ -900,7 +895,7 @@ public class Clazz {
 				Assoc methodref = (Assoc) pool[i];
 				switch (methodref.tag) {
 					case Methodref :
-					case InterfaceMethodref :
+					case InterfaceMethodref : {
 						// Method ref
 						int class_index = methodref.a;
 						int class_name_index = intPool[class_index];
@@ -919,6 +914,7 @@ public class Clazz {
 							}
 						}
 						break;
+					}
 					default :
 						break;
 				}
@@ -1010,7 +1006,7 @@ public class Clazz {
 				doStackMapTable(in);
 				break;
 			default :
-				if (attribute_length > 0x7FFFFFFF) {
+				if (attribute_length > Integer.MAX_VALUE) {
 					throw new IllegalArgumentException("Attribute > 2Gb");
 				}
 				in.skipBytes((int) attribute_length);
@@ -1189,7 +1185,7 @@ public class Clazz {
 		ByteBuffer bb = ByteBuffer.wrap(code);
 		int lastReference = -1;
 
-		while (bb.remaining() > 0) {
+		while (bb.hasRemaining()) {
 			int instruction = Byte.toUnsignedInt(bb.get());
 			switch (instruction) {
 				case OpCodes.ldc :
@@ -1856,12 +1852,10 @@ public class Clazz {
 	}
 
 	private Stream<Clazz> hierarchyStream(Analyzer analyzer) {
-		return StreamSupport.stream(new Spliterator<Clazz>() {
-			private Clazz clazz;
-			{
-				requireNonNull(analyzer);
-				clazz = Clazz.this;
-			}
+		requireNonNull(analyzer);
+		Spliterator<Clazz> spliterator = new AbstractSpliterator<Clazz>(Long.MAX_VALUE,
+			Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL) {
+			private Clazz clazz = Clazz.this;
 
 			@Override
 			public boolean tryAdvance(Consumer<? super Clazz> action) {
@@ -1886,36 +1880,19 @@ public class Clazz {
 				}
 				return true;
 			}
-
-			@Override
-			public Spliterator<Clazz> trySplit() {
-				return null;
-			}
-
-			@Override
-			public long estimateSize() {
-				return Long.MAX_VALUE;
-			}
-
-			@Override
-			public int characteristics() {
-				return Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL;
-			}
-		}, false);
+		};
+		return StreamSupport.stream(spliterator, false);
 	}
 
 	private Stream<TypeRef> typeStream(Analyzer analyzer,
 		Function<? super Clazz, Collection<? extends TypeRef>> func,
 		Set<TypeRef> visited) {
-		return StreamSupport.stream(new Spliterator<TypeRef>() {
-			private final Deque<TypeRef>	queue;
-			private final Set<TypeRef>		seen;
-			{
-				requireNonNull(analyzer);
-				// initialize queue from this class
-				queue = new ArrayDeque<>(requireNonNull(func).apply(Clazz.this));
-				seen = (visited != null) ? visited : new HashSet<>();
-			}
+		requireNonNull(analyzer);
+		requireNonNull(func);
+		Spliterator<TypeRef> spliterator = new AbstractSpliterator<TypeRef>(Long.MAX_VALUE,
+			Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL) {
+			private final Deque<TypeRef>	queue	= new ArrayDeque<>(func.apply(Clazz.this));
+			private final Set<TypeRef>		seen	= (visited != null) ? visited : new HashSet<>();
 
 			@Override
 			public boolean tryAdvance(Consumer<? super TypeRef> action) {
@@ -1945,22 +1922,8 @@ public class Clazz {
 				}
 				return true;
 			}
-
-			@Override
-			public Spliterator<TypeRef> trySplit() {
-				return null;
-			}
-
-			@Override
-			public long estimateSize() {
-				return Long.MAX_VALUE;
-			}
-
-			@Override
-			public int characteristics() {
-				return Spliterator.DISTINCT | Spliterator.ORDERED | Spliterator.NONNULL;
-			}
-		}, false);
+		};
+		return StreamSupport.stream(spliterator, false);
 	}
 
 	public boolean is(QUERY query, Instruction instr, Analyzer analyzer) throws Exception {
@@ -2064,7 +2027,7 @@ public class Clazz {
 			Assoc assoc = (Assoc) o;
 			switch (assoc.tag) {
 				case Methodref :
-				case InterfaceMethodref :
+				case InterfaceMethodref : {
 					int string_index = intPool[assoc.a];
 					TypeRef className = analyzer.getTypeRef((String) pool[string_index]);
 					int name_and_type_index = assoc.b;
@@ -2081,6 +2044,7 @@ public class Clazz {
 							"Invalid class file (or parsing is wrong), assoc is not type + name (12)");
 					}
 					break;
+				}
 				default :
 					throw new IllegalArgumentException(
 						"Invalid class file (or parsing is wrong), Assoc is not method ref! (10)");
