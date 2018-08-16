@@ -1005,6 +1005,12 @@ public class Clazz {
 			case "StackMapTable" :
 				doStackMapTable(in);
 				break;
+			case "NestHost" :
+				doNestHost(in);
+				break;
+			case "NestMembers" :
+				doNestMembers(in);
+				break;
 			default :
 				if (attribute_length > Integer.MAX_VALUE) {
 					throw new IllegalArgumentException("Attribute > 2Gb");
@@ -1657,6 +1663,25 @@ public class Clazz {
 			case 8 :// ITEM_Uninitialized
 				final int offset = in.readUnsignedShort();
 				break;
+		}
+	}
+
+	/*
+	 * Nest class references are only used during access checks. So we do not
+	 * need to record then as class references here.
+	 */
+	private void doNestHost(DataInput in) throws IOException {
+		final int host_class_index = in.readUnsignedShort();
+	}
+
+	/*
+	 * Nest class references are only used during access checks. So we do not
+	 * need to record then as class references here.
+	 */
+	private void doNestMembers(DataInput in) throws IOException {
+		final int number_of_classes = in.readUnsignedShort();
+		for (int v = 0; v < number_of_classes; v++) {
+			final int member_class_index = in.readUnsignedShort();
 		}
 	}
 
