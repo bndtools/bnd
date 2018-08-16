@@ -1598,8 +1598,7 @@ public class Clazz {
 	}
 
 	/*
-	 * We don't currently process BootstrapMethods. We walk the data structure
-	 * to consume the attribute.
+	 * Bootstrap method arguments can be class constants.
 	 */
 	private void doBootstrapMethods(DataInput in) throws IOException {
 		final int num_bootstrap_methods = in.readUnsignedShort();
@@ -1608,6 +1607,7 @@ public class Clazz {
 			final int num_bootstrap_arguments = in.readUnsignedShort();
 			for (int a = 0; a < num_bootstrap_arguments; a++) {
 				final int bootstrap_argument = in.readUnsignedShort();
+				classConstRef(bootstrap_argument);
 			}
 		}
 	}
