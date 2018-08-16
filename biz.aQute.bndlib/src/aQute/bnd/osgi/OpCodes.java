@@ -1167,7 +1167,7 @@ public class OpCodes {
 		// reference index in constant
 		// pool (indexbyte1 << 8 +
 		// indexbyte2)
-		OFFSETS[invokeinterface] = 2; // indexbyte1, indexbyte2,
+		OFFSETS[invokeinterface] = 4; // indexbyte1, indexbyte2,
 		// count, 0 objectref,
 		// [arg1, arg2, ...] ?
 		// invokes an interface
