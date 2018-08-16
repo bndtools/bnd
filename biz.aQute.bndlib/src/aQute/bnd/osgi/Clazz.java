@@ -198,7 +198,7 @@ public class Clazz {
 		Fourteen(CONSTANT::invalid),
 		MethodHandle(Clazz::doMethodHandle_info),
 		MethodType(Clazz::doMethodType_info),
-		Seventeen(CONSTANT::invalid),
+		Dynamic(Clazz::doDynamic_info),
 		InvokeDynamic(Clazz::doInvokeDynamic_info),
 		Module(Clazz::doModule_info),
 		Package(Clazz::doPackage_info);
@@ -863,6 +863,12 @@ public class Clazz {
 	void doMethodType_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
 		int descriptor_index = in.readUnsignedShort();
 		pool[poolIndex] = new Assoc(tag, 0, descriptor_index);
+	}
+
+	void doDynamic_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
+		int bootstrap_method_attr_index = in.readUnsignedShort();
+		int name_and_type_index = in.readUnsignedShort();
+		pool[poolIndex] = new Assoc(tag, bootstrap_method_attr_index, name_and_type_index);
 	}
 
 	void doInvokeDynamic_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
