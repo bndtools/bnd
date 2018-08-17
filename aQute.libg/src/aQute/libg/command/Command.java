@@ -15,8 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -36,7 +36,6 @@ public class Command {
 	Map<String, String>			variables	= new LinkedHashMap<>();
 	long						timeout		= 0;
 	File						cwd			= new File("").getAbsoluteFile();
-	static Timer				timer		= new Timer(Command.class.getName(), true);
 	Process						process;
 	volatile boolean			timedout;
 	String						fullCommand;
@@ -116,30 +115,19 @@ public class Command {
 		process = p.start();
 
 		// Make sure the command will not linger when we go
-		Runnable r = new Runnable() {
-			@Override
-			public void run() {
-				process.destroy();
-			}
-		};
-		Thread hook = new Thread(r, arguments.toString());
+		Thread hook = new Thread(() -> process.destroy(), arguments.toString());
 		Runtime.getRuntime()
 			.addShutdownHook(hook);
-		TimerTask timer = null;
 		final OutputStream stdin = process.getOutputStream();
 		Thread rdInThread = null;
 
+		ScheduledExecutorService scheduler = null;
 		if (timeout != 0) {
-			timer = new TimerTask() {
-				// @Override TODO why did this not work? TimerTask implements
-				// Runnable
-				@Override
-				public void run() {
-					timedout = true;
-					process.destroy();
-				}
-			};
-			Command.timer.schedule(timer, timeout);
+			scheduler = Executors.newScheduledThreadPool(1);
+			scheduler.schedule(() -> {
+				timedout = true;
+				process.destroy();
+			}, timeout, TimeUnit.MILLISECONDS);
 		}
 
 		final AtomicBoolean finished = new AtomicBoolean(false);
@@ -192,8 +180,9 @@ public class Command {
 			cout.join();
 			logger.debug("stdout/stderr streams have finished");
 		} finally {
-			if (timer != null)
-				timer.cancel();
+			if (scheduler != null) {
+				scheduler.shutdownNow();
+			}
 			Runtime.getRuntime()
 				.removeShutdownHook(hook);
 		}
