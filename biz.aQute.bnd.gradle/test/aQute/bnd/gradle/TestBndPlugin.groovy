@@ -178,13 +178,13 @@ class TestBndPlugin extends Specification {
           JarFile executable_jar = new JarFile(executable)
           Attributes executable_manifest = executable_jar.getManifest().getMainAttributes()
           def runpath = executable_manifest.getValue('Embedded-Runpath')
-          runpath =~ /jar\/org\.eclipse\.osgi-3\.12\.50\.v20170928-1321\.jar/
+          runpath =~ /jar\/org\.eclipse\.osgi-3\.13\.0\.v20180409-1500\.jar/
           def launcher = runpath =~ /jar\/biz\.aQute\.launcher.*?\.jar/
           launcher.find()
           executable_jar.getEntry(launcher.group(0))
           executable_jar.getEntry('jar/test.simple.jar')
           executable_jar.getEntry('jar/osgi.enroute.junit.wrapper-4.12.0.201507311000.jar')
-          executable_jar.getEntry('jar/org.eclipse.osgi-3.12.50.v20170928-1321.jar')
+          executable_jar.getEntry('jar/org.eclipse.osgi-3.13.0.v20180409-1500.jar')
           executable_jar.getEntry('launcher.properties')
           UTF8Properties props = new UTF8Properties()
           props.load(executable_jar.getInputStream(executable_jar.getEntry('launcher.properties')), null, new Slf4jReporter(TestBndPlugin.class))
