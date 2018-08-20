@@ -45,6 +45,7 @@ public class DistroCommandTest extends TestCase {
 	@Override
 	protected void setUp() throws Exception {
 		tmp = IO.getFile("generated/tmp");
+		IO.delete(tmp);
 		tmp.mkdirs();
 
 		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class, this.getClass()
@@ -55,6 +56,7 @@ public class DistroCommandTest extends TestCase {
 		Map<String, String> configuration = new HashMap<>();
 		configuration.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 		configuration.put(Constants.FRAMEWORK_STORAGE, new File(tmp, "fwstorage").getAbsolutePath());
+		configuration.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.slf4j");
 		framework = ff.newFramework(configuration);
 		framework.init();
 		framework.start();

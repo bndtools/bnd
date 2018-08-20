@@ -88,12 +88,14 @@ public class TestBndMain extends TestCase {
 	public void testPackageProject() throws Exception {
 		String output = "generated/tmp/export-workspace-project.jar";
 		bnd.mainNoExit(new String[] {
-			"package", "-o", output, "testdata/workspace/p2"
+			"-t", "package", "-o", output, "testdata/workspace/p2"
 		});
 		expectNoError();
 
 		// validate exported jar content
 		try (Jar result = new Jar(new File(output))) {
+			System.out.println(result.getResources()
+				.keySet());
 			expectJarEntry(result, "jar/biz.aQute.launcher-" + version + ".jar");
 			expectJarEntry(result, "jar/org.apache.felix.framework-5.6.10.jar");
 			expectJarEntry(result, "jar/p2.jar");

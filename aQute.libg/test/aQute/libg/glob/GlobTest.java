@@ -1,96 +1,145 @@
 package aQute.libg.glob;
 
+import java.util.regex.Pattern;
+
 import junit.framework.TestCase;
 
 public class GlobTest extends TestCase {
 
+	public void testCaseInsensitive() {
+		match("xx(?i)xx(?i)xx", "xx(?i)xx(?i)xx", "xxXXxx", "xxXxxx", "xxxxxx", "xxxxXX");
+
+	}
+	public void testtail() {
+		match("com.foo.*", "com\\.foo\\..*", "~com.foo", "com.foo.bar");
+	}
+
+	public void testDifferentMappings() {
+
+		match("[\\p{Lower}]", "[\\p{Lower}]", "e", "f", "~B");
+		match("[a-z&&[^bc]]", "[a-z&&[^bc]]", "e", "f", "~b");
+
+		match(".", "\\.", ".", "~x");
+		match("^", "\\^", "^", "~x");
+		match("$", "\\$", "$", "~x");
+		match("@", "\\@", "@", "~x");
+		match("%", "\\%", "%", "~x");
+
+		match("\\.", "\\.", ".", "~x");
+		match("\\^", "\\^", "^", "~x");
+		match("\\$", "\\$", "$", "~x");
+		match("\\@", "\\@", "@", "~x");
+		match("\\%", "\\%", "%", "~x");
+
+		match("(a).", "(a)\\.", "a.", "~ax");
+		match("(a)^", "(a)\\^", "a^", "~ax");
+		match("(a)$", "(a)\\$", "a$", "~ax");
+		match("(a)@", "(a)\\@", "a@", "~ax");
+		match("(a)%", "(a)\\%", "a%", "~ax");
+
+		match("[a].", "[a]\\.", "a.", "~ax");
+		match("[a]^", "[a]\\^", "a^", "~ax");
+		match("[a]$", "[a]\\$", "a$", "~ax");
+		match("[a]@", "[a]\\@", "a@", "~ax");
+		match("[a]%", "[a]\\%", "a%", "~ax");
+
+		match("{a}.", "(?:a)\\.", "a.", "~ax");
+		match("{a}^", "(?:a)\\^", "a^", "~ax");
+		match("{a}$", "(?:a)\\$", "a$", "~ax");
+		match("{a}@", "(?:a)\\@", "a@", "~ax");
+		match("{a}%", "(?:a)\\%", "a%", "~ax");
+
+		match("?", ".", "a", "?");
+		match("(a|b)?", "(a|b)?", "", "a", "b", "~abc");
+		match("[ab]?", "[ab]?");
+		match("{a,b}?", "(?:a|b)?", "", "a", "b");
+		match("{a?,b}?", "(?:a.|b)?", "", "ax", "b");
+		match("(a){1}?", "(a){1}.", "ax", "~a");
+
+		match("*", ".*", "foobar", "");
+		match("(a|b)*", "(a|b)*", "abbbababababa");
+		match("[ab]*", "[ab]*", "abababababa", "~axaaabbabb");
+		match("{a,b}*", "(?:a|b)*", "ababababb", "~axababab");
+		match("{a*,b}?", "(?:a.*|b)?", "", "ax", "b");
+		match("(a){1}*", "(a){1}.*", "a", "ax");
+
+		match("+", "\\+", "+");
+		match("(a|b)+", "(a|b)+", "a", "b", "~");
+		match("[ab]+", "[ab]+", "aaaa", "~");
+		match("{a,b}+", "(?:a|b)+", "abababa", "aaa", "bbb", "~x");
+		match("{a+,b}+", "(?:a\\+|b)+", "a+a+");
+		match("(a){1}+", "(a){1}\\+", "a+");
+
+		match("{a}", "(?:a)", "a");
+		match("(a){1}", "(a){1}", "a", "~aa");
+		match("(a){1,2}", "(a){1,2}", "a", "aa");
+		match("{1,2}", "(?:1|2)", "1", "2");
+	}
+
+	public void testEscape() {
+		match("[*]", "[*]", "*");
+		match("\\*", "\\*", "*");
+		match("\\?", "\\?", "?");
+		match("\\+", "\\+", "+");
+
+		match("\\(x\\)?", "\\(x\\).", "(x)X");
+		match("\\(x\\)+", "\\(x\\)\\+", "(x)+");
+		match("\\(x\\)*", "\\(x\\).*", "(x)foobar");
+
+		match("\\[x\\]?", "\\[x\\].", "[x]X");
+		match("\\[x\\]+", "\\[x\\]\\+", "[x]+");
+		match("\\[x\\]*", "\\[x\\].*", "[x]foobar");
+
+		match("\\{x\\}?", "\\{x\\}.", "{x}X");
+		match("\\{x\\}+", "\\{x\\}\\+", "{x}+");
+		match("\\{x\\}*", "\\{x\\}.*", "{x}foobar");
+	}
+
+	public void testQuoted() {
+		match("abc\\Q?*&%$#\\Edef", "abc\\Q?*&%$#\\Edef", "abc?*&%$#def");
+
+	}
+
+	public void testBracketed() {
+
+		match("[A-F]+", "[A-F]+", "AFFAED");
+
+		match("[*]", "[*]", "*");
+		match("[^x]", "[^x]", "y", "~x");
+		match("[$]", "[$]", "$", "~€");
+		match("[@]", "[@]", "@", "~€");
+		match("[%]", "[%]", "%", "~€");
+
+		match("[?]", "[?]", "?");
+		match("[+]", "[+]", "+");
+		match("[{}]", "[{}]", "{", "}");
+
+		match("[\\\\*]", "[\\\\*]", "*", "\\");
+		match("[\\\\?]", "[\\\\?]", "?", "\\");
+		match("[\\\\+]", "[\\\\+]", "+", "\\");
+		match("[\\\\{}]", "[\\\\{}]", "{", "}");
+	}
+
 	public void testSimple() {
-		Glob glob = new Glob("*foo*");
-		assertTrue(glob.matcher("foo")
-			.matches());
-		assertTrue(glob.matcher("food")
-			.matches());
-		assertTrue(glob.matcher("Xfoo")
-			.matches());
-		assertTrue(glob.matcher("XfooY")
-			.matches());
-		assertFalse(glob.matcher("ood")
-			.matches());
+		match("*foo*", ".*foo.*", "foo", "aaaafooxxx", "food", "Xfood", "~ood");
 	}
 
 	public void testCurlies() {
-		Glob glob = new Glob("xx{abc,def,ghi}xx");
-		assertTrue(glob.matcher("xxabcxx")
-			.matches());
-
-		glob = new Glob("*{.groovy,.java}");
-		assertTrue(glob.matcher("FooBar.java")
-			.matches());
-		assertTrue(glob.matcher("FooBar.groovy")
-			.matches());
+		match("(a){1,2}?", "(a){1,2}.");
+		match("{[a],[b]}", "(?:[a]|[b])", "b");
+		match("{[a]?,[b]}", "(?:[a]?|[b])", "b", "", "a");
+		match("foobar.{java,groovy}", "foobar\\.(?:java|groovy)", "foobar.java", "foobar.groovy",
+			"~foobar.cxx");
+		match("{a,{b,c}}", "(?:a|(?:b|c))", "a", "b", "c");
+		match("{a,{b,{c,d}}}", "(?:a|(?:b|(?:c|d)))", "a", "b", "c", "d");
+		match("{a,b}{1,2}", "(?:a|b){1,2}", "b", "bb", "~bbb");
 	}
 
 	public void testOr() {
-		Glob glob = new Glob("abc|def|ghi");
-		assertTrue(glob.matcher("abc")
-			.matches());
+		match("abc|def|ghi", "abc|def|ghi", "abc", "ghi");
+		match("{abc,def,ghi}", "(?:abc|def|ghi)", "abc", "ghi");
 	}
 
-	public void testGroups() {
-		Glob glob = new Glob("xx(abc|def|ghi)xx");
-		assertTrue(glob.matcher("xxabcxx")
-			.matches());
-
-		glob = new Glob("*(?:.groovy|.java)");
-		assertTrue(glob.matcher("FooBar.java")
-			.matches());
-		assertTrue(glob.matcher("FooBar.groovy")
-			.matches());
-	}
-
-	public void testChar() {
-		Glob glob = new Glob("xx[abc]xx");
-		assertTrue(glob.matcher("xxbxx")
-			.matches());
-		assertTrue(glob.matcher("xxcxx")
-			.matches());
-
-		glob = new Glob("xx[abc]{2}xx");
-		assertTrue(glob.matcher("xxbbxx")
-			.matches());
-		assertTrue(glob.matcher("xxcaxx")
-			.matches());
-		assertFalse(glob.matcher("xxcxx")
-			.matches());
-
-		glob = new Glob("xx[abc]?xx");
-		assertTrue(glob.matcher("xxbxx")
-			.matches());
-		assertTrue(glob.matcher("xxxx")
-			.matches());
-		assertFalse(glob.matcher("xxacxx")
-			.matches());
-	}
-
-	public void testGroupQuantifier() {
-		Glob glob = new Glob("xx(abc|def|ghi){2}xx");
-		assertFalse(glob.matcher("xxabcxx")
-			.matches());
-		assertTrue(glob.matcher("xxabcabcxx")
-			.matches());
-		assertTrue(glob.matcher("xxabcdefxx")
-			.matches());
-		assertFalse(glob.matcher("xxabcdefghixx")
-			.matches());
-
-		glob = new Glob("*(.groovy|.java)?");
-		assertTrue(glob.matcher("FooBar.java")
-			.matches());
-		assertTrue(glob.matcher("FooBar.groovy")
-			.matches());
-		assertTrue(glob.matcher("FooBar")
-			.matches());
-	}
 
 	public void testUrl() {
 		Glob glob;
@@ -111,4 +160,26 @@ public class GlobTest extends TestCase {
 		assertFalse(glob.matcher("http://foo.exampleXcom/repository.xml")
 			.matches());
 	}
+
+	private void match(String glob, String pattern, String... match) {
+
+		Pattern p = Glob.toPattern(glob);
+		assertEquals(pattern, p.pattern());
+
+		for (String m : match) {
+			if (m.startsWith("~")) {
+				assertFalse("Failed to match " + glob + "~" + m.substring(1), p.matcher(m.substring(1))
+					.matches());
+
+			} else
+				assertTrue("Failed to match " + glob + "~" + m, p.matcher(m)
+					.matches());
+		}
+		if (!glob.contains("\\Q")) {
+			String quoted = "\\Q" + glob + "\\E";
+			assertEquals(quoted, Glob.toPattern(quoted)
+				.pattern());
+		}
+	}
+
 }

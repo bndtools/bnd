@@ -8,7 +8,18 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Glob {
+	static Logger logger = LoggerFactory.getLogger(Glob.class);
+
+	enum State {
+		SIMPLE,
+		CURLIES,
+		BRACKETS,
+		QUOTED
+	}
 
 	public static final Glob	ALL	= new Glob("*");
 	private final String		glob;
@@ -40,26 +51,29 @@ public class Glob {
 		line = line.trim();
 		int strLen = line.length();
 		StringBuilder sb = new StringBuilder(strLen << 2);
-		int inCurlies = 0;
+		int curlyLevel = 0;
+		State state = State.SIMPLE;
+
 		char previousChar = 0;
 		for (int i = 0; i < strLen; i++) {
 			char currentChar = line.charAt(i);
 			switch (currentChar) {
 				case '*' :
-					if (!isEnd(previousChar)) {
+					if ((state == State.SIMPLE || state == State.CURLIES) && !isEnd(previousChar)) {
 						sb.append('.');
 					}
 					sb.append(currentChar);
 					break;
 				case '?' :
-					if (!isStart(previousChar) && !isEnd(previousChar)) {
+					if ((state == State.SIMPLE || state == State.CURLIES) && !isStart(previousChar)
+						&& !isEnd(previousChar)) {
 						sb.append('.');
 					} else {
 						sb.append(currentChar);
 					}
 					break;
 				case '+' :
-					if (!isEnd(previousChar)) {
+					if ((state == State.SIMPLE || state == State.CURLIES) && !isEnd(previousChar)) {
 						sb.append('\\');
 					}
 					sb.append(currentChar);
@@ -67,38 +81,63 @@ public class Glob {
 				case '\\' :
 					sb.append(currentChar);
 					if (i + 1 < strLen) {
-						sb.append(line.charAt(++i));
+						char nextChar = line.charAt(++i);
+						if (state == State.SIMPLE && nextChar == 'Q') {
+							state = State.QUOTED;
+						} else if (state == State.QUOTED && nextChar == 'E') {
+							state = State.SIMPLE;
+						}
+						sb.append(nextChar);
 					}
 					break;
+				case '[' :
+					if (state == State.SIMPLE) {
+						state = State.BRACKETS;
+					}
+					sb.append(currentChar);
+					break;
+				case ']' :
+					if (state == State.BRACKETS) {
+						state = State.SIMPLE;
+					}
+					sb.append(currentChar);
+					break;
+
 				case '{' :
-					if (!isEnd(previousChar)) {
+					if ((state == State.SIMPLE || state == State.CURLIES) && !isEnd(previousChar)) {
+						state = State.CURLIES;
 						sb.append("(?:");
-						inCurlies++;
+						curlyLevel++;
 					} else {
 						sb.append(currentChar);
 					}
 					break;
 				case '}' :
-					if (inCurlies > 0) {
+					if (state == State.CURLIES && curlyLevel > 0) {
 						sb.append(')');
-						inCurlies--;
+						currentChar = ')';
+						curlyLevel--;
+						if (curlyLevel == 0)
+							state = State.SIMPLE;
 					} else {
 						sb.append(currentChar);
 					}
 					break;
 				case ',' :
-					if (inCurlies > 0) {
+					if (state == State.CURLIES) {
 						sb.append('|');
 					} else {
 						sb.append(currentChar);
 					}
 					break;
-				case '.' :
 				case '^' :
+				case '.' :
 				case '$' :
 				case '@' :
 				case '%' :
-					sb.append('\\');
+					if (state == State.SIMPLE || state == State.CURLIES)
+						sb.append('\\');
+
 					// FALL THROUGH
 				default :
 					sb.append(currentChar);
@@ -135,6 +174,7 @@ public class Glob {
 			return Pattern.compile(convertGlobToRegEx(s), flags);
 		} catch (Exception e) {
 			// ignore
+			logger.info("failing regex in glob", e);
 		}
 		return null;
 	}
@@ -168,15 +208,17 @@ public class Glob {
 
 	public static boolean in(Glob[] globs, String key) {
 		for (Glob g : globs) {
-			if (g.matcher(key).matches())
+			if (g.matcher(key)
+				.matches())
 				return true;
 		}
 		return false;
 	}
 
-	public static boolean in(Collection< ? extends Glob> globs, String key) {
+	public static boolean in(Collection<? extends Glob> globs, String key) {
 		for (Glob g : globs) {
-			if (g.matcher(key).matches())
+			if (g.matcher(key)
+				.matches())
 				return true;
 		}
 		return false;
