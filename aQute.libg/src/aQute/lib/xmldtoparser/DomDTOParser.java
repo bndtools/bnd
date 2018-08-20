@@ -37,7 +37,8 @@ public class DomDTOParser {
 	 * @return a DTO of type
 	 */
 	public static <T> T parse(Class<T> type, File doc) throws Exception {
-		return parse(type, dbf.newDocumentBuilder().parse(doc));
+		return parse(type, dbf.newDocumentBuilder()
+			.parse(doc));
 	}
 
 	/**
@@ -50,7 +51,8 @@ public class DomDTOParser {
 	 * @return a DTO of type
 	 */
 	public static <T> T parse(Class<T> type, InputStream doc) throws Exception {
-		return parse(type, dbf.newDocumentBuilder().parse(doc));
+		return parse(type, dbf.newDocumentBuilder()
+			.parse(doc));
 	}
 
 	private static <T> T parse(Class<T> type, Node node) throws Exception {
@@ -72,7 +74,7 @@ public class DomDTOParser {
 	}
 
 	@SuppressWarnings({
-			"unchecked", "rawtypes"
+		"unchecked", "rawtypes"
 	})
 	private static <T> void get(T instance, Node node) throws Exception {
 		if (node instanceof Comment)
@@ -80,15 +82,15 @@ public class DomDTOParser {
 		if (node instanceof Text) {
 			String text = node.getTextContent()
 				.trim();
-			if (text.isEmpty())
-				return;
+			if (!text.isEmpty()) {
 
-			Field field = getField(instance.getClass(), "_content");
-			if (field == null)
-				return;
+				Field field = getField(instance.getClass(), "_content");
+				if (field == null)
+					return;
 
-			field.set(instance, Converter.cnv(field.getGenericType(), text));
-			return;
+				field.set(instance, Converter.cnv(field.getGenericType(), text));
+				return;
+			}
 		}
 
 		String name = toSimpleName(node.getNodeName());
@@ -122,6 +124,10 @@ public class DomDTOParser {
 			Type collectionType = subType.getActualTypeArguments()[0];
 			Object member = parse((Class<T>) collectionType, node);
 			Collection<Object> collection = (Collection<Object>) field.get(instance);
+			if (collection == null) {
+				collection = (Collection<Object>) Converter.cnv(field.getGenericType(), new Object[0]);
+				field.set(instance, collection);
+			}
 			collection.add(member);
 
 		} else if (isSimple(field.getType())) {
@@ -130,14 +136,17 @@ public class DomDTOParser {
 			Object convertedValue = Converter.cnv(field.getType(), value);
 			field.set(instance, convertedValue);
 
-		} else if (field.getType().isEnum()) {
+		} else if (field.getType()
+			.isEnum()) {
 			String value = node.getTextContent();
-			Class< ? > en = field.getType();
+			Class<?> en = field.getType();
 
 			for (Field constant : en.getFields()) {
+				XmlAttribute xmlAttr = constant.getAnnotation(XmlAttribute.class);
 				String nm = constant.getName();
-				if (nm.equalsIgnoreCase(value)) {
+				if (nm.equalsIgnoreCase(value) || (xmlAttr != null && value.equals(xmlAttr.name()))) {
 					field.set(instance, constant.get(null));
+					return;
 				}
 			}
 
@@ -152,16 +161,16 @@ public class DomDTOParser {
 		return nodeName.substring(n + 1);
 	}
 
-	private static boolean isSimple(Class< ? > class1) {
+	private static boolean isSimple(Class<?> class1) {
 		return class1.isPrimitive() || Number.class.isAssignableFrom(class1) || class1 == Boolean.class
-				|| class1 == String.class;
+			|| class1 == String.class;
 	}
 
-	private static boolean isCollection(Class< ? > class1) {
+	private static boolean isCollection(Class<?> class1) {
 		return Collection.class.isAssignableFrom(class1);
 	}
 
-	private static Field getField(Class< ? extends Object> class1, String name) throws Exception {
+	private static Field getField(Class<? extends Object> class1, String name) throws Exception {
 		try {
 			return class1.getField(name);
 		} catch (Exception e) {
