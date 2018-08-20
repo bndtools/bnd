@@ -160,7 +160,7 @@ public class LauncherTest extends TestCase {
 		Project project = getProject();
 		project.setProperty(Constants.RUNPROPERTIES, "test.cmd=quit.no.exit");
 		ProjectLauncher l = project.getProjectLauncher();
-		File temporaryFolder = Files.temporaryFolder();
+		File temporaryFolder = Files.newTemporaryFolder();
 		try {
 			try (Jar executable = l.executable()) {
 				executable.writeFolder(temporaryFolder);
