@@ -2,8 +2,6 @@ package aQute.lib.xmldtoparser;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAttribute;
-
 public class ComponentsDTO {
 
 	public List<TComponent> component;

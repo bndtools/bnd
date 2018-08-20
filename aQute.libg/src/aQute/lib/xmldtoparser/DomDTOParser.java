@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Attr;
@@ -25,6 +24,7 @@ import aQute.lib.converter.Converter;
  * Parse an XML file based on a DTO as schema
  */
 public class DomDTOParser {
+
 	final static DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
 	/**
@@ -142,9 +142,8 @@ public class DomDTOParser {
 			Class<?> en = field.getType();
 
 			for (Field constant : en.getFields()) {
-				XmlAttribute xmlAttr = constant.getAnnotation(XmlAttribute.class);
 				String nm = constant.getName();
-				if (nm.equalsIgnoreCase(value) || (xmlAttr != null && value.equals(xmlAttr.name()))) {
+				if (nm.equalsIgnoreCase(value) || (value.equals(getName(constant)))) {
 					field.set(instance, constant.get(null));
 					return;
 				}
@@ -154,6 +153,20 @@ public class DomDTOParser {
 			field.set(instance, parse(field.getType(), node));
 		}
 
+	}
+
+	private static String getName(Field field) {
+		XmlAttribute xmlAttribute = field.getAnnotation(XmlAttribute.class);
+		if (xmlAttribute != null)
+			return xmlAttribute.name();
+
+		try {
+			javax.xml.bind.annotation.XmlAttribute xmlAttribute2 = field
+				.getAnnotation(javax.xml.bind.annotation.XmlAttribute.class);
+			if (xmlAttribute2 != null)
+				return xmlAttribute2.name();
+		} catch (Throwable cnfe) {}
+		return null;
 	}
 
 	private static String toSimpleName(String nodeName) {
@@ -175,13 +188,9 @@ public class DomDTOParser {
 			return class1.getField(name);
 		} catch (Exception e) {
 			for (Field field : class1.getFields()) {
-				XmlAttribute xmlAttribute = field.getAnnotation(XmlAttribute.class);
-				if (xmlAttribute != null) {
-					String annName = xmlAttribute.name();
-					if (name.equals(annName)) {
+				if (name.equals(getName(field))) {
 						return field;
 					}
-				}
 			}
 		}
 		return null;
