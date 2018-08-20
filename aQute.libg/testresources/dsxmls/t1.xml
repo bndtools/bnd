@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<scr:component xmlns:scr="http://www.osgi.org/xmlns/scr/v1.3.0" name="osgi.enroute.authenticator.simple.provider.UserAdminAuthenticator" activate="activate">
+  <implementation class="osgi.enroute.authenticator.simple.provider.UserAdminAuthenticator"/>
+  <service>
+    <provide interface="osgi.enroute.authentication.api.Authenticator"/>
+  </service>
+  <reference name="Log" interface="org.slf4j.Logger" bind="setLog" cardinality="1..1"/>
+  <reference name="UA" interface="org.osgi.service.useradmin.UserAdmin" bind="setUA"/>
+  <property name="osgi.command.function" type="String">hash
+passwd
+adduser
+rmrole
+role
+user</property>
+  <property name="salt" type="Byte">47
+104
+-53
+117
+108
+-15
+116
+-124
+42
+-17</property>
+  <property name="osgi.command.scope" type="String" value="user"/>
+  <property name=".root" type="String" value=""/>
+  <property name="iterations" type="Integer" value="997"/>
+  <property name="algorithm" type="String" value="PBKDF2WithHmacSHA1"/>
+</scr:component>
