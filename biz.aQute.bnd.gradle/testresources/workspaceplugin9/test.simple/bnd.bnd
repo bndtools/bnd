@@ -6,7 +6,7 @@ Test-Cases: test.simple.Test,test.simple.FailingTest
 
 -includeresource: test.txt
 
--runfw: org.eclipse.osgi;version='[3.12.0,3.13.0)'
+-runfw: org.eclipse.osgi;version='[3.13.0,3.14.0)'
 -runee: JavaSE-1.8
 -runrequires: osgi.identity;filter:='(osgi.identity=test.simple)'
 
