@@ -275,9 +275,38 @@
 									<action>
 										<execute>
 											<runOnConfiguration>true</runOnConfiguration>
-											<runOnIncremental>false</runOnIncremental>
+											<runOnIncremental>true</runOnIncremental>
 										</execute>
 									</action>
+								</pluginExecution>
+								<pluginExecution>
+								  <pluginExecutionFilter>
+								    <groupId>org.apache.maven.plugins</groupId>
+								    <artifactId>maven-plugin-plugin</artifactId>
+								    <versionRange>[3.5.2,)</versionRange>
+								    <goals>
+								      <goal>descriptor</goal>
+								    </goals>
+								  </pluginExecutionFilter>
+								  <action>
+                    <execute>
+                      <runOnConfiguration>true</runOnConfiguration>
+                      <runOnIncremental>true</runOnIncremental>
+                    </execute>
+								  </action>
+								</pluginExecution>
+								<pluginExecution>
+								  <pluginExecutionFilter>
+								    <groupId>org.codehaus.mojo</groupId>
+								    <artifactId>flatten-maven-plugin</artifactId>
+								    <versionRange>[1.0.1,)</versionRange>
+								    <goals>
+								      <goal>flatten</goal>
+								    </goals>
+								  </pluginExecutionFilter>
+								  <action>
+                    <ignore />
+								  </action>
 								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
