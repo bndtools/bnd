@@ -160,12 +160,6 @@ public class DomDTOParser {
 		if (xmlAttribute != null)
 			return xmlAttribute.name();
 
-		try {
-			javax.xml.bind.annotation.XmlAttribute xmlAttribute2 = field
-				.getAnnotation(javax.xml.bind.annotation.XmlAttribute.class);
-			if (xmlAttribute2 != null)
-				return xmlAttribute2.name();
-		} catch (Throwable cnfe) {}
 		return null;
 	}
 
