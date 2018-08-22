@@ -115,6 +115,7 @@ public class ImportPackageQuickFixProcessorTest {
 
     static final Pattern FILTER = Pattern.compile(Pattern.quote(PackageNamespace.PACKAGE_NAMESPACE) + "\\s*=\\s*([^)= ]*)\\s*[)]");
 
+    @SuppressWarnings("unchecked")
     private void mockFindProviders(final String name, Repository repo) {
         doAnswer(new Answer<Map<Requirement, Collection<Capability>>>() {
 
@@ -143,7 +144,7 @@ public class ImportPackageQuickFixProcessorTest {
             }
 
         }).when(repo)
-            .findProviders(any());
+            .findProviders((Collection<? extends Requirement>) any());
     }
 
     private void mockRepositoryPlugin(String name, RepositoryPlugin p) {
