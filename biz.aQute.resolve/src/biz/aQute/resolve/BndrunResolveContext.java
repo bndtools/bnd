@@ -436,7 +436,7 @@ public class BndrunResolveContext extends AbstractResolveContext {
 						aQute.bnd.osgi.Resource rs = jar.getResource(path);
 						try (InputStream in = rs.openInputStream()) {
 							UTF8Properties p = new UTF8Properties();
-							p.load(in, file, project);
+							p.load(in, file, project, Constants.OSGI_SYNTAX_HEADERS);
 							augments.getProperties()
 								.putAll(p);
 							return;
