@@ -114,18 +114,4 @@ public class AnalyseBundleResolutionJobTest extends TestCase {
             .get("uses"));
     }
 
-    public void testOptionalImport() {
-        AnalyseBundleResolutionJob job = new AnalyseBundleResolutionJob("resolve", Collections.singleton(new JarFileCapReqLoader(new File("test/example2.jar"))));
-
-        IStatus status = job.run(new NullProgressMonitor());
-        assertEquals(IStatus.OK, status.getCode());
-
-        Map<String, List<RequirementWrapper>> reqs = job.getRequirements();
-        assertEquals(2, reqs.size());
-
-        List<RequirementWrapper> imports = reqs.get("osgi.wiring.package");
-        assertEquals("optional", imports.get(0).requirement.getDirectives()
-            .get("resolution"));
-    }
-
 }
