@@ -29,6 +29,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.ComponentServiceObjects;
 import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.CollectionType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
@@ -2808,52 +2809,61 @@ public class DSAnnotationTest extends BndTestCase {
 		// (service = LogService.class)
 		private Collection<Map.Entry<Map<String, Object>, LogService>>	tupleField;
 
+		@Reference(service = Map.class, collectionType = CollectionType.SERVICE)
+		private Collection<Map<String, Object>>							zmapSvc;
+
 		@Override
 		public void run() {}
 	}
 
 	public void testFieldCollectionType() throws Exception {
-		Builder b = new Builder();
-		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest*TestFieldCollectionType");
-		b.setProperty("Private-Package", "test.component");
-		b.addClasspath(new File("bin"));
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$TestFieldCollectionType");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin"));
 
-		Jar jar = b.build();
-		assertOk(b);
-		Attributes a = getAttr(jar);
-		checkProvides(a, SERIALIZABLE_RUNNABLE);
-		checkRequires(a, "1.3.0", LogService.class.getName());
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a, SERIALIZABLE_RUNNABLE);
+			checkRequires(a, "1.3.0", LogService.class.getName(), Map.class.getName());
 
-		Resource r = jar.getResource("OSGI-INF/" + TestFieldCollectionType.class.getName() + ".xml");
-		assertNotNull(r);
-		r.write(System.err);
-		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
-		xt.assertNamespace("http://www.osgi.org/xmlns/scr/v1.3.0");
+			Resource r = jar.getResource("OSGI-INF/" + TestFieldCollectionType.class.getName() + ".xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+			xt.assertNamespace("http://www.osgi.org/xmlns/scr/v1.3.0");
 
-		xt.assertAttribute("propsField", "scr:component/reference[1]/@name");
-		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
-		xt.assertAttribute("propsField", "scr:component/reference[1]/@field");
-		xt.assertAttribute("properties", "scr:component/reference[1]/@field-collection-type");
+			xt.assertAttribute("propsField", "scr:component/reference[1]/@name");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
+			xt.assertAttribute("propsField", "scr:component/reference[1]/@field");
+			xt.assertAttribute("properties", "scr:component/reference[1]/@field-collection-type");
 
-		xt.assertAttribute("serviceField", "scr:component/reference[2]/@name");
-		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
-		xt.assertAttribute("serviceField", "scr:component/reference[2]/@field");
-		xt.assertAttribute("service", "scr:component/reference[2]/@field-collection-type");
+			xt.assertAttribute("serviceField", "scr:component/reference[2]/@name");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
+			xt.assertAttribute("serviceField", "scr:component/reference[2]/@field");
+			xt.assertAttribute("service", "scr:component/reference[2]/@field-collection-type");
 
-		xt.assertAttribute("soField", "scr:component/reference[3]/@name");
-		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
-		xt.assertAttribute("soField", "scr:component/reference[3]/@field");
-		xt.assertAttribute("serviceobjects", "scr:component/reference[3]/@field-collection-type");
+			xt.assertAttribute("soField", "scr:component/reference[3]/@name");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
+			xt.assertAttribute("soField", "scr:component/reference[3]/@field");
+			xt.assertAttribute("serviceobjects", "scr:component/reference[3]/@field-collection-type");
 
-		xt.assertAttribute("srField", "scr:component/reference[4]/@name");
-		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[4]/@interface");
-		xt.assertAttribute("srField", "scr:component/reference[4]/@field");
-		xt.assertAttribute("reference", "scr:component/reference[4]/@field-collection-type");
+			xt.assertAttribute("srField", "scr:component/reference[4]/@name");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[4]/@interface");
+			xt.assertAttribute("srField", "scr:component/reference[4]/@field");
+			xt.assertAttribute("reference", "scr:component/reference[4]/@field-collection-type");
 
-		xt.assertAttribute("tupleField", "scr:component/reference[5]/@name");
-		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[5]/@interface");
-		xt.assertAttribute("tupleField", "scr:component/reference[5]/@field");
-		xt.assertAttribute("tuple", "scr:component/reference[5]/@field-collection-type");
+			xt.assertAttribute("tupleField", "scr:component/reference[5]/@name");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[5]/@interface");
+			xt.assertAttribute("tupleField", "scr:component/reference[5]/@field");
+			xt.assertAttribute("tuple", "scr:component/reference[5]/@field-collection-type");
+
+			xt.assertAttribute("zmapSvc", "scr:component/reference[6]/@name");
+			xt.assertAttribute(Map.class.getName(), "scr:component/reference[6]/@interface");
+			xt.assertAttribute("zmapSvc", "scr:component/reference[6]/@field");
+			xt.assertAttribute("service", "scr:component/reference[6]/@field-collection-type");
+		}
 	}
 
 	private void checkProvides(Attributes a, String[]... objectClass) {
