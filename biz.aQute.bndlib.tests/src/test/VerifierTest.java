@@ -19,6 +19,35 @@ import junit.framework.TestCase;
 @SuppressWarnings("resource")
 public class VerifierTest extends TestCase {
 
+	public void testExports() throws Exception {
+		Builder b = new Builder();
+		b.addClasspath(b.getFile("bin"));
+		b.setExportPackage("test,\u00A0bar.foo");
+		b.setImportPackage("\u2007bar.foo, \u2007bar.foo, \u202F bar.foo");
+		b.build();
+		assertTrue(b.check("Invalid package name: '\\\\u00A0bar.foo' in Export-Package",
+			"Invalid package name: '\\\\u2007bar.foo' in Import-Package",
+			"Invalid package name: '\\\\u202F bar.foo' in Import-Package"));
+	}
+
+	public void testFQN() {
+		assertTrue(Verifier.isFQN("a"));
+		assertTrue(Verifier.isFQN("a.b"));
+		assertTrue(Verifier.isFQN("_"));
+		assertTrue(Verifier.isFQN("_._"));
+		assertTrue(Verifier.isFQN("x\u0013o"));
+		assertTrue(Verifier.isFQN("x\u0013o.asdasdasd.adasdasdads.asdasdasda"));
+		assertTrue(Verifier.isFQN("_._$_.foo"));
+		assertTrue(Verifier.isFQN("Foo.Bar_._$_.foo"));
+		assertTrue(Verifier.isFQN("$"));
+
+		assertFalse(Verifier.isFQN("Foo.Bar_._$_.0foo"));
+		assertFalse(Verifier.isFQN("foo..bar"));
+		assertFalse(Verifier.isFQN("foo.\u00A0.bar"));
+		assertFalse(Verifier.isFQN("\\u00A0foo.bar"));
+		assertFalse(Verifier.isFQN("0"));
+	}
+
 	/**
 	 * Verify that an invalid namespace error is actually an error
 	 */

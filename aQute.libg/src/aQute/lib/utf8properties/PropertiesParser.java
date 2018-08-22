@@ -1,5 +1,6 @@
 package aQute.lib.utf8properties;
 
+import java.util.Objects;
 import java.util.Properties;
 
 import aQute.lib.hex.Hex;
@@ -46,6 +47,7 @@ final class PropertiesParser {
 	private Properties	properties;
 	private boolean		validKey;
 	private boolean		continuation	= true;
+	private String[]	syntaxHeaders		= new String[0];
 
 	PropertiesParser(String source, String file, Reporter reporter, Properties properties) {
 		this.source = source.toCharArray();
@@ -156,7 +158,7 @@ final class PropertiesParser {
 
 			if (current != '\n') {
 
-				String value = token(LINE, key.startsWith("-"));
+				String value = token(LINE, isSyntaxHeader(key));
 				properties.put(key, value);
 
 			} else {
@@ -169,6 +171,16 @@ final class PropertiesParser {
 
 		int start = n;
 
+	}
+
+	private boolean isSyntaxHeader(String key) {
+		if (key == null || key.length() == 0)
+			return false;
+
+		if (key.startsWith("-"))
+			return true;
+
+		return Strings.in(syntaxHeaders, key);
 	}
 
 	private void skipWhitespace() {
@@ -222,6 +234,18 @@ final class PropertiesParser {
 						}
 						break;
 
+					case '\u00A0' :
+						invalidWhitespace(quote, "NON BREAKING SPACE (\\u00A0)");
+						break;
+
+					case '\u2007' :
+						invalidWhitespace(quote, "FIGURE SPACE (\\u2007) ILLEGAL IN PROPERTIES");
+						break;
+
+					case '\u202F' :
+						invalidWhitespace(quote, "NARROW NO-BREAK SPACE (\\u202F)  ILLEGAL IN PROPERTIES");
+						break;
+
 					case ' ' :
 					case '\t' :
 					case '\f' :
@@ -247,6 +271,11 @@ final class PropertiesParser {
 			next();
 		}
 		return sb.toString();
+	}
+
+	private void invalidWhitespace(int quote, String type) {
+		if (quote == 0)
+			error("Non breaking space found [%s] at (line=%s,pos=%s)", type, line, pos);
 	}
 
 	private final String key() {
@@ -338,6 +367,11 @@ final class PropertiesParser {
 		while (loc < length && source[loc] != '\n')
 			loc++;
 		return new String(source, marker, loc - marker);
+	}
+
+	public void setSyntaxHeaders(String[] syntaxHeaders) {
+		Objects.requireNonNull(syntaxHeaders);
+		this.syntaxHeaders = syntaxHeaders;
 	}
 
 }

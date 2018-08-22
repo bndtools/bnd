@@ -49,41 +49,64 @@ public class UTF8Properties extends Properties {
 		super(p);
 	}
 
+	public UTF8Properties(File file, String[] syntaxHeaders) throws Exception {
+		this(file, null, syntaxHeaders);
+	}
+
 	public UTF8Properties(File file) throws Exception {
-		this(file, null);
+		this(file, null, null);
+	}
+
+	public UTF8Properties(File file, Reporter reporter, String[] syntaxHeaders) throws Exception {
+		load(file, reporter, syntaxHeaders);
 	}
 
 	public UTF8Properties(File file, Reporter reporter) throws Exception {
-		load(file, reporter);
+		load(file, reporter, null);
 	}
 
 	public UTF8Properties() {}
 
-	public void load(InputStream in, File file, Reporter reporter) throws IOException {
+	public void load(InputStream in, File file, Reporter reporter, String[] syntaxHeaders) throws IOException {
 		String source = decode(IO.read(in));
-		load(source, file, reporter);
+		load(source, file, reporter, syntaxHeaders);
+	}
+
+	public void load(InputStream in, File file, Reporter reporter) throws IOException {
+		load(in, file, reporter, null);
 	}
 
 	public void load(String source, File file, Reporter reporter) throws IOException {
+		load(source, file, reporter, null);
+	}
+
+	public void load(String source, File file, Reporter reporter, String[] syntaxHeaders) throws IOException {
 		PropertiesParser parser = new PropertiesParser(source, file == null ? null : file.getAbsolutePath(), reporter,
 			this);
+		if (syntaxHeaders != null)
+			parser.setSyntaxHeaders(syntaxHeaders);
+
 		parser.parse();
 	}
 
-	public void load(File file, Reporter reporter) throws Exception {
+	public void load(File file, Reporter reporter, String[] syntaxHeaders) throws Exception {
 		String source = decode(IO.read(file));
-		load(source, file, reporter);
+		load(source, file, reporter, syntaxHeaders);
+	}
+
+	public void load(File file, Reporter reporter) throws Exception {
+		this.load(file, reporter, null);
 	}
 
 	@Override
 	public void load(InputStream in) throws IOException {
-		load(new NonClosingInputStream(in), null, null);
+		load(new NonClosingInputStream(in), null, null, null);
 	}
 
 	@Override
 	public void load(Reader r) throws IOException {
 		String source = IO.collect(new NonClosingReader(r));
-		load(source, null, null);
+		load(source, null, null, null);
 	}
 
 	private String decode(byte[] buffer) {

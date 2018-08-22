@@ -19,6 +19,25 @@ import junit.framework.TestCase;
  */
 public class UTF8PropertiesTest extends TestCase {
 
+	public void testNBSP() throws IOException {
+		testProperty("-instr: 'foo,\u202Fbar'", "-instr", "'foo,\u202Fbar'");
+		testProperty("-instr: \"foo,\u202Fbar\"", "-instr", "\"foo,\u202Fbar\"");
+
+		testProperty("Bundle-Description: foo,\u202Fbar", "Bundle-Description", "foo,\u202Fbar");
+
+		testProperty("macro: foo,\u202Fbar", "macro", "foo,\u202Fbar");
+
+
+		testProperty("-exportcontents: foo,\u202Fbar", "-exportcontents", "foo,\u202Fbar",
+			"Non breaking space found \\[NARROW NO-BREAK SPACE");
+
+		testProperty("Export-Package: foo,\u2007bar", "Export-Package", "foo,\u2007bar",
+			"Non breaking space found \\[FIGURE SPACE");
+
+		testProperty("Private-Package: foo,\u00A0bar", "Private-Package", "foo,\u00A0bar",
+			"Non breaking space found \\[NON BREAKING SPACE");
+	}
+
 	public void testMissingDelimeterAfterQuotedString() throws IOException {
 		assertError("-foo: bar='abc' ' '    ;", "-foo", 0,
 			"Found a quote ''' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes:");
@@ -321,7 +340,9 @@ public class UTF8PropertiesTest extends TestCase {
 	private void testProperty0(String content, String key, String value, String check) throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
-		p.load(content, null, ra);
+		p.load(content, null, ra, new String[] {
+			"Export-Package", "Private-Package", "Import-Package"
+		});
 
 		if (check == null)
 			assertTrue(ra.check());
@@ -333,7 +354,7 @@ public class UTF8PropertiesTest extends TestCase {
 
 		Properties pp = new Properties();
 		pp.load(new StringReader(content));
-		assertEquals(value, pp.get(key));
+		assertEquals("normal properties differ in comparison", value, pp.get(key));
 		assertEquals(1, pp.size());
 		assertEquals(pp, p);
 	}

@@ -1472,7 +1472,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	UTF8Properties loadProperties0(File file) throws IOException {
 		try {
 			UTF8Properties p = new UTF8Properties();
-			p.load(file, this);
+			p.load(file, this, Constants.OSGI_SYNTAX_HEADERS);
 			return p.replaceHere(file.getParentFile());
 		} catch (Exception e) {
 			error("Error during loading properties file: %s, error: %s", file, e);
