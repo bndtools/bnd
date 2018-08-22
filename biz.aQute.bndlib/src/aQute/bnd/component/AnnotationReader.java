@@ -1,6 +1,7 @@
 package aQute.bnd.component;
 
 import static aQute.bnd.osgi.Clazz.QUERY.ANNOTATED;
+import static java.util.Objects.requireNonNull;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -53,9 +54,6 @@ public class AnnotationReader extends ClassDataCollector {
 	private static final Logger			logger						= LoggerFactory.getLogger(AnnotationReader.class);
 
 	final static TypeRef[]				EMPTY						= new TypeRef[0];
-	final static Pattern				PROPERTY_PATTERN			= Pattern.compile(
-		"\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
-
 	public static final Version			V1_0						= new Version("1.0.0");																										// "1.0.0"
 	public static final Version			V1_1						= new Version("1.1.0");																										// "1.1.0"
 	public static final Version			V1_2						= new Version("1.2.0");																										// "1.2.0"
@@ -134,11 +132,11 @@ public class AnnotationReader extends ClassDataCollector {
 
 	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder,
 		Version minVersion) {
-		this.analyzer = analyzer;
+		this.analyzer = requireNonNull(analyzer);
 		this.clazz = clazz;
 		this.options = options;
 		this.finder = finder;
-		this.component = new ComponentDef(finder, minVersion);
+		this.component = new ComponentDef(analyzer, finder, minVersion);
 	}
 
 	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options,
@@ -661,7 +659,7 @@ public class AnnotationReader extends ClassDataCollector {
 				if (len == 1) {
 					// To make sure the output is an array, we must make
 					// sure there is more than one entry
-					props.add(name, ComponentDef.MARKER);
+					props.add(name, PropertiesDef.MARKER);
 				}
 			} else {
 				valueToProperty(name, value, isClass, typeClass);
@@ -739,8 +737,7 @@ public class AnnotationReader extends ClassDataCollector {
 				if (prefix != null) {
 					key = prefix + key;
 				}
-				component.property.put(key, value);
-				component.propertyType.put(key, type);
+				component.properties.setProperty(key, type, value);
 			}
 		}
 
@@ -1171,21 +1168,13 @@ public class AnnotationReader extends ClassDataCollector {
 		if (annotation.get("xmlns") != null)
 			component.xmlns = comp.xmlns();
 
-		for (String entry : comp.properties()) {
-			if (entry.contains("=")) {
-				analyzer.error("Found an = sign in an OSGi DS Component annotation on %s. In the bnd annotation "
-					+ "this is an actual property but in the OSGi, this element must refer to a path with Java properties. "
-					+ "However, found a path with an '=' sign which looks like a mixup (%s) with the 'property' element.",
-					clazz, entry)
-					.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-						ErrorType.COMPONENT_PROPERTIES_ERROR));
-			}
-			component.properties.add(entry);
-		}
+		component.properties.addProperties(comp.properties());
+		component.factoryProperties.addProperties(comp.factoryProperties());
 
-		doProperty(comp.property());
+		component.properties.setTypedProperty(className, comp.property());
+		component.factoryProperties.setTypedProperty(className, comp.factoryProperty());
+
 		Object[] x = annotation.get("service");
-
 		if (x == null) {
 			// Use the found interfaces, but convert from internal to
 			// fqn.
@@ -1224,33 +1213,6 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		}
 
-	}
-
-	/**
-	 * Parse the properties
-	 */
-
-	private void doProperty(String[] properties) {
-		if (properties != null && properties.length > 0) {
-			MultiMap<String, String> props = new MultiMap<>();
-			for (String p : properties) {
-				Matcher m = PROPERTY_PATTERN.matcher(p);
-
-				if (m.matches()) {
-					String key = m.group(1);
-					String type = m.group(2);
-					if (type == null)
-						type = "String";
-
-					component.propertyType.put(key, type);
-
-					String value = m.group(3);
-					props.add(key, value);
-				} else
-					analyzer.error("Malformed property '%s' on component: %s", p, className);
-			}
-			component.property.putAll(props);
-		}
 	}
 
 	/**

@@ -122,7 +122,7 @@ public class DSAnnotationTest extends BndTestCase {
 		b.addClasspath(new File("bin"));
 
 		Jar jar = b.build();
-		if (!b.check("Cannot convert data blabla to type Integer", "Cannot convert data 3.0 to type Integer"))
+		if (!b.check("Not a valid number blabla for Integer", "Not a valid number 3.0 for Integer"))
 			fail();
 		Attributes a = getAttr(jar);
 		checkProvides(a);
@@ -2102,6 +2102,60 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("", "scr:component/reference[1]/@policy");
 		xt.assertAttribute("", "scr:component/reference[1]/@target");
 		xt.assertAttribute("", "scr:component/reference[1]/@policy-option");
+	}
+
+	/**
+	 * Check that factoryProperty and factoryProperies elements are processed.
+	 */
+	@Component(factory = "ds14", factoryProperty = {
+		"x:Integer=3.0", "a=1", "a=2", "b=1", "boolean:Boolean=true", "byte:Byte=1", "char:Character=1",
+		"short:Short=3", "integer:Integer=3", "long:Long=3", "float:Float=3.0", "double:Double=3e7", "string:String=%",
+		"wrongInteger:Integer=blabla", "\n\r\t \u0343\u0344\u0345\u0346\n:Integer=3"
+	}, factoryProperties = "factory.properties")
+	public static class FactoryProperties {
+	}
+
+	public void testFactoryProperties() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryProperties");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin"));
+
+			Jar jar = b.build();
+			if (!b.check("Not a valid number blabla for Integer", "Not a valid number 3.0 for Integer"))
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, "1.4.0");
+
+			//
+			// Test all the defaults
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$FactoryProperties.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+			xt.assertAttribute("0", "count(scr:component/properties)");
+			xt.assertAttribute("0", "count(scr:component/property)");
+			xt.assertAttribute("14", "count(scr:component/factory-property)");
+			xt.assertAttribute("1", "count(scr:component/factory-properties)");
+
+			xt.assertAttribute("", "scr:component/factory-property[@name='a']/@value");
+			xt.assertAttribute("1\n2", "scr:component/factory-property[@name='a']/text()");
+			xt.assertAttribute("1", "scr:component/factory-property[@name='b']/@value");
+			xt.assertAttribute("Byte", "scr:component/factory-property[@name='byte']/@type");
+			xt.assertAttribute("Boolean", "scr:component/factory-property[@name='boolean']/@type");
+			xt.assertAttribute("Character", "scr:component/factory-property[@name='char']/@type");
+			xt.assertAttribute("Short", "scr:component/factory-property[@name='short']/@type");
+			xt.assertAttribute("Integer", "scr:component/factory-property[@name='integer']/@type");
+			xt.assertAttribute("Long", "scr:component/factory-property[@name='long']/@type");
+			xt.assertAttribute("Float", "scr:component/factory-property[@name='float']/@type");
+			xt.assertAttribute("Double", "scr:component/factory-property[@name='double']/@type");
+			xt.assertAttribute("Integer", "scr:component/factory-property[@name='\u0343\u0344\u0345\u0346']/@type");
+
+			xt.assertAttribute("factory.properties", "scr:component/factory-properties[1]/@entry");
+		}
 	}
 
 	public void testNoHeaderDups() throws Exception {
