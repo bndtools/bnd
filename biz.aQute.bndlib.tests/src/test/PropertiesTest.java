@@ -115,16 +115,12 @@ public class PropertiesTest extends TestCase {
 		analyzer.setProperties(IO.getFile("src/test/badproperties.prop"));
 		String s = analyzer.getProperty(Constants.IMPORT_PACKAGE);
 		Parameters map = analyzer.parseHeader(s);
+		analyzer.check("This is allowed in a properties file but not in bnd to prevent mistakes:",
+			"No value specified for key: my.package",
+			"Empty clause, usually caused by repeating a comma without any name field or by having space");
 		assertEquals(2, map.size());
 		assertTrue(map.containsKey("org.osgi.service.cm"));
 		assertTrue(map.containsKey("org.osgi.util.tracker"));
-		assertEquals(1, analyzer.getWarnings()
-			.size());
-		System.err.println(analyzer.getWarnings());
-		assertTrue(analyzer.getWarnings()
-			.get(0)
-			.contains("Empty clause, usually caused by repeating a comma without"));
-		System.err.println(analyzer.getWarnings());
 	}
 
 	public static void testProperties() throws Exception {
