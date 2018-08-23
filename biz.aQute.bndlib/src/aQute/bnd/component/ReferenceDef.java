@@ -1,5 +1,6 @@
 package aQute.bnd.component;
 
+import org.osgi.service.component.annotations.CollectionType;
 import org.osgi.service.component.annotations.FieldOption;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
@@ -36,7 +37,7 @@ class ReferenceDef extends ExtensionDef {
 	ReferenceScope			scope;
 	String					field;
 	FieldOption				fieldOption;
-	FieldCollectionType		fieldCollectionType;
+	CollectionType			collectionType;
 
 	public ReferenceDef(XMLAttributeFinder finder) {
 		super(finder);
@@ -111,8 +112,8 @@ class ReferenceDef extends ExtensionDef {
 		if (fieldOption != null)
 			ref.addAttribute("field-option", fieldOption.toString());
 
-		if (fieldCollectionType != null)
-			ref.addAttribute("field-collection-type", fieldCollectionType.toString());
+		if (collectionType != null)
+			ref.addAttribute("field-collection-type", collectionType.toString());
 
 		addAttributes(ref, namespaces);
 
