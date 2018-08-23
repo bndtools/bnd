@@ -356,9 +356,9 @@ public class ConnectionSettings {
 
 			// not synchronized because conflicts only do some double work
 			if (proxySetup == null) {
-				proxySetup = new ProxySetup();
+				final ProxySetup pendingProxySetup = new ProxySetup();
 				if (proxyDTO.username != null && proxyDTO.password != null)
-					proxySetup.authentication = new PasswordAuthentication(proxyDTO.username,
+					pendingProxySetup.authentication = new PasswordAuthentication(proxyDTO.username,
 						proxyDTO.password.toCharArray());
 
 				SocketAddress socketAddress;
@@ -367,7 +367,9 @@ public class ConnectionSettings {
 				else
 					socketAddress = new InetSocketAddress(proxyDTO.port);
 
-				proxySetup.proxy = new Proxy(type, socketAddress);
+				pendingProxySetup.proxy = new Proxy(type, socketAddress);
+				
+				proxySetup = pendingProxySetup;
 			}
 			return proxySetup;
 		}
