@@ -213,6 +213,13 @@ final class PropertiesParser {
 
 				if (tmp == 0) // we hit \\n\n
 					break;
+
+				if (check && quote != 0 && tmp != quote && isQuote(tmp)) {
+					error(
+						"Found backslash escaped quote character `\\%s` while quoted-string's quote character  is `%s`. This is not an error but easier to read when not escaped ",
+						"" + tmp, "" + (quote));
+				}
+
 			} else if (check) {
 				switch (current) {
 					case '\\' :
@@ -230,7 +237,8 @@ final class PropertiesParser {
 							quote = tmp;
 						} else if (quote == tmp) {
 							quote = 0;
-							expectDelimeter = true;
+							if (isEven(countBackslashesAtEnd(sb)))
+								expectDelimeter = true;
 						}
 						break;
 
@@ -271,6 +279,26 @@ final class PropertiesParser {
 			next();
 		}
 		return sb.toString();
+	}
+
+	private boolean isQuote(char tmp) {
+		return tmp == '\'' || tmp == '"';
+	}
+
+	private boolean isEven(int count) {
+		return (count & 1) == 0;
+	}
+
+	private int countBackslashesAtEnd(StringBuilder sb) {
+		int n = 0;
+		int r = sb.length();
+		while (--r >= 0) {
+			if (sb.charAt(r) != '\\') {
+				return n;
+			}
+			n++;
+		}
+		return n;
 	}
 
 	private void invalidWhitespace(int quote, String type) {
@@ -353,7 +381,9 @@ final class PropertiesParser {
 		if (reporter != null) {
 			int line = this.line;
 			String context = context();
-			SetLocation loc = reporter.error("%s: <<%s>>", Strings.format(msg, args), context);
+			SetLocation loc;
+			loc = reporter.warning("%s: <<%s>>", Strings.format(msg, args), context);
+
 			loc.line(line);
 			loc.context(context);
 			if (file != null)
