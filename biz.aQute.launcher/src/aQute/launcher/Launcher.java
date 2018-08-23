@@ -718,6 +718,7 @@ public class Launcher implements ServiceListener {
 				.getResource(path);
 			if (useReferences() && resource.getProtocol()
 				.equalsIgnoreCase("file")) {
+				trace("installing %s by reference", path);
 
 				//
 				// Install by reference

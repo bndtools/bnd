@@ -56,8 +56,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	private final static Logger		logger					= LoggerFactory.getLogger(ProjectLauncherImpl.class);
 	private static final String		EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
 	private static final String		EMBEDDED_LAUNCHER		= "aQute/launcher/pre/EmbeddedLauncher.class";
-	private BuilderInstructions		builderInstrs			= getInstructions(BuilderInstructions.class);
-	private LauncherInstructions	launcherInstrs			= getInstructions(LauncherInstructions.class);
+	private BuilderInstructions		builderInstrs;
+	private LauncherInstructions	launcherInstrs;
 
 	final private File				launchPropertiesFile;
 	boolean							prepared;
@@ -66,6 +66,10 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	public ProjectLauncherImpl(Project project) throws Exception {
 		super(project);
+
+		builderInstrs = project.getInstructions(BuilderInstructions.class);
+		launcherInstrs = project.getInstructions(LauncherInstructions.class);
+
 		logger.debug("created a aQute launcher plugin");
 		launchPropertiesFile = File.createTempFile("launch", ".properties", project.getTarget());
 		logger.debug("launcher plugin using temp launch file {}", launchPropertiesFile.getAbsolutePath());
@@ -232,8 +236,10 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 		Optional<Compression> rejar = launcherInstrs.executable()
 			.rejar();
+		logger.debug("rejar {}", rejar);
 		Map<Glob, List<Glob>> strip = extractStripMapping(launcherInstrs.executable()
 			.strip());
+		logger.debug("strip {}", strip);
 
 		Jar jar = new Jar(getProject().getName());
 
@@ -355,13 +361,15 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	private Resource getJarFileResource(File file, Optional<Compression> compression, Map<Glob, List<Glob>> strip)
 		throws IOException {
-		if (strip.isEmpty() && !compression.isPresent())
+		if (strip.isEmpty() && !compression.isPresent()) {
 			return new FileResource(file);
+		}
 
 		Jar jar = new Jar(file);
 		jar.setDoNotTouchManifest();
 
 		compression.ifPresent(jar::setCompression);
+		logger.debug("compression {}", compression);
 
 		stripContent(strip, jar);
 
@@ -379,16 +387,20 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				continue;
 			}
 
+			logger.debug("strip {}", e.getValue());
 			List<Glob> value = e.getValue();
 
 			for (String path : jar.getResources()
 				.keySet()) {
 				if (Glob.in(value, path)) {
+					logger.debug("strip {}", path);
 					remove.add(path);
 				}
 			}
 		}
 		remove.forEach(jar::remove);
+		logger.debug("resources {}", Strings.join("\n", jar.getResources()
+			.keySet()));
 	}
 
 	String nonCollidingPath(File file, Jar jar) {

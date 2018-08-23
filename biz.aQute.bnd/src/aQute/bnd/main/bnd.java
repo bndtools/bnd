@@ -356,7 +356,7 @@ public class bnd extends Processor {
 
 			workspace = Workspace.findWorkspace(IO.work);
 			if (workspace != null) {
-				logger.info("Using workspace {}", workspace);
+				logger.debug("Using workspace {}", workspace);
 				workspace.use(this);
 				if (options.workspace() && workspace != null) {
 					this.setParent(workspace);
@@ -441,7 +441,7 @@ public class bnd extends Processor {
 			// ignore
 		}
 		logger = LoggerFactory.getLogger(bnd.class);
-		logger.info("Setup logger");
+		logger.debug("Setup logger");
 	}
 
 	/**
