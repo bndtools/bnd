@@ -16,14 +16,7 @@ bnd is not a single product, it is a library (bndlib) used in many different sof
 </div>
 
 ## Command Line
-That said, there is also a command line version of bnd, providing an easy way to try out its many features. You can install bnd through [jpm][1]. You first have to install jpm, fortunately, this is well documented at [jpm install][1]. Installing jpm has the other advantage that it provides some useful commands to work with a repository that has all of maven central. 
-
-With jpm installed, you can now install the latest version of bnd as follows:
-
-	$ sudo jpm install bnd@*
-	$ bnd version
-	2.4.0.201406271227
-	$
+That said, there is also a command line version of bnd, providing an easy way to try out its many features. You can install bnd through [brew][1] on MacOS.
 
 ## Libraries
 The binaries are available on [Cloudbees][4]. The latest version can be found at:
@@ -49,12 +42,10 @@ The manual is also on [github][5]. If you see an improvement, do not hesitate to
 
 ## Communication Settings
 
-If you're behind a firewall that requires proxies or you use repositories that require authentication see [-connection-settings].
+If you're behind a firewall that requires proxies or you use repositories that require authentication see [-connection-settings][6].
 
-[1]: http://www.jpm4j.org
-[2]: http://jpm4j.org/#!/md/install
+[1]: https://brew.sh/
 [3]: https://github.com/bndtools/bnd
 [4]: https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/
-[5]: https://github.com/bndtools/bnd.manual
-[6]: /instructions/conditionalpackage.html
-[-connection-settings]: /instructions/connection-settings
+[5]: https://github.com/bndtools/bnd/docs
+[6]: /instructions/connection-settings

@@ -39,7 +39,6 @@ The default launcher in bnd. It creates a new VM with the given options, creates
 
 ### Example bndrun file
 
-	JPM-Command: xray
 	-runfw:                     org.apache.felix.framework;version='[4,5)'
 	-runbundles: \
 		org.apache.felix.shell,\
@@ -173,7 +172,7 @@ This project is the bnd remote launcher. It consists of the following artifacts:
 
 * `biz.aQute.remote.launcher` – The actual launcher. You can use the `biz.aQute.remote.launcher` by placing it on the `-runpath`. This will override the default launcher. It contains the agent and the bnd launcher plugin.
 * `biz.aQute.remote.agent` – The agent that must run as a bundle on a framework, or alternatively, runs on the framework side of the classpath and uses the framework's Bundle Context. That is, you can put this file on the `-runpath` of the `biz.aQute.launcher` bndrun and bnd files.
-* `biz.aQute.remote.main` – An executable JAR compatible with JPM. (That is, you can install it from jpm with `sudo jpm install biz.aQute.remote.main` or `sudo jpm install bndremote`.
+* `biz.aQute.remote.main` – An executable JAR.
 
 ### Usage
 

@@ -212,7 +212,7 @@ This of course looks awkward and hardly DNRY. A better solution is to create an 
 
 ## Description
 
-Maven Central is quickly moving towards a million revisions organized in 200.000 programs. It should be clear that we need to organize this huge pile of software. One way is to make sure you document your programs appropriately. It is highly recommended to have a short one paragraph description in each bundle so that sites like [jpm](https://jpm4j.org) can provide search facilities and useful presentation. Adding a description to our bundle is easy:
+Maven Central is quickly moving towards a million revisions organized in 200.000 programs. It should be clear that we need to organize this huge pile of software. One way is to make sure you document your programs appropriately. It is highly recommended to have a short one paragraph description in each bundle. Adding a description to our bundle is easy:
  
 	v:               1.1.1
 
@@ -232,7 +232,7 @@ That said, a good Bundle-Description is a single paragraph with a few short sent
 
 ## Include Resources
 
-The Bundle-Description is an excellent way to provide a short description, but what about a longer description with examples of usage, caveats, configuration requirements, etc? It would be nice to include a `readme` file in the bundle that indexing sites could use. For example, take a look at [Xray](http://jpm4j.org/#!/p/sha/C9256D19F155D699ED0D18559BBB80441AC68FF7//0.0.0?tab=readme). You can achieve this effect by including a `readme.md` file in the root of your bundle.
+The Bundle-Description is an excellent way to provide a short description, but what about a longer description with examples of usage, caveats, configuration requirements, etc? It would be nice to include a `readme` file in the bundle that indexing sites could use. You can achieve this effect by including a `readme.md` file in the root of your bundle.
 
 In bnd it is possible to include any resource from anywhere in the file system (actually, any URL as well).
 
