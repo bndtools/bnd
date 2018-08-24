@@ -31,6 +31,14 @@ public class Hex {
 		return out;
 	}
 
+	public static String toHex(byte b) {
+		char low = HEX[b & 0xF];
+		char high = HEX[(b & 0xF0) >> 4];
+		return new String(new char[] {
+			high, low
+		});
+	}
+
 	public final static int nibble(char c) {
 		if (c >= '0' && c <= '9')
 			return c - '0';
@@ -88,5 +96,16 @@ public class Hex {
 			return false;
 
 		return c <= 'f';
+	}
+
+	public static String separated(byte[] bytes, String separator) {
+		String del="";
+		StringBuilder sb = new StringBuilder();
+		for ( byte x : bytes) {
+			sb.append(del);
+			sb.append(toHex(x));
+			del = separator;
+		}
+		return sb.toString();
 	}
 }
