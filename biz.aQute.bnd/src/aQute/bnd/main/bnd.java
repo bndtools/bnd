@@ -2430,9 +2430,8 @@ public class bnd extends Processor {
 		int errors = 0;
 		File cwd = new File("").getAbsoluteFile();
 
+		HandledProjectWorkspaceOptions hpwOptions = handleOptions(opts, Arrays.asList(BNDRUN_ALL));
 		try {
-			HandledProjectWorkspaceOptions hpwOptions = handleOptions(opts, Arrays.asList(BNDRUN_ALL));
-
 			File reportDir = getFile("reports");
 
 			IO.delete(reportDir);
@@ -2506,7 +2505,8 @@ public class bnd extends Processor {
 			if (errors != 0)
 				error("Errors found %s", errors);
 		} finally {
-			ws.close();
+			hpwOptions.workspace()
+				.close();
 		}
 	}
 
