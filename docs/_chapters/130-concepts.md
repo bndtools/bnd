@@ -51,7 +51,7 @@ In DS, the implementation class is called the _component_ and in this document w
 
 # The Workspace
 
-The bndlib _workspace_ is an encapsulation of a set of cohesive _projects_, where a project exports zero or more bundles via _repositories_. A repository provides access to set of bundles exported by some means, likely from other workspaces. A repository can be on the local file system or a remote system like JPM or Maven central. 
+The bndlib _workspace_ is an encapsulation of a set of cohesive _projects_, where a project exports zero or more bundles via _repositories_. A repository provides access to set of bundles exported by some means, likely from other workspaces. A repository can be on the local file system or a remote system like Maven central. 
 
 Projects can depend on other projects in the workspace or import bundles from the repositories. This is depicted in the following figure.
 

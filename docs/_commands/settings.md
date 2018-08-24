@@ -1,7 +1,7 @@
 ---
 layout: default
 title: settings [options] <<key>[=<value>]...> 
-summary: Set bnd/jpm global variables. The key can be wildcarded. 
+summary: Set bnd global variables. The key can be wildcarded. 
 ---
 
    [ -b, --base64 ]           - Show key in base64

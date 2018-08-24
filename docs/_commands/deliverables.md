@@ -21,8 +21,6 @@ OPTIONS
 	biz.aQute.bnd.testextension                 2.4.0  /Ws/bnd/biz.aQute.bnd.testextension/generated/biz.aQute.bnd.testextension.jar
 	biz.aQute.bndlib                            2.4.0  /Ws/bnd/biz.aQute.bndlib/generated/biz.aQute.bndlib.jar
 	biz.aQute.bndlib.tests                      2.4.0  /Ws/bnd/biz.aQute.bndlib.tests/generated/biz.aQute.bndlib.tests.jar
-	biz.aQute.jpm.daemon                        1.1.0  /Ws/bnd/biz.aQute.jpm/generated/biz.aQute.jpm.daemon.jar
-	biz.aQute.jpm.run                           1.0.0  /Ws/bnd/biz.aQute.jpm/generated/biz.aQute.jpm.run.jar
 	biz.aQute.junit                             1.3.0  /Ws/bnd/biz.aQute.junit/generated/biz.aQute.junit.jar
 	biz.aQute.launcher                          1.4.0  /Ws/bnd/biz.aQute.launcher/generated/biz.aQute.launcher.jar
 	biz.aQute.repository                        2.2.0  /Ws/bnd/biz.aQute.repository/generated/biz.aQute.repository.jar

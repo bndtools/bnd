@@ -20,7 +20,7 @@ production using only command line tools.
 arbitrary Java libraries as OSGi bundles, using bnd as a command line
 tool.
 
-As a running example, the [JDOM library][] version [1.1.1][] will be wrapped as
+As a running example, the [JDOM library][] version [1.1.2][] will be wrapped as
 an OSGi bundle.
 
 NB: Many of the tasks described here can be more easily performed with a
@@ -75,7 +75,7 @@ Create a file named `jdom.bnd` containing the following:
 
     -classpath: jdom.jar
     Bundle-SymbolicName: org.jdom
-    ver: 1.1.1
+    ver: 1.1.2
     -output: ${bsn}-${ver}.jar
     Bundle-Version: ${ver}
     Export-Package: *;version=${ver}
@@ -99,7 +99,7 @@ bundle. To summarize the features used:
     these exports are marked with the version of the API.
 
 To generate the bundle: bnd reports the name of the generated file
-(org.jdom-1.1.1.jar), the number of files contained (79) and its size in
+(org.jdom-1.1.2.jar), the number of files contained (79) and its size in
 bytes (151K). We refer to this bundle as the initial wrapping.
 
 ## Examining Dependencies
@@ -112,7 +112,7 @@ of the manifest file format that make it quite inaccessible. For
 example:
 
     $ bnd jdom.bnd
-    org.jdom-1.1.1.jar 79 154490
+    org.jdom-1.1.2.jar 79 154490
     Import-Package: javax.xml.parsers,javax.xml.transform,javax.xml.transf
      orm.sax,javax.xml.transform.stream,oracle.xml.parser,oracle.xml.parse
      r.v2,org.apache.xerces.dom,org.apache.xerces.parsers,org.jaxen,org.ja
@@ -126,7 +126,7 @@ Since this is so unreadable, Bnd offers a print command that formats in
 the manifest of a specified bundle JAR. We can request Bnd to print only
 the imports and exports by using the `-impexp` switch: ￼
 
-    $ bnd print -impexp org.jdom-1.1.1.jar
+    $ bnd print -impexp org.jdom-1.1.2.jar
     [IMPEXP]
     Import-Package
       javax.xml.parsers
@@ -146,13 +146,13 @@ the imports and exports by using the `-impexp` switch: ￼
       org.xml.sax.ext
       org.xml.sax.helpers
     Export-Package
-      org.jdom                    {version=1.1.1, imported-as=[1.1,2)}
-      org.jdom.adapters           {version=1.1.1}
-      org.jdom.filter             {version=1.1.1}
-      org.jdom.input              {version=1.1.1, imported-as=[1.1,2)}
-      org.jdom.output             {version=1.1.1}
-      org.jdom.transform          {version=1.1.1}
-      org.jdom.xpath              {version=1.1.1}
+      org.jdom                    {version=1.1.2, imported-as=[1.1,2)}
+      org.jdom.adapters           {version=1.1.2}
+      org.jdom.filter             {version=1.1.2}
+      org.jdom.input              {version=1.1.2, imported-as=[1.1,2)}
+      org.jdom.output             {version=1.1.2}
+      org.jdom.transform          {version=1.1.2}
+      org.jdom.xpath              {version=1.1.2}
 
 ￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼￼Reviewing the imports, we see that most of them come
 from JRE packages. However there are three groups of dependencies that
@@ -213,7 +213,7 @@ an optional dependency. To get further information to help us make this
 decision, we can use the Bnd `print` command again with the `-usedby`
 option: ￼￼￼
 
-    $ bnd print -usedby org.jdom-1.1.1.jar
+    $ bnd print -usedby org.jdom-1.1.2.jar
     [USEDBY]
     java.sql                   org.jdom
     javax.xml.parsers          org.jdom.adapters
@@ -270,7 +270,7 @@ JDOM XPath bundle. This is based on our original recipe:
 
     -classpath: jdom.jar
     Bundle-SymbolicName: org.jdom.xpath
-    ver: 1.1.1
+    ver: 1.1.2
     -output: ${bsn}-${ver}.jar
     Bundle-Version: ${ver}
     Export-Package: org.jdom.xpath;version=${ver}
@@ -293,8 +293,8 @@ This will result in a TEMP header being added to the manifest of the
 output bundle. To view it, use Bnd’s print command again with the
 -manifest option:
 
-    $ bnd print -manifest org.jdom-1.1.1.jar
-    [MANIFEST org.jdom-1.1.1.jar]
+    $ bnd print -manifest org.jdom-1.1.2.jar
+    [MANIFEST org.jdom-1.1.2.jar]
     ...
     TEMP                                    org.jdom.adapters.OracleV1DOMAdapter
     ...
@@ -358,7 +358,7 @@ it. This could result in errors such as `IncompatibleClassChangeError`,
 manually add import ranges where possible.
 
 For example the JDOM version we are wrapping has been built against
-version 1.1.1. The Jaxen imports can be refined by adding the following
+version 1.1.2. The Jaxen imports can be refined by adding the following
 `Import-Package` statement to `jdom.xpath.bnd`:
 
     Import-Package: \
@@ -373,15 +373,9 @@ alternative range may be required.
 Often our biggest problem is working out which version of a dependency
 library was used to build the library we are wrapping. In the case of
 JDOM, we can find jaxen.jar in the lib directory of its source project
-and note that its manifest indicates version 1.1.1. If the project is
+and note that its manifest indicates version 1.1.2. If the project is
 built with Apache Maven we can usually find a version in the POM. Other
 times we must resort to reading project documentation, if it exists.
-
-A great resource to find dependencies is [JPM4J][]. With [JPM4J][],
-you can look for symbolic names (prefix the bsn with `osgi:`) or
-packages that should be prefixed with (`p:`). For example, search
-for [p:org.jaxen](http://jpm4j.org/#!/search?q=p:org.jaxen). There
-are several more [search][] options.
 
 Note that version ranges cannot be added for JRE packages, e.g.
 `javax.swing` or `org.xml.sax` because the Java specifications do not
@@ -466,9 +460,8 @@ wrapping. The placeholders on the first three lines must be filled in:
     # Uncomment next line to customize imports. The last entry MUST be "*"
     # Import-Package: *
 
-[JDOM library]: http://jpm4j.org/#!/p/org.jdom/jdom?tab=history
-[1.1.1]: http://jpm4j.org/#!/p/sha/1D04C0F321EA337F3661CF7EDE8F4C6F653A8FDD//0.0.0
+[JDOM library]: https://search.maven.org/search?q=g:org.jdom%20AND%20a:jdom&core=gav
+[1.1.2]: https://search.maven.org/artifact/org.jdom/jdom/1.1.2/jar
 [OSGi enRoute Wrap Tutorial]: http://enroute.osgi.org/tutorial_wrap/050-start
 [Semantic Versioning]: https://www.osgi.org/wp-content/uploads/SemanticVersioning.pdf
-[JPM4J]: http://jpm4j.org
-[search]: http://jpm4j.org/#!/md/search
+

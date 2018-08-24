@@ -24,4 +24,4 @@ OPTIONS
 	008 /Ws/bnd/cnf/repo                         r/w=true
 	009 /Ws/bnd/dist/bundles                     r/w=true
 	010 aQute.bnd.signing.JartoolSigner@2dac2cb7
-	011 JpmRepository [writable=true, name=JPM, location=~/.bnd/shacache, digest=DDE7EEB45418288571FF3E7F1BA9FC00BFF6A580]
+

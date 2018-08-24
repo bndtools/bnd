@@ -75,7 +75,7 @@ Available sub-commands:
 	  select                      - Helps finding information in a set of JARs by
 	                                filtering on manifest data and printing out
 	                                selected information. 
-	  settings                    - Set bnd/jpm global variables 
+	  settings                    - Set bnd global variables 
 	  source                      - Merge a binary jar with its sources. It is
 	                                possible to specify source path 
 	  sync                        -  
