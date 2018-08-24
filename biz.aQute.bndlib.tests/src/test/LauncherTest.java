@@ -43,12 +43,11 @@ public class LauncherTest extends TestCase {
 
 	public void testExecutableJarWithStripping() throws Exception {
 		Project project = getProject();
-		ProjectLauncher l = project.getProjectLauncher();
 
-		long full = make(l, null);
-		long optStripped = make(l, "strip='OSGI-OPT/*'");
-		long optStrippedAndNoBndrun = make(l, "strip='OSGI-OPT/*,*.bndrun'");
-		long optNoBndrun = make(l, "strip='*.bndrun'");
+		long full = make(project, null);
+		long optStripped = make(project, "strip='OSGI-OPT/*'");
+		long optStrippedAndNoBndrun = make(project, "strip='OSGI-OPT/*,*.bndrun'");
+		long optNoBndrun = make(project, "strip='*.bndrun'");
 
 		assertThat(full > optStripped).isTrue();
 		assertThat(optStripped > optStrippedAndNoBndrun).isTrue();
@@ -56,9 +55,10 @@ public class LauncherTest extends TestCase {
 
 	}
 
-	private long make(ProjectLauncher l, String option) throws Exception {
+	private long make(Project p, String option) throws Exception {
+		ProjectLauncher l = project.getProjectLauncher();
 		if (option != null)
-			l.setProperty(Constants.EXECUTABLE, option);
+			p.setProperty(Constants.EXECUTABLE, option);
 		try (Jar executable = l.executable()) {
 			File tmp = Files.newTemporaryFile();
 			try {
@@ -101,27 +101,27 @@ public class LauncherTest extends TestCase {
 		project.setProperty(Constants.RUNTRACE, "false");
 		ProjectLauncher l = project.getProjectLauncher();
 		if (outer) {
-			l.setProperty(Constants.COMPRESSION, "DEFLATE");
+			project.setProperty(Constants.COMPRESSION, "DEFLATE");
 			System.out.println("outer deflate");
 		} else {
-			l.setProperty(Constants.COMPRESSION, "STORE");
+			project.setProperty(Constants.COMPRESSION, "STORE");
 			System.out.println("outer store");
 		}
 
 		if (inner) {
 			if (strip) {
-				l.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE,strip='OSGI-OPT/*,META-INF/maven/*'");
+				project.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE,strip='OSGI-OPT/*,META-INF/maven/*'");
 				System.out.println("inner deflate & strip");
 			} else {
-				l.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE");
+				project.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE");
 				System.out.println("inner deflate & no strip");
 			}
 		} else {
 			if (strip) {
-				l.setProperty(Constants.EXECUTABLE, "rejar=STORE,strip='OSGI-OPT/*,META-INF/maven/*'");
+				project.setProperty(Constants.EXECUTABLE, "rejar=STORE,strip='OSGI-OPT/*,META-INF/maven/*'");
 				System.out.println("inner store & strip");
 			} else {
-				l.setProperty(Constants.EXECUTABLE, "rejar=STORE");
+				project.setProperty(Constants.EXECUTABLE, "rejar=STORE");
 				System.out.println("inner store & no strip");
 			}
 		}

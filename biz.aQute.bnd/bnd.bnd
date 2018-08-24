@@ -49,14 +49,14 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	osgi.cmpn;version=6.0,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\
-	slf4j.api;version=latest
+	slf4j.api;version=latest,\
+    slf4j.simple;version=latest
 
 
 -testpath: \
     ${junit},\
     org.apache.felix.framework;version=latest,\
-	biz.aQute.bnd.embedded-repo; version=snapshot,\
-    slf4j.simple;version=latest
+	biz.aQute.bnd.embedded-repo; version=snapshot
 
 # About the aQute.library.bndrepo dep. Needed to add them here
 # by hand even though they are in bndlib. However, they are added
