@@ -16,6 +16,7 @@ bnd is not a single product, it is a library (bndlib) used in many different sof
 </div>
 
 ## Command Line
+*REPOSITORY www.jpm4j.org IS DEFUNCT. THIS TOPIC SHOULD BE REMOVED OR UPDATED.*
 That said, there is also a command line version of bnd, providing an easy way to try out its many features. You can install bnd through [jpm][1]. You first have to install jpm, fortunately, this is well documented at [jpm install][1]. Installing jpm has the other advantage that it provides some useful commands to work with a repository that has all of maven central. 
 
 With jpm installed, you can now install the latest version of bnd as follows:
