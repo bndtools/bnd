@@ -1,12 +1,11 @@
 package aQute.bnd.component;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
+import static java.util.stream.Collectors.joining;
+
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.ServiceScope;
@@ -17,7 +16,6 @@ import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.ExtensionDef;
 import aQute.bnd.xmlattribute.Namespaces;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
-import aQute.lib.collections.MultiMap;
 import aQute.lib.tag.Tag;
 
 /**
@@ -29,13 +27,8 @@ import aQute.lib.tag.Tag;
  */
 class ComponentDef extends ExtensionDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
-	final static String				MARKER			= new String("|marker");
-	final List<String>				properties		= new ArrayList<>();
-	final MultiMap<String, String>	property		= new MultiMap<>();					// key
-																						// is
-																						// property
-																						// name
-	final Map<String, String>		propertyType	= new HashMap<>();
+	final PropertiesDef				properties;
+	final PropertiesDef				factoryProperties;
 	final Map<String, ReferenceDef>	references		= new LinkedHashMap<>();
 	Version							version;
 	String							name;
@@ -51,11 +44,12 @@ class ComponentDef extends ExtensionDef {
 	Boolean							enabled;
 	String							xmlns;
 	String[]						configurationPid;
-	List<Tag>						propertyTags	= new ArrayList<>();
 
-	public ComponentDef(XMLAttributeFinder finder, Version minVersion) {
+	public ComponentDef(Analyzer analyzer, XMLAttributeFinder finder, Version minVersion) {
 		super(finder);
 		version = minVersion;
+		properties = new PropertiesDef(analyzer);
+		factoryProperties = new PropertiesDef(analyzer);
 	}
 
 	String effectiveName() {
@@ -93,37 +87,8 @@ class ComponentDef extends ExtensionDef {
 		} else if (scope != null && scope != ServiceScope.BUNDLE)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 
-		for (Map.Entry<String, List<String>> kvs : property.entrySet()) {
-			Tag property = new Tag("property");
-			String name = kvs.getKey();
-			String type = propertyType.get(name);
-
-			property.addAttribute("name", name);
-			if (type != null) {
-				property.addAttribute("type", type);
-			}
-			if (kvs.getValue()
-				.size() == 1) {
-				String value = kvs.getValue()
-					.get(0);
-				value = check(type, value, analyzer);
-				property.addAttribute("value", value);
-			} else {
-				StringBuilder sb = new StringBuilder();
-
-				String del = "";
-				for (String v : kvs.getValue()) {
-					if (v == MARKER) {
-						continue;
-					}
-					sb.append(del);
-					v = check(type, v, analyzer);
-					sb.append(v);
-					del = "\n";
-				}
-				property.addContent(sb.toString());
-			}
-			propertyTags.add(property);
+		if (factory == null && !factoryProperties.isEmpty()) {
+			analyzer.error("The factoryProperty and/or factoryProperies elements are used on a non-factory component");
 		}
 	}
 
@@ -139,6 +104,9 @@ class ComponentDef extends ExtensionDef {
 			updateVersion(AnnotationReader.V1_2);
 		if (modified != null)
 			updateVersion(AnnotationReader.V1_1);
+		if (!factoryProperties.isEmpty()) {
+			updateVersion(AnnotationReader.V1_4);
+		}
 
 	}
 
@@ -173,8 +141,7 @@ class ComponentDef extends ExtensionDef {
 		component.addAttribute("name", name);
 
 		if (configurationPolicy != null)
-			component.addAttribute("configuration-policy", configurationPolicy.toString()
-				.toLowerCase());
+			component.addAttribute("configuration-policy", configurationPolicy.toString());
 
 		if (enabled != null)
 			component.addAttribute("enabled", enabled);
@@ -195,22 +162,21 @@ class ComponentDef extends ExtensionDef {
 			component.addAttribute("modified", modified);
 
 		if (configurationPid != null) {
-			StringBuilder b = new StringBuilder();
-			String space = "";
-			for (String pid : configurationPid) {
-				if ("$".equals(pid))
-					pid = name;
-				b.append(space)
-					.append(pid);
-				space = " ";
-			}
-			component.addAttribute("configuration-pid", b.toString());
+			component.addAttribute("configuration-pid", Stream.of(configurationPid)
+				.map(this::map$)
+				.collect(joining(" ")));
 		}
 
 		addAttributes(component, namespaces);
 
-		Tag impl = new Tag(component, "implementation");
-		impl.addAttribute("class", implementation.getFQN());
+		properties.propertyTags("property")
+			.forEachOrdered(component::addContent);
+		properties.propertiesTags("properties")
+			.forEachOrdered(component::addContent);
+		factoryProperties.propertyTags("factory-property")
+			.forEachOrdered(component::addContent);
+		factoryProperties.propertiesTags("factory-properties")
+			.forEachOrdered(component::addContent);
 
 		if (service != null && service.length != 0) {
 			Tag s = new Tag(component, "service");
@@ -221,8 +187,7 @@ class ComponentDef extends ExtensionDef {
 					}
 					s.addAttribute("servicefactory", scope == ServiceScope.BUNDLE);
 				} else {
-					s.addAttribute("scope", scope.toString()
-						.toLowerCase());
+					s.addAttribute("scope", scope.toString());
 				}
 			}
 
@@ -237,43 +202,14 @@ class ComponentDef extends ExtensionDef {
 			component.addContent(refTag);
 		}
 
-		for (Tag tag : propertyTags)
-			component.addContent(tag);
+		Tag impl = new Tag(component, "implementation");
+		impl.addAttribute("class", implementation.getFQN());
 
-		for (String entry : properties) {
-			Tag properties = new Tag(component, "properties");
-			properties.addAttribute("entry", entry);
-		}
 		return component;
 	}
 
-	private String check(String type, String v, Analyzer analyzer) {
-		if (type == null)
-			return v;
-
-		try {
-			if (type.equals("Char"))
-				type = "Character";
-
-			Class<?> c = Class.forName("java.lang." + type);
-			if (c == String.class)
-				return v;
-
-			v = v.trim();
-			if (c == Character.class)
-				c = Integer.class;
-			Method m = c.getMethod("valueOf", String.class);
-			m.invoke(null, v);
-		} catch (ClassNotFoundException e) {
-			analyzer.error("Invalid data type %s", type);
-		} catch (NoSuchMethodException e) {
-			analyzer.error("Cannot convert data %s to type %s", v, type);
-		} catch (NumberFormatException e) {
-			analyzer.error("Not a valid number %s for %s, %s", v, type, e.getMessage());
-		} catch (Exception e) {
-			analyzer.error("Cannot convert data %s to type %s", v, type);
-		}
-		return v;
+	private String map$(String v) {
+		return "$".equals(v) ? name : v;
 	}
 
 	void updateVersion(Version version) {

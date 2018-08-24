@@ -14,6 +14,7 @@ import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
+import aQute.bnd.osgi.Constants;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -214,7 +215,7 @@ public class MavenEntry implements Closeable {
 			File props = new File(dir, "bnd.properties");
 			if (props.exists()) {
 				try {
-					properties.load(props, null);
+					properties.load(props, null, Constants.OSGI_SYNTAX_HEADERS);
 				} catch (Exception e) {
 					// we ignore for now, will handle it on safe
 				}

@@ -43,7 +43,6 @@ import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledExecutorService;
@@ -52,6 +51,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -107,36 +107,81 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
 	static ThreadLocal<Processor>					current				= new ThreadLocal<>();
-	private final static ScheduledExecutorService	scheduledExecutor;
-	private final static ExecutorService			executor;
+	private final static ScheduledThreadPoolExecutor	scheduledExecutor;
+	private final static ThreadPoolExecutor				executor;
 	static {
-		ThreadFactory threadFactory = Executors.defaultThreadFactory();
-		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactory,
-			new RejectedExecutionHandler() {
+		ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+		ThreadFactory threadFactory = (Runnable r) -> {
+			Thread t = defaultThreadFactory.newThread(r);
+			t.setName("Bnd-Processor," + t.getName());
+			t.setDaemon(true);
+			return t;
+		};
+		RejectedExecutionHandler handler = (Runnable r, ThreadPoolExecutor e) -> {
+			if (e.isShutdown()) {
+				return;
+			}
+			try {
+				r.run();
+			} catch (Throwable t) {
 				/*
 				 * We are stealing another's thread because we have hit max pool
 				 * size, so we cannot let the runnable's exception propagate
 				 * back up this thread.
 				 */
-				@Override
-				public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-					if (executor.isShutdown()) {
-						return;
-					}
-					try {
-						r.run();
-					} catch (Throwable t) {
-						try {
-							Thread thread = Thread.currentThread();
-							thread.getUncaughtExceptionHandler()
-								.uncaughtException(thread, t);
-						} catch (Throwable for_real) {
-							// we will ignore this
-						}
-					}
+				try {
+					Thread thread = Thread.currentThread();
+					thread.getUncaughtExceptionHandler()
+						.uncaughtException(thread, t);
+				} catch (Throwable for_real) {
+					// we will ignore this
 				}
-			});
-		scheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory);
+			}
+		};
+		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactory,
+			handler);
+		scheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory, handler);
+		scheduledExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
+		scheduledExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
+
+		// Handle shutting down executors via shutdown hook
+		AtomicBoolean shutdownHookInstalled = new AtomicBoolean();
+		ThreadFactory shutdownHookInstallerThreadFactory = (Runnable r) -> {
+			if (shutdownHookInstalled.compareAndSet(false, true)) {
+				executor.setThreadFactory(threadFactory);
+				scheduledExecutor.setThreadFactory(threadFactory);
+				Thread shutdownThread = defaultThreadFactory.newThread(() -> {
+					// limit new thread creation
+					executor.setMaximumPoolSize(Math.max(1, executor.getPoolSize()));
+					scheduledExecutor.shutdown();
+					try {
+						scheduledExecutor.awaitTermination(20, TimeUnit.SECONDS);
+					} catch (InterruptedException e) {
+						Thread.currentThread()
+							.interrupt();
+					}
+					executor.shutdown();
+					try {
+						executor.awaitTermination(20, TimeUnit.SECONDS);
+					} catch (InterruptedException e) {
+						Thread.currentThread()
+							.interrupt();
+					}
+				});
+				shutdownThread.setName("Bnd-ExecutorShutdownHook," + shutdownThread.getName());
+				try {
+					Runtime.getRuntime()
+						.addShutdownHook(shutdownThread);
+				} catch (IllegalStateException e) {
+					// VM is already shutting down...
+					executor.shutdown();
+					scheduledExecutor.shutdown();
+				}
+			}
+			return threadFactory.newThread(r);
+		};
+		executor.setThreadFactory(shutdownHookInstallerThreadFactory);
+		scheduledExecutor.setThreadFactory(shutdownHookInstallerThreadFactory);
 	}
 	private static PromiseFactory				promiseFactory			= new PromiseFactory(executor,
 		scheduledExecutor);
@@ -1427,7 +1472,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	UTF8Properties loadProperties0(File file) throws IOException {
 		try {
 			UTF8Properties p = new UTF8Properties();
-			p.load(file, this);
+			p.load(file, this, Constants.OSGI_SYNTAX_HEADERS);
 			return p.replaceHere(file.getParentFile());
 		} catch (Exception e) {
 			error("Error during loading properties file: %s, error: %s", file, e);

@@ -1,6 +1,7 @@
 package aQute.bnd.component;
 
 import static aQute.bnd.osgi.Clazz.QUERY.ANNOTATED;
+import static java.util.Objects.requireNonNull;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -14,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.CollectionType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Deactivate;
@@ -53,9 +55,6 @@ public class AnnotationReader extends ClassDataCollector {
 	private static final Logger			logger						= LoggerFactory.getLogger(AnnotationReader.class);
 
 	final static TypeRef[]				EMPTY						= new TypeRef[0];
-	final static Pattern				PROPERTY_PATTERN			= Pattern.compile(
-		"\\s*([^=\\s:]+)\\s*(?::\\s*(Boolean|Byte|Character|Short|Integer|Long|Float|Double|String)\\s*)?=(.*)");
-
 	public static final Version			V1_0						= new Version("1.0.0");																										// "1.0.0"
 	public static final Version			V1_1						= new Version("1.1.0");																										// "1.1.0"
 	public static final Version			V1_2						= new Version("1.2.0");																										// "1.2.0"
@@ -89,6 +88,7 @@ public class AnnotationReader extends ClassDataCollector {
 		"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
 	static final Pattern				DEACTIVATEDESCRIPTORDS13	= Pattern
 		.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
+	static final Pattern				SIGNATURE_SPLIT				= Pattern.compile("[<;>]");
 
 	static final Instruction			COMPONENT_INSTR;
 	static final Instruction			COMPONENT_PROPERTY_INSTR;
@@ -134,11 +134,11 @@ public class AnnotationReader extends ClassDataCollector {
 
 	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder,
 		Version minVersion) {
-		this.analyzer = analyzer;
+		this.analyzer = requireNonNull(analyzer);
 		this.clazz = clazz;
 		this.options = options;
 		this.finder = finder;
-		this.component = new ComponentDef(finder, minVersion);
+		this.component = new ComponentDef(analyzer, finder, minVersion);
 	}
 
 	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options,
@@ -661,7 +661,7 @@ public class AnnotationReader extends ClassDataCollector {
 				if (len == 1) {
 					// To make sure the output is an array, we must make
 					// sure there is more than one entry
-					props.add(name, ComponentDef.MARKER);
+					props.add(name, PropertiesDef.MARKER);
 				}
 			} else {
 				valueToProperty(name, value, isClass, typeClass);
@@ -739,8 +739,7 @@ public class AnnotationReader extends ClassDataCollector {
 				if (prefix != null) {
 					key = prefix + key;
 				}
-				component.property.put(key, value);
-				component.propertyType.put(key, type);
+				component.properties.setProperty(key, type, value);
 			}
 		}
 
@@ -780,11 +779,11 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	/**
-	 * @param reference @Reference proxy backed by raw.
-	 * @param raw @Reference contents
+	 * @param reference @Reference proxy backed by annotation.
+	 * @param annotation @Reference contents
 	 * @throws Exception
 	 */
-	protected void doReference(Reference reference, Annotation raw) throws Exception {
+	protected void doReference(Reference reference, Annotation annotation) throws Exception {
 		ReferenceDef def;
 		if (member == null)
 			def = new ReferenceDef(finder);
@@ -795,29 +794,29 @@ public class AnnotationReader extends ClassDataCollector {
 			referencesByMember.put(member, def);
 		}
 		def.className = className.getFQN();
-		if (raw.get("name") != null)
+		if (annotation.get("name") != null)
 			def.name = reference.name();
-		if (raw.get("bind") != null)
+		if (annotation.get("bind") != null)
 			def.bind = reference.bind();
-		if (raw.get("unbind") != null)
+		if (annotation.get("unbind") != null)
 			def.unbind = reference.unbind();
-		if (raw.get("updated") != null)
+		if (annotation.get("updated") != null)
 			def.updated = reference.updated();
-		if (raw.get("field") != null)
+		if (annotation.get("field") != null)
 			def.field = reference.field();
-		if (raw.get("fieldOption") != null)
+		if (annotation.get("fieldOption") != null)
 			def.fieldOption = reference.fieldOption();
-		if (raw.get("cardinality") != null)
+		if (annotation.get("cardinality") != null)
 			def.cardinality = reference.cardinality();
-		if (raw.get("policy") != null)
+		if (annotation.get("policy") != null)
 			def.policy = reference.policy();
-		if (raw.get("policyOption") != null)
+		if (annotation.get("policyOption") != null)
 			def.policyOption = reference.policyOption();
-		if (raw.get("scope") != null)
+		if (annotation.get("scope") != null)
 			def.scope = reference.scope();
 
 		// Check if we have a target, this must be a filter
-		if (raw.get("target") != null)
+		if (annotation.get("target") != null)
 			def.target = reference.target();
 
 		DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
@@ -830,7 +829,7 @@ public class AnnotationReader extends ClassDataCollector {
 		}
 
 		String annoService = null;
-		TypeRef annoServiceTR = raw.get("service");
+		TypeRef annoServiceTR = annotation.get("service");
 		if (annoServiceTR != null)
 			annoService = annoServiceTR.getFQN();
 
@@ -869,7 +868,7 @@ public class AnnotationReader extends ClassDataCollector {
 					// no generics, the descriptor will be the class name.
 					sig = member.getDescriptor()
 						.toString();
-				String[] sigs = sig.split("[<;>]");
+				String[] sigs = SIGNATURE_SPLIT.split(sig);
 				int sigLength = sigs.length;
 				int index = 0;
 				boolean isCollection = false;
@@ -877,30 +876,30 @@ public class AnnotationReader extends ClassDataCollector {
 					index++;
 					isCollection = true;
 				}
-				// Along with determining the FieldCollectionType, the following
+				// Along with determining the CollectionType, the following
 				// code positions index to read the service type.
-				FieldCollectionType fieldCollectionType = null;
+				CollectionType collectionType = null;
 				if (sufficientGenerics(index, sigLength, def, sig)) {
 					if ("Lorg/osgi/framework/ServiceReference".equals(sigs[index])) {
 						if (sufficientGenerics(index++, sigLength, def, sig)) {
-							fieldCollectionType = FieldCollectionType.reference;
+							collectionType = CollectionType.REFERENCE;
 						}
 					} else if ("Lorg/osgi/service/component/ComponentServiceObjects".equals(sigs[index])) {
 						if (sufficientGenerics(index++, sigLength, def, sig)) {
-							fieldCollectionType = FieldCollectionType.serviceobjects;
+							collectionType = CollectionType.SERVICEOBJECTS;
 						}
 					} else if ("Ljava/util/Map".equals(sigs[index])) {
 						if (sufficientGenerics(index++, sigLength, def, sig)) {
-							fieldCollectionType = FieldCollectionType.properties;
+							collectionType = CollectionType.PROPERTIES;
 						}
 					} else if ("Ljava/util/Map$Entry".equals(sigs[index])
 						&& sufficientGenerics(index++ + 5, sigLength, def, sig)) {
 						if ("Ljava/util/Map".equals(sigs[index++]) && "Ljava/lang/String".equals(sigs[index++])) {
 							if ("Ljava/lang/Object".equals(sigs[index]) || "+Ljava/lang/Object".equals(sigs[index])) {
-								fieldCollectionType = FieldCollectionType.tuple;
+								collectionType = CollectionType.TUPLE;
 								index += 3; // ;>;
 							} else if ("*".equals(sigs[index])) {
-								fieldCollectionType = FieldCollectionType.tuple;
+								collectionType = CollectionType.TUPLE;
 								index += 2; // >;
 							} else {
 								index = sigLength;// no idea what service might
@@ -908,13 +907,17 @@ public class AnnotationReader extends ClassDataCollector {
 							}
 						}
 					} else {
-						fieldCollectionType = FieldCollectionType.service;
+						collectionType = CollectionType.SERVICE;
 					}
 				}
 				if (isCollection) {
 					if (def.cardinality == null)
 						def.cardinality = ReferenceCardinality.MULTIPLE;
-					def.fieldCollectionType = fieldCollectionType;
+					if (annotation.get("collectionType") != null) {
+						def.collectionType = reference.collectionType();
+					} else {
+						def.collectionType = collectionType;
+					}
 				}
 				if (def.policy == ReferencePolicy.DYNAMIC && (def.cardinality == ReferenceCardinality.MULTIPLE
 					|| def.cardinality == ReferenceCardinality.AT_LEAST_ONE) && member.isFinal()) {
@@ -1050,8 +1053,7 @@ public class AnnotationReader extends ClassDataCollector {
 			int start = signature.indexOf(plainType);
 			if (start > -1) {
 				start += plainType.length();
-				String[] sigs = signature.substring(start)
-					.split("[<;>]");
+				String[] sigs = SIGNATURE_SPLIT.split(signature.substring(start));
 				if (sigs.length > 0) {
 					String sig = sigs[0];
 					if (sig.startsWith("-")) {
@@ -1171,21 +1173,13 @@ public class AnnotationReader extends ClassDataCollector {
 		if (annotation.get("xmlns") != null)
 			component.xmlns = comp.xmlns();
 
-		for (String entry : comp.properties()) {
-			if (entry.contains("=")) {
-				analyzer.error("Found an = sign in an OSGi DS Component annotation on %s. In the bnd annotation "
-					+ "this is an actual property but in the OSGi, this element must refer to a path with Java properties. "
-					+ "However, found a path with an '=' sign which looks like a mixup (%s) with the 'property' element.",
-					clazz, entry)
-					.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-						ErrorType.COMPONENT_PROPERTIES_ERROR));
-			}
-			component.properties.add(entry);
-		}
+		component.properties.addProperties(comp.properties());
+		component.factoryProperties.addProperties(comp.factoryProperties());
 
-		doProperty(comp.property());
+		component.properties.setTypedProperty(className, comp.property());
+		component.factoryProperties.setTypedProperty(className, comp.factoryProperty());
+
 		Object[] x = annotation.get("service");
-
 		if (x == null) {
 			// Use the found interfaces, but convert from internal to
 			// fqn.
@@ -1224,33 +1218,6 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		}
 
-	}
-
-	/**
-	 * Parse the properties
-	 */
-
-	private void doProperty(String[] properties) {
-		if (properties != null && properties.length > 0) {
-			MultiMap<String, String> props = new MultiMap<>();
-			for (String p : properties) {
-				Matcher m = PROPERTY_PATTERN.matcher(p);
-
-				if (m.matches()) {
-					String key = m.group(1);
-					String type = m.group(2);
-					if (type == null)
-						type = "String";
-
-					component.propertyType.put(key, type);
-
-					String value = m.group(3);
-					props.add(key, value);
-				} else
-					analyzer.error("Malformed property '%s' on component: %s", p, className);
-			}
-			component.property.putAll(props);
-		}
 	}
 
 	/**

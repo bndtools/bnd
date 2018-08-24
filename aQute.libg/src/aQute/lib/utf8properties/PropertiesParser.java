@@ -1,5 +1,6 @@
 package aQute.lib.utf8properties;
 
+import java.util.Objects;
 import java.util.Properties;
 
 import aQute.lib.hex.Hex;
@@ -46,6 +47,7 @@ final class PropertiesParser {
 	private Properties	properties;
 	private boolean		validKey;
 	private boolean		continuation	= true;
+	private String[]	syntaxHeaders		= new String[0];
 
 	PropertiesParser(String source, String file, Reporter reporter, Properties properties) {
 		this.source = source.toCharArray();
@@ -156,7 +158,7 @@ final class PropertiesParser {
 
 			if (current != '\n') {
 
-				String value = token(LINE, key.startsWith("-"));
+				String value = token(LINE, isSyntaxHeader(key));
 				properties.put(key, value);
 
 			} else {
@@ -169,6 +171,16 @@ final class PropertiesParser {
 
 		int start = n;
 
+	}
+
+	private boolean isSyntaxHeader(String key) {
+		if (key == null || key.length() == 0)
+			return false;
+
+		if (key.startsWith("-"))
+			return true;
+
+		return Strings.in(syntaxHeaders, key);
 	}
 
 	private void skipWhitespace() {
@@ -201,6 +213,13 @@ final class PropertiesParser {
 
 				if (tmp == 0) // we hit \\n\n
 					break;
+
+				if (check && quote != 0 && tmp != quote && isQuote(tmp)) {
+					error(
+						"Found backslash escaped quote character `\\%s` while quoted-string's quote character  is `%s`. This is not an error but easier to read when not escaped ",
+						"" + tmp, "" + (quote));
+				}
+
 			} else if (check) {
 				switch (current) {
 					case '\\' :
@@ -218,8 +237,21 @@ final class PropertiesParser {
 							quote = tmp;
 						} else if (quote == tmp) {
 							quote = 0;
-							expectDelimeter = true;
+							if (isEven(countBackslashesAtEnd(sb)))
+								expectDelimeter = true;
 						}
+						break;
+
+					case '\u00A0' :
+						invalidWhitespace(quote, "NON BREAKING SPACE (\\u00A0)");
+						break;
+
+					case '\u2007' :
+						invalidWhitespace(quote, "FIGURE SPACE (\\u2007) ILLEGAL IN PROPERTIES");
+						break;
+
+					case '\u202F' :
+						invalidWhitespace(quote, "NARROW NO-BREAK SPACE (\\u202F)  ILLEGAL IN PROPERTIES");
 						break;
 
 					case ' ' :
@@ -247,6 +279,31 @@ final class PropertiesParser {
 			next();
 		}
 		return sb.toString();
+	}
+
+	private boolean isQuote(char tmp) {
+		return tmp == '\'' || tmp == '"';
+	}
+
+	private boolean isEven(int count) {
+		return (count & 1) == 0;
+	}
+
+	private int countBackslashesAtEnd(StringBuilder sb) {
+		int n = 0;
+		int r = sb.length();
+		while (--r >= 0) {
+			if (sb.charAt(r) != '\\') {
+				return n;
+			}
+			n++;
+		}
+		return n;
+	}
+
+	private void invalidWhitespace(int quote, String type) {
+		if (quote == 0)
+			error("Non breaking space found [%s] at (line=%s,pos=%s)", type, line, pos);
 	}
 
 	private final String key() {
@@ -324,7 +381,9 @@ final class PropertiesParser {
 		if (reporter != null) {
 			int line = this.line;
 			String context = context();
-			SetLocation loc = reporter.error("%s: <<%s>>", Strings.format(msg, args), context);
+			SetLocation loc;
+			loc = reporter.warning("%s: <<%s>>", Strings.format(msg, args), context);
+
 			loc.line(line);
 			loc.context(context);
 			if (file != null)
@@ -338,6 +397,11 @@ final class PropertiesParser {
 		while (loc < length && source[loc] != '\n')
 			loc++;
 		return new String(source, marker, loc - marker);
+	}
+
+	public void setSyntaxHeaders(String[] syntaxHeaders) {
+		Objects.requireNonNull(syntaxHeaders);
+		this.syntaxHeaders = syntaxHeaders;
 	}
 
 }

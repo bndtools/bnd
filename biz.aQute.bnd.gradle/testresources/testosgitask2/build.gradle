@@ -21,7 +21,7 @@ configurations {
 dependencies {
     compile 'org.osgi:osgi.enroute.junit.wrapper:4.12.0'
     compile 'org.osgi:osgi.enroute.hamcrest.wrapper:1.3.0'
-    framework 'org.eclipse.platform:org.eclipse.osgi:3.12.50'
+    framework 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 
 task testosgi(type: TestOSGi) {

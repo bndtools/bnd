@@ -1,5 +1,10 @@
 package aQute.lib.utf8properties;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -7,18 +12,56 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Properties;
 
+import org.junit.Test;
+
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Report.Location;
-import junit.framework.TestCase;
 
 /**
  * Test if we properly can read
  *
  * @author aqute
  */
-public class UTF8PropertiesTest extends TestCase {
+public class UTF8PropertiesTest {
 
+	@Test
+	public void testEscapedQuotesInQuotedStrings() throws IOException {
+		testProperty(
+			"Foo=foo;string.list2:List=\"a\\\\\"quote,a\\\\,comma, aSpace ,\\\\\"start,\\\\,start,end\\\\\",end\\\\,\"",
+			"Foo",
+			"foo;string.list2:List=\"a\\\"quote,a\\,comma, aSpace ,\\\"start,\\,start,end\\\",end\\,\"");
+		
+		testProperty("Foo=foo;foo=\"a\\'quote\"", "Foo", "foo;foo=\"a\'quote\"",
+			"Found backslash escaped quote character"); // foo;foo="a\'quote"
+		testProperty("Foo=foo;foo=\"a\\\\\"quote\"", "Foo", "foo;foo=\"a\\\"quote\""); // foo;foo="a\"quote"
+		testProperty("Foo=foo;foo=\"a\\\\\\\\\\\"quote\"", "Foo", "foo;foo=\"a\\\\\"quote\""); // foo;foo="a\\\"quote"
+		testProperty("Foo=foo;foo=\"a\\\\\\\\\"", "Foo", "foo;foo=\"a\\\\\""); // foo;foo="a\\\""
+		testProperty("Foo=foo;foo='a\\\\\"quote'", "Foo", "foo;foo='a\\\"quote'"); // foo;foo="a\"quote"
+		testProperty("Foo=foo;foo='a\"quote'", "Foo", "foo;foo='a\"quote'"); // foo;foo="a\"quote"
+
+	}
+
+	@Test
+	public void testNBSP() throws IOException {
+		testProperty("-instr: 'foo,\u202Fbar'", "-instr", "'foo,\u202Fbar'");
+		testProperty("-instr: \"foo,\u202Fbar\"", "-instr", "\"foo,\u202Fbar\"");
+
+		testProperty("Bundle-Description: foo,\u202Fbar", "Bundle-Description", "foo,\u202Fbar");
+
+		testProperty("macro: foo,\u202Fbar", "macro", "foo,\u202Fbar");
+
+		testProperty("-exportcontents: foo,\u202Fbar", "-exportcontents", "foo,\u202Fbar",
+			"Non breaking space found \\[NARROW NO-BREAK SPACE");
+
+		testProperty("Export-Package: foo,\u2007bar", "Export-Package", "foo,\u2007bar",
+			"Non breaking space found \\[FIGURE SPACE");
+
+		testProperty("Private-Package: foo,\u00A0bar", "Private-Package", "foo,\u00A0bar",
+			"Non breaking space found \\[NON BREAKING SPACE");
+	}
+
+	@Test
 	public void testMissingDelimeterAfterQuotedString() throws IOException {
 		assertError("-foo: bar='abc' ' '    ;", "-foo", 0,
 			"Found a quote ''' while expecting a delimeter. You should quote the whole values, you can use both single and double quotes:");
@@ -43,6 +86,7 @@ public class UTF8PropertiesTest extends TestCase {
 	 * Entries are generally expected to be a single line of the form, one of
 	 * the following: propertyName=propertyValue propertyName:propertyValue}
 	 */
+	@Test
 	public void testSpecificationAssignment() throws IOException {
 		testProperty("propertyName=propertyValue\n", "propertyName", "propertyValue");
 		testProperty("propertyName:propertyValue\n", "propertyName", "propertyValue");
@@ -53,6 +97,7 @@ public class UTF8PropertiesTest extends TestCase {
 	 * White space that appears between the property name and property value is
 	 * ignored, so the following are equivalent.
 	 */
+	@Test
 	public void testSpecificationValueSpaces() throws IOException {
 		testProperty("name=Stephen\n", "name", "Stephen");
 		testProperty("name = Stephen\n", "name", "Stephen");
@@ -63,6 +108,7 @@ public class UTF8PropertiesTest extends TestCase {
 	/*
 	 * White space at the beginning of the line is also ignored.
 	 */
+	@Test
 	public void testSpecificationKeySpaces() throws IOException {
 		testProperty("    name = Stephen\n", "name", "Stephen");
 		testProperty("    name = Stephen", "name", "Stephen");
@@ -72,6 +118,7 @@ public class UTF8PropertiesTest extends TestCase {
 	 * Lines that start with the comment characters ! or # are ignored. Blank
 	 * lines are also ignored.
 	 */
+	@Test
 	public void testSpecificationComments() throws IOException {
 		testProperty("\n\n# comment\n!comment\n\nfoo=bar", "foo", "bar");
 		testProperty("foo=bar\n# comment", "foo", "bar");
@@ -87,6 +134,7 @@ public class UTF8PropertiesTest extends TestCase {
 	 * lines are also ignored. Comments which end with \ must not continue to
 	 * next line.
 	 */
+	@Test
 	public void testSpecificationCommentContinuation() throws IOException {
 		testProperty("\n\n# comment\\\n!comment\\\n\nfoo=bar", "foo", "bar");
 		testProperty("foo=bar\n# comment\\", "foo", "bar");
@@ -102,6 +150,7 @@ public class UTF8PropertiesTest extends TestCase {
 	 * space following the property value is not ignored, and is treated as part
 	 * of the property value.
 	 */
+	@Test
 	public void testSpecificationWhitespaceValue() throws IOException {
 		testProperty("foo=bar ", "foo", "bar ");
 		testProperty("foo=bar \n", "foo", "bar ");
@@ -111,6 +160,7 @@ public class UTF8PropertiesTest extends TestCase {
 	 * A property value can span several lines if each line is terminated by a
 	 * backslash (‘\’) character. For example:
 	 */
+	@Test
 	public void testSpecificationContinutation() throws IOException {
 		testProperty("targetCities=\\\n" //
 			+ "        Detroit,\\\n" //
@@ -123,6 +173,7 @@ public class UTF8PropertiesTest extends TestCase {
 	 * The characters newline, carriage return, and tab can be inserted with
 	 * characters \n, \r, and \t, respectively.
 	 */
+	@Test
 	public void testSpecificationControlCharacters() throws IOException {
 		testProperty("control= \\t\\n\\r\n", "control", "\t\n\r");
 	}
@@ -131,6 +182,7 @@ public class UTF8PropertiesTest extends TestCase {
 	 * The backslash character must be escaped as a double backslash. For
 	 * example:
 	 */
+	@Test
 	public void testSpecificationBackslashes() throws IOException {
 		testProperty("path=c:\\\\docs\\\\doc1", "path", "c:\\docs\\doc1");
 	}
@@ -139,6 +191,7 @@ public class UTF8PropertiesTest extends TestCase {
 	 * UNICODE characters can be entered as they are in a Java program, using
 	 * the \\u prefix. For example, \u002c.
 	 */
+	@Test
 	public void testSpecificationUnicode() throws IOException {
 		testProperty("unicode=\\u002c\n", "unicode", ",");
 		testProperty("unicode=\\uFEF0\n", "unicode", "\uFEF0");
@@ -147,12 +200,14 @@ public class UTF8PropertiesTest extends TestCase {
 	/*
 	 * You can have control characters in keys
 	 */
+	@Test
 	public void testControlCharactersInKeys() throws IOException {
 		testProperty("key\\ key = value\n", "key key", "value", "Found |Invalid");
 		testProperty("key\\u002Ckey = value\n", "key,key", "value", "Found |Invalid");
 		testProperty("key\\:key = value\n", "key:key", "value", "Found |Invalid");
 	}
 
+	@Test
 	public void testEmptyContinuations() throws IOException {
 		testProperty("-plugin: \\\n\\\n\\\nabc", "-plugin", "abc");
 		testProperty("-plugin: \\\n\\\n\\\nabc\n", "-plugin", "abc");
@@ -160,6 +215,7 @@ public class UTF8PropertiesTest extends TestCase {
 		testProperty("-plugin: \\\n  \\\n  \\\n    abc\n", "-plugin", "abc");
 	}
 
+	@Test
 	public void testEmptyKey() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -170,6 +226,7 @@ public class UTF8PropertiesTest extends TestCase {
 
 	}
 
+	@Test
 	public void testEmptySpace() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -179,6 +236,7 @@ public class UTF8PropertiesTest extends TestCase {
 
 	}
 
+	@Test
 	public void testNewlineCr() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -189,6 +247,7 @@ public class UTF8PropertiesTest extends TestCase {
 
 	}
 
+	@Test
 	public void testEscapedNewlinEmpty() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -198,6 +257,7 @@ public class UTF8PropertiesTest extends TestCase {
 
 	}
 
+	@Test
 	public void testPackageinfo() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -207,6 +267,7 @@ public class UTF8PropertiesTest extends TestCase {
 
 	}
 
+	@Test
 	public void testPackageinfoWithCrLf() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
@@ -216,6 +277,7 @@ public class UTF8PropertiesTest extends TestCase {
 
 	}
 
+	@Test
 	public void testErrorsInParsing() throws IOException {
 		assertError("\n\n\n\n\n\n\n" //
 			+ "a;b=9", "a;b", 7, "Invalid property key: `a;b`:");
@@ -235,54 +297,61 @@ public class UTF8PropertiesTest extends TestCase {
 		up.load(string, IO.getFile("foo"), ra);
 		assertNotNull("No '" + key + "' property found", up.getProperty(key));
 		if (check.length == 0)
-			assertEquals(0, ra.getErrors()
+			assertEquals(0, ra.getWarnings()
 				.size());
 		else {
-			assertTrue(ra.getErrors()
+			assertTrue(ra.getWarnings()
 				.size() > 0);
-			Location location = ra.getLocation(ra.getErrors()
+			Location location = ra.getLocation(ra.getWarnings()
 				.get(0));
 			assertEquals("Faulty line number", line, location.line);
 		}
 		assertTrue(ra.check(check));
 	}
 
+	@Test
 	public void testBackslashEncodingWithReader() throws IOException {
 		Properties p = new UTF8Properties();
 		p.load(new StringReader("x=abc \\\\ def\n"));
 		assertEquals("abc \\ def", p.get("x"));
 	}
 
+	@Test
 	public void testISO8859Encoding() throws IOException {
 		Properties p = new UTF8Properties();
 		p.load(new ByteArrayInputStream(("x=" + trickypart + "\n").getBytes("ISO-8859-1")));
 		assertEquals(trickypart, p.get("x"));
 	}
 
+	@Test
 	public void testUTF8Encoding() throws IOException {
 		Properties p = new UTF8Properties();
 		p.load(new ByteArrayInputStream(("x=" + trickypart + "\n").getBytes("UTF-8")));
 		assertEquals(trickypart, p.get("x"));
 	}
 
+	@Test
 	public void testShowUTF8PropertiesDoNotSkipBackslash() throws IOException {
 		Properties p = new UTF8Properties();
 		p.load(new ByteArrayInputStream("x=abc \\ def\n".getBytes("UTF-8")));
 		assertEquals("abc  def", p.get("x"));
 	}
 
+	@Test
 	public void testShowPropertiesSkipBackslash() throws IOException {
 		Properties p = new Properties();
 		p.load(new StringReader("x=abc \\ def\n"));
 		assertEquals("abc  def", p.get("x"));
 	}
 
+	@Test
 	public void testContinuation() throws IOException {
 		Properties p = new Properties();
 		p.load(new StringReader("x=abc \\\n        def\n"));
 		assertEquals("abc def", p.get("x"));
 	}
 
+	@Test
 	public void testWriteWithoutComment() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		p.put("Foo", "Foo");
@@ -294,6 +363,7 @@ public class UTF8PropertiesTest extends TestCase {
 		assertTrue("Foo should be in there", s.contains("Foo"));
 	}
 
+	@Test
 	public void testWrite() throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		p.put("Foo", "Foo");
@@ -321,7 +391,9 @@ public class UTF8PropertiesTest extends TestCase {
 	private void testProperty0(String content, String key, String value, String check) throws IOException {
 		UTF8Properties p = new UTF8Properties();
 		ReporterAdapter ra = new ReporterAdapter();
-		p.load(content, null, ra);
+		p.load(content, null, ra, new String[] {
+			"Export-Package", "Private-Package", "Import-Package", "Provide-Capability", "Foo"
+		});
 
 		if (check == null)
 			assertTrue(ra.check());
@@ -333,7 +405,7 @@ public class UTF8PropertiesTest extends TestCase {
 
 		Properties pp = new Properties();
 		pp.load(new StringReader(content));
-		assertEquals(value, pp.get(key));
+		assertEquals("normal properties differ in comparison", value, pp.get(key));
 		assertEquals(1, pp.size());
 		assertEquals(pp, p);
 	}

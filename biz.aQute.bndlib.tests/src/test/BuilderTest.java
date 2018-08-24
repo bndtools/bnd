@@ -946,9 +946,9 @@ public class BuilderTest extends BndTestCase {
 			}, {
 				"eclipse_1_8", "JavaSE-1.8", "1.8"
 			}, {
-				"eclipse_9_0", "JavaSE-9", "9.0"
+				"eclipse_9_0", "JavaSE-9", "9"
 			}, {
-				"eclipse_10_0", "JavaSE-10", "10.0"
+				"eclipse_10_0", "JavaSE-10", "10"
 			}, {
 				"sun_1_1", "JRE-1.1", "1.1"
 			}, {
@@ -966,15 +966,15 @@ public class BuilderTest extends BndTestCase {
 			}, {
 				"sun_1_8", "JavaSE-1.8", "1.8"
 			}, {
-				"jdk_9_0", "JavaSE-9", "9.0"
+				"jdk_9_0", "JavaSE-9", "9"
 			}, {
-				"jdk_10_0", "JavaSE-10", "10.0"
+				"jdk_10_0", "JavaSE-10", "10"
 			}
+			// TODO add JavaSE-11 test info for JDK and Eclipse
 		};
 		Pattern p = Pattern.compile("\\(&\\(osgi.ee=JavaSE\\)\\(version=(" + Version.VERSION_STRING + ")\\)\\)");
 		for (int i = 0; i < combos.length; i++) {
-			Builder b = new Builder();
-			try {
+			try (Builder b = new Builder()) {
 				b.addClasspath(IO.getFile("compilerversions/compilerversions.jar"));
 				b.setPrivatePackage(combos[i][0]);
 				b.setBundleRequiredExecutionEnvironment("${ee}");
@@ -994,9 +994,7 @@ public class BuilderTest extends BndTestCase {
 				String filter = attrs.get("filter:");
 				Matcher m = p.matcher(filter);
 				assertTrue(m.matches());
-				assertEquals(combos[i][2], m.group(1));
-			} finally {
-				b.close();
+				assertEquals(new Version(combos[i][2]), new Version(m.group(1)));
 			}
 		}
 	}
@@ -1182,6 +1180,7 @@ public class BuilderTest extends BndTestCase {
 			Set<String> names = b.getJar()
 				.getResources()
 				.keySet();
+			System.out.println(names);
 			assertThat(names).hasSize(14)
 				.contains("AnnotationWithJSR14.jclass", "mandatorynoversion.bnd", "mina.bar", "minax.bnd", "rox.bnd",
 					"WithAnnotations.jclass");

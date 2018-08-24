@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Attr;
@@ -25,6 +24,7 @@ import aQute.lib.converter.Converter;
  * Parse an XML file based on a DTO as schema
  */
 public class DomDTOParser {
+
 	final static DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 
 	/**
@@ -37,7 +37,8 @@ public class DomDTOParser {
 	 * @return a DTO of type
 	 */
 	public static <T> T parse(Class<T> type, File doc) throws Exception {
-		return parse(type, dbf.newDocumentBuilder().parse(doc));
+		return parse(type, dbf.newDocumentBuilder()
+			.parse(doc));
 	}
 
 	/**
@@ -50,7 +51,8 @@ public class DomDTOParser {
 	 * @return a DTO of type
 	 */
 	public static <T> T parse(Class<T> type, InputStream doc) throws Exception {
-		return parse(type, dbf.newDocumentBuilder().parse(doc));
+		return parse(type, dbf.newDocumentBuilder()
+			.parse(doc));
 	}
 
 	private static <T> T parse(Class<T> type, Node node) throws Exception {
@@ -72,7 +74,7 @@ public class DomDTOParser {
 	}
 
 	@SuppressWarnings({
-			"unchecked", "rawtypes"
+		"unchecked", "rawtypes"
 	})
 	private static <T> void get(T instance, Node node) throws Exception {
 		if (node instanceof Comment)
@@ -80,15 +82,15 @@ public class DomDTOParser {
 		if (node instanceof Text) {
 			String text = node.getTextContent()
 				.trim();
-			if (text.isEmpty())
-				return;
+			if (!text.isEmpty()) {
 
-			Field field = getField(instance.getClass(), "_content");
-			if (field == null)
-				return;
+				Field field = getField(instance.getClass(), "_content");
+				if (field == null)
+					return;
 
-			field.set(instance, Converter.cnv(field.getGenericType(), text));
-			return;
+				field.set(instance, Converter.cnv(field.getGenericType(), text));
+				return;
+			}
 		}
 
 		String name = toSimpleName(node.getNodeName());
@@ -122,6 +124,10 @@ public class DomDTOParser {
 			Type collectionType = subType.getActualTypeArguments()[0];
 			Object member = parse((Class<T>) collectionType, node);
 			Collection<Object> collection = (Collection<Object>) field.get(instance);
+			if (collection == null) {
+				collection = (Collection<Object>) Converter.cnv(field.getGenericType(), new Object[0]);
+				field.set(instance, collection);
+			}
 			collection.add(member);
 
 		} else if (isSimple(field.getType())) {
@@ -130,14 +136,16 @@ public class DomDTOParser {
 			Object convertedValue = Converter.cnv(field.getType(), value);
 			field.set(instance, convertedValue);
 
-		} else if (field.getType().isEnum()) {
+		} else if (field.getType()
+			.isEnum()) {
 			String value = node.getTextContent();
-			Class< ? > en = field.getType();
+			Class<?> en = field.getType();
 
 			for (Field constant : en.getFields()) {
 				String nm = constant.getName();
-				if (nm.equalsIgnoreCase(value)) {
+				if (nm.equalsIgnoreCase(value) || (value.equals(getName(constant)))) {
 					field.set(instance, constant.get(null));
+					return;
 				}
 			}
 
@@ -147,32 +155,36 @@ public class DomDTOParser {
 
 	}
 
+	private static String getName(Field field) {
+		XmlAttribute xmlAttribute = field.getAnnotation(XmlAttribute.class);
+		if (xmlAttribute != null)
+			return xmlAttribute.name();
+
+		return null;
+	}
+
 	private static String toSimpleName(String nodeName) {
 		int n = nodeName.indexOf(':');
 		return nodeName.substring(n + 1);
 	}
 
-	private static boolean isSimple(Class< ? > class1) {
+	private static boolean isSimple(Class<?> class1) {
 		return class1.isPrimitive() || Number.class.isAssignableFrom(class1) || class1 == Boolean.class
-				|| class1 == String.class;
+			|| class1 == String.class;
 	}
 
-	private static boolean isCollection(Class< ? > class1) {
+	private static boolean isCollection(Class<?> class1) {
 		return Collection.class.isAssignableFrom(class1);
 	}
 
-	private static Field getField(Class< ? extends Object> class1, String name) throws Exception {
+	private static Field getField(Class<? extends Object> class1, String name) throws Exception {
 		try {
 			return class1.getField(name);
 		} catch (Exception e) {
 			for (Field field : class1.getFields()) {
-				XmlAttribute xmlAttribute = field.getAnnotation(XmlAttribute.class);
-				if (xmlAttribute != null) {
-					String annName = xmlAttribute.name();
-					if (name.equals(annName)) {
+				if (name.equals(getName(field))) {
 						return field;
 					}
-				}
 			}
 		}
 		return null;

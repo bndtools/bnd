@@ -30,8 +30,8 @@ import junit.framework.TestCase;
 
 public class LauncherTest extends TestCase {
 
-	private static Workspace	workspace;
-	private static Project		project;
+	private Workspace	workspace;
+	private Project		project;
 
 	@Override
 	public void tearDown() throws IOException {
@@ -43,12 +43,11 @@ public class LauncherTest extends TestCase {
 
 	public void testExecutableJarWithStripping() throws Exception {
 		Project project = getProject();
-		ProjectLauncher l = project.getProjectLauncher();
 
-		long full = make(l, null);
-		long optStripped = make(l, "strip='OSGI-OPT/*'");
-		long optStrippedAndNoBndrun = make(l, "strip='OSGI-OPT/*,*.bndrun'");
-		long optNoBndrun = make(l, "strip='*.bndrun'");
+		long full = make(project, null);
+		long optStripped = make(project, "strip='OSGI-OPT/*'");
+		long optStrippedAndNoBndrun = make(project, "strip='OSGI-OPT/*,*.bndrun'");
+		long optNoBndrun = make(project, "strip='*.bndrun'");
 
 		assertThat(full > optStripped).isTrue();
 		assertThat(optStripped > optStrippedAndNoBndrun).isTrue();
@@ -56,9 +55,10 @@ public class LauncherTest extends TestCase {
 
 	}
 
-	private long make(ProjectLauncher l, String option) throws Exception {
+	private long make(Project p, String option) throws Exception {
+		ProjectLauncher l = project.getProjectLauncher();
 		if (option != null)
-			l.setProperty(Constants.EXECUTABLE, option);
+			p.setProperty(Constants.EXECUTABLE, option);
 		try (Jar executable = l.executable()) {
 			File tmp = Files.newTemporaryFile();
 			try {
@@ -101,27 +101,27 @@ public class LauncherTest extends TestCase {
 		project.setProperty(Constants.RUNTRACE, "false");
 		ProjectLauncher l = project.getProjectLauncher();
 		if (outer) {
-			l.setProperty(Constants.COMPRESSION, "DEFLATE");
+			project.setProperty(Constants.COMPRESSION, "DEFLATE");
 			System.out.println("outer deflate");
 		} else {
-			l.setProperty(Constants.COMPRESSION, "STORE");
+			project.setProperty(Constants.COMPRESSION, "STORE");
 			System.out.println("outer store");
 		}
 
 		if (inner) {
 			if (strip) {
-				l.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE,strip='OSGI-OPT/*,META-INF/maven/*'");
+				project.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE,strip='OSGI-OPT/*,META-INF/maven/*'");
 				System.out.println("inner deflate & strip");
 			} else {
-				l.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE");
+				project.setProperty(Constants.EXECUTABLE, "rejar=DEFLATE");
 				System.out.println("inner deflate & no strip");
 			}
 		} else {
 			if (strip) {
-				l.setProperty(Constants.EXECUTABLE, "rejar=STORE,strip='OSGI-OPT/*,META-INF/maven/*'");
+				project.setProperty(Constants.EXECUTABLE, "rejar=STORE,strip='OSGI-OPT/*,META-INF/maven/*'");
 				System.out.println("inner store & strip");
 			} else {
-				l.setProperty(Constants.EXECUTABLE, "rejar=STORE");
+				project.setProperty(Constants.EXECUTABLE, "rejar=STORE");
 				System.out.println("inner store & no strip");
 			}
 		}
@@ -156,11 +156,11 @@ public class LauncherTest extends TestCase {
 	 * returns normally all went ok.
 	 */
 
-	public static void testExpandedJarLauncher() throws Exception {
+	public void testExpandedJarLauncher() throws Exception {
 		Project project = getProject();
 		project.setProperty(Constants.RUNPROPERTIES, "test.cmd=quit.no.exit");
 		ProjectLauncher l = project.getProjectLauncher();
-		File temporaryFolder = Files.temporaryFolder();
+		File temporaryFolder = Files.newTemporaryFolder();
 		try {
 			try (Jar executable = l.executable()) {
 				executable.writeFolder(temporaryFolder);
@@ -183,7 +183,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testRemotePackager() throws Exception {
+	public void testRemotePackager() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.setProperty("-runpath", "biz.aQute.remote.launcher;version=latest");
@@ -197,7 +197,7 @@ public class LauncherTest extends TestCase {
 	/**
 	 * Try out the new tester that does not contain JUnit
 	 */
-	public static void testJUnitLessTester() throws Exception {
+	public void testJUnitLessTester() throws Exception {
 		Project project = getProject();
 
 		List<Container> bundles = project.getBundles(Strategy.HIGHEST, "biz.aQute.tester", "TESTER");
@@ -223,7 +223,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testPackagerDifference() throws Exception {
+	public void testPackagerDifference() throws Exception {
 
 		//
 		// First as we basically do it in bndtools for a project
@@ -332,7 +332,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testJunit4Tester() throws Exception {
+	public void testJunit4Tester() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.build();
@@ -344,7 +344,7 @@ public class LauncherTest extends TestCase {
 		assertTrue(project.check());
 	}
 
-	// public static void testLocalLaunch() throws Exception {
+	// public void testLocalLaunch() throws Exception {
 	// Project project = getProject();
 	// ProjectLauncher l = project.getProjectLauncher();
 	// l.setTrace(true);
@@ -356,7 +356,7 @@ public class LauncherTest extends TestCase {
 	/**
 	 * Test if we can keep the framework state.
 	 */
-	public static void testRunKeep() throws Exception {
+	public void testRunKeep() throws Exception {
 
 		//
 		// First set persistence after clearing the storage
@@ -416,7 +416,7 @@ public class LauncherTest extends TestCase {
 
 	}
 
-	public static void testNoReferences() throws Exception {
+	public void testNoReferences() throws Exception {
 		Project project = getProject();
 		project.setProperty("-runnoreferences", true + "");
 
@@ -430,7 +430,7 @@ public class LauncherTest extends TestCase {
 	/**
 	 * Try launching a workspace with spaces
 	 */
-	public static void testSpaces() throws Exception {
+	public void testSpaces() throws Exception {
 		File f = new File("t m p");
 		try {
 			File cnf = new File(f, "cnf");
@@ -464,7 +464,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testAgent() throws Exception {
+	public void testAgent() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.setProperty("-javaagent", "true");
@@ -480,7 +480,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testEnv() throws Exception {
+	public void testEnv() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.setProperty("-runenv", "ANSWER=84");
@@ -498,7 +498,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testCleanup() throws Exception {
+	public void testCleanup() throws Exception {
 		Project project = getProject();
 		File target = project.getTarget();
 		IO.deleteWithException(target);
@@ -533,7 +533,7 @@ public class LauncherTest extends TestCase {
 	 * @param project
 	 * @throws Exception
 	 */
-	private static void assertNoProperties(File target) throws Exception {
+	private void assertNoProperties(File target) throws Exception {
 		if (!target.exists())
 			return;
 
@@ -545,7 +545,7 @@ public class LauncherTest extends TestCase {
 		}
 	}
 
-	public static void testSimple() throws Exception {
+	public void testSimple() throws Exception {
 		Project project = getProject();
 		ProjectLauncher l = project.getProjectLauncher();
 		l.setTrace(true);
@@ -560,7 +560,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testPackager() throws Exception {
+	public void testPackager() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.setProperty("[debug]testprop", "debug");
@@ -584,7 +584,7 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	// public static void testWorkspaceWithSpace() throws Exception {
+	// public void testWorkspaceWithSpace() throws Exception {
 	// // reuse built .class files from the demo project.
 	// String base = new
 	// File("").getAbsoluteFile().getParentFile().getAbsolutePath();
@@ -612,7 +612,7 @@ public class LauncherTest extends TestCase {
 	/**
 	 * @throws Exception
 	 */
-	static Project getProject() throws Exception {
+	Project getProject() throws Exception {
 		workspace = Workspace.getWorkspace(new File("").getAbsoluteFile()
 			.getParentFile());
 		workspace.clear();
@@ -625,7 +625,7 @@ public class LauncherTest extends TestCase {
 		return project;
 	}
 
-	public static void testTester() throws Exception {
+	public void testTester() throws Exception {
 		Project project = getProject();
 		project.clear();
 		project.build();
@@ -637,7 +637,7 @@ public class LauncherTest extends TestCase {
 		assertEquals(2, pt.test());
 	}
 
-	public static void testTimeoutActivator() throws Exception {
+	public void testTimeoutActivator() throws Exception {
 		Project project = getProject();
 		project.clear();
 
@@ -648,7 +648,7 @@ public class LauncherTest extends TestCase {
 
 	}
 
-	public static void testTimeout() throws Exception {
+	public void testTimeout() throws Exception {
 		Project project = getProject();
 		project.clear();
 
@@ -665,31 +665,31 @@ public class LauncherTest extends TestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testMainThread() throws Exception {
+	public void testMainThread() throws Exception {
 		assertExitCode("main.thread", ProjectLauncher.OK);
 	}
 
-	public static void testMainThreadBoth() throws Exception {
+	public void testMainThreadBoth() throws Exception {
 		assertExitCode("main.thread.both", 43);
 	}
 
-	public static void testMainThreadCallableNull() throws Exception {
+	public void testMainThreadCallableNull() throws Exception {
 		assertExitCode("main.thread.callablenull", 0);
 	}
 
-	public static void testMainThreadInvalidType() throws Exception {
+	public void testMainThreadInvalidType() throws Exception {
 		assertExitCode("main.thread.callableinvalidtype", 0);
 	}
 
-	public static void testMainThreadCallable() throws Exception {
+	public void testMainThreadCallable() throws Exception {
 		assertExitCode("main.thread.callable", 42);
 	}
 
-	public static void testFrameworkStop() throws Exception {
+	public void testFrameworkStop() throws Exception {
 		assertExitCode("framework.stop", ProjectLauncher.STOPPED);
 	}
 
-	private static void assertExitCode(String cmd, int rv) throws Exception {
+	private void assertExitCode(String cmd, int rv) throws Exception {
 		Project project = getProject();
 		project.clear();
 

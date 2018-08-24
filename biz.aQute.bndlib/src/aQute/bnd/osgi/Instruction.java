@@ -64,6 +64,10 @@ public class Instruction {
 	private boolean					optional;
 
 	public Instruction(String input) {
+
+		if (input == null || input.isEmpty())
+			input = "!*";
+
 		this.input = input;
 
 		if (input.equals("*")) {
@@ -238,7 +242,7 @@ public class Instruction {
 	}
 
 	public String getPattern() {
-		return match;
+		return pattern == null ? null : pattern.pattern();
 	}
 
 	public String getInput() {

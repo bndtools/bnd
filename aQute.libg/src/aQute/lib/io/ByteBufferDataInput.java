@@ -25,6 +25,21 @@ public class ByteBufferDataInput implements DataInput {
 		this.bb = Objects.requireNonNull(bb);
 	}
 
+	private int ranged(int n) {
+		if (n <= 0) {
+			return 0;
+		}
+		return Math.min(n, bb.remaining());
+	}
+
+	public ByteBuffer slice(int n) {
+		int limit = ranged(n);
+		ByteBuffer slice = bb.slice();
+		slice.limit(limit);
+		bb.position(bb.position() + limit);
+		return slice;
+	}
+
 	@Override
 	public void readFully(byte[] b) {
 		bb.get(b, 0, b.length);
@@ -37,10 +52,7 @@ public class ByteBufferDataInput implements DataInput {
 
 	@Override
 	public int skipBytes(int n) {
-		if (n <= 0) {
-			return 0;
-		}
-		int skipped = Math.min(n, bb.remaining());
+		int skipped = ranged(n);
 		bb.position(bb.position() + skipped);
 		return skipped;
 	}

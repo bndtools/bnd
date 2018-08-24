@@ -42,22 +42,21 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
   biz.aQute.bndlib;version=latest, \
   biz.aQute.resolve;version=latest, \
   biz.aQute.repository;version=latest, \
-  biz.aQute.bnd.exporters;version=latest, \
+    biz.aQute.bnd.exporters;version=latest, \
 	biz.aQute.bnd.annotation;version=project,\
 	org.apache.ant:ant;version=latest,\
 	osgi.core;version=6.0,\
-    org.osgi.service.resolver;version=1.1.0, \
 	osgi.cmpn;version=6.0,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\
-	slf4j.api;version=latest
+	slf4j.api;version=latest,\
+    slf4j.simple;version=latest
 
 
 -testpath: \
-	${junit},\
-	biz.aQute.bnd.embedded-repo; version=snapshot,\
-	org.apache.felix.framework;version=latest,\
-    slf4j.simple;version=latest
+    ${junit},\
+    org.apache.felix.framework;version=latest,\
+	biz.aQute.bnd.embedded-repo; version=snapshot
 
 # About the aQute.library.bndrepo dep. Needed to add them here
 # by hand even though they are in bndlib. However, they are added

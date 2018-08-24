@@ -1,5 +1,6 @@
 package aQute.lib.collections;
 
+import static java.util.Collections.emptyEnumeration;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Enumeration;
@@ -151,7 +152,7 @@ public class Iterables {
 
 		IterableEnumeration(Enumeration<? extends T> enumeration, Function<? super T, ? extends R> mapper,
 			Predicate<? super R> filter) {
-			this.enumeration = requireNonNull(enumeration);
+			this.enumeration = enumeration != null ? enumeration : emptyEnumeration();
 			this.mapper = requireNonNull(mapper);
 			this.filter = requireNonNull(filter);
 		}

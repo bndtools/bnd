@@ -55,7 +55,7 @@ public class HeaderReader extends Processor {
 	}
 
 	public Tag createComponentTag(String name, String impl, Map<String, String> info) throws Exception {
-		final ComponentDef cd = new ComponentDef(null, AnnotationReader.V1_0);
+		final ComponentDef cd = new ComponentDef(analyzer, null, AnnotationReader.V1_0);
 		cd.name = name;
 		if (info.get(COMPONENT_ENABLED) != null)
 			cd.enabled = Boolean.valueOf(info.get(COMPONENT_ENABLED));
@@ -271,12 +271,9 @@ public class HeaderReader extends Processor {
 					String v = parts[0];
 					parts = new String[2];
 					parts[0] = v;
-					parts[1] = ComponentDef.MARKER;
+					parts[1] = PropertiesDef.MARKER;
 				}
-				cd.propertyType.put(key, type);
-				for (String part : parts) {
-					cd.property.add(key, part);
-				}
+				cd.properties.addProperty(key, type, parts);
 			} else
 				throw new IllegalArgumentException("Malformed property '" + p + "' on component: " + name);
 		}

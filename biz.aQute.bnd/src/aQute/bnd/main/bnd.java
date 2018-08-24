@@ -13,6 +13,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -149,7 +150,7 @@ import aQute.service.reporter.Reporter;
  * Utility to make bundles. @version $Revision: 1.14 $
  */
 public class bnd extends Processor {
-	private final static Logger					logger					= LoggerFactory.getLogger(bnd.class);
+	private static Logger						logger					= LoggerFactory.getLogger(bnd.class);
 	static Pattern								ASSIGNMENT				= Pattern.compile(															//
 		"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
 	Settings									settings				= new Settings();
@@ -160,6 +161,7 @@ public class bnd extends Processor {
 		BndMessages.class);
 	private Workspace							ws;
 	private char[]								password;
+	private Workspace							workspace;
 
 	private static final ThreadLocal<Boolean>	noExit					= new ThreadLocal<Boolean>() {
 																			@Override
@@ -237,11 +239,17 @@ public class bnd extends Processor {
 		@Description("Trace progress")
 		boolean trace();
 
+		@Description("Show log debug output")
+		boolean debug();
+
 		@Description("Error/Warning ignore patterns")
 		String[] ignore();
 
 		@Description("Provide a settings password")
 		char[] secret();
+
+		@Description("Use the workspace related to the default directory as parent for bnd. If the current directory is not related to a workspace this option is silently ignored")
+		boolean workspace();
 
 	}
 
@@ -397,11 +405,17 @@ public class bnd extends Processor {
 			set(FAIL_OK, options.failok() + "");
 			setExceptions(options.exceptions());
 			setTrace(options.trace());
-			if (options.trace()) {
-				System.setProperty(DEFAULT_LOG_LEVEL_KEY, "trace");
-			} else {
-				System.setProperty(DEFAULT_LOG_LEVEL_KEY, "warn");
+			doLogging(options);
+
+			workspace = Workspace.findWorkspace(IO.work);
+			if (workspace != null) {
+				logger.debug("Using workspace {}", workspace);
+				workspace.use(this);
+				if (options.workspace() && workspace != null) {
+					this.setParent(workspace);
+				}
 			}
+
 			setPedantic(options.pedantic());
 
 			if (options.base() != null)
@@ -455,6 +469,32 @@ public class bnd extends Processor {
 			Thread.sleep(1000);
 			exitWithCode(getErrors().size());
 		}
+	}
+
+	/**
+	 * Setup SLF4J logging level.
+	 * 
+	 * @param options
+	 */
+	private void doLogging(bndOptions options) {
+		try {
+			int level;
+			if (options.debug()) {
+				System.setProperty(DEFAULT_LOG_LEVEL_KEY, "debug");
+				level = org.slf4j.spi.LocationAwareLogger.DEBUG_INT;
+			} else {
+				System.setProperty(DEFAULT_LOG_LEVEL_KEY, "warn");
+				level = org.slf4j.spi.LocationAwareLogger.WARN_INT;
+			}
+			Field field = org.slf4j.impl.SimpleLogger.class.getDeclaredField("DEFAULT_LOG_LEVEL");
+			field.setAccessible(true);
+			field.set(null, level);
+		} catch (Exception e) {
+			e.printStackTrace();
+			// ignore
+		}
+		logger = LoggerFactory.getLogger(bnd.class);
+		logger.debug("Setup logger");
 	}
 
 	/**

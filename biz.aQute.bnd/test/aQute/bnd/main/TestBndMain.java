@@ -73,8 +73,7 @@ public class TestBndMain extends TestBndMainBase {
 
 		initTestData(WORKSPACE);
 
-		executeBndCmd("package", "-o", output, "p2");
-
+		executeBndCmd("-t", "package", "-o", output, "p2");
 		expectNoError();
 
 		expectFileStataus(FileStatus.CREATED, output);

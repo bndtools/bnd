@@ -163,7 +163,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.7.0</version>
+					<version>3.8.0</version>
 					<configuration>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
@@ -172,12 +172,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.0.2</version>
+					<version>3.1.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-plugin-plugin</artifactId>
-					<version>3.5</version>
+					<version>3.5.2</version>
 					<executions>
 						<execution>
 							<id>default-descriptor</id>
@@ -198,7 +198,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.0.2</version>
+					<version>3.1.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
@@ -227,7 +227,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>2.10.4</version>
+					<version>3.0.1</version>
 					<executions>
 						<execution>
 							<id>attach-javadocs</id>
@@ -241,7 +241,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-invoker-plugin</artifactId>
-					<version>3.0.1</version>
+					<version>3.1.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -275,9 +275,38 @@
 									<action>
 										<execute>
 											<runOnConfiguration>true</runOnConfiguration>
-											<runOnIncremental>false</runOnIncremental>
+											<runOnIncremental>true</runOnIncremental>
 										</execute>
 									</action>
+								</pluginExecution>
+								<pluginExecution>
+								  <pluginExecutionFilter>
+								    <groupId>org.apache.maven.plugins</groupId>
+								    <artifactId>maven-plugin-plugin</artifactId>
+								    <versionRange>[3.5.2,)</versionRange>
+								    <goals>
+								      <goal>descriptor</goal>
+								    </goals>
+								  </pluginExecutionFilter>
+								  <action>
+                    <execute>
+                      <runOnConfiguration>true</runOnConfiguration>
+                      <runOnIncremental>true</runOnIncremental>
+                    </execute>
+								  </action>
+								</pluginExecution>
+								<pluginExecution>
+								  <pluginExecutionFilter>
+								    <groupId>org.codehaus.mojo</groupId>
+								    <artifactId>flatten-maven-plugin</artifactId>
+								    <versionRange>[1.0.1,)</versionRange>
+								    <goals>
+								      <goal>flatten</goal>
+								    </goals>
+								  </pluginExecutionFilter>
+								  <action>
+                    <ignore />
+								  </action>
 								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
@@ -286,7 +315,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.0.2</version>
+					<version>3.1.1</version>
 					<executions>
 						<execution>
 							<id>copy</id>

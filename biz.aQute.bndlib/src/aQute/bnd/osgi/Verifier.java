@@ -2,6 +2,7 @@ package aQute.bnd.osgi;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Formatter;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -51,6 +52,7 @@ public class Verifier extends Processor {
 	final static int		V1_8	= 52;
 	final static int		V9_0	= 53;
 	final static int		V10_0	= 54;
+	final static int		V11_0	= 55;
 
 	static class EE {
 		String	name;
@@ -83,6 +85,7 @@ public class Verifier extends Processor {
 		new EE("JavaSE-1.8", V1_8, V1_8),																									//
 		new EE("JavaSE-9", V9_0, V9_0),																										//
 		new EE("JavaSE-10", V10_0, V10_0),																									//
+		new EE("JavaSE-11", V11_0, V11_0),																													//
 		new EE("PersonalJava-1.1", V1_1, V1_1),																								//
 		new EE("PersonalJava-1.2", V1_1, V1_1),																								//
 		new EE("CDC-1.0/PersonalBasis-1.0", V1_3, V1_1),																					//
@@ -100,6 +103,7 @@ public class Verifier extends Processor {
 			+ "|JavaSE-1\\.[6-8]"																											//
 			+ "|JavaSE-9"																													//
 			+ "|JavaSE-10"																													//
+			+ "|JavaSE-11"																																	//
 			+ "|PersonalJava-1\\.[12]"																										//
 			+ "|CDC-1\\.0/PersonalBasis-1\\.0"																								//
 			+ "|CDC-1\\.0/PersonalJava-1\\.0"																								//
@@ -121,6 +125,7 @@ public class Verifier extends Processor {
 		"JavaSE-1.8",																														//
 		"JavaSE-9",																															//
 		"JavaSE-10",																														//
+		"JavaSE-11",																																		//
 		"PersonalJava-1.1",																													//
 		"PersonalJava-1.2",																													//
 		"CDC-1.0/PersonalBasis-1.0",																										//
@@ -775,41 +780,50 @@ public class Verifier extends Processor {
 			Set<String> toobroadimports = new HashSet<>();
 
 			for (Entry<String, Attrs> e : map.entrySet()) {
+
+				String key = Processor.removeDuplicateMarker(e.getKey());
+
+				if (!isFQN(key)) {
+					Location location = warning("Import-Package '%s' is not a valid package name, it must be an FQN",
+						showUnicode(key)).location();
+					location.header = Constants.IMPORT_PACKAGE;
+					location.context = key;
+				}
+
 				String version = e.getValue()
 					.get(Constants.VERSION_ATTRIBUTE);
 				if (version == null) {
-					if (!e.getKey()
-						.startsWith("javax.")) {
-						noimports.add(e.getKey());
+					if (!key.startsWith("javax.")) {
+						noimports.add(key);
 					}
 				} else {
 					if (!VERSIONRANGE.matcher(version)
 						.matches()) {
-						Location location = error("Import Package %s has an invalid version range syntax %s",
-							e.getKey(), version).location();
+						Location location = error("Import Package %s has an invalid version range syntax %s", key,
+							version).location();
 						location.header = Constants.IMPORT_PACKAGE;
-						location.context = e.getKey();
+						location.context = key;
 					} else {
 						try {
 							VersionRange range = new VersionRange(version);
 							if (!range.isRange()) {
-								toobroadimports.add(e.getKey());
+								toobroadimports.add(key);
 							}
 							if (range.includeHigh() == false && range.includeLow() == false && range.getLow()
 								.equals(range.getHigh())) {
 								Location location = error(
 									"Import Package %s has an empty version range syntax %s, likely want to use [%s,%s]",
-									e.getKey(), version, range.getLow(), range.getHigh()).location();
+									key, version, range.getLow(), range.getHigh()).location();
 								location.header = Constants.IMPORT_PACKAGE;
-								location.context = e.getKey();
+								location.context = key;
 							}
 							// TODO check for exclude low, include high?
 						} catch (Exception ee) {
 							Location location = exception(ee,
-								"Import Package %s has an invalid version range syntax %s: %s", e.getKey(), version, ee)
+								"Import Package %s has an invalid version range syntax %s: %s", key, version, ee)
 									.location();
 							location.header = Constants.IMPORT_PACKAGE;
-							location.context = e.getKey();
+							location.context = key;
 						}
 					}
 				}
@@ -898,6 +912,20 @@ public class Verifier extends Processor {
 				Location location = error("Export Package clauses without version range: %s", noexports).location();
 				location.header = Constants.EXPORT_PACKAGE;
 			}
+		}
+	}
+
+	private Object showUnicode(String key) {
+		try (Formatter sb = new Formatter()) {
+			for (int i = 0; i < key.length(); i++) {
+				char c = key.charAt(i);
+				if (c < 0x20 || c >= 0x7E) {
+					sb.format("\\u%04X", (0xFFFF & c));
+				} else {
+					sb.format("%c", c);
+				}
+			}
+			return sb.toString();
 		}
 	}
 
@@ -1033,8 +1061,9 @@ public class Verifier extends Processor {
 	 * 
 	 * @param header
 	 * @param directives
+	 * @throws Exception
 	 */
-	private void verifyDirectives(String header, String directives, Pattern namePattern, String type) {
+	private void verifyDirectives(String header, String directives, Pattern namePattern, String type) throws Exception {
 		Pattern pattern = Pattern.compile(directives);
 		Parameters map = parseHeader(manifest.getMainAttributes()
 			.getValue(header));
@@ -1043,11 +1072,23 @@ public class Verifier extends Processor {
 
 			if (namePattern != null) {
 				if (!namePattern.matcher(pname)
-					.matches())
+					.matches()) {
+					SetLocation l;
 					if (isPedantic())
-						error("Invalid %s name: '%s'", type, pname);
+						l = error("Invalid %s name: '%s' in %s", type, showUnicode(pname), header);
 					else
-						warning("Invalid %s name: '%s'", type, pname);
+						l = warning("Invalid %s name: '%s' in %s", type, showUnicode(pname), header);
+
+					Pattern hpat;
+					if (Constants.EXPORT_PACKAGE.equals(header))
+						hpat = Pattern.compile(Constants.EXPORT_PACKAGE + "|" + Constants.EXPORT_CONTENTS);
+					else
+						hpat = Pattern.compile(header);
+
+					FileLine fileLine = analyzer.getHeader(hpat, Pattern.compile(Pattern.quote(pname)));
+					fileLine.set(l);
+					l.context(pname);
+				}
 			}
 
 			for (String key : entry.getValue()
@@ -1404,15 +1445,25 @@ public class Verifier extends Processor {
 	public static boolean isFQN(String name) {
 		if (name.length() == 0)
 			return false;
-		if (!Character.isJavaIdentifierStart(name.charAt(0)))
-			return false;
 
-		for (int i = 1; i < name.length(); i++) {
+		boolean start = true;
+
+		for (int i = 0; i < name.length(); i++) {
 			char c = name.charAt(i);
-			if (Character.isJavaIdentifierPart(c) || c == '$' || c == '.')
-				continue;
 
-			return false;
+			if (start) {
+				if (!Character.isJavaIdentifierStart(c))
+					return false;
+				start = false;
+			} else {
+				if (Character.isJavaIdentifierPart(c) || c == '$')
+					continue;
+
+				if (c == '.') {
+					start = true;
+				} else
+					return false;
+			}
 		}
 
 		return true;

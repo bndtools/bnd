@@ -16,3 +16,5 @@ Bundle-Version: 1.0.0
 -runproperties.testlauncher2: in.bndrun=bndrun
 
 -exporttype: bnd.executablejar;foo=x, bnd.runbundles;bar=x
+
+-executable: rejar=STORE, strip=OSGI-OPT/*
