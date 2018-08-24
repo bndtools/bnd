@@ -4,17 +4,22 @@ import java.io.File;
 import java.net.URI;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import aQute.bnd.main.bnd.verboseOptions;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
-import aQute.lib.getopt.Options;
+import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 
 public class IndexCommand extends Processor {
-	final bnd bnd;
+
+	public static final String	DEFAULT_INDEX_FILE			= "index.xml";
+
+	public static final String	COMPRESSED_FILE_EXTENSION	= ".gz";
+
+	final bnd					bnd;
 
 	public IndexCommand(bnd bnd) throws Exception {
 		this.bnd = bnd;
@@ -24,7 +29,7 @@ public class IndexCommand extends Processor {
 	@Arguments(arg = {
 		"bundles..."
 	})
-	interface indexOptions extends Options {
+	interface indexOptions extends verboseOptions {
 		@Description("The name of the repository index file (default: 'index.xml'). To enable GZIP compression use the file extension '.gz' (e.g. 'index.xml.gz')")
 		File repositoryIndex();
 
@@ -45,13 +50,13 @@ public class IndexCommand extends Processor {
 		}
 		File repositoryFile = opts.repositoryIndex();
 		if (repositoryFile == null) {
-			repositoryFile = new File(outputDir, "index.xml").getAbsoluteFile();
+			repositoryFile = new File(outputDir, DEFAULT_INDEX_FILE).getAbsoluteFile();
 		} else {
 			repositoryFile = repositoryFile.getAbsoluteFile();
 		}
 		boolean compress = false;
 		if (repositoryFile.getName()
-			.endsWith(".gz")) {
+			.endsWith(COMPRESSED_FILE_EXTENSION)) {
 			compress = true;
 		}
 		URI base = opts.base();
@@ -65,11 +70,13 @@ public class IndexCommand extends Processor {
 				.getName();
 		}
 
-		List<File> files = opts._arguments()
-			.stream()
-			.map(arg -> getFile(arg).getAbsoluteFile())
-			.filter(f -> f.exists() && !f.isDirectory() && !f.isHidden() && f.canRead())
-			.collect(Collectors.toList());
+		// using AntGlobs
+		final List<File> files = new FileTree().getFiles(outputDir, opts._arguments());
+
+		if (opts.verbose()) {
+			bnd.out.println(String.format("Number of files to index %d:\n", files.size()));
+			files.forEach(f -> bnd.out.println("" + f));
+		}
 
 		if (files.isEmpty()) {
 			bnd.out.println("argument <bundles..> did not contain any bundle files");
@@ -85,5 +92,4 @@ public class IndexCommand extends Processor {
 			.compress(compress)
 			.index(repositoryFile);
 	}
-
 }
