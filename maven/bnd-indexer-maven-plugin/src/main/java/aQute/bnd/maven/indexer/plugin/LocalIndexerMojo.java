@@ -72,11 +72,9 @@ public class LocalIndexerMojo extends AbstractMojo {
 		logger.debug("Producing additional gzip index: {}", includeGzip);
 		logger.debug("URI paths will be relative to: {}", baseFile);
 
-		List<File> toIndex = indexFiles.getFiles(inputDir, "**/*.jar");
-
-		logger.debug("Included files: {}", toIndex);
-
 		try {
+			List<File> toIndex = indexFiles.getFiles(inputDir, "**/*.jar");
+			logger.debug("Included files: {}", toIndex);
 			IO.mkdirs(outputFile.getParentFile());
 			new SimpleIndexer().files(toIndex)
 				.base(baseFile.toURI())

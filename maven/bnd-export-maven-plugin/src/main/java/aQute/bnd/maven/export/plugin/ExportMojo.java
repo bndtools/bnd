@@ -105,7 +105,7 @@ public class ExportMojo extends AbstractMojo {
 				system);
 
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(),
-				bundles.getFiles(project.getBasedir(), null),
+				bundles.getFiles(project.getBasedir()),
 				useMavenDependencies);
 
 			if (exporter == null) {
