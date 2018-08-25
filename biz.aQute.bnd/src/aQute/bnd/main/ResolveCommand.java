@@ -1,7 +1,6 @@
 package aQute.bnd.main;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -261,7 +260,7 @@ public class ResolveCommand extends Processor {
 	@Description("Resolve a bndrun file")
 	public void _resolve(ResolveOptions options) throws Exception {
 
-		HandledProjectWorkspaceOptions hwpo = bnd.handleOptions(options, Arrays.asList(aQute.bnd.main.bnd.BNDRUN_ALL));
+		HandledProjectWorkspaceOptions hwpo = bnd.handleOptions(options, aQute.bnd.main.bnd.BNDRUN_ALL);
 
 		for (File f : hwpo.files()) {
 			if (options.verbose()) {

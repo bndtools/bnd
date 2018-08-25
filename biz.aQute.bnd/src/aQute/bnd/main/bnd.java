@@ -908,7 +908,7 @@ public class bnd extends Processor {
 	public void perProject(ProjectWorkspaceOptions opts, PerProject run) throws Exception {
 		List<Project> projects = new ArrayList<>();
 
-		HandledProjectWorkspaceOptions hpw = handleOptions(opts, Arrays.asList("**/bnd.bnd"));
+		HandledProjectWorkspaceOptions hpw = handleOptions(opts, "**/bnd.bnd");
 
 		Workspace ws = hpw.workspace();
 
@@ -2406,7 +2406,7 @@ public class bnd extends Processor {
 	}
 
 	@Description("Run OSGi tests and create report")
-	interface runtestsOptions extends ProjectWorkspaceOptions {
+	interface runtestsOptions extends workspaceOptions, verboseOptions, excludeOptions {
 		@Description("Report directory")
 		String reportdir();
 
@@ -2415,7 +2415,6 @@ public class bnd extends Processor {
 
 		@Description("Path to work directory")
 		String dir();
-
 	}
 
 	/**
@@ -2425,54 +2424,80 @@ public class bnd extends Processor {
 	 */
 	@Description("Run OSGi tests and create report")
 	public void _runtests(runtestsOptions opts) throws Exception {
-
 		boolean verbose = opts.verbose();
 		int errors = 0;
-		File cwd = new File("").getAbsoluteFile();
+		File cwd = getBase();
+		if (opts.dir() != null) {
+			cwd = getFile(opts.dir());
+		}
+		Workspace testws;
+		if (opts.workspace() != null) {
+			testws = new Workspace(getFile(cwd, opts.workspace()));
+		} else {
+			testws = new Workspace(cwd);
+		}
 
-		HandledProjectWorkspaceOptions hpwOptions = handleOptions(opts, Arrays.asList(BNDRUN_ALL));
 		try {
-			File reportDir = getFile("reports");
+			FileTree tree = new FileTree();
+			tree.addIncludes(opts._arguments());
+			tree.addExcludes(opts.exclude());
+			List<File> matchedFiles = tree.getFiles(cwd, "*.bnd");
 
-			IO.delete(reportDir);
-
-			Tag summary = new Tag("summary");
-			summary.addAttribute("date", new Date());
-			summary.addAttribute("ws", hpwOptions.workspace()
-				.getBase());
-
+			File reportDir = getFile(cwd, "reports");
 			if (opts.reportdir() != null) {
-				reportDir = getFile(opts.reportdir());
+				reportDir = getFile(cwd, opts.reportdir());
 			}
+			IO.delete(reportDir);
 			IO.mkdirs(reportDir);
 
 			if (!reportDir.isDirectory())
 				error("reportdir must be a directory %s (tried to create it ...)", reportDir);
 
+			Tag summary = new Tag("summary");
+			summary.addAttribute("date", new Date());
+			summary.addAttribute("ws", testws.getBase());
+
 			if (opts.title() != null)
 				summary.addAttribute("title", opts.title());
+			if (verbose) {
+				out.println("workspace: " + testws);
+				out.println("search in dir: " + cwd);
+				out.println("reports in dir: " + reportDir);
 
-			if (opts.dir() != null)
-				cwd = getFile(opts.dir());
+				out.println("defaultIncludesPattern: ");
+				out.println("- *.bnd");
+				out.println("includePatterns: ");
+				if (opts._arguments() != null) {
+					for (String string : opts._arguments()) {
+						out.println("- " + string);
+					}
+				}
+				out.println("excludePatterns: ");
+				if (opts.exclude() != null) {
+					for (String string : opts.exclude()) {
+						out.println("- " + string);
+					}
+				}
+				out.println("matchedFiles: ");
+				for (File string : matchedFiles) {
+					out.println("- " + string);
+				}
+			}
+
 
 			// TODO check all the arguments
 
-			boolean hadOne = false;
 			try {
-
-				int error;
-				for (File f : hpwOptions.files()) {
+				for (File f : matchedFiles) {
 					if (verbose) {
 						out.println();
 						out.println("try to run file: " + f);
 						out.println("results:");
 					}
-					error = runtTest(f, hpwOptions.workspace(), reportDir, summary);
-
+					int error = runtTest(f, testws, reportDir, summary);
 					if (verbose) {
 						out.println("Error: " + error);
 					}
-
 					errors += error;
 				}
 
@@ -2505,15 +2530,14 @@ public class bnd extends Processor {
 			if (errors != 0)
 				error("Errors found %s", errors);
 		} finally {
-			hpwOptions.workspace()
-				.close();
+			testws.close();
 		}
 	}
 
 	/**
 	 * Help function to run the tests
 	 */
-	private int runtTest(File testFile, Workspace ws, File reportDir, Tag summary) throws Exception {
+	private int runtTest(File testFile, Workspace testws, File reportDir, Tag summary) throws Exception {
 		File tmpDir = new File(reportDir, "tmp");
 		IO.mkdirs(tmpDir);
 		tmpDir.deleteOnExit();
@@ -2527,7 +2551,7 @@ public class bnd extends Processor {
 			return 1;
 		}
 
-		Project project = new Project(ws, testFile.getAbsoluteFile()
+		Project project = new Project(testws, testFile.getAbsoluteFile()
 			.getParentFile(), testFile.getAbsoluteFile());
 		project.use(this);
 		project.setProperty(NOBUNDLES, "true");
@@ -4309,7 +4333,7 @@ public class bnd extends Processor {
 
 	public void _export(ExportOptions options) throws Exception {
 
-		HandledProjectWorkspaceOptions ho = handleOptions(options, Arrays.asList(BNDRUN_ALL));
+		HandledProjectWorkspaceOptions ho = handleOptions(options, BNDRUN_ALL);
 
 		for (File f : ho.files()) {
 			if (options.verbose()) {
@@ -4368,7 +4392,7 @@ public class bnd extends Processor {
 	}
 
 	protected HandledProjectWorkspaceOptions handleOptions(ProjectWorkspaceOptions options,
-		List<String> defaultIncludes) throws Exception {
+		String... defaultIncludes) throws Exception {
 
 		boolean verbose = options.verbose();
 		Project project = getProject(options.project());
@@ -4377,9 +4401,7 @@ public class bnd extends Processor {
 		File searchBaseDir = project != null ? project.getBase() : cws.getBase();
 
 		List<String> includePatterns = options._arguments();
-
-		final List<String> excludePatterns = options.exclude() == null ? new ArrayList<>()
-			: Arrays.asList(options.exclude());
+		String[] excludePatterns = options.exclude();
 
 		if (verbose) {
 			out.println("workspace: " + cws);
@@ -4387,26 +4409,26 @@ public class bnd extends Processor {
 
 			out.println("defaultIncludesPatterns: ");
 			for (String string : defaultIncludes) {
-
 				out.println("- " + string);
 			}
 
 			out.println("includePatterns: ");
-			for (String string : includePatterns) {
-
-				out.println("- " + string);
+			if (includePatterns != null) {
+				for (String string : includePatterns) {
+					out.println("- " + string);
+				}
 			}
 			out.println("excludePatterns: ");
-			for (String string : excludePatterns) {
-
-				out.println("- " + string);
+			if (excludePatterns != null) {
+				for (String string : excludePatterns) {
+					out.println("- " + string);
+				}
 			}
-
 		}
 
 		FileTree tree = new FileTree();
-		tree.addExcludes(excludePatterns);
 		tree.addIncludes(includePatterns);
+		tree.addExcludes(excludePatterns);
 		List<File> matchedFiles = tree.getFiles(searchBaseDir, defaultIncludes);
 
 		if (verbose) {
