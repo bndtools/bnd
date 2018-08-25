@@ -39,6 +39,7 @@ import org.apache.maven.model.PluginManagement;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -135,7 +136,7 @@ public class BndMavenPlugin extends AbstractMojo {
 	private File									propertiesFile;
 
 	@Override
-	public void execute() throws MojoExecutionException {
+	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
 			logger.debug("skip project as configured");
 			return;
@@ -280,7 +281,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 			// Finally, report
 			reportErrorsAndWarnings(builder);
-		} catch (MojoExecutionException e) {
+		} catch (MojoExecutionException | MojoFailureException e) {
 			throw e;
 		} catch (Exception e) {
 			throw new MojoExecutionException("bnd error: " + e.getMessage(), e);
@@ -378,7 +379,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		return new Xpp3Dom("configuration");
 	}
 
-	private void reportErrorsAndWarnings(Builder builder) throws MojoExecutionException {
+	private void reportErrorsAndWarnings(Builder builder) throws MojoFailureException {
 		@SuppressWarnings("unchecked")
 		Collection<File> markedFiles = (Collection<File>) buildContext.getValue(MARKED_FILES);
 		if (markedFiles == null) {
@@ -419,9 +420,9 @@ public class BndMavenPlugin extends AbstractMojo {
 		buildContext.setValue(MARKED_FILES, markedFiles);
 		if (!builder.isOk()) {
 			if (errors.size() == 1)
-				throw new MojoExecutionException(errors.get(0));
+				throw new MojoFailureException(errors.get(0));
 			else
-				throw new MojoExecutionException("Errors in bnd processing, see log for details.");
+				throw new MojoFailureException("Errors in bnd processing, see log for details.");
 		}
 	}
 
