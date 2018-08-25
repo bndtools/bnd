@@ -3,6 +3,7 @@ package aQute.bnd.main.testrules;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -23,6 +24,20 @@ public class WatchedTemporaryFolder extends TemporaryFolder implements WatchedFo
 	private Map<Path, String>		snapshotData	= Collections.unmodifiableMap(new HashMap<>());
 
 	private Function<Path, String>	snapshotFunc	= p -> "";
+
+	public WatchedTemporaryFolder() {
+		super(getParent());
+	}
+
+	private static File getParent() {
+		File parent = new File("generated/tmp/test").getAbsoluteFile();
+		try {
+			IO.mkdirs(parent);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+		return parent;
+	}
 
 	@Override
 	public Path getRootPath() {
