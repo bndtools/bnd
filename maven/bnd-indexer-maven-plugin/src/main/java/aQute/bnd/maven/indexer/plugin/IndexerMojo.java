@@ -211,7 +211,7 @@ public class IndexerMojo extends AbstractMojo {
 			throw new MojoExecutionException(e.getMessage(), e);
 		}
 		if (fail) {
-			throw new MojoExecutionException("One or more URI lookups failed");
+			throw new MojoFailureException("One or more URI lookups failed");
 		}
 		attach(outputFile, "osgi-index", "xml");
 

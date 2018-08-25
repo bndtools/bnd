@@ -139,7 +139,7 @@ public class TestingMojo extends AbstractMojo {
 		}
 
 		if (errors > 0)
-			throw new MojoExecutionException(errors + " errors found");
+			throw new MojoFailureException(errors + " errors found");
 	}
 
 	private List<String> getTests() {

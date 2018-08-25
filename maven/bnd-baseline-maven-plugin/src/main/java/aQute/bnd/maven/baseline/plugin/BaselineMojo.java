@@ -118,7 +118,7 @@ public class BaselineMojo extends AbstractMojo {
 							"The baselining check failed when checking {} against {} but the bnd-baseline-maven-plugin is configured not to fail the build.",
 							artifact, artifactResult.getArtifact());
 					} else {
-						throw new MojoExecutionException("The baselining plugin detected versioning errors");
+						throw new MojoFailureException("The baselining plugin detected versioning errors");
 					}
 				} else {
 					logger.info("Baselining check succeeded checking {} against {}", artifact,
@@ -126,13 +126,13 @@ public class BaselineMojo extends AbstractMojo {
 				}
 			} else {
 				if (failOnMissing) {
-					throw new MojoExecutionException("Unable to locate a previous version of the artifact");
+					throw new MojoFailureException("Unable to locate a previous version of the artifact");
 				} else {
 					logger.warn("No previous version of {} could be found to baseline against", artifact);
 				}
 			}
 		} catch (RepositoryException re) {
-			throw new MojoExecutionException("Unable to locate a previous version of the artifact", re);
+			throw new MojoFailureException("Unable to locate a previous version of the artifact", re);
 		} catch (Exception e) {
 			throw new MojoExecutionException("An error occurred while calculating the baseline", e);
 		}

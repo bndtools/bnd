@@ -101,7 +101,7 @@ public class ResolverMojo extends AbstractMojo {
 		}
 
 		if (errors > 0)
-			throw new MojoExecutionException(errors + " errors found");
+			throw new MojoFailureException(errors + " errors found");
 	}
 
 	private void resolve(File runFile, FileSetRepository fileSetRepository, Processor processor) throws Exception {
