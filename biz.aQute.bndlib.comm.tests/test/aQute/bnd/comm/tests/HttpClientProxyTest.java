@@ -126,42 +126,42 @@ public class HttpClientProxyTest extends TestCase {
 	public void testPromiscuousProxyWithNoUser() throws Exception {
 		createPromiscuousHttpProxy();
 		createUnsecureServer();
-		assertHttpProxy(null, false);
+		assertHttpProxy(null, false, 200);
 	}
 
 	public void testPromiscuousProxyWithBadUser() throws Exception {
 		createPromiscuousHttpProxy();
 		createUnsecureServer();
-		assertHttpProxy("bad", false);
+		assertHttpProxy("bad", false, 200);
 	}
 
 	public void testAuthenticatingProxyWithGoodUser() throws Exception {
 		createAuthenticationHttpProxy();
 		createUnsecureServer();
 
-		assertHttpProxy("good", true);
+		assertHttpProxy("good", true, 200);
 	}
 
 	public void testPromiscuousProxyWithGoodUser() throws Exception {
 		createPromiscuousHttpProxy();
 		createUnsecureServer();
-		assertHttpProxy("good", false);
+		assertHttpProxy("good", false, 200);
 	}
 
 	public void testNoProxyUnsecure() throws Exception {
 		createUnsecureServer();
-		assertHttpProxy("good", Type.HTTP.name(), false, false);
+		assertHttpProxy("good", Type.HTTP.name(), false, false, 200);
 	}
 
 	public void testNoProxySecure() throws Exception {
 		createUnsecureServer();
-		assertHttpProxy("good", Type.HTTP.name(), false, false);
+		assertHttpProxy("good", Type.HTTP.name(), false, false, 200);
 	}
 
 	public void testPromiscuousProxyWithGoodUserSecure() throws Exception {
 		createSecureServer();
 		createSecurePromiscuousHttpProxy();
-		assertHttpProxy("good", "HTTPS", true, false);
+		assertHttpProxy("good", "HTTPS", true, false, 200);
 	}
 
 	public void testAuthenticatingProxyNoUser() throws Exception {
@@ -169,7 +169,7 @@ public class HttpClientProxyTest extends TestCase {
 			createAuthenticationHttpProxy();
 			createUnsecureServer();
 
-			assertHttpProxy(null, true);
+			assertHttpProxy(null, true, 407);
 			fail("Expected authentication failure");
 		} catch (Exception e) {
 			// ok
@@ -181,7 +181,7 @@ public class HttpClientProxyTest extends TestCase {
 			createAuthenticationHttpProxy();
 			createUnsecureServer();
 
-			assertHttpProxy("bad", true);
+			assertHttpProxy("bad", true, 407);
 			fail("Expected authentication failure");
 		} catch (Exception e) {
 			// ok
@@ -416,12 +416,14 @@ public class HttpClientProxyTest extends TestCase {
 			socks5Proxy.shutdown();
 	}
 
-	void assertHttpProxy(String password, boolean authenticationCalled) throws MalformedURLException, Exception {
-		assertHttpProxy(password, Type.HTTP.name(), true, authenticationCalled);
+	void assertHttpProxy(String password, boolean authenticationCalled, int responseCode)
+		throws MalformedURLException, Exception {
+		assertHttpProxy(password, Type.HTTP.name(), true, authenticationCalled, responseCode);
 	}
 
 	@SuppressWarnings("resource")
-	void assertHttpProxy(String password, String protocol, boolean proxyCalled, boolean authenticationCalled)
+	void assertHttpProxy(String password, String protocol, boolean proxyCalled, boolean authenticationCalled,
+		int response)
 		throws MalformedURLException, Exception {
 		try (Processor p = new Processor(); HttpClient hc = new HttpClient()) {
 			p.setProperty("-connectionsettings", "" + false);
@@ -455,6 +457,7 @@ public class HttpClientProxyTest extends TestCase {
 			URL url = new URL(httpTestServer.getBaseURI() + "/get-tag/ABCDEFGH");
 			TaggedData tag = hc.connectTagged(url);
 			assertNotNull(tag);
+			assertEquals(response, tag.getResponseCode());
 			if (tag.getState() != State.OTHER)
 				assertEquals("ABCDEFGH", tag.getTag());
 			String s = IO.collect(tag.getInputStream());

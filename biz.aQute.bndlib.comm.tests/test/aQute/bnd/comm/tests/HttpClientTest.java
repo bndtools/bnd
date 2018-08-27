@@ -5,11 +5,13 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.osgi.util.promise.Promise;
 
+import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.progress.ProgressPlugin;
@@ -19,6 +21,7 @@ import aQute.bnd.url.HttpsVerification;
 import aQute.http.testservers.HttpTestServer.Config;
 import aQute.http.testservers.Httpbin;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import junit.framework.TestCase;
 
 public class HttpClientTest extends TestCase {
@@ -71,6 +74,56 @@ public class HttpClientTest extends TestCase {
 		tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
 		tmp.mkdirs();
+	}
+
+	public void testHttpsVerification() throws Exception {
+		try (Processor p = new Processor()) {
+			p.setProperty("-connection-settings", "server;id=\"" + httpsServer.getBaseURI() + "\";verify=" + true
+				+ ";trust=\"" + Strings.join(httpsServer.getTrustedCertificateFiles(tmp)) + "\"");
+			HttpClient client = new HttpClient();
+			client.setReporter(p);
+			ConnectionSettings cs = new ConnectionSettings(p, client);
+			cs.readSettings();
+
+			//
+			// First try a public HTTPS
+			//
+
+			String PUBLIC_OK_HTTPS = "https://github.com/bndtools/bnd/blob/master/biz.aQute.bndall.tests/bnd.bnd";
+
+			TaggedData go1 = client.build()
+				.asTag()
+				.go(new URI(PUBLIC_OK_HTTPS));
+
+			assertEquals(200, go1.getResponseCode());
+
+			//
+			// Try the private https for which we set the trust anchors file
+			//
+
+			TaggedData go2 = client.build()
+				.asTag()
+				.go(httpsServer.getBaseURI("get/foo"));
+
+			assertEquals(200, go2.getResponseCode());
+
+			//
+			// Create a new private https for which we do not have a trust
+			// anchor
+			//
+
+			Config configs = new Config();
+			configs.https = true;
+			try (Httpbin extraServer = new Httpbin(configs)) {
+				extraServer.start();
+
+				TaggedData go3 = client.build()
+					.asTag()
+					.go(extraServer.getBaseURI("get/foo"));
+
+				assertEquals(526, go3.getResponseCode());
+			}
+		}
 	}
 
 	public void testTimeout() throws Exception {
@@ -210,6 +263,65 @@ public class HttpClientTest extends TestCase {
 				.go(httpServer.getBaseURI("redirect/200/200"));
 			assertEquals(3, tag.getResponseCode() / 100);
 		}
+	}
+
+	public void testThatHttpWithUnverifiedNameGeneratesError() throws Exception {
+		Processor p = new Processor();
+		try (HttpClient hc = new HttpClient();) {
+			hc.setReporter(p);
+			URI go = httpsServer.getBaseURI("get/foo");
+
+			TaggedData tag = hc.build()
+				.get(TaggedData.class)
+				.go(go);
+			assertNotNull(tag);
+			assertEquals(526, tag.getResponseCode());
+		}
+		assertTrue(p.check());
+	}
+
+	public void testThatHttpWithUnverifiedNameButMatchingHandlerIsOk() throws Exception {
+		Processor p = new Processor();
+		try (HttpClient hc = new HttpClient();) {
+			hc.setReporter(p);
+			HttpsVerification httpsVerification = new HttpsVerification(httpsServer.getCertificateChain(), true,
+				hc.getReporter());
+			httpsVerification.addMatcher(httpsServer.getBaseURI()
+				.toString() + "/*");
+			hc.addURLConnectionHandler(httpsVerification);
+			URI go = httpsServer.getBaseURI("get/foo");
+
+			TaggedData tag = hc.build()
+				.get(TaggedData.class)
+				.go(go);
+			assertNotNull(tag);
+			assertEquals(200, tag.getResponseCode());
+		}
+		assertTrue(p.check());
+	}
+
+	public void testInvalidTrustAnchors() throws Exception {
+		Processor p = new Processor();
+		try (HttpClient hc = new HttpClient();) {
+			hc.setReporter(p);
+
+			Config c = new Config();
+			c.https = true;
+			Httpbin httpbin = new Httpbin(c);
+			X509Certificate[] invalidChain = httpbin.getCertificateChain();
+			httpbin.close();
+
+			HttpsVerification httpsVerification = new HttpsVerification(invalidChain, true, hc.getReporter());
+			hc.addURLConnectionHandler(httpsVerification);
+			URI go = httpsServer.getBaseURI("get/foo");
+
+			TaggedData tag = hc.build()
+				.get(TaggedData.class)
+				.go(go);
+			assertNotNull(tag);
+			assertEquals(526, tag.getResponseCode());
+		}
+		assertTrue(p.check());
 	}
 
 	public void testRedirectURL() throws Exception {
