@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -115,7 +118,8 @@ public class URLCache {
 
 		@Override
 		public String toString() {
-			return "Info [file=" + file.getName() + ", url=" + url + "]";
+			return "Info [file=" + file + ", etag=" + dto.etag + ", modified=" + Instant.ofEpochMilli(dto.modified)
+				+ ", url=" + url + ", lock=" + lock + "]";
 		}
 
 	}
@@ -131,6 +135,10 @@ public class URLCache {
 
 	public Info get(URI uri) throws Exception {
 		return get(null, uri);
+	}
+
+	public Map<File, Info> infos() {
+		return Collections.unmodifiableMap(infos);
 	}
 
 	public Info get(File file, URI uri) throws Exception {
@@ -169,6 +177,24 @@ public class URLCache {
 
 	public File getCacheFileFor(URI url) throws Exception {
 		return new File(root, toName(url) + ".content");
+	}
+
+	public File getCacheInfoFileFor(URI url) throws Exception {
+		return new File(root, toName(url) + ".content.json");
+	}
+
+	public boolean clear(URI uri) throws Exception {
+		File f = getCacheFileFor(uri);
+		boolean exists = f.isFile();
+		if (f != null && exists) {
+			IO.deleteWithException(f);
+		}
+		f = getCacheInfoFileFor(uri);
+		if (f != null && f.isFile()) {
+			IO.deleteWithException(f);
+		}
+		infos.remove(f);
+		return exists;
 	}
 
 }

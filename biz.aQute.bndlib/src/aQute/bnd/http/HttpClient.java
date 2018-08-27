@@ -29,6 +29,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -89,6 +90,7 @@ public class HttpClient implements Closeable, URLConnector {
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;
 	private final PromiseFactory				promiseFactory;
+	private ConnectionSettings					connectionSettings;
 
 	public HttpClient() {
 		promiseFactory = Processor.getPromiseFactory();
@@ -542,7 +544,14 @@ public class HttpClient implements Closeable, URLConnector {
 			InputStream in = handleContentEncoding(hcon, xin);
 			in = createProgressWrappedStream(in, con.toString(), con.getContentLength(), task, request.timeout);
 			return new TaggedData(con, in, request.useCacheFile);
-
+		} catch (javax.net.ssl.SSLHandshakeException ste) {
+			task.done(ste.getCause()
+				.toString(), null);
+			//
+			// 526 Invalid SSL Certificate
+			// Cloudflare could not validate the SSL/TLS certificate that the
+			// origin server presented.
+			return new TaggedData(request.url.toURI(), 526, request.useCacheFile);
 		} catch (SocketTimeoutException ste) {
 			task.done(ste.toString(), null);
 			return new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
@@ -688,8 +697,8 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public void readSettings(Processor processor) throws IOException, Exception {
-		ConnectionSettings cs = new ConnectionSettings(processor, this);
-		cs.readSettings();
+		connectionSettings = new ConnectionSettings(processor, this);
+		connectionSettings.readSettings();
 	}
 
 	public URI makeDir(URI uri) throws URISyntaxException {
@@ -715,5 +724,15 @@ public class HttpClient implements Closeable, URLConnector {
 
 	public PromiseFactory promiseFactory() {
 		return promiseFactory;
+	}
+
+	public URLCache cache() {
+		return cache;
+	}
+
+	public void reportSettings(Formatter out) {
+		if (connectionSettings != null) {
+			connectionSettings.report(out);
+		}
 	}
 }
