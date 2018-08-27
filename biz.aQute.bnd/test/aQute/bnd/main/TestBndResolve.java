@@ -14,10 +14,10 @@ public class TestBndResolve extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.MODIFIED, "p/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, "p2/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, "p3/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, "p3/workspace2.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, "p/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, "p2/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, "p3/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, "p3/workspace2.bndrun");
 	}
 
 	@Test
@@ -28,10 +28,10 @@ public class TestBndResolve extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, "p/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, "p2/workspace.bndrun");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, "p3/workspace.bndrun");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, "p3/workspace2.bndrun");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, "p2/workspace.bndrun");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/workspace.bndrun");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/workspace2.bndrun");
 
 	}
 
@@ -42,10 +42,10 @@ public class TestBndResolve extends TestBndMainBase {
 		executeBndCmd("resolve", "resolve", "--write", "--workspace", WORKSPACE);
 		expectNoError();
 
-		expectFileStataus(FileStatus.MODIFIED, WORKSPACE + "/p/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, WORKSPACE + "/p2/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, WORKSPACE + "/p3/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, WORKSPACE + "/p3/workspace2.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, WORKSPACE + "/p/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, WORKSPACE + "/p2/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, WORKSPACE + "/p3/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, WORKSPACE + "/p3/workspace2.bndrun");
 
 	}
 
@@ -57,10 +57,10 @@ public class TestBndResolve extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p/workspace.bndrun");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p2/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, WORKSPACE + "/p3/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, WORKSPACE + "/p3/workspace2.bndrun");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p/workspace.bndrun");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p2/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, WORKSPACE + "/p3/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, WORKSPACE + "/p3/workspace2.bndrun");
 
 	}
 
@@ -72,10 +72,10 @@ public class TestBndResolve extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.MODIFIED, "p/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, "p2/workspace.bndrun");
-		expectFileStataus(FileStatus.MODIFIED, "p3/workspace.bndrun");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, "p3/workspace2.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, "p/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, "p2/workspace.bndrun");
+		expectFileStatus(FileStatus.MODIFIED, "p3/workspace.bndrun");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/workspace2.bndrun");
 
 	}
 

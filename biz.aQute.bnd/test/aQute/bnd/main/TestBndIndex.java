@@ -35,7 +35,7 @@ public class TestBndIndex extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, IndexCommand.DEFAULT_INDEX_FILE);
+		expectFileStatus(FileStatus.CREATED, IndexCommand.DEFAULT_INDEX_FILE);
 
 		final long count = getFileContent(IndexCommand.DEFAULT_INDEX_FILE).stream()
 			.filter(line -> line.contains("<resource>"))
@@ -60,7 +60,7 @@ public class TestBndIndex extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, IndexCommand.DEFAULT_INDEX_FILE);
+		expectFileStatus(FileStatus.CREATED, IndexCommand.DEFAULT_INDEX_FILE);
 
 		final long count = getFileContent(IndexCommand.DEFAULT_INDEX_FILE).stream()
 			.filter(line -> line.contains("<resource>"))
@@ -84,7 +84,7 @@ public class TestBndIndex extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, NON_DEFAULT_INDEX_FILE);
+		expectFileStatus(FileStatus.CREATED, NON_DEFAULT_INDEX_FILE);
 
 		// folder.print(getSystemOut(), true);
 	}
@@ -103,7 +103,7 @@ public class TestBndIndex extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, DEFAULT_INDEX_FILE_COMPRESSED);
+		expectFileStatus(FileStatus.CREATED, DEFAULT_INDEX_FILE_COMPRESSED);
 	}
 
 	@Test
@@ -117,7 +117,7 @@ public class TestBndIndex extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, IndexCommand.DEFAULT_INDEX_FILE);
+		expectFileStatus(FileStatus.CREATED, IndexCommand.DEFAULT_INDEX_FILE);
 
 		final List<String> fileContent = getFileContent(IndexCommand.DEFAULT_INDEX_FILE);
 

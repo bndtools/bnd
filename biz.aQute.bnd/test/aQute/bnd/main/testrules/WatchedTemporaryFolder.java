@@ -30,7 +30,7 @@ public class WatchedTemporaryFolder extends TemporaryFolder implements WatchedFo
 	}
 
 	private static File getParent() {
-		File parent = new File("generated/tmp/test").getAbsoluteFile();
+		File parent = IO.getFile("generated/tmp/test");
 		try {
 			IO.mkdirs(parent);
 		} catch (IOException e) {
@@ -46,8 +46,8 @@ public class WatchedTemporaryFolder extends TemporaryFolder implements WatchedFo
 
 	@Override
 	public WatchedFolder copyDataFrom(Path p) throws IOException {
-		IO.copy(IO.getFile(p.toFile()
-			.getAbsolutePath()), getRoot());
+		IO.copy(p.toFile()
+			.getAbsoluteFile(), getRoot());
 
 		return this;
 	}
