@@ -1,13 +1,18 @@
 package aQute.bnd.repository.maven.provider;
 
+import static java.util.Comparator.naturalOrder;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.maxBy;
+
 import java.io.File;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.maven.api.Archive;
@@ -143,30 +148,33 @@ class RepoActions {
 	void addUpdate(final Archive archive, Map<String, Runnable> map) throws Exception {
 		try {
 			Revision rev = archive.revision;
-			Program prog = rev.program;
 
-			List<Revision> revisions = repo.storage.getRevisions(prog);
-			if (revisions.size() > 1) {
-				final Revision last = revisions.get(revisions.size() - 1);
-
-				if (!rev.equals(last)) {
-					map.put("Update to " + last, new Runnable() {
-
+			repo.storage.getRevisions(rev.program)
+				.stream()
+				.filter(v -> v.compareTo(rev) > 0)
+				.collect(groupingBy(v -> {
+					Version ov = v.version.getOSGiVersion();
+					return new Version(ov.getMajor(), ov.getMinor());
+				}, maxBy(naturalOrder())))
+				.values()
+				.stream()
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.sorted()
+				.forEachOrdered(candidate -> {
+					map.put("Update to " + candidate, new Runnable() {
 						@Override
 						public void run() {
 							try {
 								repo.index.remove(archive);
-								repo.index.add(last.archive(archive.extension, archive.classifier));
+								repo.index.add(candidate.archive(archive.extension, archive.classifier));
 								addDependency(archive, MavenScope.runtime);
 							} catch (Exception e) {
 								throw Exceptions.duck(e);
 							}
 						}
-
 					});
-				} else
-					map.put("-Update", null);
-			}
+				});
 		} catch (Exception e) {
 			map.put("-Update [" + e + "]", null);
 		}
