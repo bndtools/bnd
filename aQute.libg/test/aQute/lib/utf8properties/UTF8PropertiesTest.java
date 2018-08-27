@@ -28,9 +28,22 @@ public class UTF8PropertiesTest {
 	@Test
 	public void testEscapedQuotesInQuotedStrings() throws IOException {
 		testProperty(
-			"Foo=foo;string.list2:List=\"a\\\\\"quote,a\\\\,comma, aSpace ,\\\\\"start,\\\\,start,end\\\\\",end\\\\,\"",
+			"Provide-Capability: \\\n" + " test; effective:=\"resolve\"; \\\n" + "  test =\"aName\"; \\\n"
+				+ "  version : Version=\"1.0\"; \\\n" + "  long :Long=\"100\"; \\\n"
+				+ "  double: Double=\"1.001\"; \\\n" + "  string:String =\"aString\"; \\\n"
+				+ "  version.list:List < Version > = \"1.0, 1.1, 1.2\"; \\\n"
+				+ "  long.list : List  <Long  >=\"1, 2, 3, 4\"; \\\n"
+				+ "  double.list: List<  Double>= \"1.001, 1.002, 1.003\"; \\\n"
+				+ "  string.list :List<String  >= \"aString,bString,cString\"; \\\n"
+				+ "  string.list2:List=\"a\\\\\"quote,a\\\\,comma, aSpace ,\\\\\"start,\\\\,start,end\\\\\",end\\\\,\"; \\\n"
+				+ "  string.list3 :List<String>= \" aString , bString , cString \",",
+			"Provide-Capability",
+			"test; effective:=\"resolve\"; test =\"aName\"; version : Version=\"1.0\"; long :Long=\"100\"; double: Double=\"1.001\"; string:String =\"aString\"; version.list:List < Version > = \"1.0, 1.1, 1.2\"; long.list : List  <Long  >=\"1, 2, 3, 4\"; double.list: List<  Double>= \"1.001, 1.002, 1.003\"; string.list :List<String  >= \"aString,bString,cString\"; string.list2:List=\"a\\\"quote,a\\,comma, aSpace ,\\\"start,\\,start,end\\\",end\\,\"; string.list3 :List<String>= \" aString , bString , cString \",");
+
+		testProperty(
+			"Foo: a=\"\\\\\"\";b= \"x\",",
 			"Foo",
-			"foo;string.list2:List=\"a\\\"quote,a\\,comma, aSpace ,\\\"start,\\,start,end\\\",end\\,\"");
+			"a=\"\\\"\";b= \"x\",");
 		
 		testProperty("Foo=foo;foo=\"a\\'quote\"", "Foo", "foo;foo=\"a\'quote\"",
 			"Found backslash escaped quote character"); // foo;foo="a\'quote"

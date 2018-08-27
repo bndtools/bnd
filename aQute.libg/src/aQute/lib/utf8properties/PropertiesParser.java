@@ -236,9 +236,10 @@ final class PropertiesParser {
 							}
 							quote = tmp;
 						} else if (quote == tmp) {
-							quote = 0;
-							if (isEven(countBackslashesAtEnd(sb)))
+							if (isEven(countBackslashesAtEnd(sb))) {
+								quote = 0;
 								expectDelimeter = true;
+							}
 						}
 						break;
 
