@@ -37,7 +37,7 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, output);
+		expectFileStatus(FileStatus.CREATED, output);
 
 		// validate exported jar content
 		try (Jar result = new Jar(folder.getFile(output))) {
@@ -57,7 +57,7 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, output);
+		expectFileStatus(FileStatus.CREATED, output);
 
 		// validate exported jar content
 		try (Jar result = new Jar(folder.getFile(output))) {
@@ -76,7 +76,7 @@ public class TestBndMain extends TestBndMainBase {
 		executeBndCmd("-t", "package", "-o", output, "p2");
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, output);
+		expectFileStatus(FileStatus.CREATED, output);
 
 		// validate exported jar content
 		try (Jar result = new Jar(folder.getFile(output))) {
@@ -94,8 +94,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.DELETED, "p2/bin/somepackage/SomeOldClass.class");
-		expectFileStataus(FileStatus.DELETED, "p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.DELETED, "p2/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.DELETED, "p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	@Test
@@ -106,8 +106,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.DELETED, "p2/bin/somepackage/SomeOldClass.class");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.DELETED, "p2/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	@Test
@@ -118,8 +118,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.DELETED, WORKSPACE + "/p2/bin/somepackage/SomeOldClass.class");
-		expectFileStataus(FileStatus.DELETED, WORKSPACE + "/p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.DELETED, WORKSPACE + "/p2/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.DELETED, WORKSPACE + "/p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	@Test
@@ -130,8 +130,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.DELETED, WORKSPACE + "/p2/bin/somepackage/SomeOldClass.class");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.DELETED, WORKSPACE + "/p2/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	@Test
@@ -142,8 +142,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.DELETED, "p2/bin/somepackage/SomeOldClass.class");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.DELETED, "p2/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	@Test
@@ -154,9 +154,9 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
-		expectFileStataus(FileStatus.CREATED, "p3/bin/somepackage/SomeClass.class");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.CREATED, "p3/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	@Test
@@ -167,8 +167,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	@Test
@@ -179,9 +179,9 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, WORKSPACE + "/p2/bin/somepackage/SomeClass.class");
-		expectFileStataus(FileStatus.CREATED, WORKSPACE + "/p3/bin/somepackage/SomeClass.class");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE + "/p2/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE + "/p3/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	@Test
@@ -192,8 +192,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, WORKSPACE + "/p2/bin/somepackage/SomeClass.class");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE + "/p2/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, WORKSPACE + "/p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	@Test
@@ -204,8 +204,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
-		expectFileStataus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
+		expectFileStatus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
 	}
 
 	// Build
@@ -220,9 +220,9 @@ public class TestBndMain extends TestBndMainBase {
 			.contains(
 			"000: p: The JAR is empty: The instructions for the JAR named p did not cause any content to be included, this is likely wrong");
 
-		expectFileStataus(FileStatus.CREATED, "p/generated/p.jar");
-		expectFileStataus(FileStatus.CREATED, "p2/generated/p2.jar");
-		expectFileStataus(FileStatus.CREATED, "p3/generated/p3.jar");
+		expectFileStatus(FileStatus.CREATED, "p/generated/p.jar");
+		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
+		expectFileStatus(FileStatus.CREATED, "p3/generated/p3.jar");
 	}
 
 	@Test
@@ -235,9 +235,9 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.UNMODIFIED_NOT_EXISTS, "p/generated/p.jar");
-		expectFileStataus(FileStatus.CREATED, "p2/generated/p2.jar");
-		expectFileStataus(FileStatus.UNMODIFIED_NOT_EXISTS, "p3/generated/p3.jar");
+		expectFileStatus(FileStatus.UNMODIFIED_NOT_EXISTS, "p/generated/p.jar");
+		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
+		expectFileStatus(FileStatus.UNMODIFIED_NOT_EXISTS, "p3/generated/p3.jar");
 	}
 
 	@Test
@@ -252,9 +252,9 @@ public class TestBndMain extends TestBndMainBase {
 			.contains(
 				"000: p: The JAR is empty: The instructions for the JAR named p did not cause any content to be included, this is likely wrong");
 
-		expectFileStataus(FileStatus.CREATED, WORKSPACE+"/p/generated/p.jar");
-		expectFileStataus(FileStatus.CREATED, WORKSPACE+"/p2/generated/p2.jar");
-		expectFileStataus(FileStatus.CREATED, WORKSPACE+"/p3/generated/p3.jar");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE+"/p/generated/p.jar");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE+"/p2/generated/p2.jar");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE+"/p3/generated/p3.jar");
 	}
 
 	@Test
@@ -267,9 +267,9 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.UNMODIFIED_NOT_EXISTS, WORKSPACE + "/p/generated/p.jar");
-		expectFileStataus(FileStatus.CREATED, WORKSPACE + "/p2/generated/p2.jar");
-		expectFileStataus(FileStatus.UNMODIFIED_NOT_EXISTS, WORKSPACE + "/p3/generated/p3.jar");
+		expectFileStatus(FileStatus.UNMODIFIED_NOT_EXISTS, WORKSPACE + "/p/generated/p.jar");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE + "/p2/generated/p2.jar");
+		expectFileStatus(FileStatus.UNMODIFIED_NOT_EXISTS, WORKSPACE + "/p3/generated/p3.jar");
 	}
 
 	@Test
@@ -282,8 +282,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStataus(FileStatus.UNMODIFIED_NOT_EXISTS, "p/generated/p.jar");
-		expectFileStataus(FileStatus.CREATED, "p2/generated/p2.jar");
-		expectFileStataus(FileStatus.CREATED, "p3/generated/p3.jar");
+		expectFileStatus(FileStatus.UNMODIFIED_NOT_EXISTS, "p/generated/p.jar");
+		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
+		expectFileStatus(FileStatus.CREATED, "p3/generated/p3.jar");
 	}
 }

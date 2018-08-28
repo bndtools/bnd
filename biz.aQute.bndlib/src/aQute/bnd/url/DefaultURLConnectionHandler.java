@@ -167,4 +167,9 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	public boolean isPedantic() {
 		return reporter.isPedantic();
 	}
+
+	public DefaultURLConnectionHandler addMatcher(String glob) {
+		matchers.add(new Glob(glob));
+		return this;
+	}
 }

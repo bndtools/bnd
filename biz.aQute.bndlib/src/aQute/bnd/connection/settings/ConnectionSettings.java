@@ -16,8 +16,10 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,24 +41,27 @@ import aQute.bnd.url.HttpsVerification;
 import aQute.lib.collections.Iterables;
 import aQute.lib.concurrentinit.ConcurrentInitialize;
 import aQute.lib.converter.Converter;
+import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.mavenpasswordobfuscator.MavenPasswordObfuscator;
+import aQute.lib.strings.Strings;
 import aQute.lib.xpath.XPathParser;
 import aQute.libg.glob.Glob;
 import aQute.service.reporter.Reporter.SetLocation;
 
 public class ConnectionSettings {
-	final static Logger						logger							= LoggerFactory
+	final static Logger							logger							= LoggerFactory
 		.getLogger(ConnectionSettings.class);
-	public static final String				M2_SETTINGS_SECURITY_XML		= "~/.m2/settings-security.xml";
-	public static final String				M2_SETTINGS_SECURITY_PROPERTY	= "settings.security";
-	private static final String				M2_SETTINGS_XML					= "~/.m2/settings.xml";
-	private static final String				BND_CONNECTION_SETTINGS_XML		= "~/.bnd/connection-settings.xml";
-	private static final String				CONNECTION_SETTINGS				= "-connection-settings";
-	private final Processor					processor;
+	public static final String					M2_SETTINGS_SECURITY_XML		= "~/.m2/settings-security.xml";
+	public static final String					M2_SETTINGS_SECURITY_PROPERTY	= "settings.security";
+	private static final String					M2_SETTINGS_XML					= "~/.m2/settings.xml";
+	private static final String					BND_CONNECTION_SETTINGS_XML		= "~/.bnd/connection-settings.xml";
+	private static final String					CONNECTION_SETTINGS				= "-connection-settings";
+	private final Processor						processor;
 	private final HttpClient					client;
 	private final List<ServerDTO>				servers							= new ArrayList<>();
 	private final ConcurrentInitialize<String>	mavenMasterPassphrase;
+	private final List<String>					parsed							= new ArrayList<>();
 
 	public ConnectionSettings(Processor processor, HttpClient client) throws Exception {
 		this.processor = Objects.requireNonNull(processor);
@@ -193,6 +198,7 @@ public class ConnectionSettings {
 	 * @throws Exception
 	 */
 	private void parseServer(Attrs value) throws Exception {
+		parsed.add("direct: " + value);
 		ServerDTO server = Converter.cnv(ServerDTO.class, value);
 		if (isBasicAuth(server) || isBearerAuth(server) || isPrivateKey(server) || isHttpsVerification(server)) {
 
@@ -230,7 +236,7 @@ public class ConnectionSettings {
 		else
 			return true;
 	}
-	
+
 	private boolean isEmpty(String s) {
 		return s == null || s.trim()
 			.isEmpty();
@@ -254,7 +260,17 @@ public class ConnectionSettings {
 			} else {
 				handler = new BearerAuthentication(serverDTO.password, processor);
 			}
-			https = new HttpsVerification(serverDTO.trust, serverDTO.verify, processor);
+
+			// verify=false, trust.isEmpty -> void default check
+			// verify=false, !trust.isEmpty -> ignore
+			// verify=true, trust.isEmpty -> use default check
+			// verify=true, !trust.isEmpty -> verify against given certs
+
+			boolean hasCerts = serverDTO.trust != null && !serverDTO.trust.isEmpty();
+			if (serverDTO.verify == false || hasCerts)
+				https = new HttpsVerification(serverDTO.trust, serverDTO.verify, processor);
+			else
+				https = null; // verify & no certs ==> default
 		}
 
 		@Override
@@ -306,8 +322,8 @@ public class ConnectionSettings {
 
 	private static final class SettingsProxyHandler implements ProxyHandler {
 		private final ProxyDTO	proxyDTO;
-		private List<Glob>	globs;
-		private ProxySetup	proxySetup;
+		private List<Glob>		globs;
+		private ProxySetup		proxySetup;
 
 		SettingsProxyHandler(ProxyDTO proxyDTO) {
 			this.proxyDTO = proxyDTO;
@@ -368,7 +384,7 @@ public class ConnectionSettings {
 					socketAddress = new InetSocketAddress(proxyDTO.port);
 
 				pendingProxySetup.proxy = new Proxy(type, socketAddress);
-				
+
 				proxySetup = pendingProxySetup;
 			}
 			return proxySetup;
@@ -401,7 +417,7 @@ public class ConnectionSettings {
 	private void parse(File file) throws Exception {
 		assert file != null : "File must be set";
 		assert file.isFile() : "File must be a file and exist";
-
+		parsed.add(file.getAbsolutePath());
 		SettingsParser parser = new SettingsParser(file);
 
 		SettingsDTO settings = parser.getSettings();
@@ -413,7 +429,7 @@ public class ConnectionSettings {
 		}
 		ServerDTO deflt = null;
 		for (ServerDTO serverDTO : settings.servers) {
-			serverDTO.trust = makeAbsolute(file, serverDTO.trust);
+			serverDTO.trust = makeAbsolute(file.getParentFile(), serverDTO.trust);
 
 			if (MavenPasswordObfuscator.isObfuscatedPassword(serverDTO.password)) {
 				String masterPassphrase = mavenMasterPassphrase.get();
@@ -507,13 +523,19 @@ public class ConnectionSettings {
 	}
 
 	public static String makeAbsolute(File cwd, String trust) {
-		if (trust == null)
+		if (trust == null || trust.trim()
+			.isEmpty())
 			return null;
+
 		return Processor.split(trust)
 			.stream()
-			.map(part -> new File(cwd, part))
-			.map(IO::absolutePath)
+			.map(part -> resolve(cwd, part))
 			.collect(joining(","));
+	}
+
+	static String resolve(File dir, String part) {
+		return IO.getFile(dir, part)
+			.getPath();
 	}
 
 	public void add(ServerDTO server) {
@@ -531,4 +553,57 @@ public class ConnectionSettings {
 		return servers;
 	}
 
+	public List<String> getParsedFiles() {
+		return parsed;
+	}
+
+	public void report(Formatter f) {
+		f.format("-connection-settings          %s%n", processor.getProperty(CONNECTION_SETTINGS, "<>"));
+		f.format("Parsed files:%n");
+
+		getParsedFiles().forEach(file -> f.format("   %s%n", file));
+
+		getServerDTOs().forEach(server -> {
+			f.format("%n");
+			f.format("Id                  %s%n", server.id);
+			f.format("Username            %s%n", server.username);
+			f.format("Password            %s%n", server.password == null ? "<>" : "*******");
+			f.format("Private Key         %s%n", server.privateKey == null ? "<>" : "*******");
+			f.format("Passphrase          %s%n", server.passphrase == null ? "<>" : "*******");
+			if (server.trust != null && !server.trust.trim()
+				.isEmpty()) {
+				f.format("Trust%n");
+				List<String> paths = Strings.split(server.trust);
+				for (String path : paths)
+					try {
+						File file = new File(path);
+						if (file.isFile()) {
+							f.format("    %s%n", file);
+							List<X509Certificate> certificates = new ArrayList<>();
+							HttpsVerification.getCertificates(path, certificates);
+							for (X509Certificate certificate : certificates) {
+								f.format("        Subject     %s%n", certificate.getSubjectDN());
+								byte[] bytes = certificate.getSerialNumber()
+									.toByteArray();
+								f.format("        Serial Nr   %s%n", Hex.separated(bytes, ":"));
+								f.format("        Issuer      %s%n", certificate.getIssuerDN());
+								f.format("        Type        %s%n", certificate.getType());
+								try {
+									certificate.checkValidity();
+									f.format("        Valid       yes%n");
+								} catch (Exception e) {
+									f.format("        Valid       %s%n", e.getMessage());
+								}
+							}
+
+						} else {
+							f.format("    %s NO SUCH FILE%n", file);
+						}
+					} catch (Exception e) {
+						f.format("        Unexpected  %s%n", e.getMessage());
+					}
+				f.format("Verify              %s%n", server.verify);
+			}
+		});
+	}
 }

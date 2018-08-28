@@ -18,7 +18,7 @@ import junit.framework.TestCase;
  */
 public class HttpClientServerTest extends TestCase {
 	private File	tmp;
-	private Httpbin httpServer;
+	private Httpbin httpsServer;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -27,13 +27,13 @@ public class HttpClientServerTest extends TestCase {
 		IO.mkdirs(tmp);
 		Config config = new Config();
 		config.https = true;
-		httpServer = new Httpbin(config);
-		httpServer.start();
+		httpsServer = new Httpbin(config);
+		httpsServer.start();
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
-		IO.close(httpServer);
+		IO.close(httpsServer);
 		super.tearDown();
 	}
 
@@ -57,19 +57,19 @@ public class HttpClientServerTest extends TestCase {
 	private void assertOk(String username, String password, boolean verify) throws Exception {
 		File log = new File(tmp, "log");
 		try (Processor p = new Processor(); HttpClient hc = new HttpClient()) {
-			System.out.println(httpServer.getBaseURI());
+			System.out.println(httpsServer.getBaseURI());
 
-			String settings = "server;id=\"" + httpServer.getBaseURI() + "\";verify=" + verify + ";trust=\""
-				+ Strings.join(httpServer.getTrustedCertificateFiles(tmp)) + "\"";
+			String settings = "server;id=\"" + httpsServer.getBaseURI() + "\";verify=" + verify + ";trust=\""
+				+ Strings.join(httpsServer.getTrustedCertificateFiles(tmp)) + "\"";
 
 			URL url;
 			if (password == null) {
-				url = new URL(httpServer.getBaseURI() + "/get");
+				url = new URL(httpsServer.getBaseURI() + "/get");
 			} else if (username != null) {
-				url = new URL(httpServer.getBaseURI() + "/basic-auth/" + username + "/" + password);
+				url = new URL(httpsServer.getBaseURI() + "/basic-auth/" + username + "/" + password);
 				settings += ";username=\"" + username + "\";password=\"" + password + "\"";
 			} else {
-				url = new URL(httpServer.getBaseURI() + "/bearer-auth/" + password);
+				url = new URL(httpsServer.getBaseURI() + "/bearer-auth/" + password);
 				settings += ";password=\"" + password + "\"";
 			}
 

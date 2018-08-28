@@ -264,8 +264,7 @@ public class bnd extends Processor {
 		Workspace.addGestalt(Constants.GESTALT_SHELL, null);
 		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
 
-		Workspace ws = Workspace.findWorkspace(IO.work);
-		try (bnd main = new bnd()) { // ws == null ? new bnd() : new bnd(ws);
+		try (bnd main = new bnd()) {
 			main.start(args);
 		}
 		exitWithCode(0);
@@ -4597,4 +4596,16 @@ public class bnd extends Processor {
 		ic._index(options);
 		ic.close();
 	}
+
+	@Description("Commands to verify the bnd communications setup")
+	public void _com(CommunicationCommands.CommunicationOptions options) throws Exception {
+		try (CommunicationCommands cc = new CommunicationCommands(this, options)) {
+			String help = options._command()
+				.subCmd(options, cc);
+			if (help != null)
+				out.println(help);
+			getInfo(cc);
+		}
+	}
+
 }

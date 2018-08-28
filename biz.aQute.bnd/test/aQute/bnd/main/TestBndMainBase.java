@@ -71,7 +71,10 @@ public class TestBndMainBase {
 		// timestampchanges
 	}
 
-	protected void expectFileStataus(FileStatus expectedFileStatus, String... p) {
+	protected void expectFileStatus(FileStatus expectedFileStatus, String p) {
+		expectFileStatus(expectedFileStatus, p.split("/"));
+	}
+	protected void expectFileStatus(FileStatus expectedFileStatus, String... p) {
 
 		Path path = Paths.get("", p);
 		assertEquals(path.toString(), expectedFileStatus, folder.checkFile(path));
