@@ -20,6 +20,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.AbstractWiringNamespace;
@@ -38,6 +39,7 @@ import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 import org.osgi.service.repository.ContentNamespace;
+import org.osgi.service.repository.Repository;
 
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.header.Attrs;
@@ -520,5 +522,31 @@ public class ResourceUtils {
 		Attrs attribs = new Attrs();
 		attribs.put(Constants.VERSION_ATTRIBUTE, versionString);
 		return new VersionedClause(identity, attribs);
+	}
+
+	static <T> T requireNonNull(T obj) {
+		if (obj != null) {
+			return obj;
+		}
+		throw new NullPointerException();
+	}
+
+	static Collection<Requirement> all = Collections.singleton(createWildcardRequirement());
+
+	/**
+	 * Return all resources from a repository as returned by the wildcard
+	 * requirement, see {@link #createWildcardRequirement()}
+	 * 
+	 * @param repository the repository to use
+	 * @return a set of resources from the repository.
+	 */
+	public static Set<Resource> getAllResources(Repository repository) {
+		Set<Capability> capabilities = repository.findProviders(all)
+			.values()
+			.stream()
+			.flatMap(l -> l.stream())
+			.collect(Collectors.toSet());
+		return getResources(capabilities);
+
 	}
 }

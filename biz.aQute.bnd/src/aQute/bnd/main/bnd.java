@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +30,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Formatter;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -46,9 +46,9 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
-import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -92,9 +92,9 @@ import aQute.bnd.maven.PomFromManifest;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
-import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.Def;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Domain;
@@ -137,6 +137,8 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.classdump.ClassDumper;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
+import aQute.libg.cryptography.SHA256;
+import aQute.libg.cryptography.SHA512;
 import aQute.libg.forker.Forker;
 import aQute.libg.generics.Create;
 import aQute.libg.glob.Glob;
@@ -1322,7 +1324,10 @@ public class bnd extends Processor {
 	 */
 	@Description("Show macro value")
 	public void _macro(macroOptions options) throws Exception {
-		Project project = getProject(options.project());
+		Processor project = getProject(options.project());
+
+		if (project == null)
+			project = ws;
 
 		if (project == null) {
 			messages.NoProject();
@@ -1415,127 +1420,23 @@ public class bnd extends Processor {
 		}
 	}
 
+
 	@Description("Show a cross references for all classes in a set of jars.")
-	@Arguments(arg = {
-		"<jar path>", "[...]"
-	})
-	interface xrefOptions extends Options {
-		@Description("Show classes instead of packages")
-		boolean classes();
-
-		@Description("Show references to other classes/packages (>)")
-		boolean to();
-
-		@Description("Show references from other classes/packages (<)")
-		boolean from();
-
-		@Description("Filter for class names, a globbing expression")
-		List<String> match();
-
-	}
-
-	static public class All {
-		public Map<TypeRef, List<TypeRef>>			classes		= new HashMap<>();
-		public Map<PackageRef, List<PackageRef>>	packages	= new HashMap<>();
-	}
-
-	/**
-	 * Cross reference every class in the jar file to the files it references
-	 */
-	@Description("Show a cross references for all classes in a set of jars.")
-	public void _xref(xrefOptions options) throws IOException, Exception {
-		Analyzer analyzer = new Analyzer();
-		final MultiMap<TypeRef, TypeRef> table = new MultiMap<>();
-		final MultiMap<PackageRef, PackageRef> packages = new MultiMap<>();
-		Set<TypeRef> set = Create.set();
-		Instructions filter = new Instructions(options.match());
-		for (String arg : options._arguments()) {
-			try {
-				File file = new File(arg);
-				try (Jar jar = new Jar(file.getName(), file)) {
-					for (Map.Entry<String, Resource> entry : jar.getResources()
-						.entrySet()) {
-						String key = entry.getKey();
-						Resource r = entry.getValue();
-						if (key.endsWith(".class")) {
-							TypeRef ref = analyzer.getTypeRefFromPath(key);
-							if (filter.matches(ref.toString())) {
-								set.add(ref);
-
-								try (InputStream in = r.openInputStream()) {
-									Clazz clazz = new Clazz(analyzer, key, r);
-
-									// TODO use the proper bcp instead
-									// of using the default layout
-									Set<TypeRef> s = clazz.parseClassFile();
-									for (Iterator<TypeRef> t = s.iterator(); t.hasNext();) {
-										TypeRef tr = t.next();
-										if (tr.isJava() || tr.isPrimitive())
-											t.remove();
-										else
-											packages.add(ref.getPackageRef(), tr.getPackageRef());
-									}
-									table.addAll(ref, s);
-									set.addAll(s);
-								}
-							}
-						}
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-		boolean to = options.to();
-		boolean from = options.from();
-		if (to == false && from == false)
-			to = from = true;
-
-		if (options.classes()) {
-			if (to)
-				printxref(table, ">");
-			if (from)
-				printxref(table.transpose(), "<");
-		} else {
-			if (to)
-				printxref(packages, ">");
-			if (from)
-				printxref(packages.transpose(), "<");
-		}
-	}
-
-	private void printxref(MultiMap<?, ?> map, String direction) {
-		SortedList<?> labels = new SortedList<Object>(map.keySet(), null);
-		for (Object element : labels) {
-			List<?> e = map.get(element);
-			if (e == null) {
-				// ignore
-			} else {
-				Set<Object> set = new LinkedHashSet<>(e);
-				set.remove(element);
-				Iterator<?> row = set.iterator();
-				String first = "";
-				if (row.hasNext())
-					first = row.next()
-						.toString();
-				out.printf("%50s %s %s\n", element, direction, first);
-				while (row.hasNext()) {
-					out.printf("%50s   %s\n", "", row.next());
-				}
-			}
-		}
+	public void _xref(XRefCommand.xrefOptions options) throws IOException, Exception {
+		XRefCommand cx = new XRefCommand(this);
+		cx.xref(options);
 	}
 
 	@Description("Show info about the current directory's eclipse project")
-	@Arguments(arg = {})
-	interface eclipseOptions extends Options {
+	interface eclipseOptions extends workspaceOptions {
 		@Description("Path to the project")
 		String dir();
 	}
 
-	@Description("Show info about the current directory's eclipse project")
+	@Description("Eclipse")
 	public void _eclipse(eclipseOptions options) throws Exception {
+
+		List<String> args = options._arguments();
 
 		File dir = getBase();
 		if (options.dir() != null)
@@ -2095,9 +1996,9 @@ public class bnd extends Processor {
 		if ((options & IMPEXP) != 0) {
 			out.println("[IMPEXP]");
 			Manifest m = jar.getManifest();
-			Domain domain = Domain.domain(m);
 
 			if (m != null) {
+				Domain domain = Domain.domain(m);
 				Parameters imports = domain.getImportPackage();
 				Parameters exports = domain.getExportPackage();
 				for (String p : exports.keySet()) {
@@ -2860,7 +2761,11 @@ public class bnd extends Processor {
 				.endsWith(Constants.DEFAULT_BNDRUN_EXTENSION)) {
 				Run run = Run.createRun(ws, f);
 				ws = run.getWorkspace();
+			} else {
+				progress("Using find workspace %s", f);
+				ws = Workspace.findWorkspace(f);
 			}
+			progress("Workspace %s %s %s", ws, ws.getBase(), ws.getProperty("-standalone"));
 		}
 		return ws;
 	}
@@ -3174,6 +3079,9 @@ public class bnd extends Processor {
 		@Description("Set header(s) to search, can be wildcarded. The default is all headers (*).")
 		Set<String> headers();
 
+		@Description("Search path names of resources. No resources are included unless expressly specified.")
+		Set<String> resources();
+
 	}
 
 	@Description("Grep the manifest of bundles/jar files. ")
@@ -3216,7 +3124,15 @@ public class bnd extends Processor {
 				continue;
 			}
 
-			try (JarInputStream in = new JarInputStream(IO.stream(file))) {
+			try (Jar in = new Jar(file.getName(), IO.stream(file))) {
+
+				if (opts.resources() != null) {
+					Instructions selection = new Instructions(opts.resources());
+					Collection<String> selected = selection.select(in.getResources().keySet(), null, false);
+					selected.forEach(path -> {
+						out.printf("%40s : %s\n", fileName, path);
+					});
+				}
 				Manifest m = in.getManifest();
 				for (Object header : m.getMainAttributes()
 					.keySet()) {
@@ -3398,6 +3314,7 @@ public class bnd extends Processor {
 	enum Alg {
 		SHA1,
 		MD5,
+		SHA256, SHA512,
 		TIMELESS
 	};
 
@@ -3452,6 +3369,12 @@ public class bnd extends Processor {
 						case SHA1 :
 							digest = SHA1.digest(f)
 								.digest();
+							break;
+						case SHA256 :
+							digest = SHA256.digest(f).digest();
+							break;
+						case SHA512 :
+							digest = SHA512.digest(f).digest();
 							break;
 						case MD5 :
 							digest = MD5.digest(f)
@@ -4005,6 +3928,50 @@ public class bnd extends Processor {
 	}
 
 	/**
+	 * Show the dependencies of all projects
+	 */
+
+	@Description("Show the used workspace dependencies ")
+	@Arguments(arg = "instruction...")
+	interface DependencyOptions extends projectOptions {
+		@Description("Show the number of projects using that dependency")
+		boolean count();
+	}
+
+	@Description("Show the used workspace dependencies ")
+	public void _dependencies(DependencyOptions opts) throws Exception {
+		Workspace ws = getWorkspace(opts.project());
+
+		if (ws == null) {
+			error("Can't find a workspace");
+			return;
+		}
+		Instructions instructions = new Instructions(opts._arguments());
+
+		MultiMap<String,Attrs> dependencies = new MultiMap<>();
+		int n = 0;
+		for (Project p : ws.getAllProjects()) {
+			if (instructions.matches(p.getName())) {
+				Parameters parms = p.getParameters(Constants.BUILDPATH);
+				for (Map.Entry<String,Attrs> e : parms.entrySet()) {
+					dependencies.add(e.getKey(), e.getValue());
+				}
+			}
+		}
+		Justif justif = new Justif(80, new int[] {
+				40, 48, 56
+		});
+		Formatter f = justif.formatter();
+
+		for (Map.Entry<String,List<Attrs>> e : dependencies.entrySet()) {
+			f.format("%s \t1%s\n", e.getKey(), e.getValue().size());
+		}
+
+		out.println(justif.wrap());
+
+	}
+
+	/**
 	 * start a local framework
 	 */
 
@@ -4547,6 +4514,143 @@ public class bnd extends Processor {
 		output.setManifest(manifest);
 		output.stripSignatures();
 		output.write(destination);
+	}
+
+	@Description("Extract a set of classes/packages from a set of JARs")
+	interface CollectOptions extends Options {
+		@Description("A file with a list of class names to extract. Can be -- when the names are piped into this command")
+		String classes();
+
+	}
+
+	@Description("Extract a set of resources from a set of JARs given a set of prefixes. "
+			+ "All prefixes in any of the given input jars are added to the output jar")
+	@Arguments(arg = {
+			"<out path>", "<in path>", "[...]"
+	})
+	public void _collect(CollectOptions options) throws Exception {
+		List<Jar> opened = new ArrayList<>();
+
+		List<String> args = options._arguments();
+		String outpath = args.remove(0);
+
+		File outfile = getFile(outpath);
+		outfile.getParentFile().mkdirs();
+		logger.debug("out %s", outfile);
+
+		String classes = options.classes();
+		if (classes == null) {
+			classes = "--";
+		}
+
+		Jar store = new Jar("store");
+		opened.add(store);
+
+		for (String arg : args) {
+			try {
+				logger.debug("storing %s", arg);
+				File file = getFile(arg);
+				if (!file.isFile()) {
+					error("Cannot open file %s", file);
+					continue;
+				}
+				Jar jar = new Jar(file.getName(), file);
+				store.addAll(jar);
+				opened.add(jar);
+			} catch (Exception e) {
+				exception(e, "File %s", arg);
+			}
+		}
+
+		Jar out = new Jar("out");
+		opened.add(out);
+		forEachLine(classes, line -> {
+			String path = line.trim();
+			if (path.isEmpty() || path.startsWith("#"))
+				return;
+
+			logger.info("line {}", path);
+			boolean match = false;
+			for (Map.Entry<String,Resource> e : store.getResources().entrySet()) {
+				if (e.getKey().startsWith(path)) {
+					match = true;
+					logger.info("# found %s", path);
+					out.putResource(e.getKey(), e.getValue());
+				}
+			}
+			if (!match) {
+				this.error("Not found %s", path);
+			}
+		});
+		out.write(outfile);
+		opened.forEach(IO::close);
+
+	}
+
+	@Description("Convert class names to resource paths from stdin to stdout")
+	@Arguments(arg = {})
+	public void _classtoresource(Options options) throws IOException {
+		try (Analyzer a = new Analyzer()) {
+			List<String> l = options._arguments().isEmpty() ? Arrays.asList("--") : options._arguments();
+
+			for (String f : l) {
+				forEachLine(f, s -> {
+					String trim = s.trim();
+					TypeRef t = a.getTypeRefFromFQN(trim);
+					while (t.isArray())
+						t.getComponentTypeRef();
+
+					out.println(t.getPath());
+				});
+			}
+		}
+	}
+
+	@Description("Convert package names to resource paths from stdin to stdout")
+	@Arguments(arg = {})
+	public void _packagetoresource(Options options) throws IOException {
+		try (Analyzer a = new Analyzer()) {
+			List<String> l = options._arguments().isEmpty() ? Arrays.asList("--") : options._arguments();
+
+			for (String f : l) {
+				forEachLine(f, s -> {
+					String trim = s.trim();
+					if (trim.isEmpty())
+						return;
+
+					String path = Descriptors.fqnToBinary(trim);
+					if (!path.equals("/"))
+						path = path + "/";
+					out.println(path);
+				});
+			}
+		}
+	}
+
+
+	private void forEachLine(String file, Consumer<String> c) throws IOException {
+		InputStream in = System.in;
+		boolean isConsole = file == null || !file.equals("--");
+		if (isConsole) {
+			File f = getFile(file);
+			if (!f.isFile()) {
+				error("No such file %s", f);
+				return;
+			}
+			in = new FileInputStream(f);
+		}
+
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(in))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				c.accept(line);
+			}
+		} finally {
+			if (isConsole) {
+				in.close();
+			}
+		}
+
 	}
 
 	private void addAll(Jar output, Jar sub, String prefix, List<String> bundleClassPath) {
