@@ -192,6 +192,52 @@ public class ContractTest extends TestCase {
 		assertEquals("(&(osgi.contract=abc)(version=3.1.0))", attrs.get("filter:"));
 	}
 
+	public void testSimple_withDefault() throws Exception {
+		Jar bjar = getContractExporter("test", "2.5", "${exports}");
+
+		Builder a = newBuilder();
+		a.setTrace(true);
+		a.addClasspath(bjar);
+		a.setImportPackage("org.osgi.service.cm,*");
+		a.setProperty("Export-Package", "test.refer");
+		Jar ajar = a.build();
+		assertTrue(a.check());
+		Domain domain = Domain.domain(ajar.getManifest());
+		Parameters rc = domain.getRequireCapability();
+		rc.remove("osgi.ee");
+		System.out.println(rc);
+		assertEquals(1, rc.size());
+
+		Packages ps = a.getImports();
+		assertTrue(ps.containsFQN("org.osgi.service.cm"));
+		Attrs attrs = ps.getByFQN("org.osgi.service.cm");
+		assertNotNull(attrs);
+		assertNull(attrs.getVersion());
+		attrs = rc.get("osgi.contract");
+		assertEquals("(&(osgi.contract=test)(version=2.5.0))", attrs.get("filter:"));
+	}
+
+	public void testMultiple_withDefault() throws Exception {
+		Jar bjar = getContractExporter("abc", new String[] {
+			"2.5", "2.6", "3.0", "3.1"
+		}, "${exports}");
+
+		Builder a = newBuilder();
+		a.setTrace(true);
+		a.addClasspath(bjar);
+		a.setImportPackage("org.osgi.service.cm,*");
+		a.setProperty("Export-Package", "test.refer");
+		Jar ajar = a.build();
+		assertTrue(a.check());
+		Domain domain = Domain.domain(ajar.getManifest());
+		Parameters rc = domain.getRequireCapability();
+		rc.remove("osgi.ee");
+		System.out.println(rc);
+		assertEquals(1, rc.size());
+		Attrs attrs = rc.get("osgi.contract");
+		assertEquals("(&(osgi.contract=abc)(version=3.1.0))", attrs.get("filter:"));
+	}
+
 	private Jar getContractExporter(String name, String version, String uses) throws IOException, Exception {
 		return getContractExporter(name, new String[] {
 			version

@@ -56,7 +56,7 @@ class Contracts {
 
 	Instructions getFilter() {
 		if (instructions == null) {
-			String contract = analyzer.getProperty(Constants.CONTRACT);
+			String contract = analyzer.getProperty(Constants.CONTRACT, "*");
 			this.instructions = new Instructions(contract);
 		}
 		return instructions;
