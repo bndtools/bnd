@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
@@ -117,8 +118,9 @@ public class OSGiRepository extends BaseRepository
 		String cachePath = config.cache();
 		File cache = (cachePath == null) ? ws.getCache(config.name()) : ws.getFile(cachePath);
 
-		if (refresh)
+		if (refresh) {
 			IO.delete(cache);
+		}
 
 		List<String> strings = Strings.split(config.locations());
 		List<URI> urls = new ArrayList<>(strings.size());
@@ -127,51 +129,59 @@ public class OSGiRepository extends BaseRepository
 		}
 
 		if (poller == null) {
-			if (!(ws.getGestalt()
-				.containsKey(Constants.GESTALT_BATCH)
-				|| ws.getGestalt()
-					.containsKey(Constants.GESTALT_CI)
-				|| ws.getGestalt()
-					.containsKey(Constants.GESTALT_OFFLINE))) {
-
+			Parameters gestalt = ws.getGestalt();
+			if (!(gestalt.containsKey(Constants.GESTALT_BATCH) || gestalt.containsKey(Constants.GESTALT_CI)
+				|| gestalt.containsKey(Constants.GESTALT_OFFLINE))) {
 				int polltime = config.poll_time(DEFAULT_POLL_TIME);
 				if (polltime > 0) {
-
 					poller = Processor.getScheduledExecutor()
-						.scheduleAtFixedRate(() -> {
-							if (inPoll.getAndSet(true))
-								return;
-							try {
-								poll();
-							} catch (Exception e) {
-								logger.debug("During polling", e);
-							} finally {
-								inPoll.set(false);
-							}
-						}, polltime, polltime, TimeUnit.SECONDS);
+						.scheduleAtFixedRate(this::pollTask, polltime, polltime, TimeUnit.SECONDS);
 				}
 			}
 		}
 		index = new OSGiIndex(config.name(), client, cache, urls, config.max_stale(YEAR), refresh);
+		if (refresh) {
+			index.getBridgeRepository()
+				.onResolve(this::notifyRepositoryListeners);
+		}
 		stale = false;
 		return index;
 	}
 
-	void poll() throws Exception {
-		if (stale)
+	/**
+	 * Notify all {@link RepositoryListenerPlugin}s that this repository is
+	 * updated.
+	 */
+	private void notifyRepositoryListeners() {
+		registry.getPlugins(RepositoryListenerPlugin.class)
+			.forEach((RepositoryListenerPlugin rp) -> rp.repositoryRefreshed(this));
+	}
+
+	private void pollTask() {
+		if (inPoll.getAndSet(true))
 			return;
+		try {
+			poll();
+		} catch (Exception e) {
+			logger.debug("During polling", e);
+		} finally {
+			inPoll.set(false);
+		}
+	}
+
+	void poll() throws Exception {
+		if (stale) {
+			return;
+		}
 		OSGiIndex ix;
 		synchronized (this) {
 			ix = index;
 		}
 		if (ix == null)
 			return;
-
 		if (ix.isStale()) {
 			stale = true;
-			for (RepositoryListenerPlugin rp : registry.getPlugins(RepositoryListenerPlugin.class)) {
-				rp.repositoryRefreshed(this);
-			}
+			this.notifyRepositoryListeners();
 		}
 	}
 
@@ -267,9 +277,14 @@ public class OSGiRepository extends BaseRepository
 	}
 
 	@Override
-	public synchronized boolean refresh() throws Exception {
-		getIndex(false);
-		return true;
+	public synchronized boolean refresh() {
+		try {
+			getIndex(true);
+			return true;
+		} catch (Exception e) {
+			logger.error("Refreshing repository {} failed", this.getName(), e);
+			return false;
+		}
 	}
 
 	@Override
