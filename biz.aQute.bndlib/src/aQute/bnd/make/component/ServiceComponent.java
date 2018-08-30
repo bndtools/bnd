@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
@@ -31,19 +32,38 @@ import aQute.lib.tag.Tag;
  */
 public class ServiceComponent implements AnalyzerPlugin {
 
+	private static final String	XML_WILDCARD = "*.xml";
+	private static final String	OSGI_INF     = "OSGI-INF/";
+
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 
 		ComponentMaker m = new ComponentMaker(analyzer);
 
 		Map<String, Map<String, String>> l = m.doServiceComponent();
+		Map<String, Map<String, String>> filtered = new HashMap<>();
 
-		analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l));
+		String wildcardElement = OSGI_INF + XML_WILDCARD;
 
+		boolean hasWildcardEntry = false;
+		if (l.containsKey(wildcardElement)) {
+			hasWildcardEntry = true;
+			filtered.put(wildcardElement, Constants.EMPTY);
+		}
+		l.forEach((k, v) -> {
+			if (!(hasWildcardEntry && matchesWildcard(k))) {
+				filtered.put(k, v);
+			}
+		});
+		analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(filtered));
 		analyzer.getInfo(m, Constants.SERVICE_COMPONENT + ": ");
 		m.close();
 
 		return false;
+	}
+
+	private static boolean matchesWildcard(String element) {
+		return element.startsWith(OSGI_INF) && element.endsWith(".xml");
 	}
 
 	private static class ComponentMaker extends Processor {
@@ -209,9 +229,9 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 			String pathSegment = analyzer.validResourcePath(name, "Invalid component name");
 			analyzer.getJar()
-				.putResource("OSGI-INF/" + pathSegment + ".xml", resource);
+				.putResource(OSGI_INF + pathSegment + ".xml", resource);
 
-			components.put("OSGI-INF/" + pathSegment + ".xml", EMPTY);
+			components.put(OSGI_INF + pathSegment + ".xml", EMPTY);
 
 		}
 
