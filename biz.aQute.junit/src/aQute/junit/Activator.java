@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.regex.Pattern;
 
@@ -293,18 +292,8 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 			bundle = findHost(bundle);
 
-			List<String> names = new ArrayList<>();
-			StringTokenizer st = new StringTokenizer(testnames, " ,");
-
-			//
-			// Collect the test names and remove any duplicates
-			//
-
-			while (st.hasMoreTokens()) {
-				String token = st.nextToken();
-				if (!names.contains(token))
-					names.add(token);
-			}
+			List<String> names = Arrays.asList(testnames.trim()
+				.split(",\\s*"));
 
 			List<TestReporter> reporters = new ArrayList<>();
 			final TestResult result = new TestResult();
