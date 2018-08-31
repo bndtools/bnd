@@ -122,9 +122,10 @@ public class BndPlugin implements Plugin<Project> {
             File destinationDir = tasks.getByName(compileJavaTaskName).destinationDir
             convention.plugins.each { lang, sourceSet ->
               Task compileTask = tasks.findByName(getCompileTaskName(lang))
-              if (compileTask) {
-                sourceSet[lang].srcDirs = java.srcDirs
-                sourceSet[lang].outputDir = destinationDir
+              def sourceDirSet = sourceSet[lang]
+              if (compileTask && sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
+                sourceDirSet.srcDirs = java.srcDirs
+                sourceDirSet.outputDir = destinationDir
                 compileTask.destinationDir = destinationDir
                 output.dir(destinationDir, builtBy: compileTask)
               }
@@ -134,9 +135,10 @@ public class BndPlugin implements Plugin<Project> {
             File destinationDir = tasks.getByName(compileJavaTaskName).destinationDir
             convention.plugins.each { lang, sourceSet ->
               Task compileTask = tasks.findByName(getCompileTaskName(lang))
-              if (compileTask) {
-                sourceSet[lang].srcDirs = java.srcDirs
-                sourceSet[lang].outputDir = destinationDir
+              def sourceDirSet = sourceSet[lang]
+              if (compileTask && sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
+                sourceDirSet.srcDirs = java.srcDirs
+                sourceDirSet.outputDir = destinationDir
                 compileTask.destinationDir = destinationDir
                 output.dir(destinationDir, builtBy: compileTask)
               }
