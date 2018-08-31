@@ -2,8 +2,8 @@ package aQute.bnd.component;
 
 import static aQute.bnd.osgi.Clazz.QUERY.ANNOTATED;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.CollectionType;
@@ -24,7 +25,6 @@ import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferenceScope;
 import org.osgi.service.component.annotations.ServiceScope;
 import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
@@ -54,46 +54,56 @@ import aQute.lib.collections.MultiMap;
 public class AnnotationReader extends ClassDataCollector {
 	private static final Logger			logger						= LoggerFactory.getLogger(AnnotationReader.class);
 
-	final static TypeRef[]				EMPTY						= new TypeRef[0];
+	private final static TypeRef[]				EMPTY					= new TypeRef[0];
 	public static final Version			V1_0						= new Version("1.0.0");																										// "1.0.0"
 	public static final Version			V1_1						= new Version("1.1.0");																										// "1.1.0"
 	public static final Version			V1_2						= new Version("1.2.0");																										// "1.2.0"
 	public static final Version			V1_3						= new Version("1.3.0");																										// "1.3.0"
 	public static final Version			V1_4						= new Version("1.4.0");																										// "1.3.0"
 
-	static final Pattern				BINDNAME					= Pattern.compile("(set|add|bind)?(.*)");
+	private static final Pattern				BINDNAME				= Pattern
+		.compile("(?:set|add|bind)?(?<name>.*)");
 
-	static final Pattern				BINDDESCRIPTORDS10			= Pattern.compile(
-		"\\(L(((org/osgi/framework/ServiceReference)|(org/osgi/service/component/ComponentServiceObjects)|(java/util/Map\\$Entry)|(java/util/Map))|([^;]+));\\)(V|(Ljava/util/Map;))");
-	static final Pattern				BINDDESCRIPTORDS11			= Pattern
-		.compile("\\(L([^;]+);(Ljava/util/Map;)?\\)(V|(Ljava/util/Map;))");
+	/**
+	 * Felix SCR allows Map return type. See
+	 * {@link #checkMapReturnType(DeclarativeServicesAnnotationError)}.
+	 */
+	private static final String					RETURNTYPE				= "(?:V|L(?<return>java/util/Map);)";
+	private static final Pattern				BINDDESCRIPTOR			= Pattern.compile("\\("
+		+ "L(?:(?<inferrer>org/osgi/framework/ServiceReference|org/osgi/service/component/ComponentServiceObjects)|java/util/Map|(?<service>[^;]+));(?:(?<ds10>)|(?<ds11>Ljava/util/Map;)|(?<ds13>.+))"
+		+ "\\)"																																															//
+		+ RETURNTYPE);
+	private static final Pattern				ACTIVATEDESCRIPTOR		= Pattern.compile("\\((?:"
+		+ "(?<ds10>Lorg/osgi/service/component/ComponentContext;)"
+		+ "|(?<ds11>(?:L(?:org/osgi/service/component/ComponentContext|org/osgi/framework/BundleContext|java/util/Map);)*)"
+		+ "|(?<ds13>(?:L(?:[^;]+);)*)"
+		+ ")\\)"																																													//
+		+ RETURNTYPE);
+	private static final Pattern				DEACTIVATEDESCRIPTOR	= Pattern.compile("\\((?:"
+		+ "(?<ds10>Lorg/osgi/service/component/ComponentContext;)"
+		+ "|(?<ds11>(?:L(?:org/osgi/service/component/ComponentContext|org/osgi/framework/BundleContext|java/util/Map|java/lang/Integer);|I)*)"
+		+ "|(?<ds13>(?:L(?:[^;]+);|I)*)"																																							//
+		+ ")\\)"
+		+ RETURNTYPE);
+	private static final Pattern				ACTIVATIONOBJECTS		= Pattern.compile(
+		"L(?:org/osgi/service/component/ComponentContext|org/osgi/framework/BundleContext|java/util/Map|(?<propertytype>[^;]+));");
+	private static final Pattern				DEACTIVATIONOBJECTS		= Pattern.compile(
+		"L(?:org/osgi/service/component/ComponentContext|org/osgi/framework/BundleContext|java/util/Map|java/lang/Integer|(?<propertytype>[^;]+));|I");
 
-	// includes support for felix extensions
-	static final Pattern				BINDDESCRIPTORDS13			= Pattern.compile(
-		"\\(((Lorg/osgi/framework/ServiceReference;)|(Lorg/osgi/service/component/ComponentServiceObjects;)|(Ljava/util/Map;)|(Ljava/util/Map\\$Entry;)|(L([^;]+);))+\\)(V|(Ljava/util/Map;))");
-
-	static final Pattern				LIFECYCLEDESCRIPTORDS10		= Pattern
-		.compile("\\((Lorg/osgi/service/component/ComponentContext;)\\)(V|(Ljava/util/Map;))");
-	static final Pattern				LIFECYCLEDESCRIPTORDS11		= Pattern.compile(
-		"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;))*\\)(V|(Ljava/util/Map;))");
-	static final Pattern				LIFECYCLEDESCRIPTORDS13		= Pattern
-		.compile("\\((L([^;]+);)*\\)(V|(Ljava/util/Map;))");
-	static final Pattern				LIFECYCLEARGUMENT			= Pattern.compile(
-		"((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(L([^;]+);))");
-
-	static final Pattern				IDENTIFIERTOPROPERTY		= Pattern
+	static final Pattern						IDENTIFIERTOPROPERTY		= Pattern
 		.compile("(__)|(_)|(\\$_\\$)|(\\$\\$)|(\\$)");
 
-	static final Pattern				DEACTIVATEDESCRIPTORDS11	= Pattern.compile(
-		"\\(((Lorg/osgi/service/component/ComponentContext;)|(Lorg/osgi/framework/BundleContext;)|(Ljava/util/Map;)|(Ljava/lang/Integer;)|(I))*\\)(V|(Ljava/util/Map;))");
-	static final Pattern				DEACTIVATEDESCRIPTORDS13	= Pattern
-		.compile("\\(((L([^;]+);)|(I))*\\)(V|(Ljava/util/Map;))");
-	static final Pattern				SIGNATURE_SPLIT				= Pattern.compile("[<;>]");
+	private static final Pattern				SIGNATURE_SPLIT			= Pattern.compile("[<;>]");
 
-	static final Instruction			COMPONENT_INSTR;
-	static final Instruction			COMPONENT_PROPERTY_INSTR;
+	// We avoid using the XXX.class.getName() because it breaks the launcher
+	// tests when run in gradle. This is because gradle uses the bin/
+	// folder, not the bndlib jar which packages the ds annotations
+	private static final Instruction			COMPONENT_INSTR				= new Instruction(
+		"org.osgi.service.component.annotations.Component");
+	private static final Instruction			COMPONENT_PROPERTY_INSTR	= new Instruction(
+		"org.osgi.service.component.annotations.ComponentPropertyType");
 
-	final static Map<String, Class<?>>	wrappers;
+	private final static Map<String, Class<?>>	wrappers;
 
 	static {
 		Map<String, Class<?>> map = new HashMap<>();
@@ -106,12 +116,6 @@ public class AnnotationReader extends ClassDataCollector {
 		map.put("float", Float.class);
 		map.put("double", Double.class);
 		wrappers = Collections.unmodifiableMap(map);
-
-		// We avoid using the XXX.class.getName() because it breaks the launcher
-		// tests when run in gradle. This is because gradle uses the bin/
-		// folder, not the bndlib jar which packages the ds annotations
-		COMPONENT_INSTR = new Instruction("org.osgi.service.component.annotations.Component");
-		COMPONENT_PROPERTY_INSTR = new Instruction("org.osgi.service.component.annotations.ComponentPropertyType");
 	}
 
 	ComponentDef											component;
@@ -131,6 +135,7 @@ public class AnnotationReader extends ClassDataCollector {
 	final XMLAttributeFinder								finder;
 
 	Map<String, List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<>();
+	private int												componentPropertyTypeCount	= 0;
 
 	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder,
 		Version minVersion) {
@@ -225,11 +230,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 		if (methods.containsKey(value)) {
 			for (Clazz.MethodDef method : methods.get(value)) {
-				String service = determineReferenceType(method.getDescriptor()
-					.toString(), rdef, rdef.service, null);
+				String service = determineReferenceType(method, rdef, rdef.service, null);
 				if (service != null) {
-					if (!method.isProtected())
-						component.updateVersion(V1_1);
 					return value;
 				}
 			}
@@ -339,7 +341,10 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 
 			if (clazz.is(ANNOTATED, COMPONENT_PROPERTY_INSTR, analyzer)) {
-				clazz.parseClassFileWithCollector(new ComponentPropertyTypeDataCollector(annotation, details));
+				String propertyDefKey = String.format(ComponentDef.PROPERTYDEF_ANNOTATIONFORMAT,
+					++componentPropertyTypeCount);
+				clazz.parseClassFileWithCollector(
+					new ComponentPropertyTypeDataCollector(propertyDefKey, annotation, details));
 			} else {
 				logger.debug(
 					"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
@@ -381,157 +386,155 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doActivate() {
-		String methodDescriptor = member.getDescriptor()
-			.toString();
-		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-			member.getName(), methodDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
-		if (!(member instanceof MethodDef)) {
-			analyzer.error("Activate annotation on a field %s.%s", clazz, member.getDescriptor())
-				.details(details);
-			return;
-		}
-		boolean hasMapReturnType = false;
-		Matcher m = LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor);
-		if ("activate".equals(member.getName()) && m.matches()) {
-			component.activate = member.getName();
-			hasMapReturnType = m.group(3) != null;
-			if (!member.isProtected())
-				component.updateVersion(V1_1);
-		} else {
-			m = LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor);
+		if (member instanceof MethodDef) {
+			String memberDescriptor = member.getDescriptor()
+				.toString();
+			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+				member.getName(), memberDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
+			Matcher m = ACTIVATEDESCRIPTOR.matcher(memberDescriptor);
 			if (m.matches()) {
 				component.activate = member.getName();
-				component.updateVersion(V1_1);
-				hasMapReturnType = m.group(6) != null;
-			} else {
-				m = LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor);
-				if (m.matches()) {
-					component.activate = member.getName();
+				if (m.group("ds10") != null) {
+					if (!member.isProtected() || !"activate".equals(member.getName())) {
+						component.updateVersion(V1_1);
+					}
+				} else if (m.group("ds11") != null) {
+					component.updateVersion(V1_1);
+				} else if (m.group("ds13") != null) {
 					component.updateVersion(V1_3);
-					hasMapReturnType = m.group(4) != null;
-					processAnnotationArguments(methodDescriptor, details);
-				} else
-					analyzer
-						.error("Activate method for %s descriptor %s is not acceptable.", clazz, member.getDescriptor())
-						.details(details);
+					processActivationObjects(ComponentDef.PROPERTYDEF_ACTIVATEFORMAT, ACTIVATIONOBJECTS,
+						memberDescriptor,
+						details);
+				}
+				if (m.group("return") != null) {
+					checkMapReturnType(details);
+				}
+			} else {
+				analyzer
+					.error("Activate method for %s.%s%s is not acceptable.", details.className, details.methodName,
+						details.methodSignature)
+					.details(details);
 			}
+		} else if (member instanceof FieldDef) {
+			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+				member.getName(), ErrorType.ACTIVATE_SIGNATURE_ERROR);
+			// TODO handle activation-fields
+			analyzer.error("Activate annotation on a field %s.%s", details.className, details.fieldName)
+				.details(details);
 		}
-		checkMapReturnType(hasMapReturnType, details);
-
 	}
 
 	/**
 	 * 
 	 */
 	protected void doDeactivate() {
-		String methodDescriptor = member.getDescriptor()
-			.toString();
-		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-			member.getName(), methodDescriptor, ErrorType.DEACTIVATE_SIGNATURE_ERROR);
-
-		if (!(member instanceof MethodDef)) {
-			analyzer.error("Deactivate annotation on a field %s.%s", clazz, member.getDescriptor())
-				.details(details);
-			return;
-		}
-		boolean hasMapReturnType = false;
-		Matcher m = LIFECYCLEDESCRIPTORDS10.matcher(methodDescriptor);
-		if ("deactivate".equals(member.getName()) && m.matches()) {
-			component.deactivate = member.getName();
-			hasMapReturnType = m.group(3) != null;
-			if (!member.isProtected())
-				component.updateVersion(V1_1);
-		} else {
-			m = DEACTIVATEDESCRIPTORDS11.matcher(methodDescriptor);
+		if (member instanceof MethodDef) {
+			String memberDescriptor = member.getDescriptor()
+				.toString();
+			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+				member.getName(), memberDescriptor, ErrorType.DEACTIVATE_SIGNATURE_ERROR);
+			Matcher m = DEACTIVATEDESCRIPTOR.matcher(memberDescriptor);
 			if (m.matches()) {
 				component.deactivate = member.getName();
-				component.updateVersion(V1_1);
-				hasMapReturnType = m.group(8) != null;
-			} else {
-				m = DEACTIVATEDESCRIPTORDS13.matcher(methodDescriptor);
-				if (m.matches()) {
-					component.deactivate = member.getName();
+				if (m.group("ds10") != null) {
+					if (!member.isProtected() || !"deactivate".equals(member.getName())) {
+						component.updateVersion(V1_1);
+					}
+				} else if (m.group("ds11") != null) {
+					component.updateVersion(V1_1);
+				} else if (m.group("ds13") != null) {
 					component.updateVersion(V1_3);
-					hasMapReturnType = m.group(6) != null;
-					processAnnotationArguments(methodDescriptor, details);
-				} else
-					analyzer
-						.error("Deactivate method for %s descriptor %s is not acceptable.", clazz,
-							member.getDescriptor())
-						.details(details);
+					processActivationObjects(ComponentDef.PROPERTYDEF_DEACTIVATEFORMAT, DEACTIVATIONOBJECTS,
+						memberDescriptor,
+						details);
+				}
+				if (m.group("return") != null) {
+					checkMapReturnType(details);
+				}
+			} else {
+				analyzer
+					.error("Deactivate method for %s.%s%s is not acceptable.", details.className, details.methodName,
+						details.methodSignature)
+					.details(details);
 			}
+		} else if (member instanceof FieldDef) {
+			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+				member.getName(), ErrorType.DEACTIVATE_SIGNATURE_ERROR);
+			analyzer.error("Deactivate annotation on a field %s.%s", details.className, details.fieldName)
+				.details(details);
 		}
-		checkMapReturnType(hasMapReturnType, details);
 	}
 
 	/**
 	 * 
 	 */
 	protected void doModified() {
-		String methodDescriptor = member.getDescriptor()
-			.toString();
-		DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-			member.getName(), methodDescriptor, ErrorType.MODIFIED_SIGNATURE_ERROR);
-
-		if (!(member instanceof MethodDef)) {
-			analyzer.error("Modified annotation on a field %s.%s", clazz, member.getDescriptor())
-				.details(details);
-			return;
-		}
-		boolean hasMapReturnType = false;
-		Matcher m = LIFECYCLEDESCRIPTORDS11.matcher(methodDescriptor);
-		if (m.matches()) {
-			component.modified = member.getName();
-			component.updateVersion(V1_1);
-			hasMapReturnType = m.group(6) != null;
-		} else {
-			m = LIFECYCLEDESCRIPTORDS13.matcher(methodDescriptor);
+		if (member instanceof MethodDef) {
+			String memberDescriptor = member.getDescriptor()
+				.toString();
+			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+				member.getName(), memberDescriptor, ErrorType.MODIFIED_SIGNATURE_ERROR);
+			Matcher m = ACTIVATEDESCRIPTOR.matcher(memberDescriptor);
 			if (m.matches()) {
 				component.modified = member.getName();
-				component.updateVersion(V1_3);
-				hasMapReturnType = m.group(4) != null;
-				processAnnotationArguments(methodDescriptor, details);
-			} else
-
-				analyzer.error("Modified method for %s descriptor %s is not acceptable.", clazz, member.getDescriptor())
+				if (m.group("ds10") != null) {
+					component.updateVersion(V1_1);
+				} else if (m.group("ds11") != null) {
+					component.updateVersion(V1_1);
+				} else if (m.group("ds13") != null) {
+					component.updateVersion(V1_3);
+					processActivationObjects(ComponentDef.PROPERTYDEF_MODIFIEDFORMAT, ACTIVATIONOBJECTS,
+						memberDescriptor,
+						details);
+				}
+				if (m.group("return") != null) {
+					checkMapReturnType(details);
+				}
+			} else {
+				analyzer
+					.error("Modified method for %s.%s%s is not acceptable.", details.className, details.methodName,
+						details.methodSignature)
 					.details(details);
+			}
+		} else if (member instanceof FieldDef) {
+			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+				member.getName(), ErrorType.MODIFIED_SIGNATURE_ERROR);
+			analyzer.error("Modified annotation on a field %s.%s", details.className, details.fieldName)
+				.details(details);
 		}
-		checkMapReturnType(hasMapReturnType, details);
 	}
 
 	/**
-	 * look for annotation arguments and extract properties from them
-	 * 
-	 * @param methodDescriptor
-	 * @param fqn TODO
-	 * @param method TODO
-	 * @param descriptor TODO
+	 * look for annotation activation objects and extract properties from them
 	 */
-	private void processAnnotationArguments(final String methodDescriptor,
-		final DeclarativeServicesAnnotationError details) {
-		Matcher m = LIFECYCLEARGUMENT.matcher(methodDescriptor);
+	private void processActivationObjects(String propertyDefKeyFormat, Pattern activationObjects,
+		String methodDescriptor,
+		DeclarativeServicesAnnotationError details) {
+		Matcher m = activationObjects.matcher(methodDescriptor);
+		int activationObjectCount = 0;
 
 		while (m.find()) {
-			String type = m.group(6);
+			String type = m.group("propertytype");
 			if (type != null) {
 				TypeRef typeRef = analyzer.getTypeRef(type);
 				try {
 					Clazz clazz = analyzer.findClass(typeRef);
 					if (clazz.isAnnotation()) {
+						String propertyDefKey = String.format(propertyDefKeyFormat, ++activationObjectCount);
 						clazz.parseClassFileWithCollector(
-							new ComponentPropertyTypeDataCollector(methodDescriptor, details));
+							new ComponentPropertyTypeDataCollector(propertyDefKey, methodDescriptor, details));
 					} else if (clazz.isInterface() && options.contains(Options.felixExtensions)) {
 						// ok
 					} else {
 						analyzer
-							.error("Non annotation argument to lifecycle method with descriptor %s,  type %s",
+							.error("Non annotation type for activation object with descriptor %s,  type %s",
 								methodDescriptor, type)
 							.details(details);
 					}
 				} catch (Exception e) {
 					analyzer
 						.exception(e,
-							"Exception looking at annotation argument to lifecycle method with descriptor %s,  type %s",
+							"Exception looking at annotation type for activation object with descriptor %s,  type %s",
 							methodDescriptor, type)
 						.details(details);
 				}
@@ -540,24 +543,26 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	private final class ComponentPropertyTypeDataCollector extends ClassDataCollector {
+		private final String								propertyDefKey;
 		private final String								methodDescriptor;
 		private final DeclarativeServicesAnnotationError	details;
-		private final MultiMap<String, String>				props			= new MultiMap<>();
-		private final Map<String, String>					propertyTypes	= new HashMap<>();
+		private final PropertyDef							propertyDef		= new PropertyDef(analyzer);
 		private int											hasNoDefault	= 0;
 		private boolean										hasValue		= false;
 		private boolean										hasMethods		= false;
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
 
-		ComponentPropertyTypeDataCollector(String methodDescriptor,
+		ComponentPropertyTypeDataCollector(String propertyDefKey, String methodDescriptor,
 			DeclarativeServicesAnnotationError details) {
+			this.propertyDefKey = requireNonNull(propertyDefKey);
 			this.methodDescriptor = methodDescriptor;
 			this.details = details;
 		}
 
-		ComponentPropertyTypeDataCollector(Annotation componentPropertyAnnotation,
+		ComponentPropertyTypeDataCollector(String propertyDefKey, Annotation componentPropertyAnnotation,
 			DeclarativeServicesAnnotationError details) {
+			this.propertyDefKey = requireNonNull(propertyDefKey);
 			// Component Property annotations added in 1.4, but they just map to
 			// normal DS properties, so there's not really a need to require DS
 			// 1.4. Therefore we just leave the required version as is
@@ -601,8 +606,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 		@Override
 		public void annotationDefault(MethodDef defined, Object value) {
-			if (!defined.getName()
-				.equals("value")) {
+			String name = defined.getName();
+			if (!name.equals("value")) {
 				hasNoDefault--;
 			}
 			// check type, exit with warning if annotation
@@ -619,7 +624,7 @@ public class AnnotationReader extends ClassDataCollector {
 						Clazz r = analyzer.findClass(type);
 						if (r.isAnnotation()) {
 							analyzer
-								.warning("Nested annotation type found in member %s, %s", defined.getName(),
+								.warning("Nested annotation type found in member %s, %s", name,
 									type.getFQN())
 								.details(details);
 							return;
@@ -641,42 +646,21 @@ public class AnnotationReader extends ClassDataCollector {
 			} else {
 				typeClass = wrappers.get(type.getFQN());
 			}
-			if (value != null) {
-				String name = defined.getName();
-				if (!props.containsKey(name)) {
-					handleValue(name, value, isClass, typeClass);
-				}
-			}
-		}
 
-		private void handleValue(String name, Object value, boolean isClass, Class<?> typeClass) {
-			if (value.getClass()
-				.isArray()) {
-				// add element individually
-				int len = Array.getLength(value);
-				for (int i = 0; i < len; i++) {
-					Object element = Array.get(value, i);
-					valueToProperty(name, element, isClass, typeClass);
-				}
-				if (len == 1) {
-					// To make sure the output is an array, we must make
-					// sure there is more than one entry
-					props.add(name, PropertiesDef.MARKER);
-				}
-			} else {
-				valueToProperty(name, value, isClass, typeClass);
+			if ((value != null) && !propertyDef.containsKey(name)) {
+				handleValue(name, value, isClass, typeClass);
 			}
 		}
 
 		@Override
 		public void classEnd() throws Exception {
-			String prefix = null;
+			String prefix;
 			if (prefixField != null) {
 				Object c = prefixField.getConstant();
 				if (prefixField.isFinal() && (prefixField.getType() == analyzer.getTypeRef("java/lang/String"))
 					&& (c instanceof String)) {
 					prefix = (String) c;
-
+		
 					// If we have a method descriptor then this is an injected
 					// component property type and the prefix must be processed
 					// and understood by DS 1.4. Otherwise bnd handles the
@@ -686,21 +670,24 @@ public class AnnotationReader extends ClassDataCollector {
 						component.updateVersion(V1_4);
 					}
 				} else {
+					prefix = null;
 					analyzer.warning(
 						"Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
 						typeRef.getFQN(), c)
 						.details(details);
 				}
+			} else {
+				prefix = null;
 			}
-
+		
 			if (!hasMethods) {
 				// This is a marker annotation so treat it like it is a single
 				// element annotation with a value of Boolean.TRUE
 				hasValue = true;
 				handleValue("value", Boolean.TRUE, false, Boolean.class);
 			}
-
-			String singleElementAnnotation = null;
+		
+			String singleElementAnnotation;
 			if (hasValue && (hasNoDefault == 0)) {
 				StringBuilder sb = new StringBuilder(typeRef.getShorterName());
 				boolean lastLowerCase = false;
@@ -725,54 +712,105 @@ public class AnnotationReader extends ClassDataCollector {
 				if (methodDescriptor != null) {
 					component.updateVersion(V1_4);
 				}
+			} else {
+				singleElementAnnotation = null;
 			}
-
-			for (Entry<String, List<String>> entry : props.entrySet()) {
-				String key = entry.getKey();
-				List<String> value = entry.getValue();
-				String type = propertyTypes.get(key);
-				if ((singleElementAnnotation != null) && key.equals("value")) {
-					key = singleElementAnnotation;
-				} else {
-					key = identifierToPropertyName(key);
-				}
-				if (prefix != null) {
-					key = prefix + key;
-				}
-				component.properties.setProperty(key, type, value);
+		
+			if (!propertyDef.isEmpty()) {
+				component.propertyDefs.put(propertyDefKey, propertyDef.copy(key -> {
+					if ((singleElementAnnotation != null) && key.equals("value")) {
+						key = singleElementAnnotation;
+					} else {
+						key = identifierToPropertyName(key);
+					}
+					if (prefix != null) {
+						key = prefix + key;
+					}
+					return key;
+				}));
 			}
 		}
 
-		private void valueToProperty(String name, Object value, boolean isClass, Class<?> typeClass) {
-			if (isClass)
-				value = ((TypeRef) value).getFQN();
-			if (typeClass == null)
-				typeClass = value.getClass();
-			// enums already come out as the enum name, no
-			// processing needed.
-			String type = typeClass.getSimpleName();
-			propertyTypes.put(name, type);
-			props.add(name, value.toString());
+		/**
+		 * This method relies on {@link ConcreteRef#toString()} returning
+		 * {@link TypeRef#getFQN()}
+		 */
+		private void handleValue(String name, Object value, boolean isClass, Class<?> typeClass) {
+			if (value.getClass()
+				.isArray()) {
+				Object[] array = (Object[]) value;
+				switch (array.length) {
+					case 0 : {
+						String type = valueType(typeClass, "", isClass);
+						propertyDef.setProperty(name, type, new ArrayList<>());
+						break;
+					}
+					case 1 : {
+						value = array[0];
+						String type = valueType(typeClass, value, isClass);
+						List<String> values = new ArrayList<>(2);
+						values.add(value.toString());
+						// To make sure the output is an array, we must make
+						// sure there is more than one entry
+						values.add(PropertyDef.MARKER);
+						propertyDef.setProperty(name, type, values);
+						break;
+					}
+					default : {
+						String type = valueType(typeClass, array[0], isClass);
+						List<String> values = Stream.of(array)
+							.map(Object::toString)
+							.collect(toList());
+						propertyDef.setProperty(name, type, values);
+						break;
+					}
+				}
+			} else {
+				String type = valueType(typeClass, value, isClass);
+				propertyDef.setProperty(name, type, value.toString());
+			}
+		}
+
+		private String valueType(Class<?> typeClass, Object value, boolean isClass) {
+			if (typeClass != null) {
+				return typeClass.getSimpleName();
+			}
+			if (isClass) {
+				return "String";
+			}
+			return value.getClass()
+					.getSimpleName();
 		}
 
 		private String identifierToPropertyName(String name) {
 			Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
-			StringBuffer b = new StringBuffer();
-			while (m.find()) {
-				String replace;
-				if (m.group(1) != null) // __ to _
-					replace = "_";
-				else if (m.group(2) != null) // _ to .
-					replace = ".";
-				else if (m.group(3) != null) { // $_$ to -
-					replace = "-";
-					component.updateVersion(V1_4);
-				} else if (m.group(4) != null) // $$ to $
-					replace = "\\$";
-				else // $ removed.
-					replace = "";
-				m.appendReplacement(b, replace);
+			if (!m.find()) {
+				return name;
 			}
+			StringBuffer b = new StringBuffer();
+			do {
+				switch (m.group()) {
+					case "__" : // __ to _
+						m.appendReplacement(b, "_");
+						break;
+					case "_" : // _ to .
+						m.appendReplacement(b, ".");
+						break;
+					case "$_$" : // $_$ to -
+						m.appendReplacement(b, "-");
+						break;
+					case "$$" : // $$ to $
+						m.appendReplacement(b, "\\$");
+						break;
+					case "$" : // $ removed
+						m.appendReplacement(b, "");
+						break;
+					default : // unknown!
+						m.appendReplacement(b, m.group());
+						analyzer.error("unknown mapping %s in property name %s", m.group(), name);
+						break;
+				}
+			} while (m.find());
 			m.appendTail(b);
 			return b.toString();
 		}
@@ -837,19 +875,17 @@ public class AnnotationReader extends ClassDataCollector {
 			if (member instanceof MethodDef) {
 				def.bindDescriptor = member.getDescriptor()
 					.toString();
-				if (!member.isProtected())
-					def.updateVersion(V1_1);
 				def.bind = member.getName();
 				if (def.name == null) {
 					Matcher m = BINDNAME.matcher(member.getName());
 					if (m.matches())
-						def.name = m.group(2);
+						def.name = m.group("name");
 					else
 						analyzer.error("Invalid name for bind method %s", member.getName())
 							.details(getDetails(def, ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
 				}
 
-				def.service = determineReferenceType(def.bindDescriptor, def, annoService, member.getSignature());
+				def.service = determineReferenceType((MethodDef) member, def, annoService, member.getSignature());
 
 				if (def.service == null)
 					analyzer.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
@@ -978,129 +1014,95 @@ public class AnnotationReader extends ClassDataCollector {
 		return true;
 	}
 
-	private String determineReferenceType(String methodDescriptor, ReferenceDef def, String annoService,
+	private String determineReferenceType(MethodDef method, ReferenceDef def, String annoService,
 		String signature) {
-		String inferredService = null;
-		String plainType = null;
-		boolean hasMapReturnType;
-		Version minVersion = null;
-
-		DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
-
 		// We have to find the type of the current method to
 		// link it to the referenced service.
-		Matcher m = BINDDESCRIPTORDS10.matcher(methodDescriptor);
-		if (m.matches()) {
-			inferredService = Descriptors.binaryToFQN(m.group(1));
-			// ServiceReference (group 3) is always OK, match is always OK
-			if (m.group(3) == null && noMatch(annoService, inferredService)) {
-				if (m.group(7) == null) {
-					// single arg of recognized Map, Map.Entry or ServiceObjects
-					// so we must be V3.
-					minVersion = V1_3;
-				}
-			}
-			if (m.group(3) != null) {
-				plainType = "Lorg/osgi/framework/ServiceReference<";
-				inferredService = null;
-			} else if (m.group(4) != null) {
-				plainType = "Lorg/osgi/service/component/ComponentServiceObjects<";
-				inferredService = null;
-			} else if (m.group(5) != null) {
-				plainType = "Ljava/util/Map$Entry<Ljava/util/Map<Ljava/lang/String;Ljava/lang/Object;>;";
-				inferredService = null;
-			} else if (m.group(6) != null) {
-				// we cannot infer the service from just a map.
-				inferredService = null;
-			}
-			hasMapReturnType = m.group(9) != null;
-		} else {
-			m = BINDDESCRIPTORDS11.matcher(methodDescriptor);
-			if (m.matches()) {
-				inferredService = Descriptors.binaryToFQN(m.group(1));
+		String methodDescriptor = method.getDescriptor()
+			.toString();
+		Matcher m = BINDDESCRIPTOR.matcher(methodDescriptor);
+		if (!m.matches()) {
+			return null;
+		}
+
+		Version minVersion = null;
+		if (m.group("ds10") != null) {
+			if (!method.isProtected()) {
 				minVersion = V1_1;
-				hasMapReturnType = m.group(4) != null;
+			}
+		} else if (m.group("ds11") != null) {
+			minVersion = V1_1;
+		} else if (m.group("ds13") != null) {
+			minVersion = V1_3;
+		}
+
+		String inferredService = m.group("service");
+		if (inferredService != null) {
+			inferredService = Descriptors.binaryToFQN(inferredService);
+		} else {
+			String inferrer = m.group("inferrer");
+			if (inferrer != null) {
+				// ServiceReference or ComponentServiceObjects
+				if ((annoService == null) || !annoService.equals(Descriptors.binaryToFQN(inferrer))) {
+					if (inferrer.equals("org/osgi/service/component/ComponentServiceObjects")) {
+						// first argument using type supported starting in 1.3
+						minVersion = V1_3;
+					}
+					if (signature != null) {
+						inferrer = "L" + inferrer + "<";
+						int start = signature.indexOf(inferrer);
+						if (start > -1) {
+							String[] sigs = SIGNATURE_SPLIT.split(signature.substring(start + inferrer.length()));
+							if (sigs.length > 0) {
+								String sig = sigs[0];
+								switch (sig.charAt(0)) {
+									case '*' :
+									case '-' :
+										inferredService = Object.class.getName();
+										break;
+									case '+' :
+										inferredService = Descriptors.binaryToFQN(sig.substring(2));
+										break;
+									default :
+										inferredService = Descriptors.binaryToFQN(sig.substring(1));
+										break;
+								}
+							}
+						}
+					}
+				}
 			} else {
-				m = BINDDESCRIPTORDS13.matcher(methodDescriptor);
-				if (m.matches()) {
-					inferredService = m.group(7);
-					if (inferredService != null)
-						inferredService = Descriptors.binaryToFQN(inferredService);
+				// Map
+				if ((annoService == null) || !annoService.equals("java.util.Map")) {
+					// first argument using type supported starting in 1.3
 					minVersion = V1_3;
-					if (ReferenceScope.PROTOTYPE != def.scope && m.group(3) != null) {
-						analyzer
-							.error("In component %s, to use ComponentServiceObjects the scope must be 'prototype'",
-								component.implementation, "")
-							.details(details);
-					}
-					if (annoService == null)
-						if (m.group(2) != null)
-							plainType = "Lorg/osgi/framework/ServiceReference<";
-						else if (m.group(3) != null)
-							plainType = "Lorg/osgi/service/component/ComponentServiceObjects<";
-						else if (m.group(5) != null)
-							plainType = "Ljava/util/Map$Entry<Ljava/util/Map<Ljava/lang/String;Ljava/lang/Object;>;";
-
-					hasMapReturnType = m.group(9) != null;
-				} else {
-					return null;
 				}
 			}
 		}
 
-		String service = annoService;
-		if (inferredService == null && signature != null && plainType != null) {
-			int start = signature.indexOf(plainType);
-			if (start > -1) {
-				start += plainType.length();
-				String[] sigs = SIGNATURE_SPLIT.split(signature.substring(start));
-				if (sigs.length > 0) {
-					String sig = sigs[0];
-					if (sig.startsWith("-")) {
-						inferredService = Object.class.getName();
-					} else {
-						int index = sig.startsWith("+") ? 2 : 1;
-						inferredService = sig.substring(index)
-							.replace('/', '.');
-					}
-				}
-			}
-		}
 		// if the type is specified it may still not match as it could
 		// be a superclass of the specified service.
 		if (!analyzer.assignable(annoService, inferredService)) {
 			return null;
 		}
-		if (service == null)
-			service = inferredService;
-		checkMapReturnType(hasMapReturnType, details);
-		if (minVersion != null)
-			def.updateVersion(minVersion);
-		return service;
-	}
-
-	private void checkMapReturnType(boolean hasMapReturnType, DeclarativeServicesAnnotationError details) {
-		if (hasMapReturnType) {
-			if (!options.contains(Options.felixExtensions)) {
-				analyzer.error(
-					"In component %s, to use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
-						+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
-					component.implementation, "")
-					.details(details);
-			}
+		if (m.group("return") != null) {
+			DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
+			checkMapReturnType(details);
 		}
+		if (minVersion != null) {
+			def.updateVersion(minVersion);
+		}
+		return annoService != null ? annoService : inferredService;
 	}
 
-	/**
-	 * @param annoService
-	 * @param inferredService
-	 * @return true if the inferred service is a non-parameter object because it
-	 *         differs from the specified service type.
-	 */
-	private boolean noMatch(String annoService, String inferredService) {
-		if (annoService == null)
-			return false;
-		return !annoService.equals(inferredService);
+	private void checkMapReturnType(DeclarativeServicesAnnotationError details) {
+		if (!options.contains(Options.felixExtensions)) {
+			analyzer.error(
+				"In component %s, to use a return type of Map you must specify the -dsannotations-options felixExtensions flag "
+					+ " and use a felix extension attribute or explicitly specify the appropriate xmlns.",
+					component.implementation, "")
+				.details(details);
+		}
 	}
 
 	/**
@@ -1173,11 +1175,11 @@ public class AnnotationReader extends ClassDataCollector {
 		if (annotation.get("xmlns") != null)
 			component.xmlns = comp.xmlns();
 
+		component.property.setTypedProperty(className, comp.property());
+		component.factoryProperty.setTypedProperty(className, comp.factoryProperty());
+
 		component.properties.addProperties(comp.properties());
 		component.factoryProperties.addProperties(comp.factoryProperties());
-
-		component.properties.setTypedProperty(className, comp.property());
-		component.factoryProperties.setTypedProperty(className, comp.factoryProperty());
 
 		Object[] x = annotation.get("service");
 		if (x == null) {
@@ -1235,7 +1237,7 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	@Override
-	public void method(Clazz.MethodDef method) {
+	public void method(MethodDef method) {
 		if (method.isAbstract() || method.isStatic() || method.isBridge())
 			return;
 

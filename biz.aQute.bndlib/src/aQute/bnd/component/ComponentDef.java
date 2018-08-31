@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.joining;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
@@ -27,7 +28,26 @@ import aQute.lib.tag.Tag;
  */
 class ComponentDef extends ExtensionDef {
 	final static String				NAMESPACE_STEM	= "http://www.osgi.org/xmlns/scr";
+	/**
+	 * We use a SortedMap and a key set which controls the <a href=
+	 * "https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html#service.component-ordering.generated.properties">
+	 * ordering of the generated properties</a>.
+	 */
+	final SortedMap<String, PropertyDef>	propertyDefs;
+	final static String						PROPERTYDEF_CONSTRUCTORFORMAT	= "1-<init>-%04d";
+	final static String						PROPERTYDEF_FIELDFORMAT			= "2-field-%s";
+	final static String						PROPERTYDEF_ACTIVATEFORMAT		= "3-activate-%04d";
+	final static String						PROPERTYDEF_MODIFIEDFORMAT		= "4-modified-%04d";
+	final static String						PROPERTYDEF_DEACTIVATEFORMAT	= "5-deactivate-%04d";
+	final static String						PROPERTYDEF_ANNOTATIONFORMAT	= "6-annotation-%04d";
+	final static String						PROPERTYDEF_COMPONENT			= "7-component";
+	/**
+	 * This is an alias to the PropertyDef object in {@link #propertyDefs} under
+	 * the {@link #PROPERTYDEF_COMPONENT} key.
+	 */
+	final PropertyDef				property;
 	final PropertiesDef				properties;
+	final PropertyDef				factoryProperty;
 	final PropertiesDef				factoryProperties;
 	final Map<String, ReferenceDef>	references		= new LinkedHashMap<>();
 	Version							version;
@@ -44,10 +64,16 @@ class ComponentDef extends ExtensionDef {
 	Boolean							enabled;
 	String							xmlns;
 	String[]						configurationPid;
+	private final Analyzer					analyzer;
 
 	public ComponentDef(Analyzer analyzer, XMLAttributeFinder finder, Version minVersion) {
 		super(finder);
+		this.analyzer = analyzer;
 		version = minVersion;
+		propertyDefs = new TreeMap<>();
+		property = new PropertyDef(analyzer);
+		propertyDefs.put(PROPERTYDEF_COMPONENT, property);
+		factoryProperty = new PropertyDef(analyzer);
 		properties = new PropertiesDef(analyzer);
 		factoryProperties = new PropertiesDef(analyzer);
 	}
@@ -87,7 +113,7 @@ class ComponentDef extends ExtensionDef {
 		} else if (scope != null && scope != ServiceScope.BUNDLE)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 
-		if (factory == null && !factoryProperties.isEmpty()) {
+		if (factory == null && (!factoryProperty.isEmpty() || !factoryProperties.isEmpty())) {
 			analyzer.error("The factoryProperty and/or factoryProperies elements are used on a non-factory component");
 		}
 	}
@@ -104,7 +130,7 @@ class ComponentDef extends ExtensionDef {
 			updateVersion(AnnotationReader.V1_2);
 		if (modified != null)
 			updateVersion(AnnotationReader.V1_1);
-		if (!factoryProperties.isEmpty()) {
+		if (!factoryProperty.isEmpty() || !factoryProperties.isEmpty()) {
 			updateVersion(AnnotationReader.V1_4);
 		}
 
@@ -169,11 +195,12 @@ class ComponentDef extends ExtensionDef {
 
 		addAttributes(component, namespaces);
 
-		properties.propertyTags("property")
+		PropertyDef mergedProperty = new PropertyDef(analyzer).addAll(propertyDefs.values());
+		mergedProperty.propertyTags("property")
 			.forEachOrdered(component::addContent);
 		properties.propertiesTags("properties")
 			.forEachOrdered(component::addContent);
-		factoryProperties.propertyTags("factory-property")
+		factoryProperty.propertyTags("factory-property")
 			.forEachOrdered(component::addContent);
 		factoryProperties.propertiesTags("factory-properties")
 			.forEachOrdered(component::addContent);

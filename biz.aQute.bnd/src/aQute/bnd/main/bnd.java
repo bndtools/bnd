@@ -280,7 +280,6 @@ public class bnd extends Processor {
 		Workspace.addGestalt(Constants.GESTALT_SHELL, null);
 		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
 
-		Workspace ws = Workspace.findWorkspace(IO.work);
 		try (bnd main = new bnd()) {
 			main.setBase(baseExecDir.toFile());
 			main.start(args); // extra in test

@@ -1,5 +1,7 @@
 package aQute.bnd.main.testrules;
 
+import static java.util.function.Function.identity;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -46,23 +48,21 @@ public class WatchedTemporaryFolder extends TemporaryFolder implements WatchedFo
 
 	@Override
 	public WatchedFolder copyDataFrom(Path p) throws IOException {
-		IO.copy(p.toFile()
-			.getAbsoluteFile(), getRoot());
-
+		IO.copy(p, getRootPath());
 		return this;
 	}
 
 	@Override
-	public void snapshot(Function<Path, String> func) throws RuntimeException {
+	public void snapshot(Function<Path, String> func) {
 		snapshot(func, 0);
 	}
 
 	@Override
-	public void snapshot(Function<Path, String> func, long delay) throws RuntimeException {
+	public void snapshot(Function<Path, String> func, long delay) {
 		try {
-		snapshotFunc = func;
-		snapshotData = Collections.unmodifiableMap(Files.walk(getRootPath())
-			.collect(Collectors.toMap((Path p) -> p, p -> func.apply(p))));
+			snapshotFunc = func;
+			snapshotData = Collections.unmodifiableMap(Files.walk(getRootPath())
+				.collect(Collectors.toMap(identity(), snapshotFunc)));
 			Thread.sleep(delay);
 		} catch (InterruptedException | IOException e) {
 			throw new RuntimeException(e);
@@ -82,41 +82,40 @@ public class WatchedTemporaryFolder extends TemporaryFolder implements WatchedFo
 
 	@Override
 	public void print(PrintStream printStream, boolean relativize) throws IOException {
+		Function<Path, Path> keyMapper = relativize ? getRootPath()::relativize : identity();
 		Files.walk(getRootPath())
-			.forEach(p -> printStream.println(relativize ? getRootPath().relativize(p) : p));
+			.map(keyMapper)
+			.forEach(printStream::println);
 	}
 
 	@Override
 	public Map<Path, FileStatus> createFileStatistic(boolean relativize) throws IOException {
+		Function<Path, Path> keyMapper = relativize ? getRootPath()::relativize : identity();
 		// walk over all files (created, modified, unmodified)
 		Map<Path, FileStatus> result = Files.walk(getRootPath())
-			.collect(Collectors.toMap((Path p) -> (relativize ? getRootPath().relativize(p) : p),
-				p -> computeFileStatus(p)));
+			.collect(Collectors.toMap(keyMapper, this::computeFileStatus));
 
 		// add deleted files
 		Map<Path, FileStatus> deleted = snapshotData.keySet()
 			.stream()
-			.map(p -> getRootPath().relativize(p))
+			.map(keyMapper)
 			.filter(p -> !result.containsKey(p))
-			.collect(Collectors.toMap((Path p) -> p, p -> FileStatus.DELETED));
+			.collect(Collectors.toMap(identity(), p -> FileStatus.DELETED));
 
 		result.putAll(deleted);
 
 		return result;
 	}
 
-	private WatchedFolder.FileStatus computeFileStatus(final Path p) {
+	private WatchedFolder.FileStatus computeFileStatus(Path p) {
 		final boolean snapshotFound = snapshotData.containsKey(p);
-
 		if (Files.exists(p)) {
 			if (!snapshotFound) {
 				return FileStatus.CREATED;
 			}
-
 			return snapshotData.get(p)
 				.equals(snapshotFunc.apply(p)) ? FileStatus.UNMODIFIED_EXISTS : FileStatus.MODIFIED;
 		}
-
 		return snapshotFound ? FileStatus.DELETED : FileStatus.UNMODIFIED_NOT_EXISTS;
 	}
 }

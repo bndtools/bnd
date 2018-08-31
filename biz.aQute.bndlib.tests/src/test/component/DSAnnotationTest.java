@@ -1444,11 +1444,11 @@ public class DSAnnotationTest extends BndTestCase {
 		void updatedService(LogService l) {}
 
 		@Reference
-		private void bindSR(ServiceReference<LogService> l) {}
+		private void bindSR(ServiceReference<LogService> l, LogService l2) {}
 
-		protected void unbindSR(ServiceReference<LogService> l) {}
+		protected void unbindSR(ServiceReference<LogService> l, LogService l2) {}
 
-		void updatedSR(ServiceReference<LogService> l) {}
+		void updatedSR(ServiceReference<LogService> l, LogService l2) {}
 
 		@Reference(service = LogService.class)
 		private void bindProps(Map<String, Object> l) {}
@@ -1465,32 +1465,25 @@ public class DSAnnotationTest extends BndTestCase {
 		void updatedSO(ComponentServiceObjects<LogService> l) {}
 
 		@Reference
-		private void bindTuple(Map.Entry<Map<String, Object>, LogService> l) {}
-
-		protected void unbindTuple(Map.Entry<Map<String, Object>, LogService> l) {}
-
-		void updatedTuple(Map.Entry<Map<String, Object>, LogService> l) {}
-
-		@Reference
 		private void bindServiceSR(LogService l, ServiceReference<LogService> l2) {}
 
-		protected void unbindServiceSR(LogService l, ServiceReference<LogService> l2) {}
+		protected void unbindServiceSR(ServiceReference<LogService> l2, LogService l) {}
 
 		void updatedServiceSR(LogService l, ServiceReference<LogService> l2) {}
 
 		@Reference
-		private void bindPropsSR(Map<String, Object> l, ServiceReference<LogService> l2) {}
+		private void bindPropsSR(ServiceReference<LogService> l, Map<String, Object> l2) {}
 
-		protected void unbindPropsSR(Map<String, Object> l, ServiceReference<LogService> l2) {}
+		protected void unbindPropsSR(ServiceReference<LogService> l, Map<String, Object> l2) {}
 
-		void updatedPropsSR(Map<String, Object> l, ServiceReference<LogService> l2) {}
+		void updatedPropsSR(ServiceReference<LogService> l, Map<String, Object> l2) {}
 
 		@Reference
-		private void bindPropsTuple(Map<String, Object> l, Map.Entry<Map<String, Object>, LogService> l2) {}
+		private void bindPropsSO(ComponentServiceObjects<LogService> l2, Map<String, Object> l) {}
 
-		protected void unbindPropsTuple(Map<String, Object> l, Map.Entry<Map<String, Object>, LogService> l2) {}
+		protected void unbindPropsSO(ComponentServiceObjects<LogService> l2, Map<String, Object> l) {}
 
-		void updatedPropsTuple(Map<String, Object> l, Map.Entry<Map<String, Object>, LogService> l2) {}
+		void updatedPropsSO(ComponentServiceObjects<LogService> l, Map<String, Object> l2) {}
 
 	}
 
@@ -1511,7 +1504,9 @@ public class DSAnnotationTest extends BndTestCase {
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 
-		for (int i = 1; i <= 8; i++) {
+		int size = 7;
+		xt.assertCount(size, "scr:component/reference");
+		for (int i = 1; i <= size; i++) {
 			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[" + i + "]/@interface");
 		}
 	}
@@ -1702,7 +1697,7 @@ public class DSAnnotationTest extends BndTestCase {
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, int reason) {}
 
 		@Modified
 		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
@@ -1738,7 +1733,8 @@ public class DSAnnotationTest extends BndTestCase {
 		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") NoDefaults anno,
+			Integer reason) {}
 
 		@Modified
 		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
@@ -2605,11 +2601,11 @@ public class DSAnnotationTest extends BndTestCase {
 	public static class DS13annoOverride_a_d implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
 
-		@Activate
-		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
-
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
+
+		@Activate
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
 
 		@Modified
 		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
@@ -2624,14 +2620,14 @@ public class DSAnnotationTest extends BndTestCase {
 	public static class DS13annoOverride_a_m implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
 
+		@Modified
+		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
+
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
 
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
-
-		@Modified
-		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
 
 		@Override
 		public void run() {}
@@ -2647,10 +2643,10 @@ public class DSAnnotationTest extends BndTestCase {
 		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
 
 		@Override
 		public void run() {}
@@ -3514,9 +3510,9 @@ public class DSAnnotationTest extends BndTestCase {
 		void unsetLogService11(FinalDynamicCollectionField notLs, Map<String, Object> props) {}
 
 		@Reference
-		void setLogService13(Map<String, Object> props, LogService ls) {}
+		void setLogService13(LogService ls, Map<String, Object> props) {}
 
-		void unsetLogService13(Map<String, Object> props, FinalDynamicCollectionField notLs) {}
+		void unsetLogService13(FinalDynamicCollectionField notLs, Map<String, Object> props) {}
 	}
 
 	public void testMismatchedUnbind() throws Exception {
