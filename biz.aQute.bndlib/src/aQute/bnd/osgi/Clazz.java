@@ -980,7 +980,7 @@ public class Clazz {
 			case "AnnotationDefault" :
 				Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
 				if (last instanceof MethodDef) {
-					((MethodDef) last).constant = value;
+					last.setConstant(value);
 					cd.annotationDefault((MethodDef) last, value);
 				}
 				break;

@@ -248,6 +248,9 @@ public class Descriptors {
 			return packageRef.isJava();
 		}
 
+		/**
+		 * Returning {@link #getFQN()} is relied upon by other classes.
+		 */
 		@Override
 		public String toString() {
 			return fqn;

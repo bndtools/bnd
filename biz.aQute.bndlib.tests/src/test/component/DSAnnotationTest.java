@@ -2601,11 +2601,11 @@ public class DSAnnotationTest extends BndTestCase {
 	public static class DS13annoOverride_a_d implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
 
-		@Activate
-		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
-
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
+
+		@Activate
+		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
 
 		@Modified
 		void modified(@SuppressWarnings("unused") ComponentContext cc) {}
@@ -2620,14 +2620,14 @@ public class DSAnnotationTest extends BndTestCase {
 	public static class DS13annoOverride_a_m implements Serializable, Runnable {
 		private static final long serialVersionUID = 1L;
 
+		@Modified
+		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
+
 		@Activate
 		void activate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
 
 		@Deactivate
 		void deactivate(@SuppressWarnings("unused") ComponentContext cc) {}
-
-		@Modified
-		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
 
 		@Override
 		public void run() {}
@@ -2643,10 +2643,10 @@ public class DSAnnotationTest extends BndTestCase {
 		void activate(@SuppressWarnings("unused") ComponentContext cc) {}
 
 		@Deactivate
-		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
+		void deactivate(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
 
 		@Modified
-		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigB b) {}
+		void modified(@SuppressWarnings("unused") ComponentContext cc, @SuppressWarnings("unused") ConfigA a) {}
 
 		@Override
 		public void run() {}

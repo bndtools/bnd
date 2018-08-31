@@ -2,8 +2,8 @@ package aQute.bnd.component;
 
 import static aQute.bnd.osgi.Clazz.QUERY.ANNOTATED;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.CollectionType;
@@ -89,13 +90,18 @@ public class AnnotationReader extends ClassDataCollector {
 	private static final Pattern				DEACTIVATIONOBJECTS		= Pattern.compile(
 		"L(?:org/osgi/service/component/ComponentContext|org/osgi/framework/BundleContext|java/util/Map|java/lang/Integer|(?<propertytype>[^;]+));|I");
 
-	private static final Pattern				IDENTIFIERTOPROPERTY	= Pattern
+	static final Pattern						IDENTIFIERTOPROPERTY		= Pattern
 		.compile("(__)|(_)|(\\$_\\$)|(\\$\\$)|(\\$)");
 
 	private static final Pattern				SIGNATURE_SPLIT			= Pattern.compile("[<;>]");
 
-	private static final Instruction			COMPONENT_INSTR;
-	private static final Instruction			COMPONENT_PROPERTY_INSTR;
+	// We avoid using the XXX.class.getName() because it breaks the launcher
+	// tests when run in gradle. This is because gradle uses the bin/
+	// folder, not the bndlib jar which packages the ds annotations
+	private static final Instruction			COMPONENT_INSTR				= new Instruction(
+		"org.osgi.service.component.annotations.Component");
+	private static final Instruction			COMPONENT_PROPERTY_INSTR	= new Instruction(
+		"org.osgi.service.component.annotations.ComponentPropertyType");
 
 	private final static Map<String, Class<?>>	wrappers;
 
@@ -110,12 +116,6 @@ public class AnnotationReader extends ClassDataCollector {
 		map.put("float", Float.class);
 		map.put("double", Double.class);
 		wrappers = Collections.unmodifiableMap(map);
-
-		// We avoid using the XXX.class.getName() because it breaks the launcher
-		// tests when run in gradle. This is because gradle uses the bin/
-		// folder, not the bndlib jar which packages the ds annotations
-		COMPONENT_INSTR = new Instruction("org.osgi.service.component.annotations.Component");
-		COMPONENT_PROPERTY_INSTR = new Instruction("org.osgi.service.component.annotations.ComponentPropertyType");
 	}
 
 	ComponentDef											component;
@@ -135,6 +135,7 @@ public class AnnotationReader extends ClassDataCollector {
 	final XMLAttributeFinder								finder;
 
 	Map<String, List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<>();
+	private int												componentPropertyTypeCount	= 0;
 
 	AnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder,
 		Version minVersion) {
@@ -340,7 +341,10 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 
 			if (clazz.is(ANNOTATED, COMPONENT_PROPERTY_INSTR, analyzer)) {
-				clazz.parseClassFileWithCollector(new ComponentPropertyTypeDataCollector(annotation, details));
+				String propertyDefKey = String.format(ComponentDef.PROPERTYDEF_ANNOTATIONFORMAT,
+					++componentPropertyTypeCount);
+				clazz.parseClassFileWithCollector(
+					new ComponentPropertyTypeDataCollector(propertyDefKey, annotation, details));
 			} else {
 				logger.debug(
 					"The annotation {} on component type {} will not be used for properties as the annotation is not annotated with @ComponentPropertyType",
@@ -398,7 +402,9 @@ public class AnnotationReader extends ClassDataCollector {
 					component.updateVersion(V1_1);
 				} else if (m.group("ds13") != null) {
 					component.updateVersion(V1_3);
-					processActivationObjects(ACTIVATIONOBJECTS, memberDescriptor, details);
+					processActivationObjects(ComponentDef.PROPERTYDEF_ACTIVATEFORMAT, ACTIVATIONOBJECTS,
+						memberDescriptor,
+						details);
 				}
 				if (m.group("return") != null) {
 					checkMapReturnType(details);
@@ -438,7 +444,9 @@ public class AnnotationReader extends ClassDataCollector {
 					component.updateVersion(V1_1);
 				} else if (m.group("ds13") != null) {
 					component.updateVersion(V1_3);
-					processActivationObjects(DEACTIVATIONOBJECTS, memberDescriptor, details);
+					processActivationObjects(ComponentDef.PROPERTYDEF_DEACTIVATEFORMAT, DEACTIVATIONOBJECTS,
+						memberDescriptor,
+						details);
 				}
 				if (m.group("return") != null) {
 					checkMapReturnType(details);
@@ -475,7 +483,9 @@ public class AnnotationReader extends ClassDataCollector {
 					component.updateVersion(V1_1);
 				} else if (m.group("ds13") != null) {
 					component.updateVersion(V1_3);
-					processActivationObjects(ACTIVATIONOBJECTS, memberDescriptor, details);
+					processActivationObjects(ComponentDef.PROPERTYDEF_MODIFIEDFORMAT, ACTIVATIONOBJECTS,
+						memberDescriptor,
+						details);
 				}
 				if (m.group("return") != null) {
 					checkMapReturnType(details);
@@ -497,9 +507,11 @@ public class AnnotationReader extends ClassDataCollector {
 	/**
 	 * look for annotation activation objects and extract properties from them
 	 */
-	private void processActivationObjects(Pattern activationObjects, String methodDescriptor,
+	private void processActivationObjects(String propertyDefKeyFormat, Pattern activationObjects,
+		String methodDescriptor,
 		DeclarativeServicesAnnotationError details) {
 		Matcher m = activationObjects.matcher(methodDescriptor);
+		int activationObjectCount = 0;
 
 		while (m.find()) {
 			String type = m.group("propertytype");
@@ -508,8 +520,9 @@ public class AnnotationReader extends ClassDataCollector {
 				try {
 					Clazz clazz = analyzer.findClass(typeRef);
 					if (clazz.isAnnotation()) {
+						String propertyDefKey = String.format(propertyDefKeyFormat, ++activationObjectCount);
 						clazz.parseClassFileWithCollector(
-							new ComponentPropertyTypeDataCollector(methodDescriptor, details));
+							new ComponentPropertyTypeDataCollector(propertyDefKey, methodDescriptor, details));
 					} else if (clazz.isInterface() && options.contains(Options.felixExtensions)) {
 						// ok
 					} else {
@@ -530,24 +543,26 @@ public class AnnotationReader extends ClassDataCollector {
 	}
 
 	private final class ComponentPropertyTypeDataCollector extends ClassDataCollector {
+		private final String								propertyDefKey;
 		private final String								methodDescriptor;
 		private final DeclarativeServicesAnnotationError	details;
-		private final MultiMap<String, String>				props			= new MultiMap<>();
-		private final Map<String, String>					propertyTypes	= new HashMap<>();
+		private final PropertyDef							propertyDef		= new PropertyDef(analyzer);
 		private int											hasNoDefault	= 0;
 		private boolean										hasValue		= false;
 		private boolean										hasMethods		= false;
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
 
-		ComponentPropertyTypeDataCollector(String methodDescriptor,
+		ComponentPropertyTypeDataCollector(String propertyDefKey, String methodDescriptor,
 			DeclarativeServicesAnnotationError details) {
+			this.propertyDefKey = requireNonNull(propertyDefKey);
 			this.methodDescriptor = methodDescriptor;
 			this.details = details;
 		}
 
-		ComponentPropertyTypeDataCollector(Annotation componentPropertyAnnotation,
+		ComponentPropertyTypeDataCollector(String propertyDefKey, Annotation componentPropertyAnnotation,
 			DeclarativeServicesAnnotationError details) {
+			this.propertyDefKey = requireNonNull(propertyDefKey);
 			// Component Property annotations added in 1.4, but they just map to
 			// normal DS properties, so there's not really a need to require DS
 			// 1.4. Therefore we just leave the required version as is
@@ -591,8 +606,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 		@Override
 		public void annotationDefault(MethodDef defined, Object value) {
-			if (!defined.getName()
-				.equals("value")) {
+			String name = defined.getName();
+			if (!name.equals("value")) {
 				hasNoDefault--;
 			}
 			// check type, exit with warning if annotation
@@ -609,7 +624,7 @@ public class AnnotationReader extends ClassDataCollector {
 						Clazz r = analyzer.findClass(type);
 						if (r.isAnnotation()) {
 							analyzer
-								.warning("Nested annotation type found in member %s, %s", defined.getName(),
+								.warning("Nested annotation type found in member %s, %s", name,
 									type.getFQN())
 								.details(details);
 							return;
@@ -631,42 +646,21 @@ public class AnnotationReader extends ClassDataCollector {
 			} else {
 				typeClass = wrappers.get(type.getFQN());
 			}
-			if (value != null) {
-				String name = defined.getName();
-				if (!props.containsKey(name)) {
-					handleValue(name, value, isClass, typeClass);
-				}
-			}
-		}
 
-		private void handleValue(String name, Object value, boolean isClass, Class<?> typeClass) {
-			if (value.getClass()
-				.isArray()) {
-				// add element individually
-				int len = Array.getLength(value);
-				for (int i = 0; i < len; i++) {
-					Object element = Array.get(value, i);
-					valueToProperty(name, element, isClass, typeClass);
-				}
-				if (len == 1) {
-					// To make sure the output is an array, we must make
-					// sure there is more than one entry
-					props.add(name, PropertiesDef.MARKER);
-				}
-			} else {
-				valueToProperty(name, value, isClass, typeClass);
+			if ((value != null) && !propertyDef.containsKey(name)) {
+				handleValue(name, value, isClass, typeClass);
 			}
 		}
 
 		@Override
 		public void classEnd() throws Exception {
-			String prefix = null;
+			String prefix;
 			if (prefixField != null) {
 				Object c = prefixField.getConstant();
 				if (prefixField.isFinal() && (prefixField.getType() == analyzer.getTypeRef("java/lang/String"))
 					&& (c instanceof String)) {
 					prefix = (String) c;
-
+		
 					// If we have a method descriptor then this is an injected
 					// component property type and the prefix must be processed
 					// and understood by DS 1.4. Otherwise bnd handles the
@@ -676,21 +670,24 @@ public class AnnotationReader extends ClassDataCollector {
 						component.updateVersion(V1_4);
 					}
 				} else {
+					prefix = null;
 					analyzer.warning(
 						"Field PREFIX_ in %s is not a static final String field with a compile-time constant value: %s",
 						typeRef.getFQN(), c)
 						.details(details);
 				}
+			} else {
+				prefix = null;
 			}
-
+		
 			if (!hasMethods) {
 				// This is a marker annotation so treat it like it is a single
 				// element annotation with a value of Boolean.TRUE
 				hasValue = true;
 				handleValue("value", Boolean.TRUE, false, Boolean.class);
 			}
-
-			String singleElementAnnotation = null;
+		
+			String singleElementAnnotation;
 			if (hasValue && (hasNoDefault == 0)) {
 				StringBuilder sb = new StringBuilder(typeRef.getShorterName());
 				boolean lastLowerCase = false;
@@ -715,40 +712,83 @@ public class AnnotationReader extends ClassDataCollector {
 				if (methodDescriptor != null) {
 					component.updateVersion(V1_4);
 				}
+			} else {
+				singleElementAnnotation = null;
 			}
-
-			for (Entry<String, List<String>> entry : props.entrySet()) {
-				String key = entry.getKey();
-				List<String> value = entry.getValue();
-				String type = propertyTypes.get(key);
-				if ((singleElementAnnotation != null) && key.equals("value")) {
-					key = singleElementAnnotation;
-				} else {
-					key = identifierToPropertyName(key);
-				}
-				if (prefix != null) {
-					key = prefix + key;
-				}
-				component.properties.setProperty(key, type, value);
+		
+			if (!propertyDef.isEmpty()) {
+				component.propertyDefs.put(propertyDefKey, propertyDef.copy(key -> {
+					if ((singleElementAnnotation != null) && key.equals("value")) {
+						key = singleElementAnnotation;
+					} else {
+						key = identifierToPropertyName(key);
+					}
+					if (prefix != null) {
+						key = prefix + key;
+					}
+					return key;
+				}));
 			}
 		}
 
-		private void valueToProperty(String name, Object value, boolean isClass, Class<?> typeClass) {
-			if (isClass)
-				value = ((TypeRef) value).getFQN();
-			if (typeClass == null)
-				typeClass = value.getClass();
-			// enums already come out as the enum name, no
-			// processing needed.
-			String type = typeClass.getSimpleName();
-			propertyTypes.put(name, type);
-			props.add(name, value.toString());
+		/**
+		 * This method relies on {@link ConcreteRef#toString()} returning
+		 * {@link TypeRef#getFQN()}
+		 */
+		private void handleValue(String name, Object value, boolean isClass, Class<?> typeClass) {
+			if (value.getClass()
+				.isArray()) {
+				Object[] array = (Object[]) value;
+				switch (array.length) {
+					case 0 : {
+						String type = valueType(typeClass, "", isClass);
+						propertyDef.setProperty(name, type, new ArrayList<>());
+						break;
+					}
+					case 1 : {
+						value = array[0];
+						String type = valueType(typeClass, value, isClass);
+						List<String> values = new ArrayList<>(2);
+						values.add(value.toString());
+						// To make sure the output is an array, we must make
+						// sure there is more than one entry
+						values.add(PropertyDef.MARKER);
+						propertyDef.setProperty(name, type, values);
+						break;
+					}
+					default : {
+						String type = valueType(typeClass, array[0], isClass);
+						List<String> values = Stream.of(array)
+							.map(Object::toString)
+							.collect(toList());
+						propertyDef.setProperty(name, type, values);
+						break;
+					}
+				}
+			} else {
+				String type = valueType(typeClass, value, isClass);
+				propertyDef.setProperty(name, type, value.toString());
+			}
+		}
+
+		private String valueType(Class<?> typeClass, Object value, boolean isClass) {
+			if (typeClass != null) {
+				return typeClass.getSimpleName();
+			}
+			if (isClass) {
+				return "String";
+			}
+			return value.getClass()
+					.getSimpleName();
 		}
 
 		private String identifierToPropertyName(String name) {
 			Matcher m = IDENTIFIERTOPROPERTY.matcher(name);
+			if (!m.find()) {
+				return name;
+			}
 			StringBuffer b = new StringBuffer();
-			while (m.find()) {
+			do {
 				switch (m.group()) {
 					case "__" : // __ to _
 						m.appendReplacement(b, "_");
@@ -770,7 +810,7 @@ public class AnnotationReader extends ClassDataCollector {
 						analyzer.error("unknown mapping %s in property name %s", m.group(), name);
 						break;
 				}
-			}
+			} while (m.find());
 			m.appendTail(b);
 			return b.toString();
 		}
@@ -1135,11 +1175,11 @@ public class AnnotationReader extends ClassDataCollector {
 		if (annotation.get("xmlns") != null)
 			component.xmlns = comp.xmlns();
 
+		component.property.setTypedProperty(className, comp.property());
+		component.factoryProperty.setTypedProperty(className, comp.factoryProperty());
+
 		component.properties.addProperties(comp.properties());
 		component.factoryProperties.addProperties(comp.factoryProperties());
-
-		component.properties.setTypedProperty(className, comp.property());
-		component.factoryProperties.setTypedProperty(className, comp.factoryProperty());
 
 		Object[] x = annotation.get("service");
 		if (x == null) {

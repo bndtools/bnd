@@ -271,9 +271,9 @@ public class HeaderReader extends Processor {
 					String v = parts[0];
 					parts = new String[2];
 					parts[0] = v;
-					parts[1] = PropertiesDef.MARKER;
+					parts[1] = PropertyDef.MARKER;
 				}
-				cd.properties.addProperty(key, type, parts);
+				cd.property.addProperty(key, type, parts);
 			} else
 				throw new IllegalArgumentException("Malformed property '" + p + "' on component: " + name);
 		}
