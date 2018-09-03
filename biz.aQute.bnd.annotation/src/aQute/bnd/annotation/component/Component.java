@@ -34,6 +34,9 @@ public @interface Component {
 
 	boolean immediate() default false;
 
+	/**
+	 * @deprecated
+	 */
 	ConfigurationPolicy configurationPolicy() default ConfigurationPolicy.optional;
 
 	String[] properties() default {};
