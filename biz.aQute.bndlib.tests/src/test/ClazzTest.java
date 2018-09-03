@@ -101,7 +101,8 @@ public class ClazzTest extends TestCase {
 			Clazz c = new Clazz(a, "", null);
 			c.parseDescriptor("<S:[LFoo;>()V", Modifier.PUBLIC);
 			c.parseDescriptor("<S:[Z>()V", Modifier.PUBLIC);
-			c.parseDescriptor("<S:Z>()V", Modifier.PUBLIC);
+			// This is not legal per the JVMS spec
+			// c.parseDescriptor("<S:Z>()V", Modifier.PUBLIC);
 		}
 	}
 
