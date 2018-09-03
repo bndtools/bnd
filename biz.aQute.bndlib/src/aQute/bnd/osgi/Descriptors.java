@@ -7,12 +7,18 @@ import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
+import aQute.bnd.signatures.ClassSignature;
+import aQute.bnd.signatures.FieldSignature;
+import aQute.bnd.signatures.MethodSignature;
 import aQute.libg.generics.Create;
 
 public class Descriptors {
-	Map<String, TypeRef>	typeRefCache		= Create.map();
-	Map<String, Descriptor>	descriptorCache		= Create.map();
-	Map<String, PackageRef>	packageCache		= Create.map();
+	private final Map<String, TypeRef>			typeRefCache			= new HashMap<>();
+	private final Map<String, Descriptor>		descriptorCache			= new HashMap<>();
+	private final Map<String, PackageRef>		packageRefCache			= new HashMap<>();
+	private final Map<String, ClassSignature>	classSignatureCache		= new HashMap<>();
+	private final Map<String, MethodSignature>	methodSignatureCache	= new HashMap<>();
+	private final Map<String, FieldSignature>	fieldSignatureCache		= new HashMap<>();
 
 	// MUST BE BEFORE PRIMITIVES, THEY USE THE DEFAULT PACKAGE!!
 	final static PackageRef	DEFAULT_PACKAGE		= new PackageRef();
@@ -28,21 +34,22 @@ public class Descriptors {
 	final static TypeRef	DOUBLE				= new ConcreteRef("D", "double", PRIMITIVE_PACKAGE);
 	final static TypeRef	FLOAT				= new ConcreteRef("F", "float", PRIMITIVE_PACKAGE);
 
+	@Deprecated
 	public enum SignatureType {
 		TYPEVAR,
 		METHOD,
 		FIELD;
 	}
 
+	@Deprecated
 	public class Signature {
 		public Map<String, Signature>	typevariables	= new HashMap<>();
 		public Signature				type;
 		public List<Signature>			parameters;
-
 	}
 
-	{
-		packageCache.put("", DEFAULT_PACKAGE);
+	public Descriptors() {
+		packageRefCache.put("", DEFAULT_PACKAGE);
 	}
 
 	@ProviderType
@@ -388,85 +395,78 @@ public class Descriptors {
 
 	public TypeRef getTypeRef(String binaryClassName) {
 		assert !binaryClassName.endsWith(".class");
-
-		TypeRef ref = typeRefCache.get(binaryClassName);
-		if (ref != null)
-			return ref;
-
-		if (binaryClassName.startsWith("[")) {
-			ref = getTypeRef(binaryClassName.substring(1));
-			ref = new ArrayRef(ref);
-		} else {
-			if (binaryClassName.length() == 1) {
-				switch (binaryClassName.charAt(0)) {
-					case 'V' :
-						return VOID;
-					case 'B' :
-						return BYTE;
-					case 'C' :
-						return CHAR;
-					case 'I' :
-						return INTEGER;
-					case 'S' :
-						return SHORT;
-					case 'D' :
-						return DOUBLE;
-					case 'F' :
-						return FLOAT;
-					case 'J' :
-						return LONG;
-					case 'Z' :
-						return BOOLEAN;
-				}
-				// falls trough for other 1 letter class names
-			}
-			if (binaryClassName.startsWith("L") && binaryClassName.endsWith(";")) {
-				binaryClassName = binaryClassName.substring(1, binaryClassName.length() - 1);
-			}
-			ref = typeRefCache.get(binaryClassName);
-			if (ref != null)
-				return ref;
-
-			PackageRef pref;
-			int n = binaryClassName.lastIndexOf('/');
-			if (n < 0)
-				pref = DEFAULT_PACKAGE;
-			else
-				pref = getPackageRef(binaryClassName.substring(0, n));
-
-			ref = new ConcreteRef(pref, binaryClassName);
+		if (binaryClassName.startsWith("L") && binaryClassName.endsWith(";")) {
+			binaryClassName = binaryClassName.substring(1, binaryClassName.length() - 1);
 		}
 
-		typeRefCache.put(binaryClassName, ref);
-		return ref;
+		if (binaryClassName.startsWith("[")) {
+			TypeRef ref = typeRefCache.get(binaryClassName);
+			if (ref == null) {
+				ref = new ArrayRef(getTypeRef(binaryClassName.substring(1)));
+				typeRefCache.put(binaryClassName, ref);
+			}
+			return ref;
+		}
+
+		return typeRefCache.computeIfAbsent(binaryClassName, this::createTypeRef);
+	}
+
+	private TypeRef createTypeRef(String binaryClassName) {
+		if (binaryClassName.length() == 1) {
+			switch (binaryClassName.charAt(0)) {
+				case 'V' :
+					return VOID;
+				case 'B' :
+					return BYTE;
+				case 'C' :
+					return CHAR;
+				case 'I' :
+					return INTEGER;
+				case 'S' :
+					return SHORT;
+				case 'D' :
+					return DOUBLE;
+				case 'F' :
+					return FLOAT;
+				case 'J' :
+					return LONG;
+				case 'Z' :
+					return BOOLEAN;
+			}
+			// falls through for other 1 letter class names
+		}
+		int n = binaryClassName.lastIndexOf('/');
+		PackageRef pref = (n < 0) ? DEFAULT_PACKAGE : getPackageRef(binaryClassName.substring(0, n));
+		return new ConcreteRef(pref, binaryClassName);
 	}
 
 	public PackageRef getPackageRef(String binaryPackName) {
 		if (binaryPackName.indexOf('.') >= 0) {
 			binaryPackName = binaryPackName.replace('.', '/');
 		}
-		PackageRef ref = packageCache.get(binaryPackName);
-		if (ref != null)
-			return ref;
-
 		//
 		// Check here if a package is actually a nested class
 		// com.example.Foo.Bar should have package com.example,
 		// not com.example.Foo.
 		//
 
-		ref = new PackageRef(binaryPackName);
-		packageCache.put(binaryPackName, ref);
-		return ref;
+		return packageRefCache.computeIfAbsent(binaryPackName, PackageRef::new);
 	}
 
 	public Descriptor getDescriptor(String descriptor) {
-		Descriptor d = descriptorCache.get(descriptor);
-		if (d != null)
-			return d;
-		d = new Descriptor(descriptor);
-		descriptorCache.put(descriptor, d);
-		return d;
+		return descriptorCache.computeIfAbsent(descriptor, Descriptor::new);
+	}
+
+	public ClassSignature getClassSignature(String signature) {
+		return classSignatureCache.computeIfAbsent(signature, ClassSignature::of);
+	}
+
+	public MethodSignature getMethodSignature(String signature) {
+		return methodSignatureCache.computeIfAbsent(signature, MethodSignature::of);
+	}
+
+	public FieldSignature getFieldSignature(String signature) {
+		return fieldSignatureCache.computeIfAbsent(signature, FieldSignature::of);
 	}
 
 	public class Descriptor {
@@ -503,7 +503,6 @@ public class Descriptors {
 			switch (c) {
 				case 'L' :
 					while ((c = descriptor.charAt(index++)) != ';') {
-						// TODO
 						sb.append(c);
 					}
 					break;
@@ -641,76 +640,4 @@ public class Descriptors {
 		return getTypeRef(path.substring(0, path.length() - 6));
 	}
 
-	// static class Rover {
-	// int n = 0;
-	// String string;
-	// Rover(String string) {
-	// this.string = string;
-	//
-	// }
-	//
-	// boolean at( String s) {
-	// if ( n + s.length() > string.length())
-	// return false;
-	//
-	// for ( int i=0; i<s.length(); i++) {
-	// if ( string.charAt(n+i) != s.charAt(n+i))
-	// return false;
-	// }
-	//
-	// n += s.length();
-	// return true;
-	// }
-	//
-	// String upTo(char c) {
-	// for ( int i=n; i < string.length(); i++) {
-	// if ( string.charAt(i) == c) {
-	// String s = string.substring(n,i);
-	// n = i;
-	// return s;
-	// }
-	// }
-	// throw new IllegalArgumentException("Looking for " + c + " in " + string +
-	// " from " + n);
-	// }
-	//
-	// }
-	// public Signature getSignature(String signature) {
-	// Signature s = new Signature();
-	// Rover r = new Rover(signature);
-	//
-	//
-	// int n = parseTypeVarsDecl(s, rover);
-	// n = parseParameters(s, descriptor, n);
-	// n = parseTypeVarsDecl(s, descriptor, n);
-	//
-	// assert n == descriptor.length();
-	// return s;
-	// }
-	//
-	// private int parseParameters(Signature s, String descriptor, int n) {
-	// // TODO Auto-generated method stub
-	// return 0;
-	// }
-	//
-	// /**
-	// * <X::Ljava/util/List<Ljava/lang/String;>;Y:Ljava/lang/Object;>(TY;)TX;
-	// */
-	// private void parseTypeVarsDecl(Signature s, Rover rover) {
-	// if ( rover.at("<")) {
-	// while ( !rover.at(">")) {
-	// String name = rover.upTo(':');
-	// rover.n++;
-	// do {
-	// Signature tr = parseTypeReference(s, rover);
-	// s.typevariables.put(name, tr);
-	// } while( rover.at(":"));
-	// }
-	// }
-	// }
-	//
-	// private TypeRef parseTypeReference(String descriptor, int i) {
-	// // TODO Auto-generated method stub
-	// return null;
-	// }
 }
