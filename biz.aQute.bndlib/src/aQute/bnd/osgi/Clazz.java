@@ -1751,9 +1751,8 @@ public class Clazz {
 		if (c != '(' && c != 'L' && c != '[' && c != '<' && c != 'T') {
 			return;
 		}
-		String signature = descriptor.replace('$', '.');
-		Signature sig = (c == '(' || c == '<') ? analyzer.getMethodSignature(signature)
-			: analyzer.getFieldSignature(signature);
+		Signature sig = (c == '(' || c == '<') ? analyzer.getMethodSignature(descriptor)
+			: analyzer.getFieldSignature(descriptor);
 		Set<String> binaryRefs = sig.erasedBinaryReferences();
 		for (String binary : binaryRefs) {
 			TypeRef ref = analyzer.getTypeRef(binary);

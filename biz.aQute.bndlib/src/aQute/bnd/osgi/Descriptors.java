@@ -399,7 +399,11 @@ public class Descriptors {
 			binaryClassName = binaryClassName.substring(1, binaryClassName.length() - 1);
 		}
 
+		binaryClassName = binaryClassName.replace('.', '$');
+
 		if (binaryClassName.startsWith("[")) {
+			// We handle arrays here since computeIfAbsent does not like
+			// recursive calls starting in Java 9
 			TypeRef ref = typeRefCache.get(binaryClassName);
 			if (ref == null) {
 				ref = new ArrayRef(getTypeRef(binaryClassName.substring(1)));
@@ -441,9 +445,7 @@ public class Descriptors {
 	}
 
 	public PackageRef getPackageRef(String binaryPackName) {
-		if (binaryPackName.indexOf('.') >= 0) {
-			binaryPackName = binaryPackName.replace('.', '/');
-		}
+		binaryPackName = binaryPackName.replace('.', '/');
 		//
 		// Check here if a package is actually a nested class
 		// com.example.Foo.Bar should have package com.example,
@@ -458,15 +460,15 @@ public class Descriptors {
 	}
 
 	public ClassSignature getClassSignature(String signature) {
-		return classSignatureCache.computeIfAbsent(signature, ClassSignature::of);
+		return classSignatureCache.computeIfAbsent(signature.replace('$', '.'), ClassSignature::of);
 	}
 
 	public MethodSignature getMethodSignature(String signature) {
-		return methodSignatureCache.computeIfAbsent(signature, MethodSignature::of);
+		return methodSignatureCache.computeIfAbsent(signature.replace('$', '.'), MethodSignature::of);
 	}
 
 	public FieldSignature getFieldSignature(String signature) {
-		return fieldSignatureCache.computeIfAbsent(signature, FieldSignature::of);
+		return fieldSignatureCache.computeIfAbsent(signature.replace('$', '.'), FieldSignature::of);
 	}
 
 	public class Descriptor {
@@ -572,18 +574,8 @@ public class Descriptors {
 	}
 
 	public static String binaryToFQN(String binary) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0, l = binary.length(); i < l; i++) {
-			char c = binary.charAt(i);
-
-			if (c == '/')
-				sb.append('.');
-			else
-				sb.append(c);
-		}
-		String result = sb.toString();
-		assert result.length() > 0;
-		return result;
+		assert !binary.isEmpty();
+		return binary.replace('/', '.');
 	}
 
 	public static String fqnToBinary(String binary) {
