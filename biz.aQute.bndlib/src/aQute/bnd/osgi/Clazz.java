@@ -29,8 +29,6 @@ import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -40,6 +38,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.signatures.FieldSignature;
+import aQute.bnd.signatures.MethodSignature;
 import aQute.bnd.signatures.Signature;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
@@ -48,8 +48,6 @@ import aQute.libg.generics.Create;
 
 public class Clazz {
 	private final static Logger	logger				= LoggerFactory.getLogger(Clazz.class);
-
-	static Pattern				METHOD_DESCRIPTOR	= Pattern.compile("(.*)\\)(.+)");
 
 	public class ClassConstant {
 		final int		cname;
@@ -399,18 +397,9 @@ public class Clazz {
 			return this.constant;
 		}
 
-		// TODO change to use proper generics
 		public String getGenericReturnType() {
-			String use = descriptor.toString();
-			if (signature != null)
-				use = signature;
-
-			Matcher m = METHOD_DESCRIPTOR.matcher(use);
-			if (!m.matches())
-				throw new IllegalArgumentException("Not a valid method descriptor: " + use);
-
-			String returnType = m.group(2);
-			return objectDescriptorToFQN(returnType);
+			FieldSignature sig = analyzer.getFieldSignature((signature != null) ? signature : descriptor.toString());
+			return sig.type.toString();
 		}
 
 		@Override
@@ -444,6 +433,12 @@ public class Clazz {
 
 		public boolean isBridge() {
 			return (access & ACC_BRIDGE) != 0;
+		}
+
+		@Override
+		public String getGenericReturnType() {
+			MethodSignature sig = analyzer.getMethodSignature((signature != null) ? signature : descriptor.toString());
+			return sig.resultType.toString();
 		}
 	}
 

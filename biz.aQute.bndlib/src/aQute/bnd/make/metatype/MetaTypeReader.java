@@ -63,7 +63,7 @@ public class MetaTypeReader extends WriteResource {
 		this.inherit = Processor.isTrue(reporter.getProperty("-metatype-inherit"));
 	}
 
-	static Pattern COLLECTION = Pattern.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>");
+	static Pattern COLLECTION = Pattern.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>;");
 
 	private void addMethod(MethodDef method, Annotation a) throws Exception {
 
@@ -78,9 +78,9 @@ public class MetaTypeReader extends WriteResource {
 
 		int cardinality = 0;
 
-		if (rtype.endsWith("[]")) {
+		if (rtype.startsWith("[")) {
 			cardinality = Integer.MAX_VALUE;
-			rtype = rtype.substring(0, rtype.length() - 2);
+			rtype = rtype.substring(1);
 		}
 		if (rtype.indexOf('<') > 0) {
 			if (cardinality != 0)
@@ -111,7 +111,7 @@ public class MetaTypeReader extends WriteResource {
 		String[] optionValues = null;
 		String description = null;
 
-		TypeRef typeRef = reporter.getTypeRefFromFQN(rtype);
+		TypeRef typeRef = reporter.getTypeRef(rtype);
 		Clazz c = reporter.findClass(typeRef);
 		if (c != null && c.isEnum()) {
 			optionValues = parseOptionValues(c);
@@ -192,38 +192,40 @@ public class MetaTypeReader extends WriteResource {
 	}
 
 	Meta.Type getType(String rtype) {
-		if (rtype.endsWith("[]")) {
-			rtype = rtype.substring(0, rtype.length() - 2);
-			if (rtype.endsWith("[]"))
+		if (rtype.startsWith("[")) {
+			rtype = rtype.substring(1);
+			if (rtype.startsWith("[")) {
 				throw new IllegalArgumentException("Can only handle array of depth one");
+			}
 		}
-
-		if ("boolean".equals(rtype) || Boolean.class.getName()
-			.equals(rtype))
-			return Meta.Type.Boolean;
-		else if ("byte".equals(rtype) || Byte.class.getName()
-			.equals(rtype))
-			return Meta.Type.Byte;
-		else if ("char".equals(rtype) || Character.class.getName()
-			.equals(rtype))
-			return Meta.Type.Character;
-		else if ("short".equals(rtype) || Short.class.getName()
-			.equals(rtype))
-			return Meta.Type.Short;
-		else if ("int".equals(rtype) || Integer.class.getName()
-			.equals(rtype))
-			return Meta.Type.Integer;
-		else if ("long".equals(rtype) || Long.class.getName()
-			.equals(rtype))
-			return Meta.Type.Long;
-		else if ("float".equals(rtype) || Float.class.getName()
-			.equals(rtype))
-			return Meta.Type.Float;
-		else if ("double".equals(rtype) || Double.class.getName()
-			.equals(rtype))
-			return Meta.Type.Double;
-		else
-			return Meta.Type.String;
+		switch (rtype) {
+			case "Z" :
+			case "Ljava/lang/Boolean;" :
+				return Meta.Type.Boolean;
+			case "B" :
+			case "Ljava/lang/Byte;" :
+				return Meta.Type.Byte;
+			case "C" :
+			case "Ljava/lang/Character;" :
+				return Meta.Type.Character;
+			case "S" :
+			case "Ljava/lang/Short;" :
+				return Meta.Type.Short;
+			case "I" :
+			case "Ljava/lang/Integer;" :
+				return Meta.Type.Integer;
+			case "J" :
+			case "Ljava/lang/Long;" :
+				return Meta.Type.Long;
+			case "F" :
+			case "Ljava/lang/Float;" :
+				return Meta.Type.Float;
+			case "D" :
+			case "Ljava/lang/Double;" :
+				return Meta.Type.Double;
+			default :
+				return Meta.Type.String;
+		}
 	}
 
 	class Find extends ClassDataCollector {
