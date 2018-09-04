@@ -74,6 +74,9 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.service.classparser.ClassParser;
+import aQute.bnd.signatures.ClassSignature;
+import aQute.bnd.signatures.FieldSignature;
+import aQute.bnd.signatures.MethodSignature;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
@@ -3042,6 +3045,18 @@ public class Analyzer extends Processor {
 
 	public TypeRef getTypeRefFromPath(String path) {
 		return descriptors.getTypeRefFromPath(path);
+	}
+
+	public ClassSignature getClassSignature(String signature) {
+		return descriptors.getClassSignature(signature);
+	}
+
+	public MethodSignature getMethodSignature(String signature) {
+		return descriptors.getMethodSignature(signature);
+	}
+
+	public FieldSignature getFieldSignature(String signature) {
+		return descriptors.getFieldSignature(signature);
 	}
 
 	public boolean isImported(PackageRef packageRef) {

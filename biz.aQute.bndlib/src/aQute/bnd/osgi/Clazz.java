@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.signatures.Signature;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -598,10 +599,11 @@ public class Clazz {
 					case InterfaceMethodref :
 						classConstRef(assoc.a);
 						break;
-
 					case NameAndType :
+						referTo(assoc.b, 0); // field or method descriptor
+						break;
 					case MethodType :
-						referTo(assoc.b, 0); // Descriptor
+						referTo(assoc.b, 0); // method descriptor
 						break;
 					default :
 						break;
@@ -680,7 +682,7 @@ public class Clazz {
 					cd.field(fdef);
 				}
 
-				referTo(descriptor_index, access_flags);
+				referTo(descriptor_index, access_flags); // field descriptor
 				doAttributes(in, ElementType.FIELD, false, access_flags);
 			}
 
@@ -737,7 +739,7 @@ public class Clazz {
 					last = mdef;
 					cd.method(mdef);
 				}
-				referTo(descriptor_index, access_flags);
+				referTo(descriptor_index, access_flags); // method descriptor
 
 				if ("<init>".equals(name)) {
 					if (Modifier.isPublic(access_flags) && "()V".equals(descriptor)) {
@@ -1096,8 +1098,32 @@ public class Clazz {
 		int signature_index = in.readUnsignedShort();
 		String signature = (String) pool[signature_index];
 		try {
+			Signature sig;
+			switch (member) {
+				case ANNOTATION_TYPE :
+				case TYPE :
+					sig = analyzer.getClassSignature(signature);
+					break;
+				case FIELD :
+					sig = analyzer.getFieldSignature(signature);
+					break;
+				case CONSTRUCTOR :
+				case METHOD :
+					sig = analyzer.getMethodSignature(signature);
+					break;
+				default :
+					throw new IllegalArgumentException(
+						"Signature \"" + signature + "\" found for unknown element type: " + member);
+			}
+			Set<String> binaryRefs = sig.erasedBinaryReferences();
+			for (String binary : binaryRefs) {
+				TypeRef ref = analyzer.getTypeRef(binary);
+				if (cd != null) {
+					cd.addReference(ref);
+				}
+				referTo(ref, access_flags);
+			}
 
-			parseDescriptor(signature, access_flags);
 			if (last != null)
 				last.signature = signature;
 
@@ -1507,7 +1533,7 @@ public class Clazz {
 			annotations.add(typeRef);
 
 			if (policy == RetentionPolicy.RUNTIME) {
-				referTo(type_index, 0);
+				referTo(typeRef, 0);
 				hasRuntimeAnnotations = true;
 				if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags)))
 					api.add(typeRef.getPackageRef());
@@ -1534,7 +1560,7 @@ public class Clazz {
 
 	private Object doElementValue(DataInput in, ElementType member, RetentionPolicy policy, boolean collect,
 		int access_flags) throws IOException {
-		char tag = (char) in.readUnsignedByte();
+		int tag = in.readUnsignedByte();
 		switch (tag) {
 			case 'B' : // Byte
 			case 'C' : // Character
@@ -1557,7 +1583,7 @@ public class Clazz {
 			case 'e' : // enum constant
 				int type_name_index = in.readUnsignedShort();
 				if (policy == RetentionPolicy.RUNTIME) {
-					referTo(type_name_index, 0);
+					referTo(type_name_index, 0); // field descriptor
 					if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
 						TypeRef name = analyzer.getTypeRef((String) pool[type_name_index]);
 						api.add(name.getPackageRef());
@@ -1570,7 +1596,7 @@ public class Clazz {
 				int class_info_index = in.readUnsignedShort();
 				TypeRef name = analyzer.getTypeRef((String) pool[class_info_index]);
 				if (policy == RetentionPolicy.RUNTIME) {
-					referTo(class_info_index, 0);
+					referTo(name, 0);
 					if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags))) {
 						api.add(name.getPackageRef());
 					}
@@ -1712,133 +1738,30 @@ public class Clazz {
 	}
 
 	/**
-	 * This method parses a descriptor and adds the package of the descriptor to
-	 * the referenced packages. The syntax of the descriptor is:
-	 * 
-	 * <pre>
-	 * descriptor ::= ( '(' reference * ')' )? reference reference ::= 'L'
-	 * classname ( '&lt;' references '&gt;' )? ';' | 'B' | 'Z' | ... | '+' | '-'
-	 * | '['
-	 * </pre>
-	 * 
-	 * This methods uses heavy recursion to parse the descriptor and a roving
-	 * pointer to limit the creation of string objects.
-	 * 
+	 * This method parses method or field descriptors and calls
+	 * {@link #referTo(TypeRef, int)} for any types found therein.
+	 *
 	 * @param descriptor The to be parsed descriptor
 	 * @param modifiers
+	 * @see "https://docs.oracle.com/javase/specs/jvms/se9/html/jvms-4.html#jvms-4.3"
 	 */
 
 	public void parseDescriptor(String descriptor, int modifiers) {
-		// Some descriptors are weird, they start with a generic
-		// declaration that contains ':', not sure what they mean ...
-		int rover = 0;
-		if (descriptor.charAt(0) == '<') {
-			rover = parseFormalTypeParameters(descriptor, rover, modifiers);
+		char c = descriptor.charAt(0);
+		if (c != '(' && c != 'L' && c != '[' && c != '<' && c != 'T') {
+			return;
 		}
-
-		if (descriptor.charAt(rover) == '(') {
-			rover = parseReferences(descriptor, rover + 1, ')', modifiers);
-			rover++;
-		}
-		parseReferences(descriptor, rover, (char) 0, modifiers);
-	}
-
-	/**
-	 * Parse a sequence of references. A sequence ends with a given character or
-	 * when the string ends.
-	 * 
-	 * @param descriptor The whole descriptor.
-	 * @param rover The index in the descriptor
-	 * @param delimiter The end character or 0
-	 * @return the last index processed, one character after the delimeter
-	 */
-	int parseReferences(String descriptor, int rover, char delimiter, int modifiers) {
-		int r = rover;
-		while (r < descriptor.length() && descriptor.charAt(r) != delimiter) {
-			r = parseReference(descriptor, r, modifiers);
-		}
-		return r;
-	}
-
-	/**
-	 * Parse a single reference. This can be a single character or an object
-	 * reference when it starts with 'L'.
-	 * 
-	 * @param descriptor The descriptor
-	 * @param rover The place to start
-	 * @return The return index after the reference
-	 */
-	int parseReference(String descriptor, int rover, int modifiers) {
-		int r = rover;
-		char c = descriptor.charAt(r);
-		while (c == '[')
-			c = descriptor.charAt(++r);
-
-		if (c == '<') {
-			r = parseReferences(descriptor, r + 1, '>', modifiers);
-		} else if (c == 'T') {
-			// Type variable name
-			r++;
-			while (descriptor.charAt(r) != ';')
-				r++;
-		} else if (c == 'L') {
-			StringBuilder sb = new StringBuilder();
-			r++;
-			while ((c = descriptor.charAt(r)) != ';') {
-				if (c == '<') {
-					r = parseReferences(descriptor, r + 1, '>', modifiers);
-				} else
-					sb.append(c);
-				r++;
-			}
-			TypeRef ref = analyzer.getTypeRef(sb.toString());
-			if (cd != null)
+		String signature = descriptor.replace('$', '.');
+		Signature sig = (c == '(' || c == '<') ? analyzer.getMethodSignature(signature)
+			: analyzer.getFieldSignature(signature);
+		Set<String> binaryRefs = sig.erasedBinaryReferences();
+		for (String binary : binaryRefs) {
+			TypeRef ref = analyzer.getTypeRef(binary);
+			if (cd != null) {
 				cd.addReference(ref);
-
-			referTo(ref, modifiers);
-		} else {
-			if ("+-*BCDFIJSZV".indexOf(c) < 0)
-				;// System.err.println("Should not skip: " + c);
-		}
-
-		// this skips a lot of characters
-		// [, *, +, -, B, etc.
-
-		return r + 1;
-	}
-
-	/**
-	 * FormalTypeParameters
-	 * 
-	 * @param descriptor
-	 * @param index
-	 */
-	private int parseFormalTypeParameters(String descriptor, int index, int modifiers) {
-		index++;
-		while (descriptor.charAt(index) != '>') {
-			// Skip IDENTIFIER
-			index = descriptor.indexOf(':', index) + 1;
-			if (index == 0)
-				throw new IllegalArgumentException("Expected ClassBound or InterfaceBounds: " + descriptor);
-
-			// ClassBound? InterfaceBounds
-			char c = descriptor.charAt(index);
-
-			if (c != ':') {
-				// ClassBound?
-				index = parseReference(descriptor, index, modifiers);
-				c = descriptor.charAt(index);
 			}
-
-			// InterfaceBounds*
-			while (c == ':') {
-				index++;
-				index = parseReference(descriptor, index, modifiers);
-				c = descriptor.charAt(index);
-			} // for each interface
-
-		} // for each formal parameter
-		return index + 1; // skip >
+			referTo(ref, modifiers);
+		}
 	}
 
 	public Set<PackageRef> getReferred() {
