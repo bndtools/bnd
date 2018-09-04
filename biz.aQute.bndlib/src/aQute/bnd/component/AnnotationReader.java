@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -54,7 +55,6 @@ import aQute.lib.collections.MultiMap;
 public class AnnotationReader extends ClassDataCollector {
 	private static final Logger			logger						= LoggerFactory.getLogger(AnnotationReader.class);
 
-	private final static TypeRef[]				EMPTY					= new TypeRef[0];
 	public static final Version			V1_0						= new Version("1.0.0");																										// "1.0.0"
 	public static final Version			V1_1						= new Version("1.1.0");																										// "1.1.0"
 	public static final Version			V1_2						= new Version("1.2.0");																										// "1.2.0"
@@ -121,7 +121,7 @@ public class AnnotationReader extends ClassDataCollector {
 	ComponentDef											component;
 
 	Clazz													clazz;
-	TypeRef													interfaces[];
+	TypeRef[]												interfaces;
 	FieldDef												member;
 	TypeRef													className;
 	Analyzer												analyzer;
@@ -894,16 +894,19 @@ public class AnnotationReader extends ClassDataCollector {
 			} else if (member instanceof FieldDef) {
 				def.updateVersion(V1_3);
 				def.field = member.getName();
-				if (def.name == null)
+				if (def.name == null) {
 					def.name = def.field;
-				if (def.policy == null && member.isVolatile())
+				}
+				if (def.policy == null && member.isVolatile()) {
 					def.policy = ReferencePolicy.DYNAMIC;
+				}
 
 				String sig = member.getSignature();
-				if (sig == null)
+				if (sig == null) {
 					// no generics, the descriptor will be the class name.
 					sig = member.getDescriptor()
 						.toString();
+				}
 				String[] sigs = SIGNATURE_SPLIT.split(sig);
 				int sigLength = sigs.length;
 				int index = 0;
@@ -938,7 +941,7 @@ public class AnnotationReader extends ClassDataCollector {
 								collectionType = CollectionType.TUPLE;
 								index += 2; // >;
 							} else {
-								index = sigLength;// no idea what service might
+								index = sigLength; // no idea what service might
 													// be.
 							}
 						}
@@ -947,8 +950,9 @@ public class AnnotationReader extends ClassDataCollector {
 					}
 				}
 				if (isCollection) {
-					if (def.cardinality == null)
+					if (def.cardinality == null) {
 						def.cardinality = ReferenceCardinality.MULTIPLE;
+					}
 					if (annotation.get("collectionType") != null) {
 						def.collectionType = reference.collectionType();
 					} else {
@@ -957,23 +961,24 @@ public class AnnotationReader extends ClassDataCollector {
 				}
 				if (def.policy == ReferencePolicy.DYNAMIC && (def.cardinality == ReferenceCardinality.MULTIPLE
 					|| def.cardinality == ReferenceCardinality.AT_LEAST_ONE) && member.isFinal()) {
-					if (def.fieldOption == FieldOption.REPLACE)
+					if (def.fieldOption == FieldOption.REPLACE) {
 						analyzer.error(
 							"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
 							className, def.field)
 							.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
+					}
 					def.fieldOption = FieldOption.UPDATE;
 				}
 				if (annoService == null && index < sigs.length) {
-					annoService = sigs[index].substring(1)
-						.replace('/', '.');
+					annoService = Descriptors.binaryToFQN(sigs[index].substring(1));
 				}
 				def.service = annoService;
-				if (def.service == null)
+				if (def.service == null) {
 					analyzer
 						.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
 							component.effectiveName(), def.name, member.getDescriptor())
 						.details(details);
+				}
 
 			} // end field
 		} else {// not a member
@@ -1181,32 +1186,40 @@ public class AnnotationReader extends ClassDataCollector {
 		component.properties.addProperties(comp.properties());
 		component.factoryProperties.addProperties(comp.factoryProperties());
 
-		Object[] x = annotation.get("service");
-		if (x == null) {
+		Object[] declaredServices = annotation.get("service");
+		if (declaredServices == null) {
 			// Use the found interfaces, but convert from internal to
 			// fqn.
 			if (interfaces != null) {
-				List<TypeRef> result = new ArrayList<>();
-				for (int i = 0; i < interfaces.length; i++) {
-					if (!interfaces[i].equals(analyzer.getTypeRef("scala/ScalaObject")))
-						result.add(interfaces[i]);
-				}
-				component.service = result.toArray(EMPTY);
+				TypeRef scalaObject = analyzer.getTypeRef("scala/ScalaObject");
+				component.service = Stream.of(interfaces)
+					.filter(i -> !Objects.equals(i, scalaObject))
+					.toArray(TypeRef[]::new);
 			}
 		} else {
 			// We have explicit interfaces set
-			component.service = new TypeRef[x.length];
-			for (int i = 0; i < x.length; i++) {
-				TypeRef typeRef = (TypeRef) x[i];
-				Clazz service = analyzer.findClass(typeRef);
-				if (!analyzer.assignable(clazz, service)) {
-					analyzer
-						.error("Class %s is not assignable to specified service %s", clazz.getFQN(), typeRef.getFQN())
-						.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
-							ErrorType.INCOMPATIBLE_SERVICE));
-				}
-				component.service[i] = typeRef;
-			}
+			component.service = Stream.of(declaredServices)
+				.map(TypeRef.class::cast)
+				.peek(typeRef -> {
+					try {
+						Clazz service = analyzer.findClass(typeRef);
+						if (!analyzer.assignable(clazz, service)) {
+							analyzer
+								.error("Class %s is not assignable to specified service %s", clazz.getFQN(),
+									typeRef.getFQN())
+								.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+									ErrorType.INCOMPATIBLE_SERVICE));
+						}
+					} catch (Exception e) {
+						analyzer
+							.exception(e,
+								"An error occurred when attempting to process service %s, applied to component %s",
+								typeRef.getFQN(), className.getFQN())
+							.details(new DeclarativeServicesAnnotationError(className.getFQN(), null, null,
+								ErrorType.INCOMPATIBLE_SERVICE));
+					}
+				})
+				.toArray(TypeRef[]::new);
 		}
 
 		// make sure reference processing knows this is a Reference in Component
