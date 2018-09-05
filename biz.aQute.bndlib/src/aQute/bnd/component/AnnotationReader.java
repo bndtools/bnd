@@ -4,6 +4,7 @@ import static aQute.bnd.osgi.Clazz.QUERY.ANNOTATED;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -103,7 +104,16 @@ public class AnnotationReader extends ClassDataCollector {
 	private static final Instruction			COMPONENT_PROPERTY_INSTR	= new Instruction(
 		"org.osgi.service.component.annotations.ComponentPropertyType");
 
-	private final static Map<String, Class<?>>	wrappers;
+	final static Map<String, Class<?>>	wrappers;
+
+	private static final Entry<Pattern, String>	unbind1						= new SimpleImmutableEntry<>(
+		Pattern.compile("add(.*)"), "remove$1");
+	private static final Entry<Pattern, String>	unbind2						= new SimpleImmutableEntry<>(
+		Pattern.compile("(.*)"), "un$1");
+	private static final Entry<Pattern, String>	updated1					= new SimpleImmutableEntry<>(
+		Pattern.compile("(?:add|set|bind)(.*)"), "updated$1");
+	private static final Entry<Pattern, String>	updated2					= new SimpleImmutableEntry<>(
+		Pattern.compile("(.*)"), "updated$1");
 
 	static {
 		Map<String, Class<?>> map = new HashMap<>();
@@ -196,9 +206,8 @@ public class AnnotationReader extends ClassDataCollector {
 		}
 		for (ReferenceDef rdef : component.references.values()) {
 			if (rdef.bind != null) {
-				rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, "add(.*)", "remove$1", "(.*)", "un$1");
-				rdef.updated = referredMethod(analyzer, rdef, rdef.updated, "(add|set|bind)(.*)", "updated$2", "(.*)",
-					"updated$1");
+				rdef.unbind = referredMethod(analyzer, rdef, rdef.unbind, unbind1, unbind2);
+				rdef.updated = referredMethod(analyzer, rdef, rdef.updated, updated1, updated2);
 
 				if (rdef.policy == ReferencePolicy.DYNAMIC && rdef.unbind == null)
 					analyzer
@@ -214,22 +223,25 @@ public class AnnotationReader extends ClassDataCollector {
 	 * @param analyzer
 	 * @param rdef
 	 */
-	protected String referredMethod(Analyzer analyzer, ReferenceDef rdef, String value, String... matches) {
+	@SafeVarargs
+	private final String referredMethod(Analyzer analyzer, ReferenceDef rdef, String value,
+		Entry<Pattern, String>... matches) {
 		if (value == null) {
 			String bind = rdef.bind;
-			for (int i = 0; i < matches.length; i += 2) {
-				Matcher m = Pattern.compile(matches[i])
+			for (Entry<Pattern, String> match : matches) {
+				Matcher m = match.getKey()
 					.matcher(bind);
 				if (m.matches()) {
-					value = m.replaceFirst(matches[i + 1]);
+					value = m.replaceFirst(match.getValue());
 					break;
 				}
 			}
-		} else if (value.equals("-"))
+		} else if (value.equals("-")) {
 			return null;
+		}
 
 		if (methods.containsKey(value)) {
-			for (Clazz.MethodDef method : methods.get(value)) {
+			for (MethodDef method : methods.get(value)) {
 				String service = determineReferenceType(method, rdef, rdef.service, null);
 				if (service != null) {
 					return value;
@@ -242,7 +254,7 @@ public class AnnotationReader extends ClassDataCollector {
 			// until we know that there was no match
 			// We need to include the method name in the warning or it may be
 			// ignored as duplicate (from another non-match)
-			for (Clazz.MethodDef method : methods.get(value)) {
+			for (MethodDef method : methods.get(value)) {
 				analyzer.warning("  methodname: %s descriptor: %s", value, method.getDescriptor()
 					.toString())
 					.details(getDetails(rdef, ErrorType.UNSET_OR_MODIFY_WITH_WRONG_SIGNATURE));
