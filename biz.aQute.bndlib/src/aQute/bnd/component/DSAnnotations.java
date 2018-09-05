@@ -171,11 +171,29 @@ public class DSAnnotations implements AnalyzerPlugin {
 			maxVersion = ComponentDef.max(maxVersion, AnnotationReader.V1_3);
 			addExtenderRequirement(requires, maxVersion);
 		}
+		names = removeOverlapInServiceComponentHeader(names);
 		sc = Processor.append(names.toArray(new String[0]));
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, sc);
 		updateHeader(analyzer, Constants.REQUIRE_CAPABILITY, requires);
 		updateHeader(analyzer, Constants.PROVIDE_CAPABILITY, provides);
 		return false;
+	}
+
+	public static List<String> removeOverlapInServiceComponentHeader(Collection<String> names) {
+		List<String> wildcards = new ArrayList<>(names);
+		wildcards.removeIf(name -> !name.contains("*"));
+
+		Instructions wildcardedPaths = new Instructions(wildcards);
+		if (wildcardedPaths.isEmpty())
+			return new ArrayList<>(names);
+
+		List<String> actual = new ArrayList<>();
+		for (String name : names) {
+			if (!name.contains("*") && wildcardedPaths.matches(name))
+				continue;
+			actual.add(name);
+		}
+		return actual;
 	}
 
 	private void addServiceCapability(String[] objectClass, Set<String> provides) {
