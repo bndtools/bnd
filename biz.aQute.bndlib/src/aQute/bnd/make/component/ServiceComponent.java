@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.regex.Pattern;
 
+import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.component.HeaderReader;
 import aQute.bnd.component.TagResource;
 import aQute.bnd.header.Attrs;
@@ -21,6 +24,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.AnalyzerPlugin;
+import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
 
 /**
@@ -36,9 +40,12 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 		ComponentMaker m = new ComponentMaker(analyzer);
 
-		Map<String, Map<String, String>> l = m.doServiceComponent();
+		Set<String> l = m.doServiceComponent()
+			.keySet();
 
-		analyzer.setProperty(Constants.SERVICE_COMPONENT, Processor.printClauses(l));
+		List<String> names = DSAnnotations.removeOverlapInServiceComponentHeader(l);
+
+		analyzer.setProperty(Constants.SERVICE_COMPONENT, Strings.join(names));
 
 		analyzer.getInfo(m, Constants.SERVICE_COMPONENT + ": ");
 		m.close();
