@@ -742,14 +742,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 	private Attrs getAttributes(Annotation a, String... ignores) {
 		Attrs attrs = new Attrs();
-		outer: for (String key : a.keySet()) {
-
+		outer: for (Entry<String, Object> entry : a.entrySet()) {
+			String key = entry.getKey();
 			for (String ignore : ignores) {
 				if (key.equals(ignore))
 					continue outer;
 			}
-
-			attrs.putTyped(key, a.get(key));
+			attrs.putTyped(key, entry.getValue());
 		}
 		return attrs;
 	}

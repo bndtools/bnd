@@ -571,8 +571,9 @@ public class AnnotationReader extends ClassDataCollector {
 			this.details = details;
 
 			// Add in the defined attributes
-			for (String key : componentPropertyAnnotation.keySet()) {
-				Object value = componentPropertyAnnotation.get(key);
+			for (Entry<String, Object> entry : componentPropertyAnnotation.entrySet()) {
+				String key = entry.getKey();
+				Object value = entry.getValue();
 				handleValue(key, value, value instanceof TypeRef, null);
 			}
 		}
