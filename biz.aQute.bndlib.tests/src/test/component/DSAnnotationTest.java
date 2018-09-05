@@ -3719,9 +3719,6 @@ public class DSAnnotationTest extends BndTestCase {
 		@Reference
 		void setMarker14(ComponentServiceObjects<? super GenericMarker<? super Marker>> ref) {}
 
-		@Reference(service = Marker.class)
-		void setMarker15(ComponentServiceObjects<? super GenericMarker<? super Marker>> ref) {}
-
 	}
 
 	private List<String> indices = new ArrayList<>();
@@ -3736,7 +3733,7 @@ public class DSAnnotationTest extends BndTestCase {
 		Jar jar = b.build();
 		assertOk(b, 0, 0);
 		Attributes a = getAttr(jar);
-		checkRequires(a, null, Marker.class.getName(), GenericMarker.class.getName(), Object.class.getName());
+		checkRequires(a, null, Marker.class.getName(), GenericMarker.class.getName());
 
 		Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$RefType.xml");
 		System.err.println(Processor.join(jar.getResources()
@@ -3746,7 +3743,7 @@ public class DSAnnotationTest extends BndTestCase {
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 
 		Collection<String> indices = new TreeSet<>();
-		for (int i = 1; i < 16; i++)
+		for (int i = 1; i < 15; i++)
 			indices.add(Integer.toString(i));
 		this.indices.addAll(indices);
 
@@ -3763,8 +3760,7 @@ public class DSAnnotationTest extends BndTestCase {
 		checkMarkerReference(xt, 11, GenericMarker.class);
 		checkMarkerReference(xt, 12, GenericMarker.class);
 		checkMarkerReference(xt, 13, GenericMarker.class);
-		checkMarkerReference(xt, 14, Object.class);
-		checkMarkerReference(xt, 15, Marker.class);
+		checkMarkerReference(xt, 14, GenericMarker.class);
 
 	}
 

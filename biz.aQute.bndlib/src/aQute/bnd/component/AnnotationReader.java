@@ -1,6 +1,7 @@
 package aQute.bnd.component;
 
 import static aQute.bnd.osgi.Clazz.QUERY.ANNOTATED;
+import static aQute.bnd.osgi.Descriptors.binaryToFQN;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -42,10 +43,18 @@ import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
-import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.signatures.ClassSignature;
+import aQute.bnd.signatures.ClassTypeSignature;
+import aQute.bnd.signatures.JavaTypeSignature;
+import aQute.bnd.signatures.MethodResolver;
+import aQute.bnd.signatures.MethodSignature;
+import aQute.bnd.signatures.ReferenceTypeSignature;
+import aQute.bnd.signatures.Result;
+import aQute.bnd.signatures.TypeArgument;
+import aQute.bnd.signatures.VoidDescriptor;
 import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.collections.MultiMap;
@@ -70,10 +79,6 @@ public class AnnotationReader extends ClassDataCollector {
 	 * {@link #checkMapReturnType(DeclarativeServicesAnnotationError)}.
 	 */
 	private static final String					RETURNTYPE				= "(?:V|L(?<return>java/util/Map);)";
-	private static final Pattern				BINDDESCRIPTOR			= Pattern.compile("\\("
-		+ "L(?:(?<inferrer>org/osgi/framework/ServiceReference|org/osgi/service/component/ComponentServiceObjects)|java/util/Map|(?<service>[^;]+));(?:(?<ds10>)|(?<ds11>Ljava/util/Map;)|(?<ds13>.+))"
-		+ "\\)"																																															//
-		+ RETURNTYPE);
 	private static final Pattern				ACTIVATEDESCRIPTOR		= Pattern.compile("\\((?:"
 		+ "(?<ds10>Lorg/osgi/service/component/ComponentContext;)"
 		+ "|(?<ds11>(?:L(?:org/osgi/service/component/ComponentContext|org/osgi/framework/BundleContext|java/util/Map);)*)"
@@ -130,7 +135,8 @@ public class AnnotationReader extends ClassDataCollector {
 
 	ComponentDef											component;
 
-	Clazz													clazz;
+	final Clazz												clazz;
+	final ClassSignature									classSig;
 	TypeRef[]												interfaces;
 	FieldDef												member;
 	TypeRef													className;
@@ -154,6 +160,8 @@ public class AnnotationReader extends ClassDataCollector {
 		this.options = options;
 		this.finder = finder;
 		this.component = new ComponentDef(analyzer, finder, minVersion);
+		String signature = clazz.getClassSignature();
+		classSig = analyzer.getClassSignature((signature != null) ? signature : "Ljava/lang/Object;");
 	}
 
 	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options,
@@ -983,7 +991,7 @@ public class AnnotationReader extends ClassDataCollector {
 					def.fieldOption = FieldOption.UPDATE;
 				}
 				if (annoService == null && index < sigs.length) {
-					annoService = Descriptors.binaryToFQN(sigs[index].substring(1));
+					annoService = binaryToFQN(sigs[index].substring(1));
 				}
 				def.service = annoService;
 				if (def.service == null) {
@@ -1036,66 +1044,88 @@ public class AnnotationReader extends ClassDataCollector {
 		String signature) {
 		// We have to find the type of the current method to
 		// link it to the referenced service.
-		String methodDescriptor = method.getDescriptor()
-			.toString();
-		Matcher m = BINDDESCRIPTOR.matcher(methodDescriptor);
-		if (!m.matches()) {
+		MethodSignature methodSig = analyzer.getMethodSignature((signature != null) ? signature
+			: method.getDescriptor()
+				.toString());
+		int parameterCount = methodSig.parameterTypes.length;
+		if (parameterCount == 0) {
 			return null;
 		}
-
-		Version minVersion = null;
-		if (m.group("ds10") != null) {
-			if (!method.isProtected()) {
-				minVersion = V1_1;
+		MethodResolver resolver = new MethodResolver(classSig, methodSig);
+		boolean hasMapResultType = false;
+		Result resultType = resolver.resolveResult();
+		if (!(resultType instanceof VoidDescriptor)) {
+			if ((resultType instanceof ClassTypeSignature)
+				&& ((ClassTypeSignature) resultType).binary.equals("java/util/Map")) {
+				hasMapResultType = true;
+			} else {
+				return null;
 			}
-		} else if (m.group("ds11") != null) {
-			minVersion = V1_1;
-		} else if (m.group("ds13") != null) {
-			minVersion = V1_3;
 		}
-
-		String inferredService = m.group("service");
-		if (inferredService != null) {
-			inferredService = Descriptors.binaryToFQN(inferredService);
-		} else {
-			String inferrer = m.group("inferrer");
-			if (inferrer != null) {
-				// ServiceReference or ComponentServiceObjects
-				if ((annoService == null) || !annoService.equals(Descriptors.binaryToFQN(inferrer))) {
-					if (inferrer.equals("org/osgi/service/component/ComponentServiceObjects")) {
-						// first argument using type supported starting in 1.3
-						minVersion = V1_3;
-					}
-					if (signature != null) {
-						inferrer = "L" + inferrer + "<";
-						int start = signature.indexOf(inferrer);
-						if (start > -1) {
-							String[] sigs = SIGNATURE_SPLIT.split(signature.substring(start + inferrer.length()));
-							if (sigs.length > 0) {
-								String sig = sigs[0];
-								switch (sig.charAt(0)) {
-									case '*' :
-									case '-' :
-										inferredService = Object.class.getName();
-										break;
-									case '+' :
-										inferredService = Descriptors.binaryToFQN(sig.substring(2));
-										break;
-									default :
-										inferredService = Descriptors.binaryToFQN(sig.substring(1));
-										break;
-								}
-							}
+		JavaTypeSignature first = resolver.resolveParameter(0);
+		if (!(first instanceof ClassTypeSignature)) {
+			return null;
+		}
+		ClassTypeSignature param = (ClassTypeSignature) first;
+		Version minVersion = null;
+		switch (parameterCount) {
+			case 1 :
+				if (!method.isProtected()) {
+					minVersion = V1_1;
+				}
+				break;
+			case 2 :
+				JavaTypeSignature type = resolver.resolveParameter(1);
+				if ((type instanceof ClassTypeSignature)
+					&& ((ClassTypeSignature) type).binary.equals("java/util/Map")) {
+					minVersion = V1_1;
+				} else {
+					minVersion = V1_3;
+				}
+				break;
+			default :
+				minVersion = V1_3;
+				break;
+		}
+		String paramType = binaryToFQN(param.binary);
+		boolean tryInfer = (annoService == null) || !annoService.equals(paramType);
+		String inferredService = null;
+		switch (paramType) {
+			case "org.osgi.service.component.ComponentServiceObjects" :
+				if (tryInfer) {
+					// first argument using type supported starting in 1.3
+					minVersion = V1_3;
+					TypeArgument[] typeArguments = param.classType.typeArguments;
+					if (typeArguments.length != 0) {
+						ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
+						if (inferred instanceof ClassTypeSignature) {
+							inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
 						}
 					}
 				}
-			} else {
-				// Map
-				if ((annoService == null) || !annoService.equals("java.util.Map")) {
+				break;
+			case "org.osgi.framework.ServiceReference" :
+				// infer service type
+				if (tryInfer) {
+					TypeArgument[] typeArguments = param.classType.typeArguments;
+					if (typeArguments.length != 0) {
+						ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
+						if (inferred instanceof ClassTypeSignature) {
+							inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
+						}
+					}
+				}
+				break;
+			case "java.util.Map" :
+				if (tryInfer) {
 					// first argument using type supported starting in 1.3
 					minVersion = V1_3;
 				}
-			}
+				break;
+			default :
+				// inferred service
+				inferredService = paramType;
+				break;
 		}
 
 		// if the type is specified it may still not match as it could
@@ -1103,7 +1133,7 @@ public class AnnotationReader extends ClassDataCollector {
 		if (!analyzer.assignable(annoService, inferredService)) {
 			return null;
 		}
-		if (m.group("return") != null) {
+		if (hasMapResultType) {
 			DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
 			checkMapReturnType(details);
 		}
