@@ -127,6 +127,14 @@ public class DSAnnotations implements AnalyzerPlugin {
 		if (Processor.isTrue(analyzer.getProperty("-ds-felix-extensions")))
 			options.add(Options.felixExtensions);
 
+		// extender option conflicts with a maximum version less than 1.3
+		if (options.contains(Options.extender) && maxVersion != null
+			&& maxVersion.compareTo(AnnotationReader.V1_3) < 0) {
+			analyzer.error(
+				"Cannot use %s option in %s in conjunction with maximum version %s: the extender requirement supports only version %s and above.",
+				Options.extender, Constants.DSANNOTATIONS_OPTIONS, maxVersion, AnnotationReader.V1_3);
+		}
+
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace()
 			.values();
