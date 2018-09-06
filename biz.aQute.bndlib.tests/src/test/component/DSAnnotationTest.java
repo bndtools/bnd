@@ -2806,7 +2806,10 @@ public class DSAnnotationTest extends BndTestCase {
 		private Collection<Map.Entry<Map<String, Object>, LogService>>	tupleField;
 
 		@Reference(service = Map.class, collectionType = CollectionType.SERVICE)
-		private Collection<Map<String, Object>>							zmapSvc;
+		private Collection<Map<String, Object>>							mapSvc;
+
+		@Reference(policy = ReferencePolicy.DYNAMIC, fieldOption = FieldOption.UPDATE)
+		private CopyOnWriteArrayList<LogService>						updateField			= new CopyOnWriteArrayList<>();
 
 		@Override
 		public void run() {}
@@ -2830,35 +2833,34 @@ public class DSAnnotationTest extends BndTestCase {
 			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 			xt.assertNamespace("http://www.osgi.org/xmlns/scr/v1.3.0");
 
-			xt.assertAttribute("propsField", "scr:component/reference[1]/@name");
-			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[1]/@interface");
-			xt.assertAttribute("propsField", "scr:component/reference[1]/@field");
-			xt.assertAttribute("properties", "scr:component/reference[1]/@field-collection-type");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='propsField']/@interface");
+			xt.assertAttribute("propsField", "scr:component/reference[@name='propsField']/@field");
+			xt.assertAttribute("properties", "scr:component/reference[@name='propsField']/@field-collection-type");
 
-			xt.assertAttribute("serviceField", "scr:component/reference[2]/@name");
-			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
-			xt.assertAttribute("serviceField", "scr:component/reference[2]/@field");
-			xt.assertAttribute("service", "scr:component/reference[2]/@field-collection-type");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='serviceField']/@interface");
+			xt.assertAttribute("serviceField", "scr:component/reference[@name='serviceField']/@field");
+			xt.assertAttribute("service", "scr:component/reference[@name='serviceField']/@field-collection-type");
 
-			xt.assertAttribute("soField", "scr:component/reference[3]/@name");
-			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[3]/@interface");
-			xt.assertAttribute("soField", "scr:component/reference[3]/@field");
-			xt.assertAttribute("serviceobjects", "scr:component/reference[3]/@field-collection-type");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='soField']/@interface");
+			xt.assertAttribute("soField", "scr:component/reference[@name='soField']/@field");
+			xt.assertAttribute("serviceobjects", "scr:component/reference[@name='soField']/@field-collection-type");
 
-			xt.assertAttribute("srField", "scr:component/reference[4]/@name");
-			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[4]/@interface");
-			xt.assertAttribute("srField", "scr:component/reference[4]/@field");
-			xt.assertAttribute("reference", "scr:component/reference[4]/@field-collection-type");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='srField']/@interface");
+			xt.assertAttribute("srField", "scr:component/reference[@name='srField']/@field");
+			xt.assertAttribute("reference", "scr:component/reference[@name='srField']/@field-collection-type");
 
-			xt.assertAttribute("tupleField", "scr:component/reference[5]/@name");
-			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[5]/@interface");
-			xt.assertAttribute("tupleField", "scr:component/reference[5]/@field");
-			xt.assertAttribute("tuple", "scr:component/reference[5]/@field-collection-type");
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='tupleField']/@interface");
+			xt.assertAttribute("tupleField", "scr:component/reference[@name='tupleField']/@field");
+			xt.assertAttribute("tuple", "scr:component/reference[@name='tupleField']/@field-collection-type");
 
-			xt.assertAttribute("zmapSvc", "scr:component/reference[6]/@name");
-			xt.assertAttribute(Map.class.getName(), "scr:component/reference[6]/@interface");
-			xt.assertAttribute("zmapSvc", "scr:component/reference[6]/@field");
-			xt.assertAttribute("service", "scr:component/reference[6]/@field-collection-type");
+			xt.assertAttribute(Map.class.getName(), "scr:component/reference[@name='mapSvc']/@interface");
+			xt.assertAttribute("mapSvc", "scr:component/reference[@name='mapSvc']/@field");
+			xt.assertAttribute("service", "scr:component/reference[@name='mapSvc']/@field-collection-type");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='updateField']/@interface");
+			xt.assertAttribute("updateField", "scr:component/reference[@name='updateField']/@field");
+			xt.assertAttribute("update", "scr:component/reference[@name='updateField']/@field-option");
+			xt.assertAttribute("service", "scr:component/reference[@name='updateField']/@field-collection-type");
 		}
 	}
 

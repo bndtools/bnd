@@ -48,6 +48,8 @@ import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.signatures.ClassSignature;
 import aQute.bnd.signatures.ClassTypeSignature;
+import aQute.bnd.signatures.FieldResolver;
+import aQute.bnd.signatures.FieldSignature;
 import aQute.bnd.signatures.JavaTypeSignature;
 import aQute.bnd.signatures.MethodResolver;
 import aQute.bnd.signatures.MethodSignature;
@@ -98,8 +100,6 @@ public class AnnotationReader extends ClassDataCollector {
 
 	static final Pattern						IDENTIFIERTOPROPERTY		= Pattern
 		.compile("(__)|(_)|(\\$_\\$)|(\\$\\$)|(\\$)");
-
-	private static final Pattern				SIGNATURE_SPLIT			= Pattern.compile("[<;>]");
 
 	// We avoid using the XXX.class.getName() because it breaks the launcher
 	// tests when run in gradle. This is because gradle uses the bin/
@@ -922,78 +922,140 @@ public class AnnotationReader extends ClassDataCollector {
 					def.policy = ReferencePolicy.DYNAMIC;
 				}
 
-				String sig = member.getSignature();
-				if (sig == null) {
-					// no generics, the descriptor will be the class name.
-					sig = member.getDescriptor()
-						.toString();
+				FieldSignature fieldSig;
+				String signature = member.getSignature();
+				if (signature == null) {
+					try {
+						fieldSig = analyzer.getFieldSignature(member.getDescriptor()
+							.toString());
+					} catch (IllegalArgumentException e) {
+						fieldSig = null;
+					}
+				} else {
+					fieldSig = analyzer.getFieldSignature(signature);
 				}
-				String[] sigs = SIGNATURE_SPLIT.split(sig);
-				int sigLength = sigs.length;
-				int index = 0;
-				boolean isCollection = false;
-				if ("Ljava/util/Collection".equals(sigs[index]) || "Ljava/util/List".equals(sigs[index])) {
-					index++;
-					isCollection = true;
-				}
-				// Along with determining the CollectionType, the following
-				// code positions index to read the service type.
-				CollectionType collectionType = null;
-				if (sufficientGenerics(index, sigLength, def, sig)) {
-					if ("Lorg/osgi/framework/ServiceReference".equals(sigs[index])) {
-						if (sufficientGenerics(index++, sigLength, def, sig)) {
-							collectionType = CollectionType.REFERENCE;
+				if (fieldSig != null) { // field type is ReferenceTypeSignature
+					boolean isCollection = false;
+					boolean isCollectionSubClass = false;
+					CollectionType collectionType = null;
+					String inferredService = null;
+					FieldResolver resolver = new FieldResolver(classSig, fieldSig);
+					ReferenceTypeSignature type = resolver.resolveField();
+					if (type instanceof ClassTypeSignature) {
+						ClassTypeSignature param = (ClassTypeSignature) type;
+						String paramType = binaryToFQN(param.binary);
+						// Check for collection
+						switch (paramType) {
+							default :
+								// check for subtype of Collection
+								if (!analyzer.assignable(paramType, "java.util.Collection")) {
+									break;
+								}
+								isCollectionSubClass = true;
+								// FALL-THROUGH
+							case "java.util.Collection" :
+							case "java.util.List" :
+								isCollection = true;
+								TypeArgument[] typeArguments = param.classType.typeArguments;
+								if (typeArguments.length != 0) {
+									ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
+									if (inferred instanceof ClassTypeSignature) {
+										collectionType = CollectionType.SERVICE;
+										param = (ClassTypeSignature) inferred;
+										paramType = binaryToFQN(param.binary);
+									}
+								}
+								break;
 						}
-					} else if ("Lorg/osgi/service/component/ComponentServiceObjects".equals(sigs[index])) {
-						if (sufficientGenerics(index++, sigLength, def, sig)) {
-							collectionType = CollectionType.SERVICEOBJECTS;
+						// compute inferred service
+						boolean tryInfer = (annoService == null) || !annoService.equals(paramType);
+						switch (paramType) {
+							case "org.osgi.service.component.ComponentServiceObjects" :
+								if (tryInfer) {
+									collectionType = CollectionType.SERVICEOBJECTS;
+									TypeArgument[] typeArguments = param.classType.typeArguments;
+									if (typeArguments.length != 0) {
+										ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
+										if (inferred instanceof ClassTypeSignature) {
+											inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
+										}
+									}
+								}
+								break;
+							case "org.osgi.framework.ServiceReference" :
+								if (tryInfer) {
+									collectionType = CollectionType.REFERENCE;
+									TypeArgument[] typeArguments = param.classType.typeArguments;
+									if (typeArguments.length != 0) {
+										ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[0]);
+										if (inferred instanceof ClassTypeSignature) {
+											inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
+										}
+									}
+								}
+								break;
+							case "java.util.Map" :
+								if (tryInfer) {
+									collectionType = CollectionType.PROPERTIES;
+								}
+								break;
+							case "java.util.Map$Entry" :
+								if (tryInfer) {
+									collectionType = CollectionType.TUPLE;
+									TypeArgument[] typeArguments = param.innerTypes[0].typeArguments;
+									if (typeArguments.length != 0) {
+										ReferenceTypeSignature inferred = resolver.resolveType(typeArguments[1]);
+										if (inferred instanceof ClassTypeSignature) {
+											inferredService = binaryToFQN(((ClassTypeSignature) inferred).binary);
+										}
+									}
+								}
+								break;
+							default :
+								if (isCollection && (collectionType == null)) {
+									// no inferred type for collection
+									collectionType = CollectionType.SERVICE;
+								} else {
+									inferredService = paramType;
+								}
+								break;
 						}
-					} else if ("Ljava/util/Map".equals(sigs[index])) {
-						if (sufficientGenerics(index++, sigLength, def, sig)) {
-							collectionType = CollectionType.PROPERTIES;
+					}
+
+					if (isCollection) {
+						if (def.cardinality == null) {
+							def.cardinality = ReferenceCardinality.MULTIPLE;
 						}
-					} else if ("Ljava/util/Map$Entry".equals(sigs[index])
-						&& sufficientGenerics(index++ + 5, sigLength, def, sig)) {
-						if ("Ljava/util/Map".equals(sigs[index++]) && "Ljava/lang/String".equals(sigs[index++])) {
-							if ("Ljava/lang/Object".equals(sigs[index]) || "+Ljava/lang/Object".equals(sigs[index])) {
-								collectionType = CollectionType.TUPLE;
-								index += 3; // ;>;
-							} else if ("*".equals(sigs[index])) {
-								collectionType = CollectionType.TUPLE;
-								index += 2; // >;
-							} else {
-								index = sigLength; // no idea what service might
-													// be.
+						if (annotation.get("collectionType") != null) {
+							def.collectionType = reference.collectionType();
+						} else {
+							def.collectionType = collectionType;
+						}
+						if (isCollectionSubClass) {
+							if (def.policy != ReferencePolicy.DYNAMIC || def.fieldOption != FieldOption.UPDATE) {
+								analyzer.error(
+									"In component %s, collection type field: %s is a subclass of Collection but is not marked policy 'dynamic' and fieldOption 'update'. Changing this to 'dynamic' and 'update'.",
+									className, def.field)
+									.details(getDetails(def, ErrorType.COLLECTION_SUBCLASS_FIELD_WITH_REPLACE));
+								def.policy = ReferencePolicy.DYNAMIC;
+								def.fieldOption = FieldOption.UPDATE;
 							}
 						}
-					} else {
-						collectionType = CollectionType.SERVICE;
+					}
+					if (def.policy == ReferencePolicy.DYNAMIC && (def.cardinality == ReferenceCardinality.MULTIPLE
+						|| def.cardinality == ReferenceCardinality.AT_LEAST_ONE) && member.isFinal()) {
+						if (def.fieldOption == FieldOption.REPLACE) {
+							analyzer.error(
+								"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
+								className, def.field)
+								.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
+						}
+						def.fieldOption = FieldOption.UPDATE;
+					}
+					if (analyzer.assignable(annoService, inferredService)) {
+						def.service = (annoService != null) ? annoService : inferredService;
 					}
 				}
-				if (isCollection) {
-					if (def.cardinality == null) {
-						def.cardinality = ReferenceCardinality.MULTIPLE;
-					}
-					if (annotation.get("collectionType") != null) {
-						def.collectionType = reference.collectionType();
-					} else {
-						def.collectionType = collectionType;
-					}
-				}
-				if (def.policy == ReferencePolicy.DYNAMIC && (def.cardinality == ReferenceCardinality.MULTIPLE
-					|| def.cardinality == ReferenceCardinality.AT_LEAST_ONE) && member.isFinal()) {
-					if (def.fieldOption == FieldOption.REPLACE) {
-						analyzer.error(
-							"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
-							className, def.field)
-							.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
-					}
-					def.fieldOption = FieldOption.UPDATE;
-				}
-				if (annoService == null && index < sigs.length) {
-					annoService = binaryToFQN(sigs[index].substring(1));
-				}
-				def.service = annoService;
 				if (def.service == null) {
 					analyzer
 						.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
@@ -1028,16 +1090,6 @@ public class AnnotationReader extends ClassDataCollector {
 			return null;
 
 		return new DeclarativeServicesAnnotationError(className.getFQN(), def.bind, def.bindDescriptor, type);
-	}
-
-	private boolean sufficientGenerics(int index, int sigLength, ReferenceDef def, String sig) {
-		if (index + 1 > sigLength) {
-			analyzer.error(
-				"In component %s, method %s,  signature: %s does not have sufficient generic type information",
-				component.effectiveName(), def.name, sig);
-			return false;
-		}
-		return true;
 	}
 
 	private String determineReferenceType(MethodDef method, ReferenceDef def, String annoService,
