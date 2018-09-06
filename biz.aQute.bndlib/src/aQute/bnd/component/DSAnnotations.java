@@ -41,15 +41,26 @@ public class DSAnnotations implements AnalyzerPlugin {
 		version {
 			@Override
 			void process(DSAnnotations anno, Attrs attrs) {
-				String v = attrs.get("minimum");
-				if (v != null && v.length() > 0) {
-					anno.minVersion = new Version(v);
+				String min = attrs.get("minimum");
+				if (min != null && min.length() > 0) {
+					anno.minVersion = new Version(min);
+				}
+				String max = attrs.get("maximum");
+				if (max != null && max.length() > 0) {
+					anno.maxVersion = new Version(max);
+					if (anno.maxVersion.compareTo(anno.minVersion) < 0) {
+						throw new IllegalArgumentException(
+							"Error on " + version.name() + "attribute of "
+							+ Constants.DSANNOTATIONS_OPTIONS
+							+ ": maximum version must not be less than minimum version.");
+					}
 				}
 			}
 
 			@Override
 			void reset(DSAnnotations anno) {
 				anno.minVersion = AnnotationReader.V1_3;
+				anno.maxVersion = null;
 			}
 		};
 
@@ -68,7 +79,14 @@ public class DSAnnotations implements AnalyzerPlugin {
 				negation = true;
 				s = s.substring(1);
 			}
-			Options option = Options.valueOf(s);
+			Options option;
+			try {
+				option = Options.valueOf(s);
+			} catch (IllegalArgumentException e) {
+				throw new IllegalArgumentException(String.format(
+					"Unrecognized %s value %s with attributes %s, expected values are %s",
+					Constants.DSANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(), EnumSet.allOf(Options.class)));
+			}
 			if (negation) {
 				options.remove(option);
 				option.reset(state);
@@ -84,6 +102,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 	};
 
 	Version minVersion;
+	Version	maxVersion;
 
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
@@ -92,14 +111,14 @@ public class DSAnnotations implements AnalyzerPlugin {
 			return false;
 
 		minVersion = AnnotationReader.V1_3;
+		maxVersion = null;
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.mergeProperties(Constants.DSANNOTATIONS_OPTIONS));
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
 		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
 			try {
 				Options.parseOption(entry, options, this);
 			} catch (IllegalArgumentException e) {
-				analyzer.error("Unrecognized %s value %s with attributes %s, expected values are %s",
-					Constants.DSANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(), EnumSet.allOf(Options.class));
+				analyzer.error(e.getMessage());
 			}
 		}
 		// obsolete but backwards compatible, use the options instead
@@ -107,6 +126,14 @@ public class DSAnnotations implements AnalyzerPlugin {
 			options.add(Options.inherit);
 		if (Processor.isTrue(analyzer.getProperty("-ds-felix-extensions")))
 			options.add(Options.felixExtensions);
+
+		// extender option conflicts with a maximum version less than 1.3
+		if (options.contains(Options.extender) && maxVersion != null
+			&& maxVersion.compareTo(AnnotationReader.V1_3) < 0) {
+			analyzer.error(
+				"Cannot use %s option in %s in conjunction with maximum version %s: the extender requirement supports only version %s and above.",
+				Options.extender, Constants.DSANNOTATIONS_OPTIONS, maxVersion, AnnotationReader.V1_3);
+		}
 
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace()
@@ -119,7 +146,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 		TreeSet<String> provides = new TreeSet<>();
 		TreeSet<String> requires = new TreeSet<>();
-		Version maxVersion = AnnotationReader.V1_0;
+		Version maxVersionFound = AnnotationReader.V1_0;
 
 		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
 		boolean componentProcessed = false;
@@ -132,6 +159,11 @@ public class DSAnnotations implements AnalyzerPlugin {
 					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options, finder, minVersion);
 					if (definition == null) {
 						break;
+					}
+					if (maxVersion != null && maxVersion.compareTo(definition.version) < 0) {
+						analyzer.error(
+							"Component %s requires DS version %s, which exceeds the maximum allowed version %s.",
+							definition.name, definition.version, maxVersion);
 					}
 					componentProcessed = true;
 					definition.sortReferences();
@@ -161,15 +193,15 @@ public class DSAnnotations implements AnalyzerPlugin {
 						}
 						requires.addAll(serviceReqMerge.toStringList());
 					}
-					maxVersion = ComponentDef.max(maxVersion, definition.version);
+					maxVersionFound = ComponentDef.max(maxVersionFound, definition.version);
 					break;
 				}
 			}
 		}
 		if (componentProcessed
-			&& (options.contains(Options.extender) || (maxVersion.compareTo(AnnotationReader.V1_3) >= 0))) {
-			maxVersion = ComponentDef.max(maxVersion, AnnotationReader.V1_3);
-			addExtenderRequirement(requires, maxVersion);
+			&& (options.contains(Options.extender) || (maxVersionFound.compareTo(AnnotationReader.V1_3) >= 0))) {
+			maxVersionFound = ComponentDef.max(maxVersionFound, AnnotationReader.V1_3);
+			addExtenderRequirement(requires, maxVersionFound);
 		}
 		names = removeOverlapInServiceComponentHeader(names);
 		sc = Processor.append(names.toArray(new String[0]));

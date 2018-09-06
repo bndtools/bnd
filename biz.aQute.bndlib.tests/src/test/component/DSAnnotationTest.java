@@ -3847,4 +3847,59 @@ public class DSAnnotationTest extends BndTestCase {
 		xt.assertAttribute("activator", "scr:component/@activate");
 	}
 
+	public void testMaximumSpecVersionPassed() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13anno_*");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "extender, version;minimum=1.2;maximum=1.3");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertOk(b);
+	}
+
+	public void testMaximumSpecVersionExceeded() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13anno_*");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.2;maximum=1.2");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		assertEquals(3, b.getErrors()
+			.size());
+		for (String error : b.getErrors()) {
+			assertTrue(error.endsWith("exceeds the maximum allowed version 1.2.0."));
+		}
+	}
+
+	public void testMaximumSpecVersionLessThanMinimum() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS13anno_*");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.4;maximum=1.3");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		List<String> errors = b.getErrors();
+		// 1 for the max<min error, 1 for each of 3 components
+		assertEquals(4, errors.size());
+		assertTrue(errors.get(0)
+			.endsWith("maximum version must not be less than minimum version."));
+	}
+
+	public void testForcedExtenderWithMaximumSpecVersionUnder13() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS11_basic");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "extender, version;minimum=1.0;maximum=1.2");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin"));
+
+		Jar jar = b.build();
+		List<String> errors = b.getErrors();
+		assertEquals(1, errors.size());
+		assertTrue(errors.get(0)
+			.endsWith("the extender requirement supports only version 1.3.0 and above."));
+	}
+
 }
