@@ -457,7 +457,7 @@ public class Analyzer extends Processor {
 			.collect(Parameters.toParameters());
 	}
 
-	private Clazz getPackageInfoClazz(PackageRef pr) {
+	public Clazz getPackageInfoClazz(PackageRef pr) {
 		String bin = pr.getBinary() + "/package-info";
 		TypeRef tr = descriptors.getTypeRef(bin);
 		try {
