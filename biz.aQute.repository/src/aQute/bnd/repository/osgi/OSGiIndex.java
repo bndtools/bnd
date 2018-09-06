@@ -64,6 +64,15 @@ class OSGiIndex {
 		return bridge;
 	}
 
+	/**
+	 * Return the bridge repository in {@link Promise} form.
+	 * 
+	 * @return promise representing the repository
+	 */
+	Promise<BridgeRepository> getBridgeRepository() {
+		return this.repository;
+	}
+
 	private static File checkCache(File cache) throws Exception {
 		IO.mkdirs(cache);
 		if (!cache.isDirectory())

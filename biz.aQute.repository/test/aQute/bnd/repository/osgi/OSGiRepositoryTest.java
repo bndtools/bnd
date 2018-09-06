@@ -114,8 +114,7 @@ public class OSGiRepositoryTest extends TestCase {
 				assertNotNull(file2);
 				// second one should not have downloaded
 				assertEquals(2, tasks.get());
-
-				r.refresh();
+				r.getIndex(false);
 				File file3 = r.get("dummybundle", new Version("0"), null);
 				assertNotNull(file3);
 				// second one should not have downloaded
@@ -285,6 +284,69 @@ public class OSGiRepositoryTest extends TestCase {
 			assertEquals(r, refreshed.get());
 			assertEquals("test [stale]", r.title());
 			System.out.println(r.tooltip());
+		}
+	}
+
+	public void testRefreshable() throws Exception {
+		try (OSGiRepository testRepo = new OSGiRepository();) {
+			Map<String, String> map = new HashMap<>();
+			File index = IO.getFile(remote, "minir5.xml");
+			map.put("locations", index.toURI()
+				.toString());
+			map.put("cache", cache.getPath());
+			map.put("max.stale", "10000");
+			map.put("name", "test");
+			map.put("poll.time", "-1");
+			testRepo.setProperties(map);
+			Processor p = new Processor();
+			HttpClient httpClient = new HttpClient();
+			httpClient.setCache(cache);
+			httpClient.setRegistry(p);
+			p.addBasicPlugin(httpClient);
+			p.setBase(ws);
+			p.addBasicPlugin(Workspace.createStandaloneWorkspace(p, ws.toURI()));
+			testRepo.setRegistry(p);
+			long indexLastModifiedBeforeRefresh = testRepo.getIndex(false)
+				.getCache()
+				.lastModified();
+			AtomicInteger numberOfTimesRefreshed = new AtomicInteger();
+			final AtomicReference<RepositoryPlugin> refreshedRepo = new AtomicReference<>();
+			p.addBasicPlugin(new RepositoryListenerPlugin() {
+
+				@Override
+				public void repositoryRefreshed(RepositoryPlugin repository) {
+					numberOfTimesRefreshed.incrementAndGet();
+					refreshedRepo.set(repository);
+				}
+
+				@Override
+				public void repositoriesRefreshed() {}
+
+				@Override
+				public void bundleRemoved(RepositoryPlugin repository, Jar jar, File file) {}
+
+				@Override
+				public void bundleAdded(RepositoryPlugin repository, Jar jar, File file) {}
+			});
+			// update the index file
+			long time = index.lastModified();
+			do {
+				Thread.sleep(1000);
+				String s = IO.collect(index);
+				s += " "; // change the sha
+				IO.store(s, index);
+			} while (index.lastModified() == time);
+			// refresh through Refreshable interface
+			boolean refreshed = testRepo.refresh();
+			// give the Promise time to resolve
+			Thread.sleep(1000);
+			assertTrue("The cache should have been modified after the refresh", testRepo.getIndex(false)
+				.getCache()
+				.lastModified() > indexLastModifiedBeforeRefresh);
+			assertTrue("The refresh method should return true", refreshed);
+			assertEquals("Exactly 1 repository should have been refreshed", 1, numberOfTimesRefreshed.get());
+			assertEquals("The repository that has been refreshed should be the created one", testRepo,
+				refreshedRepo.get());
 		}
 	}
 
