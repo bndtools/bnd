@@ -14,12 +14,15 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.signatures.ClassTypeSignature;
+import aQute.bnd.signatures.MethodSignature;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
@@ -382,4 +385,33 @@ public class ClazzTest extends TestCase {
 			assertTrue(clazz.is(QUERY.NAMED, new Instruction("!junit.framework.*"), analyzer));
 		}
 	}
+
+	public static interface Foo<T> {}
+
+	public class TheBean {
+		void bindChars(Foo<Character> c) {}
+	}
+
+	public void testGenericMethodParameters() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$TheBean.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				@Override
+				public void method(MethodDef methodDef) {
+					if ("bindChars".equals(methodDef.getName())) {
+						String signature = methodDef.getSignature();
+						if (signature == null) {
+							signature = methodDef.getDescriptor()
+								.toString();
+						}
+						MethodSignature sig = MethodSignature.of(signature);
+						ClassTypeSignature parameterType = (ClassTypeSignature) sig.parameterTypes[0];
+						assertEquals(1, parameterType.classType.typeArguments.length);
+					}
+				}
+			});
+		}
+	}
+
 }
