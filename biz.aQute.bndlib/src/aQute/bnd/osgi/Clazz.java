@@ -29,8 +29,6 @@ import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -40,6 +38,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.signatures.FieldSignature;
+import aQute.bnd.signatures.MethodSignature;
 import aQute.bnd.signatures.Signature;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
@@ -48,8 +48,6 @@ import aQute.libg.generics.Create;
 
 public class Clazz {
 	private final static Logger	logger				= LoggerFactory.getLogger(Clazz.class);
-
-	static Pattern				METHOD_DESCRIPTOR	= Pattern.compile("(.*)\\)(.+)");
 
 	public class ClassConstant {
 		final int		cname;
@@ -399,18 +397,9 @@ public class Clazz {
 			return this.constant;
 		}
 
-		// TODO change to use proper generics
 		public String getGenericReturnType() {
-			String use = descriptor.toString();
-			if (signature != null)
-				use = signature;
-
-			Matcher m = METHOD_DESCRIPTOR.matcher(use);
-			if (!m.matches())
-				throw new IllegalArgumentException("Not a valid method descriptor: " + use);
-
-			String returnType = m.group(2);
-			return objectDescriptorToFQN(returnType);
+			FieldSignature sig = analyzer.getFieldSignature((signature != null) ? signature : descriptor.toString());
+			return sig.type.toString();
 		}
 
 		@Override
@@ -444,6 +433,12 @@ public class Clazz {
 
 		public boolean isBridge() {
 			return (access & ACC_BRIDGE) != 0;
+		}
+
+		@Override
+		public String getGenericReturnType() {
+			MethodSignature sig = analyzer.getMethodSignature((signature != null) ? signature : descriptor.toString());
+			return sig.resultType.toString();
 		}
 	}
 
@@ -497,8 +492,8 @@ public class Clazz {
 	int[]									intPool;
 	Set<PackageRef>							imports			= Create.set();
 	String									path;
-	int										minor			= 0;
-	int										major			= 0;
+	int										minor_version			= 0;
+	int										major_version			= 0;
 	int										innerAccess		= -1;
 	int										accessx			= 0;
 	String									sourceFile;
@@ -568,16 +563,17 @@ public class Clazz {
 		if (magic != 0xCAFEBABE)
 			throw new IOException("Not a valid class file (no CAFEBABE header)");
 
-		minor = in.readUnsignedShort(); // minor version
-		major = in.readUnsignedShort(); // major version
-		if (cd != null)
-			cd.version(minor, major);
-		int count = in.readUnsignedShort();
-		pool = new Object[count];
-		intPool = new int[count];
+		minor_version = in.readUnsignedShort(); // minor version
+		major_version = in.readUnsignedShort(); // major version
+		if (cd != null) {
+			cd.version(minor_version, major_version);
+		}
+		int constant_pool_count = in.readUnsignedShort();
+		pool = new Object[constant_pool_count];
+		intPool = new int[constant_pool_count];
 
 		CONSTANT[] tags = CONSTANT.values();
-		for (int poolIndex = 1; poolIndex < count;) {
+		for (int poolIndex = 1; poolIndex < constant_pool_count;) {
 			int tagValue = in.readUnsignedByte();
 			if (tagValue >= tags.length) {
 				throw new IOException("Unrecognized constant pool tag value " + tagValue);
@@ -586,74 +582,86 @@ public class Clazz {
 			poolIndex += tag.parse(this, in, poolIndex);
 		}
 
-		pool(pool, intPool);
-
-		// All name& type and class constant records contain descriptors we must
-		// treat as references, though not API
-		for (Object o : pool) {
-			if (o instanceof Assoc) {
-				Assoc assoc = (Assoc) o;
-				switch (assoc.tag) {
-					case Fieldref :
-					case Methodref :
-					case InterfaceMethodref :
-						classConstRef(assoc.a);
-						break;
-					case NameAndType :
-						referTo(assoc.b, 0); // field or method descriptor
-						break;
-					case MethodType :
-						referTo(assoc.b, 0); // method descriptor
-						break;
-					default :
-						break;
-				}
-			}
-		}
-
 		/*
 		 * Parse after the constant pool, code thanks to Hans Christian
 		 * Falkenberg
 		 */
 
 		accessx = in.readUnsignedShort(); // access
-		if (Modifier.isPublic(accessx))
+		if (isPublic()) {
 			api = new HashSet<>();
+		}
 
 		int this_class = in.readUnsignedShort();
 		className = analyzer.getTypeRef((String) pool[intPool[this_class]]);
-		if (!isModule()) {
-			referTo(className, Modifier.PUBLIC);
+
+		int super_class = in.readUnsignedShort();
+		if (super_class == 0) {
+			if (!(className.isObject() || isModule())) {
+				throw new IOException("Class does not have a super class and is not java.lang.Object or module-info");
+			}
+		} else {
+			String superName = (String) pool[intPool[super_class]];
+			zuper = analyzer.getTypeRef(superName);
+		}
+
+		int interfaces_count = in.readUnsignedShort();
+		if (interfaces_count > 0) {
+			interfaces = new TypeRef[interfaces_count];
+			for (int i = 0; i < interfaces_count; i++) {
+				String interfaceName = (String) pool[intPool[in.readUnsignedShort()]];
+				interfaces[i] = analyzer.getTypeRef(interfaceName);
+			}
+		}
+
+		if (cd != null) {
+			if (!cd.classStart(this)) {
+				return null;
+			}
 		}
 
 		try {
-
-			if (cd != null) {
-				if (!cd.classStart(this))
-					return null;
+			// All name&type and class constant records contain descriptors we
+			// must treat as references, though not API
+			for (Object o : pool) {
+				if (o instanceof Assoc) {
+					Assoc assoc = (Assoc) o;
+					switch (assoc.tag) {
+						case Fieldref :
+						case Methodref :
+						case InterfaceMethodref :
+							classConstRef(assoc.a);
+							break;
+						case NameAndType :
+							referTo(assoc.b, 0); // field or method descriptor
+							break;
+						case MethodType :
+							referTo(assoc.b, 0); // method descriptor
+							break;
+						default :
+							break;
+					}
+				}
 			}
 
-			int super_class = in.readUnsignedShort();
-			String superName = (String) pool[intPool[super_class]];
-			if (superName != null) {
-				zuper = analyzer.getTypeRef(superName);
+			if (!isModule()) {
+				referTo(className, Modifier.PUBLIC);
 			}
 
 			if (zuper != null) {
 				referTo(zuper, accessx);
-				if (cd != null)
+				if (cd != null) {
 					cd.extendsClass(zuper);
+				}
 			}
 
-			int interfacesCount = in.readUnsignedShort();
-			if (interfacesCount > 0) {
-				interfaces = new TypeRef[interfacesCount];
-				for (int i = 0; i < interfacesCount; i++) {
-					interfaces[i] = analyzer.getTypeRef((String) pool[intPool[in.readUnsignedShort()]]);
-					referTo(interfaces[i], accessx);
+			if (interfaces_count > 0) {
+				for (TypeRef i : interfaces) {
+					referTo(i, accessx);
 				}
-				if (cd != null)
+				if (cd != null) {
 					cd.implementsInterfaces(interfaces);
+				}
 			}
 
 			int fieldsCount = in.readUnsignedShort();
@@ -695,7 +703,7 @@ public class Clazz {
 			if (crawl) {
 				forName = findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
 				class$ = findMethodReference(className.getBinary(), "class$", "(Ljava/lang/String;)Ljava/lang/Class;");
-			} else if (major == JAVA.JDK1_4.major) {
+			} else if (major_version == JAVA.JDK1_4.major) {
 				forName = findMethodReference("java/lang/Class", "forName", "(Ljava/lang/String;)Ljava/lang/Class;");
 				if (forName > 0) {
 					crawl = true;
@@ -768,8 +776,6 @@ public class Clazz {
 				cd.classEnd();
 		}
 	}
-
-	private void pool(@SuppressWarnings("unused") Object[] pool, @SuppressWarnings("unused") int[] intPool) {}
 
 	void doUtf8_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
 		String name = in.readUTF();
@@ -1102,6 +1108,7 @@ public class Clazz {
 			switch (member) {
 				case ANNOTATION_TYPE :
 				case TYPE :
+					classSignature = signature;
 					sig = analyzer.getClassSignature(signature);
 					break;
 				case FIELD :
@@ -1124,15 +1131,13 @@ public class Clazz {
 				referTo(ref, access_flags);
 			}
 
-			if (last != null)
+			if (last != null) {
 				last.signature = signature;
+			}
 
-			if (cd != null)
+			if (cd != null) {
 				cd.signature(signature);
-
-			if (member == ElementType.TYPE)
-				classSignature = signature;
-
+			}
 		} catch (Exception e) {
 			throw new RuntimeException("Signature failed for " + signature, e);
 		}
@@ -1751,9 +1756,8 @@ public class Clazz {
 		if (c != '(' && c != 'L' && c != '[' && c != '<' && c != 'T') {
 			return;
 		}
-		String signature = descriptor.replace('$', '.');
-		Signature sig = (c == '(' || c == '<') ? analyzer.getMethodSignature(signature)
-			: analyzer.getFieldSignature(signature);
+		Signature sig = (c == '(' || c == '<') ? analyzer.getMethodSignature(descriptor)
+			: analyzer.getFieldSignature(descriptor);
 		Set<String> binaryRefs = sig.erasedBinaryReferences();
 		for (String binary : binaryRefs) {
 			TypeRef ref = analyzer.getTypeRef(binary);
@@ -1879,7 +1883,7 @@ public class Clazz {
 				return instr.matches(getClassName().getDottedOnly()) ^ instr.isNegated();
 
 			case VERSION : {
-				String v = major + "." + minor;
+				String v = major_version + "." + minor_version;
 				return instr.matches(v) ^ instr.isNegated();
 			}
 
@@ -1898,10 +1902,10 @@ public class Clazz {
 					.anyMatch(instr::matches) ^ instr.isNegated();
 
 			case PUBLIC :
-				return Modifier.isPublic(accessx);
+				return isPublic();
 
 			case CONCRETE :
-				return !Modifier.isAbstract(accessx);
+				return !isAbstract();
 
 			case ANNOTATED :
 				return typeStream(analyzer, Clazz::annotations, null) //
@@ -1934,7 +1938,7 @@ public class Clazz {
 				return hasClassAnnotations;
 
 			case ABSTRACT :
-				return Modifier.isAbstract(accessx);
+				return isAbstract();
 
 			case IMPORTS :
 				return hierarchyStream(analyzer) //
@@ -2020,7 +2024,7 @@ public class Clazz {
 	}
 
 	public JAVA getFormat() {
-		return JAVA.format(major);
+		return JAVA.format(major_version);
 
 	}
 
@@ -2178,15 +2182,16 @@ public class Clazz {
 		return new TypeDef(type, true);
 	}
 
-	private void classConstRef(int lastReference) {
-		Object o = pool[lastReference];
-		if (o == null)
+	private void classConstRef(int index) {
+		Object o = pool[index];
+		if (o == null) {
 			return;
-
+		}
 		if (o instanceof ClassConstant) {
 			ClassConstant cc = (ClassConstant) o;
-			if (cc.referred)
+			if (cc.referred) {
 				return;
+			}
 			cc.referred = true;
 			String name = cc.getName();
 			if (name != null) {

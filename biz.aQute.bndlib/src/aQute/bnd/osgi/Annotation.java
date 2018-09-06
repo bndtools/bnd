@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -105,6 +106,13 @@ public class Annotation {
 			return Collections.emptySet();
 		}
 		return elements.keySet();
+	}
+
+	public Set<Entry<String, Object>> entrySet() {
+		if (elements == null) {
+			return Collections.emptySet();
+		}
+		return elements.entrySet();
 	}
 
 	public <T extends java.lang.annotation.Annotation> T getAnnotation() throws Exception {

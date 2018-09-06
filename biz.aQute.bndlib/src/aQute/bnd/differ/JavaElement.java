@@ -420,8 +420,8 @@ class JavaElement {
 			 */
 			private Element annotatedToElement(Annotation annotation) {
 				Collection<Element> properties = Create.set();
-				for (String key : annotation.keySet()) {
-					addAnnotationMember(properties, key, annotation.get(key));
+				for (Entry<String, Object> entry : annotation.entrySet()) {
+					addAnnotationMember(properties, entry.getKey(), entry.getValue());
 				}
 				return new Element(ANNOTATED, annotation.getName()
 					.getFQN(), properties, CHANGED, CHANGED, null);

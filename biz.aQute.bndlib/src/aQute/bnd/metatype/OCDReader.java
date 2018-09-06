@@ -90,8 +90,8 @@ class OCDReader {
 	}
 
 	// TODO what about Queue|Stack|Deque?
-	static final Pattern	GENERIC					= Pattern.compile("((" + Collection.class.getName() + "|"
-		+ Set.class.getName() + "|" + List.class.getName() + "|" + Iterable.class.getName() + ")|(.*))<(L.+;)>");
+	static final Pattern	GENERIC					= Pattern
+		.compile("((Ljava/util/Collection|Ljava/util/Set|Ljava/util/List|Ljava/lang/Iterable)|(.*))<(L.+;)>;");
 
 	// Determine if we can identify that this class is a concrete subtype of
 	// collection with a no-arg constructor
@@ -253,14 +253,14 @@ class OCDReader {
 				ad.id = key;
 				ad.name = space(defined.getName());
 				String rtype = defined.getGenericReturnType();
-				if (rtype.endsWith("[]")) {
+				if (rtype.startsWith("[")) {
 					ad.cardinality = Integer.MAX_VALUE;
-					rtype = rtype.substring(0, rtype.length() - 2);
+					rtype = rtype.substring(1);
 				}
 				Matcher m = GENERIC.matcher(rtype);
 				if (m.matches()) {
 					boolean knownCollection = m.group(2) != null;
-					boolean collection = knownCollection || identifiableCollection(m.group(3), false, true);
+					boolean collection = knownCollection || identifiableCollection(m.group(3) + ";", false);
 					if (collection) {
 						if (ad.cardinality != 0)
 							analyzer.error(
@@ -269,17 +269,17 @@ class OCDReader {
 									.getFQN(),
 								defined.getName(), defined.getType()
 									.getFQN());
-						rtype = Clazz.objectDescriptorToFQN(m.group(4));
+						rtype = m.group(4);
 						ad.cardinality = Integer.MIN_VALUE;
 					}
 				}
 				if (rtype.indexOf('<') > 0) {
-					rtype = rtype.substring(0, rtype.indexOf('<'));
+					rtype = rtype.substring(0, rtype.indexOf('<')) + ";";
 				}
 				ad.type = getType(rtype);
 
 				ad.required = true;
-				TypeRef typeRef = analyzer.getTypeRefFromFQN(rtype);
+				TypeRef typeRef = analyzer.getTypeRef(rtype);
 				try {
 					Clazz c = analyzer.findClass(typeRef);
 					if (c != null && c.isEnum()) {
@@ -413,22 +413,26 @@ class OCDReader {
 			}
 		}
 
-		private boolean identifiableCollection(String type, boolean intface, boolean topLevel) {
+		private boolean identifiableCollection(String type, boolean intface) {
+			return identifiableCollection(analyzer.getTypeRef(type), intface, true);
+		}
+
+		private boolean identifiableCollection(TypeRef type, boolean intface, boolean topLevel) {
 			try {
-				Clazz clazz = analyzer.findClass(analyzer.getTypeRefFromFQN(type));
+				Clazz clazz = analyzer.findClass(type);
 				if (clazz != null && (!topLevel || !clazz.isAbstract())
 					&& ((intface && clazz.isInterface()) ^ clazz.hasPublicNoArgsConstructor())) {
 					TypeRef[] intfs = clazz.getInterfaces();
 					if (intfs != null) {
 						for (TypeRef intf : intfs) {
 							if (COLLECTION.matcher(intf.getFQN())
-								.matches() || identifiableCollection(intf.getFQN(), true, false)) {
+								.matches() || identifiableCollection(intf, true, false)) {
 								return true;
 							}
 						}
 					}
 					TypeRef ext = clazz.getSuper();
-					return ext != null && identifiableCollection(ext.getFQN(), false, false);
+					return ext != null && identifiableCollection(ext, false, false);
 				}
 			} catch (Exception e) {
 				return false;
@@ -456,49 +460,48 @@ class OCDReader {
 		}
 
 		private AttributeType getType(String rtype) {
-			if (rtype.endsWith("[]")) {
+			if (rtype.startsWith("[")) {
 				analyzer.error("Can only handle array of depth one field , nested type %s", rtype);
 				return null;
 			}
-
-			if ("boolean".equals(rtype) || Boolean.class.getName()
-				.equals(rtype))
-				return AttributeType.BOOLEAN;
-			else if ("byte".equals(rtype) || Byte.class.getName()
-				.equals(rtype))
-				return AttributeType.BYTE;
-			else if ("char".equals(rtype) || Character.class.getName()
-				.equals(rtype))
-				return AttributeType.CHARACTER;
-			else if ("short".equals(rtype) || Short.class.getName()
-				.equals(rtype))
-				return AttributeType.SHORT;
-			else if ("int".equals(rtype) || Integer.class.getName()
-				.equals(rtype))
-				return AttributeType.INTEGER;
-			else if ("long".equals(rtype) || Long.class.getName()
-				.equals(rtype))
-				return AttributeType.LONG;
-			else if ("float".equals(rtype) || Float.class.getName()
-				.equals(rtype))
-				return AttributeType.FLOAT;
-			else if ("double".equals(rtype) || Double.class.getName()
-				.equals(rtype))
-				return AttributeType.DOUBLE;
-			else if (String.class.getName()
-				.equals(rtype)
-				|| Class.class.getName()
-					.equals(rtype)
-				|| acceptableType(rtype))
-				return AttributeType.STRING;
-			else {
-				return null;
-
+			switch (rtype) {
+				case "Z" :
+				case "Ljava/lang/Boolean;" :
+					return AttributeType.BOOLEAN;
+				case "B" :
+				case "Ljava/lang/Byte;" :
+					return AttributeType.BYTE;
+				case "C" :
+				case "Ljava/lang/Character;" :
+					return AttributeType.CHARACTER;
+				case "S" :
+				case "Ljava/lang/Short;" :
+					return AttributeType.SHORT;
+				case "I" :
+				case "Ljava/lang/Integer;" :
+					return AttributeType.INTEGER;
+				case "J" :
+				case "Ljava/lang/Long;" :
+					return AttributeType.LONG;
+				case "F" :
+				case "Ljava/lang/Float;" :
+					return AttributeType.FLOAT;
+				case "D" :
+				case "Ljava/lang/Double;" :
+					return AttributeType.DOUBLE;
+				case "Ljava/lang/String;" :
+				case "Ljava/lang/Class;" :
+					return AttributeType.STRING;
+				default :
+					if (acceptableType(rtype)) {
+						return AttributeType.STRING;
+					}
+					return null;
 			}
 		}
 
 		private boolean acceptableType(String rtype) {
-			TypeRef ref = analyzer.getTypeRefFromFQN(rtype);
+			TypeRef ref = analyzer.getTypeRef(rtype);
 			try {
 				Clazz returnType = analyzer.findClass(ref);
 				if (returnType.isEnum()) {
