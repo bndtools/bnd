@@ -250,7 +250,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	void checkBundle(List<Bundle> queue, Bundle bundle) {
 		Bundle host = findHost(bundle);
-		if (host.getState() == Bundle.ACTIVE) {
+		if (host.getState() == Bundle.ACTIVE || host.getState() == Bundle.STARTING) {
 			String testcases = (String) bundle.getHeaders()
 				.get(aQute.bnd.osgi.Constants.TESTCASES);
 			if (testcases != null) {
