@@ -40,12 +40,19 @@ public class Annotation {
 	private Map<String, Object>		elements;
 	private final ElementType		member;
 	private final RetentionPolicy	policy;
+	private final int				targetIndex;
 
 	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy) {
+		this(name, elements, member, policy, -1);
+	}
+
+	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy,
+		int targetIndex) {
 		this.name = requireNonNull(name);
 		this.elements = elements;
 		this.member = requireNonNull(member);
 		this.policy = requireNonNull(policy);
+		this.targetIndex = targetIndex;
 	}
 
 	public TypeRef getName() {
@@ -58,6 +65,10 @@ public class Annotation {
 
 	public RetentionPolicy getRetentionPolicy() {
 		return policy;
+	}
+
+	public int getTargetIndex() {
+		return targetIndex;
 	}
 
 	@Override

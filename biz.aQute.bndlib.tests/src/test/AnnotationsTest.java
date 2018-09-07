@@ -20,7 +20,7 @@ public class AnnotationsTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer();) {
 			TypeRef typeref = analyzer.getTypeRefFromFQN(ActualAnnotation.class.getName());
 			Map<String, Object> annMap = Collections.singletonMap("a", 5);
-			Annotation annotation = new Annotation(typeref, annMap, ElementType.FIELD, RetentionPolicy.RUNTIME);
+			Annotation annotation = new Annotation(typeref, annMap, ElementType.FIELD, RetentionPolicy.RUNTIME, -1);
 
 			Map<String, Object> properties = Collections.singletonMap("ann", annotation);
 			ConfigurableInterface a = Configurable.createConfigurable(ConfigurableInterface.class, properties);
