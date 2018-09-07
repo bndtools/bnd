@@ -2,7 +2,10 @@ package aQute.bnd.osgi;
 
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
-@SuppressWarnings("unused")
+/**
+ * When adding methods to this class, you must also add them to
+ * {@link ClassDataCollectors} and {@link ClassDataCollectorRecorder}!
+ */
 public class ClassDataCollector {
 
 	public void classBegin(int access, TypeRef name) {}

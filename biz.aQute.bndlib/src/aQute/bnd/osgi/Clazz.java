@@ -557,17 +557,13 @@ public class Clazz {
 		++depth;
 		xref = new HashSet<>();
 
-		boolean crawl = cd != null; // Crawl the byte code if we have a
-		// collector
 		int magic = in.readInt();
-		if (magic != 0xCAFEBABE)
+		if (magic != 0xCAFEBABE) {
 			throw new IOException("Not a valid class file (no CAFEBABE header)");
+		}
 
 		minor_version = in.readUnsignedShort(); // minor version
 		major_version = in.readUnsignedShort(); // major version
-		if (cd != null) {
-			cd.version(minor_version, major_version);
-		}
 		int constant_pool_count = in.readUnsignedShort();
 		pool = new Object[constant_pool_count];
 		intPool = new int[constant_pool_count];
@@ -614,13 +610,22 @@ public class Clazz {
 			}
 		}
 
+		ClassDataCollectorRecorder recorder;
 		if (cd != null) {
 			if (!cd.classStart(this)) {
 				return null;
 			}
+			cds.push(cd);
+			cd = recorder = new ClassDataCollectorRecorder();
+		} else {
+			recorder = null;
 		}
 
 		try {
+			if (cd != null) {
+				cd.version(minor_version, major_version);
+			}
+
 			// All name&type and class constant records contain descriptors we
 			// must treat as references, though not API
 			for (Object o : pool) {
@@ -664,6 +669,9 @@ public class Clazz {
 				}
 			}
 
+			boolean crawl = cd != null; // Crawl the byte code if we have a
+										// collector
+
 			int fieldsCount = in.readUnsignedShort();
 			for (int i = 0; i < fieldsCount; i++) {
 				int access_flags = in.readUnsignedShort(); // skip access flags
@@ -681,11 +689,12 @@ public class Clazz {
 				// would not see a reference. We detect
 				// this case and add an artificial descriptor
 				String name = pool[name_index].toString(); // name_index
+				String descriptor = pool[descriptor_index].toString();
 				if (name.startsWith("class$") || name.startsWith("$class$")) {
 					crawl = true;
 				}
 				if (cd != null) {
-					FieldDef fdef = new FieldDef(access_flags, name, pool[descriptor_index].toString());
+					FieldDef fdef = new FieldDef(access_flags, name, descriptor);
 					last = fdef;
 					cd.field(fdef);
 				}
@@ -758,22 +767,26 @@ public class Clazz {
 					doAttributes(in, ElementType.METHOD, crawl, access_flags);
 				}
 			}
-			if (cd != null)
+
+			if (cd != null) {
 				cd.memberEnd();
+			}
 			last = null;
 
 			doAttributes(in, ElementType.TYPE, false, accessx);
-
-			//
-			// Parse all the descriptors we found
-			//
 
 			Set<TypeRef> xref = this.xref;
 			reset();
 			return xref;
 		} finally {
-			if (cd != null)
-				cd.classEnd();
+			if (recorder != null) {
+				cd = cds.pop();
+				try {
+					recorder.play(cd);
+				} finally {
+					cd.classEnd();
+				}
+			}
 		}
 	}
 
@@ -946,8 +959,7 @@ public class Clazz {
 		final int attribute_length = in.readInt();
 		switch (attributeName) {
 			case "Deprecated" :
-				if (cd != null)
-					cd.deprecated();
+				doDeprecated(in, member);
 				break;
 			case "RuntimeVisibleAnnotations" :
 				doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
@@ -986,11 +998,7 @@ public class Clazz {
 				doConstantValue(in);
 				break;
 			case "AnnotationDefault" :
-				Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
-				if (last instanceof MethodDef) {
-					last.setConstant(value);
-					cd.annotationDefault((MethodDef) last, value);
-				}
+				doAnnotationDefault(in, member, access_flags);
 				break;
 			case "Exceptions" :
 				doExceptions(in, access_flags);
@@ -1144,6 +1152,47 @@ public class Clazz {
 	}
 
 	/**
+	 * Handle Deprecated attribute
+	 */
+	void doDeprecated(DataInput in, ElementType member) throws Exception {
+		switch (member) {
+			case ANNOTATION_TYPE :
+			case TYPE :
+				setDeprecated(true);
+				break;
+			case FIELD :
+				if (last instanceof FieldDef) {
+					last.setDeprecated(true);
+				}
+				break;
+			case CONSTRUCTOR :
+			case METHOD :
+				if (last instanceof MethodDef) {
+					last.setDeprecated(true);
+				}
+				break;
+			default :
+				throw new IllegalArgumentException("Deprecated attribute found for unknown element type: " + member);
+		}
+		if (cd != null) {
+			cd.deprecated();
+		}
+	}
+
+	/**
+	 * Handle annotation member default value
+	 */
+	void doAnnotationDefault(DataInput in, ElementType member, int access_flags)
+		throws IOException {
+		Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
+		if (last instanceof MethodDef) {
+			last.setConstant(value);
+			cd.annotationDefault((MethodDef) last, value);
+		}
+
+	}
+
+	/**
 	 * Handle a constant value call the data collector with it
 	 */
 	void doConstantValue(DataInput in) throws IOException {
@@ -1155,7 +1204,7 @@ public class Clazz {
 		if (object == null)
 			object = pool[intPool[constantValue_index]];
 
-		last.constant = object;
+		last.setConstant(object);
 		cd.constant(object);
 	}
 
@@ -1187,15 +1236,7 @@ public class Clazz {
 		/* int max_locals = */in.readUnsignedShort();
 		int code_length = in.readInt();
 		if (crawl) {
-			ByteBuffer code;
-			if (in instanceof ByteBufferDataInput) {
-				ByteBufferDataInput bbin = (ByteBufferDataInput) in;
-				code = bbin.slice(code_length);
-			} else {
-				byte array[] = new byte[code_length];
-				in.readFully(array, 0, code_length);
-				code = ByteBuffer.wrap(array, 0, code_length);
-			}
+			ByteBuffer code = slice(in, code_length);
 			crawl(code);
 		} else {
 			in.skipBytes(code_length);
@@ -1209,6 +1250,16 @@ public class Clazz {
 			classConstRef(catch_type);
 		}
 		doAttributes(in, ElementType.METHOD, false, 0);
+	}
+
+	private ByteBuffer slice(DataInput in, int length) throws Exception {
+		if (in instanceof ByteBufferDataInput) {
+			ByteBufferDataInput bbin = (ByteBufferDataInput) in;
+			return bbin.slice(length);
+		}
+		byte array[] = new byte[length];
+		in.readFully(array, 0, length);
+		return ByteBuffer.wrap(array, 0, length);
 	}
 
 	/**
