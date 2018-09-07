@@ -47,6 +47,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
@@ -305,7 +306,9 @@ public class Analyzer extends Processor {
 
 				removeDynamicImports(referredAndExported);
 
-				// Remove any Java references ... where are the closures???
+				getHostPackages().ifPresent(hostPackages -> referredAndExported.keySet()
+					.removeAll(hostPackages));
+
 				referredAndExported.keySet()
 					.removeIf(PackageRef::isJava);
 
@@ -319,6 +322,7 @@ public class Analyzer extends Processor {
 					warning("Empty " + Constants.IMPORT_PACKAGE + " header");
 
 				Instructions filter = new Instructions(h);
+
 				imports = filter(filter, referredAndExported, unused);
 				if (!unused.isEmpty()) {
 					// We ignore the end wildcard catch
@@ -407,6 +411,35 @@ public class Analyzer extends Processor {
 					"The annotation aQute.bnd.annotation.Export applied to package %s is deprecated and will be removed in a future release. The org.osgi.annotation.bundle.Export should be used instead",
 					fqn));
 		}
+	}
+
+	/**
+	 * Get the packages from the host if this is a fragment bundle
+	 * 
+	 * @return the host packages or an empty set if not a fragment
+	 */
+	public Optional<Set<PackageRef>> getHostPackages() {
+
+		Entry<String, Attrs> host = getFragmentHost();
+		if (host != null) {
+
+			String bsn = host.getKey();
+			String v = host.getValue()
+				.get(Constants.BUNDLE_VERSION_ATTRIBUTE);
+
+			Jar jar = findClasspathEntry(bsn, v);
+			if (jar != null) {
+				return Optional.of(jar.getDirectories()
+					.keySet()
+					.stream()
+					.map(this::getPackageRef)
+					.filter(pRef -> !(pRef.isJava() || pRef.isMetaData() || pRef.isDefaultPackage()))
+					.collect(Collectors.toSet()));
+			}
+
+			warning("Host %s for this fragment cannot be found on the classpath", host);
+		}
+		return Optional.empty();
 	}
 
 	private Parameters getExportedByAnnotation() {
@@ -1020,6 +1053,41 @@ public class Analyzer extends Processor {
 			// information. So to help diagnostics. We do a full property dump
 			throw new IllegalStateException("Calc manifest failed, state=\n" + getFlattenedProperties(), e);
 		}
+	}
+
+	/**
+	 * Find a class path entry based on bsn and versionrange
+	 * 
+	 * @param bsn The bundle symbolic name
+	 * @param r The version range specified like in OSGi (version =>
+	 *            [version,infinite))
+	 * @return first JAR that matches bsn &r or null if not found
+	 */
+	public Jar findClasspathEntry(String bsn, String r) {
+		VersionRange range = VersionRange.likeOSGi(r);
+		if (range == null) {
+			error("Fragment-Host %s specifies invalid version range %s", bsn, r);
+			range = VersionRange.likeOSGi("0");
+		}
+
+		for (Jar jar : getClasspath())
+			try {
+				if (bsn.equals(jar.getBsn())) {
+					String version = jar.getVersion();
+					if (version == null) {
+						version = "0";
+					}
+					if (Version.isVersion(version)) {
+						if (!range.includes(new Version(version))) {
+							continue;
+						}
+					}
+					return jar;
+				}
+			} catch (Exception e) {
+				warning("Classpath entry with invalid bsn or version %s, throws %s", jar, e.getMessage());
+			}
+		return null;
 	}
 
 	/**

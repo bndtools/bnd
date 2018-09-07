@@ -247,4 +247,17 @@ public class VersionRange {
 		return high == Version.HIGHEST;
 	}
 
+	public static VersionRange likeOSGi(String version) {
+		if (version == null) {
+			return new VersionRange(Version.LOWEST, Version.HIGHEST);
+		}
+
+		if (Version.isVersion(version)) {
+			return new VersionRange(new Version(version), Version.HIGHEST);
+		}
+		if (isVersionRange(version)) {
+			return new VersionRange(version);
+		}
+		return null;
+	}
 }
