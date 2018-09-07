@@ -773,7 +773,14 @@ public class Clazz {
 			}
 			last = null;
 
-			doAttributes(in, ElementType.TYPE, false, accessx);
+			ElementType member = ElementType.TYPE;
+
+			if (toString().endsWith(".package-info"))
+				member = ElementType.PACKAGE;
+			else if (isAnnotation())
+				member = ElementType.ANNOTATION_TYPE;
+
+			doAttributes(in, member, false, accessx);
 
 			Set<TypeRef> xref = this.xref;
 			reset();
@@ -1390,6 +1397,8 @@ public class Clazz {
 
 	private void doParameterAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
 		throws Exception {
+		if (member == ElementType.CONSTRUCTOR || member == ElementType.METHOD)
+			member = ElementType.PARAMETER;
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
 			if (cd != null)
@@ -1451,6 +1460,7 @@ public class Clazz {
 					// }
 
 					collect = cd != null;
+					member = ElementType.TYPE_USE;
 					target_index = in.readUnsignedShort();
 					break;
 
