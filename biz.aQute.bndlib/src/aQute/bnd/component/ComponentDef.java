@@ -2,7 +2,9 @@ package aQute.bnd.component;
 
 import static java.util.stream.Collectors.joining;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -59,6 +61,7 @@ class ComponentDef extends ExtensionDef {
 	TypeRef							implementation;
 	TypeRef							service[];
 	String							activate;
+	List<String>					activation_fields	= new ArrayList<>();
 	String							deactivate;
 	String							modified;
 	Boolean							enabled;
@@ -190,6 +193,11 @@ class ComponentDef extends ExtensionDef {
 		if (configurationPid != null) {
 			component.addAttribute("configuration-pid", Stream.of(configurationPid)
 				.map(this::map$)
+				.collect(joining(" ")));
+		}
+
+		if (!activation_fields.isEmpty()) {
+			component.addAttribute("activation-fields", activation_fields.stream()
 				.collect(joining(" ")));
 		}
 
