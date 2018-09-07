@@ -246,6 +246,8 @@ public class Clazz {
 	final static int					ACC_ENUM		= 0x4000;
 	final static int					ACC_MODULE		= 0x8000;
 
+	public static final int				TARGET_INDEX_EXTENDS	= 65535;
+
 	static protected class Assoc {
 		final CONSTANT	tag;
 		final int		a;
