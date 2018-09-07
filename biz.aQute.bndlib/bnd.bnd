@@ -60,6 +60,7 @@ Import-Package: junit.framework;resolution:=optional,\
 -includeresource: 				${workspace}/LICENSE, img/=img/, {readme.md}
 
 -buildpath:  \
+	org.osgi.service.cdi;version=latest,\
 	org.osgi.service.component.annotations;version=latest,\
 	org.osgi.service.metatype.annotations;version=latest,\
     osgi.annotation;version=latest,\

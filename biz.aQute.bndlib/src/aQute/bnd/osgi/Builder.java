@@ -25,6 +25,7 @@ import java.util.zip.ZipException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.cdi.CDIAnnotations;
 import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.header.Attrs;
@@ -1612,6 +1613,7 @@ public class Builder extends Analyzer {
 	static MakeBnd				makeBnd				= new MakeBnd();
 	static MakeCopy				makeCopy			= new MakeCopy();
 	static ServiceComponent		serviceComponent	= new ServiceComponent();
+	static CDIAnnotations		cdiAnnotations		= new CDIAnnotations();
 	static DSAnnotations		dsAnnotations		= new DSAnnotations();
 	static MetatypeAnnotations	metatypeAnnotations	= new MetatypeAnnotations();
 
@@ -1620,6 +1622,7 @@ public class Builder extends Analyzer {
 		list.add(makeBnd);
 		list.add(makeCopy);
 		list.add(serviceComponent);
+		list.add(cdiAnnotations);
 		list.add(dsAnnotations);
 		list.add(metatypeAnnotations);
 		super.setTypeSpecificPlugins(list);

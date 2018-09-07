@@ -1,1 +1,2 @@
+org.osgi:org.osgi.service.cdi:1.0.0-SNAPSHOT
 org.osgi:org.osgi.util.promise:1.1.1-SNAPSHOT
