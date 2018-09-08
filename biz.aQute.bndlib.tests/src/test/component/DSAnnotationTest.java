@@ -2561,6 +2561,75 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	@Component
+	public static class DS14_activation_objects implements Serializable, Runnable {
+		private static final long	serialVersionUID	= 1L;
+
+		@Activate
+		private ComponentContext	cc;
+		@Activate
+		private BundleContext		bc;
+		@Activate
+		private Map<String, Object>	props;
+		@Activate
+		private ConfigNames14		configNames;
+
+		@Override
+		public void run() {}
+	}
+
+	public void testActivationObjects14() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$DS14_activation_objects*");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a, SERIALIZABLE_RUNNABLE);
+			checkRequires(a, "1.4.0");
+			checkDS14ActivationObjects(jar, DS14_activation_objects.class.getName());
+
+		}
+	}
+
+	private void checkDS14ActivationObjects(Jar jar, String name) throws Exception, XPathExpressionException {
+		Resource r = jar.getResource("OSGI-INF/" + name + ".xml");
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+		// Test the defaults
+		xt.assertAttribute(name, "scr:component/implementation/@class");
+
+		// Default must be the implementation class
+		xt.assertAttribute(name, "scr:component/@name");
+
+		xt.assertAttribute("", "scr:component/@configuration-policy");
+		xt.assertAttribute("", "scr:component/@immediate");
+		xt.assertAttribute("", "scr:component/@enabled");
+		xt.assertAttribute("", "scr:component/@factory");
+		xt.assertAttribute("", "scr:component/service/@scope");
+		xt.assertAttribute("", "scr:component/@configuration-pid");
+		xt.assertAttribute("cc bc props configNames", "scr:component/@activation-fields");
+		xt.assertAttribute("", "scr:component/@activate");
+		xt.assertAttribute("", "scr:component/@deactivate");
+		xt.assertAttribute("", "scr:component/@modified");
+		xt.assertAttribute("java.io.Serializable", "scr:component/service/provide[1]/@interface");
+		xt.assertAttribute("java.lang.Runnable", "scr:component/service/provide[2]/@interface");
+
+		xt.assertAttribute("2", "count(scr:component/property)");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='test.my-String7']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='test.my-String7']/@type");
+
+		xt.assertAttribute("foo", "scr:component/property[@name='test.config.names14']/@value");
+		xt.assertAttribute("String", "scr:component/property[@name='test.config.names14']/@type");
+
+	}
+
 	public @interface ConfigA {
 		String a() default "a";
 

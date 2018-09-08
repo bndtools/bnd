@@ -406,9 +406,9 @@ public class AnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	protected void doActivate() {
+		String memberDescriptor = member.getDescriptor()
+			.toString();
 		if (member instanceof MethodDef) {
-			String memberDescriptor = member.getDescriptor()
-				.toString();
 			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 				member.getName(), memberDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
 			Matcher m = ACTIVATEDESCRIPTOR.matcher(memberDescriptor);
@@ -438,9 +438,21 @@ public class AnnotationReader extends ClassDataCollector {
 		} else if (member instanceof FieldDef) {
 			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 				member.getName(), ErrorType.ACTIVATE_SIGNATURE_ERROR);
-			// TODO handle activation-fields
-			analyzer.error("Activate annotation on a field %s.%s", details.className, details.fieldName)
-				.details(details);
+			Matcher m = ACTIVATIONOBJECTS.matcher(memberDescriptor);
+			if (m.matches()) {
+				component.updateVersion(V1_4);
+				component.activation_fields.add(member.getName());
+				String propertytype = m.group("propertytype");
+				if (propertytype != null) {
+					String propertyDefKey = String.format(ComponentDef.PROPERTYDEF_FIELDFORMAT, member.getName());
+					processActivationObject(propertyDefKey, propertytype, memberDescriptor, details);
+				}
+			} else {
+				analyzer
+					.error("Activate annotation on field %s.%s is not acceptable.", details.className,
+						details.fieldName)
+					.details(details);
+			}
 		}
 	}
 
@@ -528,43 +540,47 @@ public class AnnotationReader extends ClassDataCollector {
 	 * look for annotation activation objects and extract properties from them
 	 */
 	private void processActivationObjects(String propertyDefKeyFormat, Pattern activationObjects,
-		String methodDescriptor,
-		DeclarativeServicesAnnotationError details) {
+		String methodDescriptor, DeclarativeServicesAnnotationError details) {
 		Matcher m = activationObjects.matcher(methodDescriptor);
 		int activationObjectCount = 0;
 
 		while (m.find()) {
-			String type = m.group("propertytype");
-			if (type != null) {
-				TypeRef typeRef = analyzer.getTypeRef(type);
-				try {
-					Clazz clazz = analyzer.findClass(typeRef);
-					if (clazz.isAnnotation()) {
-						String propertyDefKey = String.format(propertyDefKeyFormat, ++activationObjectCount);
-						clazz.parseClassFileWithCollector(
-							new ComponentPropertyTypeDataCollector(propertyDefKey, methodDescriptor, details));
-					} else if (clazz.isInterface() && options.contains(Options.felixExtensions)) {
-						// ok
-					} else {
-						analyzer
-							.error("Non annotation type for activation object with descriptor %s,  type %s",
-								methodDescriptor, type)
-							.details(details);
-					}
-				} catch (Exception e) {
-					analyzer
-						.exception(e,
-							"Exception looking at annotation type for activation object with descriptor %s,  type %s",
-							methodDescriptor, type)
-						.details(details);
-				}
+			String propertytype = m.group("propertytype");
+			if (propertytype != null) {
+				String propertyDefKey = String.format(propertyDefKeyFormat, ++activationObjectCount);
+				processActivationObject(propertyDefKey, propertytype, methodDescriptor, details);
 			}
+		}
+	}
+
+	/**
+	 * extract properties from an activation object
+	 */
+	private void processActivationObject(String propertyDefKey, String propertytype, String memberDescriptor,
+		DeclarativeServicesAnnotationError details) {
+		TypeRef typeRef = analyzer.getTypeRef(propertytype);
+		try {
+			Clazz clazz = analyzer.findClass(typeRef);
+			if (clazz.isAnnotation()) {
+				clazz.parseClassFileWithCollector(
+					new ComponentPropertyTypeDataCollector(propertyDefKey, memberDescriptor, details));
+			} else {
+				analyzer
+					.error("Non annotation type for activation object with descriptor %s, type %s", memberDescriptor,
+						propertytype)
+					.details(details);
+			}
+		} catch (Exception e) {
+			analyzer
+				.exception(e, "Exception looking at annotation type for activation object with descriptor %s, type %s",
+					memberDescriptor, propertytype)
+				.details(details);
 		}
 	}
 
 	private final class ComponentPropertyTypeDataCollector extends ClassDataCollector {
 		private final String								propertyDefKey;
-		private final String								methodDescriptor;
+		private final String								memberDescriptor;
 		private final DeclarativeServicesAnnotationError	details;
 		private final PropertyDef							propertyDef		= new PropertyDef(analyzer);
 		private int											hasNoDefault	= 0;
@@ -573,10 +589,10 @@ public class AnnotationReader extends ClassDataCollector {
 		private FieldDef									prefixField		= null;
 		private TypeRef										typeRef			= null;
 
-		ComponentPropertyTypeDataCollector(String propertyDefKey, String methodDescriptor,
+		ComponentPropertyTypeDataCollector(String propertyDefKey, String memberDescriptor,
 			DeclarativeServicesAnnotationError details) {
 			this.propertyDefKey = requireNonNull(propertyDefKey);
-			this.methodDescriptor = methodDescriptor;
+			this.memberDescriptor = memberDescriptor;
 			this.details = details;
 		}
 
@@ -587,7 +603,7 @@ public class AnnotationReader extends ClassDataCollector {
 			// normal DS properties, so there's not really a need to require DS
 			// 1.4. Therefore we just leave the required version as is
 
-			this.methodDescriptor = null;
+			this.memberDescriptor = null;
 			this.details = details;
 
 			// Add in the defined attributes
@@ -651,10 +667,10 @@ public class AnnotationReader extends ClassDataCollector {
 							return;
 						}
 					} catch (Exception e) {
-						if (methodDescriptor != null) {
+						if (memberDescriptor != null) {
 							analyzer.exception(e,
-								"Exception looking at annotation type to lifecycle method with descriptor %s,  type %s",
-								methodDescriptor, type)
+								"Exception looking at annotation type on member with descriptor %s, type %s",
+								memberDescriptor, type)
 								.details(details);
 						} else {
 							analyzer
@@ -682,12 +698,12 @@ public class AnnotationReader extends ClassDataCollector {
 					&& (c instanceof String)) {
 					prefix = (String) c;
 		
-					// If we have a method descriptor then this is an injected
+					// If we have a member descriptor then this is an injected
 					// component property type and the prefix must be processed
 					// and understood by DS 1.4. Otherwise bnd handles the
 					// property prefix mapping transparently here and DS doesn't
 					// need to care
-					if (methodDescriptor != null) {
+					if (memberDescriptor != null) {
 						component.updateVersion(V1_4);
 					}
 				} else {
@@ -725,12 +741,12 @@ public class AnnotationReader extends ClassDataCollector {
 					}
 				}
 				singleElementAnnotation = sb.toString();
-				// If we have a method descriptor then this is an injected
+				// If we have a member descriptor then this is an injected
 				// component property type and the single elementness must
 				// be processed and understood by DS 1.4. Otherwise bnd handles
 				// the property mapping transparently here and DS doesn't
 				// need to care
-				if (methodDescriptor != null) {
+				if (memberDescriptor != null) {
 					component.updateVersion(V1_4);
 				}
 			} else {
