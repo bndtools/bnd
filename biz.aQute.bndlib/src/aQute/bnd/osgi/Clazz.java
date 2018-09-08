@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import static aQute.bnd.osgi.Annotation.TARGET_INDEX_NONE;
 import static java.util.Objects.requireNonNull;
 
 import java.io.DataInput;
@@ -245,8 +246,6 @@ public class Clazz {
 	final static int					ACC_ANNOTATION	= 0x2000;
 	final static int					ACC_ENUM		= 0x4000;
 	final static int					ACC_MODULE		= 0x8000;
-
-	public static final int				TARGET_INDEX_EXTENDS	= 65535;
 
 	static protected class Assoc {
 		final CONSTANT	tag;
@@ -777,7 +776,8 @@ public class Clazz {
 
 			ElementType member = ElementType.TYPE;
 
-			if (toString().endsWith(".package-info"))
+			if (className.getBinary()
+				.endsWith("/package-info"))
 				member = ElementType.PACKAGE;
 			else if (isAnnotation())
 				member = ElementType.ANNOTATION_TYPE;
@@ -971,10 +971,10 @@ public class Clazz {
 				doDeprecated(in, member);
 				break;
 			case "RuntimeVisibleAnnotations" :
-				doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags, TARGET_INDEX_NONE);
 				break;
 			case "RuntimeInvisibleAnnotations" :
-				doAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				doAnnotations(in, member, RetentionPolicy.CLASS, access_flags, TARGET_INDEX_NONE);
 				break;
 			case "RuntimeVisibleParameterAnnotations" :
 				doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
@@ -1440,7 +1440,7 @@ public class Clazz {
 			// Table 4.7.20-A. Interpretation of target_type values (Part 1)
 
 			int target_type = in.readUnsignedByte();
-			int target_index = -1;
+			int target_index = TARGET_INDEX_NONE;
 			switch (target_type) {
 				case 0x00 : // type parameter declaration of generic class or
 							// interface
@@ -1572,11 +1572,6 @@ public class Clazz {
 		}
 	}
 
-	private void doAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
-		throws Exception {
-		doAnnotations(in, member, policy, -1, access_flags);
-	}
-
 	private void doAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int targetIndex,
 		int access_flags)
 		throws Exception {
@@ -1685,7 +1680,7 @@ public class Clazz {
 				return name;
 
 			case '@' : // Annotation type
-				return doAnnotation(in, member, policy, -1, collect, access_flags);
+				return doAnnotation(in, member, policy, TARGET_INDEX_NONE, collect, access_flags);
 
 			case '[' : // Array
 				int num_values = in.readUnsignedShort();

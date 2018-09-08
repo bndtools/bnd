@@ -21,6 +21,9 @@ import aQute.lib.converter.Converter;
  */
 public class Annotation {
 
+	public static final int			TARGET_INDEX_EXTENDS	= 65535;
+	public static final int			TARGET_INDEX_NONE		= -1;
+
 	private static final Converter CONVERTER;
 
 	static {
@@ -43,7 +46,7 @@ public class Annotation {
 	private final int				targetIndex;
 
 	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy) {
-		this(name, elements, member, policy, -1);
+		this(name, elements, member, policy, TARGET_INDEX_NONE);
 	}
 
 	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy,

@@ -22,13 +22,9 @@ import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
-import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.signatures.ClassTypeSignature;
-import aQute.bnd.signatures.MethodSignature;
-import aQute.bnd.signatures.TypeArgument;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
@@ -393,37 +389,6 @@ public class ClazzTest extends TestCase {
 	}
 
 	public static interface Foo<T> {}
-
-	public class GenericMethodParameters {
-		void bindChars(Foo<Character> c) {}
-	}
-
-	public void testGenericMethodParameters() throws Exception {
-		File file = IO.getFile("bin/test/ClazzTest$GenericMethodParameters.class");
-		try (Analyzer analyzer = new Analyzer()) {
-			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
-			clazz.parseClassFileWithCollector(new ClassDataCollector() {
-				@Override
-				public void method(MethodDef methodDef) {
-					if (methodDef != null && "bindChars".equals(methodDef.getName())) {
-						String signature = methodDef.getSignature();
-						if (signature == null) {
-							signature = methodDef.getDescriptor()
-								.toString();
-						}
-						MethodSignature sig = MethodSignature.of(signature);
-						ClassTypeSignature parameterSig = (ClassTypeSignature) sig.parameterTypes[0];
-						assertEquals(1, parameterSig.classType.typeArguments.length);
-						TypeArgument typeArgument = parameterSig.classType.typeArguments[0];
-						ClassTypeSignature classSig = (ClassTypeSignature) typeArgument.type;
-						TypeRef typeRef = analyzer.getTypeRef(classSig.binary);
-						assertEquals("java.lang.Character", typeRef.getFQN());
-					}
-				}
-			});
-		}
-	}
-
 	public static class Bar {}
 
 	@Target(ElementType.TYPE_USE)
@@ -440,7 +405,7 @@ public class ClazzTest extends TestCase {
 				public void annotation(Annotation annotation) throws Exception {
 					switch (annotation.getElementType()) {
 						case TYPE_USE :
-							assertEquals(Clazz.TARGET_INDEX_EXTENDS, annotation.getTargetIndex());
+							assertEquals(Annotation.TARGET_INDEX_EXTENDS, annotation.getTargetIndex());
 							break;
 						default :
 							fail("Didn't fine @TypeUse annotation");

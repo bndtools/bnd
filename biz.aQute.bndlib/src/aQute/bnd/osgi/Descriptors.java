@@ -444,6 +444,11 @@ public class Descriptors {
 		return new ConcreteRef(pref, binaryClassName);
 	}
 
+	public TypeRef getPackageInfo(PackageRef packageRef) {
+		String bin = packageRef.getBinary() + "/package-info";
+		return getTypeRef(bin);
+	}
+
 	public PackageRef getPackageRef(String binaryPackName) {
 		binaryPackName = binaryPackName.replace('.', '/');
 		//
