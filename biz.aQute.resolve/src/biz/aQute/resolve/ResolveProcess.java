@@ -48,6 +48,8 @@ import aQute.libg.tuple.Pair;
 
 public class ResolveProcess {
 
+	private static final String			ARROW	= "      ⇒ ";
+
 	private Map<Resource, List<Wire>>	required;
 	private Map<Resource, List<Wire>>	optional;
 
@@ -261,7 +263,7 @@ public class ResolveProcess {
 			for (Requirement req : chain) {
 				f.format("%n%s[%s]", prefix, req.getResource());
 				if ("    ".equals(prefix))
-					prefix = "      ⮡ "; // arrow = \u2ba1
+					prefix = ARROW;
 				else
 					prefix = "    " + prefix;
 				format(f, prefix, req);
@@ -290,7 +292,7 @@ public class ResolveProcess {
 		return (resource, list) -> {
 			f.format("%n    [%s]", resource);
 			list.forEach(req -> {
-				format(f, "      ⮡ ", req);
+				format(f, ARROW, req);
 			});
 		};
 	}
