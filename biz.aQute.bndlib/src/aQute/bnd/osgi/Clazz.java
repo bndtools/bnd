@@ -774,13 +774,15 @@ public class Clazz {
 			}
 			last = null;
 
-			ElementType member = ElementType.TYPE;
-
-			if (className.getBinary()
-				.endsWith("/package-info"))
-				member = ElementType.PACKAGE;
-			else if (isAnnotation())
+			ElementType member;
+			if (isAnnotation()) {
 				member = ElementType.ANNOTATION_TYPE;
+			} else if (className.getBinary()
+				.endsWith("/package-info")) {
+				member = ElementType.PACKAGE;
+			} else {
+				member = ElementType.TYPE;
+			}
 
 			doAttributes(in, member, false, accessx);
 
@@ -977,16 +979,16 @@ public class Clazz {
 				doAnnotations(in, member, RetentionPolicy.CLASS, access_flags, TARGET_INDEX_NONE);
 				break;
 			case "RuntimeVisibleParameterAnnotations" :
-				doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				doParameterAnnotations(in, ElementType.PARAMETER, RetentionPolicy.RUNTIME, access_flags);
 				break;
 			case "RuntimeInvisibleParameterAnnotations" :
-				doParameterAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				doParameterAnnotations(in, ElementType.PARAMETER, RetentionPolicy.CLASS, access_flags);
 				break;
 			case "RuntimeVisibleTypeAnnotations" :
-				doTypeAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				doTypeAnnotations(in, ElementType.TYPE_USE, RetentionPolicy.RUNTIME, access_flags);
 				break;
 			case "RuntimeInvisibleTypeAnnotations" :
-				doTypeAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				doTypeAnnotations(in, ElementType.TYPE_USE, RetentionPolicy.CLASS, access_flags);
 				break;
 			case "InnerClasses" :
 				doInnerClasses(in);
@@ -1125,6 +1127,7 @@ public class Clazz {
 			switch (member) {
 				case ANNOTATION_TYPE :
 				case TYPE :
+				case PACKAGE :
 					classSignature = signature;
 					sig = analyzer.getClassSignature(signature);
 					break;
@@ -1167,6 +1170,7 @@ public class Clazz {
 		switch (member) {
 			case ANNOTATION_TYPE :
 			case TYPE :
+			case PACKAGE :
 				setDeprecated(true);
 				break;
 			case FIELD :
@@ -1181,7 +1185,7 @@ public class Clazz {
 				}
 				break;
 			default :
-				throw new IllegalArgumentException("Deprecated attribute found for unknown element type: " + member);
+				break;
 		}
 		if (cd != null) {
 			cd.deprecated();
@@ -1399,8 +1403,6 @@ public class Clazz {
 
 	private void doParameterAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
 		throws Exception {
-		if (member == ElementType.CONSTRUCTOR || member == ElementType.METHOD)
-			member = ElementType.PARAMETER;
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
 			if (cd != null)
@@ -1462,7 +1464,6 @@ public class Clazz {
 					// }
 
 					collect = cd != null;
-					member = ElementType.TYPE_USE;
 					target_index = in.readUnsignedShort();
 					break;
 
@@ -1596,26 +1597,22 @@ public class Clazz {
 	// }
 
 	private Annotation doAnnotation(DataInput in, ElementType member, RetentionPolicy policy, int targetIndex,
-		boolean collect,
-		int access_flags) throws IOException {
+		boolean collect, int access_flags) throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
 			annotations = new HashSet<>();
 
 		String typeName = (String) pool[type_index];
-		TypeRef typeRef = null;
-		if (typeName != null) {
-			typeRef = analyzer.getTypeRef(typeName);
-			annotations.add(typeRef);
+		TypeRef typeRef = analyzer.getTypeRef(typeName);
+		annotations.add(typeRef);
 
-			if (policy == RetentionPolicy.RUNTIME) {
-				referTo(typeRef, 0);
-				hasRuntimeAnnotations = true;
-				if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags)))
-					api.add(typeRef.getPackageRef());
-			} else {
-				hasClassAnnotations = true;
-			}
+		if (policy == RetentionPolicy.RUNTIME) {
+			referTo(typeRef, 0);
+			hasRuntimeAnnotations = true;
+			if (api != null && (Modifier.isPublic(access_flags) || Modifier.isProtected(access_flags)))
+				api.add(typeRef.getPackageRef());
+		} else {
+			hasClassAnnotations = true;
 		}
 		int num_element_value_pairs = in.readUnsignedShort();
 		Map<String, Object> elements = null;
