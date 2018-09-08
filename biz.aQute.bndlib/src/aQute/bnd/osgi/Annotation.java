@@ -20,10 +20,6 @@ import aQute.lib.converter.Converter;
  * BND_ANNOTATION_CLASS_NAME
  */
 public class Annotation {
-
-	public static final int			TARGET_INDEX_EXTENDS	= 65535;
-	public static final int			TARGET_INDEX_NONE		= -1;
-
 	private static final Converter CONVERTER;
 
 	static {
@@ -43,19 +39,12 @@ public class Annotation {
 	private Map<String, Object>		elements;
 	private final ElementType		member;
 	private final RetentionPolicy	policy;
-	private final int				targetIndex;
 
 	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy) {
-		this(name, elements, member, policy, TARGET_INDEX_NONE);
-	}
-
-	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy,
-		int targetIndex) {
 		this.name = requireNonNull(name);
 		this.elements = elements;
 		this.member = requireNonNull(member);
 		this.policy = requireNonNull(policy);
-		this.targetIndex = targetIndex;
 	}
 
 	public TypeRef getName() {
@@ -68,10 +57,6 @@ public class Annotation {
 
 	public RetentionPolicy getRetentionPolicy() {
 		return policy;
-	}
-
-	public int getTargetIndex() {
-		return targetIndex;
 	}
 
 	@Override

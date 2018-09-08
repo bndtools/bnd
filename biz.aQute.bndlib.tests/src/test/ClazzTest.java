@@ -1,12 +1,16 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.Set;
 
 import org.xml.sax.SAXException;
@@ -18,6 +22,7 @@ import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors;
@@ -401,11 +406,21 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				int	target_index;
+				int	target_type;
+
+				@Override
+				public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {
+					this.target_type = target_type;
+					this.target_index = target_index;
+				}
+
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
 					switch (annotation.getElementType()) {
 						case TYPE_USE :
-							assertEquals(Annotation.TARGET_INDEX_EXTENDS, annotation.getTargetIndex());
+							assertEquals(0x10, target_type);
+							assertEquals(Clazz.TYPEUSE_TARGET_INDEX_EXTENDS, target_index);
 							break;
 						default :
 							fail("Didn't fine @TypeUse annotation");
@@ -422,11 +437,21 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				int	target_index;
+				int	target_type;
+
+				@Override
+				public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {
+					this.target_type = target_type;
+					this.target_index = target_index;
+				}
+
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
 					switch (annotation.getElementType()) {
 						case TYPE_USE :
-							assertEquals(0, annotation.getTargetIndex());
+							assertEquals(0x10, target_type);
+							assertEquals(0, target_index);
 							break;
 						default :
 							fail("Didn't fine @TypeUse annotation");
@@ -444,11 +469,21 @@ public class ClazzTest extends TestCase {
 		try (Analyzer analyzer = new Analyzer()) {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				int	target_index;
+				int	target_type;
+
+				@Override
+				public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {
+					this.target_type = target_type;
+					this.target_index = target_index;
+				}
+
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
 					switch (annotation.getElementType()) {
 						case TYPE_USE :
-							assertEquals(1, annotation.getTargetIndex());
+							assertEquals(0x10, target_type);
+							assertEquals(1, target_index);
 							break;
 						default :
 							fail("Didn't fine @TypeUse annotation");
@@ -471,6 +506,12 @@ public class ClazzTest extends TestCase {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 				MethodDef member;
+				int			parameter;
+
+				@Override
+				public void parameter(int p) {
+					parameter = p;
+				}
 
 				@Override
 				public void method(MethodDef member) {
@@ -485,7 +526,7 @@ public class ClazzTest extends TestCase {
 				public void annotation(Annotation annotation) throws Exception {
 					switch (annotation.getElementType()) {
 						case PARAMETER :
-							assertEquals(0, annotation.getTargetIndex());
+							assertEquals(0, parameter);
 							assertEquals("bindChars", member.getName());
 							break;
 						default :
@@ -506,6 +547,12 @@ public class ClazzTest extends TestCase {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 				MethodDef member;
+				int			parameter;
+
+				@Override
+				public void parameter(int p) {
+					parameter = p;
+				}
 
 				@Override
 				public void method(MethodDef member) {
@@ -520,7 +567,7 @@ public class ClazzTest extends TestCase {
 				public void annotation(Annotation annotation) throws Exception {
 					switch (annotation.getElementType()) {
 						case PARAMETER :
-							assertEquals(1, annotation.getTargetIndex());
+							assertEquals(1, parameter);
 							assertEquals("bindChars", member.getName());
 							break;
 						default :
@@ -541,6 +588,12 @@ public class ClazzTest extends TestCase {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 				MethodDef member;
+				int			parameter;
+
+				@Override
+				public void parameter(int p) {
+					parameter = p;
+				}
 
 				@Override
 				public void method(MethodDef member) {
@@ -555,7 +608,7 @@ public class ClazzTest extends TestCase {
 				public void annotation(Annotation annotation) throws Exception {
 					switch (annotation.getElementType()) {
 						case PARAMETER :
-							assertEquals(0, annotation.getTargetIndex());
+							assertEquals(0, parameter);
 							assertEquals("<init>", member.getName());
 							break;
 						default :
@@ -576,6 +629,12 @@ public class ClazzTest extends TestCase {
 			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
 			clazz.parseClassFileWithCollector(new ClassDataCollector() {
 				MethodDef member;
+				int			parameter;
+
+				@Override
+				public void parameter(int p) {
+					parameter = p;
+				}
 
 				@Override
 				public void method(MethodDef member) {
@@ -590,7 +649,7 @@ public class ClazzTest extends TestCase {
 				public void annotation(Annotation annotation) throws Exception {
 					switch (annotation.getElementType()) {
 						case PARAMETER :
-							assertEquals(1, annotation.getTargetIndex());
+							assertEquals(1, parameter);
 							assertEquals("<init>", member.getName());
 							break;
 						default :
@@ -601,4 +660,170 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	/**
+	 * See 4.7.20.2 in JVMS spec.
+	 */
+	public void testTypeUseTypePath() throws Exception {
+		File file = IO.getFile("bin/test/typeuse/TypePath.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			List<String> tested = new ArrayList<>();
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				FieldDef member;
+				byte[] type_path;
+
+				@Override
+				public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {
+					this.type_path = type_path;
+				}
+				@Override
+				public void field(FieldDef member) {
+					this.member = member;
+				}
+				@Override
+				public void memberEnd() {
+					member = null;
+				}
+
+				@Override
+				public void annotation(Annotation annotation) throws Exception {
+					switch (annotation.getElementType()) {
+						case TYPE_USE :
+							switch (member.getName()) {
+								case "b" :
+									switch (annotation.getName()
+										.getBinary()) {
+										case "test/typeuse/A" :
+											assertThat(type_path).hasSize(0);
+											break;
+										case "test/typeuse/B" :
+											assertThat(type_path).hasSize(2)
+												.containsExactly(3, 0);
+											break;
+										case "test/typeuse/C" :
+											assertThat(type_path).hasSize(4)
+												.containsExactly(3, 0, 2, 0);
+											break;
+										case "test/typeuse/D" :
+											assertThat(type_path).hasSize(2)
+												.containsExactly(3, 1);
+											break;
+										case "test/typeuse/E" :
+											assertThat(type_path).hasSize(4)
+												.containsExactly(3, 1, 3, 0);
+											break;
+										default :
+											fail("Unexpected annotation " + annotation);
+									}
+									break;
+								case "c" :
+									switch (annotation.getName()
+										.getBinary()) {
+										case "test/typeuse/F" :
+											assertThat(type_path).hasSize(0);
+											break;
+										case "test/typeuse/G" :
+											assertThat(type_path).hasSize(2)
+												.containsExactly(0, 0);
+											break;
+										case "test/typeuse/H" :
+											assertThat(type_path).hasSize(4)
+												.containsExactly(0, 0, 0, 0);
+											break;
+										case "test/typeuse/I" :
+											assertThat(type_path).hasSize(6)
+												.containsExactly(0, 0, 0, 0, 0, 0);
+											break;
+										default :
+											fail("Unexpected annotation " + annotation);
+									}
+									break;
+								case "d" :
+									switch (annotation.getName()
+										.getBinary()) {
+										case "test/typeuse/A" :
+											assertThat(type_path).hasSize(0);
+											break;
+										case "test/typeuse/B" :
+											assertThat(type_path).hasSize(2)
+												.containsExactly(3, 0);
+											break;
+										case "test/typeuse/C" :
+											assertThat(type_path).hasSize(4)
+												.containsExactly(3, 0, 3, 0);
+											break;
+										case "test/typeuse/D" :
+											assertThat(type_path).hasSize(6)
+												.containsExactly(3, 0, 3, 0, 0, 0);
+											break;
+										case "test/typeuse/E" :
+											assertThat(type_path).hasSize(8)
+												.containsExactly(3, 0, 3, 0, 0, 0, 0, 0);
+											break;
+										case "test/typeuse/F" :
+											assertThat(type_path).hasSize(10)
+												.containsExactly(3, 0, 3, 0, 0, 0, 0, 0, 0, 0);
+											break;
+										default :
+											fail("Unexpected annotation " + annotation);
+									}
+									break;
+								case "e" :
+									switch (annotation.getName()
+										.getBinary()) {
+										case "test/typeuse/A" :
+											assertThat(type_path).hasSize(4)
+												.containsExactly(1, 0, 1, 0);
+											break;
+										case "test/typeuse/B" :
+											assertThat(type_path).hasSize(2)
+												.containsExactly(1, 0);
+											break;
+										case "test/typeuse/C" :
+											assertThat(type_path).hasSize(0);
+											break;
+										default :
+											fail("Unexpected annotation " + annotation);
+									}
+									break;
+								case "f" :
+									switch (annotation.getName()
+										.getBinary()) {
+										case "test/typeuse/A" :
+											assertThat(type_path).hasSize(6)
+												.containsExactly(1, 0, 1, 0, 3, 0);
+											break;
+										case "test/typeuse/B" :
+											assertThat(type_path).hasSize(8)
+												.containsExactly(1, 0, 1, 0, 3, 0, 0, 0);
+											break;
+										case "test/typeuse/C" :
+											assertThat(type_path).hasSize(6)
+												.containsExactly(1, 0, 3, 0, 1, 0);
+											break;
+										case "test/typeuse/D" :
+											assertThat(type_path).hasSize(4)
+												.containsExactly(1, 0, 3, 0);
+											break;
+										default :
+											fail("Unexpected annotation " + annotation);
+									}
+									break;
+								default :
+									break;
+							}
+							tested.add(member.getName() + "|" + annotation.getName()
+								.getShortName());
+							break;
+						default :
+							fail("Didn't find TYPE_USE annotation");
+					}
+				}
+			});
+			assertThat(tested).containsExactlyInAnyOrder("b|A", "b|B", "b|C", "b|D", "b|E", "c|F", "c|G", "c|H", "c|I",
+				"d|A", "d|B", "d|C", "d|D", "d|E", "d|F", "e|A", "e|B", "e|C", "f|A", "f|B", "f|C", "f|D");
+		}
+	}
+
 }
+

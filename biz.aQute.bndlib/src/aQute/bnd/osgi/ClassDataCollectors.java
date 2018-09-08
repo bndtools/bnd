@@ -319,5 +319,16 @@ class ClassDataCollectors implements Closeable {
 				}
 			}
 		}
+
+		@Override
+		public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {
+			for (ClassDataCollector cd : shortlist) {
+				try {
+					cd.typeuse(target_type, target_index, target_info, type_path);
+				} catch (Exception e) {
+					reporter.exception(e, "Failure for %s on call typeuse[%s]", clazz, cd);
+				}
+			}
+		}
 	}
 }

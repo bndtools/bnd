@@ -148,4 +148,9 @@ class ClassDataCollectorRecorder extends ClassDataCollector {
 	public void annotationDefault(Clazz.MethodDef last, Object value) {
 		actions.add(cdc -> cdc.annotationDefault(last, value));
 	}
+
+	@Override
+	public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {
+		actions.add(cdc -> cdc.typeuse(target_type, target_index, target_info, type_path));
+	}
 }

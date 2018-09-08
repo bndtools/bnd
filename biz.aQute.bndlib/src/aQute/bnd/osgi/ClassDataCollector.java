@@ -88,4 +88,6 @@ public class ClassDataCollector {
 	public void annotationDefault(Clazz.MethodDef last, Object value) {
 		annotationDefault(last);
 	}
+
+	public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {}
 }
