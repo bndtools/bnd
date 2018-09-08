@@ -399,7 +399,7 @@ public class Analyzer extends Processor {
 			TypeRef bndAnnotation = descriptors.getTypeRefFromFQN(aQute.bnd.annotation.Export.class.getName());
 			contained.keySet()
 				.stream()
-				.map(this::getPackageInfoClazz)
+				.map(this::getPackageInfo)
 				.filter(Objects::nonNull)
 				.distinct()
 				.filter(clz -> clz.annotations()
@@ -446,7 +446,7 @@ public class Analyzer extends Processor {
 		TypeRef exportAnnotation = descriptors.getTypeRefFromFQN("org.osgi.annotation.bundle.Export");
 		return contained.keySet()
 			.stream()
-			.map(this::getPackageInfoClazz)
+			.map(this::getPackageInfo)
 			.filter(Objects::nonNull)
 			.distinct()
 			.filter(clz -> clz.annotations()
@@ -457,9 +457,8 @@ public class Analyzer extends Processor {
 			.collect(Parameters.toParameters());
 	}
 
-	private Clazz getPackageInfoClazz(PackageRef pr) {
-		String bin = pr.getBinary() + "/package-info";
-		TypeRef tr = descriptors.getTypeRef(bin);
+	public Clazz getPackageInfo(PackageRef packageRef) {
+		TypeRef tr = descriptors.getPackageInfo(packageRef);
 		try {
 			return findClass(tr);
 		} catch (Exception e) {

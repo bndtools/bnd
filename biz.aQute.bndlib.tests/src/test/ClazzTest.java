@@ -2,6 +2,9 @@ package test;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.Serializable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
 import java.util.EnumSet;
 import java.util.Set;
@@ -11,9 +14,11 @@ import org.xml.sax.SAXException;
 import aQute.bnd.component.AnnotationReader;
 import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.MethodDef;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -382,4 +387,218 @@ public class ClazzTest extends TestCase {
 			assertTrue(clazz.is(QUERY.NAMED, new Instruction("!junit.framework.*"), analyzer));
 		}
 	}
+
+	public static interface Foo<T> {}
+	public static class Bar {}
+
+	@Target(ElementType.TYPE_USE)
+	public static @interface TypeUse {}
+
+	public class AnnotationsOnTypeUseExtends extends @TypeUse Bar {}
+
+	public void testAnnotationsOnTypeUseExtends() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnTypeUseExtends.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				@Override
+				public void annotation(Annotation annotation) throws Exception {
+					switch (annotation.getElementType()) {
+						case TYPE_USE :
+							assertEquals(Annotation.TARGET_INDEX_EXTENDS, annotation.getTargetIndex());
+							break;
+						default :
+							fail("Didn't fine @TypeUse annotation");
+					}
+				}
+			});
+		}
+	}
+
+	public class AnnotationsOnTypeUseImplements0 implements @TypeUse Foo<String> {}
+
+	public void testAnnotationsOnTypeUseImplements0() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnTypeUseImplements0.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				@Override
+				public void annotation(Annotation annotation) throws Exception {
+					switch (annotation.getElementType()) {
+						case TYPE_USE :
+							assertEquals(0, annotation.getTargetIndex());
+							break;
+						default :
+							fail("Didn't fine @TypeUse annotation");
+					}
+				}
+			});
+		}
+	}
+
+	@SuppressWarnings("serial")
+	public class AnnotationsOnTypeUseImplements1 implements Serializable, @TypeUse Foo<String> {}
+
+	public void testAnnotationsOnTypeUseImplements1() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnTypeUseImplements1.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				@Override
+				public void annotation(Annotation annotation) throws Exception {
+					switch (annotation.getElementType()) {
+						case TYPE_USE :
+							assertEquals(1, annotation.getTargetIndex());
+							break;
+						default :
+							fail("Didn't fine @TypeUse annotation");
+					}
+				}
+			});
+		}
+	}
+
+	@Target(ElementType.PARAMETER)
+	public static @interface TypeParameter {}
+
+	public class AnnotationsOnMethodParams0 {
+		void bindChars(@TypeParameter Foo<Character> c) {}
+	}
+
+	public void testAnnotationsOnMethodParams0() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnMethodParams0.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				MethodDef member;
+
+				@Override
+				public void method(MethodDef member) {
+					this.member = member;
+				}
+				@Override
+				public void memberEnd() {
+					member = null;
+				}
+
+				@Override
+				public void annotation(Annotation annotation) throws Exception {
+					switch (annotation.getElementType()) {
+						case PARAMETER :
+							assertEquals(0, annotation.getTargetIndex());
+							assertEquals("bindChars", member.getName());
+							break;
+						default :
+							fail("Didn't fine @TypeParameter annotation");
+					}
+				}
+			});
+		}
+	}
+
+	public class AnnotationsOnMethodParams1 {
+		void bindChars(Foo<Character> c, @TypeParameter String s) {}
+	}
+
+	public void testAnnotationsOnMethodParams1() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnMethodParams1.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				MethodDef member;
+
+				@Override
+				public void method(MethodDef member) {
+					this.member = member;
+				}
+				@Override
+				public void memberEnd() {
+					member = null;
+				}
+
+				@Override
+				public void annotation(Annotation annotation) throws Exception {
+					switch (annotation.getElementType()) {
+						case PARAMETER :
+							assertEquals(1, annotation.getTargetIndex());
+							assertEquals("bindChars", member.getName());
+							break;
+						default :
+							fail("Didn't fine @TypeParameter annotation");
+					}
+				}
+			});
+		}
+	}
+
+	public class AnnotationsOnCtorParams0 {
+		public AnnotationsOnCtorParams0(@TypeParameter String s) {}
+	}
+
+	public void testAnnotationsOnCtorParams0() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnCtorParams0.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				MethodDef member;
+
+				@Override
+				public void method(MethodDef member) {
+					this.member = member;
+				}
+				@Override
+				public void memberEnd() {
+					member = null;
+				}
+
+				@Override
+				public void annotation(Annotation annotation) throws Exception {
+					switch (annotation.getElementType()) {
+						case PARAMETER :
+							assertEquals(0, annotation.getTargetIndex());
+							assertEquals("<init>", member.getName());
+							break;
+						default :
+							fail("Didn't fine @TypeParameter annotation");
+					}
+				}
+			});
+		}
+	}
+
+	public class AnnotationsOnCtorParams1 {
+		public AnnotationsOnCtorParams1(String r, @TypeParameter String s) {}
+	}
+
+	public void testAnnotationsOnCtorParams1() throws Exception {
+		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnCtorParams1.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFileWithCollector(new ClassDataCollector() {
+				MethodDef member;
+
+				@Override
+				public void method(MethodDef member) {
+					this.member = member;
+				}
+				@Override
+				public void memberEnd() {
+					member = null;
+				}
+
+				@Override
+				public void annotation(Annotation annotation) throws Exception {
+					switch (annotation.getElementType()) {
+						case PARAMETER :
+							assertEquals(1, annotation.getTargetIndex());
+							assertEquals("<init>", member.getName());
+							break;
+						default :
+							fail("Didn't fine @TypeParameter annotation");
+					}
+				}
+			});
+		}
+	}
+
 }

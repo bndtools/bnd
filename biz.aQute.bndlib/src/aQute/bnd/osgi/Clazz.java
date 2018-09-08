@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import static aQute.bnd.osgi.Annotation.TARGET_INDEX_NONE;
 import static java.util.Objects.requireNonNull;
 
 import java.io.DataInput;
@@ -773,7 +774,15 @@ public class Clazz {
 			}
 			last = null;
 
-			doAttributes(in, ElementType.TYPE, false, accessx);
+			ElementType member = ElementType.TYPE;
+
+			if (className.getBinary()
+				.endsWith("/package-info"))
+				member = ElementType.PACKAGE;
+			else if (isAnnotation())
+				member = ElementType.ANNOTATION_TYPE;
+
+			doAttributes(in, member, false, accessx);
 
 			Set<TypeRef> xref = this.xref;
 			reset();
@@ -962,10 +971,10 @@ public class Clazz {
 				doDeprecated(in, member);
 				break;
 			case "RuntimeVisibleAnnotations" :
-				doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
+				doAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags, TARGET_INDEX_NONE);
 				break;
 			case "RuntimeInvisibleAnnotations" :
-				doAnnotations(in, member, RetentionPolicy.CLASS, access_flags);
+				doAnnotations(in, member, RetentionPolicy.CLASS, access_flags, TARGET_INDEX_NONE);
 				break;
 			case "RuntimeVisibleParameterAnnotations" :
 				doParameterAnnotations(in, member, RetentionPolicy.RUNTIME, access_flags);
@@ -1390,16 +1399,19 @@ public class Clazz {
 
 	private void doParameterAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
 		throws Exception {
+		if (member == ElementType.CONSTRUCTOR || member == ElementType.METHOD)
+			member = ElementType.PARAMETER;
 		int num_parameters = in.readUnsignedByte();
 		for (int p = 0; p < num_parameters; p++) {
 			if (cd != null)
 				cd.parameter(p);
-			doAnnotations(in, member, policy, access_flags);
+			doAnnotations(in, member, policy, p, access_flags);
 		}
 	}
 
 	private void doTypeAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
 		throws Exception {
+		boolean collect = false;
 		int num_annotations = in.readUnsignedShort();
 		for (int p = 0; p < num_annotations; p++) {
 
@@ -1428,6 +1440,7 @@ public class Clazz {
 			// Table 4.7.20-A. Interpretation of target_type values (Part 1)
 
 			int target_type = in.readUnsignedByte();
+			int target_index = TARGET_INDEX_NONE;
 			switch (target_type) {
 				case 0x00 : // type parameter declaration of generic class or
 							// interface
@@ -1448,7 +1461,9 @@ public class Clazz {
 					// u2 supertype_index;
 					// }
 
-					in.skipBytes(2);
+					collect = cd != null;
+					member = ElementType.TYPE_USE;
+					target_index = in.readUnsignedShort();
 					break;
 
 				case 0x11 : // type in bound of type parameter declaration of
@@ -1550,19 +1565,23 @@ public class Clazz {
 
 			//
 			// Rest is identical to the normal annotations
-			doAnnotation(in, member, policy, false, access_flags);
+			Annotation annotation = doAnnotation(in, member, policy, target_index, collect, access_flags);
+			if (cd != null && annotation != null) {
+				cd.annotation(annotation);
+			}
 		}
 	}
 
-	private void doAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int access_flags)
+	private void doAnnotations(DataInput in, ElementType member, RetentionPolicy policy, int targetIndex,
+		int access_flags)
 		throws Exception {
 		int num_annotations = in.readUnsignedShort(); // # of annotations
 		for (int a = 0; a < num_annotations; a++) {
 			if (cd == null)
-				doAnnotation(in, member, policy, false, access_flags);
+				doAnnotation(in, member, policy, targetIndex, false, access_flags);
 			else {
-				Annotation annotion = doAnnotation(in, member, policy, true, access_flags);
-				cd.annotation(annotion);
+				Annotation annotation = doAnnotation(in, member, policy, targetIndex, true, access_flags);
+				cd.annotation(annotation);
 			}
 		}
 	}
@@ -1576,7 +1595,8 @@ public class Clazz {
 	// element_value_pairs[num_element_value_pairs];
 	// }
 
-	private Annotation doAnnotation(DataInput in, ElementType member, RetentionPolicy policy, boolean collect,
+	private Annotation doAnnotation(DataInput in, ElementType member, RetentionPolicy policy, int targetIndex,
+		boolean collect,
 		int access_flags) throws IOException {
 		int type_index = in.readUnsignedShort();
 		if (annotations == null)
@@ -1610,7 +1630,7 @@ public class Clazz {
 			}
 		}
 		if (collect)
-			return new Annotation(typeRef, elements, member, policy);
+			return new Annotation(typeRef, elements, member, policy, targetIndex);
 		return null;
 	}
 
@@ -1660,7 +1680,7 @@ public class Clazz {
 				return name;
 
 			case '@' : // Annotation type
-				return doAnnotation(in, member, policy, collect, access_flags);
+				return doAnnotation(in, member, policy, TARGET_INDEX_NONE, collect, access_flags);
 
 			case '[' : // Array
 				int num_values = in.readUnsignedShort();
