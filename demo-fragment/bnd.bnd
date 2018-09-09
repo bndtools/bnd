@@ -7,5 +7,6 @@ Provide-Capability: some.namespace;somenamespace=hello;version:Version=1.0.0
 -resourceonly: true
 -nojunit: true
 -nojunitosgi: true
+-buildpath: demo;version=latest
 -buildrepo:
 -releaserepo:

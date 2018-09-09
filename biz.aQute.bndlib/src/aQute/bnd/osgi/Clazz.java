@@ -1173,17 +1173,13 @@ public class Clazz {
 			case ANNOTATION_TYPE :
 			case TYPE :
 			case PACKAGE :
-				setDeprecated(true);
+				deprecated = true;
 				break;
 			case FIELD :
-				if (last instanceof FieldDef) {
-					last.setDeprecated(true);
-				}
-				break;
 			case CONSTRUCTOR :
 			case METHOD :
-				if (last instanceof MethodDef) {
-					last.setDeprecated(true);
+				if (last != null) {
+					last.deprecated = true;
 				}
 				break;
 			default :
@@ -1201,7 +1197,7 @@ public class Clazz {
 		throws IOException {
 		Object value = doElementValue(in, member, RetentionPolicy.RUNTIME, cd != null, access_flags);
 		if (last instanceof MethodDef) {
-			last.setConstant(value);
+			last.constant = value;
 			cd.annotationDefault((MethodDef) last, value);
 		}
 
@@ -1219,7 +1215,7 @@ public class Clazz {
 		if (object == null)
 			object = pool[intPool[constantValue_index]];
 
-		last.setConstant(object);
+		last.constant = object;
 		cd.constant(object);
 	}
 
@@ -1639,6 +1635,26 @@ public class Clazz {
 		String typeName = (String) pool[type_index];
 		TypeRef typeRef = analyzer.getTypeRef(typeName);
 		annotations.add(typeRef);
+
+		if (typeRef.getFQN()
+			.equals("java.lang.Deprecated")) {
+			switch (member) {
+				case ANNOTATION_TYPE :
+				case TYPE :
+				case PACKAGE :
+					deprecated = true;
+					break;
+				case FIELD :
+				case CONSTRUCTOR :
+				case METHOD :
+					if (last != null) {
+						last.deprecated = true;
+					}
+					break;
+				default :
+					break;
+			}
+		}
 
 		if (policy == RetentionPolicy.RUNTIME) {
 			referTo(typeRef, 0);
