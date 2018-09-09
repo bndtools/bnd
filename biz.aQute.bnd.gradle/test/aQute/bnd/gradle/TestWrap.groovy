@@ -26,16 +26,7 @@ class TestWrap extends Specification {
         String testProject = 'wraptask1'
         File testProjectDir = new File(testResources, testProject).canonicalFile
         assert testProjectDir.isDirectory()
-        def reporter = new Slf4jReporter(TestResolveTask.class)
         String taskname = 'wrap'
-
-        when:
-        File bndrun = new File(testProjectDir, "${taskname}.bndrun")
-        UTF8Properties props = new UTF8Properties()
-
-        then:
-        bndrun.isFile()
-        props.load(bndrun, reporter)
 
         when:
         def result = TestHelper.getGradleRunner()
@@ -50,6 +41,5 @@ class TestWrap extends Specification {
         result.task(":${taskname}").outcome == SUCCESS
         File output = new File(testProjectDir, "out.jar")
         assert output.isFile()
-        assert bndrun.isFile()
     }
 }
