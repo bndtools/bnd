@@ -1,0 +1,16 @@
+import aQute.bnd.gradle.Wrap
+
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+repositories {
+    mavenCentral()
+}
+
+task wrap(type: Wrap) {
+    classpath "jdom-2.0.2.jar"
+    bundlename "org.jdom"
+    bundleversion "2.0.2"
+    output "out.jar"
+}
