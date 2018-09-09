@@ -12,6 +12,7 @@ import static aQute.bnd.service.diff.Type.API;
 import static aQute.bnd.service.diff.Type.CLASS;
 import static aQute.bnd.service.diff.Type.CLASS_VERSION;
 import static aQute.bnd.service.diff.Type.CONSTANT;
+import static aQute.bnd.service.diff.Type.DEFAULT;
 import static aQute.bnd.service.diff.Type.ENUM;
 import static aQute.bnd.service.diff.Type.EXTENDS;
 import static aQute.bnd.service.diff.Type.FIELD;
@@ -515,6 +516,19 @@ class JavaElement {
 			Collection<Element> children = annotations.get(m);
 			if (children == null)
 				children = new HashSet<>();
+
+			// Annotations can have a default value, this is a new element
+			if ((type == ANNOTATION) && (m.getConstant() != null)) {
+				Object constant = m.getConstant();
+				String defaultValue;
+				if (constant.getClass()
+					.isArray()) {
+					defaultValue = Arrays.toString((Object[]) constant);
+				} else {
+					defaultValue = constant.toString();
+				}
+				children.add(new Element(DEFAULT, defaultValue, null, CHANGED, CHANGED, null));
+			}
 
 			access(children, m.getAccess(), m.isDeprecated(), provider.get());
 
