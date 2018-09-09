@@ -261,28 +261,12 @@ class JavaElement {
 			}
 
 			@Override
-			public void deprecated() {
-				if (memberEnd)
-					clazz.setDeprecated(true);
-				else if (last != null)
-					last.setDeprecated(true);
-			}
-
-			@Override
 			public void field(Clazz.FieldDef defined) {
 				if (defined.isProtected() || defined.isPublic()) {
 					last = defined;
 					fields.add(defined);
 				} else
 					last = null;
-			}
-
-			@Override
-			public void constant(Object o) {
-				if (last != null) {
-					// Must be accessible now
-					last.setConstant(o);
-				}
 			}
 
 			@Override
@@ -385,10 +369,6 @@ class JavaElement {
 				if (Deprecated.class.getName()
 					.equals(annotation.getName()
 						.getFQN())) {
-					if (memberEnd)
-						clazz.setDeprecated(true);
-					else if (last != null)
-						last.setDeprecated(true);
 					return;
 				}
 
