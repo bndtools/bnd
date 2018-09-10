@@ -31,6 +31,7 @@ package aQute.bnd.gradle
 
 import aQute.bnd.osgi.Builder
 import aQute.bnd.osgi.Processor
+import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.bundling.Jar
 
@@ -38,7 +39,7 @@ class Wrap extends Jar {
 
     private File output
 
-    private File classpath
+    private FileCollection classpath
 
     private String bundlename
 
@@ -49,8 +50,8 @@ class Wrap extends Jar {
     /**
      * Gets classpath files.
      */
-    @InputFile
-    File getClasspath() {
+    @InputFiles
+    FileCollection getClasspath() {
         return classpath
     }
 
@@ -58,8 +59,8 @@ class Wrap extends Jar {
      * Sets classpath files.
      * @param classpath
      */
-    void setClasspath(String classpath) {
-        this.classpath = project.file(classpath)
+    void classpath(Object... classpath) {
+        this.classpath = project.files(classpath)
     }
 
     /**
@@ -133,7 +134,9 @@ class Wrap extends Jar {
 
         Builder builder = new Builder(processor)
 
-        builder.addClasspath(classpath)
+        classpath.each {
+            builder.addClasspath(it)
+        }
 
         aQute.bnd.osgi.Jar jar = builder.build()
 
