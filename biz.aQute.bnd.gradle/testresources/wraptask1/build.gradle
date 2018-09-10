@@ -8,21 +8,21 @@ repositories {
     mavenCentral()
 }
 
-task copyLibs(type: Copy) {
-    from configurations.compile
-    into "."
+configurations {
+    bundle
 }
 
-task wrap(type: Wrap, dependsOn: copyLibs) {
-    classpath "jdom-2.0.2.jar", "htmlunit-cssparser-1.2.0.jar"
+task wrap(type: Wrap) {
+    classpath configurations.bundle
     bundlename "some.bundle"
     bundleversion "1.0.0"
+    exportpackage "org.jdom"
     output "out.jar"
 }
 
 dependencies {
     // https://mvnrepository.com/artifact/net.sourceforge.htmlunit/htmlunit-cssparser
-    compile group: 'net.sourceforge.htmlunit', name: 'htmlunit-cssparser', version: '1.2.0'
+    bundle group: 'net.sourceforge.htmlunit', name: 'htmlunit-cssparser', version: '1.2.0'
     // https://mvnrepository.com/artifact/org.jdom/jdom
-    compile group: 'org.jdom', name: 'jdom', version: '2.0.2'
+    bundle group: 'org.jdom', name: 'jdom', version: '2.0.2'
 }

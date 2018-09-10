@@ -8,13 +8,11 @@
  * Here is examples of using the Wrap task type:
  * <pre>
  * import aQute.bnd.gradle.Wrap
- * task wrap(type: Wrap) {
- *     classpath "to-wrap.jar"
+ * task wrap(type: Wrap) {*     classpath "to-wrap.jar"
  *     bundlename "to.wrap"
  *     bundleversion "1.0.0"
  *     output "to-wrap-1.0.0.jar"
- * }
- * </pre>
+ *}* </pre>
  *
  * <p>
  * Properties:
@@ -47,6 +45,8 @@ class Wrap extends DefaultTask {
     private String bundleversion
 
     private String exportpackage
+
+    private String privatepackage
 
     /**
      * Gets classpath files.
@@ -97,7 +97,7 @@ class Wrap extends DefaultTask {
     }
 
     /**
-     * Gets the manifest header Export-Package Property
+     * Gets the manifest header Export-Package property
      */
     @Input
     @Optional
@@ -105,8 +105,30 @@ class Wrap extends DefaultTask {
         return exportpackage
     }
 
+    /**
+     * Sets the manifest header Export-Package property
+     * @param exportpackage
+     */
     void setExportpackage(String exportpackage) {
         this.exportpackage = exportpackage
+    }
+
+    /**
+     * Gets the manifest header Private-Package property.
+     * @return
+     */
+    @Input
+    @Optional
+    String getPrivatepackage() {
+        return privatepackage
+    }
+
+    /**
+     * Sets the manifest header Private-Package property.
+     * @param privatepackage
+     */
+    void setPrivatepackage(String privatepackage) {
+        this.privatepackage = privatepackage
     }
 
     /**
@@ -154,8 +176,9 @@ class Wrap extends DefaultTask {
     private Properties toProperties() {
         new Properties([
                 "Bundle-SymbolicName": bundlename,
-                "Bundle-Version": bundleversion,
-                "Export-Package": exportpackage == null ? '*;version=' + bundleversion : exportpackage
+                "Bundle-Version"     : bundleversion,
+                "Private-Package"    : privatepackage == null ? '*' : privatepackage,
+                "Export-Package"     : exportpackage == null ? '*;version=' + bundleversion : exportpackage
         ])
     }
 }

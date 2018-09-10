@@ -41,5 +41,7 @@ class TestWrap extends Specification {
         result.task(":${taskname}").outcome == SUCCESS
         File output = new File(testProjectDir, "out.jar")
         assert output.isFile()
+
+        //TODO check bundle (name, version, private and exported packages, ...).
     }
 }
