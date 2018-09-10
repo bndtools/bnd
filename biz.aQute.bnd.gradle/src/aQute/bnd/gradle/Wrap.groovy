@@ -31,11 +31,11 @@ package aQute.bnd.gradle
 
 import aQute.bnd.osgi.Builder
 import aQute.bnd.osgi.Processor
+import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
-import org.gradle.api.tasks.bundling.Jar
 
-class Wrap extends Jar {
+class Wrap extends DefaultTask {
 
     private File output
 
