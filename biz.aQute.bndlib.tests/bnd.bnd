@@ -9,6 +9,10 @@
     biz.aQute.bnd.annotation;version=project,\
     biz.aQute.bndlib;version=project;packages=*,\
     biz.aQute.bnd.test;version=project,\
+    org.apache.geronimo.specs.geronimo-atinject_1.0_spec;version=latest,\
+    org.apache.geronimo.specs.geronimo-interceptor_1.2_spec;version=latest,\
+    org.apache.geronimo.specs.geronimo-jcdi_2.0_spec;version=latest,\
+	org.osgi.service.cdi;version=latest,\
 	org.osgi.service.component;version=latest,\
 	org.osgi.service.component.annotations;version=latest,\
 	org.osgi.service.metatype.annotations;version=latest,\

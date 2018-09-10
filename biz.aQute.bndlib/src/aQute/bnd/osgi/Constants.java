@@ -103,6 +103,8 @@ public interface Constants {
 	@Deprecated
 	String								BUILDPACKAGES								= "-buildpackages";
 	String								BUMPPOLICY									= "-bumppolicy";
+	String								CDIANNOTATIONS								= "-cdiannotations";
+	String								CDIANNOTATIONS_OPTIONS						= "-cdiannotations-options";
 	String								CHECK										= "-check";
 	String								CONDUIT										= "-conduit";
 	String								CONTRACT									= "-contract";
