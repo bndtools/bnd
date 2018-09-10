@@ -48,6 +48,8 @@ class Wrap extends DefaultTask {
 
     private String privatepackage
 
+    private String importpackage
+
     /**
      * Gets classpath files.
      */
@@ -115,7 +117,6 @@ class Wrap extends DefaultTask {
 
     /**
      * Gets the manifest header Private-Package property.
-     * @return
      */
     @Input
     @Optional
@@ -129,6 +130,23 @@ class Wrap extends DefaultTask {
      */
     void setPrivatepackage(String privatepackage) {
         this.privatepackage = privatepackage
+    }
+
+    /**
+     * Gets the manifest header Import-Package property.
+     */
+    @Input
+    @Optional
+    String getImportpackage() {
+        return importpackage
+    }
+
+    /**
+     * Sets the manifest header Import-Package property.
+     * @param importpackage
+     */
+    void setImportpackage(String importpackage) {
+        this.importpackage = importpackage
     }
 
     /**
@@ -177,6 +195,7 @@ class Wrap extends DefaultTask {
         new Properties([
                 "Bundle-SymbolicName": bundlename,
                 "Bundle-Version"     : bundleversion,
+                "Import-Package"     : importpackage == null ? '*' : importpackage,
                 "Private-Package"    : privatepackage == null ? '*' : privatepackage,
                 "Export-Package"     : exportpackage == null ? '*;version=' + bundleversion : exportpackage
         ])

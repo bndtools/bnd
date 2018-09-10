@@ -17,6 +17,7 @@ task wrap(type: Wrap) {
     bundlename "some.bundle"
     bundleversion "1.0.0"
     exportpackage "org.jdom"
+    importpackage "!javax.xml.namespace,*"
     output "out.jar"
 }
 
