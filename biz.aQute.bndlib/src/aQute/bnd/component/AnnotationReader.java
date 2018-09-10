@@ -139,6 +139,7 @@ public class AnnotationReader extends ClassDataCollector {
 	final ClassSignature									classSig;
 	TypeRef[]												interfaces;
 	FieldDef												member;
+	int														parameter;
 	TypeRef													className;
 	Analyzer												analyzer;
 	MultiMap<String, Clazz.MethodDef>						methods					= new MultiMap<>();
@@ -285,23 +286,23 @@ public class AnnotationReader extends ClassDataCollector {
 	public void annotation(Annotation annotation) {
 		try {
 			java.lang.annotation.Annotation a = annotation.getAnnotation();
-			if (a instanceof Component)
+			if (a instanceof Component) {
 				doComponent((Component) a, annotation);
-			else if (a instanceof Activate)
-				doActivate();
-			else if (a instanceof Deactivate)
-				doDeactivate();
-			else if (a instanceof Modified)
-				doModified();
-			else if (a instanceof Reference)
+			} else if (a instanceof Activate) {
+				doActivate(annotation);
+			} else if (a instanceof Deactivate) {
+				doDeactivate(annotation);
+			} else if (a instanceof Modified) {
+				doModified(annotation);
+			} else if (a instanceof Reference) {
 				doReference((Reference) a, annotation);
-			else if (a instanceof Designate)
-				doDesignate((Designate) a);
-			else if (annotation.getName()
+			} else if (a instanceof Designate) {
+				doDesignate((Designate) a, annotation);
+			} else if (annotation.getName()
 				.getFQN()
-				.startsWith("aQute.bnd.annotation.component"))
+				.startsWith("aQute.bnd.annotation.component")) {
 				handleMixedUsageError(annotation);
-			else {
+			} else {
 				handlePossibleComponentPropertyAnnotation(annotation);
 
 				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
@@ -397,7 +398,7 @@ public class AnnotationReader extends ClassDataCollector {
 		}
 	}
 
-	protected void doDesignate(Designate a) {
+	protected void doDesignate(Designate a, Annotation annotation) {
 		if (a.factory() && component.configurationPolicy == null)
 			component.configurationPolicy = ConfigurationPolicy.REQUIRE;
 	}
@@ -405,134 +406,147 @@ public class AnnotationReader extends ClassDataCollector {
 	/**
 	 * 
 	 */
-	protected void doActivate() {
+	protected void doActivate(Annotation annotation) {
 		String memberDescriptor = member.getDescriptor()
 			.toString();
-		if (member instanceof MethodDef) {
-			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), memberDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
-			Matcher m = ACTIVATEDESCRIPTOR.matcher(memberDescriptor);
-			if (m.matches()) {
-				component.activate = member.getName();
-				if (m.group("ds10") != null) {
-					if (!member.isProtected() || !"activate".equals(member.getName())) {
+		switch (annotation.getElementType()) {
+			case METHOD : {
+				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+					member.getName(), memberDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
+				Matcher m = ACTIVATEDESCRIPTOR.matcher(memberDescriptor);
+				if (m.matches()) {
+					component.activate = member.getName();
+					if (m.group("ds10") != null) {
+						if (!member.isProtected() || !"activate".equals(member.getName())) {
+							component.updateVersion(V1_1);
+						}
+					} else if (m.group("ds11") != null) {
 						component.updateVersion(V1_1);
+					} else if (m.group("ds13") != null) {
+						component.updateVersion(V1_3);
+						processActivationObjects(ComponentDef.PROPERTYDEF_ACTIVATEFORMAT, ACTIVATIONOBJECTS,
+							memberDescriptor, details);
 					}
-				} else if (m.group("ds11") != null) {
-					component.updateVersion(V1_1);
-				} else if (m.group("ds13") != null) {
-					component.updateVersion(V1_3);
-					processActivationObjects(ComponentDef.PROPERTYDEF_ACTIVATEFORMAT, ACTIVATIONOBJECTS,
-						memberDescriptor,
-						details);
+					if (m.group("return") != null) {
+						checkMapReturnType(details);
+					}
+				} else {
+					analyzer
+						.error("Activate method for %s.%s%s is not acceptable.", details.className, details.methodName,
+							details.methodSignature)
+						.details(details);
 				}
-				if (m.group("return") != null) {
-					checkMapReturnType(details);
+				break;
+			}
+			case FIELD : {
+				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+					member.getName(), ErrorType.ACTIVATE_SIGNATURE_ERROR);
+				Matcher m = ACTIVATIONOBJECTS.matcher(memberDescriptor);
+				if (m.matches()) {
+					component.updateVersion(V1_4);
+					component.activation_fields.add(member.getName());
+					String propertytype = m.group("propertytype");
+					if (propertytype != null) {
+						String propertyDefKey = String.format(ComponentDef.PROPERTYDEF_FIELDFORMAT, member.getName());
+						processActivationObject(propertyDefKey, propertytype, memberDescriptor, details);
+					}
+				} else {
+					analyzer
+						.error("Activate annotation on field %s.%s is not acceptable.", details.className,
+							details.fieldName)
+						.details(details);
 				}
-			} else {
+				break;
+			}
+			case CONSTRUCTOR : {
+				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+					member.getName(), memberDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
 				analyzer
-					.error("Activate method for %s.%s%s is not acceptable.", details.className, details.methodName,
+					.error("Activate constructor for %s.%s%s is not acceptable.", details.className, details.methodName,
 						details.methodSignature)
 					.details(details);
+				break;
 			}
-		} else if (member instanceof FieldDef) {
-			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), ErrorType.ACTIVATE_SIGNATURE_ERROR);
-			Matcher m = ACTIVATIONOBJECTS.matcher(memberDescriptor);
-			if (m.matches()) {
-				component.updateVersion(V1_4);
-				component.activation_fields.add(member.getName());
-				String propertytype = m.group("propertytype");
-				if (propertytype != null) {
-					String propertyDefKey = String.format(ComponentDef.PROPERTYDEF_FIELDFORMAT, member.getName());
-					processActivationObject(propertyDefKey, propertytype, memberDescriptor, details);
-				}
-			} else {
-				analyzer
-					.error("Activate annotation on field %s.%s is not acceptable.", details.className,
-						details.fieldName)
-					.details(details);
-			}
+			default :
+				break;
 		}
 	}
 
 	/**
 	 * 
 	 */
-	protected void doDeactivate() {
-		if (member instanceof MethodDef) {
-			String memberDescriptor = member.getDescriptor()
-				.toString();
-			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), memberDescriptor, ErrorType.DEACTIVATE_SIGNATURE_ERROR);
-			Matcher m = DEACTIVATEDESCRIPTOR.matcher(memberDescriptor);
-			if (m.matches()) {
-				component.deactivate = member.getName();
-				if (m.group("ds10") != null) {
-					if (!member.isProtected() || !"deactivate".equals(member.getName())) {
+	protected void doDeactivate(Annotation annotation) {
+		switch (annotation.getElementType()) {
+			case METHOD : {
+				String memberDescriptor = member.getDescriptor()
+					.toString();
+				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+					member.getName(), memberDescriptor, ErrorType.DEACTIVATE_SIGNATURE_ERROR);
+				Matcher m = DEACTIVATEDESCRIPTOR.matcher(memberDescriptor);
+				if (m.matches()) {
+					component.deactivate = member.getName();
+					if (m.group("ds10") != null) {
+						if (!member.isProtected() || !"deactivate".equals(member.getName())) {
+							component.updateVersion(V1_1);
+						}
+					} else if (m.group("ds11") != null) {
 						component.updateVersion(V1_1);
+					} else if (m.group("ds13") != null) {
+						component.updateVersion(V1_3);
+						processActivationObjects(ComponentDef.PROPERTYDEF_DEACTIVATEFORMAT, DEACTIVATIONOBJECTS,
+							memberDescriptor, details);
 					}
-				} else if (m.group("ds11") != null) {
-					component.updateVersion(V1_1);
-				} else if (m.group("ds13") != null) {
-					component.updateVersion(V1_3);
-					processActivationObjects(ComponentDef.PROPERTYDEF_DEACTIVATEFORMAT, DEACTIVATIONOBJECTS,
-						memberDescriptor,
-						details);
+					if (m.group("return") != null) {
+						checkMapReturnType(details);
+					}
+				} else {
+					analyzer
+						.error("Deactivate method for %s.%s%s is not acceptable.", details.className,
+							details.methodName, details.methodSignature)
+						.details(details);
 				}
-				if (m.group("return") != null) {
-					checkMapReturnType(details);
-				}
-			} else {
-				analyzer
-					.error("Deactivate method for %s.%s%s is not acceptable.", details.className, details.methodName,
-						details.methodSignature)
-					.details(details);
+				break;
 			}
-		} else if (member instanceof FieldDef) {
-			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), ErrorType.DEACTIVATE_SIGNATURE_ERROR);
-			analyzer.error("Deactivate annotation on a field %s.%s", details.className, details.fieldName)
-				.details(details);
+			default :
+				break;
 		}
 	}
 
 	/**
 	 * 
 	 */
-	protected void doModified() {
-		if (member instanceof MethodDef) {
-			String memberDescriptor = member.getDescriptor()
-				.toString();
-			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), memberDescriptor, ErrorType.MODIFIED_SIGNATURE_ERROR);
-			Matcher m = ACTIVATEDESCRIPTOR.matcher(memberDescriptor);
-			if (m.matches()) {
-				component.modified = member.getName();
-				if (m.group("ds10") != null) {
-					component.updateVersion(V1_1);
-				} else if (m.group("ds11") != null) {
-					component.updateVersion(V1_1);
-				} else if (m.group("ds13") != null) {
-					component.updateVersion(V1_3);
-					processActivationObjects(ComponentDef.PROPERTYDEF_MODIFIEDFORMAT, ACTIVATIONOBJECTS,
-						memberDescriptor,
-						details);
+	protected void doModified(Annotation annotation) {
+		switch (annotation.getElementType()) {
+			case METHOD : {
+				String memberDescriptor = member.getDescriptor()
+					.toString();
+				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
+					member.getName(), memberDescriptor, ErrorType.MODIFIED_SIGNATURE_ERROR);
+				Matcher m = ACTIVATEDESCRIPTOR.matcher(memberDescriptor);
+				if (m.matches()) {
+					component.modified = member.getName();
+					if (m.group("ds10") != null) {
+						component.updateVersion(V1_1);
+					} else if (m.group("ds11") != null) {
+						component.updateVersion(V1_1);
+					} else if (m.group("ds13") != null) {
+						component.updateVersion(V1_3);
+						processActivationObjects(ComponentDef.PROPERTYDEF_MODIFIEDFORMAT, ACTIVATIONOBJECTS,
+							memberDescriptor, details);
+					}
+					if (m.group("return") != null) {
+						checkMapReturnType(details);
+					}
+				} else {
+					analyzer
+						.error("Modified method for %s.%s%s is not acceptable.", details.className, details.methodName,
+							details.methodSignature)
+						.details(details);
 				}
-				if (m.group("return") != null) {
-					checkMapReturnType(details);
-				}
-			} else {
-				analyzer
-					.error("Modified method for %s.%s%s is not acceptable.", details.className, details.methodName,
-						details.methodSignature)
-					.details(details);
+				break;
 			}
-		} else if (member instanceof FieldDef) {
-			DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
-				member.getName(), ErrorType.MODIFIED_SIGNATURE_ERROR);
-			analyzer.error("Modified annotation on a field %s.%s", details.className, details.fieldName)
-				.details(details);
+			default :
+				break;
 		}
 	}
 
@@ -860,75 +874,78 @@ public class AnnotationReader extends ClassDataCollector {
 	 */
 	protected void doReference(Reference reference, Annotation annotation) throws Exception {
 		ReferenceDef def;
-		if (member == null)
-			def = new ReferenceDef(finder);
-		else if (referencesByMember.containsKey(member))
-			def = referencesByMember.get(member);
-		else {
-			def = new ReferenceDef(finder);
-			referencesByMember.put(member, def);
+		switch (annotation.getElementType()) {
+			case TYPE : // reference element of Component annotation
+				def = new ReferenceDef(finder);
+				break;
+			default :
+				def = referencesByMember.computeIfAbsent(member, m -> new ReferenceDef(finder));
+				break;
 		}
+
 		def.className = className.getFQN();
-		if (annotation.get("name") != null)
+		if (annotation.get("name") != null) {
 			def.name = reference.name();
-		if (annotation.get("bind") != null)
+		}
+		if (annotation.get("bind") != null) {
 			def.bind = reference.bind();
-		if (annotation.get("unbind") != null)
+		}
+		if (annotation.get("unbind") != null) {
 			def.unbind = reference.unbind();
-		if (annotation.get("updated") != null)
+		}
+		if (annotation.get("updated") != null) {
 			def.updated = reference.updated();
-		if (annotation.get("field") != null)
+		}
+		if (annotation.get("field") != null) {
 			def.field = reference.field();
-		if (annotation.get("fieldOption") != null)
+		}
+		if (annotation.get("fieldOption") != null) {
 			def.fieldOption = reference.fieldOption();
-		if (annotation.get("cardinality") != null)
+		}
+		if (annotation.get("cardinality") != null) {
 			def.cardinality = reference.cardinality();
-		if (annotation.get("policy") != null)
+		}
+		if (annotation.get("policy") != null) {
 			def.policy = reference.policy();
-		if (annotation.get("policyOption") != null)
+		}
+		if (annotation.get("policyOption") != null) {
 			def.policyOption = reference.policyOption();
-		if (annotation.get("scope") != null)
+		}
+		if (annotation.get("scope") != null) {
 			def.scope = reference.scope();
-
-		// Check if we have a target, this must be a filter
-		if (annotation.get("target") != null)
+		}
+		if (annotation.get("target") != null) {
 			def.target = reference.target();
-
-		DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
-
-		if (def.target != null) {
-			String error = Verifier.validateFilter(def.target);
-			if (error != null)
-				analyzer.error("Invalid target filter %s for %s: %s", def.target, def.name, error)
-					.details(getDetails(def, ErrorType.INVALID_TARGET_FILTER));
 		}
 
-		String annoService = null;
 		TypeRef annoServiceTR = annotation.get("service");
-		if (annoServiceTR != null)
-			annoService = annoServiceTR.getFQN();
+		String annoService = (annoServiceTR != null) ? annoServiceTR.getFQN() : null;
 
-		if (member != null) {
-			if (member instanceof MethodDef) {
+		switch (annotation.getElementType()) {
+			case METHOD : {
 				def.bindDescriptor = member.getDescriptor()
 					.toString();
 				def.bind = member.getName();
 				if (def.name == null) {
 					Matcher m = BINDNAME.matcher(member.getName());
-					if (m.matches())
+					if (m.matches()) {
 						def.name = m.group("name");
-					else
+					} else {
 						analyzer.error("Invalid name for bind method %s", member.getName())
 							.details(getDetails(def, ErrorType.INVALID_REFERENCE_BIND_METHOD_NAME));
+					}
 				}
 
 				def.service = determineReferenceType((MethodDef) member, def, annoService, member.getSignature());
 
-				if (def.service == null)
+				if (def.service == null) {
 					analyzer.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
-						component.effectiveName(), def.name, member.getDescriptor());
-
-			} else if (member instanceof FieldDef) {
+						component.effectiveName(), def.name, member.getDescriptor())
+						.details(getDetails(def, ErrorType.REFERENCE));
+				}
+				break;
+			}
+			case FIELD : {
 				def.updateVersion(V1_3);
 				def.field = member.getName();
 				if (def.name == null) {
@@ -950,7 +967,8 @@ public class AnnotationReader extends ClassDataCollector {
 				} else {
 					fieldSig = analyzer.getFieldSignature(signature);
 				}
-				if (fieldSig != null) { // field type is ReferenceTypeSignature
+				if (fieldSig != null) {
+					// field type is ReferenceTypeSignature
 					boolean isCollection = false;
 					boolean isCollectionSubClass = false;
 					CollectionType collectionType = null;
@@ -1074,38 +1092,60 @@ public class AnnotationReader extends ClassDataCollector {
 				}
 				if (def.service == null) {
 					analyzer
-						.error("In component %s, method %s,  cannot recognize the signature of the descriptor: %s",
+						.error("In component %s, field %s, cannot recognize the signature of the descriptor: %s",
 							component.effectiveName(), def.name, member.getDescriptor())
-						.details(details);
+						.details(getDetails(def, ErrorType.REFERENCE));
 				}
-
-			} // end field
-		} else {// not a member
-			def.service = annoService;
-			if (def.name == null) {
-				analyzer
+				break;
+			}
+			case TYPE : { // reference element of Component annotation
+				def.service = annoService;
+				if (def.name == null) {
+					analyzer
 					.error("Name must be supplied for a @Reference specified in the @Component annotation. Service: %s",
 						def.service)
 					.details(getDetails(def, ErrorType.MISSING_REFERENCE_NAME));
-				return;
+					return;
+				}
+				break;
+			}
+			case PARAMETER : {
+				analyzer.error("In component %s, constructor parameters not yet supported", component.effectiveName())
+					.details(getDetails(def, ErrorType.REFERENCE));
+				break;
+			}
+			default :
+				break;
+		}
+
+		// If we have a target, this must be a filter
+		if (def.target != null) {
+			String error = Verifier.validateFilter(def.target);
+			if (error != null) {
+				analyzer.error("Invalid target filter %s for %s: %s", def.target, def.name, error)
+					.details(getDetails(def, ErrorType.INVALID_TARGET_FILTER));
 			}
 		}
 
-		if (component.references.containsKey(def.name))
+		if (component.references.containsKey(def.name)) {
 			analyzer
 				.error("In component %s, multiple references with the same name: %s. Previous def: %s, this def: %s",
 					className, component.references.get(def.name), def.service, "")
 				.details(getDetails(def, ErrorType.MULTIPLE_REFERENCES_SAME_NAME));
-		else
+		} else {
 			component.references.put(def.name, def);
-
+		}
 	}
 
 	private DeclarativeServicesAnnotationError getDetails(ReferenceDef def, ErrorType type) {
-		if (def == null)
+		if (def == null) {
 			return null;
+		}
 
-		return new DeclarativeServicesAnnotationError(className.getFQN(), def.bind, def.bindDescriptor, type);
+		if (def.bindDescriptor != null) {
+			return new DeclarativeServicesAnnotationError(className.getFQN(), def.bind, def.bindDescriptor, type);
+		}
+		return new DeclarativeServicesAnnotationError(className.getFQN(), def.field, type);
 	}
 
 	private String determineReferenceType(MethodDef method, ReferenceDef def, String annoService,
@@ -1202,8 +1242,7 @@ public class AnnotationReader extends ClassDataCollector {
 			return null;
 		}
 		if (hasMapResultType) {
-			DeclarativeServicesAnnotationError details = getDetails(def, ErrorType.REFERENCE);
-			checkMapReturnType(details);
+			checkMapReturnType(getDetails(def, ErrorType.REFERENCE));
 		}
 		if (minVersion != null) {
 			def.updateVersion(minVersion);
@@ -1225,7 +1264,6 @@ public class AnnotationReader extends ClassDataCollector {
 	 * @param annotation
 	 * @throws Exception
 	 */
-	@SuppressWarnings("deprecation")
 	protected void doComponent(Component comp, Annotation annotation) throws Exception {
 
 		String componentName = annotation.containsKey("name") ? comp.name() : className.getFQN();
@@ -1255,23 +1293,32 @@ public class AnnotationReader extends ClassDataCollector {
 		}
 
 		// Check if we are doing a super class
-		if (component.implementation != null)
+		if (component.implementation != null) {
 			return;
+		}
 
 		component.implementation = clazz.getClassName();
 		component.name = componentName;
-		if (annotation.get("factory") != null)
+		if (annotation.get("factory") != null) {
 			component.factory = comp.factory();
-		if (annotation.get("configurationPolicy") != null)
+		}
+		if (annotation.get("configurationPolicy") != null) {
 			component.configurationPolicy = comp.configurationPolicy();
-		if (annotation.get("enabled") != null)
+		}
+		if (annotation.get("enabled") != null) {
 			component.enabled = comp.enabled();
-		if (annotation.get("factory") != null)
+		}
+		if (annotation.get("factory") != null) {
 			component.factory = comp.factory();
-		if (annotation.get("immediate") != null)
+		}
+		if (annotation.get("immediate") != null) {
 			component.immediate = comp.immediate();
-		if (annotation.get("servicefactory") != null)
-			component.scope = comp.servicefactory() ? ServiceScope.BUNDLE : ServiceScope.SINGLETON;
+		}
+		if (annotation.get("servicefactory") != null) {
+			@SuppressWarnings("deprecation")
+			boolean servicefactory = comp.servicefactory();
+			component.scope = servicefactory ? ServiceScope.BUNDLE : ServiceScope.SINGLETON;
+		}
 		if (annotation.get("scope") != null && comp.scope() != ServiceScope.DEFAULT) {
 			component.scope = comp.scope();
 			if (comp.scope() == ServiceScope.PROTOTYPE) {
@@ -1288,8 +1335,9 @@ public class AnnotationReader extends ClassDataCollector {
 			}
 		}
 
-		if (annotation.get("xmlns") != null)
+		if (annotation.get("xmlns") != null) {
 			component.xmlns = comp.xmlns();
+		}
 
 		component.property.setTypedProperty(className, comp.property());
 		component.factoryProperty.setTypedProperty(className, comp.factoryProperty());
@@ -1343,7 +1391,6 @@ public class AnnotationReader extends ClassDataCollector {
 				doReference(ref, refAnnotation);
 			}
 		}
-
 	}
 
 	/**
@@ -1362,19 +1409,24 @@ public class AnnotationReader extends ClassDataCollector {
 
 	@Override
 	public void method(MethodDef method) {
-		if (method.isAbstract() || method.isStatic() || method.isBridge())
+		if (method.isAbstract() || method.isStatic() || method.isBridge()) {
 			return;
+		}
 
-		if (!baseclass && method.isPrivate())
+		if (!baseclass && method.isPrivate()) {
 			return;
+		}
 
-		this.member = method;
+		member = method;
 		methods.add(method.getName(), method);
 	}
 
 	@Override
 	public void field(FieldDef field) {
-		this.member = field;
+		if (field.isStatic()) {
+			return;
+		}
+		member = field;
 	}
 
 	@Override
@@ -1382,4 +1434,8 @@ public class AnnotationReader extends ClassDataCollector {
 		this.extendsClass = name;
 	}
 
+	@Override
+	public void parameter(int p) {
+		parameter = p;
+	}
 }
