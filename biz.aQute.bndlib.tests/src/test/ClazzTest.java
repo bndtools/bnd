@@ -399,7 +399,7 @@ public class ClazzTest extends TestCase {
 	@Target(ElementType.TYPE_USE)
 	public static @interface TypeUse {}
 
-	public class AnnotationsOnTypeUseExtends extends @TypeUse Bar {}
+	public static class AnnotationsOnTypeUseExtends extends @TypeUse Bar {}
 
 	public void testAnnotationsOnTypeUseExtends() throws Exception {
 		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnTypeUseExtends.class");
@@ -430,7 +430,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
-	public class AnnotationsOnTypeUseImplements0 implements @TypeUse Foo<String> {}
+	public static class AnnotationsOnTypeUseImplements0 implements @TypeUse Foo<String> {}
 
 	public void testAnnotationsOnTypeUseImplements0() throws Exception {
 		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnTypeUseImplements0.class");
@@ -462,7 +462,7 @@ public class ClazzTest extends TestCase {
 	}
 
 	@SuppressWarnings("serial")
-	public class AnnotationsOnTypeUseImplements1 implements Serializable, @TypeUse Foo<String> {}
+	public static class AnnotationsOnTypeUseImplements1 implements Serializable, @TypeUse Foo<String> {}
 
 	public void testAnnotationsOnTypeUseImplements1() throws Exception {
 		File file = IO.getFile("bin/test/ClazzTest$AnnotationsOnTypeUseImplements1.class");
@@ -496,7 +496,7 @@ public class ClazzTest extends TestCase {
 	@Target(ElementType.PARAMETER)
 	public static @interface TypeParameter {}
 
-	public class AnnotationsOnMethodParams0 {
+	public static class AnnotationsOnMethodParams0 {
 		void bindChars(@TypeParameter Foo<Character> c) {}
 	}
 
@@ -537,7 +537,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
-	public class AnnotationsOnMethodParams1 {
+	public static class AnnotationsOnMethodParams1 {
 		void bindChars(Foo<Character> c, @TypeParameter String s) {}
 	}
 
@@ -578,7 +578,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
-	public class AnnotationsOnCtorParams0 {
+	public static class AnnotationsOnCtorParams0 {
 		public AnnotationsOnCtorParams0(@TypeParameter String s) {}
 	}
 
@@ -619,7 +619,7 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
-	public class AnnotationsOnCtorParams1 {
+	public static class AnnotationsOnCtorParams1 {
 		public AnnotationsOnCtorParams1(String r, @TypeParameter String s) {}
 	}
 
