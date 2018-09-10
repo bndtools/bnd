@@ -30,6 +30,7 @@
 package aQute.bnd.gradle
 
 import aQute.bnd.osgi.Builder
+import aQute.bnd.osgi.Jar
 import aQute.bnd.osgi.Processor
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
@@ -45,7 +46,7 @@ class Wrap extends DefaultTask {
 
     private String bundleversion
 
-    private String exportpackage = '*;version=${bundleversion}'
+    private String exportpackage
 
     /**
      * Gets classpath files.
@@ -138,7 +139,7 @@ class Wrap extends DefaultTask {
             builder.addClasspath(it)
         }
 
-        aQute.bnd.osgi.Jar jar = builder.build()
+        Jar jar = builder.build()
 
         File outputFile = builder.getOutputFile(output.path)
 
@@ -154,7 +155,7 @@ class Wrap extends DefaultTask {
         new Properties([
                 "Bundle-SymbolicName": bundlename,
                 "Bundle-Version": bundleversion,
-                "Export-Package": exportpackage
+                "Export-Package": exportpackage == null ? '*;version=' + bundleversion : exportpackage
         ])
     }
 }
