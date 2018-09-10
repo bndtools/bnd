@@ -1088,6 +1088,11 @@ public class AnnotationReader extends ClassDataCollector {
 					}
 					if (analyzer.assignable(annoService, inferredService)) {
 						def.service = (annoService != null) ? annoService : inferredService;
+					} else if ("org.osgi.service.log.LoggerFactory".equals(annoService)
+						&& ("org.osgi.service.log.Logger".equals(inferredService)
+							|| "org.osgi.service.log.FormatterLogger".equals(inferredService))) {
+						def.updateVersion(V1_4);
+						def.service = annoService;
 					}
 				}
 				if (def.service == null) {
@@ -1236,10 +1241,14 @@ public class AnnotationReader extends ClassDataCollector {
 				break;
 		}
 
-		// if the type is specified it may still not match as it could
-		// be a superclass of the specified service.
 		if (!analyzer.assignable(annoService, inferredService)) {
-			return null;
+			if ("org.osgi.service.log.LoggerFactory".equals(annoService)
+				&& ("org.osgi.service.log.Logger".equals(inferredService)
+					|| "org.osgi.service.log.FormatterLogger".equals(inferredService))) {
+				minVersion = V1_4;
+			} else {
+				return null;
+			}
 		}
 		if (hasMapResultType) {
 			checkMapReturnType(getDetails(def, ErrorType.REFERENCE));

@@ -18,6 +18,7 @@
 	org.osgi.service.metatype.annotations;version=latest,\
     org.osgi.util.function;version=latest,\
     org.osgi.util.promise;version=latest,\
+    org.osgi.service.log;version=latest,\
     osgi.annotation;version=latest,\
 	osgi.core;version=@6,\
 	osgi.cmpn;version=@6,\
