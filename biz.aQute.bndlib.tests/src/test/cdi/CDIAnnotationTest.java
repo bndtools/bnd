@@ -91,7 +91,7 @@ public class CDIAnnotationTest {
 	@Test
 	public void discoveryAnnotated() throws Exception {
 		try (Builder b = new Builder()) {
-			b.setProperty(Constants.CDIANNOTATIONS_OPTIONS, "annotated");
+			b.setProperty(Constants.CDIANNOTATIONS, "*;discover=annotated");
 			b.setProperty("Private-Package", "test.cdi.beans_e.*");
 			b.addClasspath(new File("bin"));
 			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
@@ -110,7 +110,7 @@ public class CDIAnnotationTest {
 	@Test(expected = AssertionError.class)
 	public void discoveryNone() throws Exception {
 		try (Builder b = new Builder()) {
-			b.setProperty(Constants.CDIANNOTATIONS_OPTIONS, "none");
+			b.setProperty(Constants.CDIANNOTATIONS, "*;discover=none");
 			b.setProperty("Private-Package", "test.cdi.beans_e.*");
 			b.addClasspath(new File("bin"));
 			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
@@ -127,7 +127,7 @@ public class CDIAnnotationTest {
 	@Test
 	public void discoveryAll() throws Exception {
 		try (Builder b = new Builder()) {
-			b.setProperty(Constants.CDIANNOTATIONS_OPTIONS, "all");
+			b.setProperty(Constants.CDIANNOTATIONS, "*;discover=all");
 			b.setProperty("Private-Package", "test.cdi.beans_e.*");
 			b.addClasspath(new File("bin"));
 			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
@@ -170,6 +170,24 @@ public class CDIAnnotationTest {
 	}
 
 	@Test
+	public void providesServiceNoProvides() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.CDIANNOTATIONS, "*;noservicecapabilities=true");
+			b.setProperty("Private-Package", "test.cdi.beans_f.*");
+			b.addClasspath(new File("bin"));
+			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, Arrays.asList("test.cdi.beans_f.AppScopedBean", "test.cdi.beans_f.ServiceB",
+				"test.cdi.beans_f.ServiceC"));
+		}
+	}
+
+	@Test
 	public void requiresService() throws Exception {
 		try (Builder b = new Builder()) {
 			b.setProperty("Private-Package", "test.cdi.beans_g.*");
@@ -191,6 +209,47 @@ public class CDIAnnotationTest {
 				"test.cdi.beans_g.Foo", "java.lang.Character", "java.lang.Integer", "java.lang.Long",
 				"java.lang.Boolean", "java.lang.Short", "test.cdi.beans_g.Bar", "test.cdi.beans_g.Baz",
 				"test.cdi.beans_g.Bif", "test.cdi.beans_g.Fum", "test.cdi.beans_g.Glum", "test.cdi.beans_g.Fee");
+		}
+	}
+
+	@Test
+	public void requiresServiceNoRequires() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.CDIANNOTATIONS, "*;noservicerequirements=true");
+			b.setProperty("Private-Package", "test.cdi.beans_g.*");
+			b.addClasspath(new File("bin"));
+			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a, new String[] {
+				"test.cdi.beans_g.Gru"
+			}, new String[] {
+				"test.cdi.beans_g.Glum"
+			});
+			checkRequires(a, Arrays.asList("test.cdi.beans_g.AppScopedBean", "test.cdi.beans_g.ServiceB",
+				"test.cdi.beans_g.ProducerA"));
+		}
+	}
+
+	@Test
+	public void discoverTypo() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.CDIANNOTATIONS, "*;discover=foo");
+			b.setProperty("Private-Package", "test.cdi.beans_g.*");
+			b.addClasspath(new File("bin"));
+			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+			Jar jar = b.build();
+
+			if (!b.check()) {
+				assertThat(b.getErrors()).asList()
+					.containsExactly(
+						"Unrecognized discover 'foo', expected values are [all, annotated, annotated_by_bean, none]");
+			} else {
+				fail("Was supposed to fail parsing discover value 'foo'");
+			}
 		}
 	}
 

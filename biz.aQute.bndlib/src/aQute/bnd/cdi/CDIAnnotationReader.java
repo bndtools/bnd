@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 import org.osgi.service.component.annotations.ReferenceCardinality;
 
-import aQute.bnd.cdi.CDIAnnotations.Options;
+import aQute.bnd.cdi.CDIAnnotations.Discover;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.ClassDataCollector;
@@ -56,7 +56,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	final Analyzer						analyzer;
 	final Clazz							clazz;
 	final ClassSignature				classSig;
-	final EnumSet<Options>				options;
+	final EnumSet<Discover>				options;
 	final Map<PackageRef, PackageDef>	packageInfos			= new HashMap<>();
 	final List<BeanDef>					definitions				= new ArrayList<>();
 	boolean								baseclass				= true;
@@ -67,7 +67,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	ReferenceDef						referenceDef;
 	int									targetIndex				= -1;
 
-	CDIAnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options) {
+	CDIAnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Discover> options) {
 		this.analyzer = requireNonNull(analyzer);
 		this.clazz = clazz;
 		this.options = options;
@@ -76,7 +76,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		this.classSig = analyzer.getClassSignature((signature != null) ? signature : "Ljava/lang/Object;");
 	}
 
-	public static List<BeanDef> getDefinition(Clazz c, Analyzer analyzer, EnumSet<Options> options) throws Exception {
+	public static List<BeanDef> getDefinition(Clazz c, Analyzer analyzer, EnumSet<Discover> options) throws Exception {
 		CDIAnnotationReader r = new CDIAnnotationReader(analyzer, c, options);
 		return r.getDefs();
 	}
@@ -90,14 +90,14 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		}
 
 		// if discovery mode is 'all', all concrete classes are considered
-		if (options.contains(Options.all) && !clazz.is(QUERY.CONCRETE, null, analyzer)) {
+		if (options.contains(Discover.all) && !clazz.is(QUERY.CONCRETE, null, analyzer)) {
 			return null;
 		}
 
 		// if discovery mode is 'annotated', only classes annotated with a bean
 		// defining annotation are considered. See
 		// http://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#bean_defining_annotations
-		if (options.contains(Options.annotated)) {
+		if (options.contains(Discover.annotated)) {
 			if (clazz.is(QUERY.ANNOTATED, VETOED_INSTR, analyzer)
 				|| (!clazz.is(QUERY.INDIRECTLY_ANNOTATED, COMPONENTSCOPED_INSTR, analyzer)
 					&& !clazz.is(QUERY.INDIRECTLY_ANNOTATED, NORMALSCOPE_INSTR, analyzer)
@@ -122,7 +122,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		// the default discovery mode is 'annotated_by_bean' to indicate that
 		// classes annotated with @Bean or in packages annotated with @Beans are
 		// considered
-		if (options.contains(Options.annotated_by_bean) && !definitions.get(0).marked) {
+		if (options.contains(Discover.annotated_by_bean) && !definitions.get(0).marked) {
 			return null;
 		}
 

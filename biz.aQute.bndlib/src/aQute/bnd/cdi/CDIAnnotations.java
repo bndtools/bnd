@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -19,7 +20,6 @@ import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
-import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.service.AnalyzerPlugin;
@@ -31,20 +31,21 @@ import aQute.lib.strings.Strings;
  */
 public class CDIAnnotations implements AnalyzerPlugin {
 
-	public enum Options {
+	public enum Discover {
 		all,
 		annotated,
 		annotated_by_bean,
 		none;
 
-		static void parseOption(Map.Entry<String, Attrs> entry, EnumSet<Options> options, CDIAnnotations state) {
-			String s = entry.getKey();
+		static void parse(String s, EnumSet<Discover> options, CDIAnnotations state) {
+			if (s == null)
+				return;
 			boolean negation = false;
 			if (s.startsWith("!")) {
 				negation = true;
 				s = s.substring(1);
 			}
-			Options option = Options.valueOf(s);
+			Discover option = Discover.valueOf(s);
 			if (negation) {
 				options.remove(option);
 			} else {
@@ -59,48 +60,40 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		if (header.size() == 0)
 			return false;
 
-		Parameters optionsHeader = OSGiHeader
-			.parseHeader(analyzer.mergeProperties(Constants.CDIANNOTATIONS_OPTIONS));
-		EnumSet<Options> options = EnumSet.noneOf(Options.class);
-		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
-			try {
-				Options.parseOption(entry, options, this);
-			} catch (IllegalArgumentException e) {
-				analyzer.error("Unrecognized %s value %s with attributes %s, expected values are %s",
-					Constants.CDIANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(), EnumSet.allOf(Options.class));
-			}
-		}
-
-		if (options.isEmpty()) {
-			// set the default mode, if org.osgi.service.cdi.annotations.Bean is
-			// on the classpath set to `annotated_by_bean`, otherwise set to
-			// `none`
-
-			TypeRef typeRef = analyzer.getTypeRefFromFQN("org.osgi.service.cdi.annotations.Bean");
-			if (typeRef != null)
-				options.add(Options.annotated_by_bean);
-			else
-				options.add(Options.none);
-		}
-
-		if (options.contains(Options.none)) {
-			return false;
-		}
-
 		Instructions instructions = new Instructions(header);
 		Collection<Clazz> list = analyzer.getClassspace()
 			.values();
 		List<String> names = new ArrayList<>();
-
 		TreeSet<String> provides = new TreeSet<>();
 		TreeSet<String> requires = new TreeSet<>();
 
 		for (Clazz c : list) {
-			for (Instruction instruction : instructions.keySet()) {
+			for (Entry<Instruction, Attrs> entry : instructions.entrySet()) {
+				Instruction instruction = entry.getKey();
+				Attrs attrs = entry.getValue();
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated()) {
 						break;
 					}
+
+					String discover = attrs.get("discover");
+					EnumSet<Discover> options = EnumSet.noneOf(Discover.class);
+					try {
+						Discover.parse(discover, options, this);
+					} catch (IllegalArgumentException e) {
+						analyzer.error("Unrecognized discover '%s', expected values are %s", discover,
+							EnumSet.allOf(Discover.class));
+					}
+
+					if (options.isEmpty()) {
+						// set the default mode
+						options.add(Discover.annotated_by_bean);
+					}
+
+					if (options.contains(Discover.none)) {
+						break;
+					}
+
 					List<BeanDef> definitions = CDIAnnotationReader.getDefinition(c, analyzer, options);
 					if (definitions == null) {
 						break;
@@ -108,25 +101,29 @@ public class CDIAnnotations implements AnalyzerPlugin {
 
 					names.add(definitions.get(0).implementation.getFQN());
 
-					for (BeanDef beanDef : definitions) {
-						if (!beanDef.service.isEmpty()) {
-							int length = beanDef.service.size();
-							String[] objectClass = new String[length];
+					if (!attrs.containsKey("noservicecapabilities")) {
+						for (BeanDef beanDef : definitions) {
+							if (!beanDef.service.isEmpty()) {
+								int length = beanDef.service.size();
+								String[] objectClass = new String[length];
 
-							for (int i = 0; i < length; i++) {
-								Descriptors.TypeRef tr = beanDef.service.get(i);
-								objectClass[i] = tr.getFQN();
+								for (int i = 0; i < length; i++) {
+									Descriptors.TypeRef tr = beanDef.service.get(i);
+									objectClass[i] = tr.getFQN();
+								}
+								Arrays.sort(objectClass);
+								addServiceCapability(objectClass, provides);
 							}
-							Arrays.sort(objectClass);
-							addServiceCapability(objectClass, provides);
 						}
 					}
 
-					MergedRequirement serviceReqMerge = new MergedRequirement("osgi.service");
-					for (ReferenceDef ref : definitions.get(0).references) {
-						addServiceRequirement(ref, serviceReqMerge);
+					if (!attrs.containsKey("noservicerequirements")) {
+						MergedRequirement serviceReqMerge = new MergedRequirement("osgi.service");
+						for (ReferenceDef ref : definitions.get(0).references) {
+							addServiceRequirement(ref, serviceReqMerge);
+						}
+						requires.addAll(serviceReqMerge.toStringList());
 					}
-					requires.addAll(serviceReqMerge.toStringList());
 
 					break;
 				}
