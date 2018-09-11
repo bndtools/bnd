@@ -11,11 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.osgi.service.cdi.annotations.Bean;
-import org.osgi.service.cdi.annotations.Beans;
-import org.osgi.service.cdi.annotations.MinimumCardinality;
-import org.osgi.service.cdi.annotations.Reference;
-import org.osgi.service.cdi.annotations.Service;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 
 import aQute.bnd.cdi.CDIAnnotations.Options;
@@ -139,9 +134,9 @@ public class CDIAnnotationReader extends ClassDataCollector {
 
 		@Override
 		public void annotation(Annotation annotation) throws Exception {
-			java.lang.annotation.Annotation a = annotation.getAnnotation();
-
-			if (a instanceof Beans) {
+			String fqn = Descriptors.binaryToFQN(annotation.getName()
+				.getBinary());
+			if (fqn.equals("org.osgi.service.cdi.annotations.Beans")) {
 				Object[] beanClasses = annotation.get("value");
 
 				if (beanClasses != null && beanClasses.length > 0) {
@@ -158,15 +153,16 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	@Override
 	public void annotation(Annotation annotation) {
 		try {
-			java.lang.annotation.Annotation a = annotation.getAnnotation();
+			String fqn = Descriptors.binaryToFQN(annotation.getName()
+				.getBinary());
 
-			if (a instanceof Bean) {
+			if (fqn.equals("org.osgi.service.cdi.annotations.Bean")) {
 				definitions.get(0).marked = true;
 			}
-			else if (a instanceof Service) {
-				doService(annotation, a);
+			else if (fqn.equals("org.osgi.service.cdi.annotations.Service")) {
+				doService(annotation);
 			}
-			else if (a instanceof MinimumCardinality) {
+			else if (fqn.equals("org.osgi.service.cdi.annotations.MinimumCardinality")) {
 				int minimumCardinality = (int) annotation.get("value");
 				if (minimumCardinality > 0) {
 					if (referenceDef == null) {
@@ -175,7 +171,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 					referenceDef.cardinality = ReferenceCardinality.AT_LEAST_ONE;
 				}
 			}
-			if (a instanceof Reference) {
+			if (fqn.equals("org.osgi.service.cdi.annotations.Reference")) {
 				doReference(annotation, parameter);
 			}
 		} catch (Exception e) {
@@ -436,7 +432,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		definitions.get(0).references.add(referenceDef);
 	}
 
-	private void doService(Annotation annotation, java.lang.annotation.Annotation a) {
+	private void doService(Annotation annotation) {
 		switch (annotation.getElementType()) {
 			case FIELD : {
 				Clazz.FieldDef fieldDef = member;
