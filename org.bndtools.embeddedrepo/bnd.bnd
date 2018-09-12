@@ -4,6 +4,8 @@
 Fragment-Host: biz.aQute.bndlib;bundle-version="[${bnd-version-base},${bnd-version-ceiling})"
 -includeresource: embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;[${bnd-version-base},${bnd-version-ceiling});HIGHEST}
 
+-buildpath: ${bndlib}
+
 Import-Package: \
 	javax.management,\
 	javax.management.remote
