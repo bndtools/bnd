@@ -4,24 +4,38 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
+import org.osgi.resource.Capability;
+import org.osgi.resource.Requirement;
+import org.osgi.resource.Resource;
+import org.osgi.service.repository.Repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,17 +47,25 @@ import aQute.bnd.differ.RepositoryElement;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.main.bnd.projectOptions;
 import aQute.bnd.maven.support.MavenRemoteRepository;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Instruction;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.osgi.repository.ResourcesRepository;
+import aQute.bnd.osgi.repository.XMLResourceGenerator;
+import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.RepositoryPlugin.PutOptions;
 import aQute.bnd.service.RepositoryPlugin.PutResult;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.maven.ToDependencyPom;
+import aQute.bnd.service.progress.ProgressToOutput;
 import aQute.bnd.service.repository.ResourceRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
@@ -57,6 +79,7 @@ import aQute.lib.getopt.OptionArgument;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
+import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.glob.Glob;
 
@@ -140,13 +163,15 @@ public class RepoCommand {
 			logger.debug("getting project repos");
 			Project p = bnd.getProject(opts.project());
 
-			if (p != null) {
+			if (p != null && opts.workspace() == null) {
 				repos.addAll(p.getWorkspace()
 					.getRepositories());
+				repos.add(p.getWorkspace()
+					.getWorkspaceRepository());
 			} else {
-				Workspace w = bnd.getWorkspace((File) null);
-				if (w != null) {
-					repos.addAll(w.getRepositories());
+				if (workspace != null) {
+					repos.addAll(workspace.getRepositories());
+					repos.add(workspace.getWorkspaceRepository());
 				}
 			}
 		}
@@ -158,8 +183,7 @@ public class RepoCommand {
 			RepositoryPlugin rpp = rp.next();
 
 			// Check for the cache
-			if (!opts.cache() && rpp.getName()
-				.equals("cache")) {
+			if (!opts.cache() && "bnd-cache".equals(rpp.getName())) {
 				rp.remove();
 			}
 			if (w == null && rpp.canWrite()) {
@@ -185,6 +209,8 @@ public class RepoCommand {
 				bnd.out.print(help);
 			}
 		}
+		if (workspace != null)
+			bnd.getInfo(workspace);
 	}
 
 	/**
@@ -230,15 +256,17 @@ public class RepoCommand {
 
 	@Description("List all artifacts from the current repositories with their versions")
 	public void _list(listOptions opts) throws Exception {
-		logger.debug("list");
 		Set<String> bsns = new HashSet<>();
 		Instruction from = opts.from();
 		if (from == null)
 			from = new Instruction("*");
 
+		logger.debug("repos list {}", from);
+
 		for (RepositoryPlugin repo : repos) {
-			if (from.matches(repo.getName()))
+			if (from.matches(repo.getName())) {
 				bsns.addAll(repo.list(opts.query()));
+			}
 		}
 		logger.debug("list {}", bsns);
 
@@ -301,6 +329,17 @@ public class RepoCommand {
 			}
 		}
 
+		if (bsn.indexOf(':') > 0 && range != null) {
+			for (RepositoryPlugin repo : repos) {
+				File file = repo.get(bsn, Version.parseVersion(range), null);
+				if (file != null) {
+					bnd.progress("maven artifact %s", file);
+					copyit(opts, file);
+					return;
+				}
+			}
+		}
+
 		VersionRange r = new VersionRange(range == null ? "0" : range);
 		Map<Version, RepositoryPlugin> index = new HashMap<>();
 
@@ -330,6 +369,10 @@ public class RepoCommand {
 		RepositoryPlugin repo = index.get(v);
 		File file = repo.get(bsn, v, null);
 
+		copyit(opts, file);
+	}
+
+	private void copyit(getOptions opts, File file) throws IOException {
 		File dir = bnd.getBase();
 		String name = file.getName();
 
@@ -486,7 +529,6 @@ public class RepoCommand {
 					if (options.remove() == false && options.added() == false || (options.remove() //
 						&& version.getDelta() == Delta.REMOVED)
 						|| (options.added() && version.getDelta() == Delta.ADDED)) {
-
 						map.add(bsn.getName(), version.getName());
 					}
 				}
@@ -517,17 +559,23 @@ public class RepoCommand {
 	@Description("Refresh refreshable repositories")
 	@Arguments(arg = {})
 	interface RefreshOptions extends Options {
-
+		boolean quiet();
 	}
 
 	@Description("Refresh refreshable repositories")
 	public void _refresh(RefreshOptions opts) throws Exception {
+		ProgressToOutput progressToOutput = new ProgressToOutput(bnd.out, null);
+		if (!opts.quiet()) {
+			workspace.addBasicPlugin(progressToOutput);
+		}
+
 		for (Object o : repos) {
 			if (o instanceof Refreshable) {
 				logger.debug("refresh {}", o);
 				((Refreshable) o).refresh();
 			}
 		}
+		progressToOutput.clear();
 	}
 
 	@Description("Displays a sorted set of versions for a given bsn that can be found in the current repositories.")
@@ -551,7 +599,7 @@ public class RepoCommand {
 	 * Copy
 	 */
 	@Arguments(arg = {
-		"source", "dest"
+		"source", "dest", "bsn[:version]..."
 	})
 	interface CopyOptions extends projectOptions {
 
@@ -560,11 +608,30 @@ public class RepoCommand {
 
 		@Description("Do not really copy but trace the steps")
 		boolean dry();
+
+		String[] filter();
+
+		boolean quiet(boolean deflt);
+
+		boolean force();
+	}
+
+	@SuppressWarnings("unused")
+	class Spec {
+		DownloadBlocker	src;
+		DownloadBlocker	dst;
+		String			bsn;
+		Version			version;
+		public byte[]	digest;
 	}
 
 	public void _copy(CopyOptions options) throws Exception {
 
 		List<String> args = options._arguments();
+		ProgressToOutput progressToOutput = new ProgressToOutput(bnd.out, null);
+		if (!options.quiet(false)) {
+			workspace.addBasicPlugin(progressToOutput);
+		}
 
 		String srcName = args.remove(0);
 		String dstName = args.remove(0);
@@ -584,39 +651,57 @@ public class RepoCommand {
 			return;
 		}
 
+		if (options.filter() != null) {
+			for (String path : options.filter()) {
+				File file = bnd.getFile(path);
+				if (!file.isFile()) {
+					bnd.error("Filter file %s does not exist", file);
+				} else {
+					Files.readAllLines(file.toPath())
+						.stream()
+						.map(String::trim)
+						.filter(s -> !s.isEmpty() && !s.startsWith("#"))
+						.forEach(args::add);
+				}
+			}
+		}
+		String instructions = Strings.join(args);
+		Instructions filter = new Instructions(instructions);
+
 		logger.debug("src = {} -> {}", srcName, source);
 		logger.debug("dst = {} -> {}", dstName, dest);
-
-		@SuppressWarnings("unused")
-		class Spec {
-			DownloadBlocker	src;
-			DownloadBlocker	dst;
-			String			bsn;
-			Version			version;
-			public byte[]	digest;
-		}
+		logger.debug("instructions {}", instructions);
 
 		List<Spec> sources = new ArrayList<>();
 
 		//
 		// Get the repo contents, using background downloads
 		//
+		Map<String, Spec> found = new TreeMap<>();
 
 		for (String bsn : source.list(null)) {
 			for (Version version : source.versions(bsn)) {
-				logger.debug("src: {} {}", bsn, version);
+				String gav = bsn + ":" + version;
+				logger.debug("src: '{}'", gav);
 
-				Spec spec = new Spec();
-				spec.bsn = bsn;
-				spec.version = version;
-				spec.src = new DownloadBlocker(bnd);
+				if (filter.matches(gav)) {
 
-				File src = source.get(bsn, version, null, spec.src);
-				if (src == null) {
-					bnd.error("No such entry: %s-%s", bsn, version);
+					Spec spec = new Spec();
+					spec.bsn = bsn;
+					spec.version = version;
+					spec.src = new DownloadBlocker(bnd);
+					found.put(gav, spec);
+
+					File src = source.get(bsn, version, null, spec.src);
+					if (src == null) {
+						bnd.error("No such entry: %s-%s", bsn, version);
+					} else {
+						spec.dst = findMatchingVersion(dest, bsn, version);
+						sources.add(spec);
+					}
 				} else {
-					spec.dst = findMatchingVersion(dest, bsn, version);
-					sources.add(spec);
+					logger.debug("skip: '{}'", gav);
+					found.put(gav, null);
 				}
 			}
 		}
@@ -659,29 +744,89 @@ public class RepoCommand {
 			// TODO Diff
 		}
 
-		if (!bnd.isOk())
+		if (!options.force() && !bnd.isOk())
 			return;
 
 		for (Spec spec : sources) {
 			File src = spec.src.getFile();
-
-			if (!options.dry()) {
-				try (InputStream fin = IO.stream(src)) {
-					PutResult put = dest.put(fin, null);
-					if (put.digest != null) {
-						if (!Arrays.equals(spec.digest, put.digest)) {
-							bnd.error("Digest error in upload %s", src);
-						}
-					}
-				} catch (Exception e) {
-					bnd.exception(e, "Exception %s in upload %s", e, src);
-				}
+			if (isBundle(src)) {
+				copyIt(options.dry(), dest, spec, src);
+			} else {
+				bnd.warning("Not a bundle %s %s %s", spec.bsn, spec.version, src);
 			}
 		}
+		progressToOutput.clear();
 
-		for (String bsn : source.list(null)) {
-			for (Version version : source.versions(bsn)) {
-				System.out.println(bsn + ";version=" + version);
+		for (Map.Entry<String, Spec> e : found.entrySet()) {
+			Spec spec = e.getValue();
+			String bsn = e.getKey()
+				.split(":")[0];
+			String version = e.getKey()
+				.split(":")[1];
+			if (spec != null) {
+				String src = spec.src != null ? (spec.src.getReason() == null ? "ok" : spec.src.getReason()) : "no src";
+				String dst = spec.dst != null ? (spec.dst.getReason() == null ? "ok" : spec.dst.getReason()) : "no dst";
+				bnd.out.printf(" %-60s %-30s %-20s %-20s%n", spec.bsn, spec.version, src, dst);
+			} else {
+				bnd.out.printf(" %-60s %-30s %-20s %-20s%n", bsn, version, "skip", "-");
+			}
+		}
+	}
+
+	private boolean isBundle(File src) throws IOException {
+		Domain domain = Domain.domain(src);
+		Entry<String, Attrs> bundleSymbolicName = domain.getBundleSymbolicName();
+		return bundleSymbolicName != null;
+	}
+
+	private void copyIt(boolean dry, RepositoryPlugin dest, Spec spec, File src) throws ZipException, IOException {
+		if (src.getName()
+			.endsWith(".zip")
+			|| src.getName()
+				.endsWith(".par")) {
+			ZipFile zipFile = new ZipFile(src);
+			Enumeration<? extends ZipEntry> entries = zipFile.entries();
+			while (entries.hasMoreElements()) {
+				ZipEntry entry = entries.nextElement();
+				String name = entry.getName();
+				int n = name.lastIndexOf('.');
+				String ext = name.substring(n);
+
+				if (".jar".equals(ext) || ".par".equals(ext)) {
+					try (InputStream in = zipFile.getInputStream(entry)) {
+						Path tmpFile = Files.createTempFile("zip", ext);
+						try {
+							IO.copy(in, tmpFile);
+							copyit(dry, dest, spec, tmpFile.toFile());
+						} finally {
+							Files.delete(tmpFile);
+						}
+					}
+				} else {
+					bnd.progress("skip %s", name);
+				}
+
+			}
+
+		} else {
+			copyit(dry, dest, spec, src);
+		}
+	}
+
+	private void copyit(boolean dry, RepositoryPlugin dest, Spec spec, File src) {
+		if (!dry) {
+			try (InputStream fin = IO.stream(src)) {
+				PutOptions po = new RepositoryPlugin.PutOptions();
+				po.context = workspace;
+
+				PutResult put = dest.put(fin, po);
+				if (put.digest != null) {
+					if (!Arrays.equals(spec.digest, put.digest)) {
+						bnd.error("Digest error in upload %s", src);
+					}
+				}
+			} catch (Exception e) {
+				bnd.exception(e, "Exception %s in upload %s", e, src);
 			}
 		}
 	}
@@ -764,4 +909,223 @@ public class RepoCommand {
 		return null;
 	}
 
+	@Description("")
+	interface SyncOptions extends Options {
+		String[] source();
+
+		String dest();
+
+		String workspace();
+
+		String[] gavs();
+	}
+
+	public void _sync(SyncOptions opts) throws Exception {
+		Workspace ws = bnd.getWorkspace(opts.workspace());
+		if (ws == null) {
+			bnd.error("No such workspace %s", opts.workspace());
+			return;
+		}
+
+		List<RepositoryPlugin> sources = new ArrayList<>();
+		String dest = null;
+		if (opts.dest() == null) {
+			dest = ws.getProperty(Constants.RELEASEREPO);
+			bnd.progress("Using release repo %s", dest);
+		}
+
+		if (dest == null) {
+			bnd.error("No destination repo set. Either --dest <dst> or the %s property in the workspace file",
+				Constants.RELEASEREPO);
+			return;
+		}
+
+		RepositoryPlugin destRepo = ws.getRepository(dest);
+		if (destRepo == null) {
+			bnd.error("No destination repo %s found", dest);
+			return;
+		}
+
+		for (String src : opts.source()) {
+			RepositoryPlugin srcRepo = ws.getRepository(src);
+			if (srcRepo == null) {
+				bnd.error("No source repo %s found", src);
+			} else {
+				bnd.progress("Using src repo %s", srcRepo);
+				sources.add(srcRepo);
+			}
+		}
+		if (sources.isEmpty()) {
+			bnd.progress("Using all repositories as source");
+			sources.addAll(ws.getRepositories());
+		}
+		if (sources.isEmpty()) {
+			bnd.error("No source repos found");
+			return;
+		}
+		sources.remove(destRepo);
+
+		copyGavs(opts, sources, destRepo);
+
+		List<String> args = opts._arguments();
+		while (!args.isEmpty()) {
+			String bsn = args.remove(0);
+			String range = "0";
+			if (!args.isEmpty() && VersionRange.isVersionRange(args.get(0))) {
+				range = args.remove(0);
+			}
+			copy(sources, destRepo, bsn, range);
+
+		}
+
+	}
+
+	private void copyGavs(SyncOptions opts, List<RepositoryPlugin> sources, RepositoryPlugin destRepo)
+		throws IOException {
+		for (String gav : opts.gavs()) {
+			File file = bnd.getFile(gav);
+			if (!file.isFile()) {
+				bnd.error("GAV file specied %s but cannot find", file);
+				continue;
+			}
+			List<String> lines = Files.readAllLines(file.toPath());
+			for (String line : lines) {
+
+				line = line.trim();
+
+				if (line.isEmpty())
+					continue;
+
+				if (line.startsWith("#"))
+					continue;
+
+				int n = line.lastIndexOf(':');
+				if (n <= 0) {
+					bnd.error("Not a valid GAV %s", line);
+					continue;
+				}
+
+				String pregav = gav.substring(0, n);
+				String version = gav.substring(n + 1);
+
+				copy(sources, destRepo, pregav, version);
+
+			}
+
+		}
+	}
+
+	private void copy(List<RepositoryPlugin> sources, RepositoryPlugin destRepo, String bsn, String range) {
+		File f = find(sources, bsn, range);
+		if (f == null) {
+			// already reported reason
+			return;
+
+		} else {
+			try (FileInputStream in = new FileInputStream(f)) {
+				destRepo.put(in, null);
+			} catch (Exception e) {
+				bnd.exception(e, "While copying %s to %s: %s", f, destRepo, e.getMessage());
+			}
+		}
+	}
+
+	private File find(List<RepositoryPlugin> sources, String bsn, String range) {
+		try {
+			VersionRange vr = VersionRange.parseVersionRange(range);
+
+			TreeSet<Version> all = new TreeSet<>();
+
+			for (RepositoryPlugin rp : sources) {
+				SortedSet<Version> versions = rp.versions(bsn);
+				all.addAll(versions);
+			}
+			if (all.isEmpty()) {
+				bnd.error("No content found at all for %s;version=%s", bsn, range);
+			}
+
+			List<Version> list = new ArrayList<>(all);
+			Collections.reverse(list);
+
+			for (Version v : list) {
+				if (vr.includes(v)) {
+					for (RepositoryPlugin rp : sources) {
+						File file;
+						file = rp.get(bsn, v, null);
+						if (file != null)
+							return file;
+					}
+				}
+			}
+			bnd.error("No file found for %s;version=%s. Available: %s", bsn, range, list);
+			return null;
+		} catch (Exception e) {
+			bnd.exception(e, "While getting %s", bsn);
+			return null;
+		}
+	}
+
+	interface IndexOptions extends Options {
+		@Description("Optional search term for the list of bsns (given to the repo)")
+		String query();
+
+		@Description("A glob expression on the source repo, default is all repos")
+		Instruction from();
+
+		@Description("Output file (will be compressed)")
+		String output();
+
+		@Description("The name of the output file. If not set will show on the console")
+		String name(String deflt);
+
+		@Description("No output")
+		boolean quiet();
+	}
+
+	public void _index(IndexOptions opts) throws Exception {
+		ProgressToOutput progressToOutput = new ProgressToOutput(bnd.out, null);
+		if (!opts.quiet()) {
+			workspace.addBasicPlugin(progressToOutput);
+		}
+
+		Set<String> bsns = new HashSet<>();
+		Instruction from = opts.from();
+		if (from == null)
+			from = new Instruction("*");
+
+		logger.debug("repos list {}", from);
+
+		ResourcesRepository all = new ResourcesRepository();
+		Set<Requirement> wildcard = Collections.singleton(ResourceUtils.createWildcardRequirement());
+
+		for (RepositoryPlugin repo : repos) {
+			if (from.matches(repo.getName())) {
+				if (repo instanceof Repository) {
+					Repository repository = (Repository) repo;
+					Collection<Collection<Capability>> findProviders = repository.findProviders(wildcard)
+						.values();
+					Set<Resource> resources = ResourceUtils.getAllResources(repository);
+					all.addAll(resources);
+					bnd.progress("repo %s %s resources", from, resources.size());
+				} else {
+					bnd.warning("selected repo that was not an OSGi repository %s", from);
+				}
+			}
+		}
+
+		XMLResourceGenerator gen = new XMLResourceGenerator();
+		gen.repository(all);
+		gen.name(opts.name("untitled"));
+		if (opts.output() == null) {
+			gen.indent(2);
+			gen.save(bnd.out);
+		} else {
+			File file = bnd.getFile(opts.output());
+			file.getParentFile()
+				.mkdirs();
+			gen.compress();
+			gen.save(file);
+		}
+		progressToOutput.clear();
+	}
 }
