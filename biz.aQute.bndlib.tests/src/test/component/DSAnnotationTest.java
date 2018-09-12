@@ -3922,8 +3922,8 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	public static class LoggerComponent {
 		@Activate
-		public LoggerComponent(@Reference(service = LoggerFactory.class, name = "ctor1") Logger logger,
-			@Reference(service = LoggerFactory.class, name = "ctor2") FormatterLogger formatterLogger) {}
+		public LoggerComponent(@Reference(service = LoggerFactory.class) Logger loggerC,
+			@Reference(service = LoggerFactory.class) FormatterLogger formatterLoggerC) {}
 
 		@Reference(service = LoggerFactory.class)
 		private Logger logger;
@@ -3961,11 +3961,15 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("0", "count(scr:component/properties)");
 			xt.assertAttribute("0", "count(scr:component/property)");
 
-			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='ctor1']/@interface");
-			xt.assertAttribute("0", "scr:component/reference[@name='ctor1']/@parameter");
+			// This test method depends upon the compiler generating
+			// MethodParameters attributes so that the DS annotations code will
+			// generate the desired reference name from the parameter name.
+			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='loggerC']/@interface");
+			xt.assertAttribute("0", "scr:component/reference[@name='loggerC']/@parameter");
 
-			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='ctor2']/@interface");
-			xt.assertAttribute("1", "scr:component/reference[@name='ctor2']/@parameter");
+			xt.assertAttribute(LoggerFactory.class.getName(),
+				"scr:component/reference[@name='formatterLoggerC']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='formatterLoggerC']/@parameter");
 
 			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='logger']/@interface");
 			xt.assertAttribute("logger", "scr:component/reference[@name='logger']/@field");
@@ -3993,7 +3997,7 @@ public class DSAnnotationTest extends BndTestCase {
 	@Component
 	public static class ConstructorInjection {
 		@Activate
-		public ConstructorInjection(ComponentContext cc, @Reference(name = "ctor1") LogService log,
+		public ConstructorInjection(ComponentContext cc, @Reference LogService log,
 			ConstructorConfig myId) {}
 
 		@Activate
@@ -4030,8 +4034,11 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("activator", "scr:component/@activate");
 			xt.assertAttribute("componentProps", "scr:component/@activation-fields");
 
-			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='ctor1']/@interface");
-			xt.assertAttribute("1", "scr:component/reference[@name='ctor1']/@parameter");
+			// This test method depends upon the compiler generating
+			// MethodParameters attributes so that the DS annotations code will
+			// generate the desired reference name from the parameter name.
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='log']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='log']/@parameter");
 
 		}
 	}

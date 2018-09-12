@@ -43,6 +43,7 @@ import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Clazz.MethodParameter;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Verifier;
@@ -1017,19 +1018,26 @@ public class AnnotationReader extends ClassDataCollector {
 						.details(getDetails(def, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR));
 					break;
 				}
+
 				processConstructorActivationArgs(parameter);
 				constructorArg = parameter + 1;
+
 				def.parameter = parameter;
 				if (def.name == null) {
-					// TODO The DS spec says were are supposed to use the
-					// parameter name, but there does not seem to be a reliable
-					// way to retrieve the information from the class file.
-					def.name = paramName;
+					MethodParameter[] parameters = ((MethodDef) member).getParameters();
+					if ((parameters != null) && (parameter < parameters.length)) {
+						def.name = parameters[parameter].getName();
+					} else {
+						// The DS specification says we are supposed to use the
+						// parameter name, but not all class files will have the
+						// MethodParameters attribute.
+						def.name = paramName;
+					}
 				}
+
 				MethodResolver resolver = new MethodResolver(classSig, constructorSig);
 				JavaTypeSignature type = resolver.resolveParameter(parameter);
 				def.service = determineReferenceType(def, type, resolver, annoService);
-
 				if (def.service != null) {
 					if (def.policy == ReferencePolicy.DYNAMIC) {
 						analyzer.error("In component %s, constructor parameters may not be dynamic", className)
