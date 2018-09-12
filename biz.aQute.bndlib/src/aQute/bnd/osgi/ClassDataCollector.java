@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import aQute.bnd.osgi.Clazz.MethodParameter;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
 /**
@@ -30,9 +31,9 @@ public class ClassDataCollector {
 
 	public void parameter(int p) {}
 
-	public void method(Clazz.MethodDef defined) {}
+	public void method(Clazz.MethodDef method) {}
 
-	public void field(Clazz.FieldDef defined) {}
+	public void field(Clazz.FieldDef field) {}
 
 	public void classEnd() throws Exception {}
 
@@ -83,11 +84,13 @@ public class ClassDataCollector {
 	 */
 	public void referTo(TypeRef typeRef, int modifiers) {}
 
-	public void annotationDefault(Clazz.MethodDef last) {}
+	public void annotationDefault(Clazz.MethodDef method) {}
 
-	public void annotationDefault(Clazz.MethodDef last, Object value) {
-		annotationDefault(last);
+	public void annotationDefault(Clazz.MethodDef method, Object value) {
+		annotationDefault(method);
 	}
 
 	public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {}
+
+	public void methodParameters(Clazz.MethodDef method, MethodParameter[] parameters) {}
 }

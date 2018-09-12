@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.osgi.util.function.Consumer;
 
+import aQute.bnd.osgi.Clazz.MethodParameter;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
 class ClassDataCollectorRecorder extends ClassDataCollector {
@@ -79,13 +80,13 @@ class ClassDataCollectorRecorder extends ClassDataCollector {
 	}
 
 	@Override
-	public void method(Clazz.MethodDef defined) {
-		actions.add(cdc -> cdc.method(defined));
+	public void method(Clazz.MethodDef method) {
+		actions.add(cdc -> cdc.method(method));
 	}
 
 	@Override
-	public void field(Clazz.FieldDef defined) {
-		actions.add(cdc -> cdc.field(defined));
+	public void field(Clazz.FieldDef field) {
+		actions.add(cdc -> cdc.field(field));
 	}
 
 	@Override
@@ -140,17 +141,22 @@ class ClassDataCollectorRecorder extends ClassDataCollector {
 	}
 
 	@Override
-	public void annotationDefault(Clazz.MethodDef last) {
-		actions.add(cdc -> cdc.annotationDefault(last));
+	public void annotationDefault(Clazz.MethodDef method) {
+		actions.add(cdc -> cdc.annotationDefault(method));
 	}
 
 	@Override
-	public void annotationDefault(Clazz.MethodDef last, Object value) {
-		actions.add(cdc -> cdc.annotationDefault(last, value));
+	public void annotationDefault(Clazz.MethodDef method, Object value) {
+		actions.add(cdc -> cdc.annotationDefault(method, value));
 	}
 
 	@Override
 	public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {
 		actions.add(cdc -> cdc.typeuse(target_type, target_index, target_info, type_path));
+	}
+
+	@Override
+	public void methodParameters(Clazz.MethodDef method, MethodParameter[] parameters) {
+		actions.add(cdc -> cdc.methodParameters(method, parameters));
 	}
 }
