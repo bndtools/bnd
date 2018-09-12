@@ -38,6 +38,9 @@ class ReferenceDef extends ExtensionDef {
 	String					field;
 	FieldOption				fieldOption;
 	CollectionType			collectionType;
+	boolean					isCollection;
+	boolean					isCollectionSubClass;
+	Integer					parameter;
 
 	public ReferenceDef(XMLAttributeFinder finder) {
 		super(finder);
@@ -50,23 +53,28 @@ class ReferenceDef extends ExtensionDef {
 	 * @throws Exception
 	 */
 	public void prepare(Analyzer analyzer) throws Exception {
-		if (name == null)
+		if (name == null) {
 			analyzer.error("No name for a reference");
+		}
 
-		if ((updated != null && !updated.equals("-")) || policyOption != null)
+		if ((updated != null && !updated.equals("-")) || policyOption != null) {
 			updateVersion(AnnotationReader.V1_2);
+		}
 
 		if (target != null) {
 			String error = Verifier.validateFilter(target);
-			if (error != null)
+			if (error != null) {
 				analyzer.error("Invalid target filter %s for %s", target, name);
+			}
 		}
 
-		if (service == null)
+		if (service == null) {
 			analyzer.error("No interface specified on %s", name);
+		}
 
-		if (scope != null || field != null)
+		if (scope != null || field != null) {
 			updateVersion(AnnotationReader.V1_3);
+		}
 
 	}
 
@@ -76,48 +84,37 @@ class ReferenceDef extends ExtensionDef {
 	 * @param namespaces
 	 * @return a tag for the reference element.
 	 */
-	public Tag getTag(Namespaces namespaces) {
-		Tag ref = new Tag("reference");
+	Tag getTag(Namespaces namespaces) {
+		Tag tag = new Tag("reference");
 
-		ref.addAttribute("name", name);
-		if (cardinality != null)
-			ref.addAttribute("cardinality", cardinality.toString());
+		tag.addAttribute("name", name)
+			.addAttribute("cardinality", cardinality)
+			.addAttribute("policy", policy)
+			.addAttribute("interface", service)
+			.addAttribute("target", target);
 
-		if (policy != null)
-			ref.addAttribute("policy", policy.toString());
+		if (!"-".equals(bind)) {
+			tag.addAttribute("bind", bind);
+		}
 
-		ref.addAttribute("interface", service);
+		if (!"-".equals(unbind)) {
+			tag.addAttribute("unbind", unbind);
+		}
 
-		if (target != null)
-			ref.addAttribute("target", target);
+		if (!"-".equals(updated)) {
+			tag.addAttribute("updated", updated);
+		}
 
-		if (bind != null && !"-".equals(bind))
-			ref.addAttribute("bind", bind);
+		tag.addAttribute("policy-option", policyOption)
+			.addAttribute("scope", scope)
+			.addAttribute("field", field)
+			.addAttribute("field-option", fieldOption)
+			.addAttribute("field-collection-type", collectionType)
+			.addAttribute("parameter", parameter);
 
-		if (unbind != null && !"-".equals(unbind))
-			ref.addAttribute("unbind", unbind);
+		addAttributes(tag, namespaces);
 
-		if (updated != null && !"-".equals(updated))
-			ref.addAttribute("updated", updated);
-
-		if (policyOption != null)
-			ref.addAttribute("policy-option", policyOption.toString());
-
-		if (scope != null)
-			ref.addAttribute("scope", scope.toString());
-
-		if (field != null)
-			ref.addAttribute("field", field);
-
-		if (fieldOption != null)
-			ref.addAttribute("field-option", fieldOption.toString());
-
-		if (collectionType != null)
-			ref.addAttribute("field-collection-type", collectionType.toString());
-
-		addAttributes(ref, namespaces);
-
-		return ref;
+		return tag;
 	}
 
 	@Override

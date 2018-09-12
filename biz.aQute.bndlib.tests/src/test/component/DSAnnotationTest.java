@@ -3921,8 +3921,9 @@ public class DSAnnotationTest extends BndTestCase {
 
 	@Component
 	public static class LoggerComponent {
-		// TODO need to test constructor injection of Logger and FormatterLogger
-		public LoggerComponent() {}
+		@Activate
+		public LoggerComponent(@Reference(service = LoggerFactory.class, name = "ctor1") Logger logger,
+			@Reference(service = LoggerFactory.class, name = "ctor2") FormatterLogger formatterLogger) {}
 
 		@Reference(service = LoggerFactory.class)
 		private Logger logger;
@@ -3960,6 +3961,12 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute("0", "count(scr:component/properties)");
 			xt.assertAttribute("0", "count(scr:component/property)");
 
+			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='ctor1']/@interface");
+			xt.assertAttribute("0", "scr:component/reference[@name='ctor1']/@parameter");
+
+			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='ctor2']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='ctor2']/@parameter");
+
 			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='logger']/@interface");
 			xt.assertAttribute("logger", "scr:component/reference[@name='logger']/@field");
 
@@ -3973,6 +3980,58 @@ public class DSAnnotationTest extends BndTestCase {
 			xt.assertAttribute(LoggerFactory.class.getName(),
 				"scr:component/reference[@name='FormatterLogger']/@interface");
 			xt.assertAttribute("bindFormatterLogger", "scr:component/reference[@name='FormatterLogger']/@bind");
+
+		}
+	}
+
+	public static @interface ConstructorConfig {
+		String name();
+
+		long id();
+	}
+
+	@Component
+	public static class ConstructorInjection {
+		@Activate
+		public ConstructorInjection(ComponentContext cc, @Reference(name = "ctor1") LogService log,
+			ConstructorConfig myId) {}
+
+		@Activate
+		Map<String, Object> componentProps;
+
+		@Activate
+		void activator() {}
+	}
+
+	public void testConstructorInjection() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ConstructorInjection");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, "1.4.0", LogService.class.getName());
+
+			//
+			// Test all the defaults
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ConstructorInjection.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+			xt.assertAttribute("0", "count(scr:component/properties)");
+			xt.assertAttribute("0", "count(scr:component/property)");
+
+			xt.assertAttribute("3", "scr:component/@init");
+			xt.assertAttribute("activator", "scr:component/@activate");
+			xt.assertAttribute("componentProps", "scr:component/@activation-fields");
+
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='ctor1']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='ctor1']/@parameter");
 
 		}
 	}
