@@ -1,5 +1,10 @@
 package aQute.bnd.component;
 
+import static aQute.bnd.component.DSAnnotationReader.V1_0;
+import static aQute.bnd.component.DSAnnotationReader.V1_1;
+import static aQute.bnd.component.DSAnnotationReader.V1_2;
+import static aQute.bnd.component.DSAnnotationReader.V1_3;
+import static aQute.bnd.component.DSAnnotationReader.V1_4;
 import static java.util.stream.Collectors.joining;
 
 import java.util.ArrayList;
@@ -129,13 +134,13 @@ class ComponentDef extends ExtensionDef {
 			updateVersion(ref.version);
 		}
 		if (configurationPolicy != null)
-			updateVersion(AnnotationReader.V1_1);
+			updateVersion(V1_1);
 		if (configurationPid != null)
-			updateVersion(AnnotationReader.V1_2);
+			updateVersion(V1_2);
 		if (modified != null)
-			updateVersion(AnnotationReader.V1_1);
+			updateVersion(V1_1);
 		if (!factoryProperty.isEmpty() || !factoryProperties.isEmpty()) {
-			updateVersion(AnnotationReader.V1_4);
+			updateVersion(V1_4);
 		}
 
 	}
@@ -153,7 +158,7 @@ class ComponentDef extends ExtensionDef {
 	 */
 	Tag getTag() {
 		String xmlns = this.xmlns;
-		if (xmlns == null && !version.equals(AnnotationReader.V1_0))
+		if (xmlns == null && !version.equals(V1_0))
 			xmlns = NAMESPACE_STEM + "/v" + version;
 		Tag component = new Tag(xmlns == null ? "component" : "scr:component");
 		Namespaces namespaces = null;
@@ -174,7 +179,7 @@ class ComponentDef extends ExtensionDef {
 			.addAttribute("immediate", immediate)
 			.addAttribute("factory", factory);
 
-		if (!version.equals(AnnotationReader.V1_0)) {
+		if (!version.equals(V1_0)) {
 			component.addAttribute("activate", activate)
 				.addAttribute("deactivate", deactivate);
 		}
@@ -210,7 +215,7 @@ class ComponentDef extends ExtensionDef {
 		if (service != null && service.length != 0) {
 			Tag s = new Tag(component, "service");
 			if (scope != null) {// TODO check for DEFAULT???
-				if (AnnotationReader.V1_3.compareTo(version) > 0) {
+				if (V1_3.compareTo(version) > 0) {
 					if (scope == ServiceScope.PROTOTYPE) {
 						throw new IllegalStateException("verification failed, pre 1.3 component with scope PROTOTYPE");
 					}

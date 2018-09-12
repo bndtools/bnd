@@ -1,5 +1,9 @@
 package aQute.bnd.component;
 
+import static aQute.bnd.component.DSAnnotationReader.V1_0;
+import static aQute.bnd.component.DSAnnotationReader.V1_2;
+import static aQute.bnd.component.DSAnnotationReader.V1_3;
+
 import org.osgi.service.component.annotations.CollectionType;
 import org.osgi.service.component.annotations.FieldOption;
 import org.osgi.service.component.annotations.ReferenceCardinality;
@@ -24,7 +28,7 @@ class ReferenceDef extends ExtensionDef {
 	String					className;
 	String					bindDescriptor;
 
-	Version					version	= AnnotationReader.V1_0;
+	Version					version	= V1_0;
 	String					name;
 	String					service;
 	ReferenceCardinality	cardinality;
@@ -58,7 +62,7 @@ class ReferenceDef extends ExtensionDef {
 		}
 
 		if ((updated != null && !updated.equals("-")) || policyOption != null) {
-			updateVersion(AnnotationReader.V1_2);
+			updateVersion(V1_2);
 		}
 
 		if (target != null) {
@@ -73,7 +77,7 @@ class ReferenceDef extends ExtensionDef {
 		}
 
 		if (scope != null || field != null) {
-			updateVersion(AnnotationReader.V1_3);
+			updateVersion(V1_3);
 		}
 
 	}

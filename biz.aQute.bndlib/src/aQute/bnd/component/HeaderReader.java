@@ -1,5 +1,9 @@
 package aQute.bnd.component;
 
+import static aQute.bnd.component.DSAnnotationReader.V1_0;
+import static aQute.bnd.component.DSAnnotationReader.V1_1;
+import static aQute.bnd.component.DSAnnotationReader.V1_2;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -55,7 +59,7 @@ public class HeaderReader extends Processor {
 	}
 
 	public Tag createComponentTag(String name, String impl, Map<String, String> info) throws Exception {
-		final ComponentDef cd = new ComponentDef(analyzer, null, AnnotationReader.V1_0);
+		final ComponentDef cd = new ComponentDef(analyzer, null, V1_0);
 		cd.name = name;
 		if (info.get(COMPONENT_ENABLED) != null)
 			cd.enabled = Boolean.valueOf(info.get(COMPONENT_ENABLED));
@@ -220,20 +224,20 @@ public class HeaderReader extends Processor {
 		}
 		for (String key : info.keySet()) {
 			if (SET_COMPONENT_DIRECTIVES_1_2.contains(key)) {
-				cd.updateVersion(AnnotationReader.V1_2);
+				cd.updateVersion(V1_2);
 				return;
 			}
 		}
 		for (ReferenceDef rd : cd.references.values()) {
 			if (rd.updated != null) {
-				cd.updateVersion(AnnotationReader.V1_2);
+				cd.updateVersion(V1_2);
 				return;
 			}
 		}
 		// among other things this picks up any specified lifecycle methods
 		for (String key : info.keySet()) {
 			if (SET_COMPONENT_DIRECTIVES_1_1.contains(key)) {
-				cd.updateVersion(AnnotationReader.V1_1);
+				cd.updateVersion(V1_1);
 				return;
 			}
 		}
@@ -243,7 +247,7 @@ public class HeaderReader extends Processor {
 			MethodDef test = descriptors.get(lifecycle);
 			if (descriptors.containsKey(lifecycle) && (!(test.isPublic() || test.isProtected())
 				|| rateLifecycle(test, "deactivate".equals(lifecycle) ? allowedDeactivate : allowed) > 1)) {
-				cd.updateVersion(AnnotationReader.V1_1);
+				cd.updateVersion(V1_1);
 				return;
 			}
 		}

@@ -15,7 +15,7 @@ import java.util.Set;
 
 import org.xml.sax.SAXException;
 
-import aQute.bnd.component.AnnotationReader;
+import aQute.bnd.component.DSAnnotationReader;
 import aQute.bnd.component.DSAnnotations;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
@@ -223,8 +223,8 @@ public class ClazzTest extends TestCase {
 			clazz.parseClassFile();
 			analyzer.getClassspace()
 				.put(clazz.getClassName(), clazz);
-			AnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class),
-				new XMLAttributeFinder(analyzer), AnnotationReader.V1_3);
+			DSAnnotationReader.getDefinition(clazz, analyzer, EnumSet.noneOf(DSAnnotations.Options.class),
+				new XMLAttributeFinder(analyzer), DSAnnotationReader.V1_3);
 		}
 	}
 
