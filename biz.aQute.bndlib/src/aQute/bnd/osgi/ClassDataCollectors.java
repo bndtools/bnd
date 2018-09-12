@@ -7,6 +7,7 @@ import java.util.List;
 
 import aQute.bnd.osgi.Clazz.FieldDef;
 import aQute.bnd.osgi.Clazz.MethodDef;
+import aQute.bnd.osgi.Clazz.MethodParameter;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.service.reporter.Reporter;
 
@@ -166,10 +167,10 @@ class ClassDataCollectors implements Closeable {
 		}
 
 		@Override
-		public void method(MethodDef defined) {
+		public void method(MethodDef method) {
 			for (ClassDataCollector cd : shortlist) {
 				try {
-					cd.method(defined);
+					cd.method(method);
 				} catch (Exception e) {
 					reporter.exception(e, "Failure for %s on call method[%s]", clazz, cd);
 				}
@@ -177,10 +178,10 @@ class ClassDataCollectors implements Closeable {
 		}
 
 		@Override
-		public void field(FieldDef defined) {
+		public void field(FieldDef field) {
 			for (ClassDataCollector cd : shortlist) {
 				try {
-					cd.field(defined);
+					cd.field(field);
 				} catch (Exception e) {
 					reporter.exception(e, "Failure for %s on call field[%s]", clazz, cd);
 				}
@@ -299,10 +300,10 @@ class ClassDataCollectors implements Closeable {
 		}
 
 		@Override
-		public void annotationDefault(Clazz.MethodDef last) {
+		public void annotationDefault(Clazz.MethodDef method) {
 			for (ClassDataCollector cd : shortlist) {
 				try {
-					cd.annotationDefault(last);
+					cd.annotationDefault(method);
 				} catch (Exception e) {
 					reporter.exception(e, "Failure for %s on call annotationDefault[%s]", clazz, cd);
 				}
@@ -310,10 +311,10 @@ class ClassDataCollectors implements Closeable {
 		}
 
 		@Override
-		public void annotationDefault(Clazz.MethodDef last, Object value) {
+		public void annotationDefault(Clazz.MethodDef method, Object value) {
 			for (ClassDataCollector cd : shortlist) {
 				try {
-					cd.annotationDefault(last, value);
+					cd.annotationDefault(method, value);
 				} catch (Exception e) {
 					reporter.exception(e, "Failure for %s on call annotationDefault[%s]", clazz, cd);
 				}
@@ -327,6 +328,17 @@ class ClassDataCollectors implements Closeable {
 					cd.typeuse(target_type, target_index, target_info, type_path);
 				} catch (Exception e) {
 					reporter.exception(e, "Failure for %s on call typeuse[%s]", clazz, cd);
+				}
+			}
+		}
+
+		@Override
+		public void methodParameters(Clazz.MethodDef method, MethodParameter[] parameters) {
+			for (ClassDataCollector cd : shortlist) {
+				try {
+					cd.methodParameters(method, parameters);
+				} catch (Exception e) {
+					reporter.exception(e, "Failure for %s on call methodParameters[%s]", clazz, cd);
 				}
 			}
 		}

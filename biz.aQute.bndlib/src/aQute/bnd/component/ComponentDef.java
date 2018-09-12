@@ -67,6 +67,7 @@ class ComponentDef extends ExtensionDef {
 	Boolean							enabled;
 	String							xmlns;
 	String[]						configurationPid;
+	Integer									init;
 	private final Analyzer					analyzer;
 
 	public ComponentDef(Analyzer analyzer, XMLAttributeFinder finder, Version minVersion) {
@@ -157,38 +158,29 @@ class ComponentDef extends ExtensionDef {
 		Tag component = new Tag(xmlns == null ? "component" : "scr:component");
 		Namespaces namespaces = null;
 		if (xmlns != null) {
-
 			namespaces = new Namespaces();
 			namespaces.registerNamespace("scr", xmlns);
 			addNamespaces(namespaces, xmlns);
-			for (ReferenceDef ref : references.values())
+			for (ReferenceDef ref : references.values()) {
 				ref.addNamespaces(namespaces, xmlns);
+			}
 
 			namespaces.addNamespaces(component);
-
 		}
-		component.addAttribute("name", name);
 
-		if (configurationPolicy != null)
-			component.addAttribute("configuration-policy", configurationPolicy.toString());
+		component.addAttribute("name", name)
+			.addAttribute("configuration-policy", configurationPolicy)
+			.addAttribute("enabled", enabled)
+			.addAttribute("immediate", immediate)
+			.addAttribute("factory", factory);
 
-		if (enabled != null)
-			component.addAttribute("enabled", enabled);
+		if (!version.equals(AnnotationReader.V1_0)) {
+			component.addAttribute("activate", activate)
+				.addAttribute("deactivate", deactivate);
+		}
 
-		if (immediate != null)
-			component.addAttribute("immediate", immediate);
 
-		if (factory != null)
-			component.addAttribute("factory", factory);
-
-		if (activate != null && !version.equals(AnnotationReader.V1_0))
-			component.addAttribute("activate", activate);
-
-		if (deactivate != null && !version.equals(AnnotationReader.V1_0))
-			component.addAttribute("deactivate", deactivate);
-
-		if (modified != null)
-			component.addAttribute("modified", modified);
+		component.addAttribute("modified", modified);
 
 		if (configurationPid != null) {
 			component.addAttribute("configuration-pid", Stream.of(configurationPid)
@@ -200,6 +192,8 @@ class ComponentDef extends ExtensionDef {
 			component.addAttribute("activation-fields", activation_fields.stream()
 				.collect(joining(" ")));
 		}
+
+		component.addAttribute("init", init);
 
 		addAttributes(component, namespaces);
 
@@ -222,7 +216,7 @@ class ComponentDef extends ExtensionDef {
 					}
 					s.addAttribute("servicefactory", scope == ServiceScope.BUNDLE);
 				} else {
-					s.addAttribute("scope", scope.toString());
+					s.addAttribute("scope", scope);
 				}
 			}
 

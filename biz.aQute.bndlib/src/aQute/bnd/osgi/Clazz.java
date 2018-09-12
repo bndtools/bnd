@@ -417,7 +417,32 @@ public class Clazz {
 		}
 	}
 
+	public static class MethodParameter {
+		final String	name;
+		final int		access_flags;
+
+		MethodParameter(String name, int access_flags) {
+			this.name = name;
+			this.access_flags = access_flags;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public int getAccess() {
+			return access_flags;
+		}
+
+		@Override
+		public String toString() {
+			return getName();
+		}
+	}
+
 	public class MethodDef extends FieldDef {
+		MethodParameter[] parameters;
+
 		public MethodDef(int access, String method, String descriptor) {
 			super(access, method, descriptor);
 		}
@@ -439,6 +464,10 @@ public class Clazz {
 		public String getGenericReturnType() {
 			MethodSignature sig = analyzer.getMethodSignature((signature != null) ? signature : descriptor.toString());
 			return sig.resultType.toString();
+		}
+
+		public MethodParameter[] getParameters() {
+			return parameters;
 		}
 	}
 
@@ -1028,6 +1057,9 @@ public class Clazz {
 			case "NestMembers" :
 				doNestMembers(in);
 				break;
+			case "MethodParameters" :
+				doMethodParameters(in);
+				break;
 			default :
 				if (attribute_length < 0) {
 					throw new IllegalArgumentException("Attribute > 2Gb");
@@ -1226,6 +1258,22 @@ public class Clazz {
 			ClassConstant cc = (ClassConstant) pool[index];
 			TypeRef clazz = analyzer.getTypeRef(cc.getName());
 			referTo(clazz, access_flags);
+		}
+	}
+
+	void doMethodParameters(DataInput in) throws IOException {
+		int parameters_count = in.readUnsignedByte();
+		MethodParameter[] parameters = new MethodParameter[parameters_count];
+		for (int i = 0; i < parameters_count; i++) {
+			int name_index = in.readUnsignedShort();
+			int access_flags = in.readUnsignedShort();
+			String name = (String) pool[name_index];
+			parameters[i] = new MethodParameter(name, access_flags);
+		}
+		if (last instanceof MethodDef) {
+			MethodDef method = (MethodDef) last;
+			method.parameters = parameters;
+			cd.methodParameters(method, parameters);
 		}
 	}
 

@@ -1,3 +1,7 @@
+compileTestJava {
+  options.compilerArgs.add '-parameters'
+}
+
 test {
   // set heap size for the test JVM(s)
   minHeapSize = "1024m"

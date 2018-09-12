@@ -40,7 +40,10 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ReferencePolicyOption;
 import org.osgi.service.component.annotations.ServiceScope;
+import org.osgi.service.log.FormatterLogger;
 import org.osgi.service.log.LogService;
+import org.osgi.service.log.Logger;
+import org.osgi.service.log.LoggerFactory;
 import org.osgi.service.metatype.annotations.Designate;
 import org.osgi.service.metatype.annotations.ObjectClassDefinition;
 
@@ -3914,6 +3917,130 @@ public class DSAnnotationTest extends BndTestCase {
 		r.write(System.err);
 		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
 		xt.assertAttribute("activator", "scr:component/@activate");
+	}
+
+	@Component
+	public static class LoggerComponent {
+		@Activate
+		public LoggerComponent(@Reference(service = LoggerFactory.class) Logger loggerC,
+			@Reference(service = LoggerFactory.class) FormatterLogger formatterLoggerC) {}
+
+		@Reference(service = LoggerFactory.class)
+		private Logger logger;
+
+		@Reference(service = LoggerFactory.class)
+		void bindLogger(Logger logger) {}
+
+		@Reference(service = LoggerFactory.class)
+		private FormatterLogger formatterLogger;
+
+		@Reference(service = LoggerFactory.class)
+		void bindFormatterLogger(FormatterLogger flogger) {}
+	}
+
+	public void testLoggerSupport() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$LoggerComponent");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, "1.4.0", LoggerFactory.class.getName());
+
+			//
+			// Test all the defaults
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$LoggerComponent.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+			xt.assertAttribute("0", "count(scr:component/properties)");
+			xt.assertAttribute("0", "count(scr:component/property)");
+
+			// This test method depends upon the compiler generating
+			// MethodParameters attributes so that the DS annotations code will
+			// generate the desired reference name from the parameter name.
+			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='loggerC']/@interface");
+			xt.assertAttribute("0", "scr:component/reference[@name='loggerC']/@parameter");
+
+			xt.assertAttribute(LoggerFactory.class.getName(),
+				"scr:component/reference[@name='formatterLoggerC']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='formatterLoggerC']/@parameter");
+
+			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='logger']/@interface");
+			xt.assertAttribute("logger", "scr:component/reference[@name='logger']/@field");
+
+			xt.assertAttribute(LoggerFactory.class.getName(),
+				"scr:component/reference[@name='formatterLogger']/@interface");
+			xt.assertAttribute("formatterLogger", "scr:component/reference[@name='formatterLogger']/@field");
+
+			xt.assertAttribute(LoggerFactory.class.getName(), "scr:component/reference[@name='Logger']/@interface");
+			xt.assertAttribute("bindLogger", "scr:component/reference[@name='Logger']/@bind");
+
+			xt.assertAttribute(LoggerFactory.class.getName(),
+				"scr:component/reference[@name='FormatterLogger']/@interface");
+			xt.assertAttribute("bindFormatterLogger", "scr:component/reference[@name='FormatterLogger']/@bind");
+
+		}
+	}
+
+	public static @interface ConstructorConfig {
+		String name();
+
+		long id();
+	}
+
+	@Component
+	public static class ConstructorInjection {
+		@Activate
+		public ConstructorInjection(ComponentContext cc, @Reference LogService log,
+			ConstructorConfig myId) {}
+
+		@Activate
+		Map<String, Object> componentProps;
+
+		@Activate
+		void activator() {}
+	}
+
+	public void testConstructorInjection() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$ConstructorInjection");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin"));
+
+			Jar jar = b.build();
+			assertOk(b);
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, "1.4.0", LogService.class.getName());
+
+			//
+			// Test all the defaults
+			//
+
+			Resource r = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$ConstructorInjection.xml");
+			assertNotNull(r);
+			r.write(System.err);
+			XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.4.0");
+			xt.assertAttribute("0", "count(scr:component/properties)");
+			xt.assertAttribute("0", "count(scr:component/property)");
+
+			xt.assertAttribute("3", "scr:component/@init");
+			xt.assertAttribute("activator", "scr:component/@activate");
+			xt.assertAttribute("componentProps", "scr:component/@activation-fields");
+
+			// This test method depends upon the compiler generating
+			// MethodParameters attributes so that the DS annotations code will
+			// generate the desired reference name from the parameter name.
+			xt.assertAttribute(LogService.class.getName(), "scr:component/reference[@name='log']/@interface");
+			xt.assertAttribute("1", "scr:component/reference[@name='log']/@parameter");
+
+		}
 	}
 
 }
