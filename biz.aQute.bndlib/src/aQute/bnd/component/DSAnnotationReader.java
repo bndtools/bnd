@@ -68,8 +68,8 @@ import aQute.lib.collections.MultiMap;
 /**
  * Processes spec DS annotations into xml.
  */
-public class AnnotationReader extends ClassDataCollector {
-	private static final Logger			logger						= LoggerFactory.getLogger(AnnotationReader.class);
+public class DSAnnotationReader extends ClassDataCollector {
+	private static final Logger			logger						= LoggerFactory.getLogger(DSAnnotationReader.class);
 
 	public static final Version			V1_0						= new Version("1.0.0");																										// "1.0.0"
 	public static final Version			V1_1						= new Version("1.1.0");																										// "1.1.0"
@@ -142,7 +142,7 @@ public class AnnotationReader extends ClassDataCollector {
 	Map<String, List<DeclarativeServicesAnnotationError>>	mismatchedAnnotations	= new HashMap<>();
 	private int												componentPropertyTypeCount	= 0;
 
-	AnnotationReader(Analyzer analyzer, Clazz clazz, Set<Options> options, XMLAttributeFinder finder,
+	DSAnnotationReader(Analyzer analyzer, Clazz clazz, Set<Options> options, XMLAttributeFinder finder,
 		Version minVersion) {
 		this.analyzer = requireNonNull(analyzer);
 		this.clazz = clazz;
@@ -155,7 +155,7 @@ public class AnnotationReader extends ClassDataCollector {
 
 	public static ComponentDef getDefinition(Clazz c, Analyzer analyzer, Set<Options> options,
 		XMLAttributeFinder finder, Version minVersion) throws Exception {
-		AnnotationReader r = new AnnotationReader(analyzer, c, options, finder, minVersion);
+		DSAnnotationReader r = new DSAnnotationReader(analyzer, c, options, finder, minVersion);
 		return r.getDef();
 	}
 
@@ -1011,12 +1011,14 @@ public class AnnotationReader extends ClassDataCollector {
 					analyzer
 						.error("In component %s, @Reference cannot be used for method parameters", className)
 						.details(getDetails(def, ErrorType.REFERENCE));
-					break;
+					return;
 				}
 				if (constructorSig == null) {
-					analyzer.error("Multiple constructors for %s have parameters annotated with @Reference.", className)
+					analyzer.error(
+						"In component %s, @Reference can only be used for parameters on the constructor annotated @Activate",
+						className)
 						.details(getDetails(def, ErrorType.CONSTRUCTOR_SIGNATURE_ERROR));
-					break;
+					return;
 				}
 
 				processConstructorActivationArgs(parameter);

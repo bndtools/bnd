@@ -1,5 +1,8 @@
 package aQute.bnd.component;
 
+import static aQute.bnd.component.DSAnnotationReader.V1_0;
+import static aQute.bnd.component.DSAnnotationReader.V1_3;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -49,7 +52,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 			@Override
 			void reset(DSAnnotations anno) {
-				anno.minVersion = AnnotationReader.V1_3;
+				anno.minVersion = V1_3;
 			}
 		};
 
@@ -91,7 +94,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		if (header.size() == 0)
 			return false;
 
-		minVersion = AnnotationReader.V1_3;
+		minVersion = V1_3;
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.mergeProperties(Constants.DSANNOTATIONS_OPTIONS));
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
 		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
@@ -119,7 +122,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 		TreeSet<String> provides = new TreeSet<>();
 		TreeSet<String> requires = new TreeSet<>();
-		Version maxVersion = AnnotationReader.V1_0;
+		Version maxVersion = V1_0;
 
 		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
 		boolean componentProcessed = false;
@@ -129,7 +132,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 					if (instruction.isNegated()) {
 						break;
 					}
-					ComponentDef definition = AnnotationReader.getDefinition(c, analyzer, options, finder, minVersion);
+					ComponentDef definition = DSAnnotationReader.getDefinition(c, analyzer, options, finder, minVersion);
 					if (definition == null) {
 						break;
 					}
@@ -167,8 +170,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 			}
 		}
 		if (componentProcessed
-			&& (options.contains(Options.extender) || (maxVersion.compareTo(AnnotationReader.V1_3) >= 0))) {
-			maxVersion = ComponentDef.max(maxVersion, AnnotationReader.V1_3);
+			&& (options.contains(Options.extender) || (maxVersion.compareTo(V1_3) >= 0))) {
+			maxVersion = ComponentDef.max(maxVersion, V1_3);
 			addExtenderRequirement(requires, maxVersion);
 		}
 		names = removeOverlapInServiceComponentHeader(names);
