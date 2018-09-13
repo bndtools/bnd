@@ -20,7 +20,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collector;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.AbstractWiringNamespace;
@@ -347,8 +346,11 @@ public class ResourceUtils {
 		if (providers == null || providers.isEmpty())
 			return Collections.emptySet();
 
-		return providers.stream()
-			.map(Capability::getResource)
+		return getResources(providers.stream());
+	}
+
+	private static Set<Resource> getResources(Stream<? extends Capability> providers) {
+		return providers.map(Capability::getResource)
 			.collect(toCollection(() -> new TreeSet<>(RESOURCE_COMPARATOR)));
 	}
 
@@ -524,14 +526,7 @@ public class ResourceUtils {
 		return new VersionedClause(identity, attribs);
 	}
 
-	static <T> T requireNonNull(T obj) {
-		if (obj != null) {
-			return obj;
-		}
-		throw new NullPointerException();
-	}
-
-	static Collection<Requirement> all = Collections.singleton(createWildcardRequirement());
+	private final static Collection<Requirement> all = Collections.singleton(createWildcardRequirement());
 
 	/**
 	 * Return all resources from a repository as returned by the wildcard
@@ -541,12 +536,9 @@ public class ResourceUtils {
 	 * @return a set of resources from the repository.
 	 */
 	public static Set<Resource> getAllResources(Repository repository) {
-		Set<Capability> capabilities = repository.findProviders(all)
+		return getResources(repository.findProviders(all)
 			.values()
 			.stream()
-			.flatMap(l -> l.stream())
-			.collect(Collectors.toSet());
-		return getResources(capabilities);
-
+			.flatMap(Collection::stream));
 	}
 }
