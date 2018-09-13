@@ -576,7 +576,7 @@ public class Macro {
 			df.setTimeZone(TimeZone.getTimeZone("UTC"));
 			return df.format(now);
 		}
-		return new Date();
+		return now;
 	}
 
 	public final static String _fmodifiedHelp = "${fmodified;<list of filenames>...}, return latest modification date";

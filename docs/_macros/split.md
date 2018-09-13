@@ -2,7 +2,7 @@
 layout: default
 class: Macro
 title: split ';' REGEX (';' STRING )*
-summary: Split a number of strings int a list using a regular expression
+summary: Split a number of strings into a list using a regular expression
 ---
 
 	static String	_split	= "${split;<regex>[;<target>...]}";
