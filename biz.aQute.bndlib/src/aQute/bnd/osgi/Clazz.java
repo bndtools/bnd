@@ -838,30 +838,35 @@ public class Clazz {
 	}
 
 	void doInteger_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
-		intPool[poolIndex] = in.readInt();
-		if (cd != null)
-			pool[poolIndex] = intPool[poolIndex];
+		int i = in.readInt();
+		intPool[poolIndex] = i;
+		if (cd != null) {
+			pool[poolIndex] = Integer.valueOf(i);
+		}
 	}
 
 	void doFloat_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
-		if (cd != null)
-			pool[poolIndex] = in.readFloat(); // ALU
-		else
+		if (cd != null) {
+			pool[poolIndex] = Float.valueOf(in.readFloat()); // ALU
+		} else {
 			in.skipBytes(4);
+		}
 	}
 
 	void doLong_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
 		if (cd != null) {
-			pool[poolIndex] = in.readLong();
-		} else
+			pool[poolIndex] = Long.valueOf(in.readLong());
+		} else {
 			in.skipBytes(8);
+		}
 	}
 
 	void doDouble_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
-		if (cd != null)
-			pool[poolIndex] = in.readDouble();
-		else
+		if (cd != null) {
+			pool[poolIndex] = Double.valueOf(in.readDouble());
+		} else {
 			in.skipBytes(8);
+		}
 	}
 
 	void doClass_info(CONSTANT tag, DataInput in, int poolIndex) throws IOException {
@@ -1738,7 +1743,7 @@ public class Clazz {
 			case 'I' : // Integer
 			case 'S' : // Short
 				int const_value_index = in.readUnsignedShort();
-				return intPool[const_value_index];
+				return Integer.valueOf(intPool[const_value_index]);
 
 			case 'D' : // Double
 			case 'F' : // Float
@@ -1749,7 +1754,7 @@ public class Clazz {
 
 			case 'Z' : // Boolean
 				const_value_index = in.readUnsignedShort();
-				return pool[const_value_index] == null || pool[const_value_index].equals(0) ? false : true;
+				return Boolean.valueOf(intPool[const_value_index] != 0);
 
 			case 'e' : // enum constant
 				int type_name_index = in.readUnsignedShort();
