@@ -2761,10 +2761,8 @@ public class bnd extends Processor {
 				Run run = Run.createRun(ws, f);
 				ws = run.getWorkspace();
 			} else {
-				progress("Using find workspace %s", f);
 				ws = Workspace.findWorkspace(f);
 			}
-			progress("Workspace %s %s %s", ws, ws.getBase(), ws.getProperty("-standalone"));
 		}
 		return ws;
 	}
