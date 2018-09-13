@@ -6,10 +6,43 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 
+import aQute.lib.io.IO.EnvironmentCalculator;
 import junit.framework.TestCase;
 
 public class IOTest extends TestCase {
+
+	public void testEnvVarsForHome() throws Exception {
+		Map<String, String> map = new HashMap<>();
+
+		EnvironmentCalculator ec = new IO.EnvironmentCalculator(false) {
+			String getenv(String key) {
+				return map.getOrDefault(key, System.getenv(key));
+			}
+		};
+
+		assertEquals(new File(System.getProperty("user.home")), ec.getHome());
+		assertEquals(new File(System.getProperty("user.home")), IO.home);
+
+		File dir = IO.getFile("generated");
+		map.put("HOME", dir.getAbsolutePath());
+		assertEquals(dir, ec.getHome());
+
+		EnvironmentCalculator ec2 = new IO.EnvironmentCalculator(true) {
+			String getenv(String key) {
+				return map.getOrDefault(key, System.getenv(key));
+			}
+		};
+		map.put("SystemDrive", "C:");
+		map.put("username", "foobar");
+		map.put("userprofile", "%SystemDrive%\\Documents and Settings\\%username%");
+		map.put("HOME", "%userprofile%");
+
+		// cannot use file system since this might not be windows
+		assertEquals("C:\\Documents and Settings\\foobar", ec2.getSystemEnv("HOME"));
+	}
 
 	public void testSafeFileName() {
 		if (IO.isWindows()) {
@@ -307,4 +340,5 @@ public class IOTest extends TestCase {
 		String result = IO.collect(in, "UTF-8");
 		assertEquals("testString", result);
 	}
+
 }
