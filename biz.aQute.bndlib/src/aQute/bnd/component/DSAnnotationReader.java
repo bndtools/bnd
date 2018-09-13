@@ -1122,10 +1122,11 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	private String determineReferenceType(ReferenceDef def, JavaTypeSignature type, ClassResolver resolver,
 		String annoService) {
+		String paramType = null;
 		String inferredService = null;
 		if (type instanceof ClassTypeSignature) {
 			ClassTypeSignature param = (ClassTypeSignature) type;
-			String paramType = binaryToFQN(param.binary);
+			paramType = binaryToFQN(param.binary);
 			// Check for collection
 			switch (paramType) {
 				default :
@@ -1211,9 +1212,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 		}
 
 		if (!analyzer.assignable(annoService, inferredService)) {
-			if ("org.osgi.service.log.LoggerFactory".equals(annoService)
-				&& ("org.osgi.service.log.Logger".equals(inferredService)
-					|| "org.osgi.service.log.FormatterLogger".equals(inferredService))) {
+			if (!def.isCollection && "org.osgi.service.log.LoggerFactory".equals(annoService)
+				&& ("org.osgi.service.log.Logger".equals(paramType)
+					|| "org.osgi.service.log.FormatterLogger".equals(paramType))) {
 				def.updateVersion(V1_4);
 			} else {
 				return null;
@@ -1309,8 +1310,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 		if (!analyzer.assignable(annoService, inferredService)) {
 			if ("org.osgi.service.log.LoggerFactory".equals(annoService)
-				&& ("org.osgi.service.log.Logger".equals(inferredService)
-					|| "org.osgi.service.log.FormatterLogger".equals(inferredService))) {
+				&& ("org.osgi.service.log.Logger".equals(paramType)
+					|| "org.osgi.service.log.FormatterLogger".equals(paramType))) {
 				minVersion = V1_4;
 			} else {
 				return null;
