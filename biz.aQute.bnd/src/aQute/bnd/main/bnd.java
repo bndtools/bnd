@@ -264,7 +264,6 @@ public class bnd extends Processor {
 	public static void main(String args[]) throws Exception {
 		Workspace.setDriver(Constants.BNDDRIVER_BND);
 		Workspace.addGestalt(Constants.GESTALT_SHELL, null);
-		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
 
 		try (bnd main = new bnd()) {
 			main.start(args);
@@ -280,7 +279,6 @@ public class bnd extends Processor {
 
 		Workspace.setDriver(Constants.BNDDRIVER_BND);
 		Workspace.addGestalt(Constants.GESTALT_SHELL, null);
-		Workspace.addGestalt(Constants.GESTALT_INTERACTIVE, null);
 
 		try (bnd main = new bnd()) {
 			main.setBase(baseExecDir.toFile());

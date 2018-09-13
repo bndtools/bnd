@@ -3352,4 +3352,9 @@ public class Project extends Processor {
 			}
 		}
 	}
+
+	@Override
+	public boolean isInteractive() {
+		return getWorkspace().isInteractive();
+	}
 }

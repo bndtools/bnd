@@ -17,7 +17,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,8 +58,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,12 +98,12 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		log = reporterAdapter;
 	}
 
-	static final int								BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
+	static final int									BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
 
-	static Pattern									PACKAGES_IGNORED	= Pattern
+	static Pattern										PACKAGES_IGNORED	= Pattern
 		.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
 
-	static ThreadLocal<Processor>					current				= new ThreadLocal<>();
+	static ThreadLocal<Processor>						current				= new ThreadLocal<>();
 	private final static ScheduledThreadPoolExecutor	scheduledExecutor;
 	private final static ThreadPoolExecutor				executor;
 	static {
@@ -619,8 +616,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				try {
 					for (String p : parts) {
 						File f = getFile(p).getAbsoluteFile();
-						loader.addURL(f.toURI()
-							.toURL());
+						loader.add(f);
 					}
 				} catch (Exception e) {
 					error("Problem adding path %s to loader for plugin %s. Exception: (%s)", path, key, e);
@@ -777,12 +773,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				}
 			}
 			logger.debug("Adding {} to loader for plugins", f);
-			try {
-				loader.addURL(f.toURI()
-					.toURL());
-			} catch (MalformedURLException e) {
-				// Cannot happen since every file has a correct url
-			}
+			loader.add(f);
 		}
 	}
 
@@ -1821,54 +1812,27 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		trace = x;
 	}
 
-	public static class CL extends URLClassLoader {
-		CL(Processor p) {
-			super(new URL[0], p.getClass()
+	public static class CL extends ActivelyClosingClassloader {
+
+		public CL(Processor p) {
+			super(p, p.getClass()
 				.getClassLoader());
 		}
 
-		@Override
-		protected void addURL(URL url) {
-			URL urls[] = getURLs();
-			for (URL u : urls) {
-				if (u.equals(url))
-					return;
-			}
-			super.addURL(url);
+		@Deprecated
+		public URL[] getURLs() {
+			return new URL[0];
 		}
 
-		@Override
-		public Class<?> loadClass(String name) throws ClassNotFoundException {
-			try {
-				try {
-					Class<?> c = super.loadClass(name);
-					return c;
-				} catch (ClassNotFoundException nfe) {
-					Bundle bundle = FrameworkUtil.getBundle(CL.class);
-					if (bundle == null)
-						throw nfe;
-					Bundle system = bundle.getBundleContext()
-						.getBundle(0);
-					return system.loadClass(name);
-				}
-			} catch (Throwable t) {
-
-				StringBuilder sb = new StringBuilder();
-				sb.append(name);
-				sb.append(" not found, parent: ");
-				sb.append(getParent());
-				sb.append(" urls:");
-				sb.append(Arrays.toString(getURLs()));
-				sb.append(" exception:");
-				sb.append(Exceptions.toString(t));
-				throw new ClassNotFoundException(sb.toString(), t);
-			}
-		}
 	}
 
 	protected CL getLoader() {
 		if (pluginLoader == null) {
 			pluginLoader = new CL(this);
+			addClose(pluginLoader);
+			if (IO.isWindows() && isInteractive()) {
+				pluginLoader.autopurge(5000);
+			}
 		}
 		return pluginLoader;
 	}
@@ -2132,8 +2096,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public synchronized Class<?> getClass(String type, File jar) throws Exception {
 		CL cl = getLoader();
-		cl.addURL(jar.toURI()
-			.toURL());
+		cl.add(jar);
 		return cl.loadClass(type);
 	}
 
@@ -2828,5 +2791,16 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public <T> T getInstructions(Class<T> type) {
 		return Syntax.getInstructions(this, type);
+	}
+
+	/**
+	 * Return if this is an interactive environment like Eclipse or runs in
+	 * batch mode. If interactive, things can get refreshed.
+	 */
+	public boolean isInteractive() {
+		if (parent != null) {
+			return parent.isInteractive();
+		}
+		return false;
 	}
 }
