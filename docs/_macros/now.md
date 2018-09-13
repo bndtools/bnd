@@ -20,6 +20,6 @@ layout: default
 			DateFormat df = new SimpleDateFormat(args[1]);
 			return df.format(now);
 		}
-		return new Date();
+		return now;
 	}
 
