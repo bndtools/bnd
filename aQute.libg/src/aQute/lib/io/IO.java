@@ -43,13 +43,16 @@ import java.nio.file.attribute.FileTime;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import aQute.libg.glob.Glob;
 
 public class IO {
+	static final Pattern								WINDOWS_MACROS			= Pattern.compile("%([^%]+)%");
 	static final int									BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	private static final int							DIRECT_MAP_THRESHOLD	= BUFFER_SIZE;
 	private static final boolean						isWindows				= File.separatorChar == '\\';
@@ -59,15 +62,10 @@ public class IO {
 	private static final EnumSet<StandardOpenOption>	writeOptions			= EnumSet.of(StandardOpenOption.WRITE,
 		StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 	private static final EnumSet<StandardOpenOption>	readOptions				= EnumSet.of(StandardOpenOption.READ);
+
 	static {
-		File tmp = null;
-		try {
-			tmp = new File(System.getenv("HOME"));
-		} catch (Exception e) {}
-		if (tmp == null) {
-			tmp = new File(System.getProperty("user.home"));
-		}
-		home = tmp;
+		EnvironmentCalculator hc = new EnvironmentCalculator(isWindows);
+		home = hc.getHome();
 	}
 
 	public static String getExtension(String fileName, String deflt) {
@@ -1278,5 +1276,86 @@ public class IO {
 
 	public static boolean isWindows() {
 		return isWindows;
+	}
+
+	/*
+	 * This class calculates the home path. This class uses environment
+	 * variables so that makes it hard to test. For this reason tests can
+	 * override the #getenv method.
+	 */
+	static class EnvironmentCalculator {
+		private boolean iswindows;
+
+		public EnvironmentCalculator(boolean iswindows) {
+			this.iswindows = iswindows;
+		}
+
+		/**
+		 * Get the value of a system environment variable. Expand any macros
+		 * (%...%) if run on windows. Generally, on Linux et. al. environment
+		 * variables are already expanded.
+		 * 
+		 * @param key the environment variable name
+		 * @return the value with expanded macros if on windows.
+		 */
+		String getSystemEnv(String key) {
+			return getSystemEnv(key, null);
+		}
+
+		String getSystemEnv(String key, Set<String> visited) {
+
+			String value = getenv(key);
+			if (value == null || !iswindows) {
+				return value;
+			}
+			if (visited == null) {
+				visited = new HashSet<>();
+			} else if (visited.contains(key))
+				return key;
+
+			visited.add(key);
+
+			StringBuffer sb = new StringBuffer();
+			Matcher matcher = WINDOWS_MACROS.matcher(value);
+			int append = 0;
+			while (matcher.find(append)) {
+				String name = matcher.group(1);
+				String replacement = getSystemEnv(name, visited);
+				while (append < matcher.start()) {
+					sb.append(value.charAt(append));
+					append++;
+				}
+				sb.append(replacement);
+				append = matcher.end();
+			}
+			while (append < value.length()) {
+				sb.append(value.charAt(append));
+				append++;
+			}
+
+			return sb.toString();
+		}
+
+		String getenv(String key) {
+			return System.getenv(key);
+		}
+
+		File getHome() {
+			File tmp = testFile(getSystemEnv("HOME"));
+
+			if (tmp == null || !tmp.isDirectory()) {
+				tmp = testFile(System.getProperty("user.home"));
+			}
+			assert tmp != null;
+			return tmp;
+		}
+
+		File testFile(String path) {
+			if (path == null)
+				return null;
+
+			return new File(path);
+		}
+
 	}
 }
