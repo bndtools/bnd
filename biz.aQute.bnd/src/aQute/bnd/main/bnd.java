@@ -932,7 +932,12 @@ public class bnd extends Processor {
 		final Set<Project> projectsWellDone = new HashSet<>();
 
 		for (Project p : projects) {
-			final Set<Project> projectDeps = p.getDependents(); // is ordered
+			final Collection<Project> projectDeps = p.getDependson(); // ordered
+			if (opts.verbose()) {
+				out.println("Project dependencies for: " + p.getName());
+				projectDeps.forEach(pr -> out
+					.println(" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
+			}
 
 			projectDeps.removeAll(projectsWellDone);
 
