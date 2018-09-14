@@ -906,6 +906,9 @@ public class Builder extends Analyzer {
 			if (x != null)
 				r.setExtra(x);
 			copy(jar, name, r, extra);
+			if (preprocess != null) {
+				warning("Preprocessing does not work for literals: %s", name);
+			}
 		} else {
 			File sourceFile;
 			String destinationPath;
