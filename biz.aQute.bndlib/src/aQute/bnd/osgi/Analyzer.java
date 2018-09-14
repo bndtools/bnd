@@ -366,10 +366,7 @@ public class Analyzer extends Processor {
 			// private
 			// packages, lets kill them as well.
 
-			for (Iterator<PackageRef> p = privatePackages.iterator(); p.hasNext();)
-				if (p.next()
-					.isJava())
-					p.remove();
+			privatePackages.removeIf(PackageRef::isJava);
 
 			for (PackageRef exported : exports.keySet()) {
 				List<PackageRef> used = uses.get(exported);
