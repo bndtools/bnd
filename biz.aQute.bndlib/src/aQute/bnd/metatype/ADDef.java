@@ -5,9 +5,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.osgi.service.metatype.annotations.AttributeDefinition;
-import org.osgi.service.metatype.annotations.AttributeType;
-
+import aQute.bnd.metatype.annotations.AttributeDefinition;
+import aQute.bnd.metatype.annotations.AttributeType;
 import aQute.bnd.osgi.Annotation;
 import aQute.bnd.xmlattribute.ExtensionDef;
 import aQute.bnd.xmlattribute.Namespaces;

@@ -14,14 +14,13 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.osgi.service.metatype.annotations.AttributeDefinition;
-import org.osgi.service.metatype.annotations.AttributeType;
-import org.osgi.service.metatype.annotations.Icon;
-import org.osgi.service.metatype.annotations.ObjectClassDefinition;
-import org.osgi.service.metatype.annotations.Option;
-
 import aQute.bnd.annotation.xml.XMLAttribute;
 import aQute.bnd.metatype.MetatypeAnnotations.Options;
+import aQute.bnd.metatype.annotations.AttributeDefinition;
+import aQute.bnd.metatype.annotations.AttributeType;
+import aQute.bnd.metatype.annotations.Icon;
+import aQute.bnd.metatype.annotations.ObjectClassDefinition;
+import aQute.bnd.metatype.annotations.Option;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.ClassDataCollector;
@@ -161,17 +160,21 @@ class OCDReader {
 		@Override
 		public void annotation(Annotation annotation) throws Exception {
 			try {
-				java.lang.annotation.Annotation a = annotation.getAnnotation();
-				if (a instanceof ObjectClassDefinition)
-					doOCD((ObjectClassDefinition) a, annotation);
-				else if (a instanceof AttributeDefinition) {
-					current.ad = (AttributeDefinition) a;
-					current.a = annotation;
-				} else {
-					XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
-					if (xmlAttr != null) {
-						doXmlAttribute(annotation, xmlAttr);
-					}
+				switch (annotation.getName()
+					.getFQN()) {
+					case "org.osgi.service.metatype.annotations.ObjectClassDefinition" :
+						doOCD(annotation.getAnnotation(ObjectClassDefinition.class), annotation);
+						break;
+					case "org.osgi.service.metatype.annotations.AttributeDefinition" :
+						current.ad = annotation.getAnnotation(AttributeDefinition.class);
+						current.a = annotation;
+						break;
+					default :
+						XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
+						if (xmlAttr != null) {
+							doXmlAttribute(annotation, xmlAttr);
+						}
+						break;
 				}
 			} catch (Exception e) {
 				analyzer.exception(e, "During generation of a component on class %s, exception %s", clazz, e);
@@ -397,7 +400,7 @@ class OCDReader {
 			if (a.get("options") != null) {
 				adDef.options.clear();
 				for (Object o : (Object[]) a.get("options")) {
-					Option opt = ((Annotation) o).getAnnotation();
+					Option opt = ((Annotation) o).getAnnotation(Option.class);
 					adDef.options.add(new OptionDef(opt.label(), opt.value()));
 				}
 			}

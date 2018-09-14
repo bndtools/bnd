@@ -3,10 +3,8 @@ package aQute.bnd.metatype;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.metatype.annotations.Designate;
-
 import aQute.bnd.annotation.xml.XMLAttribute;
+import aQute.bnd.component.annotations.Component;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.ClassDataCollector;
@@ -61,7 +59,7 @@ public class DesignateReader extends ClassDataCollector {
 				return null;
 			}
 			String id = ocd.id;
-			boolean factoryPid = Boolean.TRUE == designate.get("factory");
+			boolean factoryPid = Boolean.TRUE.equals(designate.get("factory"));
 			if (def == null)
 				def = new DesignateDef(finder);
 			def.ocdRef = id;
@@ -76,16 +74,21 @@ public class DesignateReader extends ClassDataCollector {
 	@Override
 	public void annotation(Annotation annotation) throws Exception {
 		try {
-			java.lang.annotation.Annotation a = annotation.getAnnotation();
-			if (a instanceof Designate)
-				designate = annotation;
-			else if (a instanceof Component) {
-				doComponent(annotation, (Component) a);
-			} else {
-				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
-				if (xmlAttr != null) {
-					doXmlAttribute(annotation, xmlAttr);
-				}
+			switch (annotation.getName()
+				.getFQN()) {
+				case "org.osgi.service.metatype.annotations.Designate":
+					designate = annotation;
+					break;
+				case "org.osgi.service.component.annotations.Component" :
+					doComponent(annotation, annotation.getAnnotation(Component.class));
+
+					break;
+					default:
+						XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
+						if (xmlAttr != null) {
+							doXmlAttribute(annotation, xmlAttr);
+						}
+						break;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
