@@ -66,7 +66,6 @@ Import-Package: junit.framework;resolution:=optional,\
     org.osgi.namespace.extender;version=latest,\
     org.osgi.namespace.implementation;version=latest,\
     org.osgi.namespace.service;version=latest,\
-	org.osgi.service.component.annotations;version=latest,\
     org.osgi.service.log;version=latest,\
 	org.osgi.service.metatype.annotations;version=latest,\
     org.osgi.service.repository;version=latest,\
