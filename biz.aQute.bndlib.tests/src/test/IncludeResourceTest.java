@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.HashSet;
 import java.util.Properties;
@@ -14,10 +15,23 @@ import org.junit.Test;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 
 public class IncludeResourceTest {
 
+	@Test
+	public void testpreprocessing() throws IOException, Exception {
+		String s = testPreprocessing("{foo.txt};literal='${sum;1,2,3}'", "foo.txt",
+			"Preprocessing does not work for literals: foo.txt");
+		s = testPreprocessing("foo.txt;literal='${sum;1,2,3}'", "foo.txt");
+		assertEquals("6", s);
+
+		s = testPreprocessing("{testresources/includeresource/root.txt}", "root.txt");
+		assertEquals("6", s.trim());
+	}
+	
+	
 	/**
 	 */
 	@Test
@@ -81,6 +95,7 @@ public class IncludeResourceTest {
 		Set<String> exclude = testResources("@jar/osgi.jar!/!org/osgi/framework/*", 528 - 31);
 
 		Set<String> includeOneFile = testResources("@jar/osgi.jar!/LICENSE", 1);
+		Set<String> includeOneFile2 = testResources("'@jar/osgi.jar!/LICENSE|about.html'", 2);
 		Set<String> excludeOneFile = testResources("@jar/osgi.jar!/!LICENSE", 528 - 1);
 
 		Set<String> or = testResources("@jar/osgi.jar!/LICENSE|about.html", 2);
@@ -146,4 +161,23 @@ public class IncludeResourceTest {
 		}
 	}
 
+	private String testPreprocessing(String ir, String resource, String... checks) throws IOException, Exception {
+		try (Builder bmaker = new Builder()) {
+			bmaker.setProperty("-resourcesonly", "true");
+			bmaker.addClasspath(bmaker.getFile("jar/osgi.jar"));
+			bmaker.addClasspath(bmaker.getFile("jar/easymock.jar"));
+			Properties p = new Properties();
+			p.put("-includeresource", ir);
+			bmaker.setProperties(p);
+			Jar jar = bmaker.build();
+			assertTrue(bmaker.check(checks));
+			Resource resource2 = jar.getResource(resource);
+			if (resource2 == null)
+				return null;
+
+			return IO.collect(resource2
+				.openInputStream());
+		}
+
+	}
 }
