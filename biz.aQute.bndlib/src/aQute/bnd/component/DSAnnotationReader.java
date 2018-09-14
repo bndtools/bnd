@@ -2,6 +2,7 @@ package aQute.bnd.component;
 
 import static aQute.bnd.osgi.Clazz.QUERY.ANNOTATED;
 import static aQute.bnd.osgi.Descriptors.binaryToFQN;
+import static java.lang.Boolean.TRUE;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
@@ -18,18 +19,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.CollectionType;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.FieldOption;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 import org.osgi.service.component.annotations.ServiceScope;
-import org.osgi.service.metatype.annotations.Designate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -263,30 +260,41 @@ public class DSAnnotationReader extends ClassDataCollector {
 	@Override
 	public void annotation(Annotation annotation) {
 		try {
-			java.lang.annotation.Annotation a = annotation.getAnnotation();
-			if (a instanceof Component) {
-				doComponent((Component) a, annotation);
-			} else if (a instanceof Activate) {
-				doActivate(annotation);
-			} else if (a instanceof Deactivate) {
-				doDeactivate(annotation);
-			} else if (a instanceof Modified) {
-				doModified(annotation);
-			} else if (a instanceof Reference) {
-				doReference((Reference) a, annotation);
-			} else if (a instanceof Designate) {
-				doDesignate((Designate) a, annotation);
-			} else if (annotation.getName()
-				.getFQN()
-				.startsWith("aQute.bnd.annotation.component")) {
-				handleMixedUsageError(annotation);
-			} else {
-				handlePossibleComponentPropertyAnnotation(annotation);
+			switch (annotation.getName()
+				.getFQN()) {
+				case "org.osgi.service.component.annotations.Component" :
+					doComponent(annotation.getAnnotation(Component.class), annotation);
+					break;
+				case "org.osgi.service.component.annotations.Reference" :
+					doReference(annotation.getAnnotation(Reference.class), annotation);
+					break;
+				case "org.osgi.service.component.annotations.Activate" :
+					doActivate(annotation);
+					break;
+				case "org.osgi.service.component.annotations.Deactivate" :
+					doDeactivate(annotation);
+					break;
+				case "org.osgi.service.component.annotations.Modified" :
+					doModified(annotation);
+					break;
+				case "org.osgi.service.metatype.annotations.Designate" :
+					doDesignate(annotation);
+					break;
+				case "aQute.bnd.annotation.component.Activate" :
+				case "aQute.bnd.annotation.component.Component" :
+				case "aQute.bnd.annotation.component.Deactivate" :
+				case "aQute.bnd.annotation.component.Modified" :
+				case "aQute.bnd.annotation.component.Reference" :
+					handleMixedUsageError(annotation);
+					break;
+				default :
+					handlePossibleComponentPropertyAnnotation(annotation);
 
-				XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
-				if (xmlAttr != null) {
-					doXmlAttribute(annotation, xmlAttr);
-				}
+					XMLAttribute xmlAttr = finder.getXMLAttribute(annotation);
+					if (xmlAttr != null) {
+						doXmlAttribute(annotation, xmlAttr);
+					}
+					break;
 			}
 		} catch (Exception e) {
 			analyzer.exception(e, "During generation of a component on class %s, exception %s", clazz, e);
@@ -295,10 +303,6 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	private void handleMixedUsageError(Annotation annotation) throws Exception {
 		DeclarativeServicesAnnotationError errorDetails;
-
-		String fqn = annotation.getName()
-			.getFQN();
-
 		switch (annotation.getElementType()) {
 			case METHOD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
@@ -314,6 +318,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), null,
 					ErrorType.MIXED_USE_OF_DS_ANNOTATIONS_STD);
 		}
+		String fqn = annotation.getName()
+			.getFQN();
 		List<DeclarativeServicesAnnotationError> errors = mismatchedAnnotations.get(fqn);
 		if (errors == null) {
 			errors = new ArrayList<>();
@@ -383,8 +389,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 		def.addExtensionAttribute(xmlAttr, annotation);
 	}
 
-	private void doDesignate(Designate a, Annotation annotation) {
-		if (a.factory() && component.configurationPolicy == null) {
+	private void doDesignate(Annotation annotation) {
+		if (TRUE.equals(annotation.get("factory")) && (component.configurationPolicy == null)) {
 			component.configurationPolicy = ConfigurationPolicy.REQUIRE;
 		}
 	}
@@ -1463,7 +1469,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		if (refAnnotations != null) {
 			for (Object o : refAnnotations) {
 				Annotation refAnnotation = (Annotation) o;
-				Reference ref = refAnnotation.getAnnotation();
+				Reference ref = refAnnotation.getAnnotation(Reference.class);
 				doReference(ref, refAnnotation);
 			}
 		}

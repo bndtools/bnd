@@ -43,7 +43,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.get("filter:")
 				.contains("(a=b)"));
 			assertTrue(p.get("filter:")
-				.contains("(&(version>=1.0.0)(!(version>=2.0.0)))"));
+				.contains("(version>=1.0.0)(!(version>=2.0.0))"));
 			assertTrue(p.get("filter:")
 				.contains("(require=Required)"));
 			assertFalse(p.containsKey("foo"));
@@ -54,7 +54,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.get("filter:")
 				.contains("(a=b)"));
 			assertTrue(p.get("filter:")
-				.contains("(&(version>=2.0.0)(!(version>=3.0.0)))"));
+				.contains("(version>=2.0.0)(!(version>=3.0.0))"));
 			assertTrue(p.get("filter:")
 				.contains("(require=Required2)"));
 			assertEquals("direct", p.get("foo"));
@@ -106,7 +106,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("filter:"));
 			String filter = p.get("filter:");
 			assertTrue(filter, filter.contains("(a=b)"));
-			assertTrue(filter, filter.contains("(&(version>=1.0.0)(!(version>=2.0.0)))"));
+			assertTrue(filter, filter.contains("(version>=1.0.0)(!(version>=2.0.0))"));
 			assertTrue(filter, filter.contains("(require=Indirectly-Required)"));
 
 			p = req.get("require" + DUPLICATE_MARKER);
@@ -114,7 +114,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("filter:"));
 			filter = p.get("filter:");
 			assertTrue(filter, filter.contains("(a=b)"));
-			assertTrue(filter, filter.contains("(&(version>=2.0.0)(!(version>=3.0.0)))"));
+			assertTrue(filter, filter.contains("(version>=2.0.0)(!(version>=3.0.0))"));
 			assertTrue(filter, filter.contains("(require=Indirectly-Required2)"));
 
 			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
@@ -139,7 +139,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("filter:"));
 			filter = p.get("filter:");
 			assertTrue(filter, filter.contains("(a=b)"));
-			assertTrue(filter, filter.contains("(&(version>=1.0.0)(!(version>=2.0.0)))"));
+			assertTrue(filter, filter.contains("(version>=1.0.0)(!(version>=2.0.0))"));
 			assertTrue(filter, filter.contains("(require=Required)"));
 			assertTrue(p.containsKey("open"));
 			assertEquals("sesame", p.get("open"));
@@ -162,7 +162,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertTrue(p.containsKey("filter:"));
 			filter = p.get("filter:");
 			assertTrue(filter, filter.contains("(a=b)"));
-			assertTrue(filter, filter.contains("(&(version>=2.0.0)(!(version>=3.0.0)))"));
+			assertTrue(filter, filter.contains("(version>=2.0.0)(!(version>=3.0.0))"));
 			assertTrue(filter, filter.contains("(require=Required2)"));
 			assertTrue(p.containsKey("open"));
 			assertEquals("sesame", p.get("open"));
@@ -277,7 +277,7 @@ public class StdAnnotationHeadersTest extends TestCase {
 			Props p = req.get("overriding");
 			assertNotNull(p);
 			assertTrue(p.containsKey("filter:"));
-			assertEquals("(&(overriding=foo)(&(version>=1.0.0)(!(version>=2.0.0))))", p.get("filter:"));
+			assertEquals("(&(overriding=foo)(version>=1.0.0)(!(version>=2.0.0)))", p.get("filter:"));
 			assertTrue(p.containsKey("foo:List<String>"));
 			assertEquals("foobar", p.get("foo:List<String>"));
 			assertTrue(p.containsKey("x-top-name:"));

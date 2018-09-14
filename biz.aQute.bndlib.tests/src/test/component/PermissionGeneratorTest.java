@@ -88,6 +88,8 @@ public class PermissionGeneratorTest extends BndTestCase {
             "aQute.bnd.osgi",
             "aQute.bnd.service.diff",
             "aQute.bnd.test",
+            "aQute.bnd.version",
+            "aQute.lib.filter",
             "aQute.lib.io",
             "aQute.service.reporter",
             "javax.xml.namespace",
@@ -133,8 +135,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 				new TreeSet<>(Arrays.asList("osgi.service")), 
 				providedCapabilities);
 		assertEquals("Required capabilities",
-				new TreeSet<>(Arrays.asList("osgi.extender",
-						"osgi.service")), 
+				new TreeSet<>(Arrays.asList("osgi.service")), 
 						requiredCapabilities);
 		/* @formatter:on */
 	}
