@@ -41,9 +41,11 @@ public class XMLAttributeFinder extends ClassDataCollector {
 
 	@Override
 	public void annotation(Annotation annotation) throws Exception {
-		java.lang.annotation.Annotation a = annotation.getAnnotation();
-		if (a instanceof XMLAttribute)
-			xmlAttr = (XMLAttribute) a;
+		String fqn = annotation.getName()
+			.getFQN();
+		if (fqn.equals("aQute.bnd.annotation.xml.XMLAttribute")) {
+			xmlAttr = annotation.getAnnotation(XMLAttribute.class);
+		}
 	}
 
 	public Map<String, String> getDefaults(Annotation a) {
