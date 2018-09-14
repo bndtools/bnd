@@ -697,4 +697,8 @@ public class ProjectBuilder extends Builder {
 		return super.getSourceFileFor(type, getSourcePath());
 	}
 
+	@Override
+	public boolean isInteractive() {
+		return getProject().isInteractive();
+	}
 }

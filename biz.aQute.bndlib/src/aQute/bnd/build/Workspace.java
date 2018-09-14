@@ -346,7 +346,9 @@ public class Workspace extends Processor {
 	@Override
 	public boolean refresh() {
 		data = new WorkspaceData();
+		gestalt = null;
 		if (super.refresh()) {
+
 			for (Project project : getCurrentProjects()) {
 				project.propertiesChanged();
 			}
@@ -1250,5 +1252,15 @@ public class Workspace extends Processor {
 
 	public boolean isDefaultWorkspace() {
 		return BND_DEFAULT_WS.equals(getBase());
+	}
+
+	@Override
+	public boolean isInteractive() {
+		return getGestalt(Constants.GESTALT_INTERACTIVE) != null;
+	}
+
+	public static void resetStatic() {
+		overallDriver = "unset";
+		overallGestalt = new Parameters();
 	}
 }

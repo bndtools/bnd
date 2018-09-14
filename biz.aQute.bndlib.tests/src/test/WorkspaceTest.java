@@ -1,6 +1,7 @@
 package test;
 
 import java.io.File;
+import java.io.IOException;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -13,9 +14,11 @@ public class WorkspaceTest extends TestCase {
 	File tmp = new File("tmp");
 
 	@Override
-	protected void setUp() {
+	protected void setUp() throws IOException {
 		IO.delete(tmp);
 		tmp.mkdir();
+		IO.copy(IO.getFile("testresources/ws-gestalt"), tmp);
+
 	}
 
 	@Override
@@ -53,11 +56,13 @@ public class WorkspaceTest extends TestCase {
 		}
 	}
 
-	public void testGestalt() throws Exception {
+	public void testGestaltGlobal() throws Exception {
+		Workspace.resetStatic();
 		Attrs attrs = new Attrs();
 		attrs.put("x", "10");
 		Workspace.addGestalt("peter", attrs);
 		try (Workspace w = new Workspace(tmp)) {
+			w.refresh(); // remove previous tests
 			assertEquals("peter", w.getReplacer()
 				.process("${gestalt;peter}"));
 			assertEquals("10", w.getReplacer()
@@ -74,20 +79,21 @@ public class WorkspaceTest extends TestCase {
 				.process("${gestalt;john;x}"));
 			assertEquals("", w.getReplacer()
 				.process("${gestalt;john;x;10}"));
+			assertTrue(w.check());
 		}
+	}
 
+	public void testGestaltLocal() throws Exception {
+		Workspace.resetStatic();
 		try (Workspace w = new Workspace(tmp)) {
+			w.refresh(); // remove previous tests
 			w.setProperty("-gestalt", "john;z=100, mieke;a=1000, ci");
-			assertEquals("peter", w.getReplacer()
+			assertEquals("", w.getReplacer()
 				.process("${gestalt;peter}"));
-			assertEquals("10", w.getReplacer()
+			assertEquals("", w.getReplacer()
 				.process("${gestalt;peter;x}"));
-			assertEquals("10", w.getReplacer()
+			assertEquals("", w.getReplacer()
 				.process("${gestalt;peter;x;10}"));
-			assertEquals("", w.getReplacer()
-				.process("${gestalt;peter;x;11}"));
-			assertEquals("", w.getReplacer()
-				.process("${gestalt;peter;y}"));
 			assertEquals("john", w.getReplacer()
 				.process("${gestalt;john}"));
 			assertEquals("100", w.getReplacer()
@@ -100,6 +106,8 @@ public class WorkspaceTest extends TestCase {
 				.process("${gestalt;mieke}"));
 			assertEquals("", w.getReplacer()
 				.process("${gestalt;mieke;x}"));
+
+			assertTrue(w.check());
 		}
 	}
 
