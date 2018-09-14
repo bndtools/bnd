@@ -663,7 +663,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				int current = filter.lastIndexOf(")");
 
 				VersionRange range = new VersionRange(floor, floor.bumpMajor());
-				filter.append(range.toFilter());
+				String rangeFilter = range.toFilter();
+				filter.append(rangeFilter.substring(2, rangeFilter.length() - 1));
 
 				if (andAdded) {
 					filter.deleteCharAt(current)
