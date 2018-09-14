@@ -27,6 +27,7 @@
  * 'sourceSets.main.runtimeClasspath' plus
  * 'configurations.archives.artifacts.files'.</li>
  * </ul>
+ *
  */
 
 package aQute.bnd.gradle

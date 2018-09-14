@@ -1,0 +1,29 @@
+import aQute.bnd.gradle.Wrap
+
+plugins {
+    id 'biz.aQute.bnd.builder'
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    bundle
+}
+
+task wrap(type: Wrap) {
+    classpath configurations.bundle
+    bundlename "some.bundle"
+    bundleversion "1.0.0"
+    exportpackage "org.jdom"
+    importpackage "!javax.xml.namespace,*"
+    output "out.jar"
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/net.sourceforge.htmlunit/htmlunit-cssparser
+    bundle group: 'net.sourceforge.htmlunit', name: 'htmlunit-cssparser', version: '1.2.0'
+    // https://mvnrepository.com/artifact/org.jdom/jdom
+    bundle group: 'org.jdom', name: 'jdom', version: '2.0.2'
+}
