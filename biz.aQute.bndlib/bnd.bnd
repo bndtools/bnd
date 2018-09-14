@@ -6,8 +6,7 @@ Bundle-Description:				A Swiss Army Knife for OSGi
 
 -includepackage: \
 	aQute.bnd.*,\
-	aQute.lib.spring,\
-    org.osgi.annotation.bundle;-split-package:=first
+	aQute.lib.spring
 
 Export-Package: \
 	aQute.bnd.annotation.*;-noimport:=true,\
@@ -49,6 +48,7 @@ Export-Package: \
     aQute.service.*,\
     aQute.configurable,\
     !org.osgi.service.*.annotations.*,\
+    !org.osgi.annotation.*,\
     org.osgi.*
 
 Import-Package: junit.framework;resolution:=optional,\
