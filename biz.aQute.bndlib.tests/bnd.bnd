@@ -4,7 +4,14 @@
 -dependson: biz.aQute.bnd.embedded-repo, demo, demo-fragment
 -nobundles: true
 
--buildpath: \
+# This project is a test project. For historical reasons, the test code is in src
+# so we use the normal test folders for src in the offline build.
+testsrc: src
+testbin: bin
+src: test
+bin: bin_test
+
+-testpath: \
     osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
     org.osgi.namespace.service;version=latest,\
@@ -24,26 +31,17 @@
     org.osgi.util.function;version=latest,\
     org.osgi.util.measurement;version=latest,\
     org.osgi.util.promise;version=latest,\
-	aQute.libg;version=project,\
-    biz.aQute.bnd.annotation;version=project,\
-    biz.aQute.bndlib;version=project;packages=*,\
-    biz.aQute.bnd.test;version=project,\
     org.apache.geronimo.specs.geronimo-atinject_1.0_spec;version=latest,\
     org.apache.geronimo.specs.geronimo-interceptor_1.2_spec;version=latest,\
     org.apache.geronimo.specs.geronimo-jcdi_2.0_spec;version=latest,\
+	aQute.libg;version=project,\
+    biz.aQute.bnd.annotation;version=project,\
+    biz.aQute.bndlib;version=project;packages=*,\
+    biz.aQute.repository;version=snapshot,\
+    biz.aQute.bnd.test;version=project,\
 	slf4j.api;version=latest,\
+    slf4j.simple;version=latest,\
 	${junit},\
 	${mockito}
 
--testpath: \
-    biz.aQute.repository;version=snapshot,\
-    slf4j.simple;version=latest
-
 -runtrace: true
-
-# This project is a test project. For historical reasons, the test code is in src
-# so we use the normal test folders for src in the offline build.
-testsrc: src
-testbin: bin
-src: test
-bin: bin_test
