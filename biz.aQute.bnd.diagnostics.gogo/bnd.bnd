@@ -8,7 +8,7 @@ Bundle-Activator: biz.aQute.bnd.diagnostics.gogo.osgi.Activator
 
 -buildpath: \
 	biz.aQute.bndlib;version=latest;packages=*,\
-	osgi.core;version=5.0,\
+	osgi.core;version=latest,\
 	org.apache.felix.gogo.runtime;version=0.12,\
 	org.apache.felix.gogo.command
 

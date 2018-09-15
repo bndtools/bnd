@@ -12,7 +12,7 @@
 -testpath: \
     aQute.libg;version=latest, \
     biz.aQute.bndlib;version=latest, \
-    osgi.core;version=6.0, \
+    osgi.core;version=latest, \
     org.osgi.service.resolver;version=1.1.0, \
     osgi.cmpn;version=6.0, \
     biz.aQute.resolve;version=latest, \

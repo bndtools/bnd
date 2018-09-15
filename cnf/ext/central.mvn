@@ -1,7 +1,5 @@
 org.osgi:osgi.annotation:7.0.0
 org.osgi:org.osgi.core:4.2.0
-org.osgi:osgi.core:4.3.1
-org.osgi:osgi.core:5.0.0
 org.osgi:osgi.core:6.0.0
 org.osgi:org.osgi.compendium:4.2.0
 org.osgi:osgi.cmpn:4.3.1

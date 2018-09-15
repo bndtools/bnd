@@ -45,7 +45,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
     biz.aQute.bnd.exporters;version=latest, \
 	biz.aQute.bnd.annotation;version=project,\
 	org.apache.ant:ant;version=latest,\
-	osgi.core;version=6.0,\
+	osgi.core;version=latest,\
 	osgi.cmpn;version=6.0,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\

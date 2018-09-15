@@ -11,7 +11,7 @@
 -buildpath: \
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	osgi.core;version=@6,\
+	osgi.core;version=latest,\
 	osgi.cmpn;version=@6,\
     slf4j.api;version=latest
 

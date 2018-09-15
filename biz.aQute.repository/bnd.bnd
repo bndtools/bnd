@@ -12,7 +12,7 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 
 -buildpath: \
 	osgi.annotation;version=latest,\
-	osgi.core;version=@6,\
+	osgi.core;version=latest,\
     org.osgi.util.function;version=latest,\
     org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\

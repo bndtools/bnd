@@ -1,7 +1,7 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
--buildpath: osgi.core;version=@6,\
+-buildpath: osgi.core;version=latest,\
 	org.osgi.service.resolver;version=1.1.0, \
     org.osgi.util.function;version=latest,\
     org.osgi.util.promise;version=latest,\
