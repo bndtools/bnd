@@ -22,6 +22,7 @@ import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -82,16 +83,19 @@ public class BaselineTest extends TestCase {
 				jar.getResource("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
 			out.putResource("org/osgi/application/ApplicationContext.class",
 				jar.getResource("org/osgi/application/ApplicationContext.class"));
-			Tree tree = diff.tree(out);
+			try (Analyzer a = new Analyzer(out)) {
+				a.addClasspath(out);
+				Tree tree = diff.tree(a);
 
-			Tree src = tree.get("<resources>")
-				.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
-				.getChildren()[0];
+				Tree src = tree.get("<resources>")
+					.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java")
+					.getChildren()[0];
 
-			assertNotNull(src);
+				assertNotNull(src);
 
-			assertNull(tree.get("<resources>")
-				.get("org/osgi/application/ApplicationContext.class"));
+				assertNull(tree.get("<resources>")
+					.get("org/osgi/application/ApplicationContext.class"));
+			}
 		}
 	}
 
@@ -103,12 +107,14 @@ public class BaselineTest extends TestCase {
 				if (!path.startsWith("OSGI-OPT/src/"))
 					out.putResource(path, jar.getResource(path));
 			}
-
-			Tree tree = diff.tree(out);
-			assertNull(tree.get("<resources>")
-				.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
-			assertNotNull(tree.get("<resources>")
-				.get("org/osgi/application/ApplicationContext.class"));
+			try (Analyzer a = new Analyzer(out)) {
+				a.addClasspath(out);
+				Tree tree = diff.tree(a);
+				assertNull(tree.get("<resources>")
+					.get("OSGI-OPT/src/org/osgi/application/ApplicationContext.java"));
+				assertNotNull(tree.get("<resources>")
+					.get("org/osgi/application/ApplicationContext.class"));
+			}
 		}
 	}
 
