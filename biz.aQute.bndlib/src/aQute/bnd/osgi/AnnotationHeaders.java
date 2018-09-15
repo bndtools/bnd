@@ -16,12 +16,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.osgi.annotation.bundle.Capabilities;
-import org.osgi.annotation.bundle.Capability;
-import org.osgi.annotation.bundle.Header;
-import org.osgi.annotation.bundle.Headers;
-import org.osgi.annotation.bundle.Requirement;
-import org.osgi.annotation.bundle.Requirements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +28,12 @@ import aQute.bnd.annotation.headers.BundleLicense;
 import aQute.bnd.annotation.headers.Category;
 import aQute.bnd.annotation.headers.ProvideCapability;
 import aQute.bnd.annotation.headers.RequireCapability;
+import aQute.bnd.bundle.annotations.Capabilities;
+import aQute.bnd.bundle.annotations.Capability;
+import aQute.bnd.bundle.annotations.Header;
+import aQute.bnd.bundle.annotations.Headers;
+import aQute.bnd.bundle.annotations.Requirement;
+import aQute.bnd.bundle.annotations.Requirements;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Clazz.MethodDef;

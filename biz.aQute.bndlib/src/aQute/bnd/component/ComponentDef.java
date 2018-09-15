@@ -15,9 +15,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
-import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.component.annotations.ServiceScope;
-
+import aQute.bnd.component.annotations.ConfigurationPolicy;
+import aQute.bnd.component.annotations.ServiceScope;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.version.Version;

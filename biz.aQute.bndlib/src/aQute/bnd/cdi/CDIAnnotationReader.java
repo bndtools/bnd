@@ -11,9 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.osgi.service.component.annotations.ReferenceCardinality;
-
 import aQute.bnd.cdi.CDIAnnotations.Discover;
+import aQute.bnd.component.annotations.ReferenceCardinality;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
 import aQute.bnd.osgi.ClassDataCollector;
@@ -65,7 +64,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	FieldDef							member;
 	int									parameter				= -1;
 	ReferenceDef						referenceDef;
-	int									targetIndex				= -1;
+	int									targetIndex				= Clazz.TYPEUSE_INDEX_NONE;
 
 	CDIAnnotationReader(Analyzer analyzer, Clazz clazz, EnumSet<Discover> options) {
 		this.analyzer = requireNonNull(analyzer);
@@ -134,8 +133,8 @@ public class CDIAnnotationReader extends ClassDataCollector {
 
 		@Override
 		public void annotation(Annotation annotation) throws Exception {
-			String fqn = Descriptors.binaryToFQN(annotation.getName()
-				.getBinary());
+			String fqn = annotation.getName()
+				.getFQN();
 			if (fqn.equals("org.osgi.service.cdi.annotations.Beans")) {
 				Object[] beanClasses = annotation.get("value");
 
@@ -153,26 +152,26 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	@Override
 	public void annotation(Annotation annotation) {
 		try {
-			String fqn = Descriptors.binaryToFQN(annotation.getName()
-				.getBinary());
-
-			if (fqn.equals("org.osgi.service.cdi.annotations.Bean")) {
-				definitions.get(0).marked = true;
-			}
-			else if (fqn.equals("org.osgi.service.cdi.annotations.Service")) {
-				doService(annotation);
-			}
-			else if (fqn.equals("org.osgi.service.cdi.annotations.MinimumCardinality")) {
-				int minimumCardinality = (int) annotation.get("value");
-				if (minimumCardinality > 0) {
-					if (referenceDef == null) {
-						referenceDef = new ReferenceDef();
+			switch (annotation.getName()
+				.getFQN()) {
+				case "org.osgi.service.cdi.annotations.Bean" :
+					definitions.get(0).marked = true;
+					break;
+				case "org.osgi.service.cdi.annotations.Service" :
+					doService(annotation);
+					break;
+				case "org.osgi.service.cdi.annotations.MinimumCardinality" :
+					int minimumCardinality = (int) annotation.get("value");
+					if (minimumCardinality > 0) {
+						if (referenceDef == null) {
+							referenceDef = new ReferenceDef();
+						}
+						referenceDef.cardinality = ReferenceCardinality.AT_LEAST_ONE;
 					}
-					referenceDef.cardinality = ReferenceCardinality.AT_LEAST_ONE;
-				}
-			}
-			if (fqn.equals("org.osgi.service.cdi.annotations.Reference")) {
-				doReference(annotation, parameter);
+					break;
+				case "org.osgi.service.cdi.annotations.Reference" :
+					doReference(annotation, parameter);
+					break;
 			}
 		} catch (Exception e) {
 			analyzer.exception(e, "During bean processing on class %s, exception %s", clazz, e);
@@ -291,7 +290,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	@Override
 	public void typeuse(int target_type, int target_index, byte[] target_info, byte[] type_path) {
 		if (target_type != 0x10) {
-			targetIndex = -1;
+			targetIndex = Clazz.TYPEUSE_INDEX_NONE;
 			return;
 		}
 
@@ -502,7 +501,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 				definitions.get(0).serviceOrigin = ElementType.TYPE_USE;
 				if (targetIndex == Clazz.TYPEUSE_TARGET_INDEX_EXTENDS) {
 					definitions.get(0).service.add(extendsClass);
-				} else if (targetIndex != -1) {
+				} else if (targetIndex != Clazz.TYPEUSE_INDEX_NONE) {
 					definitions.get(0).service.add(interfaces[targetIndex]);
 				}
 				break;

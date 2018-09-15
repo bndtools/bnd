@@ -4,8 +4,8 @@
 -buildpath: \
 	osgi.core;version=4.2,\
 	osgi.cmpn;version=4.2,\
-	biz.aQute.bndlib;version=project,\
 	aQute.libg;version=project,\
+	biz.aQute.bndlib;version=project,\
     ${junit}
 
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl

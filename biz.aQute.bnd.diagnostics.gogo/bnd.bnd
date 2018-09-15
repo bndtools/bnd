@@ -7,8 +7,9 @@ Private-Package: \
 Bundle-Activator: biz.aQute.bnd.diagnostics.gogo.osgi.Activator
 
 -buildpath: \
+	osgi.core;version=latest,\
+    org.osgi.service.component.annotations;version=latest,\
 	biz.aQute.bndlib;version=latest;packages=*,\
-	osgi.core;version=5.0,\
 	org.apache.felix.gogo.runtime;version=0.12,\
 	org.apache.felix.gogo.command
 

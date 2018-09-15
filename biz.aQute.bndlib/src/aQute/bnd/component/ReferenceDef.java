@@ -4,13 +4,12 @@ import static aQute.bnd.component.DSAnnotationReader.V1_0;
 import static aQute.bnd.component.DSAnnotationReader.V1_2;
 import static aQute.bnd.component.DSAnnotationReader.V1_3;
 
-import org.osgi.service.component.annotations.CollectionType;
-import org.osgi.service.component.annotations.FieldOption;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
-import org.osgi.service.component.annotations.ReferenceScope;
-
+import aQute.bnd.component.annotations.CollectionType;
+import aQute.bnd.component.annotations.FieldOption;
+import aQute.bnd.component.annotations.ReferenceCardinality;
+import aQute.bnd.component.annotations.ReferencePolicy;
+import aQute.bnd.component.annotations.ReferencePolicyOption;
+import aQute.bnd.component.annotations.ReferenceScope;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;

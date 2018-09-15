@@ -12,12 +12,14 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 
 -buildpath: \
 	osgi.annotation;version=latest,\
-	osgi.core;version=@6,\
+	osgi.core;version=latest,\
+    org.osgi.service.coordinator;version=latest,\
+    org.osgi.service.log;version=latest,\
+    org.osgi.service.repository;version=latest,\
     org.osgi.util.function;version=latest,\
     org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	osgi.cmpn;version=@6,\
 	javax.xml.stream;version=latest,\
 	slf4j.api;version=latest,\
 	org.tukaani.xz;version=latest,\

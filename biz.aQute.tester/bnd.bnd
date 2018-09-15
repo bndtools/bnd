@@ -32,8 +32,8 @@ Tester-Plugin: \
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	biz.aQute.junit;version=latest;packages=aQute.junit.*, \
 	osgi.core;version=4.2,\
+	biz.aQute.junit;version=latest;packages=aQute.junit.*, \
 	biz.aQute.bndlib;version=latest,\
 	${junit}
 

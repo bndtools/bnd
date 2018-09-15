@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+        <classpathentry kind="src" path="src"/>
+        <classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3
+"/>
+        <classpathentry combineaccessrules="false" kind="src" path="/aQute.lib"/>
+        <classpathentry kind="lib" path="/aQute.util.bnd/jar/asm.jar"/>
+        <classpathentry kind="lib" path="/aQute.util.bnd/jar/asm.jar"/>
+        <classpathentry kind="lib" path="/Ws/osgi/cnf/jar/osgi-r3.jar"/>
+        <classpathentry kind="output" path="bin_test"/>
+</classpath>

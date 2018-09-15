@@ -26,7 +26,7 @@ Import-Package: \
 
 -buildpath: \
 	osgi.annotation;version=latest,\
-	osgi.core;version=@5,\
+	osgi.core;version=latest,\
 	${junit}
 
 -runtrace: true

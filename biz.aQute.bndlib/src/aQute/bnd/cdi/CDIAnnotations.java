@@ -10,9 +10,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.osgi.service.component.annotations.ReferenceCardinality;
-
 import aQute.bnd.component.MergedRequirement;
+import aQute.bnd.component.annotations.ReferenceCardinality;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;

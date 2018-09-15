@@ -16,12 +16,11 @@ import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
-import org.osgi.service.component.annotations.ServiceScope;
-
+import aQute.bnd.component.annotations.ConfigurationPolicy;
+import aQute.bnd.component.annotations.ReferenceCardinality;
+import aQute.bnd.component.annotations.ReferencePolicy;
+import aQute.bnd.component.annotations.ReferencePolicyOption;
+import aQute.bnd.component.annotations.ServiceScope;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
 import aQute.bnd.osgi.Analyzer;

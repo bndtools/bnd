@@ -12,8 +12,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.osgi.service.component.annotations.ReferenceCardinality;
+import org.osgi.namespace.extender.ExtenderNamespace;
+import org.osgi.namespace.service.ServiceNamespace;
+import org.osgi.resource.Namespace;
 
+import aQute.bnd.component.annotations.ReferenceCardinality;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -234,8 +237,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 		boolean multiple = cardinality == ReferenceCardinality.MULTIPLE
 			|| cardinality == ReferenceCardinality.AT_LEAST_ONE;
 
-		String filter = "(objectClass=" + objectClass + ")";
-		requires.put(filter, "active", optional, multiple);
+		String filter = "(" + ServiceNamespace.CAPABILITY_OBJECTCLASS_ATTRIBUTE + "=" + objectClass + ")";
+		requires.put(filter, Namespace.EFFECTIVE_ACTIVE, optional, multiple);
 	}
 
 	private void addExtenderRequirement(Set<String> requires, Version version) {
@@ -243,8 +246,10 @@ public class DSAnnotations implements AnalyzerPlugin {
 		Parameters p = new Parameters();
 		Attrs a = new Attrs();
 		a.put(Constants.FILTER_DIRECTIVE,
-			"\"(&(osgi.extender=osgi.component)(version>=" + version + ")(!(version>=" + next + ")))\"");
-		p.put("osgi.extender", a);
+			"\"(&(" + ExtenderNamespace.EXTENDER_NAMESPACE + "=" + ComponentConstants.COMPONENT_CAPABILITY_NAME
+				+ ")(" + ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE + ">=" + version + ")(!("
+				+ ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE + ">=" + next + ")))\"");
+		p.put(ExtenderNamespace.EXTENDER_NAMESPACE, a);
 		String s = p.toString();
 		requires.add(s);
 	}

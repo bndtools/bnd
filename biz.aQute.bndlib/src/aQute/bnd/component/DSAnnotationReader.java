@@ -19,19 +19,19 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.osgi.service.component.annotations.CollectionType;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.ConfigurationPolicy;
-import org.osgi.service.component.annotations.FieldOption;
-import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferenceCardinality;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ServiceScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.xml.XMLAttribute;
 import aQute.bnd.component.DSAnnotations.Options;
+import aQute.bnd.component.annotations.CollectionType;
+import aQute.bnd.component.annotations.Component;
+import aQute.bnd.component.annotations.ConfigurationPolicy;
+import aQute.bnd.component.annotations.FieldOption;
+import aQute.bnd.component.annotations.Reference;
+import aQute.bnd.component.annotations.ReferenceCardinality;
+import aQute.bnd.component.annotations.ReferencePolicy;
+import aQute.bnd.component.annotations.ServiceScope;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
 import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
 import aQute.bnd.osgi.Analyzer;

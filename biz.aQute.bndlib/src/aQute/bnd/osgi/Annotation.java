@@ -130,11 +130,6 @@ public class Annotation {
 	}
 
 	public <T extends java.lang.annotation.Annotation> T getAnnotation(Class<T> c) throws Exception {
-		String cname = name.getFQN();
-		if (!c.getName()
-			.equals(cname)) {
-			return null;
-		}
 		if (elements == null) {
 			elements = new LinkedHashMap<>();
 		}

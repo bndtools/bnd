@@ -7,8 +7,7 @@
 aQute.agent.server.port = 29998
 
 -buildpath: \
-	osgi.core;version=@6,\
-	osgi.cmpn;version=@6,\
+	osgi.core;version=latest,\
 	aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.junit;version=latest,\
