@@ -4,13 +4,6 @@
 -dependson: biz.aQute.bnd.embedded-repo, demo, demo-fragment
 -nobundles: true
 
-# This project is a test project. For historical reasons, the test code is in src
-# so we use the normal test folders for src in the offline build.
-testsrc: src
-testbin: bin
-src: test
-bin: bin_test
-
 -testpath: \
     osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
