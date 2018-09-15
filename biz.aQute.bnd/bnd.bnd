@@ -38,15 +38,16 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 -dependson: biz.aQute.bnd.embedded-repo
 
 -buildpath: \
-  aQute.libg;version=latest, \
-  biz.aQute.bndlib;version=latest, \
-  biz.aQute.resolve;version=latest, \
-  biz.aQute.repository;version=latest, \
+	osgi.core;version=latest,\
+	org.osgi.service.log;version=latest,\
+	org.osgi.service.repository;version=latest,\
+    aQute.libg;version=latest, \
+    biz.aQute.bndlib;version=latest, \
+    biz.aQute.resolve;version=latest, \
+    biz.aQute.repository;version=latest, \
     biz.aQute.bnd.exporters;version=latest, \
 	biz.aQute.bnd.annotation;version=project,\
 	org.apache.ant:ant;version=latest,\
-	osgi.core;version=latest,\
-	osgi.cmpn;version=6.0,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\
 	slf4j.api;version=latest,\
@@ -55,6 +56,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 
 -testpath: \
     ${junit},\
+    org.osgi.namespace.extender;version=latest,\
     org.apache.felix.framework;version=latest,\
 	biz.aQute.bnd.embedded-repo; version=snapshot
 

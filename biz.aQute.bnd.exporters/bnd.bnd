@@ -9,10 +9,10 @@
     aQute.libg.*;-split-package:=first
 
 -buildpath: \
+	osgi.core;version=latest,\
+	org.osgi.service.subsystem;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	osgi.core;version=latest,\
-	osgi.cmpn;version=@6,\
     slf4j.api;version=latest
 
 -testpath: \

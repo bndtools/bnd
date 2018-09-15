@@ -10,11 +10,10 @@
 -nobundles: true
 
 -testpath: \
+    osgi.core;version=latest,\
+    org.osgi.service.cm;version=latest,\
     aQute.libg;version=latest, \
     biz.aQute.bndlib;version=latest, \
-    osgi.core;version=latest, \
-    org.osgi.service.resolver;version=1.1.0, \
-    osgi.cmpn;version=6.0, \
     biz.aQute.resolve;version=latest, \
     biz.aQute.repository;version=latest, \
     biz.aQute.bnd.annotation;version=project,\
