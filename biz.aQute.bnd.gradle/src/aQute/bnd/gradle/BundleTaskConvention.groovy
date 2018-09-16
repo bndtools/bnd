@@ -287,7 +287,7 @@ class BundleTaskConvention {
         logger.debug 'builder properties: {}', builder.getProperties()
 
         // Build bundle
-        builder.build()
+        Jar builtJar = builder.build()
         if (!builder.isOk()) {
           // if we already have an error; fail now
           logReport(builder, logger)
@@ -295,7 +295,7 @@ class BundleTaskConvention {
         }
 
         // Write out the bundle
-        bundleJar.write(archivePath)
+        builtJar.write(archivePath)
 
         logReport(builder, logger)
         if (!builder.isOk()) {
