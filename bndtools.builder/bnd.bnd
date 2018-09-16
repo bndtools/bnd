@@ -2,15 +2,14 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath:  \
+	osgi.annotation; version=latest,\
+	osgi.core;version=latest,\
+	osgi.cmpn;version=latest,\
 	${bndlib};packages=*,\
 	${aQute-repository};packages=*,\
 	bndtools.api;version=latest,\
 	bndtools.utils;version=project;packages=*,\
 	bndtools.core;version=snapshot, \
-	osgi.annotation; version=${osgi.annotation.version},\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version},\
-	javax.xml,\
 	org.eclipse.osgi,\
 	org.eclipse.equinox.common,\
 	org.eclipse.equinox.registry,\

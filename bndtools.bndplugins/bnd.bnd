@@ -2,9 +2,9 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
+	osgi.annotation; version=latest,\
 	${bndlib},\
 	${aQute-repository},\
-	osgi.annotation; version=${osgi.annotation.version},\
 	com.jcraft.jsch,\
 	org.eclipse.jgit
 

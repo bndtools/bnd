@@ -2,9 +2,9 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	osgi.annotation;version=${osgi.annotation.version},\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version},\
+	osgi.annotation;version=latest,\
+	osgi.core;version=latest,\
+	osgi.cmpn;version=latest,\
 	${bndlib},\
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\

@@ -2,9 +2,9 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath:  \
-    bndtools.api;version=latest,\
-	osgi.annotation;version=${osgi.annotation.version},\
-	osgi.cmpn;version=${osgi.cmpn.version}
+	osgi.annotation;version=latest,\
+	osgi.cmpn;version=latest,\
+    bndtools.api;version=latest
 	
 -testpath: \
 	${junit}

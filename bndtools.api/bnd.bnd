@@ -2,9 +2,9 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
+	osgi.annotation; version=latest,\
+	osgi.core;version=latest, \
 	${bndlib}, \
-	osgi.annotation; version=${osgi.annotation.version},\
-	osgi.core;version=${osgi.core.version}, \
 	org.eclipse.equinox.common, \
 	org.eclipse.core.resources,\
 	org.eclipse.core.runtime,\

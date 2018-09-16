@@ -1,14 +1,14 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	org.slf4j.api;version=latest,\
-	osgi.annotation;version=${osgi.annotation.version},\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.core.version},\
+	osgi.annotation;version=latest,\
+	osgi.core;version=latest,\
+	osgi.cmpn;version=latest,\
 	${bndlib},\
 	biz.aQute.repository;version=latest,\
 	bndtools.api;version=latest,\
 	bndtools.core;version=latest,\
+	org.slf4j.api;version=latest,\
 	org.eclipse.m2e.maven.runtime,\
 	org.apache.maven:maven-artifact,\
 	org.apache.maven:maven-core,\

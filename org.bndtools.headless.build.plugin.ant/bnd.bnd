@@ -2,9 +2,9 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	osgi.annotation;version=${osgi.annotation.version},\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version},\
+	osgi.annotation;version=latest,\
+	osgi.core;version=latest,\
+	osgi.cmpn;version=latest,\
 	${bndlib},\
 	bndtools.api;version=latest,\
 	org.bndtools.headless.build.manager;version=latest,\
@@ -15,7 +15,7 @@
 
 -includeresource: \
 	templates=resources/templates/unprocessed,\
-	templates/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd.jar=${repo;biz.aQute.bnd;[${bnd-version-base},${bnd-version-ceiling});HIGHEST}
+	templates/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd.jar=${repo;biz.aQute.bnd;latest}
 
 # we really need this, otherwise Eclipse will not start our bundles
 Bundle-ActivationPolicy: lazy

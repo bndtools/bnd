@@ -1,8 +1,6 @@
 org.osgi:osgi.annotation:7.0.0
 org.osgi:osgi.core:5.0.0
-org.osgi:osgi.core:6.0.0
 org.osgi:osgi.cmpn:5.0.0
-org.osgi:osgi.cmpn:6.0.0
 
 org.slf4j:slf4j-api:1.7.13
 org.slf4j:slf4j-simple:1.7.13

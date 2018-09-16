@@ -1,9 +1,7 @@
 # Only extra bundles that are needed for the feature are mentioned here
 -resourceonly: true
 -includeresource: \
-    ${repo;biz.aQute.bndlib;[${bnd-version-base},${bnd-version-ceiling});HIGHEST},\
-    ${repo;biz.aQute.repository;[${bnd-version-base},${bnd-version-ceiling});HIGHEST},\
-    ${repo;biz.aQute.resolve;[${bnd-version-base},${bnd-version-ceiling});HIGHEST},\
-    ${repo;org.slf4j.api;latest},\
-    ${repo;javax.xml;latest},\
-    ${repo;javax.xml.stream;latest}
+    ${repo;biz.aQute.bndlib;latest},\
+    ${repo;biz.aQute.repository;latest},\
+    ${repo;biz.aQute.resolve;latest},\
+    ${repo;org.slf4j.api;latest}
