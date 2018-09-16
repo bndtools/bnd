@@ -51,7 +51,6 @@ org.apache.geronimo.specs:geronimo-servlet_3.0_spec:1.0
 org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
 org.apache.ant:ant:1.7.1
 
-org.eclipse.birt.runtime:javax.xml.stream:1.0.1.v201004272200
 org.eclipse.jetty:jetty-continuation:7.6.3.v20120416
 org.eclipse.jetty:jetty-http:7.6.3.v20120416
 org.eclipse.jetty:jetty-io:7.6.3.v20120416
