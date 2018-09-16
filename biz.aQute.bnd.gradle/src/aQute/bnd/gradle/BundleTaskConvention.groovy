@@ -73,7 +73,7 @@ class BundleTaskConvention {
     classpathModified = false
     // need to programmatically add to inputs since @InputFiles in a convention is not processed
     task.inputs.files(classpathCollection).withPropertyName('classpath')
-    task.inputs.file({ getBndfile() ?: project.buildFile }).withPropertyName('bndfile')
+    task.inputs.file({ getBndfile() }).optional().withPropertyName('bndfile')
     task.inputs.property('bnd', { getBnd() })
   }
 
