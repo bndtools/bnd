@@ -4,7 +4,6 @@ language: java
 
 jdk:
   - oraclejdk8
-  - oraclejdk9
   - oraclejdk10
 
 before_install:
@@ -13,14 +12,14 @@ before_install:
   - rvm use 2.4 --install --binary --fuzzy
 
 install:
-  - ./gradlew --version
+  - ./gradlew --no-daemon --version
   - ./mvnw --version
   - ruby --version
   - gem --version
   - bundle --version
 
 script:
-  - ./gradlew -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
+  - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
   - (cd docs && ./build.sh)
 
 before_cache:
