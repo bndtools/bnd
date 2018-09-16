@@ -149,6 +149,8 @@ public class BndMavenPlugin extends AbstractMojo {
 			return;
 		}
 
+		File outputDirectory = new File(project.getBuild().getOutputDirectory());
+
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
 		beanProperties.put("settings", settings);
@@ -180,6 +182,13 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 			if (builder.getProperty(Constants.WABLIB) != null) {
 				throw new MojoExecutionException(Constants.WABLIB + " not supported in a maven build");
+			}
+
+			// always add the outputDirectory to the classpath, but
+			// handle projects with no output directory, like
+			// 'test-wrapper-bundle'
+			if (outputDirectory.isDirectory()) {
+				builder.addClasspath(outputDirectory);
 			}
 
 			// Include local project packages automatically
@@ -274,7 +283,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				Jar bndJar = builder.build();
 
 				// Expand Jar into target/classes
-				expandJar(bndJar, classesDir);
+				expandJar(bndJar, outputDirectory);
 			} else {
 				logger.debug("No build");
 			}
