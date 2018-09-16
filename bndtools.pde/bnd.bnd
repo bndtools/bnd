@@ -1,6 +1,9 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
+	osgi.annotation;version=latest,\
+	osgi.core;version=latest,\
+	osgi.cmpn;version=latest,\
 	${bndlib},\
 	${aQute-resolve},\
 	bndtools.api;version=latest,\
@@ -17,10 +20,7 @@
 	org.eclipse.swt,\
 	org.eclipse.ui.workbench,\
 	org.eclipse.ui.ide,\
-	org.eclipse.osgi,\
-	osgi.annotation;version=${osgi.annotation.version},\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.core.version}
+	org.eclipse.osgi
 
 Bundle-SymbolicName: ${p}; singleton:=true
 Bundle-ActivationPolicy: lazy

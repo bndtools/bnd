@@ -3,6 +3,8 @@
 Bundle-SymbolicName: bndtools.m2e.debug.fragment; singleton:=true
 Fragment-Host: org.eclipse.m2e.maven.runtime
 
+-buildpath: org.eclipse.m2e.maven.runtime
+
 Import-Package: \
 	javax.net.ssl
 

@@ -21,13 +21,13 @@ Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 					/=resources
 
 -buildpath:\
+	osgi.annotation;version=latest,\
+	osgi.core;version=latest,\
+	osgi.cmpn;version=latest,\
 	${bndlib},\
 	bndtools.utils;version=project;packages=*,\
 	bndtools.api;version=latest, \
 	bndtools.core;version=latest, \
-	osgi.annotation;version=${osgi.annotation.version},\
-	osgi.core;version=${osgi.core.version},\
-	osgi.cmpn;version=${osgi.cmpn.version},\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.jface,\

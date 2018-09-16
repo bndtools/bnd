@@ -26,19 +26,13 @@ base-version-qualifier:   DEV
 # Version of bnd/bndlib to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)
 # On advice of Peter we use an up-to-major version range
-bnd-version-base:         4.1.0
-bnd-version-ceiling:      5.0.0
-bndlib:                   aQute.libg;version='[${bnd-version-base},${bnd-version-ceiling})';strategy=highest, \
-                          biz.aQute.bndlib;version='[${bnd-version-base},${bnd-version-ceiling})';strategy=highest
+bndlib:                   aQute.libg;version=latest, \
+                          biz.aQute.bndlib;version=latest
 
 # Version of the repository plugin to use consistently throughout the build
 # NB. this must be specified as full M.m.u version (but no qualifier)
-aQute-repository:         biz.aQute.repository;version='[${bnd-version-base},${bnd-version-ceiling})';strategy=highest
-aQute-resolve:            biz.aQute.resolve;version='[${bnd-version-base},${bnd-version-ceiling})';strategy=highest
-
-osgi.annotation.version:  7.0.0
-osgi.core.version:        5.0.0
-osgi.cmpn.version:        5.0.0
+aQute-repository:         biz.aQute.repository;version=latest
+aQute-resolve:            biz.aQute.resolve;version=latest
 
 # We use git
 Git-Descriptor:           ${system-allow-fail;git describe --dirty --always --abbrev=9}
