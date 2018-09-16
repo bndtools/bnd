@@ -9,10 +9,10 @@ before_install:
   - unset _JAVA_OPTIONS
 
 install:
-  - ./gradlew --version
+  - ./gradlew --no-daemon --version
 
 script:
-  - ./gradlew -Dmaven.repo.local=cnf/cache/stable/m2 --continue
+  - ./gradlew --no-daemon -Dmaven.repo.local=cnf/cache/stable/m2 --continue
 
 before_cache:
   - git status
