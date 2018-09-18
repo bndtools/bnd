@@ -55,11 +55,12 @@ public class Iterables {
 			return new Iterator<R>() {
 				private final Iterator<? extends T>	it1		= first.iterator();
 				private final Iterator<? extends T>	it2		= second.iterator();
-				private R							next	= null;
+				private boolean						hasNext	= false;
+				private R							next;
 
 				@Override
 				public boolean hasNext() {
-					if (next != null) {
+					if (hasNext) {
 						return true;
 					}
 					while (it1.hasNext()) {
@@ -67,7 +68,7 @@ public class Iterables {
 						R r = mapper.apply(t);
 						if (filter.test(r)) {
 							next = r;
-							return true;
+							return hasNext = true;
 						}
 					}
 					while (it2.hasNext()) {
@@ -75,7 +76,7 @@ public class Iterables {
 						R r = mapper.apply(t);
 						if (filter.test(r) && !first.contains(t)) {
 							next = r;
-							return true;
+							return hasNext = true;
 						}
 					}
 					return false;
@@ -84,9 +85,8 @@ public class Iterables {
 				@Override
 				public R next() {
 					if (hasNext()) {
-						R r = next;
-						next = null;
-						return r;
+						hasNext = false;
+						return next;
 					}
 					throw new NoSuchElementException();
 				}
@@ -181,11 +181,12 @@ public class Iterables {
 		public Iterator<R> iterator() {
 			consume();
 			return new Iterator<R>() {
-				private R next = null;
+				private boolean	hasNext	= false;
+				private R		next;
 
 				@Override
 				public boolean hasNext() {
-					if (next != null) {
+					if (hasNext) {
 						return true;
 					}
 					while (enumeration.hasMoreElements()) {
@@ -193,7 +194,7 @@ public class Iterables {
 						R r = mapper.apply(t);
 						if (filter.test(r)) {
 							next = r;
-							return true;
+							return hasNext = true;
 						}
 					}
 					return false;
@@ -202,9 +203,8 @@ public class Iterables {
 				@Override
 				public R next() {
 					if (hasNext()) {
-						R r = next;
-						next = null;
-						return r;
+						hasNext = false;
+						return next;
 					}
 					throw new NoSuchElementException();
 				}
