@@ -47,11 +47,8 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -69,8 +66,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.model.BndEditModel;
-import aQute.bnd.build.model.clauses.ServiceComponent;
-import aQute.bnd.header.Attrs;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.editor.utils.ToolTips;
@@ -87,45 +82,15 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.DSANNOTATIONS
     };
 
-    private static enum ComponentChoice {
-        None("None"),
-        Bnd("Bnd Annotations"),
-        DS("OSGi DS Annotations");
-
-        private final String label;
-
-        ComponentChoice(String label) {
-            this.label = label;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public static String[] getLabels() {
-            ComponentChoice[] values = values();
-            String[] labels = new String[values.length];
-            for (int i = 0; i < values.length; i++)
-                labels[i] = values[i].getLabel();
-            return labels;
-        }
-    }
-
-    private static final ServiceComponent SERVICE_COMPONENT_STAR = new ServiceComponent("*", new Attrs());
-    private static final String DSANNOTATIONS_STAR = "*";
-
     private final Set<String> editablePropertySet;
     private final Set<String> dirtySet = new HashSet<String>();
 
     private BndEditModel model;
-    private ComponentChoice componentChoice;
 
     private Text txtVersion;
     private Text txtActivator;
 
     private final ModificationLock lock = new ModificationLock();
-
-    private Combo cmbComponents;
 
     public GeneralInfoPart(Composite parent, FormToolkit toolkit, int style) {
         super(parent, toolkit, style);
@@ -160,9 +125,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         txtActivator = toolkit.createText(composite, "", SWT.BORDER);
         ToolTips.setupMessageAndToolTipFromSyntax(txtActivator, Constants.BUNDLE_ACTIVATOR);
 
-        toolkit.createLabel(composite, "Declarative Services:");
-        cmbComponents = new Combo(composite, SWT.READ_ONLY);
-
         // Content Proposal for the Activator field
         ContentProposalAdapter activatorProposalAdapter = null;
 
@@ -185,16 +147,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
         decorActivator.setShowOnlyOnFocus(true);
         decorActivator.setShowHover(true);
 
-        // Decorator for the Components combo
-        ControlDecoration decorComponents = new ControlDecoration(cmbComponents, SWT.LEFT | SWT.CENTER, composite);
-        decorComponents.setImage(FieldDecorationRegistry.getDefault()
-            .getFieldDecoration(FieldDecorationRegistry.DEC_INFORMATION)
-            .getImage());
-        decorComponents.setMarginWidth(3);
-        decorComponents.setDescriptionText("Use Java annotations to detect Declarative Service Components.");
-        decorComponents.setShowOnlyOnFocus(false);
-        decorComponents.setShowHover(true);
-
         // Listeners
         txtVersion.addModifyListener(new ModifyListener() {
             @Override
@@ -203,29 +155,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                     @Override
                     public void run() {
                         addDirtyProperty(Constants.BUNDLE_VERSION);
-                    }
-                });
-            }
-        });
-        cmbComponents.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                lock.ifNotModifying(new Runnable() {
-                    @Override
-                    public void run() {
-                        ComponentChoice old = componentChoice;
-
-                        int index = cmbComponents.getSelectionIndex();
-                        if (index >= 0 && index < ComponentChoice.values().length) {
-                            componentChoice = ComponentChoice.values()[cmbComponents.getSelectionIndex()];
-                            if (old != componentChoice) {
-                                addDirtyProperty(aQute.bnd.osgi.Constants.SERVICE_COMPONENT);
-                                addDirtyProperty(aQute.bnd.osgi.Constants.DSANNOTATIONS);
-                                if (old == null) {
-                                    cmbComponents.remove(ComponentChoice.values().length);
-                                }
-                            }
-                        }
                     }
                 });
             }
@@ -287,7 +216,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
         txtVersion.setLayoutData(gd);
         txtActivator.setLayoutData(gd);
-        cmbComponents.setLayoutData(gd);
     }
 
     protected void addDirtyProperty(final String property) {
@@ -327,22 +255,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                     activator = null;
                 model.setBundleActivator(activator);
             }
-
-            if (dirtySet.contains(aQute.bnd.osgi.Constants.SERVICE_COMPONENT) || dirtySet.contains(aQute.bnd.osgi.Constants.DSANNOTATIONS)) {
-                switch (componentChoice) {
-                    case Bnd :
-                        model.setServiceComponents(Collections.singletonList(SERVICE_COMPONENT_STAR));
-                        model.setDSAnnotationPatterns(null);
-                        break;
-                    case None :
-                        model.setServiceComponents(null);
-                        model.setDSAnnotationPatterns(Collections.singletonList(""));
-                        break;
-                    default :
-                        model.setServiceComponents(null);
-                        model.setDSAnnotationPatterns(null);
-                }
-            }
         } finally {
             // Restore property change listening
             model.addPropertyChangeListener(this);
@@ -362,31 +274,6 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
 
                 String bundleActivator = model.getBundleActivator();
                 txtActivator.setText(bundleActivator != null ? bundleActivator : ""); //$NON-NLS-1$
-
-                List<ServiceComponent> bndPatterns = model.getServiceComponents();
-                List<String> dsPatterns = model.getDSAnnotationPatterns();
-
-                componentChoice = null;
-
-                if (bndPatterns == null && dsPatterns == null) {
-                    componentChoice = ComponentChoice.DS;
-                } else if (bndPatterns != null && bndPatterns.size() == 1 && SERVICE_COMPONENT_STAR.equals(bndPatterns.get(0)) && dsPatterns == null) {
-                    componentChoice = ComponentChoice.Bnd;
-                } else if (dsPatterns != null && bndPatterns == null) {
-                    if (dsPatterns.isEmpty()) {
-                        componentChoice = ComponentChoice.None;
-                    } else if (dsPatterns.size() == 1 && DSANNOTATIONS_STAR.equals(dsPatterns.get(0))) {
-                        componentChoice = ComponentChoice.DS;
-                    }
-                }
-
-                cmbComponents.setItems(ComponentChoice.getLabels());
-                if (componentChoice == null) {
-                    cmbComponents.add("Manually Defined", ComponentChoice.values().length);
-                    cmbComponents.select(ComponentChoice.values().length);
-                } else {
-                    cmbComponents.select(componentChoice.ordinal());
-                }
             }
         });
         dirtySet.clear();
