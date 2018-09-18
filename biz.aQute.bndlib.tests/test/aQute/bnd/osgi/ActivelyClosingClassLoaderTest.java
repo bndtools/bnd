@@ -15,16 +15,16 @@ import java.util.Optional;
 import org.junit.Test;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.ActivelyClosingClassloader.Wrapper;
+import aQute.bnd.osgi.ActivelyClosingClassLoader.Wrapper;
 import aQute.bnd.osgi.Processor.CL;
 import aQute.lib.io.IO;
 
-public class ActivelyClosingClassloaderTest {
+public class ActivelyClosingClassLoaderTest {
 
 	@Test
 	public void happycase() throws Exception {
 		try (Processor p = new Processor()) {
-			try (ActivelyClosingClassloader ac = new ActivelyClosingClassloader(p, null)) {
+			try (ActivelyClosingClassLoader ac = new ActivelyClosingClassLoader(p, null)) {
 				assertEquals(String.class, ac.loadClass("java.lang.String"));
 
 				File osgi = IO.getFile("jar/osgi.jar");
@@ -32,15 +32,20 @@ public class ActivelyClosingClassloaderTest {
 
 				Class<?> c = ac.loadClass("org.osgi.framework.Bundle");
 
-				Wrapper wrapper = ac.wrappers.get(osgi);
+				Wrapper wrapper = ac.wrappers.get()
+					.get(osgi);
 				assertEquals(wrapper.file, osgi);
 
 				Thread.sleep(100);
 				ac.purge(System.currentTimeMillis());
-				assertNull(wrapper.jarFile);
+				synchronized (wrapper) {
+					assertNull(wrapper.jarFile);
+				}
 
 				c = ac.loadClass("org.osgi.framework.FrameworkUtil");
-				assertNotNull(wrapper.jarFile);
+				synchronized (wrapper) {
+					assertNotNull(wrapper.jarFile);
+				}
 
 				URL url = ac.getResource("LICENSE");
 				String s = IO.collect(url);
@@ -75,15 +80,15 @@ public class ActivelyClosingClassloaderTest {
 	}
 
 	@Test
-	public void testWrongFile() throws IOException, ClassNotFoundException {
+	public void testMissingFile() throws IOException, ClassNotFoundException {
 		try (Processor p = new Processor()) {
-			try (ActivelyClosingClassloader ac = new ActivelyClosingClassloader(p, null)) {
+			try (ActivelyClosingClassLoader ac = new ActivelyClosingClassLoader(p, null)) {
 				ac.add(new File("foobar"));
 				ac.add(new File("jar/osgi.jar"));
 
 				ac.loadClass("org.osgi.framework.Bundle");
 
-				assertTrue(p.check("while loading class bytes org/osgi/framework/Bundle.class"));
+				assertFalse(p.check("while loading resource org/osgi/framework/Bundle.class"));
 			}
 		}
 	}
@@ -108,7 +113,8 @@ public class ActivelyClosingClassloaderTest {
 				assertTrue(plugins.isPresent());
 
 				cl = workspace.getLoader();
-				Wrapper wrapper = cl.wrappers.get(IO.getFile("jar/thinlet.jar"));
+				Wrapper wrapper = cl.wrappers.get()
+					.get(IO.getFile("jar/thinlet.jar"));
 
 				cl.autopurge(10);
 				Thread.sleep(50);

@@ -1812,7 +1812,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		trace = x;
 	}
 
-	public static class CL extends ActivelyClosingClassloader {
+	public static class CL extends ActivelyClosingClassLoader {
 
 		public CL(Processor p) {
 			super(p, p.getClass()
