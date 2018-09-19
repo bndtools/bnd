@@ -5,9 +5,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Locale;
+import java.util.NoSuchElementException;
 import java.util.SortedSet;
+import java.util.Spliterators;
 
 import junit.framework.TestCase;
 
@@ -143,4 +147,48 @@ public class CollectionsTest extends TestCase {
 		assertFalse(li.hasNext());
 	}
 
+	public void testEnumerationSpliterator() {
+		List<String> test = Arrays.asList("once", "upon", "a", "time");
+		Enumeration<String> e = Enumerations.enumeration(test.spliterator(), s -> s.toUpperCase(Locale.ROOT),
+			s -> !s.startsWith("A"));
+
+		assertTrue(e.hasMoreElements());
+		assertTrue(e.hasMoreElements());
+		assertTrue(e.hasMoreElements());
+		assertEquals("ONCE", e.nextElement());
+
+		assertTrue(e.hasMoreElements());
+		assertTrue(e.hasMoreElements());
+		assertTrue(e.hasMoreElements());
+		assertEquals("UPON", e.nextElement());
+
+		assertTrue(e.hasMoreElements());
+		assertTrue(e.hasMoreElements());
+		assertTrue(e.hasMoreElements());
+		assertEquals("TIME", e.nextElement());
+
+		assertFalse(e.hasMoreElements());
+		assertFalse(e.hasMoreElements());
+		assertFalse(e.hasMoreElements());
+		try {
+			e.nextElement();
+		} catch (NoSuchElementException nsee) {
+			// expected
+		}
+		assertFalse(e.hasMoreElements());
+	}
+
+	public void testEnumerationEmptySpliterator() {
+		Enumeration<String> e = Enumerations.enumeration(Spliterators.emptySpliterator());
+
+		assertFalse(e.hasMoreElements());
+		assertFalse(e.hasMoreElements());
+		assertFalse(e.hasMoreElements());
+		try {
+			e.nextElement();
+		} catch (NoSuchElementException nsee) {
+			// expected
+		}
+		assertFalse(e.hasMoreElements());
+	}
 }
