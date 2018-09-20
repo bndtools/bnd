@@ -79,6 +79,10 @@ class Signatures {
 	}
 
 	static boolean isEmpty(Object[] array) {
-		return (array == null) || array.length == 0;
+		return (array == null) || (array.length == 0);
+	}
+
+	static String intern(String s) {
+		return s.intern();
 	}
 }

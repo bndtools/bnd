@@ -1,5 +1,7 @@
 package aQute.bnd.signatures;
 
+import static aQute.bnd.signatures.Signatures.intern;
+
 import java.util.Objects;
 
 import aQute.lib.stringrover.StringRover;
@@ -36,7 +38,7 @@ public class TypeVariableSignature implements ReferenceTypeSignature, ThrowsSign
 	static TypeVariableSignature parseTypeVariableSignature(StringRover signature) {
 		assert signature.charAt(0) == 'T';
 		int end = signature.indexOf(';', 1);
-		String identifier = signature.substring(1, end);
+		String identifier = intern(signature.substring(1, end));
 		signature.increment(end + 1);
 		return new TypeVariableSignature(identifier);
 	}
