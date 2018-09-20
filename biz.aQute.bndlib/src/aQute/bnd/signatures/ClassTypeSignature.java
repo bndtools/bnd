@@ -1,5 +1,6 @@
 package aQute.bnd.signatures;
 
+import static aQute.bnd.signatures.Signatures.intern;
 import static aQute.bnd.signatures.SimpleClassTypeSignature.parseSimpleClassTypeSignature;
 
 import java.util.ArrayList;
@@ -72,7 +73,7 @@ public class ClassTypeSignature implements ReferenceTypeSignature, ThrowsSignatu
 				slash = offset;
 			}
 		}
-		String packageSpecifier = signature.substring(0, slash + 1);
+		String packageSpecifier = intern(signature.substring(0, slash + 1));
 		binary.append(packageSpecifier);
 		SimpleClassTypeSignature classType = parseSimpleClassTypeSignature(signature.increment(slash + 1));
 		binary.append(classType.identifier);
@@ -85,10 +86,10 @@ public class ClassTypeSignature implements ReferenceTypeSignature, ThrowsSignatu
 				binary.append('$')
 					.append(item.identifier);
 			} while (signature.charAt(0) == '.');
-			result = new ClassTypeSignature(binary.toString(), packageSpecifier, classType,
+			result = new ClassTypeSignature(intern(binary.toString()), packageSpecifier, classType,
 				list.toArray(SimpleClassTypeSignature.EMPTY));
 		} else {
-			result = new ClassTypeSignature(binary.toString(), packageSpecifier, classType,
+			result = new ClassTypeSignature(intern(binary.toString()), packageSpecifier, classType,
 				SimpleClassTypeSignature.EMPTY);
 		}
 		assert signature.charAt(0) == ';';

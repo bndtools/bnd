@@ -1,6 +1,7 @@
 package aQute.bnd.signatures;
 
 import static aQute.bnd.signatures.Signatures.EMPTY_ReferenceTypeSignature;
+import static aQute.bnd.signatures.Signatures.intern;
 import static aQute.bnd.signatures.Signatures.parseReferenceTypeSignature;
 
 import java.util.ArrayList;
@@ -61,7 +62,7 @@ public class TypeParameter {
 
 	static TypeParameter parseTypeParameter(StringRover signature) {
 		int end = signature.indexOf(':', 0);
-		String identifier = signature.substring(0, end);
+		String identifier = intern(signature.substring(0, end));
 		signature.increment(end + 1);
 		ReferenceTypeSignature classBound;
 		char c = signature.isEmpty() ? 0 : signature.charAt(0);

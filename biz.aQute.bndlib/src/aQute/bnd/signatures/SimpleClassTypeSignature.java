@@ -1,5 +1,6 @@
 package aQute.bnd.signatures;
 
+import static aQute.bnd.signatures.Signatures.intern;
 import static aQute.bnd.signatures.Signatures.isEmpty;
 import static aQute.bnd.signatures.TypeArgument.parseTypeArgument;
 
@@ -57,7 +58,7 @@ public class SimpleClassTypeSignature {
 	static SimpleClassTypeSignature parseSimpleClassTypeSignature(StringRover signature) {
 		int offset = 0;
 		for (char c = signature.charAt(offset); c != '.' && c != ';' && c != '<'; c = signature.charAt(++offset)) {}
-		String identifier = signature.substring(0, offset);
+		String identifier = intern(signature.substring(0, offset));
 		signature.increment(offset);
 		if (signature.charAt(0) != '<') {
 			return new SimpleClassTypeSignature(identifier, TypeArgument.EMPTY);
