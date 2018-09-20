@@ -94,7 +94,10 @@ public class ReporterMessages {
 						char c = name.charAt(i);
 						switch (c) {
 							case '_' :
-								sb.append(" %s, ");
+								sb.append(" %s");
+								if (i + 1 < name.length()) {
+									sb.append(", ");
+								}
 								n++;
 								break;
 
@@ -115,17 +118,23 @@ public class ReporterMessages {
 						n++;
 					}
 					format = sb.toString();
-				} else
+				} else {
 					format = d.value();
+				}
 
 				try {
 					if (method.getReturnType() == ERROR.class) {
+						for (int i = args.length - 1; i >= 0; i--) {
+							if (args[i] instanceof Throwable) {
+								return new ERRORImpl(reporter.exception((Throwable) args[i], format, args));
+							}
+						}
 						return new ERRORImpl(reporter.error(format, args));
-
 					} else if (method.getReturnType() == WARNING.class) {
 						return new WARNINGImpl(reporter.warning(format, args));
-					} else
+					} else {
 						reporter.trace(format, args);
+					}
 				} catch (IllegalFormatException e) {
 					reporter.error("Formatter failed: %s %s %s", method.getName(), format, Arrays.toString(args));
 				}
