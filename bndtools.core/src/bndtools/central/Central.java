@@ -259,6 +259,7 @@ public class Central implements IStartupParticipant {
                     if (ws != null) {
                         ws.close();
                     }
+                    logger.logError("Init of workspace", e);
                     throw e;
                 }
             }

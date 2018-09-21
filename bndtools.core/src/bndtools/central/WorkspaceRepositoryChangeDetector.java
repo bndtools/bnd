@@ -85,6 +85,7 @@ public class WorkspaceRepositoryChangeDetector implements Closeable, IResourceCh
 
                     if (delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.REMOVED) {
                         refresh.set(true);
+                        workspace.refreshProjects();
                         return false;
                     }
                     for (IResourceDelta subDelta : delta.getAffectedChildren(IResourceDelta.ADDED | IResourceDelta.REMOVED | IResourceDelta.CHANGED))
