@@ -2,6 +2,10 @@ package aQute.lib.exceptions;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
+
+import aQute.lib.strings.Strings;
 
 public class Exceptions {
 	private Exceptions() {}
@@ -21,4 +25,14 @@ public class Exceptions {
 		t.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
 	}
+
+	public static String causes(Throwable t) {
+		List<String> list = new ArrayList<>();
+		while (t != null) {
+			list.add(t.getMessage());
+			t = t.getCause();
+		}
+		return Strings.join(" -> ", list);
+	}
+
 }

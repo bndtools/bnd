@@ -1,7 +1,5 @@
 package aQute.bnd.build;
 
-import static java.util.stream.Collectors.toList;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,14 +16,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Formatter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
@@ -39,7 +35,6 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 import javax.naming.TimeLimitExceededException;
 
@@ -100,33 +95,32 @@ public class Workspace extends Processor {
 		.compile(".*biz\\.aQute\\.bnd\\.embedded-repo(-.*)?\\.jar");
 
 	static class WorkspaceData {
-		List<RepositoryPlugin> repositories;
+		List<RepositoryPlugin>	repositories;
+		public boolean			synced;
 	}
 
-	private final static Map<File, WeakReference<Workspace>>	cache					= newHashMap();
-	static Processor											defaults				= null;
-	private final Map<String, Project>							models					= new HashMap<>();
-	private final Set<String>									modelsUnderConstruction	= new HashSet<>();
-	final Map<String, Action>									commands				= newMap();
-	final Maven													maven					= new Maven(
-		Processor.getExecutor());
-	private final AtomicBoolean									offline					= new AtomicBoolean();
-	Settings													settings				= new Settings();
-	WorkspaceRepository											workspaceRepo			= new WorkspaceRepository(this);
-	static String												overallDriver			= "unset";
-	static Parameters											overallGestalt			= new Parameters();
+	private final static Map<File, WeakReference<Workspace>>	cache			= newHashMap();
+	static Processor											defaults		= null;
+	final Map<String, Action>									commands		= newMap();
+	final Maven													maven			= new Maven(Processor.getExecutor());
+	private final AtomicBoolean									offline			= new AtomicBoolean();
+	Settings													settings		= new Settings();
+	WorkspaceRepository											workspaceRepo	= new WorkspaceRepository(this);
+	static String												overallDriver	= "unset";
+	static Parameters											overallGestalt	= new Parameters();
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>									signalBusy				= new ThreadLocal<>();
+	final ThreadLocal<Reporter>									signalBusy		= new ThreadLocal<>();
 	ResourceRepositoryImpl										resourceRepositoryImpl;
 	private Parameters											gestalt;
 	private String												driver;
 	private final WorkspaceLayout								layout;
-	final Set<Project>											trail					= Collections
+	final Set<Project>											trail			= Collections
 		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
-	private WorkspaceData										data					= new WorkspaceData();
+	private WorkspaceData										data			= new WorkspaceData();
 	private File												buildDir;
+	private ProjectTracker										projects		= new ProjectTracker(this);
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -297,50 +291,17 @@ public class Workspace extends Processor {
 	}
 
 	public Project getProject(String bsn) {
-		synchronized (models) {
-			Project project = models.get(bsn);
-			if (project != null) {
-				return project;
-			}
-			if (!modelsUnderConstruction.add(bsn)) {
-				return null;
-			}
-			try {
-				File projectDir = getFile(bsn);
-				File bnd = getFile(projectDir, Project.BNDFILE);
-				if (!bnd.isFile()) {
-					return null;
-				}
-				project = new Project(this, projectDir);
-				if (!project.isValid()) {
-					return null;
-				}
-				models.put(bsn, project);
-				return project;
-			} finally {
-				modelsUnderConstruction.remove(bsn);
-			}
-		}
-	}
-
-	void removeProject(Project p) throws Exception {
-		if (p.isCnf())
-			return;
-
-		synchronized (models) {
-			models.remove(p.getName());
-		}
-		for (LifeCyclePlugin lp : getPlugins(LifeCyclePlugin.class)) {
-			lp.delete(p);
-		}
+		return projects.getProject(bsn)
+			.orElse(null);
 	}
 
 	public boolean isPresent(String name) {
-		return models.containsKey(name);
+		return projects.getProject(name)
+			.isPresent();
 	}
 
 	public Collection<Project> getCurrentProjects() {
-		return models.values();
+		return projects.getAllProjects();
 	}
 
 	@Override
@@ -355,6 +316,16 @@ public class Workspace extends Processor {
 			return true;
 		}
 		return false;
+	}
+
+	/**
+	 * Signal that the driver has detected a dynamic change in the workspace
+	 * directory, for example a project was added or removed in the IDE. Since
+	 * this does not affect the inherited properties we can only change the list
+	 * of projects.
+	 */
+	public void refreshProjects() {
+		projects.refresh();
 	}
 
 	@Override
@@ -395,15 +366,7 @@ public class Workspace extends Processor {
 	}
 
 	public Collection<Project> getAllProjects() throws Exception {
-		try (Stream<Path> paths = Files.list(getBase().toPath())) {
-			List<Project> projects = paths
-				.filter(p -> Files.isDirectory(p) && Files.isRegularFile(p.resolve(Project.BNDPATH)))
-				.map(p -> getProject(p.getFileName()
-					.toString()))
-				.filter(Objects::nonNull)
-				.collect(toList());
-			return projects;
-		}
+		return projects.getAllProjects();
 	}
 
 	/**
@@ -566,7 +529,7 @@ public class Workspace extends Processor {
 
 	public Collection<Project> getBuildOrder() throws Exception {
 		Set<Project> result = new LinkedHashSet<>();
-		for (Project project : getAllProjects()) {
+		for (Project project : projects.getAllProjects()) {
 			Collection<Project> dependsOn = project.getDependson();
 			getBuildOrder(dependsOn, result);
 			result.add(project);
@@ -1037,66 +1000,6 @@ public class Workspace extends Processor {
 	}
 
 	/**
-	 * Create a project in this workspace
-	 */
-
-	public Project createProject(String name) throws Exception {
-
-		if (!Verifier.SYMBOLICNAME.matcher(name)
-			.matches()) {
-			error(
-				"A project name is a Bundle Symbolic Name, this must therefore consist of only letters, digits and dots");
-			return null;
-		}
-
-		File pdir = getFile(name);
-		IO.mkdirs(pdir);
-
-		IO.store("#\n#   " + name.toUpperCase()
-			.replace('.', ' ') + "\n#\n", getFile(pdir, Project.BNDFILE));
-		Project p = new Project(this, pdir);
-
-		IO.mkdirs(p.getTarget());
-		IO.mkdirs(p.getOutput());
-		IO.mkdirs(p.getTestOutput());
-		for (File dir : p.getSourcePath()) {
-			IO.mkdirs(dir);
-		}
-		IO.mkdirs(p.getTestSrc());
-
-		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class))
-			l.created(p);
-
-		if (!p.isValid()) {
-			error("project %s is not valid", p);
-		}
-
-		return p;
-	}
-
-	/**
-	 * Create a new Workspace
-	 * 
-	 * @param wsdir
-	 * @throws Exception
-	 */
-	public static Workspace createWorkspace(File wsdir) throws Exception {
-		if (wsdir.exists())
-			return null;
-
-		IO.mkdirs(wsdir);
-		File cnf = IO.getFile(wsdir, CNFDIR);
-		IO.mkdirs(cnf);
-		IO.store("", new File(cnf, BUILDFILE));
-		IO.store("-nobundles: true\n", new File(cnf, Project.BNDFILE));
-		File ext = new File(cnf, EXT);
-		IO.mkdirs(ext);
-		Workspace ws = getWorkspace(wsdir);
-
-		return ws;
-	}
-
-	/**
 	 * Add a plugin
 	 * 
 	 * @param plugin
@@ -1262,5 +1165,75 @@ public class Workspace extends Processor {
 	public static void resetStatic() {
 		overallDriver = "unset";
 		overallGestalt = new Parameters();
+	}
+
+	/**
+	 * Create a project in this workspace
+	 */
+
+	public Project createProject(String name) throws Exception {
+
+		if (!Verifier.SYMBOLICNAME.matcher(name)
+			.matches()) {
+			error(
+				"A project name is a Bundle Symbolic Name, this must therefore consist of only letters, digits and dots");
+			return null;
+		}
+
+		File pdir = getFile(name);
+		IO.mkdirs(pdir);
+
+		IO.store("#\n#   " + name.toUpperCase()
+			.replace('.', ' ') + "\n#\n", getFile(pdir, Project.BNDFILE));
+		Project p = new Project(this, pdir);
+
+		IO.mkdirs(p.getTarget());
+		IO.mkdirs(p.getOutput());
+		IO.mkdirs(p.getTestOutput());
+		for (File dir : p.getSourcePath()) {
+			IO.mkdirs(dir);
+		}
+		IO.mkdirs(p.getTestSrc());
+
+		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class))
+			l.created(p);
+
+		if (!p.isValid()) {
+			error("project %s is not valid", p);
+		}
+
+		return p;
+	}
+
+	void removeProject(Project p) throws Exception {
+		if (p.isCnf())
+			return;
+
+		for (LifeCyclePlugin lp : getPlugins(LifeCyclePlugin.class)) {
+			lp.delete(p);
+		}
+		projects.refresh();
+	}
+
+	/**
+	 * Create a new Workspace
+	 * 
+	 * @param wsdir
+	 * @throws Exception
+	 */
+	public static Workspace createWorkspace(File wsdir) throws Exception {
+		if (wsdir.exists())
+			return null;
+
+		IO.mkdirs(wsdir);
+		File cnf = IO.getFile(wsdir, CNFDIR);
+		IO.mkdirs(cnf);
+		IO.store("", new File(cnf, BUILDFILE));
+		IO.store("-nobundles: true\n", new File(cnf, Project.BNDFILE));
+		File ext = new File(cnf, EXT);
+		IO.mkdirs(ext);
+		Workspace ws = getWorkspace(wsdir);
+
+		return ws;
 	}
 }

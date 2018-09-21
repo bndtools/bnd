@@ -671,8 +671,8 @@ public class Project extends Processor {
 			if (source != null)
 				message = String.format("%s (from property: %s)", message, source);
 			msgs.CircularDependencyContext_Message_(getName(), message);
-		} catch (Exception e) {
-			msgs.Unexpected_Error_(spec, e);
+		} catch (IOException e) {
+			exception(e, "Unexpected exception in get bundles", spec);
 		}
 		return result;
 	}
