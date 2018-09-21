@@ -761,7 +761,15 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		pomRev.version = foundArchive.revision.version;
 		PomDependency pomDep = new PomDependency();
 		pomDep.classifier = foundArchive.classifier;
+		if (pomDep.classifier != null && pomDep.classifier.trim()
+			.isEmpty()) {
+			pomDep.classifier = null;
+		}
 		pomDep.extension = foundArchive.extension;
+		if (pomDep.extension != null && pomDep.extension.trim()
+			.isEmpty()) {
+			pomDep.extension = null;
+		}
 		pomDep.revision = pomRev;
 		return pomDep;
 	}
