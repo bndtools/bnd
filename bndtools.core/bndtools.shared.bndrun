@@ -287,7 +287,7 @@ crossplatform.bundles: \
 	org.w3c.dom.smil,\
 	org.w3c.dom.svg
 
-crossplatform.vmargs: -Xmx512m -XX:MaxPermSize=256m
+crossplatform.vmargs: -Xmx2g
 
 crossplatform.runprops: \
 	eclipse.application=org.eclipse.ui.ide.workbench,\
