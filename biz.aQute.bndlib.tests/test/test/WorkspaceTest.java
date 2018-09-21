@@ -1,7 +1,10 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -24,6 +27,38 @@ public class WorkspaceTest extends TestCase {
 	@Override
 	protected void tearDown() {
 		IO.delete(tmp);
+	}
+
+	/**
+	 * In an IDE the workspace must be informed if the set of projects change
+	 */
+	public void testProjectChangesEnabled() throws Exception {
+		try (Workspace w = new Workspace(tmp)) {
+			assertThat(getNames(w)).containsAll(Arrays.asList("p1"));
+
+			w.createProject("newproject");
+			assertThat(getNames(w)).containsExactlyElementsOf(Arrays.asList("p1"));
+
+			w.refreshProjects();
+
+			assertThat(getNames(w)).containsAll(Arrays.asList("p1", "newproject"));
+
+			Project newproject = w.getProject("newproject");
+			assertThat(newproject).isNotNull();
+
+			newproject.remove();
+			assertThat(getNames(w)).containsAll(Arrays.asList("p1", "newproject"));
+
+			w.refreshProjects();
+			assertThat(getNames(w)).containsAll(Arrays.asList("p1"));
+		}
+	}
+
+	private Object[] getNames(Workspace w) throws Exception {
+		return w.getAllProjects()
+			.stream()
+			.map(Project::getName)
+			.toArray();
 	}
 
 	public void testDriver() throws Exception {
@@ -130,6 +165,7 @@ public class WorkspaceTest extends TestCase {
 	public void testPropertyDefaulting() throws Exception {
 		try (Workspace ws = Workspace.getWorkspace(IO.getFile("testresources/ws-defaulting"))) {
 			Project p = ws.getProject("p1");
+			assertNotNull(p);
 			assertEquals("defaults", p.getProperty("myprop1"));
 			assertEquals("workspace", p.getProperty("myprop2"));
 			assertEquals("project", p.getProperty("myprop3"));
