@@ -48,6 +48,9 @@ import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryPlugin;
 import aQute.bnd.service.RepositoryListenerPlugin;
 import aQute.bnd.service.RepositoryPlugin;
+import aQute.bnd.service.maven.GetDependencyPom;
+import aQute.bnd.service.maven.PomDependency;
+import aQute.bnd.service.maven.PomDependency.PomRevision;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
@@ -72,7 +75,7 @@ import aQute.service.reporter.Reporter;
  */
 @BndPlugin(name = "MavenBndRepository")
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
-	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
+	Refreshable, Actionable, ToDependencyPom, GetDependencyPom, ReleaseBracketingPlugin {
 	private final static Logger	logger				= LoggerFactory.getLogger(MavenBndRepository.class);
 	private static final int	DEFAULT_POLL_TIME	= 5;
 
@@ -744,6 +747,23 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			.dependencyManagement(options.dependencyManagement)
 			.out(out);
 
+	}
+
+	@Override
+	public PomDependency getPomDependency(String bsn, Version version) throws Exception {
+		init();
+		Archive foundArchive = index.find(bsn, version);
+		if (foundArchive == null)
+			return null;
+		PomRevision pomRev = new PomRevision();
+		pomRev.artifact = foundArchive.revision.artifact;
+		pomRev.group = foundArchive.revision.group;
+		pomRev.version = foundArchive.revision.version;
+		PomDependency pomDep = new PomDependency();
+		pomDep.classifier = foundArchive.classifier;
+		pomDep.extension = foundArchive.extension;
+		pomDep.revision = pomRev;
+		return pomDep;
 	}
 
 	@Override

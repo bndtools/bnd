@@ -3,6 +3,7 @@ package aQute.bnd.maven;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.jar.Manifest;
@@ -16,6 +17,8 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
+import aQute.bnd.service.maven.PomDependency;
+import aQute.bnd.service.maven.PomDependency.PomRevision;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
 import aQute.libg.glob.Glob;
@@ -29,6 +32,7 @@ public class PomResource extends WriteResource {
 	private Map<String, String>	scm;
 	final Processor				processor;
 	final static Pattern		NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
+	final PomDependencyFinder	dependencyFinder;
 	private String				where;
 	private String				groupId;
 	private String				artifactId;
@@ -52,6 +56,7 @@ public class PomResource extends WriteResource {
 	public PomResource(Processor b, Manifest manifest) {
 		this.manifest = manifest;
 		this.processor = b;
+		this.dependencyFinder = new PomDependencyFinder();
 
 		Domain domain = Domain.domain(manifest);
 		Entry<String, Attrs> bundleSymbolicName = domain.getBundleSymbolicName();
@@ -122,6 +127,7 @@ public class PomResource extends WriteResource {
 		this.artifactId = artifactId;
 		this.version = version;
 		this.where = where;
+		this.dependencyFinder = new PomDependencyFinder();
 	}
 
 	public String augmentManifest(Domain domain, String bsn) {
@@ -306,6 +312,27 @@ public class PomResource extends WriteResource {
 				}
 			}
 		}
+
+		Collection<PomDependency> pomDependencies = null;
+		try {
+			pomDependencies = this.dependencyFinder.getMavenDependencies(this.manifest, this.processor);
+		} catch (Exception e) {
+			throw new IllegalStateException(e);
+		}
+
+		if (pomDependencies != null && !pomDependencies.isEmpty()) {
+			Tag dependencies = new Tag(project, "dependencies");
+
+			for (PomDependency dep : pomDependencies) {
+				Tag dependency = new Tag(dependencies, "dependency");
+				gav(dependency, dep.revision);
+				if (dep.classifier != null)
+					new Tag(dependency, "classifier", dep.classifier);
+				if (dep.extension != null)
+					new Tag(dependency, "type", dep.extension);
+			}
+		}
+
 		String validate = project.validate();
 		if (validate != null)
 			throw new IllegalArgumentException(validate);
@@ -335,6 +362,12 @@ public class PomResource extends WriteResource {
 			return parent;
 		new Tag(parent, tag).addContent(value.trim());
 		return parent;
+	}
+
+	private void gav(Tag parent, PomRevision name) {
+		new Tag(parent, "groupId", name.group);
+		new Tag(parent, "artifactId", name.artifact);
+		new Tag(parent, "version", name.version);
 	}
 
 	public void setProperties(Map<String, String> scm) {
