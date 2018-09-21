@@ -195,7 +195,7 @@ public class VerifierTest extends TestCase {
 			"Import Package clauses without version range \\(excluding javax\\.\\*\\):",
 			"Import Package bar has an invalid version range syntax \\[1,x2\\)",
 			"Import Package baz2 has an empty version range syntax \\(1,1\\), likely want to use \\[1.0.0,1.0.0\\]",
-			"Import Package baz has an invalid version range syntax \\[2,1\\): java.lang.IllegalArgumentException: Low Range is higher than High Range: 2.0.0-1.0.0",
+			"Import Package baz has an invalid version range syntax \\[2,1\\): Low Range is higher than High Range: 2.0.0-1.0.0",
 			"Import Package clauses which use a version instead of a version range. This imports EVERY later package and not as many expect until the next major number: \\[foo\\]",
 			"Export Package org.osgi.framework version has invalid syntax: x13",
 			"Export Package test.lib uses deprecated specification-version instead of version",

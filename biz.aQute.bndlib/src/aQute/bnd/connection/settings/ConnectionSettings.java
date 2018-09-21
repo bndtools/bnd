@@ -41,6 +41,7 @@ import aQute.bnd.url.HttpsVerification;
 import aQute.lib.collections.Iterables;
 import aQute.lib.concurrentinit.ConcurrentInitialize;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
 import aQute.lib.mavenpasswordobfuscator.MavenPasswordObfuscator;
@@ -600,7 +601,7 @@ public class ConnectionSettings {
 							f.format("    %s NO SUCH FILE%n", file);
 						}
 					} catch (Exception e) {
-						f.format("        Unexpected  %s%n", e.getMessage());
+						f.format("        Unexpected connection settings  '%s'%n", Exceptions.causes(e));
 					}
 				f.format("Verify              %s%n", server.verify);
 			}

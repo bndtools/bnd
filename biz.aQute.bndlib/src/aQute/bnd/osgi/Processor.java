@@ -347,6 +347,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		fixupMessages = false;
 		Processor p = current();
 		try {
+
+			//
+			// Make Throwables into a string that shows their causes
+			//
+
+			for (int i = 0; i < args.length; i++) {
+				if (args[i] instanceof Throwable)
+					args[i] = Exceptions.causes((Throwable) args[i]);
+			}
 			if (p.isFailOk())
 				return p.warning(string, args);
 			String s = formatArrays(string, args);
@@ -389,10 +398,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		Processor p = current();
 		if (p.trace) {
 			p.getLogger()
-				.info("Reported exception", t);
+				.info("Reported exception {}", Exceptions.causes(t));
 		} else {
 			p.getLogger()
-				.debug("Reported exception", t);
+				.debug("Reported exception {}", Exceptions.causes(t));
 		}
 		if (p.exceptions) {
 			printExceptionSummary(t, System.err);
