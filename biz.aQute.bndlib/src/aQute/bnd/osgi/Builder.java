@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.cdi.CDIAnnotations;
 import aQute.bnd.component.DSAnnotations;
+import aQute.bnd.configurator.ConfiguratorPlugin;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -1619,6 +1620,7 @@ public class Builder extends Analyzer {
 	static CDIAnnotations		cdiAnnotations		= new CDIAnnotations();
 	static DSAnnotations		dsAnnotations		= new DSAnnotations();
 	static MetatypeAnnotations	metatypeAnnotations	= new MetatypeAnnotations();
+	static ConfiguratorPlugin	configuratorPlugin	= new ConfiguratorPlugin();
 
 	@Override
 	protected void setTypeSpecificPlugins(Set<Object> list) {
@@ -1628,6 +1630,7 @@ public class Builder extends Analyzer {
 		list.add(cdiAnnotations);
 		list.add(dsAnnotations);
 		list.add(metatypeAnnotations);
+		list.add(configuratorPlugin);
 		super.setTypeSpecificPlugins(list);
 	}
 
@@ -1825,6 +1828,5 @@ public class Builder extends Analyzer {
 			"githead"
 		}));
 	}
-
 
 }
