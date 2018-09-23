@@ -117,7 +117,7 @@ public class ConfiguratorPlugin implements AnalyzerPlugin {
 				updateHeader(analyzer, Constants.REQUIRE_CAPABILITY, set);
 			}
 		}
-		return true;
+		return false;
 	}
 
 	// aQute.bnd.component.DSAnnotations may refactor to abstractAnalyzerPlugin
