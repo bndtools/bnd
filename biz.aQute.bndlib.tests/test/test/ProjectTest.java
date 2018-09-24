@@ -38,10 +38,11 @@ public class ProjectTest extends TestCase {
 	File tmp;
 
 	@Override
-	protected void setUp() {
-		tmp = IO.getFile("generated/tmp");
+	protected void setUp() throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + getName())
+			.getAbsoluteFile();
 		IO.delete(tmp);
-		tmp.mkdirs();
+		IO.mkdirs(tmp);
 	}
 
 	@Override
@@ -927,10 +928,8 @@ public class ProjectTest extends TestCase {
 	}
 
 	private Workspace getWorkspace(File file) throws Exception {
-		File tmpx = new File(tmp, "tmp-ws");
-		IO.delete(tmpx);
-		IO.copy(file, tmpx);
-		return new Workspace(tmpx);
+		IO.copy(file, tmp);
+		return new Workspace(tmp);
 	}
 
 	private Workspace getWorkspace(String dir) throws Exception {
