@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
@@ -614,7 +615,13 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                             refreshAction.setEnabled(false);
                             Central.refreshPlugins();
                         } catch (Exception e) {
-                            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Failed to refresh plugins", e);
+                            Throwable t = e;
+                            while (t instanceof InvocationTargetException)
+                                t = ((InvocationTargetException) e).getTargetException();
+
+                            logger.logError("Unexpected error in refreshing plugns", t);
+
+                            return new Status(IStatus.ERROR, Plugin.PLUGIN_ID, "Failed to refresh plugins", t);
                         } finally {
                             refreshAction.setEnabled(true);
                         }
