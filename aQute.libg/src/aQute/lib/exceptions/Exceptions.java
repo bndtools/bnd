@@ -2,10 +2,7 @@ package aQute.lib.exceptions;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-
-import aQute.lib.strings.Strings;
+import java.util.StringJoiner;
 
 public class Exceptions {
 	private Exceptions() {}
@@ -27,12 +24,12 @@ public class Exceptions {
 	}
 
 	public static String causes(Throwable t) {
-		List<String> list = new ArrayList<>();
+		StringJoiner sj = new StringJoiner(" -> ");
 		while (t != null) {
-			list.add(t.getMessage());
+			sj.add(t.getMessage());
 			t = t.getCause();
 		}
-		return Strings.join(" -> ", list);
+		return sj.toString();
 	}
 
 }
