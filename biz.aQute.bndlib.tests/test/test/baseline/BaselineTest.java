@@ -40,20 +40,27 @@ import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
 public class BaselineTest extends TestCase {
-	File		tmp	= new File("tmp").getAbsoluteFile();
+	File		tmp;
 	Workspace	workspace;
 
-	public Workspace getWorkspace() throws Exception {
+	private Workspace getWorkspace() throws Exception {
 		if (workspace != null)
 			return workspace;
 
-		IO.delete(tmp);
 		IO.copy(IO.getFile("testresources/ws"), tmp);
 		return workspace = new Workspace(tmp);
 	}
 
 	@Override
-	public void tearDown() throws Exception {
+	protected void setUp() throws Exception {
+		tmp = IO.getFile("generated/tmp/test/" + getName())
+			.getAbsoluteFile();
+		IO.delete(tmp);
+		IO.mkdirs(tmp);
+	}
+
+	@Override
+	protected void tearDown() throws Exception {
 		IO.delete(tmp);
 		workspace = null;
 	}

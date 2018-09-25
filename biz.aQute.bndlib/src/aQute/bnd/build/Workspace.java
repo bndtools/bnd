@@ -96,7 +96,6 @@ public class Workspace extends Processor {
 
 	static class WorkspaceData {
 		List<RepositoryPlugin>	repositories;
-		public boolean			synced;
 	}
 
 	private final static Map<File, WeakReference<Workspace>>	cache			= newHashMap();
@@ -120,7 +119,7 @@ public class Workspace extends Processor {
 		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
 	private WorkspaceData										data			= new WorkspaceData();
 	private File												buildDir;
-	private ProjectTracker										projects		= new ProjectTracker(this);
+	private final ProjectTracker								projects;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -233,6 +232,7 @@ public class Workspace extends Processor {
 		this.layout = WorkspaceLayout.BND;
 		addBasicPlugin(new LoggingProgressPlugin());
 		setFileSystem(workspaceDir, bndDir);
+		projects = new ProjectTracker(this);
 	}
 
 	public void setFileSystem(File workspaceDir, String bndDir) throws Exception {
@@ -278,6 +278,7 @@ public class Workspace extends Processor {
 		super(getDefaults());
 		this.layout = layout;
 		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
+		projects = new ProjectTracker(this);
 	}
 
 	public Project getProjectFromFile(File projectDir) {
@@ -861,6 +862,8 @@ public class Workspace extends Processor {
 			}
 		}
 
+		projects.close();
+
 		try {
 			super.close();
 		} catch (IOException e) {
@@ -1185,7 +1188,9 @@ public class Workspace extends Processor {
 
 		IO.store("#\n#   " + name.toUpperCase()
 			.replace('.', ' ') + "\n#\n", getFile(pdir, Project.BNDFILE));
-		Project p = new Project(this, pdir);
+
+		projects.refresh();
+		Project p = getProject(name);
 
 		IO.mkdirs(p.getTarget());
 		IO.mkdirs(p.getOutput());
@@ -1195,8 +1200,9 @@ public class Workspace extends Processor {
 		}
 		IO.mkdirs(p.getTestSrc());
 
-		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class))
+		for (LifeCyclePlugin l : getPlugins(LifeCyclePlugin.class)) {
 			l.created(p);
+		}
 
 		if (!p.isValid()) {
 			error("project %s is not valid", p);

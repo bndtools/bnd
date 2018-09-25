@@ -1,10 +1,11 @@
 package test;
 
+import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Set;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -14,12 +15,13 @@ import junit.framework.TestCase;
 
 public class WorkspaceTest extends TestCase {
 
-	File tmp = new File("tmp");
+	File tmp;
 
 	@Override
 	protected void setUp() throws IOException {
+		tmp = new File("generated/tmp/test/" + getName()).getAbsoluteFile();
 		IO.delete(tmp);
-		tmp.mkdir();
+		IO.mkdirs(tmp);
 		IO.copy(IO.getFile("testresources/ws-gestalt"), tmp);
 
 	}
@@ -34,31 +36,30 @@ public class WorkspaceTest extends TestCase {
 	 */
 	public void testProjectChangesEnabled() throws Exception {
 		try (Workspace w = new Workspace(tmp)) {
-			assertThat(getNames(w)).containsAll(Arrays.asList("p1"));
+			assertThat(getNames(w)).containsExactlyInAnyOrder("p1");
 
 			w.createProject("newproject");
-			assertThat(getNames(w)).containsExactlyElementsOf(Arrays.asList("p1"));
+			assertThat(getNames(w)).containsExactlyInAnyOrder("p1", "newproject");
 
 			w.refreshProjects();
-
-			assertThat(getNames(w)).containsAll(Arrays.asList("p1", "newproject"));
+			assertThat(getNames(w)).containsExactlyInAnyOrder("p1", "newproject");
 
 			Project newproject = w.getProject("newproject");
 			assertThat(newproject).isNotNull();
 
 			newproject.remove();
-			assertThat(getNames(w)).containsAll(Arrays.asList("p1", "newproject"));
+			assertThat(getNames(w)).containsExactlyInAnyOrder("p1");
 
 			w.refreshProjects();
-			assertThat(getNames(w)).containsAll(Arrays.asList("p1"));
+			assertThat(getNames(w)).containsExactlyInAnyOrder("p1");
 		}
 	}
 
-	private Object[] getNames(Workspace w) throws Exception {
+	private Set<String> getNames(Workspace w) throws Exception {
 		return w.getAllProjects()
 			.stream()
 			.map(Project::getName)
-			.toArray();
+			.collect(toSet());
 	}
 
 	public void testDriver() throws Exception {

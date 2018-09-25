@@ -582,6 +582,8 @@ public class DSAnnotationReader extends ClassDataCollector {
 						component.updateVersion(V1_3);
 						clazz.parseClassFileWithCollector(
 							new ComponentPropertyTypeDataCollector(propertyDefKey, memberDescriptor, details));
+					} else if (clazz.isInterface() && options.contains(Options.felixExtensions)) {
+						component.updateVersion(V1_3);
 					} else {
 						analyzer
 							.error("Non annotation type for activation object with descriptor %s, type %s",
