@@ -56,6 +56,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.ProjectPom;
 import aQute.bnd.osgi.About;
@@ -2387,7 +2388,7 @@ public class Project extends Processor {
 	}
 
 	public Jar getValidJar(URL url) throws Exception {
-		try (Resource resource = Resource.fromURL(url)) {
+		try (Resource resource = Resource.fromURL(url, getPlugin(HttpClient.class))) {
 			Jar jar = Jar.fromResource(url.getFile()
 				.replace('/', '.'), resource);
 			return getValidJar(jar, url.toString());

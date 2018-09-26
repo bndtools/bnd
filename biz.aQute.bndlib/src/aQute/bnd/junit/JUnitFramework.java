@@ -33,6 +33,7 @@ import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -233,7 +234,7 @@ public class JUnitFramework implements AutoCloseable {
 		}
 
 		public BundleBuilder addResource(String path, URL url) throws IOException {
-			return addResource(path, Resource.fromURL(url));
+			return addResource(path, Resource.fromURL(url, getPlugin(HttpClient.class)));
 		}
 
 		public BundleBuilder addResource(String path, Resource resource) {

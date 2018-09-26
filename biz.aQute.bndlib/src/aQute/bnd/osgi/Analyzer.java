@@ -69,6 +69,7 @@ import aQute.bnd.annotation.Export;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -2985,7 +2986,7 @@ public class Analyzer extends Processor {
 			getClass().getClassLoader();
 			URL url = ClassLoader.getSystemResource(typeRef.getPath());
 			if (url != null)
-				r = Resource.fromURL(url);
+				r = Resource.fromURL(url, getPlugin(HttpClient.class));
 		}
 		if (r != null) {
 			c = new Clazz(this, typeRef.getPath(), r);
