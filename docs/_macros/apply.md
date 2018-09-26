@@ -10,8 +10,8 @@ The `apply` macro takes the name of a macro and invokes this macro with each ele
 	args = com.example.foo, 3.12, HIGHEST
 	${apply;repo;${args}}
 
-This will be exapanded to:
+This will be expanded to:
 
-	${repo;com.examnple.foo;3.12;HIGHEST}
+	${repo;com.example.foo;3.12;HIGHEST}
 
 Which will provide the path to the artifact
