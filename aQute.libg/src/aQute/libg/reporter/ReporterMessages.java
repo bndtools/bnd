@@ -124,9 +124,11 @@ public class ReporterMessages {
 
 				try {
 					if (method.getReturnType() == ERROR.class) {
-						for (int i = args.length - 1; i >= 0; i--) {
-							if (args[i] instanceof Throwable) {
-								return new ERRORImpl(reporter.exception((Throwable) args[i], format, args));
+						if (args != null) {
+							for (int i = args.length - 1; i >= 0; i--) {
+								if (args[i] instanceof Throwable) {
+									return new ERRORImpl(reporter.exception((Throwable) args[i], format, args));
+								}
 							}
 						}
 						return new ERRORImpl(reporter.error(format, args));
