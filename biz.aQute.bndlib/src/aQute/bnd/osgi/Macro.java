@@ -16,6 +16,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2186,22 +2187,6 @@ public class Macro {
 			help = "";
 		}
 		String h = help;
-		return new Map.Entry<String, String>() {
-
-			@Override
-			public String getKey() {
-				return name;
-			}
-
-			@Override
-			public String getValue() {
-				return h;
-			}
-
-			@Override
-			public String setValue(String value) {
-				throw new UnsupportedOperationException();
-			}
-		};
+		return new AbstractMap.SimpleImmutableEntry<String, String>(name, h);
 	}
 }
