@@ -156,13 +156,17 @@ public class Glob {
 		return c == ')' || c == ']';
 	}
 
-	public void select(List<?> objects) {
+	public void select(Collection<?> objects) {
 		for (Iterator<?> i = objects.iterator(); i.hasNext();) {
 			String s = i.next()
 				.toString();
-			if (!matcher(s).matches())
+			if (!matches(s))
 				i.remove();
 		}
+	}
+
+	public void select(List<?> objects) {
+		this.select((Collection<?>) objects);
 	}
 
 	public static Pattern toPattern(String s) {
@@ -247,5 +251,9 @@ public class Glob {
 		} else if (!glob.equals(other.glob))
 			return false;
 		return true;
+	}
+
+	public boolean matches(String s) {
+		return matcher(s).matches();
 	}
 }

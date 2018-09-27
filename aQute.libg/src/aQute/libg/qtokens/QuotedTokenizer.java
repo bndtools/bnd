@@ -43,6 +43,14 @@ public class QuotedTokenizer {
 		while (index < string.length()) {
 			char c = string.charAt(index++);
 
+			if (separators.indexOf(c) >= 0) {
+				if (returnTokens)
+					peek = Character.toString(c);
+				else
+					separator = c;
+				break;
+			}
+
 			if (Character.isWhitespace(c)) {
 				if (index == string.length())
 					break;
@@ -51,14 +59,6 @@ public class QuotedTokenizer {
 					sb.append(c);
 
 				continue;
-			}
-
-			if (separators.indexOf(c) >= 0) {
-				if (returnTokens)
-					peek = Character.toString(c);
-				else
-					separator = c;
-				break;
 			}
 
 			switch (c) {
