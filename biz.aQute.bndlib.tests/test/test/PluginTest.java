@@ -1,6 +1,7 @@
 package test;
 
 import java.awt.MenuContainer;
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Plugin;
+import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 import junit.framework.TestCase;
 
@@ -132,5 +134,23 @@ public class PluginTest extends TestCase {
 		assertEquals("thinlet.Thinlet", plugins.get(0)
 			.getClass()
 			.getName());
+	}
+
+	public void testLoadPluginWithGlobalPluginPathURL() throws Exception {
+		File tmp = new File("generated/tmp/test/" + getName() + "/thinlet.jar").getAbsoluteFile();
+		IO.delete(tmp);
+		try (Builder p = new Builder()) {
+			p.setProperty(Constants.PLUGIN, "thinlet.Thinlet");
+			p.setProperty(Constants.PLUGINPATH,
+				tmp + ";url=file:jar/thinlet.jar;sha1=af7ec3a35b1825e678bfa80edeffe65836d55b17");
+
+			List<MenuContainer> plugins = p.getPlugins(MenuContainer.class);
+			assertEquals(0, p.getErrors()
+				.size());
+			assertEquals(1, plugins.size());
+			assertEquals("thinlet.Thinlet", plugins.get(0)
+				.getClass()
+				.getName());
+		}
 	}
 }

@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.FileResource;
@@ -31,7 +32,7 @@ public class MakeCopy implements MakePlugin {
 			return new FileResource(f);
 		try {
 			URL url = new URL(from);
-			return Resource.fromURL(url);
+			return Resource.fromURL(url, builder.getPlugin(HttpClient.class));
 		} catch (MalformedURLException mfue) {
 			// We ignore this
 		}

@@ -1,10 +1,14 @@
 package aQute.bnd.comm.tests;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -14,6 +18,7 @@ import org.osgi.util.promise.Promise;
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.progress.ProgressPlugin;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
@@ -232,6 +237,19 @@ public class HttpClientTest extends TestCase {
 				.go(httpServer.getBaseURI("get"));
 			assertNotNull(text);
 			assertTrue(text.startsWith("{"));
+		}
+	}
+
+	public void testURLResource() throws Exception {
+		try (HttpClient hc = new HttpClient()) {
+			URL url = httpServer.getBaseURI("get")
+				.toURL();
+			try (Resource resource = Resource.fromURL(url, hc)) {
+				ByteBuffer bb = resource.buffer();
+				assertThat(bb).isNotNull();
+				String text = IO.collect(bb, UTF_8);
+				assertThat(text).startsWith("{");
+			}
 		}
 	}
 
