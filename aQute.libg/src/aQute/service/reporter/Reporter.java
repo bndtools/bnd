@@ -91,9 +91,7 @@ public interface Reporter extends Report {
 	 * 
 	 * @param format The format of the error
 	 * @param args The arguments of the error
-	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
-	@Deprecated
 	void trace(String format, Object... args);
 
 	/**

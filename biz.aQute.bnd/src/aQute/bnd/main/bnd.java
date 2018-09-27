@@ -1837,6 +1837,7 @@ public class bnd extends Processor {
 
 	}
 
+
 	private void report(Justif justif, String string, Processor processor) throws Exception {
 		Map<String, Object> table = new LinkedHashMap<>();
 		processor.report(table);
@@ -4712,4 +4713,68 @@ public class bnd extends Processor {
 		}
 	}
 
+	@Description("Commands to inspect a dependency graph of a set of bundles")
+	public void _graph(GraphCommand.GraphOptions options) throws Exception {
+		try (GraphCommand cc = new GraphCommand(this, options)) {
+			String help = options._command()
+				.subCmd(options, cc);
+			if (help != null)
+				out.println(help);
+		}
+	}
+
+	@Description("Start an interactive shell")
+	public void _shell(Shell.ShellOptions options) throws Exception {
+		try (Shell shell = new Shell(this, options)) {
+			shell.loop();
+		} finally {
+			out.println("done");
+		}
+	}
+
+	public Workspace getWorkspace() {
+		return workspace;
+	}
+
+	@Description("Show the project or the workspace properties")
+	@Arguments(arg = {})
+	interface PropertiesOptions extends projectOptions {
+		@Description("Get the inherited properties")
+		boolean local();
+
+		@Description("Filter on key")
+		Glob key(Glob deflt);
+
+		@Description("Filter on value")
+		Glob value(Glob deflt);
+	}
+
+	/**
+	 * Print out all the properties
+	 */
+
+	@Description("Show the project or the workspace properties")
+	public void _properties(PropertiesOptions options) throws Exception {
+
+		Processor domain = getProject(options.project());
+		if (domain == null) {
+			domain = getWorkspace();
+		}
+		if (domain == null) {
+			domain = this;
+		}
+
+		Glob key = options.key(Glob.ALL);
+		Glob value = options.value(Glob.ALL);
+
+		for (String s : domain.getPropertyKeys(options.local())) {
+			if (key.matches(s)) {
+				String property = domain.getProperty(s);
+				if (value.matches(property)) {
+					out.printf("%-40s %s%n", s, property);
+				}
+			}
+		}
+
+	}
 }

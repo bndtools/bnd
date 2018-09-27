@@ -272,6 +272,8 @@ public class PomResource extends WriteResource {
 			for (String s : pscm.keySet()) {
 				new Tag(tscm, s, pscm.get(s));
 			}
+		} else {
+			processor.warning("POM will not validate on Central due to missing Bundle-SCM header");
 		}
 
 		Parameters developers = new Parameters(manifest.getMainAttributes()
@@ -305,6 +307,8 @@ public class PomResource extends WriteResource {
 						new Tag(tdeveloper, s, i.get(s));
 				}
 			}
+		} else {
+			processor.warning("POM will not validate on Central due to missing Bundle-Developers header");
 		}
 		String validate = project.validate();
 		if (validate != null)

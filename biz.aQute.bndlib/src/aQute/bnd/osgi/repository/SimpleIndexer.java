@@ -9,17 +9,19 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.osgi.resource.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import aQute.bnd.annotation.ConsumerType;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.io.IO;
+import aQute.libg.reporter.slf4j.Slf4jReporter;
+import aQute.service.reporter.Reporter;
 
 /**
  * Simple program to generate an index from a set of bundles.
@@ -63,14 +65,13 @@ public class SimpleIndexer {
 		void analyzeFile(File file, ResourceBuilder resourceBuilder) throws Exception;
 	}
 
-	private static final Logger logger = LoggerFactory.getLogger(SimpleIndexer.class);
-
 	private final Set<File>	files		= new LinkedHashSet<>();
 	private Path			base;
 	private boolean			compress	= false;
 	private String			name;
 	private long			increment	= -1L;
 	private FileAnalyzer	analyzer;
+	private Reporter		reporter	= new Slf4jReporter(SimpleIndexer.class);
 
 	public SimpleIndexer() {}
 
@@ -148,13 +149,30 @@ public class SimpleIndexer {
 		repository().save(requireNonNull(file));
 	}
 
-	private XMLResourceGenerator repository() {
-		XMLResourceGenerator repository = new XMLResourceGenerator();
-		files.stream()
+	/**
+	 * Return the resources so far.
+	 * 
+	 * @return the set of resources handled so far.
+	 */
+	public List<Resource> getResources() {
+		List<Resource> resources = files.stream()
 			.filter(f -> f.isFile() && !f.isHidden() && f.canRead())
 			.map(this::indexFile)
 			.filter(Objects::nonNull)
-			.forEachOrdered(repository::resource);
+			.collect(Collectors.toList());
+		return resources;
+	}
+
+	public SimpleIndexer reporter(Reporter reporter) {
+		this.reporter = reporter;
+		return this;
+	}
+
+	private XMLResourceGenerator repository() {
+		XMLResourceGenerator repository = new XMLResourceGenerator();
+		List<Resource> resources = getResources();
+		repository.resources(resources);
+
 		if (name != null) {
 			repository.name(name);
 		}
@@ -177,7 +195,7 @@ public class SimpleIndexer {
 				return resourceBuilder.build();
 			}
 		} catch (Exception e) {
-			logger.error("Could not index file {}", file, e);
+			reporter.exception(e, "Could not index file %s", file);
 		}
 		return null;
 	}
@@ -192,8 +210,9 @@ public class SimpleIndexer {
 		// Note that relativePath.toURI() gives the wrong answer for us!
 		// We have to do some Windows related mashing here too :(
 		URI relativeURI = URI.create(IO.normalizePath(relativePath));
-		logger.debug("Resolving {} relative to {}; Relative Path: {}, URI: {}", filePath, base, relativePath,
+		reporter.trace("Resolving %s relative to %s; Relative Path: %s, URI: %s", filePath, base, relativePath,
 			relativeURI);
 		return relativeURI;
 	}
+
 }

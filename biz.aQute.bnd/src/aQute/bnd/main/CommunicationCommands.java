@@ -59,7 +59,7 @@ public class CommunicationCommands extends Processor {
 	("Show the information used by the Http Client to get aremote file")public void _info(InfoOptions options)
 		throws Exception {
 		List<String> arguments = options._arguments();
-		try (Formatter f = new Formatter(bnd.out)) {
+		try (Formatter f = new Formatter()) {
 			while (!arguments.isEmpty()) {
 
 				URI uri = new URI(arguments.remove(0));
@@ -108,6 +108,7 @@ public class CommunicationCommands extends Processor {
 				f.format("%n");
 				f.flush();
 			}
+			bnd.out.println(f.toString());
 		}
 	}
 
@@ -135,8 +136,9 @@ public class CommunicationCommands extends Processor {
 
 	@Description("Show the bnd -connection-settings")
 	public void _settings(SettingsOptions options) {
-		try (Formatter f = new Formatter(System.out)) {
+		try (Formatter f = new Formatter()) {
 			httpClient.reportSettings(f);
+			bnd.out.println(f.toString());
 		}
 	}
 
