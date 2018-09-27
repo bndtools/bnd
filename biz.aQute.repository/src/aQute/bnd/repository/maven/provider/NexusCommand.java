@@ -41,7 +41,9 @@ public class NexusCommand extends Processor {
 	final HttpClient			client;
 
 	public enum Compatible {
-		CRAWL, NEXUS2, NEXUS3
+		CRAWL,
+		NEXUS2,
+		NEXUS3
 	}
 
 	@ProviderType
@@ -105,17 +107,21 @@ public class NexusCommand extends Processor {
 
 		if (args.isEmpty()) {
 			List<URI> files = nexus.files();
-			for (URI uri : files) {
-				try {
-					logger.debug("signing {}", relative(uri));
-					File f = nexus.download(uri);
-					byte[] signature = signer.sign(f);
-					if (options.show())
-						show(signature);
-					else
-						nexus.upload(new URI(uri + ".asc"), signature);
-				} catch (Exception e) {
-					exception(e, "could not download/sign/upload %s", relative(uri));
+			if (files == null) {
+				error("URI is not reachable %s", nexus.getUri());
+			} else {
+				for (URI uri : files) {
+					try {
+						logger.debug("signing {}", relative(uri));
+						File f = nexus.download(uri);
+						byte[] signature = signer.sign(f);
+						if (options.show())
+							show(signature);
+						else
+							nexus.upload(new URI(uri + ".asc"), signature);
+					} catch (Exception e) {
+						exception(e, "could not download/sign/upload %s", relative(uri));
+					}
 				}
 			}
 		} else {
@@ -146,13 +152,17 @@ public class NexusCommand extends Processor {
 	}
 
 	@Arguments(arg = {
-			"files..."
+		"files..."
 	})
 	interface FilesOption extends Options {}
 
 	public void _files(FilesOption options) throws Exception {
 		List<URI> uris = getFiles();
-		System.out.println(Strings.join("\n", uris));
+		if (uris == null) {
+			error("URI is not reachable %s", nexus.getUri());
+		} else {
+			System.out.println(Strings.join("\n", uris));
+		}
 	}
 
 	private List<URI> getFiles() throws Exception {
@@ -171,7 +181,10 @@ public class NexusCommand extends Processor {
 			default :
 			case NEXUS3 :
 				for (String repo : options._arguments()) {
-					nexus.getAssets(repo).stream().map((Asset asset) -> asset.downloadUrl).forEach(list::add);
+					nexus.getAssets(repo)
+						.stream()
+						.map((Asset asset) -> asset.downloadUrl)
+						.forEach(list::add);
 				}
 				break;
 		}
@@ -204,8 +217,10 @@ public class NexusCommand extends Processor {
 
 		if (options.output() != null) {
 			File f = IO.getFile(options.output());
-			f.getParentFile().mkdirs();
-			xrg.compress().save(f);
+			f.getParentFile()
+				.mkdirs();
+			xrg.compress()
+				.save(f);
 		} else {
 			xrg.indent(2);
 			xrg.save(System.out);
@@ -217,8 +232,12 @@ public class NexusCommand extends Processor {
 			return;
 
 		try {
-			File go = client.build().get().useCache().go(jar);
-			if (jar.getPath().endsWith(".jar")) {
+			File go = client.build()
+				.get()
+				.useCache()
+				.go(jar);
+			if (jar.getPath()
+				.endsWith(".jar")) {
 				parseJar(repo, jar, go);
 			} else {
 				parseZip(repo, jar, go);
@@ -231,7 +250,7 @@ public class NexusCommand extends Processor {
 	}
 
 	private void parseZip(ResourcesRepository repo, URI jar, File go)
-			throws IOException, MalformedURLException, URISyntaxException, ZipException {
+		throws IOException, MalformedURLException, URISyntaxException, ZipException {
 
 		String base = jar.toString() + "!/";
 		IO.copy(jar.toURL(), go);
@@ -248,7 +267,7 @@ public class NexusCommand extends Processor {
 	}
 
 	private void parseJar(ResourcesRepository repo, URI jar, File go)
-			throws IOException, NoSuchAlgorithmException, Exception {
+		throws IOException, NoSuchAlgorithmException, Exception {
 		SHA256.digest(go);
 		ResourceBuilder rb = new ResourceBuilder();
 		rb.addFile(go, jar);
