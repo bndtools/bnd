@@ -9,6 +9,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.MessageDigest;
@@ -25,13 +26,16 @@ import java.util.Formatter;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -870,8 +874,7 @@ public class Macro {
 
 		List<String> result = new ArrayList<>();
 		for (File file : files)
-			result.add(relative ? file.getName()
-				: IO.absolutePath(file));
+			result.add(relative ? file.getName() : IO.absolutePath(file));
 
 		return Processor.join(result, ",");
 	}
@@ -2148,4 +2151,57 @@ public class Macro {
 		});
 	}
 
+	public Map<String, String> getCommands() {
+		Set<Object> targets = new LinkedHashSet<>();
+		targets.addAll(Arrays.asList(targets));
+		Processor rover = domain;
+		while (rover != null) {
+			targets.add(rover);
+			rover = rover.getParent();
+		}
+		targets.add(this);
+		TreeMap<String, String> result = new TreeMap<>();
+
+		targets.stream()
+			.map(object -> object.getClass())
+			.flatMap(c -> Stream.of(c.getMethods()))
+			.filter(m -> !Modifier.isStatic(m.getModifiers()) && Modifier.isPublic(m.getModifiers()) && m.getName()
+				.startsWith("_"))
+			.map(this::toEntry)
+			.forEach(e -> result.put(e.getKey(), e.getValue()));
+
+		return result;
+	}
+
+	private Map.Entry<String, String> toEntry(Method m) {
+		String name = m.getName()
+			.substring(1);
+		String help;
+
+		try {
+			Class<?> c = m.getDeclaringClass();
+			Field field = c.getField(m.getName() + "Help");
+			help = (String) field.get(null);
+		} catch (Exception e) {
+			help = "";
+		}
+		String h = help;
+		return new Map.Entry<String, String>() {
+
+			@Override
+			public String getKey() {
+				return name;
+			}
+
+			@Override
+			public String getValue() {
+				return h;
+			}
+
+			@Override
+			public String setValue(String value) {
+				throw new UnsupportedOperationException();
+			}
+		};
+	}
 }

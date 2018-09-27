@@ -81,3 +81,5 @@ org.nanohttpd:nanohttpd:2.2.0
 org.tukaani:xz:1.5
 
 com.github.mike10004:fengyouchao-sockslib:1.0.3
+
+jline:jline:2.14.6
