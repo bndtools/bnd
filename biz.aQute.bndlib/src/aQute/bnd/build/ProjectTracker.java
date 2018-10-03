@@ -67,6 +67,7 @@ class ProjectTracker implements AutoCloseable {
 		if (!changed) {
 			return;
 		}
+		changed = false;
 
 		Path base = workspace.getBase()
 			.toPath();
@@ -100,7 +101,5 @@ class ProjectTracker implements AutoCloseable {
 		older.stream()
 			.map(models::remove)
 			.forEach(IO::close);
-
-		changed = false;
 	}
 }
