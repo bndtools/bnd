@@ -88,6 +88,9 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
 	private File									classesDir;
 
+	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
+	private File									outputDir;
+
 	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF")
 	private File									manifestPath;
 
@@ -174,14 +177,6 @@ public class BndMavenPlugin extends AbstractMojo {
 			List<Builder> subs = builder.getSubBuilders();
 			if ((subs.size() != 1) || !builder.equals(subs.get(0))) {
 				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
-			}
-
-			// Reject wab projects
-			if (builder.getProperty(Constants.WAB) != null) {
-				throw new MojoExecutionException(Constants.WAB + " not supported in a maven build");
-			}
-			if (builder.getProperty(Constants.WABLIB) != null) {
-				throw new MojoExecutionException(Constants.WABLIB + " not supported in a maven build");
 			}
 
 			// always add the outputDirectory to the classpath, but
@@ -283,7 +278,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				Jar bndJar = builder.build();
 
 				// Expand Jar into target/classes
-				expandJar(bndJar, outputDirectory);
+				expandJar(bndJar, outputDir);
 			} else {
 				logger.debug("No build");
 			}
