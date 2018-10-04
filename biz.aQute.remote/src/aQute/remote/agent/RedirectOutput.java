@@ -32,13 +32,14 @@ public class RedirectOutput extends PrintStream {
 	}
 
 	public RedirectOutput(List<AgentServer> agents, PrintStream out, boolean err) {
-		super(out == null ? out = nullOutputStream() : out);
+		super(out == null ? out = newNullOutputStream() : out);
 		this.agents = agents;
 		this.out = out;
 		this.err = err;
 	}
 
-	private static PrintStream nullOutputStream() {
+	// TODO: java11 - use OutputStream.nullOutputStream()
+	private static PrintStream newNullOutputStream() {
 		return new PrintStream(new NullOutputStream());
 	}
 
