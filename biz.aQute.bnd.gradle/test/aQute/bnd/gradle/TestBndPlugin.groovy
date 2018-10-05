@@ -420,7 +420,6 @@ class TestBndPlugin extends Specification {
             .buildAndFail()
 
         then:
-          result.task(':test.simple:jar').outcome == SUCCESS
           result.task(':test.simple:testrun.testOSGi2').outcome == FAILED
 
         when:
@@ -431,7 +430,6 @@ class TestBndPlugin extends Specification {
             .build()
 
         then:
-          result.task(':test.simple:jar').outcome == UP_TO_DATE
           result.task(':test.simple:testrun.testOSGi2').outcome == SUCCESS
 
           new File(testReports, 'testrun.testOSGi2/TEST-testrun.testOSGi2.xml').isFile()
