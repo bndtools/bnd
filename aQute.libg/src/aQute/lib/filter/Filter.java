@@ -75,7 +75,7 @@ public class Filter {
 		}
 
 		private boolean doAnd() throws Exception {
-			tail = skip();
+			tail = skip(1);
 			boolean val = true;
 			if (!tail.startsWith("("))
 				error(EMPTY);
@@ -86,16 +86,17 @@ public class Filter {
 			return val;
 		}
 
-		String skip() {
+		String skip(int skip) {
 			String a = tail;
 			do {
-				a = a.substring(1);
+				a = a.substring(skip);
+				skip = 1;
 			} while (a.length() > 0 && Character.isWhitespace(a.charAt(0)));
 			return a;
 		}
 
 		private boolean doOr() throws Exception {
-			tail = skip();
+			tail = skip(1);
 			boolean val = false;
 			if (!tail.startsWith("("))
 				error(EMPTY);
@@ -107,7 +108,7 @@ public class Filter {
 		}
 
 		private boolean doNot() throws Exception {
-			tail = skip();
+			tail = skip(1);
 			if (!tail.startsWith("("))
 				error(SUBEXPR);
 			return !doQuery();
@@ -140,7 +141,7 @@ public class Filter {
 		boolean prefix(String pre) {
 			if (!tail.startsWith(pre))
 				return false;
-			tail = tail.substring(pre.length());
+			tail = skip(pre.length());
 			return true;
 		}
 

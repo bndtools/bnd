@@ -51,6 +51,7 @@ import aQute.lib.base64.Base64;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.Iterables;
 import aQute.lib.collections.SortedList;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.filter.Get;
 import aQute.lib.hex.Hex;
@@ -365,11 +366,11 @@ public class Macro {
 					domain.error("%s, for cmd: %s, arguments; %s", e.getCause()
 						.getMessage(), method, Arrays.toString(args));
 				} else {
-					domain.warning("Exception in replace: %s", e.getCause());
+					domain.warning("Exception in replace: method=%s %s", method, Exceptions.toString(e.getCause()));
 				}
 				return NULLVALUE;
 			} catch (Exception e) {
-				domain.warning("Exception in replace: %s method=%s", e, method);
+				domain.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
 				return NULLVALUE;
 			}
 		}
