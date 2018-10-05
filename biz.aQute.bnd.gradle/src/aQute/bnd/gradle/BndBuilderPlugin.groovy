@@ -79,18 +79,16 @@ public class BndBuilderPlugin implements Plugin<Project> {
       configurations.baseline.defaultDependencies { deps ->
         Task bundleTask = baseline.bundleTask
         if (bundleTask) {
+          logger.debug 'Searching for default baseline {}:{}:(,{}[', group, bundleTask.baseName, bundleTask.version
           Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version}[") {
             force = true
             transitive = false
           }
-          boolean resolveError
           try {
             Configuration detached = configurations.detachedConfiguration(baselineDep)
-            resolveError = detached.resolvedConfiguration.hasError()
+            detached.resolvedConfiguration.rethrowFailure()
           } catch(ResolveException e) {
-            resolveError = true
-          }
-          if (resolveError) {
+            logger.debug 'Baseline configuration resolve error {}, adding {} as baseline', e, baseline.bundle, e
             baselineDep = dependencies.create(files(baseline.bundle))
           }
           deps.add(baselineDep)
