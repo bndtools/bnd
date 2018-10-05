@@ -66,13 +66,9 @@ pom. Bnd instructions in the pom are not used if the project has a bnd file.
 </plugin>
 ```
 
-The plugin adds the entire content of the project from
-`${project.build.outputDirectory}` (but no other packages from 
-the build path) to the bundle content.
+The contents of `${project.build.outputDirectory}` is always included as input to the plugin (*i.e. placed in the bnd builder's classpath*).
 
-NB: If there are no Bnd instructions for the project then the bundle will contain only private
-packages: no Bundle-Activator, no Export-Package header, etc.  Therefore
-although it will be valid, the bundle may not be *useful*.
+Optionally, the plugin adds the entire content of `${project.build.outputDirectory}` to the bundle content (but no other packages from the build path). This behavior is **enabled** by default. (*See `includeClassesDir` configuration parameter*).
 
 For further usage information, see the integration test projects under the included
 `src/test/resources/integration-test/test` directory.
@@ -84,6 +80,9 @@ For further usage information, see the integration test projects under the inclu
 |`bndfile`              | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.|
 |`bnd`                  | Bnd instructions for this project specified directly in the pom file. This is generally be done using a {@code <![CDATA[]]>} section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
 |`manifestPath`         | Specify the path to a manifest file to use. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._|
+|`classesDir`           | The directory where the `maven-compiler-plugin` places its output. _Defaults to `${project.build.outputDirectory}`._|
+|`includeClassesDir` | Include the entire contents of `classesDir` in the bundle. *Defaults to `true`*. |
+|`outputDir`            | The directory where the `bnd-maven-plugin` will extract it's contents. _Defaults to `${project.build.outputDirectory}`._|
 |`skip`                 | Skip the project. _Defaults to `false`._ Override with property `bnd.skip`.|
 
 ## Bnd Instruction Inheritance
@@ -115,5 +114,83 @@ In the meantime it is necessary to configure the `maven-jar-plugin` plugin as fo
     </configuration>
 </plugin>
 ```
+
+## Usage Scenarios
+
+The plugin has 3 distinct usage scenarios:
+
+1. The common case is that very little configuration is required; inputs and outputs are based on defaults. Bnd performs it's analysis and enhances the jar with OSGi metadata obtained through introspection of classes, resources, dependencies, and [OSGi bundle annotations](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle):
+
+   ```xml
+   <plugin>
+       <groupId>biz.aQute.bnd</groupId>
+       <artifactId>bnd-maven-plugin</artifactId>
+   </plugin>
+   <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-jar-plugin</artifactId>
+       <configuration>
+           <archive>
+               <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+           </archive>
+       </configuration>
+   </plugin>
+   ```
+
+2. The second case, let's call it the _filtering_ use case, is a more advanced usage emulating the behavior found in the Bnd _Workspace_ model where instructions are used to include contents in the resulting jar. Note that controlling the actual contents of the jar is handled through configuration of the `maven-jar-plugin`:
+
+   ```xml
+   <plugin>
+       <groupId>biz.aQute.bnd</groupId>
+       <artifactId>bnd-maven-plugin</artifactId>
+       <configuration>
+           <includeClassesDir>false</includeClassesDir>
+           <bnd><![CDATA[
+               Private-Package: foo.*
+           ]]></bnd>
+       </configuration>
+   </plugin>
+   <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-jar-plugin</artifactId>
+       <configuration>
+           <archive>
+               <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+           </archive>
+           <includes>
+               <include>META-INF/*</include>
+               <include>OSGI-INF/*</include>
+               <include>OSGI-OPT/*</include>
+               <include>foo/*</include>
+           </includes>
+       </configuration>
+   </plugin>
+   ```
+
+3. The third case is best explained by building a _war_ file rather than a jar. The output of the plugin is effectively re-directed to a different location, in this case to the `maven-war-plugin` assembly directory:
+
+   ```xml
+   <plugin>
+       <groupId>biz.aQute.bnd</groupId>
+       <artifactId>bnd-maven-plugin</artifactId>
+       <configuration>
+           <outputDir>${project.build.directory}/${project.build.finalName}</outputDir>
+           <bnd><![CDATA[
+               Web-ContextPath: /${project.build.finalName}
+               -wab:
+           ]]></bnd>
+       </configuration>
+   </plugin>
+   <plugin>
+       <groupId>org.apache.maven.plugins</groupId>
+       <artifactId>maven-war-plugin</artifactId>
+       <configuration>
+           <archive>
+               <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+           </archive>
+       </configuration>
+   </plugin>
+   ```
+
 
 [1]: https://issues.apache.org/jira/browse/MJAR-193

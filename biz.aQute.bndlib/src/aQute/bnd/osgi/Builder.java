@@ -10,6 +10,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -257,9 +258,9 @@ public class Builder extends Analyzer {
 		}
 
 		Parameters clauses = parseHeader(getProperty(WABLIB));
-		for (String key : clauses.keySet()) {
-			File f = getFile(key);
-			addWabLib(dot, f);
+		for (Map.Entry<String, Attrs> entry : clauses.entrySet()) {
+			File f = getFile(entry.getKey());
+			addWabLib(dot, f, entry.getKey(), entry.getValue());
 		}
 		doIncludeResource(dot, wab);
 		return dot;
@@ -270,7 +271,7 @@ public class Builder extends Analyzer {
 	 * 
 	 * @param f
 	 */
-	private void addWabLib(Jar dot, File f) throws Exception {
+	private void addWabLib(Jar dot, File f, String name, Map<String, String> attrs) throws Exception {
 		if (f.exists()) {
 			Jar jar = new Jar(f);
 			jar.setDoNotTouchManifest();
@@ -295,13 +296,14 @@ public class Builder extends Analyzer {
 							warning("Invalid Class-Path entry %s in %s, must exist and must reside in same directory",
 								sub, f);
 						} else {
-							addWabLib(dot, sub);
+							addWabLib(dot, sub, part, Collections.emptyMap());
 						}
 					}
 				}
 			}
-		} else {
-			error("WAB lib does not exist %s", f);
+		}
+		else {
+			doIncludeResource(dot, name, attrs);
 		}
 	}
 

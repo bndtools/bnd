@@ -85,8 +85,14 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${project.build.resources}", readonly = true)
 	private List<org.apache.maven.model.Resource>	resources;
 
-	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
+	@Parameter(defaultValue = "${project.build.outputDirectory}")
 	private File									classesDir;
+
+	@Parameter(defaultValue = "true")
+	private boolean									includeClassesDir;
+
+	@Parameter(defaultValue = "${project.build.outputDirectory}")
+	private File									outputDir;
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF")
 	private File									manifestPath;
@@ -149,8 +155,6 @@ public class BndMavenPlugin extends AbstractMojo {
 			return;
 		}
 
-		File outputDirectory = new File(project.getBuild().getOutputDirectory());
-
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
 		beanProperties.put("settings", settings);
@@ -176,26 +180,18 @@ public class BndMavenPlugin extends AbstractMojo {
 				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
 			}
 
-			// Reject wab projects
-			if (builder.getProperty(Constants.WAB) != null) {
-				throw new MojoExecutionException(Constants.WAB + " not supported in a maven build");
-			}
-			if (builder.getProperty(Constants.WABLIB) != null) {
-				throw new MojoExecutionException(Constants.WABLIB + " not supported in a maven build");
-			}
-
 			// always add the outputDirectory to the classpath, but
 			// handle projects with no output directory, like
 			// 'test-wrapper-bundle'
-			if (outputDirectory.isDirectory()) {
-				builder.addClasspath(outputDirectory);
-			}
-
-			// Include local project packages automatically
 			if (classesDir.isDirectory()) {
-				Jar classesDirJar = new Jar(project.getName(), classesDir);
-				classesDirJar.setManifest(new Manifest());
-				builder.setJar(classesDirJar);
+				builder.addClasspath(classesDir);
+
+				// Include local project packages, true by default
+				if (includeClassesDir) {
+					Jar classesDirJar = new Jar(project.getName(), classesDir);
+					classesDirJar.setManifest(new Manifest());
+					builder.setJar(classesDirJar);
+				}
 			}
 
 			// Compute bnd classpath
@@ -283,7 +279,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				Jar bndJar = builder.build();
 
 				// Expand Jar into target/classes
-				expandJar(bndJar, outputDirectory);
+				expandJar(bndJar, outputDir);
 			} else {
 				logger.debug("No build");
 			}
