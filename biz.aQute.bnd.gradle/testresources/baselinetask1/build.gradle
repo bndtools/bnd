@@ -8,11 +8,12 @@ plugins {
     id 'biz.aQute.bnd.builder'
 }
 
+group 'test'
 version = '1.1.0'
 
 repositories {
-    flatDir {
-      dirs file('repodir')
+    maven {
+      url uri('repodir')
     }
     mavenCentral()
 }
