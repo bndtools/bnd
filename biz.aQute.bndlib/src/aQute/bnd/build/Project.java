@@ -3068,7 +3068,7 @@ public class Project extends Processor {
 			javac.add("-classpath", buildpath.toString());
 		}
 
-		List<File> sp = new ArrayList<>(getAllsourcepath());
+		List<File> sp = new ArrayList<>(getSourcePath());
 		StringBuilder sourcepath = new StringBuilder();
 		String sourcepathDel = "";
 

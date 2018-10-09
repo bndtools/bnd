@@ -110,7 +110,7 @@ public class Forker<T> {
 		if (waiting.containsKey(target))
 			throw new IllegalArgumentException("You can only add a target once to the forker");
 
-		System.err.println("doWhen " + dependencies + " " + target);
+		System.out.println("doWhen " + dependencies + " " + target);
 		Job job = new Job();
 		job.dependencies = new HashSet<>(dependencies);
 		job.target = target;
@@ -121,7 +121,7 @@ public class Forker<T> {
 	public void start(long ms) throws InterruptedException {
 		check();
 		count = waiting.size();
-		System.err.println("Count " + count);
+		System.out.println("Count " + count);
 		schedule();
 		if (ms >= 0)
 			sync(ms);
@@ -139,12 +139,12 @@ public class Forker<T> {
 	}
 
 	public synchronized void sync(long ms) throws InterruptedException {
-		System.err.println("Waiting for sync");
+		System.out.println("Waiting for sync");
 		while (count > 0) {
-			System.err.println("Waiting for sync " + count);
+			System.out.println("Waiting for sync " + count);
 			wait(ms);
 		}
-		System.err.println("Exiting sync " + count);
+		System.out.println("Exiting sync " + count);
 	}
 
 	private void schedule() {
@@ -174,11 +174,11 @@ public class Forker<T> {
 	 */
 	void done(Job done) {
 		synchronized (this) {
-			System.err.println("count = " + count);
+			System.out.println("count = " + count);
 			executing.remove(done);
 			count--;
 			if (count == 0) {
-				System.err.println("finished");
+				System.out.println("finished");
 				notifyAll();
 				return;
 			}
