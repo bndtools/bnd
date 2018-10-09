@@ -42,6 +42,9 @@ subprojects {
       projectDirInputsExcludes.addAll(testfolders)
     }
     test {
+      // set heap size for the test JVM(s)
+      minHeapSize = '2g'
+      maxHeapSize = '4g'
       testLogging {
         exceptionFormat 'full'
       }
