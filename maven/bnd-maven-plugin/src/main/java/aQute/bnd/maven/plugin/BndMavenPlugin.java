@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -47,6 +48,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.shared.mapping.MappingUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +75,8 @@ public class BndMavenPlugin extends AbstractMojo {
 		.getLogger(BndMavenPlugin.class);
 	private static final String						MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
 	private static final String						MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
-	private static final String						PACKAGING_POM			= "pom";
+	private static final String						PACKAGING_JAR			= "jar";
+	private static final String						PACKAGING_WAR			= "war";
 	private static final String						TSTAMP					= "${tstamp}";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
@@ -93,6 +96,9 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}")
 	private File									outputDir;
+
+	@Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
+	private File									warOutputDir;
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF")
 	private File									manifestPath;
@@ -148,10 +154,10 @@ public class BndMavenPlugin extends AbstractMojo {
 			return;
 		}
 
-		// Exit without generating anything if this is a pom-packaging project.
-		// Probably it's just a parent project.
-		if (PACKAGING_POM.equals(project.getPackaging())) {
-			logger.info("skip project with packaging=pom");
+		// Exit without generating anything if this is neither a jar or war
+		// project. Probably it's just a parent project.
+		if (!PACKAGING_JAR.equals(project.getPackaging()) && !PACKAGING_WAR.equals(project.getPackaging())) {
+			logger.info("skip project with packaging=" + project.getPackaging());
 			return;
 		}
 
@@ -194,9 +200,28 @@ public class BndMavenPlugin extends AbstractMojo {
 				}
 			}
 
+			boolean isWab = PACKAGING_WAR.equals(project.getPackaging());
+			boolean hasWablibs = builder.getProperty(Constants.WABLIB) != null;
+			String wabProperty = builder.getProperty(Constants.WAB);
+
+			if (isWab) {
+				if (wabProperty == null) {
+					builder.setProperty(Constants.WAB, "");
+				}
+				outputDir = warOutputDir;
+				logger.info(
+					"WAB mode enabled. Bnd output will be expanded into the 'maven-war-plugin' <webappDirectory>:"
+						+ outputDir);
+			}
+			else if ((wabProperty != null) || hasWablibs) {
+				throw new MojoFailureException(
+					Constants.WAB + " & " + Constants.WABLIB + " are not supported with packaging 'jar'");
+			}
+
 			// Compute bnd classpath
 			Set<Artifact> artifacts = project.getArtifacts();
 			List<Object> buildpath = new ArrayList<Object>(artifacts.size());
+			List<String> wablibs = new ArrayList<String>(artifacts.size());
 			for (Artifact artifact : artifacts) {
 				File cpe = artifact.getFile()
 					.getCanonicalFile();
@@ -226,8 +251,23 @@ public class BndMavenPlugin extends AbstractMojo {
 					}
 					builder.updateModified(cpe.lastModified(), cpe.getPath());
 					buildpath.add(cpe);
+
+					if (isWab && !hasWablibs && !Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+						&& !Artifact.SCOPE_TEST.equals(artifact.getScope()) && !artifact.isOptional()) {
+
+						String fileNameMapping = MappingUtils
+							.evaluateFileNameMapping(MappingUtils.DEFAULT_FILE_NAME_MAPPING, artifact);
+						wablibs.add("WEB-INF/lib/" + fileNameMapping + "=" + cpe.getName() + ";lib:=true");
+					}
 				}
 			}
+
+			if (!wablibs.isEmpty()) {
+				String wablib = wablibs.stream()
+					.collect(Collectors.joining(","));
+				builder.setProperty(Constants.WABLIB, wablib);
+			}
+
 			builder.setProperty("project.buildpath", Strings.join(File.pathSeparator, buildpath));
 			logger.debug("builder classpath: {}", builder.getProperty("project.buildpath"));
 
