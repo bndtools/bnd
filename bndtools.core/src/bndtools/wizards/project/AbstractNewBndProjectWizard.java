@@ -245,6 +245,9 @@ abstract class AbstractNewBndProjectWizard extends JavaProjectWizard {
                     marker.setAttribute(IMarker.MESSAGE, "Missing Bnd Workspace. Create a new workspace with the 'New Bnd OSGi Workspace' wizard.");
                     marker.setAttribute(BuildErrorDetailsHandler.PROP_HAS_RESOLUTIONS, true);
                     marker.setAttribute("$bndType", BndtoolsConstants.MARKER_BND_MISSING_WORKSPACE);
+                } else {
+                    Central.getWorkspace()
+                        .refreshProjects();
                 }
             } catch (Exception e1) {
                 // ignore exceptions, this is best effort to help new users
