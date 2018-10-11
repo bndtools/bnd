@@ -4,14 +4,20 @@ title:  xref [options] <<jar path>> <[...]>
 summary: Show a cross references for all classes in a set of jars.
 ---
 
+## Description
 
-OPTIONS
+{{page.summary}}
 
-   [ -c, --classes ]          - Show classes instead of packages
-   [ -f, --from ]             - Show references from other classes/packages (<)
-   [ -m, --match <string>* ]  - Filter for class names, a globbing expression
-   [ -t, --to ]               - Show references to other classes/packages (>)
+## Synopsis
 
+## Options
+
+	[ -c, --classes ]          - Show classes instead of packages
+	[ -f, --from ]             - Show references from other classes/packages (<)
+	[ -m, --match <string>* ]  - Filter for class names, a globbing expression
+	[ -t, --to ]               - Show references to other classes/packages (>)
+
+## Examples
    
 	   biz.aQute.bnd (master)$ bnd xref generated/*.jar
 	                              aQute.bnd.annotation > 

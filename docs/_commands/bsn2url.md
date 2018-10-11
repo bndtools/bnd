@@ -4,6 +4,16 @@ title: bsn2url
 summary: From a set of bsns, create a list of urls if found in the repo                                 
 ---
 
+## Description
+
+{{page.summary}}
+
+## Synopsis
+
+## Options
+
+## Examples
+
 	/**
 	 * From a set of bsns, create a list of urls
 	 */
