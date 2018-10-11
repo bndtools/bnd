@@ -7,13 +7,16 @@ import aQute.bnd.osgi.Jar;
 
 public class TestBndMain extends TestBndMainBase {
 
+	private static final String	WARNINGS_FRAME	= "-----------------" + System.lineSeparator() + "Warnings";
+	private static final String	EMPTY_JAR_MSG	= "000: p: The JAR is empty: The instructions for the JAR named p did not cause any content to be included, this is likely wrong";
+
 	@Test
 	public void testRunStandalone() throws Exception {
 		initTestData(STANDALONE);
 
 		executeBndCmd("run", "standalone.bndrun");
 
-		expectNoError();
+		expectNoError(true);
 		expectOutput("Gesundheit!");
 	}
 
@@ -23,7 +26,7 @@ public class TestBndMain extends TestBndMainBase {
 
 		executeBndCmd("run", "p/workspace.bndrun");
 
-		expectNoError();
+		expectNoError(true);
 		expectOutput("Gesundheit!");
 	}
 
@@ -147,6 +150,23 @@ public class TestBndMain extends TestBndMainBase {
 	}
 
 	@Test
+	public void testPar() throws Exception {
+		initTestData(WORKSPACE);
+		executeBndCmd("_par");
+
+		expectNoError(false, EMPTY_JAR_MSG, WARNINGS_FRAME);
+
+		expectFileStatus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.CREATED, "p3/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.CREATED, "p4/bin/req/RequireAnnotaionOne.class");
+		expectFileStatus(FileStatus.CREATED, "p/generated/p.jar");
+		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
+		expectFileStatus(FileStatus.CREATED, "p3/generated/p3.jar");
+		expectFileStatus(FileStatus.CREATED, "p4/generated/p4.jar");
+
+	}
+
+	@Test
 	public void testCompile() throws Exception {
 		initTestData(WORKSPACE);
 
@@ -156,7 +176,19 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectFileStatus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
 		expectFileStatus(FileStatus.CREATED, "p3/bin/somepackage/SomeClass.class");
+		expectFileStatus(FileStatus.CREATED, "p4/bin/req/RequireAnnotaionOne.class");
 		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
+	}
+
+	@Test
+	public void testCompileP4MavenDeps() throws Exception {
+		initTestData(WORKSPACE);
+
+		executeBndCmd("compile", "-p", "p4");
+
+		expectNoError();
+
+		expectFileStatus(FileStatus.CREATED, "p4/bin/req/RequireAnnotaionOne.class");
 	}
 
 	@Test
@@ -216,9 +248,7 @@ public class TestBndMain extends TestBndMainBase {
 		executeBndCmd("compile");
 		executeBndCmd("build");
 
-		capturedStdIO.getSystemErrContent()
-			.contains(
-			"000: p: The JAR is empty: The instructions for the JAR named p did not cause any content to be included, this is likely wrong");
+		expectNoError(false, EMPTY_JAR_MSG, WARNINGS_FRAME);
 
 		expectFileStatus(FileStatus.CREATED, "p/generated/p.jar");
 		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
@@ -248,20 +278,18 @@ public class TestBndMain extends TestBndMainBase {
 		executeBndCmd("compile", "--workspace", WORKSPACE);
 		executeBndCmd("build", "--workspace", WORKSPACE);
 
-		capturedStdIO.getSystemErrContent()
-			.contains(
-				"000: p: The JAR is empty: The instructions for the JAR named p did not cause any content to be included, this is likely wrong");
+		expectNoError(false, EMPTY_JAR_MSG, WARNINGS_FRAME);
 
-		expectFileStatus(FileStatus.CREATED, WORKSPACE+"/p/generated/p.jar");
-		expectFileStatus(FileStatus.CREATED, WORKSPACE+"/p2/generated/p2.jar");
-		expectFileStatus(FileStatus.CREATED, WORKSPACE+"/p3/generated/p3.jar");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE + "/p/generated/p.jar");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE + "/p2/generated/p2.jar");
+		expectFileStatus(FileStatus.CREATED, WORKSPACE + "/p3/generated/p3.jar");
 	}
 
 	@Test
 	public void testBuildWSp() throws Exception {
 		initTestDataAll();
 
-		executeBndCmd("clean","--workspace", WORKSPACE);
+		executeBndCmd("clean", "--workspace", WORKSPACE);
 		executeBndCmd("compile", "--workspace", WORKSPACE);
 		executeBndCmd("build", "--workspace", WORKSPACE, "--project", WORKSPACE + "/p2");
 

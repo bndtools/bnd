@@ -1,1 +1,7 @@
 -plugin: aQute.bnd.repository.osgi.OSGiRepository; name=Local; locations="${fileuri;${workspace}/cnf/repo/index.xml}"
+
+-plugin.1.Central: \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/central.maven; \
+		name="Maven Central"

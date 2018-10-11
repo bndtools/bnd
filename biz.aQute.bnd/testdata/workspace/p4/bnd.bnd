@@ -1,0 +1,7 @@
+
+Bundle-Version: 0.0.1
+Bundle-Name: ReqBundle
+Export-Package: req
+
+-buildpath: \
+	osgi.cmpn;version=7.0

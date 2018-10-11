@@ -1,7 +1,9 @@
 package aQute.bnd.main;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -21,6 +23,8 @@ import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Jar;
 
 public class TestBndMainBase {
+
+	private static final String						WARNING_LINE			= "(?m)^WARNING: .*$";
 
 	@Rule
 	public WatchedFolder							folder					= new WatchedTemporaryFolder();
@@ -74,6 +78,7 @@ public class TestBndMainBase {
 	protected void expectFileStatus(FileStatus expectedFileStatus, String p) {
 		expectFileStatus(expectedFileStatus, p.split("/"));
 	}
+
 	protected void expectFileStatus(FileStatus expectedFileStatus, String... p) {
 
 		Path path = Paths.get("", p);
@@ -108,8 +113,33 @@ public class TestBndMainBase {
 		assertEquals("wrong output", expected, capturedStdIO.getSystemOutContent());
 	}
 
+	protected void expectOutputContains(String expected) {
+		assertThat("missing output", capturedStdIO.getSystemOutContent(), containsString(expected));
+	}
+
+	protected void expectErrorContains(String expected) {
+		assertThat("missing error", capturedStdIO.getSystemErrContent(), containsString(expected));
+	}
+
+	protected void expectNoError(boolean ignoreWarnings, String... expects) {
+		String errors = capturedStdIO.getSystemErrContent();
+
+		if (ignoreWarnings) {
+			errors = errors.replaceAll(WARNING_LINE, "")
+				.trim();
+		}
+		if (expects != null) {
+			for (String expect : expects) {
+				assertThat("missing error", capturedStdIO.getSystemErrContent(), containsString(expect));
+				errors = errors.replaceAll(expect, "")
+					.trim();
+			}
+		}
+		assertEquals("non-empty error output", "", errors);
+	}
+
 	protected void expectNoError() {
-		assertEquals("non-empty error output", "", capturedStdIO.getSystemErrContent());
+		expectNoError(false);
 	}
 
 	protected void expectJarEntry(Jar jar, String path) {
