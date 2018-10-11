@@ -4,10 +4,6 @@ title:  shell [options]
 summary: Open a shell on a project, workspace, or plain bnd defaults and exercise commands and macros 
 ---
 
-## Options
-
-    -p, --project  path-to-project
-
 ## Description
 
 The `shell` function in bnd is primarily intended to exercise macros. Although the `macro` command made it possible to test a single macro, the awful interaction between the (ba)sh character interpretations for $ and quotes made this quite hard to use in practice. the shell therefore directly _talks_ the macro language as you write it in a bnd.bnd file. Additionally, all bnd commands are also available.
@@ -22,7 +18,7 @@ The `shell` function in bnd is primarily intended to exercise macros. Although t
 
 When you start the shell bnd will try to find a project. If the `-p` options is specified it will first look in that directory, otherwise it will look in the current working directory. If no project is found, it will try to find the workspace set by bnd. If no workspace can be found, bnd will use the bnd defaults as properties.
 
-## Properties
+### Properties
 
 A project inherits all properties from the workspace. So when bnd has a project in _scope_ then all macros and properties are available defined in the project's `bnd.bnd` file, the `./cnf/build.bnd` file, and any files in `./cnf/ext/*.bnd`. For example, `javac.source` is a property set by the workspace:
 
@@ -38,5 +34,10 @@ This raises the question: What properties are there? The shell also supports bnd
     javac.target                             1.8
     >
 
+## Synopsis
 
- 
+## Options
+
+    -p, --project  path-to-project
+
+## Examples

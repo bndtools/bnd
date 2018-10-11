@@ -4,12 +4,18 @@ title:    deliverables [options]
 summary:  Show all deliverables from this workspace. with their current version and path.
 ---
 
+## Description
 
-OPTIONS
+{{page.summary}}
 
-   [ -l, --limit ]            - Only provide deliverables of this project
-   [ -p, --project <string> ] - Path to project, default current directory
+## Synopsis
 
+## Options
+
+	[ -l, --limit ]            - Only provide deliverables of this project
+	[ -p, --project <string> ] - Path to project, default current directory
+
+## Example 
 
 	biz.aQute.bnd (master)$ bnd deliverables 
 	found password 

@@ -4,6 +4,16 @@ title:   bash
 summary:  Generate autocompletion file for bash
 ---
 
+## Description
+
+{{page.summary}}
+
+## Synopsis
+
+## Options
+
+## Examples
+
 	@Description("Generate autocompletion file for bash")
 	public void _bash(Options options) throws Exception {
 		File tmp = File.createTempFile("bnd-completion", ".tmp");
