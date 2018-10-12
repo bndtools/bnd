@@ -4,13 +4,19 @@ title:   version [options]
 summary: Show version information about bnd
 ---
 
-OPTIONS
+## Description
 
-   [ -x, --xtra ]             - Show licensing, copyright, sha, scm, etc
+{{page.summary}}
 
-   
-   
-	   biz.aQute.bnd (master)$ bnd version -x
+## Synopsis
+
+## Options
+
+	[ -x, --xtra ]             - Show licensing, copyright, sha, scm, etc
+
+## Examples
+
+	biz.aQute.bnd (master)$ bnd version -x
 	Version                                  2.4.0.201407091507
 	From                                     Wed Jul 09 17:07:14 CEST 2014
 	License                                  Apache License, Version 2.0

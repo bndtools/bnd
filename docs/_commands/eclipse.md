@@ -2,14 +2,19 @@
 layout: default
 title:      eclipse [options]  
 summary: Show info about the current directory's eclipse project
- ---
+---
 
+## Description
 
-OPTIONS
+{{page.summary}}
 
-   [ -d, --dir <string> ]     - Path to the project
+## Synopsis
 
+## Options
 
+	[ -d, --dir <string> ]     - Path to the project
+
+## Examples
 
 	$ bnd eclipse
 	Classpath    [/Ws/bnd/biz.aQute.bnd/bin]

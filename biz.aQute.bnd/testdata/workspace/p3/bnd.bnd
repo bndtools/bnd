@@ -2,3 +2,8 @@
 Bundle-Version: 0.0.1
 Bundle-Name: SomeBundle
 Export-Package: somepackage
+
+-buildpath: \
+	p4;version=project
+	
+-dependson: p4

@@ -3,11 +3,11 @@ title: Command Reference
 layout: default
 ---
 
-MAIN OPTIONS
+## Main options
 
-   [ -f, --full ]             - Do full
-   [ -p, --project <string> ] - Identify another project
-   [ -t, --test ]             - Build for test
+    [ -f, --full ]             - Do full
+    [ -p, --project <string> ] - Identify another project
+    [ -t, --test ]             - Build for test
 
 
 ## Reference

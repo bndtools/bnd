@@ -904,28 +904,7 @@ public class bnd extends Processor {
 	}
 
 	public void perProject(ProjectWorkspaceOptions opts, PerProject run) throws Exception {
-		List<Project> projects = new ArrayList<>();
-
-		HandledProjectWorkspaceOptions hpw = handleOptions(opts, "**/bnd.bnd");
-
-		Workspace ws = hpw.workspace();
-
-		for (File file : hpw.files()) {
-
-			Project p = null;
-			if (Files.isDirectory(file.toPath())) {
-
-				p = ws.getProjectFromFile(file);
-
-			} else if (Project.BNDFILE.equals(file.getName())) {
-
-				p = ws.getProjectFromFile(file.getParentFile());
-
-			}
-			if (p != null) {
-				projects.add(p);
-			}
-		}
+		List<Project> projects = getFilteredProjects(opts);
 
 		final Set<Project> projectsWellDone = new HashSet<>();
 
@@ -950,14 +929,38 @@ public class bnd extends Processor {
 		}
 	}
 
+	private List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
+		List<Project> projects = new ArrayList<>();
+
+		HandledProjectWorkspaceOptions hpw = handleOptions(opts, "**/bnd.bnd");
+
+		Workspace ws = hpw.workspace();
+
+		for (File file : hpw.files()) {
+
+			Project p = null;
+			if (Files.isDirectory(file.toPath())) {
+
+				p = ws.getProjectFromFile(file);
+
+			} else if (Project.BNDFILE.equals(file.getName())) {
+
+				p = ws.getProjectFromFile(file.getParentFile());
+
+			}
+			if (p != null) {
+				projects.add(p);
+			}
+		}
+		return projects;
+	}
+
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
 	interface buildoptions extends ProjectWorkspaceOptions {
 
 		@Description("Build for test")
 		boolean test();
 
-		@Description("Do full")
-		boolean full();
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
@@ -1422,7 +1425,6 @@ public class bnd extends Processor {
 		}
 	}
 
-
 	@Description("Show a cross references for all classes in a set of jars.")
 	public void _xref(XRefCommand.xrefOptions options) throws IOException, Exception {
 		XRefCommand cx = new XRefCommand(this);
@@ -1836,7 +1838,6 @@ public class bnd extends Processor {
 			err.println("No project");
 
 	}
-
 
 	private void report(Justif justif, String string, Processor processor) throws Exception {
 		Map<String, Object> table = new LinkedHashMap<>();
@@ -2386,7 +2387,6 @@ public class bnd extends Processor {
 					out.println("- " + string);
 				}
 			}
-
 
 			// TODO check all the arguments
 
@@ -3129,7 +3129,8 @@ public class bnd extends Processor {
 
 				if (opts.resources() != null) {
 					Instructions selection = new Instructions(opts.resources());
-					Collection<String> selected = selection.select(in.getResources().keySet(), null, false);
+					Collection<String> selected = selection.select(in.getResources()
+						.keySet(), null, false);
 					selected.forEach(path -> {
 						out.printf("%40s : %s\n", fileName, path);
 					});
@@ -3315,7 +3316,8 @@ public class bnd extends Processor {
 	enum Alg {
 		SHA1,
 		MD5,
-		SHA256, SHA512,
+		SHA256,
+		SHA512,
 		TIMELESS
 	};
 
@@ -3372,10 +3374,12 @@ public class bnd extends Processor {
 								.digest();
 							break;
 						case SHA256 :
-							digest = SHA256.digest(f).digest();
+							digest = SHA256.digest(f)
+								.digest();
 							break;
 						case SHA512 :
-							digest = SHA512.digest(f).digest();
+							digest = SHA512.digest(f)
+								.digest();
 							break;
 						case MD5 :
 							digest = MD5.digest(f)
@@ -3729,6 +3733,7 @@ public class bnd extends Processor {
 	@Description("experimental - parallel build")
 	interface ParallelBuildOptions extends buildoptions {
 
+		long synctime();
 	}
 
 	/**
@@ -3741,55 +3746,37 @@ public class bnd extends Processor {
 		final AtomicBoolean quit = new AtomicBoolean();
 
 		try {
-			final Project p = getProject(options.project());
-			final Workspace workspace = p == null || options.full() ? Workspace.getWorkspace(getBase())
-				: p.getWorkspace();
-
-			if (!workspace.exists()) {
-				error("cannot find workspace");
-				return;
-			}
-
-			final Collection<Project> targets = p == null ? workspace.getAllProjects() : p.getDependson();
-
 			final Forker<Project> forker = new Forker<>(pool);
 
-			for (final Project dep : targets) {
-				forker.doWhen(dep.getDependson(), dep, new Runnable() {
+			List<Project> projects = getFilteredProjects(options);
+
+			for (final Project proj : projects) {
+				forker.doWhen(proj.getDependson(), proj, new Runnable() {
 
 					@Override
 					public void run() {
 						if (!quit.get()) {
 
 							try {
-								dep.compile(false);
-								if (!quit.get())
-									dep.build();
-								if (!dep.isOk())
+								proj.compile(options.test());
+								if (!quit.get()) {
+									proj.build(options.test());
+								}
+								if (!proj.isOk()) {
 									quit.set(true);
+								}
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
 						}
+						getInfo(proj, proj + ": ");
 					}
 				});
 			}
 			err.flush();
 
-			forker.start(20000);
-
-			for (Project dep : targets) {
-				getInfo(dep, dep + ": ");
-			}
-			if (p != null && p.isOk() && !options.full()) {
-				p.compile(options.test());
-				p.build();
-				if (options.test() && p.isOk())
-					p.test();
-				getInfo(p);
-			}
-
-			workspace.close();
+			long syncms = options.synctime() <= 0 ? 20000 : options.synctime();
+			forker.start(syncms);
 		} finally {
 			pool.shutdownNow();
 		}
@@ -3949,23 +3936,24 @@ public class bnd extends Processor {
 		}
 		Instructions instructions = new Instructions(opts._arguments());
 
-		MultiMap<String,Attrs> dependencies = new MultiMap<>();
+		MultiMap<String, Attrs> dependencies = new MultiMap<>();
 		int n = 0;
 		for (Project p : ws.getAllProjects()) {
 			if (instructions.matches(p.getName())) {
 				Parameters parms = p.getParameters(Constants.BUILDPATH);
-				for (Map.Entry<String,Attrs> e : parms.entrySet()) {
+				for (Map.Entry<String, Attrs> e : parms.entrySet()) {
 					dependencies.add(e.getKey(), e.getValue());
 				}
 			}
 		}
 		Justif justif = new Justif(80, new int[] {
-				40, 48, 56
+			40, 48, 56
 		});
 		Formatter f = justif.formatter();
 
-		for (Map.Entry<String,List<Attrs>> e : dependencies.entrySet()) {
-			f.format("%s \t1%s\n", e.getKey(), e.getValue().size());
+		for (Map.Entry<String, List<Attrs>> e : dependencies.entrySet()) {
+			f.format("%s \t1%s\n", e.getKey(), e.getValue()
+				.size());
 		}
 
 		out.println(justif.wrap());
@@ -4358,8 +4346,8 @@ public class bnd extends Processor {
 		}
 	}
 
-	protected HandledProjectWorkspaceOptions handleOptions(ProjectWorkspaceOptions options,
-		String... defaultIncludes) throws Exception {
+	protected HandledProjectWorkspaceOptions handleOptions(ProjectWorkspaceOptions options, String... defaultIncludes)
+		throws Exception {
 
 		boolean verbose = options.verbose();
 		Project project = getProject(options.project());
@@ -4525,9 +4513,9 @@ public class bnd extends Processor {
 	}
 
 	@Description("Extract a set of resources from a set of JARs given a set of prefixes. "
-			+ "All prefixes in any of the given input jars are added to the output jar")
+		+ "All prefixes in any of the given input jars are added to the output jar")
 	@Arguments(arg = {
-			"<out path>", "<in path>", "[...]"
+		"<out path>", "<in path>", "[...]"
 	})
 	public void _collect(CollectOptions options) throws Exception {
 		List<Jar> opened = new ArrayList<>();
@@ -4536,7 +4524,8 @@ public class bnd extends Processor {
 		String outpath = args.remove(0);
 
 		File outfile = getFile(outpath);
-		outfile.getParentFile().mkdirs();
+		outfile.getParentFile()
+			.mkdirs();
 		logger.debug("out %s", outfile);
 
 		String classes = options.classes();
@@ -4572,8 +4561,10 @@ public class bnd extends Processor {
 
 			logger.info("line {}", path);
 			boolean match = false;
-			for (Map.Entry<String,Resource> e : store.getResources().entrySet()) {
-				if (e.getKey().startsWith(path)) {
+			for (Map.Entry<String, Resource> e : store.getResources()
+				.entrySet()) {
+				if (e.getKey()
+					.startsWith(path)) {
 					match = true;
 					logger.info("# found %s", path);
 					out.putResource(e.getKey(), e.getValue());
@@ -4592,7 +4583,8 @@ public class bnd extends Processor {
 	@Arguments(arg = {})
 	public void _classtoresource(Options options) throws IOException {
 		try (Analyzer a = new Analyzer()) {
-			List<String> l = options._arguments().isEmpty() ? Arrays.asList("--") : options._arguments();
+			List<String> l = options._arguments()
+				.isEmpty() ? Arrays.asList("--") : options._arguments();
 
 			for (String f : l) {
 				forEachLine(f, s -> {
@@ -4611,7 +4603,8 @@ public class bnd extends Processor {
 	@Arguments(arg = {})
 	public void _packagetoresource(Options options) throws IOException {
 		try (Analyzer a = new Analyzer()) {
-			List<String> l = options._arguments().isEmpty() ? Arrays.asList("--") : options._arguments();
+			List<String> l = options._arguments()
+				.isEmpty() ? Arrays.asList("--") : options._arguments();
 
 			for (String f : l) {
 				forEachLine(f, s -> {
@@ -4627,7 +4620,6 @@ public class bnd extends Processor {
 			}
 		}
 	}
-
 
 	private void forEachLine(String file, Consumer<String> c) throws IOException {
 		InputStream in = System.in;

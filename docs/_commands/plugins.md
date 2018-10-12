@@ -4,12 +4,17 @@ title: plugins [options]
 summary: Execute a Project action, or if no parms given, show information about the project 
 ---
 
-    
+## Description
 
-OPTIONS
+{{page.summary}}
 
-   [ -p, --project <string> ] - Identify another project
+## Synopsis
 
+## Options
+
+	[ -p, --project <string> ] - Identify another project
+
+## Examples
 
 	biz.aQute.bnd (master)$ bnd plugins
 	found password 
