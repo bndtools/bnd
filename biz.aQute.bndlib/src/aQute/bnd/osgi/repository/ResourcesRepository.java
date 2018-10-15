@@ -9,16 +9,20 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collector;
 
 import org.osgi.resource.Capability;
+import org.osgi.resource.Namespace;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
 
 import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.lib.filter.Filter;
 
 public class ResourcesRepository extends BaseRepository {
 	final Set<Resource> resources = new LinkedHashSet<>();
+	final Map<String, Filter>	cache		= new ConcurrentHashMap<>();
 
 	public ResourcesRepository(Resource resource) {
 		add(resource);
@@ -41,7 +45,26 @@ public class ResourcesRepository extends BaseRepository {
 		return resources.stream()
 			.flatMap(resource -> resource.getCapabilities(namespace)
 				.stream())
-			.filter(capability -> ResourceUtils.matches(requirement, capability))
+			.filter(capability -> {
+				if (!requirement.getNamespace()
+					.equals(capability.getNamespace()))
+					return false;
+
+				if (!ResourceUtils.isEffective(requirement, capability))
+					return false;
+
+				String filter = requirement.getDirectives()
+					.get(Namespace.REQUIREMENT_FILTER_DIRECTIVE);
+				if (filter == null)
+					return true;
+
+				try {
+					Filter f = cache.computeIfAbsent(filter, (k) -> new Filter(k));
+					return f.matchMap(capability.getAttributes());
+				} catch (Exception e) {
+					return false;
+				}
+			})
 			.collect(toCapabilities());
 	}
 
