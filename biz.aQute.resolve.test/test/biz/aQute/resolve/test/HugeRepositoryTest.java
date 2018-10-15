@@ -1,6 +1,8 @@
 package biz.aQute.resolve.test;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.LongSummaryStatistics;
 
 import org.osgi.resource.Resource;
 
@@ -64,6 +66,59 @@ public class HugeRepositoryTest extends TestCase {
 			assertTrue(validator.check());
 			assertEquals(resources.size(), resolutions.size());
 		}
+	}
+
+	public long testHugeValidateSelf() throws Exception {
+		long start = System.nanoTime();
+		try (ResolverValidator validator = new ResolverValidator();) {
+			ResourceBuilder system = new ResourceBuilder();
+			system.addEE(EE.JavaSE_1_8);
+			system.addManifest(OSGI_CORE.R7_0_0.getManifest());
+			validator.setSystem(system.build());
+			validator.setTrace(true);
+			validator.addRepository(IO.getFile("testdata/forms-and-workflow-1.0-index.xml.gz")
+				.toURI());
+			validator.addRepository(IO.getFile("testdata/foundation-1.0-index.xml.gz")
+				.toURI());
+			validator.addRepository(IO.getFile("testdata/target.platform.index.xml.gz")
+				.toURI());
+			validator.validate();
+			return (System.nanoTime() - start) / 1000000000;
+		}
+	}
+
+	public void testHugeValidateSelf1Iteration() throws Exception {
+		List<Long> durations = new ArrayList<>();
+		for (int i = 1; i <= 1; i++) {
+			durations.add(testHugeValidateSelf());
+		}
+
+		LongSummaryStatistics summaryStatistics = durations.stream()
+			.mapToLong(x -> x)
+			.summaryStatistics();
+
+		for (Long duration : durations) {
+			System.out.printf("Duration: %ds%n", duration);
+		}
+
+		System.out.printf("Summary: %s%n", summaryStatistics);
+	}
+
+	public void testHugeValidateSelfIterations() throws Exception {
+		List<Long> durations = new ArrayList<>();
+		for (int i = 1; i <= 10; i++) {
+			durations.add(testHugeValidateSelf());
+		}
+
+		LongSummaryStatistics summaryStatistics = durations.stream()
+			.mapToLong(x -> x)
+			.summaryStatistics();
+
+		for (Long duration : durations) {
+			System.out.printf("Duration: %ds%n", duration);
+		}
+
+		System.out.printf("Summary: %s%n", summaryStatistics);
 	}
 
 }
