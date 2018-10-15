@@ -4,17 +4,55 @@
  */
 package aQute.lib.filter;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Dictionary;
-import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 public class Filter {
-	final char			WILDCARD	= 65535;
+
+	// eliminate reflection on bnd/osgi Version during resolver operations
+	static Class<?>		BND_VERSION;
+	static MethodHandle	BND_parseVersion_MH;
+	static Class<?>		OSGI_VERSION;
+	static MethodHandle	OSGI_valueOf_MH;
+	static {
+		MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();
+		try {
+			BND_VERSION = Class.forName("aQute.bnd.version.Version");
+			MethodType mt = MethodType.methodType(BND_VERSION, String.class);
+			BND_parseVersion_MH = publicLookup.findStatic(BND_VERSION, "parseVersion", mt);
+		} catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException e) {
+			BND_VERSION = null;
+			BND_parseVersion_MH = null;
+		}
+		try {
+			OSGI_VERSION = Class.forName("org.osgi.framework.Version");
+			MethodType mt = MethodType.methodType(OSGI_VERSION, String.class);
+			OSGI_valueOf_MH = publicLookup.findStatic(OSGI_VERSION, "valueOf", mt);
+		} catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException e) {
+			OSGI_VERSION = null;
+			OSGI_valueOf_MH = null;
+		}
+	}
+
+	static final String				GARBAGE		= "Trailing garbage";
+	static final String				MALFORMED	= "Malformed query";
+	static final String				EMPTY		= "Empty list";
+	static final String				SUBEXPR		= "No subexpression";
+	static final String				OPERATOR	= "Undefined operator";
+	static final String				TRUNCATED	= "Truncated expression";
+	static final String				EQUALITY	= "Only equality supported";
+
+	final static char				WILDCARD	= 65535;
 
 	final static int	EQ			= 0;
 	final static int	LE			= 1;
@@ -29,30 +67,19 @@ public class Filter {
 
 	final String		filter;
 	final boolean		extended;
+	final Node						node;
+	final Exception					parseException;
+	private String					tail;
 
-	abstract class Query {
-		static final String	GARBAGE		= "Trailing garbage";
-		static final String	MALFORMED	= "Malformed query";
-		static final String	EMPTY		= "Empty list";
-		static final String	SUBEXPR		= "No subexpression";
-		static final String	OPERATOR	= "Undefined operator";
-		static final String	TRUNCATED	= "Truncated expression";
-		static final String	EQUALITY	= "Only equality supported";
+	interface Arguments {
+		public Object getProp(String key) throws Exception;
+	}
 
-		private String		tail;
-
-		boolean match() throws Exception {
-			tail = filter;
-			boolean val = doQuery();
-			if (tail.length() > 0)
-				error(GARBAGE);
-			return val;
-		}
-
-		private boolean doQuery() throws Exception {
+	class Query {
+		private Node doQuery() throws Exception {
 			if (tail.length() < 3 || !prefix("("))
 				error(MALFORMED);
-			boolean val;
+			Node val;
 
 			switch (tail.charAt(0)) {
 				case '&' :
@@ -74,16 +101,16 @@ public class Filter {
 			return val;
 		}
 
-		private boolean doAnd() throws Exception {
+		private Node doAnd() throws Exception {
 			tail = skip(1);
 			boolean val = true;
 			if (!tail.startsWith("("))
 				error(EMPTY);
+			And and = new And();
 			do {
-				if (!doQuery())
-					val = false;
+				and.children.add(doQuery());
 			} while (tail.startsWith("("));
-			return val;
+			return and;
 		}
 
 		String skip(int skip) {
@@ -95,28 +122,28 @@ public class Filter {
 			return a;
 		}
 
-		private boolean doOr() throws Exception {
+		private Node doOr() throws Exception {
 			tail = skip(1);
 			boolean val = false;
 			if (!tail.startsWith("("))
 				error(EMPTY);
+			Or or = new Or();
 			do {
-				if (doQuery())
-					val = true;
+				or.children.add(doQuery());
 			} while (tail.startsWith("("));
-			return val;
+			return or;
 		}
 
-		private boolean doNot() throws Exception {
+		private Node doNot() throws Exception {
 			tail = skip(1);
 			if (!tail.startsWith("("))
 				error(SUBEXPR);
-			return !doQuery();
+			return new Not(doQuery());
 		}
 
-		boolean doSimple() throws Exception {
+		Node doSimple() throws Exception {
 			int op = 0;
-			Object attr = getAttr();
+			String key = getKey();
 
 			if (prefix("="))
 				op = EQ;
@@ -135,7 +162,7 @@ public class Filter {
 			else
 				error(OPERATOR);
 
-			return compare(attr, op, getValue());
+			return new Simple(key, op, getValue());
 		}
 
 		boolean prefix(String pre) {
@@ -145,7 +172,7 @@ public class Filter {
 			return true;
 		}
 
-		Object getAttr() throws Exception {
+		String getKey() throws Exception {
 			int len = tail.length();
 			int ix = 0;
 			label: for (; ix < len; ix++) {
@@ -163,10 +190,8 @@ public class Filter {
 			}
 			String attr = tail.substring(0, ix);
 			tail = tail.substring(ix);
-			return getProp(attr);
+			return attr;
 		}
-
-		abstract Object getProp(String key) throws Exception;
 
 		private String getValue() {
 			StringBuilder sb = new StringBuilder();
@@ -194,76 +219,90 @@ public class Filter {
 			tail = tail.substring(ix);
 			return sb.toString();
 		}
-
-		void error(String m) throws IllegalArgumentException {
-			throw new IllegalArgumentException(m + " " + tail);
-		}
-
-		@SuppressWarnings("unchecked")
-		<T> boolean compare(T obj, int op, String s) {
-			if (obj == null)
-				return false;
-			if ((op == EQ) && (s.length() == 1) && (s.charAt(0) == WILDCARD))
-				return true;
-			try {
-				Class<T> numClass = (Class<T>) obj.getClass();
-				if (numClass == String.class) {
-					return compareString((String) obj, op, s);
-				} else if (numClass == Character.class) {
-					return compareString(obj.toString(), op, s);
-				} else if (numClass == Long.class) {
-					return compareSign(op, Long.valueOf(s)
-						.compareTo((Long) obj));
-				} else if (numClass == Integer.class) {
-					return compareSign(op, Integer.valueOf(s)
-						.compareTo((Integer) obj));
-				} else if (numClass == Short.class) {
-					return compareSign(op, Short.valueOf(s)
-						.compareTo((Short) obj));
-				} else if (numClass == Byte.class) {
-					return compareSign(op, Byte.valueOf(s)
-						.compareTo((Byte) obj));
-				} else if (numClass == Double.class) {
-					return compareSign(op, Double.valueOf(s)
-						.compareTo((Double) obj));
-				} else if (numClass == Float.class) {
-					return compareSign(op, Float.valueOf(s)
-						.compareTo((Float) obj));
-				} else if (numClass == Boolean.class) {
-					if (op != EQ)
-						return false;
-					int a = Boolean.valueOf(s)
-						.booleanValue() ? 1 : 0;
-					int b = ((Boolean) obj).booleanValue() ? 1 : 0;
-					return compareSign(op, a - b);
-				} else if (numClass == BigInteger.class) {
-					return compareSign(op, new BigInteger(s).compareTo((BigInteger) obj));
-				} else if (numClass == BigDecimal.class) {
-					return compareSign(op, new BigDecimal(s).compareTo((BigDecimal) obj));
-				} else if (obj instanceof Collection<?>) {
-					for (Object x : (Collection<?>) obj)
-						if (compare(x, op, s))
-							return true;
-				} else if (numClass.isArray()) {
-					int len = Array.getLength(obj);
-					for (int i = 0; i < len; i++)
-						if (compare(Array.get(obj, i), op, s))
-							return true;
-				} else {
-					Constructor<T> constructor = numClass.getConstructor(String.class);
-					T source = constructor.newInstance(s);
-					if (op == EQ)
-						return source.equals(obj);
-					Comparable<T> a = Comparable.class.cast(source);
-					Comparable<T> b = Comparable.class.cast(obj);
-					return compareSign(op, a.compareTo((T) b));
-				}
-			} catch (Exception e) {}
-			return false;
-		}
 	}
 
-	class DictQuery extends Query {
+	void error(String m) throws IllegalArgumentException {
+		throw new IllegalArgumentException(m + " " + tail);
+	}
+
+	@SuppressWarnings("unchecked")
+	<T> boolean compare(T obj, int op, String s) {
+		if (obj == null)
+			return false;
+		if ((op == EQ) && (s.length() == 1) && (s.charAt(0) == WILDCARD))
+			return true;
+		try {
+			Class<T> numClass = (Class<T>) obj.getClass();
+			if (numClass == String.class) {
+				return compareString((String) obj, op, s);
+			} else if (numClass == Character.class) {
+				return compareString(obj.toString(), op, s);
+			} else if (numClass == Long.class) {
+				return compareSign(op, Long.valueOf(s)
+					.compareTo((Long) obj));
+			} else if (numClass == Integer.class) {
+				return compareSign(op, Integer.valueOf(s)
+					.compareTo((Integer) obj));
+			} else if (numClass == Short.class) {
+				return compareSign(op, Short.valueOf(s)
+					.compareTo((Short) obj));
+			} else if (numClass == Byte.class) {
+				return compareSign(op, Byte.valueOf(s)
+					.compareTo((Byte) obj));
+			} else if (numClass == Double.class) {
+				return compareSign(op, Double.valueOf(s)
+					.compareTo((Double) obj));
+			} else if (numClass == Float.class) {
+				return compareSign(op, Float.valueOf(s)
+					.compareTo((Float) obj));
+			} else if (numClass == Boolean.class) {
+				if (op != EQ)
+					return false;
+				int a = Boolean.valueOf(s)
+					.booleanValue() ? 1 : 0;
+				int b = ((Boolean) obj).booleanValue() ? 1 : 0;
+				return compareSign(op, a - b);
+			} else if (numClass == BigInteger.class) {
+				return compareSign(op, new BigInteger(s).compareTo((BigInteger) obj));
+			} else if (numClass == BigDecimal.class) {
+				return compareSign(op, new BigDecimal(s).compareTo((BigDecimal) obj));
+			} else if (numClass == BND_VERSION) {
+				T source = (T) BND_parseVersion_MH.invoke(s);
+				if (op == EQ)
+					return source.equals(obj);
+				Comparable<T> a = Comparable.class.cast(source);
+				Comparable<T> b = Comparable.class.cast(obj);
+				return compareSign(op, a.compareTo((T) b));
+			} else if (numClass == OSGI_VERSION) {
+				T source = (T) OSGI_valueOf_MH.invoke(s);
+				if (op == EQ)
+					return source.equals(obj);
+				Comparable<T> a = Comparable.class.cast(source);
+				Comparable<T> b = Comparable.class.cast(obj);
+				return compareSign(op, a.compareTo((T) b));
+			} else if (obj instanceof Collection<?>) {
+				for (Object x : (Collection<?>) obj)
+					if (compare(x, op, s))
+						return true;
+			} else if (numClass.isArray()) {
+				int len = Array.getLength(obj);
+				for (int i = 0; i < len; i++)
+					if (compare(Array.get(obj, i), op, s))
+						return true;
+			} else {
+				Constructor<T> constructor = numClass.getConstructor(String.class);
+				T source = constructor.newInstance(s);
+				if (op == EQ)
+					return source.equals(obj);
+				Comparable<T> a = Comparable.class.cast(source);
+				Comparable<T> b = Comparable.class.cast(obj);
+				return compareSign(op, a.compareTo((T) b));
+			}
+		} catch (Throwable e) {}
+		return false;
+	}
+
+	class DictQuery implements Arguments {
 		private Dictionary<?, ?> dict;
 
 		DictQuery(Dictionary<?, ?> dict) {
@@ -271,12 +310,12 @@ public class Filter {
 		}
 
 		@Override
-		Object getProp(String key) {
+		public Object getProp(String key) {
 			return dict.get(key);
 		}
 	}
 
-	class MapQuery extends Query {
+	class MapQuery implements Arguments {
 		private Map<?, ?> map;
 
 		MapQuery(Map<?, ?> dict) {
@@ -284,12 +323,12 @@ public class Filter {
 		}
 
 		@Override
-		Object getProp(String key) {
+		public Object getProp(String key) {
 			return map.get(key);
 		}
 	}
 
-	class GetQuery extends Query {
+	class GetQuery implements Arguments {
 		private Get get;
 
 		GetQuery(Get get) {
@@ -297,16 +336,90 @@ public class Filter {
 		}
 
 		@Override
-		Object getProp(String key) throws Exception {
+		public Object getProp(String key) throws Exception {
 			return get.get(key);
+		}
+	}
+
+	abstract class Node {
+		public abstract boolean match(Arguments arguments) throws Exception;
+	}
+
+	class Simple extends Node {
+		final String	key;
+		final int		op;
+		final String	value;
+
+		public Simple(String key, int op, String value) {
+			this.key = key;
+			this.op = op;
+			this.value = value;
+		}
+
+		@Override
+		public boolean match(Arguments arguments) throws Exception {
+			Object attr = arguments.getProp(key);
+			return compare(attr, op, value);
+		}
+	}
+
+	class Not extends Node {
+		final Node target;
+
+		public Not(Node target) {
+			this.target = target;
+		}
+
+		@Override
+		public boolean match(Arguments arguments) throws Exception {
+			return !target.match(arguments);
+		}
+	}
+
+	class Or extends Node {
+		final List<Node> children = new ArrayList<>();
+
+		@Override
+		public boolean match(Arguments arguments) throws Exception {
+			for (Node node : children) {
+				if (node.match(arguments))
+					return true;
+			}
+			return false;
+		}
+	}
+
+	class And extends Node {
+		final List<Node> children = new ArrayList<>();
+
+		@Override
+		public boolean match(Arguments arguments) throws Exception {
+			for (Node node : children) {
+				if (!node.match(arguments))
+					return false;
+			}
+			return true;
 		}
 	}
 
 	public Filter(String filter, boolean extended) throws IllegalArgumentException {
 		this.filter = filter;
 		this.extended = extended;
+		this.tail = filter;
 		if (filter == null || filter.length() == 0)
 			throw new IllegalArgumentException("Null query");
+
+		Node node = null;
+		Exception parseException = null;
+		try {
+			node = new Query().doQuery();
+			if (tail.length() > 0)
+				error(GARBAGE);
+		} catch (Exception e) {
+			parseException = e;
+		}
+		this.node = node;
+		this.parseException = parseException;
 	}
 
 	public Filter(String filter) throws IllegalArgumentException {
@@ -315,7 +428,10 @@ public class Filter {
 
 	public boolean match(Dictionary<?, ?> dict) throws Exception {
 		try {
-			return new DictQuery(dict).match();
+			if (parseException != null) {
+				throw parseException;
+			}
+			return node.match(new DictQuery(dict));
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
@@ -323,7 +439,10 @@ public class Filter {
 
 	public boolean matchMap(Map<?, ?> dict) throws Exception {
 		try {
-			return new MapQuery(dict).match();
+			if (parseException != null) {
+				throw parseException;
+			}
+			return node.match(new MapQuery(dict));
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
@@ -331,17 +450,18 @@ public class Filter {
 
 	public boolean match(Get get) throws Exception {
 		try {
-			return new GetQuery(get).match();
+			if (parseException != null) {
+				throw parseException;
+			}
+			return node.match(new GetQuery(get));
 		} catch (IllegalArgumentException e) {
 			return false;
 		}
 	}
 
 	public String verify() throws Exception {
-		try {
-			new DictQuery(new Hashtable<>()).match();
-		} catch (IllegalArgumentException e) {
-			return e.getMessage();
+		if (parseException != null) {
+			return parseException.getMessage();
 		}
 		return null;
 	}
