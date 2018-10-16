@@ -177,13 +177,16 @@ public class Version implements Comparable<Version> {
 			return LOWEST;
 		}
 
+		return valueOf(version);
+	}
+
+	public static Version valueOf(String version) {
 		version = version.trim();
-		if (version.length() == 0) {
+		if (version.isEmpty()) {
 			return LOWEST;
 		}
 
 		return new Version(version);
-
 	}
 
 	public Version getWithoutQualifier() {

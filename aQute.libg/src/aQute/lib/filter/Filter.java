@@ -4,11 +4,12 @@
  */
 package aQute.lib.filter;
 
+import static java.lang.invoke.MethodType.methodType;
+
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -17,32 +18,12 @@ import java.util.Dictionary;
 import java.util.List;
 import java.util.Map;
 
+import aQute.lib.exceptions.Exceptions;
+
 public class Filter {
 
-	// eliminate reflection on bnd/osgi Version during resolver operations
-	static Class<?>		BND_VERSION;
-	static MethodHandle	BND_parseVersion_MH;
-	static Class<?>		OSGI_VERSION;
-	static MethodHandle	OSGI_valueOf_MH;
-	static {
-		MethodHandles.Lookup publicLookup = MethodHandles.publicLookup();
-		try {
-			BND_VERSION = Class.forName("aQute.bnd.version.Version");
-			MethodType mt = MethodType.methodType(BND_VERSION, String.class);
-			BND_parseVersion_MH = publicLookup.findStatic(BND_VERSION, "parseVersion", mt);
-		} catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException e) {
-			BND_VERSION = null;
-			BND_parseVersion_MH = null;
-		}
-		try {
-			OSGI_VERSION = Class.forName("org.osgi.framework.Version");
-			MethodType mt = MethodType.methodType(OSGI_VERSION, String.class);
-			OSGI_valueOf_MH = publicLookup.findStatic(OSGI_VERSION, "valueOf", mt);
-		} catch (ClassNotFoundException | IllegalAccessException | NoSuchMethodException e) {
-			OSGI_VERSION = null;
-			OSGI_valueOf_MH = null;
-		}
-	}
+	static final MethodHandles.Lookup	publicLookup		= MethodHandles.publicLookup();
+	static final MethodType				stringConstructor	= methodType(void.class, String.class);
 
 	static final String				GARBAGE		= "Trailing garbage";
 	static final String				MALFORMED	= "Malformed query";
@@ -225,14 +206,15 @@ public class Filter {
 		throw new IllegalArgumentException(m + " " + tail);
 	}
 
-	@SuppressWarnings("unchecked")
-	<T> boolean compare(T obj, int op, String s) {
-		if (obj == null)
+	boolean compare(Object obj, int op, String s) {
+		if (obj == null) {
 			return false;
-		if ((op == EQ) && (s.length() == 1) && (s.charAt(0) == WILDCARD))
+		}
+		if ((op == EQ) && (s.length() == 1) && (s.charAt(0) == WILDCARD)) {
 			return true;
+		}
 		try {
-			Class<T> numClass = (Class<T>) obj.getClass();
+			Class<?> numClass = obj.getClass();
 			if (numClass == String.class) {
 				return compareString((String) obj, op, s);
 			} else if (numClass == Character.class) {
@@ -256,50 +238,76 @@ public class Filter {
 				return compareSign(op, Float.valueOf(s)
 					.compareTo((Float) obj));
 			} else if (numClass == Boolean.class) {
-				if (op != EQ)
-					return false;
-				int a = Boolean.valueOf(s)
-					.booleanValue() ? 1 : 0;
-				int b = ((Boolean) obj).booleanValue() ? 1 : 0;
-				return compareSign(op, a - b);
+				switch (op) {
+					case LE :
+					case GE :
+					case EQ :
+					case APPROX :
+						return ((Boolean) obj).booleanValue() == Boolean.parseBoolean(s);
+					case NEQ :
+						return ((Boolean) obj).booleanValue() != Boolean.parseBoolean(s);
+					case LT :
+					case GT :
+					default :
+						return false;
+				}
 			} else if (numClass == BigInteger.class) {
 				return compareSign(op, new BigInteger(s).compareTo((BigInteger) obj));
 			} else if (numClass == BigDecimal.class) {
 				return compareSign(op, new BigDecimal(s).compareTo((BigDecimal) obj));
-			} else if (numClass == BND_VERSION) {
-				T source = (T) BND_parseVersion_MH.invoke(s);
-				if (op == EQ)
-					return source.equals(obj);
-				Comparable<T> a = Comparable.class.cast(source);
-				Comparable<T> b = Comparable.class.cast(obj);
-				return compareSign(op, a.compareTo((T) b));
-			} else if (numClass == OSGI_VERSION) {
-				T source = (T) OSGI_valueOf_MH.invoke(s);
-				if (op == EQ)
-					return source.equals(obj);
-				Comparable<T> a = Comparable.class.cast(source);
-				Comparable<T> b = Comparable.class.cast(obj);
-				return compareSign(op, a.compareTo((T) b));
 			} else if (obj instanceof Collection<?>) {
-				for (Object x : (Collection<?>) obj)
-					if (compare(x, op, s))
+				for (Object x : (Collection<?>) obj) {
+					if (compare(x, op, s)) {
 						return true;
+					}
+				}
+				return false;
 			} else if (numClass.isArray()) {
 				int len = Array.getLength(obj);
-				for (int i = 0; i < len; i++)
-					if (compare(Array.get(obj, i), op, s))
+				for (int i = 0; i < len; i++) {
+					if (compare(Array.get(obj, i), op, s)) {
 						return true;
+					}
+				}
+				return false;
+			} else if (obj instanceof Comparable<?>) {
+				Object source = valueOf(numClass, s);
+				@SuppressWarnings("unchecked")
+				Comparable<Object> a = (Comparable<Object>) source;
+				return compareSign(op, a.compareTo(obj));
 			} else {
-				Constructor<T> constructor = numClass.getConstructor(String.class);
-				T source = constructor.newInstance(s);
-				if (op == EQ)
-					return source.equals(obj);
-				Comparable<T> a = Comparable.class.cast(source);
-				Comparable<T> b = Comparable.class.cast(obj);
-				return compareSign(op, a.compareTo((T) b));
+				Object source = valueOf(numClass, s);
+				switch (op) {
+					case LE :
+					case GE :
+					case EQ :
+					case APPROX :
+						return source.equals(obj);
+					case NEQ :
+						return !source.equals(obj);
+					case LT :
+					case GT :
+					default :
+						return false;
+				}
 			}
-		} catch (Throwable e) {}
-		return false;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private static Object valueOf(Class<?> numClass, String s) throws Exception {
+		MethodHandle mh;
+		try {
+			mh = publicLookup.findStatic(numClass, "valueOf", methodType(numClass, String.class));
+		} catch (NoSuchMethodException | IllegalAccessException e) {
+			mh = publicLookup.findConstructor(numClass, stringConstructor);
+		}
+		try {
+			return mh.invoke(s);
+		} catch (Throwable e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
 	class DictQuery implements Arguments {
