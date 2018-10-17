@@ -707,6 +707,7 @@ public class Workspace extends Processor {
 		return this;
 	}
 
+	static final String _globalHelp = "${global;<name>[;<default>]}, get a global setting from ~/.bnd/settings.json";
 	/**
 	 * Provide access to the global settings of this machine.
 	 * 
@@ -714,7 +715,7 @@ public class Workspace extends Processor {
 	 */
 
 	public String _global(String[] args) throws Exception {
-		Macro.verifyCommand(args, "${global;<name>[;<default>]}, get a global setting from ~/.bnd/settings.json", null,
+		Macro.verifyCommand(args, _globalHelp, null,
 			2, 3);
 
 		String key = args[1];
@@ -737,13 +738,14 @@ public class Workspace extends Processor {
 		return _global(args);
 	}
 
+	static final String _repodigestsHelp = "${repodigests;[;<repo names>]...}, get the repository digests";
 	/**
 	 * Return the repository signature digests. These digests are a unique id
 	 * for the contents of the repository
 	 */
 
 	public Object _repodigests(String[] args) throws Exception {
-		Macro.verifyCommand(args, "${repodigests;[;<repo names>]...}, get the repository digests", null, 1, 10000);
+		Macro.verifyCommand(args, _repodigestsHelp, null, 1, 10000);
 		List<RepositoryPlugin> repos = getRepositories();
 		if (args.length > 1) {
 			repos: for (Iterator<RepositoryPlugin> it = repos.iterator(); it.hasNext();) {
@@ -965,6 +967,7 @@ public class Workspace extends Processor {
 		return layout;
 	}
 
+	static final String _gestaltHelp = "${gestalt;<part>[;key[;<value>]]} has too many arguments";
 	/**
 	 * The macro to access the gestalt
 	 * <p>
@@ -994,7 +997,7 @@ public class Workspace extends Processor {
 					return "";
 			}
 		}
-		throw new IllegalArgumentException("${gestalt;<part>[;key[;<value>]]} has too many arguments");
+		throw new IllegalArgumentException(_gestaltHelp);
 	}
 
 	@Override

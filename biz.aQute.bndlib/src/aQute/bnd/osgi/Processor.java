@@ -1000,10 +1000,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return IO.absolutePath(pf.getParentFile());
 	}
 
-	static String _uri = "${uri;<uri>[;<baseuri>]}, Resolve the uri against the baseuri. baseuri defaults to the processor base.";
+	static final String _uriHelp = "${uri;<uri>[;<baseuri>]}, Resolve the uri against the baseuri. baseuri defaults to the processor base.";
 
 	public String _uri(String args[]) throws Exception {
-		Macro.verifyCommand(args, _uri, null, 2, 3);
+		Macro.verifyCommand(args, _uriHelp, null, 2, 3);
 
 		URI uri = new URI(args[1]);
 		if (!uri.isAbsolute() || uri.getScheme()
@@ -1022,10 +1022,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return uri.toString();
 	}
 
-	static String _fileuri = "${fileuri;<path>}, Return a file uri for the specified path. Relative paths are resolved against the processor base.";
+	static final String _fileuriHelp = "${fileuri;<path>}, Return a file uri for the specified path. Relative paths are resolved against the processor base.";
 
 	public String _fileuri(String args[]) throws Exception {
-		Macro.verifyCommand(args, _fileuri, null, 2, 2);
+		Macro.verifyCommand(args, _fileuriHelp, null, 2, 2);
 
 		File f = IO.getFile(getBase(), args[1])
 			.getCanonicalFile();
@@ -2753,6 +2753,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		this.exceptions = p.isExceptions();
 	}
 
+	static final String _frangeHelp = "${frange;<version>[;true|false]}";
 	/**
 	 * Return a range expression for a filter from a version. By default this is
 	 * based on consumer compatibility. You can specify a third argument (true)
@@ -2767,7 +2768,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public String _frange(String[] args) {
 		if (args.length < 2 || args.length > 3) {
-			error("Invalid filter range, 2 or 3 args ${frange;<version>[;true|false]}");
+			error("Invalid filter range, 2 or 3 args" + _frangeHelp);
 			return null;
 		}
 

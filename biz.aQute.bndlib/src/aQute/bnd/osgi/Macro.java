@@ -391,7 +391,7 @@ public class Macro {
 	/**
 	 * Return a unique list where the duplicates are removed.
 	 */
-	static String _uniqHelp = "${uniq;<list> ...}";
+	static final String _uniqHelp = "${uniq;<list> ...}";
 
 	public String _uniq(String args[]) {
 		verifyCommand(args, _uniqHelp, null, 1, Integer.MAX_VALUE);
@@ -405,10 +405,10 @@ public class Macro {
 	/**
 	 * Return the first list where items from the second list are removed.
 	 */
-	static String _removeall = "${removeall;<list>;<list>}";
+	static final String _removeallHelp = "${removeall;<list>;<list>}";
 
 	public String _removeall(String args[]) {
-		verifyCommand(args, _removeall, null, 1, 3);
+		verifyCommand(args, _removeallHelp, null, 1, 3);
 		List<String> result = new ArrayList<>();
 		if (args.length > 1) {
 			Processor.split(args[1], result);
@@ -424,10 +424,10 @@ public class Macro {
 	/**
 	 * Return the first list where items not in the second list are removed.
 	 */
-	static String _retainall = "${retainall;<list>;<list>}";
+	static final String _retainallHelp = "${retainall;<list>;<list>}";
 
 	public String _retainall(String args[]) {
-		verifyCommand(args, _retainall, null, 1, 3);
+		verifyCommand(args, _retainallHelp, null, 1, 3);
 		List<String> result = new ArrayList<>();
 		if (args.length > 1) {
 			Processor.split(args[1], result);
@@ -466,7 +466,7 @@ public class Macro {
 
 	}
 
-	static String _filterHelp = "${%s;<list>;<regex>}";
+	static final String _filterHelp = "${%s;<list>;<regex>}";
 
 	String filter(String[] args, boolean include) {
 		verifyCommand(args, String.format(_filterHelp, args[0]), null, 3, 3);
@@ -483,7 +483,7 @@ public class Macro {
 		return new ArrayList<>(Processor.split(arg));
 	}
 
-	static String _sortHelp = "${sort;<list>...}";
+	static final String _sortHelp = "${sort;<list>...}";
 
 	public String _sort(String args[]) {
 		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);
@@ -496,7 +496,7 @@ public class Macro {
 		return Processor.join(result);
 	}
 
-	static String _nsortHelp = "${nsort;<list>...}";
+	static final String _nsortHelp = "${nsort;<list>...}";
 
 	public String _nsort(String args[]) {
 		verifyCommand(args, _nsortHelp, null, 2, Integer.MAX_VALUE);
@@ -527,7 +527,7 @@ public class Macro {
 		return result.join();
 	}
 
-	static String _joinHelp = "${join;<list>...}";
+	static final String _joinHelp = "${join;<list>...}";
 
 	public String _join(String args[]) {
 
@@ -540,7 +540,7 @@ public class Macro {
 		return Processor.join(result);
 	}
 
-	static String _sjoinHelp = "${sjoin;<separator>;<list>...}";
+	static final String _sjoinHelp = "${sjoin;<separator>;<list>...}";
 
 	public String _sjoin(String args[]) throws Exception {
 		verifyCommand(args, _sjoinHelp, null, 2, Integer.MAX_VALUE);
@@ -552,7 +552,7 @@ public class Macro {
 		return Processor.join(result, args[1]);
 	}
 
-	static String _ifHelp = "${if;<condition>;<iftrue> [;<iffalse>] } condition is either a filter expression or truthy";
+	static final String _ifHelp = "${if;<condition>;<iftrue> [;<iffalse>] } condition is either a filter expression or truthy";
 
 	public String _if(String args[]) throws Exception {
 		verifyCommand(args, _ifHelp, null, 2, 4);
@@ -629,13 +629,14 @@ public class Macro {
 		return "${" + args[1] + "}";
 	}
 
+	static final String _defHelp = "${def;<name>[;<value>]}, get the property or a default value if unset";
 	public String _def(String args[]) {
-		verifyCommand(args, "${def;<name>[;<value>]}, get the property or a default value if unset", null, 2, 3);
+		verifyCommand(args, _defHelp, null, 2, 3);
 
 		return domain.getProperty(args[1], args.length == 3 ? args[2] : "");
 	}
 
-	static String _replace = "${replace;<list>;<regex>;[<replace>[;delimiter]]}";
+	static final String _replaceHelp = "${replace;<list>;<regex>;[<replace>[;delimiter]]}";
 
 	/**
 	 * replace ; <list> ; regex ; replace
@@ -643,7 +644,7 @@ public class Macro {
 	 * @param args
 	 */
 	public String _replace(String args[]) {
-		verifyCommand(args, _replace, null, 3, 5);
+		verifyCommand(args, _replaceHelp, null, 3, 5);
 
 		String replace = "";
 		if (args.length > 3) {
@@ -692,7 +693,7 @@ public class Macro {
 	/**
 	 * toclassname ; <path>.class ( , <path>.class ) *
 	 */
-	static String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
+	static final String _toclassnameHelp = "${classname;<list of class names>}, convert class paths to FQN class names ";
 
 	public String _toclassname(String args[]) {
 		verifyCommand(args, _toclassnameHelp, null, 2, 2);
@@ -719,7 +720,7 @@ public class Macro {
 	 * toclassname ; <path>.class ( , <path>.class ) *
 	 */
 
-	static String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
+	static final String _toclasspathHelp = "${toclasspath;<list>[;boolean]}, convert a list of class names to paths";
 
 	public String _toclasspath(String args[]) {
 		verifyCommand(args, _toclasspathHelp, null, 2, 3);
@@ -911,18 +912,19 @@ public class Macro {
 	 */
 	final static String		MASK_STRING			= "[\\-+=~0123456789]{0,3}[=~]?";
 	final static Pattern	MASK				= Pattern.compile(MASK_STRING);
-	final static String		_versionHelp		= "${version;<mask>;<version>}, modify a version\n"
+	final static String		_versionmaskHelp	= "${versionmask;<mask>;<version>}, modify a version\n"
 		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
+	final static String		_versionHelp		= _versionmaskHelp;
 	final static Pattern	_versionPattern[]	= new Pattern[] {
 		null, null, MASK, Verifier.VERSION
 	};
 
-	public String _versionmask(String args[]) {
-		return _version(args);
+	public String _version(String args[]) {
+		return _versionmask(args);
 	}
 
-	public String _version(String args[]) {
-		verifyCommand(args, _versionHelp, null, 2, 3);
+	public String _versionmask(String args[]) {
+		verifyCommand(args, _versionmaskHelp, null, 2, 3);
 
 		String mask = args[1];
 
@@ -1118,8 +1120,10 @@ public class Macro {
 		}
 	}
 
+	static final String _envHelp = "${env;<name>[;alternative]}, get the environment variable";
+
 	public String _env(String args[]) {
-		verifyCommand(args, "${env;<name>[;alternative]}, get the environment variable", null, 2, 3);
+		verifyCommand(args, _envHelp, null, 2, 3);
 
 		try {
 			String ret = System.getenv(args[1]);
@@ -1135,6 +1139,7 @@ public class Macro {
 		return "";
 	}
 
+	static final String _catHelp = "${cat;<in>}, get the content of a file";
 	/**
 	 * Get the contents of a file.
 	 *
@@ -1142,7 +1147,7 @@ public class Macro {
 	 */
 
 	public String _cat(String args[]) throws IOException {
-		verifyCommand(args, "${cat;<in>}, get the content of a file", null, 2, 2);
+		verifyCommand(args, _catHelp, null, 2, 2);
 		File f = domain.getFile(args[1]);
 		if (f.isFile()) {
 			return IO.collect(f)
@@ -1160,13 +1165,14 @@ public class Macro {
 		}
 	}
 
+	static final String _base64Help = "${base64;<file>[;fileSizeLimit]}, get the Base64 encoding of a file";
 	/**
 	 * Get the Base64 encoding of a file.
 	 *
 	 * @throws IOException
 	 */
 	public String _base64(String... args) throws IOException {
-		verifyCommand(args, "${base64;<file>[;fileSizeLimit]}, get the Base64 encoding of a file", null, 2, 3);
+		verifyCommand(args, _base64Help, null, 2, 3);
 
 		File file = domain.getFile(args[1]);
 		long maxLength = 100_000;
@@ -1180,6 +1186,7 @@ public class Macro {
 		return Base64.encodeBase64(file);
 	}
 
+	static final String _digestHelp = "${digest;<algo>;<in>}, get a digest (e.g. MD5, SHA-256) of a file";
 	/**
 	 * Get a digest of a file.
 	 *
@@ -1187,7 +1194,7 @@ public class Macro {
 	 * @throws IOException
 	 */
 	public String _digest(String... args) throws NoSuchAlgorithmException, IOException {
-		verifyCommand(args, "${digest;<algo>;<in>}, get a digest (e.g. MD5, SHA-256) of a file", null, 3, 3);
+		verifyCommand(args, _digestHelp, null, 3, 3);
 
 		MessageDigest digester = MessageDigest.getInstance(args[1]);
 		File f = domain.getFile(args[2]);
@@ -1328,8 +1335,9 @@ public class Macro {
 
 	public final static String _fileHelp = "${file;<base>;<paths>...}, create correct OS dependent path";
 
+	static final String			_osfileHelp	= "${osfile;<base>;<path>}, create correct OS dependent path";
 	public String _osfile(String args[]) {
-		verifyCommand(args, _fileHelp, null, 3, 3);
+		verifyCommand(args, _osfileHelp, null, 3, 3);
 		File base = new File(args[1]);
 		File f = Processor.getFile(base, args[2]);
 		return IO.absolutePath(f);
@@ -1422,30 +1430,30 @@ public class Macro {
 		return sb.toString();
 	}
 
-	static String _startswith = "${startswith;<string>;<prefix>}";
+	static final String _startswithHelp = "${startswith;<string>;<prefix>}";
 
 	public String _startswith(String args[]) throws Exception {
-		verifyCommand(args, _startswith, null, 3, 3);
+		verifyCommand(args, _startswithHelp, null, 3, 3);
 		if (args[1].startsWith(args[2]))
 			return args[1];
 		else
 			return "";
 	}
 
-	static String _endswith = "${endswith;<string>;<suffix>}";
+	static final String _endswithHelp = "${endswith;<string>;<suffix>}";
 
 	public String _endswith(String args[]) throws Exception {
-		verifyCommand(args, _endswith, null, 3, 3);
+		verifyCommand(args, _endswithHelp, null, 3, 3);
 		if (args[1].endsWith(args[2]))
 			return args[1];
 		else
 			return "";
 	}
 
-	static String _extension = "${extension;<string>}";
+	static final String _extensionHelp = "${extension;<string>}";
 
 	public String _extension(String args[]) throws Exception {
-		verifyCommand(args, _extension, null, 2, 2);
+		verifyCommand(args, _extensionHelp, null, 2, 2);
 		String name = args[1];
 		int n = name.indexOf('.');
 		if (n < 0)
@@ -1453,10 +1461,10 @@ public class Macro {
 		return name.substring(n + 1);
 	}
 
-	static String _stem = "${stem;<string>}";
+	static final String _stemHelp = "${stem;<string>}";
 
 	public String _stem(String args[]) throws Exception {
-		verifyCommand(args, _stem, null, 2, 2);
+		verifyCommand(args, _stemHelp, null, 2, 2);
 		String name = args[1];
 		int n = name.indexOf('.');
 		if (n < 0)
@@ -1464,10 +1472,10 @@ public class Macro {
 		return name.substring(0, n);
 	}
 
-	static String _substring = "${substring;<string>;<start>[;<end>]}";
+	static final String _substringHelp = "${substring;<string>;<start>[;<end>]}";
 
 	public String _substring(String args[]) throws Exception {
-		verifyCommand(args, _substring, null, 3, 4);
+		verifyCommand(args, _substringHelp, null, 3, 4);
 
 		String string = args[1];
 		int start = Integer.parseInt(args[2].equals("") ? "0" : args[2]);
@@ -1491,11 +1499,11 @@ public class Macro {
 		return string.substring(start, end);
 	}
 
-	static String	_rand	= "${rand;[<min>[;<end>]]}";
+	static String	_randHelp	= "${rand;[<min>[;<end>]]}";
 	static Random	random	= new Random();
 
 	public long _rand(String args[]) throws Exception {
-		verifyCommand(args, _rand, null, 2, 3);
+		verifyCommand(args, _randHelp, null, 2, 3);
 
 		int min = 0;
 		int max = 100;
@@ -1511,20 +1519,20 @@ public class Macro {
 		return Math.round(d);
 	}
 
-	static String _length = "${length;<string>}";
+	static final String _lengthHelp = "${length;<string>}";
 
 	public int _length(String args[]) throws Exception {
-		verifyCommand(args, _length, null, 1, 2);
+		verifyCommand(args, _lengthHelp, null, 1, 2);
 		if (args.length == 1)
 			return 0;
 
 		return args[1].length();
 	}
 
-	static String _get = "${get;<index>;<list>}";
+	static final String _getHelp = "${get;<index>;<list>}";
 
 	public String _get(String args[]) throws Exception {
-		verifyCommand(args, _get, null, 3, 3);
+		verifyCommand(args, _getHelp, null, 3, 3);
 
 		int index = Integer.parseInt(args[1]);
 		List<String> list = toList(args, 2, 3);
@@ -1533,10 +1541,10 @@ public class Macro {
 		return list.get(index);
 	}
 
-	static String _sublist = "${sublist;<start>;<end>[;<list>...]}";
+	static final String _sublistHelp = "${sublist;<start>;<end>[;<list>...]}";
 
 	public String _sublist(String args[]) throws Exception {
-		verifyCommand(args, _sublist, null, 4, Integer.MAX_VALUE);
+		verifyCommand(args, _sublistHelp, null, 4, Integer.MAX_VALUE);
 
 		int start = Integer.parseInt(args[1]);
 		int end = Integer.parseInt(args[2]);
@@ -1565,10 +1573,10 @@ public class Macro {
 		return list;
 	}
 
-	static String _first = "${first;<list>[;<list>...]}";
+	static final String _firstHelp = "${first;<list>[;<list>...]}";
 
 	public String _first(String args[]) throws Exception {
-		verifyCommand(args, _first, null, 1, Integer.MAX_VALUE);
+		verifyCommand(args, _firstHelp, null, 1, Integer.MAX_VALUE);
 
 		List<String> list = toList(args, 1, args.length);
 		if (list.isEmpty())
@@ -1577,10 +1585,10 @@ public class Macro {
 		return list.get(0);
 	}
 
-	static String _last = "${last;<list>[;<list>...]}";
+	static final String _lastHelp = "${last;<list>[;<list>...]}";
 
 	public String _last(String args[]) throws Exception {
-		verifyCommand(args, _last, null, 1, Integer.MAX_VALUE);
+		verifyCommand(args, _lastHelp, null, 1, Integer.MAX_VALUE);
 
 		List<String> list = toList(args, 1, args.length);
 		if (list.isEmpty())
@@ -1589,10 +1597,10 @@ public class Macro {
 		return list.get(list.size() - 1);
 	}
 
-	static String _max = "${max;<list>[;<list>...]}";
+	static final String _maxHelp = "${max;<list>[;<list>...]}";
 
 	public String _max(String args[]) throws Exception {
-		verifyCommand(args, _max, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _maxHelp, null, 2, Integer.MAX_VALUE);
 
 		List<String> list = toList(args, 1, args.length);
 		String a = null;
@@ -1607,10 +1615,10 @@ public class Macro {
 		return a;
 	}
 
-	static String _min = "${min;<list>[;<list>...]}";
+	static final String _minHelp = "${min;<list>[;<list>...]}";
 
 	public String _min(String args[]) throws Exception {
-		verifyCommand(args, _min, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _minHelp, null, 2, Integer.MAX_VALUE);
 
 		List<String> list = toList(args, 1, args.length);
 		String a = null;
@@ -1625,10 +1633,10 @@ public class Macro {
 		return a;
 	}
 
-	static String _nmax = "${nmax;<list>[;<list>...]}";
+	static final String _nmaxHelp = "${nmax;<list>[;<list>...]}";
 
 	public String _nmax(String args[]) throws Exception {
-		verifyCommand(args, _nmax, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _nmaxHelp, null, 2, Integer.MAX_VALUE);
 
 		List<String> list = toList(args, 1, args.length);
 		double d = Double.NaN;
@@ -1641,10 +1649,10 @@ public class Macro {
 		return toString(d);
 	}
 
-	static String _nmin = "${nmin;<list>[;<list>...]}";
+	static final String _nminHelp = "${nmin;<list>[;<list>...]}";
 
 	public String _nmin(String args[]) throws Exception {
-		verifyCommand(args, _nmin, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _nminHelp, null, 2, Integer.MAX_VALUE);
 
 		List<String> list = toList(args, 1, args.length);
 		double d = Double.NaN;
@@ -1657,10 +1665,10 @@ public class Macro {
 		return toString(d);
 	}
 
-	static String _sum = "${sum;<list>[;<list>...]}";
+	static final String _sumHelp = "${sum;<list>[;<list>...]}";
 
 	public String _sum(String args[]) throws Exception {
-		verifyCommand(args, _sum, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _sumHelp, null, 2, Integer.MAX_VALUE);
 
 		List<String> list = toList(args, 1, args.length);
 		double d = 0;
@@ -1672,10 +1680,10 @@ public class Macro {
 		return toString(d);
 	}
 
-	static String _average = "${average;<list>[;<list>...]}";
+	static final String _averageHelp = "${average;<list>[;<list>...]}";
 
 	public String _average(String args[]) throws Exception {
-		verifyCommand(args, _sum, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _sumHelp, null, 2, Integer.MAX_VALUE);
 
 		List<String> list = toList(args, 1, args.length);
 		if (list.isEmpty())
@@ -1690,56 +1698,56 @@ public class Macro {
 		return toString(d / list.size());
 	}
 
-	static String _reverse = "${reverse;<list>[;<list>...]}";
+	static final String _reverseHelp = "${reverse;<list>[;<list>...]}";
 
 	public String _reverse(String args[]) throws Exception {
-		verifyCommand(args, _reverse, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _reverseHelp, null, 2, Integer.MAX_VALUE);
 
 		ExtList<String> list = toList(args, 1, args.length);
 		Collections.reverse(list);
 		return Processor.join(list);
 	}
 
-	static String _indexof = "${indexof;<value>;<list>[;<list>...]}";
+	static final String _indexofHelp = "${indexof;<value>;<list>[;<list>...]}";
 
 	public int _indexof(String args[]) throws Exception {
-		verifyCommand(args, _indexof, null, 3, Integer.MAX_VALUE);
+		verifyCommand(args, _indexofHelp, null, 3, Integer.MAX_VALUE);
 
 		String value = args[1];
 		ExtList<String> list = toList(args, 2, args.length);
 		return list.indexOf(value);
 	}
 
-	static String _lastindexof = "${lastindexof;<value>;<list>[;<list>...]}";
+	static final String _lastindexofHelp = "${lastindexof;<value>;<list>[;<list>...]}";
 
 	public int _lastindexof(String args[]) throws Exception {
-		verifyCommand(args, _indexof, null, 3, Integer.MAX_VALUE);
+		verifyCommand(args, _lastindexofHelp, null, 3, Integer.MAX_VALUE);
 
 		String value = args[1];
 		ExtList<String> list = toList(args, 1, args.length);
 		return list.lastIndexOf(value);
 	}
 
-	static String _find = "${find;<target>;<searched>}";
+	static final String _findHelp = "${find;<target>;<searched>}";
 
 	public int _find(String args[]) throws Exception {
-		verifyCommand(args, _find, null, 3, 3);
+		verifyCommand(args, _findHelp, null, 3, 3);
 
 		return args[1].indexOf(args[2]);
 	}
 
-	static String _findlast = "${findlast;<find>;<target>}";
+	static final String _findlastHelp = "${findlast;<find>;<target>}";
 
 	public int _findlast(String args[]) throws Exception {
-		verifyCommand(args, _findlast, null, 3, 3);
+		verifyCommand(args, _findlastHelp, null, 3, 3);
 
 		return args[2].lastIndexOf(args[1]);
 	}
 
-	static String _split = "${split;<regex>[;<target>...]}";
+	static final String _splitHelp = "${split;<regex>[;<target>...]}";
 
 	public String _split(String args[]) throws Exception {
-		verifyCommand(args, _split, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _splitHelp, null, 2, Integer.MAX_VALUE);
 
 		List<String> collected = new ArrayList<>();
 		for (int n = 2; n < args.length; n++) {
@@ -1752,10 +1760,10 @@ public class Macro {
 		return Processor.join(collected);
 	}
 
-	static String _js = "${js [;<js expr>...]}";
+	static final String _jsHelp = "${js [;<js expr>...]}";
 
 	public Object _js(String args[]) throws Exception {
-		verifyCommand(args, _js, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _jsHelp, null, 2, Integer.MAX_VALUE);
 
 		StringBuilder sb = new StringBuilder();
 
@@ -1808,26 +1816,26 @@ public class Macro {
 
 	}
 
-	static String _toupper = "${toupper;<target>}";
+	static final String _toupperHelp = "${toupper;<target>}";
 
 	public String _toupper(String args[]) throws Exception {
-		verifyCommand(args, _tolower, null, 2, 2);
+		verifyCommand(args, _tolowerHelp, null, 2, 2);
 
 		return args[1].toUpperCase();
 	}
 
-	static String _tolower = "${tolower;<target>}";
+	static final String _tolowerHelp = "${tolower;<target>}";
 
 	public String _tolower(String args[]) throws Exception {
-		verifyCommand(args, _tolower, null, 2, 2);
+		verifyCommand(args, _tolowerHelp, null, 2, 2);
 
 		return args[1].toLowerCase();
 	}
 
-	static String _compare = "${compare;<astring>;<bstring>}";
+	static final String _compareHelp = "${compare;<astring>;<bstring>}";
 
 	public int _compare(String args[]) throws Exception {
-		verifyCommand(args, _compare, null, 3, 3);
+		verifyCommand(args, _compareHelp, null, 3, 3);
 		int n = args[1].compareTo(args[2]);
 		if (n == 0)
 			return 0;
@@ -1835,10 +1843,10 @@ public class Macro {
 		return n > 0 ? 1 : -1;
 	}
 
-	static String _ncompare = "${ncompare;<anumber>;<bnumber>}";
+	static final String _ncompareHelp = "${ncompare;<anumber>;<bnumber>}";
 
 	public int _ncompare(String args[]) throws Exception {
-		verifyCommand(args, _ncompare, null, 3, 3);
+		verifyCommand(args, _ncompareHelp, null, 3, 3);
 		double a = Double.parseDouble(args[1]);
 		double b = Double.parseDouble(args[2]);
 		if (a > b)
@@ -1848,18 +1856,18 @@ public class Macro {
 		return 0;
 	}
 
-	static String _matches = "${matches;<target>;<regex>}";
+	static final String _matchesHelp = "${matches;<target>;<regex>}";
 
 	public boolean _matches(String args[]) throws Exception {
-		verifyCommand(args, _matches, null, 3, 3);
+		verifyCommand(args, _matchesHelp, null, 3, 3);
 
 		return args[1].matches(args[2]);
 	}
 
-	static String _subst = "${subst;<target>;<regex>[;<replace>[;count]]}";
+	static final String _substHelp = "${subst;<target>;<regex>[;<replace>[;count]]}";
 
 	public StringBuffer _subst(String args[]) throws Exception {
-		verifyCommand(args, _subst, null, 3, 5);
+		verifyCommand(args, _substHelp, null, 3, 5);
 
 		Pattern p = Pattern.compile(args[2]);
 		Matcher matcher = p.matcher(args[1]);
@@ -1886,18 +1894,18 @@ public class Macro {
 		return sb;
 	}
 
-	static String _trim = "${trim;<target>}";
+	static final String _trimHelp = "${trim;<target>}";
 
 	public String _trim(String args[]) throws Exception {
-		verifyCommand(args, _trim, null, 2, 2);
+		verifyCommand(args, _trimHelp, null, 2, 2);
 
 		return args[1].trim();
 	}
 
-	static String _format = "${format;<format>[;args...]}";
+	static final String _formatHelp = "${format;<format>[;args...]}";
 
 	public String _format(String args[]) throws Exception {
-		verifyCommand(args, _format, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _formatHelp, null, 2, Integer.MAX_VALUE);
 
 		Object[] args2 = new Object[args.length + 10];
 
@@ -2004,10 +2012,10 @@ public class Macro {
 		}
 	}
 
-	static String _isempty = "${isempty;[<target>...]}";
+	static final String _isemptyHelp = "${isempty;[<target>...]}";
 
 	public boolean _isempty(String args[]) throws Exception {
-		verifyCommand(args, _isempty, null, 1, Integer.MAX_VALUE);
+		verifyCommand(args, _isemptyHelp, null, 1, Integer.MAX_VALUE);
 
 		for (int i = 1; i < args.length; i++)
 			if (!args[i].trim()
@@ -2017,10 +2025,10 @@ public class Macro {
 		return true;
 	}
 
-	static String _isnumber = "${isnumber[;<target>...]}";
+	static final String _isnumberHelp = "${isnumber[;<target>...]}";
 
 	public boolean _isnumber(String args[]) throws Exception {
-		verifyCommand(args, _isnumber, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _isnumberHelp, null, 2, Integer.MAX_VALUE);
 
 		for (int i = 1; i < args.length; i++)
 			if (!NUMERIC_P.matcher(args[i])
@@ -2030,10 +2038,10 @@ public class Macro {
 		return true;
 	}
 
-	static String _is = "${is;<a>;<b>}";
+	static final String _isHelp = "${is;<a>;<b>}";
 
 	public boolean _is(String args[]) throws Exception {
-		verifyCommand(args, _is, null, 3, Integer.MAX_VALUE);
+		verifyCommand(args, _isHelp, null, 3, Integer.MAX_VALUE);
 		String a = args[1];
 
 		for (int i = 2; i < args.length; i++)
@@ -2047,10 +2055,10 @@ public class Macro {
 	 * Map a value from a list to a new value
 	 */
 
-	static String _map = "${map;<macro>[;<list>...]}";
+	static final String _mapHelp = "${map;<macro>[;<list>...]}";
 
 	public String _map(String args[]) throws Exception {
-		verifyCommand(args, _map, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _mapHelp, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		List<String> list = toList(args, 2, args.length);
 		List<String> result = new ArrayList<>();
@@ -2067,10 +2075,10 @@ public class Macro {
 	 * Map a value from a list to a new value, providing the value and the index
 	 */
 
-	static String _foreach = "${foreach;<macro>[;<list>...]}";
+	static final String _foreachHelp = "${foreach;<macro>[;<list>...]}";
 
 	public String _foreach(String args[]) throws Exception {
-		verifyCommand(args, _foreach, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _foreachHelp, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		List<String> list = toList(args, 2, args.length);
 		List<String> result = new ArrayList<>();
@@ -2088,10 +2096,10 @@ public class Macro {
 	 * Take a list and convert this to the argumets
 	 */
 
-	static String _apply = "${apply;<macro>[;<list>...]}";
+	static final String _applyHelp = "${apply;<macro>[;<list>...]}";
 
 	public String _apply(String args[]) throws Exception {
-		verifyCommand(args, _apply, null, 2, Integer.MAX_VALUE);
+		verifyCommand(args, _applyHelp, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		List<String> list = toList(args, 2, args.length);
 		List<String> result = new ArrayList<>();
@@ -2132,7 +2140,7 @@ public class Macro {
 		sb.format("%s %s", l, strings[i]);
 	}
 
-	static String _globHelp = "${glob;<globexp>} (turn it into a regular expression)";
+	static final String _globHelp = "${glob;<globexp>} (turn it into a regular expression)";
 
 	public String _glob(String[] args) {
 		verifyCommand(args, _globHelp, null, 2, 2);
