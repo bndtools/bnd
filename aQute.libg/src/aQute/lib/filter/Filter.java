@@ -167,6 +167,10 @@ public class Filter {
 					case '*' :
 					case '\\' :
 						break label;
+					case '!' :
+						if (extended) {
+							break label;
+						}
 				}
 			}
 			String attr = tail.substring(0, ix);

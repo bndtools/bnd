@@ -112,7 +112,7 @@ public class MacroTest extends TestCase {
 			.process("${if;(a[]=D)}"));
 		assertEquals("", p.getReplacer()
 			.process("${if;(a[]=E)}"));
-		assertEquals("", p.getReplacer()
+		assertEquals("true", p.getReplacer()
 			.process("${if;(a[]!=E)}"));
 	}
 
@@ -133,7 +133,7 @@ public class MacroTest extends TestCase {
 			.process("${if;(a[]=D)}"));
 		assertEquals("", p.getReplacer()
 			.process("${if;(a[]=E)}"));
-		assertEquals("", p.getReplacer()
+		assertEquals("true", p.getReplacer()
 			.process("${if;(a[]!=E)}"));
 	}
 
