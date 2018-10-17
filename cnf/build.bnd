@@ -19,9 +19,9 @@ copyright:              Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and othe
 copyright.html:         Copyright &copy; aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 
 # This is the version to baseline this build against.
-baseline.version:       4.0.0
+baseline.version:       4.1.0
 # biz.aQute.bndlib:aQute.bnd.osgi.About.CURRENT needs to be kept in sync with the base.version.
-base.version:           4.1.0
+base.version:           4.2.0
 # Uncomment the following line to build the non-snapshot version.
 #-snapshot:
 Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
