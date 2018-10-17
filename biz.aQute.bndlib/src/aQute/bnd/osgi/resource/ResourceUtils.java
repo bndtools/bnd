@@ -1,5 +1,6 @@
 package aQute.bnd.osgi.resource;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 
@@ -314,16 +315,19 @@ public class ResourceUtils {
 	public static <T extends Capability> T as(final Capability cap, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
 			type
-		}, (target, method, args) -> (Capability.class == method.getDeclaringClass()) ? method.invoke(cap, args)
-			: get(method, cap.getAttributes(), cap.getDirectives(), args));
+		}, (target, method, args) -> (Capability.class == method.getDeclaringClass()) ? publicLookup().unreflect(method)
+			.bindTo(cap)
+			.invokeWithArguments(args) : get(method, cap.getAttributes(), cap.getDirectives(), args));
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Requirement> T as(final Requirement req, Class<T> type) {
 		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
 			type
-		}, (target, method, args) -> (Requirement.class == method.getDeclaringClass()) ? method.invoke(req, args)
-			: get(method, req.getAttributes(), req.getDirectives(), args));
+		}, (target, method,
+			args) -> (Requirement.class == method.getDeclaringClass()) ? publicLookup().unreflect(method)
+				.bindTo(req)
+				.invokeWithArguments(args) : get(method, req.getAttributes(), req.getDirectives(), args));
 	}
 
 	private static Object get(Method method, Map<String, Object> attrs, Map<String, String> directives, Object[] args)

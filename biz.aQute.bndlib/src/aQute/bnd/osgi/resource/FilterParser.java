@@ -1,8 +1,10 @@
 package aQute.bnd.osgi.resource;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
+
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -276,16 +278,18 @@ public class FilterParser {
 					cached = value;
 				else {
 					try {
-						Method factory = scalarClass.getMethod("valueOf", String.class);
-						cached = factory.invoke(null, value);
-					} catch (Exception e) {
-						Constructor<?> constructor;
+						MethodHandle mh;
 						try {
-							constructor = scalarClass.getConstructor(String.class);
-							cached = constructor.newInstance(value);
-						} catch (Exception e1) {
-							cached = value;
+							mh = publicLookup().findStatic(scalarClass, "valueOf",
+								methodType(scalarClass, String.class));
+						} catch (NoSuchMethodException | IllegalAccessException e) {
+							mh = publicLookup().findConstructor(scalarClass, methodType(void.class, String.class));
 						}
+						cached = mh.invoke(value);
+					} catch (Error e) {
+						throw e;
+					} catch (Throwable e) {
+						cached = value;
 					}
 				}
 			}
@@ -1029,7 +1033,7 @@ public class FilterParser {
 
 				char eq = rover.next();
 				if (eq != '=')
-					throw new IllegalArgumentException("Expected an = after " + rover.current());
+					throw new IllegalArgumentException("Expected an = after " + s);
 
 				switch (s) {
 					case '~' :

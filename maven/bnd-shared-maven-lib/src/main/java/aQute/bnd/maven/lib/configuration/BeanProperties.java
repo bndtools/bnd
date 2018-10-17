@@ -1,7 +1,9 @@
 package aQute.bnd.maven.lib.configuration;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Iterator;
 import java.util.List;
@@ -44,14 +46,16 @@ public class BeanProperties extends Properties {
 			while (!Modifier.isPublic(targetClass.getModifiers())) {
 				targetClass = targetClass.getSuperclass();
 			}
-			Method getter;
+			MethodHandle mh;
 			try {
-				getter = targetClass.getMethod("get" + getterSuffix);
+				mh = publicLookup().unreflect(targetClass.getMethod("get" + getterSuffix));
 			} catch (NoSuchMethodException nsme) {
-				getter = targetClass.getMethod("is" + getterSuffix);
+				mh = publicLookup().unreflect(targetClass.getMethod("is" + getterSuffix));
 			}
-			return getter.invoke(target);
-		} catch (Exception e) {
+			return mh.invoke(target);
+		} catch (Error e) {
+			throw e;
+		} catch (Throwable e) {
 			logger.debug("Could not find getter method for field {}", fieldName, e);
 		}
 		return null;

@@ -2,6 +2,8 @@ package aQute.lib.tag;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -296,12 +298,16 @@ public class Tag {
 			} else {
 				getFields(dto.getClass()).forEach(field -> {
 					try {
-						Object nextDTO = field.get(dto);
+						MethodHandle mh = MethodHandles.publicLookup()
+							.unreflectGetter(field);
+						Object nextDTO = mh.invoke(dto);
 						if (nextDTO != null) {
 							result.addContent(Tag.convertDTO(field.getName(), arrayElementName, nextDTO, true));
 						}
-					} catch (IllegalAccessException bug) {
 						/* should not be thrown if input respect dto spec */
+					} catch (Error | RuntimeException bug) {
+						throw bug;
+					} catch (Throwable bug) {
 						throw new RuntimeException(bug);
 					}
 				});

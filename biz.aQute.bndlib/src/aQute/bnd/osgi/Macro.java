@@ -1,13 +1,16 @@
 package aQute.bnd.osgi;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toMap;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -16,7 +19,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -352,24 +354,33 @@ public class Macro {
 			}
 
 			String cname = "_" + part;
+			Method m;
 			try {
-				Method m = target.getClass()
+				m = target.getClass()
 					.getMethod(cname, String[].class);
-				Object result = m.invoke(target, new Object[] {
-					args
-				});
-				return result == null ? NULLVALUE : result.toString();
 			} catch (NoSuchMethodException e) {
 				return null;
-			} catch (InvocationTargetException e) {
-				if (e.getCause() instanceof IllegalArgumentException) {
-					domain.error("%s, for cmd: %s, arguments; %s", e.getCause()
-						.getMessage(), method, Arrays.toString(args));
-				} else {
-					domain.warning("Exception in replace: method=%s %s", method, Exceptions.toString(e.getCause()));
-				}
+			}
+			MethodHandle mh;
+			try {
+				mh = publicLookup().unreflect(m)
+					.bindTo(target);
+			} catch (Exception e) {
+				domain.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
+				return NULLVALUE;
+			}
+			try {
+				Object result = mh.invoke(args);
+				return result == null ? NULLVALUE : result.toString();
+			} catch (Error e) {
+				throw e;
+			} catch (WrongMethodTypeException e) {
+				domain.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
 				return NULLVALUE;
 			} catch (Exception e) {
+				domain.error("%s, for cmd: %s, arguments; %s", e.getMessage(), method, Arrays.toString(args));
+				return NULLVALUE;
+			} catch (Throwable e) {
 				domain.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
 				return NULLVALUE;
 			}
@@ -1348,8 +1359,11 @@ public class Macro {
 		try {
 			Field f = Properties.class.getDeclaredField("defaults");
 			f.setAccessible(true);
-			return (Properties) f.get(p);
-		} catch (Exception e) {
+			MethodHandle mh = publicLookup().unreflectGetter(f);
+			return (Properties) mh.invoke(p);
+		} catch (Error e) {
+			throw e;
+		} catch (Throwable e) {
 			Field[] fields = Properties.class.getFields();
 			System.err.println(Arrays.toString(fields));
 			return null;
@@ -2162,32 +2176,27 @@ public class Macro {
 			rover = rover.getParent();
 		}
 		targets.add(this);
-		TreeMap<String, String> result = new TreeMap<>();
 
-		targets.stream()
-			.map(object -> object.getClass())
-			.flatMap(c -> Stream.of(c.getMethods()))
+		return targets.stream()
+			.map(Object::getClass)
+			.map(Class::getMethods)
+			.flatMap(Stream::of)
 			.filter(m -> !Modifier.isStatic(m.getModifiers()) && Modifier.isPublic(m.getModifiers()) && m.getName()
 				.startsWith("_"))
-			.map(this::toEntry)
-			.forEach(e -> result.put(e.getKey(), e.getValue()));
-
-		return result;
+			.collect(toMap(m -> m.getName()
+				.substring(1), m -> {
+					try {
+						Field f = m.getDeclaringClass()
+							.getDeclaredField(m.getName() + "Help");
+						f.setAccessible(true);
+						MethodHandle mh = publicLookup().unreflectGetter(f);
+						return (String) mh.invoke();
+					} catch (Error e) {
+						throw e;
+					} catch (Throwable e) {
+						return "";
+					}
+				}, (u, v) -> u, TreeMap::new));
 	}
 
-	private Map.Entry<String, String> toEntry(Method m) {
-		String name = m.getName()
-			.substring(1);
-		String help;
-
-		try {
-			Class<?> c = m.getDeclaringClass();
-			Field field = c.getField(m.getName() + "Help");
-			help = (String) field.get(null);
-		} catch (Exception e) {
-			help = "";
-		}
-		String h = help;
-		return new AbstractMap.SimpleImmutableEntry<String, String>(name, h);
-	}
 }
