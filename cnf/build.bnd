@@ -15,11 +15,11 @@ javac.compliance:           1.8
 -include ${workspace}/gradle.properties
 
 # This is the version to baseline this build against.
-baseline.version:         4.0.0
+baseline.version:         4.1.0
 # Master Version Settings
 # base-version           = a valid major.minor.micro version
 # base-version-qualifier = DEV|Mx|RCx|REL, with x a number
-base-version:             4.1.0
+base-version:             4.2.0
 base-version-qualifier:   DEV
 
 
