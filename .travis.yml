@@ -2,23 +2,29 @@ sudo: false
 
 language: java
 
-jdk:
-  - oraclejdk8
-  - oraclejdk10
-
 matrix:
   include:
-    - jdk: oraclejdk8
+    - name: "Oracle JDK 8"
+      jdk: oraclejdk8
+    - name: "OpenJDK 10"
+      jdk: openjdk10
+      # Fix SSL errors, snippet from https://github.com/travis-ci/travis-ci/issues/9368
+      before_install:
+        - unset _JAVA_OPTIONS
+        - rm "${JAVA_HOME}/lib/security/cacerts"
+        - ln -s /etc/ssl/certs/java/cacerts "${JAVA_HOME}/lib/security/cacerts"
+    - name: "Local rebuild"
+      jdk: oraclejdk8
       script: 
-      - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:release
-      - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --rerun-tasks -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build
+        - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:release
+        - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --rerun-tasks -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build
 
 before_install:
   - unset _JAVA_OPTIONS
-  - rvm --version
-  - rvm use 2.4 --install --binary --fuzzy
 
 install:
+  - rvm --version
+  - rvm use 2.4 --install --binary --fuzzy
   - ./gradlew --no-daemon --version
   - ./mvnw --version
   - ruby --version
