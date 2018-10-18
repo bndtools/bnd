@@ -387,7 +387,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 				try (Processor ctx = new Processor(context)) {
 					ctx.addProperties(utf8p);
-					return new PomResource(ctx, jar.getManifest(), groupId, artifactId, version, path);
+					return new PomResource(ctx, jar.getManifest(), groupId, artifactId, version);
 				}
 			}
 		}

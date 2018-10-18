@@ -184,7 +184,7 @@ public class MavenBndRepoTest extends TestCase {
 		PutResult put = repo.put(new FileInputStream(jar), null);
 
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 140212);
-		File file = assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.pom", 1413);
+		File file = assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.pom", 1470);
 		IPom pom = repo.storage.getPom(new FileInputStream(file));
 		assertEquals("jar", pom.getPackaging());
 		assertEquals(true, pom.hasValidGAV());
@@ -257,7 +257,7 @@ public class MavenBndRepoTest extends TestCase {
 		PutResult put = repo.put(new FileInputStream(jar), null);
 
 		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 140212);
-		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.pom", 1413);
+		assertIsFile(local, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.pom", 1470);
 		put = repo.put(new FileInputStream(jar), null);
 
 		Requirement wc = ResourceUtils.createWildcardRequirement();
