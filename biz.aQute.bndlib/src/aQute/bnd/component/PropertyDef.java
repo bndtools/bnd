@@ -1,10 +1,11 @@
 package aQute.bnd.component;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -165,12 +166,8 @@ public class PropertyDef {
 			if (c == Character.class) {
 				c = Integer.class;
 			}
-			Method m = c.getMethod("valueOf", String.class);
-			try {
-				m.invoke(null, v);
-			} catch (InvocationTargetException e) {
-				throw e.getCause();
-			}
+			MethodHandle mh = publicLookup().findStatic(c, "valueOf", methodType(c, String.class));
+			Object result = mh.invoke(v);
 		} catch (ClassNotFoundException e) {
 			analyzer.error("Invalid data type %s", type);
 		} catch (NoSuchMethodException e) {

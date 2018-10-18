@@ -1,7 +1,10 @@
 package aQute.lib.converter;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
+
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationHandler;
@@ -172,11 +175,11 @@ public class Converter {
 			if (byte[].class == resultType) {
 				// Sometimes classes implement toByteArray
 				try {
-					Method m = actualType.getMethod("toByteArray");
-					if (m.getReturnType() == byte[].class)
-						return m.invoke(o);
-
-				} catch (Exception e) {
+					MethodHandle mh = publicLookup().findVirtual(actualType, "toByteArray", methodType(byte[].class));
+					return mh.invoke(o);
+				} catch (Error e) {
+					throw e;
+				} catch (Throwable e) {
 					// Ignore
 				}
 			}
@@ -267,15 +270,16 @@ public class Converter {
 			if (resultType == URI.class) {
 				return new URI(sanitizeInputForURI(input));
 			}
-
 			try {
-				Constructor<?> c = resultType.getConstructor(String.class);
-				return c.newInstance(o.toString());
-			} catch (Throwable t) {}
-			try {
-				Method m = resultType.getMethod("valueOf", String.class);
-				if (Modifier.isStatic(m.getModifiers()))
-					return m.invoke(null, o.toString());
+				MethodHandle mh;
+				try {
+					mh = publicLookup().findStatic(resultType, "valueOf", methodType(resultType, String.class));
+				} catch (NoSuchMethodException | IllegalAccessException e) {
+					mh = publicLookup().findConstructor(resultType, methodType(void.class, String.class));
+				}
+				return mh.invoke(o.toString());
+			} catch (Error e) {
+				throw e;
 			} catch (Throwable t) {}
 
 			if (resultType == Character.class && input.length() == 1)
@@ -285,12 +289,16 @@ public class Converter {
 		if (n != null) {
 			if (Enum.class.isAssignableFrom(resultType)) {
 				try {
-					Method values = resultType.getMethod("values");
-					Enum[] vs = (Enum[]) values.invoke(null);
+					MethodHandle mh = publicLookup().findStatic(resultType, "values",
+						methodType(Array.newInstance(resultType, 0)
+							.getClass()));
+					Object[] vs = (Object[]) mh.invoke();
 					int nn = n.intValue();
 					if (nn > 0 && nn < vs.length)
 						return vs[nn];
-				} catch (Exception e) {
+				} catch (Error e) {
+					throw e;
+				} catch (Throwable e) {
 					// Ignore
 				}
 			}
@@ -313,29 +321,31 @@ public class Converter {
 			String key = null;
 			try {
 				Map<Object, Object> map = (Map) o;
-				Object instance = resultType.getConstructor()
-					.newInstance();
+				MethodHandle mh = publicLookup().findConstructor(resultType, methodType(void.class));
+				Object instance = mh.invoke();
 				for (Map.Entry e : map.entrySet()) {
 					key = (String) e.getKey();
 					try {
 						Field f = resultType.getField(key);
 						Object value = convert(f.getGenericType(), e.getValue());
-						f.set(instance, value);
+						mh = publicLookup().unreflectSetter(f);
+						mh.invoke(instance, value);
 					} catch (Exception ee) {
-
 						// We cannot find the key, so try the __extra field
-						Field f = resultType.getField("__extra");
-						Map<String, Object> extra = (Map<String, Object>) f.get(instance);
+						mh = publicLookup().findGetter(resultType, "__extra", Map.class);
+						Map<String, Object> extra = (Map<String, Object>) mh.invoke(instance);
 						if (extra == null) {
 							extra = new HashMap<>();
-							f.set(instance, extra);
+							mh = publicLookup().findSetter(resultType, "__extra", Map.class);
+							mh.invoke(instance, extra);
 						}
 						extra.put(key, convert(Object.class, e.getValue()));
-
 					}
 				}
 				return instance;
-			} catch (Exception e) {
+			} catch (Error e) {
+				throw e;
+			} catch (Throwable e) {
 				return error(
 					"No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key " + key);
 			}
@@ -514,13 +524,22 @@ public class Converter {
 	public Map<?, ?> toMap(Object o) throws Exception {
 		if (o instanceof Map)
 			return (Map<?, ?>) o;
-		Map result = new HashMap();
-		Field fields[] = o.getClass()
+		Map<String, Object> result = new HashMap<>();
+		Field[] fields = o.getClass()
 			.getFields();
-		for (Field f : fields)
-			result.put(f.getName(), f.get(o));
-		if (result.isEmpty())
+		for (Field f : fields) {
+			MethodHandle mh = publicLookup().unreflectGetter(f);
+			try {
+				result.put(f.getName(), mh.invoke(o));
+			} catch (Error | Exception e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
+		}
+		if (result.isEmpty()) {
 			return null;
+		}
 
 		return result;
 	}
@@ -565,7 +584,9 @@ public class Converter {
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
 				if (Object.class == method.getDeclaringClass()) {
-					return method.invoke(this, args);
+					MethodHandle mh = publicLookup().unreflect(method)
+						.bindTo(this);
+					return mh.invokeWithArguments(args);
 				}
 
 				Object o = properties.get(method.getName());
@@ -583,6 +604,7 @@ public class Converter {
 				return convert(method.getGenericReturnType(), o);
 			}
 
+			@Override
 			public String toString() {
 				return properties + "'";
 			}
