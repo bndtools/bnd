@@ -29,11 +29,11 @@ public class PomResource extends WriteResource {
 	private Map<String, String>	scm;
 	final Processor				processor;
 	final static Pattern		NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
-	private String				where;
-	private String				groupId;
-	private String				artifactId;
-	private String				version;
-	private String				name;
+	private final String		where;
+	private final String		groupId;
+	private final String		artifactId;
+	private final String		version;
+	private final String		name;
 
 	public PomResource(Manifest manifest) {
 		this(new Processor(), manifest);
@@ -50,26 +50,33 @@ public class PomResource extends WriteResource {
 	}
 
 	public PomResource(Processor b, Manifest manifest) {
+		this(b, manifest, null, null, null);
+	}
+
+	public PomResource(Processor p, Manifest manifest, String groupId, String artifactId, String version) {
+		this.processor = p;
 		this.manifest = manifest;
-		this.processor = b;
 
 		Domain domain = Domain.domain(manifest);
+
+		String bsn = null;
 		Entry<String, Attrs> bundleSymbolicName = domain.getBundleSymbolicName();
-		if (bundleSymbolicName == null) {
-			throw new RuntimeException("Cannot create POM unless bsn is set");
-		}
-		String bsn = bundleSymbolicName.getKey();
-		if (bsn == null) {
-			throw new RuntimeException("Cannot create POM unless bsn is set");
+		if (bundleSymbolicName != null) {
+			bsn = bundleSymbolicName.getKey();
 		}
 
-		groupId = augmentManifest(domain, bsn);
+		if (groupId == null) {
+			if (bsn == null) {
+				throw new RuntimeException("Cannot create POM unless bsn is set");
+			}
+			groupId = augmentManifest(domain, bsn);
+		}
 
-		name = domain.get(Constants.BUNDLE_NAME);
-		where = processor.get(WHERE);
+		String where = processor.get(WHERE);
 
-		if (groupId == null)
+		if (groupId == null) {
 			groupId = processor.get(GROUPID);
+		}
 
 		if (groupId == null) {
 			groupId = processor.get(Constants.GROUPID);
@@ -79,48 +86,60 @@ public class PomResource extends WriteResource {
 			groupId = processor.get("groupId");
 		}
 
-		if (groupId != null) {
+		if (artifactId == null) {
 			artifactId = processor.get(ARTIFACTID);
-			if (artifactId == null)
-				artifactId = processor.get("artifactId");
+		}
+		if (artifactId == null) {
+			artifactId = processor.get("artifactId");
+		}
 
-			if (artifactId == null)
+		if (groupId != null) {
+			if (artifactId == null) {
+				if (bsn == null) {
+					throw new RuntimeException("Cannot create POM unless bsn is set");
+				}
 				artifactId = bsn;
+			}
 			if (where == null) {
 				where = String.format("META-INF/maven/%s/%s/pom.xml", groupId, artifactId);
 			}
 		} else {
+			if (bsn == null) {
+				throw new RuntimeException("Cannot create POM unless bsn is set");
+			}
 			int n = bsn.lastIndexOf('.');
-			if (n <= 0)
+			if (n <= 0) {
 				throw new RuntimeException("\"" + GROUPID + "\" not set and" + Constants.BUNDLE_SYMBOLICNAME
 					+ " does not contain a '.' to separate into a groupid and artifactid.");
+			}
 
-			artifactId = processor.get(ARTIFACTID);
-			if (artifactId == null)
+			if (artifactId == null) {
 				artifactId = bsn.substring(n + 1);
+			}
 			groupId = bsn.substring(0, n);
 			if (where == null) {
 				where = "pom.xml";
 			}
 		}
+		String name = domain.get(Constants.BUNDLE_NAME);
 		if (name == null) {
 			name = groupId + ":" + artifactId;
 		}
 
-		version = processor.get(VERSION);
-		if (version == null)
+		if (version == null) {
+			version = processor.get(VERSION);
+		}
+		if (version == null) {
 			version = domain.getBundleVersion();
-		if (version == null)
+		}
+		if (version == null) {
 			version = "0";
+		}
 
-	}
-
-	public PomResource(Processor p, Manifest m, String groupId, String artifactId, String version, String where) {
-		this.processor = p;
-		this.manifest = m;
 		this.groupId = groupId;
 		this.artifactId = artifactId;
 		this.version = version;
+		this.name = name;
 		this.where = where;
 	}
 
