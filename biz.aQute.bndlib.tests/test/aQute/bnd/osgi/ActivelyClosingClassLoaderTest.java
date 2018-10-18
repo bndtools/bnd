@@ -117,7 +117,7 @@ public class ActivelyClosingClassLoaderTest {
 					.get(IO.getFile("jar/thinlet.jar"));
 
 				cl.autopurge(10);
-				Thread.sleep(50);
+				Thread.sleep(500);
 				synchronized (wrapper) {
 					assertNull(wrapper.jarFile);
 				}
