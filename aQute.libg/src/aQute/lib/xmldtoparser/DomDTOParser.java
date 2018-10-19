@@ -1,8 +1,13 @@
 package aQute.lib.xmldtoparser;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+
 import java.io.File;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collection;
@@ -84,17 +89,17 @@ public class DomDTOParser {
 				.trim();
 			if (!text.isEmpty()) {
 
-				Field field = getField(instance.getClass(), "_content");
+				Field field = findField(instance.getClass(), "_content");
 				if (field == null)
 					return;
 
-				field.set(instance, Converter.cnv(field.getGenericType(), text));
+				setField(field, instance, Converter.cnv(field.getGenericType(), text));
 				return;
 			}
 		}
 
 		String name = toSimpleName(node.getNodeName());
-		Field field = getField(instance.getClass(), name);
+		Field field = findField(instance.getClass(), name);
 		if (field == null) {
 
 			//
@@ -103,12 +108,12 @@ public class DomDTOParser {
 			//
 
 			try {
-				field = getField(instance.getClass(), "__extra");
+				field = findField(instance.getClass(), "__extra");
 				if (field != null && field.getType() == Map.class) {
-					Map map = (Map) field.get(instance);
+					Map map = (Map) getField(field, instance);
 					if (map == null) {
 						map = new HashMap();
-						field.set(instance, map);
+						setField(field, instance, map);
 					}
 					map.put(name, node.getTextContent());
 				}
@@ -123,10 +128,10 @@ public class DomDTOParser {
 			ParameterizedType subType = (ParameterizedType) field.getGenericType();
 			Type collectionType = subType.getActualTypeArguments()[0];
 			Object member = parse((Class<T>) collectionType, node);
-			Collection<Object> collection = (Collection<Object>) field.get(instance);
+			Collection<Object> collection = (Collection<Object>) getField(field, instance);
 			if (collection == null) {
 				collection = (Collection<Object>) Converter.cnv(field.getGenericType(), new Object[0]);
-				field.set(instance, collection);
+				setField(field, instance, collection);
 			}
 			collection.add(member);
 
@@ -134,7 +139,7 @@ public class DomDTOParser {
 
 			String value = node.getTextContent();
 			Object convertedValue = Converter.cnv(field.getType(), value);
-			field.set(instance, convertedValue);
+			setField(field, instance, convertedValue);
 
 		} else if (field.getType()
 			.isEnum()) {
@@ -144,13 +149,13 @@ public class DomDTOParser {
 			for (Field constant : en.getFields()) {
 				String nm = constant.getName();
 				if (nm.equalsIgnoreCase(value) || (value.equals(getName(constant)))) {
-					field.set(instance, constant.get(null));
+					setField(field, instance, getField(constant, null));
 					return;
 				}
 			}
 
 		} else {
-			field.set(instance, parse(field.getType(), node));
+			setField(field, instance, parse(field.getType(), node));
 		}
 
 	}
@@ -177,7 +182,7 @@ public class DomDTOParser {
 		return Collection.class.isAssignableFrom(class1);
 	}
 
-	private static Field getField(Class<? extends Object> class1, String name) throws Exception {
+	private static Field findField(Class<? extends Object> class1, String name) throws Exception {
 		try {
 			return class1.getField(name);
 		} catch (Exception e) {
@@ -188,6 +193,34 @@ public class DomDTOParser {
 			}
 		}
 		return null;
+	}
+
+	private static void setField(Field f, Object targetObject, Object value) throws Exception {
+		try {
+			MethodHandle mh = publicLookup().unreflectSetter(f);
+			if (!Modifier.isStatic(f.getModifiers())) {
+				mh = mh.bindTo(targetObject);
+			}
+			mh.invoke(value);
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new InvocationTargetException(e);
+		}
+	}
+
+	private static <T> T getField(Field f, Object targetObject) throws Exception {
+		try {
+			MethodHandle mh = publicLookup().unreflectGetter(f);
+			if (!Modifier.isStatic(f.getModifiers())) {
+				mh = mh.bindTo(targetObject);
+			}
+			return (T) mh.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new InvocationTargetException(e);
+		}
 	}
 
 }

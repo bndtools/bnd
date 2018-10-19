@@ -1,6 +1,8 @@
 package aQute.bnd.osgi;
 
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
 
@@ -11,6 +13,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -816,8 +819,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private Object loadPlugin(ClassLoader loader, Attrs attrs, String className, boolean ignoreError) {
 		try {
 			Class<?> c = loader.loadClass(className);
-			Object plugin = c.getConstructor()
-				.newInstance();
+			Object plugin = publicLookup().findConstructor(c, defaultConstructor)
+				.invoke();
 			customize(plugin, attrs);
 			if (plugin instanceof Closeable) {
 				addClose((Closeable) plugin);
@@ -829,11 +832,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		} catch (ClassNotFoundException e) {
 			if (!ignoreError)
 				exception(e, "Failed to load plugin %s;%s, error: %s ", className, attrs, e);
-		} catch (Exception e) {
+		} catch (Error e) {
+			throw e;
+		} catch (Throwable e) {
 			exception(e, "Unexpected error loading plugin %s-%s: %s", className, attrs, e);
 		}
 		return null;
 	}
+
+	private static final MethodType defaultConstructor = methodType(void.class);
 
 	protected void setTypeSpecificPlugins(Set<Object> list) {
 		list.add(getExecutor());

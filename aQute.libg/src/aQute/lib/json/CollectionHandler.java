@@ -64,8 +64,7 @@ public class CollectionHandler extends Handler {
 	@Override
 	public Object decodeArray(Decoder r) throws Exception {
 		@SuppressWarnings("unchecked")
-		Collection<Object> c = (Collection<Object>) rawClass.getConstructor()
-			.newInstance();
+		Collection<Object> c = (Collection<Object>) newInstance(rawClass);
 		r.codec.parseArray(c, componentType, r);
 		return c;
 	}

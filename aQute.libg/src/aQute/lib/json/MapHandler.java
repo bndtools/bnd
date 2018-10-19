@@ -105,8 +105,7 @@ public class MapHandler extends Handler {
 		assert r.current() == '{';
 
 		@SuppressWarnings("unchecked")
-		Map<Object, Object> map = (Map<Object, Object>) rawClass.getConstructor()
-			.newInstance();
+		Map<Object, Object> map = (Map<Object, Object>) newInstance(rawClass);
 
 		int c = r.next();
 		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {

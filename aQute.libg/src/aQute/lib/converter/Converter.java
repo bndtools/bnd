@@ -4,6 +4,7 @@ import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -35,6 +36,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import aQute.lib.base64.Base64;
 
@@ -329,7 +331,10 @@ public class Converter {
 						Field f = resultType.getField(key);
 						Object value = convert(f.getGenericType(), e.getValue());
 						mh = publicLookup().unreflectSetter(f);
-						mh.invoke(instance, value);
+						if (!Modifier.isStatic(f.getModifiers())) {
+							mh = mh.bindTo(instance);
+						}
+						mh.invoke(value);
 					} catch (Exception ee) {
 						// We cannot find the key, so try the __extra field
 						mh = publicLookup().findGetter(resultType, "__extra", Map.class);
@@ -403,9 +408,9 @@ public class Converter {
 				collection = new ConcurrentLinkedQueue();
 			else
 				return (Collection) error("Cannot find a suitable collection for the collection interface " + rawClass);
-		} else
-			collection = rawClass.getConstructor()
-				.newInstance();
+		} else {
+			collection = newInstance(rawClass);
+		}
 
 		Type subType = Object.class;
 		if (collectionType instanceof ParameterizedType) {
@@ -421,6 +426,19 @@ public class Converter {
 		return collection;
 	}
 
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	private static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private Map map(Type mapType, Class<? extends Map<?, ?>> rawClass, Object o) throws Exception {
 		Map result;
 		if (rawClass.isInterface() || Modifier.isAbstract(rawClass.getModifiers())) {
@@ -433,9 +451,9 @@ public class Converter {
 			else {
 				return (Map) error("Cannot find suitable map for map interface " + rawClass);
 			}
-		} else
-			result = rawClass.getConstructor()
-				.newInstance();
+		} else {
+			result = newInstance(rawClass);
+		}
 
 		Map<?, ?> input = toMap(o);
 
@@ -525,23 +543,25 @@ public class Converter {
 		if (o instanceof Map)
 			return (Map<?, ?>) o;
 		Map<String, Object> result = new HashMap<>();
-		Field[] fields = o.getClass()
-			.getFields();
-		for (Field f : fields) {
-			MethodHandle mh = publicLookup().unreflectGetter(f);
+		getFields(o.getClass()).forEach(f -> {
 			try {
+				MethodHandle mh = publicLookup().unreflectGetter(f);
 				result.put(f.getName(), mh.invoke(o));
-			} catch (Error | Exception e) {
-				throw e;
 			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
-		}
+		});
 		if (result.isEmpty()) {
 			return null;
 		}
 
 		return result;
+	}
+
+	private static Stream<Field> getFields(Class<?> c) {
+		return Stream.of(c.getFields())
+			.filter(
+				field -> !(field.isEnumConstant() || field.isSynthetic() || Modifier.isStatic(field.getModifiers())));
 	}
 
 	private Object error(String string) {

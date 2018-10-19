@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -93,6 +94,7 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -2829,16 +2831,18 @@ public class Project extends Processor {
 							logger.debug("found handler {} from {}", defaultHandler, c);
 							handlerClass = clz.asSubclass(target);
 
+							Constructor<? extends T> constructor;
 							try {
-								Constructor<? extends T> constructor = handlerClass.getConstructor(Project.class,
-									Container.class);
-								return constructor.newInstance(this, c);
-							} catch (Exception e) {
-								// ignore
+								constructor = handlerClass.getConstructor(Project.class, Container.class);
+							} catch (NoSuchMethodException e) {
+								constructor = handlerClass.getConstructor(Project.class);
 							}
-
-							Constructor<? extends T> constructor = handlerClass.getConstructor(Project.class);
-							return constructor.newInstance(this);
+							try {
+								return (constructor.getParameterCount() == 1) ? constructor.newInstance(this)
+									: constructor.newInstance(this, c);
+							} catch (InvocationTargetException e) {
+								throw Exceptions.duck(e.getCause());
+							}
 						}
 					}
 				}
