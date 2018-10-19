@@ -1,8 +1,12 @@
 package aQute.bnd.build;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodType;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
@@ -671,8 +675,7 @@ public class Workspace extends Processor {
 						for (Entry<String, Attrs> e : activators.entrySet()) {
 							try {
 								Class<?> c = cl.loadClass(e.getKey());
-								ExtensionActivator extensionActivator = (ExtensionActivator) c.getConstructor()
-									.newInstance();
+								ExtensionActivator extensionActivator = (ExtensionActivator) newInstance(c);
 								customize(extensionActivator, blocker.getValue());
 								List<?> plugins = extensionActivator.activate(this, blocker.getValue());
 								list.add(extensionActivator);
@@ -1046,8 +1049,7 @@ public class Workspace extends Processor {
 			IO.delete(f);
 		}
 
-		Object l = plugin.getConstructor()
-			.newInstance();
+		Object l = newInstance(plugin);
 
 		try (Formatter setup = new Formatter()) {
 			setup.format("#\n" //
@@ -1076,6 +1078,19 @@ public class Workspace extends Processor {
 			lp.addedPlugin(this, plugin.getName(), alias, parameters);
 		}
 		return true;
+	}
+
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	private static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	static Pattern ESCAPE_P = Pattern.compile("(\"|')(.*)\1");

@@ -55,8 +55,7 @@ public class ObjectHandler extends Handler {
 			extra = null;
 
 		try {
-			Object template = c.getConstructor()
-				.newInstance();
+			Object template = newInstance(c);
 
 			for (int i = 0; i < this.fields.length; i++) {
 				defaults[i] = this.fields[i].get(template);
@@ -102,8 +101,7 @@ public class ObjectHandler extends Handler {
 	public Object decodeObject(Decoder r) throws Exception {
 		assert r.current() == '{';
 		@SuppressWarnings("unchecked")
-		Object targetObject = rawClass.getConstructor()
-			.newInstance();
+		Object targetObject = newInstance(rawClass);
 
 		int c = r.next();
 		while (JSONCodec.START_CHARACTERS.indexOf(c) >= 0) {

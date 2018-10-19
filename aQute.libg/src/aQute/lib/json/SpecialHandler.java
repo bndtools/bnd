@@ -1,5 +1,7 @@
 package aQute.lib.json;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -29,11 +31,27 @@ public class SpecialHandler extends Handler {
 		if (type == Pattern.class)
 			return Pattern.compile(s);
 
-		if (constructor != null)
-			return constructor.newInstance(s);
+		if (constructor != null) {
+			try {
+				return publicLookup().unreflectConstructor(constructor)
+					.invoke(s);
+			} catch (Error | Exception e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
+		}
 
-		if (valueOf != null)
-			return valueOf.invoke(null, s);
+		if (valueOf != null) {
+			try {
+				return publicLookup().unreflect(valueOf)
+					.invoke(s);
+			} catch (Error | Exception e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
+		}
 
 		throw new IllegalArgumentException("Do not know how to convert a " + type + " from a string");
 	}

@@ -4,6 +4,7 @@ import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
@@ -403,9 +404,9 @@ public class Converter {
 				collection = new ConcurrentLinkedQueue();
 			else
 				return (Collection) error("Cannot find a suitable collection for the collection interface " + rawClass);
-		} else
-			collection = rawClass.getConstructor()
-				.newInstance();
+		} else {
+			collection = newInstance(rawClass);
+		}
 
 		Type subType = Object.class;
 		if (collectionType instanceof ParameterizedType) {
@@ -421,6 +422,19 @@ public class Converter {
 		return collection;
 	}
 
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	private static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private Map map(Type mapType, Class<? extends Map<?, ?>> rawClass, Object o) throws Exception {
 		Map result;
 		if (rawClass.isInterface() || Modifier.isAbstract(rawClass.getModifiers())) {
@@ -433,9 +447,9 @@ public class Converter {
 			else {
 				return (Map) error("Cannot find suitable map for map interface " + rawClass);
 			}
-		} else
-			result = rawClass.getConstructor()
-				.newInstance();
+		} else {
+			result = newInstance(rawClass);
+		}
 
 		Map<?, ?> input = toMap(o);
 

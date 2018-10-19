@@ -1,7 +1,11 @@
 package aQute.p2.provider;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -70,8 +74,7 @@ public class XML {
 	}
 
 	<T> T getFromType(Node item, Class<T> clazz) throws Exception {
-		T a = clazz.getConstructor()
-			.newInstance();
+		T a = newInstance(clazz);
 		for (Field f : clazz.getDeclaredFields()) {
 			String s = getAttribute(item, f.getName());
 			if (s != null) {
@@ -79,6 +82,19 @@ public class XML {
 			}
 		}
 		return a;
+	}
+
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	private static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

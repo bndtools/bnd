@@ -1,10 +1,12 @@
 package aQute.bnd.annotation.metatype;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -191,8 +193,7 @@ public class Configurable<T> {
 			}
 
 			try {
-				Constructor<?> c = resultType.getConstructor(String.class);
-				return c.newInstance(o.toString());
+				return newInstance(resultType, o.toString());
 			} catch (Throwable t) {
 				// handled on next line
 			}
@@ -225,8 +226,7 @@ public class Configurable<T> {
 							"Unknown interface for a collection, no concrete class found: " + resultType);
 				}
 
-				Collection<Object> result = (Collection<Object>) resultType.getConstructor()
-					.newInstance();
+				Collection<Object> result = (Collection<Object>) newInstance(resultType);
 				Type componentType = pType.getActualTypeArguments()[0];
 
 				for (Object i : input) {
@@ -361,6 +361,32 @@ public class Configurable<T> {
 			tokens.add(p);
 		}
 		return tokens;
+	}
+
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static final MethodType stringConstructor = methodType(void.class, String.class);
+
+	private static <T> T newInstance(Class<T> rawClass, String arg) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, stringConstructor)
+				.invoke(arg);
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

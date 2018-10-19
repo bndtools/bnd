@@ -1,6 +1,8 @@
 package aQute.lib.json;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Type;
 import java.util.Map;
 
@@ -29,6 +31,20 @@ public abstract class Handler {
 
 	public Object decode(Decoder dec) {
 		return null;
+	}
+
+	private static final MethodType defaultConstructor = MethodType.methodType(void.class);
+
+	static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) MethodHandles.publicLookup()
+				.findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 }

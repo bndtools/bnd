@@ -1,10 +1,14 @@
 package aQute.remote.agent;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
+
 import java.io.Closeable;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -139,8 +143,7 @@ public class AgentDispatcher {
 
 						// TODO check immediate
 
-						BundleActivator ba = (BundleActivator) activatorClass.getConstructor()
-							.newInstance();
+						BundleActivator ba = (BundleActivator) newInstance(activatorClass);
 						ba.start(framework.getBundleContext());
 						d.activators.add(ba);
 					}
@@ -206,4 +209,18 @@ public class AgentDispatcher {
 			}
 		}
 	}
+
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	private static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }
