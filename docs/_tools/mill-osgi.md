@@ -2,18 +2,18 @@
 title: Mill OSGi Plugin
 layout: default
 summary: A Mill Plugin to create OSGi Bundles.
-version: 0.0.1
+version: 0.0.2
 ---
 
-Plugin to build OSGi bundles with the [mill build tool](https://github.com/lihaoyi/mill "Project page of mill build tool").
+Plugin to build OSGi bundles with the [mill build tool][1].
 
 ## Quickstart
 
 ```scala
 // mill default imports
 import mill._, scalalib._
-// Load mill-osgi in version 0.0.1
-import $ivy.`de.tototec::de.tobiasroeser.mill.osgi:0.0.1`
+// Load mill-osgi in version 0.0.2
+import $ivy.`de.tototec::de.tobiasroeser.mill.osgi:0.0.2`
 // and import its main package
 import de.tobiasroeser.mill.osgi._
 
@@ -31,4 +31,7 @@ object project extends ScalaModule with OsgiBundleModule {
 
 ## Download and Documentation
 
-Please refer the [plugin project page for details](https://github.com/lefou/mill-osgi "Project Page of mill-osgi plugin").
+Please refer the [plugin project page][2] for details.
+
+[1] https://github.com/lihaoyi/mill
+[2] https://github.com/lefou/mill-osgi
