@@ -1,6 +1,11 @@
 package aQute.lib.getopt;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -147,7 +152,17 @@ public class CommandLine {
 		if (reporter.getErrors()
 			.size() == 0) {
 			m.setAccessible(true);
-			result = m.invoke(target, options);
+			try {
+				MethodHandle mh = publicLookup().unreflect(m);
+				if (!Modifier.isStatic(m.getModifiers())) {
+					mh = mh.bindTo(target);
+				}
+				result = mh.invoke(options);
+			} catch (Error | Exception e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new InvocationTargetException(e);
+			}
 			return null;
 		}
 		return help(target, cmd, optionClass);

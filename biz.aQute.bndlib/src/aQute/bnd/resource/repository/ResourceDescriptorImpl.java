@@ -1,6 +1,10 @@
 package aQute.bnd.resource.repository;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -13,10 +17,18 @@ public class ResourceDescriptorImpl extends ResourceDescriptor implements Compar
 
 	public ResourceDescriptorImpl() {}
 
-	public ResourceDescriptorImpl(ResourceDescriptor ref) throws IllegalAccessException {
+	public ResourceDescriptorImpl(ResourceDescriptor ref) throws Exception {
 		for (Field f : ref.getClass()
 			.getFields()) {
-			f.set(this, f.get(ref));
+			MethodHandle getter = publicLookup().unreflectGetter(f);
+			MethodHandle setter = publicLookup().unreflectSetter(f);
+			try {
+				setter.invoke(this, getter.invoke(ref));
+			} catch (Error | Exception e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new InvocationTargetException(e);
+			}
 		}
 	}
 

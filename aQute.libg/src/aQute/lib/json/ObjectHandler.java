@@ -58,7 +58,7 @@ public class ObjectHandler extends Handler {
 			Object template = newInstance(c);
 
 			for (int i = 0; i < this.fields.length; i++) {
-				defaults[i] = this.fields[i].get(template);
+				defaults[i] = getField(this.fields[i], template);
 			}
 		} catch (Exception e) {
 			// Ignore
@@ -76,7 +76,7 @@ public class ObjectHandler extends Handler {
 					.startsWith("__"))
 					continue;
 
-				Object value = fields[i].get(object);
+				Object value = getField(fields[i], object);
 				if (!app.writeDefaults) {
 					if (value == defaults[i])
 						continue;
@@ -126,7 +126,7 @@ public class ObjectHandler extends Handler {
 					if (Modifier.isFinal(f.getModifiers()))
 						throw new IllegalArgumentException("Field " + f + " is final");
 
-					f.set(targetObject, value);
+					setField(f, targetObject, value);
 				}
 			} else {
 				// No field, but may extra is defined
@@ -139,10 +139,10 @@ public class ObjectHandler extends Handler {
 				} else {
 
 					@SuppressWarnings("unchecked")
-					Map<String, Object> map = (Map<String, Object>) extra.get(targetObject);
+					Map<String, Object> map = (Map<String, Object>) getField(extra, targetObject);
 					if (map == null) {
 						map = new LinkedHashMap<>();
-						extra.set(targetObject, map);
+						setField(extra, targetObject, map);
 					}
 					Object value = r.codec.decode(null, r);
 					map.put(key, value);

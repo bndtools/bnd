@@ -5,8 +5,11 @@ import static java.lang.invoke.MethodType.methodType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,7 +81,7 @@ public class XML {
 		for (Field f : clazz.getDeclaredFields()) {
 			String s = getAttribute(item, f.getName());
 			if (s != null) {
-				f.set(a, Converter.cnv(f.getGenericType(), s));
+				setField(f, a, Converter.cnv(f.getGenericType(), s));
 			}
 		}
 		return a;
@@ -94,6 +97,20 @@ public class XML {
 			throw e;
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	private static void setField(Field f, Object targetObject, Object value) throws Exception {
+		try {
+			MethodHandle mh = publicLookup().unreflectSetter(f);
+			if (!Modifier.isStatic(f.getModifiers())) {
+				mh = mh.bindTo(targetObject);
+			}
+			mh.invoke(value);
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new InvocationTargetException(e);
 		}
 	}
 

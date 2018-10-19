@@ -1,12 +1,16 @@
 package aQute.junit;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -98,12 +102,38 @@ public class JUnitEclipseReport implements TestReporter {
 	public void startTest(Test test) {
 		this.current = test;
 		message("%TESTS  ", test);
-		try {
-			Method m = test.getClass()
-				.getMethod("setBundleContext", BundleContext.class);
-			m.invoke(test, targetBundle.getBundleContext());
-		} catch (Exception e) {
 
+		BundleContext context = targetBundle.getBundleContext();
+		try {
+			MethodHandle mh;
+			try {
+				Method m = test.getClass()
+					.getMethod("setBundleContext", BundleContext.class);
+				m.setAccessible(true);
+				mh = publicLookup().unreflect(m);
+				if (!Modifier.isStatic(m.getModifiers())) {
+					mh = mh.bindTo(test);
+				}
+			} catch (NoSuchMethodException | IllegalAccessException e) {
+				try {
+					Field f = test.getClass()
+						.getField("context");
+					f.setAccessible(true);
+					mh = publicLookup().unreflectSetter(f);
+					if (!Modifier.isStatic(f.getModifiers())) {
+						mh = mh.bindTo(test);
+					}
+				} catch (NoSuchFieldException | IllegalAccessException e1) {
+					mh = null;
+				}
+			}
+			if (mh != null) {
+				mh.invoke(context);
+			}
+		} catch (Error e) {
+			throw e;
+		} catch (Throwable t) {
+			// Ok, no problem
 		}
 	}
 

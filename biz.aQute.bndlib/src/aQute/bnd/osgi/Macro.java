@@ -363,8 +363,10 @@ public class Macro {
 			}
 			MethodHandle mh;
 			try {
-				mh = publicLookup().unreflect(m)
-					.bindTo(target);
+				mh = publicLookup().unreflect(m);
+				if (!Modifier.isStatic(m.getModifiers())) {
+					mh = mh.bindTo(target);
+				}
 			} catch (Exception e) {
 				domain.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
 				return NULLVALUE;

@@ -5,10 +5,12 @@ import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.lang.annotation.Annotation;
+import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
@@ -184,8 +186,16 @@ public class Configurable<T> {
 				}
 			} else if (resultType.isAnnotation() && actualType.getName()
 				.equals(BND_ANNOTATION_CLASS_NAME)) {
-				Method m = actualType.getMethod(BND_ANNOTATION_METHOD_NAME);
-				java.lang.annotation.Annotation a = (Annotation) m.invoke(o);
+				MethodHandle mh = publicLookup().findVirtual(actualType, BND_ANNOTATION_METHOD_NAME,
+					methodType(Annotation.class));
+				Annotation a;
+				try {
+					a = (Annotation) mh.invoke(o);
+				} catch (Error | Exception e) {
+					throw e;
+				} catch (Throwable e) {
+					throw new InvocationTargetException(e);
+				}
 				if (resultType.isAssignableFrom(a.getClass())) {
 					return a;
 				}

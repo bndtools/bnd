@@ -6,6 +6,7 @@ import static java.lang.invoke.MethodType.methodType;
 import java.io.File;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
@@ -81,7 +82,14 @@ public class XPathParser {
 				value = value.toUpperCase();
 
 			Object o = Converter.cnv(f.getGenericType(), value);
-			f.set(dto, o);
+			try {
+				publicLookup().unreflectSetter(f)
+					.invoke(dto, o);
+			} catch (Error | Exception e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new InvocationTargetException(e);
+			}
 		}
 	}
 

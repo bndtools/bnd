@@ -36,6 +36,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import aQute.lib.base64.Base64;
 
@@ -330,7 +331,10 @@ public class Converter {
 						Field f = resultType.getField(key);
 						Object value = convert(f.getGenericType(), e.getValue());
 						mh = publicLookup().unreflectSetter(f);
-						mh.invoke(instance, value);
+						if (!Modifier.isStatic(f.getModifiers())) {
+							mh = mh.bindTo(instance);
+						}
+						mh.invoke(value);
 					} catch (Exception ee) {
 						// We cannot find the key, so try the __extra field
 						mh = publicLookup().findGetter(resultType, "__extra", Map.class);
@@ -539,23 +543,25 @@ public class Converter {
 		if (o instanceof Map)
 			return (Map<?, ?>) o;
 		Map<String, Object> result = new HashMap<>();
-		Field[] fields = o.getClass()
-			.getFields();
-		for (Field f : fields) {
-			MethodHandle mh = publicLookup().unreflectGetter(f);
+		getFields(o.getClass()).forEach(f -> {
 			try {
+				MethodHandle mh = publicLookup().unreflectGetter(f);
 				result.put(f.getName(), mh.invoke(o));
-			} catch (Error | Exception e) {
-				throw e;
 			} catch (Throwable e) {
 				throw new RuntimeException(e);
 			}
-		}
+		});
 		if (result.isEmpty()) {
 			return null;
 		}
 
 		return result;
+	}
+
+	private static Stream<Field> getFields(Class<?> c) {
+		return Stream.of(c.getFields())
+			.filter(
+				field -> !(field.isEnumConstant() || field.isSynthetic() || Modifier.isStatic(field.getModifiers())));
 	}
 
 	private Object error(String string) {
