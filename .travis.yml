@@ -18,22 +18,24 @@ matrix:
       script: 
         - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:release
         - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --rerun-tasks -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build
-
-before_install:
-  - unset _JAVA_OPTIONS
+    - name: "Documentation"
+      install:
+        - rvm --version
+        - rvm use 2.4 --install --binary --fuzzy
+        - ruby --version
+        - gem --version
+        - bundle --version
+      script: 
+        - cd docs
+        - ./build.sh
 
 install:
-  - rvm --version
-  - rvm use 2.4 --install --binary --fuzzy
+  - unset _JAVA_OPTIONS
   - ./gradlew --no-daemon --version
   - ./mvnw --version
-  - ruby --version
-  - gem --version
-  - bundle --version
 
 script:
   - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
-  - (cd docs && ./build.sh)
 
 before_cache:
   - git status
