@@ -7,12 +7,9 @@ matrix:
     - name: "Oracle JDK 8"
       jdk: oraclejdk8
     - name: "OpenJDK 10"
-      jdk: openjdk10
-      # Fix SSL errors, snippet from https://github.com/travis-ci/travis-ci/issues/9368
       before_install:
-        - unset _JAVA_OPTIONS
-        - rm "${JAVA_HOME}/lib/security/cacerts"
-        - ln -s /etc/ssl/certs/java/cacerts "${JAVA_HOME}/lib/security/cacerts"
+        - curl -O -L --retry 3  https://github.com/sormuras/bach/raw/master/install-jdk.sh
+        - source install-jdk.sh -F 10 -L GPL --cacerts
     - name: "Local rebuild"
       jdk: oraclejdk8
       script: 
