@@ -633,7 +633,9 @@ public class DSAnnotationReader extends ClassDataCollector {
 			for (Entry<String, Object> entry : componentPropertyAnnotation.entrySet()) {
 				String key = entry.getKey();
 				Object value = entry.getValue();
-				handleValue(key, value, value instanceof TypeRef, null);
+				boolean isClass = value instanceof TypeRef || (value.getClass()
+					.isArray() && ((Object[]) value)[0] instanceof TypeRef);
+				handleValue(key, value, isClass, null);
 			}
 		}
 
