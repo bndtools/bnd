@@ -69,13 +69,29 @@ For further usage information, see the integration test projects under the inclu
 |Configuration Parameter | Description |
 | ---                   | ---         |
 |`bndfile`              | File path to a bnd file containing bnd instructions for this project. The file path can be either absolute or relative to the project directory. _Defaults to `bnd.bnd`_.|
-|`bnd`                  | Bnd instructions for this project specified directly in the pom file. This is generally be done using a {@code <![CDATA[]]>} section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
+|`bnd`                  | Bnd instructions for this project specified directly in the pom file. This is generally be done using a `<![CDATA[  ]]>` section. If the projects has a `bndfile` configuration property or a file in the default location `bnd.bnd`, then this configuration element is ignored. |
 |`manifestPath`         | Specify the path to a manifest file to use. _Defaults to `${project.build.outputDirectory}/META-INF/MANIFEST.MF`._|
 |`classesDir`           | The directory where the `maven-compiler-plugin` places its output. _Defaults to `${project.build.outputDirectory}`._|
 |`includeClassesDir` | Include the entire contents of `classesDir` in the bundle. *Defaults to `true`*. |
 |`outputDir`            | The directory where the `bnd-maven-plugin` will extract it's contents. _Defaults to `${project.build.outputDirectory}`._|
 |`warOutputDir`            | The directory where the `bnd-maven-plugin` will extract it's contents when packaging is `war`. _Defaults to `${project.build.directory}/${project.build.finalName}`._|
 |`skip`                 | Skip the project. _Defaults to `false`._ Override with property `bnd.skip`.|
+
+## Default Bundle Headers
+
+The plugin will by default set some OSGi bundle headers derived from [pom elements](https://maven.apache.org/pom.html) (if not overwritten with explicit bnd instructions). 
+
+|OSGi Header | Derived from POM Element |
+| --- | --- |
+| `Bundle-SymbolicName` | `artifactId` |
+| `Bundle-Name` | `name` |
+| `Bundle-Version` | `version` |
+| `Bundle-Description` | `description` |
+| `Bundle-Vendor` | `organisation.name` |
+| `Bundle-Bundle-License` | `licenses` |
+| `Bundle-SCM` | `scm` |
+| `Bundle-Developers` | `developers` (child element `id` must be set on each developer) |
+| `Bundle-DocUrl` | `url` |
 
 ## Bnd Instruction Inheritance
 
