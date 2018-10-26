@@ -633,8 +633,25 @@ public class DSAnnotationReader extends ClassDataCollector {
 			for (Entry<String, Object> entry : componentPropertyAnnotation.entrySet()) {
 				String key = entry.getKey();
 				Object value = entry.getValue();
-				boolean isClass = value instanceof TypeRef || (value.getClass()
-					.isArray() && ((Object[]) value)[0] instanceof TypeRef);
+				boolean isClass;
+				if (value instanceof TypeRef) {
+					isClass = true;
+				} else if (value.getClass()
+					.isArray()) {
+					Object[] valueArray = (Object[]) value;
+					if (valueArray.length == 0) {
+						// If there are no values then it doesn't matter whether
+						// this
+						// is a class or not as we pass null for the type and it
+						// will
+						// eventually get interpreted as a string
+						isClass = false;
+					} else {
+						isClass = valueArray[0] instanceof TypeRef;
+					}
+				} else {
+					isClass = false;
+				}
 				handleValue(key, value, isClass, null);
 			}
 		}

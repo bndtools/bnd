@@ -268,6 +268,64 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 	@ComponentPropertyType
 	@Retention(RetentionPolicy.CLASS)
 	@Target(ElementType.TYPE)
+	public static @interface IntArrayProp {
+		int[] value();
+	}
+
+	@IntArrayProp({
+		1, 2, 3
+	})
+	@Component
+	public static class IntArrayPropertyAnnotated {}
+
+	public void testIntArrayPropertyAnnotation() throws Exception {
+
+		Resource r = jar.getResource("OSGI-INF/" + IntArrayPropertyAnnotated.class.getName() + ".xml");
+
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		// Test the defaults
+		xt.assertAttribute(IntArrayPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
+		xt.assertCount(1, "scr:component/property");
+		xt.assertAttribute("Integer", "scr:component/property[@name='int.array.prop']/@type");
+		xt.assertAttribute("1\n2\n3", "scr:component/property[@name='int.array.prop']");
+	}
+
+	@ComponentPropertyType
+	@Retention(RetentionPolicy.CLASS)
+	@Target(ElementType.TYPE)
+	public static @interface DefaultIntArrayProp {
+		int[] value() default {
+			1, 2, 3
+		};
+	}
+
+	@DefaultIntArrayProp
+	@Component
+	public static class DefaultIntArrayPropertyAnnotated {}
+
+	public void testDefaultIntArrayPropertyAnnotation() throws Exception {
+
+		Resource r = jar.getResource("OSGI-INF/" + DefaultIntArrayPropertyAnnotated.class.getName() + ".xml");
+
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		// Test the defaults
+		xt.assertAttribute(DefaultIntArrayPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
+		xt.assertCount(1, "scr:component/property");
+		xt.assertAttribute("Integer", "scr:component/property[@name='default.int.array.prop']/@type");
+		xt.assertAttribute("1\n2\n3", "scr:component/property[@name='default.int.array.prop']");
+	}
+
+	@ComponentPropertyType
+	@Retention(RetentionPolicy.CLASS)
+	@Target(ElementType.TYPE)
 	public static @interface ClassArrayProp {
 		Class<?>[] value();
 	}
@@ -293,6 +351,24 @@ public class DSPropertyAnnotationsTest extends BndTestCase {
 		xt.assertAttribute("String", "scr:component/property[@name='class.array.prop']/@type");
 		xt.assertAttribute(List.class.getName() + "\n" + Set.class.getName() + "\n" + Queue.class.getName(),
 			"scr:component/property[@name='class.array.prop']");
+	}
+
+	@ClassArrayProp({})
+	@Component
+	public static class EmptyClassArrayPropertyAnnotated {}
+
+	public void testEmptyClassArrayPropertyAnnotation() throws Exception {
+
+		Resource r = jar.getResource("OSGI-INF/" + EmptyClassArrayPropertyAnnotated.class.getName() + ".xml");
+
+		System.err.println(Processor.join(jar.getResources()
+			.keySet(), "\n"));
+		assertNotNull(r);
+		r.write(System.err);
+		XmlTester xt = new XmlTester(r.openInputStream(), "scr", "http://www.osgi.org/xmlns/scr/v1.3.0");
+		// Test the defaults
+		xt.assertAttribute(EmptyClassArrayPropertyAnnotated.class.getName(), "scr:component/implementation/@class");
+		xt.assertCount(0, "scr:component/property");
 	}
 
 	@ComponentPropertyType
