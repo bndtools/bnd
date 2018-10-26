@@ -10,7 +10,7 @@ Bundle-Description: \
 -conditionalpackage: aQute.lib*, fi.*, org.bouncycastle.*
 
 -buildpath: \
-    osgi.annotation;version=latest,\
+	osgi.annotation;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.promise;version=latest,\
 	biz.aQute.bndlib;version=latest;packages=*,\

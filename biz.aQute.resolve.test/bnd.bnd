@@ -4,11 +4,11 @@
 -nobundles: true
 
 -buildpath: \
-    osgi.annotation;version=latest,\
-    osgi.core;version=latest,\
+	osgi.annotation;version=latest,\
+	osgi.core;version=latest,\
 	biz.aQute.bndlib;version=latest,\
 	biz.aQute.resolve;version=latest,\
-    biz.aQute.repository;version=latest,\
+	biz.aQute.repository;version=latest,\
 	slf4j.api;version=latest
 
 -testpath: \

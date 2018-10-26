@@ -20,7 +20,11 @@ aQute.agent.server.port = 29998
 # Make sure we do not create depson aQute.lib
 #
 
--conditionalpackage: aQute.lib*, aQute.configurable.*,aQute.service.reporter, aQute.bnd.util.*
+-conditionalpackage: \
+	aQute.lib*,\
+	aQute.configurable.*,\
+	aQute.service.reporter,\
+	aQute.bnd.util.*
 
 #
 # TODO Some tests were hanging on Travis. They ran fine on the mac
