@@ -8,21 +8,26 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
-
-Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable, aQute.remote.*, org.osgi.*, org.yaml.*
+-conditionalpackage: \
+	aQute.libg.*,\
+	aQute.lib.*,\
+	aQute.configurable,\
+	aQute.remote.*,\
+	org.osgi.*,\
+	org.yaml.*
 
 -includeresource: \
- ${workspace}/LICENSE, \
- embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
- templates=templates, \
- @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
- @${repo;biz.aQute.repository;latest}!/!META-INF/*, \
- @${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
- @${repo;biz.aQute.bnd.exporters;latest}!/!META-INF/*, \
- @${repo;slf4j.api;latest}!/!META-INF/*, \
- @${repo;slf4j.simple;latest}!/!META-INF/*, \
- @${repo;jline}!/!META-INF/*
- 
+	${workspace}/LICENSE, \
+	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
+	templates=templates, \
+	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.bnd.exporters;latest}!/!META-INF/*, \
+	@${repo;slf4j.api;latest}!/!META-INF/*, \
+	@${repo;slf4j.simple;latest}!/!META-INF/*, \
+	@${repo;jline}!/!META-INF/*
+
 
 Import-Package: org.slf4j, *
 Export-Package: \
@@ -43,24 +48,23 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	osgi.core;version=latest,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
-    aQute.libg;version=latest, \
-    biz.aQute.bndlib;version=latest, \
-    biz.aQute.resolve;version=latest, \
-    biz.aQute.repository;version=latest, \
-    biz.aQute.bnd.exporters;version=latest, \
+	aQute.libg;version=latest, \
+	biz.aQute.bndlib;version=latest, \
+	biz.aQute.resolve;version=latest, \
+	biz.aQute.repository;version=latest, \
+	biz.aQute.bnd.exporters;version=latest, \
 	biz.aQute.bnd.annotation;version=project,\
 	org.apache.ant:ant;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	org.yaml.snakeyaml;version=latest,\
 	slf4j.api;version=latest,\
-    slf4j.simple;version=latest, \
-    jline
-
+	slf4j.simple;version=latest, \
+	jline
 
 -testpath: \
-    ${junit},\
-    org.osgi.namespace.extender;version=latest,\
-    org.apache.felix.framework;version=latest,\
+	${junit},\
+	org.osgi.namespace.extender;version=latest,\
+	org.apache.felix.framework;version=latest,\
 	biz.aQute.bnd.embedded-repo; version=snapshot
 
 # About the aQute.library.bndrepo dep. Needed to add them here

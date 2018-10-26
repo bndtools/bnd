@@ -7,9 +7,9 @@
 	org.osgi.util.promise;version=latest
 
 -testpath: \
-    ${junit},\
-    osgi.core;version=latest,\
-    slf4j.simple;version=latest
+	${junit},\
+	osgi.core;version=latest,\
+	slf4j.simple;version=latest
 
 -exportcontents: *
 

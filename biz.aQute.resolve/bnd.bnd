@@ -2,20 +2,20 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-    osgi.core;version=latest,\
-    org.osgi.namespace.contract;version=latest,\
-    org.osgi.namespace.service;version=latest,\
-    org.osgi.service.log;version=latest,\
-    org.osgi.service.repository;version=latest,\
+	osgi.core;version=latest,\
+	org.osgi.namespace.contract;version=latest,\
+	org.osgi.namespace.service;version=latest,\
+	org.osgi.service.log;version=latest,\
+	org.osgi.service.repository;version=latest,\
 	org.osgi.service.resolver;version=latest, \
-    org.osgi.util.function;version=latest,\
-    org.osgi.util.promise;version=latest,\
-    aQute.libg;version=latest,\
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
+	aQute.libg;version=latest,\
 	biz.aQute.bndlib;version=snapshot,\
 	biz.aQute.repository;version=snapshot,\
 	org.apache.felix.resolver;version=latest;packages=org.apache.felix.resolver.*,\
 	slf4j.api;version=latest
-	
+
 -testpath: \
 	${junit},\
 	${mockito},\

@@ -8,7 +8,7 @@ Bundle-Description:     Contains only the test functions for bnd.
 
 -buildpath: \
 	osgi.core;version=latest,\
-    aQute.libg;version=project,\
+	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=project,\
 	${junit}
 
