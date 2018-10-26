@@ -211,6 +211,8 @@ public class Analyzer extends Processor {
 					}
 			}
 
+			doContractEmulations();
+
 			// Handle the bundle activator
 
 			String s = getProperty(BUNDLE_ACTIVATOR);
@@ -476,6 +478,14 @@ public class Analyzer extends Processor {
 		for (Jar extra = getExtra(); extra != null; extra = getExtra()) {
 			dot.addAll(extra);
 			analyzeJar(extra, "", true);
+		}
+	}
+
+	private void doContractEmulations() {
+		Parameters contractEmulations = parseHeader(getProperty(Constants.CONTRACT_EMULATION));
+
+		if (!contractEmulations.isEmpty()) {
+			contracts.collectContracts("emulated", contractEmulations);
 		}
 	}
 
