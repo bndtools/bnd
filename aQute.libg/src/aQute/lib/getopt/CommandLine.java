@@ -154,10 +154,7 @@ public class CommandLine {
 			m.setAccessible(true);
 			try {
 				MethodHandle mh = publicLookup().unreflect(m);
-				if (!Modifier.isStatic(m.getModifiers())) {
-					mh = mh.bindTo(target);
-				}
-				result = mh.invoke(options);
+				result = Modifier.isStatic(m.getModifiers()) ? mh.invoke(options) : mh.invoke(target, options);
 			} catch (Error | Exception e) {
 				throw e;
 			} catch (Throwable e) {

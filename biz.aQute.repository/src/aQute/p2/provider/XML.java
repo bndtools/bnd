@@ -103,10 +103,11 @@ public class XML {
 	private static void setField(Field f, Object targetObject, Object value) throws Exception {
 		try {
 			MethodHandle mh = publicLookup().unreflectSetter(f);
-			if (!Modifier.isStatic(f.getModifiers())) {
-				mh = mh.bindTo(targetObject);
+			if (Modifier.isStatic(f.getModifiers())) {
+				mh.invoke(value);
+			} else {
+				mh.invoke(targetObject, value);
 			}
-			mh.invoke(value);
 		} catch (Error | Exception e) {
 			throw e;
 		} catch (Throwable e) {

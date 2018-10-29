@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -198,10 +199,11 @@ public class DomDTOParser {
 	private static void setField(Field f, Object targetObject, Object value) throws Exception {
 		try {
 			MethodHandle mh = publicLookup().unreflectSetter(f);
-			if (!Modifier.isStatic(f.getModifiers())) {
-				mh = mh.bindTo(targetObject);
+			if (isStatic(f)) {
+				mh.invoke(value);
+			} else {
+				mh.invoke(targetObject, value);
 			}
-			mh.invoke(value);
 		} catch (Error | Exception e) {
 			throw e;
 		} catch (Throwable e) {
@@ -212,10 +214,7 @@ public class DomDTOParser {
 	private static <T> T getField(Field f, Object targetObject) throws Exception {
 		try {
 			MethodHandle mh = publicLookup().unreflectGetter(f);
-			if (!Modifier.isStatic(f.getModifiers())) {
-				mh = mh.bindTo(targetObject);
-			}
-			return (T) mh.invoke();
+			return isStatic(f) ? (T) mh.invoke() : (T) mh.invoke(targetObject);
 		} catch (Error | Exception e) {
 			throw e;
 		} catch (Throwable e) {
@@ -223,4 +222,7 @@ public class DomDTOParser {
 		}
 	}
 
+	private static boolean isStatic(Member m) {
+		return Modifier.isStatic(m.getModifiers());
+	}
 }
