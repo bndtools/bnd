@@ -11,7 +11,7 @@ Bundle-Description: \
 	to make this also work for small devices and slow connections.
 
 #
-# The agent can run as a real bundle or 
+# The agent can run as a real bundle or
 # as an embedded bundle on the -runpath
 #
 
@@ -29,11 +29,9 @@ Embedded-Activator: 		aQute.remote.agent.Activator
 # to accept older frameworks. (4.2)
 # the code is adjusted to handle errors
 # when calling later methods.
- 
+
 Import-Package: \
 	org.osgi.framework;version='[1.5,2)',\
 	org.osgi.framework.launch;version='[1.0,2)',\
 	org.apache.felix.service.command;resolution:=optional,\
 	*
-
-	

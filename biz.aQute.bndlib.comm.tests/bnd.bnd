@@ -21,4 +21,3 @@
 	com.google.guava;version=latest,\
 	bcpkix;version=latest,\
 	bcprov;version=latest
-

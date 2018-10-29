@@ -5,7 +5,7 @@ Bundle-Description: \
 	like any other bundle.
 
 
-# The dependency on aQute packages is only for the 
+# The dependency on aQute packages is only for the
 # master side. When launched, those dependencies
 # are not necessary
 Import-Package: \

@@ -4,25 +4,25 @@
 -dependson: biz.aQute.bnd.embedded-repo
 
 -includepackage: \
-    aQute.bnd.gradle.*
+	aQute.bnd.gradle.*
 
 -digests: MD5, SHA1
 
 Bundle-Description: The bnd gradle plugin.
 
 -buildpath: \
-  aQute.libg;version=latest, \
-  biz.aQute.bndlib;version=latest, \
-  biz.aQute.resolve;version=latest, \
-  biz.aQute.repository;version=latest
+	aQute.libg;version=latest, \
+	biz.aQute.bndlib;version=latest, \
+	biz.aQute.resolve;version=latest, \
+	biz.aQute.repository;version=latest
 
 -includeresource: \
-  OSGI-OPT/src=src, \
-  resources, \
-  @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
-  @${repo;biz.aQute.repository;latest}!/!META-INF/*, \
-  @${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
-  embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
+	OSGI-OPT/src=src, \
+	resources, \
+	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
+	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
 
 # Use groovydoc task generated doc for -javadoc.jar
 -maven-release: javadoc;path=${target}/docs/groovydoc
