@@ -364,15 +364,12 @@ public class Macro {
 			MethodHandle mh;
 			try {
 				mh = publicLookup().unreflect(m);
-				if (!Modifier.isStatic(m.getModifiers())) {
-					mh = mh.bindTo(target);
-				}
 			} catch (Exception e) {
 				domain.warning("Exception in replace: method=%s %s ", method, Exceptions.toString(e));
 				return NULLVALUE;
 			}
 			try {
-				Object result = mh.invoke(args);
+				Object result = Modifier.isStatic(m.getModifiers()) ? mh.invoke(args) : mh.invoke(target, args);
 				return result == null ? NULLVALUE : result.toString();
 			} catch (Error e) {
 				throw e;

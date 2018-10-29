@@ -9,6 +9,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -331,10 +332,11 @@ public class Converter {
 						Field f = resultType.getField(key);
 						Object value = convert(f.getGenericType(), e.getValue());
 						mh = publicLookup().unreflectSetter(f);
-						if (!Modifier.isStatic(f.getModifiers())) {
-							mh = mh.bindTo(instance);
+						if (isStatic(f)) {
+							mh.invoke(value);
+						} else {
+							mh.invoke(instance, value);
 						}
-						mh.invoke(value);
 					} catch (Exception ee) {
 						// We cannot find the key, so try the __extra field
 						mh = publicLookup().findGetter(resultType, "__extra", Map.class);
@@ -437,6 +439,10 @@ public class Converter {
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private static boolean isStatic(Member m) {
+		return Modifier.isStatic(m.getModifiers());
 	}
 
 	private Map map(Type mapType, Class<? extends Map<?, ?>> rawClass, Object o) throws Exception {
@@ -561,7 +567,7 @@ public class Converter {
 	private static Stream<Field> getFields(Class<?> c) {
 		return Stream.of(c.getFields())
 			.filter(
-				field -> !(field.isEnumConstant() || field.isSynthetic() || Modifier.isStatic(field.getModifiers())));
+				field -> !(field.isEnumConstant() || field.isSynthetic() || isStatic(field)));
 	}
 
 	private Object error(String string) {

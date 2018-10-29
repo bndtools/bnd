@@ -387,16 +387,13 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			MethodHandle mh;
 			try {
 				mh = publicLookup().unreflect(m);
-				if (!Modifier.isStatic(m.getModifiers())) {
-					mh = mh.bindTo(target);
-				}
 			} catch (Exception e) {
 				reporter.warning("Exception in replace: %s method=%s", e, method);
 				e.printStackTrace();
 				return null;
 			}
 			try {
-				Object result = mh.invoke(args);
+				Object result = Modifier.isStatic(m.getModifiers()) ? mh.invoke(args) : mh.invoke(target, args);
 				return "" + result;
 			} catch (Error e) {
 				throw e;
