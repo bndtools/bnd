@@ -1,0 +1,15 @@
+{"components":[{
+  "activate":"activate","configurationPid":["pid1","pid2"],"configurationPolicy":"optional","deactivate":"deactivate","defaultEnabled":true,"factory":"factoryTest","immediate":false,"implementationClass":"org.component.test.ProviderImpl2","modified":"modify","name":"org.test.project1","properties":{"cool":{
+    "multiValue":false,"type":"String","values":["top"]
+  },"prop2":{
+    "multiValue":false,"type":"String","values":["top"]
+  },"prop1":{
+    "multiValue":true,"type":"Long","values":["3","4"]
+  }},"references":[{
+    "bind":null,"cardinality":"1..1","field":"_service","fieldOption":"replace","interfaceName":"org.osgi.service.cm.ConfigurationAdmin","name":"_service","policy":"static","policyOption":"reluctant","scope":"bundle","target":null,"unbind":null,"updated":null
+  },{
+    "bind":"bindService","cardinality":"0..1","field":"_service2","fieldOption":"replace","interfaceName":"org.osgi.service.event.EventAdmin","name":"test","policy":"dynamic","policyOption":"reluctant","scope":"prototype","target":"(test=4)","unbind":"unbindService","updated":"updateService"
+  }],"scope":"prototype","serviceInterfaces":["org.component.test.api.SomeApi","org.component.test.api.SomeOtherApi"]
+},{
+  "activate":null,"configurationPid":["org.component.test.ProviderImpl"],"configurationPolicy":"optional","deactivate":null,"defaultEnabled":true,"factory":null,"immediate":true,"implementationClass":"org.component.test.ProviderImpl","modified":null,"name":"org.component.test.ProviderImpl","properties":{},"references":[],"scope":null,"serviceInterfaces":[]
+}]}

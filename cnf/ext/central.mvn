@@ -83,3 +83,17 @@ org.tukaani:xz:1.5
 com.github.mike10004:fengyouchao-sockslib:1.0.3
 
 jline:jline:2.14.6
+
+#
+# Used by biz.aQute.bnd.reporter (Jtwig transformer)
+#
+org.jtwig:jtwig-core:5.86.1.RELEASE
+org.jtwig:jtwig-reflection:5.86.1.RELEASE
+com.google.guava:guava:18.0
+com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:1.4.2
+org.parboiled:parboiled-java:1.1.7
+org.parboiled:parboiled-core:jar:1.1.7
+org.ow2.asm:asm:jar:5.0.3
+org.ow2.asm:asm-tree:jar:5.0.3
+org.ow2.asm:asm-analysis:jar:5.0.3
+org.ow2.asm:asm-util:jar:5.0.3
