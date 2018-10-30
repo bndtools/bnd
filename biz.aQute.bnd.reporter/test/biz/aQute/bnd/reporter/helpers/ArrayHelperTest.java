@@ -1,22 +1,24 @@
 package biz.aQute.bnd.reporter.helpers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
 public class ArrayHelperTest {
 
   @Test
   public void testContainsIgnoreCase() {
-    assertEquals(false, ArrayHelper.containsIgnoreCase(null, null));
-    assertEquals(false, ArrayHelper.containsIgnoreCase(new String[0], null));
-    assertEquals(false, ArrayHelper.containsIgnoreCase(new String[] {}, ""));
-    assertEquals(false, ArrayHelper.containsIgnoreCase(null, "a"));
-    assertEquals(true, ArrayHelper.containsIgnoreCase(new String[] {""}, ""));
-    assertEquals(true, ArrayHelper.containsIgnoreCase(new String[] {"a"}, "a"));
-    assertEquals(true, ArrayHelper.containsIgnoreCase(new String[] {"a"}, "A"));
-    assertEquals(true, ArrayHelper.containsIgnoreCase(new String[] {"a", "b"}, "A"));
-    assertEquals(false, ArrayHelper.containsIgnoreCase(new String[] {"a", "b"}, "c"));
+		assertFalse(ArrayHelper.containsIgnoreCase(null, null));
+		assertFalse(ArrayHelper.containsIgnoreCase(new String[0], null));
+		assertFalse(ArrayHelper.containsIgnoreCase(new String[] {}, ""));
+		assertFalse(ArrayHelper.containsIgnoreCase(null, "a"));
+		assertTrue(ArrayHelper.containsIgnoreCase(new String[] { "" }, ""));
+		assertTrue(ArrayHelper.containsIgnoreCase(new String[] { "a" }, "a"));
+		assertTrue(ArrayHelper.containsIgnoreCase(new String[] { "a" }, "A"));
+		assertTrue(ArrayHelper.containsIgnoreCase(new String[] { "a", "b" }, "A"));
+		assertFalse(ArrayHelper.containsIgnoreCase(new String[] { "a", "b" }, "c"));
   }
 
   @Test

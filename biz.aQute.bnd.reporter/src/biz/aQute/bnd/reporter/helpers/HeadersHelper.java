@@ -1,5 +1,20 @@
 package biz.aQute.bnd.reporter.helpers;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Attrs.Type;
 import aQute.bnd.header.OSGiHeader;
@@ -29,20 +44,6 @@ import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionInRangeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionRangeDTO;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * Helper to extract (localized) and convert manifest headers into DTO. The extraction process
@@ -113,8 +114,8 @@ public class HeadersHelper {
     result.floor = new VersionInRangeDTO();
     result.floor.include = range.includeLow();
     result.floor.major = range.getLow().getMajor();
-    result.floor.minor = range.getLow().getMinor();
-    result.floor.micro = range.getLow().getMicro();
+		result.floor.minor = Integer.valueOf(range.getLow().getMinor());
+		result.floor.micro = Integer.valueOf(range.getLow().getMicro());
     if (range.getLow().getQualifier() != null && !range.getLow().getQualifier().isEmpty()) {
       result.floor.qualifier = range.getLow().getQualifier();
     }
@@ -123,8 +124,8 @@ public class HeadersHelper {
       result.ceiling = new VersionInRangeDTO();
       result.ceiling.include = range.includeHigh();
       result.ceiling.major = range.getHigh().getMajor();
-      result.ceiling.minor = range.getHigh().getMinor();
-      result.ceiling.micro = range.getHigh().getMicro();
+			result.ceiling.minor = Integer.valueOf(range.getHigh().getMinor());
+			result.ceiling.micro = Integer.valueOf(range.getHigh().getMicro());
       if (range.getHigh().getQualifier() != null && !range.getHigh().getQualifier().isEmpty()) {
         result.ceiling.qualifier = range.getHigh().getQualifier();
       }
@@ -139,8 +140,8 @@ public class HeadersHelper {
       final VersionDTO result = new VersionDTO();
 
       result.major = version.getMajor();
-      result.minor = version.getMinor();
-      result.micro = version.getMicro();
+			result.minor = Integer.valueOf(version.getMinor());
+			result.micro = Integer.valueOf(version.getMicro());
       if (version.getQualifier() != null && !version.getQualifier().isEmpty()) {
         result.qualifier = version.getQualifier();
       }
@@ -156,8 +157,8 @@ public class HeadersHelper {
 
     range.floor = new VersionInRangeDTO();
     range.floor.major = 0;
-    range.floor.minor = 0;
-    range.floor.micro = 0;
+		range.floor.minor = Integer.valueOf(0);
+		range.floor.micro = Integer.valueOf(0);
     range.floor.include = true;
 
     return range;
@@ -167,8 +168,8 @@ public class HeadersHelper {
     final VersionDTO version = new VersionDTO();
 
     version.major = 0;
-    version.minor = 0;
-    version.micro = 0;
+		version.minor = Integer.valueOf(0);
+		version.micro = Integer.valueOf(0);
 
     return version;
   }
@@ -607,7 +608,7 @@ public class HeadersHelper {
     if (!header.isEmpty()) {
       result = Integer.valueOf(cleanKey(header.keySet().iterator().next()));
     } else {
-      result = 1;
+			result = Integer.valueOf(1);
     }
     return result;
   }
@@ -943,7 +944,7 @@ public class HeadersHelper {
       }
 
       if (attributes.containsKey("singleton:")) {
-        bsn.singleton = Boolean.valueOf(attributes.get("singleton:"));
+				bsn.singleton = Boolean.parseBoolean(attributes.get("singleton:"));
       }
 
       attributes.remove("fragment-attachment:");
