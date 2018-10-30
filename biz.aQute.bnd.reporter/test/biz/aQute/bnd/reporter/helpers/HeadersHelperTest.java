@@ -1,5 +1,14 @@
 package biz.aQute.bnd.reporter.helpers;
 
+import java.io.File;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.jar.Manifest;
+
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
@@ -26,16 +35,9 @@ import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionInRangeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionRangeDTO;
-import java.io.File;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.jar.Manifest;
 import junit.framework.TestCase;
 
+@SuppressWarnings("boxing")
 public class HeadersHelperTest extends TestCase {
 
   public void testBundleActivator() throws Exception {
@@ -308,7 +310,7 @@ public class HeadersHelperTest extends TestCase {
         expected);
   }
 
-  public void testFragmentHost() throws Exception {
+	public void testFragmentHost() throws Exception {
     FragmentHostDTO expected = null;
     perform(Constants.FRAGMENT_HOST, "fragmentHost", "", expected);
 

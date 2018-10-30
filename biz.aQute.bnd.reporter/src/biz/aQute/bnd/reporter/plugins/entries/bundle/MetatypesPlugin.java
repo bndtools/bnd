@@ -1,5 +1,22 @@
 package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -13,20 +30,6 @@ import biz.aQute.bnd.reporter.component.dto.ObjectClassDefinitionDTO;
 import biz.aQute.bnd.reporter.component.dto.OptionDTO;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.helpers.LocaleHelper;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 /**
  * This plugin allows to add all the metatype resources defined in a bundle to the report.
@@ -198,7 +201,7 @@ public class MetatypesPlugin implements ReportEntryPlugin<Jar>, Plugin {
                 }
 
                 if (ad.hasAttribute(CARDINALITY_ATTR)) {
-                  attrDto.cardinality = Integer.valueOf(ad.getAttribute(CARDINALITY_ATTR));
+									attrDto.cardinality = Integer.parseInt(ad.getAttribute(CARDINALITY_ATTR));
                 }
 
                 if (ad.hasAttribute(TYPE_ATTR)) {
@@ -223,7 +226,7 @@ public class MetatypesPlugin implements ReportEntryPlugin<Jar>, Plugin {
                 }
 
                 if (ad.hasAttribute(REQUIRED_ATTR)) {
-                  attrDto.required = Boolean.valueOf(ad.getAttribute(REQUIRED_ATTR));
+									attrDto.required = Boolean.parseBoolean(ad.getAttribute(REQUIRED_ATTR));
                 }
 
                 if (ad.hasAttribute(MAX_ATTR)) {

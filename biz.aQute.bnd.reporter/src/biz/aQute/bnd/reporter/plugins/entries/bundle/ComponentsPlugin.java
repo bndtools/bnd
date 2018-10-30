@@ -1,17 +1,5 @@
 package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
-import aQute.bnd.annotation.plugin.BndPlugin;
-import aQute.bnd.header.OSGiHeader;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Resource;
-import aQute.bnd.service.Plugin;
-import aQute.bnd.service.reporter.ReportEntryPlugin;
-import aQute.service.reporter.Reporter;
-import biz.aQute.bnd.reporter.component.dto.ComponentDescriptionDTO;
-import biz.aQute.bnd.reporter.component.dto.ReferenceDTO;
-import biz.aQute.bnd.reporter.generator.EntryNamesReference;
-import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,11 +12,26 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.reporter.ReportEntryPlugin;
+import aQute.service.reporter.Reporter;
+import biz.aQute.bnd.reporter.component.dto.ComponentDescriptionDTO;
+import biz.aQute.bnd.reporter.component.dto.ReferenceDTO;
+import biz.aQute.bnd.reporter.generator.EntryNamesReference;
+import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 
 /**
  * This plugin allows to add all the components defined in a bundle to the report.
@@ -121,7 +124,7 @@ public class ComponentsPlugin implements ReportEntryPlugin<Jar>, Plugin {
           }
 
           if (root.hasAttribute(ENABLED_ATTR)) {
-            comp.defaultEnabled = Boolean.valueOf(root.getAttribute(ENABLED_ATTR));
+						comp.defaultEnabled = Boolean.parseBoolean(root.getAttribute(ENABLED_ATTR));
           }
 
           boolean isFactory = false;
@@ -156,7 +159,7 @@ public class ComponentsPlugin implements ReportEntryPlugin<Jar>, Plugin {
           }
 
           if (root.hasAttribute(IMMEDIATE_ATTR)) {
-            comp.immediate = Boolean.valueOf(root.getAttribute(IMMEDIATE_ATTR));
+						comp.immediate = Boolean.parseBoolean(root.getAttribute(IMMEDIATE_ATTR));
           } else {
             if (serviceCount == 0 && !isFactory) {
               comp.immediate = true;
