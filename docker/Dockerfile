@@ -1,4 +1,4 @@
-FROM java:8-jre-alpine
+FROM java:8-jdk-alpine
 MAINTAINER Neil Bartlett <njbartlett@gmail.com>
 
 ADD tmp/bnd.jar /
