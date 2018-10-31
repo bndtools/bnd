@@ -31,7 +31,7 @@ class URLResource implements Resource {
 	 */
 	URLResource(URL url, HttpClient client) {
 		this.url = url;
-		this.client = client;
+		this.client = "jrt".equals(url.getProtocol()) ? null : client;
 	}
 
 	@Override
