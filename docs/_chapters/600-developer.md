@@ -55,7 +55,7 @@ By default, bnd creates a container with resources and then calculates the manif
   }
 
 [[#make]]
-###Make
+### Make
 Make plugins kick in when the `Include-Resource` header tries to locate a resource but it cannot find that resource. The `-make` option defines a number of patterns that are mapped to a make instruction.
 
 For example, if you have
@@ -70,7 +70,7 @@ The first name part of the clause is matched against the unfound resource. All p
 
 bnd has a bnd and a copy Make Plugin.
 
-###Buildin Plugins
+### Buildin Plugins
 Some plugins are provided by bnd itself.
 
 ||aQute.lib.spring.SpringComponent||AnalyzerPlugin||This component will analyze the Spring XML for Spring DM and will add any classes in these files to the referred set of classes.||

@@ -1,6 +1,6 @@
 ---
 layout: default
-title:  wrap [options] <<jar-file>> <[...]>
+title:  wrap [options] <[jar-file]> <[...]> 
 summary: Wrap a jar into a bundle. This is a poor man's facility to quickly turn a non-OSGi JAR into an OSGi bundle. It is usually better to write a bnd file and use the bnd <file>.bnd command because that has greater control. Even better is to wrap in bndtools.
 ---
 

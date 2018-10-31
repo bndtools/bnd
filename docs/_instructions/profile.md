@@ -2,7 +2,7 @@
 layout: default
 class: Builder
 title: -profile KEY   
-summary:  Sets a prefix that is used when a variable is not found, it is then re-searched under "[<profile>]<key>". 
+summary:  Sets a prefix that is used when a variable is not found, it is then re-searched under "[<[profile]>]<[key]>". 
 ---
 
 	public Jar pack(String profile) throws Exception {

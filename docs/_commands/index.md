@@ -1,6 +1,6 @@
 ---
 layout: default
-title: index [options] <bundles...>
+title: index [options] <[bundles]...>
 summary: Index bundles from the local file system
 ---
 

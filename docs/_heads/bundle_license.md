@@ -1,7 +1,7 @@
 ---
 layout: default
 class: Header
-title: Bundle-License ::= '<<EXTERNAL>>' | ( license ( ',' license ) * )
+title: Bundle-License ::= '<<[EXTERNAL]>>' | ( license ( ',' license ) * )
 summary: The Bundle-License header provides an optional machine readable form of license information. 
 ---
 	

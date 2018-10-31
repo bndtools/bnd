@@ -1,6 +1,6 @@
 ---
 layout: default
-title:   digest [options] <file...> 
+title:   digest [options] <[file...]> 
 summary: Digest a number of files 
 ---
 
