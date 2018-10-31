@@ -38,4 +38,3 @@ In this text `bnd` is used as if it is a command line program. This should be se
 
 {% for c in site.commands %}<dt><a href="{{ c.url | prepend: site.github.url }}">{{c.title}}</a></dt><dd>{{c.summary}}</dd>
 {% endfor %}
-

@@ -1,6 +1,6 @@
 ---
 layout: default
-title:  eclipse pde [options] <<repo-dir>> <[...]>
+title:  eclipse pde [options] <[repo-dir]> <[...]> 
 summary: Import PDE projects into a bnd workspace 
 bnd: 4
 ---

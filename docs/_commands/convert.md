@@ -1,6 +1,6 @@
 ---
 layout: default
-title:    convert [options] <from> <to> 
+title:    convert [options] <[from]> <[to]> 
 summary: Converter to different formats                                 
 ---
 

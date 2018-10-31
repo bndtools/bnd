@@ -1,6 +1,6 @@
 ---
 layout: default
-title:     grep [options] <pattern> <file...> 
+title:     grep [options] <[pattern]> <[file]...> 
 summary:  Grep the manifest of bundles/jar files.
 ---
 

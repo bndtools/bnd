@@ -1,6 +1,6 @@
 ---
 layout: default
-title:     macro [options] <<macro>> <[...]>
+title:     macro [options] <[macro]> <[...]> 
 summary:  Show macro value. Macro can contain the  { and } parentheses but it is also ok without. You can use the ':' instead of the ';' in a macro
 ---
 ## Description

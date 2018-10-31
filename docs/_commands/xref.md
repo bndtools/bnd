@@ -1,6 +1,6 @@
 ---
 layout: default
-title:  xref [options] <<jar path>> <[...]>
+title:  xref [options] <[jar path]> <[...]> 
 summary: Show a cross references for all classes in a set of jars.
 ---
 
