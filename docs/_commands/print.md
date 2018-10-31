@@ -11,7 +11,7 @@ summary: Provides detailed view of the bundle. It will analyze the bundle and th
 ## Synopsis
 
 ## Options
-
+    [ -all ]                   - Do all (this is the default)
     [ -a, --api ]              - Print the api usage. This shows the usage
                                   constraints on exported packages when only
                                   public API is used.
