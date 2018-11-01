@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
 
-	
+
    <!-- Extension Points -->
    <!-- DEPRECATED -->
    <extension-point id="cnfTemplates"
@@ -186,7 +186,7 @@
 			class="bndtools.wizards.workspace.MissingWorkspaceMarkerResolutionGenerator"
 		/>
 	</extension>
-	
+
 	<extension point="bndtools.core.buildErrorDetailsHandlers">
 		<handler
 			typeMatch="bndtools.builder.missingworkspace"
@@ -372,7 +372,7 @@
                <visibleWhen checkEnabled="true"/>
           </command>
       </menuContribution>
-      
+
       <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
           <toolbar id="bndtools.runEditor.toolbar">
               <command commandId="bndtools.runEditor.resolve">
@@ -527,17 +527,17 @@
       <launchConfigurationType
         delegate="bndtools.launch.bnd.NativeBndLaunchDelegate"
         id="bnd.launch"
-        modes="run, debug"               
+        modes="run, debug"
         name="bnd Native"
         sourceLocatorId="org.bndtools.core.launch.BndDependencySourceLookupDirector"
         sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer"
-      >        
+      >
       </launchConfigurationType>
    </extension>
 
    <!-- A status handler for "no available JVM matching EE" from the launch infra -->
    <extension point="org.eclipse.debug.core.statusHandlers">
-      <statusHandler 
+      <statusHandler
          id="bndtools.launch.ui.internal.NoVMForEEStatusHandler"
          class="bndtools.launch.ui.internal.NoVMForEEStatusHandler"
          plugin="bndtools.core"
@@ -570,13 +570,6 @@
          class="bndtools.launch.BndDependencySourceLookupDirector"
       />
    </extension>
-
-   <extension point="org.eclipse.jdt.launching.runtimeClasspathEntryResolvers">
-      <runtimeClasspathEntryResolver
-         id="bndtools.core.BndContainerRuntimeClasspathEntryResolver"
-         class="bndtools.launch.BndContainerRuntimeClasspathEntryResolver"
-         container="aQute.bnd.classpath.container" />
-    </extension>
 
    <extension point="org.eclipse.core.expressions.propertyTesters">
       <propertyTester id="org.bndtools.core.launchPropertyTester"
@@ -737,7 +730,7 @@
       </shortcut>
 
    </extension>
-   
+
    <extension point="org.eclipse.ui.keywords">
       <keyword id="bndtools.core" label="Bndtools"/>
    </extension>
