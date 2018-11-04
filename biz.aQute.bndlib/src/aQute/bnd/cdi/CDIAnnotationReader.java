@@ -4,14 +4,11 @@ import static java.util.Objects.requireNonNull;
 
 import java.lang.annotation.ElementType;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import aQute.bnd.cdi.CDIAnnotations.Discover;
 import aQute.bnd.component.annotations.ReferenceCardinality;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
@@ -38,7 +35,8 @@ import aQute.bnd.signatures.VoidDescriptor;
 import aQute.bnd.version.Version;
 
 public class CDIAnnotationReader extends ClassDataCollector {
-	public static final Version			V1_0						= new Version("1.0.0");								// "1.0.0"
+	public static final Version			V1_0					= new Version(1, 0, 0);
+	public static final Version			CDI_ARCHIVE_VERSION		= new Version(1, 1, 0);
 
 	private static final Instruction	COMPONENTSCOPED_INSTR	= new Instruction(
 		"org.osgi.service.cdi.annotations.ComponentScoped");
@@ -81,18 +79,6 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	}
 
 	private List<BeanDef> getDefs() throws Exception {
-		if (clazz.isEnum() || clazz.isInterface() || clazz.isAnnotation()) {
-			// These types cannot be managed beans so don't bother scanning
-			// them. See
-			// http://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#what_classes_are_beans
-			return null;
-		}
-
-		// if discovery mode is 'all', all concrete classes are considered
-		if (options.contains(Discover.all) && !clazz.is(QUERY.CONCRETE, null, analyzer)) {
-			return null;
-		}
-
 		// if discovery mode is 'annotated', only classes annotated with a bean
 		// defining annotation are considered. See
 		// http://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#bean_defining_annotations
@@ -128,27 +114,6 @@ public class CDIAnnotationReader extends ClassDataCollector {
 		return definitions;
 	}
 
-	class PackageDef extends ClassDataCollector {
-		Instruction marked;
-
-		@Override
-		public void annotation(Annotation annotation) throws Exception {
-			String fqn = annotation.getName()
-				.getFQN();
-			if (fqn.equals("org.osgi.service.cdi.annotations.Beans")) {
-				Object[] beanClasses = annotation.get("value");
-
-				if (beanClasses != null && beanClasses.length > 0) {
-					marked = new Instruction(Arrays.stream(beanClasses)
-						.map(Object::toString)
-						.collect(Collectors.joining(",")));
-				} else {
-					marked = new Instruction("*");
-				}
-			}
-		}
-	}
-
 	@Override
 	public void annotation(Annotation annotation) {
 		try {
@@ -182,19 +147,8 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	public void classBegin(int access, TypeRef name) {
 		definitions.get(0).implementation = name;
 
-		PackageDef packageDef = packageInfos.computeIfAbsent(name.getPackageRef(), k -> {
-			Clazz packageInfoClazz = analyzer.getPackageInfo(k);
-			if (packageInfoClazz != null) {
-				try {
-					PackageDef pd = new PackageDef();
-					packageInfoClazz.parseClassFileWithCollector(pd);
-					return pd;
-				} catch (Exception e) {
-					analyzer.exception(e, "Error while processing package-info of class %s", clazz);
-				}
-			}
-			return new PackageDef();
-		});
+		PackageDef packageDef = packageInfos.computeIfAbsent(name.getPackageRef(),
+			k -> new PackageDef(analyzer.getPackageInfo(k)));
 
 		if (packageDef.marked != null) {
 			definitions.get(0).marked = packageDef.marked.matches(name.getFQN());
