@@ -148,7 +148,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		//
 		// Parse any annotated classes except annotations
 		//
-		if (!c.isAnnotation() && c.annotations != null) {
+		if (!c.isAnnotation() && !c.annotations()
+			.isEmpty()) {
 
 			current = c;
 			return true;
@@ -258,7 +259,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		// If this annotation has meta-annotations then it may be relevant to us
 
-		if (c != null && c.annotations != null) {
+		if (c != null && !c.annotations()
+			.isEmpty()) {
 			c.parseClassFileWithCollector(
 				new MetaAnnotationCollector(c, annotation, processed, baseAttrs));
 			// }

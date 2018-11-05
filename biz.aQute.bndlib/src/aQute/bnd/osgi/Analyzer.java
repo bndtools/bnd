@@ -2567,7 +2567,6 @@ public class Analyzer extends Processor {
 	 * 
 	 * @param jar
 	 * @param contained
-	 * @param referred
 	 * @param uses
 	 * @throws IOException
 	 */
@@ -2598,7 +2597,7 @@ public class Analyzer extends Processor {
 					try {
 						clazz = new Clazz(this, path, resource);
 						clazz.parseClassFile();
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						exception(e, "Invalid class file %s (%s)", relativePath, e);
 						continue next;
 					}
@@ -3436,7 +3435,7 @@ public class Analyzer extends Processor {
 		final MultiMap<Clazz.Def, TypeRef> xref = new MultiMap<>(Clazz.Def.class, TypeRef.class, true);
 
 		for (final Clazz clazz : getClassspace().values()) {
-			if ((clazz.accessx & sourceModifiers) == 0)
+			if ((clazz.getAccess() & sourceModifiers) == 0)
 				continue;
 
 			if (source != null && source != clazz.getClassName()
@@ -3602,7 +3601,7 @@ public class Analyzer extends Processor {
 		}
 
 		String path = type.getPackageRef()
-			.getBinary() + "/" + clazz.sourceFile;
+			.getBinary() + "/" + clazz.getSourceFile();
 
 		for (File srcDir : sourcePath) {
 			if (!srcDir.isFile())

@@ -29,6 +29,7 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,7 @@ class JavaElement {
 
 	final Analyzer						analyzer;
 	final Map<PackageRef, Instructions>	providerMatcher		= Create.map();
+	final Map<TypeRef, Integer>			innerAccess			= new HashMap<>();
 	final Set<TypeRef>					notAccessible		= Create.set();
 	final Map<Object, Element>			cache				= Create.map();
 	final MultiMap<PackageRef, Element>	packages;
@@ -441,9 +443,7 @@ class JavaElement {
 			@Override
 			public void innerClass(TypeRef innerClass, TypeRef outerClass, String innerName, int innerClassAccessFlags)
 				throws Exception {
-				Clazz clazz = analyzer.findClass(innerClass);
-				if (clazz != null)
-					clazz.setInnerAccess(innerClassAccessFlags);
+				innerAccess.computeIfAbsent(innerClass, k -> Integer.valueOf(innerClassAccessFlags));
 
 				if (Modifier.isProtected(innerClassAccessFlags) || Modifier.isPublic(innerClassAccessFlags))
 					return;
@@ -595,7 +595,9 @@ class JavaElement {
 			}
 		}
 
-		access(members, clazz.getAccess(), clazz.isDeprecated(), provider.get());
+		Integer inner_access_flags = innerAccess.get(clazz.getClassName());
+		int access_flags = (inner_access_flags != null) ? inner_access_flags.intValue() : clazz.getAccess();
+		access(members, access_flags, clazz.isDeprecated(), provider.get());
 
 		// And make the result
 		Element s = new Element(type, fqn, members, MINOR, MAJOR, null);
