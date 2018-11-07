@@ -904,23 +904,29 @@ public class bnd extends Processor {
 	}
 
 	public void perProject(ProjectWorkspaceOptions opts, PerProject run) throws Exception {
+		perProject(opts, run, true);
+	}
+
+	public void perProject(ProjectWorkspaceOptions opts, PerProject run, boolean manageDeps) throws Exception {
 		List<Project> projects = getFilteredProjects(opts);
 
 		final Set<Project> projectsWellDone = new HashSet<>();
 
 		for (Project p : projects) {
-			final Collection<Project> projectDeps = p.getDependson(); // ordered
-			if (opts.verbose()) {
-				out.println("Project dependencies for: " + p.getName());
-				projectDeps.forEach(pr -> out
-					.println(" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
-			}
+			if (manageDeps) {
+				final Collection<Project> projectDeps = p.getDependson(); // ordered
+				if (opts.verbose()) {
+					out.println("Project dependencies for: " + p.getName());
+					projectDeps.forEach(pr -> out.println(
+						" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
+				}
 
-			projectDeps.removeAll(projectsWellDone);
+				projectDeps.removeAll(projectsWellDone);
 
-			for (Project dep : projectDeps) {
-				run.doit(dep);
-				projectsWellDone.add(dep);
+				for (Project dep : projectDeps) {
+					run.doit(dep);
+					projectsWellDone.add(dep);
+				}
 			}
 
 			run.doit(p);
@@ -4768,5 +4774,12 @@ public class bnd extends Processor {
 			}
 		}
 
+	}
+
+	@Description("Generate and export reports of a workspace, a project or of a jar.")
+	public void _exportreport(ExportReportCommand.ReporterOptions options) throws Exception {
+		ExportReportCommand mc = new ExportReportCommand(this);
+		mc.run(options);
+		getInfo(mc);
 	}
 }
