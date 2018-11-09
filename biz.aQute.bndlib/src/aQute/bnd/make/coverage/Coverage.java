@@ -42,7 +42,8 @@ public class Coverage {
 
 				@Override
 				public void implementsInterfaces(TypeRef names[]) {
-					MethodDef def = clazz.getMethodDef(0, "<implements>", "()V");
+					@SuppressWarnings("deprecation")
+					MethodDef def = clazz.new MethodDef(0, "<implements>", "()V");
 					// TODO
 					for (TypeRef interfaceName : names) {
 						for (Map.Entry<MethodDef, List<MethodDef>> entry : catalog.entrySet()) {

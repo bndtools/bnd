@@ -11,6 +11,7 @@ Bundle-Description: A Swiss Army Knife for OSGi
 Export-Package: \
 	aQute.bnd.annotation.*;-noimport:=true,\
 	aQute.bnd.osgi;-noimport:=true,\
+	aQute.bnd.classfile;-noimport:=true,\
 	aQute.bnd.signatures;-noimport:=true,\
 	aQute.bnd.service.lifecycle;-noimport:=true,\
 	aQute.bnd.osgi.resource;-noimport:=true,\

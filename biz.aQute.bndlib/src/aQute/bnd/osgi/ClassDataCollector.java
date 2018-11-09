@@ -5,7 +5,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 
 /**
  * When adding methods to this class, you must also add them to
- * {@link ClassDataCollectors} and {@link ClassDataCollectorRecorder}!
+ * {@link ClassDataCollectors}!
  */
 public class ClassDataCollector {
 
@@ -17,7 +17,7 @@ public class ClassDataCollector {
 	}
 
 	public boolean classStart(Clazz c) {
-		classBegin(c.accessx, c.className);
+		classBegin(c.getAccess(), c.getClassName());
 		return true;
 	}
 
