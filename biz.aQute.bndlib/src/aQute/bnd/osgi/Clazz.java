@@ -691,6 +691,9 @@ public class Clazz {
 		if (classDef.isPublic()) {
 			api = new HashSet<>();
 		}
+		if (!classDef.isModule()) {
+			referTo(classDef.getType(), Modifier.PUBLIC);
+		}
 
 		String superName = classFile.super_class;
 		if (superName == null) {
@@ -700,6 +703,7 @@ public class Clazz {
 			}
 		} else {
 			superClass = analyzer.getTypeRef(superName);
+			referTo(superClass, classFile.access);
 		}
 
 		int interfaces_count = classFile.interfaces.length;
@@ -707,20 +711,7 @@ public class Clazz {
 			interfaces = new TypeRef[interfaces_count];
 			for (int i = 0; i < interfaces_count; i++) {
 				interfaces[i] = analyzer.getTypeRef(classFile.interfaces[i]);
-			}
-		}
-
-		if (!classDef.isModule()) {
-			referTo(classDef.getType(), Modifier.PUBLIC);
-		}
-
-		if (superClass != null) {
-			referTo(superClass, classFile.access);
-		}
-
-		if (interfaces_count > 0) {
-			for (TypeRef i : interfaces) {
-				referTo(i, classFile.access);
+				referTo(interfaces[i], classFile.access);
 			}
 		}
 
