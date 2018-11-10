@@ -557,7 +557,7 @@ public class Clazz {
 
 		@Override
 		public Object getConstant() {
-			return attribute(AnnotationDefaultAttribute.class).map(a -> constant(a, access))
+			return attribute(AnnotationDefaultAttribute.class).map(a -> annotationDefault(a, access))
 				.orElse(null);
 		}
 
@@ -1054,13 +1054,13 @@ public class Clazz {
 	private void visitAnnotationDefault(ClassDataCollector cd, AnnotationDefaultAttribute attribute,
 		ElementDef elementDef) {
 		MethodDef methodDef = (MethodDef) elementDef;
-		Object value = constant(attribute, methodDef.getAccess());
+		Object value = annotationDefault(attribute, methodDef.getAccess());
 		cd.annotationDefault(methodDef, value);
 	}
 
-	Object constant(AnnotationDefaultAttribute attribute, int access) {
+	Object annotationDefault(AnnotationDefaultAttribute attribute, int access_flags) {
 		try {
-			return newElementValue(attribute.value, ElementType.METHOD, RetentionPolicy.RUNTIME, access);
+			return newElementValue(attribute.value, ElementType.METHOD, RetentionPolicy.RUNTIME, access_flags);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
