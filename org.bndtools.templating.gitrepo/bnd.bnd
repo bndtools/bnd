@@ -27,4 +27,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-SymbolicName: org.bndtools.templating.gitrepo; singleton:=true
 # Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
 Import-Package: \
+    sun.net.www.protocol.*; resolution:=optional,\
+    sun.security.*; resolution:=optional,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
