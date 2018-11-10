@@ -29,5 +29,7 @@ Bundle-ActivationPolicy: lazy
 
 # Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
 Import-Package: sun.misc; resolution:=optional,\
+    com.google.appengine.*; resolution:=optional,\
+    com.google.apphosting.*; resolution:=optional,\
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
