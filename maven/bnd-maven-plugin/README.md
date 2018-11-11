@@ -88,7 +88,7 @@ The plugin will by default set some OSGi bundle headers derived from [pom elemen
 | `Bundle-Version` | `version` |
 | `Bundle-Description` | `description` |
 | `Bundle-Vendor` | `organisation.name` |
-| `Bundle-Bundle-License` | `licenses` |
+| `Bundle-License` | `licenses` |
 | `Bundle-SCM` | `scm` |
 | `Bundle-Developers` | `developers` (child element `id` must be set on each developer) |
 | `Bundle-DocUrl` | `url` |
