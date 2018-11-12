@@ -15,9 +15,18 @@ public abstract class MemberInfo extends ElementInfo {
 		this.descriptor = descriptor;
 	}
 
-	@Override
-	public String toString() {
-		return Modifier.toString(access) + " " + name + " " + descriptor + " " + Arrays.toString(attributes);
+	String toString(int access_mask) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(Modifier.toString(access & access_mask));
+		if (sb.length() > 0) {
+			sb.append(' ');
+		}
+		return sb.append(name)
+			.append(' ')
+			.append(descriptor)
+			.append(' ')
+			.append(Arrays.toString(attributes))
+			.toString();
 	}
 
 	@FunctionalInterface

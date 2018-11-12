@@ -10,6 +10,10 @@ import aQute.lib.io.ByteBufferDataInput;
 
 public class ClassFile extends ElementInfo {
 	public static final int		MAJOR_VERSION	= 55;
+	private static final int	ACC_ANNOTATION	= 0x2000;
+	private static final int	ACC_ENUM		= 0x4000;
+	private static final int	ACC_MODULE		= 0x8000;
+
 	public final int			minor_version;
 	public final int			major_version;
 	public final ConstantPool	constant_pool;
@@ -34,7 +38,25 @@ public class ClassFile extends ElementInfo {
 
 	@Override
 	public String toString() {
-		return Modifier.toString(access) + " " + this_class + " " + Arrays.toString(attributes);
+		StringBuilder sb = new StringBuilder();
+		sb.append(Modifier.toString(access & Modifier.classModifiers()));
+		if (sb.length() > 0) {
+			sb.append(' ');
+		}
+		if ((access & Modifier.INTERFACE) != 0) {
+			if ((access & ACC_ANNOTATION) != 0) {
+				sb.append('@');
+			}
+			sb.append("interface ");
+		} else if ((access & ACC_ENUM) != 0) {
+			sb.append("enum ");
+		} else if ((access & ACC_MODULE) == 0) {
+			sb.append("class ");
+		}
+		return sb.append(this_class)
+			.append(' ')
+			.append(Arrays.toString(attributes))
+			.toString();
 	}
 
 	public static ClassFile parseClassFile(DataInput in) throws IOException {
