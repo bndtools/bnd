@@ -411,9 +411,16 @@ public class Clazz {
 			type = analyzer.getTypeRef(classFile.this_class);
 		}
 
-		public String getSourceFile() {
+		String getSourceFile() {
 			return attribute(SourceFileAttribute.class).map(a -> a.sourcefile)
 				.orElse(null);
+		}
+
+		boolean isInnerClass() {
+			return attributes(InnerClassesAttribute.class).map(a -> a.classes)
+				.flatMap(Arrays::stream)
+				.anyMatch(
+					inner -> !Modifier.isStatic(inner.inner_access) && inner.inner_class.equals(type.getBinary()));
 		}
 
 		@Override
@@ -1803,6 +1810,10 @@ public class Clazz {
 
 	public TypeRef getClassName() {
 		return classDef.getType();
+	}
+
+	public boolean isInnerClass() {
+		return classDef.isInnerClass();
 	}
 
 	@Deprecated
