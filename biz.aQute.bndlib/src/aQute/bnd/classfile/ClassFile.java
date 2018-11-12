@@ -121,6 +121,15 @@ public class ClassFile extends ElementInfo {
 			case InnerClassesAttribute.NAME : {
 				return InnerClassesAttribute.parseInnerClassesAttribute(in, constant_pool);
 			}
+			case LineNumberTableAttribute.NAME : {
+				return LineNumberTableAttribute.parseLineNumberTableAttribute(in, constant_pool);
+			}
+			case LocalVariableTableAttribute.NAME : {
+				return LocalVariableTableAttribute.parseLocalVariableTableAttribute(in, constant_pool);
+			}
+			case LocalVariableTypeTableAttribute.NAME : {
+				return LocalVariableTypeTableAttribute.parseLocalVariableTypeTableAttribute(in, constant_pool);
+			}
 			case MethodParametersAttribute.NAME : {
 				return MethodParametersAttribute.parseMethodParametersAttribute(in, constant_pool);
 			}
@@ -164,6 +173,9 @@ public class ClassFile extends ElementInfo {
 			}
 			case SignatureAttribute.NAME : {
 				return SignatureAttribute.parseSignatureAttribute(in, constant_pool);
+			}
+			case SourceDebugExtensionAttribute.NAME : {
+				return SourceDebugExtensionAttribute.parseSourceDebugExtensionAttribute(in, attribute_length);
 			}
 			case SourceFileAttribute.NAME : {
 				return SourceFileAttribute.parseSourceFileAttribute(in, constant_pool);
