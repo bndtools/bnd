@@ -16,7 +16,7 @@ public class AnnotationInfo {
 
 	@Override
 	public String toString() {
-		return type + " " + Arrays.deepToString(values);
+		return type + " " + Arrays.toString(values);
 	}
 
 	static AnnotationInfo parseAnnotationInfo(DataInput in, ConstantPool constant_pool) throws IOException {

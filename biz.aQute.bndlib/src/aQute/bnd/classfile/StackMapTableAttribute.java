@@ -36,7 +36,7 @@ public class StackMapTableAttribute implements Attribute {
 
 	@Override
 	public String toString() {
-		return NAME + " " + Arrays.deepToString(entries);
+		return NAME + " " + Arrays.toString(entries);
 	}
 
 	static StackMapTableAttribute parseStackMapTableAttribute(DataInput in, ConstantPool constant_pool)
@@ -217,7 +217,7 @@ public class StackMapTableAttribute implements Attribute {
 
 		@Override
 		public String toString() {
-			return tag + "/" + delta + "/" + Arrays.deepToString(locals);
+			return tag + "/" + delta + "/" + Arrays.toString(locals);
 		}
 	}
 
@@ -240,7 +240,7 @@ public class StackMapTableAttribute implements Attribute {
 
 		@Override
 		public String toString() {
-			return tag + "/" + delta + "/" + Arrays.deepToString(locals) + "/" + Arrays.deepToString(stack);
+			return tag + "/" + delta + "/" + Arrays.toString(locals) + "/" + Arrays.toString(stack);
 		}
 	}
 

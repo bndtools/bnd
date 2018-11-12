@@ -19,7 +19,7 @@ public class BootstrapMethodsAttribute implements Attribute {
 
 	@Override
 	public String toString() {
-		return NAME + " " + Arrays.deepToString(bootstrap_methods);
+		return NAME + " " + Arrays.toString(bootstrap_methods);
 	}
 
 	static BootstrapMethodsAttribute parseBootstrapMethodsAttribute(DataInput in, ConstantPool constant_pool)

@@ -23,7 +23,7 @@ public class TypeAnnotationInfo extends AnnotationInfo {
 
 	@Override
 	public String toString() {
-		return type + " " + Arrays.deepToString(values);
+		return type + " " + Arrays.toString(values);
 	}
 
 	static TypeAnnotationInfo parseTypeAnnotationInfo(DataInput in, ConstantPool constant_pool) throws IOException {

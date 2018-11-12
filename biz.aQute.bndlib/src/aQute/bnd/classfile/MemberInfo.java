@@ -17,7 +17,7 @@ public abstract class MemberInfo extends ElementInfo {
 
 	@Override
 	public String toString() {
-		return Modifier.toString(access) + " " + name + " " + descriptor + " " + Arrays.deepToString(attributes);
+		return Modifier.toString(access) + " " + name + " " + descriptor + " " + Arrays.toString(attributes);
 	}
 
 	@FunctionalInterface

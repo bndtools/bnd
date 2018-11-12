@@ -34,7 +34,7 @@ public class ClassFile extends ElementInfo {
 
 	@Override
 	public String toString() {
-		return Modifier.toString(access) + " " + this_class + " " + Arrays.deepToString(attributes);
+		return Modifier.toString(access) + " " + this_class + " " + Arrays.toString(attributes);
 	}
 
 	public static ClassFile parseClassFile(DataInput in) throws IOException {

@@ -14,7 +14,7 @@ public abstract class TypeAnnotationsAttribute implements Attribute {
 
 	@Override
 	public String toString() {
-		return name() + " " + Arrays.deepToString(type_annotations);
+		return name() + " " + Arrays.toString(type_annotations);
 	}
 
 	static <A extends TypeAnnotationsAttribute> A parseTypeAnnotationsAttribute(DataInput in,

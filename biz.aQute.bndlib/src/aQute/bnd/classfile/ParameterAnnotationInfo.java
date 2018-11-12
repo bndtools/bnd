@@ -13,6 +13,6 @@ public class ParameterAnnotationInfo {
 
 	@Override
 	public String toString() {
-		return parameter + ":" + Arrays.deepToString(annotations);
+		return parameter + ":" + Arrays.toString(annotations);
 	}
 }

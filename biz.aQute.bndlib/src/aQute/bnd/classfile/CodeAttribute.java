@@ -29,7 +29,7 @@ public class CodeAttribute implements Attribute {
 
 	@Override
 	public String toString() {
-		return NAME + " " + Arrays.deepToString(attributes);
+		return NAME + " " + Arrays.toString(attributes);
 	}
 
 	static CodeAttribute parseCodeAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
