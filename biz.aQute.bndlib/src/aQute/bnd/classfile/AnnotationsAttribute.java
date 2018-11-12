@@ -14,7 +14,7 @@ public abstract class AnnotationsAttribute implements Attribute {
 
 	@Override
 	public String toString() {
-		return name() + " " + Arrays.deepToString(annotations);
+		return name() + " " + Arrays.toString(annotations);
 	}
 
 	static <A extends AnnotationsAttribute> A parseAnnotationsAttribute(DataInput in,

@@ -15,7 +15,7 @@ public class ElementValueInfo {
 
 	@Override
 	public String toString() {
-		return name + "=" + ((value instanceof Object[]) ? Arrays.deepToString((Object[]) value) : value);
+		return name + "=" + ((value instanceof Object[]) ? Arrays.toString((Object[]) value) : value);
 	}
 
 	static ElementValueInfo parseElementValueInfo(DataInput in, ConstantPool constant_pool) throws IOException {

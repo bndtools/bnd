@@ -83,7 +83,7 @@ public class ConstantPool {
 
 	@Override
 	public String toString() {
-		return Arrays.deepToString(pool);
+		return Arrays.toString(pool);
 	}
 
 	static ConstantPool parseConstantPool(DataInput in) throws IOException {

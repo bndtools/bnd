@@ -14,7 +14,7 @@ public abstract class ParameterAnnotationsAttribute implements Attribute {
 
 	@Override
 	public String toString() {
-		return name() + " " + Arrays.deepToString(parameter_annotations);
+		return name() + " " + Arrays.toString(parameter_annotations);
 	}
 
 	static <A extends ParameterAnnotationsAttribute> A parseParameterAnnotationsAttribute(DataInput in,
