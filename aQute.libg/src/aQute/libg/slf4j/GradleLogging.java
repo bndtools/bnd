@@ -17,10 +17,11 @@ public class GradleLogging {
 	public final static Marker	QUIET;
 
 	static {
+		String gradleLogging = "org.gradle.api.logging.Logging";
 		Marker lifecycle = null;
 		Marker quiet = null;
 		try {
-			Class<?> logging = Class.forName("org.gradle.api.logging.Logging");
+			Class<?> logging = Class.forName(gradleLogging);
 			lifecycle = (Marker) logging.getField("LIFECYCLE")
 				.get(null);
 			quiet = (Marker) logging.getField("QUIET")
