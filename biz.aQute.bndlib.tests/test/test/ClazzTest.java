@@ -820,5 +820,26 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	public static class Nested {}
+
+	public class Inner {}
+
+	public void testNestedClass() throws Exception {
+		File file = IO.getFile("bin_test/test/ClazzTest$Nested.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isFalse();
+		}
+	}
+
+	public void testInnerClass() throws Exception {
+		File file = IO.getFile("bin_test/test/ClazzTest$Inner.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isTrue();
+		}
+	}
 }
 
