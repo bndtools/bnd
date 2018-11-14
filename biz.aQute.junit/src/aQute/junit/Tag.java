@@ -234,23 +234,19 @@ public class Tag {
 			for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
 				Object content = e.nextElement();
 				if (content instanceof String) {
+					String s = (String) content;
 					if (cdata) {
-						pw.print("<![CDATA[");
-						StringBuffer sb = new StringBuffer();
-						sb.append(content);
-
-						// Unbelievable but Richard had cases
-						// where the contents matched the end ]]>
-						// specifier, so clean it up
-						int l = sb.indexOf("]]>");
-						while (l >= 0) {
-							sb.insert(l + 2, "]]><![CDATA[");
-							l = sb.indexOf("]]>", l + 15);
+						pw.write("<![CDATA[");
+						int begin = 0;
+						for (int end; (end = s.indexOf("]]>", begin)) >= 0; begin = end + 3) {
+							pw.write(s, begin, end - begin);
+							pw.print("]]]]><![CDATA[>");
 						}
-						pw.print(sb);
-						pw.print("]]>");
-					} else
-						formatted(pw, indent + 2, 60, escape((String) content));
+						pw.write(s, begin, s.length() - begin);
+						pw.write("]]>");
+					} else {
+						formatted(pw, indent + 2, 60, s);
+					}
 				} else if (content instanceof Tag) {
 					Tag tag = (Tag) content;
 					tag.print(indent + 2, pw);

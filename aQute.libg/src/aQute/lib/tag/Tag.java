@@ -447,9 +447,9 @@ public class Tag {
 			pw.print('"');
 		}
 
-		if (content.size() == 0)
+		if (content.isEmpty()) {
 			pw.print('/');
-		else {
+		} else {
 			pw.print('>');
 			Object last = null;
 			for (Object c : content) {
@@ -464,14 +464,18 @@ public class Tag {
 						continue;
 
 					String s = c.toString();
-
 					if (cdata) {
-						pw.print("<![CDATA[");
-						s = s.replaceAll("]]>", "]]]]><![CDATA[>");
-						pw.print(s);
-						pw.print("]]>");
-					} else
+						pw.write("<![CDATA[");
+						int begin = 0;
+						for (int end; (end = s.indexOf("]]>", begin)) >= 0; begin = end + 3) {
+							pw.write(s, begin, end - begin);
+							pw.print("]]]]><![CDATA[>");
+						}
+						pw.write(s, begin, s.length() - begin);
+						pw.write("]]>");
+					} else {
 						pw.print(escape(s));
+					}
 				}
 				last = c;
 			}
