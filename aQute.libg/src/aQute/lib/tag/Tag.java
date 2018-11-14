@@ -444,7 +444,7 @@ public class Tag {
 			pw.print(key);
 			pw.print("=\"");
 			pw.print(value);
-			pw.print("\"");
+			pw.print('"');
 		}
 
 		if (content.size() == 0)
