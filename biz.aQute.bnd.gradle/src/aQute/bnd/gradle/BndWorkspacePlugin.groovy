@@ -12,15 +12,23 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.logReport
+
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
+import biz.aQute.bnd.reporter.exporter.ReportExporterBuilder
+import biz.aQute.bnd.reporter.generator.EntryNamesReference
+import biz.aQute.bnd.reporter.generator.ReportGeneratorBuilder
+import aQute.bnd.osgi.Resource
 
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.logging.Logger
 import org.gradle.api.initialization.Settings
 import org.gradle.api.tasks.Delete
+import groovy.lang.MissingPropertyException
 
 public class BndWorkspacePlugin implements Plugin<Object> {
   public static final String PLUGINID = 'biz.aQute.bnd.workspace'
@@ -175,6 +183,61 @@ public class BndWorkspacePlugin implements Plugin<Object> {
           apply plugin: BndPlugin.class
         }
       }
-    }
-  }
+	  
+	  task('listReports') {
+		  description 'Displays the list of reports defined with the -exportreport instruction.'
+		  group 'help'
+		  doLast {
+			try {
+			  List<String> reports = ReportExporterBuilder.create()
+			  .setProcessor(bndWorkspace)
+			  .setScope("workspace")
+			  .build()
+			  .getAvailableReportsOf(bndWorkspace);
+  
+			  if (reports.isEmpty()) {
+				println "no reports";
+			  } else {
+				reports.each {
+				 r -> println "${r}"
+				}
+			  }
+			} catch (Exception e) {
+			  throw new GradleException("Failed to list the reports",e)
+			} 
+		  }
+		}
+		
+		task('exportReports') {
+          description 'Exports the reports defined with the -exportreport instruction.'
+		  group 'export'
+		  doLast {
+			  try {
+				Map<String, Resource> reports = ReportExporterBuilder.create()
+				.setProcessor(bndWorkspace)
+				.setGenerator(ReportGeneratorBuilder.create()
+				  .setProcessor(bndWorkspace)
+				  .useCustomConfig()
+				  .addPlugin(EntryNamesReference.FILE_NAME)
+				  .addPlugin(EntryNamesReference.PROJECTS)
+				  .build())
+				.setScope("workspace")
+				.build()
+				.exportReportsOf(bndWorkspace);
+	  
+				if (reports.isEmpty()) {
+				  println "no reports";
+				} else {
+				  reports.each { path, resource ->
+					resource.write(new FileOutputStream(path));
+					println "${path}"
+				  }
+				}
+			  } catch (Exception e) {
+				  throw new GradleException("Failed to export the reports", e)
+			  } 
+		  }
+		}		
+  }  
+ }
 }
