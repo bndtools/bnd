@@ -45,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
+import aQute.bnd.home.Home;
 import aQute.bnd.http.URLCache.Info;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Registry;
@@ -85,7 +86,8 @@ public class HttpClient implements Closeable, URLConnector {
 	private ThreadLocal<PasswordAuthentication>	passwordAuthentication	= new ThreadLocal<>();
 	private boolean								inited;
 	private static JSONCodec					codec					= new JSONCodec();
-	private URLCache							cache					= new URLCache(IO.getFile("~/.bnd/urlcache"));
+	private URLCache							cache					= new URLCache(
+		IO.getFile(Home.getUserHomeBnd() + "/urlcache"));
 	private Registry							registry				= null;
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;

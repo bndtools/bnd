@@ -23,10 +23,11 @@ Export-Package: \
 	aQute.bnd.service.*;-noimport:=true,\
 	aQute.bnd.help.*;-noimport:=true,\
 	aQute.bnd.header;-noimport:=true,\
+	aQute.bnd.home;-noimport:=true,\
 	aQute.bnd.version;-noimport:=true,\
 	aQute.bnd.filerepo;-noimport:=true,\
 	aQute.lib.deployer;-noimport:=true,\
-	aQute.bnd.junit,\
+	aQute.bnd.junit;-noimport:=true,\
 	aQute.bnd.properties;-noimport:=true,\
 	aQute.bnd.build.model;-noimport:=true,\
 	aQute.bnd.build.model.clauses;-noimport:=true,\
@@ -40,7 +41,7 @@ Export-Package: \
 	aQute.bnd.component.error;-noimport:=true,\
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.repository;-split-package:=first,\
-	org.osgi.util.promise;-split-package:=first, \
+	org.osgi.util.promise;-split-package:=first,\
 	org.osgi.util.function;-split-package:=first
 
 -conditionalpackage: \

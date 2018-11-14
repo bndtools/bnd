@@ -51,6 +51,7 @@ import aQute.bnd.exporter.runbundles.RunbundlesExporter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.home.Home;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Maven;
 import aQute.bnd.osgi.About;
@@ -84,7 +85,7 @@ import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
 	private final static Logger	logger							= LoggerFactory.getLogger(Workspace.class);
-	public static final File	BND_DEFAULT_WS					= IO.getFile("~/.bnd/default-ws");
+	public static final File	BND_DEFAULT_WS					= IO.getFile(Home.getUserHomeBnd() + "/default-ws");
 	public static final String	BND_CACHE_REPONAME				= "bnd-cache";
 	public static final String	EXT								= "ext";
 	public static final String	BUILDFILE						= "build.bnd";
@@ -107,7 +108,8 @@ public class Workspace extends Processor {
 	final Map<String, Action>									commands		= newMap();
 	final Maven													maven			= new Maven(Processor.getExecutor());
 	private final AtomicBoolean									offline			= new AtomicBoolean();
-	Settings													settings		= new Settings();
+	Settings													settings		= new Settings(
+		Home.getUserHomeBnd() + "/settings.json");
 	WorkspaceRepository											workspaceRepo	= new WorkspaceRepository(this);
 	static String												overallDriver	= "unset";
 	static Parameters											overallGestalt	= new Parameters();
@@ -575,7 +577,7 @@ public class Workspace extends Processor {
 			}
 
 			resourceRepositoryImpl = new ResourceRepositoryImpl();
-			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, "~/.bnd/caches/shas")));
+			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, Home.getUserHomeBnd() + "/caches/shas")));
 			resourceRepositoryImpl.setExecutor(getExecutor());
 			resourceRepositoryImpl.setIndexFile(getFile(getBuildDir(), "repo.json"));
 			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));

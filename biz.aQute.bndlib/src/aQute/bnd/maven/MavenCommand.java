@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.home.Home;
 import aQute.bnd.maven.support.CachedPom;
 import aQute.bnd.maven.support.Maven;
 import aQute.bnd.maven.support.Pom;
@@ -49,7 +50,7 @@ import aQute.libg.command.Command;
 
 public class MavenCommand extends Processor {
 	private final static Logger	logger		= LoggerFactory.getLogger(MavenCommand.class);
-	final Settings				settings	= new Settings();
+	final Settings				settings	= new Settings(Home.getUserHomeBnd() + "/settings.json");
 	File						temp;
 
 	public MavenCommand() {}
