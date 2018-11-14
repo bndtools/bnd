@@ -1,6 +1,6 @@
 ---
 order: 400
-title: Command line Reference
+title: Commands
 layout: default
 ---
 

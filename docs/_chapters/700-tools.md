@@ -17,4 +17,4 @@ layout: default
 If you're a developer of a tool that needs to be listed here, do not hesitate to submit a pull request at [github][1].
 
 
-[1]: https://github.com/bndtools/bnd.manual
+[1]: https://github.com/bndtools/bnd
