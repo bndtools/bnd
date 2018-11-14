@@ -83,6 +83,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
+import aQute.bnd.home.Home;
 import aQute.bnd.main.BaselineCommands.baseLineOptions;
 import aQute.bnd.main.BaselineCommands.schemaOptions;
 import aQute.bnd.main.DiffCommand.diffOptions;
@@ -155,7 +156,8 @@ public class bnd extends Processor {
 	private static Logger						logger					= LoggerFactory.getLogger(bnd.class);
 	static Pattern								ASSIGNMENT				= Pattern.compile(															//
 		"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
-	Settings									settings				= new Settings();
+	Settings									settings				= new Settings(
+		Home.getUserHomeBnd() + "/settings.json");
 	final PrintStream							err						= System.err;
 	final public PrintStream					out						= System.out;
 	Justif										justif					= new Justif(80, 40, 42, 70);

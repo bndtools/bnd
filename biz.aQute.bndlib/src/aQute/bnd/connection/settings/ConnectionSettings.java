@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.home.Home;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
@@ -56,7 +57,8 @@ public class ConnectionSettings {
 	public static final String					M2_SETTINGS_SECURITY_XML		= "~/.m2/settings-security.xml";
 	public static final String					M2_SETTINGS_SECURITY_PROPERTY	= "settings.security";
 	private static final String					M2_SETTINGS_XML					= "~/.m2/settings.xml";
-	private static final String					BND_CONNECTION_SETTINGS_XML		= "~/.bnd/connection-settings.xml";
+	private static final String					BND_CONNECTION_SETTINGS_XML		= Home.getUserHomeBnd()
+		+ "/connection-settings.xml";
 	private static final String					CONNECTION_SETTINGS				= "-connection-settings";
 	private final Processor						processor;
 	private final HttpClient					client;
