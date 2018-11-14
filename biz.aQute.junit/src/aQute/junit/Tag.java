@@ -9,17 +9,17 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.Dictionary;
-import java.util.Enumeration;
-import java.util.Hashtable;
-import java.util.Vector;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The Tag class represents a minimal XML tree. It consist of a named element
- * with a hashtable of named attributes. Methods are provided to walk the tree
- * and get its constituents. The content of a Tag is a list that contains String
- * objects or other Tag objects.
+ * with a map of named attributes. Methods are provided to walk the tree and get
+ * its constituents. The content of a Tag is a list that contains String objects
+ * or other Tag objects.
  */
 public class Tag {
 	Tag								parent;														// Parent
@@ -28,11 +28,11 @@ public class Tag {
 																								// of
 																								// the
 																								// tag
-	Hashtable<String, String>		attributes	= new Hashtable<>();							// Attributes
+	Map<String, String>				attributes	= new LinkedHashMap<>();						// Attributes
 																								// name
 																								// ->
 																								// value
-	Vector<Object>					content		= new Vector<>();								// Content
+	List<Object>					content		= new ArrayList<>();							// Content
 																								// elements
 	boolean							cdata;
 
@@ -48,7 +48,7 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
-	public Tag(String name, Hashtable<String, String> attributes) {
+	public Tag(String name, Map<String, String> attributes) {
 		this.name = name;
 		this.attributes = attributes;
 	}
@@ -113,14 +113,14 @@ public class Tag {
 	 * Add a new content string.
 	 */
 	public void addContent(String string) {
-		content.addElement(string);
+		content.add(string);
 	}
 
 	/**
 	 * Add a new content tag.
 	 */
 	public void addContent(Tag tag) {
-		content.addElement(tag);
+		content.add(tag);
 		tag.parent = this;
 	}
 
@@ -149,14 +149,14 @@ public class Tag {
 	/**
 	 * Answer the attributes as a Dictionary object.
 	 */
-	public Dictionary<String, String> getAttributes() {
+	public Map<String, String> getAttributes() {
 		return attributes;
 	}
 
 	/**
 	 * Return the contents.
 	 */
-	public Vector<Object> getContents() {
+	public List<Object> getContents() {
 		return content;
 	}
 
@@ -175,13 +175,12 @@ public class Tag {
 	 * Return only the tags of the first level of descendants that match the
 	 * name.
 	 */
-	public Vector<Object> getContents(String tag) {
-		Vector<Object> out = new Vector<>();
-		for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
-			Object o = e.nextElement();
+	public List<Object> getContents(String tag) {
+		List<Object> out = new ArrayList<>();
+		for (Object o : content) {
 			if (o instanceof Tag && ((Tag) o).getName()
 				.equals(tag))
-				out.addElement(o);
+				out.add(o);
 		}
 		return out;
 	}
@@ -190,17 +189,16 @@ public class Tag {
 	 * Return the whole contents as a String (no tag info and attributes).
 	 */
 	public String getContentsAsString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		getContentsAsString(sb);
 		return sb.toString();
 	}
 
 	/**
-	 * convenient method to get the contents in a StringBuffer.
+	 * convenient method to get the contents in a StringBuilder.
 	 */
-	public void getContentsAsString(StringBuffer sb) {
-		for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
-			Object o = e.nextElement();
+	public void getContentsAsString(StringBuilder sb) {
+		for (Object o : content) {
 			if (o instanceof Tag)
 				((Tag) o).getContentsAsString(sb);
 			else
@@ -217,8 +215,7 @@ public class Tag {
 		pw.print('<');
 		pw.print(name);
 
-		for (Enumeration<String> e = attributes.keys(); e.hasMoreElements();) {
-			String key = e.nextElement();
+		for (String key : attributes.keySet()) {
 			String value = escape(attributes.get(key));
 			pw.print(' ');
 			pw.print(key);
@@ -227,12 +224,11 @@ public class Tag {
 			pw.print('"');
 		}
 
-		if (content.size() == 0)
+		if (content.isEmpty()) {
 			pw.print('/');
-		else {
+		} else {
 			pw.print('>');
-			for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
-				Object content = e.nextElement();
+			for (Object content : content) {
 				if (content instanceof String) {
 					String s = (String) content;
 					if (cdata) {
@@ -364,20 +360,17 @@ public class Tag {
 	}
 
 	public Tag[] select(String path, Tag mapping) {
-		Vector<Tag> v = new Vector<>();
+		List<Tag> v = new ArrayList<>();
 		select(path, v, mapping);
-		Tag[] result = new Tag[v.size()];
-		v.copyInto(result);
-		return result;
+		return v.toArray(new Tag[0]);
 	}
 
-	void select(String path, Vector<Tag> results, Tag mapping) {
+	void select(String path, List<Tag> results, Tag mapping) {
 		if (path.startsWith("//")) {
 			int i = path.indexOf('/', 2);
 			String name = path.substring(2, i < 0 ? path.length() : i);
 
-			for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
-				Object o = e.nextElement();
+			for (Object o : content) {
 				if (o instanceof Tag) {
 					Tag child = (Tag) o;
 					if (match(name, child, mapping))
@@ -390,7 +383,7 @@ public class Tag {
 		}
 
 		if (path.length() == 0) {
-			results.addElement(this);
+			results.add(this);
 			return;
 		}
 
@@ -402,8 +395,7 @@ public class Tag {
 			remainder = path.substring(i + 1);
 		}
 
-		for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
-			Object o = e.nextElement();
+		for (Object o : content) {
 			if (o instanceof Tag) {
 				Tag child = (Tag) o;
 				if (child.getName()
@@ -457,7 +449,7 @@ public class Tag {
 				path = "";
 		}
 		Tag tags[] = select(path);
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < tags.length; i++) {
 			if (attribute == null)
 				tags[i].getContentsAsString(sb);
@@ -469,8 +461,7 @@ public class Tag {
 
 	public String getStringContent() {
 		StringBuilder sb = new StringBuilder();
-		for (Enumeration<Object> e = content.elements(); e.hasMoreElements();) {
-			Object c = e.nextElement();
+		for (Object c : content) {
 			if (!(c instanceof Tag))
 				sb.append(c);
 		}
