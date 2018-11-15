@@ -25,13 +25,20 @@
 	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.exporters;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.reporter;latest}!/!META-INF/*, \
+ 	@${repo;biz.aQute.bnd.remote.junit;latest}!/!META-INF/*, \
 	@${repo;slf4j.api;latest}!/!META-INF/*, \
 	@${repo;slf4j.simple;latest}!/!META-INF/*, \
 	@${repo;jline}!/!META-INF/*
 
 
 Import-Package: org.slf4j, *
-Export-Package: \
+# About the aQute.library.bndrepo dep. Needed to add them here
+# by hand even though they are in bndlib. However, they are added
+# and we can unfortunately not see those packages ...
+Private-Package: \
+    aQute.bnd.ant,\
+    aQute.bnd.enroute.commands,\
+    aQute.bnd.main, \
 	!org.slf4j.impl,\
 	org.slf4j.*
 
@@ -61,18 +68,12 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	org.yaml.snakeyaml;version=latest,\
 	slf4j.api;version=latest,\
 	slf4j.simple;version=latest, \
-	jline
+	jline, \
+	biz.aQute.bnd.remote.junit;version=latest
 
 -testpath: \
 	${junit},\
 	org.osgi.namespace.extender;version=latest,\
-	org.apache.felix.framework;version=latest,\
+	org.apache.felix.framework, \
 	biz.aQute.bnd.embedded-repo; version=snapshot
 
-# About the aQute.library.bndrepo dep. Needed to add them here
-# by hand even though they are in bndlib. However, they are added
-# and we can unfortunately not see those packages ...
-Private-Package: \
-	aQute.bnd.ant,\
-	aQute.bnd.enroute.commands,\
-	aQute.bnd.main
