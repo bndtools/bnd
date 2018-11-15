@@ -7,16 +7,16 @@ Private-Package: \
 Bundle-Activator: biz.aQute.bnd.diagnostics.gogo.osgi.Activator
 
 -buildpath: \
-	osgi.core;version=latest,\
-	org.osgi.service.component.annotations;version=latest,\
+	osgi.core;version=@6,\
+    org.osgi.service.component;version='[1.3,1.4)', \
+    org.osgi.service.component.annotations;version='[1.3,1.4)', \
 	biz.aQute.bndlib;version=latest;packages=*,\
 	org.apache.felix.gogo.runtime;version=0.12,\
 	org.apache.felix.gogo.command
 
 -testpath: \
-	biz.aQute.bnd;version=latest,\
-	org.apache.felix.framework;version=5,  \
-	${junit}
+	${junit}, \
+	biz.aQute.bnd.remote.junit;version=latest
 
 -conditionalpackage: \
 	aQute.lib*,\
@@ -25,4 +25,5 @@ Bundle-Activator: biz.aQute.bnd.diagnostics.gogo.osgi.Activator
 	org.osgi.service.repository.*
 
 Import-Package: \
+	org.osgi.service.component.runtime;resolution:=optional,\
 	*
