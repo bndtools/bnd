@@ -151,7 +151,7 @@ public class Annotation {
 		if (elements == null) {
 			elements = new LinkedHashMap<>(map);
 		} else {
-			map.forEach((k, v) -> elements.putIfAbsent(k, v));
+			map.forEach(elements::putIfAbsent);
 		}
 	}
 }

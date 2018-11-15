@@ -228,7 +228,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Resource pom = null;
 
 		if (instructions.pom.path != null) {
-			pom = createPomFromFile(options.context.getFile(instructions.pom.path));
+			if (instructions.pom.path.equals("JAR")) {
+				pom = getPomResource(binary);
+			} else {
+				pom = createPomFromFile(options.context.getFile(instructions.pom.path));
+			}
 		} else {
 
 			if (!configuration.ignore_metainf_maven()) {
@@ -371,6 +375,17 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return new FileResource(file);
 	}
 
+	private Resource getPomResource(Jar jar) {
+		for (Map.Entry<String, Resource> e : jar.getResources()
+			.entrySet()) {
+			String path = e.getKey();
+			if (path.startsWith("META-INF/maven/") && path.endsWith("/pom.xml")) {
+				return e.getValue();
+			}
+		}
+		return null;
+	}
+
 	private PomResource createPomFromFirstMavenPropertiesInJar(Jar jar, Processor context)
 		throws IOException, Exception {
 		for (Map.Entry<String, Resource> e : jar.getResources()
@@ -380,10 +395,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			if (path.startsWith("META-INF/maven/") && path.endsWith("/pom.properties")) {
 				Resource r = e.getValue();
 				UTF8Properties utf8p = new UTF8Properties();
-				utf8p.load(r.openInputStream());
+				try (InputStream in = r.openInputStream()) {
+					utf8p.load(in);
+				}
 				String version = utf8p.getProperty("version");
-				String artifactId = utf8p.getProperty("artifactId");
 				String groupId = utf8p.getProperty("groupId");
+				String artifactId = utf8p.getProperty("artifactId");
 
 				try (Processor ctx = new Processor(context)) {
 					ctx.addProperties(utf8p);
