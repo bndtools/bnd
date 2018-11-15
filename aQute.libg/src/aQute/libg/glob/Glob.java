@@ -8,11 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Glob {
-	static Logger logger = LoggerFactory.getLogger(Glob.class);
 
 	enum State {
 		SIMPLE,
@@ -177,8 +173,7 @@ public class Glob {
 		try {
 			return Pattern.compile(convertGlobToRegEx(s), flags);
 		} catch (Exception e) {
-			// ignore
-			logger.info("failing regex in glob", e);
+			// ignore, throw?
 		}
 		return null;
 	}
