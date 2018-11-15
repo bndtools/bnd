@@ -65,11 +65,11 @@ public class PomResource extends WriteResource {
 			bsn = bundleSymbolicName.getKey();
 		}
 
-		if (groupId == null) {
-			if (bsn == null) {
-				throw new RuntimeException("Cannot create POM unless bsn is set");
+		if (bsn != null) {
+			String g = augmentManifest(domain, bsn);
+			if (groupId == null) {
+				groupId = g;
 			}
-			groupId = augmentManifest(domain, bsn);
 		}
 
 		String where = processor.get(WHERE);
