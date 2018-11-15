@@ -1,10 +1,7 @@
 ---
-title: Header Reference
+title: Headers
 layout: default
 ---
-
-
-## Reference
 
 <div>
 <dl class="property-index">

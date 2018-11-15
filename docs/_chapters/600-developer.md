@@ -11,31 +11,29 @@ It is quite easy to use bnd from Java, you only need to include biz.aQute.bndlib
 ## Creating a Manifest
 By default, bnd creates a container with resources and then calculates the manifest. However, these phases are separated although they use the same instructions. The following snippet therefore shows how you can create a manifest from an existing file or directory.
 
-  Analyzer analyzer = new Analyzer(); 
-  Jar bin = new Jar( new File("bin") );  // where our data is
-  analyzer.setJar( bin );                // give bnd the contents
 
-  // You can provide additional class path entries to allow
-  // bnd to pickup export version from the packageinfo file,
-  // Version annotation, or their manifests.
-  analyzer.addClasspath( new File("jar/spring.jar") );
-
-  analyzer.setProperty("Bundle-SymbolicName","org.osgi.core");
-  analyzer.setProperty("Export-Package", 
+    Analyzer analyzer = new Analyzer(); 
+    Jar bin = new Jar( new File("bin") );  // where our data is
+    analyzer.setJar( bin );                // give bnd the contents
+    
+    // You can provide additional class path entries to allow
+    // bnd to pickup export version from the packageinfo file,
+    // Version annotation, or their manifests.
+    analyzer.addClasspath( new File("jar/spring.jar") );
+    
+    analyzer.setProperty("Bundle-SymbolicName","org.osgi.core");
+    analyzer.setProperty("Export-Package", 
                        "org.osgi.framework,org.osgi.service.event");
-  analyzer.setProperty("Bundle-Version","1.0");
-
-  // There are no good defaults so make sure you set the 
-  // Import-Package
-  analyzer.setProperty("Import-Package","*");
-
-  // Calculate the manifest
-  Manifest manifest = analyzer.calcManifest();
-
-
-
-  public interface MakePlugin {
-
+    analyzer.setProperty("Bundle-Version","1.0");
+    
+    // There are no good defaults so make sure you set the 
+    // Import-Package
+    analyzer.setProperty("Import-Package","*");
+    
+    // Calculate the manifest
+    Manifest manifest = analyzer.calcManifest();
+  
+    public interface MakePlugin {
     /**
      * This plugin is called when Include-Resource detects 
      * a reference to a resource that it can not find in the 
@@ -52,29 +50,19 @@ By default, bnd creates a container with resources and then calculates the manif
      */
     Resource make(Builder builder, String source, 
           Map<String,String> arguments) throws Exception;
-  }
+    }
 
-[[#make]]
 ### Make
 Make plugins kick in when the `Include-Resource` header tries to locate a resource but it cannot find that resource. The `-make` option defines a number of patterns that are mapped to a make instruction.
 
 For example, if you have
 
-  Include-Resource:       com.acme.Abc.ann
+    Include-Resource:       com.acme.Abc.ann
 
 If no such resource is found, bnd will look in the -make instruction. This instruction associates a pattern with a plugin type. For example:
 
-       -make:                  (*.jar); type=xyz; abc=3; def="$1"
+    -make:                  (*.jar); type=xyz; abc=3; def="$1"
 
 The first name part of the clause is matched against the unfound resource. All plugins are called sequentially until one returns non-null. The arguments on the -make clause are given as parameters to the make plugin. Normally all Make Plugins should verify the type field.
 
 bnd has a bnd and a copy Make Plugin.
-
-### Buildin Plugins
-Some plugins are provided by bnd itself.
-
-||aQute.lib.spring.SpringComponent||AnalyzerPlugin||This component will analyze the Spring XML for Spring DM and will add any classes in these files to the referred set of classes.||
-||aQute.bnd.make.MakeBnd||MakePlugin||If Include-Resource can't find a referred resource it will use the make plugins to see if any of them can make the requested resource. The MakeBnd has type=bnd. This plugin can recursively call bnd to create embedded jars that are not created sequentially||
-||aQute.bnd.make.MakeCopy||MakePlugin||Copies resources from other places in the file system||
-||aQute.lib.deployer.FileRepo||RepositoryPlugin||Provides a file based repository.||
-||aQute.bnd.maven.MavenRepository||RepositoryPlugin||Provides an interface to a the default maven repository in the user's home directory. Can be used with aQute.bnd.maven.MavenGroup to support converting bundle symbolic names to group and artifact id.||
