@@ -107,6 +107,22 @@ public class Attrs implements Map<String, String> {
 		}
 	}
 
+	// do not remove, used to make sur Attrs use this one and not the next that
+	// takes a Map
+	public Attrs(Attrs attrs) {
+		this();
+		putAll(attrs);
+	}
+
+	public Attrs(Map<String, String> map) {
+		this();
+		assert !(map instanceof Attrs);
+		if (map != null)
+			map.entrySet()
+				.stream()
+				.forEach(e -> put(e.getKey(), e.getValue()));
+	}
+
 	public void putAllTyped(Map<String, Object> attrs) {
 
 		for (Map.Entry<String, Object> entry : attrs.entrySet()) {

@@ -208,6 +208,9 @@ public interface Constants {
 	String								AUGMENT_CAPABILITY_DIRECTIVE				= "capability:";
 	String								AUGMENT_REQUIREMENT_DIRECTIVE				= "requirement:";
 
+	String								REMOTEWORKSPACE								= "-remoteworkspace";
+
+
 	/**
 	 * @deprecated This is for support of the legacy OBR requirement format, use
 	 *             {@link #RUNREQUIRES} for new format.
@@ -274,7 +277,7 @@ public interface Constants {
 		METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE, JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA,
 		JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE,
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
-		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS
+		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS, REMOTEWORKSPACE
 
 	};
 
@@ -319,6 +322,7 @@ public interface Constants {
 	String								SIZE_ATTRIBUTE								= "size";
 	String								LINK_ATTRIBUTE								= "link";
 	String								LITERAL_ATTRIBUTE							= "literal";
+	String								CLASS_ATTRIBUTE								= "class";
 	String								NAME_ATTRIBUTE								= "name";
 	String								RESOLUTION_DYNAMIC							= "dynamic";
 	String								DESCRIPTION_ATTRIBUTE						= "description";
