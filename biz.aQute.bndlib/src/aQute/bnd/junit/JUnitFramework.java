@@ -68,6 +68,7 @@ import aQute.lib.io.IO;
  * et. al. Notice that this framework starts in the same process as that the
  * JUnit code runs. This is normally a separately started VM.
  */
+@Deprecated // see biz.aQute.bnd.remote.junit
 public class JUnitFramework implements AutoCloseable {
 	final ExecutorService					executor		= Executors.newCachedThreadPool();
 	final PromiseFactory					promiseFactory	= new PromiseFactory(executor);
