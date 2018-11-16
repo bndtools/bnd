@@ -40,6 +40,7 @@ import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -102,6 +103,7 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.generics.Create;
+import aQute.libg.glob.Glob;
 
 public class Clazz {
 	private final static Logger logger = LoggerFactory.getLogger(Clazz.class);
@@ -313,7 +315,7 @@ public class Clazz {
 		}
 
 		public boolean isAnnotation() {
-			return (access & ACC_ANNOTATION) != 0;
+			return Clazz.isAnnotation(access);
 		}
 
 		@Deprecated
@@ -336,7 +338,7 @@ public class Clazz {
 		}
 	}
 
-	class ElementDef extends Def {
+	abstract class ElementDef extends Def {
 		final Attribute[] attributes;
 
 		ElementDef(int access, Attribute[] attributes) {
@@ -371,15 +373,43 @@ public class Clazz {
 				.flatMap(Arrays::stream);
 		}
 
+		public Stream<Annotation> annotations(String binaryNameFilter) {
+			Predicate<AnnotationInfo> matches = matches(binaryNameFilter);
+			ElementType elementType = elementType();
+			Stream<Annotation> runtimeAnnotations = annotationInfos(RuntimeVisibleAnnotationsAttribute.class)
+				.filter(matches)
+				.map(a -> newAnnotation(a, elementType, RetentionPolicy.RUNTIME, access));
+			Stream<Annotation> classAnnotations = annotationInfos(RuntimeInvisibleAnnotationsAttribute.class)
+				.filter(matches)
+				.map(a -> newAnnotation(a, elementType, RetentionPolicy.CLASS, access));
+			return Stream.concat(runtimeAnnotations, classAnnotations);
+		}
+
+		Predicate<AnnotationInfo> matches(String binaryNameFilter) {
+			if ((binaryNameFilter == null) || binaryNameFilter.equals("*")) {
+				return annotationInfo -> true;
+			}
+			Glob glob = new Glob("L{" + binaryNameFilter + "};");
+			return annotationInfo -> glob.matches(annotationInfo.type);
+		}
+		
 		<A extends TypeAnnotationsAttribute> Stream<TypeAnnotationInfo> typeAnnotationInfos(Class<A> attributeType) {
 			return attributes(attributeType).map(a -> a.type_annotations)
 				.flatMap(Arrays::stream);
 		}
 
-		<A extends ParameterAnnotationsAttribute> Stream<ParameterAnnotationInfo> parameterAnnotationInfos(
-			Class<A> attributeType) {
-			return attributes(attributeType).map(a -> a.parameter_annotations)
-				.flatMap(Arrays::stream);
+		public Stream<TypeAnnotation> typeAnnotations(String binaryNameFilter) {
+			Predicate<AnnotationInfo> matches = matches(binaryNameFilter);
+			ElementType elementType = elementType();
+			Stream<TypeAnnotation> runtimeTypeAnnotations = typeAnnotationInfos(
+				RuntimeVisibleTypeAnnotationsAttribute.class)
+					.filter(matches)
+					.map(a -> newTypeAnnotation(a, elementType, RetentionPolicy.RUNTIME, access));
+			Stream<TypeAnnotation> classTypeAnnotations = typeAnnotationInfos(
+				RuntimeInvisibleTypeAnnotationsAttribute.class)
+					.filter(matches)
+					.map(a -> newTypeAnnotation(a, elementType, RetentionPolicy.CLASS, access));
+			return Stream.concat(runtimeTypeAnnotations, classTypeAnnotations);
 		}
 
 		@Override
@@ -401,6 +431,22 @@ public class Clazz {
 		public String toString() {
 			return getName();
 		}
+
+		abstract ElementType elementType();
+	}
+
+	class CodeDef extends ElementDef {
+		private final ElementType elementType;
+
+		CodeDef(CodeAttribute code, ElementType elementType) {
+			super(0, code.attributes);
+			this.elementType = elementType;
+		}
+
+		@Override
+		ElementType elementType() {
+			return elementType;
+		}
 	}
 
 	class ClassDef extends ElementDef {
@@ -417,10 +463,11 @@ public class Clazz {
 		}
 
 		boolean isInnerClass() {
+			String binary = type.getBinary();
 			return attributes(InnerClassesAttribute.class).map(a -> a.classes)
 				.flatMap(Arrays::stream)
 				.anyMatch(
-					inner -> !Modifier.isStatic(inner.inner_access) && inner.inner_class.equals(type.getBinary()));
+					inner -> !Modifier.isStatic(inner.inner_access) && inner.inner_class.equals(binary));
 		}
 
 		@Override
@@ -431,6 +478,15 @@ public class Clazz {
 		@Override
 		public TypeRef getType() {
 			return type;
+		}
+
+		@Override
+		ElementType elementType() {
+			if (isAnnotation()) {
+				return ElementType.ANNOTATION_TYPE;
+			}
+			return type.getBinary()
+				.endsWith("/package-info") ? ElementType.PACKAGE : ElementType.TYPE;
 		}
 	}
 
@@ -494,6 +550,11 @@ public class Clazz {
 		@Override
 		public TypeRef[] getPrototype() {
 			return null;
+		}
+
+		@Override
+		ElementType elementType() {
+			return ElementType.FIELD;
 		}
 	}
 
@@ -568,19 +629,51 @@ public class Clazz {
 				.orElse(null);
 		}
 
+		<A extends ParameterAnnotationsAttribute> Stream<ParameterAnnotationInfo> parameterAnnotationInfos(
+			Class<A> attributeType) {
+			return attributes(attributeType).map(a -> a.parameter_annotations)
+				.flatMap(Arrays::stream);
+		}
+
+		public Stream<ParameterAnnotation> parameterAnnotations(String binaryNameFilter) {
+			Predicate<AnnotationInfo> matches = matches(binaryNameFilter);
+			ElementType elementType = elementType();
+			Stream<ParameterAnnotation> runtimeParameterAnnotations = parameterAnnotationInfos(
+				RuntimeVisibleParameterAnnotationsAttribute.class)
+					.flatMap(a -> parameterAnnotations(a, matches, elementType, RetentionPolicy.RUNTIME));
+			Stream<ParameterAnnotation> classParameterAnnotations = parameterAnnotationInfos(
+				RuntimeInvisibleParameterAnnotationsAttribute.class)
+					.flatMap(a -> parameterAnnotations(a, matches, elementType, RetentionPolicy.CLASS));
+			return Stream.concat(runtimeParameterAnnotations, classParameterAnnotations);
+		}
+
+		private Stream<ParameterAnnotation> parameterAnnotations(ParameterAnnotationInfo parameterAnnotationInfo,
+			Predicate<AnnotationInfo> matches, ElementType elementType, RetentionPolicy policy) {
+			int parameter = parameterAnnotationInfo.parameter;
+			return Arrays.stream(parameterAnnotationInfo.annotations)
+				.filter(matches)
+				.map(a -> newParameterAnnotation(parameter, a, elementType, policy, access));
+		}
+
 		/**
 		 * We must also look in the method's Code attribute for type
 		 * annotations.
 		 */
 		@Override
 		<A extends TypeAnnotationsAttribute> Stream<TypeAnnotationInfo> typeAnnotationInfos(Class<A> attributeType) {
+			ElementType elementType = elementType();
 			Stream<A> methodAttributes = attributes(attributeType);
 			Stream<A> codeAttributes = attribute(CodeAttribute.class)
-				.map(code -> new ElementDef(0, code.attributes).attributes(attributeType))
+				.map(code -> new CodeDef(code, elementType).attributes(attributeType))
 				.orElseGet(Stream::empty);
 			return Stream.concat(methodAttributes, codeAttributes)
 				.map(a -> a.type_annotations)
 				.flatMap(Arrays::stream);
+		}
+
+		@Override
+		ElementType elementType() {
+			return name.equals("<init>") ? ElementType.CONSTRUCTOR : ElementType.METHOD;
 		}
 	}
 
@@ -751,7 +844,7 @@ public class Clazz {
 
 		for (FieldInfo fieldInfo : classFile.fields) {
 			referTo(fieldInfo.descriptor, fieldInfo.access);
-			processAttributes(fieldInfo.attributes, ElementType.FIELD, fieldInfo.access);
+			processAttributes(fieldInfo.attributes, elementType(fieldInfo), fieldInfo.access);
 		}
 
 		/*
@@ -765,25 +858,15 @@ public class Clazz {
 
 		for (MethodInfo methodInfo : classFile.methods) {
 			referTo(methodInfo.descriptor, methodInfo.access);
-			ElementType elementType = "<init>".equals(methodInfo.name) ? ElementType.CONSTRUCTOR : ElementType.METHOD;
+			ElementType elementType = elementType(methodInfo);
 			if ((elementType == ElementType.CONSTRUCTOR) && Modifier.isPublic(methodInfo.access)
-				&& "()V".equals(methodInfo.descriptor)) {
+				&& methodInfo.descriptor.equals("()V")) {
 				hasDefaultConstructor = true;
 			}
 			processAttributes(methodInfo.attributes, elementType, methodInfo.access);
 		}
 
-		ElementType elementType;
-		if (classDef.isAnnotation()) {
-			elementType = ElementType.ANNOTATION_TYPE;
-		} else if (classDef.getName()
-			.endsWith(".package-info")) {
-			elementType = ElementType.PACKAGE;
-		} else {
-			elementType = ElementType.TYPE;
-		}
-
-		processAttributes(classFile.attributes, elementType, classFile.access);
+		processAttributes(classFile.attributes, elementType(classFile), classFile.access);
 
 		return xref;
 	}
@@ -817,7 +900,7 @@ public class Clazz {
 				if (fieldDef.isDeprecated()) {
 					cd.deprecated();
 				}
-				visitAttributes(cd, fieldDef, ElementType.FIELD);
+				visitAttributes(cd, fieldDef);
 			}
 
 			for (MethodInfo methodInfo : classFile.methods) {
@@ -826,9 +909,7 @@ public class Clazz {
 				if (methodDef.isDeprecated()) {
 					cd.deprecated();
 				}
-				ElementType elementType = "<init>".equals(methodDef.getName()) ? ElementType.CONSTRUCTOR
-					: ElementType.METHOD;
-				visitAttributes(cd, methodDef, elementType);
+				visitAttributes(cd, methodDef);
 			}
 
 			cd.memberEnd();
@@ -836,20 +917,20 @@ public class Clazz {
 			if (classDef.isDeprecated()) {
 				cd.deprecated();
 			}
-			ElementType elementType;
-			if (classDef.isAnnotation()) {
-				elementType = ElementType.ANNOTATION_TYPE;
-			} else if (classDef.getName()
-				.endsWith(".package-info")) {
-				elementType = ElementType.PACKAGE;
-			} else {
-				elementType = ElementType.TYPE;
-			}
-
-			visitAttributes(cd, classDef, elementType);
+			visitAttributes(cd, classDef);
 		} finally {
 			cd.classEnd();
 		}
+	}
+
+	public Stream<FieldDef> fields() {
+		return Arrays.stream(classFile.fields)
+			.map(FieldDef::new);
+	}
+
+	public Stream<MethodDef> methods() {
+		return Arrays.stream(classFile.methods)
+			.map(MethodDef::new);
 	}
 
 	/**
@@ -914,7 +995,7 @@ public class Clazz {
 					processEnclosingMethod((EnclosingMethodAttribute) attribute);
 					break;
 				case CodeAttribute.NAME :
-					processCode((CodeAttribute) attribute);
+					processCode((CodeAttribute) attribute, elementType);
 					break;
 				case SignatureAttribute.NAME :
 					processSignature((SignatureAttribute) attribute, elementType, access_flags);
@@ -940,9 +1021,10 @@ public class Clazz {
 	/**
 	 * Called for the attributes in the class, field, or method.
 	 */
-	private void visitAttributes(ClassDataCollector cd, ElementDef elementDef, ElementType elementType)
+	private void visitAttributes(ClassDataCollector cd, ElementDef elementDef)
 		throws Exception {
 		int access_flags = elementDef.getAccess();
+		ElementType elementType = elementDef.elementType();
 		for (Attribute attribute : elementDef.attributes) {
 			switch (attribute.name()) {
 				case RuntimeVisibleAnnotationsAttribute.NAME :
@@ -976,7 +1058,7 @@ public class Clazz {
 					visitEnclosingMethod(cd, (EnclosingMethodAttribute) attribute);
 					break;
 				case CodeAttribute.NAME :
-					visitCode(cd, (CodeAttribute) attribute);
+					visitCode(cd, (CodeAttribute) attribute, elementType);
 					break;
 				case SignatureAttribute.NAME :
 					visitSignature(cd, (SignatureAttribute) attribute);
@@ -1065,6 +1147,21 @@ public class Clazz {
 		cd.annotationDefault(methodDef, value);
 	}
 
+	static ElementType elementType(FieldInfo fieldInfo) {
+		return ElementType.FIELD;
+	}
+
+	static ElementType elementType(MethodInfo methodInfo) {
+		return methodInfo.name.equals("<init>") ? ElementType.CONSTRUCTOR : ElementType.METHOD;
+	}
+
+	static ElementType elementType(ClassFile classFile) {
+		if (isAnnotation(classFile.access)) {
+			return ElementType.ANNOTATION_TYPE;
+		}
+		return classFile.this_class.endsWith("/package-info") ? ElementType.PACKAGE : ElementType.TYPE;
+	}
+
 	Object annotationDefault(AnnotationDefaultAttribute attribute, int access_flags) {
 		try {
 			return newElementValue(attribute.value, ElementType.METHOD, RetentionPolicy.RUNTIME, access_flags);
@@ -1091,7 +1188,7 @@ public class Clazz {
 		cd.methodParameters(method, MethodParameter.parameters(attribute));
 	}
 
-	private void processCode(CodeAttribute attribute) {
+	private void processCode(CodeAttribute attribute, ElementType elementType) {
 		ByteBuffer code = attribute.code.duplicate();
 		code.rewind();
 		int lastReference = -1;
@@ -1179,10 +1276,10 @@ public class Clazz {
 		for (ExceptionHandler exceptionHandler : attribute.exception_table) {
 			classConstRef(exceptionHandler.catch_type);
 		}
-		processAttributes(attribute.attributes, ElementType.METHOD, 0);
+		processAttributes(attribute.attributes, elementType, 0);
 	}
 
-	private void visitCode(ClassDataCollector cd, CodeAttribute attribute) throws Exception {
+	private void visitCode(ClassDataCollector cd, CodeAttribute attribute, ElementType elementType) throws Exception {
 		ByteBuffer code = attribute.code.duplicate();
 		code.rewind();
 		while (code.hasRemaining()) {
@@ -1244,8 +1341,8 @@ public class Clazz {
 			}
 		}
 
-		ElementDef codeDef = new ElementDef(0, attribute.attributes);
-		visitAttributes(cd, codeDef, ElementType.METHOD);
+		CodeDef codeDef = new CodeDef(attribute, elementType);
+		visitAttributes(cd, codeDef);
 	}
 
 	/**
@@ -1339,17 +1436,40 @@ public class Clazz {
 		}
 	}
 
-	private Annotation newAnnotation(AnnotationInfo annotationInfo, ElementType elementType, RetentionPolicy policy,
+	Annotation newAnnotation(AnnotationInfo annotationInfo, ElementType elementType, RetentionPolicy policy,
 		int access_flags) {
 		String typeName = annotationInfo.type;
 		TypeRef typeRef = analyzer.getTypeRef(typeName);
+		Map<String, Object> elements = annotationValues(annotationInfo.values, elementType, policy, access_flags);
+		return new Annotation(typeRef, elements, elementType, policy);
+	}
+
+	ParameterAnnotation newParameterAnnotation(int parameter, AnnotationInfo annotationInfo,
+		ElementType elementType, RetentionPolicy policy, int access_flags) {
+		String typeName = annotationInfo.type;
+		TypeRef typeRef = analyzer.getTypeRef(typeName);
+		Map<String, Object> elements = annotationValues(annotationInfo.values, elementType, policy, access_flags);
+		return new ParameterAnnotation(parameter, typeRef, elements, elementType, policy);
+	}
+
+	TypeAnnotation newTypeAnnotation(TypeAnnotationInfo annotationInfo, ElementType elementType,
+		RetentionPolicy policy, int access_flags) {
+		String typeName = annotationInfo.type;
+		TypeRef typeRef = analyzer.getTypeRef(typeName);
+		Map<String, Object> elements = annotationValues(annotationInfo.values, elementType, policy, access_flags);
+		return new TypeAnnotation(annotationInfo.target_type, annotationInfo.target_info, annotationInfo.target_index,
+			annotationInfo.type_path, typeRef, elements, elementType, policy);
+	}
+
+	private Map<String, Object> annotationValues(ElementValueInfo[] values, ElementType elementType,
+		RetentionPolicy policy, int access_flags) {
 		Map<String, Object> elements = new LinkedHashMap<>();
-		for (ElementValueInfo elementValueInfo : annotationInfo.values) {
+		for (ElementValueInfo elementValueInfo : values) {
 			String element = elementValueInfo.name;
 			Object value = newElementValue(elementValueInfo.value, elementType, policy, access_flags);
 			elements.put(element, value);
 		}
-		return new Annotation(typeRef, elements, elementType, policy);
+		return elements;
 	}
 
 	private void processElementValue(Object value, ElementType elementType, RetentionPolicy policy, int access_flags) {
@@ -1808,6 +1928,14 @@ public class Clazz {
 	@Deprecated
 	public void setInnerAccess(int access) {}
 
+	public Stream<Annotation> annotations(String binaryNameFilter) {
+		return classDef.annotations(binaryNameFilter);
+	}
+
+	public Stream<TypeAnnotation> typeAnnotations(String binaryNameFilter) {
+		return classDef.typeAnnotations(binaryNameFilter);
+	}
+
 	public TypeRef getClassName() {
 		return classDef.getType();
 	}
@@ -1856,6 +1984,10 @@ public class Clazz {
 		return classDef.isAnnotation();
 	}
 
+	static boolean isAnnotation(int access) {
+		return (access & ACC_ANNOTATION) != 0;
+	}
+
 	public Set<PackageRef> getAPIUses() {
 		return (api != null) ? api : emptySet();
 	}
@@ -1895,8 +2027,7 @@ public class Clazz {
 		if (!classDef.isAnnotation()) {
 			return emptyMap();
 		}
-		Map<String, Object> map = Arrays.stream(classFile.methods)
-			.map(MethodDef::new)
+		Map<String, Object> map = methods()
 			.filter(m -> m.attribute(AnnotationDefaultAttribute.class)
 				.isPresent())
 			.collect(toMap(MethodDef::getName, MethodDef::getConstant));
