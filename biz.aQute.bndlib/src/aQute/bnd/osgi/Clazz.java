@@ -447,6 +447,11 @@ public class Clazz {
 		ElementType elementType() {
 			return elementType;
 		}
+
+		@Override
+		public boolean isDeprecated() {
+			return false;
+		}
 	}
 
 	class ClassDef extends ElementDef {
@@ -897,26 +902,17 @@ public class Clazz {
 			for (FieldInfo fieldInfo : classFile.fields) {
 				FieldDef fieldDef = new FieldDef(fieldInfo);
 				cd.field(fieldDef);
-				if (fieldDef.isDeprecated()) {
-					cd.deprecated();
-				}
 				visitAttributes(cd, fieldDef);
 			}
 
 			for (MethodInfo methodInfo : classFile.methods) {
 				MethodDef methodDef = new MethodDef(methodInfo);
 				cd.method(methodDef);
-				if (methodDef.isDeprecated()) {
-					cd.deprecated();
-				}
 				visitAttributes(cd, methodDef);
 			}
 
 			cd.memberEnd();
 
-			if (classDef.isDeprecated()) {
-				cd.deprecated();
-			}
 			visitAttributes(cd, classDef);
 		} finally {
 			cd.classEnd();
@@ -1021,10 +1017,12 @@ public class Clazz {
 	/**
 	 * Called for the attributes in the class, field, or method.
 	 */
-	private void visitAttributes(ClassDataCollector cd, ElementDef elementDef)
-		throws Exception {
+	private void visitAttributes(ClassDataCollector cd, ElementDef elementDef) throws Exception {
 		int access_flags = elementDef.getAccess();
 		ElementType elementType = elementDef.elementType();
+		if (elementDef.isDeprecated()) {
+			cd.deprecated();
+		}
 		for (Attribute attribute : elementDef.attributes) {
 			switch (attribute.name()) {
 				case RuntimeVisibleAnnotationsAttribute.NAME :
