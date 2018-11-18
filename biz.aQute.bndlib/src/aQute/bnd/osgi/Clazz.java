@@ -369,8 +369,7 @@ public class Clazz {
 		}
 
 		<A extends AnnotationsAttribute> Stream<AnnotationInfo> annotationInfos(Class<A> attributeType) {
-			return attributes(attributeType).map(a -> a.annotations)
-				.flatMap(Arrays::stream);
+			return attributes(attributeType).flatMap(a -> Arrays.stream(a.annotations));
 		}
 
 		public Stream<Annotation> annotations(String binaryNameFilter) {
@@ -392,22 +391,19 @@ public class Clazz {
 			Glob glob = new Glob("L{" + binaryNameFilter + "};");
 			return annotationInfo -> glob.matches(annotationInfo.type);
 		}
-		
+
 		<A extends TypeAnnotationsAttribute> Stream<TypeAnnotationInfo> typeAnnotationInfos(Class<A> attributeType) {
-			return attributes(attributeType).map(a -> a.type_annotations)
-				.flatMap(Arrays::stream);
+			return attributes(attributeType).flatMap(a -> Arrays.stream(a.type_annotations));
 		}
 
 		public Stream<TypeAnnotation> typeAnnotations(String binaryNameFilter) {
 			Predicate<AnnotationInfo> matches = matches(binaryNameFilter);
 			ElementType elementType = elementType();
 			Stream<TypeAnnotation> runtimeTypeAnnotations = typeAnnotationInfos(
-				RuntimeVisibleTypeAnnotationsAttribute.class)
-					.filter(matches)
+				RuntimeVisibleTypeAnnotationsAttribute.class).filter(matches)
 					.map(a -> newTypeAnnotation(a, elementType, RetentionPolicy.RUNTIME, access));
 			Stream<TypeAnnotation> classTypeAnnotations = typeAnnotationInfos(
-				RuntimeInvisibleTypeAnnotationsAttribute.class)
-					.filter(matches)
+				RuntimeInvisibleTypeAnnotationsAttribute.class).filter(matches)
 					.map(a -> newTypeAnnotation(a, elementType, RetentionPolicy.CLASS, access));
 			return Stream.concat(runtimeTypeAnnotations, classTypeAnnotations);
 		}
@@ -447,6 +443,11 @@ public class Clazz {
 		ElementType elementType() {
 			return elementType;
 		}
+
+		@Override
+		public boolean isDeprecated() {
+			return false;
+		}
 	}
 
 	class ClassDef extends ElementDef {
@@ -464,10 +465,8 @@ public class Clazz {
 
 		boolean isInnerClass() {
 			String binary = type.getBinary();
-			return attributes(InnerClassesAttribute.class).map(a -> a.classes)
-				.flatMap(Arrays::stream)
-				.anyMatch(
-					inner -> !Modifier.isStatic(inner.inner_access) && inner.inner_class.equals(binary));
+			return attributes(InnerClassesAttribute.class).flatMap(a -> Arrays.stream(a.classes))
+				.anyMatch(inner -> !Modifier.isStatic(inner.inner_access) && inner.inner_class.equals(binary));
 		}
 
 		@Override
@@ -631,8 +630,7 @@ public class Clazz {
 
 		<A extends ParameterAnnotationsAttribute> Stream<ParameterAnnotationInfo> parameterAnnotationInfos(
 			Class<A> attributeType) {
-			return attributes(attributeType).map(a -> a.parameter_annotations)
-				.flatMap(Arrays::stream);
+			return attributes(attributeType).flatMap(a -> Arrays.stream(a.parameter_annotations));
 		}
 
 		public Stream<ParameterAnnotation> parameterAnnotations(String binaryNameFilter) {
@@ -667,8 +665,7 @@ public class Clazz {
 				.map(code -> new CodeDef(code, elementType).attributes(attributeType))
 				.orElseGet(Stream::empty);
 			return Stream.concat(methodAttributes, codeAttributes)
-				.map(a -> a.type_annotations)
-				.flatMap(Arrays::stream);
+				.flatMap(a -> Arrays.stream(a.type_annotations));
 		}
 
 		@Override
@@ -731,7 +728,7 @@ public class Clazz {
 	private ConstantPool					constantPool					= null;
 	TypeRef									superClass;
 	private TypeRef[]						interfaces;
-	private ClassDef						classDef;
+	ClassDef								classDef;
 
 	private Map<TypeRef, Integer>			referred						= null;
 
@@ -784,8 +781,8 @@ public class Clazz {
 		logger.debug("parseClassFile(): path={} resource={}", path, resource);
 
 		classFile = ClassFile.parseClassFile(in);
-		constantPool = classFile.constant_pool;
 		classDef = new ClassDef(classFile);
+		constantPool = classFile.constant_pool;
 		referred = new HashMap<>(constantPool.size());
 
 		if (classDef.isPublic()) {
@@ -897,26 +894,17 @@ public class Clazz {
 			for (FieldInfo fieldInfo : classFile.fields) {
 				FieldDef fieldDef = new FieldDef(fieldInfo);
 				cd.field(fieldDef);
-				if (fieldDef.isDeprecated()) {
-					cd.deprecated();
-				}
 				visitAttributes(cd, fieldDef);
 			}
 
 			for (MethodInfo methodInfo : classFile.methods) {
 				MethodDef methodDef = new MethodDef(methodInfo);
 				cd.method(methodDef);
-				if (methodDef.isDeprecated()) {
-					cd.deprecated();
-				}
 				visitAttributes(cd, methodDef);
 			}
 
 			cd.memberEnd();
 
-			if (classDef.isDeprecated()) {
-				cd.deprecated();
-			}
 			visitAttributes(cd, classDef);
 		} finally {
 			cd.classEnd();
@@ -1021,10 +1009,12 @@ public class Clazz {
 	/**
 	 * Called for the attributes in the class, field, or method.
 	 */
-	private void visitAttributes(ClassDataCollector cd, ElementDef elementDef)
-		throws Exception {
+	private void visitAttributes(ClassDataCollector cd, ElementDef elementDef) throws Exception {
 		int access_flags = elementDef.getAccess();
 		ElementType elementType = elementDef.elementType();
+		if (elementDef.isDeprecated()) {
+			cd.deprecated();
+		}
 		for (Attribute attribute : elementDef.attributes) {
 			switch (attribute.name()) {
 				case RuntimeVisibleAnnotationsAttribute.NAME :
@@ -1444,16 +1434,16 @@ public class Clazz {
 		return new Annotation(typeRef, elements, elementType, policy);
 	}
 
-	ParameterAnnotation newParameterAnnotation(int parameter, AnnotationInfo annotationInfo,
-		ElementType elementType, RetentionPolicy policy, int access_flags) {
+	ParameterAnnotation newParameterAnnotation(int parameter, AnnotationInfo annotationInfo, ElementType elementType,
+		RetentionPolicy policy, int access_flags) {
 		String typeName = annotationInfo.type;
 		TypeRef typeRef = analyzer.getTypeRef(typeName);
 		Map<String, Object> elements = annotationValues(annotationInfo.values, elementType, policy, access_flags);
 		return new ParameterAnnotation(parameter, typeRef, elements, elementType, policy);
 	}
 
-	TypeAnnotation newTypeAnnotation(TypeAnnotationInfo annotationInfo, ElementType elementType,
-		RetentionPolicy policy, int access_flags) {
+	TypeAnnotation newTypeAnnotation(TypeAnnotationInfo annotationInfo, ElementType elementType, RetentionPolicy policy,
+		int access_flags) {
 		String typeName = annotationInfo.type;
 		TypeRef typeRef = analyzer.getTypeRef(typeName);
 		Map<String, Object> elements = annotationValues(annotationInfo.values, elementType, policy, access_flags);
@@ -2027,9 +2017,8 @@ public class Clazz {
 		if (!classDef.isAnnotation()) {
 			return emptyMap();
 		}
-		Map<String, Object> map = methods()
-			.filter(m -> m.attribute(AnnotationDefaultAttribute.class)
-				.isPresent())
+		Map<String, Object> map = methods().filter(m -> m.attribute(AnnotationDefaultAttribute.class)
+			.isPresent())
 			.collect(toMap(MethodDef::getName, MethodDef::getConstant));
 		return map;
 	}
