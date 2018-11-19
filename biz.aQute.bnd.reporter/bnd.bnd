@@ -26,6 +26,12 @@ Export-Package: \
 	biz.aQute.bnd.reporter.exporter,\
 	biz.aQute.bnd.reporter.generator
 
+Import-Package: \
+    sun.*; resolution:=optional,\
+    com.google.appengine.*; resolution:=optional,\
+    com.google.apphosting.*; resolution:=optional,\
+    *
+
 -conditionalpackage: \
 	aQute.lib.*,\
 	aQute.libg.*,\

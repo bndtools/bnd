@@ -1,2 +1,2 @@
 @org.osgi.annotation.versioning.Version("1.0.0")
-package aQute.bnd.home;
+package aQute.bnd.util.home;

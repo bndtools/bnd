@@ -23,7 +23,6 @@ Export-Package: \
 	aQute.bnd.service.*;-noimport:=true,\
 	aQute.bnd.help.*;-noimport:=true,\
 	aQute.bnd.header;-noimport:=true,\
-	aQute.bnd.home;-noimport:=true,\
 	aQute.bnd.version;-noimport:=true,\
 	aQute.bnd.filerepo;-noimport:=true,\
 	aQute.lib.deployer;-noimport:=true,\
@@ -37,6 +36,7 @@ Export-Package: \
 	aQute.bnd.maven.support;-noimport:=true,\
 	aQute.bnd.url;-noimport:=true,\
 	aQute.bnd.util.dto;-noimport:=true,\
+	aQute.bnd.util.home;-noimport:=true,\
 	aQute.bnd.util.repository;-noimport:=true,\
 	aQute.bnd.component.error;-noimport:=true,\
 	org.osgi.service.log;-split-package:=first,\

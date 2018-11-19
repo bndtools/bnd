@@ -1,4 +1,4 @@
-package aQute.bnd.home;
+package aQute.bnd.util.home;
 public class Home {
 	public static final String	USER_HOME_BND_DEFAULT		= "~/.bnd";
 	public static final String	USER_HOME_BND_SYSTEM_PROP	= "bnd.home.dir";
