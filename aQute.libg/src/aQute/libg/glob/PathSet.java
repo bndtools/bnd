@@ -182,14 +182,22 @@ public class PathSet {
 			return path -> false;
 		}
 		if (excludePatterns.isEmpty()) {
-			return path -> includePatterns.stream()
+			if (includePatterns.size() == 1) {
+				Pattern include = includePatterns.get(0);
+				return path -> include.matcher(path)
+					.matches();
+			}
+			List<Pattern> includes = new ArrayList<>(includePatterns);
+			return path -> includes.stream()
 				.anyMatch(include -> include.matcher(path)
 					.matches());
 		}
-		return path -> includePatterns.stream()
+		List<Pattern> includes = new ArrayList<>(includePatterns);
+		List<Pattern> excludes = new ArrayList<>(excludePatterns);
+		return path -> includes.stream()
 			.anyMatch(include -> include.matcher(path)
 				.matches())
-			&& !excludePatterns.stream()
+			&& !excludes.stream()
 				.anyMatch(exclude -> exclude.matcher(path)
 					.matches());
 	}
