@@ -18,6 +18,7 @@
     biz.aQute.resolve;version=latest, \
     biz.aQute.repository;version=latest, \
     biz.aQute.bnd.annotation;version=project,\
+    biz.aQute.bnd.remote.junit;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	${junit},\
 	biz.aQute.bnd.embedded-repo; version=snapshot,\
