@@ -3,7 +3,7 @@ package aQute.remote.main;
 import java.io.File;
 import java.io.IOException;
 
-import aQute.bnd.home.Home;
+import aQute.bnd.util.home.Home;
 import aQute.lib.collections.ExtList;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Options;

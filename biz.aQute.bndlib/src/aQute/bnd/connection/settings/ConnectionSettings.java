@@ -30,7 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.home.Home;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Processor.FileLine;
@@ -39,6 +38,7 @@ import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.BasicAuthentication;
 import aQute.bnd.url.BearerAuthentication;
 import aQute.bnd.url.HttpsVerification;
+import aQute.bnd.util.home.Home;
 import aQute.lib.collections.Iterables;
 import aQute.lib.concurrentinit.ConcurrentInitialize;
 import aQute.lib.converter.Converter;
