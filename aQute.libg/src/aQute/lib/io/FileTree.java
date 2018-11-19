@@ -8,16 +8,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.regex.Pattern;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import aQute.libg.glob.AntGlob;
+import aQute.libg.glob.PathSet;
 
-public class FileTree {
-	private List<File>		files		= new ArrayList<>();
-	private List<Pattern>	includes	= new ArrayList<>();
-	private List<Pattern>	excludes	= new ArrayList<>();
+public class FileTree extends PathSet {
+	private final List<File> files = new ArrayList<>();
 
 	public FileTree() {}
 
@@ -43,15 +40,7 @@ public class FileTree {
 	 * @param includes Add an Ant-style glob
 	 */
 	public void addIncludes(List<String> includes) {
-		if (includes == null) {
-			return;
-		}
-		for (String include : includes) {
-			if (include == null) {
-				continue;
-			}
-			this.includes.add(AntGlob.toPattern(include));
-		}
+		includes(includes);
 	}
 
 	/**
@@ -60,15 +49,7 @@ public class FileTree {
 	 * @param includes Add an Ant-style glob
 	 */
 	public void addIncludes(String... includes) {
-		if (includes == null) {
-			return;
-		}
-		for (String include : includes) {
-			if (include == null) {
-				continue;
-			}
-			this.includes.add(AntGlob.toPattern(include));
-		}
+		include(includes);
 	}
 
 	/**
@@ -77,15 +58,7 @@ public class FileTree {
 	 * @param excludes Add an Ant-style glob
 	 */
 	public void addExcludes(String... excludes) {
-		if (excludes == null) {
-			return;
-		}
-		for (String exclude : excludes) {
-			if (exclude == null) {
-				continue;
-			}
-			this.excludes.add(AntGlob.toPattern(exclude));
-		}
+		exclude(excludes);
 	}
 
 	/**
@@ -94,15 +67,7 @@ public class FileTree {
 	 * @param excludes Add an Ant-style glob
 	 */
 	public void addExcludes(List<String> excludes) {
-		if (excludes == null) {
-			return;
-		}
-		for (String exclude : excludes) {
-			if (exclude == null) {
-				continue;
-			}
-			this.excludes.add(AntGlob.toPattern(exclude));
-		}
+		excludes(excludes);
 	}
 
 	/**
@@ -116,16 +81,7 @@ public class FileTree {
 	 * @throws IOException If an exception occurs.
 	 */
 	public List<File> getFiles(File baseDir, String... defaultIncludes) throws IOException {
-		if (includes.isEmpty() && files.isEmpty() && (defaultIncludes != null) && (defaultIncludes.length > 0)) {
-			return getFiles(baseDir, toPatterns(Stream.of(defaultIncludes)), excludes);
-		}
-		return getFiles(baseDir, includes, excludes);
-	}
-
-	private List<Pattern> toPatterns(Stream<String> globs) {
-		return globs.filter(Objects::nonNull)
-			.map(AntGlob::toPattern)
-			.collect(toList());
+		return getFiles(baseDir, files.isEmpty() ? matches(defaultIncludes) : matches());
 	}
 
 	/**
@@ -139,31 +95,16 @@ public class FileTree {
 	 * @throws IOException If an exception occurs.
 	 */
 	public List<File> getFiles(File baseDir, List<String> defaultIncludes) throws IOException {
-		if (includes.isEmpty() && files.isEmpty() && (defaultIncludes != null) && !defaultIncludes.isEmpty()) {
-			return getFiles(baseDir, toPatterns(defaultIncludes.stream()), excludes);
-		}
-		return getFiles(baseDir, includes, excludes);
+		return getFiles(baseDir, files.isEmpty() ? matches(defaultIncludes) : matches());
 	}
 
-	private List<File> getFiles(File baseDir, List<Pattern> includePatterns, List<Pattern> excludePatterns)
-		throws IOException {
-		if (includePatterns.isEmpty()) {
-			return new ArrayList<>(files);
-		}
+	private List<File> getFiles(File baseDir, Predicate<String> matches) throws IOException {
 		Path basePath = baseDir.toPath();
 		try (Stream<Path> walker = Files.walk(basePath)
 			.skip(1)) {
 			List<File> result = Stream.concat(files.stream(), //
-				walker.filter(p -> {
-					String path = basePath.relativize(p)
-						.toString();
-					return includePatterns.stream()
-						.anyMatch(i -> i.matcher(path)
-							.matches())
-						&& !excludePatterns.stream()
-							.anyMatch(e -> e.matcher(path)
-								.matches());
-				})
+				walker.filter(p -> matches.test(basePath.relativize(p)
+					.toString()))
 					.sorted()
 					.map(Path::toFile))
 				.distinct()
