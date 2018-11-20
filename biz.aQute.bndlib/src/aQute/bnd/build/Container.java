@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 
 import aQute.bnd.build.DownloadBlocker.Stage;
 import aQute.bnd.header.Attrs;
@@ -365,4 +366,32 @@ public class Container {
 	public String getWarning() {
 		return warning;
 	}
+
+	/**
+	 * Convert a set of containers to a list of paths. Only containers that have
+	 * no error will be converted. Any errors will be collected in the errors
+	 * parameter. If the errors parameter is null, an exception is thrown for
+	 * the first erroneous container.
+	 * 
+	 * @param errors a list of errors or null
+	 * @param containers the containers to convert.
+	 */
+	static public List<String> toPaths(List<String> errors, Collection<Container> containers) {
+		return containers.stream()
+			.filter(container -> {
+				if (container.getError() == null)
+					return true;
+
+				if (errors != null) {
+					errors.add(container.getError());
+				} else
+					throw new IllegalArgumentException("Container " + container + " has error " + container.getError());
+
+				return false;
+			})
+			.map(container -> container.getFile())
+			.map(File::getAbsolutePath)
+			.collect(Collectors.toList());
+	}
+
 }

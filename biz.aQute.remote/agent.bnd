@@ -33,5 +33,6 @@ Embedded-Activator: 		aQute.remote.agent.Activator
 Import-Package: \
 	org.osgi.framework;version='[1.5,2)',\
 	org.osgi.framework.launch;version='[1.0,2)',\
+	org.apache.felix.gogo.runtime;resolution:=optional,\
 	org.apache.felix.service.command;resolution:=optional,\
 	*

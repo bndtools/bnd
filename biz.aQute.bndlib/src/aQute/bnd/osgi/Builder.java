@@ -47,6 +47,7 @@ import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
+import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
@@ -301,8 +302,7 @@ public class Builder extends Analyzer {
 					}
 				}
 			}
-		}
-		else {
+		} else {
 			doIncludeResource(dot, name, attrs);
 		}
 	}
@@ -911,6 +911,8 @@ public class Builder extends Analyzer {
 			if (preprocess != null) {
 				warning("Preprocessing does not work for literals: %s", name);
 			}
+		} else if (extra.containsKey(Constants.CLASS_ATTRIBUTE)) {
+			doClassAttribute(jar, name, extra, preprocess, absentIsOk);
 		} else {
 			File sourceFile;
 			String destinationPath;
@@ -941,6 +943,36 @@ public class Builder extends Analyzer {
 				noSuchFile(jar, name, extra, source, destinationPath);
 			} else
 				copy(jar, destinationPath, sourceFile, preprocess, extra);
+		}
+	}
+
+	private void doClassAttribute(Jar jar, String name, Map<String, String> extra, Instructions preprocess,
+		boolean absentIsOk) throws Exception {
+		FileLine header = getHeader(Constants.INCLUDE_RESOURCE, Constants.CLASS_ATTRIBUTE);
+		String fqn = extra.get(Constants.CLASS_ATTRIBUTE);
+		TypeRef typeRef = getTypeRefFromFQN(fqn);
+		if (typeRef == null) {
+			header.set(warning(
+				"-includeresource entry uses 'class' attribute to refer to classpath but the reference '%s' is not a value type ref (fqn)",
+				fqn));
+		} else {
+			Clazz clazz = findClass(typeRef);
+			if (clazz == null) {
+				if (!absentIsOk) {
+					header.set(warning(
+						"-includeresource entry uses 'class' attribute to refer to classpath but the reference '%s' could not be found",
+						typeRef));
+				}
+			} else {
+				Resource r = clazz.getResource();
+				String x = extra.get("extra");
+				if (x != null)
+					r.setExtra(x);
+				copy(jar, name, r, extra);
+				if (preprocess != null) {
+					warning("Preprocessing does not work for class references: %s", name);
+				}
+			}
 		}
 	}
 
@@ -1828,5 +1860,77 @@ public class Builder extends Analyzer {
 		}));
 	}
 
+	/**
+	 * Collect the information from the {@link BuilderSpecification}
+	 * 
+	 * @throws IOException
+	 */
+
+	public Builder from(BuilderSpecification spec) throws IOException {
+		if (spec.bundleActivator != null)
+			setBundleActivator(spec.bundleActivator);
+
+		setFailOk(spec.failOk);
+		setSources(spec.sources);
+		setProperty(Constants.RESOURCEONLY, spec.resourceOnly + "");
+		
+		if (!spec.bundleNativeCode.isEmpty())
+			setProperty(Constants.BUNDLE_NATIVECODE, new Parameters(spec.bundleNativeCode).toString());
+
+		if (!spec.bundleSymbolicName.isEmpty()) {
+			setBundleSymbolicName(new Parameters(spec.bundleSymbolicName).toString());
+		}
+		if (!spec.fragmentHost.isEmpty()) {
+			setProperty(Constants.FRAGMENT_HOST, new Parameters(spec.fragmentHost).toString());
+		}
+
+		if (spec.bundleVersion != null) {
+			setBundleVersion(spec.bundleVersion);
+		}
+
+		for (String path : spec.classpath) {
+			this.addClasspath(new File(path));
+		}
+
+		if (!spec.exportContents.isEmpty()) {
+			setProperty(Constants.EXPORT_CONTENTS, new Parameters(spec.exportContents).toString());
+		}
+
+		if (!spec.exportPackage.isEmpty()) {
+			setProperty(Constants.EXPORT_PACKAGE, new Parameters(spec.exportPackage).toString());
+		}
+
+		if (!spec.importPackage.isEmpty()) {
+			setProperty(Constants.IMPORT_PACKAGE, new Parameters(spec.importPackage).toString());
+		}
+
+		if (!spec.includeresource.isEmpty()) {
+			setProperty(Constants.INCLUDE_RESOURCE, new Parameters(spec.includeresource).toString());
+		}
+		
+		if (!spec.privatePackage.isEmpty()) {
+			setProperty(Constants.PRIVATEPACKAGE, new Parameters(spec.privatePackage).toString());
+		}
+
+		if (!spec.provideCapability.isEmpty()) {
+			setProperty(Constants.PROVIDE_CAPABILITY, new Parameters(spec.provideCapability).toString());
+		}
+
+		if (!spec.requireBundle.isEmpty()) {
+			setProperty(Constants.REQUIRE_BUNDLE, new Parameters(spec.requireBundle).toString());
+		}
+
+		if (!spec.requireCapability.isEmpty()) {
+			setProperty(Constants.REQUIRE_CAPABILITY, new Parameters(spec.requireCapability).toString());
+		}
+
+		spec.other.entrySet()
+			.forEach(e -> {
+			setProperty(e.getKey(), e.getValue());
+		});
+
+		return this;
+
+	}
 
 }

@@ -68,14 +68,20 @@ public class DistroCommandTest extends TestCase {
 			"testdata/bundles/com.liferay.item.selector.taglib.jar"
 		};
 
+		List<Bundle> toBeStarted = new ArrayList<>();
+
 		for (String bundle : bundles) {
 			String location = "reference:" + IO.getFile(bundle)
 				.toURI()
 				.toString();
 			Bundle b = context.installBundle(location);
-			b.start();
+			toBeStarted.add(b);
 		}
-
+		for (Bundle b : toBeStarted) {
+			if (b.getHeaders()
+				.get(Constants.FRAGMENT_HOST) == null)
+				b.start();
+		}
 		super.setUp();
 	}
 

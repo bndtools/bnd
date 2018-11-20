@@ -178,10 +178,6 @@ public class WorkspaceTest extends TestCase {
 		try (Workspace ws = Workspace.getWorkspace(IO.getFile("testresources/ws"))) {
 			assertEquals(true, ws.isValid());
 		}
-
-		try (Workspace invalidWs = new Workspace(IO.getFile("testresources/not a workspace"))) {
-			assertEquals(false, invalidWs.isValid());
-		}
 	}
 
 	public void testJavacDefaults() throws Exception {

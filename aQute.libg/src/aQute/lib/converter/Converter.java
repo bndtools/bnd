@@ -85,8 +85,17 @@ public class Converter {
 		}
 
 		if (o == null) {
-			if (resultType.isPrimitive() || Number.class.isAssignableFrom(resultType))
+			if (resultType.isPrimitive()) {
+
+				if (resultType == void.class)
+					return null;
+
+				if (resultType == boolean.class)
+					return false;
+				if (resultType == char.class)
+					return '\u0000';
 				return convert(type, 0);
+			}
 
 			return null; // compatible with any
 		}
@@ -566,8 +575,7 @@ public class Converter {
 
 	private static Stream<Field> getFields(Class<?> c) {
 		return Stream.of(c.getFields())
-			.filter(
-				field -> !(field.isEnumConstant() || field.isSynthetic() || isStatic(field)));
+			.filter(field -> !(field.isEnumConstant() || field.isSynthetic() || isStatic(field)));
 	}
 
 	private Object error(String string) {

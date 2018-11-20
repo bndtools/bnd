@@ -12,15 +12,16 @@
 -testpath: \
     osgi.core;version=latest,\
     org.osgi.service.cm;version=latest,\
+    org.osgi.service.component.annotations;version=latest,\
     aQute.libg;version=latest, \
     biz.aQute.bndlib;version=latest, \
     biz.aQute.resolve;version=latest, \
     biz.aQute.repository;version=latest, \
     biz.aQute.bnd.annotation;version=project,\
+    biz.aQute.bnd.remote.junit;version=latest,\
 	biz.aQute.remote.api;version=latest,\
 	${junit},\
 	biz.aQute.bnd.embedded-repo; version=snapshot,\
-	org.apache.felix.framework;version=latest,\
 	slf4j.api;version=latest, \
     slf4j.simple;version=latest
 

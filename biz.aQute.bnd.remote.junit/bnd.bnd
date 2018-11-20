@@ -1,0 +1,36 @@
+
+
+Export-Package: \
+    aQute.bnd.remoteworkspace.client, \
+	aQute.bnd.service.remoteworkspace,\
+    aQute.bnd.remote.junit,\
+	aQute.bnd.service.specifications,\
+    aQute.bnd.util.scr
+
+Import-Package: \
+    org.osgi.service.component.runtime;resolution:=optional,\
+    org.osgi.service.component.runtime.dto;resolution:=optional,\
+    *
+
+-conditionalpackage: \
+    aQute.lib*
+
+
+-buildpath: \
+    osgi.annotation, \
+    osgi.core;version=6, \
+    org.osgi.service.component;version='[1.3,1.4)', \
+    org.osgi.service.component.annotations;version='[1.3,1.4)', \
+    biz.aQute.bndlib;version=latest;packages=*, \
+    aQute.libg;version=latest
+
+-testpath: \
+    ${junit},\
+    slf4j.simple;version=latest, \
+    biz.aQute.repository, \
+    slf4j.api
+
+-runbundles: \
+    org.apache.felix.gogo.shell
+
+-runfw: org.apache.felix.framework

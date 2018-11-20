@@ -2022,4 +2022,9 @@ public class Clazz {
 			.collect(toMap(MethodDef::getName, MethodDef::getConstant));
 		return map;
 	}
+
+	public Resource getResource() {
+		return resource;
+	}
+
 }

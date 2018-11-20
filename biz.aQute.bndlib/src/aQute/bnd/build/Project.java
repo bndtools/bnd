@@ -1,5 +1,7 @@
 package aQute.bnd.build;
 
+import static aQute.bnd.build.Container.toPaths;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -89,6 +91,7 @@ import aQute.bnd.service.action.Action;
 import aQute.bnd.service.action.NamedAction;
 import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
+import aQute.bnd.service.specifications.RunSpecification;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.ExtList;
@@ -3362,4 +3365,36 @@ public class Project extends Processor {
 	public boolean isInteractive() {
 		return getWorkspace().isInteractive();
 	}
+
+	/**
+	 * Return a basic type only specification of the run aspect of this project
+	 */
+	public RunSpecification getSpecification() {
+		RunSpecification runspecification = new RunSpecification();
+		try {
+			runspecification.bin = getOutput().getAbsolutePath();
+			runspecification.bin_test = getTestOutput().getAbsolutePath();
+			runspecification.target = getTarget().getAbsolutePath();
+			runspecification.errors.addAll(getErrors());
+			runspecification.extraSystemCapabilities = getRunSystemCapabilities().toBasic();
+			runspecification.extraSystemPackages = getRunSystemPackages().toBasic();
+			runspecification.properties = getRunProperties();
+			runspecification.runbundles = toPaths(runspecification.errors, getRunbundles());
+			runspecification.runfw = toPaths(runspecification.errors, getRunFw());
+			runspecification.runpath = toPaths(runspecification.errors, getRunpath());
+		} catch (Exception e) {
+			runspecification.errors.add(e.toString());
+		}
+		return runspecification;
+	}
+
+
+	public Parameters getRunSystemPackages() {
+		return new Parameters(mergeProperties(Constants.RUNSYSTEMPACKAGES));
+	}
+
+	public Parameters getRunSystemCapabilities() {
+		return new Parameters(mergeProperties(Constants.RUNSYSTEMCAPABILITIES));
+	}
+
 }
