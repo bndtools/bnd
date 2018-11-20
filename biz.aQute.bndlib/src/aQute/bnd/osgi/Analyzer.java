@@ -54,12 +54,14 @@ import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.slf4j.Logger;
@@ -2966,6 +2968,11 @@ public class Analyzer extends Processor {
 				return r;
 		}
 		return null;
+	}
+
+	public Stream<Resource> findResources(Predicate<String> matches) {
+		return getClasspath().stream()
+			.flatMap(jar -> jar.getResources(matches));
 	}
 
 	/**
