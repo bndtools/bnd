@@ -9,6 +9,9 @@ buildscript {
   repositories {
     mavenCentral()
     maven {
+      url 'https://oss.sonatype.org/content/groups/osgi/'
+    }
+    maven {
       url uri(bnd_repourl)
     }
   }
