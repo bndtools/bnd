@@ -53,23 +53,23 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 -dependson: biz.aQute.bnd.embedded-repo
 
 -buildpath: \
-	osgi.core;version=latest,\
-	org.osgi.service.log;version=latest,\
-	org.osgi.service.repository;version=latest,\
-	aQute.libg;version=latest, \
-	biz.aQute.bndlib;version=latest, \
-	biz.aQute.resolve;version=latest, \
-	biz.aQute.repository;version=latest, \
-	biz.aQute.bnd.exporters;version=latest, \
- 	biz.aQute.bnd.reporter;version=latest,\
+	osgi.core;version=latest;maven-scope=provided,\
+	org.osgi.service.log;version=latest;maven-scope=provided,\
+	org.osgi.service.repository;version=latest;maven-scope=provided,\
+	aQute.libg;version=project, \
+	biz.aQute.bndlib;version=latest;maven-scope=provided, \
+	biz.aQute.resolve;version=latest;maven-scope=provided, \
+	biz.aQute.repository;version=latest;maven-scope=provided, \
+	biz.aQute.bnd.exporters;version=latest;maven-scope=provided, \
+ 	biz.aQute.bnd.reporter;version=latest;maven-scope=provided,\
 	biz.aQute.bnd.annotation;version=project,\
-	org.apache.ant:ant;version=latest,\
-	biz.aQute.remote.api;version=latest,\
-	org.yaml.snakeyaml;version=latest,\
-	slf4j.api;version=latest,\
-	slf4j.simple;version=latest, \
-	jline, \
-	biz.aQute.bnd.remote.junit;version=latest
+	org.apache.ant:ant;version=latest;maven-scope=provided,\
+	biz.aQute.remote.api;version=latest;maven-scope=provided,\
+	org.yaml.snakeyaml;version=latest;maven-scope=provided,\
+	slf4j.api;version=latest;maven-scope=provided,\
+	slf4j.simple;version=latest;maven-scope=provided, \
+	jline;maven-scope=provided, \
+	biz.aQute.bnd.remote.junit;version=latest;maven-scope=provided
 
 -testpath: \
 	${junit},\

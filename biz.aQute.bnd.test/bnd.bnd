@@ -1,16 +1,10 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
-Bundle-Name:            bnd Test Library
-Bundle-Description:     Contains only the test functions for bnd.
--exportcontents:        aQute.bnd.test.*
-
+-nobundles: true
 
 -buildpath: \
 	osgi.core;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=project,\
 	${junit}
-
--buildrepo:
--releaserepo:

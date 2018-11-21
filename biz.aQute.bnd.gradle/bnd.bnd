@@ -6,12 +6,16 @@
 -includepackage: \
 	aQute.bnd.gradle.*
 
+-conditionalpackage: \
+    aQute.lib.*, \
+    aQute.libg.*
+
 -digests: MD5, SHA1
 
 Bundle-Description: The bnd gradle plugin.
 
 -buildpath: \
-	aQute.libg;version=latest, \
+	aQute.libg;version=project, \
 	biz.aQute.bndlib;version=latest, \
 	biz.aQute.resolve;version=latest, \
 	biz.aQute.repository;version=latest

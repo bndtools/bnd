@@ -48,6 +48,11 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
+	public Tag(String name, Object content) {
+		this.name = name;
+		this.content.add(content);
+	}
+
 	public Tag(String name, Object... contents) {
 		this.name = name;
 		Collections.addAll(content, contents);
@@ -58,13 +63,22 @@ public class Tag {
 		parent.addContent(this);
 	}
 
+	public Tag(Tag parent, String name, Object content) {
+		this(name, content);
+		parent.addContent(this);
+	}
+
 	/**
 	 * Construct a new Tag with a name.
 	 */
+	public Tag(String name, Map<String, String> attributes, Object content) {
+		this(name, content);
+		this.attributes.putAll(attributes);
+	}
+
 	public Tag(String name, Map<String, String> attributes, Object... contents) {
 		this(name, contents);
 		this.attributes.putAll(attributes);
-
 	}
 
 	public Tag(String name, Map<String, String> attributes) {
@@ -75,6 +89,12 @@ public class Tag {
 	 * Construct a new Tag with a name and a set of attributes. The attributes
 	 * are given as ( name, value ) ...
 	 */
+	public Tag(String name, String[] attributes, Object content) {
+		this(name, content);
+		for (int i = 0; i < attributes.length; i += 2)
+			addAttribute(attributes[i], attributes[i + 1]);
+	}
+
 	public Tag(String name, String[] attributes, Object... contents) {
 		this(name, contents);
 		for (int i = 0; i < attributes.length; i += 2)
@@ -140,6 +160,14 @@ public class Tag {
 	public Tag addContent(Tag tag) {
 		content.add(tag);
 		tag.parent = this;
+		return this;
+	}
+
+	/**
+	 * Add a new content tags.
+	 */
+	public Tag addContent(Map<String, ?> map) {
+		map.forEach((name, content) -> addContent(new Tag(name, content)));
 		return this;
 	}
 

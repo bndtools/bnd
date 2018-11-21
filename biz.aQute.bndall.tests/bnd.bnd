@@ -13,7 +13,7 @@
     osgi.core;version=latest,\
     org.osgi.service.cm;version=latest,\
     org.osgi.service.component.annotations;version=latest,\
-    aQute.libg;version=latest, \
+    aQute.libg;version=project, \
     biz.aQute.bndlib;version=latest, \
     biz.aQute.resolve;version=latest, \
     biz.aQute.repository;version=latest, \

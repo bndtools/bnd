@@ -606,6 +606,7 @@ version of the plugin jar:
 ```groovy
 buildscript {
   repositories {
+    mavenCentral()
     maven {
       url 'https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles'
     }

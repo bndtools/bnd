@@ -38,7 +38,7 @@ public class RemoteWorkspaceClientFactory {
 		RemoteWorkspace remote = link.getRemote();
 		return Aspects.intercept(RemoteWorkspace.class, remote)
 			.intercept(() -> {
-				System.out.println("Closing remote worksapace link on port " + port);
+				logger.debug("Closing remote worksapace link on port {}", port);
 				IO.close(link::close);
 			}, "close")
 			.intercept(() -> {

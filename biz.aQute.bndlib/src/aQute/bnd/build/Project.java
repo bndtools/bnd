@@ -1095,18 +1095,22 @@ public class Project extends Processor {
 		if (releaseRepos.isEmpty()) {
 			return null;
 		}
-
-		RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only first
-															// release repo
-		return releaseRepo(releaseRepo, jarName, jarStream);
+		try (ProjectBuilder builder = getBuilder(null)) {
+			builder.init();
+			RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only
+																// first
+			// release repo
+			return releaseRepo(releaseRepo, builder, jarName, jarStream);
+		}
 	}
 
-	private URI releaseRepo(RepositoryPlugin releaseRepo, String jarName, InputStream jarStream) throws Exception {
+	private URI releaseRepo(RepositoryPlugin releaseRepo, Processor context, String jarName, InputStream jarStream)
+		throws Exception {
 		logger.debug("release to {}", releaseRepo.getName());
 		try {
 			PutOptions putOptions = new RepositoryPlugin.PutOptions();
 			// TODO find sub bnd that is associated with this thing
-			putOptions.context = this;
+			putOptions.context = context;
 			PutResult r = releaseRepo.put(jarStream, putOptions);
 			logger.debug("Released {} to {} in repository {}", jarName, r.artifact, releaseRepo);
 			return r.artifact;
@@ -1182,9 +1186,12 @@ public class Project extends Processor {
 		}
 		logger.debug("releasing {} - {}", jars, releaseRepos);
 
-		for (RepositoryPlugin releaseRepo : releaseRepos) {
-			for (File jar : jars) {
-				releaseRepo(releaseRepo, jar.getName(), new BufferedInputStream(IO.stream(jar)));
+		try (ProjectBuilder builder = getBuilder(null)) {
+			builder.init();
+			for (RepositoryPlugin releaseRepo : releaseRepos) {
+				for (File jar : jars) {
+					releaseRepo(releaseRepo, builder, jar.getName(), new BufferedInputStream(IO.stream(jar)));
+				}
 			}
 		}
 	}
