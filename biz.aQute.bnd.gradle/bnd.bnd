@@ -25,10 +25,7 @@ pluginClasspath: ${p-buildpath;\\${pathseparator}}
 -includeresource: \
 	OSGI-OPT/src=src, \
 	resources, \
-	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
-	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
-	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
-	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
+	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;latest}
 
 # Use groovydoc task generated doc for -javadoc.jar
 -maven-release: pom;path=JAR,javadoc;path=${target}/docs/groovydoc
