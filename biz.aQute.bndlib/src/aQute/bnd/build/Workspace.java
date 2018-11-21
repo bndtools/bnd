@@ -73,7 +73,6 @@ import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.url.MultiURLConnectionHandler;
-import aQute.bnd.util.home.Home;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;

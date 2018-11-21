@@ -39,6 +39,14 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
 
+/**
+ * Implements an RPC interface to a workspace. When a workspace is created then
+ * it can create a Remote Workspace Server to allow remote access.
+ * <p>
+ * This server will register the ephemeral port it uses in the
+ * {@code cnf/cache/remotews} directory so that it can be found by clients. This
+ * registration is deleted when the process properly exits.
+ */
 public class RemoteWorkspaceServer implements Closeable {
 	final Logger	logger	= LoggerFactory.getLogger(RemoteWorkspaceServer.class);
 	final Closeable	server;
@@ -71,8 +79,8 @@ public class RemoteWorkspaceServer implements Closeable {
 			})
 			.build();
 
-		this.server = Link.server("remotews", RemoteWorkspaceClient.class, server, (l) -> workspaceLocker,
-			true, Processor.getExecutor());
+		this.server = Link.server("remotews", RemoteWorkspaceClient.class, server, (l) -> workspaceLocker, true,
+			Processor.getExecutor());
 
 		File remotews = RemoteWorkspaceClientFactory.getPortDirectory(workspace.getBase(), workspace.getBase());
 		remotews.mkdirs();
@@ -86,6 +94,11 @@ public class RemoteWorkspaceServer implements Closeable {
 		remotewsPort.deleteOnExit();
 	}
 
+	/**
+	 * Close the server. This generally happens when the corresponding workspace
+	 * is closed. It will release the ephemeral port and delete the registration
+	 * file.
+	 */
 	@Override
 	public void close() throws IOException {
 		logger.info("Closing remote workspace server {}", remotewsPort);
@@ -93,6 +106,9 @@ public class RemoteWorkspaceServer implements Closeable {
 		server.close();
 	}
 
+	/**
+	 * Holds the implementations of the {@link RemoteWorkspace}
+	 */
 	class Instance implements RemoteWorkspace {
 		@Override
 		public String getBndVersion() {

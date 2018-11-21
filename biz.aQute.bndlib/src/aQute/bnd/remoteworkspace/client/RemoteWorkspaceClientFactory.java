@@ -20,16 +20,41 @@ import aQute.lib.exceptions.FunctionWithException;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
 
+/**
+ * A class that can setup a 2-way link to a {@link RemoteWorkspace} on the same
+ * machine.
+ */
 public class RemoteWorkspaceClientFactory {
 	final static Logger				logger			= LoggerFactory.getLogger(RemoteWorkspaceClientFactory.class);
 	final static ExecutorService	executorService	= Executors.newFixedThreadPool(6);
 
+	/**
+	 * Create a Remote Workspace object that communicates with a Remote
+	 * Workspace server on the same machine on the loopback interface.
+	 * <p>
+	 * This class will search in the {@code {dir}/cnf/cache/remotews} directory
+	 * for registered workspaces. (Multiple can be registered.) It will try to
+	 * contact these remote workspace servers in order of last modified, newest
+	 * first. The first one that responds will be returned.
+	 * 
+	 * @param dir The directory of the workspace
+	 * @param client the client API
+	 * @return a RemoteWorkspace
+	 */
 	public static RemoteWorkspace create(File dir, RemoteWorkspaceClient client) {
 		return findRemoteWorkspace(dir, p -> {
 			return create(p, client);
 		});
 	}
 
+	/**
+	 * Create a Remote Workspace on a specific port.
+	 * 
+	 * @param port the port to use
+	 * @param client the client API
+	 * @return a Workspace
+	 * @throws IOException when something goes wrong
+	 */
 	public static RemoteWorkspace create(int port, RemoteWorkspaceClient client) throws IOException {
 		Socket socket = new Socket(InetAddress.getLoopbackAddress(), port);
 		@SuppressWarnings("resource")
@@ -94,6 +119,14 @@ public class RemoteWorkspaceClientFactory {
 		throw new IllegalArgumentException("Cannot find remote workspace from directory  " + dir);
 	}
 
+	/**
+	 * Get the directory where the ports are registered in
+	 * 
+	 * @param dir the directory to start from.
+	 * @param org the original directory started from
+	 * @return the directory (cnf/cache/remotews) in the first workspace
+	 *         encountered
+	 */
 	public static File getPortDirectory(File dir, File org) {
 		if (dir != null && dir.exists()) {
 			boolean isWorkspace = IO.getFile(dir, "cnf/build.bnd")
