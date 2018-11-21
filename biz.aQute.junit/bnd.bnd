@@ -2,10 +2,10 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	osgi.core;version=4.2,\
-	osgi.cmpn;version=4.2,\
+	osgi.core;version=4.2;maven-scope=provided,\
+	osgi.cmpn;version=4.2;maven-scope=provided,\
 	aQute.libg;version=project,\
-	biz.aQute.bndlib;version=project,\
+	biz.aQute.bndlib;version=latest;maven-scope=provided,\
 	${junit}
 
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
