@@ -1,12 +1,10 @@
 package aQute.bnd.maven;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,20 +12,15 @@ import java.util.regex.Pattern;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.WriteResource;
 import aQute.lib.io.IO;
 import aQute.lib.tag.Tag;
-import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
-import aQute.libg.glob.PathSet;
 
 public class PomResource extends WriteResource {
-	private static final Predicate<String>	pomPropertiesFilter	= new PathSet("META-INF/maven/*/*/pom.properties")
-		.matches();
 	private static final String	VERSION		= "version";
 	private static final String	ARTIFACTID	= "artifactid";
 	private static final String	GROUPID		= "groupid";
@@ -337,35 +330,17 @@ public class PomResource extends WriteResource {
 			processor.warning("POM will not validate on Central due to missing Bundle-Developers header");
 		}
 
-		for (Processor p = processor; p != null; p = p.getParent()) {
-			if (p instanceof Analyzer) {
-				Analyzer analyzer = (Analyzer) p;
-				Tag tdependencies = new Tag("dependencies");
-				analyzer.findResources(pomPropertiesFilter)
-					.forEachOrdered(r -> {
-						UTF8Properties pomProperties = new UTF8Properties();
-						try (InputStream in = r.openInputStream()) {
-							pomProperties.load(in);
-						} catch (Exception e) {
-							return;
-						}
-						String depVersion = pomProperties.getProperty("version");
-						String depGroupId = pomProperties.getProperty("groupId");
-						String depArtifactId = pomProperties.getProperty("artifactId");
-						if ((depVersion != null) && (depGroupId != null) && (depArtifactId != null)) {
-							Tag tdependency = new Tag(tdependencies, "dependency");
-							tdependency.addContent(new Tag("groupId", depGroupId))
-								.addContent(new Tag("artifactId", depArtifactId))
-								.addContent(new Tag("version", depVersion));
-						}
-					});
-				if (!tdependencies.getContents()
-					.isEmpty()) {
-					project.addContent(tdependencies);
-				}
-				break;
+		Parameters dependencies = new Parameters(processor.getProperty(Constants.MAVEN_DEPENDENCIES), processor);
+		if (!dependencies.isEmpty()) {
+			Tag tdependencies = new Tag("dependencies");
+			dependencies.values()
+				.forEach(attrs -> tdependencies.addContent(new Tag("dependency").addContent(attrs)));
+			if (!tdependencies.getContents()
+				.isEmpty()) {
+				project.addContent(tdependencies);
 			}
 		}
+
 		String validate = project.validate();
 		if (validate != null)
 			throw new IllegalArgumentException(validate);
