@@ -20,6 +20,8 @@ Bundle-Description: The bnd gradle plugin.
 	biz.aQute.resolve;version=latest, \
 	biz.aQute.repository;version=latest
 
+pluginClasspath: ${p-buildpath;\\${pathseparator}}
+
 -includeresource: \
 	OSGI-OPT/src=src, \
 	resources, \

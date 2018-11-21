@@ -7,7 +7,7 @@
 
 buildscript {
   dependencies {
-    classpath files(new File(bnd_plugin).canonicalFile)
+    classpath files(bnd_plugin.tokenize(File.pathSeparatorChar))
   }
 }
 
