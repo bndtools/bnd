@@ -30,6 +30,7 @@ import java.util.NavigableMap;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -37,6 +38,7 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -282,6 +284,14 @@ public class Jar implements Closeable {
 	public Resource getResource(String path) {
 		check();
 		return resources.get(path);
+	}
+
+	public Stream<Resource> getResources(Predicate<String> matches) {
+		check();
+		return resources.keySet()
+			.stream()
+			.filter(matches)
+			.map(resources::get);
 	}
 
 	private String getDirectory(String path) {

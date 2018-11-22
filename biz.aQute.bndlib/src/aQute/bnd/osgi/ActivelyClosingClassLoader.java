@@ -132,6 +132,21 @@ class ActivelyClosingClassLoader extends URLClassLoader implements Closeable {
 						public InputStream getInputStream() throws IOException {
 							return new ByteBufferInputStream(data);
 						}
+
+						@Override
+						public int getContentLength() {
+							return data.length;
+						}
+
+						@Override
+						public long getContentLengthLong() {
+							return data.length;
+						}
+
+						@Override
+						public String getContentType() {
+							return "application/octet-stream";
+						}
 					};
 				}
 			});

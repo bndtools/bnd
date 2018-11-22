@@ -41,6 +41,7 @@ import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.util.home.Home;
 import aQute.lib.collections.LineCollection;
 import aQute.lib.io.IO;
 import aQute.lib.settings.Settings;
@@ -49,7 +50,7 @@ import aQute.libg.command.Command;
 
 public class MavenCommand extends Processor {
 	private final static Logger	logger		= LoggerFactory.getLogger(MavenCommand.class);
-	final Settings				settings	= new Settings();
+	final Settings				settings	= new Settings(Home.getUserHomeBnd() + "/settings.json");
 	File						temp;
 
 	public MavenCommand() {}

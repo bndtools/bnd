@@ -19,6 +19,7 @@ import java.util.SortedSet;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 import java.util.jar.Manifest;
 
 import org.osgi.resource.Capability;
@@ -57,6 +58,7 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.SHA1;
+import aQute.libg.glob.PathSet;
 import aQute.maven.api.Archive;
 import aQute.maven.api.IMavenRepo;
 import aQute.maven.api.IPom;
@@ -228,7 +230,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Resource pom = null;
 
 		if (instructions.pom.path != null) {
-			pom = createPomFromFile(options.context.getFile(instructions.pom.path));
+			if (instructions.pom.path.equals("JAR")) {
+				pom = getPomResource(binary);
+			} else {
+				pom = createPomFromFile(options.context.getFile(instructions.pom.path));
+			}
 		} else {
 
 			if (!configuration.ignore_metainf_maven()) {
@@ -371,27 +377,45 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		return new FileResource(file);
 	}
 
-	private PomResource createPomFromFirstMavenPropertiesInJar(Jar jar, Processor context)
-		throws IOException, Exception {
-		for (Map.Entry<String, Resource> e : jar.getResources()
-			.entrySet()) {
-			String path = e.getKey();
+	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();
+	private Resource getPomResource(Jar jar) {
+		return jar.getResources()
+			.keySet()
+			.stream()
+			.filter(pomXmlFilter)
+			.findFirst()
+			.map(jar::getResource)
+			.orElse(null);
+	}
 
-			if (path.startsWith("META-INF/maven/") && path.endsWith("/pom.properties")) {
-				Resource r = e.getValue();
+	private static final Predicate<String> pomPropertiesFilter = new PathSet("META-INF/maven/*/*/pom.properties")
+		.matches();
+	private PomResource createPomFromFirstMavenPropertiesInJar(Jar jar, Processor context) throws Exception {
+		return jar.getResources()
+			.keySet()
+			.stream()
+			.filter(pomPropertiesFilter)
+			.findFirst()
+			.map(path -> {
+				Resource r = jar.getResource(path);
 				UTF8Properties utf8p = new UTF8Properties();
-				utf8p.load(r.openInputStream());
+				try (InputStream in = r.openInputStream()) {
+					utf8p.load(in);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
+				}
 				String version = utf8p.getProperty("version");
-				String artifactId = utf8p.getProperty("artifactId");
 				String groupId = utf8p.getProperty("groupId");
+				String artifactId = utf8p.getProperty("artifactId");
 
 				try (Processor ctx = new Processor(context)) {
 					ctx.addProperties(utf8p);
-					return new PomResource(ctx, jar.getManifest(), groupId, artifactId, version, path);
+					return new PomResource(ctx, jar.getManifest(), groupId, artifactId, version);
+				} catch (Exception e) {
+					throw Exceptions.duck(e);
 				}
-			}
-		}
-		return null;
+			})
+			.orElse(null);
 	}
 
 	private PomResource createPomFromContextAndManifest(Manifest manifest, Processor context) throws Exception {

@@ -19,6 +19,7 @@ import org.osgi.service.log.LogListener;
 import org.osgi.service.log.LogReaderService;
 import org.osgi.service.log.LogService;
 
+@Deprecated // see biz.aQute.bnd.remote.junit
 public class ConsoleLogger implements LogReaderService {
 	public List<LogEntry>							entries			= new ArrayList<>();
 	public List<Facade>								facades			= new CopyOnWriteArrayList<>();

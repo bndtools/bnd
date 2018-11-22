@@ -1,5 +1,7 @@
 package aQute.lib.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.lang.reflect.Array;
@@ -110,6 +112,7 @@ public class ConverterTest extends TestCase {
 		assertEquals(2, m.b());
 		assertEquals(0, m.c());
 		assertEquals(0d, m.d());
+		assertThat(m.toString()).endsWith("'");
 	}
 
 	public void testTypeRef() throws Exception {
@@ -164,18 +167,21 @@ public class ConverterTest extends TestCase {
 	 * Test map to object
 	 */
 
-	public class DD {
-
-	}
-
-	public class D {
-		int		n;
-		String	s;
-
+	public static class D {
+		public int		n;
+		public String	s;
+		public Map<String, Object>	__extra;
 	}
 
 	public void testMap2Object() throws Exception {
-
+		Map<String, Object> map = new HashMap<>();
+		map.put("n", 42);
+		map.put("s", "string");
+		map.put("e", Boolean.TRUE);
+		D d = converter.convert(D.class, map);
+		assertThat(d.n).isEqualTo(42);
+		assertThat(d.s).isEqualTo("string");
+		assertThat(d.__extra).containsEntry("e", Boolean.TRUE);
 	}
 
 	/**

@@ -1,8 +1,21 @@
 package test;
 
+import org.osgi.framework.BundleContext;
+
 import junit.framework.TestCase;
 
 public class TestCase1 extends TestCase {
+
+	@SuppressWarnings("unused")
+	private volatile BundleContext context;
+
+	/**
+	 * This method is called by the JUnit runner for OSGi, and gives us a Bundle
+	 * Context.
+	 */
+	public void setBundleContext(BundleContext context) {
+		this.context = context;
+	}
 
 	public static void test1() {
 		System.err.println("All ok");

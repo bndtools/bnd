@@ -71,7 +71,7 @@ public class JSONTest extends TestCase {
 
 	}
 
-	static class VX {
+	public static class VX {
 		public VX() throws Exception {}
 
 		public static Version	DEFAULT_VERSION	= new Version("1.2.3.static");

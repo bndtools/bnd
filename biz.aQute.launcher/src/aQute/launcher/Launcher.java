@@ -5,6 +5,8 @@ import static aQute.launcher.constants.LauncherConstants.DEFAULT_LAUNCHER_PROPER
 import static aQute.launcher.constants.LauncherConstants.ERROR;
 import static aQute.launcher.constants.LauncherConstants.UPDATE_NEEDED;
 import static aQute.launcher.constants.LauncherConstants.WARNING;
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
@@ -16,6 +18,7 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.instrument.Instrumentation;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -409,8 +412,7 @@ public class Launcher implements ServiceListener {
 			for (Object token : parms.activators) {
 				try {
 					Class<?> clazz = loader.loadClass((String) token);
-					BundleActivator activator = (BundleActivator) clazz.getConstructor()
-						.newInstance();
+					BundleActivator activator = (BundleActivator) newInstance(clazz);
 					if (isImmediate(activator)) {
 						start(systemContext, result, activator);
 					}
@@ -1023,8 +1025,7 @@ public class Launcher implements ServiceListener {
 			String implementation = implementations.get(0);
 
 			Class<?> clazz = loader.loadClass(implementation);
-			FrameworkFactory factory = (FrameworkFactory) clazz.getConstructor()
-				.newInstance();
+			FrameworkFactory factory = (FrameworkFactory) newInstance(clazz);
 			trace("Framework factory %s", factory);
 			@SuppressWarnings({
 				"unchecked", "rawtypes"
@@ -1467,4 +1468,18 @@ public class Launcher implements ServiceListener {
 		}
 		return null;
 	}
+
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	private static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }

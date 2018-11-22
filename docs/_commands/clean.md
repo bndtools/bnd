@@ -3,9 +3,15 @@ layout: default
 title: clean [options] ... 
 summary: Clean a project                                 
 ---
-   
-OPTIONS
 
-   [ -p, --project <string> ] - Path to another project than the current project
+## Description
 
+{{page.summary}}
 
+## Synopsis
+
+## Options
+
+    [ -p, --project <string> ] - Path to another project than the current project
+
+## Examples

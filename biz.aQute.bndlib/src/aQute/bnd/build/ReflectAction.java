@@ -23,9 +23,9 @@ public class ReflectAction implements Action {
 	public void execute(Project project, Object... args) throws Exception {
 		for (Method m : project.getClass()
 			.getMethods()) {
-			Class<?>[] types = m.getParameterTypes();
 			if (m.getName()
 				.equals(what)) {
+				Class<?>[] types = m.getParameterTypes();
 				if (args.length == types.length) {
 					if (args.length == 0)
 						m.invoke(project);

@@ -361,4 +361,7 @@ public class BridgeRepository {
 		return info;
 	}
 
+	public Set<Resource> getResources() {
+		return ResourceUtils.getAllResources(repository);
+	}
 }

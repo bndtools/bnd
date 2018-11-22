@@ -2,25 +2,37 @@ sudo: false
 
 language: java
 
-jdk:
-  - oraclejdk8
-  - oraclejdk10
-
-before_install:
-  - unset _JAVA_OPTIONS
-  - rvm --version
-  - rvm use 2.4 --install --binary --fuzzy
+matrix:
+  include:
+    - name: "Oracle JDK 8"
+      jdk: oraclejdk8
+    - name: "OpenJDK 10"
+      before_install:
+        - curl -O -L --retry 3  https://github.com/sormuras/bach/raw/master/install-jdk.sh
+        - source install-jdk.sh --url "https://api.adoptopenjdk.net/v2/binary/releases/openjdk10?openjdk_impl=hotspot&os=linux&arch=x64&release=latest&type=jdk"
+    - name: "Local rebuild"
+      jdk: oraclejdk8
+      script: 
+        - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded
+        - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --rerun-tasks -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build
+    - name: "Documentation"
+      install:
+        - rvm --version
+        - rvm use 2.4 --install --binary --fuzzy
+        - ruby --version
+        - gem --version
+        - bundle --version
+      script: 
+        - cd docs
+        - ./build.sh
 
 install:
+  - unset _JAVA_OPTIONS
   - ./gradlew --no-daemon --version
   - ./mvnw --version
-  - ruby --version
-  - gem --version
-  - bundle --version
 
 script:
   - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
-  - (cd docs && ./build.sh)
 
 before_cache:
   - git status

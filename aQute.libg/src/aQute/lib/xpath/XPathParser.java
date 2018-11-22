@@ -1,7 +1,12 @@
 package aQute.lib.xpath;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
+
 import java.io.File;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
@@ -42,10 +47,22 @@ public class XPathParser {
 		NodeList proxies = (NodeList) xp.evaluate(what, doc, XPathConstants.NODESET);
 		for (int i = 0; i < proxies.getLength(); i++) {
 			Node node = proxies.item(i);
-			X dto = type.getConstructor()
-				.newInstance();
+			X dto = newInstance(type);
 			parse(node, dto);
 			map.add(dto);
+		}
+	}
+
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	private static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -65,7 +82,14 @@ public class XPathParser {
 				value = value.toUpperCase();
 
 			Object o = Converter.cnv(f.getGenericType(), value);
-			f.set(dto, o);
+			try {
+				publicLookup().unreflectSetter(f)
+					.invoke(dto, o);
+			} catch (Error | Exception e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new InvocationTargetException(e);
+			}
 		}
 	}
 

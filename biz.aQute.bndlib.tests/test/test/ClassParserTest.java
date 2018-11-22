@@ -348,20 +348,6 @@ public class ClassParserTest extends TestCase {
 			.contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
 	}
 
-	public void testMissingPackage1() throws Exception {
-		InputStream in = getClass().getResourceAsStream("JobsService.clazz");
-		assertNotNull(in);
-		Clazz clazz = new Clazz(a, "test", null);
-		clazz.parseClassFile(in);
-
-		System.err.println(clazz.getReferred());
-		clazz.parseDescriptor(
-			"(IILcom/linkedin/member2/pub/profile/core/view/I18nPositionViews;)Lcom/linkedin/leo/cloud/overlap/api/OverlapQuery;",
-			0);
-		assertTrue(clazz.getReferred()
-			.contains(a.getPackageRef("com/linkedin/member2/pub/profile/core/view")));
-	}
-
 	public void testGeneratedClass() throws Exception {
 		InputStream in = getClass().getResourceAsStream("XDbCmpXView.clazz");
 		assertNotNull(in);

@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Method;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -56,12 +59,16 @@ public class EmbeddedLauncher {
 
 				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]), cl)) {
 					Class<?> embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
-					Method method = embeddedLauncher.getMethod("main", String[].class);
-					method.invoke(null, new Object[] {
-						args
-					});
+					MethodHandle mh = MethodHandles.publicLookup()
+						.findStatic(embeddedLauncher, "main", MethodType.methodType(void.class, String[].class));
+					try {
+						mh.invoke(args);
+					} catch (Error | Exception e) {
+						throw e;
+					} catch (Throwable e) {
+						throw new InvocationTargetException(e);
+					}
 				}
-				return;
 			}
 		}
 	}

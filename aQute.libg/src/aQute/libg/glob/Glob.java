@@ -8,11 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Glob {
-	static Logger logger = LoggerFactory.getLogger(Glob.class);
 
 	enum State {
 		SIMPLE,
@@ -156,13 +152,17 @@ public class Glob {
 		return c == ')' || c == ']';
 	}
 
-	public void select(List<?> objects) {
+	public void select(Collection<?> objects) {
 		for (Iterator<?> i = objects.iterator(); i.hasNext();) {
 			String s = i.next()
 				.toString();
-			if (!matcher(s).matches())
+			if (!matches(s))
 				i.remove();
 		}
+	}
+
+	public void select(List<?> objects) {
+		this.select((Collection<?>) objects);
 	}
 
 	public static Pattern toPattern(String s) {
@@ -173,8 +173,7 @@ public class Glob {
 		try {
 			return Pattern.compile(convertGlobToRegEx(s), flags);
 		} catch (Exception e) {
-			// ignore
-			logger.info("failing regex in glob", e);
+			// ignore, throw?
 		}
 		return null;
 	}
@@ -247,5 +246,9 @@ public class Glob {
 		} else if (!glob.equals(other.glob))
 			return false;
 		return true;
+	}
+
+	public boolean matches(String s) {
+		return matcher(s).matches();
 	}
 }

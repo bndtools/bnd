@@ -77,16 +77,17 @@ public class ResolveTest extends TestCase {
 		File f = IO.getFile("testdata/resolve/includebndrun/" + file);
 		File wsf = IO.getFile("testdata/ws");
 
-		Workspace ws = new Workspace(wsf);
-		ws.setProperty("-resolve.effective", "active;skip:='workspace'");
+		try (Workspace ws = new Workspace(wsf)) {
+			ws.setProperty("-resolve.effective", "active;skip:='workspace'");
 
-		Run run = Run.createRun(ws, f);
-		BndrunResolveContext context = new BndrunResolveContext(run, run, ws, log);
-		context.init();
-		Map<String, Set<String>> effectiveSet = context.getEffectiveSet();
-		assertNotNull(effectiveSet.get("active"));
-		assertTrue(effectiveSet.get("active")
-			.contains(value));
+			Run run = Run.createRun(ws, f);
+			BndrunResolveContext context = new BndrunResolveContext(run, run, ws, log);
+			context.init();
+			Map<String, Set<String>> effectiveSet = context.getEffectiveSet();
+			assertNotNull(effectiveSet.get("active"));
+			assertTrue(effectiveSet.get("active")
+				.contains(value));
+		}
 	}
 
 	/**
@@ -95,7 +96,7 @@ public class ResolveTest extends TestCase {
 
 	public void testDefaultVersionsForJava() throws Exception {
 		Run run = Run.createRun(null, IO.getFile("testdata/defltversions/run.bndrun"));
-		try (ProjectResolver pr = new ProjectResolver(run);) {
+		try (Workspace w = run.getWorkspace(); ProjectResolver pr = new ProjectResolver(run);) {
 			Map<Resource, List<Wire>> resolve = pr.resolve();
 			assertTrue(pr.check());
 			assertNotNull(resolve);

@@ -2,34 +2,38 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -buildpath: \
-	osgi.core;version=4.2,\
-	osgi.cmpn;version=4.2,\
+	osgi.core;version=4.2;maven-scope=provided,\
+	osgi.cmpn;version=4.2;maven-scope=provided,\
 	aQute.libg;version=project,\
-	biz.aQute.bndlib;version=project,\
-    ${junit}
+	biz.aQute.bndlib;version=latest;maven-scope=provided,\
+	${junit}
 
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
--includepackage: aQute.junit.*, \
-				org.assertj.core.*
+-includepackage: \
+	aQute.junit.*, \
+	org.assertj.core.*
+
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
-Export-Package: junit.*;version="3.8.2", \
-				org.junit.*, \
-				org.hamcrest.*, \
-				!org.assertj.core.internal.*, \
-				org.assertj.core.*
+Export-Package: \
+	junit.*;version="3.8.2", \
+	org.junit.*, \
+	org.hamcrest.*, \
+	!org.assertj.core.internal.*, \
+	org.assertj.core.*
 
 -fixupmessages.junit: Version for package junit.*3.8.2
 -fixupmessages.assertj: Export org.assertj.core.* private references
 
-# The dependency on aQute packages is only for the 
+# The dependency on aQute packages is only for the
 # master side. When launched, those dependencies
 # are not necessary
 Import-Package: \
-    aQute.*;resolution:=optional, \
-    junit.*;version="[3.8,5)",\
-    *
+	aQute.*;resolution:=optional, \
+	junit.*;version="[3.8,5)",\
+	sun.*; resolution:=optional,\
+	*
 
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator

@@ -57,7 +57,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.1.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.2.0'
   }
 }
 apply plugin: 'biz.aQute.bnd.workspace'
@@ -91,7 +91,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.1.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.2.0'
   }
 }
 apply plugin: 'biz.aQute.bnd.workspace'
@@ -220,7 +220,7 @@ buildscript {
     mavenCentral()
   }
   dependencies {
-    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.1.0'
+    classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:4.2.0'
   }
 }
 ```
@@ -606,6 +606,7 @@ version of the plugin jar:
 ```groovy
 buildscript {
   repositories {
+    mavenCentral()
     maven {
       url 'https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles'
     }

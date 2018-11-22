@@ -54,12 +54,14 @@ import java.util.SortedSet;
 import java.util.StringJoiner;
 import java.util.TimeZone;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
 import org.slf4j.Logger;
@@ -69,6 +71,7 @@ import aQute.bnd.annotation.Export;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Clazz.JAVA;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
@@ -2566,7 +2569,6 @@ public class Analyzer extends Processor {
 	 * 
 	 * @param jar
 	 * @param contained
-	 * @param referred
 	 * @param uses
 	 * @throws IOException
 	 */
@@ -2597,7 +2599,7 @@ public class Analyzer extends Processor {
 					try {
 						clazz = new Clazz(this, path, resource);
 						clazz.parseClassFile();
-					} catch (Throwable e) {
+					} catch (Exception e) {
 						exception(e, "Invalid class file %s (%s)", relativePath, e);
 						continue next;
 					}
@@ -2968,6 +2970,11 @@ public class Analyzer extends Processor {
 		return null;
 	}
 
+	public Stream<Resource> findResources(Predicate<String> matches) {
+		return getClasspath().stream()
+			.flatMap(jar -> jar.getResources(matches));
+	}
+
 	/**
 	 * Find a clazz on the class path. This class has been parsed.
 	 */
@@ -2985,7 +2992,7 @@ public class Analyzer extends Processor {
 			getClass().getClassLoader();
 			URL url = ClassLoader.getSystemResource(typeRef.getPath());
 			if (url != null)
-				r = Resource.fromURL(url);
+				r = Resource.fromURL(url, getPlugin(HttpClient.class));
 		}
 		if (r != null) {
 			c = new Clazz(this, typeRef.getPath(), r);
@@ -3435,7 +3442,7 @@ public class Analyzer extends Processor {
 		final MultiMap<Clazz.Def, TypeRef> xref = new MultiMap<>(Clazz.Def.class, TypeRef.class, true);
 
 		for (final Clazz clazz : getClassspace().values()) {
-			if ((clazz.accessx & sourceModifiers) == 0)
+			if ((clazz.getAccess() & sourceModifiers) == 0)
 				continue;
 
 			if (source != null && source != clazz.getClassName()
@@ -3601,7 +3608,7 @@ public class Analyzer extends Processor {
 		}
 
 		String path = type.getPackageRef()
-			.getBinary() + "/" + clazz.sourceFile;
+			.getBinary() + "/" + clazz.getSourceFile();
 
 		for (File srcDir : sourcePath) {
 			if (!srcDir.isFile())

@@ -1,5 +1,9 @@
 package aQute.lib.tag;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -179,5 +183,26 @@ public class TagTest extends TestCase {
 				}
 			}
 		}
+	}
+
+	public void testCDATAEscaped() throws Exception {
+		Tag t = new Tag("test", "]]>blah blah bl]]>]]>ah blah]]>");
+		t.setCDATA();
+		StringWriter w = new StringWriter();
+		try (PrintWriter pw = new PrintWriter(w)) {
+			t.print(0, pw);
+		}
+		assertThat(w.toString())
+			.contains("<![CDATA[]]]]><![CDATA[>blah blah bl]]]]><![CDATA[>]]]]><![CDATA[>ah blah]]]]><![CDATA[>]]>");
+	}
+
+	public void testCDATA() throws Exception {
+		Tag t = new Tag("test", "blah blah blah blah");
+		t.setCDATA();
+		StringWriter w = new StringWriter();
+		try (PrintWriter pw = new PrintWriter(w)) {
+			t.print(0, pw);
+		}
+		assertThat(w.toString()).contains("<![CDATA[blah blah blah blah]]>");
 	}
 }

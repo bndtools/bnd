@@ -1,6 +1,8 @@
 package aQute.bnd.osgi;
 
 import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.toList;
 
@@ -11,13 +13,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
@@ -67,6 +69,7 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.SyntaxAnnotation;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.RegistryDonePlugin;
@@ -712,78 +715,96 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	private void loadPluginPath(Set<Object> instances, String pluginPath, CL loader) {
 		Parameters pluginpath = new Parameters(pluginPath, this);
+		HttpClient client = null;
+		try {
+			nextClause: for (Entry<String, Attrs> entry : pluginpath.entrySet()) {
 
-		nextClause: for (Entry<String, Attrs> entry : pluginpath.entrySet()) {
+				File f = getFile(entry.getKey()).getAbsoluteFile();
+				if (!f.isFile()) {
 
-			File f = getFile(entry.getKey()).getAbsoluteFile();
-			if (!f.isFile()) {
+					//
+					// File does not exist! Check if we need to download
+					//
 
-				//
-				// File does not exist! Check if we need to download
-				//
+					String url = entry.getValue()
+						.get(PLUGINPATH_URL_ATTR);
+					if (url != null) {
+						try {
+							logger.debug("downloading {} to {}", url, f.getAbsoluteFile());
+							URL u = new URL(url);
+							if (client == null) {
+								@SuppressWarnings("resource")
+								HttpClient c = new HttpClient();
+								c.setRegistry(this);
+								c.readSettings(this);
 
-				String url = entry.getValue()
-					.get(PLUGINPATH_URL_ATTR);
-				if (url != null) {
-					try {
-
-						logger.debug("downloading {} to {}", url, f.getAbsoluteFile());
-						URL u = new URL(url);
-						URLConnection connection = u.openConnection();
-
-						//
-						// Allow the URLCOnnectionHandlers to interact with the
-						// connection so they can sign it or decorate it with
-						// a password etc.
-						//
-						for (Object plugin : instances) {
-							if (plugin instanceof URLConnectionHandler) {
-								URLConnectionHandler handler = (URLConnectionHandler) plugin;
-								if (handler.matches(u))
-									handler.handle(connection);
+								//
+								// Allow the URLCOnnectionHandlers to interact
+								// with the
+								// connection so they can sign it or decorate it
+								// with
+								// a password etc.
+								//
+								instances.stream()
+									.filter(URLConnectionHandler.class::isInstance)
+									.map(URLConnectionHandler.class::cast)
+									.forEach(c::addURLConnectionHandler);
+								client = c;
 							}
-						}
 
-						//
-						// Copy the url to the file
-						//
-						IO.mkdirs(f.getParentFile());
-						IO.copy(connection.getInputStream(), f);
-
-						//
-						// If there is a sha specified, we verify the download
-						// of the
-						// the file.
-						//
-						String digest = entry.getValue()
-							.get(PLUGINPATH_SHA1_ATTR);
-						if (digest != null) {
-							if (Hex.isHex(digest.trim())) {
-								byte[] sha1 = Hex.toByteArray(digest);
-								byte[] filesha1 = SHA1.digest(f)
-									.digest();
-								if (!Arrays.equals(sha1, filesha1)) {
-									error(
-										"Plugin path: %s, specified url %s and a sha1 but the file does not match the sha",
-										entry.getKey(), url);
+							//
+							// Copy the url to the file
+							//
+							IO.mkdirs(f.getParentFile());
+							try (Resource resource = Resource.fromURL(u, client)) {
+								try (OutputStream out = IO.outputStream(f)) {
+									resource.write(out);
 								}
-							} else {
-								error("Plugin path: %s, specified url %s and a sha1 '%s' but this is not a hexadecimal",
-									entry.getKey(), url, digest);
+								long lastModified = resource.lastModified();
+								if (lastModified > 0L) {
+									f.setLastModified(lastModified);
+								}
 							}
+
+							//
+							// If there is a sha specified, we verify the
+							// download
+							// of the
+							// the file.
+							//
+							String digest = entry.getValue()
+								.get(PLUGINPATH_SHA1_ATTR);
+							if (digest != null) {
+								if (Hex.isHex(digest.trim())) {
+									byte[] sha1 = Hex.toByteArray(digest);
+									byte[] filesha1 = SHA1.digest(f)
+										.digest();
+									if (!Arrays.equals(sha1, filesha1)) {
+										error(
+											"Plugin path: %s, specified url %s and a sha1 but the file does not match the sha",
+											entry.getKey(), url);
+									}
+								} else {
+									error(
+										"Plugin path: %s, specified url %s and a sha1 '%s' but this is not a hexadecimal",
+										entry.getKey(), url, digest);
+								}
+							}
+						} catch (Exception e) {
+							exception(e, "Failed to download plugin %s from %s, error %s", entry.getKey(), url, e);
+							continue nextClause;
 						}
-					} catch (Exception e) {
-						error("Failed to download plugin %s from %s, error %s", entry.getKey(), url, e);
+					} else {
+						error("No such file %s from %s and no 'url' attribute on the path so it can be downloaded",
+							entry.getKey(), this);
 						continue nextClause;
 					}
-				} else {
-					error("No such file %s from %s and no 'url' attribute on the path so it can be downloaded",
-						entry.getKey(), this);
-					continue nextClause;
 				}
+				logger.debug("Adding {} to loader for plugins", f);
+				loader.add(f);
 			}
-			logger.debug("Adding {} to loader for plugins", f);
-			loader.add(f);
+		} finally {
+			IO.close(client);
 		}
 	}
 
@@ -798,8 +819,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private Object loadPlugin(ClassLoader loader, Attrs attrs, String className, boolean ignoreError) {
 		try {
 			Class<?> c = loader.loadClass(className);
-			Object plugin = c.getConstructor()
-				.newInstance();
+			Object plugin = publicLookup().findConstructor(c, defaultConstructor)
+				.invoke();
 			customize(plugin, attrs);
 			if (plugin instanceof Closeable) {
 				addClose((Closeable) plugin);
@@ -811,11 +832,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		} catch (ClassNotFoundException e) {
 			if (!ignoreError)
 				exception(e, "Failed to load plugin %s;%s, error: %s ", className, attrs, e);
-		} catch (Exception e) {
+		} catch (Error e) {
+			throw e;
+		} catch (Throwable e) {
 			exception(e, "Unexpected error loading plugin %s-%s: %s", className, attrs, e);
 		}
 		return null;
 	}
+
+	private static final MethodType defaultConstructor = methodType(void.class);
 
 	protected void setTypeSpecificPlugins(Set<Object> list) {
 		list.add(getExecutor());
@@ -982,10 +1007,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return IO.absolutePath(pf.getParentFile());
 	}
 
-	static String _uri = "${uri;<uri>[;<baseuri>]}, Resolve the uri against the baseuri. baseuri defaults to the processor base.";
+	static final String _uriHelp = "${uri;<uri>[;<baseuri>]}, Resolve the uri against the baseuri. baseuri defaults to the processor base.";
 
 	public String _uri(String args[]) throws Exception {
-		Macro.verifyCommand(args, _uri, null, 2, 3);
+		Macro.verifyCommand(args, _uriHelp, null, 2, 3);
 
 		URI uri = new URI(args[1]);
 		if (!uri.isAbsolute() || uri.getScheme()
@@ -1004,10 +1029,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return uri.toString();
 	}
 
-	static String _fileuri = "${fileuri;<path>}, Return a file uri for the specified path. Relative paths are resolved against the processor base.";
+	static final String _fileuriHelp = "${fileuri;<path>}, Return a file uri for the specified path. Relative paths are resolved against the processor base.";
 
 	public String _fileuri(String args[]) throws Exception {
-		Macro.verifyCommand(args, _fileuri, null, 2, 2);
+		Macro.verifyCommand(args, _fileuriHelp, null, 2, 2);
 
 		File f = IO.getFile(getBase(), args[1])
 			.getCanonicalFile();
@@ -1143,7 +1168,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 								ext = value.substring(n);
 
 							Path tmp = Files.createTempFile("url", ext);
-							try (Resource resource = Resource.fromURL(url)) {
+							try (Resource resource = Resource.fromURL(url, getPlugin(HttpClient.class))) {
 								try (OutputStream out = IO.outputStream(tmp)) {
 									resource.write(out);
 								}
@@ -2689,18 +2714,19 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		try {
 			// Lets try a URL
 			URL url = new URL(name);
-			URLConnection connection = url.openConnection();
-			try (InputStream in = connection.getInputStream()) {
-				long lastModified = connection.getLastModified();
-				if (lastModified == 0L)
+			try (Resource resource = Resource.fromURL(url, getPlugin(HttpClient.class))) {
+				Jar jar = Jar.fromResource(fileName(url.getPath()), resource);
+				if (jar.lastModified() <= 0L) {
 					// We assume the worst :-(
-					lastModified = System.currentTimeMillis();
-				Jar jar = new Jar(fileName(url.getPath()), in, lastModified);
+					jar.updateModified(System.currentTimeMillis(), "use current time");
+				}
 				addClose(jar);
 				return jar;
 			}
 		} catch (IOException ee) {
 			// ignore
+		} catch (Exception ee) {
+			throw Exceptions.duck(ee);
 		}
 		return null;
 	}
@@ -2734,6 +2760,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		this.exceptions = p.isExceptions();
 	}
 
+	static final String _frangeHelp = "${frange;<version>[;true|false]}";
 	/**
 	 * Return a range expression for a filter from a version. By default this is
 	 * based on consumer compatibility. You can specify a third argument (true)
@@ -2748,7 +2775,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 */
 	public String _frange(String[] args) {
 		if (args.length < 2 || args.length > 3) {
-			error("Invalid filter range, 2 or 3 args ${frange;<version>[;true|false]}");
+			error("Invalid filter range, 2 or 3 args" + _frangeHelp);
 			return null;
 		}
 

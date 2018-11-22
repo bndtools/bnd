@@ -1,6 +1,10 @@
 package biz.aQute.bnd.diagnostics.gogo.osgi;
 
+import java.io.Closeable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.TreeSet;
@@ -10,50 +14,65 @@ import org.apache.felix.service.command.Converter;
 import org.apache.felix.service.command.Descriptor;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 
+import biz.aQute.bnd.diagnostics.gogo.impl.ComponentAnalyzer;
 import biz.aQute.bnd.diagnostics.gogo.impl.Diagnostics;
 
-public class Activator implements BundleActivator, Converter {
+public class Activator implements BundleActivator {
 
-	private Diagnostics d;
+	final Set<Closeable>	closeables	= new HashSet<>();
+	BundleContext			context;
 
 	@Override
 	public void start(BundleContext context) throws Exception {
-		Hashtable<String, Object> p = new Hashtable<>();
-		p.put(CommandProcessor.COMMAND_SCOPE, "bnd");
-		Set<String> commands = new TreeSet<>();
-		for (Method m : Diagnostics.class.getMethods()) {
-			Descriptor d = m.getAnnotation(Descriptor.class);
+		this.context = context;
+		register(Diagnostics.class);
+		register(ComponentAnalyzer.class);
+	}
 
-			if (d != null)
-				commands.add(m.getName());
+	<T extends Converter> void register(Class<T> c) throws Exception {
+		try {
+			Constructor<T> constructor = c.getConstructor(BundleContext.class);
+
+			Hashtable<String, Object> properties = new Hashtable<>();
+			properties.put(CommandProcessor.COMMAND_SCOPE, "bnd");
+			Set<String> commands = new TreeSet<>();
+			for (Method m : c.getMethods()) {
+				Descriptor d = m.getAnnotation(Descriptor.class);
+
+				if (d != null)
+					commands.add(m.getName());
+			}
+			T service = constructor.newInstance(context);
+
+			properties.put(CommandProcessor.COMMAND_SCOPE, "bnd");
+			properties.put(CommandProcessor.COMMAND_FUNCTION, commands.toArray(new String[0]));
+			System.out.println("Cmd " + service + " " + properties);
+			ServiceRegistration<Converter> registration = context.registerService(Converter.class, service, properties);
+			closeables.add(() -> {
+				registration.unregister();
+				if (service instanceof Closeable) {
+					((Closeable) service).close();
+				}
+			});
+
+		} catch (InvocationTargetException e) {
+			System.out.println("Oops " + e.getTargetException());
+		} catch (Exception e) {
+			System.out.println("Oops " + e);
 		}
-		p.put(CommandProcessor.COMMAND_SCOPE, "bnd");
-		p.put(CommandProcessor.COMMAND_FUNCTION, commands.toArray(new String[0]));
-		context.registerService(Diagnostics.class, d = new Diagnostics(context), p);
-
-		context.registerService(Converter.class, this, null);
 	}
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		d.close();
-	}
-
-	@Override
-	public Object convert(Class<?> targetType, Object source) throws Exception {
-		if (source instanceof Converter) {
-			return ((Converter) source).convert(targetType, source);
-		}
-		return null;
-	}
-
-	@Override
-	public CharSequence format(Object source, int level, Converter next) throws Exception {
-		if (source instanceof Converter) {
-			return ((Converter) source).format(source, level, next);
-		}
-		return null;
+		closeables.forEach(c -> {
+			try {
+				c.close();
+			} catch (Exception e) {
+				// ignore
+			}
+		});
 	}
 
 }

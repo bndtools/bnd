@@ -2,19 +2,19 @@
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
 -exportcontents: \
-    aQute.bnd.exporter.subsystem
+	aQute.bnd.exporter.subsystem
 
 -conditionalpackage: \
-    aQute.lib.*;-split-package:=first, \
-    aQute.libg.*;-split-package:=first
+	aQute.lib.*;-split-package:=first, \
+	aQute.libg.*;-split-package:=first
 
 -buildpath: \
-	osgi.core;version=latest,\
-	org.osgi.service.subsystem;version=latest,\
+	osgi.core;version=latest;maven-scope=provided,\
+	org.osgi.service.subsystem;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-    slf4j.api;version=latest
+	slf4j.api;version=latest
 
 -testpath: \
-    ${junit},\
-    slf4j.simple;version=latest
+	${junit},\
+	slf4j.simple;version=latest

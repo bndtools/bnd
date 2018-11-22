@@ -1,8 +1,8 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
-Bundle-Name: 					bndlib
-Bundle-Description:				A Swiss Army Knife for OSGi
+Bundle-Name: bndlib
+Bundle-Description: A Swiss Army Knife for OSGi
 
 -includepackage: \
 	aQute.bnd.*,\
@@ -11,6 +11,7 @@ Bundle-Description:				A Swiss Army Knife for OSGi
 Export-Package: \
 	aQute.bnd.annotation.*;-noimport:=true,\
 	aQute.bnd.osgi;-noimport:=true,\
+	aQute.bnd.classfile;-noimport:=true,\
 	aQute.bnd.signatures;-noimport:=true,\
 	aQute.bnd.service.lifecycle;-noimport:=true,\
 	aQute.bnd.osgi.resource;-noimport:=true,\
@@ -25,7 +26,7 @@ Export-Package: \
 	aQute.bnd.version;-noimport:=true,\
 	aQute.bnd.filerepo;-noimport:=true,\
 	aQute.lib.deployer;-noimport:=true,\
-	aQute.bnd.junit,\
+	aQute.bnd.junit;-noimport:=true,\
 	aQute.bnd.properties;-noimport:=true,\
 	aQute.bnd.build.model;-noimport:=true,\
 	aQute.bnd.build.model.clauses;-noimport:=true,\
@@ -35,41 +36,42 @@ Export-Package: \
 	aQute.bnd.maven.support;-noimport:=true,\
 	aQute.bnd.url;-noimport:=true,\
 	aQute.bnd.util.dto;-noimport:=true,\
+	aQute.bnd.util.home;-noimport:=true,\
 	aQute.bnd.util.repository;-noimport:=true,\
 	aQute.bnd.component.error;-noimport:=true,\
 	org.osgi.service.log;-split-package:=first,\
 	org.osgi.service.repository;-split-package:=first,\
-	org.osgi.util.promise;-split-package:=first, \
+	org.osgi.util.promise;-split-package:=first,\
 	org.osgi.util.function;-split-package:=first
 
--conditionalpackage:	 \
-    aQute.lib.*,\
-    aQute.libg.*,\
-    aQute.service.*,\
-    aQute.configurable,\
-    !org.osgi.service.*.annotations.*,\
-    !org.osgi.annotation.*,\
-    org.osgi.*
+-conditionalpackage: \
+	aQute.lib.*,\
+	aQute.libg.*,\
+	aQute.service.*,\
+	aQute.configurable,\
+	!org.osgi.service.*.annotations.*,\
+	!org.osgi.annotation.*,\
+	org.osgi.*
 
 Import-Package: junit.framework;resolution:=optional,\
-    org.osgi.service.repository,\
-    org.osgi.service.log,\
-    ${replace;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\
+	org.osgi.service.repository,\
+	org.osgi.service.log,\
+	${replace;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\
 	*
 
--includeresource: 				${workspace}/LICENSE, img/=img/, {readme.md}
+-includeresource: ${workspace}/LICENSE, img/=img/, {readme.md}
 
--buildpath:  \
-    osgi.annotation;version=latest,\
-	osgi.core;version=latest,\
-    org.osgi.namespace.contract;version=latest,\
-    org.osgi.namespace.extender;version=latest,\
-    org.osgi.namespace.implementation;version=latest,\
-    org.osgi.namespace.service;version=latest,\
-    org.osgi.service.log;version=latest,\
-    org.osgi.service.repository;version=latest,\
-    org.osgi.util.function;version=latest,\
-    org.osgi.util.promise;version=latest,\
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+	org.osgi.namespace.contract;version=latest;maven-scope=provided,\
+	org.osgi.namespace.extender;version=latest;maven-scope=provided,\
+	org.osgi.namespace.implementation;version=latest;maven-scope=provided,\
+	org.osgi.namespace.service;version=latest;maven-scope=provided,\
+	org.osgi.service.log;version=latest;maven-scope=provided,\
+	org.osgi.service.repository;version=latest;maven-scope=provided,\
+	org.osgi.util.function;version=latest;maven-scope=provided,\
+	org.osgi.util.promise;version=latest;maven-scope=provided,\
 	aQute.libg;version=project, \
 	biz.aQute.bnd.annotation;version=project,\
 	slf4j.api;version=latest

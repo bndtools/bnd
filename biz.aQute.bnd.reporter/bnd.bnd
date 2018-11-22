@@ -1,0 +1,50 @@
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+	aQute.libg;version=project,\
+	biz.aQute.bndlib;version=latest,\
+	slf4j.api;version=latest,\
+	org.jtwig:jtwig-core;version=latest,\
+	org.apache.commons.lang3;version=latest,\
+	org.parboiled:parboiled-java;version=latest,\
+	com.google.guava;version=18.0,\
+	org.jtwig:jtwig-reflection;version=latest,\
+	com.googlecode.concurrentlinkedhashmap.lru;version=latest,\
+	org.objectweb.asm;version=latest,\
+	org.objectweb.asm.analysis;version=latest,\
+	org.objectweb.asm.tree;version=latest,\
+	org.objectweb.asm.util;version=latest,\
+	org.parboiled:parboiled-core;version=latest
+	
+-testpath: \
+	${junit}
+	
+Export-Package: \
+	aQute.bnd.service.reporter,\
+	org.osgi.dto,\
+	biz.aQute.bnd.reporter.service.resource.converter,\
+	biz.aQute.bnd.reporter.exporter,\
+	biz.aQute.bnd.reporter.generator
+
+Import-Package: \
+    sun.*; resolution:=optional,\
+    com.google.appengine.*; resolution:=optional,\
+    com.google.apphosting.*; resolution:=optional,\
+    *
+
+-conditionalpackage: \
+	aQute.lib.*,\
+	aQute.libg.*,\
+	com.google.common.*,\
+	com.googlecode.*,\
+	org.apache.commons.lang3.*	
+	
+Private-Package: \
+	org.parboiled.*;-split-package:=merge-first,\
+	org.objectweb.asm.*,\
+	org.jtwig.*,\
+	biz.aQute.bnd.reporter.plugins.*,\
+	biz.aQute.bnd.reporter.generator,\
+	biz.aQute.bnd.reporter.helpers,\
+	biz.aQute.bnd.reporter.component.dto,\
+	biz.aQute.bnd.reporter.manifest.dto

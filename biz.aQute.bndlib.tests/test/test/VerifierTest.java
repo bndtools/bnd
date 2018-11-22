@@ -168,7 +168,7 @@ public class VerifierTest extends TestCase {
 		b.setProperty("Require-Capability",
 			"test; resolution:=mandatory, " + " test; resolution:=optional, " + " test; cardinality:=single, "
 				+ " test; cardinality:=multiple, " + " test; effective:=foo, "
-				+ " test; filter:=\"(&(version>=1.1)(long.list=1)(long.list=2))\", " + " test; x-custom:=bar, ");
+				+ " test; filter:=\"(&(version>=1.1) (long.list=1)(long.list=2) )\", " + " test; x-custom:=bar, ");
 
 		b.build();
 		assertTrue(b.check());

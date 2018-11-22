@@ -1,10 +1,17 @@
 ---
 layout: default
-title:  source [options] <<jar path>> <<source path>>
+title:  source [options] <[jar path]> <[source path]> 
 summary: Merge a binary jar with its sources. It is possible to specify source path 
 ---
    
+## Description
 
-OPTIONS
+{{page.summary}}
 
-   [ -o, --output <string> ]  - The output file
+## Synopsis
+
+## Options
+
+    [ -o, --output <string> ]  - The output file
+
+## Examples

@@ -1,12 +1,15 @@
 package aQute.libg.sed;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.WrongMethodTypeException;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -374,23 +377,32 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		// domain);
 		else {
 			String cname = "_" + method.replaceAll("-", "_");
+			Method m;
 			try {
-				Method m = target.getClass()
+				m = target.getClass()
 					.getMethod(cname, String[].class);
-				return "" + m.invoke(target, new Object[] {
-					args
-				});
 			} catch (NoSuchMethodException e) {
-				// Ignore
-			} catch (InvocationTargetException e) {
-				if (e.getCause() instanceof IllegalArgumentException) {
-					reporter.error("%s, for cmd: %s, arguments; %s", e.getCause(), method, Arrays.toString(args));
-				} else {
-					reporter.warning("Exception in replace: %s", e.getCause());
-					e.getCause()
-						.printStackTrace();
-				}
+				return null;
+			}
+			MethodHandle mh;
+			try {
+				mh = publicLookup().unreflect(m);
 			} catch (Exception e) {
+				reporter.warning("Exception in replace: %s method=%s", e, method);
+				e.printStackTrace();
+				return null;
+			}
+			try {
+				Object result = Modifier.isStatic(m.getModifiers()) ? mh.invoke(args) : mh.invoke(target, args);
+				return "" + result;
+			} catch (Error e) {
+				throw e;
+			} catch (WrongMethodTypeException e) {
+				reporter.warning("Exception in replace: %s method=%s", e, method);
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				reporter.error("%s, for cmd: %s, arguments; %s", e, method, Arrays.toString(args));
+			} catch (Throwable e) {
 				reporter.warning("Exception in replace: %s method=%s", e, method);
 				e.printStackTrace();
 			}

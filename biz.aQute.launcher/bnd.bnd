@@ -4,15 +4,14 @@
 -dependson: demo
 
 -buildpath: \
-	osgi.core;version=4.2,\
-    aQute.libg;version=project,\
-    biz.aQute.bndlib;version=latest,\
+	osgi.core;version=4.2;maven-scope=provided,\
+	aQute.libg;version=project,\
+	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest
 
 -testpath: \
 	${junit},\
 	slf4j.simple;version=latest
-
 
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 

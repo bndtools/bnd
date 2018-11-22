@@ -41,7 +41,7 @@ public class Nexus {
 		public String				id;
 		public String				repository;
 		public String				format;
-		public Map<String,String>	checksum;
+		public Map<String, String>	checksum;
 	}
 
 	public static class Assets extends DTO {
@@ -56,7 +56,8 @@ public class Nexus {
 
 	public Nexus(URI uri, HttpClient client, Executor executor) throws URISyntaxException {
 		this.executor = executor;
-		this.uri = uri.toString().endsWith("/") ? uri : new URI(uri.toString() + "/");
+		this.uri = uri.toString()
+			.endsWith("/") ? uri : new URI(uri.toString() + "/");
 		this.client = client;
 	}
 
@@ -70,8 +71,10 @@ public class Nexus {
 		URI uri = this.uri.resolve("content/");
 		List<URI> uris = new ArrayList<URI>();
 
-		files(uris, uri);
-		return uris;
+		if (hasFiles(uris, uri))
+			return uris;
+
+		return null;
 	}
 
 	/**
@@ -85,17 +88,26 @@ public class Nexus {
 	 * <sizeOnDisk>-1</sizeOnDisk> </content-item> </data> </content>
 	 * </pre>
 	 */
-	public void files(List<URI> list, URI uri) throws Exception {
+	public boolean hasFiles(List<URI> list, URI uri) throws Exception {
 		ContentDTO content = request().get(ContentDTO.class)
 			.go(uri);
-		for (ContentDTO.ItemDTO item : content.data) {
-			if (item.sizeOnDisk < 0) {
-				files(list, item.resourceURI);
-			} else {
-				if (isReal(item.resourceURI))
-					list.add(item.resourceURI);
+		if (content != null) {
+
+			for (ContentDTO.ItemDTO item : content.data) {
+				if (item.sizeOnDisk < 0) {
+					files(list, item.resourceURI);
+				} else {
+					if (isReal(item.resourceURI))
+						list.add(item.resourceURI);
+				}
 			}
+			return true;
 		}
+		return false;
+	}
+
+	public void files(List<URI> list, URI uri) throws Exception {
+		hasFiles(list, uri);
 	}
 
 	private boolean isReal(URI uri) {
@@ -141,7 +153,9 @@ public class Nexus {
 				if (continuationToken != null) {
 					f.format("&continuationToken=%s", URLEncoder.encode(continuationToken, "UTF-8"));
 				}
-				Assets go = client.build().get(Assets.class).go(uri.resolve(f.toString()));
+				Assets go = client.build()
+					.get(Assets.class)
+					.go(uri.resolve(f.toString()));
 				if (go != null) {
 					assets.addAll(go.items);
 					continuationToken = go.continuationToken;
@@ -171,9 +185,12 @@ public class Nexus {
 		logger.info("crawl = {}", base);
 		Deferred<List<URI>> deferred = new Deferred<>();
 
-		String content = client.build().get(String.class).go(base);
+		String content = client.build()
+			.get(String.class)
+			.go(base);
 		Matcher m = MAVEN_INDEX_P.matcher(content);
-		String normalized = base.normalize().toString();
+		String normalized = base.normalize()
+			.toString();
 
 		executor.execute(() -> {
 			try {
@@ -207,11 +224,14 @@ public class Nexus {
 					}
 
 				}
-				Promise<List<URI>> result = Promises.all(promises).map(ll -> {
-					List<URI> collect = ll.stream().flatMap(l -> l.stream()).collect(Collectors.toList());
-					jars.addAll(collect);
-					return jars;
-				});
+				Promise<List<URI>> result = Promises.all(promises)
+					.map(ll -> {
+						List<URI> collect = ll.stream()
+							.flatMap(l -> l.stream())
+							.collect(Collectors.toList());
+						jars.addAll(collect);
+						return jars;
+					});
 				deferred.resolveWith(result);
 			} catch (Throwable e) {
 				deferred.fail(e);
@@ -220,5 +240,9 @@ public class Nexus {
 		});
 
 		return deferred.getPromise();
+	}
+
+	public URI getUri() {
+		return uri;
 	}
 }

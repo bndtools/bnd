@@ -1,5 +1,6 @@
 package biz.aQute.bnd.diagnostics.gogo.impl;
 
+import java.io.Closeable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.felix.service.command.Converter;
 import org.apache.felix.service.command.Descriptor;
 import org.apache.felix.service.command.Parameter;
 import org.osgi.framework.Bundle;
@@ -27,7 +29,7 @@ import org.osgi.resource.Resource;
 
 import aQute.libg.glob.Glob;
 
-public class Diagnostics {
+public class Diagnostics implements Closeable, Converter {
 
 	private final BundleContext		context;
 	private final FilterListener	fl;
@@ -271,6 +273,18 @@ public class Diagnostics {
 		}
 		Glob nsg = new Glob(ns);
 		return nsg;
+	}
+
+	@Override
+	public Object convert(Class<?> arg0, Object arg1) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public CharSequence format(Object arg0, int arg1, Converter arg2) throws Exception {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

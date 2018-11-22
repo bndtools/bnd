@@ -14,6 +14,8 @@ import aQute.service.reporter.Reporter.SetLocation;
 
 public class ReporterMessages {
 
+	private static final Object[] EMPTY = new Object[0];
+
 	static class WARNINGImpl implements WARNING {
 		Reporter.SetLocation loc;
 
@@ -83,6 +85,10 @@ public class ReporterMessages {
 			@Override
 			@SuppressWarnings("deprecation")
 			public Object invoke(Object target, Method method, Object[] args) throws Throwable {
+
+				if (args == null)
+					args = EMPTY;
+
 				String format;
 				Message d = method.getAnnotation(Message.class);
 				if (d == null) {

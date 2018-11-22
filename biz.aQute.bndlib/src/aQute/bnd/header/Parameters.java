@@ -35,6 +35,14 @@ public class Parameters implements Map<String, Attrs> {
 		OSGiHeader.parseHeader(header, reporter, this);
 	}
 
+	public Parameters(Map<String, Map<String, String>> basic) {
+		this();
+		if (basic != null)
+			basic.entrySet()
+				.stream()
+				.forEach(e -> map.put(e.getKey(), new Attrs(e.getValue())));
+	}
+
 	@Override
 	public void clear() {
 		map.clear();
@@ -246,5 +254,12 @@ public class Parameters implements Map<String, Attrs> {
 	private static Parameters combiner(Parameters t, Parameters u) {
 		t.mergeWith(u, true);
 		return t;
+	}
+
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	public Map<String, Map<String, String>> toBasic() {
+		return (Map) this;
 	}
 }

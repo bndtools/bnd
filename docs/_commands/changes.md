@@ -4,13 +4,21 @@ title: changes [options]
 summary: Show the changes in this release of bnd                                 
 ---
    
+## Description
 
-NAME
-  changes                     - Show the changes in this release of bnd
+{{page.summary}}
 
-SYNOPSIS
-   changes [options] 
+## Synopsis
 
-OPTIONS
+    changes [options] 
 
-   [ -a, --all ]              - Print all releases
+## Options
+
+    [ -a, --all ]              - Print all releases
+
+## Examples
+
+
+
+
+

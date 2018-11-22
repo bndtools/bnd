@@ -10,6 +10,7 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.URLResource.JarURLUtil;
 
 public interface Resource extends Closeable {
@@ -28,6 +29,10 @@ public interface Resource extends Closeable {
 	ByteBuffer buffer() throws Exception;
 
 	static Resource fromURL(URL url) throws IOException {
+		return fromURL(url, null);
+	}
+
+	static Resource fromURL(URL url, HttpClient client) throws IOException {
 		if (url.getProtocol()
 			.equalsIgnoreCase("file")) {
 			URI uri = URI.create(url.toExternalForm());
@@ -51,6 +56,6 @@ public interface Resource extends Closeable {
 				return new ZipResource(path, entryName);
 			}
 		}
-		return new URLResource(url);
+		return new URLResource(url, client);
 	}
 }

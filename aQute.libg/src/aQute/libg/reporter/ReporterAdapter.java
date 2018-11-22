@@ -197,10 +197,8 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 	}
 
 	/**
-	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
 	@Override
-	@Deprecated
 	public void trace(String s, Object... args) {
 		if (trace && out != null) {
 			out.format("# " + s + "%n", args);

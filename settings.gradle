@@ -7,6 +7,10 @@ import aQute.bnd.osgi.Constants
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
   repositories {
+    mavenCentral()
+    maven {
+      url 'https://oss.sonatype.org/content/groups/osgi/'
+    }
     maven {
       url uri(bnd_repourl)
     }

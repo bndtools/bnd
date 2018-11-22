@@ -10,12 +10,15 @@ import java.net.URLConnection;
 import java.nio.ByteBuffer;
 import java.util.jar.JarFile;
 
+import aQute.bnd.http.HttpClient;
+import aQute.bnd.service.url.TaggedData;
 import aQute.lib.io.IO;
 
 class URLResource implements Resource {
 	private static final ByteBuffer	CLOSED			= ByteBuffer.allocate(0);
 	private ByteBuffer				buffer;
 	private final URL				url;
+	private final HttpClient		client;
 	private String					extra;
 	private long					lastModified	= -1L;
 	private int						size			= -1;
@@ -26,8 +29,9 @@ class URLResource implements Resource {
 	 * 
 	 * @see Resource#fromURL(URL)
 	 */
-	URLResource(URL url) {
+	URLResource(URL url, HttpClient client) {
 		this.url = url;
+		this.client = "jrt".equals(url.getProtocol()) ? null : client;
 	}
 
 	@Override
@@ -39,24 +43,33 @@ class URLResource implements Resource {
 		if (buffer != null) {
 			return buffer;
 		}
-		URLConnection conn = openConnection();
+		InputStream in = open();
 		if (size == -1) {
-			return buffer = ByteBuffer.wrap(IO.read(conn.getInputStream()));
+			return buffer = ByteBuffer.wrap(IO.read(in));
 		}
-		ByteBuffer bb = IO.copy(conn.getInputStream(), ByteBuffer.allocate(size));
+		ByteBuffer bb = IO.copy(in, ByteBuffer.allocate(size));
 		bb.flip();
 		return buffer = bb;
 	}
 
-	private URLConnection openConnection() throws Exception {
-		URLConnection conn = url.openConnection();
-		conn.connect();
+	private InputStream open() throws Exception {
+		URLConnection conn;
+		InputStream in;
+		if (client != null) {
+			TaggedData tag = client.connectTagged(url);
+			conn = tag.getConnection();
+			in = tag.getInputStream();
+		} else {
+			conn = url.openConnection();
+			conn.connect();
+			in = conn.getInputStream();
+		}
 		lastModified = conn.getLastModified();
 		int length = conn.getContentLength();
 		if (length != -1) {
 			size = length;
 		}
-		return conn;
+		return in;
 	}
 
 	@Override
@@ -74,7 +87,7 @@ class URLResource implements Resource {
 		if (buffer != null) {
 			IO.copy(buffer(), out);
 		} else {
-			IO.copy(openConnection().getInputStream(), out);
+			IO.copy(open(), out);
 		}
 	}
 

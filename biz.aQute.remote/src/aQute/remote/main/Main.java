@@ -3,6 +3,7 @@ package aQute.remote.main;
 import java.io.File;
 import java.io.IOException;
 
+import aQute.bnd.util.home.Home;
 import aQute.lib.collections.ExtList;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Options;
@@ -68,7 +69,7 @@ public class Main extends ReporterAdapter {
 		int port = options.port(Agent.DEFAULT_PORT);
 		String network = options.network(options.all() ? "0.0.0.0" : "localhost");
 
-		File cache = IO.getFile(options.cache("~/.bnd/remote/cache"));
+		File cache = IO.getFile(options.cache(Home.getUserHomeBnd() + "/remote/cache"));
 		File storage = IO.getFile(options.storage("storage"));
 
 		dispatcher = new EnvoyDispatcher(this, cache, storage, network, port);

@@ -72,6 +72,12 @@ public class XMLResourceParser extends Processor {
 		}
 	}
 
+	public static List<Resource> getResources(File file) throws Exception {
+		try (XMLResourceParser parser = new XMLResourceParser(file)) {
+			return parser.parse();
+		}
+	}
+
 	public XMLResourceParser(URI url) throws Exception {
 		this(url.toURL()
 			.openStream(), url.toString(), url);

@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.Serializable;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -108,22 +107,18 @@ public class ClazzTest extends TestCase {
 
 	public void test375() throws Exception {
 		try (Analyzer a = new Analyzer()) {
-			Clazz c = new Clazz(a, "", null);
-			c.parseDescriptor("<S:[LFoo;>()V", Modifier.PUBLIC);
-			c.parseDescriptor("<S:[Z>()V", Modifier.PUBLIC);
+			a.getMethodSignature("<S:[LFoo;>()V");
+			a.getMethodSignature("<S:[Z>()V");
 			// This is not legal per the JVMS spec
-			// c.parseDescriptor("<S:Z>()V", Modifier.PUBLIC);
+			// a.getMethodSignature("<S:Z>()V");
 		}
 	}
 
 	public void testNoClassBound() throws Exception {
 		try (Analyzer a = new Analyzer()) {
-			Clazz c = new Clazz(a, "", null);
-
 			// From aQute.lib.collections.SortedList.fromIterator()
-			c.parseDescriptor(
-				"<T::Ljava/lang/Comparable<*>;>(Ljava/util/Iterator<TT;>;)LaQute/lib/collections/SortedList<TT;>;",
-				Modifier.PUBLIC);
+			a.getMethodSignature(
+				"<T::Ljava/lang/Comparable<*>;>(Ljava/util/Iterator<TT;>;)LaQute/lib/collections/SortedList<TT;>;");
 		}
 	}
 
@@ -825,5 +820,26 @@ public class ClazzTest extends TestCase {
 		}
 	}
 
+	public static class Nested {}
+
+	public class Inner {}
+
+	public void testNestedClass() throws Exception {
+		File file = IO.getFile("bin_test/test/ClazzTest$Nested.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isFalse();
+		}
+	}
+
+	public void testInnerClass() throws Exception {
+		File file = IO.getFile("bin_test/test/ClazzTest$Inner.class");
+		try (Analyzer analyzer = new Analyzer()) {
+			Clazz clazz = new Clazz(analyzer, file.getPath(), new FileResource(file));
+			clazz.parseClassFile();
+			assertThat(clazz.isInnerClass()).isTrue();
+		}
+	}
 }
 

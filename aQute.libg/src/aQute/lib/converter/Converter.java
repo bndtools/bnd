@@ -1,10 +1,15 @@
 package aQute.lib.converter;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
+
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
@@ -32,6 +37,7 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import aQute.lib.base64.Base64;
 
@@ -79,8 +85,17 @@ public class Converter {
 		}
 
 		if (o == null) {
-			if (resultType.isPrimitive() || Number.class.isAssignableFrom(resultType))
+			if (resultType.isPrimitive()) {
+
+				if (resultType == void.class)
+					return null;
+
+				if (resultType == boolean.class)
+					return false;
+				if (resultType == char.class)
+					return '\u0000';
 				return convert(type, 0);
+			}
 
 			return null; // compatible with any
 		}
@@ -172,11 +187,11 @@ public class Converter {
 			if (byte[].class == resultType) {
 				// Sometimes classes implement toByteArray
 				try {
-					Method m = actualType.getMethod("toByteArray");
-					if (m.getReturnType() == byte[].class)
-						return m.invoke(o);
-
-				} catch (Exception e) {
+					MethodHandle mh = publicLookup().findVirtual(actualType, "toByteArray", methodType(byte[].class));
+					return mh.invoke(o);
+				} catch (Error e) {
+					throw e;
+				} catch (Throwable e) {
 					// Ignore
 				}
 			}
@@ -267,15 +282,16 @@ public class Converter {
 			if (resultType == URI.class) {
 				return new URI(sanitizeInputForURI(input));
 			}
-
 			try {
-				Constructor<?> c = resultType.getConstructor(String.class);
-				return c.newInstance(o.toString());
-			} catch (Throwable t) {}
-			try {
-				Method m = resultType.getMethod("valueOf", String.class);
-				if (Modifier.isStatic(m.getModifiers()))
-					return m.invoke(null, o.toString());
+				MethodHandle mh;
+				try {
+					mh = publicLookup().findStatic(resultType, "valueOf", methodType(resultType, String.class));
+				} catch (NoSuchMethodException | IllegalAccessException e) {
+					mh = publicLookup().findConstructor(resultType, methodType(void.class, String.class));
+				}
+				return mh.invoke(o.toString());
+			} catch (Error e) {
+				throw e;
 			} catch (Throwable t) {}
 
 			if (resultType == Character.class && input.length() == 1)
@@ -285,12 +301,16 @@ public class Converter {
 		if (n != null) {
 			if (Enum.class.isAssignableFrom(resultType)) {
 				try {
-					Method values = resultType.getMethod("values");
-					Enum[] vs = (Enum[]) values.invoke(null);
+					MethodHandle mh = publicLookup().findStatic(resultType, "values",
+						methodType(Array.newInstance(resultType, 0)
+							.getClass()));
+					Object[] vs = (Object[]) mh.invoke();
 					int nn = n.intValue();
 					if (nn > 0 && nn < vs.length)
 						return vs[nn];
-				} catch (Exception e) {
+				} catch (Error e) {
+					throw e;
+				} catch (Throwable e) {
 					// Ignore
 				}
 			}
@@ -313,29 +333,35 @@ public class Converter {
 			String key = null;
 			try {
 				Map<Object, Object> map = (Map) o;
-				Object instance = resultType.getConstructor()
-					.newInstance();
+				MethodHandle mh = publicLookup().findConstructor(resultType, methodType(void.class));
+				Object instance = mh.invoke();
 				for (Map.Entry e : map.entrySet()) {
 					key = (String) e.getKey();
 					try {
 						Field f = resultType.getField(key);
 						Object value = convert(f.getGenericType(), e.getValue());
-						f.set(instance, value);
+						mh = publicLookup().unreflectSetter(f);
+						if (isStatic(f)) {
+							mh.invoke(value);
+						} else {
+							mh.invoke(instance, value);
+						}
 					} catch (Exception ee) {
-
 						// We cannot find the key, so try the __extra field
-						Field f = resultType.getField("__extra");
-						Map<String, Object> extra = (Map<String, Object>) f.get(instance);
+						mh = publicLookup().findGetter(resultType, "__extra", Map.class);
+						Map<String, Object> extra = (Map<String, Object>) mh.invoke(instance);
 						if (extra == null) {
 							extra = new HashMap<>();
-							f.set(instance, extra);
+							mh = publicLookup().findSetter(resultType, "__extra", Map.class);
+							mh.invoke(instance, extra);
 						}
 						extra.put(key, convert(Object.class, e.getValue()));
-
 					}
 				}
 				return instance;
-			} catch (Exception e) {
+			} catch (Error e) {
+				throw e;
+			} catch (Throwable e) {
 				return error(
 					"No conversion found for " + o.getClass() + " to " + type + ", error " + e + " on key " + key);
 			}
@@ -393,9 +419,9 @@ public class Converter {
 				collection = new ConcurrentLinkedQueue();
 			else
 				return (Collection) error("Cannot find a suitable collection for the collection interface " + rawClass);
-		} else
-			collection = rawClass.getConstructor()
-				.newInstance();
+		} else {
+			collection = newInstance(rawClass);
+		}
 
 		Type subType = Object.class;
 		if (collectionType instanceof ParameterizedType) {
@@ -411,6 +437,23 @@ public class Converter {
 		return collection;
 	}
 
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	private static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private static boolean isStatic(Member m) {
+		return Modifier.isStatic(m.getModifiers());
+	}
+
 	private Map map(Type mapType, Class<? extends Map<?, ?>> rawClass, Object o) throws Exception {
 		Map result;
 		if (rawClass.isInterface() || Modifier.isAbstract(rawClass.getModifiers())) {
@@ -423,9 +466,9 @@ public class Converter {
 			else {
 				return (Map) error("Cannot find suitable map for map interface " + rawClass);
 			}
-		} else
-			result = rawClass.getConstructor()
-				.newInstance();
+		} else {
+			result = newInstance(rawClass);
+		}
 
 		Map<?, ?> input = toMap(o);
 
@@ -514,15 +557,25 @@ public class Converter {
 	public Map<?, ?> toMap(Object o) throws Exception {
 		if (o instanceof Map)
 			return (Map<?, ?>) o;
-		Map result = new HashMap();
-		Field fields[] = o.getClass()
-			.getFields();
-		for (Field f : fields)
-			result.put(f.getName(), f.get(o));
-		if (result.isEmpty())
+		Map<String, Object> result = new HashMap<>();
+		getFields(o.getClass()).forEach(f -> {
+			try {
+				MethodHandle mh = publicLookup().unreflectGetter(f);
+				result.put(f.getName(), mh.invoke(o));
+			} catch (Throwable e) {
+				throw new RuntimeException(e);
+			}
+		});
+		if (result.isEmpty()) {
 			return null;
+		}
 
 		return result;
+	}
+
+	private static Stream<Field> getFields(Class<?> c) {
+		return Stream.of(c.getFields())
+			.filter(field -> !(field.isEnumConstant() || field.isSynthetic() || isStatic(field)));
 	}
 
 	private Object error(String string) {
@@ -565,7 +618,9 @@ public class Converter {
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
 				if (Object.class == method.getDeclaringClass()) {
-					return method.invoke(this, args);
+					MethodHandle mh = publicLookup().unreflect(method)
+						.bindTo(this);
+					return mh.invokeWithArguments(args);
 				}
 
 				Object o = properties.get(method.getName());
@@ -583,6 +638,7 @@ public class Converter {
 				return convert(method.getGenericReturnType(), o);
 			}
 
+			@Override
 			public String toString() {
 				return properties + "'";
 			}

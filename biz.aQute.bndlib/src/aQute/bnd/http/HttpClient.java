@@ -56,6 +56,7 @@ import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.service.url.URLConnector;
+import aQute.bnd.util.home.Home;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.reporter.ReporterAdapter;
@@ -85,7 +86,8 @@ public class HttpClient implements Closeable, URLConnector {
 	private ThreadLocal<PasswordAuthentication>	passwordAuthentication	= new ThreadLocal<>();
 	private boolean								inited;
 	private static JSONCodec					codec					= new JSONCodec();
-	private URLCache							cache					= new URLCache(IO.getFile("~/.bnd/urlcache"));
+	private URLCache							cache					= new URLCache(
+		IO.getFile(Home.getUserHomeBnd() + "/urlcache"));
 	private Registry							registry				= null;
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;

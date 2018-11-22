@@ -1,14 +1,24 @@
 package aQute.bnd.cdi;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Document;
 
 import aQute.bnd.component.MergedRequirement;
 import aQute.bnd.component.annotations.ReferenceCardinality;
@@ -17,12 +27,18 @@ import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Clazz;
+import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
+import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Packages;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 
 /**
@@ -30,26 +46,26 @@ import aQute.lib.strings.Strings;
  */
 public class CDIAnnotations implements AnalyzerPlugin {
 
-	public enum Discover {
-		all,
-		annotated,
-		annotated_by_bean,
-		none;
+	static final DocumentBuilder		db;
+	static final XPathExpression		discoveryModeExpression;
+	static final XPathExpression		versionExpression;
 
-		static void parse(String s, EnumSet<Discover> options, CDIAnnotations state) {
-			if (s == null)
-				return;
-			boolean negation = false;
-			if (s.startsWith("!")) {
-				negation = true;
-				s = s.substring(1);
-			}
-			Discover option = Discover.valueOf(s);
-			if (negation) {
-				options.remove(option);
-			} else {
-				options.add(option);
-			}
+	static {
+		try {
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			dbf.setXIncludeAware(false);
+			dbf.setExpandEntityReferences(false);
+
+			db = dbf.newDocumentBuilder();
+
+			XPath xPath = XPathFactory.newInstance()
+				.newXPath();
+
+			versionExpression = xPath.compile("/beans/@version");
+			discoveryModeExpression = xPath.compile("/beans/@bean-discovery-mode");
+		} catch (Throwable t) {
+			throw Exceptions.duck(t);
 		}
 	}
 
@@ -59,22 +75,63 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		if (header.size() == 0)
 			return false;
 
+		List<String> beanArchives = new ArrayList<>();
+		Parameters bcp = analyzer.getBundleClassPath();
+		Jar currentJar = analyzer.getJar();
+		beanArchives.add(getName(currentJar.getName(), currentJar.getVersion()));
+
+		for (Entry<String, Attrs> entry : bcp.entrySet()) {
+			String path = entry.getKey();
+			Resource resource = currentJar.getResource(path);
+			if (resource != null) {
+				Jar jar = Jar.fromResource(path, resource);
+
+				Resource beansResource = jar.getResource("META-INF/beans.xml");
+
+				Discover discover = findDiscoveryMode(beansResource);
+
+				if (discover != Discover.none) {
+					beanArchives.add(getName(path, jar.getVersion()));
+				}
+			}
+		}
+
 		Instructions instructions = new Instructions(header);
-		Collection<Clazz> list = analyzer.getClassspace()
-			.values();
+		Packages contained = analyzer.getContained();
+
 		List<String> names = new ArrayList<>();
 		TreeSet<String> provides = new TreeSet<>();
 		TreeSet<String> requires = new TreeSet<>();
 
-		for (Clazz c : list) {
+		for (Clazz c : analyzer.getClassspace()
+			.values()) {
+
+			if (c.isEnum() || c.isInterface() || c.isInnerClass() || c.isSynthetic()
+				|| !c.is(QUERY.CONCRETE, null, analyzer)) {
+				// These types cannot be managed beans so don't bother scanning
+				// them. See
+				// http://docs.jboss.org/cdi/spec/2.0/cdi-spec.html#what_classes_are_beans
+				continue;
+			}
+
+			PackageRef packageRef = c.getClassName()
+				.getPackageRef();
+			Attrs packageAttrs = contained.get(packageRef);
+
+			// It must be inside a bean archive
+			String isd = packageAttrs.get(Constants.INTERNAL_SOURCE_DIRECTIVE);
+			if (!beanArchives.contains(isd)) {
+				continue;
+			}
+
 			for (Entry<Instruction, Attrs> entry : instructions.entrySet()) {
 				Instruction instruction = entry.getKey();
-				Attrs attrs = entry.getValue();
 				if (instruction.matches(c.getFQN())) {
 					if (instruction.isNegated()) {
 						break;
 					}
 
+					Attrs attrs = entry.getValue();
 					String discover = attrs.get("discover");
 					EnumSet<Discover> options = EnumSet.noneOf(Discover.class);
 					try {
@@ -210,6 +267,53 @@ public class CDIAnnotations implements AnalyzerPlugin {
 	@Override
 	public String toString() {
 		return getClass().getSimpleName();
+	}
+
+	private String getName(String name, String version) throws Exception {
+		if (version == null)
+			version = "0.0.0";
+
+		return name + "-" + version;
+	}
+
+	private Discover findDiscoveryMode(Resource beansResource) {
+		if (beansResource == null) {
+			return Discover.none;
+		}
+
+		Document document = readXMLResource(beansResource);
+
+		if (!document.hasAttributes() && !document.hasChildNodes()) {
+			return Discover.all;
+		}
+
+		try {
+			Object versionResult = versionExpression.evaluate(beansResource, XPathConstants.STRING);
+
+			Version version = Version.valueOf(versionResult.toString());
+
+			if (CDIAnnotationReader.CDI_ARCHIVE_VERSION.compareTo(version) <= 0) {
+				try {
+					Object beanDiscoveryMode = discoveryModeExpression.evaluate(beansResource, XPathConstants.STRING);
+
+					return Discover.valueOf(beanDiscoveryMode.toString());
+				} catch (NullPointerException | XPathExpressionException e) {
+					return Discover.annotated;
+				}
+			}
+
+			return Discover.all;
+		} catch (NullPointerException | XPathExpressionException e) {
+			return Discover.all;
+		}
+	}
+
+	private Document readXMLResource(Resource resource) {
+		try (InputStream is = resource.openInputStream()) {
+			return db.parse(is);
+		} catch (Throwable t) {
+			return db.newDocument();
+		}
 	}
 
 }

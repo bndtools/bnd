@@ -4,7 +4,7 @@ layout: default
 requires: 2.2.0
 ---
 
-Baselining compares a bundle with another bundle, the _baseline_, to find mistakes in the semantic versioning. For example, there is a binary incompatible change in the new bundle but the version has not been bumped Baselining can be run from the command line (see `bnd help baseline`) or it an be run as part of a project is build. 
+Baselining compares a bundle with another bundle, the _baseline_, to find mistakes in the semantic versioning. For example, there is a binary incompatible change in the new bundle but the version has not been bumped. Baselining can be run from the command line (see `bnd help baseline`) or it can be run as part of a project build. 
 
 APIs are compared for backward compatibility using the semantic versioning rules defined in this chapter. Baselining is aware of the `@ConsumerType` and `@ProviderType` rules. Proper versions are calculated and suggested.
 

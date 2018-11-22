@@ -39,10 +39,8 @@ public class Slf4jReporter extends ReporterAdapter {
 	}
 
 	/**
-	 * @deprecated Use SLF4J Logger.debug instead.
 	 */
 	@Override
-	@Deprecated
 	public void trace(String format, Object... args) {
 		super.trace(format, args);
 		if (isTrace()) {

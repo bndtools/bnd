@@ -1,8 +1,12 @@
 package aQute.bnd.build;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodType.methodType;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.invoke.MethodType;
 import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
@@ -25,11 +29,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -54,6 +62,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.remoteworkspace.server.RemoteWorkspaceServer;
 import aQute.bnd.resource.repository.ResourceRepositoryImpl;
 import aQute.bnd.service.BndListener;
 import aQute.bnd.service.RepositoryPlugin;
@@ -64,6 +73,7 @@ import aQute.bnd.service.repository.Prepare;
 import aQute.bnd.service.repository.RepositoryDigest;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.url.MultiURLConnectionHandler;
+import aQute.bnd.util.home.Home;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.Iterables;
@@ -80,7 +90,7 @@ import aQute.service.reporter.Reporter;
 
 public class Workspace extends Processor {
 	private final static Logger	logger							= LoggerFactory.getLogger(Workspace.class);
-	public static final File	BND_DEFAULT_WS					= IO.getFile("~/.bnd/default-ws");
+	public static final File	BND_DEFAULT_WS					= IO.getFile(Home.getUserHomeBnd() + "/default-ws");
 	public static final String	BND_CACHE_REPONAME				= "bnd-cache";
 	public static final String	EXT								= "ext";
 	public static final String	BUILDFILE						= "build.bnd";
@@ -96,30 +106,35 @@ public class Workspace extends Processor {
 
 	static class WorkspaceData {
 		List<RepositoryPlugin>	repositories;
+		RemoteWorkspaceServer	remoteServer;
 	}
 
-	private final static Map<File, WeakReference<Workspace>>	cache			= newHashMap();
-	static Processor											defaults		= null;
-	final Map<String, Action>									commands		= newMap();
+	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
+	static Processor											defaults			= null;
+	final Map<String, Action>									commands			= newMap();
 	final Maven													maven			= new Maven(Processor.getExecutor());
-	private final AtomicBoolean									offline			= new AtomicBoolean();
-	Settings													settings		= new Settings();
-	WorkspaceRepository											workspaceRepo	= new WorkspaceRepository(this);
-	static String												overallDriver	= "unset";
-	static Parameters											overallGestalt	= new Parameters();
+	private final AtomicBoolean									offline				= new AtomicBoolean();
+	Settings													settings		= new Settings(
+		Home.getUserHomeBnd() + "/settings.json");
+	WorkspaceRepository											workspaceRepo		= new WorkspaceRepository(this);
+	static String												overallDriver		= "unset";
+	static Parameters											overallGestalt		= new Parameters();
 	/**
 	 * Signal a BndListener plugin. We ran an infinite bug loop :-(
 	 */
-	final ThreadLocal<Reporter>									signalBusy		= new ThreadLocal<>();
+	final ThreadLocal<Reporter>									signalBusy			= new ThreadLocal<>();
 	ResourceRepositoryImpl										resourceRepositoryImpl;
 	private Parameters											gestalt;
 	private String												driver;
 	private final WorkspaceLayout								layout;
-	final Set<Project>											trail			= Collections
+	final Set<Project>											trail				= Collections
 		.newSetFromMap(new ConcurrentHashMap<Project, Boolean>());
-	private WorkspaceData										data			= new WorkspaceData();
+	private WorkspaceData										data				= new WorkspaceData();
 	private File												buildDir;
 	private final ProjectTracker								projects;
+	private final ReadWriteLock									lock				= new ReentrantReadWriteLock(true);
+
+	public static boolean										remoteWorkspaces	= false;
 
 	/**
 	 * This static method finds the workspace and creates a project (or returns
@@ -155,6 +170,12 @@ public class Workspace extends Processor {
 	}
 
 	public static Workspace createDefaultWorkspace() throws Exception {
+		File build = IO.getFile(BND_DEFAULT_WS, CNFDIR + "/" + BUILDFILE);
+		if (!build.exists()) {
+			build.getParentFile()
+				.mkdirs();
+			IO.store("", build);
+		}
 		Workspace ws = new Workspace(BND_DEFAULT_WS, CNFDIR);
 		return ws;
 	}
@@ -227,11 +248,18 @@ public class Workspace extends Processor {
 
 	public Workspace(File workspaceDir, String bndDir) throws Exception {
 		super(getDefaults());
+		this.layout = WorkspaceLayout.BND;
 		workspaceDir = workspaceDir.getAbsoluteFile();
 		setBase(workspaceDir); // setBase before call to setFileSystem
-		this.layout = WorkspaceLayout.BND;
 		addBasicPlugin(new LoggingProgressPlugin());
 		setFileSystem(workspaceDir, bndDir);
+		projects = new ProjectTracker(this);
+	}
+
+	private Workspace(WorkspaceLayout layout) throws Exception {
+		super(getDefaults());
+		this.layout = layout;
+		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
 		projects = new ProjectTracker(this);
 	}
 
@@ -255,9 +283,10 @@ public class Workspace extends Processor {
 		setBuildDir(buildDir);
 
 		File buildFile = new File(buildDir, BUILDFILE).getAbsoluteFile();
-		if (!buildFile.isFile())
-			warning("No Build File in %s", workspaceDir);
-
+		if (!buildFile.isFile()) {
+			warning("No Build File in %s, creating it", workspaceDir);
+			IO.store("", buildFile);
+		}
 		setProperties(buildFile, workspaceDir);
 		propertiesChanged();
 
@@ -272,13 +301,6 @@ public class Workspace extends Processor {
 		for (Entry<String, String> e : sysProps.entrySet()) {
 			System.setProperty(e.getKey(), e.getValue());
 		}
-	}
-
-	private Workspace(WorkspaceLayout layout) throws Exception {
-		super(getDefaults());
-		this.layout = layout;
-		setBuildDir(IO.getFile(BND_DEFAULT_WS, CNFDIR));
-		projects = new ProjectTracker(this);
 	}
 
 	public Project getProjectFromFile(File projectDir) {
@@ -308,6 +330,7 @@ public class Workspace extends Processor {
 	@Override
 	public boolean refresh() {
 		data = new WorkspaceData();
+
 		gestalt = null;
 		if (super.refresh()) {
 
@@ -331,6 +354,10 @@ public class Workspace extends Processor {
 
 	@Override
 	public void propertiesChanged() {
+
+		if (data.remoteServer != null)
+			IO.close(data.remoteServer);
+
 		data = new WorkspaceData();
 		File extDir = new File(getBuildDir(), EXT);
 		File[] extensions = extDir.listFiles();
@@ -345,6 +372,14 @@ public class Workspace extends Processor {
 						exception(e, "PropertiesChanged: %s", e);
 					}
 				}
+			}
+		}
+
+		if (remoteWorkspaces || Processor.isTrue(getProperty(Constants.REMOTEWORKSPACE))) {
+			try {
+				data.remoteServer = new RemoteWorkspaceServer(this);
+			} catch (IOException e) {
+				exception(e, "Could not create remote workspace %s", getBase());
 			}
 		}
 		super.propertiesChanged();
@@ -571,7 +606,7 @@ public class Workspace extends Processor {
 			}
 
 			resourceRepositoryImpl = new ResourceRepositoryImpl();
-			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, "~/.bnd/caches/shas")));
+			resourceRepositoryImpl.setCache(IO.getFile(getProperty(CACHEDIR, Home.getUserHomeBnd() + "/caches/shas")));
 			resourceRepositoryImpl.setExecutor(getExecutor());
 			resourceRepositoryImpl.setIndexFile(getFile(getBuildDir(), "repo.json"));
 			resourceRepositoryImpl.setURLConnector(new MultiURLConnectionHandler(this));
@@ -671,8 +706,7 @@ public class Workspace extends Processor {
 						for (Entry<String, Attrs> e : activators.entrySet()) {
 							try {
 								Class<?> c = cl.loadClass(e.getKey());
-								ExtensionActivator extensionActivator = (ExtensionActivator) c.getConstructor()
-									.newInstance();
+								ExtensionActivator extensionActivator = (ExtensionActivator) newInstance(c);
 								customize(extensionActivator, blocker.getValue());
 								List<?> plugins = extensionActivator.activate(this, blocker.getValue());
 								list.add(extensionActivator);
@@ -707,6 +741,8 @@ public class Workspace extends Processor {
 		return this;
 	}
 
+	static final String _globalHelp = "${global;<name>[;<default>]}, get a global setting from ~/.bnd/settings.json";
+
 	/**
 	 * Provide access to the global settings of this machine.
 	 * 
@@ -714,8 +750,7 @@ public class Workspace extends Processor {
 	 */
 
 	public String _global(String[] args) throws Exception {
-		Macro.verifyCommand(args, "${global;<name>[;<default>]}, get a global setting from ~/.bnd/settings.json", null,
-			2, 3);
+		Macro.verifyCommand(args, _globalHelp, null, 2, 3);
 
 		String key = args[1];
 		if (key.equals("key.public"))
@@ -737,13 +772,15 @@ public class Workspace extends Processor {
 		return _global(args);
 	}
 
+	static final String _repodigestsHelp = "${repodigests;[;<repo names>]...}, get the repository digests";
+
 	/**
 	 * Return the repository signature digests. These digests are a unique id
 	 * for the contents of the repository
 	 */
 
 	public Object _repodigests(String[] args) throws Exception {
-		Macro.verifyCommand(args, "${repodigests;[;<repo names>]...}, get the repository digests", null, 1, 10000);
+		Macro.verifyCommand(args, _repodigestsHelp, null, 1, 10000);
 		List<RepositoryPlugin> repos = getRepositories();
 		if (args.length > 1) {
 			repos: for (Iterator<RepositoryPlugin> it = repos.iterator(); it.hasNext();) {
@@ -855,6 +892,9 @@ public class Workspace extends Processor {
 
 	@Override
 	public void close() {
+		if (data.remoteServer != null) {
+			IO.close(data.remoteServer);
+		}
 		synchronized (cache) {
 			WeakReference<Workspace> wsr = cache.get(getBase());
 			if ((wsr != null) && (wsr.get() == this)) {
@@ -965,6 +1005,8 @@ public class Workspace extends Processor {
 		return layout;
 	}
 
+	static final String _gestaltHelp = "${gestalt;<part>[;key[;<value>]]} has too many arguments";
+
 	/**
 	 * The macro to access the gestalt
 	 * <p>
@@ -994,7 +1036,7 @@ public class Workspace extends Processor {
 					return "";
 			}
 		}
-		throw new IllegalArgumentException("${gestalt;<part>[;key[;<value>]]} has too many arguments");
+		throw new IllegalArgumentException(_gestaltHelp);
 	}
 
 	@Override
@@ -1043,8 +1085,7 @@ public class Workspace extends Processor {
 			IO.delete(f);
 		}
 
-		Object l = plugin.getConstructor()
-			.newInstance();
+		Object l = newInstance(plugin);
 
 		try (Formatter setup = new Formatter()) {
 			setup.format("#\n" //
@@ -1073,6 +1114,19 @@ public class Workspace extends Processor {
 			lp.addedPlugin(this, plugin.getName(), alias, parameters);
 		}
 		return true;
+	}
+
+	private static final MethodType defaultConstructor = methodType(void.class);
+
+	private static <T> T newInstance(Class<T> rawClass) throws Exception {
+		try {
+			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke();
+		} catch (Error | Exception e) {
+			throw e;
+		} catch (Throwable e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	static Pattern ESCAPE_P = Pattern.compile("(\"|')(.*)\1");
@@ -1242,4 +1296,49 @@ public class Workspace extends Processor {
 
 		return ws;
 	}
+
+	/**
+	 * Lock the workspace and its corresponding projects for reading. The r
+	 * parameter when called can freely use any read function in the workspace.
+	 * 
+	 * @param r the lambda to run
+	 * @param timeoutInMs the timeout in milliseconds
+	 * @return the value of the lambda
+	 */
+	public <T> T readLocked(Callable<T> r, long timeoutInMs) throws Exception {
+		return locked(r, timeoutInMs, lock.readLock());
+	}
+
+	public <T> T readLocked(Callable<T> r) throws Exception {
+		return readLocked(r, 120000);
+	}
+
+	/**
+	 * Lock the workspace and its corresponding projects for all functions. The
+	 * r parameter when called can freely use any function in the workspace.
+	 * 
+	 * @param r the lambda to run
+	 * @param timeoutInMs the timeout in milliseconds
+	 * @return the value of the lambda
+	 */
+	public <T> T writeLocked(Callable<T> r, long timeoutInMs) throws Exception {
+		return locked(r, timeoutInMs, lock.writeLock());
+	}
+
+	public <T> T writeLocked(Callable<T> r) throws Exception {
+		return writeLocked(r, 120000);
+	}
+
+	<T> T locked(Callable<T> r, long timeoutInMs, Lock readLock) throws Exception {
+		boolean locked = readLock.tryLock(timeoutInMs, TimeUnit.MILLISECONDS);
+		if (!locked)
+			throw new TimeoutException();
+
+		try {
+			return r.call();
+		} finally {
+			readLock.unlock();
+		}
+	}
+
 }

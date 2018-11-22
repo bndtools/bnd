@@ -34,6 +34,10 @@
 			<artifactId>maven-compat</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.maven.shared</groupId>
+			<artifactId>maven-mapping</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.sonatype.plexus</groupId>
 			<artifactId>plexus-build-api</artifactId>
 		</dependency>

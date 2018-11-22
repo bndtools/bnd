@@ -173,24 +173,24 @@ And example of a launcher set is:
 
 Debugging launching is greatly simplified with the -runtrace property set to true. This provides a lot of feedback what the launcher is doing.
 
-###Access to arguments
+### Access to arguments
 When the launcher is ready it will register itself as a service with the following properties:
 
 |`launcher.arguments`|The command line arguments|
 |`launcher.ready`|Indicating the launcher is read|
 
-###Access to main thread
+### Access to main thread
 In certain cases it is necessary to grab the main thread after launching. The default launcher will launch all the bundles and then wait for any of those bundles to register a Runnable service with a service property `main.thread=true`. If such  service is registered, the launcher will call the run method and exit when this method returns.
 
-###Timeout
+### Timeout
 The launcher will timeout after an hour. There is currently no way to override this timeout.
 
-###Mini Framework
+### Mini Framework
 The bnd launcher contains a mini framework that implements the bare bones of an OSGi framework. The purpose of this mini framework is to allow tests and runs that want to launch their own framework. A launch that wants to take advantage of this can launch with the following property:
 
 	-runframework: none
 
-###Ant
+### Ant
 In ant, the following task provides the run facility.
 	
 	<target name="run" depends="compile">
@@ -212,7 +212,7 @@ Maintaining this list can be cumbersome and for that reason the `${classes}` mac
 
 See [classes macro](../macros/classes.html) for more information.
 
-###Ant
+### Ant
 
 	<target name="test" depends="compile">
 		<bnd command="test" exceptions="true" basedir="${project}" />

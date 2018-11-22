@@ -38,6 +38,7 @@ import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.url.BasicAuthentication;
 import aQute.bnd.url.BearerAuthentication;
 import aQute.bnd.url.HttpsVerification;
+import aQute.bnd.util.home.Home;
 import aQute.lib.collections.Iterables;
 import aQute.lib.concurrentinit.ConcurrentInitialize;
 import aQute.lib.converter.Converter;
@@ -56,7 +57,8 @@ public class ConnectionSettings {
 	public static final String					M2_SETTINGS_SECURITY_XML		= "~/.m2/settings-security.xml";
 	public static final String					M2_SETTINGS_SECURITY_PROPERTY	= "settings.security";
 	private static final String					M2_SETTINGS_XML					= "~/.m2/settings.xml";
-	private static final String					BND_CONNECTION_SETTINGS_XML		= "~/.bnd/connection-settings.xml";
+	private static final String					BND_CONNECTION_SETTINGS_XML		= Home.getUserHomeBnd()
+		+ "/connection-settings.xml";
 	private static final String					CONNECTION_SETTINGS				= "-connection-settings";
 	private final Processor						processor;
 	private final HttpClient					client;

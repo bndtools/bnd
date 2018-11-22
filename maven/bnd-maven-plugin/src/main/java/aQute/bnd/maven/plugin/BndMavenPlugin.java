@@ -29,10 +29,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.Developer;
+import org.apache.maven.model.License;
 import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.PluginManagement;
@@ -47,12 +50,15 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.settings.Settings;
+import org.apache.maven.shared.mapping.MappingUtils;
+import org.codehaus.plexus.util.StringUtils;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.plexus.build.incremental.BuildContext;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -73,7 +79,8 @@ public class BndMavenPlugin extends AbstractMojo {
 		.getLogger(BndMavenPlugin.class);
 	private static final String						MANIFEST_LAST_MODIFIED	= "aQute.bnd.maven.plugin.BndMavenPlugin.manifestLastModified";
 	private static final String						MARKED_FILES			= "aQute.bnd.maven.plugin.BndMavenPlugin.markedFiles";
-	private static final String						PACKAGING_POM			= "pom";
+	private static final String						PACKAGING_JAR			= "jar";
+	private static final String						PACKAGING_WAR			= "war";
 	private static final String						TSTAMP					= "${tstamp}";
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
@@ -85,8 +92,17 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(defaultValue = "${project.build.resources}", readonly = true)
 	private List<org.apache.maven.model.Resource>	resources;
 
-	@Parameter(defaultValue = "${project.build.outputDirectory}", readonly = true)
+	@Parameter(defaultValue = "${project.build.outputDirectory}")
 	private File									classesDir;
+
+	@Parameter(defaultValue = "true")
+	private boolean									includeClassesDir;
+
+	@Parameter(defaultValue = "${project.build.outputDirectory}")
+	private File									outputDir;
+
+	@Parameter(defaultValue = "${project.build.directory}/${project.build.finalName}")
+	private File									warOutputDir;
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}/META-INF/MANIFEST.MF")
 	private File									manifestPath;
@@ -142,14 +158,12 @@ public class BndMavenPlugin extends AbstractMojo {
 			return;
 		}
 
-		// Exit without generating anything if this is a pom-packaging project.
-		// Probably it's just a parent project.
-		if (PACKAGING_POM.equals(project.getPackaging())) {
-			logger.info("skip project with packaging=pom");
+		// Exit without generating anything if this is neither a jar or war
+		// project. Probably it's just a parent project.
+		if (!PACKAGING_JAR.equals(project.getPackaging()) && !PACKAGING_WAR.equals(project.getPackaging())) {
+			logger.info("skip project with packaging=" + project.getPackaging());
 			return;
 		}
-
-		File outputDirectory = new File(project.getBuild().getOutputDirectory());
 
 		Properties beanProperties = new BeanProperties();
 		beanProperties.put("project", project);
@@ -176,31 +190,42 @@ public class BndMavenPlugin extends AbstractMojo {
 				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
 			}
 
-			// Reject wab projects
-			if (builder.getProperty(Constants.WAB) != null) {
-				throw new MojoExecutionException(Constants.WAB + " not supported in a maven build");
-			}
-			if (builder.getProperty(Constants.WABLIB) != null) {
-				throw new MojoExecutionException(Constants.WABLIB + " not supported in a maven build");
-			}
-
 			// always add the outputDirectory to the classpath, but
 			// handle projects with no output directory, like
 			// 'test-wrapper-bundle'
-			if (outputDirectory.isDirectory()) {
-				builder.addClasspath(outputDirectory);
+			if (classesDir.isDirectory()) {
+				builder.addClasspath(classesDir);
+
+				// Include local project packages, true by default
+				if (includeClassesDir) {
+					Jar classesDirJar = new Jar(project.getName(), classesDir);
+					classesDirJar.setManifest(new Manifest());
+					builder.setJar(classesDirJar);
+				}
 			}
 
-			// Include local project packages automatically
-			if (classesDir.isDirectory()) {
-				Jar classesDirJar = new Jar(project.getName(), classesDir);
-				classesDirJar.setManifest(new Manifest());
-				builder.setJar(classesDirJar);
+			boolean isWab = PACKAGING_WAR.equals(project.getPackaging());
+			boolean hasWablibs = builder.getProperty(Constants.WABLIB) != null;
+			String wabProperty = builder.getProperty(Constants.WAB);
+
+			if (isWab) {
+				if (wabProperty == null) {
+					builder.setProperty(Constants.WAB, "");
+				}
+				outputDir = warOutputDir;
+				logger.info(
+					"WAB mode enabled. Bnd output will be expanded into the 'maven-war-plugin' <webappDirectory>:"
+						+ outputDir);
+			}
+			else if ((wabProperty != null) || hasWablibs) {
+				throw new MojoFailureException(
+					Constants.WAB + " & " + Constants.WABLIB + " are not supported with packaging 'jar'");
 			}
 
 			// Compute bnd classpath
 			Set<Artifact> artifacts = project.getArtifacts();
 			List<Object> buildpath = new ArrayList<Object>(artifacts.size());
+			List<String> wablibs = new ArrayList<String>(artifacts.size());
 			for (Artifact artifact : artifacts) {
 				File cpe = artifact.getFile()
 					.getCanonicalFile();
@@ -230,8 +255,23 @@ public class BndMavenPlugin extends AbstractMojo {
 					}
 					builder.updateModified(cpe.lastModified(), cpe.getPath());
 					buildpath.add(cpe);
+
+					if (isWab && !hasWablibs && !Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+						&& !Artifact.SCOPE_TEST.equals(artifact.getScope()) && !artifact.isOptional()) {
+
+						String fileNameMapping = MappingUtils
+							.evaluateFileNameMapping(MappingUtils.DEFAULT_FILE_NAME_MAPPING, artifact);
+						wablibs.add("WEB-INF/lib/" + fileNameMapping + "=" + cpe.getName() + ";lib:=true");
+					}
 				}
 			}
+
+			if (!wablibs.isEmpty()) {
+				String wablib = wablibs.stream()
+					.collect(Collectors.joining(","));
+				builder.setProperty(Constants.WABLIB, wablib);
+			}
+
 			builder.setProperty("project.buildpath", Strings.join(File.pathSeparator, buildpath));
 			logger.debug("builder classpath: {}", builder.getProperty("project.buildpath"));
 
@@ -269,7 +309,110 @@ public class BndMavenPlugin extends AbstractMojo {
 					builder.setProperty(Constants.SNAPSHOT, TSTAMP);
 				}
 			}
+			
+			// Set Bundle-Description
+			if (builder.getProperty(Constants.BUNDLE_DESCRIPTION) == null) {
+				// may be null
+				if (StringUtils.isNotBlank(project.getDescription())) {
+					StringBuilder description = new StringBuilder();
+					OSGiHeader.quote(description, project.getDescription());
+					builder.setProperty(Constants.BUNDLE_DESCRIPTION, description.toString());
+				}
+			}
 
+			// Set Bundle-Vendor
+			if (builder.getProperty(Constants.BUNDLE_VENDOR) == null) {
+				if (project.getOrganization() != null && StringUtils.isNotBlank(project.getOrganization().getName())) {
+					builder.setProperty(Constants.BUNDLE_VENDOR, project.getOrganization().getName());
+				}
+			}
+			
+			// Set Bundle-License
+			if (builder.getProperty(Constants.BUNDLE_LICENSE) == null) {
+				StringBuilder licenses = new StringBuilder();
+				for (License license : project.getLicenses()) {
+					addHeaderValue(licenses, license.getName(), ',');
+					// link is optional
+					if (StringUtils.isNotBlank(license.getUrl())) {
+						addHeaderAttribute(licenses, "link", license.getUrl(), ';');
+					}
+					// comment is optional
+					if (StringUtils.isNotBlank(license.getComments())) {
+						addHeaderAttribute(licenses, "description", license.getComments(), ';');
+					}
+				}
+				if (licenses.length() > 0) {
+					builder.setProperty(Constants.BUNDLE_LICENSE, licenses.toString());
+				}
+			}
+			
+			// Set Bundle-SCM
+			if (builder.getProperty(Constants.BUNDLE_SCM) == null) {
+				StringBuilder scm = new StringBuilder();
+				if (project.getScm() != null) {
+					if (StringUtils.isNotBlank(project.getScm().getUrl())) {
+						addHeaderAttribute(scm, "url", project.getScm().getUrl(), ',');
+					}
+					if (StringUtils.isNotBlank(project.getScm().getConnection())) {
+						addHeaderAttribute(scm, "connection", project.getScm().getConnection(), ',');
+					}
+					if (StringUtils.isNotBlank(project.getScm().getDeveloperConnection())) {
+						addHeaderAttribute(scm, "developer-connection", project.getScm().getDeveloperConnection(), ',');
+					}
+					if (StringUtils.isNotBlank(project.getScm().getTag())) {
+						addHeaderAttribute(scm, "tag", project.getScm().getTag(), ',');
+					}
+					if (scm.length() > 0) {
+						builder.setProperty(Constants.BUNDLE_SCM, scm.toString());
+					}
+				}
+			}
+			
+			// Set Bundle-Developers
+			if (builder.getProperty(Constants.BUNDLE_DEVELOPERS) == null) {
+				StringBuilder developers = new StringBuilder();
+				// this is never null
+				for (Developer developer : project.getDevelopers()) {
+					// id is mandatory for OSGi but not enforced in the pom.xml
+					if (StringUtils.isNotBlank(developer.getId())) {
+						addHeaderValue(developers, developer.getId(), ',');
+						// all attributes are optional
+						if (StringUtils.isNotBlank(developer.getEmail())) {
+							addHeaderAttribute(developers, "email", developer.getEmail(), ';');
+						}
+						if (StringUtils.isNotBlank(developer.getName())) {
+							addHeaderAttribute(developers, "name", developer.getName(), ';');
+						}
+						if (StringUtils.isNotBlank(developer.getOrganization())) {
+							addHeaderAttribute(developers, "organization", developer.getOrganization(), ';');
+						}
+						if (StringUtils.isNotBlank(developer.getOrganizationUrl())) {
+							addHeaderAttribute(developers, "organizationUrl", developer.getOrganizationUrl(), ';');
+						}
+						if (!developer.getRoles().isEmpty()) {
+							addHeaderAttribute(developers, "roles", StringUtils.join(developer.getRoles().iterator(), ","), ';');
+						}
+						if (StringUtils.isNotBlank(developer.getTimezone())) {
+							addHeaderAttribute(developers, "timezone", developer.getTimezone(), ';');
+						}
+					} else {
+						logger.warn(
+							"Cannot consider developer in line '{}' of file '{}' for bundle header '{}' as it does not contain the mandatory id.",
+							developer.getLocation("").getLineNumber(), developer.getLocation("").getSource().getLocation(), Constants.BUNDLE_DEVELOPERS);
+					}
+				}
+				if (developers.length() > 0) {
+					builder.setProperty(Constants.BUNDLE_DEVELOPERS, developers.toString());
+				}
+			}
+			
+			// Set Bundle-DocURL
+			if (builder.getProperty(Constants.BUNDLE_DOCURL) == null) {
+				if (StringUtils.isNotBlank(project.getUrl())) {
+					builder.setProperty(Constants.BUNDLE_DOCURL, project.getUrl());
+				}
+			}
+						
 			logger.debug("builder properties: {}", builder.getProperties());
 			logger.debug("builder delta: {}", delta);
 
@@ -283,7 +426,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				Jar bndJar = builder.build();
 
 				// Expand Jar into target/classes
-				expandJar(bndJar, outputDirectory);
+				expandJar(bndJar, outputDir);
 			} else {
 				logger.debug("No build");
 			}
@@ -297,6 +440,25 @@ public class BndMavenPlugin extends AbstractMojo {
 		}
 	}
 
+	private static StringBuilder addHeaderValue(StringBuilder builder, String value, char separator) {
+		if (builder.length() > 0) {
+			builder.append(separator);
+		}
+		// use quoted string if necessary
+		OSGiHeader.quote(builder, value);
+		return builder;
+	}
+	
+	private static StringBuilder addHeaderAttribute(StringBuilder builder, String key, String value, char separator) {
+		if (builder.length() > 0) {
+			builder.append(separator);
+		}
+		builder.append(key).append("=");
+		// use quoted string if necessary
+		OSGiHeader.quote(builder, value);
+		return builder;
+	}
+	
 	private File loadProperties(Builder builder) throws Exception {
 		// Load parent project properties first
 		loadParentProjectProperties(builder, project);

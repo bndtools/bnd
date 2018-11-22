@@ -11,7 +11,7 @@
 	<version>${revision}</version>
 
 	<properties>
-		<revision>4.1.0-SNAPSHOT</revision>
+		<revision>4.2.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.target.version>3.1.1</maven.target.version>
 		<aether.version>0.9.0.M2</aether.version>
@@ -82,6 +82,11 @@
 				<artifactId>maven-compat</artifactId>
 				<version>${maven.target.version}</version>
 				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.maven.shared</groupId>
+				<artifactId>maven-mapping</artifactId>
+				<version>3.0.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.maven.plugin-tools</groupId>

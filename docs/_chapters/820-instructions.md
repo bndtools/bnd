@@ -1,5 +1,5 @@
 ---
-title: Instruction
+title: Instruction Reference
 layout: default
 ---
 A bnd instruction is a property that starts with a minus sign ('-'). An instruction instructs bndlib to do something, in general providing parameters to the code. All instructions in bndlib are listed later in this page.

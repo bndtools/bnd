@@ -114,6 +114,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.action.Action;
 import aQute.bnd.service.repository.InfoRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.bnd.util.home.Home;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.configurable.Config;
@@ -155,7 +156,8 @@ public class bnd extends Processor {
 	private static Logger						logger					= LoggerFactory.getLogger(bnd.class);
 	static Pattern								ASSIGNMENT				= Pattern.compile(															//
 		"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
-	Settings									settings				= new Settings();
+	Settings									settings				= new Settings(
+		Home.getUserHomeBnd() + "/settings.json");
 	final PrintStream							err						= System.err;
 	final public PrintStream					out						= System.out;
 	Justif										justif					= new Justif(80, 40, 42, 70);
@@ -904,6 +906,38 @@ public class bnd extends Processor {
 	}
 
 	public void perProject(ProjectWorkspaceOptions opts, PerProject run) throws Exception {
+		perProject(opts, run, true);
+	}
+
+	public void perProject(ProjectWorkspaceOptions opts, PerProject run, boolean manageDeps) throws Exception {
+		List<Project> projects = getFilteredProjects(opts);
+
+		final Set<Project> projectsWellDone = new HashSet<>();
+
+		for (Project p : projects) {
+			if (manageDeps) {
+				final Collection<Project> projectDeps = p.getDependson(); // ordered
+				if (opts.verbose()) {
+					out.println("Project dependencies for: " + p.getName());
+					projectDeps.forEach(pr -> out.println(
+						" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
+				}
+
+				projectDeps.removeAll(projectsWellDone);
+
+				for (Project dep : projectDeps) {
+					run.doit(dep);
+					projectsWellDone.add(dep);
+				}
+			}
+
+			run.doit(p);
+
+			getInfo(p, p + ": ");
+		}
+	}
+
+	private List<Project> getFilteredProjects(ProjectWorkspaceOptions opts) throws Exception {
 		List<Project> projects = new ArrayList<>();
 
 		HandledProjectWorkspaceOptions hpw = handleOptions(opts, "**/bnd.bnd");
@@ -926,28 +960,7 @@ public class bnd extends Processor {
 				projects.add(p);
 			}
 		}
-
-		final Set<Project> projectsWellDone = new HashSet<>();
-
-		for (Project p : projects) {
-			final Collection<Project> projectDeps = p.getDependson(); // ordered
-			if (opts.verbose()) {
-				out.println("Project dependencies for: " + p.getName());
-				projectDeps.forEach(pr -> out
-					.println(" + " + pr.getName() + " " + (projectsWellDone.contains(pr) ? "<handled before>" : "")));
-			}
-
-			projectDeps.removeAll(projectsWellDone);
-
-			for (Project dep : projectDeps) {
-				run.doit(dep);
-				projectsWellDone.add(dep);
-			}
-
-			run.doit(p);
-
-			getInfo(p, p + ": ");
-		}
+		return projects;
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
@@ -956,8 +969,6 @@ public class bnd extends Processor {
 		@Description("Build for test")
 		boolean test();
 
-		@Description("Do full")
-		boolean full();
 	}
 
 	@Description("Build a project. This will create the jars defined in the bnd.bnd and sub-builders.")
@@ -1421,7 +1432,6 @@ public class bnd extends Processor {
 			getInfo(project);
 		}
 	}
-
 
 	@Description("Show a cross references for all classes in a set of jars.")
 	public void _xref(XRefCommand.xrefOptions options) throws IOException, Exception {
@@ -2386,7 +2396,6 @@ public class bnd extends Processor {
 				}
 			}
 
-
 			// TODO check all the arguments
 
 			try {
@@ -3128,7 +3137,8 @@ public class bnd extends Processor {
 
 				if (opts.resources() != null) {
 					Instructions selection = new Instructions(opts.resources());
-					Collection<String> selected = selection.select(in.getResources().keySet(), null, false);
+					Collection<String> selected = selection.select(in.getResources()
+						.keySet(), null, false);
 					selected.forEach(path -> {
 						out.printf("%40s : %s\n", fileName, path);
 					});
@@ -3314,7 +3324,8 @@ public class bnd extends Processor {
 	enum Alg {
 		SHA1,
 		MD5,
-		SHA256, SHA512,
+		SHA256,
+		SHA512,
 		TIMELESS
 	};
 
@@ -3371,10 +3382,12 @@ public class bnd extends Processor {
 								.digest();
 							break;
 						case SHA256 :
-							digest = SHA256.digest(f).digest();
+							digest = SHA256.digest(f)
+								.digest();
 							break;
 						case SHA512 :
-							digest = SHA512.digest(f).digest();
+							digest = SHA512.digest(f)
+								.digest();
 							break;
 						case MD5 :
 							digest = MD5.digest(f)
@@ -3728,6 +3741,7 @@ public class bnd extends Processor {
 	@Description("experimental - parallel build")
 	interface ParallelBuildOptions extends buildoptions {
 
+		long synctime();
 	}
 
 	/**
@@ -3740,55 +3754,37 @@ public class bnd extends Processor {
 		final AtomicBoolean quit = new AtomicBoolean();
 
 		try {
-			final Project p = getProject(options.project());
-			final Workspace workspace = p == null || options.full() ? Workspace.getWorkspace(getBase())
-				: p.getWorkspace();
-
-			if (!workspace.exists()) {
-				error("cannot find workspace");
-				return;
-			}
-
-			final Collection<Project> targets = p == null ? workspace.getAllProjects() : p.getDependson();
-
 			final Forker<Project> forker = new Forker<>(pool);
 
-			for (final Project dep : targets) {
-				forker.doWhen(dep.getDependson(), dep, new Runnable() {
+			List<Project> projects = getFilteredProjects(options);
+
+			for (final Project proj : projects) {
+				forker.doWhen(proj.getDependson(), proj, new Runnable() {
 
 					@Override
 					public void run() {
 						if (!quit.get()) {
 
 							try {
-								dep.compile(false);
-								if (!quit.get())
-									dep.build();
-								if (!dep.isOk())
+								proj.compile(options.test());
+								if (!quit.get()) {
+									proj.build(options.test());
+								}
+								if (!proj.isOk()) {
 									quit.set(true);
+								}
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
 						}
+						getInfo(proj, proj + ": ");
 					}
 				});
 			}
 			err.flush();
 
-			forker.start(20000);
-
-			for (Project dep : targets) {
-				getInfo(dep, dep + ": ");
-			}
-			if (p != null && p.isOk() && !options.full()) {
-				p.compile(options.test());
-				p.build();
-				if (options.test() && p.isOk())
-					p.test();
-				getInfo(p);
-			}
-
-			workspace.close();
+			long syncms = options.synctime() <= 0 ? 20000 : options.synctime();
+			forker.start(syncms);
 		} finally {
 			pool.shutdownNow();
 		}
@@ -3948,23 +3944,24 @@ public class bnd extends Processor {
 		}
 		Instructions instructions = new Instructions(opts._arguments());
 
-		MultiMap<String,Attrs> dependencies = new MultiMap<>();
+		MultiMap<String, Attrs> dependencies = new MultiMap<>();
 		int n = 0;
 		for (Project p : ws.getAllProjects()) {
 			if (instructions.matches(p.getName())) {
 				Parameters parms = p.getParameters(Constants.BUILDPATH);
-				for (Map.Entry<String,Attrs> e : parms.entrySet()) {
+				for (Map.Entry<String, Attrs> e : parms.entrySet()) {
 					dependencies.add(e.getKey(), e.getValue());
 				}
 			}
 		}
 		Justif justif = new Justif(80, new int[] {
-				40, 48, 56
+			40, 48, 56
 		});
 		Formatter f = justif.formatter();
 
-		for (Map.Entry<String,List<Attrs>> e : dependencies.entrySet()) {
-			f.format("%s \t1%s\n", e.getKey(), e.getValue().size());
+		for (Map.Entry<String, List<Attrs>> e : dependencies.entrySet()) {
+			f.format("%s \t1%s\n", e.getKey(), e.getValue()
+				.size());
 		}
 
 		out.println(justif.wrap());
@@ -4357,8 +4354,8 @@ public class bnd extends Processor {
 		}
 	}
 
-	protected HandledProjectWorkspaceOptions handleOptions(ProjectWorkspaceOptions options,
-		String... defaultIncludes) throws Exception {
+	protected HandledProjectWorkspaceOptions handleOptions(ProjectWorkspaceOptions options, String... defaultIncludes)
+		throws Exception {
 
 		boolean verbose = options.verbose();
 		Project project = getProject(options.project());
@@ -4524,9 +4521,9 @@ public class bnd extends Processor {
 	}
 
 	@Description("Extract a set of resources from a set of JARs given a set of prefixes. "
-			+ "All prefixes in any of the given input jars are added to the output jar")
+		+ "All prefixes in any of the given input jars are added to the output jar")
 	@Arguments(arg = {
-			"<out path>", "<in path>", "[...]"
+		"<out path>", "<in path>", "[...]"
 	})
 	public void _collect(CollectOptions options) throws Exception {
 		List<Jar> opened = new ArrayList<>();
@@ -4535,7 +4532,8 @@ public class bnd extends Processor {
 		String outpath = args.remove(0);
 
 		File outfile = getFile(outpath);
-		outfile.getParentFile().mkdirs();
+		outfile.getParentFile()
+			.mkdirs();
 		logger.debug("out %s", outfile);
 
 		String classes = options.classes();
@@ -4571,8 +4569,10 @@ public class bnd extends Processor {
 
 			logger.info("line {}", path);
 			boolean match = false;
-			for (Map.Entry<String,Resource> e : store.getResources().entrySet()) {
-				if (e.getKey().startsWith(path)) {
+			for (Map.Entry<String, Resource> e : store.getResources()
+				.entrySet()) {
+				if (e.getKey()
+					.startsWith(path)) {
 					match = true;
 					logger.info("# found %s", path);
 					out.putResource(e.getKey(), e.getValue());
@@ -4591,7 +4591,8 @@ public class bnd extends Processor {
 	@Arguments(arg = {})
 	public void _classtoresource(Options options) throws IOException {
 		try (Analyzer a = new Analyzer()) {
-			List<String> l = options._arguments().isEmpty() ? Arrays.asList("--") : options._arguments();
+			List<String> l = options._arguments()
+				.isEmpty() ? Arrays.asList("--") : options._arguments();
 
 			for (String f : l) {
 				forEachLine(f, s -> {
@@ -4610,7 +4611,8 @@ public class bnd extends Processor {
 	@Arguments(arg = {})
 	public void _packagetoresource(Options options) throws IOException {
 		try (Analyzer a = new Analyzer()) {
-			List<String> l = options._arguments().isEmpty() ? Arrays.asList("--") : options._arguments();
+			List<String> l = options._arguments()
+				.isEmpty() ? Arrays.asList("--") : options._arguments();
 
 			for (String f : l) {
 				forEachLine(f, s -> {
@@ -4626,7 +4628,6 @@ public class bnd extends Processor {
 			}
 		}
 	}
-
 
 	private void forEachLine(String file, Consumer<String> c) throws IOException {
 		InputStream in = System.in;
@@ -4712,4 +4713,75 @@ public class bnd extends Processor {
 		}
 	}
 
+	@Description("Commands to inspect a dependency graph of a set of bundles")
+	public void _graph(GraphCommand.GraphOptions options) throws Exception {
+		try (GraphCommand cc = new GraphCommand(this, options)) {
+			String help = options._command()
+				.subCmd(options, cc);
+			if (help != null)
+				out.println(help);
+		}
+	}
+
+	@Description("Start an interactive shell")
+	public void _shell(Shell.ShellOptions options) throws Exception {
+		try (Shell shell = new Shell(this, options)) {
+			shell.loop();
+		} finally {
+			out.println("done");
+		}
+	}
+
+	public Workspace getWorkspace() {
+		return workspace;
+	}
+
+	@Description("Show the project or the workspace properties")
+	@Arguments(arg = {})
+	interface PropertiesOptions extends projectOptions {
+		@Description("Get the inherited properties")
+		boolean local();
+
+		@Description("Filter on key")
+		Glob key(Glob deflt);
+
+		@Description("Filter on value")
+		Glob value(Glob deflt);
+	}
+
+	/**
+	 * Print out all the properties
+	 */
+
+	@Description("Show the project or the workspace properties")
+	public void _properties(PropertiesOptions options) throws Exception {
+
+		Processor domain = getProject(options.project());
+		if (domain == null) {
+			domain = getWorkspace();
+		}
+		if (domain == null) {
+			domain = this;
+		}
+
+		Glob key = options.key(Glob.ALL);
+		Glob value = options.value(Glob.ALL);
+
+		for (String s : domain.getPropertyKeys(options.local())) {
+			if (key.matches(s)) {
+				String property = domain.getProperty(s);
+				if (value.matches(property)) {
+					out.printf("%-40s %s%n", s, property);
+				}
+			}
+		}
+
+	}
+
+	@Description("Generate and export reports of a workspace, a project or of a jar.")
+	public void _exportreport(ExportReportCommand.ReporterOptions options) throws Exception {
+		ExportReportCommand mc = new ExportReportCommand(this);
+		mc.run(options);
+		getInfo(mc);
+	}
 }

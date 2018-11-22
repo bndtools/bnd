@@ -1,5 +1,7 @@
 package aQute.bnd.build;
 
+import static aQute.bnd.build.Container.toPaths;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
@@ -8,6 +10,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.file.Files;
@@ -56,6 +59,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.ProjectPom;
 import aQute.bnd.osgi.About;
@@ -87,11 +91,13 @@ import aQute.bnd.service.action.Action;
 import aQute.bnd.service.action.NamedAction;
 import aQute.bnd.service.export.Exporter;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
+import aQute.bnd.service.specifications.RunSpecification;
 import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -1089,18 +1095,22 @@ public class Project extends Processor {
 		if (releaseRepos.isEmpty()) {
 			return null;
 		}
-
-		RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only first
-															// release repo
-		return releaseRepo(releaseRepo, jarName, jarStream);
+		try (ProjectBuilder builder = getBuilder(null)) {
+			builder.init();
+			RepositoryPlugin releaseRepo = releaseRepos.get(0); // use only
+																// first
+			// release repo
+			return releaseRepo(releaseRepo, builder, jarName, jarStream);
+		}
 	}
 
-	private URI releaseRepo(RepositoryPlugin releaseRepo, String jarName, InputStream jarStream) throws Exception {
+	private URI releaseRepo(RepositoryPlugin releaseRepo, Processor context, String jarName, InputStream jarStream)
+		throws Exception {
 		logger.debug("release to {}", releaseRepo.getName());
 		try {
 			PutOptions putOptions = new RepositoryPlugin.PutOptions();
 			// TODO find sub bnd that is associated with this thing
-			putOptions.context = this;
+			putOptions.context = context;
 			PutResult r = releaseRepo.put(jarStream, putOptions);
 			logger.debug("Released {} to {} in repository {}", jarName, r.artifact, releaseRepo);
 			return r.artifact;
@@ -1176,9 +1186,12 @@ public class Project extends Processor {
 		}
 		logger.debug("releasing {} - {}", jars, releaseRepos);
 
-		for (RepositoryPlugin releaseRepo : releaseRepos) {
-			for (File jar : jars) {
-				releaseRepo(releaseRepo, jar.getName(), new BufferedInputStream(IO.stream(jar)));
+		try (ProjectBuilder builder = getBuilder(null)) {
+			builder.init();
+			for (RepositoryPlugin releaseRepo : releaseRepos) {
+				for (File jar : jars) {
+					releaseRepo(releaseRepo, builder, jar.getName(), new BufferedInputStream(IO.stream(jar)));
+				}
 			}
 		}
 	}
@@ -2387,7 +2400,7 @@ public class Project extends Processor {
 	}
 
 	public Jar getValidJar(URL url) throws Exception {
-		try (Resource resource = Resource.fromURL(url)) {
+		try (Resource resource = Resource.fromURL(url, getPlugin(HttpClient.class))) {
 			Jar jar = Jar.fromResource(url.getFile()
 				.replace('/', '.'), resource);
 			return getValidJar(jar, url.toString());
@@ -2828,16 +2841,18 @@ public class Project extends Processor {
 							logger.debug("found handler {} from {}", defaultHandler, c);
 							handlerClass = clz.asSubclass(target);
 
+							Constructor<? extends T> constructor;
 							try {
-								Constructor<? extends T> constructor = handlerClass.getConstructor(Project.class,
-									Container.class);
-								return constructor.newInstance(this, c);
-							} catch (Exception e) {
-								// ignore
+								constructor = handlerClass.getConstructor(Project.class, Container.class);
+							} catch (NoSuchMethodException e) {
+								constructor = handlerClass.getConstructor(Project.class);
 							}
-
-							Constructor<? extends T> constructor = handlerClass.getConstructor(Project.class);
-							return constructor.newInstance(this);
+							try {
+								return (constructor.getParameterCount() == 1) ? constructor.newInstance(this)
+									: constructor.newInstance(this, c);
+							} catch (InvocationTargetException e) {
+								throw Exceptions.duck(e.getCause());
+							}
 						}
 					}
 				}
@@ -3067,7 +3082,7 @@ public class Project extends Processor {
 			javac.add("-classpath", buildpath.toString());
 		}
 
-		List<File> sp = new ArrayList<>(getAllsourcepath());
+		List<File> sp = new ArrayList<>(getSourcePath());
 		StringBuilder sourcepath = new StringBuilder();
 		String sourcepathDel = "";
 
@@ -3357,4 +3372,36 @@ public class Project extends Processor {
 	public boolean isInteractive() {
 		return getWorkspace().isInteractive();
 	}
+
+	/**
+	 * Return a basic type only specification of the run aspect of this project
+	 */
+	public RunSpecification getSpecification() {
+		RunSpecification runspecification = new RunSpecification();
+		try {
+			runspecification.bin = getOutput().getAbsolutePath();
+			runspecification.bin_test = getTestOutput().getAbsolutePath();
+			runspecification.target = getTarget().getAbsolutePath();
+			runspecification.errors.addAll(getErrors());
+			runspecification.extraSystemCapabilities = getRunSystemCapabilities().toBasic();
+			runspecification.extraSystemPackages = getRunSystemPackages().toBasic();
+			runspecification.properties = getRunProperties();
+			runspecification.runbundles = toPaths(runspecification.errors, getRunbundles());
+			runspecification.runfw = toPaths(runspecification.errors, getRunFw());
+			runspecification.runpath = toPaths(runspecification.errors, getRunpath());
+		} catch (Exception e) {
+			runspecification.errors.add(e.toString());
+		}
+		return runspecification;
+	}
+
+
+	public Parameters getRunSystemPackages() {
+		return new Parameters(mergeProperties(Constants.RUNSYSTEMPACKAGES));
+	}
+
+	public Parameters getRunSystemCapabilities() {
+		return new Parameters(mergeProperties(Constants.RUNSYSTEMCAPABILITIES));
+	}
+
 }

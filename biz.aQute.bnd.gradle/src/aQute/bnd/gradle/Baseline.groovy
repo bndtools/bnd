@@ -190,6 +190,7 @@ public class Baseline extends DefaultTask {
       processor.addClose(newer)
       Jar older = new Jar(baseline)
       processor.addClose(older)
+      logger.debug 'Baseline bundle {} against baseline {}', bundle, baseline
 
       def baseliner = new aQute.bnd.differ.Baseline(processor, new DiffPluginImpl())
       def infos = baseliner.baseline(newer, older, null).sort {it.packageName}

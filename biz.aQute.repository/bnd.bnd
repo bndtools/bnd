@@ -11,25 +11,25 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 	org.eclipse.jetty.util;version=7.6.3
 
 -buildpath: \
-	osgi.annotation;version=latest,\
-	osgi.core;version=latest,\
-    org.osgi.service.coordinator;version=latest,\
-    org.osgi.service.log;version=latest,\
-    org.osgi.service.repository;version=latest,\
-    org.osgi.util.function;version=latest,\
-    org.osgi.util.promise;version=latest,\
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+	org.osgi.service.coordinator;version=latest;maven-scope=provided,\
+	org.osgi.service.log;version=latest,\
+	org.osgi.service.repository;version=latest,\
+	org.osgi.util.function;version=latest;maven-scope=provided,\
+	org.osgi.util.promise;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
-	biz.aQute.bnd.annotation;version=latest,\
+	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest,\
-	org.tukaani.xz;version=latest
+	org.tukaani.xz;version=latest;maven-scope=provided
 
 -testpath: \
 	${junit},\
 	${mockito},\
 	${jetty.libs},\
 	biz.aQute.http.testservers;version=latest,\
-    slf4j.simple;version=latest
+	slf4j.simple;version=latest
 
 Export-Package: \
 	aQute.bnd.deployer.http;bnd-plugins=true,\
@@ -52,8 +52,8 @@ Export-Package: \
 	aQute.p2.provider
 
 -conditionalpackage:\
-	aQute.lib.*;-split-package:=first,\
-	aQute.libg.*;-split-package:=first, \
+	aQute.lib.*,\
+	aQute.libg.*, \
 	org.tukaani.xz.*, \
 	aQute.configurable.*
 

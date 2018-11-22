@@ -2,6 +2,8 @@ package aQute.lib.tag;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -46,6 +48,11 @@ public class Tag {
 	/**
 	 * Construct a new Tag with a name.
 	 */
+	public Tag(String name, Object content) {
+		this.name = name;
+		this.content.add(content);
+	}
+
 	public Tag(String name, Object... contents) {
 		this.name = name;
 		Collections.addAll(content, contents);
@@ -56,13 +63,22 @@ public class Tag {
 		parent.addContent(this);
 	}
 
+	public Tag(Tag parent, String name, Object content) {
+		this(name, content);
+		parent.addContent(this);
+	}
+
 	/**
 	 * Construct a new Tag with a name.
 	 */
+	public Tag(String name, Map<String, String> attributes, Object content) {
+		this(name, content);
+		this.attributes.putAll(attributes);
+	}
+
 	public Tag(String name, Map<String, String> attributes, Object... contents) {
 		this(name, contents);
 		this.attributes.putAll(attributes);
-
 	}
 
 	public Tag(String name, Map<String, String> attributes) {
@@ -73,6 +89,12 @@ public class Tag {
 	 * Construct a new Tag with a name and a set of attributes. The attributes
 	 * are given as ( name, value ) ...
 	 */
+	public Tag(String name, String[] attributes, Object content) {
+		this(name, content);
+		for (int i = 0; i < attributes.length; i += 2)
+			addAttribute(attributes[i], attributes[i + 1]);
+	}
+
 	public Tag(String name, String[] attributes, Object... contents) {
 		this(name, contents);
 		for (int i = 0; i < attributes.length; i += 2)
@@ -138,6 +160,14 @@ public class Tag {
 	public Tag addContent(Tag tag) {
 		content.add(tag);
 		tag.parent = this;
+		return this;
+	}
+
+	/**
+	 * Add a new content tags.
+	 */
+	public Tag addContent(Map<String, ?> map) {
+		map.forEach((name, content) -> addContent(new Tag(name, content)));
 		return this;
 	}
 
@@ -296,12 +326,16 @@ public class Tag {
 			} else {
 				getFields(dto.getClass()).forEach(field -> {
 					try {
-						Object nextDTO = field.get(dto);
+						MethodHandle mh = MethodHandles.publicLookup()
+							.unreflectGetter(field);
+						Object nextDTO = mh.invoke(dto);
 						if (nextDTO != null) {
 							result.addContent(Tag.convertDTO(field.getName(), arrayElementName, nextDTO, true));
 						}
-					} catch (IllegalAccessException bug) {
 						/* should not be thrown if input respect dto spec */
+					} catch (Error | RuntimeException bug) {
+						throw bug;
+					} catch (Throwable bug) {
 						throw new RuntimeException(bug);
 					}
 				});
@@ -438,12 +472,12 @@ public class Tag {
 			pw.print(key);
 			pw.print("=\"");
 			pw.print(value);
-			pw.print("\"");
+			pw.print('"');
 		}
 
-		if (content.size() == 0)
+		if (content.isEmpty()) {
 			pw.print('/');
-		else {
+		} else {
 			pw.print('>');
 			Object last = null;
 			for (Object c : content) {
@@ -458,14 +492,18 @@ public class Tag {
 						continue;
 
 					String s = c.toString();
-
 					if (cdata) {
-						pw.print("<![CDATA[");
-						s = s.replaceAll("]]>", "]]]]><![CDATA[>");
-						pw.print(s);
-						pw.print("]]>");
-					} else
+						pw.write("<![CDATA[");
+						int begin = 0;
+						for (int end; (end = s.indexOf("]]>", begin)) >= 0; begin = end + 3) {
+							pw.write(s, begin, end - begin);
+							pw.print("]]]]><![CDATA[>");
+						}
+						pw.write(s, begin, s.length() - begin);
+						pw.write("]]>");
+					} else {
 						pw.print(escape(s));
+					}
 				}
 				last = c;
 			}

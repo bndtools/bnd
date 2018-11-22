@@ -2,6 +2,7 @@ package aQute.bnd.build;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Formatter;
@@ -12,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Predicate;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 
@@ -41,8 +43,12 @@ import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.Version;
 import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
+import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.glob.PathSet;
 
 public class ProjectBuilder extends Builder {
+	private static final Predicate<String>	pomPropertiesFilter	= new PathSet("META-INF/maven/*/*/pom.properties")
+		.matches();
 	private final static Logger		logger	= LoggerFactory.getLogger(ProjectBuilder.class);
 	private final DiffPluginImpl	differ	= new DiffPluginImpl();
 	Project							project;
@@ -87,9 +93,10 @@ public class ProjectBuilder extends Builder {
 		try {
 			if (!initialized) {
 				initialized = true;
+				Parameters dependencies = (getProperty(MAVEN_DEPENDENCIES) == null) ? new Parameters() : null;
 				doRequireBnd();
 				for (Container file : project.getClasspath()) {
-					addClasspath(file);
+					addClasspath(dependencies, file);
 				}
 
 				File output = project.getOutput();
@@ -98,7 +105,7 @@ public class ProjectBuilder extends Builder {
 				}
 
 				for (Container file : project.getBuildpath()) {
-					addClasspath(file);
+					addClasspath(dependencies, file);
 				}
 
 				for (Container file : project.getBootclasspath()) {
@@ -108,13 +115,16 @@ public class ProjectBuilder extends Builder {
 				for (File file : project.getAllsourcepath()) {
 					addSourcepath(file);
 				}
+				if ((dependencies != null) && !dependencies.isEmpty()) {
+					setProperty(MAVEN_DEPENDENCIES, dependencies.toString());
+				}
 			}
 		} catch (Exception e) {
 			msgs.Unexpected_Error_("ProjectBuilder init", e);
 		}
 	}
 
-	public void addClasspath(Container c) throws IOException {
+	private void addClasspath(Parameters dependencies, Container c) throws IOException {
 		File file = c.getFile();
 		if ((c.getType() == TYPE.PROJECT) && !file.exists()) {
 			return;
@@ -122,6 +132,34 @@ public class ProjectBuilder extends Builder {
 		Jar jar = new Jar(file);
 		super.addClasspath(jar);
 		project.unreferencedClasspathEntries.put(jar.getName(), c);
+		if ((dependencies != null) && !Boolean.parseBoolean(c.getAttributes()
+			.getOrDefault("maven-optional", "false"))) {
+			jar.getResources(pomPropertiesFilter)
+				.forEachOrdered(r -> {
+					UTF8Properties pomProperties = new UTF8Properties();
+					try (InputStream in = r.openInputStream()) {
+						pomProperties.load(in);
+					} catch (Exception e) {
+						return;
+					}
+					String depVersion = pomProperties.getProperty("version");
+					String depGroupId = pomProperties.getProperty("groupId");
+					String depArtifactId = pomProperties.getProperty("artifactId");
+					if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
+						Attrs attrs = new Attrs();
+						attrs.put("groupId", depGroupId);
+						attrs.put("artifactId", depArtifactId);
+						attrs.put("version", depVersion);
+						attrs.put("scope", c.getAttributes()
+							.getOrDefault("maven-scope", "compile"));
+						dependencies.put(String.format("%s:%s:%s", depGroupId, depArtifactId, depVersion), attrs);
+					}
+				});
+		}
+	}
+
+	public void addClasspath(Container c) throws IOException {
+		addClasspath(null, c);
 	}
 
 	@Override

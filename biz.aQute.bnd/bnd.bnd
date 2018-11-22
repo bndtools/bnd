@@ -8,22 +8,37 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
 
-
-Conditional-Package: 			aQute.libg.*,aQute.lib.*,aQute.configurable, aQute.remote.*, org.osgi.*, org.yaml.*
+-conditionalpackage: \
+	aQute.libg.*,\
+	aQute.lib.*,\
+	aQute.configurable,\
+	aQute.remote.*,\
+	org.osgi.*,\
+	org.yaml.*
 
 -includeresource: \
- ${workspace}/LICENSE, \
- embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
- templates=templates, \
- @${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
- @${repo;biz.aQute.repository;latest}!/!META-INF/*, \
- @${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
- @${repo;biz.aQute.bnd.exporters;latest}!/!META-INF/*, \
- @${repo;slf4j.api;latest}!/!META-INF/*, \
- @${repo;slf4j.simple;latest}!/!META-INF/*
+	${workspace}/LICENSE, \
+	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}, \
+	templates=templates, \
+	@${repo;biz.aQute.bndlib;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.repository;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.bnd.exporters;latest}!/!META-INF/*, \
+	@${repo;biz.aQute.bnd.reporter;latest}!/!META-INF/*, \
+ 	@${repo;biz.aQute.bnd.remote.junit;latest}!/!META-INF/*, \
+	@${repo;slf4j.api;latest}!/!META-INF/*, \
+	@${repo;slf4j.simple;latest}!/!META-INF/*, \
+	@${repo;jline}!/!META-INF/*
+
 
 Import-Package: org.slf4j, *
-Export-Package: \
+# About the aQute.library.bndrepo dep. Needed to add them here
+# by hand even though they are in bndlib. However, they are added
+# and we can unfortunately not see those packages ...
+Private-Package: \
+    aQute.bnd.ant,\
+    aQute.bnd.enroute.commands,\
+    aQute.bnd.main, \
 	!org.slf4j.impl,\
 	org.slf4j.*
 
@@ -38,32 +53,27 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 -dependson: biz.aQute.bnd.embedded-repo
 
 -buildpath: \
-	osgi.core;version=latest,\
-	org.osgi.service.log;version=latest,\
-	org.osgi.service.repository;version=latest,\
-    aQute.libg;version=latest, \
-    biz.aQute.bndlib;version=latest, \
-    biz.aQute.resolve;version=latest, \
-    biz.aQute.repository;version=latest, \
-    biz.aQute.bnd.exporters;version=latest, \
+	osgi.core;version=latest;maven-scope=provided,\
+	org.osgi.service.log;version=latest;maven-scope=provided,\
+	org.osgi.service.repository;version=latest;maven-scope=provided,\
+	aQute.libg;version=project, \
+	biz.aQute.bndlib;version=latest;maven-scope=provided, \
+	biz.aQute.resolve;version=latest;maven-scope=provided, \
+	biz.aQute.repository;version=latest;maven-scope=provided, \
+	biz.aQute.bnd.exporters;version=latest;maven-scope=provided, \
+ 	biz.aQute.bnd.reporter;version=latest;maven-scope=provided,\
 	biz.aQute.bnd.annotation;version=project,\
-	org.apache.ant:ant;version=latest,\
-	biz.aQute.remote.api;version=latest,\
-	org.yaml.snakeyaml;version=latest,\
-	slf4j.api;version=latest,\
-    slf4j.simple;version=latest
-
+	org.apache.ant:ant;version=latest;maven-scope=provided,\
+	biz.aQute.remote.api;version=latest;maven-scope=provided,\
+	org.yaml.snakeyaml;version=latest;maven-scope=provided,\
+	slf4j.api;version=latest;maven-scope=provided,\
+	slf4j.simple;version=latest;maven-scope=provided, \
+	jline;maven-scope=provided, \
+	biz.aQute.bnd.remote.junit;version=latest;maven-scope=provided
 
 -testpath: \
-    ${junit},\
-    org.osgi.namespace.extender;version=latest,\
-    org.apache.felix.framework;version=latest,\
+	${junit},\
+	org.osgi.namespace.extender;version=latest,\
+	org.apache.felix.framework, \
 	biz.aQute.bnd.embedded-repo; version=snapshot
 
-# About the aQute.library.bndrepo dep. Needed to add them here
-# by hand even though they are in bndlib. However, they are added
-# and we can unfortunately not see those packages ...
-Private-Package: \
-	aQute.bnd.ant,\
-	aQute.bnd.enroute.commands,\
-	aQute.bnd.main

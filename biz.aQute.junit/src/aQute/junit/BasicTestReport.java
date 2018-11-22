@@ -1,7 +1,11 @@
 package aQute.junit;
 
+import static java.lang.invoke.MethodHandles.publicLookup;
+
+import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 import org.osgi.framework.Bundle;
@@ -74,32 +78,50 @@ public class BasicTestReport implements TestListener, TestReporter {
 		activator.trace("  >> %s", test);
 		check();
 		Bundle b = targetBundle;
-		if (b == null)
+		if (b == null) {
 			b = FrameworkUtil.getBundle(test.getClass());
+		}
 
 		if (b != null) {
 			BundleContext context = b.getBundleContext();
-			activator.trace("got bundle context %s from %s in state %s", context, b, b.getState());
+			activator.trace("Obtained bundle context %s from %s in state %s", context, b, b.getState());
 			assert context != null;
 			try {
-				Method m = test.getClass()
-					.getMethod("setBundleContext", BundleContext.class);
-				m.setAccessible(true);
-				m.invoke(test, context);
-				activator.trace("set context through setter");
-			} catch (Exception e) {
-				Field f;
+				MethodHandle mh;
 				try {
-					f = test.getClass()
-						.getField("context");
-					f.setAccessible(true);
-					f.set(test, context);
-					activator.trace("set context in field");
-				} catch (Exception e1) {
-					// Ok, no problem
+					Method m = test.getClass()
+						.getMethod("setBundleContext", BundleContext.class);
+					m.setAccessible(true);
+					mh = publicLookup().unreflect(m);
+					if (!Modifier.isStatic(m.getModifiers())) {
+						mh = mh.bindTo(test);
+					}
+					activator.trace("setBundleContext method will be used to set BundleContext");
+				} catch (NoSuchMethodException | IllegalAccessException e) {
+					try {
+						Field f = test.getClass()
+							.getField("context");
+						f.setAccessible(true);
+						mh = publicLookup().unreflectSetter(f);
+						if (!Modifier.isStatic(f.getModifiers())) {
+							mh = mh.bindTo(test);
+						}
+						activator.trace("context field will be used to set BundleContext");
+					} catch (NoSuchFieldException | IllegalAccessException e1) {
+						mh = null;
+					}
 				}
+				if (mh != null) {
+					mh.invoke(context);
+					activator.trace("BundleContext set in test");
+				}
+			} catch (Error e) {
+				throw e;
+			} catch (Throwable t) {
+				// Ok, no problem
 			}
 		}
+
 		fails = result.failureCount();
 		errors = result.errorCount();
 		systemOut.clear()
