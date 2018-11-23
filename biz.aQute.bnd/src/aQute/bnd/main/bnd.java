@@ -486,14 +486,20 @@ public class bnd extends Processor {
 				System.setProperty(DEFAULT_LOG_LEVEL_KEY, "warn");
 				level = org.slf4j.spi.LocationAwareLogger.WARN_INT;
 			}
-			Field field = org.slf4j.impl.SimpleLogger.class.getDeclaredField("DEFAULT_LOG_LEVEL");
+			Field field = org.slf4j.impl.SimpleLogger.class.getDeclaredField("CONFIG_PARAMS");
 			field.setAccessible(true);
-			field.set(null, level);
+			Object CONFIG_PARAMS = field.get(null);
+			field = org.slf4j.impl.SimpleLoggerConfiguration.class.getDeclaredField("defaultLogLevel");
+			field.setAccessible(true);
+			field.set(CONFIG_PARAMS, level);
+
+			field = org.slf4j.impl.SimpleLogger.class.getDeclaredField("currentLogLevel");
+			field.setAccessible(true);
+			field.set(logger, level);
 		} catch (Exception e) {
 			e.printStackTrace();
 			// ignore
 		}
-		logger = LoggerFactory.getLogger(bnd.class);
 		logger.debug("Setup logger");
 	}
 

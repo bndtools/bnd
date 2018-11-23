@@ -17,6 +17,6 @@ import java.lang.annotation.Target;
 @Target({ TYPE, PACKAGE })
 
 @RequireConfigurator
-public @interface RequireAnnotaionOne {
+public @interface RequireAnnotationOne {
 
 }

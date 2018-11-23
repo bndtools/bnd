@@ -35,3 +35,17 @@ test {
 release {
   dependsOn groovydoc
 }
+
+classes {
+    inputs.property('pluginClasspath', bnd('pluginClasspath'))
+    File pluginClasspathFile = new File(compileJava.destinationDir, 'plugin-under-test-metadata.properties')
+    outputs.file(pluginClasspathFile).withPropertyName('pluginClasspathFile')
+    doLast {
+        def pluginClasspath = project.files(new File(buildDir, "${project.name}.jar"), bnd('pluginClasspath').tokenize(File.pathSeparatorChar))
+        Properties properties = new Properties()
+        properties.setProperty('implementation-classpath', pluginClasspath.asPath)
+        pluginClasspathFile.withOutputStream {
+          properties.store(it, 'plugin-under-test-metadata')
+        }
+    }
+}

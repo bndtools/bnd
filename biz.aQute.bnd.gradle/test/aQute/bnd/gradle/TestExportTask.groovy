@@ -14,13 +14,6 @@ class TestExportTask extends Specification {
 
     File buildDir = new File('generated')
     File testResources = new File(buildDir, 'testresources')
-    List<File> pluginClasspath
-
-    def setup() {
-      File plugin = new File(buildDir, 'biz.aQute.bnd.gradle.jar').getCanonicalFile()
-      assert plugin.isFile()
-      pluginClasspath = Collections.singletonList(plugin)
-    }
 
     def "Simple Bnd Export Task Executable Jar Test"() {
         given:
@@ -44,7 +37,7 @@ class TestExportTask extends Specification {
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
-            .withPluginClasspath(pluginClasspath)
+            .withPluginClasspath()
             .forwardOutput()
             .build()
 
@@ -94,7 +87,7 @@ class TestExportTask extends Specification {
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
-            .withPluginClasspath(pluginClasspath)
+            .withPluginClasspath()
             .forwardOutput()
             .build()
 
@@ -133,7 +126,7 @@ class TestExportTask extends Specification {
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
-            .withPluginClasspath(pluginClasspath)
+            .withPluginClasspath()
             .forwardOutput()
             .build()
 

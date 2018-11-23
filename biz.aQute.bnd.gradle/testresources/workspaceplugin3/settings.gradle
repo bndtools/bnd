@@ -10,7 +10,7 @@ import aQute.bnd.osgi.Constants
 /* Add bnd gradle plugin as a script dependency */
 buildscript {
   dependencies {
-    classpath files(new File(bnd_plugin).canonicalFile)
+    classpath files(bnd_plugin.tokenize(File.pathSeparatorChar))
   }
   /* Add bnd gradle plugin to buildscript classpath of rootProject */
   def bndPlugin = files(configurations.classpath.files)
