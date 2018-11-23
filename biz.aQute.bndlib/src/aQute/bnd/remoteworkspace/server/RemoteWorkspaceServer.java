@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -21,8 +20,8 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.About;
-import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -152,9 +151,14 @@ public class RemoteWorkspaceServer implements Closeable {
 		public RunSpecification analyzeTestSetup(String projectDir) {
 			try {
 				Project project = getProject(projectDir);
-				try (Analyzer a = new Analyzer()) {
+				RunSpecification r = project.getSpecification();
+
+				try (Builder a = new Builder()) {
 					a.setJar(project.getTestOutput());
-					RunSpecification r = project.getSpecification();
+					a.setConditionalPackage("!java.*,*");
+					a.set(Constants.EXPORT_CONTENTS, "*");
+
+					a.addClasspath(project.getOutput());
 
 					for (Container c : project.getTestpath()) {
 						if (c.getError() != null)
@@ -170,23 +174,15 @@ public class RemoteWorkspaceServer implements Closeable {
 							a.addClasspath(c.getFile());
 					}
 
-					a.calcManifest();
+					a.build();
 					r.errors.addAll(a.getErrors());
 
-					Parameters extraPackages = new Parameters();
+					String clauses = Processor.printClauses(a.getExports());
 
-					for (Entry<PackageRef, Attrs> e : a.getImports()
-						.entrySet()) {
-
-						doPackage(extraPackages, e.getKey(), e.getValue());
-					}
-
-					for (Entry<PackageRef, Attrs> e : a.getContained()
-						.entrySet()) {
-						doPackage(extraPackages, e.getKey(), e.getValue());
-					}
+					Parameters extraPackages = new Parameters(clauses);
 
 					r.extraSystemPackages.putAll(extraPackages.toBasic());
+					System.out.println("Extra packages " + r.extraSystemPackages);
 					return r;
 				}
 			} catch (Throwable e) {
