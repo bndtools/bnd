@@ -151,7 +151,10 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 		try {
 			File storage = IO.getFile(new File(local.target), "junit-fw-" + counter.incrementAndGet());
 			IO.delete(storage);
-			local.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, toString(local.extraSystemPackages));
+
+			String extra = toString(local.extraSystemPackages);
+			System.out.println(extra);
+			local.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extra);
 			local.properties.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, toString(local.extraSystemCapabilities));
 			local.properties.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
 			local.properties.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
@@ -170,6 +173,27 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 			throw Exceptions.duck(e);
 		}
 	}
+
+	// private Map<String, Map<String, String>> addUses(Map<String, Map<String,
+	// String>> extraSystemPackages) {
+	// String uses = extraSystemPackages.keySet()
+	// .stream()
+	// .map(s -> {
+	// while (s.endsWith("~"))
+	// s = s.substring(0, s.length() - 1);
+	// return s;
+	// })
+	// .filter(s -> !s.startsWith("java"))
+	// .distinct()
+	// .collect(Collectors.joining(","));
+	//
+	// extraSystemPackages.entrySet()
+	// .forEach(e -> {
+	// e.getValue()
+	// .put("uses:", uses);
+	// });
+	// return extraSystemPackages;
+	// }
 
 	private String toString(Map<String, Map<String, String>> map) {
 		StringBuilder sb = new StringBuilder();
