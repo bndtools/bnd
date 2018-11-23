@@ -5,7 +5,7 @@ layout: default
 version: 4.2.0
 ---
 
-This chapter describes how to test using the bnd _JUnit Framework_ in OSGi. This JUnit Frqmework is specific for the 
+This chapter describes how to test using the bnd _JUnit Framework_ in OSGi. This JUnit Framework is specific for the 
 workspace mode of bndtools. This workspace mode is supported by Eclipse, Intellij, Gradle, and the standalone bnd command.
 It is not supported by Maven for now.
 
