@@ -10,6 +10,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -203,6 +204,7 @@ public class JUnitFrameworkTest {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testComponent() throws Exception {
 		try (JUnitFramework fw = builder
@@ -215,7 +217,7 @@ public class JUnitFrameworkTest {
 				.addResource(Comp.class)
 				.start();
 
-			assertThat(semaphore.tryAcquire(1, 1, TimeUnit.SECONDS)).isTrue();
+			assertThat(semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)).isTrue();
 			assertThat(semaphore.tryAcquire(1, 200, TimeUnit.MILLISECONDS)).isFalse();
 
 			start.stop();
