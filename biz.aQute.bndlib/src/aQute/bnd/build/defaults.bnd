@@ -7,13 +7,13 @@ target-dir:   generated
 
 
 # General Options
-project.dependson       = ${p-dependson;:}
-project.bootclasspath   = ${p-bootclasspath;:}
-project.buildpath       = ${p-buildpath;:}
-project.sourcepath      = ${p-sourcepath;:}
-project.allsourcepath   = ${p-allsourcepath;:}
+project.dependson       = ${p-dependson;\\${pathseparator}}
+project.bootclasspath   = ${p-bootclasspath;\\${pathseparator}}
+project.buildpath       = ${p-buildpath;\\${pathseparator}}
+project.sourcepath      = ${p-sourcepath;\\${pathseparator}}
+project.allsourcepath   = ${p-allsourcepath;\\${pathseparator}}
 project.output          = ${p-output}
-project.testpath        = ${p-testpath;:}
+project.testpath        = ${p-testpath;\\${pathseparator}}
 
 -verbose:     false
 project:      ${basedir}
