@@ -13,8 +13,9 @@ import java.util.stream.Stream;
 
 import aQute.libg.glob.PathSet;
 
-public class FileTree extends PathSet {
+public class FileTree {
 	private final List<File> files = new ArrayList<>();
+	private final PathSet		paths	= new PathSet();
 
 	public FileTree() {}
 
@@ -40,7 +41,7 @@ public class FileTree extends PathSet {
 	 * @param includes Add an Ant-style glob
 	 */
 	public void addIncludes(List<String> includes) {
-		includes(includes);
+		paths.includes(includes);
 	}
 
 	/**
@@ -49,7 +50,7 @@ public class FileTree extends PathSet {
 	 * @param includes Add an Ant-style glob
 	 */
 	public void addIncludes(String... includes) {
-		include(includes);
+		paths.include(includes);
 	}
 
 	/**
@@ -58,7 +59,7 @@ public class FileTree extends PathSet {
 	 * @param excludes Add an Ant-style glob
 	 */
 	public void addExcludes(String... excludes) {
-		exclude(excludes);
+		paths.exclude(excludes);
 	}
 
 	/**
@@ -67,7 +68,7 @@ public class FileTree extends PathSet {
 	 * @param excludes Add an Ant-style glob
 	 */
 	public void addExcludes(List<String> excludes) {
-		excludes(excludes);
+		paths.excludes(excludes);
 	}
 
 	/**
@@ -81,7 +82,7 @@ public class FileTree extends PathSet {
 	 * @throws IOException If an exception occurs.
 	 */
 	public List<File> getFiles(File baseDir, String... defaultIncludes) throws IOException {
-		return getFiles(baseDir, files.isEmpty() ? matches(defaultIncludes) : matches());
+		return getFiles(baseDir, files.isEmpty() ? paths.matches(defaultIncludes) : paths.matches());
 	}
 
 	/**
@@ -95,7 +96,7 @@ public class FileTree extends PathSet {
 	 * @throws IOException If an exception occurs.
 	 */
 	public List<File> getFiles(File baseDir, List<String> defaultIncludes) throws IOException {
-		return getFiles(baseDir, files.isEmpty() ? matches(defaultIncludes) : matches());
+		return getFiles(baseDir, files.isEmpty() ? paths.matches(defaultIncludes) : paths.matches());
 	}
 
 	private List<File> getFiles(File baseDir, Predicate<String> matches) throws IOException {
