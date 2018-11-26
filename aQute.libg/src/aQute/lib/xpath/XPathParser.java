@@ -77,6 +77,8 @@ public class XPathParser {
 			if (value == null || value.isEmpty())
 				continue;
 
+			value = processValue(value);
+
 			if (f.getType()
 				.isAnnotation())
 				value = value.toUpperCase();
@@ -91,6 +93,10 @@ public class XPathParser {
 				throw new InvocationTargetException(e);
 			}
 		}
+	}
+
+	protected String processValue(String value) {
+		return value;
 	}
 
 	public String parse(String expression) throws Exception {
