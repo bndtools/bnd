@@ -73,6 +73,7 @@ import aQute.bnd.classfile.InnerClassesAttribute.InnerClass;
 import aQute.bnd.classfile.MemberInfo;
 import aQute.bnd.classfile.MethodInfo;
 import aQute.bnd.classfile.MethodParametersAttribute;
+import aQute.bnd.classfile.ModuleAttribute;
 import aQute.bnd.classfile.ParameterAnnotationInfo;
 import aQute.bnd.classfile.ParameterAnnotationsAttribute;
 import aQute.bnd.classfile.RuntimeInvisibleAnnotationsAttribute;
@@ -477,6 +478,22 @@ public class Clazz {
 		@Override
 		public TypeRef getType() {
 			return type;
+		}
+
+		int getModuleFlags() {
+			return attributes(ModuleAttribute.class).mapToInt(attr -> attr.module_flags)
+				.findFirst()
+				.orElse(0);
+		}
+
+		String getModuleName() {
+			return attribute(ModuleAttribute.class).map(attr -> attr.module_name)
+				.orElse(null);
+		}
+
+		String getModuleVersion() {
+			return attribute(ModuleAttribute.class).map(attr -> attr.module_version)
+				.orElse(null);
 		}
 
 		@Override
@@ -2025,6 +2042,18 @@ public class Clazz {
 
 	public Resource getResource() {
 		return resource;
+	}
+
+	public int getModuleFlags() {
+		return classDef.getModuleFlags();
+	}
+
+	public String getModuleName() {
+		return classDef.getModuleName();
+	}
+
+	public String getModuleVersion() {
+		return classDef.getModuleVersion();
 	}
 
 }
