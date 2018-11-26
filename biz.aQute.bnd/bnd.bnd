@@ -50,7 +50,7 @@ JPM-Command:                    bnd
 Bundle-Description: This command line utility is the Swiss army knife of OSGi. It provides you with a breadth \
  of tools to understand and manage OSGi based systems. This project basically uses bndlib.
 
--dependson: biz.aQute.bnd.embedded-repo
+-dependson: biz.aQute.bnd.remote.junit, biz.aQute.bnd.embedded-repo
 
 -buildpath: \
 	osgi.core;version=latest;maven-scope=provided,\

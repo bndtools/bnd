@@ -6,6 +6,8 @@ Private-Package: \
 	biz.aQute.bnd.diagnostics.gogo.osgi
 Bundle-Activator: biz.aQute.bnd.diagnostics.gogo.osgi.Activator
 
+-dependson: biz.aQute.bnd.remote.junit
+
 -buildpath: \
 	osgi.core;version=latest;maven-scope=provided,\
     org.osgi.service.component;version='[1.3,1.4)', \
