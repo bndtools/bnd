@@ -182,7 +182,6 @@ public class RemoteWorkspaceServer implements Closeable {
 					Parameters extraPackages = new Parameters(clauses);
 
 					r.extraSystemPackages.putAll(extraPackages.toBasic());
-					System.out.println("Extra packages " + r.extraSystemPackages);
 					return r;
 				}
 			} catch (Throwable e) {
@@ -203,8 +202,6 @@ public class RemoteWorkspaceServer implements Closeable {
 					Jar build = builder.from(spec)
 						.build();
 
-					build.getManifest()
-						.write(System.out);
 					if (!builder.isOk()) {
 						throw new IllegalStateException(builder.getErrors()
 							.stream()
@@ -216,7 +213,6 @@ public class RemoteWorkspaceServer implements Closeable {
 					return bout.toByteArray();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
 				throw Exceptions.duck(e);
 			}
 		}
