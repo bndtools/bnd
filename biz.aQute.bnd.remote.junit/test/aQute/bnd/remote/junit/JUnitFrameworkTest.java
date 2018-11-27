@@ -19,7 +19,6 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.packageadmin.PackageAdmin;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.About;
@@ -86,7 +85,7 @@ public class JUnitFrameworkTest {
 
 	static public class Foo extends Foo1 {
 		@Service
-		PackageAdmin packageAdmin;
+		org.osgi.service.packageadmin.PackageAdmin packageAdmin;
 	}
 
 	@Test
