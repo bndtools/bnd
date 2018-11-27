@@ -400,4 +400,24 @@
 			</plugin>
 		</plugins>
 	</build>
+
+  <profiles>
+    <profile>
+      <id>ossrh</id>
+      <properties>
+        <skipTests>true</skipTests>
+        <invoker.skip>true</invoker.skip>
+      </properties>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>https://oss.sonatype.org</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+          <id>https://oss.sonatype.org</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
+    </profile>
+  </profiles>
 </project>
