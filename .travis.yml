@@ -6,6 +6,7 @@ matrix:
   include:
     - name: "Oracle JDK 8"
       jdk: oraclejdk8
+      env: MAIN_BUILD=true
     - name: "OpenJDK 10"
       before_install:
         - curl -O -L --retry 3  https://github.com/sormuras/bach/raw/master/install-jdk.sh
