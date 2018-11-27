@@ -8,8 +8,32 @@ if (localrepo) {
 }
 def releaserepo = uri(bnd('releaserepo', parent.file('dist/bundles'))) /* Release repository. */
 
+task deployOSSRH(type:Exec) {
+  enabled !bnd('-releaserepo.ossrh', '').empty
+  onlyIf {
+        deploy.state.didWork && (deploy.state.failure == null)
+  }
+  if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+    executable 'cmd'
+    args '/c', 'mvn'
+  } else {
+    executable rootProject.file('mvnw')
+  }
+  args '--batch-mode'
+  if (logger.isDebugEnabled()) {
+    args '--debug'
+  }
+  args '-Possrh'
+  args "--settings=${parent.project('cnf').file('ext/connection-settings.xml')}"
+  if (localrepo) {
+    args "-Dmaven.repo.local=${localrepo}"
+  }
+  args 'deploy'
+}
+
 task deploy(type:Exec) {
   dependsOn "${parent.absoluteProjectPath('dist')}:build"
+  finalizedBy deployOSSRH
   tasks.getByPath("${parent.absoluteProjectPath('dist')}:index").mustRunAfter it
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
@@ -25,5 +49,5 @@ task deploy(type:Exec) {
   if (localrepo) {
     args "-Dmaven.repo.local=${localrepo}"
   }
-  args name
+  args 'deploy'
 }
