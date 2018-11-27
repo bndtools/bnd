@@ -2,10 +2,13 @@ package aQute.bnd.connection.settings;
 
 import java.io.File;
 
+import aQute.bnd.osgi.Macro;
+import aQute.bnd.osgi.Processor;
 import aQute.lib.xpath.XPathParser;
 
 public class SettingsParser extends XPathParser {
 	final SettingsDTO settings = new SettingsDTO();
+	private final Macro	replacer	= new Processor().getReplacer();
 
 	/*
 	 * <proxies> <proxy> <id>example-proxy</id> <active>true</active>
@@ -25,5 +28,10 @@ public class SettingsParser extends XPathParser {
 
 	public SettingsDTO getSettings() {
 		return settings;
+	}
+
+	@Override
+	protected String processValue(String value) {
+		return replacer.process(value);
 	}
 }

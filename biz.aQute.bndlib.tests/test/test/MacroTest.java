@@ -718,6 +718,11 @@ public class MacroTest extends TestCase {
 			.process("${env;PATH}");
 		assertNotNull(s);
 		assertTrue(s.length() > 0);
+		String s2 = proc.getReplacer()
+			.process("${env.PATH}");
+		assertNotNull(s2);
+		assertTrue(s2.length() > 0);
+		assertEquals(s, s2);
 	}
 
 	public static void testEnvAlt() {

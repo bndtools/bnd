@@ -21,6 +21,11 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
         releaseUrl="${fileuri;${releaserepo}}";\
         snapshotUrl="${fileuri;${releaserepo}}";\
         noupdateOnRelease=true,\
+    aQute.bnd.repository.maven.provider.MavenBndRepository; \
+        name='Sonatype'; \
+        releaseUrl="https://oss.sonatype.org/service/local/staging/deploy/maven2/"; \
+        snapshotUrl="https://oss.sonatype.org/content/repositories/snapshots/"; \
+        noupdateOnRelease=true, \
 	aQute.bnd.signing.JartoolSigner, \
     aQute.bnd.repository.osgi.OSGiRepository; \
         name='Baseline'; \
@@ -30,4 +35,8 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
 
 -buildrepo: Local
 -releaserepo: Release
+-releaserepo.sonatype: ${if;(&(env.MAIN_BUILD=true)(|(env.TRAVIS_BRANCH=master)(env.TRAVIS_BRANCH=next))(env.TRAVIS_PULL_REQUEST=false)(env.REPOSITORY_USERNAME=*));Sonatype}
+
+-connection-settings: ${if;${-releaserepo.sonatype};${.}/connection-settings.xml}
+
 -baselinerepo: Baseline

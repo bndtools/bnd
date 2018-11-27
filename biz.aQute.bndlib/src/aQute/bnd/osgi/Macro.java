@@ -225,6 +225,9 @@ public class Macro {
 				if (key != null && key.trim()
 					.length() > 0) {
 					value = System.getProperty(key);
+					if ((value == null) && key.startsWith("env.")) {
+						value = System.getenv(key.substring(4));
+					}
 					if (value != null)
 						return value;
 				}
