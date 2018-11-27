@@ -19,6 +19,7 @@ public interface Constants {
 	 * policy ::= ’lazy’
 	 * </pre>
 	 */
+	String								AUTOMATIC_MODULE_NAME						= "Automatic-Module-Name";
 	String								BND_ADDXMLTOTEST							= "Bnd-AddXMLToTest";
 	String								BUNDLE_ACTIVATIONPOLICY						= "Bundle-ActivationPolicy";
 	String								BUNDLE_ACTIVATOR							= "Bundle-Activator";
@@ -475,6 +476,12 @@ public interface Constants {
 	 * processor for tstamp
 	 */
 	String								TSTAMP										= "_@tstamp";
+
+	/*
+	 * Module Section
+	 */
+
+	String								MODULE_INFO_CLASS							= "module-info.class";
 
 	/*
 	 * Deprecated Section

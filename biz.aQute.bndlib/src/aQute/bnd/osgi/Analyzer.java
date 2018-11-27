@@ -3708,4 +3708,63 @@ public class Analyzer extends Processor {
 		return false;
 	}
 
+	/**
+	 * Guess the module name of the jar from
+	 * <p>
+	 * a) the module-info.class or,
+	 * <p>
+	 * b) the {@link Constants#AUTOMATIC_MODULE_NAME} manifest header or,
+	 * <p>
+	 * c) the {@link Constants#BUNDLE_SYMBOLICNAME} manifest header.
+	 *
+	 * @return null when the jar has no module-info.class, manifest, when the
+	 *         manifest has no {@link Constants#AUTOMATIC_MODULE_NAME} header
+	 *         and no {@link Constants#BUNDLE_SYMBOLICNAME} header, or when
+	 *         either header value is not a valid bsn according to {@link #BSN}.
+	 * @throws Exception when the jar is closed or when the manifest could not
+	 *             be retrieved.
+	 */
+	public String getModuleName(Jar jar) throws Exception {
+		Resource resource = jar.getResource(Constants.MODULE_INFO_CLASS);
+		if (resource != null) {
+			Clazz clazz = new Clazz(this, Constants.MODULE_INFO_CLASS, resource);
+			clazz.parseClassFile();
+			return clazz.getModuleName();
+		}
+
+		Manifest m = jar.getManifest();
+		if (m == null)
+			return null;
+
+		String s = m.getMainAttributes()
+			.getValue(Constants.AUTOMATIC_MODULE_NAME);
+		if (s == null)
+			s = jar.getBsn();
+
+		return s;
+	}
+
+	/**
+	 * Guess the module version of the jar from
+	 * <p>
+	 * a) the module-info.class or,
+	 * <p>
+	 * b) the {@link Constants#BUNDLE_VERSION} manifest header.
+	 *
+	 * @return null when the jar has no module-info.class, manifest, when the
+	 *         manifest has no {@link Constants#BUNDLE_VERSION} header.
+	 * @throws Exception when the jar is closed or when the manifest could not
+	 *             be retrieved.
+	 */
+	public String getModuleVersion(Jar jar) throws Exception {
+		Resource resource = jar.getResource(Constants.MODULE_INFO_CLASS);
+		if (resource != null) {
+			Clazz clazz = new Clazz(this, Constants.MODULE_INFO_CLASS, resource);
+			clazz.parseClassFile();
+			return clazz.getModuleVersion();
+		}
+
+		return jar.getVersion();
+	}
+
 }
