@@ -9,6 +9,7 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.util.Locale;
 
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.URLResource.JarURLUtil;
@@ -33,15 +34,15 @@ public interface Resource extends Closeable {
 	}
 
 	static Resource fromURL(URL url, HttpClient client) throws IOException {
-		if (url.getProtocol()
-			.equalsIgnoreCase("file")) {
+		String protocol = url.getProtocol()
+			.toLowerCase(Locale.ROOT);
+		if (protocol.equals("file")) {
 			URI uri = URI.create(url.toExternalForm());
 			Path path = new File(uri.getSchemeSpecificPart()).toPath()
 				.toAbsolutePath();
 			return new FileResource(path);
 		}
-		if (url.getProtocol()
-			.equals("jar")) {
+		if (protocol.equals("jar")) {
 			JarURLUtil util = new JarURLUtil(url);
 			URL jarFileURL = util.getJarFileURL();
 			if (jarFileURL.getProtocol()
@@ -56,6 +57,6 @@ public interface Resource extends Closeable {
 				return new ZipResource(path, entryName);
 			}
 		}
-		return new URLResource(url, client);
+		return new URLResource(url, protocol.equals("jrt") ? null : client);
 	}
 }
