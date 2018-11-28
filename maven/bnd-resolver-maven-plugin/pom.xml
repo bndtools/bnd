@@ -98,7 +98,6 @@
                     <goals>
                         <goal>package</goal>
                     </goals>
-                    <debug>true</debug>
                     <scriptVariables>
                       <bndVersion>${project.version}</bndVersion>
                     </scriptVariables>
