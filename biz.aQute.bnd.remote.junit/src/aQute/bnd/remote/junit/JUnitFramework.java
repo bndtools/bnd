@@ -1,6 +1,7 @@
 package aQute.bnd.remote.junit;
 
 import static aQute.bnd.remote.junit.JUnitFrameworkBuilder.projectDir;
+import static java.util.Objects.requireNonNull;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -8,6 +9,8 @@ import java.io.Closeable;
 import java.io.File;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -33,7 +37,6 @@ import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.framework.hooks.service.EventListenerHook;
 import org.osgi.framework.hooks.service.FindHook;
 import org.osgi.framework.launch.Framework;
 import org.osgi.util.tracker.ServiceTracker;
@@ -67,7 +70,7 @@ public class JUnitFramework implements AutoCloseable {
 	final List<ServiceTracker<?, ?>>	trackers				= new ArrayList<>();
 
 	final JUnitFrameworkBuilder			builder;
-	final List<FrameworkEvent>			frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
+	final List<FrameworkEvent>			frameworkEvents			= new CopyOnWriteArrayList<>();
 	final Injector<Service>				injector;
 
 	Bundle								testbundle;
@@ -78,9 +81,8 @@ public class JUnitFramework implements AutoCloseable {
 			this.framework = framework;
 			this.framework.init();
 			this.injector = new Injector<>(makeConverter(), this::getService, Service.class);
-
-			framework.getBundleContext()
-				.addFrameworkListener(frameworkEvents::add);
+			
+			framework.getBundleContext().addFrameworkListener(frameworkEvents::add);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -91,8 +93,10 @@ public class JUnitFramework implements AutoCloseable {
 	 * 
 	 * @param f the file to install
 	 * @return the bundle object
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
 	public Bundle bundle(File f) {
+		requireNonNull(f, "Specified file cannot be null");
 		try {
 			return framework.getBundleContext()
 				.installBundle(toInstallURI(f));
@@ -107,8 +111,10 @@ public class JUnitFramework implements AutoCloseable {
 	 * 
 	 * @param specification the bundle specifications
 	 * @return a list of bundles
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
 	public List<Bundle> bundles(String specification) {
+		requireNonNull(specification, "Specification cannot be null");
 		try {
 			return JUnitFrameworkBuilder.workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
 				.stream()
@@ -147,8 +153,10 @@ public class JUnitFramework implements AutoCloseable {
 	 * Start a bundle
 	 * 
 	 * @param b the bundle object
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
 	public void start(Bundle b) {
+		requireNonNull(b, "Bundle cannot be null");
 		try {
 			if (!isFragment(b))
 				b.start();
@@ -161,8 +169,10 @@ public class JUnitFramework implements AutoCloseable {
 	 * Start all bundles
 	 * 
 	 * @param bs a collection of bundles
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
 	public void start(Collection<Bundle> bs) {
+		requireNonNull(bs, "Collection of Bundle instance cannot be null");
 		bs.forEach(this::start);
 	}
 
@@ -194,16 +204,18 @@ public class JUnitFramework implements AutoCloseable {
 	}
 
 	/**
-	 * Get a service registered under class1. If multiple services or none are
-	 * registered then this method will throw an exception when asserts are
-	 * enabled.
+	 * Get a service registered under {@code clazz}. If multiple services or
+	 * none are registered then this method will throw an exception when asserts
+	 * are enabled.
 	 * 
-	 * @param class1 the name of the service
+	 * @param clazz the name of the service
 	 * @return a service
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
-	public <T> T getService(Class<T> class1) {
+	public <T> T getService(Class<T> clazz) {
+		requireNonNull(clazz, "Service Class instance cannot be null");
 		try {
-			List<T> services = getServices(class1);
+			List<T> services = getServices(clazz);
 			assert 1 == services.size();
 			return services.get(0);
 		} catch (Exception e) {
@@ -214,19 +226,22 @@ public class JUnitFramework implements AutoCloseable {
 	/**
 	 * Get a list of services of a given name
 	 * 
-	 * @param class1 the service name
+	 * @param clazz the service name
 	 * @return a list of services
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
-	public <T> List<T> getServices(Class<T> class1) {
+	public <T> List<T> getServices(Class<T> clazz) {
+		requireNonNull(clazz, "Service Class instance cannot be null");
 		try {
-			Collection<ServiceReference<T>> refs = getBundleContext().getServiceReferences(class1, null);
-			List<T> result = new ArrayList<>();
-			for (ServiceReference<T> ref : refs) {
-				T service = getBundleContext().getService(ref);
-				if (service != null)
-					result.add(service);
+			ServiceReference[] refs = getBundleContext().getAllServiceReferences(clazz.getName(), null);
+			if (refs == null) {
+				return Collections.emptyList();
 			}
-			return result;
+			return Stream.of(refs)
+				         .map(r -> getBundleContext().getService(r))
+				         .filter(clazz::isInstance)
+				         .map(clazz::cast)
+				         .collect(Collectors.toList());
 		} catch (InvalidSyntaxException e) {
 			throw Exceptions.duck(e);
 		}
@@ -248,15 +263,13 @@ public class JUnitFramework implements AutoCloseable {
 	 * Inject an object with services and other OSGi specific values.
 	 * 
 	 * @param object the object to inject
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
-
 	public JUnitFramework inject(Object object) {
+		requireNonNull(object, "Object instance to be injected cannot be null");
 		try {
 			injector.inject(object);
 			return this;
-		} catch (TimeoutException e) {
-			// reportComponents();
-			throw Exceptions.duck(e);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -267,11 +280,12 @@ public class JUnitFramework implements AutoCloseable {
 	 * 
 	 * @param file the file to install
 	 * @return a bundle
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
 	public Bundle install(File file) {
+		requireNonNull(file, "File instance to install cannot be null");
 		try {
-			return framework.getBundleContext()
-				.installBundle(toInstallURI(file));
+			return framework.getBundleContext().installBundle(toInstallURI(file));
 		} catch (BundleException e) {
 			throw Exceptions.duck(e);
 		}
@@ -290,9 +304,11 @@ public class JUnitFramework implements AutoCloseable {
 	 * Create a new object and inject it.
 	 * 
 	 * @param type the type of object
-	 * @return a new object injected and all
+	 * @return a new object injected
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
 	public <T> T newInstance(Class<T> type) {
+		requireNonNull(type, "Specified type cannot be null");
 		try {
 			return injector.newInstance(type);
 		} catch (Exception e) {
@@ -311,27 +327,31 @@ public class JUnitFramework implements AutoCloseable {
 
 	/**
 	 * Show the installed bundles
+	 * 
+	 * @param out the output destination
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
 	public void reportBundles(Appendable out) {
+		requireNonNull(out, "Output destination instance cannot be null");
 		try (Formatter f = new Formatter(out)) {
 			Stream.of(framework.getBundleContext()
 				.getBundles())
-				.forEach(bb -> {
-					f.format("%4s %s\n", bundleStateToString(bb.getState()), bb);
-				});
+				.forEach(bb -> f.format("%4s %s%n", bundleStateToString(bb.getState()), bb));
 		}
 	}
 
 	/**
 	 * Show the registered service
+	 * 
+	 * @param out the output destination
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
 	public void reportServices(Appendable out) throws InvalidSyntaxException {
+		requireNonNull(out, "Output destination instance cannot be null");
 		try (Formatter f = new Formatter(out)) {
 			Stream.of(framework.getBundleContext()
-				.getAllServiceReferences(null, null))
-				.forEach(sref -> {
-					f.format("%s\n", sref);
-				});
+				.getAllServiceReferences((String) null, null))
+				.forEach(sref -> f.format("%s%n", sref));
 			f.flush();
 		}
 	}
@@ -339,21 +359,28 @@ public class JUnitFramework implements AutoCloseable {
 	/**
 	 * Wait for a Service Reference to be registered
 	 * 
-	 * @param class1 the name of the service
-	 * @param timeoutInMs the time to wait
+	 * @param clazz the name of the service
+	 * @param timeout the time to wait
 	 * @return a service reference
 	 * @throws InterruptedException
+	 * @throws IllegalArgumentException if any of the specified arguments is
+	 *             {@code null}
 	 */
-	public <T> Optional<ServiceReference<T>> waitForServiceReference(Class<T> class1, long timeoutInMs)
+	public <T> Optional<ServiceReference> waitForServiceReference(Class<T> clazz, Duration timeout)
 		throws InterruptedException {
-		long deadline = System.currentTimeMillis() + timeoutInMs;
-		while (deadline > System.currentTimeMillis()) {
+		requireNonNull(clazz, "Service class instance cannot be null");
+		requireNonNull(timeout, "Timeout cannot be null");
 
-			ServiceReference<T> serviceReference = getBundleContext().getServiceReference(class1);
+		LocalDateTime currentTime = LocalDateTime.now();
+		LocalDateTime endTime = currentTime.plus(timeout);
+
+		while (endTime.isAfter(currentTime)) {
+			@SuppressWarnings("unchecked")
+			ServiceReference serviceReference = getBundleContext().getServiceReference(clazz.getName());
 			if (serviceReference != null) {
 				return Optional.of(serviceReference);
 			}
-			Thread.sleep(50);
+			TimeUnit.MILLISECONDS.sleep(50);
 		}
 		return Optional.empty();
 	}
@@ -361,23 +388,27 @@ public class JUnitFramework implements AutoCloseable {
 	/**
 	 * Wait for service to be registered
 	 * 
-	 * @param class1 name of the service
-	 * @param timeoutInMs timeout in ms
+	 * @param clazz name of the service
+	 * @param timeout timeout
 	 * @return a service
 	 * @throws InterruptedException
+	 * @throws IllegalArgumentException if any of the specified arguments is
+	 *             {@code null}
 	 */
-	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs) throws InterruptedException {
+	public <T> Optional<T> waitForService(Class<T> clazz, Duration timeout) throws InterruptedException {
+		requireNonNull(clazz, "Service class instance cannot be null");
+		requireNonNull(timeout, "Timeout cannot be null");
+
 		try {
-			Optional<ServiceReference<T>> ref = waitForServiceReference(class1, timeoutInMs);
+			Optional<ServiceReference> ref = waitForServiceReference(clazz, timeout);
 			BundleContext context = getBundleContext();
-			return ref.map(context::getService);
+			return ref.map(context::getService).filter(clazz::isInstance).map(clazz::cast);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
 	Object getService(Injector.Target<Service> param) {
-
 		try {
 			if (param.type == BundleContext.class) {
 				return getBundleContext();
@@ -389,15 +420,12 @@ public class JUnitFramework implements AutoCloseable {
 				return framework;
 			}
 			if (param.type == Bundle[].class) {
-				return framework.getBundleContext()
-					.getBundles();
+				return framework.getBundleContext().getBundles();
 			}
-
 			Service service = param.annotation;
-			String target = service.target()
-				.isEmpty() ? null : service.target();
+			String target = service.filter().isEmpty() ? null : service.filter();
 
-			Class<?> serviceClass = service.service();
+			Class<?> serviceClass = service.type();
 
 			if (serviceClass == Object.class)
 				serviceClass = getServiceType(param.type);
@@ -405,26 +433,24 @@ public class JUnitFramework implements AutoCloseable {
 			if (serviceClass == null)
 				serviceClass = getServiceType(param.primaryType);
 
-			if (serviceClass == null)
+			if (serviceClass == null) {
 				throw new IllegalArgumentException("Cannot define service class for " + param);
-
+			}
 			boolean multiple = isMultiple(param.type);
-
-			List<? extends ServiceReference<?>> serviceReferences = getReferences(serviceClass, target);
+			List<? extends ServiceReference> serviceReferences = getReferences(serviceClass, target);
 
 			if (multiple) {
 				return serviceReferences;
 			} else {
 				if (serviceReferences.isEmpty()) {
-
 					long timeout = service.timeout();
 					if (timeout <= 0)
 						timeout = SERVICE_DEFAULT_TIMEOUT;
-					Optional<?> waitForServiceReference = waitForServiceReference(serviceClass, timeout);
-					return waitForServiceReference
-						.orElseThrow(() -> new TimeoutException("Cannot find service " + param));
-				} else
+					Optional<?> waitForServiceReference = waitForServiceReference(serviceClass, Duration.ofMillis(timeout));
+					return waitForServiceReference.orElseThrow(() -> new TimeoutException("Cannot find service " + param));
+				} else {
 					return serviceReferences.get(0);
+				}
 			}
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
@@ -433,9 +459,7 @@ public class JUnitFramework implements AutoCloseable {
 
 	void reportEvents(Appendable out) {
 		try (Formatter f = new Formatter(out)) {
-			frameworkEvents.forEach(fe -> {
-				f.format("%s\n", fe);
-			});
+			frameworkEvents.forEach(fe -> f.format("%s%n", fe));
 			f.flush();
 		}
 	}
@@ -459,12 +483,10 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
-	private List<? extends ServiceReference<?>> getReferences(Class<?> serviceClass, String target)
+	private List<? extends ServiceReference> getReferences(Class<?> serviceClass, String target)
 		throws InvalidSyntaxException {
-		List<? extends ServiceReference<?>> serviceReferences = new ArrayList<>(
-			getBundleContext().getServiceReferences(serviceClass, target));
-		Collections.sort(serviceReferences);
-		return serviceReferences;
+		ServiceReference[] refs = getBundleContext().getAllServiceReferences(serviceClass.getName(), target);
+		return Stream.of(refs).sorted().collect(Collectors.toList());
 	}
 
 	private Class<?> getServiceType(Type type) {
@@ -494,50 +516,40 @@ public class JUnitFramework implements AutoCloseable {
 			return ((Class<?>) type).isArray();
 		}
 		if (type instanceof ParameterizedType) {
-
 			Type rawType = ((ParameterizedType) type).getRawType();
 			if (rawType instanceof Class) {
 				Class<?> clazz = (Class<?>) rawType;
 				if (Iterable.class.isAssignableFrom(clazz))
 					return true;
 			}
-
 		}
 		return false;
 	}
 
 	private boolean isParameterizedType(Type to, Class<?> clazz) {
-		if (to instanceof ParameterizedType) {
-			if (((ParameterizedType) to).getRawType() == clazz)
-				return true;
-		}
-		return false;
+		return to instanceof ParameterizedType && ((ParameterizedType) to).getRawType() == clazz;
 	}
 
 	private Converter makeConverter() {
 		Converter converter = new Converter();
 		converter.hook(null, (to, from) -> {
-			try {
-				if (!(from instanceof ServiceReference))
-					return null;
+			if (!(from instanceof ServiceReference))
+				return null;
 
-				ServiceReference<?> reference = (ServiceReference<?>) from;
+			ServiceReference reference = (ServiceReference) from;
 
-				if (isParameterizedType(to, ServiceReference.class))
-					return reference;
+			if (isParameterizedType(to, ServiceReference.class))
+				return reference;
 
-				if (isParameterizedType(to, Map.class))
-					return converter.convert(to, toMap(reference));
+			if (isParameterizedType(to, Map.class))
+				return converter.convert(to, toMap(reference));
 
-				Object service = getBundleContext().getService(reference);
+			Object service = getBundleContext().getService(reference);
 
-				if (isParameterizedType(to, Optional.class))
-					return Optional.ofNullable(service);
+			if (isParameterizedType(to, Optional.class))
+				return Optional.ofNullable(service);
 
-				return service;
-			} catch (Exception e) {
-				throw e;
-			}
+			return service;
 		});
 		return converter;
 	}
@@ -546,32 +558,42 @@ public class JUnitFramework implements AutoCloseable {
 		return "reference:" + c.toURI();
 	}
 
-	private Map<String, Object> toMap(ServiceReference<?> reference) {
+	private Map<String, Object> toMap(ServiceReference reference) {
 		Map<String, Object> map = new HashMap<>();
 
 		for (String key : reference.getPropertyKeys()) {
 			map.put(key, reference.getProperty(key));
 		}
-
 		return map;
 	}
 
 	/**
 	 * Get a bundle by symbolic name
+	 * 
+	 * @param bsn Bundle Symbolic Name
+	 * @throws IllegalArgumentException if specified argument is {@code null}
 	 */
 	public Optional<Bundle> getBundle(String bsn) {
+		requireNonNull(bsn, "Bundle symbolic name cannot be null");
 		return Stream.of(getBundleContext().getBundles())
-			.filter(b -> bsn.equals(b.getSymbolicName()))
-			.findFirst();
+			         .filter(b -> bsn.equals(b.getSymbolicName()))
+			         .findFirst();
 	}
 
 	/**
 	 * Broadcast a message to many services
+	 * 
+	 * @param type the type of service to broadcast
+	 * @param consumer the consumer action to be performed
+	 * @throws IllegalArgumentException if any of the specified arguments is
+	 *             {@code null}
 	 */
-
 	@SuppressWarnings("unchecked")
 	public <T> int broadcast(Class<T> type, Consumer<T> consumer) {
-		ServiceTracker<T, T> tracker = new ServiceTracker<>(getBundleContext(), type, null);
+		requireNonNull(type, "Class type cannot be null");
+		requireNonNull(consumer, "Consumer instance cannot be null");
+
+		ServiceTracker<T, T> tracker = new ServiceTracker<>(getBundleContext(), type.getName(), null);
 		int n = 0;
 		try {
 			for (T instance : (T[]) tracker.getServices()) {
@@ -589,34 +611,25 @@ public class JUnitFramework implements AutoCloseable {
 	 * before you let others look. In general, the JUnit Framework should be
 	 * started in {@link JUnitFrameworkBuilder#nostart()} mode. This initializes
 	 * the OSGi framework making it possible to register a service before
+	 * 
+	 * @param type the type of service to hide
+	 * @throws IllegalArgumentException if the specified argument is {@code null}
 	 */
-
 	public Closeable hide(Class<?> type) {
-		ServiceRegistration<EventListenerHook> eventReg = getBundleContext().registerService(EventListenerHook.class,
-			(event, listeners) -> {
-				if (isOneOfType(event.getServiceReference(), type))
-					listeners.entrySet()
-						.removeIf(e -> e.getKey()
-							.getBundle() != testbundle);
-			}, null);
-
-		ServiceRegistration<FindHook> findReg = getBundleContext().registerService(FindHook.class, new FindHook() {
-
-			@Override
-			public void find(BundleContext context, String name, String filter, boolean allServices,
-				Collection<ServiceReference<?>> references) {
-				if (name == null || name.equals(type.getName()))
-					references.removeIf(r -> r.getBundle() != testbundle);
-			}
-		}, null);
-
-		return () -> {
-			eventReg.unregister();
-			findReg.unregister();
+		requireNonNull(type, "Service type cannot be null");
+		@SuppressWarnings("unchecked")
+		FindHook service = (context, name, filter, allServices, references) -> {
+			if (name == null || name.equals(type.getName()))
+				references.removeIf(r -> ((ServiceReference) r).getBundle() != testbundle);
 		};
+		ServiceRegistration findReg = getBundleContext().registerService(FindHook.class.getName(), service, null);
+		return findReg::unregister;
 	}
 
-	public boolean isOneOfType(ServiceReference<?> serviceReference, Class<?>... types) {
+	public boolean isOneOfType(ServiceReference serviceReference, Class<?>... types) {
+		requireNonNull(serviceReference, "Service reference cannot be null");
+		requireNonNull(types, "Service types cannot be null");
+
 		String[] objectClasses = (String[]) serviceReference.getProperty(Constants.OBJECTCLASS);
 		for (Class<?> type : types) {
 			String name = type.getName();
@@ -632,42 +645,37 @@ public class JUnitFramework implements AutoCloseable {
 	/**
 	 * Start the framework if not yet started
 	 */
-
 	public void start() {
 		try {
 			framework.start();
 			List<Bundle> toBeStarted = new ArrayList<>();
 			for (String path : builder.local.runbundles) {
 				File file = new File(path);
-				if (!file.isFile())
+				if (!file.isFile()) {
 					throw new IllegalArgumentException("-runbundle " + file + " does not exist or is not a file");
-
+				}
 				Bundle b = install(file);
 				if (!isFragment(b))
 					toBeStarted.add(b);
 			}
-
 			toBeStarted.forEach(this::start);
 
 			if (builder.testbundle)
 				testbundle();
 
 			toBeStarted.forEach(this::start);
-
 		} catch (BundleException e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
 	private boolean isFragment(Bundle b) {
-		return b.getHeaders()
-			.get(Constants.FRAGMENT_HOST) != null;
+		return b.getHeaders().get(Constants.FRAGMENT_HOST) != null;
 	}
 
 	/**
 	 * Stop the framework if not yet stopped
 	 */
-
 	public void stop() {
 		try {
 			framework.stop();
@@ -694,16 +702,32 @@ public class JUnitFramework implements AutoCloseable {
 			JarOutputStream jout = new JarOutputStream(bout, man);
 			jout.close();
 			ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
-			this.testbundle = framework.getBundleContext()
-				.installBundle(name, bin);
+			this.testbundle = framework.getBundleContext().installBundle(name, bin);
 			this.testbundle.start();
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
-	public <T> ServiceRegistration<T> register(Class<T> type, T instance) {
-		return getBundleContext().registerService(type, instance, null);
+	/**
+	 * Registers the specified service object with the specified properties
+	 * under the specified class name with the Framework.
+	 * 
+	 * @param type the type of service
+	 * @param instance the service instance
+	 * @return A {@code ServiceRegistration} object for use by the bundle
+	 *         registering the service to update the service's properties or to
+	 *         unregister the service
+	 * @throws IllegalArgumentException if any of the specified arguments is
+	 *             {@code null}
+	 */
+	public <T> ServiceRegistration register(Class<T> type, T instance) {
+		requireNonNull(type, "Service type cannot be null");
+		requireNonNull(instance, "Service instance cannot be null");
+
+		@SuppressWarnings("unchecked")
+		ServiceRegistration serviceReg = getBundleContext().registerService(type.getName(), instance, null);
+		return serviceReg;
 	}
 
 	public Framework getFramework() {

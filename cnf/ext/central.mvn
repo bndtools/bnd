@@ -37,12 +37,22 @@ commons-codec:commons-codec:1.10
 
 org.apache.felix:org.apache.felix.configadmin:1.2.4
 org.apache.felix:org.apache.felix.log:1.2.0
-org.apache.felix:org.apache.felix.framework:4.2.1
+
+# OSGi R4.2
+org.apache.felix:org.apache.felix.framework:3.2.2
+
+# OSGi R6
 org.apache.felix:org.apache.felix.framework:5.6.10
+
 org.apache.felix:org.apache.felix.gogo.command:1.0.2
 org.apache.felix:org.apache.felix.gogo.runtime:1.1.0
 org.apache.felix:org.apache.felix.gogo.shell:1.1.0
 org.apache.felix:org.apache.felix.resolver:2.0.0
+
+# DS 1.2 (OSGi 4.2)
+org.apache.felix:org.apache.felix.scr:1.6.2
+
+# DS 1.4 (OSGi R6)
 org.apache.felix:org.apache.felix.scr:2.1.12
 
 org.apache.geronimo.specs:geronimo-atinject_1.0_spec:1.1

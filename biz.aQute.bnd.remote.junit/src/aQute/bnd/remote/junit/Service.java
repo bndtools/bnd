@@ -21,10 +21,10 @@ public @interface Service {
 	/**
 	 * Target filter
 	 */
-	String target() default "";
+	String filter() default "";
 
 	/**
 	 * The service type
 	 */
-	Class<?> service() default Object.class;
+	Class<?> type() default Object.class;
 }

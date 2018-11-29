@@ -53,7 +53,7 @@ public class HelloTest {
 	
 	@Test
 	public void testActivator() throws Exception {
-		try (JUnitFramework framework = builder.runfw("org.apache.felix.framework")
+		try (JUnitFramework framework = builder.runfw("org.apache.felix.framework;version='[3,4)'")
 			.create()) {
 			Bundle hello = framework.bundle()
 				.bundleActivator(Hello.class)

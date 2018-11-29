@@ -1,5 +1,7 @@
 package aQute.bnd.remote.junit;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,8 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -31,12 +31,11 @@ import aQute.lib.io.IO;
  */
 public class JUnitFrameworkBuilder implements AutoCloseable {
 
-	final static ExecutorService	executor	= Executors.newCachedThreadPool();
-	final static File				projectDir	= IO.work;
-	final static RemoteWorkspace	workspace	= RemoteWorkspaceClientFactory.create(projectDir,
+	static final File				projectDir	= IO.work;
+	static final RemoteWorkspace	workspace	= RemoteWorkspaceClientFactory.create(projectDir,
 		new RemoteWorkspaceClient() {});
-	final static RunSpecification	projectTestSetup;
-	final static AtomicInteger		counter		= new AtomicInteger();
+	static final RunSpecification	projectTestSetup;
+	static final AtomicInteger		counter		= new AtomicInteger();
 
 	static {
 		projectTestSetup = workspace.analyzeTestSetup(IO.work.getAbsolutePath());
@@ -74,12 +73,14 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 	}
 
 	public JUnitFrameworkBuilder bndrun(File file) {
+		requireNonNull(file, "Bndrun file instance cannot be null");
 		RunSpecification setup = workspace.getRun(file.getAbsolutePath());
 		local.mergeWith(setup);
 		return this;
 	}
 
 	public JUnitFrameworkBuilder bndrun(String path) {
+		requireNonNull(path, "Bndrun file path cannot be null");
 		return bndrun(IO.getFile(projectDir, path));
 	}
 
@@ -93,30 +94,22 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 	}
 
 	public JUnitFrameworkBuilder bundles(String specification) {
+		requireNonNull(specification, "Bundle specification cannot be null");
 		List<String> config = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		config.forEach(local.runbundles::add);
 		return this;
 	}
 
 	public JUnitFrameworkBuilder runpath(String specification) {
+		requireNonNull(specification, "Runpath specification cannot be null");
 		List<String> config = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		config.forEach(local.runpath::add);
 		return this;
 	}
 
 	public JUnitFrameworkBuilder bundles(File... files) {
-		Stream.of(files)
-			.map(File::getAbsolutePath)
-			.forEach(local.runpath::add);
-
-		return this;
-	}
-
-	public JUnitFrameworkBuilder runpath(File... files) {
-		Stream.of(files)
-			.map(File::getAbsolutePath)
-			.forEach(local.runpath::add);
-
+		requireNonNull(files, "'files' cannot be null");
+		Stream.of(files).map(File::getAbsolutePath).forEach(local.runpath::add);
 		return this;
 	}
 
@@ -131,18 +124,22 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 	}
 
 	public JUnitFrameworkBuilder runfw(File file) {
+		requireNonNull(file, "Framework file instance cannot be null");
 		local.runfw.clear();
 		local.runfw.add(file.getAbsolutePath());
-
 		return this;
 	}
 
 	public JUnitFrameworkBuilder runfw(String specification) {
+		requireNonNull(specification, "Firmware specification cannot be null");
 		local.runfw = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		return this;
 	}
 
 	public JUnitFrameworkBuilder set(String key, String value) {
+		requireNonNull(key, "Property key cannot be null");
+		requireNonNull(value, "Property value cannot be null");
+
 		projectTestSetup.properties.put(key, value);
 		return this;
 	}
@@ -153,9 +150,9 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 			IO.delete(storage);
 
 			String extra = toString(local.extraSystemPackages);
-			System.out.println(extra);
 			local.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extra);
-			local.properties.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, toString(local.extraSystemCapabilities));
+			// the following property does work in higher versions of OSGi
+			local.properties.put("org.osgi.framework.system.capabilities.extra", toString(local.extraSystemCapabilities));
 			local.properties.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
 			local.properties.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 			local.properties.put(Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_FRAMEWORK);
@@ -167,33 +164,11 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 			if (start) {
 				jUnitFramework.start();
 			}
-
 			return jUnitFramework;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
-
-	// private Map<String, Map<String, String>> addUses(Map<String, Map<String,
-	// String>> extraSystemPackages) {
-	// String uses = extraSystemPackages.keySet()
-	// .stream()
-	// .map(s -> {
-	// while (s.endsWith("~"))
-	// s = s.substring(0, s.length() - 1);
-	// return s;
-	// })
-	// .filter(s -> !s.startsWith("java"))
-	// .distinct()
-	// .collect(Collectors.joining(","));
-	//
-	// extraSystemPackages.entrySet()
-	// .forEach(e -> {
-	// e.getValue()
-	// .put("uses:", uses);
-	// });
-	// return extraSystemPackages;
-	// }
 
 	private String toString(Map<String, Map<String, String>> map) {
 		StringBuilder sb = new StringBuilder();
@@ -224,7 +199,6 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 				});
 			del = ", ";
 		}
-		System.out.println(sb.toString());
 		return sb.toString();
 	}
 
@@ -245,7 +219,6 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 			} else {
 				List<String> runpath = new ArrayList<>(local.runfw);
 				runpath.addAll(local.runpath);
-				System.out.println("-runpath " + runpath);
 				URL[] urls = runpath.stream()
 					.map(File::new)
 					.map(this::toURL)
@@ -255,9 +228,6 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 			}
 
 			FrameworkFactory factory = getFactory(loader);
-			if (factory == null) {
-				throw new IllegalArgumentException("Could not find an OSGi Framework on the runpath " + local.runpath);
-			}
 			return factory.newFramework(local.properties);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
@@ -269,9 +239,7 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 		FrameworkFactory result = null;
 
 		for (FrameworkFactory ff : sl) {
-
 			if (result != null) {
-
 				if (ff.getClass()
 					.getClassLoader() == loader)
 					return ff;
@@ -293,8 +261,7 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 
 	private URL toURL(File file) {
 		try {
-			return file.toURI()
-				.toURL();
+			return file.toURI().toURL();
 		} catch (MalformedURLException e) {
 			throw Exceptions.duck(e);
 		}

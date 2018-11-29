@@ -97,7 +97,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testInjectionInherited() throws Exception {
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework;version='[3,4)'")
 			.create()) {
 
 			Foo foo = fw.newInstance(Foo.class);
@@ -109,7 +109,7 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testBundleActivatorCalled() throws Exception {
 
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework;version='[3,4)'")
 			.create()) {
 
 			Bundle x = fw.bundle()
@@ -147,7 +147,7 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testConfiguration() throws Exception {
 
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework;version='[3,4)'")
 			.create()
 			.inject(this)) {
 
@@ -166,10 +166,9 @@ public class JUnitFrameworkTest {
 	/**
 	 * Hide a service
 	 */
-
 	@Test
 	public void testHiding() throws Exception {
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework;version='[3,4)'")
 			.nostart()
 			.create()
 			.inject(this)) {
@@ -183,7 +182,7 @@ public class JUnitFrameworkTest {
 
 			fw.getFramework()
 			.getBundleContext()
-			.registerService(String.class, "Hello", null);
+			.registerService(String.class.getName(), "Hello", null);
 
 			assertThat(fw.getServices(String.class)).isEmpty();
 			hide.close();
@@ -193,9 +192,8 @@ public class JUnitFrameworkTest {
 	}
 
 	/**
-	 * Test a built in commponent
+	 * Test a built-in component
 	 */
-
 	@Component(immediate = true, service = Comp.class)
 	public static class Comp {
 
@@ -215,19 +213,18 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testComponent() throws Exception {
 		try (JUnitFramework fw = builder
-			.bundles(
-				"org.apache.felix.log, org.apache.felix.scr")
-			.runfw("org.apache.felix.framework")
+			.bundles("org.apache.felix.scr;version='[1.6,2.0)'")
+			.runfw("org.apache.felix.framework;version='[3,4)'")
 			.create()) {
 
-			Bundle start = fw.bundle()
+			Bundle bundle = fw.bundle()
 				.addResource(Comp.class)
 				.start();
 
 			assertThat(semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)).isTrue();
 			assertThat(semaphore.tryAcquire(1, 200, TimeUnit.MILLISECONDS)).isFalse();
 
-			start.stop();
+			bundle.stop();
 
 			assertThat(semaphore.tryAcquire(1, 1, TimeUnit.SECONDS)).isTrue();
 

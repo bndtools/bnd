@@ -1,5 +1,7 @@
 package aQute.bnd.remote.junit;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -22,6 +24,7 @@ public class BundleBuilder implements BundleSpecBuilder {
 	final List<Closeable>		closeables	= new ArrayList<>();
 
 	BundleBuilder(JUnitFramework ws) {
+		requireNonNull(ws, "'ws' cannot be null");
 		this.ws = ws;
 		bundleSymbolicName("test-" + JUnitFrameworkBuilder.counter.incrementAndGet());
 	}
@@ -36,39 +39,39 @@ public class BundleBuilder implements BundleSpecBuilder {
 
 	Entry<String, Map<String, String>> add(String s, Entry<String, Map<String, String>> entry, String key,
 			String value) {
-		if (entry == null)
-			throw new IllegalArgumentException("Requires " + s + " to be set before adding " + key + "=" + value);
+		requireNonNull(s, "'s' cannot be null");
+		requireNonNull(entry, "Requires " + s + " to be set before adding " + key + "=" + value);
+		requireNonNull(key, "Key cannot be null");
+		requireNonNull(value, "Value cannot be null");
 
-		String put = entry.getValue()
-				.put(key, value);
-		if (put != null)
+		String put = entry.getValue().put(key, value);
+		if (put != null) {
 			throw new IllegalArgumentException(
-					"Value already set " + s + " : " + key + "=" + value + " old value was: " + put);
+				"Value already set " + s + " : " + key + "=" + value + " old value was: " + put);
+		}
 		return entry;
 	}
 
 	void add(String header, Map<String, Map<String, String>> s, String outerkey,
 			String innerKey, String value) {
-
-		Map<String, String> map = s.get(outerkey);
-		if (map == null) {
-			map = new LinkedHashMap<>();
-			s.put(outerkey, map);
-		}
+		Map<String, String> map = s.computeIfAbsent(outerkey, k -> new LinkedHashMap<>());
+		s.put(outerkey, map);
 		map.put(innerKey, value);
 	}
 
 	String join(String... packageNames) {
-		return Stream.of(packageNames)
-				.collect(Collectors.joining(","));
+		requireNonNull(packageNames, "'packageNames' cannot be null");
+		return Stream.of(packageNames).collect(Collectors.joining(","));
 	}
 
 	String prepare(String name, Map<String, Map<String, String>> domain) {
+		StringBuilder builder = new StringBuilder(name);
 		while (domain.containsKey(name)) {
-			name += "~";
+			builder.append("~");
 		}
-		domain.put(name, new LinkedHashMap<>());
-		return name;
+		String val = builder.toString();
+		domain.put(val, new LinkedHashMap<>());
+		return val;
 	}
 
 	void addClose(Closeable closeable) {
@@ -76,7 +79,7 @@ public class BundleBuilder implements BundleSpecBuilder {
 	}
 
 	void close() {
-		closeables.forEach( IO::close);
+		closeables.forEach(IO::close);
 	}
 
 }

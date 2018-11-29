@@ -1,2 +1,2 @@
 -runsystempackages: blabar
--runfw: org.apache.felix.framework
+-runfw: org.apache.felix.framework;version='[3,4)'
