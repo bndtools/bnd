@@ -10,14 +10,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public interface Constants {
+	String								AUTOMATIC_MODULE_NAME						= "Automatic-Module-Name";
+
 	/*
 	 * Defined in OSGi
-	 */
-	/**
-	 * <pre>
-	 * Bundle-ActivationPolicy ::= policy ( ’;’ directive )*
-	 * policy ::= ’lazy’
-	 * </pre>
 	 */
 	String								BND_ADDXMLTOTEST							= "Bnd-AddXMLToTest";
 	String								BUNDLE_ACTIVATIONPOLICY						= "Bundle-ActivationPolicy";
@@ -75,7 +71,7 @@ public interface Constants {
 		PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE, IMPORT_SERVICE, EXPORT_SERVICE,
 		CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY, BUNDLE_ICON,
 		REPOSITORIES, META_PERSISTENCE, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS, BUNDLE_SCM, LAUNCHER_PLUGIN,
-		TESTER_PLUGIN
+		TESTER_PLUGIN, AUTOMATIC_MODULE_NAME
 	};
 
 	String								OSGI_SYNTAX_HEADERS[]						= {
@@ -475,6 +471,11 @@ public interface Constants {
 	 * processor for tstamp
 	 */
 	String								TSTAMP										= "_@tstamp";
+
+	/*
+	 * Module Section
+	 */
+	String								MODULE_INFO_CLASS							= "module-info.class";
 
 	/*
 	 * Deprecated Section
