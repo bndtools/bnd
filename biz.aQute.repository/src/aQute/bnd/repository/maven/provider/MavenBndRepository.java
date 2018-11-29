@@ -230,21 +230,28 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Resource pom = null;
 
 		if (instructions.pom.path != null) {
+			System.out.println("Looking for pom in path");
 			if (instructions.pom.path.equals("JAR")) {
+				System.out.println("jar");
 				pom = getPomResource(binary);
 			} else {
+				System.out.println("file");
 				pom = createPomFromFile(options.context.getFile(instructions.pom.path));
 			}
 		} else {
 
+			System.out.println("ignore_metainf_maven");
 			if (!configuration.ignore_metainf_maven()) {
+				System.out.println("createPomFromFirstMavenPropertiesInJar");
 				pom = createPomFromFirstMavenPropertiesInJar(binary, options.context);
 			}
 			if (pom == null) {
 				logger.info("No properties in binary or invalid GAV");
+				System.out.println("createPomFromContextAndManifest");
 				pom = createPomFromContextAndManifest(binary.getManifest(), options.context);
 			}
 			if (pom == null) {
+				System.out.println("createPomFromFirstMavenPropertiesInJar");
 				pom = createPomFromFirstMavenPropertiesInJar(binary, options.context);
 			}
 		}
