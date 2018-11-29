@@ -5,15 +5,35 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.Semaphore;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleException;
+
+import aQute.bnd.build.Workspace;
+import aQute.lib.io.IO;
 
 public class HelloTest {
-	JUnitFrameworkBuilder	builder		= new JUnitFrameworkBuilder();
-	JUnitFramework			framework = builder.runfw("org.apache.felix.framework").create();
+	static Workspace		ws;
+	JUnitFrameworkBuilder	builder;
+
+	@BeforeClass
+	public static void beforeClass() throws Exception {
+		ws = Workspace.findWorkspace(IO.work);
+	}
+
+	@Before
+	public void before() throws Exception {
+		builder = new JUnitFrameworkBuilder();
+	}
+
+	@After
+	public void after() throws Exception {
+		builder.close();
+	}
 
 	public static class Hello implements BundleActivator {
 		static Semaphore semaphore = new Semaphore(0);
@@ -32,17 +52,19 @@ public class HelloTest {
 	}
 	
 	@Test
-	public void testActivator() throws BundleException {
-		Bundle hello = framework.bundle()
-			.bundleActivator(Hello.class)
-			.start();
+	public void testActivator() throws Exception {
+		try (JUnitFramework framework = builder.runfw("org.apache.felix.framework")
+			.create()) {
+			Bundle hello = framework.bundle()
+				.bundleActivator(Hello.class)
+				.start();
 
-		assertTrue(Hello.semaphore.tryAcquire());
-		assertFalse(Hello.semaphore.tryAcquire());
+			assertTrue(Hello.semaphore.tryAcquire());
+			assertFalse(Hello.semaphore.tryAcquire());
 
-		hello.stop();
-		assertTrue(Hello.semaphore.tryAcquire());
-
+			hello.stop();
+			assertTrue(Hello.semaphore.tryAcquire());
+		}
 	}
 	
 }
