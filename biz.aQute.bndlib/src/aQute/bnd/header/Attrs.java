@@ -461,6 +461,9 @@ public class Attrs implements Map<String, String> {
 	}
 
 	public static Type toType(String type) {
+		if (type == null) {
+			return null;
+		}
 		for (Type t : Type.values()) {
 			if (t.toString.equals(type))
 				return t;
