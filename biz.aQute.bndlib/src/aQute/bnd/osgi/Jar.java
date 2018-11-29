@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -46,9 +47,13 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import aQute.bnd.classfile.ClassFile;
+import aQute.bnd.classfile.ModuleAttribute;
 import aQute.bnd.version.Version;
 import aQute.lib.base64.Base64;
 import aQute.lib.collections.Iterables;
+import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
@@ -86,7 +91,8 @@ public class Jar implements Closeable {
 	public static final Object[]								EMPTY_ARRAY				= new Jar[0];
 	private final NavigableMap<String, Resource>				resources				= new TreeMap<>();
 	private final NavigableMap<String, Map<String, Resource>>	directories				= new TreeMap<>();
-	private Manifest											manifest;
+	private Optional<Manifest>									manifest;
+	private Optional<ModuleAttribute>							moduleAttribute;
 	private boolean												manifestFirst;
 	private String												manifestName			= DEFAULT_MANIFEST_NAME;
 	private String												name;
@@ -262,6 +268,8 @@ public class Jar implements Closeable {
 			manifest = null;
 			if (resources.isEmpty())
 				manifestFirst = true;
+		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
+			moduleAttribute = null;
 		}
 		Map<String, Resource> s = directories.computeIfAbsent(getDirectory(path), dir -> {
 			// make ancestor directories
@@ -326,16 +334,65 @@ public class Jar implements Closeable {
 	}
 
 	public Manifest getManifest() throws Exception {
+		return manifest().orElse(null);
+	}
+
+	Optional<Manifest> manifest() {
 		check();
-		if (manifest == null) {
+		if (manifest != null) {
+			return manifest;
+		}
+		try {
 			Resource manifestResource = getResource(manifestName);
-			if (manifestResource != null) {
-				try (InputStream in = manifestResource.openInputStream()) {
-					manifest = new Manifest(in);
-				}
+			if (manifestResource == null) {
+				return manifest = Optional.empty();
+			}
+			try (InputStream in = manifestResource.openInputStream()) {
+				return manifest = Optional.of(new Manifest(in));
+			}
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	Optional<ModuleAttribute> moduleAttribute() throws Exception {
+		check();
+		if (moduleAttribute != null) {
+			return moduleAttribute;
+		}
+		Resource module_info_resource = getResource(Constants.MODULE_INFO_CLASS);
+		if (module_info_resource == null) {
+			return moduleAttribute = Optional.empty();
+		}
+		ClassFile module_info;
+		ByteBuffer bb = module_info_resource.buffer();
+		if (bb != null) {
+			module_info = ClassFile.parseClassFile(ByteBufferDataInput.wrap(bb));
+		} else {
+			try (DataInputStream din = new DataInputStream(module_info_resource.openInputStream())) {
+				module_info = ClassFile.parseClassFile(din);
 			}
 		}
-		return manifest;
+		return moduleAttribute = Arrays.stream(module_info.attributes)
+			.filter(ModuleAttribute.class::isInstance)
+			.map(ModuleAttribute.class::cast)
+			.findFirst();
+	}
+
+	public String getModuleName() throws Exception {
+		return moduleAttribute().map(a -> a.module_name)
+			.orElseGet(this::automaticModuleName);
+	}
+
+	String automaticModuleName() {
+		return manifest().map(m -> m.getMainAttributes()
+			.getValue(Constants.AUTOMATIC_MODULE_NAME))
+			.orElse(null);
+	}
+
+	public String getModuleVersion() throws Exception {
+		return moduleAttribute().map(a -> a.module_version)
+			.orElse(null);
 	}
 
 	public boolean exists(String path) {
@@ -346,7 +403,7 @@ public class Jar implements Closeable {
 	public void setManifest(Manifest manifest) {
 		check();
 		manifestFirst = true;
-		this.manifest = manifest;
+		this.manifest = Optional.ofNullable(manifest);
 	}
 
 	public void setManifest(File file) throws IOException {
@@ -990,21 +1047,13 @@ public class Jar implements Closeable {
 	 *             be retrieved.
 	 */
 	public String getBsn() throws Exception {
-		check();
-		Manifest m = getManifest();
-		if (m == null)
-			return null;
-
-		String s = m.getMainAttributes()
-			.getValue(Constants.BUNDLE_SYMBOLICNAME);
-		if (s == null)
-			return null;
-
-		Matcher matcher = BSN.matcher(s);
-		if (matcher.matches()) {
-			return matcher.group(1);
-		}
-		return null;
+		return manifest().map(m -> m.getMainAttributes()
+			.getValue(Constants.BUNDLE_SYMBOLICNAME))
+			.map(s -> {
+				Matcher matcher = BSN.matcher(s);
+				return matcher.matches() ? matcher.group(1) : null;
+			})
+			.orElse(null);
 	}
 
 	/**
@@ -1017,17 +1066,10 @@ public class Jar implements Closeable {
 	 *             be retrieved.
 	 */
 	public String getVersion() throws Exception {
-		check();
-		Manifest m = getManifest();
-		if (m == null)
-			return null;
-
-		String s = m.getMainAttributes()
-			.getValue(Constants.BUNDLE_VERSION);
-		if (s == null)
-			return null;
-
-		return s.trim();
+		return manifest().map(m -> m.getMainAttributes()
+			.getValue(Constants.BUNDLE_VERSION))
+			.map(String::trim)
+			.orElse(null);
 	}
 
 	/**
@@ -1046,9 +1088,9 @@ public class Jar implements Closeable {
 	 * @throws Exception
 	 */
 	public void ensureManifest() throws Exception {
-		if (getManifest() != null)
-			return;
-		manifest = new Manifest();
+		if (!manifest().isPresent()) {
+			manifest = Optional.of(new Manifest());
+		}
 	}
 
 	/**
