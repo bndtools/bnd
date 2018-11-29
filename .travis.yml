@@ -11,7 +11,7 @@ matrix:
     - name: "OpenJDK 10"
       before_install:
         - "curl -O -L --retry 3  https://github.com/sormuras/bach/raw/master/install-jdk.sh"
-        - "source install-jdk.sh --url \"https://api.adoptopenjdk.net/v2/binary/releases/openjdk10?openjdk_impl=hotspot&os=linux&arch=x64&release=latest&type=jdk\""
+        - "source install-jdk.sh --url \"https://ci.adoptopenjdk.net/job/build-scripts/job/jobs/job/jdk10u/job/jdk10u-linux-x64-hotspot/lastSuccessfulBuild/artifact/workspace/target/OpenJDK10U-jdk_x64_linux_hotspot_10.0.2_13.tar.gz\""
     - name: "Local rebuild"
       jdk: oraclejdk8
       script: 
