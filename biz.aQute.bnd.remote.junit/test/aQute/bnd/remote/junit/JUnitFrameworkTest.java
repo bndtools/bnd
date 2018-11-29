@@ -4,18 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -27,17 +26,24 @@ import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
 import aQute.lib.io.IO;
 
-@SuppressWarnings("deprecation")
 public class JUnitFrameworkTest {
-
-	static Workspace ws;
+	static Workspace		ws;
+	JUnitFrameworkBuilder	builder;
 
 	@BeforeClass
-	public static void before() throws Exception {
+	public static void beforeClass() throws Exception {
 		ws = Workspace.findWorkspace(IO.work);
 	}
 
-	JUnitFrameworkBuilder	builder	= new JUnitFrameworkBuilder();
+	@Before
+	public void before() throws Exception {
+		builder = new JUnitFrameworkBuilder();
+	}
+
+	@After
+	public void after() throws Exception {
+		builder.close();
+	}
 
 	@Test
 	public void testConnection() throws Exception {
@@ -84,6 +90,7 @@ public class JUnitFrameworkTest {
 	}
 
 	static public class Foo extends Foo1 {
+		@SuppressWarnings("deprecation")
 		@Service
 		org.osgi.service.packageadmin.PackageAdmin packageAdmin;
 	}
@@ -161,26 +168,28 @@ public class JUnitFrameworkTest {
 	 */
 
 	@Test
-	public void testHiding() throws IOException, InvalidSyntaxException {
-		JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+	public void testHiding() throws Exception {
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
 			.nostart()
 			.create()
-			.inject(this);
+			.inject(this)) {
+			Closeable hide = fw.hide(String.class);
+			fw.start();
+			assertThat(fw.getServices(String.class)).isEmpty();
 
-		Closeable hide = fw.hide(String.class);
-		fw.start();
-		assertThat(fw.getServices(String.class)).isEmpty();
+			// register via the framework since we do not hide services
+			// registered
+			// via the testbundle
 
-		// register via the framework since we do not hide services registered
-		// via the testbundle
-
-		fw.getFramework()
+			fw.getFramework()
 			.getBundleContext()
 			.registerService(String.class, "Hello", null);
 
-		assertThat(fw.getServices(String.class)).isEmpty();
-		hide.close();
-		assertThat(fw.getServices(String.class)).containsOnly("Hello");
+			assertThat(fw.getServices(String.class)).isEmpty();
+			hide.close();
+			assertThat(fw.getServices(String.class)).containsOnly("Hello");
+		}
+
 	}
 
 	/**
@@ -203,7 +212,6 @@ public class JUnitFrameworkTest {
 		}
 	}
 
-	@Ignore
 	@Test
 	public void testComponent() throws Exception {
 		try (JUnitFramework fw = builder
