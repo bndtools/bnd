@@ -14,13 +14,6 @@ class TestResolveTask extends Specification {
 
     File buildDir = new File('generated')
     File testResources = new File(buildDir, 'testresources')
-    List<File> pluginClasspath
-
-    def setup() {
-      File plugin = new File(buildDir, 'biz.aQute.bnd.gradle.jar').getCanonicalFile()
-      assert plugin.isFile()
-      pluginClasspath = Collections.singletonList(plugin)
-    }
 
     def "Simple Bnd Resolve Task Generate -runbundles Test"() {
         given:
@@ -44,7 +37,7 @@ class TestResolveTask extends Specification {
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
-            .withPluginClasspath(pluginClasspath)
+            .withPluginClasspath()
             .forwardOutput()
             .build()
 
@@ -77,7 +70,7 @@ class TestResolveTask extends Specification {
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
-            .withPluginClasspath(pluginClasspath)
+            .withPluginClasspath()
             .forwardOutput()
             .build()
 
@@ -110,7 +103,7 @@ class TestResolveTask extends Specification {
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
-            .withPluginClasspath(pluginClasspath)
+            .withPluginClasspath()
             .forwardOutput()
             .buildAndFail()
 
@@ -144,7 +137,7 @@ class TestResolveTask extends Specification {
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
             .withArguments('--stacktrace', '--debug', taskname)
-            .withPluginClasspath(pluginClasspath)
+            .withPluginClasspath()
             .forwardOutput()
             .buildAndFail()
 

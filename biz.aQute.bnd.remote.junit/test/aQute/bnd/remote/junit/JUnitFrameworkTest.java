@@ -4,18 +4,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.Closeable;
-import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -28,14 +27,22 @@ import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
 import aQute.lib.io.IO;
 
 public class JUnitFrameworkTest {
-	static Workspace		workspace;
-
-	JUnitFrameworkBuilder	builder	= new JUnitFrameworkBuilder();
+	static Workspace		ws;
+	JUnitFrameworkBuilder	builder;
 
 	@BeforeClass
-	public static void beforClass() throws Exception {
-		Workspace.remoteWorkspaces = true;
-		workspace = Workspace.getWorkspace(IO.work.getParentFile());
+	public static void beforeClass() throws Exception {
+		ws = Workspace.findWorkspace(IO.work);
+	}
+
+	@Before
+	public void before() throws Exception {
+		builder = new JUnitFrameworkBuilder();
+	}
+
+	@After
+	public void after() throws Exception {
+		builder.close();
 	}
 
 	@Test
@@ -72,16 +79,39 @@ public class JUnitFrameworkTest {
 	}
 
 	@Service
-	Bundle[] bundles;
+	Bundle[]		bundles;
+
+	@Service
+	BundleContext	context;
+
+	static public class Foo1 {
+		@Service
+		Bundle[] bundles;
+	}
+
+	static public class Foo extends Foo1 {
+		@SuppressWarnings("deprecation")
+		@Service
+		org.osgi.service.packageadmin.PackageAdmin packageAdmin;
+	}
+
+	@Test
+	public void testInjectionInherited() throws Exception {
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+			.create()) {
+
+			Foo foo = fw.newInstance(Foo.class);
+			assertThat(foo.bundles).isNotNull();
+			assertThat(foo.packageAdmin).isNotNull();
+		}
+	}
 
 	@Test
 	public void testBundleActivatorCalled() throws Exception {
 
 		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
-			.create()
-			.inject(this)) {
+			.create()) {
 
-			System.out.println(Arrays.toString(bundles));
 			Bundle x = fw.bundle()
 				.bundleActivator(MyActivator.class)
 				.start();
@@ -138,26 +168,28 @@ public class JUnitFrameworkTest {
 	 */
 
 	@Test
-	public void testHiding() throws IOException, InvalidSyntaxException {
-		JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+	public void testHiding() throws Exception {
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
 			.nostart()
 			.create()
-			.inject(this);
+			.inject(this)) {
+			Closeable hide = fw.hide(String.class);
+			fw.start();
+			assertThat(fw.getServices(String.class)).isEmpty();
 
-		Closeable hide = fw.hide(String.class);
-		fw.start();
-		assertThat(fw.getServices(String.class)).isEmpty();
+			// register via the framework since we do not hide services
+			// registered
+			// via the testbundle
 
-		// register via the framework since we do not hide services registered
-		// via the testbundle
-
-		fw.getFramework()
+			fw.getFramework()
 			.getBundleContext()
 			.registerService(String.class, "Hello", null);
 
-		assertThat(fw.getServices(String.class)).isEmpty();
-		hide.close();
-		assertThat(fw.getServices(String.class)).containsOnly("Hello");
+			assertThat(fw.getServices(String.class)).isEmpty();
+			hide.close();
+			assertThat(fw.getServices(String.class)).containsOnly("Hello");
+		}
+
 	}
 
 	/**
@@ -192,7 +224,7 @@ public class JUnitFrameworkTest {
 				.addResource(Comp.class)
 				.start();
 
-			assertThat(semaphore.tryAcquire(1, 1, TimeUnit.SECONDS)).isTrue();
+			assertThat(semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)).isTrue();
 			assertThat(semaphore.tryAcquire(1, 200, TimeUnit.MILLISECONDS)).isFalse();
 
 			start.stop();

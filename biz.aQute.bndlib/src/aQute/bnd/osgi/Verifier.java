@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -673,7 +674,9 @@ public class Verifier extends Processor {
 		verifyDirectives(Constants.IMPORT_PACKAGE, "resolution:", PACKAGEPATTERN, "package");
 		verifyDirectives(Constants.REQUIRE_BUNDLE, "visibility:|resolution:", SYMBOLICNAME, "bsn");
 		verifyDirectives(Constants.FRAGMENT_HOST, "extension:", SYMBOLICNAME, "bsn");
-		verifyDirectives(Constants.PROVIDE_CAPABILITY, "effective:|uses:", null, null);
+		verifyDirectives(Constants.PROVIDE_CAPABILITY,
+			namespace -> "osgi.serviceloader".equals(namespace) ? "effective:|uses:|register:" : "effective:|uses:",
+			null, null);
 		verifyDirectives(Constants.REQUIRE_CAPABILITY, "effective:|resolution:|filter:|cardinality:", null, null);
 		verifyDirectives(Constants.BUNDLE_SYMBOLICNAME, "singleton:|fragment-attachment:|mandatory:", SYMBOLICNAME,
 			"bsn");
@@ -1058,17 +1061,34 @@ public class Verifier extends Processor {
 
 	/**
 	 * Verify if the header does not contain any other directives
-	 * 
+	 *
 	 * @param header
 	 * @param directives
+	 * @param namePattern
+	 * @param type
 	 * @throws Exception
 	 */
 	private void verifyDirectives(String header, String directives, Pattern namePattern, String type) throws Exception {
-		Pattern pattern = Pattern.compile(directives);
+		verifyDirectives(header, namespace -> directives, namePattern, type);
+	}
+
+	/**
+	 * Verify if the header does not contain any other directives
+	 *
+	 * @param header
+	 * @param directives
+	 * @param namePattern
+	 * @param type
+	 * @throws Exception
+	 */
+	private void verifyDirectives(String header, Function<String, String> directives, Pattern namePattern, String type)
+		throws Exception {
 		Parameters map = parseHeader(manifest.getMainAttributes()
 			.getValue(header));
 		for (Entry<String, Attrs> entry : map.entrySet()) {
 			String pname = removeDuplicateMarker(entry.getKey());
+
+			Pattern pattern = Pattern.compile(directives.apply(pname));
 
 			if (namePattern != null) {
 				if (!namePattern.matcher(pname)
@@ -1100,7 +1120,8 @@ public class Verifier extends Processor {
 							continue;
 
 						warning("Unknown directive %s in %s, allowed directives are %s, and 'x-*'.", key, header,
-							directives.replace('|', ','));
+							pattern.toString()
+								.replace('|', ','));
 					}
 				}
 			}

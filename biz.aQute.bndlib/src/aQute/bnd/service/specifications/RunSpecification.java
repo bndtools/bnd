@@ -22,6 +22,9 @@ public class RunSpecification implements Cloneable {
 	public List<String>						errors					= new ArrayList<>();
 	public List<String>						runfw					= new ArrayList<>();
 
+	/**
+	 * Create a clone of this specification.
+	 */
 	public RunSpecification clone() {
 		try {
 			return (RunSpecification) super.clone();
@@ -30,6 +33,12 @@ public class RunSpecification implements Cloneable {
 		}
 	}
 
+	/**
+	 * Merge this specification with the given spec. The given spec will
+	 * override the values of this specification if set.
+	 * 
+	 * @param spec the spec that overrides the values in this spec.
+	 */
 	public void mergeWith(RunSpecification spec) {
 		if (spec.target != null)
 			target = spec.target;

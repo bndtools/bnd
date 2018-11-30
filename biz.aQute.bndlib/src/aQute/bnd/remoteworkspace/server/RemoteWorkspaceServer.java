@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -21,8 +20,8 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.About;
-import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
@@ -39,6 +38,14 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
 
+/**
+ * Implements an RPC interface to a workspace. When a workspace is created then
+ * it can create a Remote Workspace Server to allow remote access.
+ * <p>
+ * This server will register the ephemeral port it uses in the
+ * {@code cnf/cache/remotews} directory so that it can be found by clients. This
+ * registration is deleted when the process properly exits.
+ */
 public class RemoteWorkspaceServer implements Closeable {
 	final Logger	logger	= LoggerFactory.getLogger(RemoteWorkspaceServer.class);
 	final Closeable	server;
@@ -71,8 +78,8 @@ public class RemoteWorkspaceServer implements Closeable {
 			})
 			.build();
 
-		this.server = Link.server("remotews", RemoteWorkspaceClient.class, server, (l) -> workspaceLocker,
-			true, Processor.getExecutor());
+		this.server = Link.server("remotews", RemoteWorkspaceClient.class, server, (l) -> workspaceLocker, true,
+			Processor.getExecutor());
 
 		File remotews = RemoteWorkspaceClientFactory.getPortDirectory(workspace.getBase(), workspace.getBase());
 		remotews.mkdirs();
@@ -86,6 +93,11 @@ public class RemoteWorkspaceServer implements Closeable {
 		remotewsPort.deleteOnExit();
 	}
 
+	/**
+	 * Close the server. This generally happens when the corresponding workspace
+	 * is closed. It will release the ephemeral port and delete the registration
+	 * file.
+	 */
 	@Override
 	public void close() throws IOException {
 		logger.info("Closing remote workspace server {}", remotewsPort);
@@ -93,6 +105,9 @@ public class RemoteWorkspaceServer implements Closeable {
 		server.close();
 	}
 
+	/**
+	 * Holds the implementations of the {@link RemoteWorkspace}
+	 */
 	class Instance implements RemoteWorkspace {
 		@Override
 		public String getBndVersion() {
@@ -136,9 +151,14 @@ public class RemoteWorkspaceServer implements Closeable {
 		public RunSpecification analyzeTestSetup(String projectDir) {
 			try {
 				Project project = getProject(projectDir);
-				try (Analyzer a = new Analyzer()) {
+				RunSpecification r = project.getSpecification();
+
+				try (Builder a = new Builder()) {
 					a.setJar(project.getTestOutput());
-					RunSpecification r = project.getSpecification();
+					a.setConditionalPackage("!java.*,*");
+					a.set(Constants.EXPORT_CONTENTS, "*");
+
+					a.addClasspath(project.getOutput());
 
 					for (Container c : project.getTestpath()) {
 						if (c.getError() != null)
@@ -154,21 +174,12 @@ public class RemoteWorkspaceServer implements Closeable {
 							a.addClasspath(c.getFile());
 					}
 
-					a.calcManifest();
+					a.build();
 					r.errors.addAll(a.getErrors());
 
-					Parameters extraPackages = new Parameters();
+					String clauses = Processor.printClauses(a.getExports());
 
-					for (Entry<PackageRef, Attrs> e : a.getImports()
-						.entrySet()) {
-
-						doPackage(extraPackages, e.getKey(), e.getValue());
-					}
-
-					for (Entry<PackageRef, Attrs> e : a.getContained()
-						.entrySet()) {
-						doPackage(extraPackages, e.getKey(), e.getValue());
-					}
+					Parameters extraPackages = new Parameters(clauses);
 
 					r.extraSystemPackages.putAll(extraPackages.toBasic());
 					return r;
@@ -191,8 +202,6 @@ public class RemoteWorkspaceServer implements Closeable {
 					Jar build = builder.from(spec)
 						.build();
 
-					build.getManifest()
-						.write(System.out);
 					if (!builder.isOk()) {
 						throw new IllegalStateException(builder.getErrors()
 							.stream()
@@ -204,7 +213,6 @@ public class RemoteWorkspaceServer implements Closeable {
 					return bout.toByteArray();
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
 				throw Exceptions.duck(e);
 			}
 		}

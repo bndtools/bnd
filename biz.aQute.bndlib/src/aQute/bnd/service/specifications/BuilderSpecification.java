@@ -9,6 +9,10 @@ import java.util.Map;
 /**
  * A specification of the Builder parameters without any special types. This
  * specification can be used to persist or for remote.
+ * <p>
+ * This class should not inherit DTO, however convenient this might be, since
+ * this creates unwanted dependencies on clients. These clients include test
+ * code that is severely handicapped by these kind of dependencies.
  */
 public class BuilderSpecification {
 	public boolean							inherit				= false;

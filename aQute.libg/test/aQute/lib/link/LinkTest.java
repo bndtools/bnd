@@ -1,5 +1,7 @@
 package aQute.lib.link;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,9 +9,10 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.TimeUnit;
 
 import junit.framework.TestCase;
 
@@ -17,14 +20,17 @@ public class LinkTest extends TestCase {
 	private ServerSocket	server;
 	private LocalImpl		localImpl;
 	private RemoteImpl		remoteImpl;
-	AtomicInteger			localClosed		= new AtomicInteger();
-	AtomicInteger			remoteClosed	= new AtomicInteger();
+	CountDownLatch			localClosed;
+	CountDownLatch			remoteClosed;
 	private Socket			localSocket;
 	private Socket			remoteSocket;
-	private ExecutorService	es				= Executors.newCachedThreadPool();
+	ExecutorService			es;
 
 	@Override
 	public void setUp() throws IOException {
+		es = Executors.newCachedThreadPool();
+		localClosed = new CountDownLatch(1);
+		remoteClosed = new CountDownLatch(1);
 		server = new ServerSocket(4567);
 		remoteSocket = new Socket(InetAddress.getByName(null), server.getLocalPort());
 		remoteSocket.setSoTimeout(500);
@@ -39,6 +45,7 @@ public class LinkTest extends TestCase {
 		server.close();
 		localSocket.close();
 		remoteSocket.close();
+		es.shutdown();
 	}
 
 	interface Remote {
@@ -70,7 +77,7 @@ public class LinkTest extends TestCase {
 		@Override
 		public void close() throws IOException {
 			System.out.println("local closed");
-			localClosed.incrementAndGet();
+			localClosed.countDown();
 		}
 
 		@Override
@@ -97,7 +104,7 @@ public class LinkTest extends TestCase {
 		@Override
 		public void close() throws IOException {
 			System.out.println("remote closed");
-			remoteClosed.incrementAndGet();
+			remoteClosed.countDown();
 		}
 
 		@Override
@@ -125,9 +132,8 @@ public class LinkTest extends TestCase {
 			.foo());
 		newer.link.close();
 
-		Thread.sleep(100);
-		assertEquals(1, remoteClosed.get());
-		assertEquals(1, localClosed.get());
+		assertThat(remoteClosed.await(1000, TimeUnit.MILLISECONDS)).isTrue();
+		assertThat(localClosed.await(1000, TimeUnit.MILLISECONDS)).isTrue();
 
 		newer.close();
 	}
@@ -151,12 +157,10 @@ public class LinkTest extends TestCase {
 	}
 
 	private void normalClose() throws InterruptedException {
-		Thread.sleep(100);
-
+		assertThat(remoteClosed.await(1000, TimeUnit.MILLISECONDS)).isTrue();
+		assertThat(localClosed.await(1000, TimeUnit.MILLISECONDS)).isTrue();
 		assertFalse(localImpl.link.isOpen());
 		assertFalse(remoteImpl.link.isOpen());
-		assertEquals(1, localClosed.get());
-		assertEquals(1, remoteClosed.get());
 	}
 
 	/**

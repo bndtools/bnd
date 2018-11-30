@@ -1,8 +1,8 @@
 package somepackage;
 
-import req.RequireAnnotaionOne;
+import req.RequireAnnotationOne;
 
-@RequireAnnotaionOne
+@RequireAnnotationOne
 public class SomeClass {
 
 	public SomeClass() {

@@ -6,39 +6,41 @@ matrix:
   include:
     - name: "Oracle JDK 8"
       jdk: oraclejdk8
+      env:
+        - secure: JuFTmYTsnmzZzWTvf/hNkRDkpQhLrtl8BRLBdxGR79pzGxmoq961pgaYO615DFJUBggmZm1VkLSao3sC8eWfanTng9Qm1r1CUVsHbLiBDrIR2kwUU7DFiPOEkqwuf9YDjlTl1D4bRKwOZXPVMzlbwfWNr5yj2iRS8PSRS/76f3k=
     - name: "OpenJDK 10"
       before_install:
-        - curl -O -L --retry 3  https://github.com/sormuras/bach/raw/master/install-jdk.sh
-        - source install-jdk.sh --url "https://api.adoptopenjdk.net/v2/binary/releases/openjdk10?openjdk_impl=hotspot&os=linux&arch=x64&release=latest&type=jdk"
+        - "curl -O -L --retry 3  https://github.com/sormuras/bach/raw/master/install-jdk.sh"
+        - "source install-jdk.sh --url \"https://cdn.azul.com/zulu/bin/zulu10.3+5-jdk10.0.2-linux_x64.tar.gz\""
     - name: "Local rebuild"
       jdk: oraclejdk8
       script: 
-        - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded
-        - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --rerun-tasks -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build
+        - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded"
+        - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --rerun-tasks -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build"
     - name: "Documentation"
       install:
-        - rvm --version
-        - rvm use 2.4 --install --binary --fuzzy
-        - ruby --version
-        - gem --version
-        - bundle --version
+        - "rvm --version"
+        - "rvm use 2.4 --install --binary --fuzzy"
+        - "ruby --version"
+        - "gem --version"
+        - "bundle --version"
       script: 
-        - cd docs
-        - ./build.sh
+        - "cd docs"
+        - "./build.sh"
 
 install:
-  - unset _JAVA_OPTIONS
-  - ./gradlew --no-daemon --version
-  - ./mvnw --version
+  - "unset _JAVA_OPTIONS"
+  - "./gradlew --no-daemon --version"
+  - "./mvnw --version"
 
 script:
-  - ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
+  - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy"
 
 before_cache:
-  - git status
-  - rm -rf maven/target/m2/biz/aQute/bnd/
-  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-  - rm -rf $HOME/.gradle/caches/*/plugin-resolution/
+  - "git status"
+  - "rm -rf maven/target/m2/biz/aQute/bnd/"
+  - "rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock"
+  - "rm -rf $HOME/.gradle/caches/*/plugin-resolution/"
 
 cache:
   directories:

@@ -18,7 +18,7 @@
 			</activation>
 			<repositories>
 				<repository>
-					<id>local.central</id>
+					<id>local</id>
 					<url>@localRepositoryUrl@</url>
 					<releases>
 						<checksumPolicy>ignore</checksumPolicy>
@@ -32,7 +32,7 @@
 			</repositories>
 			<pluginRepositories>
 				<pluginRepository>
-					<id>local.central</id>
+					<id>local</id>
 					<url>@localRepositoryUrl@</url>
 					<releases>
 						<checksumPolicy>ignore</checksumPolicy>

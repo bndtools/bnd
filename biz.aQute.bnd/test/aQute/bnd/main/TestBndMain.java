@@ -158,7 +158,7 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectFileStatus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
 		expectFileStatus(FileStatus.CREATED, "p3/bin/somepackage/SomeClass.class");
-		expectFileStatus(FileStatus.CREATED, "p4/bin/req/RequireAnnotaionOne.class");
+		expectFileStatus(FileStatus.CREATED, "p4/bin/req/RequireAnnotationOne.class");
 		expectFileStatus(FileStatus.CREATED, "p/generated/p.jar");
 		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
 		expectFileStatus(FileStatus.CREATED, "p3/generated/p3.jar");
@@ -176,7 +176,7 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectFileStatus(FileStatus.CREATED, "p2/bin/somepackage/SomeClass.class");
 		expectFileStatus(FileStatus.CREATED, "p3/bin/somepackage/SomeClass.class");
-		expectFileStatus(FileStatus.CREATED, "p4/bin/req/RequireAnnotaionOne.class");
+		expectFileStatus(FileStatus.CREATED, "p4/bin/req/RequireAnnotationOne.class");
 		expectFileStatus(FileStatus.UNMODIFIED_EXISTS, "p3/bin/somepackage/SomeOldClass.class");
 	}
 
@@ -188,7 +188,7 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
-		expectFileStatus(FileStatus.CREATED, "p4/bin/req/RequireAnnotaionOne.class");
+		expectFileStatus(FileStatus.CREATED, "p4/bin/req/RequireAnnotationOne.class");
 	}
 
 	@Test

@@ -86,6 +86,12 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Add a file as a bundle to the framework. This bundle will not be started.
+	 * 
+	 * @param f the file to install
+	 * @return the bundle object
+	 */
 	public Bundle bundle(File f) {
 		try {
 			return framework.getBundleContext()
@@ -95,14 +101,31 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
-	public List<Bundle> bundles(String specification) throws Exception {
-		return JUnitFrameworkBuilder.workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
-			.stream()
-			.map(File::new)
-			.map(this::bundle)
-			.collect(Collectors.toList());
+	/**
+	 * Install a number of bundles based on their bundle specification. A bundle
+	 * specification is the format used in for example -runbundles.
+	 * 
+	 * @param specification the bundle specifications
+	 * @return a list of bundles
+	 */
+	public List<Bundle> bundles(String specification) {
+		try {
+			return JUnitFrameworkBuilder.workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
+				.stream()
+				.map(File::new)
+				.map(this::bundle)
+				.collect(Collectors.toList());
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
 	}
 
+	/**
+	 * Install a number of bundles
+	 * 
+	 * @param runbundles the list of bundles
+	 * @return a list of bundle objects
+	 */
 	public List<Bundle> bundles(File... runbundles) {
 		if (runbundles == null || runbundles.length == 0)
 			return Collections.emptyList();
@@ -120,14 +143,25 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Start a bundle
+	 * 
+	 * @param b the bundle object
+	 */
 	public void start(Bundle b) {
 		try {
-			b.start();
+			if (!isFragment(b))
+				b.start();
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
+	/**
+	 * Start all bundles
+	 * 
+	 * @param bs a collection of bundles
+	 */
 	public void start(Collection<Bundle> bs) {
 		bs.forEach(this::start);
 	}
@@ -144,6 +178,14 @@ public class JUnitFramework implements AutoCloseable {
 		framework.waitForStop(10000);
 	}
 
+	/**
+	 * Get the Bundle Context. If a test bundle was installed then this is the
+	 * context of the test bundle otherwise it is the context of the framework.
+	 * To be able to proxy services it is necessary to have a test bundle
+	 * installed.
+	 * 
+	 * @return the bundle context of the test bundle or the framework
+	 */
 	public BundleContext getBundleContext() {
 		if (testbundle != null)
 			return testbundle.getBundleContext();
@@ -151,6 +193,14 @@ public class JUnitFramework implements AutoCloseable {
 		return framework.getBundleContext();
 	}
 
+	/**
+	 * Get a service registered under class1. If multiple services or none are
+	 * registered then this method will throw an exception when asserts are
+	 * enabled.
+	 * 
+	 * @param class1 the name of the service
+	 * @return a service
+	 */
 	public <T> T getService(Class<T> class1) {
 		try {
 			List<T> services = getServices(class1);
@@ -161,6 +211,12 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Get a list of services of a given name
+	 * 
+	 * @param class1 the service name
+	 * @return a list of services
+	 */
 	public <T> List<T> getServices(Class<T> class1) {
 		try {
 			Collection<ServiceReference<T>> refs = getBundleContext().getServiceReferences(class1, null);
@@ -176,6 +232,9 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Add the standard Gogo bundles
+	 */
 	public JUnitFramework gogo() {
 		try {
 			bundles("org.apache.felix.gogo.runtime,org.apache.felix.gogo.command,org.apache.felix.gogo.shell");
@@ -184,6 +243,12 @@ public class JUnitFramework implements AutoCloseable {
 			throw Exceptions.duck(e);
 		}
 	}
+
+	/**
+	 * Inject an object with services and other OSGi specific values.
+	 * 
+	 * @param object the object to inject
+	 */
 
 	public JUnitFramework inject(Object object) {
 		try {
@@ -197,13 +262,12 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
-	// public void reportComponents() {
-	// ComponentAnalyzer ca = new ComponentAnalyzer();
-	// inject(ca);
-	// ca.show()
-	// .go();
-	// }
-
+	/**
+	 * Install a bundle from a file
+	 * 
+	 * @param file the file to install
+	 * @return a bundle
+	 */
 	public Bundle install(File file) {
 		try {
 			return framework.getBundleContext()
@@ -213,10 +277,21 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Create a new synthetic bundle.
+	 * 
+	 * @return the bundle builder
+	 */
 	public BundleBuilder bundle() {
 		return new BundleBuilder(this);
 	}
 
+	/**
+	 * Create a new object and inject it.
+	 * 
+	 * @param type the type of object
+	 * @return a new object injected and all
+	 */
 	public <T> T newInstance(Class<T> type) {
 		try {
 			return injector.newInstance(type);
@@ -225,16 +300,18 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Show the information of how the framework is setup and is running
+	 */
 	public void report() throws InvalidSyntaxException {
 		reportBundles(System.out);
 		reportServices(System.out);
 		reportEvents(System.out);
 	}
 
-	public void reportSystemExports() {
-
-	}
-
+	/**
+	 * Show the installed bundles
+	 */
 	public void reportBundles(Appendable out) {
 		try (Formatter f = new Formatter(out)) {
 			Stream.of(framework.getBundleContext()
@@ -245,6 +322,9 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Show the registered service
+	 */
 	public void reportServices(Appendable out) throws InvalidSyntaxException {
 		try (Formatter f = new Formatter(out)) {
 			Stream.of(framework.getBundleContext()
@@ -256,12 +336,14 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
-	public void startAll(List<Bundle> bundles) throws BundleException {
-		for (Bundle b : bundles) {
-			b.start();
-		}
-	}
-
+	/**
+	 * Wait for a Service Reference to be registered
+	 * 
+	 * @param class1 the name of the service
+	 * @param timeoutInMs the time to wait
+	 * @return a service reference
+	 * @throws InterruptedException
+	 */
 	public <T> Optional<ServiceReference<T>> waitForServiceReference(Class<T> class1, long timeoutInMs)
 		throws InterruptedException {
 		long deadline = System.currentTimeMillis() + timeoutInMs;
@@ -276,6 +358,14 @@ public class JUnitFramework implements AutoCloseable {
 		return Optional.empty();
 	}
 
+	/**
+	 * Wait for service to be registered
+	 * 
+	 * @param class1 name of the service
+	 * @param timeoutInMs timeout in ms
+	 * @return a service
+	 * @throws InterruptedException
+	 */
 	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs) throws InterruptedException {
 		try {
 			Optional<ServiceReference<T>> ref = waitForServiceReference(class1, timeoutInMs);
@@ -427,25 +517,27 @@ public class JUnitFramework implements AutoCloseable {
 	private Converter makeConverter() {
 		Converter converter = new Converter();
 		converter.hook(null, (to, from) -> {
+			try {
+				if (!(from instanceof ServiceReference))
+					return null;
 
-			if (!(from instanceof ServiceReference))
-				return null;
+				ServiceReference<?> reference = (ServiceReference<?>) from;
 
-			ServiceReference<?> reference = (ServiceReference<?>) from;
+				if (isParameterizedType(to, ServiceReference.class))
+					return reference;
 
-			if (isParameterizedType(to, ServiceReference.class))
-				return reference;
+				if (isParameterizedType(to, Map.class))
+					return converter.convert(to, toMap(reference));
 
-			if (isParameterizedType(to, Map.class))
-				return converter.convert(to, toMap(reference));
+				Object service = getBundleContext().getService(reference);
 
-			Object service = getBundleContext().getService(reference);
+				if (isParameterizedType(to, Optional.class))
+					return Optional.ofNullable(service);
 
-			if (isParameterizedType(to, Optional.class))
-				return Optional.ofNullable(service);
-
-			return service;
-
+				return service;
+			} catch (Exception e) {
+				throw e;
+			}
 		});
 		return converter;
 	}
@@ -494,7 +586,9 @@ public class JUnitFramework implements AutoCloseable {
 
 	/**
 	 * Hide a service by registering a hook. This should in general be done
-	 * before you let others look
+	 * before you let others look. In general, the JUnit Framework should be
+	 * started in {@link JUnitFrameworkBuilder#nostart()} mode. This initializes
+	 * the OSGi framework making it possible to register a service before
 	 */
 
 	public Closeable hide(Class<?> type) {

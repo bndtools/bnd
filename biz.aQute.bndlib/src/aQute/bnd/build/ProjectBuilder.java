@@ -26,6 +26,7 @@ import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
 import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -140,6 +141,7 @@ public class ProjectBuilder extends Builder {
 					try (InputStream in = r.openInputStream()) {
 						pomProperties.load(in);
 					} catch (Exception e) {
+						logger.debug("unable to read pom.properties resource {}", r, e);
 						return;
 					}
 					String depVersion = pomProperties.getProperty("version");
@@ -152,7 +154,9 @@ public class ProjectBuilder extends Builder {
 						attrs.put("version", depVersion);
 						attrs.put("scope", c.getAttributes()
 							.getOrDefault("maven-scope", "compile"));
-						dependencies.put(String.format("%s:%s:%s", depGroupId, depArtifactId, depVersion), attrs);
+						StringBuilder key = new StringBuilder();
+						OSGiHeader.quote(key, IO.absolutePath(file));
+						dependencies.put(key.toString(), attrs);
 					}
 				});
 		}

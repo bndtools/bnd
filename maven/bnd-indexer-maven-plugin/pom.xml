@@ -96,7 +96,6 @@
 					<goals>
 						<goal>package</goal>
 					</goals>
-					<debug>true</debug>
 				</configuration>
 				<executions>
 					<execution>
