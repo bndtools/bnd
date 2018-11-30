@@ -236,9 +236,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				pom = createPomFromFile(options.context.getFile(instructions.pom.path));
 			}
 		} else {
-
 			if (!configuration.ignore_metainf_maven()) {
-				pom = createPomFromFirstMavenPropertiesInJar(binary, options.context);
+				if (options.context.is(Constants.POM)) {
+					pom = getPomResource(binary);
+				} else {
+					pom = createPomFromFirstMavenPropertiesInJar(binary, options.context);
+				}
 			}
 			if (pom == null) {
 				logger.info("No properties in binary or invalid GAV");
