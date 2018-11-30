@@ -7,7 +7,7 @@ import java.net.URLEncoder;
 import java.util.Arrays;
 import java.util.List;
 
-import aQute.bnd.deployer.http.DefaultURLConnector;
+import aQute.bnd.http.HttpClient;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
 import test.lib.NanoHTTPD;
@@ -22,7 +22,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 	public static void testLoadFromCache() throws Exception {
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/1"),
-			new DefaultURLConnector(), null);
+			new HttpClient(), null);
 		File result = handle.request();
 
 		assertEquals(IO.getFile("testdata/httpcache/1/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar")
@@ -34,7 +34,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		File cacheDir = new File(testDirName);
 		URI baseUri = new URI("http://localhost:18083/bundles");
 		URI uri = new URI(baseUri + "/dummybundle.jar");
-		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(), null);
+		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new HttpClient(), null);
 
 		try {
 			handle.request();
@@ -61,7 +61,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		File cacheDir = new File(testDirName);
 		URI baseUri = new URI("http://localhost:18083/bundles");
 		URI uri = new URI(baseUri + "/dummybundle.jar");
-		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(), null);
+		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new HttpClient(), null);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
@@ -97,7 +97,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/4"),
-			new DefaultURLConnector(), EXPECTED_SHA);
+			new HttpClient(), EXPECTED_SHA);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
@@ -119,7 +119,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/5"),
-			new DefaultURLConnector(), EXPECTED_SHA);
+			new HttpClient(), EXPECTED_SHA);
 
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
@@ -148,7 +148,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		File shaFile = new File(cached.getAbsolutePath() + AbstractIndexedRepo.REPO_INDEX_SHA_EXTENSION);
 		shaFile.delete();
 
-		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new DefaultURLConnector(),
+		CachingUriResourceHandle handle = new CachingUriResourceHandle(uri, cacheDir, new HttpClient(),
 			EXPECTED_SHA);
 		NanoHTTPD httpd = new NanoHTTPD(18083, IO.getFile("testdata/http"));
 		try {
@@ -173,7 +173,7 @@ public class CachingUriResourceHandlerTest extends TestCase {
 		File cached = IO.getFile("testdata/httpcache/7/http%3A%2F%2Flocalhost%3A18083%2Fbundles/dummybundle.jar");
 		CachingUriResourceHandle handle = new CachingUriResourceHandle(
 			new URI("http://localhost:18083/bundles/dummybundle.jar"), IO.getFile("testdata/httpcache/7"),
-			new DefaultURLConnector(), null);
+			new HttpClient(), null);
 
 		// whoops where's the server...
 

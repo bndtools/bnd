@@ -28,6 +28,7 @@ import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
 import aQute.service.reporter.Reporter;
 
+@Deprecated
 @aQute.bnd.annotation.plugin.BndPlugin(name = "urlconnector", parameters = HttpBasicAuthURLConnector.Config.class)
 public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	private final static Logger logger = LoggerFactory.getLogger(HttpBasicAuthURLConnector.class);
@@ -73,6 +74,8 @@ public class HttpBasicAuthURLConnector implements URLConnector, Plugin {
 	@Override
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
+		reporter.error(
+			"Unfortunately we needed to break the HttpBasicAuthURLConnector plugin :-( Passwords and other communication settings are now down via the Http Client");
 	}
 
 	@Override

@@ -21,6 +21,7 @@ import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.service.url.URLConnector;
 import aQute.service.reporter.Reporter;
 
+@Deprecated
 public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin {
 
 	@interface Config {
@@ -52,6 +53,8 @@ public class DefaultURLConnector implements URLConnector, Plugin, RegistryPlugin
 	@Override
 	public void setReporter(Reporter reporter) {
 		this.reporter = reporter;
+		reporter.error(
+			"Unfortunately we needed to break the HttpBasicAuthURLConnector plugin :-( Passwords and other communication settings are now down via the Http Client");
 	}
 
 	@Override
