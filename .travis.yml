@@ -2,6 +2,9 @@ sudo: false
 
 language: java
 
+env:
+  global:
+
 matrix:
   include:
     - name: "Oracle JDK 8"
@@ -12,6 +15,11 @@ matrix:
       before_install:
         - "curl -O -L --retry 3  https://github.com/sormuras/bach/raw/master/install-jdk.sh"
         - "source install-jdk.sh --url \"https://cdn.azul.com/zulu/bin/zulu10.3+5-jdk10.0.2-linux_x64.tar.gz\""
+    - name: "OpenJDK 11"
+      env: ALLOW_FAILURE=true
+      before_install:
+        - "curl -O -L --retry 3  https://github.com/sormuras/bach/raw/master/install-jdk.sh"
+        - "source install-jdk.sh --url \"https://cdn.azul.com/zulu/bin/zulu11.2.3-jdk11.0.1-linux_x64.tar.gz\""
     - name: "Local rebuild"
       jdk: oraclejdk8
       script: 
@@ -27,6 +35,8 @@ matrix:
       script: 
         - "cd docs"
         - "./build.sh"
+  allow_failures:
+    - env: ALLOW_FAILURE=true
 
 install:
   - "unset _JAVA_OPTIONS"
