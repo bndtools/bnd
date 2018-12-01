@@ -30,8 +30,6 @@ org.osgi:org.osgi.util.promise:1.1.0
 org.bouncycastle:bcpkix-jdk15on:1.54
 org.bouncycastle:bcprov-jdk15on:1.54
 
-com.googlecode.pojosr:de.kalpatec.pojosr.framework:0.1.8
-
 org.apache.commons:commons-lang3:3.4
 commons-codec:commons-codec:1.10
 
@@ -48,18 +46,9 @@ org.apache.felix:org.apache.felix.scr:2.1.12
 org.apache.geronimo.specs:geronimo-atinject_1.0_spec:1.1
 org.apache.geronimo.specs:geronimo-interceptor_1.2_spec:1.1
 org.apache.geronimo.specs:geronimo-jcdi_2.0_spec:1.1
-org.apache.geronimo.specs:geronimo-servlet_2.5_spec:1.2
-org.apache.geronimo.specs:geronimo-servlet_3.0_spec:1.0
 
 org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
 org.apache.ant:ant:1.7.1
-
-org.eclipse.jetty:jetty-continuation:7.6.3.v20120416
-org.eclipse.jetty:jetty-http:7.6.3.v20120416
-org.eclipse.jetty:jetty-io:7.6.3.v20120416
-org.eclipse.jetty:jetty-security:7.6.3.v20120416
-org.eclipse.jetty:jetty-server:7.6.3.v20120416
-org.eclipse.jetty:jetty-util:7.6.3.v20120416
 
 org.mockito:mockito-core:2.23.0
 net.bytebuddy:byte-buddy:1.9.0
