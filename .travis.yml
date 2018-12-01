@@ -14,7 +14,6 @@ matrix:
       install:
         - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu10.3+5-jdk10.0.2-linux_x64.tar.gz"
     - name: "OpenJDK11"
-      env: ALLOW_FAILURE=true
       install:
         - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu11.2.3-jdk11.0.1-linux_x64.tar.gz"
     - name: "Local rebuild"
