@@ -1,7 +1,6 @@
 package aQute.bnd.deployer.http;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.InputStream;
@@ -12,6 +11,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import aQute.bnd.http.HttpClient;
 import aQute.lib.io.IO;
 import aQute.service.reporter.Reporter;
 import junit.framework.TestCase;
@@ -41,14 +41,14 @@ public class HttpRedirectionTest extends TestCase {
 		String originalUrl = baseUrl + "foo";
 		String redirectUrl = baseUrl + "bar";
 
-		DefaultURLConnector connector = new DefaultURLConnector();
-		connector.setReporter(reporter);
+		try (HttpClient connector = new HttpClient()) {
+			connector.setReporter(reporter);
 
-		InputStream stream = connector.connect(new URL(originalUrl));
-		String result = IO.collect(stream);
+			InputStream stream = connector.connect(new URL(originalUrl));
+			String result = IO.collect(stream);
 
-		assertEquals("got it", result);
-		verify(reporter).warning("HTTP address redirected from %s to %s", originalUrl, redirectUrl);
+			assertEquals("got it", result);
+		}
 	}
 
 	public void testDetectRedirectLoop() throws Exception {
@@ -75,12 +75,13 @@ public class HttpRedirectionTest extends TestCase {
 		Future<?> future = executor.submit(new Runnable() {
 			@Override
 			public void run() {
-				DefaultURLConnector connector = new DefaultURLConnector();
-				try {
-					InputStream stream = connector.connect(new URL("http://localhost:" + httpd.getPort() + "/foo"));
-					IO.collect(stream);
-				} catch (Exception e) {
-					e.printStackTrace();
+				try (HttpClient connector = new HttpClient()) {
+					try {
+						InputStream stream = connector.connect(new URL("http://localhost:" + httpd.getPort() + "/foo"));
+						IO.collect(stream);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				}
 			}
 		});
