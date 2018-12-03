@@ -16,15 +16,17 @@ source.toFile().eachFileRecurse({ f ->
 // We run this check to be sure that the metadata needed by the
 // bad-remote-metadata test is correctly installed in the local repo
 
-String expected = "#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.\n" +
-    "#Thu Jul 27 10:28:27 BST 2017\n" +
-    "objenesis-2.2.pom>central=\n" +
-    "objenesis-2.2.jar>central=\n" +
-    "objenesis-2.2.pom>=\n" +
-    "objenesis-2.2.jar>=\n";
+String expected = """\
+#NOTE: This is an Aether internal implementation file, its format can be changed without prior notice.
+#Thu Jul 27 10:28:27 BST 2017
+objenesis-2.2.pom>central=
+objenesis-2.2.jar>central=
+objenesis-2.2.pom>=
+objenesis-2.2.jar>=
+"""
 
-Path remote = Paths.get(target.toString(), "objenesis/2.2/_remote.repositories");
+Path remote = target.resolve("objenesis/2.2/_remote.repositories");
 
-assert expected == remote.toFile().getText();
+assert remote.toFile().text.normalize() == expected.normalize()
 
 return;
