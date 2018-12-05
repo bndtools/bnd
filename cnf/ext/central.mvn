@@ -17,6 +17,7 @@ org.osgi:org.osgi.service.device:1.1.0
 org.osgi:org.osgi.service.event:1.4.0
 org.osgi:org.osgi.service.http:1.2.1
 org.osgi:org.osgi.service.log:1.3.0
+org.osgi:org.osgi.service.metatype:1.3.0
 org.osgi:org.osgi.service.metatype:1.4.0
 org.osgi:org.osgi.service.metatype.annotations:1.4.0
 org.osgi:org.osgi.service.repository:1.1.0
@@ -75,6 +76,12 @@ org.tukaani:xz:1.5
 com.github.mike10004:fengyouchao-sockslib:1.0.3
 
 jline:jline:2.14.6
+
+# Bndtools
+com.github.spullara.mustache.java:compiler:0.8.18
+org.antlr:ST4:jar:complete:4.0.8
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.kxml2:2.3.0_3
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.xmlpull:1.1.3.4a_1
 
 #
 # Used by biz.aQute.bnd.reporter (Jtwig transformer)

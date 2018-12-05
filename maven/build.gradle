@@ -8,7 +8,7 @@ if (localrepo) {
 }
 def releaserepo = uri(bnd('releaserepo', parent.file('dist/bundles'))) /* Release repository. */
 
-task deployOSSRH(type:Exec) {
+task deployOSSRH(type: Exec) {
   enabled !bnd('-releaserepo.ossrh', '').empty
   onlyIf {
         deploy.state.didWork && (deploy.state.failure == null)
@@ -31,7 +31,7 @@ task deployOSSRH(type:Exec) {
   args 'deploy'
 }
 
-task deploy(type:Exec) {
+task deploy(type: Exec) {
   dependsOn "${parent.absoluteProjectPath('dist')}:build"
   finalizedBy deployOSSRH
   tasks.getByPath("${parent.absoluteProjectPath('dist')}:index").mustRunAfter it
