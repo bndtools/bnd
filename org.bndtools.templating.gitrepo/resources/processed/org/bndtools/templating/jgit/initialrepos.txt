@@ -1,1 +1,1 @@
-bndtools/workspace;branch=origin/${version;==;${base-version}}
+bndtools/workspace;branch=origin/${version;==;${base.version}}

@@ -1,21 +1,10 @@
-# Eclipse workspace metadata
-/.metadata
-/.recommenders
-/External Plug-in Libraries
-
-# Eclipse compiler output
-/*feature/compile*.xml
-
-# vi detritus
-*.swp
-*~
-
-# Mac OS detritus
+*.bak
+/.metadata/
+/.recommenders/
+Archive
 .DS_Store
-
-# Bnd stuff
-/cnf/eclipse-*/bnd.index
-
+.*.swp
+buildfiles
 /.gradle/
 /reports/
 /generated/

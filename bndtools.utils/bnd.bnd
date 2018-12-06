@@ -4,8 +4,11 @@
 -buildpath: \
 	osgi.annotation;version=latest,\
     osgi.core;version=latest, \
-    osgi.cmpn;version=latest, \
-    ${bndlib}, \
+    org.osgi.namespace.contract;version=latest,\
+    org.osgi.namespace.extender;version=latest,\
+    org.osgi.namespace.service;version=latest,\
+    aQute.libg;version=latest,\
+    biz.aQute.bndlib;version=latest, \
     bndtools.api; version=latest, \
     org.eclipse.osgi, \
     org.eclipse.equinox.common, \
@@ -30,3 +33,9 @@
 # Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
 Import-Package: \
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+
+-pom: false
+Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-License:           EPL-1.0; \
+                          description="Eclipse Public License, Version 1.0"; \
+                          link="http://www.eclipse.org/legal/epl-v10.html"

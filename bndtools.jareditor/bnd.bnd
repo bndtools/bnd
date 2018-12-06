@@ -7,7 +7,8 @@ Bundle-SymbolicName: bndtools.jareditor;singleton:=true
 -buildpath:  \
 	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
-	${bndlib};packages=*,\
+	aQute.libg;version=latest,\
+    biz.aQute.bndlib;version=latest,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
 	org.eclipse.ui.editors,\
@@ -37,3 +38,9 @@ Bundle-SymbolicName: bndtools.jareditor;singleton:=true
 Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 
 Bundle-Activator: bndtools.jareditor.internal.Plugin
+
+-pom: false
+Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-License:           EPL-1.0; \
+                          description="Eclipse Public License, Version 1.0"; \
+                          link="http://www.eclipse.org/legal/epl-v10.html"

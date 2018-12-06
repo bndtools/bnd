@@ -5,6 +5,8 @@
 
 -releaserepo:
 
+gittag: ${first;${system-allow-fail;git describe --abbrev=0},${base.version}.DEV}
+
 # Main p2 feature
 p2 = bndtools.api, \
     bndtools.builder, \
@@ -28,3 +30,9 @@ templates = \
     org.bndtools.templates.template
 
 -dependson: ${p2}, ${templates}
+
+-pom: false
+Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-License:           EPL-1.0; \
+                          description="Eclipse Public License, Version 1.0"; \
+                          link="http://www.eclipse.org/legal/epl-v10.html"

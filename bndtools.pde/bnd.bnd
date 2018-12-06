@@ -4,8 +4,9 @@
 	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
 	osgi.cmpn;version=latest,\
-	${bndlib},\
-	${aQute-resolve},\
+	aQute.libg;version=latest,\
+    biz.aQute.bndlib;version=latest,\
+	biz.aQute.resolve;version=latest,\
 	bndtools.api;version=latest,\
 	bndtools.core;version=latest,\
 	org.eclipse.core.commands,\
@@ -35,3 +36,9 @@ Import-Package: \
 
 -includeresource: \
 	plugin.xml=_plugin.xml
+
+-pom: false
+Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-License:           EPL-1.0; \
+                          description="Eclipse Public License, Version 1.0"; \
+                          link="http://www.eclipse.org/legal/epl-v10.html"

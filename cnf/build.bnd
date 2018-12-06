@@ -1,57 +1,37 @@
-########################
-## BND BUILD SETTINGS ##
-########################
-
-#
-# Customised Settings
-#
-
-javac.source:               1.8
-javac.target:               1.8
-javac.compliance:           1.8
-
 # Include the gradle.properties to get the value of bnd_repourl which is used
 # for the bnd build repository.
 -include ${workspace}/gradle.properties
 
+########################
+## BUILD SETTINGS ##
+########################
+## Java Compiler Options
+#java:                  java
+#javac:                 javac
+javac.source:           1.8
+javac.target:           1.8
+javac.compliance:       1.8
+javac.debug:            on
+
+#
+# Custom Settings
+#
+Git-Descriptor:         ${system-allow-fail;git describe --dirty --always --abbrev=9}
+Git-SHA:                ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
+
 # This is the version to baseline this build against.
-baseline.version:         4.1.0
-# Master Version Settings
-# base-version           = a valid major.minor.micro version
-# base-version-qualifier = DEV|Mx|RCx|REL, with x a number
-base-version:             4.2.0
-base-version-qualifier:   DEV
+baseline.version:       4.1.0
+# biz.aQute.bndlib:aQute.bnd.osgi.About.CURRENT needs to be kept in sync with the base.version.
+base.version:           4.2.0
+#-snapshot:
+Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 
-
-# Version of bnd/bndlib to use consistently throughout the build
-# NB. this must be specified as full M.m.u version (but no qualifier)
-# On advice of Peter we use an up-to-major version range
-bndlib:                   aQute.libg;version=latest, \
-                          biz.aQute.bndlib;version=latest
-
-# Version of the repository plugin to use consistently throughout the build
-# NB. this must be specified as full M.m.u version (but no qualifier)
-aQute-repository:         biz.aQute.repository;version=latest
-aQute-resolve:            biz.aQute.resolve;version=latest
-
-# We use git
-Git-Descriptor:           ${system-allow-fail;git describe --dirty --always --abbrev=9}
-Git-SHA:                  ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
-
-# Recipe for embedded JARs
--make:                    (*).(jar);type=bnd;recipe="bnd/$1.bnd"
-
-# Runtime Options and Variables
--runpath: org.eclipse.osgi,\
-          ${junit}
-
-# Extra Headers
-build.version:            ${base-version}.${tstamp}
-Bundle-Version:           ${build.version}
+# Maven info. The maven artifactId defaults to Bundle-SymbolicName
 -groupid:                 org.bndtools
+-pom:                     false
+
 Bundle-Vendor:            Bndtools http://bndtools.org/
-copyright:				  Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
-Bundle-Copyright:         ${copyright}
+Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
 Bundle-License:           EPL-1.0; \
                           description="Eclipse Public License, Version 1.0"; \
                           link="http://www.eclipse.org/legal/epl-v10.html"
@@ -61,11 +41,6 @@ Bundle-SCM:               url=https://github.com/bndtools/bndtools, \
                           developerConnection=scm:git:git@github.com:bndtools/bndtools.git, \
                           tag=${Git-Descriptor}
 
-# Bnd 3.4 defaults to 1.3 as the base DS version. We want to work with older
-# DS versions since Eclipse Equinox DS currently does not support DS 1.3.
--dsannotations-options.version: version;minimum=1.0.0
-
--diffignore: Git-Descriptor,Git-SHA
 -reproducible: true
 -noextraheaders: true
 -removeheaders: Include-Resource, Private-Package
