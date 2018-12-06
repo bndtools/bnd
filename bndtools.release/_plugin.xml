@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+   <extension-point id="bndtoolsReleaseParticipant" name="Release Participant" schema="schema/bndtoolsReleaseParticipant.exsd"/>
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="false"
+            id="bndtools.releaseBundleContribution"
+            nameFilter="*.bnd"
+            objectClass="org.eclipse.core.resources.IFile">
+         <action
+               class="bndtools.release.ReleaseAction"
+               enablesFor="+"
+               id="bndtools.release.releaseBundle"
+               icon="icons/lorry.png"
+               label="%releaseBundle"
+               menubarPath="additions"
+               tooltip="%releaseBundle.tooltip">
+         </action>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="bndtools.releaseBundlesContribution"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="bndtools.release.WorkspaceReleaseAction"
+               enablesFor="+"
+               id="bndtools.release.releaseBundles"
+               icon="icons/lorry.png"
+               label="%releaseBundles"
+               menubarPath="additions"
+               style="push">
+         </action>
+         <visibility>
+            <objectState
+                  name="projectNature"
+                  value="bndtools.core.bndnature">
+            </objectState>
+         </visibility>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="bndtools.releaseBundlesContributionWorkingSets"
+            objectClass="org.eclipse.ui.IWorkingSet">
+         <action
+               class="bndtools.release.WorkspaceReleaseAction"
+               enablesFor="+"
+               id="bndtools.release.releaseBundlesWorkingSets"
+               icon="icons/lorry.png"
+               label="%releaseBundles"
+               menubarPath="additions"
+               style="push">
+         </action>
+      </objectContribution>
+   </extension>
+
+   <extension point="org.eclipse.ui.commands">
+      <command
+         id="bndtools.release.releaseWorkspaceBundles"
+         name="%releaseWorkspaceBundles"
+         description=""
+      />
+   </extension>
+
+   <extension point="org.eclipse.ui.commandImages">
+      <image
+         commandId="bndtools.release.releaseWorkspaceBundles"
+         icon="icons/lorry.png"
+      />
+   </extension>
+
+   <extension point="org.eclipse.ui.handlers">
+       <handler
+         commandId="bndtools.release.releaseWorkspaceBundles"
+         class="bndtools.release.ReleaseWorkspaceHandler"
+       />
+   </extension>
+
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="menu:bndtools?after=additions">
+          <command commandId="bndtools.release.releaseWorkspaceBundles" mnemonic="R"/>
+      </menuContribution>
+   </extension>
+
+</plugin>

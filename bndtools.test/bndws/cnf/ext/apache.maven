@@ -1,0 +1,13 @@
+org.apache.aries.tx-control:tx-control-provider-jdbc-local:0.0.1-SNAPSHOT
+org.apache.aries.tx-control:tx-control-provider-jdbc-xa:0.0.1-SNAPSHOT
+org.apache.aries.tx-control:tx-control-provider-jpa-local:0.0.1-SNAPSHOT
+org.apache.aries.tx-control:tx-control-provider-jpa-xa:0.0.1-SNAPSHOT
+org.apache.aries.tx-control:tx-control-service-common:0.0.1-SNAPSHOT
+org.apache.aries.tx-control:tx-control-service-local:0.0.1-SNAPSHOT
+org.apache.aries.tx-control:tx-control-api:0.0.1-SNAPSHOT
+org.apache.aries.tx-control:tx-control-service-xa:0.0.1-SNAPSHOT
+org.apache.aries.tx-control:tx-control-provider-jdbc-common:0.0.1-SNAPSHOT
+org.osgi:org.osgi.service.jdbc:1.0.0
+org.osgi:org.osgi.service.jpa:1.0.0
+org.osgi:osgi.annotation:6.0.1
+org.apache.geronimo.specs:geronimo-jpa_2.0_spec:1.1

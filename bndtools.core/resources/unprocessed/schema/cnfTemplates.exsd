@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="bndtools.core" xmlns="http://www.w3.org/2001/XMLSchema">
+
+   <annotation>
+      <appinfo>
+         <meta.schema plugin="bndtools.core" id="cnfTemplates" name="Workspace Configuration Templates" />
+      </appinfo>
+   </annotation>
+
+   <element name="extension">
+      <complexType>
+         <sequence>
+            <element ref="template" minOccurs="1" maxOccurs="unbounded" />
+         </sequence>
+         <attribute name="point" type="string" use="required" />
+         <attribute name="id" type="string" />
+         <attribute name="name" type="string">
+            <annotation>
+               <appinfo>
+                  <meta.attribute translatable="true" />
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="template">
+      <complexType>
+         <attribute name="name" type="string">
+            <appinfo>
+               <meta.attribute translatable="true" />
+            </appinfo>
+         </attribute>
+         <attribute name="paths" type="string"/>
+         <attribute name="nobuild" type="boolean" default="false"/>
+         <attribute name="doc">
+            <annotation>
+               <appinfo>
+                  <meta.attribute kind="resource" />
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="javaProject" type="boolean"/>
+      </complexType>
+   </element>
+
+</schema>

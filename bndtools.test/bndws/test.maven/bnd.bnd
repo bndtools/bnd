@@ -1,0 +1,13 @@
+Bundle-Version: 1.0.0.${tstamp}
+
+-resourceonly: true
+-includeresource: foo;literal='X'
+
+-releaserepo: Sonatype
+
+-pom: 					groupid	=	biz.aQute.bnd,\
+						version =	${versionmask;===;${@version}}
+						
+						
+-buildpath: \
+	commons-cli:commons-cli;version=1.2

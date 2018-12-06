@@ -1,0 +1,15 @@
+-buildpath: \
+	osgi.annotation; version=6.0.1,\
+	osgi.core; version=6.0,\
+	osgi.cmpn; version=6.0
+
+-testpath: \
+	\${junit}
+
+$if(javaLevel)$
+javac.source: $javaLevel$
+javac.target: $javaLevel$
+$endif$
+
+Bundle-Version: 0.0.0.\${tstamp}
+Private-Package: $basePackageName$

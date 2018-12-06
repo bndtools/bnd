@@ -1,0 +1,23 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
+-buildpath: \
+	osgi.annotation; version=latest,\
+	osgi.core;version=latest, \
+	aQute.libg;version=latest,\
+    biz.aQute.bndlib;version=latest, \
+	org.eclipse.equinox.common, \
+	org.eclipse.core.resources,\
+	org.eclipse.core.runtime,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
+	org.eclipse.jface
+
+Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+
+-conditionalpackage: aQute.lib*
+
+-pom: false
+Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-License:           EPL-1.0; \
+                          description="Eclipse Public License, Version 1.0"; \
+                          link="http://www.eclipse.org/legal/epl-v10.html"

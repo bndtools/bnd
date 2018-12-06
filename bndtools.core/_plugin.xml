@@ -1,0 +1,1098 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+
+   <!-- Extension Points -->
+   <!-- DEPRECATED -->
+   <extension-point id="cnfTemplates"
+      name="Workspace Configuration Templates"
+      schema="schema/cnfTemplates.exsd"
+   />
+   <extension-point id="launchTemplates"
+      name="Launch Templates"
+      schema="schema/launchTemplates.exsd"
+   />
+   <extension-point id="projectTemplates"
+      name="Project Templates"
+      schema="schema/projectTemplates.exsd"
+   />
+   <extension-point id="workspaceTemplates"
+      name="Workspace Templates"
+   />
+   <!-- END DEPRECATION -->
+   <extension-point id="bndtoolsStartupParticipant"
+      name="Bndtools Start-up Participant"
+      schema="schema/bndtoolsStartupParticipant.exsd"
+   />
+   <extension-point id="osgiFrameworks"
+      name="OSGi Frameworks"
+      schema="schema/osgiFrameworks.exsd"
+   />
+   <extension-point id="bndPlugins"
+      name="Bnd Plug-ins"
+      schema="schema/.exsd"
+   />
+   <extension-point id="validators"
+      name="Build Validators"
+      schema="schema/validators.exsd"
+   />
+   <extension-point id="buildListeners"
+      name="Build Listeners"
+      schema="schema/buildListeners.exsd"
+   />
+   <extension-point id="buildErrorDetailsHandlers"
+      name="Build Error Details Handlers"
+      schema="schema/buildErrorDetailsHandlers.exsd"
+   />
+   <extension-point id="runExportWizards"
+      name="Run Descriptor Export Wizards"
+      schema="schema/runExportWizards.exsd"
+   />
+
+   <extension-point id="editorPages"
+      name="Bnd Editor Pages"
+      schema="schema/editorPages"
+   />
+
+	<extension point="bndtoolsStartupParticipant">
+		<startupParticipant
+			class="bndtools.central.Central" />
+	</extension>
+
+   <!-- EDITORS -->
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="bndtools.editor.BndEditor"
+            default="false"
+            extensions="bnd"
+            icon="${icons.bundle}"
+            id="bndtools.bndEditor"
+            name="Bnd Bundle Editor">
+      </editor>
+      <editor
+            class="bndtools.editor.BndEditor"
+            default="false"
+            filenames="bnd.bnd"
+            icon="icons/bricks.png"
+            id="bndtools.bndProjectEditor"
+            name="Bnd Project Editor">
+      </editor>
+      <editor
+            class="bndtools.editor.BndEditor"
+            default="false"
+            extensions="bndrun"
+            icon="${icons.bndrun}"
+            id="bndtools.bndRunEditor"
+            name="Bnd Run File Editor">
+      </editor>
+      <editor
+            class="bndtools.editor.BndEditor"
+            default="false"
+            filenames="build.bnd,ext/*.bnd"
+            icon="icons/bndtools-logo-16x16.png"
+            id="bndtools.bndWorkspaceConfigEditor"
+            name="Bnd Workspace Config Editor"
+      />
+      <editor
+            class="org.bndtools.core.editors.pkginfo.PackageInfoEditor"
+            default="true"
+            filenames="packageinfo"
+            id="bndtools.packageInfoEditor"
+            name="Package Info Editor"
+            icon="icons/information.gif"
+      />
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="bndtools.wizardCategory"
+            name="Bndtools"
+      />
+      <wizard
+            id="bndtools.newBndFile"
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.bndfile.EmptyBndFileWizard"
+            icon="${icons.bundle}"
+            name="Bundle Descriptor File (.bnd)"
+            project="false">
+      </wizard>
+      <wizard
+            id="bndtools.newBlueprintXml"
+            category="bndtools.wizardCategory"
+            class="org.bndtools.core.ui.wizards.blueprint.BlueprintXmlFileWizard"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/blueprint.png"
+            name="OSGi Blueprint Descriptor"
+            project="false">
+      </wizard>
+      <wizard
+            id="bndtools.newIndexWizard"
+            category="bndtools.wizardCategory"
+            class="org.bndtools.core.ui.wizards.index.NewIndexWizard"
+            icon="icons/repoindex.png"
+            name="OSGi Repository Index"
+            project="false"
+            >
+      </wizard>
+      <wizard
+            name="OSGi Declarative Services Component"
+            icon="${icons.component}"
+            category="bndtools.wizardCategory"
+            id="bndtools.newDsComponentWizard">
+         <class class="org.bndtools.core.ui.wizards.ds.NewDSComponentWizard">
+            <parameter name="javatype" value="true"/>
+         </class>
+         <description>
+            Create an OSGi Declarative Services Component
+         </description>
+         <!-- This is used to add the wizard to the "New Java Type" toolbar dropdown -->
+         <keywordReference id="org.eclipse.jdt.ui.wizards.java"/>
+      </wizard>
+      <wizard
+            id="bndtools.bndrunWizard"
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.bndfile.BndRunFileWizard"
+            icon="${icons.bndrun}"
+            name="Run Descriptor File (.bndrun)">
+      </wizard>
+      <wizard
+            id="bndtools.newProjWiz"
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.project.NewBndProjectWizardFactory"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/bricks.png"
+            name="Bnd OSGi Project"
+            project="true">
+      </wizard>
+      <wizard
+            id="bndtools.workspaceWizard"
+            category="bndtools.wizardCategory"
+            class="bndtools.wizards.workspace.WorkspaceSetupWizard"
+            finalPerspective="bndtools.perspective"
+            preferredPerspectives="bndtools.perspective"
+            icon="icons/bndtools-logo-16x16.png"
+            name="Bnd OSGi Workspace"
+            project="true">
+      </wizard>
+   </extension>
+
+	<extension point="org.eclipse.ui.ide.markerResolution">
+		<markerResolutionGenerator
+			markerType="bndtools.builder.missingworkspace"
+			class="bndtools.wizards.workspace.MissingWorkspaceMarkerResolutionGenerator"
+		/>
+	</extension>
+
+	<extension point="bndtools.core.buildErrorDetailsHandlers">
+		<handler
+			typeMatch="bndtools.builder.missingworkspace"
+			class="bndtools.wizards.workspace.MissingWorkspaceBuildErrorHandler"
+		/>
+	</extension>
+
+	<extension point="org.eclipse.jdt.ui.quickFixProcessors">
+		<quickFixProcessor id="PackageInfoBaselineQuickFixProcessor"
+			name="Package Info Baseline Quick Fix" requiredSourceLevel="1.5"
+			class="org.bndtools.core.editors.PackageInfoBaselineQuickFixProcessor">
+			<handledMarkerTypes>
+				<markerType id="bndtools.builder.packageInfoBaseline" />
+			</handledMarkerTypes>
+			<enablement>
+				<with variable="projectNatures">
+					<iterate operator="or">
+						<equals value="org.eclipse.jdt.core.javanature" />
+					</iterate>
+				</with>
+			</enablement>
+		</quickFixProcessor>
+		<quickFixProcessor id="ImportPackageQuickFixProcessor"
+			name="Import Package Quick Fix" requiredSourceLevel="1.5"
+			class="org.bndtools.core.editors.ImportPackageQuickFixProcessor"
+			icon="icons/bricks.png">
+ 			<handledMarkerTypes>
+				<markerType id="org.eclipse.jdt.core.problem" />
+			</handledMarkerTypes>
+			<enablement>
+				<with variable="projectNatures">
+					<iterate operator="or">
+						<equals value="bndtools.core.bndnature" />
+					</iterate>
+				</with>
+			</enablement>
+		</quickFixProcessor>
+	</extension>
+
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="bndtools.viewCategory"
+            name="Bndtools">
+      </category>
+      <view
+            category="bndtools.viewCategory"
+            class="bndtools.views.resolution.ResolutionView"
+            icon="${icons.capreq}"
+            id="bndtools.impExpView"
+            name="Resolution"
+            restorable="true">
+      </view>
+      <view
+            category="bndtools.viewCategory"
+            class="bndtools.views.repository.RepositoriesView"
+            icon="icons/database.png"
+            id="bndtools.repositoriesView"
+            name="Repositories"
+            restorable="true">
+      </view>
+      <view
+            category="bndtools.viewCategory"
+            class="org.bndtools.core.views.jpm.JPMBrowserView"
+            icon="icons/jpm.gif"
+            id="org.bndtools.core.views.jpm.JPMBrowserView"
+            name="Searchable Repositories"
+            restorable="true">
+      </view>
+   </extension>
+   <extension point="org.eclipse.ui.commands">
+      <command
+         id="bndtools.core.removeRepoResource"
+         name="Remove Resource"
+         description="Remove selected resource from the repository"
+      />
+      <command
+         id="bndtools.workspace.openMainConfig"
+         name="Open main bnd config"
+         description=""
+      />
+      <command
+         id="bndtools.workspace.refreshRepos"
+         name="Refresh Repositories"
+         description=""
+      />
+      <command
+         id="bnd.wizard.generateIndex"
+         name="Generate OSGi Repo. Index"
+      />
+   </extension>
+   <extension point="org.eclipse.ui.commandImages">
+      <image
+         commandId="bndtools.core.removeRepoResource"
+         icon="icons/cross.png"
+      />
+      <image
+         commandId="bndtools.workspace.openMainConfig"
+         icon="icons/bndtools-logo-16x16.png"
+      />
+      <image
+         commandId="bndtools.workspace.refreshRepos"
+         icon="icons/arrow_refresh.png"
+      />
+      <image
+         commandId="bnd.wizard.generateIndex"
+         icon="icons/repoindex.png"
+      />
+      <image
+         commandId="bndtools.runEditor.resolve"
+         icon="${icons.resolve}"
+      />
+   </extension>
+   <extension point="org.eclipse.ui.handlers">
+      <handler
+         commandId="bndtools.core.removeRepoResource"
+         class="bndtools.views.repository.RemoveRepoResourceHandler">
+         <enabledWhen>
+            <with variable="selection">
+               <count value="+" />
+               <iterate operator="and">
+                  <adapt type="bndtools.model.repo.RepositoryBundle" />
+               </iterate>
+            </with>
+         </enabledWhen>
+       </handler>
+       <handler
+         commandId="bndtools.workspace.openMainConfig"
+         class="bndtools.OpenMainConfigHandler"
+       />
+       <handler
+          commandId="bndtools.workspace.refreshRepos"
+          class="bndtools.RefreshReposHandler"
+       />
+       <handler
+          commandId="bnd.wizard.generateIndex"
+          class="org.bndtools.core.ui.wizards.index.GenerateIndexCommandHandler">
+          <enabledWhen>
+             <with variable="selection">
+                 <count value="1"/>
+                 <iterate operator="and">
+	                 <adapt type="org.eclipse.core.resources.IContainer"/>
+                 </iterate>
+             </with>
+          </enabledWhen>
+       </handler>
+   </extension>
+
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
+         <command commandId="bndtools.core.removeRepoResource">
+            <visibleWhen checkEnabled="true"/>
+         </command>
+      </menuContribution>
+
+      <menuContribution locationURI="menu:org.eclipse.ui.main.menu?after=project">
+         <menu
+            id="bndtools"
+            label="Bndtools"
+            mnemonic="B">
+            <visibleWhen>
+               <with variable="activeWorkbenchWindow.activePerspective">
+                  <equals value="bndtools.perspective"/>
+               </with>
+            </visibleWhen>
+            <command commandId="bndtools.workspace.refreshRepos" mnemonic="R"/>
+            <separator
+               name="main"
+               visible="true"
+            />
+            <command commandId="bndtools.workspace.openMainConfig" mnemonic="M"/>
+            <dynamic id="bndtools.workspace.openExtConfigs"
+               class="bndtools.OpenExtConfigsContributionItem"/>
+            <separator
+               name="additions"
+               visible="false"
+            />
+         </menu>
+      </menuContribution>
+
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
+          <command commandId="bnd.wizard.generateIndex">
+               <visibleWhen checkEnabled="true"/>
+          </command>
+      </menuContribution>
+
+      <menuContribution locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+          <toolbar id="bndtools.runEditor.toolbar">
+              <command commandId="bndtools.runEditor.resolve">
+                  <visibleWhen>
+                      <with variable="activeEditorId"><equals value="bndtools.bndRunEditor"/></with>
+                  </visibleWhen>
+              </command>
+              <separator name="additions"/>
+          </toolbar>
+      </menuContribution>
+   </extension>
+
+   <extension point="org.eclipse.ui.bindings">
+       <!-- M1 == Shift -->
+       <!-- M2 == Ctrl on Win, Cmd on Mac -->
+       <!-- M3 == Alt -->
+       <!-- Ctrl == Ctrl on both Win and Mac -->
+       <key
+            commandId="bndtools.workspace.openMainConfig"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+M"
+      />
+      <key
+            commandId="bndtools.workspace.refreshRepos"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+M2+F"
+      />
+      <key
+            commandId="bndtools.runEditor.resolve"
+            contextId="org.eclipse.ui.contexts.window"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="Ctrl+R"
+      />
+   </extension>
+
+   <extension
+      point="org.eclipse.ui.actionSets">
+      <actionSet
+         id="bndtools.actions"
+         label="Bndtools"
+         visible="false">
+
+         <action
+            id="bndtools.actions.openBrowser"
+            label="Open Web Browser"
+            toolbarPath="Normal/Bndtools"
+            icon="icons/browser.gif"
+            tooltip="Open Web Browser"
+            class="org.bndtools.core.actions.OpenBrowserActionDelegate"
+         />
+         <action
+            id="bndtools.actions.newRunDescriptor"
+            label="New OSGi Run Descriptor"
+            toolbarPath="Normal/Bndtools"
+            icon="${icons.bndrun.new}"
+            tooltip="New OSGi Run Descriptor"
+            class="bndtools.wizards.bndfile.NewRunDescriptorActionDelegate"
+         />
+         <action
+            id="bndtools.actions.newBundle"
+            label="New Bundle Descriptor"
+            toolbarPath="Normal/Bndtools"
+            icon="${icons.bundle.new}"
+            tooltip="New Bundle Descriptor"
+            class="bndtools.wizards.bndfile.NewBndFileActionDelegate"
+         />
+      </actionSet>
+   </extension>
+   <extension point="org.eclipse.ui.perspectives">
+      <perspective
+         id="bndtools.perspective"
+         name="Bndtools"
+         class="bndtools.perspective.BndPerspective"
+         icon="icons/bndtools-logo-16x16.png">
+      </perspective>
+   </extension>
+
+   <extension point="org.eclipse.ui.perspectiveExtensions">
+      <!-- Add lots of lovely Bndtools stuff to the Java perspective -->
+      <perspectiveExtension targetID="org.eclipse.jdt.ui.JavaPerspective">
+         <newWizardShortcut id="bndtools.newProjWiz"/>
+         <newWizardShortcut id="bndtools.newWrapProjWiz"/>
+         <newWizardShortcut id="bndtools.newBndFile"/>
+         <viewShortcut id="bndtools.impExpView"/>
+         <perspectiveShortcut id="bndtools.perspective"/>
+      </perspectiveExtension>
+
+      <!-- Add a way back to the Bndtools perspective from the Debug perspective -->
+      <perspectiveExtension targetID="org.eclipse.debug.ui.DebugPerspective">
+         <viewShortcut id="bndtools.impExpView"/>
+         <perspectiveShortcut id="bndtools.perspective"/>
+      </perspectiveExtension>
+   </extension>
+   <!-- COMPLETION PROPOSALS
+   <extension
+      point="org.eclipse.jdt.ui.javaCompletionProposalComputer"
+      id="bundleImports"
+      name="Bundle Import Proposals">
+      <proposalCategory icon="icons/bricks.png"/>
+   </extension>
+   <extension
+      point="org.eclipse.jdt.ui.javaCompletionProposalComputer"
+      id="bundleImportClassProposalComputer"
+      name="Bundle Import Proposal Computer">
+      <javaCompletionProposalComputer
+         class="bndtools.classpath.BundleClassCompletionProposalComputer"
+         categoryId="bndtools.core.bundleImports">
+         <partition type="__dftl_partition_content_type"/>
+      </javaCompletionProposalComputer>
+   </extension>
+   -->
+
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="bndtools.launch.ui.internal.LaunchTabGroup"
+            id="aQute.bnd.launch.tabgroup"
+            type="bndtools.launch">
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="bndtools.launch.ui.internal.JUnitLaunchTabGroup"
+            id="aQute.bnd.launch.junit.tabgroup"
+            type="bndtools.launch.junit">
+      </launchConfigurationTabGroup>
+      <launchConfigurationTabGroup
+            class="bndtools.launch.bnd.NativeLaunchTabGroup"
+            id="aQute.bnd.launch.native.tabgroup"
+            type="bnd.launch">
+      </launchConfigurationTabGroup>
+   </extension>
+
+   <!-- DEFINE LAUNCH CONFIGURATION TYPES -->
+   <extension point="org.eclipse.debug.core.launchConfigurationTypes">
+      <launchConfigurationType
+        delegate="bndtools.launch.OSGiRunLaunchDelegate"
+        id="bndtools.launch"
+        modes="run, debug"
+        name="OSGi Framework"
+        sourceLocatorId="org.bndtools.core.launch.BndDependencySourceLookupDirector"
+        sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer"
+      />
+      <launchConfigurationType
+         delegate="bndtools.launch.OSGiJUnitLaunchDelegate"
+         id="bndtools.launch.junit"
+         modes="run, debug"
+         name="OSGi Framework JUnit Tests"
+         sourceLocatorId="org.bndtools.core.launch.BndDependencySourceLookupDirector"
+         sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer"
+      />
+      <launchConfigurationType
+        delegate="bndtools.launch.bnd.NativeBndLaunchDelegate"
+        id="bnd.launch"
+        modes="run, debug"
+        name="bnd Native"
+        sourceLocatorId="org.bndtools.core.launch.BndDependencySourceLookupDirector"
+        sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer"
+      >
+      </launchConfigurationType>
+   </extension>
+
+   <!-- A status handler for "no available JVM matching EE" from the launch infra -->
+   <extension point="org.eclipse.debug.core.statusHandlers">
+      <statusHandler
+         id="bndtools.launch.ui.internal.NoVMForEEStatusHandler"
+         class="bndtools.launch.ui.internal.NoVMForEEStatusHandler"
+         plugin="bndtools.core"
+         code="101">
+      </statusHandler>
+    </extension>
+
+   <!-- DEFINE THE "Bnd Dependencies" SOURCE CONTAINER TYPE -->
+   <extension point="org.eclipse.debug.core.sourceContainerTypes">
+      <sourceContainerType
+         id="org.bndtools.core.launch.sourceContainerTypes.bndDependencies"
+         name="Bnd Dependencies"
+         description=""
+         class="bndtools.launch.BndDependencySourceContainerType"
+      />
+   </extension>
+   <extension point="org.eclipse.debug.ui.sourceContainerPresentations">
+      <sourceContainerPresentation
+         id="org.bndtools.core.launch.sourceContainerTypes.bndDependencies.presentation"
+         containerTypeID="org.bndtools.core.launch.sourceContainerTypes.bndDependencies"
+         icon="icons/bricks.png"
+      />
+   </extension>
+
+   <!-- DEFINE THE SOURCE LOOKUP DIRECTOR -->
+   <extension point="org.eclipse.debug.core.sourceLocators">
+      <sourceLocator
+         id="org.bndtools.core.launch.BndDependencySourceLookupDirector"
+         name="Bndtools Source Lookup Director"
+         class="bndtools.launch.BndDependencySourceLookupDirector"
+      />
+   </extension>
+
+   <extension point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester id="org.bndtools.core.launchPropertyTester"
+         namespace="org.bndtools.core"
+         properties="isInBndJavaProject"
+         class="bndtools.launch.LaunchPropertyTester"
+         type="org.eclipse.jdt.core.IJavaElement"/>
+   </extension>
+
+   <!-- LAUNCH SHORTCUTS -->
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            label="Bnd OSGi Test Launcher (JUnit)"
+            icon="icons/bricks_junit.png"
+            class="bndtools.launch.JUnitShortcut"
+            modes="run, debug"
+            id="bndtools.launch.junitShortcut"
+            path="bndtools.launch.core">
+         <contextualLaunch>
+            <enablement>
+               <or>
+                  <with variable="selection">
+                     <count value="+"/>
+                     <iterate>
+                        <or>
+                           <!-- Java/Bnd Project -->
+                           <and>
+                              <test property="org.eclipse.jdt.launching.isContainer"/>
+                              <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+                              <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
+                           </and>
+
+                           <!--  Java element (src-folder, package or JUnit class) -->
+                           <adapt type="org.eclipse.jdt.core.IJavaElement">
+                              <test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
+                              <test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
+                              <test property="org.bndtools.core.isInBndJavaProject" forcePluginActivation="true" />
+                           </adapt>
+
+						   <!-- bnd.bnd or *.bndrun file -->
+                           <and>
+                              <instanceof value="org.eclipse.core.resources.IResource" />
+                              <or>
+                                 <test property="org.eclipse.core.resources.name" value="bnd.bnd" />
+                                 <test property="org.eclipse.core.resources.extension" value="bndrun" />
+                              </or>
+                           </and>
+                        </or>
+                     </iterate>
+                  </with>
+                  <with variable="activeEditorId">
+                     <or>
+                        <equals value="bndtools.bndProjectEditor"/>
+                        <equals value="bndtools.bndRunEditor"/>
+                     </or>
+                  </with>
+               </or>
+            </enablement>
+         </contextualLaunch>
+         <configurationType
+               id="org.eclipse.jdt.junit.launchconfig">
+         </configurationType>
+         <description
+               description="Debug a JUnit Test in an OSGi Framework"
+               mode="debug">
+         </description>
+         <description
+               description="Run an OSGi JUnit Test in an OSGi framework"
+               mode="run">
+         </description>
+      </shortcut>
+
+      <shortcut
+            class="bndtools.launch.RunShortcut"
+            icon="icons/bricks_run.png"
+            id="bndtools.launch.runShortcut"
+            label="Bnd OSGi Run Launcher"
+            modes="run, debug"
+            path="bndtools.launch.core">
+         <contextualLaunch>
+            <enablement>
+               <or>
+                  <with variable="selection">
+                     <count value="1"/>
+                     <iterate>
+                        <or>
+                           <!-- Java/Bnd Project -->
+                           <and>
+                              <test property="org.eclipse.jdt.launching.isContainer"/>
+                              <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+                              <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
+                           </and>
+
+						   <!-- bnd.bnd or *.bndrun file -->
+                           <and>
+                              <instanceof value="org.eclipse.core.resources.IResource" />
+                              <or>
+                                 <test property="org.eclipse.core.resources.name" value="bnd.bnd" />
+                                 <test property="org.eclipse.core.resources.extension" value="bndrun" />
+                              </or>
+                           </and>
+                        </or>
+                     </iterate>
+                  </with>
+                  <with variable="activeEditorId">
+                     <or>
+                        <equals value="bndtools.bndProjectEditor"/>
+                        <equals value="bndtools.bndRunEditor"/>
+                     </or>
+                  </with>
+               </or>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+
+      <shortcut
+            class="bndtools.launch.bnd.RunShortcut"
+            icon="icons/bricks_run.png"
+            id="bnd.launch.runShortcut"
+            label="Bnd Native Launcher"
+            modes="run, debug"
+            path="bndtools.launch.core">
+         <contextualLaunch>
+            <enablement>
+               <or>
+                  <with variable="selection">
+                     <count value="1"/>
+                     <iterate>
+                        <or>
+                           <!-- Java/Bnd Project -->
+                           <and>
+                              <test property="org.eclipse.jdt.launching.isContainer"/>
+                              <test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+                              <test property="org.eclipse.jdt.launching.hasProjectNature" args="bndtools.core.bndnature"/>
+                           </and>
+
+                           <!-- bnd.bnd or *.bndrun file -->
+                           <and>
+                              <instanceof value="org.eclipse.core.resources.IResource" />
+                              <or>
+                                 <test property="org.eclipse.core.resources.name" value="bnd.bnd" />
+                                 <test property="org.eclipse.core.resources.extension" value="bndrun" />
+                              </or>
+                           </and>
+                        </or>
+                    </iterate>
+                 </with>
+                 <with variable="activeEditorId">
+                    <or>
+                       <equals value="bndtools.bndProjectEditor"/>
+                       <equals value="bndtools.bndRunEditor"/>
+                    </or>
+                 </with>
+               </or>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+
+   </extension>
+
+   <extension point="org.eclipse.ui.keywords">
+      <keyword id="bndtools.core" label="Bndtools"/>
+   </extension>
+
+    <extension
+          point="org.eclipse.ui.preferencePages">
+       <page
+             class="bndtools.preferences.ui.BndPreferencePage"
+             id="bndtools.prefPages.basic"
+             name="Bndtools">
+             <keywordReference id="bndtools.core"/>
+       </page>
+       <page
+             class="bndtools.preferences.ui.BndBuildPreferencePage"
+             id="bndtools.prefPages.build"
+             category="bndtools.prefPages.basic"
+             name="Build">
+             <keywordReference id="bndtools.core"/>
+       </page>
+       <page
+             class="bndtools.preferences.ui.ReposPreferencePage"
+             id="bndtools.prefPages.repos"
+             category="bndtools.prefPages.basic"
+             name="Repositories">
+             <keywordReference id="bndtools.core"/>
+       </page>
+       <page
+             class="bndtools.preferences.ui.GeneratedResourcesPreferencePage"
+             id="bndtools.prefPages.generatedResources"
+             category="bndtools.prefPages.basic"
+             name="Generated Resources">
+             <keywordReference id="bndtools.core"/>
+       </page>
+       <page
+             class="bndtools.preferences.ui.JpmPreferencePage"
+             id="bndtools.prefPages.jpm"
+             category="bndtools.prefPages.basic"
+             name="Searchable Repositories">
+             <keywordReference id="bndtools.core"/>
+       </page>
+    </extension>
+	<extension point="org.eclipse.ui.propertyPages">
+		<page id="org.bndtools.core.propPages.project" name="Bndtools"
+			adaptable="true" objectClass="org.eclipse.core.resources.IProject"
+			class="bndtools.preferences.ui.BndProjectPropertyPage">
+			<enabledWhen>
+				<adapt type="org.eclipse.core.resources.IProject">
+					<test property="org.eclipse.core.resources.projectNature"
+						value="bndtools.core.bndnature" />
+				</adapt>
+			</enabledWhen>
+		</page>
+	</extension>
+    <extension
+          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+       <launchConfigurationTypeImage
+             configTypeID="bndtools.launch"
+             icon="icons/bricks_run.png"
+             id="bndtools.core.launchConfigImages.run">
+       </launchConfigurationTypeImage>
+       <launchConfigurationTypeImage
+             configTypeID="bndtools.launch.junit"
+             icon="icons/bricks_junit.png"
+             id="bndtools.core.launchConfigImages.test">
+       </launchConfigurationTypeImage>
+       <launchConfigurationTypeImage
+             configTypeID="bnd.launch"
+             icon="icons/bricks_run.png"
+             id="bnd.launchConfigImages.run">
+       </launchConfigurationTypeImage>
+    </extension>
+    <extension
+         point="org.eclipse.help.contexts">
+         <contexts file="contexthelp.xml"/>
+    </extension>
+
+   <!-- DEPRECATED -->
+   <extension point="bndtools.core.launchTemplates">
+      <template
+         name="Apache Felix 4 with Gogo Shell"
+         path="launchTemplates/felix4+shell.bndrun"
+         doc="html/felix4+shell.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Apache Felix 4 with Web Console and Gogo"
+         path="launchTemplates/felix4+webconsole.bndrun"
+         doc="html/felix4+webconsole.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Apache Felix 4 (Empty)"
+         path="launchTemplates/felix4.bndrun"
+         doc="html/felix4.form.xml"
+         icon="icons/felix.gif"/>
+      <template
+         name="Eclipse Equinox 3.7 with Built-in Console"
+         path="launchTemplates/equinox37+console.bndrun"
+         doc="html/equinox37+console.form.xml"
+         icon="icons/equinox.gif"/>
+      <template
+         name="Eclipse Equinox 3.7 with Gogo and DS"
+         path="launchTemplates/equinox37+gogo+ds.bndrun"
+         doc="html/equinox37+gogo+ds.form.xml"
+         icon="icons/equinox.gif"/>
+      <template
+         name="«Empty»"
+         path="launchTemplates/empty.bndrun"
+         doc="html/empty.form.xml"/>
+   </extension>
+   <!-- END DEPRECATION -->
+
+   <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
+      <renameParticipant
+         id="bndtools.refactoring.pkgRenameParticipant"
+         name="Bndtools Package Rename Participant"
+         class="bndtools.refactor.PkgRenameParticipant">
+         <enablement>
+           <with variable="affectedNatures">
+             <iterate operator="or">
+               <equals value="bndtools.core.bndnature"/>
+             </iterate>
+           </with>
+           <with variable="element">
+               <instanceof value="org.eclipse.jdt.core.IPackageFragment"/>
+           </with>
+         </enablement>
+      </renameParticipant>
+   </extension>
+
+   <extension point="bndtools.core.osgiFrameworks">
+      <framework name="Apache Felix" bsn="org.apache.felix.framework" icon="icons/felix.gif"/>
+      <framework name="Eclipse Equinox" bsn="org.eclipse.osgi" icon="icons/equinox.gif"/>
+      <framework name="Knopflerfish" bsn="org.knopflerfish.framework" icons="icons/knopflerfish_16x16.gif"/>
+      <framework name="PojoSR" bsn="de.kalpatec.pojosr.framework" updateable="false"/>
+   </extension>
+
+   <!-- BND PLUGINS -->
+   <extension point="bndtools.core.bndPlugins">
+      <plugin
+         class="aQute.lib.deployer.FileRepo"
+         rank="10"
+         icon="icons/bundlefolder.png"
+         name="File Repository">
+         <property name="name" type="string" description="Name of the repository"/>
+         <property name="location" type="string" description="Local directory path"/>
+         <property name="readonly" type="boolean" default="false"/>
+      </plugin>
+
+      <plugin
+         class="aQute.bnd.repository.osgi.OSGiRepository"
+         icon="icons/database.png"
+         name="Indexed Repository (read-only)">
+         <property name="name" type="string" description="Name of the repository"/>
+         <property name="locations" type="string" description="Index locations (comma-separated list of URLs)"/>
+         <property name="cache" type="string" description="Local cache for downloaded remote resources"/>
+      </plugin>
+
+      <plugin
+         class="aQute.bnd.deployer.repository.LocalIndexedRepo"
+         icon="icons/database.png"
+         name="Locally Indexed Repository (read/write)">
+         <property name="name" type="string" description="Name of the repository"/>
+         <property name="local" type="string" description="Local directory path"/>
+         <property name="phase" type="string" description="Resolution phase (build, runtime or any)"/>
+         <property name="pretty" type="boolean" default="false" description="Enable pretty-printed index format"/>
+         <property name="readonly" type="boolean" default="false"/>
+         <property name="type" type="string" description="Index types, separated by '|'. E.g. 'R5|OBR'"/>
+      </plugin>
+
+      <plugin
+         class="aQute.lib.spring.SpringXMLType"
+         icon="icons/magnifier.png"
+         name="Spring Component Analyzer"/>
+
+      <plugin
+         class="aQute.lib.spring.JPAComponent"
+         icon="icons/magnifier.png"
+         name="JPA Component Analyzer"/>
+
+      <plugin
+         class="aQute.lib.deployer.http.DefaultURLConnector"
+         icon="icons/link.png"
+         name="HTTP(S) Connector">
+         <property name="disableServerVerify" type="boolean" description="Disable verification of server's X509 certificate (insecure, for testing only!)"/>
+      </plugin>
+
+      <plugin
+         class="aQute.bnd.deployer.http.HttpBasicAuthURLConnector"
+         icon="${icons.lock}"
+         name="Authenticated HTTP(S) Connector">
+         <property name="configs" type="string" description="List of config files (comma-separated paths)"/>
+         <property name="disableServerVerify" type="boolean" description="Disable verification of server's X509 certificate (insecure, for testing only!)"/>
+      </plugin>
+
+   </extension>
+
+   <extension point="org.eclipse.ui.intro.configExtension">
+      <configExtension configId="org.eclipse.ui.intro.universalConfig" content="/intro/whatsnewExtensionContent.xml" />
+   </extension>
+
+   <extension point="org.eclipse.debug.core.statusHandlers">
+      <statusHandler
+         id="bndtools.core.debug.statusHandler"
+         class="bndtools.launch.ui.internal.LaunchStatusHandler"
+         plugin="bndtools.core"
+         code="0"
+      />
+      <statusHandler
+         id="bndtools.core.debug.junitStatusHandler"
+         class="bndtools.launch.ui.internal.JUnitViewOpenerStatusHandler"
+         plugin="bndtools.core"
+         code="999"
+      />
+   </extension>
+
+   <extension point="runExportWizards">
+      <wizard
+         name="Executable JAR"
+         class="bndtools.wizards.bndfile.ExecutableJarExportWizard"
+         icon="icons/jar_exec.gif"
+      />
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.popupMenus">
+      <objectContribution
+            adaptable="true"
+            id="bndtools.nonBndProjectContribution"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="bndtools.nature.ToggleNatureAction"
+               enablesFor="+"
+               icon="icons/bnd_nature_add.png"
+               id="bndtools.addBndNatureAction"
+               label="Add Bndtools Project Nature"
+               menubarPath="org.eclipse.ui.projectConfigure/additions"
+               style="push">
+         </action>
+         <visibility>
+            <and>
+               <objectState
+                     name="projectNature"
+                     value="org.eclipse.jdt.core.javanature">
+               </objectState>
+               <not>
+                  <objectState
+                        name="projectNature"
+                        value="bndtools.core.bndnature">
+                  </objectState>
+               </not>
+            </and>
+         </visibility>
+      </objectContribution>
+      <objectContribution
+            adaptable="true"
+            id="bndtools.bndProjectContribution"
+            objectClass="org.eclipse.core.resources.IProject">
+         <action
+               class="bndtools.nature.ToggleNatureAction"
+               enablesFor="1"
+               icon="icons/bnd_nature_remove.png"
+               id="bndtools.removeBndNatureAction"
+               label="Remove Bndtools Project Nature"
+               menubarPath="org.eclipse.ui.projectConfigure/additions"
+               style="push">
+         </action>
+         <visibility>
+            <objectState
+                  name="projectNature"
+                  value="bndtools.core.bndnature">
+            </objectState>
+         </visibility>
+      </objectContribution>
+   </extension>
+
+   <extension point="org.eclipse.ui.commands">
+      <command
+         id="bndtools.launch.runShortcut.run"
+         name="Run Bnd OSGi Run Launcher"
+         description="Run Bnd OSGi Run Launcher"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bndtools.launch.runShortcut.debug"
+         name="Debug Bnd OSGi Run Launcher"
+         description="Debug Bnd OSGi Run Launcher"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bndtools.launch.junitShortcut.run"
+         name="Run Bnd OSGi Run Launcher (JUnit)"
+         description="Run Bnd OSGi Run Launcher (JUnit)"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bndtools.launch.junitShortcut.debug"
+         name="Debug Bnd OSGi Run Launcher (JUnit)"
+         description="Debug Bnd OSGi Run Launcher (JUnit)"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bnd.launch.runShortcut.run"
+         name="Run Bnd Native Launcher"
+         description="Run Bnd Native Launcher"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+      <command
+         id="bnd.launch.runShortcut.debug"
+         name="Debug Bnd Native Launcher"
+         description="Debug Bnd Native Launcher"
+         categoryId="org.eclipse.debug.ui.category.run"/>
+
+      <category
+         id="bndtools.runEditor"
+         name="Run Editor Commands"/>
+      <command
+         id="bndtools.runEditor.resolve"
+         name="Resolve Run Bundles"
+         description="Resolve Run Bundles"
+         categoryId="bndtools.runEditor"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.bindings">
+      <key
+         sequence="M3+M2+X B"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bndtools.launch.runShortcut.run"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+D B"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bndtools.launch.runShortcut.debug"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+X K"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bndtools.launch.junitShortcut.run"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+D K"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bndtools.launch.junitShortcut.debug"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+X N"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bnd.launch.runShortcut.run"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+      <key
+         sequence="M3+M2+D N"
+         contextId="org.eclipse.ui.globalScope"
+         commandId="bnd.launch.runShortcut.debug"
+         schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+   </extension>
+   <extension
+         point="org.eclipse.ui.importWizards">
+      <category
+		name="Bndtools"
+        id="bndtools.importCategory">
+      </category>
+		<wizard
+            id="bndtools.importProject"
+            category="bndtools.importCategory"
+            class="bndtools.wizards.project.ImportBndWorkspaceWizard"
+            icon="icons/bndtools-logo-16x16.png"
+            name="Existing Bnd Workspace"
+            project="true">
+      </wizard>
+   </extension>
+
+ </plugin>

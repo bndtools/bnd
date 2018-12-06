@@ -1,0 +1,58 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
+-buildpath:  \
+	osgi.annotation; version=latest,\
+	osgi.core;version=latest,\
+    org.osgi.namespace.service;version=latest,\
+	aQute.libg;version=latest,\
+    biz.aQute.bndlib;version=latest,\
+	biz.aQute.repository;version=latest,\
+	bndtools.api;version=latest,\
+	bndtools.utils;version=project;packages=*,\
+	bndtools.core;version=snapshot, \
+	org.eclipse.osgi,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.equinox.preferences,\
+	org.eclipse.core.contenttype,\
+	org.eclipse.core.runtime,\
+	org.eclipse.core.resources,\
+	org.eclipse.core.jobs,\
+	org.eclipse.core.commands,\
+	org.eclipse.jface,\
+	org.eclipse.jface.text,\
+	org.eclipse.text,\
+	org.eclipse.ui.ide,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.jdt.core,\
+	org.eclipse.jdt.launching,\
+	org.eclipse.jdt.ui,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
+	org.eclipse.swt
+
+# Headers
+Bundle-SymbolicName: bndtools.builder; singleton:=true
+Bundle-Activator: org.bndtools.builder.BuilderPlugin
+Bundle-ActivationPolicy: lazy
+
+# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+
+-includepackage: \
+	org.bndtools.builder.*
+
+-conditionalpackage: \
+	aQute.lib.*;-split-package:=merge-first, \
+	aQute.libg.*;-split-package:=merge-first, \
+	org.bndtools.utils.*
+
+-includeresource: \
+	plugin.xml=_plugin.xml, \
+	resources
+
+-pom: false
+Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-License:           EPL-1.0; \
+                          description="Eclipse Public License, Version 1.0"; \
+                          link="http://www.eclipse.org/legal/epl-v10.html"

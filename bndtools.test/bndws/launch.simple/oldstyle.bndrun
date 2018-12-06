@@ -1,0 +1,8 @@
+-runrequires: osgi.identity;filter:='(osgi.identity=launch.simple.really)'
+-runfw: org.apache.felix.framework;version='[4.4.0,4.4.0]'
+-runee: JavaSE-1.8
+
+-runbundles: \
+	launch.simple.really;version=latest
+
+-runpath: /Ws/bnd/biz.aQute.launcher/generated/biz.aQute.launcher.jar;version=file

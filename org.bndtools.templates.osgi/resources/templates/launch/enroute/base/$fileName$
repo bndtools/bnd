@@ -1,0 +1,8 @@
+#
+# LAUNCH SPECFICATION 
+#
+
+-runrequires: 
+
+
+-runbundles: \${error;You must resolve this bndrun file before you can run/debug it}

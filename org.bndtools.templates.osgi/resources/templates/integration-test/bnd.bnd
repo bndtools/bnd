@@ -1,0 +1,38 @@
+# This is the version of JUnit that will be used at build time and run time
+junit: org.apache.servicemix.bundles.junit;version="[4.11,5)"
+
+# This is the version of Mockito that will be used at build time and run time
+mockito: org.mockito.mockito-core;version="[1.9,2)",\
+  org.objenesis;version="[2.1,3)"
+
+# Discover and run all test cases annotated with the @RunWith annotation
+Test-Cases: \${classes;CONCRETE;ANNOTATED;org.junit.runner.RunWith}
+
+# Build dependencies 
+-buildpath: \
+	\${junit},\
+	\${mockito},\
+	osgi.annotation; version=6.0.1,\
+	osgi.core; version=6.0,\
+	osgi.cmpn; version=6.0
+
+$if(javaLevel)$
+javac.source: $javaLevel$
+javac.target: $javaLevel$
+$endif$
+
+# We need JUnit and Mockito to resolve the test cases at runtime. 
+# Other runtime dependencies should be added as necessary
+-runbundles: \
+	\${junit},\
+	\${mockito}
+
+Bundle-Version: 0.0.0.\${tstamp}
+Private-Package: $basePackageName$
+
+# Needed for Mockito's mocking to work
+-runsystempackages.objenesis: sun.misc,sun.reflect
+
+# Use Felix by default
+-runfw: org.apache.felix.framework;version=5
+-runvm: -ea

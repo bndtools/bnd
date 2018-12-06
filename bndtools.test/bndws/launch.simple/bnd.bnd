@@ -1,0 +1,31 @@
+Bundle-Version: 1.0.0.${tstamp}
+
+
+
+-buildpath: \
+	osgi.core,\
+	../cnf/cache/biz.aQute.launcher/biz.aQute.launcher-latest.jar;version=file,\
+	../cnf/cache/biz.aQute.remote.launcher/biz.aQute.remote.launcher-latest.jar;version=file,\
+	javax.servlet;version=3.0,\
+	osgi.cmpn;version=4.3, \
+	pi4j-core.jar;version=file
+	
+-runfw: org.eclipse.osgi;version='[3.10.1,3.10.1]'
+-runee: JavaSE-1.8
+-runpath: ../../../../bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher.jar;version=file
+
+-runremote: \
+	wlp;host=192.168.67.122;jdb=1044
+		
+-runbundles: \
+	launch.simple.really, \
+	org.apache.felix.gogo.command,\
+	org.apache.felix.gogo.runtime,\
+	org.apache.felix.gogo.shell
+
+-runproperties: osgi.console=
+
+
+#	, \
+	pi;host=192.168.67.114;agent=4001;jdb=4000
+-sub: *.bnd

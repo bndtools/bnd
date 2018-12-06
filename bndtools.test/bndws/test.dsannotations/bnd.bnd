@@ -1,0 +1,5 @@
+-dsannotations: *
+
+Bundle-Version: 0.0.0.${tstamp}
+-buildpath: osgi.cmpn;version=5.0
+Private-Package: test.dsannotations

@@ -1,0 +1,6 @@
+Bundle-Activator: simple.hello.Hello
+Private-Package: simple.hello
+
+-includeresource: @pi4j-core.jar
+
+Conditional-Package: aQute.lib*

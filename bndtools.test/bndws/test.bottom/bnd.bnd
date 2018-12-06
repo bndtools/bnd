@@ -1,0 +1,5 @@
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: test.bottom
+-buildpath: \
+	test.top;version=latest;packages=test.top.*,\
+	test.exports.external;version=latest

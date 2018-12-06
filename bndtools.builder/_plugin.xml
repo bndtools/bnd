@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.5"?>
+<plugin>
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="bndtools.builder.componentmarker"
+		name="OSGi Component"
+		>
+		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+	</extension>
+	<extension
+		point="org.eclipse.core.resources.natures"
+		id="bndtools.core.bndnature"
+		name="Bndtools Nature"
+		>
+		<runtime>
+			<run class="org.bndtools.builder.BndProjectNature" />
+		</runtime>
+		<requires-nature id="org.eclipse.jdt.core.javanature" />
+		<builder id="bndtools.core.bndbuilder" />
+	</extension>
+
+	<extension
+		point="org.eclipse.core.resources.builders"
+		id="bndtools.core.bndbuilder"
+		name="Bndtools Builder"
+		>
+		<builder callOnEmptyDelta="true" hasNature="true">
+			<run class="org.bndtools.builder.BndtoolsBuilder" />
+		</builder>
+	</extension>
+
+	<extension
+		point="org.eclipse.jdt.core.compilationParticipant"
+		name="Bnd Container Compilation Participant"
+		>
+		<compilationParticipant class="org.bndtools.builder.classpath.BndContainerCompilationParticipant"
+			id="bndtools.builder.classpath.compilationparticipant"
+			modifiesEnvironment="true"
+			>
+		</compilationParticipant>
+	</extension>
+
+	<extension point="org.eclipse.ui.decorators">
+		<decorator
+			id="bndtools.packageDecorator"
+			label="Bndtools OSGi Package Decorations"
+			objectClass="org.eclipse.jdt.core.IPackageFragment" state="true"
+			adaptable="true"
+			lightweight="true"
+			class="org.bndtools.builder.decorator.ui.PackageDecorator"
+			location="TOP_LEFT">
+			<description>Marks exported packages with a '+' decoration, and
+				excluded packages with a strike-through.</description>
+		</decorator>
+
+		<decorator
+			id="bndtools.componentDecorator"
+			label="Bndtools OSGi Component Decorations"
+			state="true"
+			adaptable="true"
+			lightweight="true"
+			class="org.bndtools.builder.decorator.ui.ComponentDecorator"
+			location="TOP_RIGHT">
+			<enablement>
+				<or>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.CompilationUnit">
+					</objectClass>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.SourceType">
+					</objectClass>
+					<objectClass
+						name="org.eclipse.jdt.internal.core.PackageFragment">
+					</objectClass>
+				</or>
+			</enablement>
+			<description>Marks components with a decoration.</description>
+		</decorator>
+	</extension>
+
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="bndproblem"
+		name="Bndtools Problem Marker"
+		>
+		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.problemmarker"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+	</extension>
+
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="bndpathproblem"
+		name="Bndtools Path Problem Marker"
+		>
+		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.problemmarker"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+		<super type="org.eclipse.jdt.core.buildpath_problem"/>
+	</extension>
+
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="bndworkspaceproblem"
+		name="Bndtools Workspace Problem Marker"
+		>
+		<persistent value="true"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+		<super type="org.eclipse.core.resources.problemmarker"/>
+	</extension>
+
+	<extension
+		point="org.eclipse.core.resources.markers"
+		id="missingworkspace"
+		name="Missing Bndtools Workspace Problem Marker"
+		>
+		<persistent value="true"/>
+		<super type="bndtools.builder.bndpathproblem"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+		<super type="org.eclipse.core.resources.problemmarker"/>
+	</extension>
+
+	<extension point="org.eclipse.core.resources.markers"
+		id="packageInfoBaseline"
+		name="Package Info Baseline Problem Marker"
+		>
+		<persistent value="true"></persistent>
+		<super type="bndtools.builder.bndproblem"/>
+		<super type="org.eclipse.jdt.core.problem"/>
+		<super type="org.eclipse.core.resources.textmarker"/>
+		<super type="org.eclipse.core.resources.problemmarker"/>
+	</extension>
+
+	<extension point="org.eclipse.jdt.core.classpathContainerInitializer">
+		<classpathContainerInitializer
+			id="aQute.bnd.classpath.container"
+			class="org.bndtools.builder.classpath.BndContainerInitializer"
+		/>
+	</extension>
+
+	<extension point="org.eclipse.jdt.ui.classpathContainerPage">
+		<classpathContainerPage
+			id="aQute.bnd.classpath.container"
+			name="Bnd Bundle Path"
+			class="org.bndtools.builder.classpath.BndContainerPage"
+		/>
+	</extension>
+
+	<extension point="bndtools.core.bndtoolsStartupParticipant">
+		<startupParticipant
+			class="org.bndtools.builder.jobs.newproject.NewProjectJobsStartupParticipant" />
+	</extension>
+
+	<extension point="bndtools.core.buildListeners">
+		<listener name="Bundle Index Generation"
+			class="org.bndtools.builder.indexer.BuiltBundleIndexer" />
+	</extension>
+
+	<extension point="bndtools.core.buildErrorDetailsHandlers">
+		<handler typeMatch="aQute.bnd.differ.Baseline$Info"
+			class="org.bndtools.builder.handlers.baseline.BaselineErrorHandler" />
+	</extension>
+
+	<extension point="bndtools.core.buildErrorDetailsHandlers">
+		<handler typeMatch="aQute.bnd.differ.Baseline$BundleInfo"
+			class="org.bndtools.builder.handlers.baseline.BundleVersionErrorHandler" />
+	</extension>
+
+	<extension point="bndtools.core.buildErrorDetailsHandlers">
+		<handler typeMatch="aQute.bnd.osgi.Verifier$BundleActivatorError"
+			class="org.bndtools.builder.handlers.activator.BundleActivatorErrorHandler" />
+	</extension>
+
+	<extension point="bndtools.core.buildErrorDetailsHandlers">
+		<handler typeMatch="aQute.bnd.component.error.DeclarativeServicesAnnotationError"
+			class="org.bndtools.builder.handlers.component.DSAnnotationErrorHandler" />
+	</extension>
+
+	<extension point="org.eclipse.ui.ide.markerResolution">
+		<markerResolutionGenerator markerType="bndtools.core.bndproblem"
+			class="org.bndtools.builder.BndtoolsMarkerResolutionGenerator" />
+	</extension>
+
+	<extension point="bndtools.core.validators">
+		<validator name="BSN check"
+			class="org.bndtools.builder.validate.BsnValidator" />
+	</extension>
+
+	<extension point="bndtools.core.validators">
+		<validator name="Project paths check"
+			class="org.bndtools.builder.validate.ProjectPathsValidator" />
+	</extension>
+
+	<extension point="bndtools.core.validators">
+		<validator name="Java versions check"
+			class="org.bndtools.builder.validate.JavaVersionsValidator" />
+	</extension>
+</plugin>

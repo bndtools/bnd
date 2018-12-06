@@ -1,0 +1,18 @@
+# use this runfile when you are on GTK 3.20+ 
+# because the version from Eclipse 4.4.2 doesnt work with newer versions of GTK
+
+-include: bndtools.shared.bndrun
+
+-runbundles: \
+	${crossplatform.bundles},\
+	org.eclipse.core.filesystem.linux.x86_64,\
+	org.eclipse.core.net.linux.x86_64,\
+	org.eclipse.swt.gtk.linux.x86_64;version='3.105.2'
+
+-runvm: ${crossplatform.vmargs}
+
+-runproperties: \
+	${crossplatform.runprops},\
+	osgi.ws=gtk,\
+	osgi.arch=x86_64,\
+	osgi.os=linux

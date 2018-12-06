@@ -1,0 +1,53 @@
+# Template inception... templates for generating template projects!
+
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/eclipse/jdt.bnd
+
+-resourceonly: true
+
+-includeresource: \
+	resources, \
+	{templates/bndrun/=shared}, \
+	{templates/project/=shared}, \
+	{templates/project-mustache/=shared}
+
+icon: data:image/gif;base64,${base64;icons/templates.gif}
+
+category: nnn/Template Projects
+
+Bundle-Name: Bndtools Template-Template
+
+templates-st: \
+	org.bndtools.template; \
+		org.bndtools.template=project; \
+		name=Project Template Project (StringTemplate); \
+		category=${category};\
+		dir=templates/project;\
+		icon="${icon}";\
+		help=project.help.xml,\
+	\
+	org.bndtools.template; \
+		org.bndtools.template=project; \
+		name=Run Template Project; \
+		category=${category};\
+		dir=templates/bndrun;\
+		icon="${icon}";\
+		help=bndrun.help.xml
+
+templates-mustache: \
+	org.bndtools.template;\
+		org.bndtools.template=project; \
+		name=Project Template Project (Mustache); \
+		category=${category}; \
+		dir=templates/project-mustache; \
+		icon="${icon}"; \
+		help=project.help.xml
+		
+
+Provide-Capability: ${templates-st}, ${templates-mustache}
+
+-pom: false
+Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-License:           EPL-1.0; \
+                          description="Eclipse Public License, Version 1.0"; \
+                          link="http://www.eclipse.org/legal/epl-v10.html"

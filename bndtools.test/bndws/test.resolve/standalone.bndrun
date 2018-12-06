@@ -1,0 +1,11 @@
+-plugin.enroute.distro = \
+	aQute.bnd.repository.osgi.OSGiRepository; \
+	        name		=       Distro; \
+	        locations	=       https://raw.githubusercontent.com/osgi/osgi.enroute/master/cnf/distro/index.xml
+
+-standalone:
+-runrequires: osgi.identity;filter:='(osgi.identity=biz.aQute.bndlib)'
+-runfw: org.eclipse.osgi;version='[3.10.100.v20150529-1857,3.10.100.v20150529-1857]'
+-runee: JavaSE-1.8
+
+-runbundles: biz.aQute.bndlib;version='[3.0.0,3.0.1)'
