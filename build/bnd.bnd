@@ -1,9 +1,6 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/eclipse/jdt.bnd
-
--sub: *.bnd
-
--releaserepo:
+-nobundles: true
 
 gittag: ${first;${system-allow-fail;git describe --abbrev=0},${base.version}.DEV}
 
@@ -23,6 +20,13 @@ p2 = bndtools.api, \
     org.bndtools.versioncontrol.ignores.plugin.git, \
     org.bndtools.templating,\
     org.bndtools.templating.gitrepo
+
+plugins: \
+    ${map;repo;${replace;${p2};$;\\\\\\;latest}},\
+    ${repo;biz.aQute.bndlib;latest},\
+    ${repo;biz.aQute.repository;latest},\
+    ${repo;biz.aQute.resolve;latest},\
+    ${repo;org.slf4j.api;latest}
 
 # Template projects which are not part of the p2 feature
 templates = \
