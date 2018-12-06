@@ -37,10 +37,6 @@ baselinerepo: https://dl.bintray.com/bndtools/bndtools/${baseline.version}
         revision="org.apache.maven:maven-core:3.3.3,org.sonatype.plexus:plexus-build-api:0.0.7"; \
         releaseUrls='https://repo.maven.apache.org/maven2';\
         location=${build}/cache/stable/m2eDeps/index.xml,\
-    aQute.lib.deployer.FileRepo; \
-        name='Build'; \
-        location=${build}/buildrepo; \
-        latest=false, \
     aQute.bnd.deployer.repository.LocalIndexedRepo; \
         name='Release'; \
         local=${workspace}/build/${target-dir}/repo; \

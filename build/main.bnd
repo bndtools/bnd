@@ -1,7 +1,0 @@
-# Only extra bundles that are needed for the feature are mentioned here
--resourceonly: true
--includeresource: \
-    ${repo;biz.aQute.bndlib;latest},\
-    ${repo;biz.aQute.repository;latest},\
-    ${repo;biz.aQute.resolve;latest},\
-    ${repo;org.slf4j.api;latest}

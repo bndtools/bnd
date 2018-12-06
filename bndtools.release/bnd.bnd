@@ -24,7 +24,8 @@ Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
 	osgi.cmpn;version=latest,\
-	${bndlib},\
+	aQute.libg;version=latest,\
+    biz.aQute.bndlib;version=latest,\
 	bndtools.utils;version=project;packages=*,\
 	bndtools.api;version=latest, \
 	bndtools.core;version=latest, \
@@ -60,3 +61,9 @@ Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	
 -testpath: \
 	${junit}
+
+-pom: false
+Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
+Bundle-License:           EPL-1.0; \
+                          description="Eclipse Public License, Version 1.0"; \
+                          link="http://www.eclipse.org/legal/epl-v10.html"
