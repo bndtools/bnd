@@ -1,7 +1,7 @@
 # Template inception... templates for generating template projects!
 
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -resourceonly: true
 
@@ -45,9 +45,3 @@ templates-mustache: \
 		
 
 Provide-Capability: ${templates-st}, ${templates-mustache}
-
--pom: false
-Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
-Bundle-License:           EPL-1.0; \
-                          description="Eclipse Public License, Version 1.0"; \
-                          link="http://www.eclipse.org/legal/epl-v10.html"

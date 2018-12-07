@@ -3,6 +3,8 @@
  */
 
 import aQute.bnd.gradle.Index
+import aQute.bnd.osgi.Jar
+import org.apache.tools.ant.filters.ReplaceTokens
 
 def buildProject = project
 
@@ -15,6 +17,7 @@ configure(parent) {
     dependsOn "${buildProject.path}:checkNeeded"
     dependsOn "${buildProject.path}:releaseNeeded"
     dependsOn "${buildProject.path}:index"
+    dependsOn "${buildProject.path}:p2Zip"
     description "Assembles, tests and releases the ${buildProject.name} project."
     group 'build'
   }
@@ -24,10 +27,136 @@ configure(parent) {
 /* Configure this project */
 def releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
 
+task p2Plugins(type: Sync) {
+  dependsOn build
+  from    bnd('plugins').tokenize(',')
+  into    "${buildDir}/plugins"
+}
+
+task p2FeatureProperties(type: WriteProperties) {
+  inputs.files p2Plugins
+  outputFile = file("${buildDir}/feature.properties")
+  doFirst {
+    property('master-version', String.format('%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
+                          bnd('gittag'),
+                          Calendar.getInstance(TimeZone.getTimeZone("UTC")),
+                          bnd('Git-SHA')))
+    property('base-version', bnd('base.version'))
+    fileTree(p2Plugins.destinationDir).each {
+      new Jar(it).withCloseable { jar ->
+        property("${jar.getBsn()}-version", jar.getVersion())
+      }
+    }
+  }
+}
+
+task p2FeatureMain(type: Zip) {
+  inputs.files p2FeatureProperties
+  destinationDir = file("${buildDir}/features")
+  archiveName    = 'bndtools.feature.jar'
+  from             'feature/bndtools'
+  include          'feature.xml'
+  doFirst {
+    Properties properties = new Properties()
+    p2FeatureProperties.outputFile.withInputStream {
+        properties.load(it)
+    }
+    filter(ReplaceTokens, tokens: properties )
+  }
+}
+
+task p2FeatureM2e(type: Zip) {
+  inputs.files p2FeatureProperties
+  destinationDir = file("${buildDir}/features")
+  archiveName    = 'bndtools.m2e.feature.jar'
+  from             'feature/bndtools-m2e'
+  include          'feature.xml'
+  doFirst {
+    Properties properties = new Properties()
+    p2FeatureProperties.outputFile.withInputStream {
+        properties.load(it)
+    }
+    filter(ReplaceTokens, tokens: properties )
+  }
+}
+
+task p2FeaturePde(type: Zip) {
+  inputs.files p2FeatureProperties
+  destinationDir = file("${buildDir}/features")
+  archiveName    = 'bndtools.pde.feature.jar'
+  from             'feature/bndtools-pde'
+  include          'feature.xml'
+  doFirst {
+    Properties properties = new Properties()
+    p2FeatureProperties.outputFile.withInputStream {
+        properties.load(it)
+    }
+    filter(ReplaceTokens, tokens: properties )
+  }
+}
+
+task p2 {
+  description 'Publish the p2 repositories.'
+  group       'release'
+  inputs.files p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde, 'p2.xml', 'feature/category.xml'
+  ext.destinationDir = file("${buildDir}/p2")
+  outputs.dir destinationDir
+  doLast {
+    def eclipseDir = file('eclipse-3.5.2')
+    javaexec {
+      classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
+      main = 'org.eclipse.equinox.launcher.Main'
+      if (logger.isDebugEnabled()) {
+        args '-consoleLog'
+      }
+      args '-application'
+      args 'org.eclipse.ant.core.antRunner'
+      args '-data'
+      args buildDir
+      args '-buildfile'
+      args 'p2.xml'
+      args 'p2Bndtools'
+    }.assertNormalExitValue()
+
+    javaexec {
+      classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
+      main = 'org.eclipse.equinox.launcher.Main'
+      if (logger.isDebugEnabled()) {
+        args '-consoleLog'
+      }
+      args '-application'
+      args 'org.eclipse.equinox.p2.publisher.CategoryPublisher'
+      args '-data'
+      args buildDir
+      args '-metadataRepository'
+      args uri(destinationDir)
+      args '-categoryDefinition'
+      args uri('feature/category.xml')
+      args '-compress'
+    }.assertNormalExitValue()
+
+    delete fileTree(eclipseDir).include('configuration/*.log'),
+      "${eclipseDir}/configuration/org.eclipse.core.runtime",
+      "${eclipseDir}/configuration/org.eclipse.equinox.app",
+      "${eclipseDir}/configuration/org.eclipse.osgi",
+      "${eclipseDir}/p2"
+  }
+}
+
+task p2Zip(type: Zip) {
+  description 'Create distribution archives containing p2 repository.'
+  group       'release'
+  inputs.files p2
+  destinationDir = buildDir
+  archiveName    = 'bndtools-latest.zip'
+  from             "${buildDir}/p2"
+  include          '**'
+}
+
 task('indexonly', type: Index) {
   description 'Index the release repository only. (Does not depend on releaseNeeded).'
   group 'release'
-  repositoryName = "Bnd ${version}"
+  repositoryName = "Bnd/Bndtools ${version}"
   destinationDir = releaserepo
   gzip = true
   bundles fileTree(destinationDir) {

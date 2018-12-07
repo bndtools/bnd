@@ -1,5 +1,5 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -includeresource: resources
 -resourceonly: true
@@ -84,9 +84,3 @@ component-icon: ${dataurl},${base64;icons/cog.gif}
 integration-test-icon: ${dataurl},${base64;icons/junit.gif}
 enroute-icon: ${dataurl},${base64;icons/enroute-bw-16x16.gif}
 felix-icon: ${dataurl},${base64;icons/felix.gif}
-
--pom: false
-Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
-Bundle-License:           EPL-1.0; \
-                          description="Eclipse Public License, Version 1.0"; \
-                          link="http://www.eclipse.org/legal/epl-v10.html"

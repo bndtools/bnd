@@ -1,9 +1,9 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -buildpath: \
-	osgi.annotation;version=latest,\
-    org.osgi.service.component.annotations;version=1.3.0,\
+	osgi.annotation;version=latest;maven-scope=provided,\
+    org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
 	bndtools.api;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest
 
@@ -16,13 +16,3 @@ Bundle-ActivationPolicy: lazy
 # Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
 Import-Package: \
 	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
-
-# Bnd 3.4 defaults to 1.3 as the base DS version. We want to work with older
-# DS versions since Eclipse Equinox DS currently does not support DS 1.3.
--dsannotations-options.version: version;minimum=1.0.0
-
--pom: false
-Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
-Bundle-License:           EPL-1.0; \
-                          description="Eclipse Public License, Version 1.0"; \
-                          link="http://www.eclipse.org/legal/epl-v10.html"

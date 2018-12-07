@@ -1,11 +1,11 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 -buildpath:  \
-	osgi.annotation; version=latest,\
-	osgi.core;version=latest,\
-    org.osgi.namespace.service;version=latest,\
-	aQute.libg;version=latest,\
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+    org.osgi.namespace.service;version=latest;maven-scope=provided,\
+	aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\
 	bndtools.api;version=latest,\
@@ -50,9 +50,3 @@ Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
 -includeresource: \
 	plugin.xml=_plugin.xml, \
 	resources
-
--pom: false
-Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
-Bundle-License:           EPL-1.0; \
-                          description="Eclipse Public License, Version 1.0"; \
-                          link="http://www.eclipse.org/legal/epl-v10.html"

@@ -1,21 +1,63 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
+-include: ${workspace}/cnf/includes/jdt.bnd
+-nobundles: true
 
--dependson = aQute.libg, \
-             biz.aQute.bnd, \
-             biz.aQute.bnd.annotation, \
-             biz.aQute.bnd.test, \
-             biz.aQute.bnd.testextension, \
-             biz.aQute.bnd.exporters, \
-             biz.aQute.bnd.reporter, \
-             biz.aQute.bnd.gradle, \
-             biz.aQute.bndlib, \
-             biz.aQute.bndlib.tests, \
-             biz.aQute.bndall.tests, \
-             biz.aQute.bndlib.comm.tests, \
-             biz.aQute.junit, \
-             biz.aQute.launcher, \
-             biz.aQute.remote, \
-             biz.aQute.repository, \
-             biz.aQute.resolve
--nobundles = true
+gittag: ${first;${system-allow-fail;git describe --abbrev=0},${base.version}.DEV}
+
+# Plugins to be included in the Bndtools p2 update repository
+p2: \
+    bndtools.api, \
+    bndtools.builder, \
+    bndtools.core, \
+    bndtools.jareditor, \
+    bndtools.m2e, \
+    bndtools.pde, \
+    bndtools.release, \
+    org.bndtools.embeddedrepo, \
+    org.bndtools.headless.build.manager, \
+    org.bndtools.headless.build.plugin.ant, \
+    org.bndtools.headless.build.plugin.gradle, \
+    org.bndtools.versioncontrol.ignores.manager, \
+    org.bndtools.versioncontrol.ignores.plugin.git, \
+    org.bndtools.templating, \
+    org.bndtools.templating.gitrepo, \
+    biz.aQute.bndlib, \
+    biz.aQute.repository, \
+    biz.aQute.resolve, \
+    org.slf4j.api
+plugins: ${map;repo;${replace;${p2};$;\\\\\\;latest}}
+
+-dependson: aQute.libg, \
+            biz.aQute.bnd, \
+            biz.aQute.bnd.annotation, \
+            biz.aQute.bnd.test, \
+            biz.aQute.bnd.testextension, \
+            biz.aQute.bnd.exporters, \
+            biz.aQute.bnd.reporter, \
+            biz.aQute.bnd.gradle, \
+            biz.aQute.bndlib, \
+            biz.aQute.bndlib.tests, \
+            biz.aQute.bndall.tests, \
+            biz.aQute.bndlib.comm.tests, \
+            biz.aQute.junit, \
+            biz.aQute.launcher, \
+            biz.aQute.remote, \
+            biz.aQute.repository, \
+            biz.aQute.resolve, \
+            bndtools.api, \
+            bndtools.builder, \
+            bndtools.core, \
+            bndtools.jareditor, \
+            bndtools.m2e, \
+            bndtools.pde, \
+            bndtools.release, \
+            org.bndtools.embeddedrepo, \
+            org.bndtools.headless.build.manager, \
+            org.bndtools.headless.build.plugin.ant, \
+            org.bndtools.headless.build.plugin.gradle, \
+            org.bndtools.versioncontrol.ignores.manager, \
+            org.bndtools.versioncontrol.ignores.plugin.git, \
+            org.bndtools.templating, \
+            org.bndtools.templating.gitrepo, \
+            org.bndtools.templates.osgi, \
+            org.bndtools.templates.template

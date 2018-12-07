@@ -29,7 +29,7 @@ Tester-Plugin: \
 
 
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
+-include: ${workspace}/cnf/includes/jdt.bnd
 
 -buildpath: \
 	osgi.core;version=4.2;maven-scope=provided,\

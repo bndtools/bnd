@@ -4,7 +4,7 @@
 # This is not a bundle ...
 #
 
--include: ${workspace}/cnf/eclipse/jdt.bnd
+-include: ${workspace}/cnf/includes/jdt.bnd
 
 -dependson: biz.aQute.bnd.embedded-repo
 -nobundles: true

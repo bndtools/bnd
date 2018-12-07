@@ -1,5 +1,5 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd, icons.properties
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd, icons.properties
 
 -dependson: bndtools.bndplugins
 
@@ -75,15 +75,15 @@ eclipse.deps: \
 	org.eclipse.core.contenttype
 
 -buildpath: \
-	osgi.annotation;version=latest,\
-	osgi.core;version=latest,\
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
 	org.osgi.service.component;version=1.3.0,\
-	org.osgi.service.component.annotations;version=1.3.0,\
+	org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
 	org.osgi.service.metatype;version=1.3.0,\
-	org.osgi.namespace.contract;version=latest,\
-	org.osgi.namespace.extender;version=latest,\
-	org.osgi.namespace.service;version=latest,\
-	aQute.libg;version=latest,\
+	org.osgi.namespace.contract;version=latest;maven-scope=provided,\
+	org.osgi.namespace.extender;version=latest;maven-scope=provided,\
+	org.osgi.namespace.service;version=latest;maven-scope=provided,\
+	aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\
 	biz.aQute.resolve;version=latest,\
@@ -92,8 +92,8 @@ eclipse.deps: \
 	org.bndtools.headless.build.manager;version=latest,\
 	org.bndtools.versioncontrol.ignores.manager;version=latest,\
 	org.bndtools.templating; version=latest,\
-	org.apache.servicemix.bundles.kxml2;version=latest,\
-	org.apache.servicemix.bundles.xmlpull;version=latest,\
+	org.apache.servicemix.bundles.kxml2;version=latest;maven-scope=provided,\
+	org.apache.servicemix.bundles.xmlpull;version=latest;maven-scope=provided,\
 	bndtools.utils;version=project;packages=*
 
 -testpath: \
@@ -101,16 +101,6 @@ eclipse.deps: \
 	slf4j.simple,\
 	${junit},\
 	${mockito}
-
-# Bnd 3.4 defaults to 1.3 as the base DS version. We want to work with older
-# DS versions since Eclipse Equinox DS currently does not support DS 1.3.
--dsannotations-options.version: version;minimum=1.0.0
-
--pom: false
-Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
-Bundle-License:           EPL-1.0; \
-                          description="Eclipse Public License, Version 1.0"; \
-                          link="http://www.eclipse.org/legal/epl-v10.html"
 
 # Runtime Options and Variables
 -runpath: org.eclipse.osgi,\

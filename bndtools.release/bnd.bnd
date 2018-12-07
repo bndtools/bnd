@@ -1,5 +1,5 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
 
 Test: true
 Bundle-SymbolicName: bndtools.release;singleton:=true
@@ -21,10 +21,9 @@ Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 					/=resources
 
 -buildpath:\
-	osgi.annotation;version=latest,\
-	osgi.core;version=latest,\
-	osgi.cmpn;version=latest,\
-	aQute.libg;version=latest,\
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+	aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest,\
 	bndtools.utils;version=project;packages=*,\
 	bndtools.api;version=latest, \
@@ -43,7 +42,7 @@ Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	org.eclipse.equinox.registry,\
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.ui,\
-	org.eclipse.osgi,\
+	org.eclipse.osgi;maven-scope=provided,\
 	org.eclipse.core.commands,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.forms,\
@@ -61,9 +60,3 @@ Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	
 -testpath: \
 	${junit}
-
--pom: false
-Bundle-Copyright:         Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
-Bundle-License:           EPL-1.0; \
-                          description="Eclipse Public License, Version 1.0"; \
-                          link="http://www.eclipse.org/legal/epl-v10.html"
