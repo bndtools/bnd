@@ -113,6 +113,11 @@ task p2 {
       args 'org.eclipse.ant.core.antRunner'
       args '-data'
       args buildDir
+      if (logger.isDebugEnabled()) {
+        args '-debug'
+      } else {
+        args '-quiet'
+      }
       args '-buildfile'
       args 'p2.xml'
       args 'p2Bndtools'
