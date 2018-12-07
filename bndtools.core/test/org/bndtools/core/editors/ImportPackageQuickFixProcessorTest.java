@@ -42,8 +42,6 @@ import aQute.lib.strings.Strings;
 import static org.eclipse.jdt.core.compiler.IProblem.*;
 import static org.bndtools.core.editors.ImportPackageQuickFixProcessor.*;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -247,19 +245,6 @@ public class ImportPackageQuickFixProcessorTest {
             .isNotNull();
     }
 
-    // This could be better put in a test utils class somewhere if such a thing existed.
-    public static void setFinalStatic(Class<?> clazz, String field, Object newValue) throws Exception {
-        Field fieldObj = clazz.getDeclaredField(field);
-        fieldObj.setAccessible(true);
-
-        // remove final modifier from field
-        Field modifiersField = Field.class.getDeclaredField("modifiers");
-        modifiersField.setAccessible(true);
-        modifiersField.setInt(fieldObj, fieldObj.getModifiers() & ~Modifier.FINAL);
-
-        fieldObj.set(null, newValue);
-    }
-
     @Before
     public void setUp() throws Exception {
         sut = new FakeImportPackageQuickFixProcessor();
@@ -267,7 +252,7 @@ public class ImportPackageQuickFixProcessorTest {
         repoMap = new HashMap<>();
 
         logger = mock(ILogger.class);
-        setFinalStatic(ImportPackageQuickFixProcessor.class, "logger", logger);
+        ImportPackageQuickFixProcessor.logger = logger;
 
         workspacePlugin = mock(WorkspaceRepository.class, DO_NOT_CALL);
         workspaceRepo = mock(Repository.class, DO_NOT_CALL);

@@ -71,7 +71,7 @@ import bndtools.central.RepositoryUtils;
 
 public class ImportPackageQuickFixProcessor implements IQuickFixProcessor {
 
-    private static final ILogger logger = Logger.getLogger(ImportPackageQuickFixProcessor.class);
+    static ILogger logger = Logger.getLogger(ImportPackageQuickFixProcessor.class);
 
     // Relevance constants
     public static final int ADD_BUNDLE = 15;
