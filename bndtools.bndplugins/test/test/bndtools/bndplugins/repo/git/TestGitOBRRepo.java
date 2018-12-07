@@ -18,55 +18,39 @@ import junit.framework.TestCase;
 
 public class TestGitOBRRepo extends TestCase {
 
-    private final File getCheckoutDir = IO.getFile("generated/test-gitcheckout-get-tmp");
-    private final File putCheckoutDir = IO.getFile("generated/test-gitcheckout-put-tmp");
+    private File checkoutDir;
+    private File repoDstDir;
 
     @Override
     protected void setUp() throws Exception {
-        IO.delete(getCheckoutDir);
-        IO.delete(putCheckoutDir);
-        getCheckoutDir.mkdirs();
-        putCheckoutDir.mkdirs();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        IO.delete(getCheckoutDir);
-        IO.delete(putCheckoutDir);
+        File tmp = IO.getFile("generated/tmp/test/" + getName());
+        IO.delete(tmp);
+        checkoutDir = IO.getFile(tmp, "gitcheckout");
+        repoDstDir = IO.getFile(tmp, "testrepo.git");
+        checkoutDir.mkdirs();
+        repoDstDir.mkdirs();
     }
 
     public void testGitRepoGet() throws Exception {
-        GitOBRRepo repo = getOBRRepo(getCheckoutDir);
+        GitOBRRepo repo = getOBRRepo();
         File bundleFile = repo.get("osgi.core", new Version("4.2.0"), null);
         assertNotNull("Repository returned null", bundleFile);
-        assertEquals(IO.getFile(getCheckoutDir, "jars/osgi.core/osgi.core-4.2.0.jar")
+        assertEquals(IO.getFile(checkoutDir, "jars/osgi.core/osgi.core-4.2.0.jar")
             .getAbsoluteFile(), bundleFile);
-        removeOBRRepo();
     }
 
     public void testGitRepoPut() throws Exception {
-        GitOBRRepo repo = getOBRRepo(putCheckoutDir);
+        GitOBRRepo repo = getOBRRepo();
         repo.put(new BufferedInputStream(new FileInputStream(IO.getFile("testdata/eclipse2/ploogins/javax.servlet_2.5.0.v200806031605.jar"))), new RepositoryPlugin.PutOptions());
         File bundleFile = repo.get("javax.servlet", new Version("2.5"), null);
         assertNotNull("Repository returned null", bundleFile);
-        assertEquals(IO.getFile(putCheckoutDir, "jars/javax.servlet/javax.servlet-2.5.0.jar"), bundleFile);
-        removeOBRRepo();
+        assertEquals(IO.getFile(checkoutDir, "jars/javax.servlet/javax.servlet-2.5.0.jar"), bundleFile);
     }
 
-    private static File getOBRRepoDstDir() {
-        return IO.getFile("testdata/tmp/testrepo.git");
-    }
-
-    private static void removeOBRRepo() throws IOException {
-        IO.deleteWithException(getOBRRepoDstDir());
-    }
-
-    private GitOBRRepo getOBRRepo(File checkoutDir) throws IOException {
+    private GitOBRRepo getOBRRepo() throws IOException {
         File srcDir = IO.getFile("testdata/testrepo.git");
-        File dstDir = getOBRRepoDstDir();
-        IO.copy(srcDir, dstDir);
-
-        String repoUri = dstDir.getAbsoluteFile()
+        IO.copy(srcDir, repoDstDir);
+        String repoUri = repoDstDir.getAbsoluteFile()
             .toURI()
             .toString();
 
