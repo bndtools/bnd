@@ -66,7 +66,6 @@ public class Bndrun extends DefaultTask {
     super()
     bndWorkspace = project.findProperty('bndWorkspace')
     ignoreFailures = false
-    workingDir = temporaryDir
     if (bndWorkspace == null) {
       convention.plugins.bundles = new FileSetRepositoryConvention(this)
     }
@@ -97,7 +96,7 @@ public class Bndrun extends DefaultTask {
    *
    */
   public File getWorkingDir() {
-    return workingDir
+    return workingDir ?: temporaryDir
   }
 
   /**
