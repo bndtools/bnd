@@ -25,80 +25,64 @@ configure(parent) {
 }
 
 /* Configure this project */
-def releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
+File releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
+String masterVersion = String.format('%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
+                          bnd('gittag'),
+                          Calendar.getInstance(TimeZone.getTimeZone("UTC")),
+                          bnd('Git-SHA'))
+Map<String, String> featureProperties = ['master-version': masterVersion, 'base-version': bnd('base.version')]
 
 task p2Plugins(type: Sync) {
   dependsOn build
   from    bnd('plugins').tokenize(',')
   into    "${buildDir}/plugins"
-}
-
-task p2FeatureProperties(type: WriteProperties) {
-  inputs.files p2Plugins
-  outputFile = file("${buildDir}/feature.properties")
-  doFirst {
-    property('master-version', String.format('%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
-                          bnd('gittag'),
-                          Calendar.getInstance(TimeZone.getTimeZone("UTC")),
-                          bnd('Git-SHA')))
-    property('base-version', bnd('base.version'))
-    fileTree(p2Plugins.destinationDir).each {
-      new Jar(it).withCloseable { jar ->
-        property("${jar.getBsn()}-version", jar.getVersion())
-      }
+  eachFile { details ->
+    new Jar(details.file).withCloseable { jar ->
+      String bsn = jar.getBsn()
+      String version = jar.getVersion()
+      featureProperties["${bsn}-version"] = version
+      details.name = "${bsn}_${version}.jar"
     }
   }
 }
 
 task p2FeatureMain(type: Zip) {
-  inputs.files p2FeatureProperties
+  dependsOn p2Plugins
   destinationDir = file("${buildDir}/features")
-  archiveName    = 'bndtools.feature.jar'
-  from             'feature/bndtools'
+  archiveName    = "bndtools.main.feature_${masterVersion}.jar"
+  from             'features/bndtools.main'
   include          'feature.xml'
   doFirst {
-    Properties properties = new Properties()
-    p2FeatureProperties.outputFile.withInputStream {
-        properties.load(it)
-    }
-    filter(ReplaceTokens, tokens: properties )
+    filter(ReplaceTokens, tokens: featureProperties )
   }
 }
 
 task p2FeatureM2e(type: Zip) {
-  inputs.files p2FeatureProperties
+  dependsOn p2Plugins
   destinationDir = file("${buildDir}/features")
-  archiveName    = 'bndtools.m2e.feature.jar'
-  from             'feature/bndtools-m2e'
+  archiveName    = "bndtools.m2e.feature_${masterVersion}.jar"
+  from             'features/bndtools.m2e'
   include          'feature.xml'
   doFirst {
-    Properties properties = new Properties()
-    p2FeatureProperties.outputFile.withInputStream {
-        properties.load(it)
-    }
-    filter(ReplaceTokens, tokens: properties )
+    filter(ReplaceTokens, tokens: featureProperties )
   }
 }
 
 task p2FeaturePde(type: Zip) {
-  inputs.files p2FeatureProperties
+  dependsOn p2Plugins
   destinationDir = file("${buildDir}/features")
-  archiveName    = 'bndtools.pde.feature.jar'
-  from             'feature/bndtools-pde'
+  archiveName    = "bndtools.pde.feature_${masterVersion}.jar"
+  from             'features/bndtools.pde'
   include          'feature.xml'
   doFirst {
-    Properties properties = new Properties()
-    p2FeatureProperties.outputFile.withInputStream {
-        properties.load(it)
-    }
-    filter(ReplaceTokens, tokens: properties )
+    filter(ReplaceTokens, tokens: featureProperties )
   }
 }
 
 task p2 {
   description 'Publish the p2 repositories.'
   group       'release'
-  inputs.files p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde, 'p2.xml', 'feature/category.xml'
+  inputs.files p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde, 'p2.xml', 'features/category.xml'
   ext.destinationDir = file("${buildDir}/p2")
   outputs.dir destinationDir
   doLast {
@@ -136,7 +120,7 @@ task p2 {
       args '-metadataRepository'
       args uri(destinationDir)
       args '-categoryDefinition'
-      args uri('feature/category.xml')
+      args uri('features/category.xml')
       args '-compress'
     }.assertNormalExitValue()
 
