@@ -33,16 +33,14 @@ Gradle is used to build Bnd/Bndtools. The workspace root has a `build.gradle` fi
 
 The workspace root includes the gradle wrapper, `gradlew`, command.
 
-[![CloudBees Build Status](https://bndtools.ci.cloudbees.com/job/bnd.master/badge/icon)](https://bndtools.ci.cloudbees.com/job/bnd.master/)
+[![Azure Pipeline Build Status](https://dev.azure.com/bndtools/bnd/_apis/build/status/bndtools.bnd?branchName=master)](https://dev.azure.com/bndtools/bnd/_build/latest?definitionId=1?branchName=master)
 [![Travis CI Build Status](https://travis-ci.org/bndtools/bnd.svg?branch=master)](https://travis-ci.org/bndtools/bnd)
 
 ## Release
-Bnd/Bndtools is continuously built and released on [CloudBees](https://bndtools.ci.cloudbees.com/).
+Bnd/Bndtools is continuously built on [Azure Pipeline](https://dev.azure.com/bndtools/bnd/_build?definitionId=1).
 
-A Maven repository of the latest build is available at <https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/>.
+A Maven repository of the latest build is available at <https://oss.sonatype.org/content/repositories/snapshots/>.
 A snapshot version of all the bundles and Maven and Gradle plugins is there.
-
-[![Built on DEV@cloud](http://www.cloudbees.com/sites/default/files/Button-Built-on-CB-1.png)](http://www.cloudbees.com/foss/foss-dev.cb)
 
 ## Feedback
 Feedback is always welcome, for general discussions use the [bndtools-users@googlegroups.com](https://groups.google.com/d/forum/bndtools-users) mail list. We also have the [bndtools-dev@googlegroups.com](https://groups.google.com/d/forum/bndtools-dev) mail list for discussions on the development of bnd.

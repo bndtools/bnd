@@ -19,12 +19,10 @@ bnd is not a single product, it is a library (bndlib) used in many different sof
 That said, there is also a command line version of bnd, providing an easy way to try out its many features. You can install bnd through [brew][1] on MacOS.
 
 ## Libraries
-The binaries are available on [Cloudbees][4]. The latest version can be found at:
+The binaries are available on [OSSRH][4]. The latest version can be found at:
 
-	https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/
+	https://oss.sonatype.org/content/repositories/snapshots/
 
-However, Cloudbees currently also contains the previously released libraries.
-	
 If you are a maven user, you can find many version in central. The coordinates are:
 
 		<dependency>
@@ -46,6 +44,6 @@ If you're behind a firewall that requires proxies or you use repositories that r
 
 [1]: https://brew.sh/
 [3]: https://github.com/bndtools/bnd
-[4]: https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/
+[4]: https://oss.sonatype.org/content/repositories/snapshots/
 [5]: https://github.com/bndtools/bnd/docs
 [6]: /instructions/connection-settings

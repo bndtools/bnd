@@ -598,7 +598,7 @@ plus _${project.configurations.archives.artifacts.files}_.
 
 If you want to try the latest development SNAPSHOT build of the 
 Bnd Gradle Plugins, you will need to adjust your `buildscript` classpath 
-to refer to the CI built repository on Cloudbees and select the latest version
+to refer to the snapshot repository and select the latest version
 (`+`) of the plugin. For example, edit the `buildscript` script block (in
 `settings.gradle` for Workspace builds), to configure the repository and
 version of the plugin jar:
@@ -608,7 +608,7 @@ buildscript {
   repositories {
     mavenCentral()
     maven {
-      url 'https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles'
+      url 'https://oss.sonatype.org/content/repositories/snapshots'
     }
   }
   dependencies {
