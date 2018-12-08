@@ -17,7 +17,9 @@ configure(parent) {
     dependsOn "${buildProject.path}:checkNeeded"
     dependsOn "${buildProject.path}:releaseNeeded"
     dependsOn "${buildProject.path}:index"
-    dependsOn "${buildProject.path}:p2Zip"
+    if (JavaVersion.current().isJava8()) {
+      dependsOn "${buildProject.path}:p2Zip"
+    }
     description "Assembles, tests and releases the ${buildProject.name} project."
     group 'build'
   }
