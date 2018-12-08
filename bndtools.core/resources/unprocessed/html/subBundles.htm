@@ -1,0 +1,20 @@
+<html>
+<body>
+
+<h2>Sub-bundles</h2>
+<p>Bnd projects support building a single bundle per workspace project, or multiple bundles.</p>
+
+
+<p>When building a single bundle, all data about both the project (e.g. the build path) <em>and</em> about
+the output bundle (such as private packages, exported packages, service components, etc) is included in the
+<code>bnd.bnd</code> file.</p>
+
+<p>However when building multiple bundles, the <code>bnd.bnd</code> file only contains the project configuration.
+Information about the output bundles is held in separate files called, e.g., <code>something.bnd</code>. These
+files are called <strong>sub-bundles</strong>.</p>
+
+<p>When switching from a single-bundle project to a multiple-bundle project, it is often necessary to move some
+instructions from the <code>bnd.bnd</code> file into the new sub-bundle file.</p>
+
+</body>
+</html>

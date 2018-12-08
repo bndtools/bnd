@@ -1,0 +1,32 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+-nobundles: true
+
+-buildpath: \
+	osgi.annotation;version=latest,\
+    osgi.core;version=latest, \
+    org.osgi.namespace.contract;version=latest,\
+    org.osgi.namespace.extender;version=latest,\
+    org.osgi.namespace.service;version=latest,\
+    aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest, \
+    bndtools.api;version=latest, \
+    org.eclipse.osgi, \
+    org.eclipse.equinox.common, \
+    org.eclipse.equinox.registry, \
+    org.eclipse.core.runtime, \
+    org.eclipse.core.commands, \
+    org.eclipse.core.resources, \
+    org.eclipse.core.jobs, \
+    org.eclipse.jface, \
+    org.eclipse.swt.cocoa.macosx.x86_64;packages=*, \
+    org.eclipse.swt, \
+    org.eclipse.ui.ide, \
+    org.eclipse.ui.workbench, \
+    org.eclipse.jdt.core, \
+    org.eclipse.text
+
+-testpath: \
+    ${junit}
+
+# No exports. This is bundle is not intended for runtime use.

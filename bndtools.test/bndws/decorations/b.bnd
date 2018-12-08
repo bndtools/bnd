@@ -1,0 +1,7 @@
+Private-Package: b.b.c
+
+#
+# Override the version in the manifest
+# this 2.3 must now show up on b.b.e
+#
+Export-Package: a.b.e;version=5, b.b.e;version=2.3

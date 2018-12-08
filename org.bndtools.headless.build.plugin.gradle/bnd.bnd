@@ -1,0 +1,27 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+    org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
+	aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest,\
+	bndtools.api;version=latest,\
+	org.bndtools.headless.build.manager;version=latest,\
+	org.bndtools.versioncontrol.ignores.manager;version=latest,\
+	bndtools.utils;version=project;packages=*,\
+	${junit}
+-includeresource: \
+	templates=resources/templates/unprocessed, \
+	{templates=resources/templates/filter}
+
+# we really need this, otherwise Eclipse will not start our bundles
+Bundle-ActivationPolicy: lazy
+
+-conditionalpackage: \
+	org.bndtools.utils.copy.bundleresource,\
+	aQute.lib.*;-split-package:=merge-first, \
+	aQute.libg.*;-split-package:=merge-first
+-includepackage: \
+	org.bndtools.headless.build.plugin.gradle.*

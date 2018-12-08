@@ -1,0 +1,8 @@
+<form>
+	<p>Creates a project for integration testing bundles inside an OSGi framework. The following dependencies are added to the build path:</p>
+	<li>OSGi Annotation 6.0.1</li>
+	<li>OSGi Core 6.0</li>
+	<li>OSGi Compendium 6.0</li>
+	<li>JUnit 4</li>
+	<li>Mockito Core 1.9</li>
+</form>

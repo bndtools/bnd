@@ -1,0 +1,47 @@
+# Template inception... templates for generating template projects!
+
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-resourceonly: true
+
+-includeresource: \
+	resources, \
+	{templates/bndrun/=shared}, \
+	{templates/project/=shared}, \
+	{templates/project-mustache/=shared}
+
+icon: data:image/gif;base64,${base64;icons/templates.gif}
+
+category: nnn/Template Projects
+
+Bundle-Name: Bndtools Template-Template
+
+templates-st: \
+	org.bndtools.template; \
+		org.bndtools.template=project; \
+		name=Project Template Project (StringTemplate); \
+		category=${category};\
+		dir=templates/project;\
+		icon="${icon}";\
+		help=project.help.xml,\
+	\
+	org.bndtools.template; \
+		org.bndtools.template=project; \
+		name=Run Template Project; \
+		category=${category};\
+		dir=templates/bndrun;\
+		icon="${icon}";\
+		help=bndrun.help.xml
+
+templates-mustache: \
+	org.bndtools.template;\
+		org.bndtools.template=project; \
+		name=Project Template Project (Mustache); \
+		category=${category}; \
+		dir=templates/project-mustache; \
+		icon="${icon}"; \
+		help=project.help.xml
+		
+
+Provide-Capability: ${templates-st}, ${templates-mustache}

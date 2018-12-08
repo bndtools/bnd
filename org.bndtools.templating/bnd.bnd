@@ -1,0 +1,37 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-buildpath:\
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+    org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
+    org.osgi.service.metatype;version=1.3.0,\
+	aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest,\
+	biz.aQute.repository;version=latest,\
+	org.eclipse.equinox.common,\
+	org.antlr:ST4:jar:complete;maven-scope=provided,\
+	com.github.spullara.mustache.java:compiler;maven-scope=provided,\
+	com.google.guava;version=latest;maven-scope=provided
+
+-testpath: \
+	slf4j.api,\
+	slf4j.simple,\
+	${junit},\
+	bndtools.utils;version=project;packages=*
+
+-conditionalpackage: \
+	org.stringtemplate.*, \
+	st4hidden.*, \
+	aQute.lib.*, \
+	aQute.libg.*,\
+	com.github.mustachejava.*,\
+	com.google.common.*
+	
+Bundle-ActivationPolicy: lazy
+
+# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: sun.misc; resolution:=optional,\
+    com.google.appengine.*; resolution:=optional,\
+    com.google.apphosting.*; resolution:=optional,\
+	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!

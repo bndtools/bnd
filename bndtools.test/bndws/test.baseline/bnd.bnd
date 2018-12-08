@@ -1,0 +1,9 @@
+Bundle-Version: 2.3.5.${tstamp}
+Export-Package: \
+	test.baseline
+
+-buildpath: \
+	osgi.core;version=@5
+	
+-releaserepo: Local
+-baseline: *

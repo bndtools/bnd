@@ -1,0 +1,37 @@
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+	aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest,\
+	biz.aQute.resolve;version=latest,\
+	bndtools.api;version=latest,\
+	bndtools.core;version=latest,\
+	org.eclipse.core.commands,\
+	org.eclipse.core.jobs,\
+	org.eclipse.core.runtime,\
+	org.eclipse.core.resources,\
+	org.eclipse.equinox.common,\
+	org.eclipse.jface,\
+	org.eclipse.pde.core,\
+	org.eclipse.pde.ui,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
+	org.eclipse.swt,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.ui.ide,\
+	org.eclipse.osgi;maven-scope=provided
+
+Bundle-SymbolicName: ${p}; singleton:=true
+Bundle-ActivationPolicy: lazy
+
+# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: \
+	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+
+-conditionalpackage: aQute.lib*;-split-package:=first
+
+-includepackage: bndtools.pde.*
+
+-includeresource: \
+	plugin.xml=_plugin.xml

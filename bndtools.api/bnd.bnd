@@ -1,0 +1,17 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided, \
+	aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest, \
+	org.eclipse.equinox.common, \
+	org.eclipse.core.resources,\
+	org.eclipse.core.runtime,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
+	org.eclipse.jface
+
+Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+
+-conditionalpackage: aQute.lib*

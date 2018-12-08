@@ -1,0 +1,8 @@
+-plugin: \
+	aQute.bnd.repository.osgi.OSGiRepository; \
+		name=Bndtools Hub; \
+		locations=https://raw.githubusercontent.com/bndtools/bundle-hub/master/index.xml.gz
+		
+
+-releaserepo: Release
+

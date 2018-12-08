@@ -1,0 +1,4 @@
+-buildpath: \
+	javax.inject,\
+	javax.servlet.jsp;version=2.0,\
+	javax.xml

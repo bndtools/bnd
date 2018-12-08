@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.0"?>
+<plugin>
+
+    <extension id="ide" point="org.eclipse.core.runtime.products"> 
+      <product name="%productName" application="org.eclipse.ui.ide.workbench" description="%productBlurb"> 
+          <property name="windowImages" value="eclipse.gif,eclipse32.gif,eclipse48.gif,eclipse.png,eclipse32.png,eclipse48.png"/> 
+          <property name="aboutImage" value="eclipse_lg.gif"/> 
+          <property name="aboutText" value="%productBlurb"/> 
+          <property name="appName" value="Eclipse"/> 
+          <property name="preferenceCustomization" value="plugin_customization.ini"/>
+          <property
+                name="startupForegroundColor"
+                value="C8D5EA"/>
+          <property
+                name="startupMessageRect"
+                value="7,220,441,20"/>
+          <property
+                name="startupProgressRect"
+                value="0,280,455,15"/> 
+          <property
+          		name="introTitle"
+          		value="%productIntroTitle"/>
+          <property
+          		name="introBrandingImage"
+          		value="product:intro-eclipse.png"/>
+          <property
+          		name="introBrandingImageText"
+          		value="%productIntroBrandingText"/>
+		  <property
+				name="introDescription-overview"
+				value="%introDescription-overview"/>
+		  <property
+				name="introDescription-tutorials"
+				value="%introDescription-tutorials"/>
+		  <property
+				name="introDescription-samples"
+				value="%introDescription-samples"/>
+    <property
+          name="buildIdLocation"
+          value="303,190">
+    </property>
+      </product> 
+    </extension> 
+
+	<extension
+		point="org.eclipse.ui.intro">
+      <introProductBinding
+            introId="org.eclipse.ui.intro.universal"
+            productId="org.eclipse.sdk.ide">
+      </introProductBinding>
+    </extension>
+
+    <extension
+         point="org.eclipse.ui.activities">
+  
+      <activity
+            name="%activity.java"
+            description="%activity.java.desc"
+            id="org.eclipse.javaDevelopment">
+      </activity>
+      
+      <activity
+            name="%activity.plugin"
+            description="%activity.plugin.desc"
+            id="org.eclipse.plugInDevelopment">
+      </activity>
+      <activityRequirementBinding
+            activityId="org.eclipse.plugInDevelopment"
+            requiredActivityId="org.eclipse.javaDevelopment">
+      </activityRequirementBinding>
+      <activity
+            description="%activity.debug.description"
+            id="org.eclipse.debugSupport"
+            name="%activity.debug">
+      </activity>
+      
+  
+      <activity
+            name="%activity.team.cvs"
+            description="%activity.team.cvs.desc"
+            id="org.eclipse.team.cvs">
+      </activity> 
+      
+      <activity
+            name="%activity.team"
+            description="%activity.team.desc"
+            id="org.eclipse.team">
+      </activity>
+      
+      <activityRequirementBinding
+            activityId="org.eclipse.team.cvs"
+            requiredActivityId="org.eclipse.team">
+      </activityRequirementBinding>
+      
+      <activityPatternBinding
+            activityId="org.eclipse.javaDevelopment"
+            pattern="org\.eclipse\.jdt\.debug/debugModel">
+      </activityPatternBinding>
+      
+      <activityPatternBinding
+            activityId="org.eclipse.javaDevelopment"
+            pattern="org\.eclipse\.jdt\..*/.*">
+      </activityPatternBinding>
+      
+      <activityPatternBinding
+            activityId="org.eclipse.javaDevelopment"
+            pattern="org\.eclipse\.jdt/.*">
+      </activityPatternBinding>
+      
+      <activityPatternBinding
+            activityId="org.eclipse.javaDevelopment"
+            pattern="org\.eclipse\.jdt\.core/javanature">
+
+      </activityPatternBinding>
+      
+      <activityPatternBinding
+            activityId="org.eclipse.plugInDevelopment"
+            pattern="org\.eclipse\.pde\..*/.*">
+      </activityPatternBinding>
+      
+      <activityPatternBinding
+            activityId="org.eclipse.plugInDevelopment"
+            pattern="org\.eclipse\.pde/.*">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="org.eclipse.debugSupport"
+            pattern="org\.eclipse\.debug\.ui/.*">
+      </activityPatternBinding>
+      
+      <activityPatternBinding
+            activityId="org.eclipse.plugInDevelopment"
+            pattern="org\.eclipse\.pde/PluginNature">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="org.eclipse.team"
+            pattern="org\.eclipse\.team\.ui/org.*">
+      </activityPatternBinding> 
+      <activityPatternBinding
+            activityId="org.eclipse.team"
+            pattern="org\.eclipse\.compare/compareWithPatch">
+      </activityPatternBinding>           
+      <activityPatternBinding
+            activityId="org.eclipse.team.cvs"
+            pattern="org\.eclipse\.team\.cvs\.ui/.*">
+      </activityPatternBinding>
+      <activityPatternBinding
+            activityId="org.eclipse.team.cvs"
+            pattern="org\.eclipse\.team\.cvs\.core/.*cvsnature">
+      </activityPatternBinding>
+      
+      <category
+            name="%activity.cat.development"
+            description="%activity.cat.development.desc"
+            id="org.eclipse.categories.developmentCategory">
+      </category>
+
+ 	  <category
+            name="%activity.cat.team"
+            description="%activity.cat.team.desc"
+            id="org.eclipse.categories.teamCategory">
+
+      </category>
+      
+      <categoryActivityBinding
+            activityId="org.eclipse.javaDevelopment"
+            categoryId="org.eclipse.categories.developmentCategory">
+      </categoryActivityBinding>
+      
+      <categoryActivityBinding
+            activityId="org.eclipse.plugInDevelopment"
+            categoryId="org.eclipse.categories.developmentCategory">
+      </categoryActivityBinding>
+       <categoryActivityBinding
+             activityId="org.eclipse.debugSupport"
+             categoryId="org.eclipse.categories.developmentCategory">
+       </categoryActivityBinding>
+
+      <categoryActivityBinding
+            activityId="org.eclipse.team"
+            categoryId="org.eclipse.categories.teamCategory">
+      </categoryActivityBinding>        
+      
+      <categoryActivityBinding
+            activityId="org.eclipse.team.cvs"
+            categoryId="org.eclipse.categories.teamCategory">
+      </categoryActivityBinding>
+  
+      <!-- bind all elements that start with "org" -->      
+       
+      <defaultEnablement
+            id="org.eclipse.javaDevelopment">
+      </defaultEnablement>
+      
+      <defaultEnablement
+            id="org.eclipse.plugInDevelopment">
+      </defaultEnablement>
+       <defaultEnablement
+             id="org.eclipse.debugSupport">
+       </defaultEnablement>
+      
+      <defaultEnablement
+            id="org.eclipse.team">
+      </defaultEnablement>     
+      
+      <defaultEnablement
+            id="org.eclipse.team.cvs">
+      </defaultEnablement>
+       <activity
+             description="%activity.ant.desc"
+             id="org.eclipse.antDevelopment"
+             name="%activity.ant">
+       </activity>
+       <activityPatternBinding
+             activityId="org.eclipse.antDevelopment"
+             pattern="org\.eclipse\.ant\.ui/.*">
+       </activityPatternBinding>
+       <activityPatternBinding
+             activityId="org.eclipse.antDevelopment"
+             pattern="org\.eclipse\.ui\.externaltools/.*">
+       </activityPatternBinding>
+       <categoryActivityBinding
+             activityId="org.eclipse.antDevelopment"
+             categoryId="org.eclipse.categories.developmentCategory">
+       </categoryActivityBinding>
+       <defaultEnablement
+             id="org.eclipse.antDevelopment">
+       </defaultEnablement>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <primaryWizard
+            id="org.eclipse.jdt.ui.wizards.JavaProjectWizard">
+      </primaryWizard>
+      <primaryWizard
+            id="org.eclipse.pde.ui.NewProjectWizard">
+      </primaryWizard>
+      <primaryWizard
+            id="org.eclipse.jdt.ui.wizards.NewClassCreationWizard">
+      </primaryWizard>
+      <primaryWizard
+            id="org.eclipse.jdt.ui.wizards.NewInterfaceCreationWizard">
+      </primaryWizard>
+      <primaryWizard
+            id="org.eclipse.ant.ui.wizards.JavaProjectWizard">
+      </primaryWizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+	  <page            
+            category="org.eclipse.ui.preferencePages.Workbench"
+            name="%PreferencePages.Capabilities"
+            id="org.eclipse.sdk.capabilities">
+            <class class="org.eclipse.ui.activities.ActivityCategoryPreferencePage">
+                <parameter name="allowAdvanced" value="true"/>
+                <parameter name="captionMessage" value="%PreferencePages.Capabilities.captionMessage" />
+            	<parameter name="activityName" value="%PreferencePages.Capabilities.activityName" />
+                <parameter name="categoryName" value="%PreferencePages.Capabilities.categoryName" />
+            	<parameter name="activityPromptButton" value="%PreferencePages.Capabilities.activityPromptButton"/>
+            	<parameter name="activityPromptButtonTooltip" value="%PreferencePages.Capabilities.activityPromptButtonTooltip"/>
+            </class>
+      </page>   
+   </extension>
+   
+   <extension
+   		point="org.eclipse.help.base.activitySupport">
+      <support productId="org.eclipse.sdk.ide">
+         <showAllMessage>
+            %helpActivitySupport.showAllMessage
+         </showAllMessage>
+         <documentMessage
+               class="org.eclipse.help.ui.internal.ShowCapabilitiesPreferenceAction"
+               pluginId="org.eclipse.help.ui">
+            %helpActivitySupport.documentMessage
+         </documentMessage>
+      </support>
+   </extension>
+   
+      <extension
+            point="org.eclipse.ui.activitySupport">
+      <triggerPointAdvisor
+            id="org.eclipse.ui.ide.triggerPointAdvisor">
+            <class class="org.eclipse.ui.activities.WorkbenchTriggerPointAdvisor">
+            	<parameter name="proceedMulti" value="%TriggerPointAdvisor.proceedMulti" />
+            	<parameter name="proceedSingle" value="%TriggerPointAdvisor.proceedSingle" />
+            	<parameter name="dontAsk" value="%TriggerPointAdvisor.dontAsk" />
+            	<parameter name="noDetails" value="%TriggerPointAdvisor.noDetails" />
+            </class>
+      </triggerPointAdvisor>
+   </extension>   
+   
+   <extension
+         point="org.eclipse.ui.activitySupport">
+      <triggerPointAdvisorProductBinding
+            productId="org.eclipse.sdk.ide"
+            triggerPointAdvisorId="org.eclipse.ui.ide.triggerPointAdvisor"/>
+   </extension>
+   
+   <extension
+         point="org.eclipse.help.ui.searchEngine">
+      <engine
+            enabled="true"
+            engineTypeId="org.eclipse.help.ui.web"
+            id="org.eclipse.sdk.Eclipse"
+            label="%search.Eclipse.label">
+      		<description>
+	      		%search.Eclipse.desc
+      		</description>
+      		<param 
+      			name="url" 
+      			value="http://eclipse.org/search/search.cgi?q={expression}&amp;ul=&amp;ps=20&amp;m=all">
+      		</param>
+      </engine>
+    </extension>
+
+</plugin>

@@ -1,0 +1,10 @@
+/*
+ * Master Gradle build script
+ */
+
+/* Additional configuration for the Bnd projects */
+subprojects {
+  if (plugins.hasPlugin('biz.aQute.bnd')) {
+    // additional configuration for Bnd projects
+  }
+}

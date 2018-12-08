@@ -1,0 +1,7 @@
+a#bndtools-noteworthy img {
+	background-image: url(../images/bndtools.gif);
+}
+
+a#bndtools-noteworthy:hover img {
+	background-image: url(../images/bndtools-glow.gif);
+}
