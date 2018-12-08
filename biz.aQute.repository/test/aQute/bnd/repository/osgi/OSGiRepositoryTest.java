@@ -1,5 +1,7 @@
 package aQute.bnd.repository.osgi;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -353,8 +355,7 @@ public class OSGiRepositoryTest extends TestCase {
 	public void testBndRepo() throws Exception {
 		try (OSGiRepository r = new OSGiRepository();) {
 			Map<String, String> map = new HashMap<>();
-			map.put("locations",
-				"https://bndtools.ci.cloudbees.com/job/bnd.master/lastSuccessfulBuild/artifact/dist/bundles/index.xml.gz");
+			map.put("locations", "https://dl.bintray.com/bnd/dist/4.1.0/index.xml.gz");
 			map.put("cache", cache.getPath());
 			map.put("max.stale", "10000");
 			r.setProperties(map);
@@ -395,22 +396,24 @@ public class OSGiRepositoryTest extends TestCase {
 				}
 			});
 
-			assertEquals(0, tasks.get());
+			assertThat(tasks).hasValue(0);
 			List<String> list = r.list(null);
-			assertFalse(list.isEmpty());
+			assertThat(list).isNotEmpty();
 
 			SortedSet<Version> versions = r.versions("aQute.libg");
-			assertFalse(versions.isEmpty());
+			assertThat(versions).isNotEmpty();
 			File f1 = r.get("aQute.libg", versions.first(), null);
-			assertNotNull(f1);
-			assertEquals(2, tasks.get()); // index + bundle
+			assertThat(f1).isNotNull();
+			assertThat(tasks).hasValueGreaterThanOrEqualTo(2); // index + bundle
+																// + redirects
+			int t = tasks.get();
 
 			File f2 = r.get("aQute.libg", versions.first(), null);
-			assertEquals(2, tasks.get());// should use cache
+			assertThat(tasks).hasValue(t); // should use cache
 
 			r.getIndex(true);
 			File f3 = r.get("aQute.libg", versions.first(), null);
-			assertEquals(4, tasks.get()); // should fetch again
+			assertThat(tasks).hasValue(t * 2); // should fetch again
 
 		}
 	}
