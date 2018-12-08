@@ -1,4 +1,5 @@
-
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
 
 Export-Package: \
     aQute.bnd.remoteworkspace.client, \
