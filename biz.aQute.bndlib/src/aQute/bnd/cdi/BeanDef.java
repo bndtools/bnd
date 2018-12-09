@@ -1,9 +1,9 @@
 package aQute.bnd.cdi;
 
-import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.List;
 
+import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 
 public class BeanDef {

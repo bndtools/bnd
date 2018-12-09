@@ -2,7 +2,6 @@ package aQute.bnd.osgi;
 
 import static java.util.Objects.requireNonNull;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Map;
 

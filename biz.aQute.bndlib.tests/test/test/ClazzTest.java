@@ -412,7 +412,7 @@ public class ClazzTest extends TestCase {
 
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
-					switch (annotation.getElementType()) {
+					switch (annotation.elementType()) {
 						case TYPE_USE :
 							assertEquals(0x10, target_type);
 							assertEquals(Clazz.TYPEUSE_TARGET_INDEX_EXTENDS, target_index);
@@ -443,7 +443,7 @@ public class ClazzTest extends TestCase {
 
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
-					switch (annotation.getElementType()) {
+					switch (annotation.elementType()) {
 						case TYPE_USE :
 							assertEquals(0x10, target_type);
 							assertEquals(0, target_index);
@@ -475,7 +475,7 @@ public class ClazzTest extends TestCase {
 
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
-					switch (annotation.getElementType()) {
+					switch (annotation.elementType()) {
 						case TYPE_USE :
 							assertEquals(0x10, target_type);
 							assertEquals(1, target_index);
@@ -519,7 +519,7 @@ public class ClazzTest extends TestCase {
 
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
-					switch (annotation.getElementType()) {
+					switch (annotation.elementType()) {
 						case PARAMETER :
 							assertEquals(0, parameter);
 							assertEquals("bindChars", member.getName());
@@ -560,7 +560,7 @@ public class ClazzTest extends TestCase {
 
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
-					switch (annotation.getElementType()) {
+					switch (annotation.elementType()) {
 						case PARAMETER :
 							assertEquals(1, parameter);
 							assertEquals("bindChars", member.getName());
@@ -601,7 +601,7 @@ public class ClazzTest extends TestCase {
 
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
-					switch (annotation.getElementType()) {
+					switch (annotation.elementType()) {
 						case PARAMETER :
 							assertEquals(0, parameter);
 							assertEquals("<init>", member.getName());
@@ -642,7 +642,7 @@ public class ClazzTest extends TestCase {
 
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
-					switch (annotation.getElementType()) {
+					switch (annotation.elementType()) {
 						case PARAMETER :
 							assertEquals(1, parameter);
 							assertEquals("<init>", member.getName());
@@ -682,7 +682,7 @@ public class ClazzTest extends TestCase {
 
 				@Override
 				public void annotation(Annotation annotation) throws Exception {
-					switch (annotation.getElementType()) {
+					switch (annotation.elementType()) {
 						case TYPE_USE :
 							switch (member.getName()) {
 								case "b" :

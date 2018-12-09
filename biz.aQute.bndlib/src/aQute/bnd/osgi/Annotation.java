@@ -2,7 +2,6 @@ package aQute.bnd.osgi;
 
 import static java.util.Objects.requireNonNull;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,6 +19,28 @@ import aQute.lib.converter.Converter;
  * BND_ANNOTATION_CLASS_NAME
  */
 public class Annotation {
+	/**
+	 * Bnd ElememtType
+	 * <p>
+	 * We use this instead of java.lang.annotation.ElementType so we can
+	 * reference element types introduced in versions of Java later than the
+	 * current compile/runtime version of Java.
+	 */
+	public enum ElementType {
+		// ordinals MUST match those of java.lang.annotation.ElementType
+		TYPE, // Java 5
+		FIELD, // Java 5
+		METHOD, // Java 5
+		PARAMETER, // Java 5
+		CONSTRUCTOR, // Java 5
+		LOCAL_VARIABLE, // Java 5
+		ANNOTATION_TYPE, // Java 5
+		PACKAGE, // Java 5
+		TYPE_PARAMETER, // Java 8
+		TYPE_USE, // Java 8
+		MODULE; // Java 9
+	}
+
 	private static final Converter CONVERTER;
 
 	static {
@@ -40,6 +61,15 @@ public class Annotation {
 	private final ElementType		member;
 	private final RetentionPolicy	policy;
 
+	@Deprecated
+	public Annotation(TypeRef name, Map<String, Object> elements, java.lang.annotation.ElementType member,
+		RetentionPolicy policy) {
+		this.name = requireNonNull(name);
+		this.elements = elements;
+		this.member = ElementType.values()[member.ordinal()];
+		this.policy = requireNonNull(policy);
+	}
+
 	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy) {
 		this.name = requireNonNull(name);
 		this.elements = elements;
@@ -51,7 +81,12 @@ public class Annotation {
 		return name;
 	}
 
-	public ElementType getElementType() {
+	@Deprecated
+	public java.lang.annotation.ElementType getElementType() {
+		return java.lang.annotation.ElementType.values()[member.ordinal()];
+	}
+
+	public ElementType elementType() {
 		return member;
 	}
 

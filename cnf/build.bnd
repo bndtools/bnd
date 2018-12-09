@@ -34,7 +34,7 @@ Bundle-Copyright:       Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and othe
 Bundle-License:         Apache-2.0; \
                         description="Apache License, Version 2.0"; \
                         link="http://www.apache.org/licenses/LICENSE-2.0"
-Bundle-DocURL:          http://bnd.bndtools.org/
+Bundle-DocURL:          https://bnd.bndtools.org/
 Bundle-SCM:             url=https://github.com/bndtools/bnd, \
                         connection=scm:git:https://github.com/bndtools/bnd.git, \
                         developerConnection=scm:git:git@github.com:bndtools/bnd.git, \
