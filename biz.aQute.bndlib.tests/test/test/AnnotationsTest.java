@@ -1,6 +1,5 @@
 package test;
 
-import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.Map;
@@ -8,6 +7,7 @@ import java.util.Map;
 import aQute.bnd.annotation.metatype.Configurable;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.Descriptors.TypeRef;
 import junit.framework.TestCase;
 
