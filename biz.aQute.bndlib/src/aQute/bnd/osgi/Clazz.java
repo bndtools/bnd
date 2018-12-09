@@ -311,7 +311,7 @@ public class Clazz {
 		}
 
 		public boolean isModule() {
-			return (access & ACC_MODULE) != 0;
+			return Clazz.isModule(access);
 		}
 
 		public boolean isAnnotation() {
@@ -483,6 +483,9 @@ public class Clazz {
 		ElementType elementType() {
 			if (isAnnotation()) {
 				return ElementType.ANNOTATION_TYPE;
+			}
+			if (isModule()) {
+				return ElementType.MODULE;
 			}
 			return type.getBinary()
 				.endsWith("/package-info") ? ElementType.PACKAGE : ElementType.TYPE;
@@ -1148,6 +1151,9 @@ public class Clazz {
 	static ElementType elementType(ClassFile classFile) {
 		if (isAnnotation(classFile.access)) {
 			return ElementType.ANNOTATION_TYPE;
+		}
+		if (isModule(classFile.access)) {
+			return ElementType.MODULE;
 		}
 		return classFile.this_class.endsWith("/package-info") ? ElementType.PACKAGE : ElementType.TYPE;
 	}
@@ -1825,6 +1831,10 @@ public class Clazz {
 
 	public boolean isModule() {
 		return classDef.isModule();
+	}
+
+	static boolean isModule(int access) {
+		return (access & ACC_MODULE) != 0;
 	}
 
 	public JAVA getFormat() {
