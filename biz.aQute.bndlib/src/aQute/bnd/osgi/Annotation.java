@@ -27,7 +27,6 @@ public class Annotation {
 	 * current compile/runtime version of Java.
 	 */
 	public enum ElementType {
-		// ordinals MUST match those of java.lang.annotation.ElementType
 		TYPE, // Java 5
 		FIELD, // Java 5
 		METHOD, // Java 5
@@ -61,15 +60,6 @@ public class Annotation {
 	private final ElementType		member;
 	private final RetentionPolicy	policy;
 
-	@Deprecated
-	public Annotation(TypeRef name, Map<String, Object> elements, java.lang.annotation.ElementType member,
-		RetentionPolicy policy) {
-		this.name = requireNonNull(name);
-		this.elements = elements;
-		this.member = ElementType.values()[member.ordinal()];
-		this.policy = requireNonNull(policy);
-	}
-
 	public Annotation(TypeRef name, Map<String, Object> elements, ElementType member, RetentionPolicy policy) {
 		this.name = requireNonNull(name);
 		this.elements = elements;
@@ -77,17 +67,23 @@ public class Annotation {
 		this.policy = requireNonNull(policy);
 	}
 
+	@Deprecated
+	public Annotation(TypeRef name, Map<String, Object> elements, java.lang.annotation.ElementType member,
+		RetentionPolicy policy) {
+		this(name, elements, ElementType.valueOf(member.name()), policy);
+	}
+
 	public TypeRef getName() {
 		return name;
 	}
 
-	@Deprecated
-	public java.lang.annotation.ElementType getElementType() {
-		return java.lang.annotation.ElementType.values()[member.ordinal()];
-	}
-
 	public ElementType elementType() {
 		return member;
+	}
+
+	@Deprecated
+	public java.lang.annotation.ElementType getElementType() {
+		return java.lang.annotation.ElementType.valueOf(elementType().name());
 	}
 
 	public RetentionPolicy getRetentionPolicy() {
