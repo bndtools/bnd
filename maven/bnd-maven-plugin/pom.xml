@@ -13,7 +13,7 @@
 	<description>This maven plugin is used to build OSGi bundles using the bnd tool for generating MANIFEST.MF and other OSGi-specific artifacts.</description>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>maven-plugin</packaging>
-  <url>http://bnd.bndtools.org/</url>
+  <url>https://bnd.bndtools.org/</url>
   <scm>
     <url>https://github.com/bndtools/bnd</url>
     <connection>scm:git:https://github.com/bndtools/bnd.git</connection>

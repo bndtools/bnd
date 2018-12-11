@@ -13,7 +13,7 @@
 	<description>This maven plugin is used to make OSGi indexes from lists of maven dependencies.</description>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>maven-plugin</packaging>
-  <url>http://bnd.bndtools.org/</url>
+  <url>https://bnd.bndtools.org/</url>
   <scm>
     <url>https://github.com/bndtools/bnd</url>
     <connection>scm:git:https://github.com/bndtools/bnd.git</connection>

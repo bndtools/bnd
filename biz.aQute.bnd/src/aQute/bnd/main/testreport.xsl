@@ -11,7 +11,7 @@
 		<html>
 			<head>
 				<title>Test</title>
-				<link rel='stylesheet' href='http://bnd.bndtools.org/css/testresport.css'
+				<link rel='stylesheet' href='https://bnd.bndtools.org/css/testresport.css'
 					type='text/css' />
 				<style type="text/css">
 					.code { font-family: Courier,
@@ -22,13 +22,13 @@
 					background-repeat:no-repeat;
 					width:10px; }
 					.ok {
-					background-image:url("http://bnd.bndtools.org/img/greenball.png"); }
+					background-image:url("https://bnd.bndtools.org/img/greenball.png"); }
 					.warning {
-					background-image:url("http://bnd.bndtools.org/img/orangeball.png"); }
+					background-image:url("https://bnd.bndtools.org/img/orangeball.png"); }
 					.error {
-					background-image:url("http://bnd.bndtools.org/img/redball.png"); }
+					background-image:url("https://bnd.bndtools.org/img/redball.png"); }
 					.info {
-					background-image:url("http://bnd.bndtools.org/img/info.png"); }
+					background-image:url("https://bnd.bndtools.org/img/info.png"); }
 					.class { padding-top:20px; padding-bottom: 10px; font-size:12;
 					font-weight:bold; }
 
@@ -100,7 +100,7 @@
 					exception, click on the info icon on the right.</p>
 				<table width="100%">
 					<tr>
-						<th width="15px"><img src="http://bnd.bndtools.org/img/colorball.png" title="Status. red=bad, orange=almost good, green is perfect"/></th>
+						<th width="15px"><img src="https://bnd.bndtools.org/img/colorball.png" title="Status. red=bad, orange=almost good, green is perfect"/></th>
 						<th>Test</th>
 						<th>Failures</th>
 						<th>Error</th>
@@ -166,7 +166,7 @@
 							</td>
 							<td>
 								<xsl:if test="failure or error">
-									<img src="http://bnd.bndtools.org/img/info.png" onclick="toggle('{@name}')" title="Show Exceptions"/>
+									<img src="https://bnd.bndtools.org/img/info.png" onclick="toggle('{@name}')" title="Show Exceptions"/>
 								</xsl:if>
 							</td>
 						</tr>
@@ -223,7 +223,7 @@
 									</td>
 									<td>
 										<xsl:if test="ref">
-											<img src="http://bnd.bndtools.org/img/info.png" onclick="toggle('{@pretty}')" title="Show/Hide Callers"/>
+											<img src="https://bnd.bndtools.org/img/info.png" onclick="toggle('{@pretty}')" title="Show/Hide Callers"/>
 										</xsl:if>
 									</td>
 								</tr>

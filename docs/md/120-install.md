@@ -31,7 +31,7 @@ Maven Central may lag in its version but can be used with:
 
 * [Master build][3]
 
-[1]: http://bndtools.org
+[1]: https://bndtools.org
 [2]: http://felix.apache.org/site/apache-felix-maven-bundle-plugin-bnd.html
 [3]: http://www.gradleware.com/
 [5]: https://github.com/bndtools/bnd

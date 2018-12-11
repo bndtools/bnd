@@ -662,10 +662,10 @@ For full details on what the Bnd Gradle Plugins do, check out the
 [1]: http://gradle.org/
 [2]: https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.gradle
 [3]: http://gradle.org/docs/current/userguide/java_plugin.html
-[4]: http://bnd.bndtools.org/instructions/buildpath.html
-[5]: http://bnd.bndtools.org/instructions/testpath.html
-[6]: http://bnd.bndtools.org/instructions/releaserepo.html
-[7]: http://bnd.bndtools.org/instructions/runbundles.html
+[4]: https://bnd.bndtools.org/instructions/buildpath.html
+[5]: https://bnd.bndtools.org/instructions/testpath.html
+[6]: https://bnd.bndtools.org/instructions/releaserepo.html
+[7]: https://bnd.bndtools.org/instructions/runbundles.html
 [8]: ../biz.aQute.bndlib/src/aQute/bnd/build/Workspace.java
 [9]: ../biz.aQute.bndlib/src/aQute/bnd/build/Project.java
 [10]: src/aQute/bnd/gradle

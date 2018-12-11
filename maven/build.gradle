@@ -24,7 +24,7 @@ task deployOSSRH(type: Exec) {
     args '--debug'
   }
   args '-Possrh'
-  args "--settings=${parent.project('cnf').file('ext/connection-settings.xml')}"
+  args "--settings=${parent.project('cnf').file('ext/ossrh-settings.xml')}"
   if (localrepo) {
     args "-Dmaven.repo.local=${localrepo}"
   }
