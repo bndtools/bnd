@@ -125,9 +125,15 @@ public class DebugReporter {
 
 	private void capability(String prefix, Capability c) {
 		Map<String, Object> attributes = new HashMap<>(c.getAttributes());
-		String name = (String) attributes.remove(c.getNamespace());
 		String ns = c.getNamespace();
-		switch (c.getNamespace()) {
+		Object value = attributes.remove(ns);
+		String name;
+		try {
+			name = Converter.cnv(String.class, value);
+		} catch (Exception e) {
+			name = value + "";
+		}
+		switch (ns) {
 			case IdentityNamespace.IDENTITY_NAMESPACE :
 				ns = "ID";
 				break;
@@ -142,10 +148,11 @@ public class DebugReporter {
 				break;
 			case ServiceNamespace.SERVICE_NAMESPACE :
 				ns = "Service";
+				value = attributes.remove(Constants.OBJECTCLASS);
 				try {
-					name = Converter.cnv(String.class, attributes.remove(Constants.OBJECTCLASS));
+					name = Converter.cnv(String.class, value);
 				} catch (Exception e) {
-					name = attributes.remove(Constants.OBJECTCLASS) + "";
+					name = value + "";
 				}
 				break;
 		}
