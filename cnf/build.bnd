@@ -29,7 +29,7 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 -maven-release:         pom;path=JAR
 
 Automatic-Module-Name:  ${def;bsn}
-Bundle-Vendor:          Bndtools http://bndtools.org/
+Bundle-Vendor:          Bndtools https://bndtools.org/
 Bundle-Copyright:       Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 Bundle-License:         Apache-2.0; \
                         description="Apache License, Version 2.0"; \

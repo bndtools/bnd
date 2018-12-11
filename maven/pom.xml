@@ -29,10 +29,10 @@
 		<module>bnd-resolver-maven-plugin</module>
 	</modules>
 
-	<url>http://bnd.bndtools.org/</url>
+	<url>https://bnd.bndtools.org/</url>
 	<organization>
 		<name>Bndtools</name>
-		<url>http://bndtools.org/</url>
+		<url>https://bndtools.org/</url>
 	</organization>
 	<licenses>
 		<license>
