@@ -1,6 +1,7 @@
 package biz.aQute.resolve;
 
 import static java.util.Objects.requireNonNull;
+import static org.osgi.framework.Constants.SYSTEM_BUNDLE_SYMBOLICNAME;
 import static org.osgi.framework.namespace.BundleNamespace.BUNDLE_NAMESPACE;
 import static org.osgi.framework.namespace.HostNamespace.HOST_NAMESPACE;
 import static org.osgi.framework.namespace.IdentityNamespace.IDENTITY_NAMESPACE;
@@ -29,7 +30,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 
-import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.Version;
 import org.osgi.framework.namespace.AbstractWiringNamespace;
@@ -59,6 +59,8 @@ import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.service.resolve.hook.ResolverHook;
 import aQute.bnd.version.VersionRange;
+import aQute.lib.converter.Converter;
+import aQute.lib.converter.TypeReference;
 import aQute.lib.io.IO;
 import aQute.libg.filters.AndFilter;
 import aQute.libg.filters.Filter;
@@ -727,6 +729,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		return new ArrayList<>(resources);
 	}
 
+	private static final TypeReference<List<String>> LIST_STRING = new TypeReference<List<String>>() {};
+
 	/**
 	 * Add a framework resource to the system resource builder
 	 * 
@@ -739,31 +743,25 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		this.framework = requireNonNull(framework);
 
 		//
-		// We copy the framework capabilities
+		// We copy the framework capabilities and add system.bundle alias
 		//
-		system.addCapabilities(framework.getCapabilities(null));
-
-		//
-		// Add system.bundle alias. This is mandated by the spec.
-		//
-
-		String frameworkVersion = ResourceUtils.getIdentityVersion(framework);
-
-		CapReqBuilder cap = new CapReqBuilder(BUNDLE_NAMESPACE);
-		cap.addAttribute(cap.getNamespace(), Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
-		cap.addAttribute(ResourceUtils.getVersionAttributeForNamespace(cap.getNamespace()), frameworkVersion);
-		system.addCapability(cap);
-
-		cap = new CapReqBuilder(HOST_NAMESPACE);
-		cap.addAttribute(cap.getNamespace(), Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
-		cap.addAttribute(ResourceUtils.getVersionAttributeForNamespace(cap.getNamespace()), frameworkVersion);
-		system.addCapability(cap);
-
-		cap = new CapReqBuilder(IDENTITY_NAMESPACE);
-		cap.addAttribute(cap.getNamespace(), Constants.SYSTEM_BUNDLE_SYMBOLICNAME);
-		cap.addAttribute(ResourceUtils.getVersionAttributeForNamespace(cap.getNamespace()), frameworkVersion);
-		cap.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_BUNDLE);
-		system.addCapability(cap);
+		for (Capability cap : framework.getCapabilities(null)) {
+			CapReqBuilder builder = CapReqBuilder.clone(cap);
+			String namespace = cap.getNamespace();
+			switch (namespace) {
+				case BUNDLE_NAMESPACE :
+				case HOST_NAMESPACE : {
+					List<String> names = Converter.cnv(LIST_STRING, cap.getAttributes()
+						.get(namespace));
+					if (!names.contains(SYSTEM_BUNDLE_SYMBOLICNAME)) {
+						names.add(SYSTEM_BUNDLE_SYMBOLICNAME);
+						builder.addAttribute(namespace, names);
+					}
+					break;
+				}
+			}
+			system.addCapability(builder);
+		}
 	}
 
 	/*
