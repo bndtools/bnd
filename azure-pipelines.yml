@@ -12,6 +12,9 @@ jobs:
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
     displayName: Build
+    env:
+      JFROG_USERNAME: $(JFrog.Username)
+      JFROG_PASSWORD: $(JFrog.Password)
 
 - job: OpenJDK11
   pool:
