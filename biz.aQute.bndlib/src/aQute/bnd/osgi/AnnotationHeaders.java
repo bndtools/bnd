@@ -245,8 +245,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		final String fqn = name.getFQN();
 		if (processed.contains(fqn)) {
-			logger.debug("Detected an annotation cycle when processing %s. The cycled annotation was %s",
-					current.getFQN(), fqn);
 			return;
 		}
 
