@@ -273,7 +273,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 						"Unable to determine whether the meta annotation %s applied to type %s provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
 						fqn, current.getFQN());
 				} else {
-					logger.info(
+					logger.debug(
 						"Unable to determine whether the meta annotation {} applied to type {} provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
 						fqn, current.getFQN());
 				}
