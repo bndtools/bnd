@@ -1930,132 +1930,124 @@ public class Project extends Processor {
 			File outputFile = getOutputFile(jar.getName(), jar.getVersion());
 			File logicalFile = outputFile;
 
-			String msg = "";
-			if (!outputFile.exists() || outputFile.lastModified() < jar.lastModified()) {
-				reportNewer(outputFile.lastModified(), jar);
+			reportNewer(outputFile.lastModified(), jar);
 
-				File fp = outputFile.getParentFile();
-				if (!fp.isDirectory()) {
-					IO.mkdirs(fp);
-				}
+			File fp = outputFile.getParentFile();
+			if (!fp.isDirectory()) {
+				IO.mkdirs(fp);
+			}
 
-				// On windows we sometimes cannot delete a file because
-				// someone holds a lock in our or another process. So if
-				// we set the -overwritestrategy flag we use an avoiding
-				// strategy.
-				// We will always write to a temp file name. Basically the
-				// calculated name + a variable suffix. We then create
-				// a link with the constant name to this variable name.
-				// This allows us to pick a different suffix when we cannot
-				// delete the file. Yuck, but better than the alternative.
+			// On windows we sometimes cannot delete a file because
+			// someone holds a lock in our or another process. So if
+			// we set the -overwritestrategy flag we use an avoiding
+			// strategy.
+			// We will always write to a temp file name. Basically the
+			// calculated name + a variable suffix. We then create
+			// a link with the constant name to this variable name.
+			// This allows us to pick a different suffix when we cannot
+			// delete the file. Yuck, but better than the alternative.
 
-				String overwritestrategy = getProperty("-x-overwritestrategy", "classic");
-				swtch: switch (overwritestrategy) {
-					case "delay" :
-						for (int i = 0; i < 10; i++) {
-							try {
-								IO.deleteWithException(outputFile);
-								jar.write(outputFile);
-								break swtch;
-							} catch (Exception e) {
-								Thread.sleep(500);
-							}
-						}
-
-						// Execute normal case to get classic behavior
-						// FALL THROUGH
-
-					case "classic" :
-						IO.deleteWithException(outputFile);
-						jar.write(outputFile);
-						break swtch;
-
-					case "gc" :
+			String overwritestrategy = getProperty("-x-overwritestrategy", "classic");
+			swtch: switch (overwritestrategy) {
+				case "delay" :
+					for (int i = 0; i < 10; i++) {
 						try {
 							IO.deleteWithException(outputFile);
-						} catch (Exception e) {
-							System.gc();
-							System.runFinalization();
-							IO.deleteWithException(outputFile);
-						}
-						jar.write(outputFile);
-						break swtch;
-
-					case "windows-only-disposable-names" :
-						boolean isWindows = File.separatorChar == '\\';
-						if (!isWindows) {
-							IO.deleteWithException(outputFile);
 							jar.write(outputFile);
-							break;
+							break swtch;
+						} catch (Exception e) {
+							Thread.sleep(500);
 						}
-						// Fall through
+					}
 
-					case "disposable-names" :
-						int suffix = 0;
-						while (true) {
-							outputFile = new File(outputFile.getParentFile(), outputFile.getName() + "-" + suffix);
-							IO.delete(outputFile);
-							if (!outputFile.isFile()) {
-								// Succeeded to delete the file
-								jar.write(outputFile);
-								Files.createSymbolicLink(logicalFile.toPath(), outputFile.toPath());
-								break;
-							} else {
-								warning("Could not delete build file {} ", overwritestrategy);
-								logger.warn("Cannot delete file {} but that should be ok", outputFile);
-							}
-							suffix++;
-						}
-						break swtch;
+					// Execute normal case to get classic behavior
+					// FALL THROUGH
 
-					default :
-						error(
-							"Invalid value for -x-overwritestrategy: %s, expected classic, delay, gc, windows-only-disposable-names, disposable-names",
-							overwritestrategy);
+				case "classic" :
+					IO.deleteWithException(outputFile);
+					jar.write(outputFile);
+					break swtch;
+
+				case "gc" :
+					try {
+						IO.deleteWithException(outputFile);
+					} catch (Exception e) {
+						System.gc();
+						System.runFinalization();
+						IO.deleteWithException(outputFile);
+					}
+					jar.write(outputFile);
+					break swtch;
+
+				case "windows-only-disposable-names" :
+					boolean isWindows = File.separatorChar == '\\';
+					if (!isWindows) {
 						IO.deleteWithException(outputFile);
 						jar.write(outputFile);
-						break swtch;
-
-				}
-
-				//
-				// For maven we've got the shitty situation that the
-				// files in the generated directories have an ever changing
-				// version number so it is hard to refer to them in test cases
-				// and from for example bndtools if you want to refer to the
-				// latest so the following code attempts to create a link to the
-				// output file if this is using some other naming scheme,
-				// creating a constant name. Would probably be more logical to
-				// always output in the canonical name and then create a link to
-				// the desired name but not sure how much that would break BJ's
-				// maven handling that caused these versioned JARs
-				//
-
-				File canonical = new File(getTarget(), jar.getName() + ".jar");
-				if (!canonical.equals(logicalFile)) {
-					IO.delete(canonical);
-					if (!IO.createSymbolicLink(canonical, outputFile)) {
-						//
-						// As alternative, we copy the file
-						//
-						IO.copy(outputFile, canonical);
+						break;
 					}
-					getWorkspace().changedFile(canonical);
-				}
+					// Fall through
 
-				getWorkspace().changedFile(outputFile);
-				if (!outputFile.equals(logicalFile))
-					getWorkspace().changedFile(logicalFile);
+				case "disposable-names" :
+					int suffix = 0;
+					while (true) {
+						outputFile = new File(outputFile.getParentFile(), outputFile.getName() + "-" + suffix);
+						IO.delete(outputFile);
+						if (!outputFile.isFile()) {
+							// Succeeded to delete the file
+							jar.write(outputFile);
+							Files.createSymbolicLink(logicalFile.toPath(), outputFile.toPath());
+							break;
+						} else {
+							warning("Could not delete build file {} ", overwritestrategy);
+							logger.warn("Cannot delete file {} but that should be ok", outputFile);
+						}
+						suffix++;
+					}
+					break swtch;
 
-			} else {
-				msg = "(not modified since " + new Date(outputFile.lastModified()) + ")";
+				default :
+					error(
+						"Invalid value for -x-overwritestrategy: %s, expected classic, delay, gc, windows-only-disposable-names, disposable-names",
+						overwritestrategy);
+					IO.deleteWithException(outputFile);
+					jar.write(outputFile);
+					break swtch;
+
 			}
-			logger.debug("{} ({}) {} {}", jar.getName(), outputFile.getName(), jar.getResources()
-				.size(), msg);
-			return logicalFile;
-		} finally
 
-		{
+			//
+			// For maven we've got the shitty situation that the
+			// files in the generated directories have an ever changing
+			// version number so it is hard to refer to them in test cases
+			// and from for example bndtools if you want to refer to the
+			// latest so the following code attempts to create a link to the
+			// output file if this is using some other naming scheme,
+			// creating a constant name. Would probably be more logical to
+			// always output in the canonical name and then create a link to
+			// the desired name but not sure how much that would break BJ's
+			// maven handling that caused these versioned JARs
+			//
+
+			File canonical = new File(getTarget(), jar.getName() + ".jar");
+			if (!canonical.equals(logicalFile)) {
+				IO.delete(canonical);
+				if (!IO.createSymbolicLink(canonical, outputFile)) {
+					//
+					// As alternative, we copy the file
+					//
+					IO.copy(outputFile, canonical);
+				}
+				getWorkspace().changedFile(canonical);
+			}
+
+			getWorkspace().changedFile(outputFile);
+			if (!outputFile.equals(logicalFile))
+				getWorkspace().changedFile(logicalFile);
+			logger.debug("{} ({}) {}", jar.getName(), outputFile.getName(), jar.getResources()
+				.size());
+			return logicalFile;
+		} finally {
 			jar.close();
 		}
 	}
