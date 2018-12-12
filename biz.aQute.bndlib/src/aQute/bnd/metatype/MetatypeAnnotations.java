@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.component.TagResource;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
@@ -25,6 +28,7 @@ import aQute.libg.generics.Create;
  * Analyze the class space for any classes that have an OSGi annotation for DS.
  */
 public class MetatypeAnnotations implements AnalyzerPlugin {
+	static final Logger logger = LoggerFactory.getLogger(MetatypeAnnotations.class);
 
 	enum Options {
 		nested,
@@ -79,6 +83,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		this.minVersion = MetatypeVersion.VERSION_1_2;
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS, "*"));
+		logger.debug("Analyzing for Metatype annotations: " + Constants.METATYPE_ANNOTATIONS + ": {}", header);
 		if (header.size() == 0)
 			return false;
 
@@ -114,6 +119,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 					list.add(c);
 					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder, minVersion);
 					if (definition != null) {
+						logger.debug("Found OCD class {} with id {}", c, definition.id);
 						classToOCDMap.put(c.getClassName(), definition);
 					}
 					break;
