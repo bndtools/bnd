@@ -65,7 +65,7 @@ baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}
 
 -buildrepo: Local
 -releaserepo: Release
--releaserepo.ossrh: ${if;(&(-groupid=biz.aQute.bnd)(|(env.TRAVIS_BRANCH=master)(env.TRAVIS_BRANCH=next))(env.TRAVIS_PULL_REQUEST=false)(env.REPOSITORY_USERNAME=*));OSSRH}
+-releaserepo.ossrh: ${if;(&(|(env.TRAVIS_BRANCH=master)(env.TRAVIS_BRANCH=next))(env.TRAVIS_PULL_REQUEST=false)(env.REPOSITORY_USERNAME=*));OSSRH}
 
 -connection-settings.ossrh: ${if;${-releaserepo.ossrh};${.}/ossrh-settings.xml}
 
