@@ -31,9 +31,32 @@ task deployOSSRH(type: Exec) {
   args 'deploy'
 }
 
+task deployJFrog(type: Exec) {
+  enabled !bnd('-releaserepo.jfrog', '').empty
+  onlyIf {
+        deploy.state.didWork && (deploy.state.failure == null)
+  }
+  if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+    executable 'cmd'
+    args '/c', 'mvn'
+  } else {
+    executable rootProject.file('mvnw')
+  }
+  args '--batch-mode'
+  if (logger.isDebugEnabled()) {
+    args '--debug'
+  }
+  args '-Pjfrog'
+  args "--settings=${parent.project('cnf').file('ext/jfrog-settings.xml')}"
+  if (localrepo) {
+    args "-Dmaven.repo.local=${localrepo}"
+  }
+  args 'deploy'
+}
+
 task deploy(type: Exec) {
   dependsOn "${parent.absoluteProjectPath('dist')}:build"
-  finalizedBy deployOSSRH
+  finalizedBy deployOSSRH, deployJFrog
   tasks.getByPath("${parent.absoluteProjectPath('dist')}:index").mustRunAfter it
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
