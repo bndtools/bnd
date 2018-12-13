@@ -608,7 +608,7 @@ buildscript {
   repositories {
     mavenCentral()
     maven {
-      url 'https://oss.sonatype.org/content/repositories/snapshots'
+      url 'https://bndtools.jfrog.io/bndtools/libs-snapshot'
     }
   }
   dependencies {
