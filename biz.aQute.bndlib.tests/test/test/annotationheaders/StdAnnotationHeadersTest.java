@@ -306,4 +306,39 @@ public class StdAnnotationHeadersTest extends TestCase {
 		}
 	}
 
+	/**
+	 * Test support for version macros in Requirement and Capability annotation
+	 *
+	 * @throws Exception
+	 */
+	public void testStdAnnotationsMacroVersions() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.attrs.std.versioned");
+			b.build();
+			assertTrue(b.check());
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			Props p = req.get("overriding");
+			assertNotNull(p);
+			assertTrue(p.containsKey("filter:"));
+			assertEquals("(&(overriding=foo)(version>=1.0.0)(!(version>=2.0.0)))", p.get("filter:"));
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			p = cap.get("overriding");
+			assertNotNull(p);
+			assertTrue(p.containsKey("overriding"));
+			assertEquals("foo", p.get("overriding"));
+			assertTrue(p.containsKey("version:Version"));
+			assertEquals("1.0.0", p.get("version:Version"));
+		}
+	}
+
 }
