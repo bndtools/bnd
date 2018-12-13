@@ -39,8 +39,12 @@ The workspace root includes the gradle wrapper, `gradlew`, command.
 ## Release
 Bnd/Bndtools is continuously built on [Azure Pipeline](https://dev.azure.com/bndtools/bnd/_build?definitionId=1).
 
-A Maven repository of the latest build is available at <https://oss.sonatype.org/content/repositories/snapshots/>.
+A Maven repository of the latest build is available at <https://bndtools.jfrog.io/bndtools/libs-snapshot>.
 A snapshot version of all the bundles and Maven and Gradle plugins is there.
+
+An Eclipse p2 update site for the latest build of the Bndtools plugins is available at <https://bndtools.jfrog.io/bndtools/update>.
+
+![Powered by Artifactory](https://github.com/bndtools/bnd/raw/master/docs/img/Powered-by-artifactory_04.png)
 
 ## Feedback
 Feedback is always welcome, for general discussions use the [bndtools-users@googlegroups.com](https://groups.google.com/d/forum/bndtools-users) mail list. We also have the [bndtools-dev@googlegroups.com](https://groups.google.com/d/forum/bndtools-dev) mail list for discussions on the development of bnd.
