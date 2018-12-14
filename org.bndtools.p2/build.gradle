@@ -12,7 +12,7 @@ String masterVersion = String.format('%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
                           bnd('Git-SHA'))
 
 task p2Plugins(type: Sync) {
-  dependsOn bnd('-dependson').tokenize(',').collect { "${parent.absoluteProjectPath(it.trim())}:jar" }
+  dependsOn jarDependencies
   from    bnd('plugins').tokenize(',')
   into    "${buildDir}/plugins"
 }
