@@ -58,6 +58,7 @@ import org.gradle.api.tasks.TaskAction
 public class Index extends DefaultTask {
   private ConfigurableFileCollection bundleCollection
   private File destinationDir
+  private URI base
 
   /**
    * Whether a gzip'd index should be made.
@@ -98,7 +99,6 @@ public class Index extends DefaultTask {
   public Index() {
     super()
     gzip = false
-    destinationDir = project.buildDir
     indexName = 'index.xml'
     repositoryName = name
     bundleCollection = project.files()
@@ -107,7 +107,6 @@ public class Index extends DefaultTask {
 
   /**
    * Set the destination directory for the index.
-   * This is used as the URI base of the generated index.
    *
    * <p>
    * The argument will be handled using
@@ -119,7 +118,6 @@ public class Index extends DefaultTask {
 
   /**
    * Return the destination directory for the index.
-   * This is used as the URI base of the generated index.
    *
    * <p>
    * The default value is buildDir.
@@ -127,7 +125,30 @@ public class Index extends DefaultTask {
   @Input
   @Optional
   public File getDestinationDir() {
-    return destinationDir
+    return destinationDir ?: project.buildDir
+  }
+
+  /**
+   * Set the base URI directory for the index.
+   *
+   * <p>
+   * The argument will be handled using
+   * Project.uri().
+   */
+  public void setBase(Object path) {
+    base = project.uri(path)
+  }
+
+  /**
+   * Return the URI base of the generated index.
+   *
+   * <p>
+   * The default value is destinationDir.
+   */
+  @Input
+  @Optional
+  public URI getBase() {
+    return base ?: project.uri(getDestinationDir())
   }
 
   /**
@@ -165,7 +186,7 @@ public class Index extends DefaultTask {
    */
   @OutputFile
   public File getIndexUncompressed() {
-    return new File(destinationDir, indexName)
+    return new File(getDestinationDir(), indexName)
   }
 
   /**
@@ -173,7 +194,7 @@ public class Index extends DefaultTask {
    */
   @OutputFile
   public File getIndexCompressed() {
-    return new File(destinationDir, indexName + '.gz')
+    return new File(getDestinationDir(), indexName + '.gz')
   }
 
   /**
@@ -184,7 +205,7 @@ public class Index extends DefaultTask {
   void indexer() {
     new SimpleIndexer()
       .files(bundles.sort())
-      .base(project.uri(destinationDir))
+      .base(getBase())
       .name(repositoryName)
       .index(indexUncompressed)
     logger.info 'Generated index {}.', indexUncompressed
