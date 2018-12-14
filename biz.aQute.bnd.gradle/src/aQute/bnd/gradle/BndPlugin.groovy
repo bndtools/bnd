@@ -252,7 +252,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       jar {
-        description 'Assemble the project bundles.'
+        description 'Jar this project\'s bundles.'
         actions.clear() /* Replace the standard task actions */
         enabled !bndProject.isNoBundles()
         configurations.archives.artifacts.files.find {
@@ -301,8 +301,20 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
+      task('jarDependencies') {
+        description 'Jar all projects this project depends on.'
+        dependsOn buildDependencies('jar')
+        group 'build'
+      }
+
+      task('buildDependencies') {
+        description 'Assembles and tests all projects this project depends on.'
+        dependsOn testDependencies('buildNeeded')
+        group 'build'
+      }
+
       buildNeeded {
-        dependsOn testDependencies(name)
+        dependsOn buildDependencies
       }
 
       buildDependents {
@@ -310,7 +322,7 @@ public class BndPlugin implements Plugin<Project> {
       }
 
       task('release') {
-        description 'Release the project to the release repository.'
+        description 'Release this project to the release repository.'
         group 'release'
         enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
         inputs.files jar
@@ -324,9 +336,15 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
+      task('releaseDependencies') {
+        description 'Release all projects this project depends on.'
+        dependsOn buildDependencies('releaseNeeded')
+        group 'release'
+      }
+
       task('releaseNeeded') {
-        description 'Release the project and all projects it depends on.'
-        dependsOn buildDependencies(name), release
+        description 'Release this project and all projects it depends on.'
+        dependsOn releaseDependencies, release
         group 'release'
       }
 
@@ -349,20 +367,32 @@ public class BndPlugin implements Plugin<Project> {
         dependsOn testOSGi
       }
 
+      task('checkDependencies') {
+        description 'Runs all checks on all projects this project depends on.'
+        dependsOn testDependencies('checkNeeded')
+        group 'verification'
+      }
+
       task('checkNeeded') {
-        description 'Runs all checks on the project and all projects it depends on.'
-        dependsOn testDependencies(name), check
+        description 'Runs all checks on this project and all projects it depends on.'
+        dependsOn checkDependencies, check
         group 'verification'
       }
 
       clean {
-        description 'Cleans the build and compiler output directories of the project.'
+        description 'Cleans the build and compiler output directories of this project.'
         delete buildDir, sourceSets.main.output, sourceSets.test.output
       }
 
+      task('cleanDependencies') {
+        description 'Cleans all projects this project depends on.'
+        dependsOn testDependencies('cleanNeeded')
+        group 'build'
+      }
+
       task('cleanNeeded') {
-        description 'Cleans the project and all projects it depends on.'
-        dependsOn testDependencies(name), clean
+        description 'Cleans this project and all projects it depends on.'
+        dependsOn cleanDependencies, clean
         group 'build'
       }
 
