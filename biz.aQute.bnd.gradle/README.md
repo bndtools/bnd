@@ -128,8 +128,17 @@ including `test` and `testOSGi`.
 
 ### Additional Tasks
 
+The `jarDependencies` task jars all projects the project
+depends on.
+
+The `buildDependencies` task assembles and tests all projects 
+the project depends on.
+
 The `release` task releases the project's bundles to the
 [`-releaserepo`][6], if one is configured for the project.
+
+The `releaseDependencies` task releases all projects the project
+depends on.
 
 The `releaseNeeded` task releases the project and all projects it
 depends on.
@@ -140,8 +149,14 @@ framework. This means the `bnd.bnd` file must have the necessary
 `-runfw` and `-runbundles` to support the test bundles built by
 the project. The `check` task depends on the `testOSGi` task.
 
+The `checkDependencies` task runs the `check` task on all
+projects the project depends on.
+
 The `checkNeeded` task runs the `check` task on the project and all
 projects it depends on.
+
+The `cleanDependencies` task cleans all projects the project depends
+on.
 
 The `cleanNeeded` task cleans the project and all projects it depends
 on.
