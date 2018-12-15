@@ -9,6 +9,7 @@
     <modules>
         <module>resolve</module>
         <module>resolve-from-dependencies</module>
+        <module>resolve-from-scopes</module>
         <module>resolve-from-inputbundles</module>
     </modules>
 

@@ -1,0 +1,4 @@
+-runfw: org.eclipse.osgi
+-runee: JavaSE-1.8
+-resolve.effective: resolve, active
+-runrequires: osgi.implementation;filter:='(osgi.implementation=osgi.event)'
