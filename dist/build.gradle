@@ -11,14 +11,21 @@ configure(parent) {
   buildDir = buildProject.buildDir
 
   task build {
-    dependsOn "${buildProject.path}:build"
-    dependsOn "${buildProject.path}:checkNeeded"
-    dependsOn "${buildProject.path}:releaseNeeded"
-    dependsOn "${buildProject.path}:index"
+    dependsOn buildProject.absoluteProjectPath('jarDependencies')
+    dependsOn buildProject.absoluteProjectPath('checkDependencies')
+    dependsOn buildProject.absoluteProjectPath('releaseNeeded')
     description "Assembles, tests and releases the ${buildProject.name} project."
     group 'build'
   }
   defaultTasks = [build.path]
+}
+
+checkDependencies {
+  mustRunAfter jarDependencies
+}
+
+releaseDependencies {
+  mustRunAfter jarDependencies, checkDependencies
 }
 
 /* Configure this project */
@@ -41,8 +48,13 @@ task('indexonly', type: Index) {
 task('index') {
   description 'Index the release repository.'
   group 'release'
-  dependsOn releaseNeeded
+  dependsOn releaseDependencies
   finalizedBy indexonly
+}
+
+jar {
+  dependsOn index
+  mustRunAfter indexonly
 }
 
 clean {

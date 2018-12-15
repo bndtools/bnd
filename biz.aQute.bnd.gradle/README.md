@@ -563,8 +563,11 @@ The name attribute in the generated index. The default is the name of the task.
 
 ### destinationDir
 
-The destination directory for the index. This is used as the URI base of the
-generated index. The default value is _${project.buildDir}_.
+The destination directory for the index. The default value is _${project.buildDir}_.
+
+### base
+
+The URI base for the generated index. The default value is _${project.uri(destinationDir)}_.
 
 ### bundles
 

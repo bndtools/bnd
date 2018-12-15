@@ -55,9 +55,9 @@ task deployJFrog(type: Exec) {
 }
 
 task deploy(type: Exec) {
-  dependsOn "${parent.absoluteProjectPath('dist')}:build"
+  dependsOn parent.absoluteProjectPath('dist:jarDependencies')
   finalizedBy deployOSSRH, deployJFrog
-  tasks.getByPath("${parent.absoluteProjectPath('dist')}:index").mustRunAfter it
+  tasks.getByPath(parent.absoluteProjectPath('dist:index')).mustRunAfter it
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
     args '/c', 'mvn'
