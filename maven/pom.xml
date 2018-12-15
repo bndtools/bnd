@@ -403,6 +403,19 @@
 
   <profiles>
     <profile>
+      <id>dist</id>
+      <distributionManagement>
+        <snapshotRepository>
+          <id>dist</id>
+          <url>${releaserepo}</url>
+        </snapshotRepository>
+        <repository>
+          <id>dist</id>
+          <url>${releaserepo}</url>
+        </repository>
+      </distributionManagement>
+    </profile>
+    <profile>
       <id>ossrh</id>
       <properties>
         <skipTests>true</skipTests>
