@@ -68,7 +68,8 @@ task deploy(type: Exec) {
   if (logger.isDebugEnabled()) {
     args '--debug'
   }
-  args "-DaltDeploymentRepository=dist::default::${releaserepo}"
+  args '-Pdist'
+  args "-Dreleaserepo=${releaserepo}"
   if (localrepo) {
     args "-Dmaven.repo.local=${localrepo}"
   }
