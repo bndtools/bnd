@@ -3,13 +3,19 @@ package aQute.bnd.repository.osgi;
 import static aQute.lib.promise.PromiseCollectors.toPromise;
 import static java.util.stream.Collectors.toList;
 
+import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
@@ -90,10 +96,42 @@ class OSGiIndex {
 					logger.debug("{}: No file downloaded for {}", name, uri);
 					return Collections.emptyList();
 				}
-				try (XMLResourceParser xmlp = new XMLResourceParser(IO.stream(file), name, uri)) {
-					return xmlp.parse();
+				// file could be xml, gzipped xml, OR zip with index.xml or
+				// index.xml.gz entry
+				try (InputStream in = new BufferedInputStream(IO.stream(file))) {
+					in.mark(2);
+					int magic = readUnsignedShort(in);
+					in.reset();
+					if (magic == 0x504b) { // "PK" means a zip file
+						try (ZipInputStream zin = new ZipInputStream(in)) {
+							for (ZipEntry entry; (entry = zin.getNextEntry()) != null;) {
+								switch (entry.getName()) {
+									case "index.xml" :
+									case "index.xml.gz" :
+										try (XMLResourceParser xrp = new XMLResourceParser(zin, name, uri)) {
+											return xrp.parse();
+										}
+									default :
+										break;
+								}
+							}
+							logger.debug("{}: No index.xml or index.xml.gz entry found in zip file {}", name, uri);
+							return Collections.emptyList();
+						}
+					}
+					try (XMLResourceParser xrp = new XMLResourceParser(in, name, uri)) {
+						return xrp.parse();
+					}
 				}
 			});
+	}
+
+	private static final int readUnsignedShort(InputStream in) throws IOException {
+		int b1 = in.read();
+		int b2 = in.read();
+		if ((b1 | b2) < 0)
+			throw new EOFException();
+		return (b1 << 8) + (b2 & 0xff);
 	}
 
 	Promise<File> get(String bsn, Version version, File file) throws Exception {
