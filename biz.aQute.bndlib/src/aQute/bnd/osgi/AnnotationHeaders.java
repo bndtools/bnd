@@ -649,22 +649,45 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		if (a.containsKey("version")) {
-			Version floor;
-			try {
-				floor = Version.parseVersion(annotation.version());
-			} catch (Exception e) {
-				floor = null;
-				analyzer.exception(e,
-					"The version declared by the Requirement annotation attached to type %s is invalid",
-					current.getFQN());
-			}
+			if (annotation.version()
+				.indexOf('$') == -1) {
 
-			if (floor != null) {
+				Version floor;
+				try {
+					floor = Version.parseVersion(annotation.version());
+				} catch (Exception e) {
+					floor = null;
+					analyzer.exception(e,
+						"The version declared by the Requirement annotation attached to type %s is invalid",
+						current.getFQN());
+				}
+
+				if (floor != null) {
+					int current = filter.lastIndexOf(")");
+
+					VersionRange range = new VersionRange(floor, floor.bumpMajor());
+					String rangeFilter = range.toFilter();
+					filter.append(rangeFilter.substring(2, rangeFilter.length() - 1));
+
+					if (andAdded) {
+						filter.deleteCharAt(current)
+							.append(')');
+					} else if (addAnd) {
+						filter.insert(0, "(&")
+							.append(')');
+					}
+				}
+			}
+			else {
+				String floor = annotation.version();
+
 				int current = filter.lastIndexOf(")");
 
-				VersionRange range = new VersionRange(floor, floor.bumpMajor());
-				String rangeFilter = range.toFilter();
-				filter.append(rangeFilter.substring(2, rangeFilter.length() - 1));
+				filter.append("(version>=")
+					.append(floor)
+					.append(")(!(version>=${versionmask;+00;")
+					.append(floor)
+					.append("}))");
 
 				if (andAdded) {
 					filter.deleteCharAt(current)
@@ -695,12 +718,15 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		if (a.containsKey("version")) {
-			try {
-				Version.parseVersion(annotation.version());
-			} catch (Exception e) {
-				analyzer.exception(e,
-					"The version declared by the Capability annotation attached to type %s is invalid",
-					current.getFQN());
+			if (annotation.version()
+				.indexOf('$') == -1) {
+				try {
+					Version.parseVersion(annotation.version());
+				} catch (Exception e) {
+					analyzer.exception(e,
+						"The version declared by the Capability annotation attached to type %s is invalid",
+						current.getFQN());
+				}
 			}
 			cap.append(";version:Version=")
 				.append(annotation.version());
