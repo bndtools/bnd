@@ -559,7 +559,7 @@ Project ${project.name}
       builtBy path.findAll { Container c ->
         c.getType() == TYPE.PROJECT
       }.collect { Container c ->
-        "${project.parent.absoluteProjectPath(c.getProject().getName())}:jar"
+        project.parent.absoluteProjectPath("${c.getProject().getName()}:jar")
       }
     }
   }
@@ -567,7 +567,7 @@ Project ${project.name}
   private Closure buildDependencies(String taskName, Closure transformer = { it }) {
     return {
       bndProject.getBuildDependencies()*.getName().collect { String dependency ->
-        transformer("${project.parent.absoluteProjectPath(dependency)}:${taskName}")
+        transformer(project.parent.absoluteProjectPath("${dependency}:${taskName}"))
       }
     }
   }
@@ -575,7 +575,7 @@ Project ${project.name}
   private Closure testDependencies(String taskName, Closure transformer = { it }) {
     return {
       bndProject.getTestDependencies()*.getName().collect { String dependency ->
-        transformer("${project.parent.absoluteProjectPath(dependency)}:${taskName}")
+        transformer(project.parent.absoluteProjectPath("${dependency}:${taskName}"))
       }
     }
   }
@@ -583,7 +583,7 @@ Project ${project.name}
   private Closure dependents(String taskName, Closure transformer = { it }) {
     return {
       bndProject.getDependents()*.getName().collect { String dependency ->
-        transformer("${project.parent.absoluteProjectPath(dependency)}:${taskName}")
+        transformer(project.parent.absoluteProjectPath("${dependency}:${taskName}"))
       }
     }
   }
