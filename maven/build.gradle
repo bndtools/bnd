@@ -38,7 +38,7 @@ task deployJFrog(type: Exec) {
   }
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
-    args '/c', 'mvn'
+    args '/c', rootProject.file('mvnw.cmd')
   } else {
     executable rootProject.file('mvnw')
   }
@@ -55,12 +55,12 @@ task deployJFrog(type: Exec) {
 }
 
 task deploy(type: Exec) {
-  dependsOn parent.absoluteProjectPath('dist:jarDependencies')
+  dependsOn parent.tasks.getByPath('dist:jarDependencies')
   finalizedBy deployOSSRH, deployJFrog
-  tasks.getByPath(parent.absoluteProjectPath('dist:index')).mustRunAfter it
+  parent.tasks.getByPath('dist:releaseDependencies').mustRunAfter it
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
-    args '/c', 'mvn'
+    args '/c', rootProject.file('mvnw.cmd')
   } else {
     executable rootProject.file('mvnw')
   }

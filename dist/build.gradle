@@ -31,30 +31,22 @@ releaseDependencies {
 /* Configure this project */
 File releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
 
-task('indexonly', type: Index) {
-  description 'Index the release repository only. (Does not depend on releaseNeeded).'
+task('index', type: Index) {
+  description 'Index the release repository.'
   group 'release'
+  mustRunAfter releaseDependencies
   repositoryName = "Bnd/Bndtools ${version}"
-  destinationDir = releaserepo
-  gzip = true
-  bundles fileTree(destinationDir) {
+  base = new File(releaserepo, "${bnd('-groupid').replace('.','/')}/artifact/version")
+  gzip = false
+  bundles fileTree(releaserepo) {
     include '**/*.jar'
-    exclude '**/*-latest.jar'
     exclude '**/*-sources.jar'
     exclude '**/*-javadoc.jar'
   }
 }
 
-task('index') {
-  description 'Index the release repository.'
-  group 'release'
-  dependsOn releaseDependencies
-  finalizedBy indexonly
-}
-
 jar {
-  dependsOn index
-  mustRunAfter indexonly
+  inputs.files index
 }
 
 clean {

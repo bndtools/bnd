@@ -1,6 +1,5 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
--nobundles: true
 
 -dependson: aQute.libg, \
             biz.aQute.bnd, \
@@ -37,3 +36,12 @@
             org.bndtools.templates.osgi, \
             org.bndtools.templates.template, \
             org.bndtools.p2
+
+index: ${target}/index.xml
+-includeresource: ${index}
+-resourceonly: true
+Bundle-Description: An OSGi Repository Index for the Bnd/Bndtools jars.
+#
+# The project tasks must be run from the gradle build
+#
+-fixupmessages.dist: "Input file does not exist*${index}";is:=warning;replace:="${index} must be created with the gradle build."
