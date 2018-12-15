@@ -96,6 +96,9 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter
 	private Set<Scope>					scopes	= EnumSet.of(Scope.compile, Scope.runtime);
 
+	@Parameter(property = "bnd.export.skip", defaultValue = "false")
+	private boolean						skip;
+
 	private int							errors	= 0;
 
 	@Component
@@ -106,6 +109,11 @@ public class ExportMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (skip) {
+			logger.debug("skip project as configured");
+			return;
+		}
+
 		try {
 			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
 				system, scopes);
