@@ -2,7 +2,8 @@ package aQute.bnd.maven.lib.resolve;
 
 public enum Scope {
 	compile,
-	test,
+	provided,
 	runtime,
-	system;
+	system,
+	test;
 }

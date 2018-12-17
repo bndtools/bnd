@@ -1,7 +1,6 @@
 package aQute.bnd.maven.resolver.plugin;
 
 import java.io.File;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -72,8 +71,8 @@ public class ResolverMojo extends AbstractMojo {
 	@Parameter(defaultValue = "true")
 	private boolean						reportOptional;
 
-	@Parameter
-	private Set<Scope>					scopes	= EnumSet.of(Scope.compile, Scope.runtime);
+	@Parameter(property = "bnd.resolve.scopes", defaultValue = "compile,runtime")
+	private Set<Scope>					scopes;
 
 	@Parameter(property = "bnd.resolve.skip", defaultValue = "false")
 	private boolean						skip;

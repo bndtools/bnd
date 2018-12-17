@@ -75,6 +75,15 @@ public class DependencyResolver {
 	}
 
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,
+		ProjectDependenciesResolver resolver, RepositorySystem system, Set<Scope> scopes, boolean includeTransitive,
+		PostProcessor postProcessor) {
+
+		this(project, session, resolver, system, scopes.stream()
+			.map(Scope::name)
+			.collect(Collectors.toList()), includeTransitive, postProcessor);
+	}
+
+	public DependencyResolver(MavenProject project, RepositorySystemSession session,
 		ProjectDependenciesResolver resolver, RepositorySystem system, List<String> scopes, boolean includeTransitive,
 		PostProcessor postProcessor) {
 

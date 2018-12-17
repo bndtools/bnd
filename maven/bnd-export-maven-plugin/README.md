@@ -54,5 +54,5 @@ Here's an example setting the `bundles` used for resolution.
 |`useMavenDependencies` | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._|
 |`attach` | If `true` then if the exported generates a jar file, the jar file will be attached as an output of the current artifact. _Defaults to `true`._|
 |`reportOptional`       | If `true`, resolution failure reports (see `resolve`) will include optional requirements. _Defaults to `true`._|
-|`scopes`               | Specify from which scopes to collect dependencies. _Defaults to `compile, runtime`._|
+|`scopes`               | Specify from which scopes to collect dependencies. _Defaults to `compile, runtime`._ Override with property `bnd.export.scopes`.|
 |`skip`                 | Skip the project. _Defaults to `false`._ Override with property `bnd.export.skip`.|

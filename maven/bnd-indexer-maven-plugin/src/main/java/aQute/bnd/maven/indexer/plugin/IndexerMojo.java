@@ -8,11 +8,10 @@ import static org.apache.maven.plugins.annotations.ResolutionScope.TEST;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.DefaultArtifact;
@@ -43,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
 import aQute.bnd.maven.lib.resolve.LocalURLs;
 import aQute.bnd.maven.lib.resolve.RemotePostProcessor;
+import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
@@ -78,8 +78,8 @@ public class IndexerMojo extends AbstractMojo {
 	@Parameter(property = "bnd.indexer.add.mvn.urls", defaultValue = "false")
 	private boolean						addMvnURLs;
 
-	@Parameter(property = "bnd.indexer.scopes")
-	private List<String>				scopes;
+	@Parameter(property = "bnd.indexer.scopes", defaultValue = "compile,runtime")
+	private Set<Scope>					scopes;
 
 	@Parameter(property = "bnd.indexer.include.gzip", defaultValue = "true")
 	private boolean						includeGzip;
@@ -138,10 +138,6 @@ public class IndexerMojo extends AbstractMojo {
 		if (skip) {
 			logger.debug("skip project as configured");
 			return;
-		}
-
-		if (scopes == null || scopes.isEmpty()) {
-			scopes = Arrays.asList("compile", "runtime");
 		}
 
 		logger.debug("Indexing dependencies with scopes: {}", scopes);

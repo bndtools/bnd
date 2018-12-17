@@ -1,7 +1,6 @@
 package aQute.bnd.maven.testing.plugin;
 
 import java.io.File;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -94,8 +93,8 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${session}", readonly = true)
 	private MavenSession				session;
 
-	@Parameter
-	private Set<Scope>					scopes	= EnumSet.of(Scope.compile, Scope.runtime);
+	@Parameter(property = "bnd.testing.scopes", defaultValue = "compile,runtime")
+	private Set<Scope>					scopes;
 
 	private int							errors	= 0;
 
