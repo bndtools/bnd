@@ -1,8 +1,10 @@
 package aQute.bnd.maven.resolver.plugin;
 
 import java.io.File;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -25,6 +27,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
+import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
@@ -69,6 +72,12 @@ public class ResolverMojo extends AbstractMojo {
 	@Parameter(defaultValue = "true")
 	private boolean						reportOptional;
 
+	@Parameter
+	private Set<Scope>					scopes	= EnumSet.of(Scope.compile, Scope.runtime);
+
+	@Parameter(property = "bnd.resolve.skip", defaultValue = "false")
+	private boolean						skip;
+
 	private int							errors	= 0;
 
 	@Component
@@ -79,9 +88,14 @@ public class ResolverMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (skip) {
+			logger.debug("skip project as configured");
+			return;
+		}
+
 		try {
 			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
-				system);
+				system, scopes);
 
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
 				useMavenDependencies);

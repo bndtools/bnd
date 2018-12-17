@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.maven.RepositoryUtils;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -35,7 +37,7 @@ public class DependencyResolver {
 
 	private final boolean						includeTransitive;
 	private final MavenProject					project;
-	final List<String>							scopes;
+	final Collection<String>							scopes;
 	private final RepositorySystemSession		session;
 	private final RepositorySystem				system;
 	private final ProjectDependenciesResolver	resolver;
@@ -56,6 +58,20 @@ public class DependencyResolver {
 		ProjectDependenciesResolver resolver, RepositorySystem system) {
 
 		this(project, session, resolver, system, Arrays.asList("compile", "runtime"), true, new LocalPostProcessor());
+	}
+
+	public DependencyResolver(MavenProject project, RepositorySystemSession session,
+		ProjectDependenciesResolver resolver, RepositorySystem system, Set<Scope> scopes) {
+
+		this(project, session, resolver, system, scopes.stream()
+			.map(Scope::name)
+			.collect(Collectors.toList()));
+	}
+
+	public DependencyResolver(MavenProject project, RepositorySystemSession session,
+		ProjectDependenciesResolver resolver, RepositorySystem system, List<String> scopes) {
+
+		this(project, session, resolver, system, scopes, true, new LocalPostProcessor());
 	}
 
 	public DependencyResolver(MavenProject project, RepositorySystemSession session,
