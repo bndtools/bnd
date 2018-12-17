@@ -196,12 +196,12 @@ public class BndMavenPlugin extends AbstractMojo {
 			if (classesDir.isDirectory()) {
 				builder.addClasspath(classesDir);
 
-				// Include local project packages, true by default
-				if (includeClassesDir) {
-					Jar classesDirJar = new Jar(project.getName(), classesDir);
-					classesDirJar.setManifest(new Manifest());
-					builder.setJar(classesDirJar);
+				Jar classesDirJar = new Jar(project.getName(), classesDir);
+				if (!includeClassesDir) {
+					classesDirJar.removePrefix(""); // clear the jar
 				}
+				classesDirJar.setManifest(new Manifest());
+				builder.setJar(classesDirJar);
 			}
 
 			boolean isWab = PACKAGING_WAR.equals(project.getPackaging());
