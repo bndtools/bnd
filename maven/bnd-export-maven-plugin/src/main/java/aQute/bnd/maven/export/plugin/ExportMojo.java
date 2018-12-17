@@ -5,7 +5,6 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 import java.io.File;
 import java.io.OutputStream;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -93,8 +92,8 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${session}", readonly = true)
 	private MavenSession				session;
 
-	@Parameter
-	private Set<Scope>					scopes	= EnumSet.of(Scope.compile, Scope.runtime);
+	@Parameter(property = "bnd.export.scopes", defaultValue = "compile,runtime")
+	private Set<Scope>					scopes;
 
 	@Parameter(property = "bnd.export.skip", defaultValue = "false")
 	private boolean						skip;
