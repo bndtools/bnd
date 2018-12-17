@@ -187,6 +187,50 @@ if the same instruction is in both places, the one in the
 `BundleTaskConvention` property will be
 used and the one in the `manifest` property will be ignored.
 
+### Replacing use of Gradle's deprecated OSGi Plugin
+
+In Gradle 5.0, the [OSGi Plugin was deprecated][22]. If you used
+the OSGi Plugin and want to switch to the Bnd Gradle Plugin, you
+will need to modify your build scripts. In addition to applying the
+`biz.aQute.bnd.builder` plugin to replace the OSGi Plugin, you will need
+to change usage of the `OSGiManifest`'s `instruction` property to use 
+the `bnd` property.
+
+For example:
+
+```groovy
+jar {
+    manifest { // the manifest of the default jar is of type OsgiManifest
+        name = 'overwrittenSpecialOsgiName'
+        instruction 'Private-Package',
+            'org.mycomp.package1',
+            'org.mycomp.package2'
+        instruction 'Bundle-Vendor', 'MyCompany'
+        instruction 'Bundle-Description', 'Platform2: Metrics 2 Measures Framework'
+        instruction 'Bundle-DocURL', 'http://www.mycompany.com'
+    }
+}
+```
+
+becomes:
+
+```groovy
+jar {
+    bnd ('Bundle-Name': 'overwrittenSpecialOsgiName',
+         'Private-Package': 'org.mycomp.package1,org.mycomp.package2',
+         'Bundle-Vendor': 'MyCompany',
+         'Bundle-Description': 'Platform2: Metrics 2 Measures Framework',
+         'Bundle-DocURL': 'http://www.mycompany.com')
+    }
+}
+```
+
+Use the `sourceSet` property to replace use of the `classesDir` property.
+Use of the convenience properties on `OSGiManifest` must be replaced with
+the specifying the actual OSGi manifest header name in the Bnd
+instructions. For example, `name = 'overwrittenSpecialOsgiName'` is replaced
+with `bnd 'Bundle-Name: overwrittenSpecialOsgiName'`.
+
 ## Create a task of the `Baseline` type
 
 The `Baseline` task type
@@ -739,3 +783,4 @@ For full details on what the Bnd Gradle Plugins do, check out the
 [19]: https://docs.gradle.org/current/dsl/org.gradle.api.reporting.ReportingExtension.html#org.gradle.api.reporting.ReportingExtension:baseDir
 [20]: #gradle-plugins-for-bnd-workspace-builds
 [21]: #gradle-plugin-for-non-bnd-workspace-builds
+[22]: https://docs.gradle.org/5.0/userguide/osgi_plugin.html
