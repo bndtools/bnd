@@ -17,10 +17,12 @@ package aQute.bnd.maven.plugin;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +66,7 @@ import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.version.MavenVersion;
@@ -72,6 +75,7 @@ import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
+import aQute.service.reporter.Reporter;
 
 @Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
 public class BndMavenPlugin extends AbstractMojo {
@@ -145,6 +149,9 @@ public class BndMavenPlugin extends AbstractMojo {
 	// This is not used and is for doc only; see loadProjectProperties
 	@SuppressWarnings("unused")
 	private String									bnd;
+
+	@Parameter
+	private Properties								instructions;
 
 	@Component
 	private BuildContext							buildContext;
@@ -460,22 +467,25 @@ public class BndMavenPlugin extends AbstractMojo {
 	}
 	
 	private File loadProperties(Builder builder) throws Exception {
+		Map<String, Xpp3Dom> tracker = new HashMap<>();
 		// Load parent project properties first
-		loadParentProjectProperties(builder, project);
+		loadParentProjectProperties(builder, project, tracker);
 
 		// Load current project properties
 		Xpp3Dom configuration = Optional.ofNullable(project.getBuildPlugins())
 			.flatMap(this::getConfiguration)
 			.orElseGet(this::defaultConfiguration);
-		return loadProjectProperties(builder, project, project, configuration);
+		return loadProjectProperties(builder, project, project, configuration, tracker);
 	}
 
-	private void loadParentProjectProperties(Builder builder, MavenProject currentProject) throws Exception {
+	private void loadParentProjectProperties(Builder builder, MavenProject currentProject,
+		Map<String, Xpp3Dom> tracker)
+		throws Exception {
 		MavenProject parentProject = currentProject.getParent();
 		if (parentProject == null) {
 			return;
 		}
-		loadParentProjectProperties(builder, parentProject);
+		loadParentProjectProperties(builder, parentProject, tracker);
 
 		// Get configuration from parent project
 		Xpp3Dom configuration = Optional.ofNullable(parentProject.getBuildPlugins())
@@ -483,7 +493,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			.orElse(null);
 		if (configuration != null) {
 			// Load parent project's properties
-			loadProjectProperties(builder, parentProject, parentProject, configuration);
+			loadProjectProperties(builder, parentProject, parentProject, configuration, tracker);
 			return;
 		}
 
@@ -494,11 +504,13 @@ public class BndMavenPlugin extends AbstractMojo {
 			.orElseGet(this::defaultConfiguration);
 		// Load properties from parent project's bnd file or configuration in
 		// project's pluginManagement
-		loadProjectProperties(builder, parentProject, currentProject, configuration);
+		loadProjectProperties(builder, parentProject, currentProject, configuration, tracker);
 	}
 
 	private File loadProjectProperties(Builder builder, MavenProject bndProject, MavenProject pomProject,
-		Xpp3Dom configuration) throws Exception {
+		Xpp3Dom configuration, Map<String, Xpp3Dom> tracker) throws Exception {
+		File projectFile = null;
+
 		// check for bnd file configuration
 		File baseDir = bndProject.getBasedir();
 		if (baseDir != null) { // file system based pom
@@ -512,7 +524,7 @@ public class BndMavenPlugin extends AbstractMojo {
 				logger.debug("loading bnd properties from file: {}", bndFile);
 				// we use setProperties to handle -include
 				builder.setProperties(bndFile.getParentFile(), builder.loadProperties(bndFile));
-				return bndFile;
+				projectFile = bndFile;
 			}
 			// no bnd file found, so we fall through
 		}
@@ -523,15 +535,122 @@ public class BndMavenPlugin extends AbstractMojo {
 		if (baseDir != null) {
 			builder.updateModified(pomFile.lastModified(), "POM: " + pomFile);
 		}
+
+		boolean bndUsed = false;
 		Xpp3Dom bndElement = configuration.getChild("bnd");
 		if (bndElement != null) {
-			logger.debug("loading bnd properties from bnd element in pom: {}", pomProject);
-			UTF8Properties properties = new UTF8Properties();
-			properties.load(bndElement.getValue(), pomFile, builder);
-			// we use setProperties to handle -include
-			builder.setProperties(baseDir, properties.replaceHere(baseDir));
+			if (projectFile == null) {
+				if (!xppDomEqualsWithSubtitution(bndElement, tracker.get("bnd"), projectFile, builder)) {
+					tracker.put("bnd", bndElement);
+					bndUsed = true;
+					logger.debug("loading bnd properties from bnd element in pom: {}", pomProject);
+					projectFile = pomFile;
+					UTF8Properties properties = new UTF8Properties();
+					properties.load(bndElement.getValue(), projectFile, builder);
+					// we use setProperties to handle -include
+					builder.setProperties(baseDir, transformUnderscoreKeys(properties.replaceHere(baseDir)));
+				}
+			} else {
+				logger.warn("Pom defines both bndfile and bnd configuration. Ignoring the bnd configuration in pom: {}",
+					pomProject);
+			}
 		}
-		return pomFile;
+
+		if (instructions != null && instructions.size() > 0 && configuration.getChild("instructions") != null) {
+			if (projectFile == null && !bndUsed) {
+				logger.debug("loading bnd properties from the instructions element in pom: {}", pomProject);
+				projectFile = pomFile;
+				// Copy into UTF8Properties so that we can replace ${.}
+				// placeholders
+				UTF8Properties properties = new UTF8Properties();
+
+				properties.putAll(instructions);
+				builder.setProperties(baseDir, transformUnderscoreKeys(properties.replaceHere(baseDir)));
+			} else {
+				logger.warn(
+					"Pom defines both a bnd/bndfile and instructions element. Ignoring the instructions element in pom: {}",
+					pomProject);
+			}
+		}
+
+		return projectFile;
+	}
+
+	/**
+	 * Compare two Xpp3Dom objects, substituting any variable placeholders if
+	 * available.
+	 * 
+	 * @param d1 The first XML object.
+	 * @param d2 The seconds XML object.
+	 * @param projectFile A properties file used by the properties loader for
+	 *            error reporting.
+	 * @param reporter A reporter for logging.
+	 * @return {@code true} if the two XML objects are equal after placeholder
+	 *         substitution.
+	 * @throws IOException If an IO exception occurs.
+	 */
+	private boolean xppDomEqualsWithSubtitution(Xpp3Dom d1, Xpp3Dom d2, File projectFile, Reporter reporter)
+		throws IOException {
+		if (d1 == null && d2 == null)
+			return true;
+
+		if (d1 == null || d2 == null)
+			return false;
+		UTF8Properties p1 = new UTF8Properties();
+		p1.load(d1.getValue(), projectFile, reporter);
+
+		UTF8Properties p2 = new UTF8Properties();
+		p2.load(d2.getValue(), projectFile, reporter);
+
+		if (p1.size() != p2.size()) {
+			return false;
+		}
+
+		Properties beanProperties = new BeanProperties();
+		beanProperties.put("project", project);
+		beanProperties.put("settings", settings);
+		Properties mavenProperties = new Properties(beanProperties);
+		mavenProperties.putAll(project.getProperties());
+
+		for (String key : p1.stringPropertyNames()) {
+			String p1val = p1.getProperty(key);
+			String p2val = p2.getProperty(key);
+
+			if (Objects.equals(p1val, p2val))
+				continue;
+
+			try (Processor p = new Processor(mavenProperties, false)) {
+				Macro m = p.getReplacer();
+				String p1valp = m.process(p1val);
+				String p2valp = m.process(p2val);
+
+				if (!p1valp.equals(p2valp))
+					return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Transform keys that start with an underscore to keys that start with a
+	 * dash. XML does not allow tags that start with a dash.
+	 * 
+	 * @param properties The properties to work on. The properties that start
+	 *            with a dash will be removed and replacement properties that
+	 *            start with a dash are added. This properties object is
+	 *            modified in-place.
+	 * @return The properties object that has been transformed.
+	 */
+	private static Properties transformUnderscoreKeys(Properties properties) {
+		for (String key : new HashSet<String>(properties.stringPropertyNames())) {
+			if (key.startsWith("_")) {
+				String val = properties.getProperty(key);
+				String newKey = "-" + key.substring(1);
+				properties.remove(key);
+				properties.put(newKey, val);
+			}
+		}
+		return properties;
 	}
 
 	private Optional<Xpp3Dom> getConfiguration(List<Plugin> plugins) {

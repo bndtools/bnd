@@ -13,10 +13,13 @@
 	</properties>
 
 	<modules>
+        <module>test-sub-parent</module>
 		<module>test-api-bundle</module>
 		<module>test-impl-bundle</module>
 		<module>test-wrapper-bundle</module>
 		<module>test-in-build-pluginManagement-inheritance</module>
+        <module>test-pom-instructions</module>
+        <module>test-pom-instructions2</module>
 	</modules>
 	
 	<build>
