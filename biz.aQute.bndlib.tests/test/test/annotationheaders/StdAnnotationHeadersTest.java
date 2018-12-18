@@ -1,8 +1,10 @@
 package test.annotationheaders;
 
 import static aQute.lib.env.Header.DUPLICATE_MARKER;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -338,6 +340,30 @@ public class StdAnnotationHeadersTest extends TestCase {
 			assertEquals("foo", p.get("overriding"));
 			assertTrue(p.containsKey("version:Version"));
 			assertEquals("1.0.0", p.get("version:Version"));
+		}
+	}
+
+	/**
+	 * A Meta annotated class using Repeatable annotations
+	 * 
+	 * @throws Exception
+	 */
+	public void testStdRepeatableMetaAnnotated() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.attrs.std.repeatable");
+			b.build();
+			assertTrue(b.check());
+			Manifest manifest = b.getJar()
+				.getManifest();
+			manifest.write(System.out);
+
+			Attributes mainAttributes = manifest.getMainAttributes();
+
+			Header repeated = Header.parseHeader(mainAttributes.getValue("Repeatable"));
+			assertThat(repeated).containsOnlyKeys("RepeatableAnnotation");
+			Header container = Header.parseHeader(mainAttributes.getValue("Container"));
+			assertThat(container).containsOnlyKeys("RepeatableAnnotations");
 		}
 	}
 

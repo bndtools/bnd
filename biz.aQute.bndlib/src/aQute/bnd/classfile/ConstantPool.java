@@ -25,8 +25,8 @@ public class ConstantPool {
 
 	final Object[]			pool;
 
-	ConstantPool(int constant_pool_count) {
-		this.pool = new Object[constant_pool_count];
+	ConstantPool(Object[] pool) {
+		this.pool = pool;
 	}
 
 	public int size() {
@@ -88,8 +88,7 @@ public class ConstantPool {
 
 	static ConstantPool parseConstantPool(DataInput in) throws IOException {
 		int constant_pool_count = in.readUnsignedShort();
-		ConstantPool constant_pool = new ConstantPool(constant_pool_count);
-		Object[] pool = constant_pool.pool;
+		Object[] pool = new Object[constant_pool_count];
 		for (int index = 1; index < constant_pool_count; index++) {
 			int tag = in.readUnsignedByte();
 			switch (tag) {
@@ -175,7 +174,7 @@ public class ConstantPool {
 			}
 		}
 
-		return constant_pool;
+		return new ConstantPool(pool);
 	}
 
 	static String parseUtf8Info(DataInput in) throws IOException {

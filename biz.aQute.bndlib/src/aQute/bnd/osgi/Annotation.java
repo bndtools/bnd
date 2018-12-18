@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -92,7 +93,37 @@ public class Annotation {
 
 	@Override
 	public String toString() {
-		return name + ":" + member + ":" + policy + ":" + (elements == null ? "{}" : elements);
+		StringBuilder sb = new StringBuilder();
+		sb.append(name)
+			.append(':')
+			.append(member)
+			.append(':')
+			.append(policy)
+			.append(':')
+			.append('{');
+		if (elements != null) {
+			Iterator<Entry<String, Object>> i = elements.entrySet()
+				.iterator();
+			if (i.hasNext()) {
+				for (Entry<String, Object> e = i.next();; e = i.next()) {
+					sb.append(e.getKey())
+						.append('=');
+					Object v = e.getValue();
+					if (v instanceof Object[]) {
+						sb.append(Arrays.toString((Object[]) v));
+					} else {
+						sb.append(v);
+					}
+					if (!i.hasNext()) {
+						break;
+					}
+					sb.append(',')
+						.append(' ');
+				}
+			}
+		}
+		return sb.append('}')
+			.toString();
 	}
 
 	@SuppressWarnings("unchecked")
