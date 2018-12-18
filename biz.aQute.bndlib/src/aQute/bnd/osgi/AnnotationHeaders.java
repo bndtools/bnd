@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -227,6 +228,23 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				}
 				break;
 			default :
+				// Handle annotations in a repeatable container annotation
+				Object value = annotation.get("value");
+				if (value instanceof Object[]) {
+					Object[] container = (Object[]) value;
+					if ((container.length > 0) && (container[0] instanceof Annotation)) {
+						if (Optional.ofNullable(analyzer.findClass(((Annotation) container[0]).getName()))
+							.flatMap(c -> c.annotations("java/lang/annotation/Repeatable")
+								.findFirst())
+							.filter(a -> name.equals(a.get("value")))
+							.isPresent()) {
+							for (Object a : container) {
+								Annotation repeatable = (Annotation) a;
+								doAnnotatedAnnotation(repeatable, repeatable.getName(), emptySet(), new Attrs());
+							}
+						}
+					}
+				}
 				doAnnotatedAnnotation(annotation, name, emptySet(), new Attrs());
 				break;
 		}
@@ -254,15 +272,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		final Clazz c = analyzer.findClass(name);
-
-		// If this annotation has meta-annotations then it may be relevant to us
-
-		if (c != null && !c.annotations()
-			.isEmpty()) {
-			c.parseClassFileWithCollector(
-				new MetaAnnotationCollector(c, annotation, processed, baseAttrs));
-			// }
-		} else if (c == null) {
+		if (c == null) {
 			// Don't repeatedly log for the same missing annotation
 			if (loggedMissing.add(fqn)) {
 				// Only issue a warning if pedantic
@@ -275,6 +285,13 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 						"Unable to determine whether the meta annotation {} applied to type {} provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
 						fqn, current.getFQN());
 				}
+			}
+		} else {
+			// If this annotation has meta-annotations then it may be relevant
+			// to us
+			if (!c.annotations()
+				.isEmpty()) {
+				c.parseClassFileWithCollector(new MetaAnnotationCollector(c, annotation, processed, baseAttrs));
 			}
 		}
 	}
