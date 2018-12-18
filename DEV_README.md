@@ -86,16 +86,3 @@ in to this you need to add the following to your plugin.xml
 
 Error markers will now appear in the right places. More work can be done to add quick fixes, but
 it's much harder than adding the markers.
-
-Build against local Bnd-Lib
-----------------------------
-
-Since BndTools relies on Bnd, it is sometimes necessary to use a local version of Bnd.
-
-The Repository for Bnd is configured with `bnd_repourl` in `gradle.properties`, located at the workspace-root. This file already contains a commented entry to point to a local distribution.
-
-	#bnd_repourl=../bnd/dist/bundles
-
-Assuming Bnd is located next to BndTools, just uncomment this line (otherwise adjust the relative path to your Bnd workspace location). Now you can do a local release of Bnd (see [documentation](https://github.com/bndtools/bnd) on how to release).
-
-Restart Eclipse or change some file in `cnf/ext`, which will cause the Eclipse workspace to pick-up the changes.
