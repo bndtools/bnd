@@ -45,5 +45,5 @@ If you're behind a firewall that requires proxies or you use repositories that r
 [1]: https://brew.sh/
 [3]: https://github.com/bndtools/bnd
 [4]: https://bndtools.jfrog.io/bndtools/libs-snapshot
-[5]: https://github.com/bndtools/bnd/docs
+[5]: https://github.com/bndtools/bnd/tree/master/docs
 [6]: /instructions/connection-settings
