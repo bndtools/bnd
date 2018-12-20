@@ -146,7 +146,7 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                     for (IAnnotation annot : annots) {
                         String name = annot.getElementName();
                         if (ANNOTATION_VERSION_NO_PKG.equals(name) || ANNOTATION_VERSION_OSGI.equals(name) || ANNOTATION_VERSION_BND.equals(name)) {
-                            ASTParser parser = ASTParser.newParser(AST.JLS8);
+                            ASTParser parser = ASTParser.newParser(AST.JLS10);
                             parser.setKind(ASTParser.K_COMPILATION_UNIT);
                             parser.setSource(compUnit);
                             parser.setResolveBindings(true);
@@ -185,7 +185,8 @@ public class BaselineErrorHandler extends AbstractBuildErrorDetailsHandler {
                 @SuppressWarnings("unused")
                 Tree pkgMember = pkgMemberDiff.getNewer();
                 // markers.addAll(generateAddedTypeMarker(javaProject, pkgMember.getName(), pkgMember.ifAdded()));
-            } else if (Delta.REMOVED == pkgMemberDiff.getDelta()) {} else {
+            } else if (Delta.REMOVED == pkgMemberDiff.getDelta()) {
+            } else {
                 Tree pkgMember = pkgMemberDiff.getOlder();
                 if (pkgMember != null && (Type.INTERFACE == pkgMember.getType() || Type.CLASS == pkgMember.getType())) {
                     String className = pkgMember.getName();

@@ -2,9 +2,9 @@ package bndtools.editor.workspace;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 
-public class PluginClassSorter extends ViewerSorter {
+public class PluginClassSorter extends ViewerComparator {
 
     @Override
     public int compare(Viewer viewer, Object e1, Object e2) {

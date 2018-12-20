@@ -359,6 +359,7 @@ public class BndtoolsBuilder extends IncrementalProjectBuilder {
     /*
      * Set the project's dependencies to influence the build order for Eclipse.
      */
+    @SuppressWarnings("deprecation")
     private boolean setBuildOrder(IProgressMonitor monitor) throws Exception {
         try {
             IProjectDescription projectDescription = getProject().getDescription();

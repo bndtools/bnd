@@ -32,6 +32,7 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
         this.size = new Point(16, 16);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void drawCompositeImage(int width, int height) {
 

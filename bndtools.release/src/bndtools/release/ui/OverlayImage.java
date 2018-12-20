@@ -42,6 +42,7 @@ public class OverlayImage {
     }
 
     private class OverlayImageDescriptor extends CompositeImageDescriptor {
+        @SuppressWarnings("deprecation")
         @Override
         protected void drawCompositeImage(int width, int height) {
 

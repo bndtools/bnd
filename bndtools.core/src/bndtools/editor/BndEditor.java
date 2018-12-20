@@ -427,7 +427,8 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     }
 
     @Override
-    public void doSaveAs() {}
+    public void doSaveAs() {
+    }
 
     @Override
     public boolean isSaveAsAllowed() {
@@ -555,7 +556,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
     private void setupActions() {
         String fileName = getFileAndProject(getEditorInput()).getFirst();
         if (fileName.endsWith(LaunchConstants.EXT_BNDRUN)) {
-            final IHandlerService handlerSvc = (IHandlerService) getEditorSite().getService(IHandlerService.class);
+            final IHandlerService handlerSvc = getEditorSite().getService(IHandlerService.class);
             final AbstractHandler handler = new AbstractHandler() {
                 @Override
                 public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -775,10 +776,11 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (IContentOutlinePage.class == adapter) {
-            return new BndEditorContentOutlinePage(this, model);
+            return (T) new BndEditorContentOutlinePage(this, model);
         }
         return super.getAdapter(adapter);
     }
@@ -791,13 +793,16 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         String savedString = null;
 
         @Override
-        public void elementMoved(Object originalElement, Object movedElement) {}
+        public void elementMoved(Object originalElement, Object movedElement) {
+        }
 
         @Override
-        public void elementDirtyStateChanged(Object element, boolean isDirty) {}
+        public void elementDirtyStateChanged(Object element, boolean isDirty) {
+        }
 
         @Override
-        public void elementDeleted(Object element) {}
+        public void elementDeleted(Object element) {
+        }
 
         @Override
         public void elementContentReplaced(Object element) {

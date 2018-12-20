@@ -11,7 +11,7 @@ import org.bndtools.core.ui.resource.RequirementWithResourceLabelProvider;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -241,7 +241,7 @@ public class ResolutionFailurePanel {
         ITreeContentProvider contentProvider = (ITreeContentProvider) unresolvedViewer.getContentProvider();
         Object[] roots = contentProvider.getElements(input);
 
-        ViewerSorter sorter = unresolvedViewer.getSorter();
+        ViewerComparator sorter = unresolvedViewer.getComparator();
         if (sorter != null)
             Arrays.sort(roots, new SorterComparatorAdapter(unresolvedViewer, sorter));
         for (Object root : roots) {
@@ -277,7 +277,7 @@ public class ResolutionFailurePanel {
         Object[] children = contentProvider.getChildren(unresolvedTreeElem);
         if (children == null)
             return;
-        ViewerSorter sorter = unresolvedViewer.getSorter();
+        ViewerComparator sorter = unresolvedViewer.getComparator();
         if (sorter != null)
             Arrays.sort(children, new SorterComparatorAdapter(unresolvedViewer, sorter));
         for (Object child : children) {

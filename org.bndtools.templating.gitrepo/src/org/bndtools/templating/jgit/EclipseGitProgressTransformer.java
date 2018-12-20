@@ -1,7 +1,7 @@
 package org.bndtools.templating.jgit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jgit.lib.ProgressMonitor;
 
 /** Create a new Git to Eclipse progress monitor. */
@@ -38,7 +38,7 @@ public class EclipseGitProgressTransformer implements ProgressMonitor {
         msg = name;
         lastWorked = 0;
         totalWork = total;
-        task = new SubProgressMonitor(root, 1000);
+        task = SubMonitor.convert(root, 1000);
         if (totalWork == UNKNOWN)
             task.beginTask(EMPTY_STRING, IProgressMonitor.UNKNOWN);
         else

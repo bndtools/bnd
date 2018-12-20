@@ -103,7 +103,7 @@ public class BndProjectPropertyPage extends PropertyPage {
         if (elem instanceof IProject)
             return (IProject) elem;
 
-        IProject project = (IProject) elem.getAdapter(IProject.class);
+        IProject project = elem.getAdapter(IProject.class);
         if (project != null)
             return project;
 

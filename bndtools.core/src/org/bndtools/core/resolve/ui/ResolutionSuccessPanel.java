@@ -104,7 +104,7 @@ public class ResolutionSuccessPanel {
         requiredViewer = new TableViewer(tblRequired);
         requiredViewer.setContentProvider(ArrayContentProvider.getInstance());
         requiredViewer.setLabelProvider(new ResourceLabelProvider());
-        requiredViewer.setSorter(new BundleSorter());
+        requiredViewer.setComparator(new BundleSorter());
 
         requiredViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -140,7 +140,7 @@ public class ResolutionSuccessPanel {
         optionalViewer = new CheckboxTableViewer(tblOptional);
         optionalViewer.setContentProvider(ArrayContentProvider.getInstance());
         optionalViewer.setLabelProvider(new ResourceLabelProvider());
-        optionalViewer.setSorter(new BundleSorter());
+        optionalViewer.setComparator(new BundleSorter());
 
         optionalViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -329,7 +329,8 @@ public class ResolutionSuccessPanel {
         return checkedOptional.isEmpty();
     }
 
-    public void dispose() {}
+    public void dispose() {
+    }
 
     private void doOptionalReasonUpdate(Resource resource) {
         reasonsContentProvider.setOptional(true);

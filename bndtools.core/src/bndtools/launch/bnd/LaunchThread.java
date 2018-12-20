@@ -157,27 +157,27 @@ class LaunchThread extends Thread implements IProcess {
         }
     }
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter.equals(IProcess.class)) {
-            return this;
+            return (T) this;
         }
         if (adapter.equals(IDebugTarget.class)) {
             ILaunch launch = getLaunch();
             IDebugTarget[] targets = launch.getDebugTargets();
             for (int i = 0; i < targets.length; i++) {
                 if (this.equals(targets[i].getProcess())) {
-                    return targets[i];
+                    return (T) targets[i];
                 }
             }
             return null;
         }
         if (adapter.equals(ILaunch.class)) {
-            return getLaunch();
+            return (T) getLaunch();
         }
         if (adapter.equals(ILaunchConfiguration.class)) {
-            return getLaunch().getLaunchConfiguration();
+            return (T) getLaunch().getLaunchConfiguration();
         }
         return null;
     }

@@ -386,7 +386,6 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
         final String javacTarget = bndWorkspace.getProperties()
             .getProperty(Constants.JAVAC_TARGET);
 
-        @SuppressWarnings("unchecked")
         Hashtable<String, String> javaCoreOptions = JavaCore.getOptions();
         if (javacSource != null) {
             javaCoreOptions.put(JavaCore.COMPILER_SOURCE, javacSource);
@@ -414,7 +413,6 @@ public class ImportBndWorkspaceWizard extends Wizard implements IImportWizard {
 
         addSystemLibraryContainer(javaProject, javacTarget, importSettings, monitor);
 
-        @SuppressWarnings("unchecked")
         Map<String, String> projectOptions = javaProject.getOptions(false);
         // only update project-specific settings when different from workspace
         if (javacSource != null && !javacSource.equals(JavaCore.getOption(JavaCore.COMPILER_SOURCE))) {

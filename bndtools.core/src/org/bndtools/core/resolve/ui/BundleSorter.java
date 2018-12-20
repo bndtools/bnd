@@ -2,12 +2,12 @@ package org.bndtools.core.resolve.ui;
 
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.osgi.framework.Version;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Resource;
 
-class BundleSorter extends ViewerSorter {
+class BundleSorter extends ViewerComparator {
 
     @Override
     public int compare(Viewer viewer, Object e1, Object e2) {
