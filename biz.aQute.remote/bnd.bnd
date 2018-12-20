@@ -33,6 +33,3 @@ aQute.agent.server.port = 29998
 -nojunit: true
 
 -baseline: *
-
--fixupmessages: \
-	'biz.aQute.remote.fixup: There is no baseline for biz.aQute.remote.fixup'
