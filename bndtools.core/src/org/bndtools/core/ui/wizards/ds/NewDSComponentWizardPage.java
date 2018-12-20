@@ -6,7 +6,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.internal.ui.IJavaHelpContextIds;
@@ -246,7 +246,7 @@ public class NewDSComponentWizardPage extends NewTypeWizardPage {
         boolean doConstr = isCreateConstructors();
         boolean doInherited = isCreateInherited();
 
-        createInheritedMethods(newType, doConstr, doInherited, imports, new SubProgressMonitor(monitor, 1));
+        createInheritedMethods(newType, doConstr, doInherited, imports, SubMonitor.convert(monitor, 1));
 
         if (activateSignature != null && activateSignature != ActivateSignature.NoActivate) {
             StringBuilder builder;

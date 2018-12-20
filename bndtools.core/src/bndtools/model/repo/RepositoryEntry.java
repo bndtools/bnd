@@ -60,8 +60,9 @@ public abstract class RepositoryEntry implements IAdaptable {
         return bsn;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         // Avoid getting the file if the requested adapter type is not supported.
         boolean adaptable = IFile.class.equals(adapter) || File.class.equals(adapter) || URI.class.equals(adapter);
         if (!adaptable)
@@ -71,15 +72,15 @@ public abstract class RepositoryEntry implements IAdaptable {
             IWorkspaceRoot root = ResourcesPlugin.getWorkspace()
                 .getRoot();
             File file = getFile(false);
-            return file != null ? root.getFileForLocation(new Path(file.getAbsolutePath())) : null;
+            return file != null ? (T) root.getFileForLocation(new Path(file.getAbsolutePath())) : null;
         }
 
         if (File.class.equals(adapter))
-            return getFile(false);
+            return (T) getFile(false);
 
         if (URI.class.equals(adapter)) {
             File file = getFile(false);
-            return file != null ? file.toURI() : null;
+            return file != null ? (T) file.toURI() : null;
         }
 
         return null;

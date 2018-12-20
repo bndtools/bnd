@@ -37,9 +37,10 @@ public class ProjectBundle implements IAdaptable {
         return "ProjectBundle [project=" + project + ", bsn=" + bsn + "]";
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
-        Object result = null;
+    public <T> T getAdapter(Class<T> adapter) {
+        T result = null;
 
         if (IFile.class.equals(adapter) || IResource.class.equals(adapter)) {
             try {
@@ -47,7 +48,7 @@ public class ProjectBundle implements IAdaptable {
                 File bundleFile = new File(targetDir, bsn + ".jar");
                 if (bundleFile.isFile()) {
                     Path path = new Path(bundleFile.getAbsolutePath());
-                    result = ResourcesPlugin.getWorkspace()
+                    result = (T) ResourcesPlugin.getWorkspace()
                         .getRoot()
                         .getFileForLocation(path);
                 }

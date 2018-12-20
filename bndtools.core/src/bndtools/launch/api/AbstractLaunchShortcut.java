@@ -95,11 +95,11 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
             launchBndRun(bndRunFile, mode);
         } else if (selected instanceof IAdaptable) {
             IAdaptable adaptable = (IAdaptable) selected;
-            IJavaElement javaElement = (IJavaElement) adaptable.getAdapter(IJavaElement.class);
+            IJavaElement javaElement = adaptable.getAdapter(IJavaElement.class);
             if (javaElement != null) {
                 launchJavaElements(Collections.singletonList(javaElement), mode);
             } else {
-                IResource resource = (IResource) adaptable.getAdapter(IResource.class);
+                IResource resource = adaptable.getAdapter(IResource.class);
                 if (resource != null && resource != selected)
                     launchSelectedObject(resource, mode);
             }
@@ -109,7 +109,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
     @Override
     public void launch(IEditorPart editor, String mode) {
         IEditorInput input = editor.getEditorInput();
-        IJavaElement element = (IJavaElement) input.getAdapter(IJavaElement.class);
+        IJavaElement element = input.getAdapter(IJavaElement.class);
         if (element != null) {
             IJavaProject jproject = element.getJavaProject();
             if (jproject != null) {
@@ -208,7 +208,7 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
             if (element instanceof IResource)
                 return ((IResource) element).getProject();
             else if (element instanceof IAdaptable) {
-                IResource resource = (IResource) ((IAdaptable) element).getAdapter(IResource.class);
+                IResource resource = ((IAdaptable) element).getAdapter(IResource.class);
                 if (resource != null)
                     return resource.getProject();
             }
@@ -272,7 +272,8 @@ public abstract class AbstractLaunchShortcut implements ILaunchShortcut2 {
         if (element != null) {
             try {
                 return element.getCorrespondingResource();
-            } catch (JavaModelException e) {}
+            } catch (JavaModelException e) {
+            }
         }
         return null;
     }

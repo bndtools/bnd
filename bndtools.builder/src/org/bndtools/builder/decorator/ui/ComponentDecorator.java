@@ -107,7 +107,7 @@ public class ComponentDecorator extends LabelProvider implements ILightweightLab
                 }
             } else if (element instanceof IPackageFragment) {
                 IPackageFragment frag = (IPackageFragment) element;
-                IResource resource = (IResource) frag.getAdapter(IResource.class);
+                IResource resource = frag.getAdapter(IResource.class);
                 if (resource != null && countComponents(resource)) {
                     decoration.addOverlay(componentIcon);
                 }

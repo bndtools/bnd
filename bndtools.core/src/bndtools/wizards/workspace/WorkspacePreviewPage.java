@@ -35,7 +35,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.wizard.IWizardContainer;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
@@ -242,7 +242,7 @@ public class WorkspacePreviewPage extends WizardPage {
                 cell.setImage(icon);
             }
         });
-        vwrOutputs.setSorter(new ViewerSorter(Collator.getInstance()));
+        vwrOutputs.setComparator(new ViewerComparator(Collator.getInstance()));
 
         // Details display
         final Label lblDetails = new Label(composite, SWT.NONE);

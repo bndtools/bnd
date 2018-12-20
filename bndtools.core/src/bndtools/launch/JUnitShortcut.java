@@ -53,7 +53,7 @@ public class JUnitShortcut extends AbstractLaunchShortcut {
                 IJavaElement element = getSelectedJavaElement((JavaEditor) editor);
                 if (element == null) {
                     IEditorInput input = editor.getEditorInput();
-                    element = (IJavaElement) input.getAdapter(IJavaElement.class);
+                    element = input.getAdapter(IJavaElement.class);
                 }
 
                 if (element != null) {

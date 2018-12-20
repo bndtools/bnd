@@ -71,7 +71,7 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
                 } else if (selected instanceof IWorkingSet) {
                     IWorkingSet workingSet = (IWorkingSet) selected;
                     for (IAdaptable adaptable : workingSet.getElements()) {
-                        IProject project = (IProject) adaptable.getAdapter(IProject.class);
+                        IProject project = adaptable.getAdapter(IProject.class);
                         if (project != null && !projects.contains(project)) {
                             projects.add(project);
                         }
@@ -89,5 +89,6 @@ public class WorkspaceReleaseAction implements IObjectActionDelegate {
     }
 
     @Override
-    public void setActivePart(IAction action, IWorkbenchPart targetPart) {}
+    public void setActivePart(IAction action, IWorkbenchPart targetPart) {
+    }
 }

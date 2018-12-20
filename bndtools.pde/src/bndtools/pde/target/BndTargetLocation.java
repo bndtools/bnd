@@ -48,16 +48,17 @@ public abstract class BndTargetLocation extends AbstractBundleContainer implemen
             .createImage();
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getAdapter(@SuppressWarnings("rawtypes") Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == ITargetLocationEditor.class) {
-            return this;
+            return (T) this;
 
         } else if (adapter == ITargetLocationUpdater.class) {
-            return this;
+            return (T) this;
 
         } else if (adapter == ILabelProvider.class) {
-            return this;
+            return (T) this;
 
         } else {
             return super.getAdapter(adapter);
@@ -86,7 +87,8 @@ public abstract class BndTargetLocation extends AbstractBundleContainer implemen
     }
 
     @Override
-    public void addListener(ILabelProviderListener listener) {}
+    public void addListener(ILabelProviderListener listener) {
+    }
 
     @Override
     public void dispose() {
@@ -99,7 +101,8 @@ public abstract class BndTargetLocation extends AbstractBundleContainer implemen
     }
 
     @Override
-    public void removeListener(ILabelProviderListener listener) {}
+    public void removeListener(ILabelProviderListener listener) {
+    }
 
     @Override
     protected TargetFeature[] resolveFeatures(ITargetDefinition definition, IProgressMonitor monitor) throws CoreException {

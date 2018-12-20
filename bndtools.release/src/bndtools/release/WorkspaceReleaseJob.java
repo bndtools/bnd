@@ -16,7 +16,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 
 import aQute.bnd.service.RepositoryPlugin;
@@ -53,7 +53,7 @@ public class WorkspaceReleaseJob extends Job {
                 ReleaseJob job = new ReleaseJob(context, showMessage);
                 job.setRule(ResourcesPlugin.getWorkspace()
                     .getRoot());
-                job.run(new SubProgressMonitor(monitor, 1));
+                job.run(SubMonitor.convert(monitor, 1));
             }
             monitor.worked(1);
         }

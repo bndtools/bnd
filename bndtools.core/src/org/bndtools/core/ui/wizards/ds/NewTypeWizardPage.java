@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -17,7 +18,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
@@ -52,6 +53,8 @@ import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.internal.corext.CorextMessages;
+import org.eclipse.jdt.internal.corext.ValidateEditException;
 import org.eclipse.jdt.internal.corext.codemanipulation.AddUnimplementedConstructorsOperation;
 import org.eclipse.jdt.internal.corext.codemanipulation.AddUnimplementedMethodsOperation;
 import org.eclipse.jdt.internal.corext.codemanipulation.CodeGenerationSettings;
@@ -195,7 +198,19 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
         /* package */void create(boolean needsSave, IProgressMonitor monitor) throws CoreException {
             TextEdit edit = fImportsRewrite.rewriteImports(monitor);
-            JavaModelUtil.applyEdit(fImportsRewrite.getCompilationUnit(), edit, needsSave, null);
+            ICompilationUnit cu = fImportsRewrite.getCompilationUnit();
+            SubMonitor subMonitor = SubMonitor.convert(null, CorextMessages.JavaModelUtil_applyedit_operation, 2);
+            IFile file = (IFile) cu.getResource();
+            if (!needsSave || !file.exists()) {
+                cu.applyTextEdit(edit, subMonitor.split(2));
+            } else {
+                IStatus status = Resources.makeCommittable(file, null);
+                if (!status.isOK()) {
+                    throw new ValidateEditException(status);
+                }
+                cu.applyTextEdit(edit, subMonitor.split(1));
+                cu.save(subMonitor.split(1), true);
+            }
         }
 
         /* package */void removeImport(String qualifiedName) {
@@ -873,7 +888,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         }
 
         @Override
-        public void selectionChanged(ListDialogField<InterfaceWrapper> field) {}
+        public void selectionChanged(ListDialogField<InterfaceWrapper> field) {
+        }
 
         // -------- IDialogFieldListener
         @Override
@@ -882,7 +898,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         }
 
         @Override
-        public void doubleClicked(ListDialogField<InterfaceWrapper> field) {}
+        public void doubleClicked(ListDialogField<InterfaceWrapper> field) {
+        }
 
         @Override
         public void widgetSelected(SelectionEvent e) {
@@ -1899,7 +1916,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
         if (!pack.exists()) {
             String packName = pack.getElementName();
-            pack = root.createPackageFragment(packName, true, new SubProgressMonitor(monitorInternal, 1));
+            pack = root.createPackageFragment(packName, true, SubMonitor.convert(monitorInternal, 1));
         } else {
             monitorInternal.worked(1);
         }
@@ -1923,12 +1940,12 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                 lineDelimiter = StubUtility.getLineDelimiterUsed(pack.getJavaProject());
 
                 String cuName = getCompilationUnitName(typeName);
-                ICompilationUnit parentCU = pack.createCompilationUnit(cuName, "", false, new SubProgressMonitor(monitorInternal, 2)); //$NON-NLS-1$
+                ICompilationUnit parentCU = pack.createCompilationUnit(cuName, "", false, SubMonitor.convert(monitorInternal, 2)); //$NON-NLS-1$
                 // create a working copy with a new owner
 
                 needsSave = true;
-                parentCU.becomeWorkingCopy(new SubProgressMonitor(monitorInternal, 1)); // cu is now a (primary) working
-                                                                                        // copy
+                parentCU.becomeWorkingCopy(SubMonitor.convert(monitorInternal, 1)); // cu is now a (primary) working
+                                                                                    // copy
                 connectedCU = parentCU;
 
                 IBuffer buffer = parentCU.getBuffer();
@@ -1965,8 +1982,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                 ICompilationUnit parentCU = enclosingType.getCompilationUnit();
 
                 needsSave = !parentCU.isWorkingCopy();
-                parentCU.becomeWorkingCopy(new SubProgressMonitor(monitorInternal, 1)); // cu is now for sure (primary)
-                                                                                        // a working copy
+                parentCU.becomeWorkingCopy(SubMonitor.convert(monitorInternal, 1)); // cu is now for sure (primary)
+                                                                                    // a working copy
                 connectedCU = parentCU;
 
                 CompilationUnit astRoot = createASTForImports(parentCU);
@@ -2005,7 +2022,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                     sibling = elems.length > 0 ? elems[0] : null;
                 }
 
-                createdType = enclosingType.createType(content.toString(), sibling, false, new SubProgressMonitor(monitorInternal, 2));
+                createdType = enclosingType.createType(content.toString(), sibling, false, SubMonitor.convert(monitorInternal, 2));
 
                 indent = StubUtility.getIndentUsed(enclosingType) + 1;
             }
@@ -2017,7 +2034,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
 
             ICompilationUnit cu = createdType.getCompilationUnit();
 
-            imports.create(false, new SubProgressMonitor(monitorInternal, 1));
+            imports.create(false, SubMonitor.convert(monitorInternal, 1));
 
             JavaModelUtil.reconcile(cu);
 
@@ -2029,10 +2046,10 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             CompilationUnit astRoot = createASTForImports(imports.getCompilationUnit());
             imports = new ImportsManager(astRoot);
 
-            createTypeMembers(createdType, imports, new SubProgressMonitor(monitorInternal, 1));
+            createTypeMembers(createdType, imports, SubMonitor.convert(monitorInternal, 1));
 
             // add imports
-            imports.create(false, new SubProgressMonitor(monitorInternal, 1));
+            imports.create(false, SubMonitor.convert(monitorInternal, 1));
 
             removeUnusedImports(cu, existingImports, false);
 
@@ -2055,7 +2072,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             fCreatedType = createdType;
 
             if (needsSave) {
-                cu.commitWorkingCopy(true, new SubProgressMonitor(monitorInternal, 1));
+                cu.commitWorkingCopy(true, SubMonitor.convert(monitorInternal, 1));
             } else {
                 monitorInternal.worked(1);
             }
@@ -2303,7 +2320,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * Construct the type annotations to add to the class. This base implementation does nothing, subclasses may extend.
      */
     @SuppressWarnings("unused")
-    protected void constructTypeAnnotationStubs(StringBuffer buffer, ImportsManager imports, String lineDelimiter) {}
+    protected void constructTypeAnnotationStubs(StringBuffer buffer, ImportsManager imports, String lineDelimiter) {
+    }
 
     /**
      * Hook method that gets called from <code>createType</code> to support adding of unanticipated methods, fields, and
@@ -2369,7 +2387,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                 next = scanner.getNextToken();
             }
             return next == ITerminalSymbols.TokenNameEOF;
-        } catch (InvalidInputException e) {}
+        } catch (InvalidInputException e) {
+        }
         return false;
     }
 
@@ -2480,7 +2499,7 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
         ASTParser parser = ASTParser.newParser(ASTProvider.SHARED_AST_LEVEL);
         parser.setResolveBindings(true);
         parser.setSource(cu);
-        CompilationUnit unit = (CompilationUnit) parser.createAST(new SubProgressMonitor(monitor, 1));
+        CompilationUnit unit = (CompilationUnit) parser.createAST(SubMonitor.convert(monitor, 1));
         final ITypeBinding binding = ASTNodes.getTypeBinding(unit, type);
         if (binding != null) {
             if (doUnimplementedMethods) {

@@ -35,8 +35,7 @@ public class SelectionUtils {
         }
 
         if (obj instanceof IAdaptable) {
-            @SuppressWarnings("unchecked")
-            T result = (T) ((IAdaptable) obj).getAdapter(clazz);
+            T result = ((IAdaptable) obj).getAdapter(clazz);
             return result;
         }
 
@@ -60,8 +59,7 @@ public class SelectionUtils {
                     result.add(casted);
                 }
             } else if (element instanceof IAdaptable) {
-                @SuppressWarnings("unchecked")
-                T adapted = (T) ((IAdaptable) element).getAdapter(clazz);
+                T adapted = ((IAdaptable) element).getAdapter(clazz);
                 if (adapted != null) {
                     if (filter == null || filter.test(adapted)) {
                         result.add(adapted);

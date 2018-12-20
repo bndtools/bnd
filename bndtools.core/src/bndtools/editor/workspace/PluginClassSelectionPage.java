@@ -49,7 +49,7 @@ public class PluginClassSelectionPage extends WizardPage {
         table = new Table(composite, SWT.FULL_SELECTION | SWT.BORDER);
         viewer = new TableViewer(table);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
-        viewer.setSorter(new PluginClassSorter());
+        viewer.setComparator(new PluginClassSorter());
         viewer.setLabelProvider(new PluginDeclarationLabelProvider());
 
         // txtDescription = new ScrolledFormText(composite, true);

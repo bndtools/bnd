@@ -29,7 +29,6 @@ public class JavaVersionsValidator implements IValidator, IProjectValidator {
             return;
         }
 
-        @SuppressWarnings("unchecked")
         Map<String, String> options = javaProject.getOptions(true);
 
         String javacSource = model.getProperty(Constants.JAVAC_SOURCE);

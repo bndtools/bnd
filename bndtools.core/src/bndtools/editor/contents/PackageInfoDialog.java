@@ -24,7 +24,7 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -140,7 +140,7 @@ public class PackageInfoDialog extends TitleAreaDialog {
         tblViewerClmnVersion.setEditingSupport(new VersionEditingSupport(viewer));
 
         viewer.setContentProvider(ArrayContentProvider.getInstance());
-        viewer.setSorter(new ViewerSorter() {
+        viewer.setComparator(new ViewerComparator() {
             @Override
             public int compare(Viewer viewer, Object e1, Object e2) {
                 FileVersionTuple f1 = (FileVersionTuple) e1;

@@ -85,7 +85,8 @@ public class ImportPackageQuickFixProcessorTest {
     private WorkspaceRepository workspacePlugin;
     private Repository workspaceRepo;
 
-    private static interface PluginRepo extends RepositoryPlugin, Repository {}
+    private static interface PluginRepo extends RepositoryPlugin, Repository {
+    }
 
     // This could go into a test utils package somewhere.
     public static final Answer<?> DO_NOT_CALL = new Answer<Object>() {
@@ -286,9 +287,8 @@ public class ImportPackageQuickFixProcessorTest {
     }
 
     private void setupAST(String source) {
-        ASTParser parser = ASTParser.newParser(AST.JLS8);
-        @SuppressWarnings("rawtypes")
-        Map options = JavaCore.getOptions();
+        ASTParser parser = ASTParser.newParser(AST.JLS10);
+        Map<String, String> options = JavaCore.getOptions();
         // Need to set 1.5 or higher for the "import static" syntax to work.
         // Need to set 1.8 or higher to test parameterized type usages.
         JavaCore.setComplianceOptions(JavaCore.VERSION_1_8, options);

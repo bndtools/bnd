@@ -3,14 +3,14 @@ package bndtools.model.obr;
 import java.util.Comparator;
 
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 
 public class SorterComparatorAdapter implements Comparator<Object> {
 
-    private Viewer viewer;
-    private ViewerSorter sorter;
+    private final Viewer viewer;
+    private final ViewerComparator sorter;
 
-    public SorterComparatorAdapter(Viewer viewer, ViewerSorter sorter) {
+    public SorterComparatorAdapter(Viewer viewer, ViewerComparator sorter) {
         this.viewer = viewer;
         this.sorter = sorter;
     }

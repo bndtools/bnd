@@ -274,7 +274,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                                         break;
                                     }
                                     if (element instanceof IAdaptable) {
-                                        IFile file = (IFile) ((IAdaptable) element).getAdapter(IFile.class);
+                                        IFile file = ((IAdaptable) element).getAdapter(IFile.class);
                                         if (file != null) {
                                             valid = true;
                                             break;
@@ -396,7 +396,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                     IStructuredSelection selection = (IStructuredSelection) event.getSelection();
                     final Object element = selection.getFirstElement();
                     if (element instanceof IAdaptable) {
-                        final URI uri = (URI) ((IAdaptable) element).getAdapter(URI.class);
+                        final URI uri = ((IAdaptable) element).getAdapter(URI.class);
                         if (uri == null && element instanceof RepositoryEntry) {
                             boolean download = MessageDialog.openQuestion(getSite().getShell(), "Repositories", "This repository entry is unable to be opened because it has not been downloaded. Download and open it now?");
                             if (download) {
@@ -548,12 +548,12 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                     .toFile());
             else if (element instanceof IAdaptable) {
                 IAdaptable adaptable = (IAdaptable) element;
-                IFile ifile = (IFile) adaptable.getAdapter(IFile.class);
+                IFile ifile = adaptable.getAdapter(IFile.class);
                 if (ifile != null) {
                     files.add(ifile.getLocation()
                         .toFile());
                 } else {
-                    File file = (File) adaptable.getAdapter(File.class);
+                    File file = adaptable.getAdapter(File.class);
                     if (file != null) {
                         files.add(file);
                     }
