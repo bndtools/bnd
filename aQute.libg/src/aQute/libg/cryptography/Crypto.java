@@ -21,12 +21,11 @@ public class Crypto {
 	 * @return key
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	public static <T> T fromString(String spec, Class<T> c) throws Exception {
 		if (PrivateKey.class.isAssignableFrom(c)) {
 			Matcher m = RSA_PRIVATE.matcher(spec);
 			if (m.matches()) {
-				return (T) RSA.createPrivate(new BigInteger(m.group(1)), new BigInteger(m.group(2)));
+				return c.cast(RSA.createPrivate(new BigInteger(m.group(1)), new BigInteger(m.group(2))));
 			}
 			throw new IllegalArgumentException("No such private key " + spec);
 		}
@@ -34,7 +33,7 @@ public class Crypto {
 		if (PublicKey.class.isAssignableFrom(c)) {
 			Matcher m = RSA_PUBLIC.matcher(spec);
 			if (m.matches()) {
-				return (T) RSA.create(new RSAPublicKeySpec(new BigInteger(m.group(1)), new BigInteger(m.group(2))));
+				return c.cast(RSA.create(new RSAPublicKeySpec(new BigInteger(m.group(1)), new BigInteger(m.group(2)))));
 			}
 			throw new IllegalArgumentException("No such public key " + spec);
 		}

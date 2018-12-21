@@ -1120,8 +1120,8 @@ public class Workspace extends Processor {
 
 	private static <T> T newInstance(Class<T> rawClass) throws Exception {
 		try {
-			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
-				.invoke();
+			return rawClass.cast(publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke());
 		} catch (Error | Exception e) {
 			throw e;
 		} catch (Throwable e) {

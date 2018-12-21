@@ -76,9 +76,8 @@ public class ReporterMessages {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public static <T> T base(final Reporter reporter, Class<T> messages) {
-		return (T) Proxy.newProxyInstance(messages.getClassLoader(), new Class[] {
+		return messages.cast(Proxy.newProxyInstance(messages.getClassLoader(), new Class[] {
 			messages
 		}, new InvocationHandler() {
 
@@ -146,6 +145,6 @@ public class ReporterMessages {
 				}
 				return null;
 			}
-		});
+		}));
 	}
 }

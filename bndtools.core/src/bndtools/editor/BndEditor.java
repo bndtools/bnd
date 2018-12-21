@@ -776,11 +776,10 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (IContentOutlinePage.class == adapter) {
-            return (T) new BndEditorContentOutlinePage(this, model);
+            return adapter.cast(new BndEditorContentOutlinePage(this, model));
         }
         return super.getAdapter(adapter);
     }

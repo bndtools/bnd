@@ -91,7 +91,6 @@ public class GogoRedirector implements Redirector {
 	 * on the framework side and we can't force Gogo to import our classes (nor
 	 * should we).
 	 */
-	@SuppressWarnings("unchecked")
 	<T> T proxy(final Class<T> clazz, final Object target) {
 		final Class<?> targetClass = target.getClass();
 
@@ -103,7 +102,7 @@ public class GogoRedirector implements Redirector {
 		if (targetClass == clazz)
 			return clazz.cast(target);
 
-		return (T) Proxy.newProxyInstance(clazz.getClassLoader(), new Class<?>[] {
+		return clazz.cast(Proxy.newProxyInstance(clazz.getClassLoader(), new Class<?>[] {
 			clazz
 		}, new InvocationHandler() {
 
@@ -119,7 +118,7 @@ public class GogoRedirector implements Redirector {
 					} catch (Exception e) {}
 				return result;
 			}
-		});
+		}));
 	}
 
 	@Override

@@ -91,11 +91,10 @@ class ZipTreeNode implements IAdaptable {
         return path;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == JarEntry.class) {
-            return (T) entry;
+            return adapter.cast(entry);
         }
         return null;
     }

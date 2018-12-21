@@ -48,17 +48,16 @@ public abstract class BndTargetLocation extends AbstractBundleContainer implemen
             .createImage();
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == ITargetLocationEditor.class) {
-            return (T) this;
+            return adapter.cast(this);
 
         } else if (adapter == ITargetLocationUpdater.class) {
-            return (T) this;
+            return adapter.cast(this);
 
         } else if (adapter == ILabelProvider.class) {
-            return (T) this;
+            return adapter.cast(this);
 
         } else {
             return super.getAdapter(adapter);

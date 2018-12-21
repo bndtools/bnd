@@ -29,9 +29,7 @@ public class SelectionUtils {
 
     public static <T> T adaptObject(Object obj, Class<T> clazz) {
         if (clazz.isInstance(obj)) {
-            @SuppressWarnings("unchecked")
-            T result = (T) obj;
-            return result;
+            return clazz.cast(obj);
         }
 
         if (obj instanceof IAdaptable) {
@@ -53,8 +51,7 @@ public class SelectionUtils {
         while (iter.hasNext()) {
             Object element = iter.next();
             if (clazz.isInstance(element)) {
-                @SuppressWarnings("unchecked")
-                T casted = (T) element;
+                T casted = clazz.cast(element);
                 if (filter == null || filter.test(casted)) {
                     result.add(casted);
                 }

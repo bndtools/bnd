@@ -34,10 +34,9 @@ public class AnnotationSetter<T> {
 
 	Method						lastUsedMethod;
 
-	@SuppressWarnings("unchecked")
 	public AnnotationSetter(Class<T> type) {
 		this.type = type;
-		proxy = (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
+		proxy = type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
 				type
 		}, new InvocationHandler() {
 
@@ -105,7 +104,7 @@ public class AnnotationSetter<T> {
 					sb.append(value);
 				}
 			}
-		});
+		}));
 	}
 
 	public <X> AnnotationSetter<T> set(X x, X value) {

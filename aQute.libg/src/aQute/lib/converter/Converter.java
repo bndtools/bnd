@@ -61,8 +61,8 @@ public class Converter {
 	public <T> T convert(Class<T> type, Object o) throws Exception {
 		// Is it a compatible type?
 		if (o != null && type.isAssignableFrom(o.getClass()))
-			return (T) o;
-		return (T) convertT(type, o);
+			return type.cast(o);
+		return type.cast(convertT(type, o));
 	}
 
 	public <T> T convert(TypeReference<T> type, Object o) throws Exception {
@@ -441,8 +441,8 @@ public class Converter {
 
 	private static <T> T newInstance(Class<T> rawClass) throws Exception {
 		try {
-			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
-				.invoke();
+			return rawClass.cast(publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke());
 		} catch (Error | Exception e) {
 			throw e;
 		} catch (Throwable e) {
@@ -610,7 +610,7 @@ public class Converter {
 	 * @return proxy object for map
 	 */
 	public <T> T proxy(Class<T> interfc, final Map<?, ?> properties) {
-		return (T) Proxy.newProxyInstance(interfc.getClassLoader(), new Class[] {
+		return interfc.cast(Proxy.newProxyInstance(interfc.getClassLoader(), new Class[] {
 			interfc
 		}, new InvocationHandler() {
 
@@ -642,7 +642,7 @@ public class Converter {
 			public String toString() {
 				return properties + "'";
 			}
-		});
+		}));
 	}
 
 	public static String mangleMethodName(String id) {

@@ -377,8 +377,8 @@ public class Configurable<T> {
 
 	static <T> T newInstance(Class<T> rawClass) throws Exception {
 		try {
-			return (T) publicLookup().findConstructor(rawClass, defaultConstructor)
-				.invoke();
+			return rawClass.cast(publicLookup().findConstructor(rawClass, defaultConstructor)
+				.invoke());
 		} catch (Error | Exception e) {
 			throw e;
 		} catch (Throwable e) {
@@ -390,8 +390,8 @@ public class Configurable<T> {
 
 	private static <T> T newInstance(Class<T> rawClass, String arg) throws Exception {
 		try {
-			return (T) publicLookup().findConstructor(rawClass, stringConstructor)
-				.invoke(arg);
+			return rawClass.cast(publicLookup().findConstructor(rawClass, stringConstructor)
+				.invoke(arg));
 		} catch (Error | Exception e) {
 			throw e;
 		} catch (Throwable e) {

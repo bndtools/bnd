@@ -742,8 +742,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                 while (iterator.hasNext()) {
                     Object item = iterator.next();
                     if (type.isInstance(item)) {
-                        @SuppressWarnings("unchecked")
-                        T cast = (T) item;
+                        T cast = type.cast(item);
                         result.add(cast);
                     }
                 }

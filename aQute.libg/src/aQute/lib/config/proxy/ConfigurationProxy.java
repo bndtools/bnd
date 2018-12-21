@@ -9,10 +9,9 @@ import aQute.lib.converter.Converter;
 
 public class ConfigurationProxy {
 
-	@SuppressWarnings("unchecked")
 	public static <T> T create(Class<T> type, Map<String,Object> properties) {
 
-		return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class< ? >[] {
+		return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class<?>[] {
 				type
 		}, new InvocationHandler() {
 			
@@ -37,6 +36,6 @@ public class ConfigurationProxy {
 
 				return Converter.cnv(method.getGenericReturnType(), value);
 			}
-		});
+		}));
 	}
 }

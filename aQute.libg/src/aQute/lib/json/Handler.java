@@ -41,9 +41,9 @@ public abstract class Handler {
 
 	static <T> T newInstance(Class<T> rawClass) throws Exception {
 		try {
-			return (T) MethodHandles.publicLookup()
+			return rawClass.cast(MethodHandles.publicLookup()
 				.findConstructor(rawClass, defaultConstructor)
-				.invoke();
+				.invoke());
 		} catch (Error | Exception e) {
 			throw e;
 		} catch (Throwable e) {

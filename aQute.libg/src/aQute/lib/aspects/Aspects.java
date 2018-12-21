@@ -305,9 +305,9 @@ public class Aspects {
 							throw exc;
 						};
 
-					return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
+					return type.cast(Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
 						type
-					}, this::invoke);
+					}, this::invoke));
 				} catch (Exception e) {
 					throw Exceptions.duck(e);
 				}

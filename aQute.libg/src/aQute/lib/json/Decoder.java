@@ -95,10 +95,9 @@ public class Decoder implements Closeable {
 		return digest.digest();
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> T get(Class<T> clazz) throws Exception {
 		try {
-			return (T) codec.decode(clazz, this);
+			return clazz.cast(codec.decode(clazz, this));
 		} finally {
 			if (!keepOpen)
 				close();
