@@ -314,6 +314,9 @@ public class Analyzer extends Processor {
 				getHostPackages().ifPresent(hostPackages -> referredAndExported.keySet()
 					.removeAll(hostPackages));
 
+				getRequireBundlePackages().ifPresent(hostPackages -> referredAndExported.keySet()
+					.removeAll(hostPackages));
+
 				referredAndExported.keySet()
 					.removeIf(PackageRef::isJava);
 
@@ -425,23 +428,72 @@ public class Analyzer extends Processor {
 		Entry<String, Attrs> host = getFragmentHost();
 		if (host != null) {
 
-			String bsn = host.getKey();
-			String v = host.getValue()
-				.get(Constants.BUNDLE_VERSION_ATTRIBUTE);
-
-			Jar jar = findClasspathEntry(bsn, v);
+			Jar jar = toJar(host);
 			if (jar != null) {
 				return Optional.of(jar.getDirectories()
 					.keySet()
 					.stream()
 					.map(this::getPackageRef)
-					.filter(pRef -> !(pRef.isJava() || pRef.isMetaData() || pRef.isDefaultPackage()))
+					.filter(this::isNormalPackage)
 					.collect(Collectors.toSet()));
 			}
 
 			warning("Host %s for this fragment cannot be found on the classpath", host);
 		}
 		return Optional.empty();
+	}
+
+	/**
+	 * Find the packages belonging to the required bundles
+	 * 
+	 * @return the packages from the required bundles, with no Require-Bundle
+	 *         return an empty Optional
+	 */
+	public Optional<Set<PackageRef>> getRequireBundlePackages() {
+
+		Parameters required = getRequireBundle();
+		if (required.isEmpty())
+			return Optional.empty();
+
+		Set<PackageRef> refs = required.entrySet()
+			.stream()
+			.map(this::toJar)
+			.filter(jar -> jar != null)
+			.map(jar -> {
+				try {
+					return jar.getManifest();
+				} catch (Exception e) {
+					return null;
+				}
+			})
+			.filter(manifest -> manifest != null)
+			.flatMap(manifest -> {
+				Domain domain = Domain.domain(manifest);
+				Parameters exportPackages = domain.getExportPackage();
+				return exportPackages.keySet()
+					.stream();
+			})
+			.map(this::getPackageRef)
+			.filter(this::isNormalPackage)
+			.collect(Collectors.toSet());
+
+		return Optional.of(refs);
+	}
+
+	private boolean isNormalPackage(PackageRef pRef) {
+		return !(pRef.isJava() || pRef.isMetaData() || pRef.isDefaultPackage());
+	}
+
+	private Jar toJar(Map.Entry<String, Attrs> host) {
+		String bsn = host.getKey();
+		String v = host.getValue()
+			.get(Constants.BUNDLE_VERSION_ATTRIBUTE);
+
+		Jar jar = findClasspathEntry(bsn, v);
+		if (jar == null) {
+			warning("Host %s for this fragment/require bundle cannot be found on the classpath", host);
+		}
+		return jar;
 	}
 
 	private Parameters getExportedByAnnotation() {
