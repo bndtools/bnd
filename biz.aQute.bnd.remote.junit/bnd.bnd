@@ -35,3 +35,7 @@ Import-Package: \
     org.apache.felix.gogo.shell;version=latest
 
 -runfw: org.apache.felix.framework
+
+-baseline: *
+-fixupmessages.baseline: \
+    'There is no baseline for biz\\.aQute\\.bnd\\.remote\\.junit'

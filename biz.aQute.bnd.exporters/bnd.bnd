@@ -18,3 +18,5 @@
 -testpath: \
 	${junit},\
 	slf4j.simple;version=latest
+
+-baseline: *

@@ -27,3 +27,5 @@ Bundle-Activator: biz.aQute.bnd.diagnostics.gogo.osgi.Activator
 Import-Package: \
 	org.osgi.service.component.runtime;resolution:=optional,\
 	*
+
+-releaserepo:

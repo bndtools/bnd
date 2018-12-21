@@ -15,3 +15,5 @@
 	${junit}
 
 -sub: *.bnd
+
+-releaserepo:
