@@ -76,6 +76,9 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 
 	public JUnitFrameworkBuilder bndrun(File file) {
 		RunSpecification setup = workspace.getRun(file.getAbsolutePath());
+		setup.target = null;
+		setup.bin = null;
+		setup.bin_test = null;
 		local.mergeWith(setup);
 		return this;
 	}

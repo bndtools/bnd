@@ -464,21 +464,27 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	/**
-	 * A Require-Bundle should not fail on missing imports, just warn
+	 * A Require-Bundle should remove imports that are exported by its target(s)
 	 * 
 	 * @throws Exception
 	 */
 
-	public void testMissingImportWithRequireBundle() throws Exception {
+	public void testRemovedImportWithRequireBundle() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(new File("bin_test"));
+			b.addClasspath(new File("jar/osgi.core.jar"));
 			b.setPedantic(true);
-			b.setExportPackage("test.classreference;version=1");
-			b.setImportPackage("!*");
-			b.setProperty("Require-Bundle", "com.abc");
+
+			// causes an import to org.osgi.framework and javax.swing
+			b.setExportPackage("test.classreference;version=1,test.classreferencetoosgijar;version=1");
+
+			// the require bundle will then remove the osgi ref
+			b.setProperty("Require-Bundle", "osgi.core");
 			b.build();
-			assertTrue(b.check());
+			assertTrue(b.check("Imports that lack version ranges: \\[javax.swing\\]"));
+			assertThat(b.getImports()
+				.keySet()).containsExactlyInAnyOrder(b.getPackageRef("javax.swing"));
 
 			Verifier v = new Verifier(b.getJar());
 			v.verify();

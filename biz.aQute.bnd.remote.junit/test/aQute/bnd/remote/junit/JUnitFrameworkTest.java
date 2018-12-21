@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.Closeable;
+import java.io.File;
 import java.net.URL;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -127,10 +128,9 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testRunSystemPackages() throws Exception {
-
 		// Exports blabar
 
-		try (JUnitFramework fw = builder.bndrun("resources/systempackages.bndrun")
+		try (JUnitFramework fw = builder.bndrun(new File("resources/systempackages.bndrun").getAbsolutePath())
 			.create()
 			.inject(this)) {
 
@@ -182,8 +182,8 @@ public class JUnitFrameworkTest {
 			// via the testbundle
 
 			fw.getFramework()
-			.getBundleContext()
-			.registerService(String.class, "Hello", null);
+				.getBundleContext()
+				.registerService(String.class, "Hello", null);
 
 			assertThat(fw.getServices(String.class)).isEmpty();
 			hide.close();
@@ -214,9 +214,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testComponent() throws Exception {
-		try (JUnitFramework fw = builder
-			.bundles(
-				"org.apache.felix.log, org.apache.felix.scr")
+		try (JUnitFramework fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
 			.runfw("org.apache.felix.framework")
 			.create()) {
 
