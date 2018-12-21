@@ -363,9 +363,9 @@ public interface BundleSpecBuilder {
 	 *            name of the package to be imported, may contain wildcards
 	 */
 
-	default BundleSpecImportPackage importPackage(String name) {
+	default BundleSpecImportPackage importPackage(String packageName) {
 		BundleBuilder x = x();
-		String packageName = x().prepare(name, x.spec.importPackage);
+		x.spec.importPackage.computeIfAbsent(packageName, k -> new LinkedHashMap<>());
 
 		return new BundleSpecImportPackage() {
 

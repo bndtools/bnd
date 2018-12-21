@@ -64,6 +64,7 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 	RunSpecification	local;
 	boolean				start		= true;
 	boolean				testbundle	= true;
+	long				closeTimeout	= 60000;
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -144,6 +145,11 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 
 	public JUnitFrameworkBuilder set(String key, String value) {
 		projectTestSetup.properties.put(key, value);
+		return this;
+	}
+
+	public JUnitFrameworkBuilder closeTimeout(long ms) {
+		this.closeTimeout = ms;
 		return this;
 	}
 

@@ -171,11 +171,8 @@ public class JUnitFramework implements AutoCloseable {
 	 */
 	@Override
 	public void close() throws Exception {
-		for (ServiceTracker<?, ?> st : trackers) {
-			st.close();
-		}
 		framework.stop();
-		framework.waitForStop(10000);
+		framework.waitForStop(builder.closeTimeout);
 	}
 
 	/**
