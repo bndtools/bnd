@@ -2,7 +2,14 @@
  * dist Gradle build script
  */
 
-import aQute.bnd.gradle.Index
+import java.util.function.Predicate
+
+import aQute.bnd.header.Attrs
+import aQute.bnd.header.Parameters
+import aQute.bnd.osgi.Constants
+import aQute.bnd.osgi.Jar
+import aQute.lib.utf8properties.UTF8Properties
+import aQute.libg.glob.PathSet
 
 def buildProject = project
 
@@ -31,22 +38,51 @@ releaseDependencies {
 /* Configure this project */
 File releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
 
-task('index', type: Index) {
-  description 'Index the release repository.'
-  group 'release'
+task pomDependencies(type: WriteProperties) {
+  description 'Generate properties from releaserepo contents.'
+  group 'build'
   mustRunAfter releaseDependencies
-  repositoryName = "Bnd/Bndtools ${version}"
-  base = new File(releaserepo, "${bnd('-groupid').replace('.','/')}/artifact/version")
-  gzip = false
-  bundles fileTree(releaserepo) {
+  def bundles = fileTree(releaserepo) {
     include '**/*.jar'
     exclude '**/*-sources.jar'
     exclude '**/*-javadoc.jar'
   }
+  inputs.files bundles
+  outputFile = new File(buildDir, 'releaserepo.properties')
+  encoding = 'UTF-8'
+  doFirst {
+    Predicate<String> pomPropertiesFilter = new PathSet('META-INF/maven/*/*/pom.properties').matches()
+    Parameters dependencies = new Parameters()
+    bundles.sort().forEach { file ->
+      new Jar(file).withCloseable { jar ->
+        jar.getResources(pomPropertiesFilter).forEachOrdered { r ->
+          UTF8Properties pomProperties = new UTF8Properties()
+          r.openInputStream().withCloseable {
+            pomProperties.load(it)
+          }
+          String depGroupId = pomProperties.getProperty('groupId')
+          String depArtifactId = pomProperties.getProperty('artifactId')
+          String depVersion = pomProperties.getProperty('version')
+          if ((depGroupId != null) && (depArtifactId != null) && (depVersion != null)) {
+            Attrs attrs = new Attrs()
+            attrs.put('groupId', depGroupId)
+            attrs.put('artifactId', depArtifactId)
+            attrs.put('version', depVersion)
+            attrs.put('scope',  'compile')
+            dependencies.put("${depGroupId}:${depArtifactId}", attrs)
+          }
+        }
+      }
+    }
+    property(Constants.MAVEN_DEPENDENCIES, dependencies.toString())
+  }
 }
 
 jar {
-  inputs.files index
+  inputs.files pomDependencies
+  doFirst {
+    bnd.project.addProperties(pomDependencies.outputFile)
+  }
 }
 
 clean {

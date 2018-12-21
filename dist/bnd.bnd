@@ -37,11 +37,7 @@
             org.bndtools.templates.template, \
             org.bndtools.p2
 
-index: ${target}/index.xml
--includeresource: ${index}
 -resourceonly: true
-Bundle-Description: An OSGi Repository Index for the Bnd/Bndtools jars.
-#
-# The project tasks must be run from the gradle build
-#
--fixupmessages.dist: "Input file does not exist*${index}";is:=warning;replace:="${index} must be created with the gradle build."
+
+Bundle-Description: Baseline distribution for the Bnd/Bndtools build. \
+ This can be used with BndPomRepository as a baseline repo.
