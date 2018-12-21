@@ -20,3 +20,5 @@ Timestamp: ${_@tstamp}
 	biz.aQute.tester
 
 -digests: MD5, SHA1
+
+-releaserepo:
