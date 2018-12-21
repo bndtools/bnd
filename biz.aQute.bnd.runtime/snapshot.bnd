@@ -1,0 +1,21 @@
+Bundle-Activator: aQute.bnd.runtime.snapshot.Snapshot
+Dynamic-ImportPackage \
+    org.osgi.service.component.runtime.dto,\
+    org.osgi.service.cm,\
+    org.osgi.service.coordinator,\
+    org.osgi.service.log\
+
+
+Private-Package: \
+	aQute.bnd.runtime.facade,\
+	aQute.bnd.runtime.snapshot,\
+	aQute.bnd.runtime.util
+Import-Package: \
+	org.osgi.service.cm;resolution:=optional,\
+	org.apache.felix.service.command;version='[0,2)';resolution:=optional,\
+	org.osgi.service.component.runtime;resolution:=optional,\
+	org.osgi.service.component.runtime.dto;resolution:=optional,\
+	org.osgi.service.coordinator;resolution:=optional,\
+	org.osgi.service.log;resolution:=optional,\
+	*
+Export-Package: aQute.bnd.runtime.api
