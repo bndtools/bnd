@@ -1,6 +1,19 @@
 releaserepo:            ${workspace}/dist/bundles
-baselinerepo:           https://dl.bintray.com/bnd/dist/${baseline.version}/index.xml.gz
 mavencentral:           https://repo.maven.apache.org/maven2
+
+baseline:   aQute.libg,\
+            biz.aQute.bnd.exporters,\
+            biz.aQute.bndlib,\
+            biz.aQute.junit,\
+            biz.aQute.launcher,\
+            biz.aQute.remote.agent,\
+            biz.aQute.remote.api,\
+            biz.aQute.remote.gc,\
+            biz.aQute.remote.launcher,\
+            biz.aQute.remote.main,\
+            biz.aQute.repository,\
+            biz.aQute.resolve,\
+            biz.aQute.tester
 
 -plugin:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
@@ -49,11 +62,11 @@ mavencentral:           https://repo.maven.apache.org/maven2
         revision="org.apache.maven:maven-core:3.3.9,org.sonatype.plexus:plexus-build-api:0.0.7";\
         releaseUrls="${mavencentral}";\
         location="${workspace}/cnf/cache/stable/EclipseM2EDeps/index.xml",\
-    aQute.bnd.repository.osgi.OSGiRepository;\
+     aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
         name="Baseline";\
-        locations="${baselinerepo}";\
-        poll.time=-1;\
-        cache="${workspace}/cnf/cache/stable/Baseline"
+        revision="${replace;${baseline};.+;biz.aQute.bnd:$0:${baseline.version}}";\
+        releaseUrls="${mavencentral}";\
+        location="${workspace}/cnf/cache/stable/Baseline/index.xml"
 
 # m2e debug repos
 #-plugin.m2e.debug:\
