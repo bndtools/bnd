@@ -1,6 +1,7 @@
 #
 # FIXUP
 #
+-baseline:
 
 Bundle-Description: \
 	Provides a number of packages that are needed by the agent but not

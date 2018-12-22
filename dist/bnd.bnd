@@ -1,6 +1,8 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
+-nobundles: true
+
 -dependson: aQute.libg, \
             biz.aQute.bnd, \
             biz.aQute.bnd.annotation, \
@@ -36,8 +38,3 @@
             org.bndtools.templates.osgi, \
             org.bndtools.templates.template, \
             org.bndtools.p2
-
--resourceonly: true
-
-Bundle-Description: Baseline distribution for the Bnd/Bndtools build. \
- This can be used with BndPomRepository as a baseline repo.

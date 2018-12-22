@@ -1,3 +1,5 @@
 -includepackage: aQute.remote.test
+-baseline:
+
 Bundle-Activator: aQute.remote.test.JMXStarter
 Import-Package: org.osgi.framework;version=1.5,*
