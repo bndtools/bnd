@@ -245,7 +245,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
                     IWorkbenchBrowserSupport browser = PlatformUI.getWorkbench()
                         .getBrowserSupport();
                     browser.getExternalBrowser()
-                        .openURL(new URL("https://github.com/bndtools/bndtools/wiki/Blurry-Form-Text-on-High-Resolution-Displays"));
+                        .openURL(new URL("https://github.com/bndtools/bnd/wiki/Blurry-Form-Text-on-High-Resolution-Displays"));
                 } catch (Exception e) {
                     log.log(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Browser open error", e));
                 }
