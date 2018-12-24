@@ -21,12 +21,12 @@ public class FileTree {
 
 	/**
 	 * Can be used by subclasses to add specific files to the return value of
-	 * {@link #getFiles(File, String)}.
-	 * 
+	 * {@link #getFiles(File, String...)}.
+	 *
 	 * @param file A file to include in the return value of
-	 *            {@link #getFiles(File, String)}.
+	 *            {@link #getFiles(File, String...)}.
 	 */
-	protected void addFile(File file) {
+	public void addFile(File file) {
 		if (file == null) {
 			return;
 		}

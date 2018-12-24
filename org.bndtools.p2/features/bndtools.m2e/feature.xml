@@ -118,4 +118,11 @@ This Agreement is governed by the laws of the State of New York and the intellec
          version="@bndtools.m2e-version@"
          unpack="false"/>
 
+   <plugin
+         id="biz.aQute.bnd.maven"
+         download-size="0"
+         install-size="0"
+         version="@biz.aQute.bnd.maven-version@"
+         unpack="false"/>
+
 </feature>

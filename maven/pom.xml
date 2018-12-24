@@ -20,7 +20,6 @@
 	</properties>
 
 	<modules>
-		<module>bnd-shared-maven-lib</module>
 		<module>bnd-maven-plugin</module>
 		<module>bnd-indexer-maven-plugin</module>
 		<module>bnd-baseline-maven-plugin</module>
@@ -118,7 +117,7 @@
 			</dependency>
 			<dependency>
 				<groupId>biz.aQute.bnd</groupId>
-				<artifactId>bnd-shared-maven-lib</artifactId>
+				<artifactId>biz.aQute.bnd.maven</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>

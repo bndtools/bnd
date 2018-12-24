@@ -55,11 +55,11 @@
 
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
-			<artifactId>biz.aQute.bndlib</artifactId>
+			<artifactId>biz.aQute.bnd.maven</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
-			<artifactId>bnd-shared-maven-lib</artifactId>
+			<artifactId>biz.aQute.bndlib</artifactId>
 		</dependency>
 	</dependencies>
 

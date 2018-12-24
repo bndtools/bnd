@@ -1,0 +1,37 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+Bundle-Name:            Shared logic used by bnd maven plugins
+Bundle-Description:	    Shared logic used by bnd maven plugins
+
+-exportcontents: aQute.bnd.maven.lib.*
+
+Import-Package: \
+	org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
+	org.eclipse.aether.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
+	*
+
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	aQute.libg;version=project,\
+	biz.aQute.bndlib;version=latest,\
+	biz.aQute.resolve;version=latest,\
+	biz.aQute.repository;version=latest,\
+	org.eclipse.m2e.maven.runtime,\
+	org.apache.maven:maven-artifact,\
+	org.apache.maven:maven-core,\
+	org.apache.maven:maven-model,\
+	org.apache.maven:maven-plugin-api,\
+	org.apache.maven:maven-repository-metadata,\
+	org.apache.maven:maven-settings,\
+	org.eclipse.aether.api,\
+	org.slf4j.api;version=latest
+
+-conditionalpackage: aQute.lib*;-split-package:=first
+
+-testpath: \
+	${junit},\
+	${mockito},\
+	org.codehaus.plexus.classworlds,\
+	org.codehaus.plexus:plexus-utils,\
+	slf4j.simple;version=latest

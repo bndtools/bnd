@@ -37,6 +37,10 @@
 		</dependency>
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>biz.aQute.bnd.maven</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.bndlib</artifactId>
 		</dependency>
 		<dependency>
@@ -46,10 +50,6 @@
 		<dependency>
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.repository</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>biz.aQute.bnd</groupId>
-			<artifactId>bnd-shared-maven-lib</artifactId>
 		</dependency>
 	</dependencies>
 
