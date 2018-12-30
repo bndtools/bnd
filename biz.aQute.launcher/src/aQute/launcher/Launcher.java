@@ -72,6 +72,7 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.permissionadmin.PermissionInfo;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import aQute.launcher.agent.LauncherAgent;
 import aQute.launcher.constants.LauncherConstants;
@@ -242,6 +243,7 @@ public class Launcher implements ServiceListener {
 		this.parms = new LauncherConstants(properties);
 		out = System.err;
 
+		installJULBridge();
 		setupComms();
 
 		trace("properties %s", properties);
@@ -270,6 +272,11 @@ public class Launcher implements ServiceListener {
 			};
 			new Timer(true).scheduleAtFixedRate(watchdog, 5000, 1000);
 		}
+	}
+
+	private void installJULBridge() {
+		SLF4JBridgeHandler.removeHandlersForRootLogger();
+		SLF4JBridgeHandler.install();
 	}
 
 	private void setupComms() {

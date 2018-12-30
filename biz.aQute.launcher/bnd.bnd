@@ -7,7 +7,8 @@
 	osgi.core;version=4.2;maven-scope=provided,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
-	slf4j.api;version=latest
+	slf4j.api;version=latest,\
+	jul.to.slf4j;version=latest;maven-scope=provided
 
 -testpath: \
 	${junit},\
@@ -15,7 +16,9 @@
 
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
--conditionalpackage: aQute.lib*
+-conditionalpackage: \
+	aQute.lib*,\
+	org.slf4j.bridge
 
 Premain-Class: aQute.launcher.agent.LauncherAgent
 
