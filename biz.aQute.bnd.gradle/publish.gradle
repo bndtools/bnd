@@ -41,7 +41,7 @@ artifacts {
   }
 }
 
-task displayArtifacts {
+tasks.create('displayArtifacts') {
   doLast {
     println "gradle.publish.key: ${project.findProperty('gradle.publish.key')}"
     println "gradle.publish.secret: ${project.findProperty('gradle.publish.secret')}"

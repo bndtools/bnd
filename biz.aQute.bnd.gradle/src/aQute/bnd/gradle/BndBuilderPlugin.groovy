@@ -69,7 +69,7 @@ public class BndBuilderPlugin implements Plugin<Project> {
         }
       }
 
-      task ('baseline', type: Baseline) {
+      tasks.create('baseline', Baseline.class) {
         description 'Baseline the project bundle.'
         group 'release'
         bundle jar
