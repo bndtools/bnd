@@ -227,30 +227,6 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      processResources {
-        outputs.files({
-          FileCollection sourceDirectories = sourceSets.main.resources.sourceDirectories
-          source*.absolutePath.collect { String file ->
-            sourceDirectories.each {
-              file -= it
-            }
-            new File(destinationDir, file)
-          }
-        }).withPropertyName('resources')
-      }
-
-      processTestResources {
-        outputs.files({
-          FileCollection sourceDirectories = sourceSets.test.resources.sourceDirectories
-          source*.absolutePath.collect { String file ->
-            sourceDirectories.each {
-              file -= it
-            }
-            new File(destinationDir, file)
-          }
-        }).withPropertyName('testResources')
-      }
-
       jar {
         description 'Jar this project\'s bundles.'
         actions.clear() /* Replace the standard task actions */
