@@ -64,7 +64,7 @@ jobs:
       set -ev
       ruby --version
       gem --version
-      gem install bundler
+      gem install bundler -v '~> 1.17'
       bundle --version
       cd docs
       ./build.sh
