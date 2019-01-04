@@ -11,13 +11,13 @@ String masterVersion = String.format('%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
                           Calendar.getInstance(TimeZone.getTimeZone("UTC")),
                           bnd('Git-SHA'))
 
-task p2Plugins(type: Sync) {
+tasks.create('p2Plugins', Sync.class) {
   dependsOn jarDependencies
   from    bnd('plugins').tokenize(',')
   into    "${buildDir}/plugins"
 }
 
-task p2FeatureProperties(type: WriteProperties) {
+tasks.create('p2FeatureProperties', WriteProperties.class) {
   inputs.files p2Plugins
   outputFile = file("${buildDir}/feature.properties")
   doFirst {
@@ -30,7 +30,7 @@ task p2FeatureProperties(type: WriteProperties) {
   }
 }
 
-task p2FeatureMain(type: Zip) {
+tasks.create('p2FeatureMain', Zip.class) {
   inputs.files p2FeatureProperties
   destinationDir = file("${buildDir}/features")
   archiveName    = 'bndtools.main.feature.jar'
@@ -46,7 +46,7 @@ task p2FeatureMain(type: Zip) {
   }
 }
 
-task p2FeatureM2e(type: Zip) {
+tasks.create('p2FeatureM2e', Zip.class) {
   inputs.files p2FeatureProperties
   destinationDir = file("${buildDir}/features")
   archiveName    = 'bndtools.m2e.feature.jar'
@@ -62,7 +62,7 @@ task p2FeatureM2e(type: Zip) {
   }
 }
 
-task p2FeaturePde(type: Zip) {
+tasks.create('p2FeaturePde', Zip.class) {
   inputs.files p2FeatureProperties
   destinationDir = file("${buildDir}/features")
   archiveName    = 'bndtools.pde.feature.jar'
@@ -78,7 +78,7 @@ task p2FeaturePde(type: Zip) {
   }
 }
 
-task p2 {
+tasks.create('p2') {
   description 'Publish the p2 repositories.'
   group       'release'
   enabled JavaVersion.current().isJava8()

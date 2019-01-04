@@ -8,7 +8,7 @@ if (localrepo) {
 }
 def releaserepo = uri(bnd('releaserepo', parent.file('dist/bundles'))) /* Release repository. */
 
-task deployOSSRH(type: Exec) {
+tasks.create('deployOSSRH', Exec.class) {
   enabled !bnd('-releaserepo.ossrh', '').empty
   onlyIf {
         deploy.state.didWork && (deploy.state.failure == null)
@@ -31,7 +31,7 @@ task deployOSSRH(type: Exec) {
   args 'deploy'
 }
 
-task deployJFrog(type: Exec) {
+tasks.create('deployJFrog', Exec.class) {
   enabled !bnd('-releaserepo.jfrog', '').empty
   onlyIf {
         deploy.state.didWork && (deploy.state.failure == null)
@@ -54,7 +54,7 @@ task deployJFrog(type: Exec) {
   args 'deploy'
 }
 
-task deploy(type: Exec) {
+tasks.create('deploy', Exec.class) {
   dependsOn parent.tasks.getByPath('dist:jarDependencies')
   finalizedBy deployOSSRH, deployJFrog
   parent.tasks.getByPath('dist:releaseDependencies').mustRunAfter it

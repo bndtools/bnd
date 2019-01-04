@@ -162,7 +162,7 @@ public class BndWorkspacePlugin implements Plugin<Object> {
       Project cnfProject = findProject(bnd_cnf)
       if (cnfProject != null) {
         ext.cnf = cnfProject
-        cnfProject.task('cleanCache', type: Delete) {
+        cnfProject.tasks.create('cleanCache', Delete.class) {
           description 'Clean the cache folder.'
           group 'build'
           delete 'cache'

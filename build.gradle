@@ -74,7 +74,7 @@ wrapper {
   jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
 }
 
-task buildscriptDependencies {
+tasks.create('buildscriptDependencies') {
   doLast {
     println "bnd_plugin: ${bnd_plugin}"
     println "bnd_repourl: ${bnd_repourl}"

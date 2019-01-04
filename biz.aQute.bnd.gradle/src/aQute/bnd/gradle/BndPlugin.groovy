@@ -227,30 +227,6 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      processResources {
-        outputs.files({
-          FileCollection sourceDirectories = sourceSets.main.resources.sourceDirectories
-          source*.absolutePath.collect { String file ->
-            sourceDirectories.each {
-              file -= it
-            }
-            new File(destinationDir, file)
-          }
-        }).withPropertyName('resources')
-      }
-
-      processTestResources {
-        outputs.files({
-          FileCollection sourceDirectories = sourceSets.test.resources.sourceDirectories
-          source*.absolutePath.collect { String file ->
-            sourceDirectories.each {
-              file -= it
-            }
-            new File(destinationDir, file)
-          }
-        }).withPropertyName('testResources')
-      }
-
       jar {
         description 'Jar this project\'s bundles.'
         actions.clear() /* Replace the standard task actions */
@@ -301,13 +277,13 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      task('jarDependencies') {
+      tasks.create('jarDependencies') {
         description 'Jar all projects this project depends on.'
         dependsOn buildDependencies('jar')
         group 'build'
       }
 
-      task('buildDependencies') {
+      tasks.create('buildDependencies') {
         description 'Assembles and tests all projects this project depends on.'
         dependsOn testDependencies('buildNeeded')
         group 'build'
@@ -321,7 +297,7 @@ public class BndPlugin implements Plugin<Project> {
         dependsOn dependents(name)
       }
 
-      task('release') {
+      tasks.create('release') {
         description 'Release this project to the release repository.'
         group 'release'
         enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
@@ -336,13 +312,13 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      task('releaseDependencies') {
+      tasks.create('releaseDependencies') {
         description 'Release all projects this project depends on.'
         dependsOn buildDependencies('releaseNeeded')
         group 'release'
       }
 
-      task('releaseNeeded') {
+      tasks.create('releaseNeeded') {
         description 'Release this project and all projects it depends on.'
         dependsOn releaseDependencies, release
         group 'release'
@@ -355,7 +331,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      task('testOSGi', type: TestOSGi) {
+      tasks.create('testOSGi', TestOSGi.class) {
         description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
         group 'verification'
         enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
@@ -367,13 +343,13 @@ public class BndPlugin implements Plugin<Project> {
         dependsOn testOSGi
       }
 
-      task('checkDependencies') {
+      tasks.create('checkDependencies') {
         description 'Runs all checks on all projects this project depends on.'
         dependsOn testDependencies('checkNeeded')
         group 'verification'
       }
 
-      task('checkNeeded') {
+      tasks.create('checkNeeded') {
         description 'Runs all checks on this project and all projects it depends on.'
         dependsOn checkDependencies, check
         group 'verification'
@@ -384,13 +360,13 @@ public class BndPlugin implements Plugin<Project> {
         delete buildDir, sourceSets.main.output, sourceSets.test.output
       }
 
-      task('cleanDependencies') {
+      tasks.create('cleanDependencies') {
         description 'Cleans all projects this project depends on.'
         dependsOn testDependencies('cleanNeeded')
         group 'build'
       }
 
-      task('cleanNeeded') {
+      tasks.create('cleanNeeded') {
         description 'Cleans this project and all projects it depends on.'
         dependsOn cleanDependencies, clean
         group 'build'
@@ -401,7 +377,7 @@ public class BndPlugin implements Plugin<Project> {
           String bndrunName = taskName - 'export.'
           File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName, type: Export) {
+            tasks.create(taskName, Export.class) {
               description "Export the ${bndrunName}.bndrun file."
               dependsOn assemble
               group 'export'
@@ -412,7 +388,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      task('export') {
+      tasks.create('export') {
         description 'Export all the bndrun files.'
         group 'export'
         fileTree(projectDir) {
@@ -427,7 +403,7 @@ public class BndPlugin implements Plugin<Project> {
           String bndrunName = taskName - 'runbundles.'
           File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName, type: Export) {
+            tasks.create(taskName, Export.class) {
               description "Create a distribution of the runbundles in the ${bndrunName}.bndrun file."
               dependsOn assemble
               group 'export'
@@ -438,7 +414,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      task('runbundles') {
+      tasks.create('runbundles') {
         description 'Create a distribution of the runbundles in each of the bndrun files.'
         group 'export'
         fileTree(projectDir) {
@@ -453,7 +429,7 @@ public class BndPlugin implements Plugin<Project> {
           String bndrunName = taskName - 'resolve.'
           File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName, type: Resolve) {
+            tasks.create(taskName, Resolve.class) {
               description "Resolve the runbundles required for ${bndrunName}.bndrun file."
               dependsOn assemble
               group 'export'
@@ -463,7 +439,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      task('resolve') {
+      tasks.create('resolve') {
         description 'Resolve the runbundles required for each of the bndrun files.'
         group 'export'
         fileTree(projectDir) {
@@ -478,7 +454,7 @@ public class BndPlugin implements Plugin<Project> {
           String bndrunName = taskName - 'run.'
           File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName, type: Bndrun) {
+            tasks.create(taskName, Bndrun.class) {
               description "Run the bndrun file ${bndrunName}.bndrun."
               dependsOn assemble
               group 'export'
@@ -493,7 +469,7 @@ public class BndPlugin implements Plugin<Project> {
           String bndrunName = taskName - 'testrun.'
           File runFile = file("${bndrunName}.bndrun")
           if (runFile.isFile()) {
-            task(taskName, type: TestOSGi) {
+            tasks.create(taskName, TestOSGi.class) {
               description "Runs the OSGi JUnit tests in the bndrun file ${bndrunName}.bndrun."
               dependsOn assemble
               group 'verification'
@@ -503,7 +479,7 @@ public class BndPlugin implements Plugin<Project> {
         }
       }
 
-      task('echo') {
+      tasks.create('echo') {
         description 'Displays the bnd project information.'
         group 'help'
         doLast {
@@ -535,7 +511,7 @@ javac.profile:          ${javacProfile}
         }
       }
 
-      task('bndproperties') {
+      tasks.create('bndproperties') {
         description 'Displays the bnd properties.'
         group 'help'
         doLast {

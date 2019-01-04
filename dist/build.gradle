@@ -8,7 +8,7 @@ def buildProject = project
 configure(parent) {
   buildDir = buildProject.buildDir
 
-  task build {
+  tasks.create('build') {
     dependsOn buildProject.absoluteProjectPath('jarDependencies')
     dependsOn buildProject.absoluteProjectPath('checkDependencies')
     dependsOn buildProject.absoluteProjectPath('releaseNeeded')
