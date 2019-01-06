@@ -17,6 +17,10 @@ package aQute.bnd.gradle
 import static aQute.bnd.exporter.executable.ExecutableJarExporter.EXECUTABLE_JAR
 import static aQute.bnd.exporter.runbundles.RunbundlesExporter.RUNBUNDLES
 import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.configureEachTask
+import static aQute.bnd.gradle.BndUtils.configureTask
+import static aQute.bnd.gradle.BndUtils.createTask
+import static aQute.bnd.gradle.BndUtils.namedTask
 import static aQute.bnd.osgi.Processor.isTrue
 
 import aQute.bnd.build.Container
@@ -30,6 +34,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.UnknownDomainObjectException
 import org.gradle.api.file.FileCollection
 import org.gradle.api.logging.Logger
 import org.gradle.api.tasks.compile.JavaCompile
@@ -85,10 +90,10 @@ public class BndPlugin implements Plugin<Project> {
       bndProject.getDeliverables()*.getFile().each { File deliverable ->
         artifacts {
           runtime(deliverable) {
-             builtBy jar
+             builtBy 'jar'
           }
           archives(deliverable) {
-             builtBy jar
+             builtBy 'jar'
           }
         }
       }
@@ -97,53 +102,67 @@ public class BndPlugin implements Plugin<Project> {
         /* bnd uses the same directory for java and resources. */
         main {
           FileCollection srcDirs = files(bndProject.getSourcePath())
+          File destinationDir = bndProject.getSrcOutput()
           java.srcDirs = srcDirs
           resources.srcDirs = srcDirs
-          File destinationDir = bndProject.getSrcOutput()
-          Task compileTask = tasks.getByName(compileJavaTaskName)
           java.outputDir = destinationDir
           output.resourcesDir = destinationDir
-          compileTask.destinationDir = destinationDir
-          output.dir(destinationDir, builtBy: compileTask)
+          configureTask(project, compileJavaTaskName) { t ->
+            t.destinationDir = destinationDir
+          }
+          output.dir(destinationDir, builtBy: compileJavaTaskName)
         }
         test {
           FileCollection srcDirs = files(bndProject.getTestSrc())
+          File destinationDir = bndProject.getTestOutput()
           java.srcDirs = srcDirs
           resources.srcDirs = srcDirs
-          File destinationDir = bndProject.getTestOutput()
-          Task compileTask = tasks.getByName(compileJavaTaskName)
           java.outputDir = destinationDir
           output.resourcesDir = destinationDir
-          compileTask.destinationDir = destinationDir
-          output.dir(destinationDir, builtBy: compileTask)
+          configureTask(project, compileJavaTaskName) { t ->
+            t.destinationDir = destinationDir
+          }
+          output.dir(destinationDir, builtBy: compileJavaTaskName)
         }
       }
       /* Configure srcDirs for any additional languages */
       afterEvaluate {
         sourceSets {
           main {
-            File destinationDir = tasks.getByName(compileJavaTaskName).destinationDir
-            convention.plugins.each { lang, sourceSet ->
-              Task compileTask = tasks.findByName(getCompileTaskName(lang))
-              def sourceDirSet = sourceSet[lang]
-              if (compileTask && sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
-                sourceDirSet.srcDirs = java.srcDirs
-                sourceDirSet.outputDir = destinationDir
-                compileTask.destinationDir = destinationDir
-                output.dir(destinationDir, builtBy: compileTask)
+            convention.plugins.each { lang, sourceDirSets ->
+              def sourceDirSet = sourceDirSets[lang]
+              if (sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
+                File destinationDir = java.outputDir
+                String compileTaskName = getCompileTaskName(lang)
+                try {
+                  configureTask(project, compileTaskName) { t ->
+                    t.destinationDir = destinationDir
+                  }
+                  sourceDirSet.srcDirs = java.srcDirs
+                  sourceDirSet.outputDir = destinationDir
+                  output.dir(destinationDir, builtBy: compileTaskName)
+                } catch (UnknownDomainObjectException e) {
+                 // no such task
+                }
               }
             }
           }
           test {
-            File destinationDir = tasks.getByName(compileJavaTaskName).destinationDir
-            convention.plugins.each { lang, sourceSet ->
-              Task compileTask = tasks.findByName(getCompileTaskName(lang))
-              def sourceDirSet = sourceSet[lang]
-              if (compileTask && sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
-                sourceDirSet.srcDirs = java.srcDirs
-                sourceDirSet.outputDir = destinationDir
-                compileTask.destinationDir = destinationDir
-                output.dir(destinationDir, builtBy: compileTask)
+            convention.plugins.each { lang, sourceDirSets ->
+              def sourceDirSet = sourceDirSets[lang]
+              if (sourceDirSet.hasProperty('srcDirs') && sourceDirSet.hasProperty('outputDir')){
+                File destinationDir = java.outputDir
+                String compileTaskName = getCompileTaskName(lang)
+                try {
+                  configureTask(project, compileTaskName) { t ->
+                    t.destinationDir = destinationDir
+                  }
+                  sourceDirSet.srcDirs = java.srcDirs
+                  sourceDirSet.outputDir = destinationDir
+                  output.dir(destinationDir, builtBy: compileTaskName)
+                } catch (UnknownDomainObjectException e) {
+                 // no such task
+                }
               }
             }
           }
@@ -172,13 +191,13 @@ public class BndPlugin implements Plugin<Project> {
       boolean javacDebug = bndis('javac.debug')
       boolean javacDeprecation = isTrue(bnd('javac.deprecation', 'true'))
       String javacEncoding = bnd('javac.encoding', 'UTF-8')
-      tasks.withType(JavaCompile) {
-        configure(options) {
+      configureEachTask(project, JavaCompile.class) { t ->
+        configure(t.options) {
           if (javacDebug) {
             debugOptions.debugLevel = 'source,lines,vars'
           }
-          verbose = logger.isDebugEnabled()
-          listFiles = logger.isInfoEnabled()
+          verbose = t.logger.isDebugEnabled()
+          listFiles = t.logger.isInfoEnabled()
           deprecation = javacDeprecation
           encoding = javacEncoding
           if (javac != 'javac') {
@@ -197,48 +216,46 @@ public class BndPlugin implements Plugin<Project> {
             compilerArgs.addAll(['-profile', javacProfile])
           }
           if (JavaVersion.current().isJava9Compatible()) {
-            if ((sourceCompatibility == targetCompatibility) && javacBootclasspath.empty && javacProfile.empty) {
-              compilerArgs.addAll(['--release', JavaVersion.toVersion(sourceCompatibility).majorVersion])
+            if ((project.sourceCompatibility == project.targetCompatibility) && javacBootclasspath.empty && javacProfile.empty) {
+              compilerArgs.addAll(['--release', JavaVersion.toVersion(project.sourceCompatibility).majorVersion])
             }
           }
         }
-        if (logger.isInfoEnabled()) {
-          doFirst {
-            logger.info 'Compile to {}', destinationDir
-            if (options.compilerArgs.contains('--release')) {
-              logger.info '{}', options.compilerArgs.join(' ')
+        t.doFirst {
+          checkErrors(t.logger)
+          if (t.logger.isInfoEnabled()) {
+            t.logger.info 'Compile to {}', t.destinationDir
+            if (t.options.compilerArgs.contains('--release')) {
+              t.logger.info '{}', t.options.compilerArgs.join(' ')
             } else {
-              logger.info '-source {} -target {} {}', sourceCompatibility, targetCompatibility, options.compilerArgs.join(' ')
+              t.logger.info '-source {} -target {} {}', project.sourceCompatibility, project.targetCompatibility, options.compilerArgs.join(' ')
             }
-            logger.info '-classpath {}', classpath.asPath
-            if (options.hasProperty('bootstrapClasspath')) { // gradle 4.3
-              if (options.bootstrapClasspath != null) {
-                logger.info '-bootclasspath {}', options.bootstrapClasspath.asPath
+            t.logger.info '-classpath {}', t.classpath.asPath
+            if (t.options.hasProperty('bootstrapClasspath')) { // gradle 4.3
+              if (t.options.bootstrapClasspath != null) {
+                t.logger.info '-bootclasspath {}', t.options.bootstrapClasspath.asPath
               }
             } else {
-              if (options.bootClasspath != null) {
-                logger.info '-bootclasspath {}', options.bootClasspath
+              if (t.options.bootClasspath != null) {
+                t.logger.info '-bootclasspath {}', t.options.bootClasspath
               }
             }
           }
-        }
-        doFirst {
-            checkErrors(logger)
         }
       }
 
-      jar {
-        description 'Jar this project\'s bundles.'
-        actions.clear() /* Replace the standard task actions */
-        enabled !bndProject.isNoBundles()
-        configurations.archives.artifacts.files.find {
-          archiveName = it.name /* use first artifact as archiveName */
+      def jar = configureTask(project, 'jar') { t ->
+        t.description 'Jar this project\'s bundles.'
+        t.actions.clear() /* Replace the standard task actions */
+        t.enabled !bndProject.isNoBundles()
+        project.configurations.archives.artifacts.files.find {
+          t.archiveName = it.name /* use first artifact as archiveName */
         }
-        ext.projectDirInputsExcludes = [] /* Additional excludes for projectDir inputs */
+        t.ext.projectDirInputsExcludes = [] /* Additional excludes for projectDir inputs */
         /* all other files in the project like bnd and resources */
-        inputs.files({
-          fileTree(projectDir) { tree ->
-            sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
+        t.inputs.files({
+          project.fileTree(projectDir) { tree ->
+            project.sourceSets.each { sourceSet -> /* exclude sourceSet dirs */
               tree.exclude sourceSet.allSource.sourceDirectories.collect {
                 project.relativePath(it)
               }
@@ -247,274 +264,242 @@ public class BndPlugin implements Plugin<Project> {
               }
             }
             tree.exclude project.relativePath(buildDir) /* exclude buildDir */
-            tree.exclude projectDirInputsExcludes /* user specified excludes */
+            tree.exclude t.projectDirInputsExcludes /* user specified excludes */
           }
         }).withPropertyName('projectFolder')
         /* bnd can include from -buildpath */
-        inputs.files({
-          compileJava.classpath
-        }).withPropertyName('buildpath')
+        t.inputs.files(project.sourceSets.main.compileClasspath).withPropertyName('buildpath')
         /* bnd can include from -dependson */
-        inputs.files(buildDependencies(name, { tasks.getByPath(it) })).withPropertyName('buildDependencies')
+        t.inputs.files(buildDependencies('jar')).withPropertyName('buildDependencies')
         /* Workspace and project configuration changes should trigger jar task */
-        inputs.files(bndProject.getWorkspace().getPropertiesFile(),
+        t.inputs.files(bndProject.getWorkspace().getPropertiesFile(),
           bndProject.getWorkspace().getIncluded(),
           bndProject.getPropertiesFile(),
           bndProject.getIncluded()).withPropertyName('bndFiles')
-        outputs.files({ configurations.archives.artifacts.files }).withPropertyName('artifacts')
-        outputs.file(new File(buildDir, Constants.BUILDFILES)).withPropertyName('buildfiles')
-        doLast {
+        t.outputs.files({ project.configurations.archives.artifacts.files }).withPropertyName('artifacts')
+        t.outputs.file(new File(project.buildDir, Constants.BUILDFILES)).withPropertyName('buildfiles')
+        t.doLast {
           File[] built
           try {
             built = bndProject.build()
           } catch (Exception e) {
             throw new GradleException("Project ${bndProject.getName()} failed to build", e)
           }
-          checkErrors(logger)
+          checkErrors(t.logger)
           if (built != null) {
-            logger.info 'Generated bundles: {}', built as Object
+            t.logger.info 'Generated bundles: {}', built as Object
           }
         }
       }
 
-      tasks.create('jarDependencies') {
-        description 'Jar all projects this project depends on.'
-        dependsOn buildDependencies('jar')
-        group 'build'
+      createTask(project, 'jarDependencies') { t ->
+        t.description 'Jar all projects this project depends on.'
+        t.dependsOn buildDependencies('jar')
+        t.group 'build'
       }
 
-      tasks.create('buildDependencies') {
-        description 'Assembles and tests all projects this project depends on.'
-        dependsOn testDependencies('buildNeeded')
-        group 'build'
+      createTask(project, 'buildDependencies') { t ->
+        t.description 'Assembles and tests all projects this project depends on.'
+        t.dependsOn testDependencies('buildNeeded')
+        t.group 'build'
       }
 
-      buildNeeded {
-        dependsOn buildDependencies
+      configureTask(project, 'buildNeeded') { t ->
+        t.dependsOn 'buildDependencies'
       }
 
-      buildDependents {
-        dependsOn dependents(name)
+      configureTask(project, 'buildDependents') { t ->
+        t.dependsOn dependents('buildDependents')
       }
 
-      tasks.create('release') {
-        description 'Release this project to the release repository.'
-        group 'release'
-        enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
-        inputs.files jar
-        doLast {
+      createTask(project, 'release') { t ->
+        t.description 'Release this project to the release repository.'
+        t.group 'release'
+        t.enabled !bndProject.isNoBundles() && !bnd(Constants.RELEASEREPO, 'unset').empty
+        t.inputs.files jar
+        t.doLast {
           try {
             bndProject.release()
           } catch (Exception e) {
             throw new GradleException("Project ${bndProject.getName()} failed to release", e)
           }
-          checkErrors(logger)
+          checkErrors(t.logger)
         }
       }
 
-      tasks.create('releaseDependencies') {
-        description 'Release all projects this project depends on.'
-        dependsOn buildDependencies('releaseNeeded')
-        group 'release'
+      createTask(project, 'releaseDependencies') { t ->
+        t.description 'Release all projects this project depends on.'
+        t.dependsOn buildDependencies('releaseNeeded')
+        t.group 'release'
       }
 
-      tasks.create('releaseNeeded') {
-        description 'Release this project and all projects it depends on.'
-        dependsOn releaseDependencies, release
-        group 'release'
+      createTask(project, 'releaseNeeded') { t ->
+        t.description 'Release this project and all projects it depends on.'
+        t.dependsOn 'releaseDependencies', 'release'
+        t.group 'release'
       }
 
-      test {
-        enabled !bndis(Constants.NOJUNIT) && !bndis('no.junit')
-        doFirst {
-          checkErrors(logger, ignoreFailures)
+      configureTask(project, 'test') { t ->
+        t.enabled !bndis(Constants.NOJUNIT) && !bndis('no.junit')
+        t.doFirst {
+          checkErrors(t.logger, t.ignoreFailures)
         }
       }
 
-      tasks.create('testOSGi', TestOSGi.class) {
-        description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
-        group 'verification'
-        enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
-        inputs.files jar
-        bndrun = bndProject.getPropertiesFile()
+      createTask(project, 'testOSGi', TestOSGi.class) { t ->
+        t.description 'Runs the OSGi JUnit tests by launching a framework and running the tests in the launched framework.'
+        t.group 'verification'
+        t.enabled !bndis(Constants.NOJUNITOSGI) && !bndUnprocessed(Constants.TESTCASES, '').empty
+        t.inputs.files jar
+        t.bndrun = bndProject.getPropertiesFile()
       }
 
-      check {
-        dependsOn testOSGi
+      configureTask(project, 'check') { t ->
+        t.dependsOn 'testOSGi'
       }
 
-      tasks.create('checkDependencies') {
-        description 'Runs all checks on all projects this project depends on.'
-        dependsOn testDependencies('checkNeeded')
-        group 'verification'
+      createTask(project, 'checkDependencies') { t ->
+        t.description 'Runs all checks on all projects this project depends on.'
+        t.dependsOn testDependencies('checkNeeded')
+        t.group 'verification'
       }
 
-      tasks.create('checkNeeded') {
-        description 'Runs all checks on this project and all projects it depends on.'
-        dependsOn checkDependencies, check
-        group 'verification'
+      createTask(project, 'checkNeeded') { t ->
+        t.description 'Runs all checks on this project and all projects it depends on.'
+        t.dependsOn 'checkDependencies', 'check'
+        t.group 'verification'
       }
 
-      clean {
-        description 'Cleans the build and compiler output directories of this project.'
-        delete buildDir, sourceSets.main.output, sourceSets.test.output
+      configureTask(project, 'clean') { t ->
+        t.description 'Cleans the build and compiler output directories of this project.'
+        t.delete project.buildDir, project.sourceSets.main.output, project.sourceSets.test.output
       }
 
-      tasks.create('cleanDependencies') {
-        description 'Cleans all projects this project depends on.'
-        dependsOn testDependencies('cleanNeeded')
-        group 'build'
+      createTask(project, 'cleanDependencies') { t ->
+        t.description 'Cleans all projects this project depends on.'
+        t.dependsOn testDependencies('cleanNeeded')
+        t.group 'build'
       }
 
-      tasks.create('cleanNeeded') {
-        description 'Cleans this project and all projects it depends on.'
-        dependsOn cleanDependencies, clean
-        group 'build'
+      createTask(project, 'cleanNeeded') { t ->
+        t.description 'Cleans this project and all projects it depends on.'
+        t.dependsOn 'cleanDependencies', 'clean'
+        t.group 'build'
       }
 
-      tasks.addRule('Pattern: export.<name>: Export the <name>.bndrun file.') { taskName ->
-        if (taskName.startsWith('export.')) {
-          String bndrunName = taskName - 'export.'
-          File runFile = file("${bndrunName}.bndrun")
-          if (runFile.isFile()) {
-            tasks.create(taskName, Export.class) {
-              description "Export the ${bndrunName}.bndrun file."
-              dependsOn assemble
-              group 'export'
-              bndrun = runFile
-              exporter = EXECUTABLE_JAR
-            }
-          }
+      def bndruns = fileTree(projectDir) {
+          include '*.bndrun'
+      }
+
+      createTask(project, 'export') { t ->
+        t.description 'Export all the bndrun files.'
+        t.group 'export'
+      }
+
+      bndruns.forEach { runFile ->
+        def subtask = createTask(project, "export.${runFile.name - '.bndrun'}", Export.class) { t ->
+          t.description "Export the ${runFile.name} file."
+          t.dependsOn 'assemble'
+          t.group 'export'
+          t.bndrun = runFile
+          t.exporter = EXECUTABLE_JAR
+        }
+        configureTask(project, 'export') { t ->
+          t.dependsOn subtask
         }
       }
 
-      tasks.create('export') {
-        description 'Export all the bndrun files.'
-        group 'export'
-        fileTree(projectDir) {
-            include '*.bndrun'
-        }.each {
-          dependsOn tasks.getByName("export.${it.name - '.bndrun'}")
+      createTask(project, 'runbundles') { t ->
+        t.description 'Create a distribution of the runbundles in each of the bndrun files.'
+        t.group 'export'
+      }
+
+      bndruns.forEach { runFile ->
+        def subtask = createTask(project, "runbundles.${runFile.name - '.bndrun'}", Export.class) { t ->
+          t.description "Create a distribution of the runbundles in the ${runFile.name} file."
+          t.dependsOn 'assemble'
+          t.group 'export'
+          t.bndrun = runFile
+          t.exporter = RUNBUNDLES
+        }
+        configureTask(project, 'runbundles') { t ->
+          t.dependsOn subtask
         }
       }
 
-      tasks.addRule('Pattern: runbundles.<name>: Create a distribution of the runbundles in <name>.bndrun file.') { taskName ->
-        if (taskName.startsWith('runbundles.')) {
-          String bndrunName = taskName - 'runbundles.'
-          File runFile = file("${bndrunName}.bndrun")
-          if (runFile.isFile()) {
-            tasks.create(taskName, Export.class) {
-              description "Create a distribution of the runbundles in the ${bndrunName}.bndrun file."
-              dependsOn assemble
-              group 'export'
-              bndrun = runFile
-              exporter = RUNBUNDLES
-            }
-          }
+      createTask(project, 'resolve') { t ->
+        t.description 'Resolve the runbundles required for each of the bndrun files.'
+        t.group 'export'
+      }
+
+      bndruns.forEach { runFile ->
+        def subtask = createTask(project, "resolve.${runFile.name - '.bndrun'}", Resolve.class) { t ->
+          t.description "Resolve the runbundles required for ${runFile.name} file."
+          t.dependsOn 'assemble'
+          t.group 'export'
+          t.bndrun = runFile
+        }
+        configureTask(project, 'resolve') { t ->
+          t.dependsOn subtask
         }
       }
 
-      tasks.create('runbundles') {
-        description 'Create a distribution of the runbundles in each of the bndrun files.'
-        group 'export'
-        fileTree(projectDir) {
-            include '*.bndrun'
-        }.each {
-          dependsOn tasks.getByName("runbundles.${it.name - '.bndrun'}")
+      bndruns.forEach { runFile ->
+        createTask(project, "run.${runFile.name - '.bndrun'}", Bndrun.class) { t ->
+          t.description "Run the bndrun file ${runFile.name}."
+          t.dependsOn 'assemble'
+          t.group 'export'
+          t.bndrun = runFile
         }
       }
 
-      tasks.addRule('Pattern: resolve.<name>: Resolve the required runbundles in the <name>.bndrun file.') { taskName ->
-        if (taskName.startsWith('resolve.')) {
-          String bndrunName = taskName - 'resolve.'
-          File runFile = file("${bndrunName}.bndrun")
-          if (runFile.isFile()) {
-            tasks.create(taskName, Resolve.class) {
-              description "Resolve the runbundles required for ${bndrunName}.bndrun file."
-              dependsOn assemble
-              group 'export'
-              bndrun = runFile
-            }
-          }
+      bndruns.forEach { runFile ->
+        createTask(project, "testrun.${runFile.name - '.bndrun'}", TestOSGi.class) { t ->
+          t.description "Runs the OSGi JUnit tests in the bndrun file ${runFile.name}."
+          t.dependsOn 'assemble'
+          t.group 'verification'
+          t.bndrun = runFile
         }
       }
 
-      tasks.create('resolve') {
-        description 'Resolve the runbundles required for each of the bndrun files.'
-        group 'export'
-        fileTree(projectDir) {
-            include '*.bndrun'
-        }.each {
-          dependsOn tasks.getByName("resolve.${it.name - '.bndrun'}")
-        }
-      }
-
-      tasks.addRule('Pattern: run.<name>: Run the bndrun file <name>.bndrun.') { taskName ->
-        if (taskName.startsWith('run.')) {
-          String bndrunName = taskName - 'run.'
-          File runFile = file("${bndrunName}.bndrun")
-          if (runFile.isFile()) {
-            tasks.create(taskName, Bndrun.class) {
-              description "Run the bndrun file ${bndrunName}.bndrun."
-              dependsOn assemble
-              group 'export'
-              bndrun = runFile
-            }
-          }
-        }
-      }
-
-      tasks.addRule('Pattern: testrun.<name>: Runs the OSGi JUnit tests in the bndrun file <name>.bndrun.') { taskName ->
-        if (taskName.startsWith('testrun.')) {
-          String bndrunName = taskName - 'testrun.'
-          File runFile = file("${bndrunName}.bndrun")
-          if (runFile.isFile()) {
-            tasks.create(taskName, TestOSGi.class) {
-              description "Runs the OSGi JUnit tests in the bndrun file ${bndrunName}.bndrun."
-              dependsOn assemble
-              group 'verification'
-              bndrun = runFile
-            }
-          }
-        }
-      }
-
-      tasks.create('echo') {
-        description 'Displays the bnd project information.'
-        group 'help'
-        doLast {
+      createTask(project, 'echo') { t ->
+        t.description 'Displays the bnd project information.'
+        t.group 'help'
+        def compileJava = project.tasks.getByName('compileJava')
+        def compileTestJava = project.tasks.getByName('compileTestJava')
+        t.doLast {
           println """
 ------------------------------------------------------------
 Project ${project.name} // Bnd version ${About.CURRENT}
 ------------------------------------------------------------
 
-project.workspace:      ${parent.projectDir}
+project.workspace:      ${project.parent.projectDir}
 project.name:           ${project.name}
-project.dir:            ${projectDir}
-target:                 ${buildDir}
+project.dir:            ${project.projectDir}
+target:                 ${project.buildDir}
 project.dependson:      ${bndProject.getDependson()*.getName()}
-project.sourcepath:     ${sourceSets.main.java.sourceDirectories.asPath}
+project.sourcepath:     ${project.sourceSets.main.java.sourceDirectories.asPath}
 project.output:         ${compileJava.destinationDir}
 project.buildpath:      ${compileJava.classpath.asPath}
 project.allsourcepath:  ${bnd.allSrcDirs.asPath}
-project.testsrc:        ${sourceSets.test.java.sourceDirectories.asPath}
+project.testsrc:        ${project.sourceSets.test.java.sourceDirectories.asPath}
 project.testoutput:     ${compileTestJava.destinationDir}
 project.testpath:       ${compileTestJava.classpath.asPath}
 project.bootclasspath:  ${compileJava.options.hasProperty('bootstrapClasspath')?compileJava.options.bootstrapClasspath?.asPath?:'':compileJava.options.bootClasspath?:''}
-project.deliverables:   ${configurations.archives.artifacts.files*.path}
+project.deliverables:   ${project.configurations.archives.artifacts.files*.path}
 javac:                  ${compileJava.options.forkOptions.executable?:'javac'}
-javac.source:           ${compileJava.sourceCompatibility}
-javac.target:           ${compileJava.targetCompatibility}
+javac.source:           ${project.sourceCompatibility}
+javac.target:           ${project.targetCompatibility}
 javac.profile:          ${javacProfile}
 """
-          checkErrors(logger, true)
+          checkErrors(t.logger, true)
         }
       }
 
-      tasks.create('bndproperties') {
-        description 'Displays the bnd properties.'
-        group 'help'
-        doLast {
+      createTask(project, 'bndproperties') { t ->
+        t.description 'Displays the bnd properties.'
+        t.group 'help'
+        t.doLast {
           println """
 ------------------------------------------------------------
 Project ${project.name}
@@ -524,7 +509,7 @@ Project ${project.name}
             println "${it}: ${bnd(it, '')}"
           }
           println()
-          checkErrors(logger, true)
+          checkErrors(t.logger, true)
         }
       }
     }
@@ -540,26 +525,26 @@ Project ${project.name}
     }
   }
 
-  private Closure buildDependencies(String taskName, Closure transformer = { it }) {
+  private Closure buildDependencies(String taskName) {
     return {
-      bndProject.getBuildDependencies()*.getName().collect { String dependency ->
-        transformer(project.parent.absoluteProjectPath("${dependency}:${taskName}"))
+      bndProject.getBuildDependencies().collect { dependency ->
+        namedTask(project.parent.project(dependency.getName()), taskName)
       }
     }
   }
 
-  private Closure testDependencies(String taskName, Closure transformer = { it }) {
+  private Closure testDependencies(String taskName) {
     return {
-      bndProject.getTestDependencies()*.getName().collect { String dependency ->
-        transformer(project.parent.absoluteProjectPath("${dependency}:${taskName}"))
+      bndProject.getTestDependencies().collect { dependency ->
+        namedTask(project.parent.project(dependency.getName()), taskName)
       }
     }
   }
 
-  private Closure dependents(String taskName, Closure transformer = { it }) {
+  private Closure dependents(String taskName) {
     return {
-      bndProject.getDependents()*.getName().collect { String dependency ->
-        transformer(project.parent.absoluteProjectPath("${dependency}:${taskName}"))
+      bndProject.getDependents().collect { dependent ->
+        namedTask(project.parent.project(dependent.getName()), taskName)
       }
     }
   }
