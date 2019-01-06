@@ -11,18 +11,18 @@ String masterVersion = String.format('%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
                           Calendar.getInstance(TimeZone.getTimeZone("UTC")),
                           bnd('Git-SHA'))
 
-tasks.create('p2Plugins', Sync.class) {
-  dependsOn jarDependencies
+def p2Plugins = tasks.register('p2Plugins', Sync.class) {
+  dependsOn 'jarDependencies'
   from    bnd('plugins').tokenize(',')
   into    "${buildDir}/plugins"
 }
 
-tasks.create('p2FeatureProperties', WriteProperties.class) {
+def p2FeatureProperties = tasks.register('p2FeatureProperties', WriteProperties.class) {
   inputs.files p2Plugins
   outputFile = file("${buildDir}/feature.properties")
   doFirst {
     property('base-version', bnd('base.version'))
-    fileTree(p2Plugins.destinationDir).each {
+    fileTree(p2Plugins.get().destinationDir).each {
       new Jar(it).withCloseable { jar ->
         property("${jar.getBsn()}-version", jar.getVersion())
       }
@@ -30,7 +30,7 @@ tasks.create('p2FeatureProperties', WriteProperties.class) {
   }
 }
 
-tasks.create('p2FeatureMain', Zip.class) {
+def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
   inputs.files p2FeatureProperties
   destinationDir = file("${buildDir}/features")
   archiveName    = 'bndtools.main.feature.jar'
@@ -38,7 +38,7 @@ tasks.create('p2FeatureMain', Zip.class) {
   include          'feature.xml'
   doFirst {
     Properties properties = new Properties()
-    p2FeatureProperties.outputFile.withInputStream {
+    p2FeatureProperties.get().outputFile.withInputStream {
         properties.load(it)
         properties['master-version'] = masterVersion
     }
@@ -46,7 +46,7 @@ tasks.create('p2FeatureMain', Zip.class) {
   }
 }
 
-tasks.create('p2FeatureM2e', Zip.class) {
+def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
   inputs.files p2FeatureProperties
   destinationDir = file("${buildDir}/features")
   archiveName    = 'bndtools.m2e.feature.jar'
@@ -54,7 +54,7 @@ tasks.create('p2FeatureM2e', Zip.class) {
   include          'feature.xml'
   doFirst {
     Properties properties = new Properties()
-    p2FeatureProperties.outputFile.withInputStream {
+    p2FeatureProperties.get().outputFile.withInputStream {
         properties.load(it)
         properties['master-version'] = masterVersion
     }
@@ -62,7 +62,7 @@ tasks.create('p2FeatureM2e', Zip.class) {
   }
 }
 
-tasks.create('p2FeaturePde', Zip.class) {
+def p2FeaturePde = tasks.register('p2FeaturePde', Zip.class) {
   inputs.files p2FeatureProperties
   destinationDir = file("${buildDir}/features")
   archiveName    = 'bndtools.pde.feature.jar'
@@ -70,7 +70,7 @@ tasks.create('p2FeaturePde', Zip.class) {
   include          'feature.xml'
   doFirst {
     Properties properties = new Properties()
-    p2FeatureProperties.outputFile.withInputStream {
+    p2FeatureProperties.get().outputFile.withInputStream {
         properties.load(it)
         properties['master-version'] = masterVersion
     }
@@ -78,7 +78,7 @@ tasks.create('p2FeaturePde', Zip.class) {
   }
 }
 
-tasks.create('p2') {
+def p2 = tasks.register('p2') {
   description 'Publish the p2 repositories.'
   group       'release'
   enabled JavaVersion.current().isJava8()
@@ -132,11 +132,11 @@ tasks.create('p2') {
   }
 }
 
-jar {
+tasks.named('jar') {
   dependsOn p2
 }
 
-release {
+tasks.named('release') {
   onlyIf {
     JavaVersion.current().isJava8()
   }

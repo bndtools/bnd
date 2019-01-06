@@ -8,27 +8,25 @@ def buildProject = project
 configure(parent) {
   buildDir = buildProject.buildDir
 
-  tasks.create('build') {
+  def build = tasks.register(bnd_defaultTask) {
     dependsOn buildProject.absoluteProjectPath('jarDependencies')
     dependsOn buildProject.absoluteProjectPath('checkDependencies')
     dependsOn buildProject.absoluteProjectPath('releaseNeeded')
     description "Assembles, tests and releases the ${buildProject.name} project."
     group 'build'
   }
-  defaultTasks = [build.path]
+  defaultTasks = [absoluteProjectPath(build.name)]
 }
 
-checkDependencies {
-  mustRunAfter jarDependencies
+tasks.named('checkDependencies') {
+  mustRunAfter 'jarDependencies'
 }
 
-releaseDependencies {
-  mustRunAfter jarDependencies, checkDependencies
+tasks.named('releaseDependencies') {
+  mustRunAfter 'jarDependencies', 'checkDependencies'
 }
 
-/* Configure this project */
-File releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
-
-clean {
+tasks.named('clean') {
+  File releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
   delete releaserepo
 }
