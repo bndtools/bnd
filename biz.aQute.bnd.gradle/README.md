@@ -10,7 +10,7 @@ specified in the Bnd Workspace's `cnf/build.bnd` file and each project's
 The [`biz.aQute.bnd.gradle`][2] jar contains the Bnd Gradle Plugins.
 These plugins requires at least Gradle 4.0 for Java 8, at least
 Gradle 4.2.1 for Java 9, at least Gradle 4.7 for Java 10, and at
-least Gralde 5.0 for Java 11.
+least Gradle 5.0 for Java 11.
 
 # Gradle Plugin for non-Bnd Workspace Builds
 
