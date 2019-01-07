@@ -1158,7 +1158,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 			switch (paramType) {
 				default :
 					// check for subtype of Collection
-					if (!analyzer.assignable(paramType, "java.util.Collection")) {
+					if (!analyzer.assignable(paramType, "java.util.Collection", false)) {
 						break;
 					}
 					def.isCollectionSubClass = true;
