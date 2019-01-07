@@ -40,14 +40,14 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.builtBy
+
 import aQute.bnd.osgi.repository.SimpleIndexer
 import aQute.lib.io.IO
 
 import java.util.zip.GZIPOutputStream
 
-import org.gradle.api.Buildable
 import org.gradle.api.DefaultTask
-import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -159,9 +159,7 @@ public class Index extends DefaultTask {
    * Project.files().
    */
   public ConfigurableFileCollection bundles(Object... paths) {
-    return bundleCollection.from(paths).builtBy(paths.findAll { path ->
-      path instanceof Task || path instanceof Buildable
-    })
+    return builtBy(bundleCollection.from(paths), paths)
   }
 
   /**

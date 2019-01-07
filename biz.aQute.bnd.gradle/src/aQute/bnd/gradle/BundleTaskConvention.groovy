@@ -24,6 +24,7 @@
 package aQute.bnd.gradle
 
 import static aQute.bnd.gradle.BndUtils.logReport
+import static aQute.bnd.gradle.BndUtils.builtBy
 
 import java.util.Properties
 import java.util.jar.Manifest
@@ -153,9 +154,7 @@ class BundleTaskConvention {
    */
   public ConfigurableFileCollection classpath(Object... paths) {
     classpathModified = true
-    return classpathCollection.from(paths).builtBy(paths.findAll { path ->
-      path instanceof Task || path instanceof Buildable
-    })
+    return builtBy(classpathCollection.from(paths), paths)
   }
 
   /**

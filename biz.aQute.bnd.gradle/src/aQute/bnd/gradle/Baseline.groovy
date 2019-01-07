@@ -44,12 +44,14 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.builtBy
+import static aQute.bnd.gradle.BndUtils.toTask
+
 import aQute.bnd.differ.DiffPluginImpl
 import aQute.bnd.osgi.Jar
 import aQute.bnd.osgi.Processor
 import aQute.bnd.version.Version
 
-import org.gradle.api.Buildable
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Task
@@ -109,9 +111,7 @@ public class Baseline extends DefaultTask {
    */
   public void setBundle(Object file) {
     bundleCollection = project.files(file)
-    if (file instanceof Task || file instanceof Buildable) {
-      bundleCollection.builtBy file
-    }
+    builtBy(bundleCollection, file)
   }
 
   /**
@@ -134,9 +134,7 @@ public class Baseline extends DefaultTask {
    */
   public void setBaseline(Object file) {
     baselineCollection = project.files(file)
-    if (file instanceof Task || file instanceof Buildable) {
-      baselineCollection.builtBy file
-    }
+    builtBy(baselineCollection, file)
   }
 
   /**
@@ -160,7 +158,10 @@ public class Baseline extends DefaultTask {
   }
 
   Task getBundleTask() {
-    return bundleCollection?.builtBy.find()
+    return bundleCollection.getBuiltBy().flatten().findResult { t ->
+      t = toTask(t)
+      t instanceof Task && t.convention.findPlugin(BundleTaskConvention.class) ? t : null
+    }
   }
   ConfigurableFileCollection getBundleCollection() {
     return bundleCollection

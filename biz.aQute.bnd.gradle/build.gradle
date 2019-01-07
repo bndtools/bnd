@@ -14,15 +14,15 @@ dependencies {
 }
 
 if (JavaVersion.current().isJava9Compatible()) {
-    tasks.withType(GroovyCompile) {
+    tasks.withType(GroovyCompile.class).configureEach {
         groovyOptions.fork 'jvmArgs': java9options
     }
 }
 
-test {
-    dependsOn jar
-    def source = file('testresources')
-    def target = file("${buildDir}/testresources")
+tasks.named('test') {
+    dependsOn 'jar'
+    File source = project.file('testresources')
+    File target = new File(project.buildDir, 'testresources')
     doFirst { // copy test resources into build dir
         project.delete(target)
         copy {
@@ -32,16 +32,16 @@ test {
     }
 }
 
-release {
-  dependsOn groovydoc
+tasks.named('release') {
+  dependsOn 'groovydoc'
 }
 
-classes {
+tasks.named('classes') {
     inputs.property('pluginClasspath', bnd('pluginClasspath'))
-    File pluginClasspathFile = new File(compileJava.destinationDir, 'plugin-under-test-metadata.properties')
+    File pluginClasspathFile = new File(tasks.getByName('compileJava').destinationDir, 'plugin-under-test-metadata.properties')
     outputs.file(pluginClasspathFile).withPropertyName('pluginClasspathFile')
     doLast {
-        def pluginClasspath = project.files(new File(buildDir, "${project.name}.jar"), bnd('pluginClasspath').tokenize(File.pathSeparatorChar))
+        def pluginClasspath = project.files(new File(project.buildDir, "${project.name}.jar"), bnd('pluginClasspath').tokenize(File.pathSeparatorChar))
         Properties properties = new Properties()
         properties.setProperty('implementation-classpath', pluginClasspath.asPath)
         pluginClasspathFile.withOutputStream {

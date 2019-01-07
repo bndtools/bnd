@@ -6,12 +6,37 @@ def localrepo = System.getProperty('maven.repo.local')
 if (localrepo) {
   localrepo = relativePath(uri(gradle.startParameter.currentDir).resolve(localrepo))
 }
-def releaserepo = uri(bnd('releaserepo', parent.file('dist/bundles'))) /* Release repository. */
+def dist = parent.project(bnd_build)
 
-tasks.create('deployOSSRH', Exec.class) {
+def deploy = tasks.register('deploy', Exec.class) {
+  def releaserepo = uri(bnd('releaserepo', dist.file('bundles'))) /* Release repository. */
+  dependsOn dist.tasks.named('jarDependencies')
+  if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+    executable 'cmd'
+    args '/c', rootProject.file('mvnw.cmd')
+  } else {
+    executable rootProject.file('mvnw')
+  }
+  args '--batch-mode'
+  if (logger.isDebugEnabled()) {
+    args '--debug'
+  }
+  args '-Pdist'
+  args "-Dreleaserepo=${releaserepo}"
+  if (localrepo) {
+    args "-Dmaven.repo.local=${localrepo}"
+  }
+  args 'deploy'
+}
+
+dist.tasks.named('releaseDependencies') {
+  mustRunAfter deploy
+}
+
+def deployOSSRH = tasks.register('deployOSSRH', Exec.class) {
   enabled !bnd('-releaserepo.ossrh', '').empty
   onlyIf {
-        deploy.state.didWork && (deploy.state.failure == null)
+    deploy.get().state.didWork && (deploy.get().state.failure == null)
   }
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
@@ -31,10 +56,14 @@ tasks.create('deployOSSRH', Exec.class) {
   args 'deploy'
 }
 
-tasks.create('deployJFrog', Exec.class) {
+deploy.configure {
+  finalizedBy deployOSSRH
+}
+
+def deployJFrog = tasks.register('deployJFrog', Exec.class) {
   enabled !bnd('-releaserepo.jfrog', '').empty
   onlyIf {
-        deploy.state.didWork && (deploy.state.failure == null)
+    deploy.get().state.didWork && (deploy.get().state.failure == null)
   }
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
@@ -54,24 +83,6 @@ tasks.create('deployJFrog', Exec.class) {
   args 'deploy'
 }
 
-tasks.create('deploy', Exec.class) {
-  dependsOn parent.tasks.getByPath('dist:jarDependencies')
-  finalizedBy deployOSSRH, deployJFrog
-  parent.tasks.getByPath('dist:releaseDependencies').mustRunAfter it
-  if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-    executable 'cmd'
-    args '/c', rootProject.file('mvnw.cmd')
-  } else {
-    executable rootProject.file('mvnw')
-  }
-  args '--batch-mode'
-  if (logger.isDebugEnabled()) {
-    args '--debug'
-  }
-  args '-Pdist'
-  args "-Dreleaserepo=${releaserepo}"
-  if (localrepo) {
-    args "-Dmaven.repo.local=${localrepo}"
-  }
-  args 'deploy'
+deploy.configure {
+  finalizedBy deployJFrog
 }

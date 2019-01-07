@@ -14,6 +14,8 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.builtBy
+
 import aQute.bnd.repository.fileset.FileSetRepository
 
 import org.gradle.api.Project
@@ -46,9 +48,7 @@ class FileSetRepositoryConvention {
    * Project.files().
    */
   public ConfigurableFileCollection bundles(Object... paths) {
-    return bundleCollection.from(paths).builtBy(paths.findAll { path ->
-      path instanceof Task || path instanceof Buildable
-    })
+    return builtBy(bundleCollection.from(paths), paths)
   }
 
   /**
