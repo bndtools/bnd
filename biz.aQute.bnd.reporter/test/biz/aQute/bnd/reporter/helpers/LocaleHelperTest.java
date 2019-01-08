@@ -20,9 +20,9 @@ public class LocaleHelperTest {
   @Test
   public void testNotFound() {
     final Jar jar = new Jar("jar");
-    assertNull(LocaleHelper.get(jar, Locale.forLanguageTag("und"), "ln/bundle"));
+    assertNull(LocaleHelper.createIfPresent(jar, Locale.forLanguageTag("und"), "ln/bundle"));
     jar.putResource("ln/bundle.properties", new PropResource());
-    assertNull(LocaleHelper.get(jar, Locale.forLanguageTag("und"), "ln/other"));
+    assertNull(LocaleHelper.createIfPresent(jar, Locale.forLanguageTag("und"), "ln/other"));
   }
 
   @Test
@@ -31,7 +31,8 @@ public class LocaleHelperTest {
     final PropResource r = new PropResource();
     r.add("key", "value");
     jar.putResource("ln/bundle.properties", r);
-    final LocaleHelper h = LocaleHelper.get(jar, Locale.forLanguageTag("und"), "ln/bundle");
+    final LocaleHelper h =
+        LocaleHelper.createIfPresent(jar, Locale.forLanguageTag("und"), "ln/bundle");
     assertEquals("key", h.get("key"));
     assertEquals("value", h.get("%key"));
     assertNull(h.get("%  key"));
@@ -64,7 +65,8 @@ public class LocaleHelperTest {
     rENUSVAR.add("key4", "value4ENUSVAR");
     jar.putResource("ln/bundle_en_US_POSIX.properties", rENUSVAR);
 
-    final LocaleHelper h = LocaleHelper.get(jar, Locale.forLanguageTag("en"), "ln/bundle");
+    final LocaleHelper h =
+        LocaleHelper.createIfPresent(jar, Locale.forLanguageTag("en"), "ln/bundle");
 
     assertEquals("key", h.get("key"));
     assertEquals("valueEN", h.get("%key"));
