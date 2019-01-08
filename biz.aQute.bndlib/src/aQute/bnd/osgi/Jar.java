@@ -19,6 +19,7 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.security.DigestOutputStream;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.EnumSet;
@@ -1209,5 +1210,14 @@ public class Jar implements Closeable {
 		}
 		directories.subMap(prefixLow, prefixHigh)
 			.clear();
+	}
+
+	public void removeSubDirs(String dir) {
+		if (!dir.endsWith("/")) {
+			dir = dir + "/";
+		}
+		List<String> subDirs = new ArrayList<>(directories.subMap(dir, dir + "\uFFFF")
+			.keySet());
+		subDirs.forEach(subDir -> removePrefix(subDir + "/"));
 	}
 }
