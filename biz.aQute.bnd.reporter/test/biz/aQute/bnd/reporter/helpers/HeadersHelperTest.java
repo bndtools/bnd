@@ -1,14 +1,5 @@
 package biz.aQute.bnd.reporter.helpers;
 
-import java.io.File;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.jar.Manifest;
-
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
@@ -35,6 +26,14 @@ import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionInRangeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionRangeDTO;
+import java.io.File;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.jar.Manifest;
 import junit.framework.TestCase;
 
 @SuppressWarnings("boxing")
@@ -310,7 +309,7 @@ public class HeadersHelperTest extends TestCase {
         expected);
   }
 
-	public void testFragmentHost() throws Exception {
+  public void testFragmentHost() throws Exception {
     FragmentHostDTO expected = null;
     perform(Constants.FRAGMENT_HOST, "fragmentHost", "", expected);
 
@@ -925,8 +924,8 @@ public class HeadersHelperTest extends TestCase {
     jar.setManifest(manifest);
     manifest.getMainAttributes().putValue(headerName, header);
     final Processor p = new Processor();
-    final HeadersHelper extractor =
-        new HeadersHelper(ManifestHelper.get(jar, Locale.forLanguageTag("und")), jar, p);
+    final HeadersHelper extractor = new HeadersHelper(
+        ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("und")), jar, p);
     final Object actual = extractor.getClass().getDeclaredMethod("_" + entryName).invoke(extractor);
     assertTrue(p.isOk());
     final JSONCodec c = new JSONCodec();

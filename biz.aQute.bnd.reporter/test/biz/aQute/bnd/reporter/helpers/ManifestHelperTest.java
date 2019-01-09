@@ -11,7 +11,7 @@ public class ManifestHelperTest {
 
   @Test
   public void testWithoutManifest() {
-    assertNull(ManifestHelper.get(new Jar("dot"), Locale.forLanguageTag("und")));
+    assertNull(ManifestHelper.createIfPresent(new Jar("dot"), Locale.forLanguageTag("und")));
   }
 
   @Test
@@ -22,7 +22,7 @@ public class ManifestHelperTest {
     manifest.getMainAttributes().putValue("Bundle-Description", "desUN");
 
     jar.setManifest(manifest);
-    final ManifestHelper h = ManifestHelper.get(jar, Locale.forLanguageTag("und"));
+    final ManifestHelper h = ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("und"));
 
     assertEquals("desUN", h.getHeader("Bundle-Description", false).keySet().iterator().next());
   }
@@ -44,8 +44,11 @@ public class ManifestHelperTest {
     jar.putResource("OSGI-INF/l10n/bundle_en.properties", r);
 
     jar.setManifest(manifest);
-    final ManifestHelper h = ManifestHelper.get(jar, Locale.forLanguageTag("und"));
-    final ManifestHelper hen = ManifestHelper.get(jar, Locale.forLanguageTag("en"));
+    final ManifestHelper h = ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("und"));
+
+    manifest.getMainAttributes().putValue("Bundle-Localization", "");
+
+    final ManifestHelper hen = ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("en"));
 
     assertEquals("valueUN", h.getHeader("Bundle-Description", false).keySet().iterator().next());
     assertEquals("test", h.getHeader("Bundle-Test", false).keySet().iterator().next());
@@ -74,8 +77,8 @@ public class ManifestHelperTest {
     jar.putResource("bundle_en.properties", r);
 
     jar.setManifest(manifest);
-    final ManifestHelper h = ManifestHelper.get(jar, Locale.forLanguageTag("und"));
-    final ManifestHelper hen = ManifestHelper.get(jar, Locale.forLanguageTag("en"));
+    final ManifestHelper h = ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("und"));
+    final ManifestHelper hen = ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("en"));
 
     assertEquals("valueUN", h.getHeader("Bundle-Description", false).keySet().iterator().next());
     assertEquals("test", h.getHeader("Bundle-Test", false).keySet().iterator().next());
