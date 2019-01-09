@@ -1,4 +1,6 @@
+// touch settings.gradle
 // ../gradlew -b publish.gradle displayArtifacts publishPlugins
+// rm settings.gradle
 
 buildscript {
   repositories {
@@ -7,7 +9,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath 'com.gradle.publish:plugin-publish-plugin:0.9.10'
+    classpath 'com.gradle.publish:plugin-publish-plugin:0.10.0'
   }
 }
 
@@ -16,10 +18,10 @@ apply plugin: 'java'
 
 ext.groupId = 'biz.aQute.bnd'
 ext.artifactId = 'biz.aQute.bnd.gradle'
-ext.artifactVersion = '4.1.0'
+ext.artifactVersion = '4.2.0'
 
 repositories {
-  mavenCentral()
+  jcenter()
 }
 
 configurations {
