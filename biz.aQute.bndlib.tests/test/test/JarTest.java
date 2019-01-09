@@ -54,6 +54,62 @@ public class JarTest extends TestCase {
 		}
 	}
 
+	public void testDeleteSubDirs() {
+		Resource r = new EmbeddedResource(new byte[1], 0L);
+
+		try (Jar jar = new Jar("test")) {
+			jar.putResource("META-INF/maven/org/osgi/test/test.pom", r);
+			jar.putResource("META-INF/maven/org/osgi/test/test.properties", r);
+			jar.putResource("META-INF/maven/plugin.xml", r);
+			jar.putResource("META-INF/MANIFEST.MF", r);
+			jar.putResource("com/example/foo.jar", r);
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/maven/org/osgi/test"));
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/maven"));
+			jar.removeSubDirs("META-INF/maven/");
+
+			assertNotNull(jar.getResource("META-INF/MANIFEST.MF"));
+			assertNotNull(jar.getResource("META-INF/maven/plugin.xml"));
+			assertNotNull(jar.getResource("com/example/foo.jar"));
+			assertNull(jar.getResource("META-INF/maven/org/osgi/test/test.pom"));
+			assertNull(jar.getResource("META-INF/maven/org/osgi/test/test.properties"));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/maven"));
+			assertFalse(jar.getDirectories()
+				.containsKey("META-INF/maven/org/osgi/test"));
+		}
+	}
+
+	public void testDeleteSubDirs2() {
+		Resource r = new EmbeddedResource(new byte[1], 0L);
+
+		try (Jar jar = new Jar("test")) {
+			jar.putResource("META-INF/maven/plugin/foo.txt", r);
+			jar.putResource("META-INF/maven/plugin.xml", r);
+			jar.putResource("META-INF/MANIFEST.MF", r);
+			jar.putResource("com/example/foo.jar", r);
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/maven/plugin"));
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/maven"));
+			jar.removeSubDirs("META-INF/maven");
+
+			assertNotNull(jar.getResource("META-INF/MANIFEST.MF"));
+			assertNotNull(jar.getResource("META-INF/maven/plugin.xml"));
+			assertNotNull(jar.getResource("com/example/foo.jar"));
+			assertNull(jar.getResource("META-INF/maven/plugin/foo.txt"));
+
+			assertTrue(jar.getDirectories()
+				.containsKey("META-INF/maven"));
+			assertFalse(jar.getDirectories()
+				.containsKey("META-INF/maven/plugin"));
+		}
+	}
+
 	public void testWriteFolder() throws Exception {
 		File tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
