@@ -540,7 +540,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		Xpp3Dom bndElement = configuration.getChild("bnd");
 		if (bndElement != null) {
 			if (projectFile == null) {
-				if (!xppDomEqualsWithSubtitution(bndElement, tracker.get("bnd"), projectFile, builder)) {
+				if (!xppDomEqualsWithSubstitution(bndElement, tracker.get("bnd"), projectFile, builder)) {
 					tracker.put("bnd", bndElement);
 					bndUsed = true;
 					logger.debug("loading bnd properties from bnd element in pom: {}", pomProject);
@@ -589,7 +589,7 @@ public class BndMavenPlugin extends AbstractMojo {
 	 *         substitution.
 	 * @throws IOException If an IO exception occurs.
 	 */
-	private boolean xppDomEqualsWithSubtitution(Xpp3Dom d1, Xpp3Dom d2, File projectFile, Reporter reporter)
+	private boolean xppDomEqualsWithSubstitution(Xpp3Dom d1, Xpp3Dom d2, File projectFile, Reporter reporter)
 		throws IOException {
 		if (d1 == null && d2 == null)
 			return true;
