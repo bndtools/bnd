@@ -13,12 +13,12 @@
 	<description>This maven plugin is used to make OSGi indexes from lists of maven dependencies.</description>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>maven-plugin</packaging>
-  <url>http://bnd.bndtools.org/</url>
-  <scm>
-    <url>https://github.com/bndtools/bnd</url>
-    <connection>scm:git:https://github.com/bndtools/bnd.git</connection>
-    <developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
-  </scm>
+	<url>https://bnd.bndtools.org/</url>
+	<scm>
+		<url>https://github.com/bndtools/bnd</url>
+		<connection>scm:git:https://github.com/bndtools/bnd.git</connection>
+		<developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
+	</scm>
 
 	<dependencies>
 		<dependency>
@@ -33,10 +33,10 @@
 			<groupId>org.apache.maven.plugin-tools</groupId>
 			<artifactId>maven-plugin-annotations</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.eclipse.aether</groupId>
 			<artifactId>aether-api</artifactId>
@@ -54,7 +54,7 @@
 			<artifactId>osgi.core</artifactId>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -83,16 +83,16 @@
 					<preBuildHookScript>setup.groovy</preBuildHookScript>
 					<postBuildHookScript>verify.groovy</postBuildHookScript>
 					<scriptVariables>
-					  <pluginBasedir>${project.basedir}</pluginBasedir>
-					  <pluginBuildDirectory>${project.build.directory}</pluginBuildDirectory>
+						<pluginBasedir>${project.basedir}</pluginBasedir>
+						<pluginBuildDirectory>${project.build.directory}</pluginBuildDirectory>
 					</scriptVariables>
-                    <properties>
-                      <jsse.enableSNIExtension>false</jsse.enableSNIExtension>
-                      <!-- Used in the "no-dist-mgmt" deploy test -->
-                      <altSnapshotDeploymentRepository>LocalSnapshotDeploy::default::file://${project.build.directory}/integration-test/projects/test/localsnapshotdeployrepo</altSnapshotDeploymentRepository>
-                      <maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
-                      <maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
-                    </properties>
+					<properties>
+						<jsse.enableSNIExtension>false</jsse.enableSNIExtension>
+						<!-- Used in the "no-dist-mgmt" deploy test -->
+						<altSnapshotDeploymentRepository>LocalSnapshotDeploy::default::file://${project.build.directory}/integration-test/projects/test/localsnapshotdeployrepo</altSnapshotDeploymentRepository>
+						<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+						<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+					</properties>
 					<goals>
 						<goal>package</goal>
 					</goals>

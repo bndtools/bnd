@@ -1,0 +1,12 @@
+Foo	foo
+-include ~${workspace}/cnf/bar.bnd
+
+-plugin.foo = bndtools.test.plugin.TestPlugin
+
+
+-plugin.aries = \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		snapshotUrl=https://repository.apache.org/content/groups/snapshots/; \
+		releaseUrl= https://repository.apache.org/content/repositories/releases/; \
+		index=${.}/apache.maven; \
+		name="Apache"

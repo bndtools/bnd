@@ -1,0 +1,6 @@
+-include:   pom.xml
+-src:       src/main/java
+-classpath: target/classes
+
+Bundle-SymbolicName: ${pom.artifactId}
+Bundle-Version:      ${pom.version}

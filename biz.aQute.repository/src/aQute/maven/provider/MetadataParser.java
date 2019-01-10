@@ -398,8 +398,6 @@ public class MetadataParser {
 	}
 
 	private static void skip(XMLStreamReader sr) throws Exception {
-		System.out.println("Skipping " + sr.getLocalName());
-
 		while (sr.next() != XMLStreamConstants.END_ELEMENT) {
 			switch (sr.getEventType()) {
 				case XMLStreamConstants.START_ELEMENT :

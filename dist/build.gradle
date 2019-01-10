@@ -2,49 +2,31 @@
  * dist Gradle build script
  */
 
-import aQute.bnd.gradle.Index
-
 def buildProject = project
 
 /* Configure the workspace project */
 configure(parent) {
   buildDir = buildProject.buildDir
 
-  task build {
-    dependsOn "${buildProject.path}:build"
-    dependsOn "${buildProject.path}:checkNeeded"
-    dependsOn "${buildProject.path}:releaseNeeded"
-    dependsOn "${buildProject.path}:index"
+  def build = tasks.register(bnd_defaultTask) {
+    dependsOn buildProject.absoluteProjectPath('jarDependencies')
+    dependsOn buildProject.absoluteProjectPath('checkDependencies')
+    dependsOn buildProject.absoluteProjectPath('releaseNeeded')
     description "Assembles, tests and releases the ${buildProject.name} project."
     group 'build'
   }
-  defaultTasks = [build.path]
+  defaultTasks = [absoluteProjectPath(build.name)]
 }
 
-/* Configure this project */
-def releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
-
-task('indexonly', type: Index) {
-  description 'Index the release repository only. (Does not depend on releaseNeeded).'
-  group 'release'
-  repositoryName = "Bnd ${version}"
-  destinationDir = releaserepo
-  gzip = true
-  bundles fileTree(destinationDir) {
-    include '**/*.jar'
-    exclude '**/*-latest.jar'
-    exclude '**/*-sources.jar'
-    exclude '**/*-javadoc.jar'
-  }
+tasks.named('checkDependencies') {
+  mustRunAfter 'jarDependencies'
 }
 
-task('index') {
-  description 'Index the release repository.'
-  group 'release'
-  dependsOn releaseNeeded
-  finalizedBy indexonly
+tasks.named('releaseDependencies') {
+  mustRunAfter 'jarDependencies', 'checkDependencies'
 }
 
-clean {
+tasks.named('clean') {
+  File releaserepo = file(bnd('releaserepo', 'bundles')) /* Release repository. */
   delete releaserepo
 }

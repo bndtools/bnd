@@ -3,6 +3,9 @@ package aQute.bnd.metatype;
 import java.util.Arrays;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import aQute.bnd.annotation.xml.XMLAttribute;
 import aQute.bnd.component.annotations.Component;
 import aQute.bnd.osgi.Analyzer;
@@ -13,6 +16,7 @@ import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
 
 public class DesignateReader extends ClassDataCollector {
+	static final Logger					logger	= LoggerFactory.getLogger(DesignateReader.class);
 
 	private Analyzer					analyzer;
 	private Clazz						clazz;
@@ -49,7 +53,7 @@ public class DesignateReader extends ClassDataCollector {
 				return null;
 			}
 			TypeRef ocdClass = designate.get("ocd");
-			// ocdClass = ocdClass.substring(1, ocdClass.length() - 1);
+			logger.debug("Class {} annotated {}", clazz, designate);
 			OCDDef ocd = classToOCDMap.get(ocdClass);
 			if (ocd == null) {
 				analyzer.error("DS Component %s specifies ocd class %s which cannot be found; known classes %s",

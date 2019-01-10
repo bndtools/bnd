@@ -1,0 +1,12 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+Fragment-Host: biz.aQute.bndlib;bundle-version="[${base.version},${versionmask;=+0;${base.version}})"
+-includeresource: embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;latest}
+
+-buildpath: aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest
+
+Import-Package: \
+	javax.management,\
+	javax.management.remote

@@ -27,16 +27,18 @@ public class LocaleHelper {
   }
 
   /**
-   * Extracts the localization data of the Jar and return the helper.
+   * Create a {@link LocaleHelper} if localization data are found at the specified path, otherwise
+   * return {@code null}.
    *
    * @param jar the jar containing the localization file, must not be {@code null}
    * @param locale the default locale for this helper, must not be {@code null}
-   * @param basePath a path in the Jar to the localization property file without its extension and
-   *        its locale suffix, must not be {@code null}
-   * @return a {@code LocaleHelper} which contains localization data or {@code null} if the
-   *         localization property file is not found
+   * @param basePath a base path in the Jar to the localization property files without its extension
+   *        and its locale suffix, must not be {@code null}
+   * @return a {@code LocaleHelper} which contains localization data or {@code null} if there is no
+   *         localization data at the specified path.
    */
-  public static LocaleHelper get(final Jar jar, final Locale locale, final String basePath) {
+  public static LocaleHelper createIfPresent(final Jar jar, final Locale locale,
+      final String basePath) {
     Objects.requireNonNull(jar, "jar");
     Objects.requireNonNull(locale, "locale");
     Objects.requireNonNull(basePath, "basePath");
@@ -143,7 +145,8 @@ public class LocaleHelper {
 
             result.put(lang, properties);
           } catch (final Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Unable to read localization data at path " + entry.getKey(),
+                e);
           }
         });
 

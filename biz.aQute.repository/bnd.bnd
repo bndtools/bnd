@@ -1,14 +1,5 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
-
-
-jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
-	org.eclipse.jetty.continuation;version=7.6.3,\
-	org.eclipse.jetty.http;version=7.6.3,\
-	org.eclipse.jetty.io;version=7.6.3,\
-	org.eclipse.jetty.security;version=7.6.3,\
-	org.eclipse.jetty.server;version=7.6.3,\
-	org.eclipse.jetty.util;version=7.6.3
+-include: ${workspace}/cnf/includes/jdt.bnd
 
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
@@ -27,7 +18,6 @@ jetty.libs: org.apache.geronimo.specs.geronimo-servlet_2.5_spec;version=1.2,\
 -testpath: \
 	${junit},\
 	${mockito},\
-	${jetty.libs},\
 	biz.aQute.http.testservers;version=latest,\
 	slf4j.simple;version=latest
 

@@ -1,0 +1,13 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-buildpath:  \
+	osgi.annotation;version=latest;maven-scope=provided,\
+    org.osgi.service.component.annotations;version=1.3.0;maven-scope=provided,\
+    bndtools.api;version=latest
+	
+-testpath: \
+	${junit}
+
+# we really need this, otherwise Eclipse will not start our bundles
+Bundle-ActivationPolicy: lazy

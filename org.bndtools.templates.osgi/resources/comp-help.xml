@@ -1,0 +1,9 @@
+<form>
+	<p>Creates a project for developing Components with Declarative Services. The following dependencies are added to the build path:</p>
+	<li>OSGi Annotation 6.0.1</li>
+	<li>OSGi Core 5.0</li>
+	<li>OSGi Compendium 5.0</li>
+	<p>... and the following are added to the test path:</p>
+	<li>JUnit 4</li>
+	<li>Hamcrest Core 1.3</li>
+</form>

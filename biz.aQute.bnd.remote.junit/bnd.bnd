@@ -1,4 +1,5 @@
-
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
 
 Export-Package: \
     aQute.bnd.remoteworkspace.client, \
@@ -31,6 +32,10 @@ Import-Package: \
     slf4j.api
 
 -runbundles: \
-    org.apache.felix.gogo.shell
+    org.apache.felix.gogo.shell;version=latest
 
 -runfw: org.apache.felix.framework
+
+-baseline: *
+-fixupmessages.baseline: \
+    'There is no baseline for biz\\.aQute\\.bnd\\.remote\\.junit'

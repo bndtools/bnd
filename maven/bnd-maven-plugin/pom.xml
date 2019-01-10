@@ -1,24 +1,24 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<parent>
 		<groupId>biz.aQute.bnd</groupId>
 		<artifactId>bnd-plugin-parent</artifactId>
 		<version>${revision}</version>
 		<relativePath>..</relativePath>
 	</parent>
-	
+
 	<artifactId>bnd-maven-plugin</artifactId>
 	<description>This maven plugin is used to build OSGi bundles using the bnd tool for generating MANIFEST.MF and other OSGi-specific artifacts.</description>
 	<name>${project.groupId}:${project.artifactId}</name>
 	<packaging>maven-plugin</packaging>
-  <url>http://bnd.bndtools.org/</url>
-  <scm>
-    <url>https://github.com/bndtools/bnd</url>
-    <connection>scm:git:https://github.com/bndtools/bnd.git</connection>
-    <developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
-  </scm>
+	<url>https://bnd.bndtools.org/</url>
+	<scm>
+		<url>https://github.com/bndtools/bnd</url>
+		<connection>scm:git:https://github.com/bndtools/bnd.git</connection>
+		<developerConnection>scm:git:git@github.com:bndtools/bnd.git</developerConnection>
+	</scm>
 
 	<dependencies>
 		<dependency>
@@ -41,10 +41,10 @@
 			<groupId>org.sonatype.plexus</groupId>
 			<artifactId>plexus-build-api</artifactId>
 		</dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
 
 
 		<!-- dependencies to annotations -->
@@ -72,13 +72,13 @@
 					<cloneClean>true</cloneClean>
 					<projectsDirectory>src/test/resources/integration-test</projectsDirectory>
 					<settingsFile>src/test/resources/integration-test/settings.xml</settingsFile>
-                    <streamLogs>true</streamLogs>
+					<streamLogs>true</streamLogs>
 					<localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
 					<postBuildHookScript>verify.groovy</postBuildHookScript>
-          <properties>
-            <maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
-            <maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
-          </properties>
+					<properties>
+						<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+						<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+					</properties>
 					<goals>
 						<goal>package</goal>
 					</goals>

@@ -1,3 +1,4 @@
 /bundles/
 /bin/
-/generated
+/bin_test/
+/generated/

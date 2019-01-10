@@ -25,7 +25,7 @@ class TestHelper {
 
   private static String gradleVersion() {
     if (JavaVersion.current().isJava11Compatible()) {
-      return '4.8'
+      return '5.0'
     }
     if (JavaVersion.current().isJava10Compatible()) {
       return '4.7'

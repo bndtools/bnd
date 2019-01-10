@@ -1,0 +1,16 @@
+# Example Project Template
+# Make sure to edit the name, category and help document.
+
+Provide-Capability: \
+	org.bndtools.template;\
+		org.bndtools.template=project; \
+		name=<projectName>; \
+		category=Examples; \
+		dir=template; \
+		icon="${icondata}"; \
+		help=help.xml
+
+icondata: data:image/gif;base64,${base64;icon.gif}
+
+-resourceonly: true
+-includeresource: resources

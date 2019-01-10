@@ -1,0 +1,22 @@
+-runfw: org.apache.felix.framework;version='[4,5)'
+-runee: JavaSE-1.8
+-runprovidedcapabilities: ${native_capability}
+
+-resolve.effective: active;skip:="osgi.service"
+
+-runbundles:\
+	launch.simple.servlet;version=latest, \
+	org.apache.felix.gogo.shell,\
+	org.apache.felix.gogo.command,\
+	org.apache.felix.gogo.runtime
+
+-runrequires:\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
+
+	
+-runpath: /Ws/bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file
+
+
+-runremote: \
+	wlp;jdb=7777

@@ -1,15 +1,4 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/eclipse/jdt.bnd
+-include: ${workspace}/cnf/includes/jdt.bnd
 
 -nobundles = true
-
--runfw: org.apache.felix.framework;version=@4.0.0
--runee: JavaSE-1.8
--runsystemcapabilities: ${native_capability}
-
--runbundles:\
-	org.apache.felix.gogo.runtime,\
-	org.apache.felix.gogo.shell,\
-	org.apache.felix.gogo.command
-
--runtrace: true

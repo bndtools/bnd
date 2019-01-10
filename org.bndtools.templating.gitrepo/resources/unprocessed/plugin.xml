@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+
+	<extension point="org.eclipse.ui.preferencePages">
+	
+		<page
+			class="org.bndtools.templating.jgit.ui.GitRepoTemplatePreferencePage"
+			id="bndtools.prefPages.templating.gitRepos"
+			category="bndtools.prefPages.basic"
+			name="Workspace Template">
+			<keywordReference id="bndtools.core"/>
+		</page>
+	
+	</extension>
+
+</plugin>

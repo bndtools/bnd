@@ -23,11 +23,11 @@ public class ManifestHelper {
     _manifest = manifest;
 
     String path = manifest.getMainAttributes().getValue(Constants.BUNDLE_LOCALIZATION);
-    if (path == null) {
+    if (path == null || path.isEmpty()) {
       path = DEFAULT_LOCALIZATION_BASE;
     }
 
-    _loHelper = LocaleHelper.get(jar, locale, path);
+    _loHelper = LocaleHelper.createIfPresent(jar, locale, path);
 
     if (_loHelper == null) {
       _loHelper = LocaleHelper.empty();
@@ -35,19 +35,28 @@ public class ManifestHelper {
   }
 
   /**
-   * Extracts the localization data and the manifest of the Jar and return the helper.
+   * Create a {@link ManifestHelper} if the specified jar contains a manifest, otherwise return
+   * {@code null}.
    *
    * @param jar the jar, must not be {@code null}
    * @param locale the locale, must not be {@code null}
    * @return the helper or {@code null} if the jar does not contain a manifest
    */
-  public static ManifestHelper get(final Jar jar, final Locale locale) {
+  public static ManifestHelper createIfPresent(final Jar jar, final Locale locale) {
     Objects.requireNonNull(jar, "jar");
     Objects.requireNonNull(locale, "locale");
 
+    Manifest manifest = null;
+
     try {
-      return new ManifestHelper(jar, jar.getManifest(), locale);
-    } catch (@SuppressWarnings("unused") final Exception e) {
+      manifest = jar.getManifest();
+    } catch (final Exception exception) {
+      throw new RuntimeException("Unable to read the manifest of Jar " + jar.getName(), exception);
+    }
+
+    if (manifest != null) {
+      return new ManifestHelper(jar, manifest, locale);
+    } else {
       return null;
     }
   }

@@ -1,0 +1,21 @@
+/*
+ * Master Gradle initialization script
+ *
+ * Depends on bnd_plugin value from gradle.properties.
+ */
+
+/* Add bnd gradle plugin as a script dependency */
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath bnd_plugin
+  }
+}
+
+/*
+ * Determine the Bnd project folders, include them in the Gradle build,
+ * and apply the 'biz.aQute.bnd' Gradle plugin to those projects.
+ */
+apply plugin: 'biz.aQute.bnd.workspace'

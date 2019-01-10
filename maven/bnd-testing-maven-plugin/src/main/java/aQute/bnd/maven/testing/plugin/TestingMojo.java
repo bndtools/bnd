@@ -3,6 +3,7 @@ package aQute.bnd.maven.testing.plugin;
 import java.io.File;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
@@ -26,6 +27,7 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
+import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
@@ -91,6 +93,9 @@ public class TestingMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${session}", readonly = true)
 	private MavenSession				session;
 
+	@Parameter(property = "bnd.testing.scopes", defaultValue = "compile,runtime")
+	private Set<Scope>					scopes;
+
 	private int							errors	= 0;
 
 	@Component
@@ -106,7 +111,7 @@ public class TestingMojo extends AbstractMojo {
 		}
 		try {
 			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
-				system);
+				system, scopes);
 
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
 				useMavenDependencies);

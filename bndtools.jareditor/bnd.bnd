@@ -1,0 +1,40 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+Bundle-SymbolicName: bndtools.jareditor;singleton:=true
+-includeresource: resources
+
+-buildpath:  \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+	aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest,\
+	org.eclipse.jface.text,\
+	org.eclipse.core.resources,\
+	org.eclipse.ui.editors,\
+	org.eclipse.ui.forms,\
+	org.eclipse.ui.ide,\
+	org.eclipse.ui,\
+	org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
+	org.eclipse.jface,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.ui.workbench.texteditor,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.core.commands,\
+	org.eclipse.core.runtime,\
+	org.eclipse.core.jobs,\
+	org.eclipse.text
+
+-includepackage: bndtools.jareditor.*,\
+	bndtools.test.plugin
+	
+-conditionalpackage: \
+	aQute.libg.*,\
+	aQute.lib.*
+
+# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+
+Bundle-Activator: bndtools.jareditor.internal.Plugin

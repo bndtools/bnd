@@ -1,0 +1,143 @@
+/*
+ * org.bndtools.p2 Gradle build script
+ */
+
+import aQute.bnd.osgi.Jar
+import org.apache.tools.ant.filters.ReplaceTokens
+
+/* Configure this project */
+String masterVersion = String.format('%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
+                          bnd('gittag'),
+                          Calendar.getInstance(TimeZone.getTimeZone("UTC")),
+                          bnd('Git-SHA'))
+
+def p2Plugins = tasks.register('p2Plugins', Sync.class) {
+  dependsOn 'jarDependencies'
+  from    bnd('plugins').tokenize(',')
+  into    "${buildDir}/plugins"
+}
+
+def p2FeatureProperties = tasks.register('p2FeatureProperties', WriteProperties.class) {
+  inputs.files p2Plugins
+  outputFile = file("${buildDir}/feature.properties")
+  doFirst {
+    property('base-version', bnd('base.version'))
+    fileTree(p2Plugins.get().destinationDir).each {
+      new Jar(it).withCloseable { jar ->
+        property("${jar.getBsn()}-version", jar.getVersion())
+      }
+    }
+  }
+}
+
+def p2FeatureMain = tasks.register('p2FeatureMain', Zip.class) {
+  inputs.files p2FeatureProperties
+  destinationDir = file("${buildDir}/features")
+  archiveName    = 'bndtools.main.feature.jar'
+  from             'features/bndtools.main'
+  include          'feature.xml'
+  doFirst {
+    Properties properties = new Properties()
+    p2FeatureProperties.get().outputFile.withInputStream {
+        properties.load(it)
+        properties['master-version'] = masterVersion
+    }
+    filter(ReplaceTokens, tokens: properties)
+  }
+}
+
+def p2FeatureM2e = tasks.register('p2FeatureM2e', Zip.class) {
+  inputs.files p2FeatureProperties
+  destinationDir = file("${buildDir}/features")
+  archiveName    = 'bndtools.m2e.feature.jar'
+  from             'features/bndtools.m2e'
+  include          'feature.xml'
+  doFirst {
+    Properties properties = new Properties()
+    p2FeatureProperties.get().outputFile.withInputStream {
+        properties.load(it)
+        properties['master-version'] = masterVersion
+    }
+    filter(ReplaceTokens, tokens: properties)
+  }
+}
+
+def p2FeaturePde = tasks.register('p2FeaturePde', Zip.class) {
+  inputs.files p2FeatureProperties
+  destinationDir = file("${buildDir}/features")
+  archiveName    = 'bndtools.pde.feature.jar'
+  from             'features/bndtools.pde'
+  include          'feature.xml'
+  doFirst {
+    Properties properties = new Properties()
+    p2FeatureProperties.get().outputFile.withInputStream {
+        properties.load(it)
+        properties['master-version'] = masterVersion
+    }
+    filter(ReplaceTokens, tokens: properties)
+  }
+}
+
+def p2 = tasks.register('p2') {
+  description 'Publish the p2 repositories.'
+  group       'release'
+  enabled JavaVersion.current().isJava8()
+  inputs.files p2Plugins, p2FeatureMain, p2FeatureM2e, p2FeaturePde, 'p2.xml', 'features/category.xml'
+  ext.destinationDir = file("${buildDir}/p2")
+  outputs.dir destinationDir
+  doLast {
+    def eclipseDir = file('eclipse-3.5.2')
+    javaexec {
+      classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
+      main = 'org.eclipse.equinox.launcher.Main'
+      if (logger.isDebugEnabled()) {
+        args '-consoleLog'
+      }
+      args '-application'
+      args 'org.eclipse.ant.core.antRunner'
+      args '-data'
+      args buildDir
+      if (logger.isDebugEnabled()) {
+        args '-debug'
+      } else {
+        args '-quiet'
+      }
+      args '-buildfile'
+      args 'p2.xml'
+      args 'p2Bndtools'
+    }.assertNormalExitValue()
+
+    javaexec {
+      classpath "${eclipseDir}/plugins/org.eclipse.equinox.launcher_1.0.201.R35x_v20090715.jar"
+      main = 'org.eclipse.equinox.launcher.Main'
+      if (logger.isDebugEnabled()) {
+        args '-consoleLog'
+      }
+      args '-application'
+      args 'org.eclipse.equinox.p2.publisher.CategoryPublisher'
+      args '-data'
+      args buildDir
+      args '-metadataRepository'
+      args uri(destinationDir)
+      args '-categoryDefinition'
+      args uri('features/category.xml')
+      args '-compress'
+    }.assertNormalExitValue()
+
+    delete fileTree(eclipseDir).include('configuration/*.log'),
+      "${eclipseDir}/configuration/org.eclipse.core.runtime",
+      "${eclipseDir}/configuration/org.eclipse.equinox.app",
+      "${eclipseDir}/configuration/org.eclipse.osgi",
+      "${eclipseDir}/p2"
+  }
+}
+
+tasks.named('jar') {
+  dependsOn p2
+}
+
+tasks.named('release') {
+  onlyIf {
+    JavaVersion.current().isJava8()
+  }
+}

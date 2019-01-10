@@ -1,0 +1,17 @@
+-include: bndtools.shared.bndrun
+
+-runbundles: ${crossplatform.bundles},\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.e4.ui.workbench.renderers.swt.cocoa,\
+	org.eclipse.equinox.security.macosx,\
+	org.eclipse.jdt.launching.ui.macosx,\
+	org.eclipse.core.filesystem.macosx,\
+	org.eclipse.jdt.launching.macosx
+
+-runvm: -XstartOnFirstThread -Djava.awt.headless=true -Dorg.eclipse.swt.internal.carbon.smallFonts ${crossplatform.vmargs}
+
+-runproperties: ${crossplatform.runprops},\
+	osgi.ws=cocoa,\
+	osgi.arch=x86_64,\
+	osgi.os=macosx
+

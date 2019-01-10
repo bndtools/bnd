@@ -2,7 +2,6 @@ package aQute.bnd.cdi;
 
 import static java.util.Objects.requireNonNull;
 
-import java.lang.annotation.ElementType;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -12,6 +11,7 @@ import java.util.Map;
 import aQute.bnd.component.annotations.ReferenceCardinality;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Annotation;
+import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.ClassDataCollector;
 import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.FieldDef;
@@ -267,7 +267,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 
 		ClassTypeSignature type;
 		ClassResolver resolver;
-		switch (reference.getElementType()) {
+		switch (reference.elementType()) {
 			case PARAMETER : {
 				String signature = (member.getSignature() != null) ? member.getSignature() : member.getDescriptor()
 					.toString();
@@ -386,7 +386,7 @@ public class CDIAnnotationReader extends ClassDataCollector {
 	}
 
 	private void doService(Annotation annotation) {
-		switch (annotation.getElementType()) {
+		switch (annotation.elementType()) {
 			case FIELD : {
 				Clazz.FieldDef fieldDef = member;
 				FieldSignature fieldSig;

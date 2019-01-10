@@ -1,0 +1,86 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-includeresource: resources
+-resourceonly: true
+
+category: bbb/OSGi Standard Templates
+category-enroute: ccc/OSGi enRoute
+
+project-template-component:\
+	org.bndtools.template; org.bndtools.template=project;\
+		name=Component Development;\
+		category=${category};\
+		ranking:Double=1001;\
+		dir=templates/ds;\
+		icon="${component-icon}";\
+		help=comp-help.xml
+
+project-template-api:\
+	org.bndtools.template; org.bndtools.template=project;\
+		name=API Project;\
+		category=${category};\
+		ranking:Double=1000;\
+		dir=templates/api;\
+		icon="${api-icon}";\
+		help=api-help.xml
+
+project-template-integration-test:\
+	org.bndtools.template; org.bndtools.template=project;\
+		name=Integration Testing;\
+		category=${category};\
+		ranking:Double=999;\
+		dir=templates/integration-test;\
+		help=integration-test-help.xml;\
+		icon="${integration-test-icon}"
+
+workspace-template-minimal:\
+	org.bndtools.template; org.bndtools.template=workspace;\
+		name=Minimal Workspace;\
+		category=${category};\
+		ranking:Double=0;\
+		dir=templates/workspace-minimal
+
+launch-template-felix:\
+	org.bndtools.template; org.bndtools.template=bndrun;\
+		name=Felix 4+;\
+		category=${category};\
+		ranking:Double=1001;\
+		dir=templates/launch/felix-gogo;\
+		icon="${felix-icon}";\
+		help=templates/launch/felix-gogo.xml
+
+launch-template-enroute-base:\
+	org.bndtools.template; org.bndtools.template=bndrun;\
+		name=OSGi enRoute Base Launcher;\
+		category=${category-enroute};\
+		ranking:Double=1000;\
+		dir=templates/launch/enroute/base;\
+		icon="${enroute-icon}";\
+		help=templates/launch/enroute/base.xml
+
+launch-template-enroute-debug:\
+	org.bndtools.template; org.bndtools.template=bndrun;\
+		name=OSGi enRoute Debug Launcher;\
+		category=${category-enroute};\
+		ranking:Double=999;\
+		dir=templates/launch/enroute/debug;\
+		icon="${enroute-icon}";\
+		help=templates/launch/enroute/debug.xml
+
+Provide-Capability: \
+	${project-template-component},\
+	${project-template-api},\
+	${project-template-integration-test},\
+	${workspace-template-minimal},\
+	${launch-template-felix},\
+	${launch-template-enroute-base},\
+	${launch-template-enroute-debug}
+
+dataurl: data:image/gif;base64
+
+api-icon: ${dataurl},${base64;icons/script.png}
+component-icon: ${dataurl},${base64;icons/cog.gif}
+integration-test-icon: ${dataurl},${base64;icons/junit.gif}
+enroute-icon: ${dataurl},${base64;icons/enroute-bw-16x16.gif}
+felix-icon: ${dataurl},${base64;icons/felix.gif}

@@ -1,0 +1,13 @@
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-resourceonly: true
+
+Bundle-SymbolicName: bndtools.m2e.debug.fragment; singleton:=true
+Fragment-Host: org.eclipse.m2e.maven.runtime
+
+-buildpath: org.eclipse.m2e.maven.runtime
+
+Import-Package: \
+	javax.net.ssl
+
+-fixupmessages.empty: The JAR is empty

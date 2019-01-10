@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contexts>
+   <context id="enableSubBundles" title="Sub-bundles">
+      <description>This dialog appears when <b>sub-bundles</b> need to be enabled on a project.</description>
+      <topic href="html/subBundles.htm" label="What are sub-bundles?"/>
+   </context>
+</contexts>

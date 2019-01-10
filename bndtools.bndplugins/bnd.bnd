@@ -1,0 +1,19 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	aQute.libg;version=project,\
+    biz.aQute.bndlib;version=latest,\
+	biz.aQute.repository;version=latest,\
+	com.jcraft.jsch;maven-scope=provided,\
+	org.eclipse.jgit;maven-scope=provided
+
+-testpath: \
+	slf4j.api,\
+	slf4j.simple,\
+	${junit}
+
+-sub: *.bnd
+
+-releaserepo:

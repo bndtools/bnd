@@ -12,7 +12,7 @@
 REPO=$(dirname ${BASH_SOURCE[0]})
 ARGS="$@"
 if [ -z "$ARGS" ]; then
-  ARGS="--rerun-tasks :build"
+  ARGS=":build"
 fi
 
 echo $REPO/gradlew --no-daemon -Pbnd_repourl=$REPO/dist/bundles $ARGS

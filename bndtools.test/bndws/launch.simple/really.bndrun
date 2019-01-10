@@ -1,0 +1,31 @@
+
+#
+# targets
+#
+pi = pi2;host=192.168.2.4;jdb=1044;shell=1
+wlp = wlp;jdb=7777;shell=-22
+liferay=liferay;shell=11311;jdb=8000
+
+-runremote: ${pi}
+
+-runfw: org.apache.felix.framework;version='[4,5)'
+-runee: JavaSE-1.8
+-runprovidedcapabilities: ${native_capability}
+-runproperties = gosh.args=--noshutdown, osgi.shell.telnet.ip=192.168.67.110, osgi.shell.telnet.port=4003
+-resolve.effective: active;skip:="osgi.service"
+
+-runbundles:\
+	launch.simple.really;version=latest, \
+	org.apache.felix.gogo.shell,\
+	org.apache.felix.gogo.command,\
+	org.apache.felix.gogo.runtime, \
+	org.apache.felix.shell.remote
+
+-runrequires:\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
+
+	
+-runpath: /Ws/bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher.jar;version=file
+
+

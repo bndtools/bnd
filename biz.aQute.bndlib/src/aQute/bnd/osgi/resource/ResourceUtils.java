@@ -109,12 +109,8 @@ public class ResourceUtils {
 	public static final Resource						DUMMY_RESOURCE				= new ResourceBuilder().build();
 	public static final String							WORKSPACE_NAMESPACE			= "bnd.workspace.project";
 
-	private static final Converter						cnv							= new Converter();
-
-	static {
-		cnv.hook(Version.class,
-			(dest, o) -> (o instanceof org.osgi.framework.Version) ? new Version(o.toString()) : null);
-	}
+	private static final Converter						cnv							= new Converter()
+		.hook(Version.class, (dest, o) -> toVersion(o));
 
 	public static interface IdentityCapability extends Capability {
 		public enum Type {
@@ -220,11 +216,8 @@ public class ResourceUtils {
 				: new Version(o.getMajor(), o.getMinor(), o.getMicro(), q);
 		}
 
-		if (v instanceof String) {
-			if (!Version.isVersion((String) v))
-				return null;
-
-			return new Version((String) v);
+		if ((v instanceof String) && Version.isVersion((String) v)) {
+			return Version.valueOf((String) v);
 		}
 
 		return null;
@@ -236,19 +229,7 @@ public class ResourceUtils {
 			return null;
 		Object v = cap.getAttributes()
 			.get(attr);
-		if (v == null)
-			return null;
-
-		if (v instanceof Version)
-			return (Version) v;
-
-		if (v instanceof org.osgi.framework.Version)
-			return new Version(v.toString());
-
-		if (v instanceof String)
-			return Version.parseVersion((String) v);
-
-		return null;
+		return toVersion(v);
 	}
 
 	public static URI getURI(Capability contentCapability) {

@@ -303,7 +303,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 
 	private void handleMixedUsageError(Annotation annotation) throws Exception {
 		DeclarativeServicesAnnotationError errorDetails;
-		switch (annotation.getElementType()) {
+		switch (annotation.elementType()) {
 			case METHOD :
 				errorDetails = new DeclarativeServicesAnnotationError(className.getFQN(), member.getName(),
 					member.getDescriptor()
@@ -370,7 +370,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		// make sure doc is namespace aware, since we are adding namespaced
 		// attributes.
 		ExtensionDef def;
-		switch (annotation.getElementType()) {
+		switch (annotation.elementType()) {
 			case METHOD :
 			case FIELD :
 				def = referencesByTarget.computeIfAbsent(member, m -> new ReferenceDef(finder));
@@ -401,7 +401,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	private void doActivate(Annotation annotation) {
 		String memberDescriptor = member.getDescriptor()
 			.toString();
-		switch (annotation.getElementType()) {
+		switch (annotation.elementType()) {
 			case METHOD : {
 				DeclarativeServicesAnnotationError details = new DeclarativeServicesAnnotationError(className.getFQN(),
 					member.getName(), memberDescriptor, ErrorType.ACTIVATE_SIGNATURE_ERROR);
@@ -463,7 +463,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	private void doDeactivate(Annotation annotation) {
-		switch (annotation.getElementType()) {
+		switch (annotation.elementType()) {
 			case METHOD : {
 				String memberDescriptor = member.getDescriptor()
 					.toString();
@@ -485,7 +485,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	 * 
 	 */
 	private void doModified(Annotation annotation) {
-		switch (annotation.getElementType()) {
+		switch (annotation.elementType()) {
 			case METHOD : {
 				String memberDescriptor = member.getDescriptor()
 					.toString();
@@ -903,7 +903,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 	private void doReference(Reference reference, Annotation annotation) throws Exception {
 		ReferenceDef def;
 		String paramName = null;
-		switch (annotation.getElementType()) {
+		switch (annotation.elementType()) {
 			case METHOD :
 			case FIELD :
 				def = referencesByTarget.computeIfAbsent(member, m -> new ReferenceDef(finder));
@@ -956,7 +956,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 		TypeRef annoServiceTR = annotation.get("service");
 		String annoService = (annoServiceTR != null) ? annoServiceTR.getFQN() : null;
 
-		switch (annotation.getElementType()) {
+		switch (annotation.elementType()) {
 			case METHOD : {
 				def.bindDescriptor = member.getDescriptor()
 					.toString();
@@ -1158,7 +1158,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 			switch (paramType) {
 				default :
 					// check for subtype of Collection
-					if (!analyzer.assignable(paramType, "java.util.Collection")) {
+					if (!analyzer.assignable(paramType, "java.util.Collection", false)) {
 						break;
 					}
 					def.isCollectionSubClass = true;

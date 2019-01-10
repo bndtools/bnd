@@ -27,7 +27,7 @@ subprojects {
   if (plugins.hasPlugin('biz.aQute.bnd')) {
     group bnd('-groupid')
     version bnd('base.version')
-    javadoc {
+    tasks.named('javadoc') {
       options.tags = [
         'Immutable:t:',
         'ThreadSafe:t:',
@@ -37,11 +37,11 @@ subprojects {
     }
     /* test folders are not part of jar but used by unit tests  */
     def testfolders = ['testresources/', 'testdata/']
-    jar {
+    tasks.named('jar') {
       projectDirInputsExcludes.add('.*')
       projectDirInputsExcludes.addAll(testfolders)
     }
-    test {
+    tasks.named('test') {
       testLogging {
         exceptionFormat 'full'
       }
@@ -49,7 +49,7 @@ subprojects {
         jvmArgs java9options
         environment 'JAVA_OPTS': java9options.join(' ')
       }
-      inputs.files(fileTree(projectDir) {
+      inputs.files(fileTree(project.projectDir) {
         include testfolders
         exclude {
           def f = it.file
@@ -70,11 +70,11 @@ subprojects {
   }
 }
 
-wrapper {
+tasks.named('wrapper') {
   jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
 }
 
-task buildscriptDependencies {
+tasks.register('buildscriptDependencies') {
   doLast {
     println "bnd_plugin: ${bnd_plugin}"
     println "bnd_repourl: ${bnd_repourl}"

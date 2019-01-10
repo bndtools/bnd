@@ -29,10 +29,10 @@
 		<module>bnd-resolver-maven-plugin</module>
 	</modules>
 
-	<url>http://bnd.bndtools.org/</url>
+	<url>https://bnd.bndtools.org/</url>
 	<organization>
 		<name>Bndtools</name>
-		<url>http://bndtools.org/</url>
+		<url>https://bndtools.org/</url>
 	</organization>
 	<licenses>
 		<license>
@@ -148,12 +148,12 @@
 				<version>3.10.0</version>
 				<scope>test</scope>
 			</dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-simple</artifactId>
-        <version>1.7.5</version>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-simple</artifactId>
+				<version>1.7.5</version>
 				<scope>test</scope>
-      </dependency>
+			</dependency>
 			<dependency>
 				<groupId>org.osgi</groupId>
 				<artifactId>osgi.core</artifactId>
@@ -285,33 +285,33 @@
 									</action>
 								</pluginExecution>
 								<pluginExecution>
-								  <pluginExecutionFilter>
-								    <groupId>org.apache.maven.plugins</groupId>
-								    <artifactId>maven-plugin-plugin</artifactId>
-								    <versionRange>[3.5.2,)</versionRange>
-								    <goals>
-								      <goal>descriptor</goal>
-								    </goals>
-								  </pluginExecutionFilter>
-								  <action>
-                    <execute>
-                      <runOnConfiguration>true</runOnConfiguration>
-                      <runOnIncremental>true</runOnIncremental>
-                    </execute>
-								  </action>
+								<pluginExecutionFilter>
+									<groupId>org.apache.maven.plugins</groupId>
+									<artifactId>maven-plugin-plugin</artifactId>
+									<versionRange>[3.5.2,)</versionRange>
+									<goals>
+										<goal>descriptor</goal>
+									</goals>
+								</pluginExecutionFilter>
+								<action>
+									<execute>
+										<runOnConfiguration>true</runOnConfiguration>
+										<runOnIncremental>true</runOnIncremental>
+									</execute>
+								</action>
 								</pluginExecution>
 								<pluginExecution>
-								  <pluginExecutionFilter>
-								    <groupId>org.codehaus.mojo</groupId>
-								    <artifactId>flatten-maven-plugin</artifactId>
-								    <versionRange>[1.0.1,)</versionRange>
-								    <goals>
-								      <goal>flatten</goal>
-								    </goals>
-								  </pluginExecutionFilter>
-								  <action>
-                    <ignore />
-								  </action>
+								<pluginExecutionFilter>
+									<groupId>org.codehaus.mojo</groupId>
+									<artifactId>flatten-maven-plugin</artifactId>
+									<versionRange>[1.0.1,)</versionRange>
+									<goals>
+										<goal>flatten</goal>
+									</goals>
+								</pluginExecutionFilter>
+								<action>
+									<ignore />
+								</action>
 								</pluginExecution>
 							</pluginExecutions>
 						</lifecycleMappingMetadata>
@@ -335,25 +335,25 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
 					<version>1.0.1</version>
-				  <configuration>
-				    <flattenMode>oss</flattenMode>
-				  </configuration>
-				  <executions>
-					 <execution>
-						  <id>flatten</id>
-						  <phase>process-resources</phase>
-						  <goals>
-							 <goal>flatten</goal>
-						  </goals>
-					 </execution>
-					 <execution>
-						  <id>flatten-clean</id>
-						  <phase>clean</phase>
-						  <goals>
-							 <goal>clean</goal>
-						  </goals>
-					 </execution>
-				  </executions>
+					<configuration>
+						<flattenMode>oss</flattenMode>
+					</configuration>
+					<executions>
+						<execution>
+							<id>flatten</id>
+							<phase>process-resources</phase>
+							<goals>
+								<goal>flatten</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>flatten-clean</id>
+							<phase>clean</phase>
+							<goals>
+								<goal>clean</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -401,23 +401,53 @@
 		</plugins>
 	</build>
 
-  <profiles>
-    <profile>
-      <id>ossrh</id>
-      <properties>
-        <skipTests>true</skipTests>
-        <invoker.skip>true</invoker.skip>
-      </properties>
-      <distributionManagement>
-        <snapshotRepository>
-          <id>https://oss.sonatype.org</id>
-          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-          <id>https://oss.sonatype.org</id>
-          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-      </distributionManagement>
-    </profile>
-  </profiles>
+	<profiles>
+		<profile>
+			<id>dist</id>
+			<distributionManagement>
+				<snapshotRepository>
+					<id>dist</id>
+					<url>${releaserepo}</url>
+				</snapshotRepository>
+				<repository>
+					<id>dist</id>
+					<url>${releaserepo}</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+		<profile>
+			<id>ossrh</id>
+			<properties>
+				<skipTests>true</skipTests>
+				<invoker.skip>true</invoker.skip>
+			</properties>
+			<distributionManagement>
+				<snapshotRepository>
+					<id>https://oss.sonatype.org</id>
+					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+				</snapshotRepository>
+				<repository>
+					<id>https://oss.sonatype.org</id>
+					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+		<profile>
+			<id>jfrog</id>
+			<properties>
+				<skipTests>true</skipTests>
+				<invoker.skip>true</invoker.skip>
+			</properties>
+			<distributionManagement>
+				<snapshotRepository>
+					<id>https://bndtools.jfrog.io</id>
+					<url>https://bndtools.jfrog.io/bndtools/libs-snapshot-local/</url>
+				</snapshotRepository>
+				<repository>
+					<id>https://bndtools.jfrog.io</id>
+					<url>https://bndtools.jfrog.io/bndtools/libs-release-local/</url>
+				</repository>
+			</distributionManagement>
+		</profile>
+	</profiles>
 </project>

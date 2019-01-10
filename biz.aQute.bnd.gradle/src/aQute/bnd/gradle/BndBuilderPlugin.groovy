@@ -19,6 +19,9 @@
 
 package aQute.bnd.gradle
 
+import static aQute.bnd.gradle.BndUtils.configureTask
+import static aQute.bnd.gradle.BndUtils.createTask
+
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -45,14 +48,14 @@ public class BndBuilderPlugin implements Plugin<Project> {
       }
       plugins.apply 'java'
 
-      jar {
-        description 'Assembles a bundle containing the main classes.'
-        convention.plugins.bundle = new BundleTaskConvention(jar)
+      def jar = configureTask(project, 'jar') { t ->
+        t.description 'Assembles a bundle containing the main classes.'
+        t.convention.plugins.bundle = new BundleTaskConvention(t)
         def defaultBndfile = project.file('bnd.bnd')
         if (defaultBndfile.isFile()) {
-          bndfile = defaultBndfile
+          t.bndfile = defaultBndfile
         }
-        doLast {
+        t.doLast {
           buildBundle()
         }
       }
@@ -69,15 +72,16 @@ public class BndBuilderPlugin implements Plugin<Project> {
         }
       }
 
-      task ('baseline', type: Baseline) {
-        description 'Baseline the project bundle.'
-        group 'release'
-        bundle jar
-        baseline configurations.baseline
+      createTask(project, 'baseline', Baseline.class) { t ->
+        t.description 'Baseline the project bundle.'
+        t.group 'release'
+        t.bundle jar
+        t.baseline project.configurations.baseline
       }
 
       configurations.baseline.defaultDependencies { deps ->
-        Task bundleTask = baseline.bundleTask
+        Task baselineTask = tasks.getByName('baseline')
+        Task bundleTask = baselineTask.getBundleTask()
         if (bundleTask) {
           logger.debug 'Searching for default baseline {}:{}:(,{}[', group, bundleTask.baseName, bundleTask.version
           Dependency baselineDep = dependencies.create('group': group, 'name': bundleTask.baseName, 'version': "(,${bundleTask.version}[") {
@@ -88,8 +92,8 @@ public class BndBuilderPlugin implements Plugin<Project> {
             Configuration detached = configurations.detachedConfiguration(baselineDep)
             detached.resolvedConfiguration.rethrowFailure()
           } catch(ResolveException e) {
-            logger.debug 'Baseline configuration resolve error {}, adding {} as baseline', e, baseline.bundle, e
-            baselineDep = dependencies.create(files(baseline.bundle))
+            logger.debug 'Baseline configuration resolve error {}, adding {} as baseline', e, baselineTask.bundle, e
+            baselineDep = dependencies.create(files(baselineTask.bundle))
           }
           deps.add(baselineDep)
         }

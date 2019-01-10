@@ -1,3 +1,6 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
 -buildpath: \
 	osgi.annotation;version=latest;maven-scope=provided,\
 	osgi.core;version=latest;maven-scope=provided,\
@@ -48,3 +51,7 @@ Private-Package: \
 	biz.aQute.bnd.reporter.helpers,\
 	biz.aQute.bnd.reporter.component.dto,\
 	biz.aQute.bnd.reporter.manifest.dto
+
+-baseline: *
+-fixupmessages.baseline: \
+    'There is no baseline for biz\\.aQute\\.bnd\\.reporter'

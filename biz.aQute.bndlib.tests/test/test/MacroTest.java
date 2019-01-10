@@ -190,6 +190,13 @@ public class MacroTest extends TestCase {
 		assertTrue(p.check());
 	}
 
+	public void testVersionMaskNextMajorVersion() throws IOException {
+		Processor p = new Processor();
+		assertEquals("2.0.0", p.getReplacer()
+			.process("${version;+00;1.2.3}"));
+		assertTrue(p.check());
+	}
+
 	public void testVersionMaskWithSetExplicitTarget() throws IOException {
 		Processor p = new Processor();
 		p.setProperty("@", "1.2.3");

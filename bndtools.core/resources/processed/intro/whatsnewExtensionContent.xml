@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<introContent>
+	<extensionContent id="bndtools.core" name="Bndtools"
+		style="css/whatsnew.css" alt-style="css/whatsnew.properties" path="whatsnew/@">
+		<group id="content-group" style-id="content-group">
+			<link label="Bndtools" url="https://github.com/bndtools/bnd/wiki/Changes-in-${base.version}" id="bndtools-noteworthy" style-id="content-link">
+				<text>
+					Find out what's new in Bndtools!
+				</text>
+			</link>
+		</group>
+	</extensionContent>
+</introContent>

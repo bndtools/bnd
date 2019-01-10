@@ -17,7 +17,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
@@ -93,6 +92,7 @@ import aQute.bnd.classfile.StackMapTableAttribute.StackMapFrame;
 import aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo;
 import aQute.bnd.classfile.TypeAnnotationInfo;
 import aQute.bnd.classfile.TypeAnnotationsAttribute;
+import aQute.bnd.osgi.Annotation.ElementType;
 import aQute.bnd.osgi.Descriptors.Descriptor;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
@@ -311,7 +311,7 @@ public class Clazz {
 		}
 
 		public boolean isModule() {
-			return (access & ACC_MODULE) != 0;
+			return Clazz.isModule(access);
 		}
 
 		public boolean isAnnotation() {
@@ -483,6 +483,9 @@ public class Clazz {
 		ElementType elementType() {
 			if (isAnnotation()) {
 				return ElementType.ANNOTATION_TYPE;
+			}
+			if (isModule()) {
+				return ElementType.MODULE;
 			}
 			return type.getBinary()
 				.endsWith("/package-info") ? ElementType.PACKAGE : ElementType.TYPE;
@@ -1148,6 +1151,9 @@ public class Clazz {
 	static ElementType elementType(ClassFile classFile) {
 		if (isAnnotation(classFile.access)) {
 			return ElementType.ANNOTATION_TYPE;
+		}
+		if (isModule(classFile.access)) {
+			return ElementType.MODULE;
 		}
 		return classFile.this_class.endsWith("/package-info") ? ElementType.PACKAGE : ElementType.TYPE;
 	}
@@ -1825,6 +1831,10 @@ public class Clazz {
 
 	public boolean isModule() {
 		return classDef.isModule();
+	}
+
+	static boolean isModule(int access) {
+		return (access & ACC_MODULE) != 0;
 	}
 
 	public JAVA getFormat() {

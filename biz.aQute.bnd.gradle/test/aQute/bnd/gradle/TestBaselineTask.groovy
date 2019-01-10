@@ -38,7 +38,7 @@ class TestBaselineTask extends Specification {
           File baselineSelf = new File(testProjectReportsDir, "foo/baselineSelf/${testProject}-1.1.0.txt")
           baselineSelf.isFile()
 
-          result.getOutput() =~ Pattern.quote("Baseline problems detected. See the report in ${baseline.absolutePath}")
+          //result.getOutput() =~ Pattern.quote("Baseline problems detected. See the report in ${baseline.absolutePath}")
     }
 
     def "Bnd Baseline Configuration Test"() {

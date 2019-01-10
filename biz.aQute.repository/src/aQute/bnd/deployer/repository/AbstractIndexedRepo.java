@@ -37,11 +37,11 @@ import org.osgi.service.log.LogService;
 import org.osgi.service.repository.ContentNamespace;
 import org.osgi.service.repository.Repository;
 
-import aQute.bnd.deployer.http.DefaultURLConnector;
 import aQute.bnd.deployer.repository.api.IRepositoryContentProvider;
 import aQute.bnd.deployer.repository.api.IRepositoryIndexProcessor;
 import aQute.bnd.deployer.repository.api.Referral;
 import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
+import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
@@ -269,21 +269,15 @@ public abstract class AbstractIndexedRepo extends BaseRepository
 	}
 
 	/**
-	 * @return the class to use for URL connections. It's retrieved from the
-	 *         registry under the URLConnector class, or it will be the
-	 *         DefaultURLConnector if the former was not found.
+	 * @return the current Http Client
 	 */
 	private URLConnector getConnector() {
-		URLConnector connector;
-		synchronized (this) {
-			connector = registry != null ? registry.getPlugin(URLConnector.class) : null;
+		if (registry != null) {
+			HttpClient plugin = registry.getPlugin(HttpClient.class);
+			if (plugin != null)
+				return plugin;
 		}
-		if (connector == null) {
-			DefaultURLConnector defaultConnector = new DefaultURLConnector();
-			defaultConnector.setRegistry(registry);
-			connector = defaultConnector;
-		}
-		return connector;
+		return new HttpClient();
 	}
 
 	@Override

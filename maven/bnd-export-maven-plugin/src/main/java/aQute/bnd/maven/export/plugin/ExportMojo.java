@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -34,6 +35,7 @@ import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.configuration.Bundles;
 import aQute.bnd.maven.lib.resolve.DependencyResolver;
+import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
@@ -90,6 +92,12 @@ public class ExportMojo extends AbstractMojo {
 	@Parameter(defaultValue = "${session}", readonly = true)
 	private MavenSession				session;
 
+	@Parameter(property = "bnd.export.scopes", defaultValue = "compile,runtime")
+	private Set<Scope>					scopes;
+
+	@Parameter(property = "bnd.export.skip", defaultValue = "false")
+	private boolean						skip;
+
 	private int							errors	= 0;
 
 	@Component
@@ -100,9 +108,14 @@ public class ExportMojo extends AbstractMojo {
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
+		if (skip) {
+			logger.debug("skip project as configured");
+			return;
+		}
+
 		try {
 			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
-				system);
+				system, scopes);
 
 			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(),
 				bundles.getFiles(project.getBasedir()),

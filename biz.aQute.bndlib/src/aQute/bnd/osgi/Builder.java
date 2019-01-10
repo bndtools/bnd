@@ -184,8 +184,8 @@ public class Builder extends Analyzer {
 			if (version != null)
 				scoped.setProperty("@version", version);
 			String pom = scoped.getProperty(POM);
-			if (pom != null && !pom.equalsIgnoreCase("false")) {
-				dot.removePrefix("META-INF/maven/");
+			if (isTrue(pom)) {
+				dot.removeSubDirs("META-INF/maven/");
 				scoped.addProperties(OSGiHeader.parseProperties(pom));
 				PomResource pomXml = new PomResource(scoped, dot.getManifest());
 				String v = pomXml.validate();

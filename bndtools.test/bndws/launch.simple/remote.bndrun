@@ -1,0 +1,19 @@
+liferay=liferay;shell=11311;jmx=attach
+
+-runremote: ${liferay}
+
+-runfw: org.apache.felix.framework;version='[4,5)'
+-runee: JavaSE-1.8
+-runprovidedcapabilities: ${native_capability}
+-resolve.effective: active;skip:="osgi.service"
+
+-runbundles:\
+	launch.simple.servlet;version=latest
+
+-runrequires:\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
+
+
+-runpath: \
+	../../../../bnd/biz.aQute.remote/generated/biz.aQute.remote.launcher-3.0.0.jar;version=file

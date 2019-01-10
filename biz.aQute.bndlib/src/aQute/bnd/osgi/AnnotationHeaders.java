@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -227,6 +228,23 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				}
 				break;
 			default :
+				// Handle annotations in a repeatable container annotation
+				Object value = annotation.get("value");
+				if (value instanceof Object[]) {
+					Object[] container = (Object[]) value;
+					if ((container.length > 0) && (container[0] instanceof Annotation)) {
+						if (Optional.ofNullable(analyzer.findClass(((Annotation) container[0]).getName()))
+							.flatMap(c -> c.annotations("java/lang/annotation/Repeatable")
+								.findFirst())
+							.filter(a -> name.equals(a.get("value")))
+							.isPresent()) {
+							for (Object a : container) {
+								Annotation repeatable = (Annotation) a;
+								doAnnotatedAnnotation(repeatable, repeatable.getName(), emptySet(), new Attrs());
+							}
+						}
+					}
+				}
 				doAnnotatedAnnotation(annotation, name, emptySet(), new Attrs());
 				break;
 		}
@@ -245,8 +263,6 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		final String fqn = name.getFQN();
 		if (processed.contains(fqn)) {
-			logger.debug("Detected an annotation cycle when processing %s. The cycled annotation was %s",
-					current.getFQN(), fqn);
 			return;
 		}
 
@@ -256,15 +272,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		final Clazz c = analyzer.findClass(name);
-
-		// If this annotation has meta-annotations then it may be relevant to us
-
-		if (c != null && !c.annotations()
-			.isEmpty()) {
-			c.parseClassFileWithCollector(
-				new MetaAnnotationCollector(c, annotation, processed, baseAttrs));
-			// }
-		} else if (c == null) {
+		if (c == null) {
 			// Don't repeatedly log for the same missing annotation
 			if (loggedMissing.add(fqn)) {
 				// Only issue a warning if pedantic
@@ -273,10 +281,17 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 						"Unable to determine whether the meta annotation %s applied to type %s provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
 						fqn, current.getFQN());
 				} else {
-					logger.info(
+					logger.debug(
 						"Unable to determine whether the meta annotation {} applied to type {} provides bundle annotations as it is not on the project build path. If this annotation does provide bundle annotations then it must be present on the build path in order to be processed",
 						fqn, current.getFQN());
 				}
+			}
+		} else {
+			// If this annotation has meta-annotations then it may be relevant
+			// to us
+			if (!c.annotations()
+				.isEmpty()) {
+				c.parseClassFileWithCollector(new MetaAnnotationCollector(c, annotation, processed, baseAttrs));
 			}
 		}
 	}
@@ -651,22 +666,45 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		if (a.containsKey("version")) {
-			Version floor;
-			try {
-				floor = Version.parseVersion(annotation.version());
-			} catch (Exception e) {
-				floor = null;
-				analyzer.exception(e,
-					"The version declared by the Requirement annotation attached to type %s is invalid",
-					current.getFQN());
-			}
+			if (annotation.version()
+				.indexOf('$') == -1) {
 
-			if (floor != null) {
+				Version floor;
+				try {
+					floor = Version.parseVersion(annotation.version());
+				} catch (Exception e) {
+					floor = null;
+					analyzer.exception(e,
+						"The version declared by the Requirement annotation attached to type %s is invalid",
+						current.getFQN());
+				}
+
+				if (floor != null) {
+					int current = filter.lastIndexOf(")");
+
+					VersionRange range = new VersionRange(floor, floor.bumpMajor());
+					String rangeFilter = range.toFilter();
+					filter.append(rangeFilter.substring(2, rangeFilter.length() - 1));
+
+					if (andAdded) {
+						filter.deleteCharAt(current)
+							.append(')');
+					} else if (addAnd) {
+						filter.insert(0, "(&")
+							.append(')');
+					}
+				}
+			}
+			else {
+				String floor = annotation.version();
+
 				int current = filter.lastIndexOf(")");
 
-				VersionRange range = new VersionRange(floor, floor.bumpMajor());
-				String rangeFilter = range.toFilter();
-				filter.append(rangeFilter.substring(2, rangeFilter.length() - 1));
+				filter.append("(version>=")
+					.append(floor)
+					.append(")(!(version>=${versionmask;+00;")
+					.append(floor)
+					.append("}))");
 
 				if (andAdded) {
 					filter.deleteCharAt(current)
@@ -697,12 +735,15 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		if (a.containsKey("version")) {
-			try {
-				Version.parseVersion(annotation.version());
-			} catch (Exception e) {
-				analyzer.exception(e,
-					"The version declared by the Capability annotation attached to type %s is invalid",
-					current.getFQN());
+			if (annotation.version()
+				.indexOf('$') == -1) {
+				try {
+					Version.parseVersion(annotation.version());
+				} catch (Exception e) {
+					analyzer.exception(e,
+						"The version declared by the Capability annotation attached to type %s is invalid",
+						current.getFQN());
+				}
 			}
 			cap.append(";version:Version=")
 				.append(annotation.version());

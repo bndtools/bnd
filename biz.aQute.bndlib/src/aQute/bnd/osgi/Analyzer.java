@@ -3648,64 +3648,66 @@ public class Analyzer extends Processor {
 	}
 
 	public boolean assignable(String annoService, String inferredService) {
-		if (annoService == null || annoService.isEmpty() || inferredService == null || inferredService.isEmpty()
-			|| Object.class.getName()
-				.equals(inferredService))
-			return true;
+		return assignable(annoService, inferredService, true);
+	}
+
+	public boolean assignable(String annoService, String inferredService, boolean unknownResult) {
+		if ((annoService == null) || (inferredService == null) || annoService.isEmpty() || inferredService.isEmpty()) {
+			return unknownResult;
+		}
+		if (inferredService.equals("java.lang.Object")) {
+			return true; // shortcut
+		}
 		try {
 			Clazz annoServiceClazz = findClass(getTypeRefFromFQN(annoService));
 			Clazz inferredServiceClazz = findClass(getTypeRefFromFQN(inferredService));
-			return assignable(annoServiceClazz, inferredServiceClazz);
-		} catch (Exception e) {}
-		// we couldn't determine
-		return true;
+			return assignable(annoServiceClazz, inferredServiceClazz, unknownResult);
+		} catch (Exception e) {
+			// we couldn't determine
+			return unknownResult;
+		}
 	}
 
 	public boolean assignable(Clazz annoServiceClazz, Clazz inferredServiceClazz) {
-		if (annoServiceClazz == null || inferredServiceClazz == null)
-			// we don't know what one of the classes is, assume assignable.
-			return true;
-		if (annoServiceClazz.equals(inferredServiceClazz))
-			return true;
-		if (!inferredServiceClazz.isInterface()) {
-			if (annoServiceClazz.isInterface())
-				return false;
-			TypeRef zuper = annoServiceClazz.getSuper();
-			if (zuper == null)
-				return false;
-			try {
-				return assignable(findClass(zuper), inferredServiceClazz);
-			} catch (Exception e) {
-				// can't tell
-				return true;
-			}
+		return assignable(annoServiceClazz, inferredServiceClazz, true);
+	}
+
+	public boolean assignable(Clazz annoServiceClazz, Clazz inferredServiceClazz, boolean unknownResult) {
+		try {
+			Boolean result = assignable0(annoServiceClazz, inferredServiceClazz);
+			return (result != null) ? result.booleanValue() : unknownResult;
+		} catch (Exception e) {
+			// we couldn't determine
+			return unknownResult;
 		}
-		TypeRef[] intfs = annoServiceClazz.getInterfaces();
-		if (intfs != null) {
-			for (TypeRef intf : intfs) {
-				try {
-					if (assignable(findClass(intf), inferredServiceClazz))
-						return true;
-				} catch (Exception e) {
-					return true;
+	}
+
+	private Boolean assignable0(Clazz annoServiceClazz, Clazz inferredServiceClazz)
+		throws Exception {
+		if ((annoServiceClazz == null) || (inferredServiceClazz == null)) {
+			return null; // unknown
+		}
+		if (annoServiceClazz.equals(inferredServiceClazz)) {
+			return Boolean.TRUE;
+		}
+		if (inferredServiceClazz.isInterface()) {
+			TypeRef[] intfs = annoServiceClazz.getInterfaces();
+			if (intfs != null) {
+				for (TypeRef intf : intfs) {
+					Boolean result = assignable0(findClass(intf), inferredServiceClazz);
+					if (result != Boolean.FALSE) {
+						return result;
+					}
 				}
 			}
+		} else if (annoServiceClazz.isInterface()) {
+			return Boolean.FALSE;
 		}
-		TypeRef superType = annoServiceClazz.getSuper();
-		if (superType != null) {
-			try {
-				Clazz zuper = findClass(superType);
-				if (zuper != null)
-					return assignable(zuper, inferredServiceClazz);
-				// cannot analyze super class
-				return true;
-			} catch (Exception e) {
-				// cannot analyze super class
-				return true;
-			}
+		TypeRef zuper = annoServiceClazz.getSuper();
+		if (zuper == null) {
+			return Boolean.FALSE;
 		}
-		// no more superclasses, not assignable.
-		return false;
+		return assignable0(findClass(zuper), inferredServiceClazz);
 	}
 
 }

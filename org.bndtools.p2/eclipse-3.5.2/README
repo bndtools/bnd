@@ -1,0 +1,4 @@
+DO NOT REMOVE!!!
+
+This directory is required in order to execute the p2 repository generation tasks. Believe it or not,
+the 'plugins' directory contains the minimal set of JARs required to run p2.
