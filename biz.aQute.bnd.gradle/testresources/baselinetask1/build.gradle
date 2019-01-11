@@ -41,6 +41,15 @@ baseline {
    ignoreFailures = true
 }
 
+task baselineDiffpackages(type: Baseline) {
+   description 'Baseline diffpackages'
+   group 'build'
+   bundle jar
+   baseline configurations.baseline
+   diffpackages '!doubler', '*'
+   ignoreFailures = false
+}
+
 task baselineSelf(type: Baseline) {
    description 'Baseline Self'
    group 'build'

@@ -257,7 +257,7 @@ task baseline(type: Baseline) {
 }
 ```
 
-There are four properties which can be configured for a Baseline task:
+There are six properties which can be configured for a Baseline task:
 
 ### ignoreFailures
 
@@ -280,6 +280,20 @@ can accept to result in a single file. This property must be set.
 
 The baseline bundle. It can be anything that `Project.files(Object...)`
 can accept to result in a single file. This property must be set.
+
+### diffpackages
+
+The names of the exported packages in the bundle to baseline.
+The default is all the exported packages but this property can be used to
+[specify](https://bnd.bndtools.org/chapters/820-instructions.html#selector)
+which exported packages are baselined.
+
+### diffignore
+
+The manifest header names and resource paths to ignore when baseline comparing.
+This property can be used to
+[exclude](https://bnd.bndtools.org/chapters/820-instructions.html#selector)
+items from baseline comparison.
 
 ## Create a task of the `Resolve` type
 
