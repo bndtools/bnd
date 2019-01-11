@@ -1,5 +1,12 @@
 package aQute.bnd.differ;
 
+import static aQute.bnd.service.diff.Delta.ADDED;
+import static aQute.bnd.service.diff.Delta.MAJOR;
+import static aQute.bnd.service.diff.Delta.MICRO;
+import static aQute.bnd.service.diff.Delta.MINOR;
+import static aQute.bnd.service.diff.Delta.REMOVED;
+import static aQute.bnd.service.diff.Delta.UNCHANGED;
+
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -119,7 +126,7 @@ public class Baseline {
 				newerVersion = Version.ONE;
 			}
 		}
-		Delta highestDelta = Delta.UNCHANGED;
+		Delta highestDelta = UNCHANGED;
 		for (Diff pdiff : apiDiff.getChildren()) {
 			if (pdiff.getType() != Type.PACKAGE) // Just packages
 				continue;
@@ -141,18 +148,18 @@ public class Baseline {
 
 			info.newerVersion = getVersion(info.attributes);
 			info.olderVersion = getVersion(oExports.get(info.packageName));
-			if (pdiff.getDelta() == Delta.UNCHANGED) {
+			if (pdiff.getDelta() == UNCHANGED) {
 				info.suggestedVersion = info.olderVersion;
 				// Fix previously released package containing version qualifier
 				if (info.olderVersion.getQualifier() != null) {
-					info.suggestedVersion = bump(Delta.MICRO, info.olderVersion, 1, 0);
+					info.suggestedVersion = bump(MICRO, info.olderVersion, 1, 0);
 					info.warning += "Found package version with qualifier. Bumping micro version";
 				} else if (!info.newerVersion.equals(info.olderVersion)) {
 					info.warning += "No difference but versions are not equal";
 				}
-			} else if (pdiff.getDelta() == Delta.REMOVED) {
+			} else if (pdiff.getDelta() == REMOVED) {
 				info.suggestedVersion = null;
-			} else if (pdiff.getDelta() == Delta.ADDED) {
+			} else if (pdiff.getDelta() == ADDED) {
 				info.suggestedVersion = info.newerVersion;
 			} else {
 				// We have an API change
@@ -164,7 +171,7 @@ public class Baseline {
 
 					// We can fix some major problems by assuming
 					// that an interface is a provider interface
-					if (pdiff.getDelta() == Delta.MAJOR) {
+					if (pdiff.getDelta() == MAJOR) {
 
 						info.providers = Create.set();
 						if (info.attributes != null)
@@ -176,7 +183,7 @@ public class Baseline {
 						Delta tryDelta = pdiff.getDelta(new Ignore() {
 							@Override
 							public boolean contains(Diff diff) {
-								if (diff.getType() == Type.INTERFACE && diff.getDelta() == Delta.MAJOR) {
+								if (diff.getType() == Type.INTERFACE && diff.getDelta() == MAJOR) {
 									info.providers.add(Descriptors.getShortName(diff.getName()));
 									return true;
 								}
@@ -184,7 +191,7 @@ public class Baseline {
 							}
 						});
 
-						if (tryDelta != Delta.MAJOR) {
+						if (tryDelta != MAJOR) {
 							info.suggestedIfProviders = bump(tryDelta, info.olderVersion, 1, 0);
 						}
 					}
@@ -194,15 +201,15 @@ public class Baseline {
 			switch (pdiff.getDelta()) {
 				case IGNORED :
 				case UNCHANGED :
-					content = Delta.UNCHANGED;
+					content = UNCHANGED;
 					break;
 
 				case ADDED :
-					content = Delta.MINOR;
+					content = MINOR;
 					break;
 
 				case CHANGED : // cannot happen
-					content = Delta.MICRO;
+					content = MICRO;
 					break;
 
 				case MICRO :
@@ -217,7 +224,7 @@ public class Baseline {
 
 				case REMOVED :
 				default :
-					content = Delta.MAJOR;
+					content = MAJOR;
 					break;
 			}
 			if (content.compareTo(highestDelta) > 0) {
@@ -247,7 +254,7 @@ public class Baseline {
 			// have the same version, this happens after a release, only want
 			// to generate an error when they really differ.
 
-			if (getDiff().getDelta() == Delta.UNCHANGED)
+			if (getDiff().getDelta() == UNCHANGED)
 				return infos;
 		}
 
@@ -289,9 +296,9 @@ public class Baseline {
 			if (child.getDelta() == diff.getDelta()) {
 				getRootCauses(f, child, cpath);
 			} else {
-				if (child.getDelta() == Delta.ADDED) {
+				if (child.getDelta() == ADDED) {
 					f.format("+ %s\n", cpath);
-				} else if (child.getDelta() == Delta.REMOVED) {
+				} else if (child.getDelta() == REMOVED) {
 					f.format("- %s\n", cpath);
 				}
 			}
