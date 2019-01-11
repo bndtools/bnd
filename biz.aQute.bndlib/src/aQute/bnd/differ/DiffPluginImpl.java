@@ -285,13 +285,16 @@ public class DiffPluginImpl implements Differ {
 	}
 
 	public void setIgnore(String diffignore) {
-		if (diffignore == null) {
+		setIgnore(new Parameters(diffignore));
+	}
+
+	public void setIgnore(Parameters diffignore) {
+		if ((diffignore == null) || diffignore.isEmpty()) {
 			localIgnore = null;
 			return;
 		}
 
-		Parameters p = new Parameters(diffignore);
-		localIgnore = new Instructions(p);
+		localIgnore = new Instructions(diffignore);
 	}
 
 }
