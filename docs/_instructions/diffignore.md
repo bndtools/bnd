@@ -1,13 +1,13 @@
 ---
 layout: default
-class: Builder
-title: -diffignore PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *
-summary: Items to ignore during baseline comparison.
+class: Project
+title: -diffignore SELECTORS
+summary: Manifest header names
+and resource paths to ignore during baseline comparison.
 ---
 
-You can use the `-diffignore` instruction to specify a comma
-separated list of things to ignore during baseline comparison
-such as manifest headers or entry paths.
+You can use the `-diffignore` instruction to specify manifest header names
+and resource paths to ignore during baseline comparison.
 
 ## Example
 
