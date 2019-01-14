@@ -3511,9 +3511,8 @@ public class DSAnnotationTest extends BndTestCase {
 		@Reference(policy = ReferencePolicy.DYNAMIC)
 		private final List<LogService>	logs1	= new CopyOnWriteArrayList<>();
 
-		@Reference
-		private final List<LogService>	logs2	= new CopyOnWriteArrayList<>();
-
+		@Reference(policy = ReferencePolicy.DYNAMIC)
+		private final CopyOnWriteArrayList<LogService>	logs2	= new CopyOnWriteArrayList<>();
 	}
 
 	public void testFinalDynamicCollectionField() throws Exception {
@@ -3544,8 +3543,8 @@ public class DSAnnotationTest extends BndTestCase {
 
 		xt.assertAttribute("logs2", "scr:component/reference[2]/@name");
 		xt.assertAttribute(LogService.class.getName(), "scr:component/reference[2]/@interface");
-		xt.assertNoAttribute("scr:component/reference[2]/@policy");
-		xt.assertNoAttribute("scr:component/reference[2]/@field-option");
+		xt.assertAttribute("dynamic", "scr:component/reference[2]/@policy");
+		xt.assertAttribute("update", "scr:component/reference[2]/@field-option");
 
 	}
 
