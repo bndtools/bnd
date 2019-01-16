@@ -1,8 +1,6 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd, icons.properties
 
--dependson: bndtools.bndplugins
-
 Bundle-SymbolicName: bndtools.core;singleton:=true
 Bundle-Activator: bndtools.Plugin
 Bundle-ActivationPolicy: lazy
