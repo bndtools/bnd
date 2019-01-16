@@ -3263,4 +3263,29 @@ public class BuilderTest extends BndTestCase {
 		System.err.println("Imports     " + builder.getImports());
 	}
 
+	public void testImportBSN() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(new File("jar/ecj-4.7.3a.jar"));
+			b.addClasspath(new File("jar/org.eclipse.osgi-3.5.0.jar"));
+			b.setProperty("Export-Package", "test.activator");
+			b.setProperty("Import-Package",
+				"org.eclipse.jdt.core.compiler;org.eclipse.osgi.framework.util;"
+					+ "bundle-symbolic-name=\"${@bundlesymbolicname}\";"
+					+ "bundle-version=\"${range;[==,+0);${@bundleversion}}\"");
+			Jar jar = b.build();
+			assertTrue(b.check());
+			Manifest manifest = jar.getManifest();
+			manifest.write(System.err);
+			Domain d = Domain.domain(manifest);
+			Parameters imports = d.getImportPackage();
+			Attrs attrs = imports.get("org.eclipse.jdt.core.compiler");
+			assertEquals("org.eclipse.jdt.core.compiler.batch", attrs.get("bundle-symbolic-name"));
+			assertEquals("[3.13,4.0)", attrs.get("bundle-version"));
+			attrs = imports.get("org.eclipse.osgi.framework.util");
+			assertEquals("org.eclipse.osgi", attrs.get("bundle-symbolic-name"));
+			assertEquals("[3.5,4.0)", attrs.get("bundle-version"));
+		}
+	}
+
 }

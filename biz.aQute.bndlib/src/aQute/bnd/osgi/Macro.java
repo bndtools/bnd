@@ -943,7 +943,7 @@ public class Macro {
 
 	String version(Version version, String mask) {
 		if (version == null) {
-			String v = domain.getProperty("@");
+			String v = domain.getProperty(Constants.CURRENT_VERSION);
 			if (v == null) {
 				return LITERALVALUE;
 			}
@@ -1026,7 +1026,7 @@ public class Macro {
 
 			version = new Version(string);
 		} else {
-			String v = domain.getProperty("@");
+			String v = domain.getProperty(Constants.CURRENT_VERSION);
 			if (v == null)
 				return LITERALVALUE;
 
@@ -1058,8 +1058,13 @@ public class Macro {
 		return sb.toString();
 	}
 
+	private static final String		LOCALTARGET_NAME	= "@[^${}\\[\\]()<>«»‹›]*";
+	private static final Pattern	LOCALTARGET_P	= Pattern
+		.compile("\\$(\\{" + LOCALTARGET_NAME + "\\}|\\[" + LOCALTARGET_NAME + "\\]|\\(" + LOCALTARGET_NAME + "\\)|<"
+			+ LOCALTARGET_NAME + ">|«" + LOCALTARGET_NAME + "»|‹" + LOCALTARGET_NAME + "›)");
 	boolean isLocalTarget(String string) {
-		return string.matches("\\$(\\{@\\}|\\[@\\]|\\(@\\)|<@>|«@»|‹@›)");
+		return LOCALTARGET_P.matcher(string)
+			.matches();
 	}
 
 	/**

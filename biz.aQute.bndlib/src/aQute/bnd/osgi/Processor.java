@@ -1595,6 +1595,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			case PROVIDE_DIRECTIVE :
 			case SPLIT_PACKAGE_DIRECTIVE :
 			case FROM_DIRECTIVE :
+			case INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE :
+			case INTERNAL_BUNDLEVERSION_DIRECTIVE :
 				return true;
 			default :
 				return false;
