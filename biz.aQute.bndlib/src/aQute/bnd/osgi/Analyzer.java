@@ -165,10 +165,9 @@ public class Analyzer extends Processor {
 			analyzer.setProperties(properties);
 			Manifest m = analyzer.calcManifest();
 			Properties result = new UTF8Properties();
-			for (Iterator<Object> i = m.getMainAttributes()
-				.keySet()
-				.iterator(); i.hasNext();) {
-				Attributes.Name name = (Attributes.Name) i.next();
+			for (Object key : m.getMainAttributes()
+				.keySet()) {
+				Attributes.Name name = (Attributes.Name) key;
 				result.put(name.toString(), m.getMainAttributes()
 					.getValue(name));
 			}
@@ -902,14 +901,8 @@ public class Analyzer extends Processor {
 			// to a resource in the JAR
 			//
 
-			for (Iterator<PackageRef> i = temp.keySet()
-				.iterator(); i.hasNext();) {
-				String binary = i.next()
-					.getBinary();
-				Resource r = dot.getResource(binary);
-				if (r != null)
-					i.remove();
-			}
+			temp.keySet()
+				.removeIf(packageRef -> dot.getResource(packageRef.getBinary()) != null);
 
 			if (!temp.isEmpty())
 				main.putValue(PRIVATE_PACKAGE, printClauses(temp));
@@ -1346,9 +1339,7 @@ public class Analyzer extends Processor {
 		String ddel = "";
 		StringBuilder sb = new StringBuilder();
 		Map<String, Map<String, Resource>> map = bundle.getDirectories();
-		for (Iterator<String> i = map.keySet()
-			.iterator(); i.hasNext();) {
-			String directory = i.next();
+		for (String directory : map.keySet()) {
 			if (directory.equals("META-INF") || directory.startsWith("META-INF/"))
 				continue;
 			if (directory.equals("OSGI-OPT") || directory.startsWith("OSGI-OPT/"))
@@ -1403,9 +1394,7 @@ public class Analyzer extends Processor {
 	 */
 	public Set<PackageRef> getUnreachable() {
 		Set<PackageRef> unreachable = new HashSet<>(uses.keySet()); // all
-		for (Iterator<PackageRef> r = exports.keySet()
-			.iterator(); r.hasNext();) {
-			PackageRef packageRef = r.next();
+		for (PackageRef packageRef : exports.keySet()) {
 			removeTransitive(packageRef, unreachable);
 		}
 		if (activator != null) {
@@ -1495,9 +1484,8 @@ public class Analyzer extends Processor {
 	public void mergeManifest(Manifest manifest) throws IOException {
 		if (manifest != null) {
 			Attributes attributes = manifest.getMainAttributes();
-			for (Iterator<Object> i = attributes.keySet()
-				.iterator(); i.hasNext();) {
-				Name name = (Name) i.next();
+			for (Object k : attributes.keySet()) {
+				Name name = (Name) k;
 				String key = name.toString();
 				// Dont want instructions
 				if (key.startsWith("-"))
@@ -1554,8 +1542,8 @@ public class Analyzer extends Processor {
 				error("Missing file on classpath: %s", IO.absolutePath(classpath[i]));
 			}
 		}
-		for (Iterator<Jar> i = list.iterator(); i.hasNext();) {
-			addClasspath(i.next());
+		for (Jar jar : list) {
+			addClasspath(jar);
 		}
 	}
 
@@ -1627,8 +1615,7 @@ public class Analyzer extends Processor {
 		Jar j = super.getJarFromName(name, from);
 		Glob g = new Glob(name);
 		if (j == null) {
-			for (Iterator<Jar> cp = getClasspath().iterator(); cp.hasNext();) {
-				Jar entry = cp.next();
+			for (Jar entry : getClasspath()) {
 				if (entry.getSource() == null)
 					continue;
 
@@ -1649,8 +1636,7 @@ public class Analyzer extends Processor {
 
 		Glob g = new Glob(name);
 		List<Jar> result = new ArrayList<>();
-		for (Iterator<Jar> cp = getClasspath().iterator(); cp.hasNext();) {
-			Jar entry = cp.next();
+		for (Jar entry : getClasspath()) {
 			if (entry.getSource() == null)
 				continue;
 
@@ -1669,10 +1655,8 @@ public class Analyzer extends Processor {
 	 */
 	private void merge(Manifest result, Manifest old) {
 		if (old != null) {
-			for (Iterator<Map.Entry<Object, Object>> e = old.getMainAttributes()
-				.entrySet()
-				.iterator(); e.hasNext();) {
-				Map.Entry<Object, Object> entry = e.next();
+			for (Map.Entry<Object, Object> entry : old.getMainAttributes()
+				.entrySet()) {
 				Attributes.Name name = (Attributes.Name) entry.getKey();
 				String value = (String) entry.getValue();
 				if (name.toString()
@@ -1687,9 +1671,7 @@ public class Analyzer extends Processor {
 			// do not overwrite existing entries
 			Map<String, Attributes> oldEntries = old.getEntries();
 			Map<String, Attributes> newEntries = result.getEntries();
-			for (Iterator<Map.Entry<String, Attributes>> e = oldEntries.entrySet()
-				.iterator(); e.hasNext();) {
-				Map.Entry<String, Attributes> entry = e.next();
+			for (Map.Entry<String, Attributes> entry : oldEntries.entrySet()) {
 				if (!newEntries.containsKey(entry.getKey())) {
 					newEntries.put(entry.getKey(), entry.getValue());
 				}
@@ -1706,9 +1688,8 @@ public class Analyzer extends Processor {
 	 */
 
 	void verifyManifestHeadersCase(Properties properties) {
-		for (Iterator<Object> i = properties.keySet()
-			.iterator(); i.hasNext();) {
-			String header = (String) i.next();
+		for (Object key : properties.keySet()) {
+			String header = (String) key;
 			for (int j = 0; j < headers.length; j++) {
 				if (!headers[j].equals(header) && headers[j].equalsIgnoreCase(header)) {
 					warning(
@@ -1791,8 +1772,7 @@ public class Analyzer extends Processor {
 
 		// Clean up attributes and generate result map
 		Packages result = new Packages();
-		for (Iterator<PackageRef> i = toBeImported.iterator(); i.hasNext();) {
-			PackageRef ep = i.next();
+		for (PackageRef ep : toBeImported) {
 			Attrs parameters = exports.get(ep);
 
 			String noimport = parameters == null ? null : parameters.get(NO_IMPORT_DIRECTIVE);
@@ -2170,13 +2150,9 @@ public class Analyzer extends Processor {
 		}
 
 		// Remove any ! valued attributes
-		for (Iterator<Entry<String, String>> i = attributes.entrySet()
-			.iterator(); i.hasNext();) {
-			String v = i.next()
-				.getValue();
-			if (v.equals("!"))
-				i.remove();
-		}
+		attributes.entrySet()
+			.removeIf(entry -> entry.getValue()
+				.equals("!"));
 	}
 
 	/**
@@ -2206,9 +2182,7 @@ public class Analyzer extends Processor {
 		if (isTrue(getProperty(NOUSES)))
 			return;
 
-		for (Iterator<PackageRef> i = exports.keySet()
-			.iterator(); i.hasNext();) {
-			PackageRef packageRef = i.next();
+		for (PackageRef packageRef : exports.keySet()) {
 			String packageName = packageRef.getFQN();
 			setProperty(CURRENT_PACKAGE, packageName);
 			try {
@@ -2216,7 +2190,6 @@ public class Analyzer extends Processor {
 			} finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
-
 		}
 	}
 
@@ -2249,8 +2222,7 @@ public class Analyzer extends Processor {
 
 			StringBuilder sb = new StringBuilder();
 			String del = "";
-			for (Iterator<PackageRef> u = sharedPackages.iterator(); u.hasNext();) {
-				PackageRef usedPackage = u.next();
+			for (PackageRef usedPackage : sharedPackages) {
 				if (!usedPackage.isJava()) {
 					sb.append(del);
 					sb.append(usedPackage.getFQN());
@@ -2298,8 +2270,7 @@ public class Analyzer extends Processor {
 
 		List<PackageRef> ref = uses.get(name);
 		if (ref != null) {
-			for (Iterator<PackageRef> r = ref.iterator(); r.hasNext();) {
-				PackageRef element = r.next();
+			for (PackageRef element : ref) {
 				removeTransitive(element, unreachable);
 			}
 		}
@@ -2364,8 +2335,7 @@ public class Analyzer extends Processor {
 		super.close();
 
 		if (classpath != null)
-			for (Iterator<Jar> j = classpath.iterator(); j.hasNext();) {
-				Jar jar = j.next();
+			for (Jar jar : classpath) {
 				jar.close();
 			}
 	}
@@ -2406,10 +2376,8 @@ public class Analyzer extends Processor {
 		String del = "";
 
 		Pattern expr = Pattern.compile(regexp);
-		for (Iterator<String> e = dot.getResources()
-			.keySet()
-			.iterator(); e.hasNext();) {
-			String path = e.next();
+		for (String path : dot.getResources()
+			.keySet()) {
 			if (!fullPathName) {
 				int n = path.lastIndexOf('/');
 				if (n >= 0) {
@@ -2431,9 +2399,7 @@ public class Analyzer extends Processor {
 	}
 
 	public void putAll(Map<String, String> additional, boolean force) {
-		for (Iterator<Map.Entry<String, String>> i = additional.entrySet()
-			.iterator(); i.hasNext();) {
-			Map.Entry<String, String> entry = i.next();
+		for (Map.Entry<String, String> entry : additional.entrySet()) {
 			if (force || getProperties().get(entry.getKey()) == null)
 				setProperty(entry.getKey(), entry.getValue());
 		}
