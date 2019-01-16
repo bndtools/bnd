@@ -943,7 +943,7 @@ public class Macro {
 
 	String version(Version version, String mask) {
 		if (version == null) {
-			String v = domain.getProperty("@");
+			String v = domain.getProperty(Constants.CURRENT_VERSION);
 			if (v == null) {
 				return LITERALVALUE;
 			}
@@ -1026,7 +1026,7 @@ public class Macro {
 
 			version = new Version(string);
 		} else {
-			String v = domain.getProperty("@");
+			String v = domain.getProperty(Constants.CURRENT_VERSION);
 			if (v == null)
 				return LITERALVALUE;
 

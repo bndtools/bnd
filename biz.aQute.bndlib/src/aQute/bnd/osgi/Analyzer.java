@@ -2008,7 +2008,7 @@ public class Analyzer extends Processor {
 
 	String applyVersionPolicy(String exportVersion, String importRange, boolean provider) {
 		try {
-			setProperty("@", exportVersion);
+			setProperty(CURRENT_VERSION, exportVersion);
 
 			if (importRange != null) {
 				importRange = cleanupVersion(importRange);
@@ -2017,7 +2017,7 @@ public class Analyzer extends Processor {
 				importRange = getVersionPolicy(provider);
 
 		} finally {
-			unsetProperty("@");
+			unsetProperty(CURRENT_VERSION);
 		}
 		return importRange;
 	}
@@ -2187,11 +2187,11 @@ public class Analyzer extends Processor {
 	 */
 
 	String calculateVersionRange(String version, boolean impl) {
-		setProperty("@", version);
+		setProperty(CURRENT_VERSION, version);
 		try {
 			return getVersionPolicy(impl);
 		} finally {
-			unsetProperty("@");
+			unsetProperty(CURRENT_VERSION);
 		}
 	}
 
