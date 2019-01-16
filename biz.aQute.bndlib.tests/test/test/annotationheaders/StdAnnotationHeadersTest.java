@@ -367,4 +367,30 @@ public class StdAnnotationHeadersTest extends TestCase {
 		}
 	}
 
+	/**
+	 * Override bundle annotation processing with the `-bundleannotations`
+	 * instruction
+	 *
+	 * @throws Exception
+	 */
+	public void testOverrideBundleAnnotationsInstruction_success() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.attrs.std.activator");
+			b.setProperty(Constants.BUNDLE_ACTIVATOR,
+				"test.annotationheaders.attrs.std.activator.TypeInVersionedPackage2");
+			b.setProperty("-bundleannotations", "!test.annotationheaders.attrs.std.activator.TypeInVersionedPackage,*");
+			b.build();
+			assertTrue(b.check());
+			Manifest manifest = b.getJar()
+				.getManifest();
+			manifest.write(System.out);
+
+			Attributes mainAttributes = manifest.getMainAttributes();
+
+			Header repeated = Header.parseHeader(mainAttributes.getValue(Constants.BUNDLE_ACTIVATOR));
+			assertThat(repeated).containsOnlyKeys("test.annotationheaders.attrs.std.activator.TypeInVersionedPackage2");
+		}
+	}
+
 }

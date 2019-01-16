@@ -247,7 +247,9 @@ public class Analyzer extends Processor {
 					// built ins
 					//
 
-					cds.add(annotationHeaders = new AnnotationHeaders(this));
+					Instructions instructions = new Instructions(
+						OSGiHeader.parseHeader(getProperty(Constants.BUNDLEANNOTATIONS, "*")));
+					cds.add(annotationHeaders = new AnnotationHeaders(this, instructions));
 
 					for (Clazz c : classspace.values()) {
 						cds.parse(c);
