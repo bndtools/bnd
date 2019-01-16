@@ -33,5 +33,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-SymbolicName: org.bndtools.templating.gitrepo; singleton:=true
 
 Import-Package: \
+ org.eclipse.jgit.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${versionmask;==;${@bundleversion}}";version=!,\
  ${eclipse.importpackage},\
  *
