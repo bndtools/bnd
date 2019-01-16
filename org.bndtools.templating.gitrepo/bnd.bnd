@@ -11,25 +11,27 @@
 	bndtools.api;version=latest,\
 	org.bndtools.templating;version=latest,\
 	bndtools.utils;version=project;packages=*,\
-	org.eclipse.jgit;version=3.4.2;maven-scope=provided,\
-	javaewah;version=0.7.9;maven-scope=provided,\
-	com.jcraft.jsch;version=0.1.51,\
+	org.eclipse.jgit,\
 	org.eclipse.jface,\
+	org.eclipse.ui.ide,\
 	org.eclipse.ui.workbench,\
-	org.eclipse.swt.cocoa.macosx.x86_64; packages=*,\
-	org.eclipse.equinox.preferences,\
-	org.eclipse.equinox.common,\
-	org.eclipse.core.commands
+    org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+    org.eclipse.core.runtime,\
+    org.eclipse.core.commands,\
+    org.eclipse.equinox.common,\
+	org.eclipse.equinox.preferences
 
 -includepackage: org.bndtools.templating.jgit.*
 -includeresource: /=resources/unprocessed,\
     {/=resources/processed}
--conditionalpackage: aQute.lib.*, aQute.libg.*, org.bndtools.utils.*, org.eclipse.jgit.*, com.googlecode.javaewah
-
+-conditionalpackage: \
+ aQute.lib*,\
+ org.bndtools.utils.*
+ 
 Bundle-ActivationPolicy: lazy
 Bundle-SymbolicName: org.bndtools.templating.gitrepo; singleton:=true
-# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
+
 Import-Package: \
-    sun.net.www.protocol.*; resolution:=optional,\
-    sun.security.*; resolution:=optional,\
-	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+ ${eclipse.importpackage},\
+ *
