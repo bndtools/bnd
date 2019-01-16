@@ -2053,8 +2053,8 @@ public class Analyzer extends Processor {
 	void augmentExports(Packages exports) throws IOException {
 		for (PackageRef packageRef : exports.keySet()) {
 			String packageName = packageRef.getFQN();
-			setProperty(CURRENT_PACKAGE, packageName);
 			Attrs attributes = exports.get(packageRef);
+			setProperty(CURRENT_PACKAGE, packageName);
 			try {
 				Attrs exporterAttributes = classpathExports.get(packageRef);
 				if (exporterAttributes == null) {
@@ -2068,45 +2068,46 @@ public class Analyzer extends Processor {
 				} else {
 					for (Map.Entry<String, String> entry : exporterAttributes.entrySet()) {
 						String key = entry.getKey();
-
-						// dont overwrite and no directives
-						if (!key.endsWith(":")) {
-							if (!attributes.containsKey(key))
-								attributes.put(key, entry.getValue());
-							else {
-								if (since(About._2_4)) {
-									// we have the attribute from the classpath
-									// and we have set it.
-									if (key.equals(Constants.VERSION_ATTRIBUTE)) {
-										try {
-											Version fromExport = new Version(
-												cleanupVersion(exporterAttributes.getVersion()));
-											Version fromSet = new Version(cleanupVersion(attributes.getVersion()));
-											if (!fromExport.equals(fromSet)) {
-												SetLocation location = warning(
-													"Version for package %s is set to different values in the source (%s) and in the manifest (%s). The version in the manifest is not "
-														+ "picked up by an other sibling bundles in this project or projects that directly depend on this project",
+						// no directives
+						if (key.endsWith(":")) {
+							continue;
+						}
+						// don't overwrite
+						if (!attributes.containsKey(key))
+							attributes.put(key, entry.getValue());
+						else {
+							if (since(About._2_4)) {
+								// we have the attribute from the classpath
+								// and we have set it.
+								if (key.equals(Constants.VERSION_ATTRIBUTE)) {
+									try {
+										Version fromExport = new Version(
+											cleanupVersion(exporterAttributes.getVersion()));
+										Version fromSet = new Version(cleanupVersion(attributes.getVersion()));
+										if (!fromExport.equals(fromSet)) {
+											SetLocation location = warning(
+												"Version for package %s is set to different values in the source (%s) and in the manifest (%s). The version in the manifest is not "
+													+ "picked up by an other sibling bundles in this project or projects that directly depend on this project",
 													packageName, attributes.get(key), exporterAttributes.get(key));
-												if (getPropertiesFile() != null)
-													location.file(getPropertiesFile().getAbsolutePath());
-												location.header(EXPORT_PACKAGE);
-												location.context(packageName);
-											}
-										} catch (Exception e) {
-											// Ignored here, is picked up in
-											// other places
+											if (getPropertiesFile() != null)
+												location.file(getPropertiesFile().getAbsolutePath());
+											location.header(EXPORT_PACKAGE);
+											location.context(packageName);
 										}
+									} catch (Exception e) {
+										// Ignored here, is picked up in
+										// other places
 									}
 								}
 							}
 						}
 					}
 				}
+				fixupAttributes(packageRef, attributes);
+				removeAttributes(attributes);
 			} finally {
 				unsetProperty(CURRENT_PACKAGE);
 			}
-			fixupAttributes(packageRef, attributes);
-			removeAttributes(attributes);
 		}
 	}
 
