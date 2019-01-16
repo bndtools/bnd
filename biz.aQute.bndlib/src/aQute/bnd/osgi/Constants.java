@@ -289,6 +289,8 @@ public interface Constants {
 
 	char								DUPLICATE_MARKER							= '~';
 	String								INTERNAL_EXPORTED_DIRECTIVE					= "-internal-exported:";
+	String								INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE		= "-internal-bundlesymbolicname:";
+	String								INTERNAL_BUNDLEVERSION_DIRECTIVE			= "-internal-bundleversion:";
 	String								INTERNAL_SOURCE_DIRECTIVE					= "-internal-source:";
 	String								SPECIFICATION_VERSION						= "specification-version";
 	String								SPLIT_PACKAGE_DIRECTIVE						= "-split-package:";

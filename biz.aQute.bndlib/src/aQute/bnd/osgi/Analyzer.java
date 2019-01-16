@@ -1820,12 +1820,19 @@ public class Analyzer extends Processor {
 			if (m != null) {
 				Domain domain = Domain.domain(m);
 				Parameters exported = domain.getExportPackage();
+				String bsn = jar.getBsn();
+				String version = jar.getVersion();
+				String bsn_version = bsn + "-" + version;
 				for (Entry<String, Attrs> e : exported.entrySet()) {
 					PackageRef ref = getPackageRef(e.getKey());
 					if (!classpathExports.containsKey(ref)) {
-						e.getValue()
-							.put(Constants.INTERNAL_EXPORTED_DIRECTIVE, jar.getBsn() + "-" + jar.getVersion());
 						Attrs attrs = e.getValue();
+						attrs.put(Constants.INTERNAL_EXPORTED_DIRECTIVE, bsn_version);
+						if (bsn != null) {
+							attrs.put(Constants.INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE, bsn);
+							attrs.put(Constants.INTERNAL_BUNDLEVERSION_DIRECTIVE,
+								(version != null) ? version : "0.0.0");
+						}
 
 						//
 						// Fixup any old style specification versions
