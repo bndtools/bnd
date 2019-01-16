@@ -1058,8 +1058,13 @@ public class Macro {
 		return sb.toString();
 	}
 
+	private static final String		LOCALTARGET_NAME	= "@[^${}\\[\\]()<>«»‹›]*";
+	private static final Pattern	LOCALTARGET_P	= Pattern
+		.compile("\\$(\\{" + LOCALTARGET_NAME + "\\}|\\[" + LOCALTARGET_NAME + "\\]|\\(" + LOCALTARGET_NAME + "\\)|<"
+			+ LOCALTARGET_NAME + ">|«" + LOCALTARGET_NAME + "»|‹" + LOCALTARGET_NAME + "›)");
 	boolean isLocalTarget(String string) {
-		return string.matches("\\$(\\{@\\}|\\[@\\]|\\(@\\)|<@>|«@»|‹@›)");
+		return LOCALTARGET_P.matcher(string)
+			.matches();
 	}
 
 	/**

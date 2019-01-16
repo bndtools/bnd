@@ -383,6 +383,8 @@ public interface Constants {
 
 	String								CURRENT_VERSION								= "@";
 	String								CURRENT_PACKAGE								= "@package";
+	String								CURRENT_BUNDLESYMBOLICNAME					= "@bundlesymbolicname";
+	String								CURRENT_BUNDLEVERSION						= "@bundleversion";
 
 	String								BUILDFILES									= "buildfiles";
 

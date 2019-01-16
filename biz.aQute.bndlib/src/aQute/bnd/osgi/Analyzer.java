@@ -1881,6 +1881,12 @@ public class Analyzer extends Processor {
 				Attrs defaultAttrs = new Attrs();
 				Attrs importAttributes = imports.get(packageRef);
 				Attrs exportAttributes = exports.get(packageRef, classpathExports.get(packageRef, defaultAttrs));
+				String bundlesymbolicname = exportAttributes.get(INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE);
+				if (bundlesymbolicname != null) {
+					setProperty(CURRENT_BUNDLESYMBOLICNAME, bundlesymbolicname);
+					String bundleversion = exportAttributes.get(INTERNAL_BUNDLEVERSION_DIRECTIVE);
+					setProperty(CURRENT_BUNDLEVERSION, (bundleversion != null) ? bundleversion : "0.0.0");
+				}
 
 				String exportVersion = exportAttributes.getVersion();
 				String importRange = importAttributes.getVersion();
@@ -1965,6 +1971,8 @@ public class Analyzer extends Processor {
 					noimports.add(packageRef);
 			} finally {
 				unsetProperty(CURRENT_PACKAGE);
+				unsetProperty(CURRENT_BUNDLESYMBOLICNAME);
+				unsetProperty(CURRENT_BUNDLEVERSION);
 			}
 		}
 
