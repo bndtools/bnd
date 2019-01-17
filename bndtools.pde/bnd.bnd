@@ -16,18 +16,18 @@
 	org.eclipse.jface,\
 	org.eclipse.pde.core,\
 	org.eclipse.pde.ui,\
-	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
 	org.eclipse.swt,\
-	org.eclipse.ui.workbench,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
 	org.eclipse.ui.ide,\
+	org.eclipse.ui.workbench,\
 	org.eclipse.osgi;maven-scope=provided
 
 Bundle-SymbolicName: ${p}; singleton:=true
 Bundle-ActivationPolicy: lazy
 
-# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
 Import-Package: \
-	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+ ${eclipse.importpackage},\
+ *
 
 -conditionalpackage: aQute.lib*;-split-package:=first
 

@@ -107,7 +107,7 @@ This Agreement is governed by the laws of the State of New York and the intellec
    </url>
 
    <requires>
-      <import feature="org.eclipse.m2e.feature" version="1.6.0" match="greaterOrEqual"/>
+      <import feature="org.eclipse.m2e.feature" version="1.8.3" match="greaterOrEqual"/>
       <import feature="bndtools.main.feature" version="@master-version@" match="equal"/>
    </requires>
 

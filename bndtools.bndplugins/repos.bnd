@@ -1,1 +1,0 @@
--includepackage: bndtools.bndplugins.repo.*,com.jcraft.jsch*,org.eclipse.jgit*

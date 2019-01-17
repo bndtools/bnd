@@ -7,8 +7,9 @@ Bundle-Activator: bndtools.release.Activator
 Bundle-ActivationPolicy: lazy
 Bundle-Localization: plugin
 
-Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
-	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+Import-Package: \
+ ${eclipse.importpackage},\
+ *
 
 -includepackage: \
 	bndtools.release*
@@ -34,10 +35,9 @@ Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	org.eclipse.jface.text,\
 	org.eclipse.core.resources,\
 	org.eclipse.equinox.common,\
-	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
 	org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
 	org.eclipse.text,\
-	org.eclipse.ui.workbench,\
 	org.eclipse.core.jobs,\
 	org.eclipse.equinox.registry,\
 	org.eclipse.jdt.core,\
@@ -46,9 +46,10 @@ Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	org.eclipse.core.commands,\
 	org.eclipse.ui.ide,\
 	org.eclipse.ui.forms,\
-	org.eclipse.ui.workbench.texteditor,\
 	org.eclipse.ui.editors,\
 	org.eclipse.ui.views,\
+	org.eclipse.ui.workbench,\
+	org.eclipse.ui.workbench.texteditor,\
 	org.eclipse.debug.core,\
 	org.eclipse.debug.ui,\
 	org.eclipse.jdt.launching,\
@@ -57,6 +58,6 @@ Import-Package: !junit*,org.eclipse.core.runtime;registry=!,\
 	org.eclipse.team.core,\
 	org.eclipse.core.filesystem, \
 	org.eclipse.equinox.preferences
-	
+
 -testpath: \
 	${junit}

@@ -33,12 +33,10 @@ Bundle-SymbolicName: bndtools.m2e; singleton:=true
 Bundle-ActivationPolicy: lazy
 
 Import-Package: \
-	org.apache.maven.lifecycle;provider=m2e,\
-	org.apache.maven.model;provider=m2e,\
-	org.apache.maven.plugin;provider=m2e,\
-	org.apache.maven.project;provider=m2e,\
-	org.codehaus.plexus.util.xml;provider=m2e,\
-	*
+ org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
+ org.codehaus.plexus.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
+ ${eclipse.importpackage},\
+ *
 
 -conditionalpackage: aQute.lib*;-split-package:=first
 
