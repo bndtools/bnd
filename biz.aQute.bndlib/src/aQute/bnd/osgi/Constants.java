@@ -99,6 +99,7 @@ public interface Constants {
 	@Deprecated
 	String								BUILDPACKAGES								= "-buildpackages";
 	String								BUMPPOLICY									= "-bumppolicy";
+	String								BUNDLEANNOTATIONS							= "-bundleannotations";
 	String								CDIANNOTATIONS								= "-cdiannotations";
 	String								CHECK										= "-check";
 	String								CONDUIT										= "-conduit";

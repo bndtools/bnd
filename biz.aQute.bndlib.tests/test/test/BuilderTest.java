@@ -2765,6 +2765,8 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setProperty("Bundle-Activator", "test.activator.Activator");
 			bmaker.setProperty("build", "xyz"); // for @Version annotation
 			bmaker.setProperty("Private-Package", "test.*");
+			bmaker.setProperty("-bundleannotations",
+				"!test.annotationheaders.attrs.std.activator.TypeInVersionedPackage,*");
 			bmaker.setProperty("-dsannotations", "!*");
 			bmaker.setProperty("-metatypeannotations", "!*");
 			bmaker.setClasspath(new File[] {
