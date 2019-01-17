@@ -22,16 +22,16 @@ If an explicit version is given, then `${@}` can be used to substitute the found
 You can reference the `Bundle-SymbolicName` and `Bundle-Version` of the exporter on the classpath by using the `${@bundlesymbolicname}` and `${@bundleversion}` values. In those cases, the [range](../macros/range.html) macro can be very useful to calculate ranges and drop specific parts of the bundle version. For example:
 
     Import-Package: org.eclipse.jdt.ui;bundle-symbolic-name="${@bundlesymbolicname}";\
-     bundle-version="${range;[==,+0);${@bundleversion}}"
+     bundle-version="${range;[==,+);${@bundleversion}}"
 
 
 Packages with directive `resolution:=dynamic` will be removed from `Import-Package` and added to the `DynamicImport-Package` header after being processed like any other `Import-Package` entry. For example:
 
     Import-Package: org.slf4j.*;resolution:=dynamic, *
 
-If an imported package uses mandatory attributes, then bnd will attempt to add those attributes to the import statement. However, in certain (bizarre!) cases this is not wanted. It is therefore possible to remove an attribute from the import clause. This is done with the `-remove-attribute:` directive or by setting the value of an attribute to `!`. The parameter of the `-remove-attribute` directive is an instruction and can use the standard options with `!`, `*`, `?`, etc.
+If an imported package uses mandatory attributes, then bnd will attempt to add those attributes to the import statement. However, in certain (bizarre!) cases this is not wanted. It is therefore possible to remove an attribute from the import clause. This is done with the `-remove-attribute` directive or by setting the value of an attribute to `!`. The parameter of the `-remove-attribute` directive is an instruction and can use the standard options with `!`, `*`, `?`, etc.
 
-    Import-Package: org.eclipse.core.runtime;-remove-attribute:common,*
+    Import-Package: org.eclipse.core.runtime;-remove-attribute:="common",*
 
 Or
 
