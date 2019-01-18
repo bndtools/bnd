@@ -1,8 +1,7 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
-Bundle-Name:            bnd Annotations Library
-Bundle-Description:     Contains only the annotations for bnd.
+Bundle-Description:     bnd Annotations Library
 Bundle-DocURL:          http://www.aQute.biz/Code/Bnd
 -exportcontents:        aQute.bnd.annotation.*
 
