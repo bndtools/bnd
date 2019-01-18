@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import static aQute.lib.exceptions.PredicateWithException.asPredicate;
 /**
  * This class can calculate the required headers for a (potential) JAR file. It
  * analyzes a directory or JAR for the packages that are contained and that are
@@ -2799,7 +2800,7 @@ public class Analyzer extends Processor {
 					break;
 			}
 
-			Instruction instr = null;
+			Instruction instr;
 			if (Clazz.HAS_ARGUMENT.contains(type)) {
 				if (++i == args.length) {
 					throw new IllegalArgumentException(
@@ -2807,13 +2808,10 @@ public class Analyzer extends Processor {
 				}
 				String s = args[i];
 				instr = new Instruction(s);
+			} else {
+				instr = null;
 			}
-			for (Iterator<Clazz> c = matched.iterator(); c.hasNext();) {
-				Clazz clazz = c.next();
-				if (!clazz.is(type, instr, this)) {
-					c.remove();
-				}
-			}
+			matched.removeIf(asPredicate(clazz -> !clazz.is(type, instr, this)));
 		}
 		return new SortedList<>(matched, Clazz.NAME_COMPARATOR);
 	}
