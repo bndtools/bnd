@@ -119,6 +119,9 @@ public class BndMavenPlugin extends AbstractMojo {
 	@Parameter(property = "bnd.skip", defaultValue = "false")
 	private boolean									skip;
 
+	@Parameter(property = "bnd.packagingTypes", defaultValue = PACKAGING_JAR + "," + PACKAGING_WAR)
+	private List<String>							packagingTypes;
+
 	/**
 	 * File path to a bnd file containing bnd instructions for this project.
 	 * Defaults to {@code bnd.bnd}. The file path can be an absolute or relative
@@ -160,7 +163,7 @@ public class BndMavenPlugin extends AbstractMojo {
 
 		// Exit without generating anything if this is neither a jar or war
 		// project. Probably it's just a parent project.
-		if (!PACKAGING_JAR.equals(project.getPackaging()) && !PACKAGING_WAR.equals(project.getPackaging())) {
+		if (!packagingTypes.contains(project.getPackaging())) {
 			logger.info("skip project with packaging=" + project.getPackaging());
 			return;
 		}
@@ -309,7 +312,7 @@ public class BndMavenPlugin extends AbstractMojo {
 					builder.setProperty(Constants.SNAPSHOT, TSTAMP);
 				}
 			}
-			
+
 			// Set Bundle-Description
 			if (builder.getProperty(Constants.BUNDLE_DESCRIPTION) == null) {
 				// may be null
@@ -326,7 +329,7 @@ public class BndMavenPlugin extends AbstractMojo {
 					builder.setProperty(Constants.BUNDLE_VENDOR, project.getOrganization().getName());
 				}
 			}
-			
+
 			// Set Bundle-License
 			if (builder.getProperty(Constants.BUNDLE_LICENSE) == null) {
 				StringBuilder licenses = new StringBuilder();
@@ -345,7 +348,7 @@ public class BndMavenPlugin extends AbstractMojo {
 					builder.setProperty(Constants.BUNDLE_LICENSE, licenses.toString());
 				}
 			}
-			
+
 			// Set Bundle-SCM
 			if (builder.getProperty(Constants.BUNDLE_SCM) == null) {
 				StringBuilder scm = new StringBuilder();
@@ -367,7 +370,7 @@ public class BndMavenPlugin extends AbstractMojo {
 					}
 				}
 			}
-			
+
 			// Set Bundle-Developers
 			if (builder.getProperty(Constants.BUNDLE_DEVELOPERS) == null) {
 				StringBuilder developers = new StringBuilder();
@@ -405,14 +408,14 @@ public class BndMavenPlugin extends AbstractMojo {
 					builder.setProperty(Constants.BUNDLE_DEVELOPERS, developers.toString());
 				}
 			}
-			
+
 			// Set Bundle-DocURL
 			if (builder.getProperty(Constants.BUNDLE_DOCURL) == null) {
 				if (StringUtils.isNotBlank(project.getUrl())) {
 					builder.setProperty(Constants.BUNDLE_DOCURL, project.getUrl());
 				}
 			}
-						
+
 			logger.debug("builder properties: {}", builder.getProperties());
 			logger.debug("builder delta: {}", delta);
 
@@ -448,7 +451,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		OSGiHeader.quote(builder, value);
 		return builder;
 	}
-	
+
 	private static StringBuilder addHeaderAttribute(StringBuilder builder, String key, String value, char separator) {
 		if (builder.length() > 0) {
 			builder.append(separator);
@@ -458,7 +461,7 @@ public class BndMavenPlugin extends AbstractMojo {
 		OSGiHeader.quote(builder, value);
 		return builder;
 	}
-	
+
 	private File loadProperties(Builder builder) throws Exception {
 		// Load parent project properties first
 		loadParentProjectProperties(builder, project);
