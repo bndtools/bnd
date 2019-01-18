@@ -63,3 +63,4 @@ Here's an example setting the `bundles` used for resolution.
 |`useMavenDependencies`          | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._|
 |`reportOptional`                | If `true`, resolution failure reports (see `resolve`) will include optional requirements. _Defaults to `true`._|
 |`scopes`                        | Specify from which scopes to collect dependencies. _Defaults to `compile, runtime`._ Override with property `bnd.testing.scopes`.|
+|`includeDependencyManagement`   | Include `<dependencyManagement>` when locating bundles during the bndrun resolution. _Defaults to `false`._ Override with property `bnd.testing.include.dependency.management`.|

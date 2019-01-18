@@ -7,9 +7,8 @@ public class Bndruns extends FileTree {
 
 	/**
 	 * Add a bndrun file.
-	 * 
-	 * @param bndrun A bndrun file. A relative path is relative to the project
-	 *            base directory.
+	 *
+	 * @param bndrun A bndrun file. A relative path is relative to the project base directory.
 	 */
 	public void setBndrun(File bndrun) {
 		addFile(bndrun);
