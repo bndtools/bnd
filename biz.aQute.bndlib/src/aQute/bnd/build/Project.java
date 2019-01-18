@@ -1682,16 +1682,18 @@ public class Project extends Processor {
 	private void install(File[] files) throws Exception {
 		if (files == null)
 			return;
-
-		Parameters p = getInstallRepositories();
-		for (Map.Entry<String, Attrs> e : p.entrySet()) {
-			RepositoryPlugin rp = getWorkspace().getRepository(e.getKey());
-			if (rp != null) {
-				for (File f : files) {
-					install(f, rp, e.getValue());
-				}
-			} else
-				warning("No such repository to install into: %s", e.getKey());
+		try (ProjectBuilder builder = getBuilder(null)) {
+			builder.init();
+			Parameters p = getInstallRepositories();
+			for (Map.Entry<String, Attrs> e : p.entrySet()) {
+				RepositoryPlugin rp = getWorkspace().getRepository(e.getKey());
+				if (rp != null) {
+					for (File f : files) {
+						install(rp, builder, f, e.getValue());
+					}
+				} else
+					warning("No such repository to install into: %s", e.getKey());
+			}
 		}
 	}
 
@@ -1702,8 +1704,8 @@ public class Project extends Processor {
 		return data.installRepositories;
 	}
 
-	private void install(File f, RepositoryPlugin repo, Attrs value) throws Exception {
-		try (Processor p = new Processor()) {
+	private void install(RepositoryPlugin repo, Processor context, File f, Attrs value) throws Exception {
+		try (Processor p = new Processor(context)) {
 			p.getProperties()
 				.putAll(value);
 			PutOptions options = new PutOptions();
