@@ -2,6 +2,5 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 Bundle-Description:     bnd Annotations Library
-Bundle-DocURL:          http://www.aQute.biz/Code/Bnd
 -exportcontents:        aQute.bnd.annotation.*
 
