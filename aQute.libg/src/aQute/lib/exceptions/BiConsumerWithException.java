@@ -1,11 +1,24 @@
 package aQute.lib.exceptions;
 
+import java.util.function.BiConsumer;
+
 /**
- * Consumer interface that allows exceptions *
+ * Consumer interface that allows exceptions.
  * 
- * @param <T1> the type of the first argument
- * @param <T2> the type of the second argument
+ * @param <T> the type of the first argument
+ * @param <U> the type of the second argument
  */
-public interface BiConsumerWithException<T1, T2> {
-	void apply(T1 t1, T2 t2) throws Throwable;
+@FunctionalInterface
+public interface BiConsumerWithException<T, U> {
+	void accept(T t, U u) throws Exception;
+
+	static <T, U> BiConsumer<T, U> asBiConsumer(BiConsumerWithException<T, U> unchecked) {
+		return (t, u) -> {
+			try {
+				unchecked.accept(t, u);
+			} catch (Exception e) {
+				throw Exceptions.duck(e);
+			}
+		};
+	}
 }

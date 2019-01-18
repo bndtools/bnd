@@ -1,8 +1,7 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
-Bundle-Name: bndlib
-Bundle-Description: A Swiss Army Knife for OSGi
+Bundle-Description: bndlib: A Swiss Army Knife for OSGi
 
 -includepackage: \
 	aQute.bnd.*,\

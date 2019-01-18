@@ -231,13 +231,7 @@ public class Aspects {
 					this.around = around;
 				} else {
 					BiFunctionWithException<Invocation, Callable<Object>, Object> previous = this.around;
-					this.around = (inv, callable) -> around.apply(inv, () -> {
-						try {
-							return previous.apply(inv, callable);
-						} catch (Throwable e) {
-							throw Exceptions.duck(e);
-						}
-					});
+					this.around = (inv, callable) -> around.apply(inv, () -> previous.apply(inv, callable));
 				}
 				return this;
 			}
@@ -249,8 +243,8 @@ public class Aspects {
 				else {
 					ConsumerWithException<Invocation> previous = this.before;
 					this.before = (args) -> {
-						previous.apply(args);
-						before.apply(args);
+						previous.accept(args);
+						before.accept(args);
 						;
 					};
 				}
@@ -301,8 +295,8 @@ public class Aspects {
 					if (exceptions == null)
 						this.exceptions = (inv, exc) -> {
 							if (exc instanceof InvocationTargetException)
-								throw ((InvocationTargetException) exc).getTargetException();
-							throw exc;
+								throw Exceptions.duck(((InvocationTargetException) exc).getTargetException());
+							throw Exceptions.duck(exc);
 						};
 
 					return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {
@@ -316,16 +310,10 @@ public class Aspects {
 			Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 				Invocation inv = new Invocation(proxy, method, args);
 				try {
-					before.apply(inv);
+					before.accept(inv);
 
 					FunctionWithException<Invocation, Object> target = methods.get(method);
-					Object result = around.apply(inv, () -> {
-						try {
-							return target.apply(inv);
-						} catch (Throwable e) {
-							throw Exceptions.duck(e);
-						}
-					});
+					Object result = around.apply(inv, () -> target.apply(inv));
 
 					return after.apply(inv, result);
 				} catch (Throwable t) {
