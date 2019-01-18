@@ -73,7 +73,7 @@ import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
 
-@Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
+@Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public class BndMavenPlugin extends AbstractMojo {
 	private static final Logger						logger					= LoggerFactory
 		.getLogger(BndMavenPlugin.class);
@@ -154,6 +154,8 @@ public class BndMavenPlugin extends AbstractMojo {
 
 	private File									propertiesFile;
 
+	private static final Object						lock					= new Object();
+
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
@@ -174,272 +176,274 @@ public class BndMavenPlugin extends AbstractMojo {
 		Properties mavenProperties = new Properties(beanProperties);
 		mavenProperties.putAll(project.getProperties());
 
-		try (Builder builder = new Builder(new Processor(mavenProperties, false))) {
-			builder.setTrace(logger.isDebugEnabled());
+		synchronized (lock) {
+			try (Builder builder = new Builder(new Processor(mavenProperties, false))) {
+				builder.setTrace(logger.isDebugEnabled());
 
-			builder.setBase(project.getBasedir());
-			propertiesFile = loadProperties(builder);
-			builder.setProperty("project.output", targetDir.getCanonicalPath());
+				builder.setBase(project.getBasedir());
+				propertiesFile = loadProperties(builder);
+				builder.setProperty("project.output", targetDir.getCanonicalPath());
 
-			// If no bundle to be built, we have nothing to do
-			if (Processor.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
-				logger.debug(Constants.NOBUNDLES + ": true");
-				return;
-			}
-
-			// Reject sub-bundle projects
-			List<Builder> subs = builder.getSubBuilders();
-			if ((subs.size() != 1) || !builder.equals(subs.get(0))) {
-				throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
-			}
-
-			// always add the outputDirectory to the classpath, but
-			// handle projects with no output directory, like
-			// 'test-wrapper-bundle'
-			if (classesDir.isDirectory()) {
-				builder.addClasspath(classesDir);
-
-				Jar classesDirJar = new Jar(project.getName(), classesDir);
-				if (!includeClassesDir) {
-					classesDirJar.removePrefix(""); // clear the jar
+				// If no bundle to be built, we have nothing to do
+				if (Processor.isTrue(builder.getProperty(Constants.NOBUNDLES))) {
+					logger.debug(Constants.NOBUNDLES + ": true");
+					return;
 				}
-				classesDirJar.setManifest(new Manifest());
-				builder.setJar(classesDirJar);
-			}
 
-			boolean isWab = PACKAGING_WAR.equals(project.getPackaging());
-			boolean hasWablibs = builder.getProperty(Constants.WABLIB) != null;
-			String wabProperty = builder.getProperty(Constants.WAB);
-
-			if (isWab) {
-				if (wabProperty == null) {
-					builder.setProperty(Constants.WAB, "");
+				// Reject sub-bundle projects
+				List<Builder> subs = builder.getSubBuilders();
+				if ((subs.size() != 1) || !builder.equals(subs.get(0))) {
+					throw new MojoExecutionException("Sub-bundles not permitted in a maven build");
 				}
-				outputDir = warOutputDir;
-				logger.info(
-					"WAB mode enabled. Bnd output will be expanded into the 'maven-war-plugin' <webappDirectory>:"
-						+ outputDir);
-			}
-			else if ((wabProperty != null) || hasWablibs) {
-				throw new MojoFailureException(
-					Constants.WAB + " & " + Constants.WABLIB + " are not supported with packaging 'jar'");
-			}
 
-			// Compute bnd classpath
-			Set<Artifact> artifacts = project.getArtifacts();
-			List<Object> buildpath = new ArrayList<Object>(artifacts.size());
-			List<String> wablibs = new ArrayList<String>(artifacts.size());
-			for (Artifact artifact : artifacts) {
-				File cpe = artifact.getFile()
-					.getCanonicalFile();
-				if (!cpe.exists()) {
-					logger.debug("dependency {} does not exist", cpe);
-					continue;
-				}
-				if (cpe.isDirectory()) {
-					Jar cpeJar = new Jar(cpe);
-					builder.addClose(cpeJar);
-					builder.updateModified(cpeJar.lastModified(), cpe.getPath());
-					buildpath.add(cpeJar);
-				} else {
-					if (!artifact.getType()
-						.equals("jar")) {
-						/*
-						 * Check if it is a valid zip file. We don't create a
-						 * Jar object here because we want to avoid the cost of
-						 * creating the Jar object if we decide not to build.
-						 */
-						try (ZipFile zip = new ZipFile(cpe)) {
-							zip.entries();
-						} catch (ZipException e) {
-							logger.debug("dependency {} is not a zip", cpe);
-							continue;
-						}
+				// always add the outputDirectory to the classpath, but
+				// handle projects with no output directory, like
+				// 'test-wrapper-bundle'
+				if (classesDir.isDirectory()) {
+					builder.addClasspath(classesDir);
+
+					Jar classesDirJar = new Jar(project.getName(), classesDir);
+					if (!includeClassesDir) {
+						classesDirJar.removePrefix(""); // clear the jar
 					}
-					builder.updateModified(cpe.lastModified(), cpe.getPath());
-					buildpath.add(cpe);
-
-					if (isWab && !hasWablibs && !Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
-						&& !Artifact.SCOPE_TEST.equals(artifact.getScope()) && !artifact.isOptional()) {
-
-						String fileNameMapping = MappingUtils
-							.evaluateFileNameMapping(MappingUtils.DEFAULT_FILE_NAME_MAPPING, artifact);
-						wablibs.add("WEB-INF/lib/" + fileNameMapping + "=" + cpe.getName() + ";lib:=true");
-					}
+					classesDirJar.setManifest(new Manifest());
+					builder.setJar(classesDirJar);
 				}
-			}
 
-			if (!wablibs.isEmpty()) {
-				String wablib = wablibs.stream()
-					.collect(Collectors.joining(","));
-				builder.setProperty(Constants.WABLIB, wablib);
-			}
+				boolean isWab = PACKAGING_WAR.equals(project.getPackaging());
+				boolean hasWablibs = builder.getProperty(Constants.WABLIB) != null;
+				String wabProperty = builder.getProperty(Constants.WAB);
 
-			builder.setProperty("project.buildpath", Strings.join(File.pathSeparator, buildpath));
-			logger.debug("builder classpath: {}", builder.getProperty("project.buildpath"));
-
-			// Compute bnd sourcepath
-			boolean delta = !buildContext.isIncremental() || manifestOutOfDate();
-			List<File> sourcepath = new ArrayList<File>();
-			if (sourceDir.exists()) {
-				sourcepath.add(sourceDir.getCanonicalFile());
-				delta |= buildContext.hasDelta(sourceDir);
-			}
-			for (org.apache.maven.model.Resource resource : resources) {
-				File resourceDir = new File(resource.getDirectory());
-				if (resourceDir.exists()) {
-					sourcepath.add(resourceDir.getCanonicalFile());
-					delta |= buildContext.hasDelta(resourceDir);
-				}
-			}
-			builder.setProperty("project.sourcepath", Strings.join(File.pathSeparator, sourcepath));
-			logger.debug("builder sourcepath: {}", builder.getProperty("project.sourcepath"));
-
-			// Set Bundle-SymbolicName
-			if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
-				builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, project.getArtifactId());
-			}
-			// Set Bundle-Name
-			if (builder.getProperty(Constants.BUNDLE_NAME) == null) {
-				builder.setProperty(Constants.BUNDLE_NAME, project.getName());
-			}
-			// Set Bundle-Version
-			if (builder.getProperty(Constants.BUNDLE_VERSION) == null) {
-				Version version = MavenVersion.parseString(project.getVersion())
-					.getOSGiVersion();
-				builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
-				if (builder.getProperty(Constants.SNAPSHOT) == null) {
-					builder.setProperty(Constants.SNAPSHOT, TSTAMP);
-				}
-			}
-
-			// Set Bundle-Description
-			if (builder.getProperty(Constants.BUNDLE_DESCRIPTION) == null) {
-				// may be null
-				if (StringUtils.isNotBlank(project.getDescription())) {
-					StringBuilder description = new StringBuilder();
-					OSGiHeader.quote(description, project.getDescription());
-					builder.setProperty(Constants.BUNDLE_DESCRIPTION, description.toString());
-				}
-			}
-
-			// Set Bundle-Vendor
-			if (builder.getProperty(Constants.BUNDLE_VENDOR) == null) {
-				if (project.getOrganization() != null && StringUtils.isNotBlank(project.getOrganization().getName())) {
-					builder.setProperty(Constants.BUNDLE_VENDOR, project.getOrganization().getName());
-				}
-			}
-
-			// Set Bundle-License
-			if (builder.getProperty(Constants.BUNDLE_LICENSE) == null) {
-				StringBuilder licenses = new StringBuilder();
-				for (License license : project.getLicenses()) {
-					addHeaderValue(licenses, license.getName(), ',');
-					// link is optional
-					if (StringUtils.isNotBlank(license.getUrl())) {
-						addHeaderAttribute(licenses, "link", license.getUrl(), ';');
+				if (isWab) {
+					if (wabProperty == null) {
+						builder.setProperty(Constants.WAB, "");
 					}
-					// comment is optional
-					if (StringUtils.isNotBlank(license.getComments())) {
-						addHeaderAttribute(licenses, "description", license.getComments(), ';');
-					}
+					outputDir = warOutputDir;
+					logger.info(
+						"WAB mode enabled. Bnd output will be expanded into the 'maven-war-plugin' <webappDirectory>:"
+							+ outputDir);
 				}
-				if (licenses.length() > 0) {
-					builder.setProperty(Constants.BUNDLE_LICENSE, licenses.toString());
+				else if ((wabProperty != null) || hasWablibs) {
+					throw new MojoFailureException(
+						Constants.WAB + " & " + Constants.WABLIB + " are not supported with packaging 'jar'");
 				}
-			}
 
-			// Set Bundle-SCM
-			if (builder.getProperty(Constants.BUNDLE_SCM) == null) {
-				StringBuilder scm = new StringBuilder();
-				if (project.getScm() != null) {
-					if (StringUtils.isNotBlank(project.getScm().getUrl())) {
-						addHeaderAttribute(scm, "url", project.getScm().getUrl(), ',');
+				// Compute bnd classpath
+				Set<Artifact> artifacts = project.getArtifacts();
+				List<Object> buildpath = new ArrayList<Object>(artifacts.size());
+				List<String> wablibs = new ArrayList<String>(artifacts.size());
+				for (Artifact artifact : artifacts) {
+					File cpe = artifact.getFile()
+						.getCanonicalFile();
+					if (!cpe.exists()) {
+						logger.debug("dependency {} does not exist", cpe);
+						continue;
 					}
-					if (StringUtils.isNotBlank(project.getScm().getConnection())) {
-						addHeaderAttribute(scm, "connection", project.getScm().getConnection(), ',');
-					}
-					if (StringUtils.isNotBlank(project.getScm().getDeveloperConnection())) {
-						addHeaderAttribute(scm, "developer-connection", project.getScm().getDeveloperConnection(), ',');
-					}
-					if (StringUtils.isNotBlank(project.getScm().getTag())) {
-						addHeaderAttribute(scm, "tag", project.getScm().getTag(), ',');
-					}
-					if (scm.length() > 0) {
-						builder.setProperty(Constants.BUNDLE_SCM, scm.toString());
-					}
-				}
-			}
-
-			// Set Bundle-Developers
-			if (builder.getProperty(Constants.BUNDLE_DEVELOPERS) == null) {
-				StringBuilder developers = new StringBuilder();
-				// this is never null
-				for (Developer developer : project.getDevelopers()) {
-					// id is mandatory for OSGi but not enforced in the pom.xml
-					if (StringUtils.isNotBlank(developer.getId())) {
-						addHeaderValue(developers, developer.getId(), ',');
-						// all attributes are optional
-						if (StringUtils.isNotBlank(developer.getEmail())) {
-							addHeaderAttribute(developers, "email", developer.getEmail(), ';');
-						}
-						if (StringUtils.isNotBlank(developer.getName())) {
-							addHeaderAttribute(developers, "name", developer.getName(), ';');
-						}
-						if (StringUtils.isNotBlank(developer.getOrganization())) {
-							addHeaderAttribute(developers, "organization", developer.getOrganization(), ';');
-						}
-						if (StringUtils.isNotBlank(developer.getOrganizationUrl())) {
-							addHeaderAttribute(developers, "organizationUrl", developer.getOrganizationUrl(), ';');
-						}
-						if (!developer.getRoles().isEmpty()) {
-							addHeaderAttribute(developers, "roles", StringUtils.join(developer.getRoles().iterator(), ","), ';');
-						}
-						if (StringUtils.isNotBlank(developer.getTimezone())) {
-							addHeaderAttribute(developers, "timezone", developer.getTimezone(), ';');
-						}
+					if (cpe.isDirectory()) {
+						Jar cpeJar = new Jar(cpe);
+						builder.addClose(cpeJar);
+						builder.updateModified(cpeJar.lastModified(), cpe.getPath());
+						buildpath.add(cpeJar);
 					} else {
-						logger.warn(
-							"Cannot consider developer in line '{}' of file '{}' for bundle header '{}' as it does not contain the mandatory id.",
-							developer.getLocation("").getLineNumber(), developer.getLocation("").getSource().getLocation(), Constants.BUNDLE_DEVELOPERS);
+						if (!artifact.getType()
+							.equals("jar")) {
+							/*
+							 * Check if it is a valid zip file. We don't create a
+							 * Jar object here because we want to avoid the cost of
+							 * creating the Jar object if we decide not to build.
+							 */
+							try (ZipFile zip = new ZipFile(cpe)) {
+								zip.entries();
+							} catch (ZipException e) {
+								logger.debug("dependency {} is not a zip", cpe);
+								continue;
+							}
+						}
+						builder.updateModified(cpe.lastModified(), cpe.getPath());
+						buildpath.add(cpe);
+
+						if (isWab && !hasWablibs && !Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
+							&& !Artifact.SCOPE_TEST.equals(artifact.getScope()) && !artifact.isOptional()) {
+
+							String fileNameMapping = MappingUtils
+								.evaluateFileNameMapping(MappingUtils.DEFAULT_FILE_NAME_MAPPING, artifact);
+							wablibs.add("WEB-INF/lib/" + fileNameMapping + "=" + cpe.getName() + ";lib:=true");
+						}
 					}
 				}
-				if (developers.length() > 0) {
-					builder.setProperty(Constants.BUNDLE_DEVELOPERS, developers.toString());
+
+				if (!wablibs.isEmpty()) {
+					String wablib = wablibs.stream()
+						.collect(Collectors.joining(","));
+					builder.setProperty(Constants.WABLIB, wablib);
 				}
-			}
 
-			// Set Bundle-DocURL
-			if (builder.getProperty(Constants.BUNDLE_DOCURL) == null) {
-				if (StringUtils.isNotBlank(project.getUrl())) {
-					builder.setProperty(Constants.BUNDLE_DOCURL, project.getUrl());
+				builder.setProperty("project.buildpath", Strings.join(File.pathSeparator, buildpath));
+				logger.debug("builder classpath: {}", builder.getProperty("project.buildpath"));
+
+				// Compute bnd sourcepath
+				boolean delta = !buildContext.isIncremental() || manifestOutOfDate();
+				List<File> sourcepath = new ArrayList<File>();
+				if (sourceDir.exists()) {
+					sourcepath.add(sourceDir.getCanonicalFile());
+					delta |= buildContext.hasDelta(sourceDir);
 				}
+				for (org.apache.maven.model.Resource resource : resources) {
+					File resourceDir = new File(resource.getDirectory());
+					if (resourceDir.exists()) {
+						sourcepath.add(resourceDir.getCanonicalFile());
+						delta |= buildContext.hasDelta(resourceDir);
+					}
+				}
+				builder.setProperty("project.sourcepath", Strings.join(File.pathSeparator, sourcepath));
+				logger.debug("builder sourcepath: {}", builder.getProperty("project.sourcepath"));
+
+				// Set Bundle-SymbolicName
+				if (builder.getProperty(Constants.BUNDLE_SYMBOLICNAME) == null) {
+					builder.setProperty(Constants.BUNDLE_SYMBOLICNAME, project.getArtifactId());
+				}
+				// Set Bundle-Name
+				if (builder.getProperty(Constants.BUNDLE_NAME) == null) {
+					builder.setProperty(Constants.BUNDLE_NAME, project.getName());
+				}
+				// Set Bundle-Version
+				if (builder.getProperty(Constants.BUNDLE_VERSION) == null) {
+					Version version = MavenVersion.parseString(project.getVersion())
+						.getOSGiVersion();
+					builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
+					if (builder.getProperty(Constants.SNAPSHOT) == null) {
+						builder.setProperty(Constants.SNAPSHOT, TSTAMP);
+					}
+				}
+
+				// Set Bundle-Description
+				if (builder.getProperty(Constants.BUNDLE_DESCRIPTION) == null) {
+					// may be null
+					if (StringUtils.isNotBlank(project.getDescription())) {
+						StringBuilder description = new StringBuilder();
+						OSGiHeader.quote(description, project.getDescription());
+						builder.setProperty(Constants.BUNDLE_DESCRIPTION, description.toString());
+					}
+				}
+
+				// Set Bundle-Vendor
+				if (builder.getProperty(Constants.BUNDLE_VENDOR) == null) {
+					if (project.getOrganization() != null && StringUtils.isNotBlank(project.getOrganization().getName())) {
+						builder.setProperty(Constants.BUNDLE_VENDOR, project.getOrganization().getName());
+					}
+				}
+
+				// Set Bundle-License
+				if (builder.getProperty(Constants.BUNDLE_LICENSE) == null) {
+					StringBuilder licenses = new StringBuilder();
+					for (License license : project.getLicenses()) {
+						addHeaderValue(licenses, license.getName(), ',');
+						// link is optional
+						if (StringUtils.isNotBlank(license.getUrl())) {
+							addHeaderAttribute(licenses, "link", license.getUrl(), ';');
+						}
+						// comment is optional
+						if (StringUtils.isNotBlank(license.getComments())) {
+							addHeaderAttribute(licenses, "description", license.getComments(), ';');
+						}
+					}
+					if (licenses.length() > 0) {
+						builder.setProperty(Constants.BUNDLE_LICENSE, licenses.toString());
+					}
+				}
+
+				// Set Bundle-SCM
+				if (builder.getProperty(Constants.BUNDLE_SCM) == null) {
+					StringBuilder scm = new StringBuilder();
+					if (project.getScm() != null) {
+						if (StringUtils.isNotBlank(project.getScm().getUrl())) {
+							addHeaderAttribute(scm, "url", project.getScm().getUrl(), ',');
+						}
+						if (StringUtils.isNotBlank(project.getScm().getConnection())) {
+							addHeaderAttribute(scm, "connection", project.getScm().getConnection(), ',');
+						}
+						if (StringUtils.isNotBlank(project.getScm().getDeveloperConnection())) {
+							addHeaderAttribute(scm, "developer-connection", project.getScm().getDeveloperConnection(), ',');
+						}
+						if (StringUtils.isNotBlank(project.getScm().getTag())) {
+							addHeaderAttribute(scm, "tag", project.getScm().getTag(), ',');
+						}
+						if (scm.length() > 0) {
+							builder.setProperty(Constants.BUNDLE_SCM, scm.toString());
+						}
+					}
+				}
+
+				// Set Bundle-Developers
+				if (builder.getProperty(Constants.BUNDLE_DEVELOPERS) == null) {
+					StringBuilder developers = new StringBuilder();
+					// this is never null
+					for (Developer developer : project.getDevelopers()) {
+						// id is mandatory for OSGi but not enforced in the pom.xml
+						if (StringUtils.isNotBlank(developer.getId())) {
+							addHeaderValue(developers, developer.getId(), ',');
+							// all attributes are optional
+							if (StringUtils.isNotBlank(developer.getEmail())) {
+								addHeaderAttribute(developers, "email", developer.getEmail(), ';');
+							}
+							if (StringUtils.isNotBlank(developer.getName())) {
+								addHeaderAttribute(developers, "name", developer.getName(), ';');
+							}
+							if (StringUtils.isNotBlank(developer.getOrganization())) {
+								addHeaderAttribute(developers, "organization", developer.getOrganization(), ';');
+							}
+							if (StringUtils.isNotBlank(developer.getOrganizationUrl())) {
+								addHeaderAttribute(developers, "organizationUrl", developer.getOrganizationUrl(), ';');
+							}
+							if (!developer.getRoles().isEmpty()) {
+								addHeaderAttribute(developers, "roles", StringUtils.join(developer.getRoles().iterator(), ","), ';');
+							}
+							if (StringUtils.isNotBlank(developer.getTimezone())) {
+								addHeaderAttribute(developers, "timezone", developer.getTimezone(), ';');
+							}
+						} else {
+							logger.warn(
+								"Cannot consider developer in line '{}' of file '{}' for bundle header '{}' as it does not contain the mandatory id.",
+								developer.getLocation("").getLineNumber(), developer.getLocation("").getSource().getLocation(), Constants.BUNDLE_DEVELOPERS);
+						}
+					}
+					if (developers.length() > 0) {
+						builder.setProperty(Constants.BUNDLE_DEVELOPERS, developers.toString());
+					}
+				}
+
+				// Set Bundle-DocURL
+				if (builder.getProperty(Constants.BUNDLE_DOCURL) == null) {
+					if (StringUtils.isNotBlank(project.getUrl())) {
+						builder.setProperty(Constants.BUNDLE_DOCURL, project.getUrl());
+					}
+				}
+
+				logger.debug("builder properties: {}", builder.getProperties());
+				logger.debug("builder delta: {}", delta);
+
+				if (delta || (builder.getJar() == null) || (builder.lastModified() > builder.getJar()
+					.lastModified())) {
+					// Set builder paths
+					builder.setClasspath(buildpath);
+					builder.setSourcepath(sourcepath.toArray(new File[0]));
+
+					// Build bnd Jar (in memory)
+					Jar bndJar = builder.build();
+
+					// Expand Jar into target/classes
+					expandJar(bndJar, outputDir);
+				} else {
+					logger.debug("No build");
+				}
+
+				// Finally, report
+				reportErrorsAndWarnings(builder);
+			} catch (MojoExecutionException | MojoFailureException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new MojoExecutionException("bnd error: " + e.getMessage(), e);
 			}
-
-			logger.debug("builder properties: {}", builder.getProperties());
-			logger.debug("builder delta: {}", delta);
-
-			if (delta || (builder.getJar() == null) || (builder.lastModified() > builder.getJar()
-				.lastModified())) {
-				// Set builder paths
-				builder.setClasspath(buildpath);
-				builder.setSourcepath(sourcepath.toArray(new File[0]));
-
-				// Build bnd Jar (in memory)
-				Jar bndJar = builder.build();
-
-				// Expand Jar into target/classes
-				expandJar(bndJar, outputDir);
-			} else {
-				logger.debug("No build");
-			}
-
-			// Finally, report
-			reportErrorsAndWarnings(builder);
-		} catch (MojoExecutionException | MojoFailureException e) {
-			throw e;
-		} catch (Exception e) {
-			throw new MojoExecutionException("bnd error: " + e.getMessage(), e);
 		}
 	}
 
