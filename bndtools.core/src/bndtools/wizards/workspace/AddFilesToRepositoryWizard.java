@@ -4,22 +4,21 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.net.URI;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.jar.Attributes;
-
-import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.wizard.Wizard;
 
-import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
@@ -65,54 +64,45 @@ public class AddFilesToRepositoryWizard extends Wizard {
         WorkspaceJob job = new WorkspaceJob("Adding files to repository") {
             @Override
             public IStatus runInWorkspace(IProgressMonitor monitor) throws CoreException {
-                return performFinishAddFiles(monitor);
+                MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Failed to install one or more bundles", null);
+                List<File> files = fileSelectionPage.getFiles();
+                List<File> refresh = new ArrayList<>();
+                selectedBundles = new LinkedList<Pair<String, String>>();
+                SubMonitor progress = SubMonitor.convert(monitor, getName(), files.size());
+                for (File file : files) {
+                    try (Jar jar = new Jar(file)) {
+                        String bsn = jar.getBsn();
+                        String version = jar.getVersion();
+                        selectedBundles.add(Pair.newInstance(bsn, (version != null) ? version : "0"));
+                    } catch (Exception e) {
+                        status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to analyse JAR: {0}", file.getPath()), e));
+                        progress.worked(1);
+                        continue;
+                    }
+
+                    try {
+                        RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(IO.stream(file)), new RepositoryPlugin.PutOptions());
+                        URI artifact = result.artifact;
+                        if ((artifact != null) && artifact.getScheme()
+                            .equalsIgnoreCase("file")) {
+                            refresh.add(new File(artifact));
+                        }
+                    } catch (Exception e) {
+                        status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to add JAR to repository: {0}", file.getPath()), e));
+                        progress.worked(1);
+                        continue;
+                    }
+                    progress.worked(1);
+                }
+                RefreshFileJob refreshJob = new RefreshFileJob(refresh, false);
+                if (refreshJob.needsToSchedule())
+                    refreshJob.schedule();
+                progress.done();
+                return status;
             }
         };
         job.schedule();
         return true;
-    }
-
-    private IStatus performFinishAddFiles(IProgressMonitor monitor) {
-        MultiStatus status = new MultiStatus(Plugin.PLUGIN_ID, 0, "Failed to install one or more bundles", null);
-
-        List<File> files = fileSelectionPage.getFiles();
-        selectedBundles = new LinkedList<Pair<String, String>>();
-        monitor.beginTask("Processing files", files.size());
-        for (File file : files) {
-            monitor.subTask(file.getName());
-
-            try (Jar jar = new Jar(file)) {
-                jar.setDoNotTouchManifest();
-
-                Attributes mainAttribs = jar.getManifest()
-                    .getMainAttributes();
-                String bsn = BundleUtils.getBundleSymbolicName(mainAttribs);
-                String version = mainAttribs.getValue(Constants.BUNDLE_VERSION);
-                if (version == null)
-                    version = "0";
-                selectedBundles.add(Pair.newInstance(bsn, version));
-            } catch (Exception e) {
-                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to analyse JAR: {0}", file.getPath()), e));
-                continue;
-            }
-
-            try {
-                RepositoryPlugin.PutResult result = repository.put(new BufferedInputStream(IO.stream(file)), new RepositoryPlugin.PutOptions());
-                if (result.artifact != null && result.artifact.getScheme()
-                    .equals("file")) {
-                    File newFile = new File(result.artifact);
-
-                    RefreshFileJob refreshJob = new RefreshFileJob(newFile, false);
-                    if (refreshJob.needsToSchedule())
-                        refreshJob.schedule();
-                }
-            } catch (Exception e) {
-                status.add(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, MessageFormat.format("Failed to add JAR to repository: {0}", file.getPath()), e));
-                continue;
-            }
-            monitor.worked(1);
-        }
-        return status;
     }
 
     public List<Pair<String, String>> getSelectedBundles() {

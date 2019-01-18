@@ -82,4 +82,3 @@ Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic
 -baseline: *
 
 -fixupmessages.converter: "Export aQute.bnd.http,* private references \\[aQute.lib.converter\\]"
--fixupmessages.bundleversion: "The bundle version \\(4.0.0/4.1.0\\) is too low, must be at least 5.0.0"
