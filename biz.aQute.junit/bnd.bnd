@@ -6,7 +6,8 @@
 	osgi.cmpn;version=4.2;maven-scope=provided,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest;maven-scope=provided,\
-	${junit}
+	org.apache.servicemix.bundles.junit;version="[4.11,5)";maven-scope=provided,\
+	org.assertj.core;version="[3,4)";maven-scope=provided
 
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 
