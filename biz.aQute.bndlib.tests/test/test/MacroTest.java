@@ -256,7 +256,7 @@ public class MacroTest extends TestCase {
 	 * @throws Exception
 	 */
 
-	public static void testPackageAttribute() throws Exception {
+	public void testPackageAttribute() throws Exception {
 		Builder builder = new Builder();
 		builder.addClasspath(IO.getFile("jar/osgi.jar"));
 		builder.setExportPackage("org.osgi.service.event;foo=3");
@@ -648,7 +648,7 @@ public class MacroTest extends TestCase {
 	 * Test replacement of ./ with cwd
 	 */
 
-	public static void testCurrentWorkingDirectory() {
+	public void testCurrentWorkingDirectory() {
 		Processor top = new Processor();
 		top.setProperty("cwd.1", "./"); // empty
 		top.setProperty("cwd.2", " ./"); // empty
@@ -687,7 +687,7 @@ public class MacroTest extends TestCase {
 	 * Test if $if accepts isdir
 	 */
 
-	public static void testifDir() {
+	public void testifDir() {
 		Processor top = new Processor();
 		top.setProperty("presentd", "${if;${isdir;jar};YES;NO}");
 		top.setProperty("absentd", "${if;${isdir;xxx};YES;NO}");
@@ -707,7 +707,7 @@ public class MacroTest extends TestCase {
 	 * Test the combine macro that groups properties
 	 */
 
-	public static void testWildcardKeys() {
+	public void testWildcardKeys() {
 		Processor top = new Processor();
 		top.setProperty("a.3", "a.3");
 		top.setProperty("a.1", "a.1");
@@ -719,7 +719,7 @@ public class MacroTest extends TestCase {
 
 	}
 
-	public static void testEnv() {
+	public void testEnv() {
 		Processor proc = new Processor();
 		String s = proc.getReplacer()
 			.process("${env;PATH}");
@@ -732,7 +732,7 @@ public class MacroTest extends TestCase {
 		assertEquals(s, s2);
 	}
 
-	public static void testEnvAlt() {
+	public void testEnvAlt() {
 		Processor proc = new Processor();
 		String s = proc.getReplacer()
 			.process("${env;FOOBAR;hello}");
@@ -742,7 +742,7 @@ public class MacroTest extends TestCase {
 	/**
 	 * Test the random macro
 	 */
-	public static void testRandom() {
+	public void testRandom() {
 		Processor top = new Processor();
 		top.setProperty("a", "${random}");
 		top.setProperty("a12", "${random;12}");
@@ -759,7 +759,7 @@ public class MacroTest extends TestCase {
 	 * Testing an example with nesting that was supposd not to work
 	 */
 
-	public static void testSuper() {
+	public void testSuper() {
 		Processor top = new Processor();
 		Processor middle = new Processor(top);
 		Processor bottom = new Processor(middle);
@@ -782,7 +782,7 @@ public class MacroTest extends TestCase {
 	 * Testing an example with nesting that was supposd not to work
 	 */
 
-	public static void testNesting2() {
+	public void testNesting2() {
 		Processor p = new Processor();
 		p.setProperty("groupId", "com.trivadis.tomas");
 		p.setProperty("artifactId", "common");
@@ -806,7 +806,7 @@ public class MacroTest extends TestCase {
 	 * Verify system command
 	 */
 
-	public static void testSystem() throws Exception {
+	public void testSystem() throws Exception {
 		// disable this test on windows
 		if (!"/".equals(File.separator))
 			return;
@@ -818,7 +818,7 @@ public class MacroTest extends TestCase {
 			.matches("\\s*[0-9]+\\s+[0-9]+\\s+[0-9]+\\s*"));
 	}
 
-	public static void testSystemFail() throws Exception {
+	public void testSystemFail() throws Exception {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		String cmd = "${system;mostidioticcommandthatwillsurelyfail}";
@@ -830,7 +830,7 @@ public class MacroTest extends TestCase {
 	 * Verify system-allow-fail command
 	 */
 
-	public static void testSystemAllowFail() throws Exception {
+	public void testSystemAllowFail() throws Exception {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		assertEquals("", macro.process("${system-allow-fail;mostidioticcommandthatwillsurelyfail}"));
@@ -839,7 +839,7 @@ public class MacroTest extends TestCase {
 	/**
 	 * Check that variables override macros.
 	 */
-	public static void testPriority() {
+	public void testPriority() {
 		Processor p = new Processor();
 		p.setProperty("now", "not set");
 		Macro macro = new Macro(p);
@@ -847,7 +847,7 @@ public class MacroTest extends TestCase {
 
 	}
 
-	public static void testNames() {
+	public void testNames() {
 		Processor p = new Processor();
 		p.setProperty("a", "a");
 		p.setProperty("aa", "aa");
@@ -856,7 +856,7 @@ public class MacroTest extends TestCase {
 		assertEquals("aa", macro.process("${${a}${a}}"));
 	}
 
-	public static void testVersion() throws Exception {
+	public void testVersion() throws Exception {
 		Processor proc = new Processor();
 		Macro macro = new Macro(proc);
 		assertEquals("1.0.0", macro.process("${version;===;1.0.0}"));
@@ -901,7 +901,7 @@ public class MacroTest extends TestCase {
 		assertEquals("1.2.3.X", macro.process("${version;====;1.2.3.X}"));
 	}
 
-	public static void testRange() throws Exception {
+	public void testRange() throws Exception {
 		Processor proc = new Processor();
 		Macro macro = new Macro(proc);
 		assertEquals("[1.0,1.0]", macro.process("${range;[==,==];1.0.0}"));
@@ -936,7 +936,7 @@ public class MacroTest extends TestCase {
 	 * Test the wc function
 	 */
 
-	public static void testWc() {
+	public void testWc() {
 		Processor p = new Processor();
 		Macro macro = new Macro(p);
 		String a = macro.process("${lsr;test/test;*.java}");
@@ -956,7 +956,7 @@ public class MacroTest extends TestCase {
 	 * Check the uniq command
 	 */
 
-	public static void testUniq() {
+	public void testUniq() {
 		Builder builder = new Builder();
 		Properties p = new Properties();
 		p.setProperty("a", "${uniq;1}");
@@ -978,7 +978,7 @@ public class MacroTest extends TestCase {
 	 * Test arguments with difficult characters like ;
 	 */
 
-	public static void testEscapedArgs() {
+	public void testEscapedArgs() {
 		Builder builder = new Builder();
 		Properties p = new Properties();
 		p.setProperty("x", "${replace;1,2,3;.+;$0\\;version=1}");
@@ -990,7 +990,7 @@ public class MacroTest extends TestCase {
 	/**
 	 * Check if variables that contain variables, ad nauseum, really wrk
 	 */
-	public static void testNested() {
+	public void testNested() {
 		Builder builder = new Builder();
 		Properties p = new Properties();
 		p.setProperty("a", ".");
@@ -1010,7 +1010,7 @@ public class MacroTest extends TestCase {
 		assertEquals(builder.getProperty("f"), builder.getProperty("d"));
 	}
 
-	public static void testLoop() {
+	public void testLoop() {
 		Builder builder = new Builder();
 		Properties p = new Properties();
 		p.setProperty("a", "${b}");
@@ -1027,7 +1027,7 @@ public class MacroTest extends TestCase {
 		assertEquals("${infinite:[d,h,g,f,e,${e}]}", builder.getProperty("d"));
 	}
 
-	public static void testTstamp() {
+	public void testTstamp() {
 		String aug152008 = "1218810097322";
 		Processor p = new Processor();
 		Macro m = new Macro(p);
@@ -1040,27 +1040,27 @@ public class MacroTest extends TestCase {
 		assertEquals("200808152321", m.process("${tstamp;yyyyMMddHHmm;Asia/Tokyo;" + aug152008 + "}"));
 	}
 
-	public static void testIsfile() {
+	public void testIsfile() {
 		Processor p = new Processor();
 		Macro m = new Macro(p);
 		assertEquals("true", m.process("${isfile;.project}"));
 		assertEquals("false", m.process("${isfile;thisfiledoesnotexist}"));
 	}
 
-	public static void testParentFile() {
+	public void testParentFile() {
 		Processor p = new Processor();
 		Macro m = new Macro(p);
 		assertTrue(m.process("${dir;.project}")
 			.endsWith("biz.aQute.bndlib.tests"));
 	}
 
-	public static void testBasename() {
+	public void testBasename() {
 		Processor p = new Processor();
 		Macro m = new Macro(p);
 		assertEquals("biz.aQute.bndlib.tests", m.process("${basename;${dir;.project}}"));
 	}
 
-	public static void testMavenVersionMacro() throws Exception {
+	public void testMavenVersionMacro() throws Exception {
 		Builder builder = new Builder();
 		Properties p = new Properties();
 		p.setProperty("Export-Package", "org.objectweb.*;version=1.5-SNAPSHOT");
@@ -1080,7 +1080,7 @@ public class MacroTest extends TestCase {
 	 * Check if we can check for the defintion of a variable
 	 */
 
-	public static void testDef() {
+	public void testDef() {
 		Processor p = new Processor();
 		p.setProperty("set.1", "1");
 		p.setProperty("set.2", "2");
@@ -1093,7 +1093,7 @@ public class MacroTest extends TestCase {
 	/**
 	 * NEW
 	 */
-	public static void testReplace() {
+	public void testReplace() {
 		Processor p = new Processor();
 		p.setProperty("specs", "a0,b0, c0,    d0");
 		Macro m = new Macro(p);
@@ -1101,7 +1101,7 @@ public class MacroTest extends TestCase {
 		assertEquals("a, b, c, d", m.process("${replace;${specs};0}"));
 	}
 
-	public static void testToClassName() {
+	public void testToClassName() {
 		Processor p = new Processor();
 		Macro m = new Macro(p);
 		assertEquals("com.acme.test.Test", m.process("${toclassname;com/acme/test/Test.class}"));
@@ -1113,7 +1113,7 @@ public class MacroTest extends TestCase {
 		assertEquals("Test.class,com/acme/test/Test.class", m.process("${toclasspath;Test,com.acme.test.Test}"));
 	}
 
-	public static void testFindPath() throws IOException {
+	public void testFindPath() throws IOException {
 		try (Analyzer analyzer = new Analyzer()) {
 			analyzer.setJar(IO.getFile("jar/asm.jar"));
 			Macro m = new Macro(analyzer);
@@ -1132,7 +1132,7 @@ public class MacroTest extends TestCase {
 		}
 	}
 
-	public static void testWarning() {
+	public void testWarning() {
 		Processor p = new Processor();
 		p.setProperty("three", "333");
 		p.setProperty("empty", "");
@@ -1170,7 +1170,7 @@ public class MacroTest extends TestCase {
 			.endsWith("3 333"));
 	}
 
-	public static void testNestedReplace() {
+	public void testNestedReplace() {
 		Processor p = new Processor();
 		Macro m = new Macro(p);
 		String value = m.process("xx$(replace;1.2.3-SNAPSHOT;(\\d(\\.\\d)+).*;$1)xx");
@@ -1186,14 +1186,14 @@ public class MacroTest extends TestCase {
 
 	}
 
-	public static void testParentheses() {
+	public void testParentheses() {
 		Processor p = new Processor();
 		Macro m = new Macro(p);
 		String value = m.process("$(replace;();(\\(\\));$1)");
 		assertEquals("()", value);
 	}
 
-	public static void testSimple() {
+	public void testSimple() {
 		Processor p = new Processor();
 		p.setProperty("a", "aaaa");
 		Macro m = new Macro(p);
@@ -1206,7 +1206,7 @@ public class MacroTest extends TestCase {
 		assertEquals("xaaaaxaaaax", m.process("x${a}x${a}x"));
 	}
 
-	public static void testFilter() {
+	public void testFilter() {
 		Processor p = new Processor();
 		p.setProperty("a", "aaaa");
 		Macro m = new Macro(p);
@@ -1215,7 +1215,7 @@ public class MacroTest extends TestCase {
 		assertEquals("bb,dd,ff", m.process("${filter;${a},bb,cc,dd,ee,ff;[^ace]+}"));
 	}
 
-	public static void testFilterOut() {
+	public void testFilterOut() {
 		Processor p = new Processor();
 		p.setProperty("a", "aaaa");
 		Macro m = new Macro(p);
@@ -1224,7 +1224,7 @@ public class MacroTest extends TestCase {
 		assertEquals("aaaa,cc,ee", m.process("${filterout;${a},bb,cc,dd,ee,ff;[^ace]+}"));
 	}
 
-	public static void testSort() {
+	public void testSort() {
 		Processor p = new Processor();
 		p.setProperty("a", "aaaa");
 		Macro m = new Macro(p);
@@ -1233,7 +1233,7 @@ public class MacroTest extends TestCase {
 		assertEquals("aaaa,bb,cc,dd,ee,ff", m.process("${sort;ff,ee,cc,bb,dd,$<a>}"));
 	}
 
-	public static void testJoin() {
+	public void testJoin() {
 		Processor p = new Processor();
 		p.setProperty("a", "aaaa");
 		Macro m = new Macro(p);
@@ -1246,7 +1246,7 @@ public class MacroTest extends TestCase {
 		assertEquals("aa\nbb\ncc\ndd\nee\nff", m.process("${unescape;${sjoin;\\n;aa,bb,cc;dd,ee,ff}}"));
 	}
 
-	public static void testIf() {
+	public void testIf() {
 		Processor p = new Processor();
 		p.setProperty("a", "aaaa");
 		Macro m = new Macro(p);
@@ -1256,14 +1256,14 @@ public class MacroTest extends TestCase {
 		assertEquals("yes", m.process("${if;false;$<a>;yes}"));
 	}
 
-	public static void testLiteral() {
+	public void testLiteral() {
 		Processor p = new Processor();
 		p.setProperty("a", "aaaa");
 		Macro m = new Macro(p);
 		assertEquals("${aaaa}", m.process("${literal;$<a>}"));
 	}
 
-	public static void testFilterout() throws Exception {
+	public void testFilterout() throws Exception {
 		Builder b = new Builder();
 		b.addClasspath(IO.getFile("jar/osgi.jar"));
 		b.addClasspath(IO.getFile("jar/ds.jar"));
@@ -1283,7 +1283,7 @@ public class MacroTest extends TestCase {
 
 	}
 
-	public static void testPackagesMacro() throws Exception {
+	public void testPackagesMacro() throws Exception {
 		Builder b = new Builder();
 		b.setClasspath(new Jar[] {
 			new Jar(IO.getFile("bin_test"))
