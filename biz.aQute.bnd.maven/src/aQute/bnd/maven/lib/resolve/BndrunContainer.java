@@ -176,7 +176,10 @@ public class BndrunContainer {
 
 		DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver, system, scopes);
 
-		return fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles, useMavenDependencies);
+		String name = project.getName()
+			.isEmpty() ? project.getArtifactId() : project.getName();
+
+		return fileSetRepository = dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
 	}
 
 	private String getNamePart(File runFile) {
