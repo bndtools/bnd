@@ -298,17 +298,24 @@ public class Macro {
 	 * Parse the key as a command. A command consist of parameters separated by
 	 * ':'.
 	 */
-	static Pattern commands = Pattern.compile("(?<!\\\\);");
+	// Handle up to 4 sequential backslashes in the negative lookbehind.
+	private static final String		ESCAPING	= "(?<!(?<!(?<!(?<!\\\\)\\\\)\\\\)\\\\)";
+	private static final String		SEMICOLON			= ";";
+	private static final String		ESCAPED_SEMICOLON	= "\\\\" + SEMICOLON;
+	private static final Pattern	SEMICOLON_P			= Pattern.compile(ESCAPING + SEMICOLON);
+	private static final Pattern	ESCAPED_SEMICOLON_P	= Pattern.compile(ESCAPING + ESCAPED_SEMICOLON);
 
 	@SuppressWarnings("resource")
 	private String doCommands(String key, Link source) {
-		String[] args = commands.split(key);
+		String[] args = SEMICOLON_P.split(key, 0);
 		if (args == null || args.length == 0)
 			return null;
 
 		for (int i = 0; i < args.length; i++)
-			if (args[i].indexOf('\\') >= 0)
-				args[i] = args[i].replaceAll("\\\\;", ";");
+			if (args[i].indexOf('\\') >= 0) {
+				args[i] = ESCAPED_SEMICOLON_P.matcher(args[i])
+					.replaceAll(SEMICOLON);
+			}
 
 		if (args[0].startsWith("^")) {
 			String varname = args[0].substring(1)
