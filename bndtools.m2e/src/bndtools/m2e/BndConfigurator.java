@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.maven.lifecycle.MavenExecutionPlan;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.bndtools.api.ILogger;
@@ -202,13 +201,10 @@ public class BndConfigurator extends AbstractProjectConfigurator {
                 SubMonitor progress = SubMonitor.convert(monitor);
                 MavenProject mavenProject = getMavenProject(projectFacade, progress.newChild(1));
 
-                MavenExecutionPlan plan = maven.calculateExecutionPlan(mavenProject, Arrays.asList("jar:jar"), true, monitor);
-                List<MojoExecution> mojoExecutions = plan.getMojoExecutions();
+                List<MojoExecution> mojoExecutions = projectFacade.getMojoExecutions("org.apache.maven.plugins", "maven-jar-plugin", monitor, "jar");
 
-                if (mojoExecutions != null) {
-                    for (MojoExecution mojoExecution : mojoExecutions) {
-                        maven.execute(mavenProject, mojoExecution, progress.newChild(1));
-                    }
+                for (MojoExecution mojoExecution : mojoExecutions) {
+                    maven.execute(mavenProject, mojoExecution, progress.newChild(1));
                 }
 
                 // We can now decorate based on the build we just did.
