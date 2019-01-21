@@ -987,6 +987,19 @@ public class MacroTest extends TestCase {
 
 	}
 
+	public void testListMacro() throws Exception {
+		try (Builder builder = new Builder()) {
+			Properties p = new Properties();
+			p.setProperty("l1", "1;version=1.1,,2;version=1.2");
+			p.setProperty("l2", "3;version=1.3,");
+			p.setProperty("x", "${replace;${list;l1;l2};$;\\;maven-scope=provided}");
+			builder.setProperties(p);
+			assertEquals(
+				"1;version=1.1;maven-scope=provided, 2;version=1.2;maven-scope=provided, 3;version=1.3;maven-scope=provided",
+				builder.getProperty("x"));
+		}
+	}
+
 	/**
 	 * Check if variables that contain variables, ad nauseum, really wrk
 	 */

@@ -58,6 +58,7 @@ import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.filter.Get;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
 import aQute.service.reporter.Reporter.SetLocation;
@@ -643,6 +644,19 @@ public class Macro {
 		verifyCommand(args, _defHelp, null, 2, 3);
 
 		return domain.getProperty(args[1], args.length == 3 ? args[2] : "");
+	}
+
+	static final String _listHelp = "${list[;<name>]*}, returns a list of the values of the named properties with escaped semicolons";
+	public String _list(String args[]) {
+		verifyCommand(args, _listHelp, null, 1, Integer.MAX_VALUE);
+
+		return Arrays.stream(args, 1, args.length)
+			.map(domain::getProperty)
+			.flatMap(Strings::splitAsStream)
+			.map(element -> (element.indexOf(';') < 0) ? element
+				: SEMICOLON_P.matcher(element)
+					.replaceAll(ESCAPED_SEMICOLON))
+			.collect(joining(","));
 	}
 
 	static final String _replaceHelp = "${replace;<list>;<regex>;[<replace>[;delimiter]]}";
