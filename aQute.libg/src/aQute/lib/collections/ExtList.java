@@ -2,7 +2,11 @@ package aQute.lib.collections;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Collector;
+
+import aQute.lib.strings.Strings;
 
 public class ExtList<T> extends ArrayList<T> {
 	private static final long serialVersionUID = 1L;
@@ -13,6 +17,10 @@ public class ExtList<T> extends ArrayList<T> {
 		for (T t : ts) {
 			add(t);
 		}
+	}
+
+	ExtList() {
+		super();
 	}
 
 	public ExtList(int size) {
@@ -29,15 +37,21 @@ public class ExtList<T> extends ArrayList<T> {
 	}
 
 	public static ExtList<String> from(String s) {
-		// TODO make sure no \ before comma
-		return from(s, "\\s*,\\s*");
+		return Strings.splitAsStream(s)
+			.collect(collector());
 	}
 
 	public static ExtList<String> from(String s, String delimeter) {
-		ExtList<String> result = new ExtList<>();
-		String[] parts = s.split(delimeter);
-		Collections.addAll(result, parts);
-		return result;
+		return Pattern.compile(delimeter)
+			.splitAsStream(s)
+			.collect(collector());
+	}
+
+	private static Collector<String, ?, ExtList<String>> collector() {
+		return Collector.of(ExtList::new, List::add, (left, right) -> {
+			left.addAll(right);
+			return left;
+		});
 	}
 
 	public String join() {
@@ -45,15 +59,7 @@ public class ExtList<T> extends ArrayList<T> {
 	}
 
 	public String join(String del) {
-		StringBuilder sb = new StringBuilder();
-		String d = "";
-		for (T t : this) {
-			sb.append(d);
-			d = del;
-			if (t != null)
-				sb.append(t);
-		}
-		return sb.toString();
+		return Strings.join(",", this, null, null);
 	}
 
 }
