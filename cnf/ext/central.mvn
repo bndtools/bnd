@@ -48,13 +48,14 @@ org.apache.geronimo.specs:geronimo-atinject_1.0_spec:1.1
 org.apache.geronimo.specs:geronimo-interceptor_1.2_spec:1.1
 org.apache.geronimo.specs:geronimo-jcdi_2.0_spec:1.1
 
-org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
 org.apache.ant:ant:1.7.1
+
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
+org.assertj:assertj-core:3.11.1
 
 org.mockito:mockito-core:2.23.0
 net.bytebuddy:byte-buddy:1.9.0
 org.objenesis:objenesis:2.6
-org.assertj:assertj-core:3.10.0
 
 args4j:args4j:2.0.26
 
