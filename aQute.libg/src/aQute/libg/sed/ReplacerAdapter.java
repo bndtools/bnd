@@ -2,6 +2,7 @@ package aQute.libg.sed;
 
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.stream.Collectors.joining;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.util.regex.Pattern;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.SortedList;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
@@ -587,20 +589,15 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 			reporter.warning("Invalid nr of arguments to replace %s", Arrays.asList(args));
 			return null;
 		}
+		Pattern regex = Pattern.compile(args[2]);
+		String replace = (args.length > 3) ? args[3] : "";
+		String middle = (args.length > 4) ? args[4] : ",";
 
-		String list[] = args[1].split("\\s*,\\s*");
-		StringBuilder sb = new StringBuilder();
-		String del = "";
-		for (int i = 0; i < list.length; i++) {
-			String element = list[i].trim();
-			if (!element.equals("")) {
-				sb.append(del);
-				sb.append(element.replaceAll(args[2], args[3]));
-				del = ", ";
-			}
-		}
-
-		return sb.toString();
+		String result = Strings.splitAsStream(args[1])
+			.map(element -> regex.matcher(element)
+				.replaceAll(replace))
+			.collect(joining(middle));
+		return result;
 	}
 
 	public String _warning(String args[]) {
