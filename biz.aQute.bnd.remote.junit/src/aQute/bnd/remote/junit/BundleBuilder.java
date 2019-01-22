@@ -23,7 +23,8 @@ public class BundleBuilder implements BundleSpecBuilder {
 
 	BundleBuilder(JUnitFramework ws) {
 		this.ws = ws;
-		bundleSymbolicName("test-" + JUnitFrameworkBuilder.counter.incrementAndGet());
+		spec.classpath.add(ws.builder.local.bin_test);
+		bundleSymbolicName("t-" + JUnitFrameworkBuilder.counter.incrementAndGet());
 	}
 
 	/**

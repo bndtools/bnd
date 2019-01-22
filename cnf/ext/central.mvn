@@ -34,7 +34,7 @@ org.bouncycastle:bcprov-jdk15on:1.54
 org.apache.commons:commons-lang3:3.4
 commons-codec:commons-codec:1.10
 
-org.apache.felix:org.apache.felix.configadmin:1.2.4
+org.apache.felix:org.apache.felix.configadmin:1.9.10
 org.apache.felix:org.apache.felix.log:1.2.0
 org.apache.felix:org.apache.felix.framework:4.2.1
 org.apache.felix:org.apache.felix.framework:5.6.10
