@@ -58,6 +58,7 @@ import aQute.lib.filter.ExtendedFilter;
 import aQute.lib.filter.Get;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.glob.Glob;
 import aQute.service.reporter.Reporter.SetLocation;
@@ -298,17 +299,24 @@ public class Macro {
 	 * Parse the key as a command. A command consist of parameters separated by
 	 * ':'.
 	 */
-	static Pattern commands = Pattern.compile("(?<!\\\\);");
+	// Handle up to 4 sequential backslashes in the negative lookbehind.
+	private static final String		ESCAPING	= "(?<!(?<!(?<!(?<!\\\\)\\\\)\\\\)\\\\)";
+	private static final String		SEMICOLON			= ";";
+	private static final String		ESCAPED_SEMICOLON	= "\\\\" + SEMICOLON;
+	private static final Pattern	SEMICOLON_P			= Pattern.compile(ESCAPING + SEMICOLON);
+	private static final Pattern	ESCAPED_SEMICOLON_P	= Pattern.compile(ESCAPING + ESCAPED_SEMICOLON);
 
 	@SuppressWarnings("resource")
 	private String doCommands(String key, Link source) {
-		String[] args = commands.split(key);
+		String[] args = SEMICOLON_P.split(key, 0);
 		if (args == null || args.length == 0)
 			return null;
 
 		for (int i = 0; i < args.length; i++)
-			if (args[i].indexOf('\\') >= 0)
-				args[i] = args[i].replaceAll("\\\\;", ";");
+			if (args[i].indexOf('\\') >= 0) {
+				args[i] = ESCAPED_SEMICOLON_P.matcher(args[i])
+					.replaceAll(SEMICOLON);
+			}
 
 		if (args[0].startsWith("^")) {
 			String varname = args[0].substring(1)
@@ -636,6 +644,19 @@ public class Macro {
 		verifyCommand(args, _defHelp, null, 2, 3);
 
 		return domain.getProperty(args[1], args.length == 3 ? args[2] : "");
+	}
+
+	static final String _listHelp = "${list[;<name>]*}, returns a list of the values of the named properties with escaped semicolons";
+	public String _list(String args[]) {
+		verifyCommand(args, _listHelp, null, 1, Integer.MAX_VALUE);
+
+		return Arrays.stream(args, 1, args.length)
+			.map(domain::getProperty)
+			.flatMap(Strings::splitAsStream)
+			.map(element -> (element.indexOf(';') < 0) ? element
+				: SEMICOLON_P.matcher(element)
+					.replaceAll(ESCAPED_SEMICOLON))
+			.collect(joining(","));
 	}
 
 	static final String _replaceHelp = "${replace;<list>;<regex>;[<replace>[;delimiter]]}";
