@@ -27,4 +27,6 @@ public @interface Service {
 	 * The service type
 	 */
 	Class<?> service() default Object.class;
+
+	int minimum() default 0;
 }

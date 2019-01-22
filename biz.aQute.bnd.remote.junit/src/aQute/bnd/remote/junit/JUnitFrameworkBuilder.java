@@ -65,6 +65,7 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 	boolean				start		= true;
 	boolean				testbundle	= true;
 	long				closeTimeout	= 60000;
+	boolean				debug;
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -153,6 +154,11 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 
 	public JUnitFrameworkBuilder closeTimeout(long ms) {
 		this.closeTimeout = ms;
+		return this;
+	}
+
+	public JUnitFrameworkBuilder debug() {
+		this.debug = true;
 		return this;
 	}
 

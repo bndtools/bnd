@@ -2,12 +2,17 @@ package aQute.bnd.remote.junit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.Closeable;
 import java.io.File;
 import java.net.URL;
+import java.util.Hashtable;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,6 +27,8 @@ import org.osgi.service.component.annotations.Deactivate;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.About;
+import aQute.bnd.osgi.Constants;
+import aQute.bnd.remote.junit.test.inject.SomeService;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
@@ -33,7 +40,7 @@ public class JUnitFrameworkTest {
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
-		ws = Workspace.findWorkspace(IO.work);
+		// ws = Workspace.findWorkspace(IO.work);
 	}
 
 	@Before
@@ -181,8 +188,7 @@ public class JUnitFrameworkTest {
 			// registered
 			// via the testbundle
 
-			fw.getFramework()
-				.getBundleContext()
+			fw.testbundle.getBundleContext()
 				.registerService(String.class, "Hello", null);
 
 			assertThat(fw.getServices(String.class)).isEmpty();
@@ -193,7 +199,7 @@ public class JUnitFrameworkTest {
 	}
 
 	/**
-	 * Test a built in commponent
+	 * Test a built in component
 	 */
 
 	@Component(immediate = true, service = Comp.class)
@@ -231,5 +237,136 @@ public class JUnitFrameworkTest {
 
 		}
 
+	}
+
+	@Test(expected = TimeoutException.class)
+	public void testTimeout() throws Exception {
+		class X {
+			@Service(timeout = 500)
+			String s;
+		}
+		X x = new X();
+		try (JUnitFramework fw = builder.bundles()
+			.runfw("org.apache.felix.framework")
+			.create()
+			.inject(x)) {
+
+		}
+	}
+
+	@Test
+	public void testTimeoutWithInvisibleAndFiltered() throws Exception {
+		try {
+			try (JUnitFramework fw = builder
+				.runfw("org.apache.felix.framework")
+				.create()) {
+
+				Hashtable<String, Object> properties = new Hashtable<>();
+				properties.put("foo", "hello");
+
+				fw.getBundleContext()
+					.registerService(SomeService.class, new SomeService(), properties);
+				Bundle a = fw.bundle()
+					.exportPackage(SomeService.class.getPackage()
+						.getName())
+					.header(Constants.BUNDLE_ACTIVATOR, SomeService.class.getName())
+					.start();
+				Bundle b = fw.bundle()
+					.exportPackage(SomeService.class.getPackage()
+						.getName())
+					.header(Constants.BUNDLE_ACTIVATOR, SomeService.class.getName())
+					.start();
+
+				class X {
+					@Service(minimum = 2, timeout = 100, target = "(!(foo=hello))")
+					List<aQute.bnd.remote.junit.test.inject.SomeService> l;
+				}
+				X x = new X();
+
+				fw.inject(x);
+				SomeService afoo = x.l.get(0);
+				SomeService bfoo = x.l.get(1);
+			}
+			fail();
+		} catch (TimeoutException toe) {
+			System.out.println(toe);
+			assertThat(toe.getMessage()).contains("Invisible reference", "Reference not matched by the target filter");
+		}
+	}
+
+	@Test
+	public void testTimeoutWithPrivatePackage() throws Exception {
+		try {
+			try (JUnitFramework fw = builder
+				.runfw("org.apache.felix.framework")
+				.create()) {
+
+				Bundle a = fw.bundle()
+					.privatePackage(SomeService.class.getPackage()
+						.getName())
+					.header(Constants.BUNDLE_ACTIVATOR, SomeService.class.getName())
+					.start();
+
+				class X {
+					@Service(minimum = 2, timeout = 100)
+					List<aQute.bnd.remote.junit.test.inject.SomeService> l;
+				}
+				X x = new X();
+
+				fw.inject(x);
+				SomeService afoo = x.l.get(0);
+				SomeService bfoo = x.l.get(1);
+			}
+			fail();
+		} catch (TimeoutException toe) {
+			System.out.println(toe);
+			assertThat(toe.getMessage()).contains("Invisible reference", "PRIVATE");
+		}
+	}
+
+	@Test
+	public void testReportingHiddenService() throws Exception {
+		try {
+			try (JUnitFramework fw = builder
+				.runfw("org.apache.felix.framework")
+				.create()) {
+
+				fw.hide(SomeService.class);
+				Hashtable<String, Object> properties = new Hashtable<>();
+
+				fw.getBundleContext()
+					.registerService(SomeService.class, new SomeService(), properties);
+
+				class X {
+					@Service(minimum = 2, timeout = 100)
+					List<aQute.bnd.remote.junit.test.inject.SomeService> l;
+				}
+				X x = new X();
+
+				fw.inject(x);
+				SomeService afoo = x.l.get(0);
+				SomeService bfoo = x.l.get(1);
+			}
+			fail();
+		} catch (TimeoutException toe) {
+			System.out.println(toe);
+			assertThat(toe.getMessage()).contains("Hidden (FindHook)", "JUnitFramework[hide]");
+		}
+	}
+
+	@Test
+	public void testReportingUnimportedExport() throws Exception {
+		try (JUnitFramework fw = builder
+			.runfw("org.apache.felix.framework")
+			.create()) {
+
+			Bundle a = fw.bundle()
+				.exportPackage(SomeService.class.getPackage()
+					.getName())
+				.header(Constants.BUNDLE_ACTIVATOR, SomeService.class.getName())
+				.start();
+
+			assertTrue(fw.check("is exporting but NOT importing package"));
+		}
 	}
 }

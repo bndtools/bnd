@@ -937,7 +937,7 @@ public interface BundleSpecBuilder {
 	default Bundle start() {
 		try {
 			Bundle b = install();
-			b.start();
+			x().ws.start(b);
 			return b;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);

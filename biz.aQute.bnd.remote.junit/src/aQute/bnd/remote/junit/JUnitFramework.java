@@ -6,16 +6,18 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.PrintStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,19 +31,30 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
+import org.osgi.framework.Filter;
 import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceEvent;
+import org.osgi.framework.ServiceException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.hooks.service.EventListenerHook;
 import org.osgi.framework.hooks.service.FindHook;
+import org.osgi.framework.hooks.service.ListenerHook.ListenerInfo;
 import org.osgi.framework.launch.Framework;
+import org.osgi.framework.namespace.PackageNamespace;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.ServiceTracker;
 
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.inject.Injector;
+import aQute.lib.strings.Strings;
+import aQute.libg.glob.Glob;
 
 /**
  * This class provides an OSGi framework that is configured with the current bnd
@@ -61,29 +74,111 @@ import aQute.lib.inject.Injector;
  */
 public class JUnitFramework implements AutoCloseable {
 
-	private static final long			SERVICE_DEFAULT_TIMEOUT	= 5000L;
-	static final AtomicInteger			n						= new AtomicInteger();
-	final Framework						framework;
-	final List<ServiceTracker<?, ?>>	trackers				= new ArrayList<>();
+	private static final long					SERVICE_DEFAULT_TIMEOUT	= 60000L;
+	static final AtomicInteger					n						= new AtomicInteger();
+	final Framework								framework;
+	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
 
-	final JUnitFrameworkBuilder			builder;
-	final List<FrameworkEvent>			frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
-	final Injector<Service>				injector;
+	final JUnitFrameworkBuilder					builder;
+	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
+	final Injector<Service>						injector;
+	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new HashMap<>();
+	final Set<String>							frameworkExports;
+	final List<String>							errors					= new ArrayList<>();
 
-	Bundle								testbundle;
+	Bundle										testbundle;
+	boolean										debug;
+	PrintStream									out						= System.err;
+	ServiceTracker<FindHook, FindHook>			hooks;
 
 	JUnitFramework(JUnitFrameworkBuilder jUnitFrameworkBuilder, Framework framework) {
 		try {
 			this.builder = jUnitFrameworkBuilder;
+			this.debug = jUnitFrameworkBuilder.debug;
 			this.framework = framework;
 			this.framework.init();
 			this.injector = new Injector<>(makeConverter(), this::getService, Service.class);
+			this.frameworkExports = getExports(framework).keySet();
+
+			report("Initialized framework %s", this.framework);
 
 			framework.getBundleContext()
 				.addFrameworkListener(frameworkEvents::add);
+
+			hooks = new ServiceTracker<FindHook, FindHook>(framework.getBundleContext(), FindHook.class, null);
+			hooks.open();
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	public void report(String format, Object... args) {
+		if (!debug)
+			return;
+
+		out.printf(format + "%n", args);
+	}
+
+	/**
+	 * Generate an error so that the test case can check if we found anything
+	 * wrong. This is easy to check with {@link #check(String...)}
+	 * 
+	 * @param format the format string used in
+	 *            {@link String#format(String, Object...)}
+	 * @param args the arguments to be formatted
+	 */
+	public void error(String format, Object... args) {
+		report(format, args);
+		String msg = String.format(format, args);
+		errors.add(msg);
+	}
+
+	/**
+	 * Check the errors found, filtering out any unwanted with globbing patters.
+	 * Each error is filtered against all the patterns. This method return true
+	 * if there are no unfiltered errors, otherwise false.
+	 * 
+	 * @param patterns globbing patterns
+	 * @return true if no errors after filtering,otherwise false
+	 */
+	public boolean check(String... patterns) {
+		Glob[] globs = Stream.of(patterns)
+			.map(Glob::new)
+			.toArray(Glob[]::new);
+		boolean[] used = new boolean[globs.length];
+
+		String[] unmatched = errors.stream()
+			.filter(msg -> {
+				for (int i = 0; i < globs.length; i++) {
+					if (globs[i].finds(msg) >= 0) {
+						used[i] = true;
+						return false;
+					}
+				}
+				return true;
+			})
+			.toArray(String[]::new);
+
+		if (unmatched.length == 0) {
+
+			List<Glob> report = new ArrayList<>();
+			for (int i = 0; i < used.length; i++) {
+				if (!used[i]) {
+					report.add(globs[i]);
+				}
+			}
+
+			if (report.isEmpty())
+				return true;
+
+			out.println("Missing patterns");
+			out.println(Strings.join("\n", globs));
+			return false;
+		}
+
+		out.println("Errors");
+		out.println(Strings.join("\n", unmatched));
+		return false;
 	}
 
 	/**
@@ -94,11 +189,21 @@ public class JUnitFramework implements AutoCloseable {
 	 */
 	public Bundle bundle(File f) {
 		try {
+			report("Installing %s", f);
 			return framework.getBundleContext()
 				.installBundle(toInstallURI(f));
 		} catch (Exception e) {
+			report("Failed to installing %s : %s", f, e);
 			throw Exceptions.duck(e);
 		}
+	}
+
+	/**
+	 * Set the debug flag
+	 */
+	public JUnitFramework debug() {
+		this.debug = true;
+		return this;
 	}
 
 	/**
@@ -133,9 +238,8 @@ public class JUnitFramework implements AutoCloseable {
 		try {
 			List<Bundle> bundles = new ArrayList<>();
 			for (File f : runbundles) {
-				Bundle bundle = framework.getBundleContext()
-					.installBundle(toInstallURI(f));
-				bundles.add(bundle);
+				Bundle b = bundle(f);
+				bundles.add(b);
 			}
 			return bundles;
 		} catch (Exception e) {
@@ -150,9 +254,27 @@ public class JUnitFramework implements AutoCloseable {
 	 */
 	public void start(Bundle b) {
 		try {
-			if (!isFragment(b))
+			if (!isFragment(b)) {
+				report("Starting %s", b);
 				b.start();
+
+				Set<String> exports = getExports(b).keySet();
+				Set<String> imports = getImports(b).keySet();
+				exports.removeAll(imports);
+				exports.retainAll(frameworkExports);
+
+				if (!exports.isEmpty()) {
+					error(
+						"bundle %s is exporting but NOT importing package(s) %s that are/is also exported by the framework.\n"
+							+ "This means that the test code and the bundle cannot share classes of these package.",
+						b, exports);
+				}
+
+			} else {
+				report("Not starting fragment %s", b);
+			}
 		} catch (Exception e) {
+			report("Failed to start %s : %s", b, e);
 			throw Exceptions.duck(e);
 		}
 	}
@@ -171,8 +293,11 @@ public class JUnitFramework implements AutoCloseable {
 	 */
 	@Override
 	public void close() throws Exception {
+		report("Stop the framework");
 		framework.stop();
+		report("Stopped the framework");
 		framework.waitForStop(builder.closeTimeout);
+		report("Framework fully stopped");
 	}
 
 	/**
@@ -191,40 +316,50 @@ public class JUnitFramework implements AutoCloseable {
 	}
 
 	/**
-	 * Get a service registered under class1. If multiple services or none are
-	 * registered then this method will throw an exception when asserts are
-	 * enabled.
+	 * Get a service registered under class. If multiple services are registered
+	 * it will return the first
 	 * 
-	 * @param class1 the name of the service
+	 * @param serviceInterface the name of the service
 	 * @return a service
 	 */
-	public <T> T getService(Class<T> class1) {
-		try {
-			List<T> services = getServices(class1);
-			assert 1 == services.size();
-			return services.get(0);
-		} catch (Exception e) {
-			throw Exceptions.duck(e);
-		}
+	public <T> Optional<T> getService(Class<T> serviceInterface) {
+		return getServices(serviceInterface, null, 0, 0).stream()
+			.map(this::getService)
+			.findFirst();
 	}
 
 	/**
 	 * Get a list of services of a given name
 	 * 
-	 * @param class1 the service name
+	 * @param serviceClass the service name
 	 * @return a list of services
 	 */
-	public <T> List<T> getServices(Class<T> class1) {
+	public <T> List<T> getServices(Class<T> serviceClass) {
+		return getServices(serviceClass, null, 0, 0).stream()
+			.map(this::getService)
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * Get a service from a reference. If the service is null, then throw an
+	 * exception.
+	 * 
+	 * @param ref the reference
+	 * @return the service, never null
+	 */
+	public <T> T getService(ServiceReference<T> ref) {
 		try {
-			Collection<ServiceReference<T>> refs = getBundleContext().getServiceReferences(class1, null);
-			List<T> result = new ArrayList<>();
-			for (ServiceReference<T> ref : refs) {
-				T service = getBundleContext().getService(ref);
-				if (service != null)
-					result.add(service);
+			T service = getBundleContext().getService(ref);
+			if (service == null) {
+				if (ref.getBundle() == null) {
+					throw new ServiceException(
+						"getService(" + ref + ") returns null, the service is no longer registered");
+				}
+				throw new ServiceException("getService(" + ref + ") returns null, this probbaly means the \n"
+					+ "component failed to activate. The cause can \n" + "generally be found in the log.\n" + "");
 			}
-			return result;
-		} catch (InvalidSyntaxException e) {
+			return service;
+		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
@@ -251,9 +386,6 @@ public class JUnitFramework implements AutoCloseable {
 		try {
 			injector.inject(object);
 			return this;
-		} catch (TimeoutException e) {
-			// reportComponents();
-			throw Exceptions.duck(e);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -267,9 +399,11 @@ public class JUnitFramework implements AutoCloseable {
 	 */
 	public Bundle install(File file) {
 		try {
+			report("Installing %s", file);
 			return framework.getBundleContext()
 				.installBundle(toInstallURI(file));
 		} catch (BundleException e) {
+			report("Failed to install %s : %s", file, e);
 			throw Exceptions.duck(e);
 		}
 	}
@@ -293,6 +427,7 @@ public class JUnitFramework implements AutoCloseable {
 		try {
 			return injector.newInstance(type);
 		} catch (Exception e) {
+			report("Failed to create and instance for %s : %s", type, e);
 			throw Exceptions.duck(e);
 		}
 	}
@@ -301,36 +436,31 @@ public class JUnitFramework implements AutoCloseable {
 	 * Show the information of how the framework is setup and is running
 	 */
 	public void report() throws InvalidSyntaxException {
-		reportBundles(System.out);
-		reportServices(System.out);
-		reportEvents(System.out);
+		reportBundles();
+		reportServices();
+		reportEvents();
 	}
 
 	/**
 	 * Show the installed bundles
 	 */
-	public void reportBundles(Appendable out) {
-		try (Formatter f = new Formatter(out)) {
-			Stream.of(framework.getBundleContext()
-				.getBundles())
-				.forEach(bb -> {
-					f.format("%4s %s\n", bundleStateToString(bb.getState()), bb);
-				});
-		}
+	public void reportBundles() {
+		Stream.of(framework.getBundleContext()
+			.getBundles())
+			.forEach(bb -> {
+				report("%4s %s", bundleStateToString(bb.getState()), bb);
+			});
 	}
 
 	/**
 	 * Show the registered service
 	 */
-	public void reportServices(Appendable out) throws InvalidSyntaxException {
-		try (Formatter f = new Formatter(out)) {
-			Stream.of(framework.getBundleContext()
-				.getAllServiceReferences(null, null))
-				.forEach(sref -> {
-					f.format("%s\n", sref);
-				});
-			f.flush();
-		}
+	public void reportServices() throws InvalidSyntaxException {
+		Stream.of(framework.getBundleContext()
+			.getAllServiceReferences(null, null))
+			.forEach(sref -> {
+				report("%s", sref);
+			});
 	}
 
 	/**
@@ -339,20 +469,12 @@ public class JUnitFramework implements AutoCloseable {
 	 * @param class1 the name of the service
 	 * @param timeoutInMs the time to wait
 	 * @return a service reference
-	 * @throws InterruptedException
 	 */
-	public <T> Optional<ServiceReference<T>> waitForServiceReference(Class<T> class1, long timeoutInMs)
-		throws InterruptedException {
-		long deadline = System.currentTimeMillis() + timeoutInMs;
-		while (deadline > System.currentTimeMillis()) {
+	public <T> Optional<ServiceReference<T>> waitForServiceReference(Class<T> class1, long timeoutInMs) {
 
-			ServiceReference<T> serviceReference = getBundleContext().getServiceReference(class1);
-			if (serviceReference != null) {
-				return Optional.of(serviceReference);
-			}
-			Thread.sleep(50);
-		}
-		return Optional.empty();
+		return getServices(class1, null, 1, timeoutInMs).stream()
+			.findFirst();
+
 	}
 
 	/**
@@ -405,36 +527,183 @@ public class JUnitFramework implements AutoCloseable {
 			if (serviceClass == null)
 				throw new IllegalArgumentException("Cannot define service class for " + param);
 
+			long timeout = service.timeout();
+			if (timeout <= 0)
+				timeout = SERVICE_DEFAULT_TIMEOUT;
+
 			boolean multiple = isMultiple(param.type);
+			int cardinality = multiple ? service.minimum() : 1;
 
-			List<? extends ServiceReference<?>> serviceReferences = getReferences(serviceClass, target);
+			List<? extends ServiceReference<?>> matchedReferences = getServices(serviceClass, target, cardinality,
+				timeout);
 
-			if (multiple) {
-				return serviceReferences;
-			} else {
-				if (serviceReferences.isEmpty()) {
+			if (multiple)
+				return matchedReferences;
+			else
+				return matchedReferences.get(0);
 
-					long timeout = service.timeout();
-					if (timeout <= 0)
-						timeout = SERVICE_DEFAULT_TIMEOUT;
-					Optional<?> waitForServiceReference = waitForServiceReference(serviceClass, timeout);
-					return waitForServiceReference
-						.orElseThrow(() -> new TimeoutException("Cannot find service " + param));
-				} else
-					return serviceReferences.get(0);
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	@SuppressWarnings({
+		"rawtypes", "unchecked"
+	})
+	private <T> List<ServiceReference<T>> getServices(Class<T> serviceClass, String target, int cardinality,
+		long timeout) {
+		try {
+
+			String className = serviceClass.getName();
+
+			ServiceTracker<?, ?> tracker = injectedDoNotClose.computeIfAbsent(serviceClass, (c) -> {
+				ServiceTracker<?, ?> t = new ServiceTracker<Object, Object>(framework.getBundleContext(), className,
+					null);
+				t.open(true);
+				return t;
+			});
+
+			long deadline = System.currentTimeMillis() + timeout;
+
+			while (true) {
+
+				// we get the ALL services regardless of class space or hidden
+				// by hooks or filters.
+
+				@SuppressWarnings("unchecked")
+				List<ServiceReference<T>> allReferences = (List<ServiceReference<T>>) getReferences(tracker,
+					serviceClass);
+
+				List<ServiceReference<T>> visibleReferences = allReferences.stream()
+					.filter(ref -> ref.isAssignableTo(framework, className))
+					.collect(Collectors.toList());
+
+				List<ServiceReference<T>> unhiddenReferences = new ArrayList<>(visibleReferences);
+				Map<ServiceReference<T>, FindHook> hookMap = new HashMap<>();
+
+				for (FindHook hook : this.hooks.getServices(new FindHook[0])) {
+					List<ServiceReference<T>> original = new ArrayList<>(unhiddenReferences);
+					hook.find(testbundle.getBundleContext(), className, target, true, (Collection) unhiddenReferences);
+					original.removeAll(unhiddenReferences);
+					for (ServiceReference<T> ref : original) {
+						hookMap.put(ref, hook);
+					}
+				}
+
+				List<ServiceReference<T>> matchedReferences;
+
+				if (target == null) {
+					matchedReferences = new ArrayList<>(unhiddenReferences);
+				} else {
+					Filter filter = framework.getBundleContext()
+						.createFilter(target);
+					matchedReferences = visibleReferences.stream()
+						.filter(filter::match)
+						.collect(Collectors.toList());
+				}
+
+				if (cardinality <= matchedReferences.size()) {
+					return matchedReferences;
+				}
+
+				if (deadline < System.currentTimeMillis()) {
+					String error = "Injection of service " + className;
+					if (target != null)
+						error += " with target " + target;
+
+					error += " failed.";
+
+					if (allReferences.size() > visibleReferences.size()) {
+						List<ServiceReference<?>> invisibleReferences = new ArrayList<>(allReferences);
+						invisibleReferences.removeAll(visibleReferences);
+						for (ServiceReference<?> r : invisibleReferences) {
+							error += "\nInvisible reference " + r + "[" + r.getProperty(Constants.SERVICE_ID)
+								+ "] from bundle " + r.getBundle();
+
+							String[] objectClass = (String[]) r.getProperty(Constants.OBJECTCLASS);
+							for (String clazz : objectClass) {
+								error += "\n  " + clazz + "\n     registrar: "
+									+ getSource(clazz, r.getBundle()).orElse("null") + "\n     framework: "
+									+ getSource(clazz, framework).orElse("null");
+							}
+						}
+					}
+
+					if (visibleReferences.size() > unhiddenReferences.size()) {
+						List<ServiceReference<?>> hiddenReferences = new ArrayList<>(visibleReferences);
+						hiddenReferences.removeAll(unhiddenReferences);
+						for (ServiceReference<?> r : hiddenReferences) {
+							error += "\nHidden (FindHook) Reference " + r + " from bundle " + r.getBundle() + " hook "
+								+ hookMap.get(r);
+						}
+					}
+
+					if (unhiddenReferences.size() > matchedReferences.size()) {
+						List<ServiceReference<?>> untargetReferences = new ArrayList<>(unhiddenReferences);
+						untargetReferences.removeAll(matchedReferences);
+						error += "\nReference not matched by the target filter " + target;
+						for (ServiceReference<?> ref : untargetReferences) {
+							error += "\n  " + ref + " : " + getProperties(ref);
+						}
+					}
+
+					throw new TimeoutException(error);
+				}
+				Thread.sleep(100);
 			}
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
 
-	void reportEvents(Appendable out) {
-		try (Formatter f = new Formatter(out)) {
-			frameworkEvents.forEach(fe -> {
-				f.format("%s\n", fe);
-			});
-			f.flush();
+	private Map<String, String> getProperties(ServiceReference<?> ref) {
+		Map<String, String> map = new HashMap<>();
+		for (String k : ref.getPropertyKeys()) {
+			Object property = ref.getProperty(k);
+			String s;
+			if (property != null && property.getClass()
+				.isArray()) {
+				s = Arrays.deepToString((Object[]) property);
+			} else
+				s = property + "";
+
+			map.put(k, s);
 		}
+		return map;
+	}
+
+	private Optional<String> getSource(String className, Bundle from) {
+		try {
+			Class<?> loadClass = from.loadClass(className);
+			Bundle bundle = FrameworkUtil.getBundle(loadClass);
+
+			if (bundle == null)
+				return Optional.ofNullable("from class path");
+			else {
+				BundleWiring wiring = bundle.adapt(BundleWiring.class);
+				String exported = "PRIVATE! ";
+				List<BundleCapability> capabilities = wiring.getCapabilities(PackageNamespace.PACKAGE_NAMESPACE);
+				String packageName = loadClass.getPackage()
+					.getName();
+
+				for (BundleCapability c : capabilities) {
+					if (packageName.equals(c.getAttributes()
+						.get(PackageNamespace.PACKAGE_NAMESPACE))) {
+						exported = "Exported from ";
+					}
+				}
+
+				return Optional.ofNullable(exported + " " + bundle.toString());
+			}
+		} catch (Exception e) {
+			return Optional.empty();
+		}
+	}
+
+	void reportEvents() {
+		frameworkEvents.forEach(fe -> {
+			report("%s", fe);
+		});
 	}
 
 	private String bundleStateToString(int state) {
@@ -456,12 +725,14 @@ public class JUnitFramework implements AutoCloseable {
 		}
 	}
 
-	private List<? extends ServiceReference<?>> getReferences(Class<?> serviceClass, String target)
+	private List<? extends ServiceReference<?>> getReferences(ServiceTracker<?, ?> tracker, Class<?> serviceClass)
 		throws InvalidSyntaxException {
-		List<? extends ServiceReference<?>> serviceReferences = new ArrayList<>(
-			getBundleContext().getServiceReferences(serviceClass, target));
-		Collections.sort(serviceReferences);
-		return serviceReferences;
+		ServiceReference<?>[] references = tracker.getServiceReferences();
+		if (references == null) {
+			return Collections.EMPTY_LIST;
+		}
+		Arrays.sort(references);
+		return Arrays.asList(references);
 	}
 
 	private Class<?> getServiceType(Type type) {
@@ -526,7 +797,7 @@ public class JUnitFramework implements AutoCloseable {
 				if (isParameterizedType(to, Map.class))
 					return converter.convert(to, toMap(reference));
 
-				Object service = getBundleContext().getService(reference);
+				Object service = getService(reference);
 
 				if (isParameterizedType(to, Optional.class))
 					return Optional.ofNullable(service);
@@ -589,12 +860,22 @@ public class JUnitFramework implements AutoCloseable {
 	 */
 
 	public Closeable hide(Class<?> type) {
+		return hide(type, "hide");
+	}
+
+	public Closeable hide(Class<?> type, String reason) {
 		ServiceRegistration<EventListenerHook> eventReg = getBundleContext().registerService(EventListenerHook.class,
-			(event, listeners) -> {
-				if (isOneOfType(event.getServiceReference(), type))
-					listeners.entrySet()
-						.removeIf(e -> e.getKey()
-							.getBundle() != testbundle);
+			new EventListenerHook() {
+				@Override
+				public void event(ServiceEvent event, Map<BundleContext, Collection<ListenerInfo>> listeners) {
+					if (isOneOfType(event.getServiceReference(), type))
+						listeners.clear();
+				}
+
+				@Override
+				public String toString() {
+					return "JUnitFramework[" + reason + "]";
+				}
 			}, null);
 
 		ServiceRegistration<FindHook> findReg = getBundleContext().registerService(FindHook.class, new FindHook() {
@@ -603,8 +884,14 @@ public class JUnitFramework implements AutoCloseable {
 			public void find(BundleContext context, String name, String filter, boolean allServices,
 				Collection<ServiceReference<?>> references) {
 				if (name == null || name.equals(type.getName()))
-					references.removeIf(r -> r.getBundle() != testbundle);
+					references.clear();
 			}
+
+			@Override
+			public String toString() {
+				return "JUnitFramework[" + reason + "]";
+			}
+
 		}, null);
 
 		return () -> {
@@ -667,12 +954,17 @@ public class JUnitFramework implements AutoCloseable {
 
 	public void stop() {
 		try {
+			report("Stopping the framework");
 			framework.stop();
 		} catch (BundleException e) {
+			report("Could not stop the framework : %s", e);
 			throw Exceptions.duck(e);
 		}
 	}
 
+	/**
+	 * Set the test bundle
+	 */
 	public void testbundle() {
 		if (testbundle != null) {
 			throw new IllegalArgumentException("Test bundle already exists");
@@ -684,6 +976,7 @@ public class JUnitFramework implements AutoCloseable {
 				.putValue("Manifest-Version", "1");
 			String name = projectDir.getName()
 				.toUpperCase();
+			report("Creating test bundle %s", name);
 			man.getMainAttributes()
 				.putValue(Constants.BUNDLE_SYMBOLICNAME, name);
 			man.getMainAttributes()
@@ -695,15 +988,28 @@ public class JUnitFramework implements AutoCloseable {
 				.installBundle(name, bin);
 			this.testbundle.start();
 		} catch (Exception e) {
+			report("Failed to create test bundle");
 			throw Exceptions.duck(e);
 		}
 	}
 
 	public <T> ServiceRegistration<T> register(Class<T> type, T instance) {
+		report("Registering service %s %s", type, instance);
 		return getBundleContext().registerService(type, instance, null);
 	}
 
 	public Framework getFramework() {
 		return framework;
 	}
+
+	private Parameters getExports(Bundle b) {
+		return new Parameters(b.getHeaders()
+			.get(Constants.EXPORT_PACKAGE));
+	}
+
+	private Parameters getImports(Bundle b) {
+		return new Parameters(b.getHeaders()
+			.get(Constants.IMPORT_PACKAGE));
+	}
+
 }

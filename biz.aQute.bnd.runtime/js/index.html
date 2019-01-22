@@ -33,7 +33,7 @@
             <div class="tabs">
                 <ul>
                     <li :class="{ 'is-active': active==='errors'}">
-                        <a @click="active='errors'">Errors</a>
+                        <a @click="active='errors'">Errors{{ getErrors().length != 0 ? "!" : ""}}</a>
                     </li>
                     <li :class="{ 'is-active': active==='bundles'}">
                         <a @click="active='bundles'">Bundles</a>
@@ -54,17 +54,16 @@
                         <a @click="active='configs'">Configuration</a>
                     </li>
                     <li :class="{ 'is-active': active==='logs'}">
-                        <a @click="active='logs'">Logs</a>
+                        <a @click="active='logs'">Logs{{getLog().filter( function(l) {  "ERROR" === l.level || "WARNING" == l.level } ).length != 0 ? "!" : ""}}</a>
                     </li>
                 </ul>
             </div>
 
             <div v-if="snapshot.framework && active=='errors'">
 
-                <div class="notification" v-for="package in getPackages().filter( p=> p.duplicates.length > 0 )">
-                    <h2>Duplicate Packages</h2>
-                    <package-ref :packageid="package.id" />
-                </div>
+                <div class="notification" v-for="e in getErrors()">
+                    {{e}}
+                </div>                
 
                 <template v-for="bundle in getBundles()">
                     <template v-for="wait in bundle.waiting">
@@ -73,7 +72,6 @@
                             In
                             <bundle-ref :bundleid="bundle.id" /> the services
                             <service-ref v-for="serviceid in wait.hidden" :serviceid="serviceid" :key="sericeid" /> are hidden from view.
-
                         </div>
                     </template>
                 </template>
@@ -902,6 +900,7 @@
                     var reader = new FileReader();
                     reader.onload = function (e) {
                         app.snapshot = JSON.parse(e.target.result)
+                        window.location.hash = ""
                     }
                     if (file)
                         reader.readAsText(file)
@@ -968,7 +967,7 @@
 
                 },
                 getInstances: function () {
-                    return Object.values(this.snapshot.scr.instances)
+                    return this.snapshot.scr ? Object.values(this.snapshot.scr.instances) : []
                 },
                 getInstance: function (instanceId) {
                     return this.snapshot.scr.templates[instanceId]
@@ -1007,7 +1006,7 @@
                     return log.level + "?"
                 },
                 getLog: function () {
-                    return this.snapshot.log.log
+                    return this.snapshot.log ? this.snapshot.log.log : []
                 },
                 getLogByBundle: function (bundleId) {
                     return this.getLog().filter(l => l.bundle === bundleId)
@@ -1018,42 +1017,66 @@
                 hasPid: function (pid) {
                     return this.getConfigurations().filter(cnf => cnf.pid === pid)
                 },
+                getErrors: function() {
+                    var errors = []
+                    Object.values(this.snapshot).forEach( obj => {
+                        if ( obj.errors) {
+                            errors = errors.concat(obj.errors);
+                        }
+                    })
+
+                    return errors;
+                },
                 hashChanged: function (hash) {
                     var result = /#b-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedBundle = parseInt(result[1])
                         this.active = 'bundles'
+                        return;
                     }
+                    
                     result = /#s-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedService = parseInt(result[1])
                         this.active = 'services'
+                        return;
                     }
+                    
                     result = /#i-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedInstance = parseInt(result[1])
                         this.active = 'instances'
+                        return;
                     }
+                    
                     result = /#t-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedTemplate = parseInt(result[1])
                         this.active = 'templates'
+                        return;
                     }
+                    
                     result = /#l-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedLog = parseInt(result[1])
                         this.active = 'logs'
+                        return;
                     }
+                    
                     result = /#c-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedConfiguration = parseInt(result[1])
                         this.active = 'config'
+                        return;
                     }
+
                     result = /#p-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedPackage = parseInt(result[1])
                         this.active = 'packages'
+                        return;
                     }
+                    this.active = 'errors';
                 }
             }
         })

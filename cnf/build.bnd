@@ -57,5 +57,3 @@ Bundle-Developers: \
 -runproperties.testlauncher0: in.workspace=workspace
 -runproperties.testlauncher1: in.project=workspace
 -runproperties.testlauncher2: in.bndrun=workspace
-
--remoteworkspace: true

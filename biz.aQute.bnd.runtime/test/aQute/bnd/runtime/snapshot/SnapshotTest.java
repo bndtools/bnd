@@ -10,6 +10,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import aQute.bnd.remote.junit.JUnitFramework;
 import aQute.bnd.remote.junit.JUnitFrameworkBuilder;
 import aQute.bnd.remote.junit.Service;
+import exported_not_imported.ExportedNotImported;
 
 public class SnapshotTest {
 
@@ -64,4 +65,17 @@ public class SnapshotTest {
 		}
 	}
 
+	@Test
+	public void testNonImportedExportConflicts() throws Exception {
+		try (JUnitFramework fw = builder.gogo()
+			.closeTimeout(0)
+			.create()) {
+			Bundle start1 = fw.bundle()
+				.exportPackage(ExportedNotImported.class.getPackage()
+					.getName())
+				.start();
+		}
+		System.out.println();
+
+	}
 }

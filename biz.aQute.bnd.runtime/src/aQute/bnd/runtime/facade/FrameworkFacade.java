@@ -39,6 +39,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.packageadmin.RequiredBundle;
 import org.osgi.util.tracker.ServiceTracker;
 
+import aQute.bnd.header.Parameters;
 import aQute.bnd.runtime.api.SnapshotProvider;
 import aQute.bnd.runtime.util.Util;
 import aQute.lib.collections.MultiMap;
@@ -152,6 +153,8 @@ public class FrameworkFacade implements SnapshotProvider {
 			xframework.services.put(sref.id, sref);
 		}
 
+		Set<String> frameworkExports = getExports(context.getBundle()).keySet();
+
 		for (BundleDTO bundle : adapt.bundles) {
 			XBundleDTO xbundle = Util.copy(XBundleDTO.class, bundle);
 			Bundle b = context.getBundle(xbundle.id);
@@ -193,6 +196,8 @@ public class FrameworkFacade implements SnapshotProvider {
 				}
 			}
 
+			verifyThatExportedPackagesAreImportableWhenExportedByFramework(xframework, frameworkExports, b);
+
 			xbundle.registeredServices = adapt.services.stream()
 				.filter(r -> r.bundle == b.getBundleId())
 				.map(r -> r.id)
@@ -217,6 +222,27 @@ public class FrameworkFacade implements SnapshotProvider {
 		return xframework;
 	}
 
+	/*
+	 * Do a sanity check that any exports from bundle b are imported when the
+	 * framework exports them.
+	 */
+	private void verifyThatExportedPackagesAreImportableWhenExportedByFramework(XFrameworkDTO xframework,
+		Set<String> frameworkExports, Bundle b) {
+		if (b.getBundleId() != 0L) {
+			Set<String> imports = getImports(b).keySet();
+			Set<String> exports = getExports(b).keySet();
+			exports.removeAll(imports);
+			exports.retainAll(frameworkExports);
+			if (!exports.isEmpty()) {
+				xframework.errors.add("bundle " + b + " exports packages " + exports + ".\n"
+					+ "These packages are not imported by this bundle " + b
+					+ " but they are exported by the framework.\n"
+					+ "Since they are not imported they will remain in their own class space. The JUnitFramework will\n"
+					+ "likely not work for these packages");
+			}
+		}
+	}
+
 	private void doPackages(XFrameworkDTO xframework, PackageAdmin packageAdmin) {
 		if (packageAdmin != null) {
 			ExportedPackage[] exportedPackages = packageAdmin.getExportedPackages((Bundle) null);
@@ -229,7 +255,12 @@ public class FrameworkFacade implements SnapshotProvider {
 				}
 
 				for (List<PackageDTO> l : duplicates.values()) {
-					setDuplicates(l);
+					if (setDuplicates(l)) {
+						xframework.errors.add("Duplicate package " + l.stream()
+							.map(p -> p.name)
+							.findFirst()
+							.orElse("?"));
+					}
 				}
 			} else {
 				xframework.errors.add("No packages in package admin found?");
@@ -239,16 +270,17 @@ public class FrameworkFacade implements SnapshotProvider {
 		}
 	}
 
-	private void setDuplicates(List<PackageDTO> l) {
+	private boolean setDuplicates(List<PackageDTO> l) {
 		Set<Long> ids = l.stream()
 			.map(p -> p.id)
 			.collect(Collectors.toSet());
 		if (l.size() <= 1)
-			return;
+			return false;
 
 		for (PackageDTO p : l) {
 			p.duplicates.addAll(ids);
 		}
+		return true;
 	}
 
 	private void doPackage(XFrameworkDTO xframework, MultiMap<String, PackageDTO> duplicates, AtomicLong number,
@@ -295,4 +327,15 @@ public class FrameworkFacade implements SnapshotProvider {
 	public Object getSnapshot() throws Exception {
 		return getFrameworkDTO();
 	}
+
+	private Parameters getExports(Bundle b) {
+		return new Parameters(b.getHeaders()
+			.get(Constants.EXPORT_PACKAGE));
+	}
+
+	private Parameters getImports(Bundle b) {
+		return new Parameters(b.getHeaders()
+			.get(Constants.IMPORT_PACKAGE));
+	}
+
 }
