@@ -11,4 +11,4 @@ Import-Package: \
     org.osgi.service.component.runtime.dto;resolution:=optional,\
     !org.apache.felix.service.command, \
     *
-Private-Package: aQute.bnd.runtime.gogo
+-includepackage: aQute.bnd.runtime.gogo
