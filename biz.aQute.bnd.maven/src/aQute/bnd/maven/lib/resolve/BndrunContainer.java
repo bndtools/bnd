@@ -27,48 +27,52 @@ import biz.aQute.resolve.Bndrun;
 
 public class BndrunContainer {
 
-	private static final Logger logger = LoggerFactory.getLogger(BndrunContainer.class);
+	private static final Logger										logger	= LoggerFactory
+		.getLogger(BndrunContainer.class);
 
-	private final List<File> bundles;
+	private final List<File>										bundles;
 
-	private final boolean includeDependencyManagement;
+	private final boolean											includeDependencyManagement;
 
-	private final MavenProject project;
+	private final MavenProject										project;
 
-	private final RepositorySystemSession repositorySession;
+	private final RepositorySystemSession							repositorySession;
 
-	private final Set<Scope> scopes;
+	private final Set<Scope>										scopes;
 
-	private final MavenSession session;
+	private final MavenSession										session;
 
-	private final boolean useMavenDependencies;
+	private final boolean											useMavenDependencies;
 
 	@SuppressWarnings("deprecation")
-	private final org.apache.maven.artifact.factory.ArtifactFactory artifactFactory;
+	private final org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
 
-	private final ProjectDependenciesResolver resolver;
+	private final ProjectDependenciesResolver						resolver;
 
-	private final RepositorySystem system;
+	private final RepositorySystem									system;
 
-	private FileSetRepository fileSetRepository;
-	private Processor processor;
+	private FileSetRepository										fileSetRepository;
+	private Processor												processor;
 
 	public static class Builder {
 
-		private final MavenProject project;
-		private final MavenSession session;
-		private final RepositorySystemSession repositorySession;
-		private final ProjectDependenciesResolver resolver;
+		private final MavenProject										project;
+		private final MavenSession										session;
+		private final RepositorySystemSession							repositorySession;
+		private final ProjectDependenciesResolver						resolver;
 		@SuppressWarnings("deprecation")
-		private final org.apache.maven.artifact.factory.ArtifactFactory artifactFactory;
-		private final RepositorySystem system;
-		private List<File> bundles = Collections.emptyList();
-		private boolean includeDependencyManagement = false;
-		private Set<Scope> scopes = new HashSet<>(Arrays.asList(Scope.compile, Scope.runtime));
-		private boolean useMavenDependencies = true;
+		private final org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
+		private final RepositorySystem									system;
+		private List<File>												bundles						= Collections
+			.emptyList();
+		private boolean													includeDependencyManagement	= false;
+		private Set<Scope>												scopes						= new HashSet<>(
+			Arrays.asList(Scope.compile, Scope.runtime));
+		private boolean													useMavenDependencies		= true;
 
 		@SuppressWarnings("deprecation")
-		public Builder(MavenProject project, MavenSession session, RepositorySystemSession repositorySession, ProjectDependenciesResolver resolver, org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
+		public Builder(MavenProject project, MavenSession session, RepositorySystemSession repositorySession,
+			ProjectDependenciesResolver resolver, org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
 			RepositorySystem system) {
 
 			this.project = Objects.requireNonNull(project);
@@ -100,7 +104,8 @@ public class BndrunContainer {
 		}
 
 		public BndrunContainer build() {
-			return new BndrunContainer(project, session, resolver, repositorySession, artifactFactory, system, scopes, bundles, useMavenDependencies, includeDependencyManagement);
+			return new BndrunContainer(project, session, resolver, repositorySession, artifactFactory, system, scopes,
+				bundles, useMavenDependencies, includeDependencyManagement);
 		}
 
 	}
@@ -118,8 +123,10 @@ public class BndrunContainer {
 	}
 
 	@SuppressWarnings("deprecation")
-	BndrunContainer(MavenProject project, MavenSession session, ProjectDependenciesResolver resolver, RepositorySystemSession repositorySession, org.apache.maven.artifact.factory.ArtifactFactory artifactFactory, RepositorySystem system,
-		Set<Scope> scopes, List<File> bundles, boolean useMavenDependencies, boolean includeDependencyManagement) {
+	BndrunContainer(MavenProject project, MavenSession session, ProjectDependenciesResolver resolver,
+		RepositorySystemSession repositorySession, org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
+		RepositorySystem system, Set<Scope> scopes, List<File> bundles, boolean useMavenDependencies,
+		boolean includeDependencyManagement) {
 		this.project = project;
 		this.session = session;
 		this.resolver = resolver;
@@ -174,9 +181,13 @@ public class BndrunContainer {
 			includeDependencyManagement(project, artifactFactory);
 		}
 
-		DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver, system, scopes);
+		DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver, system,
+			scopes);
 
-		return fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles, useMavenDependencies);
+		String name = project.getName()
+			.isEmpty() ? project.getArtifactId() : project.getName();
+
+		return fileSetRepository = dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
 	}
 
 	private String getNamePart(File runFile) {
@@ -199,7 +210,8 @@ public class BndrunContainer {
 	}
 
 	@SuppressWarnings("deprecation")
-	private void includeDependencyManagement(MavenProject mavenProject, org.apache.maven.artifact.factory.ArtifactFactory artifactFactory) {
+	private void includeDependencyManagement(MavenProject mavenProject,
+		org.apache.maven.artifact.factory.ArtifactFactory artifactFactory) {
 		if (mavenProject.getDependencyManagement() != null) {
 			List<Dependency> dependencies = mavenProject.getDependencies();
 

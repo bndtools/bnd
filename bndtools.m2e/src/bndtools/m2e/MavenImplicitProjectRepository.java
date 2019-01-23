@@ -9,7 +9,6 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 
 import org.apache.maven.execution.MavenSession;
-import org.apache.maven.model.Plugin;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
@@ -24,6 +23,7 @@ import org.osgi.resource.Requirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.configuration.Bundles;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
 import aQute.bnd.maven.lib.resolve.BndrunContainer.Builder;
@@ -31,6 +31,7 @@ import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.central.Central;
 
 public class MavenImplicitProjectRepository extends AbstractMavenRepository implements Refreshable {
@@ -40,9 +41,11 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
     private volatile FileSetRepository fileSetRepository;
 
     private final IMavenProjectFacade projectFacade;
+    private final File bndrunFile;
 
-    public MavenImplicitProjectRepository(IMavenProjectFacade projectFacade) {
+    public MavenImplicitProjectRepository(IMavenProjectFacade projectFacade, File bndrunFile) {
         this.projectFacade = projectFacade;
+        this.bndrunFile = bndrunFile;
 
         createRepo(projectFacade, new NullProgressMonitor());
 
@@ -126,27 +129,26 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 
             MojoExecution mojoExecution = projectFacade.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", monitor, "resolve")
                 .stream()
+                .filter(exe -> containsBndrun(exe, mavenProject, monitor))
                 .findFirst()
                 .orElse(null);
 
             if (mojoExecution != null) {
-                Plugin plugin = mojoExecution.getPlugin();
-
-                Bundles bundles = maven.getMojoParameterValue(mavenProject, "bundles", Bundles.class, plugin, plugin, "resolve", monitor);
+                Bundles bundles = maven.getMojoParameterValue(mavenProject, mojoExecution, "bundles", Bundles.class, monitor);
                 if (bundles == null) {
                     bundles = new Bundles();
                 }
 
                 containerBuilder.setBundles(bundles.getFiles(mavenProject.getBasedir()));
 
-                containerBuilder.setIncludeDependencyManagement(maven.getMojoParameterValue(mavenProject, "includeDependencyManagement", Boolean.class, plugin, plugin, "resolve", monitor));
+                containerBuilder.setIncludeDependencyManagement(maven.getMojoParameterValue(mavenProject, mojoExecution, "includeDependencyManagement", Boolean.class, monitor));
 
-                Set<String> scopeValues = maven.getMojoParameterValue(mavenProject, "scopes", Set.class, plugin, plugin, "resolve", monitor);
+                Set<String> scopeValues = maven.getMojoParameterValue(mavenProject, mojoExecution, "scopes", Set.class, monitor);
                 containerBuilder.setScopes(scopeValues.stream()
                     .map(Scope::valueOf)
                     .collect(Collectors.toSet()));
 
-                containerBuilder.setUseMavenDependencies(maven.getMojoParameterValue(mavenProject, "useMavenDependencies", Boolean.class, plugin, plugin, "resolve", monitor));
+                containerBuilder.setUseMavenDependencies(maven.getMojoParameterValue(mavenProject, mojoExecution, "useMavenDependencies", Boolean.class, monitor));
             }
 
             fileSetRepository = containerBuilder.build()
@@ -158,6 +160,17 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
             if (logger.isErrorEnabled()) {
                 logger.error("Failed to create implicit repository for m2e project {}", getName(), e);
             }
+        }
+    }
+
+    private boolean containsBndrun(MojoExecution mojoExecution, MavenProject mavenProject, IProgressMonitor monitor) {
+        try {
+            Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class, monitor);
+
+            return bndruns.getFiles(mavenProject.getBasedir())
+                .contains(bndrunFile);
+        } catch (Exception e) {
+            throw Exceptions.duck(e);
         }
     }
 
