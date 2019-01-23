@@ -318,7 +318,7 @@ public class MacroTest extends TestCase {
 		processor.setProperty("foo", "--${1}--");
 		processor.setProperty("xlibs", "${replace;${libs};/lib/(.*).jar;$0=${foo;$1}}");
 
-		assertEquals("/lib/a.jar=--a--, /lib/b.jar=--b--", processor.getProperty("xlibs"));
+		assertEquals("/lib/a.jar=--a--,/lib/b.jar=--b--", processor.getProperty("xlibs"));
 	}
 
 	/**
@@ -399,7 +399,7 @@ public class MacroTest extends TestCase {
 		assertEquals("-1", processor.getReplacer()
 			.process("${indexof;60;1, 2, 3, 4, 5, 6, 7, 8, 9, 10}"));
 
-		assertEquals("9", processor.getReplacer()
+		assertEquals("8", processor.getReplacer()
 			.process("${lastindexof;7;1, 2, 3, 4, 5, 6, 7, 7, 7, 10}"));
 
 		assertEquals("10,9,8,7,6,5,4,3,2,1", processor.getReplacer()
@@ -456,6 +456,8 @@ public class MacroTest extends TestCase {
 			.process("${isempty;${empty};${empty};${empty};${empty};}"));
 		assertEquals("false", processor.getReplacer()
 			.process("${isempty;abc}"));
+		assertEquals("false", processor.getReplacer()
+			.process("${isempty;${empty};abc}"));
 
 		assertEquals("\n000010", processor.getReplacer()
 			.process("${format;\n%06d;10}"));
@@ -983,19 +985,19 @@ public class MacroTest extends TestCase {
 		Properties p = new Properties();
 		p.setProperty("x", "${replace;1,2,3;.+;$0\\;version=1}");
 		builder.setProperties(p);
-		assertEquals("1;version=1, 2;version=1, 3;version=1", builder.getProperty("x"));
+		assertEquals("1;version=1,2;version=1,3;version=1", builder.getProperty("x"));
 
 	}
 
 	public void testListMacro() throws Exception {
 		try (Builder builder = new Builder()) {
 			Properties p = new Properties();
-			p.setProperty("l1", "1;version=1.1,,2;version=1.2");
+			p.setProperty("l1", "1;version=\"[1.1,2)\",,2;version=1.2");
 			p.setProperty("l2", "3;version=1.3,");
 			p.setProperty("x", "${replace;${list;l1;l2};$;\\;maven-scope=provided}");
 			builder.setProperties(p);
 			assertEquals(
-				"1;version=1.1;maven-scope=provided, 2;version=1.2;maven-scope=provided, 3;version=1.3;maven-scope=provided",
+				"1;version=\"[1.1,2)\";maven-scope=provided,2;version=1.2;maven-scope=provided,3;version=1.3;maven-scope=provided",
 				builder.getProperty("x"));
 		}
 	}
@@ -1110,8 +1112,8 @@ public class MacroTest extends TestCase {
 		Processor p = new Processor();
 		p.setProperty("specs", "a0,b0, c0,    d0");
 		Macro m = new Macro(p);
-		assertEquals("xa0y, xb0y, xc0y, xd0y", m.process("${replace;${specs};([^\\s]+);x$1y}"));
-		assertEquals("a, b, c, d", m.process("${replace;${specs};0}"));
+		assertEquals("xa0y,xb0y,xc0y,xd0y", m.process("${replace;${specs};([^\\s]+);x$1y}"));
+		assertEquals("a,b,c,d", m.process("${replace;${specs};0}"));
 	}
 
 	public void testToClassName() {
@@ -1244,6 +1246,13 @@ public class MacroTest extends TestCase {
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${sort;aa,bb,cc,dd,ee,ff}"));
 		assertEquals("aa,bb,cc,dd,ee,ff", m.process("${sort;ff,ee,cc,bb,dd,aa}"));
 		assertEquals("aaaa,bb,cc,dd,ee,ff", m.process("${sort;ff,ee,cc,bb,dd,$<a>}"));
+	}
+
+	public void testNSort() {
+		Processor p = new Processor();
+		p.setProperty("a", "02");
+		Macro m = new Macro(p);
+		assertEquals("1,02,10", m.process("${nsort;$<a>,1,10}"));
 	}
 
 	public void testJoin() {

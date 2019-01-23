@@ -2106,7 +2106,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Properties p = new Properties();
 			p.setProperty("Import-Package", "*");
-			p.setProperty("Export-Package", "org.*'");
+			p.setProperty("Export-Package", "org.*");
 			bmaker.setProperties(p);
 			bmaker.setClasspath(cp);
 			Jar jar = bmaker.build();

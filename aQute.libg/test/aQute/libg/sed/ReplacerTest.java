@@ -370,7 +370,7 @@ public class ReplacerTest extends TestCase {
 		Processor p = new Processor();
 		p.getMap()
 			.put("x", "${replace;1,2,3;.+;$0\\;version=1}");
-		assertEquals("1;version=1, 2;version=1, 3;version=1", p.getProcessed("x"));
+		assertEquals("1;version=1,2;version=1,3;version=1", p.getProcessed("x"));
 		p.check();
 	}
 
@@ -483,7 +483,7 @@ public class ReplacerTest extends TestCase {
 		Processor p = new Processor();
 		p.getMap()
 			.put("specs", "a,b, c,    d");
-		assertEquals("xay, xby, xcy, xdy", p.process("${replace;${specs};([^\\s]+);x$1y}"));
+		assertEquals("xay,xby,xcy,xdy", p.process("${replace;${specs};([^\\s]+);x$1y}"));
 		p.check();
 	}
 

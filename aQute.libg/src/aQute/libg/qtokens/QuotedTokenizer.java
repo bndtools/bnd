@@ -1,27 +1,38 @@
 package aQute.libg.qtokens;
 
-import java.util.ArrayList;
-import java.util.List;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 
-public class QuotedTokenizer {
-	String	string;
-	int		index				= 0;
-	String	separators;
-	boolean	returnTokens;
-	boolean	ignoreWhiteSpace	= true;
-	String	peek;
-	char	separator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Spliterator;
+import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+public class QuotedTokenizer implements Iterable<String> {
+	private final String	string;
+	private final String	separators;
+	private final boolean	returnTokens;
+	private int				index	= 0;
+	private String			peek;
+	private char			separator;
 
 	public QuotedTokenizer(String string, String separators, boolean returnTokens) {
-		if (string == null)
-			throw new IllegalArgumentException("string argument must be not null");
-		this.string = string;
-		this.separators = separators;
+		this.string = requireNonNull(string, "string argument must be not null");
+		this.separators = requireNonNull(separators, "separators argument must be not null");
 		this.returnTokens = returnTokens;
 	}
 
 	public QuotedTokenizer(String string, String separators) {
 		this(string, separators, false);
+	}
+
+	@Override
+	public String toString() {
+		return String.format("\"%s\" - \"%s\" - %s", string, separators, returnTokens);
 	}
 
 	public String nextToken(String separators) {
@@ -32,8 +43,9 @@ public class QuotedTokenizer {
 			return tmp;
 		}
 
-		if (index == string.length())
+		if (index == string.length()) {
 			return null;
+		}
 
 		StringBuilder sb = new StringBuilder();
 
@@ -44,20 +56,21 @@ public class QuotedTokenizer {
 			char c = string.charAt(index++);
 
 			if (separators.indexOf(c) >= 0) {
-				if (returnTokens)
+				if (returnTokens) {
 					peek = Character.toString(c);
-				else
+				} else {
 					separator = c;
+				}
 				break;
 			}
 
 			if (Character.isWhitespace(c)) {
-				if (index == string.length())
+				if (index == string.length()) {
 					break;
-
-				if (validspace)
+				}
+				if (validspace) {
 					sb.append(c);
-
+				}
 				continue;
 			}
 
@@ -73,14 +86,17 @@ public class QuotedTokenizer {
 				default :
 					sb.append(c);
 					validspace = true;
+					break;
 			}
 		}
 		String result = sb.toString();
-		if (!hadstring)
+		if (!hadstring) {
 			result = result.trim();
+		}
 
-		if (!hadstring && result.length() == 0 && index == string.length())
+		if (!hadstring && result.isEmpty() && (index == string.length())) {
 			return null;
+		}
 		return result;
 	}
 
@@ -88,16 +104,24 @@ public class QuotedTokenizer {
 		return nextToken(separators);
 	}
 
-	private void quotedString(StringBuilder sb, char c) {
-		char quote = c;
+	private void quotedString(StringBuilder sb, char quote) {
+		boolean embedded = sb.length() != 0;
+		if (embedded) {
+			sb.append(quote);
+		}
 		while (index < string.length()) {
-			c = string.charAt(index++);
-			if (c == quote)
+			char c = string.charAt(index++);
+			if (c == quote) {
+				if (embedded) {
+					sb.append(quote);
+				}
 				break;
-			if (c == '\\' && index < string.length()) {
+			}
+			if ((c == '\\') && (index < string.length())) {
 				char cc = string.charAt(index++);
-				if (cc != quote)
+				if (cc != quote) {
 					sb.append("\\");
+				}
 				c = cc;
 			}
 			sb.append(c);
@@ -105,17 +129,7 @@ public class QuotedTokenizer {
 	}
 
 	public String[] getTokens() {
-		return getTokens(0);
-	}
-
-	private String[] getTokens(int cnt) {
-		String token = nextToken();
-		if (token == null)
-			return new String[cnt];
-
-		String result[] = getTokens(cnt + 1);
-		result[cnt] = token;
-		return result;
+		return stream(this).toArray(String[]::new);
 	}
 
 	public char getSeparator() {
@@ -123,10 +137,64 @@ public class QuotedTokenizer {
 	}
 
 	public List<String> getTokenSet() {
-		List<String> list = new ArrayList<>();
-		for (String token = nextToken(); token != null; token = nextToken()) {
-			list.add(token);
-		}
-		return list;
+		return stream(this).collect(toList());
+	}
+
+	public Stream<String> stream() {
+		return stream(new QuotedTokenizer(string, separators, returnTokens));
+	}
+
+	private static Stream<String> stream(QuotedTokenizer qt) {
+		return StreamSupport.stream(spliterator(qt), false);
+	}
+
+	@Override
+	public Spliterator<String> spliterator() {
+		return spliterator(new QuotedTokenizer(string, separators, returnTokens));
+	}
+
+	private static Spliterator<String> spliterator(QuotedTokenizer qt) {
+		return new AbstractSpliterator<String>(Long.MAX_VALUE, Spliterator.ORDERED) {
+			@Override
+			public boolean tryAdvance(Consumer<? super String> action) {
+				requireNonNull(action);
+				String next = qt.nextToken();
+				if (next != null) {
+					action.accept(next);
+					return true;
+				}
+				return false;
+			}
+		};
+	}
+
+	@Override
+	public Iterator<String> iterator() {
+		return iterator(new QuotedTokenizer(string, separators, returnTokens));
+	}
+
+	private static Iterator<String> iterator(QuotedTokenizer qt) {
+		return new Iterator<String>() {
+			private boolean	hasNext	= false;
+			private String	next;
+
+			@Override
+			public boolean hasNext() {
+				if (hasNext) {
+					return true;
+				}
+				next = qt.nextToken();
+				return hasNext = (next != null);
+			}
+
+			@Override
+			public String next() {
+				if (hasNext()) {
+					hasNext = false;
+					return next;
+				}
+				throw new NoSuchElementException();
+			}
+		};
 	}
 }

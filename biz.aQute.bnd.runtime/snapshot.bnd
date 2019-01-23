@@ -1,12 +1,11 @@
 Bundle-Activator: aQute.bnd.runtime.snapshot.Snapshot
-Dynamic-ImportPackage \
+DynamicImport-Package: \
     org.osgi.service.component.runtime.dto,\
     org.osgi.service.cm,\
     org.osgi.service.coordinator,\
     org.osgi.service.log\
 
-
-Private-Package: \
+-includepackage: \
 	aQute.bnd.runtime.facade,\
 	aQute.bnd.runtime.snapshot,\
 	aQute.bnd.runtime.util

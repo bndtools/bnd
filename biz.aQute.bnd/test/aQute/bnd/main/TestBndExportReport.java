@@ -163,7 +163,7 @@ public class TestBndExportReport extends TestBndMainBase {
 			.toString(), "--configName", "test", "--templateType", "twig", "--template",
 			folder.getFile("template")
 				.toString(),
-			"--parameters", "param='value'", folder.getFile("com.liferay.item.selector.taglib.jar")
+			"--parameters", "param=value", folder.getFile("com.liferay.item.selector.taglib.jar")
 				.toString(),
 			folder.getRootPath()
 				.toString() + "/result.txt");
