@@ -645,12 +645,13 @@ public class Macro {
 
 		Pattern regex = Pattern.compile(args[2]);
 		String replace = (args.length > 3) ? args[3] : "";
-		String middle = (args.length > 4) ? args[4] : ",";
+		Collector<CharSequence, ?, String> joining = (args.length > 4) ? Collectors.joining(args[4])
+			: Strings.joining();
 
 		String result = Strings.splitAsStream(args[1])
 			.map(element -> regex.matcher(element)
 				.replaceAll(replace))
-			.collect(Collectors.joining(middle));
+			.collect(joining);
 		return result;
 	}
 
@@ -1214,7 +1215,7 @@ public class Macro {
 			for (String arg : args) {
 				sb.append(del);
 				sb.append(arg);
-				del = ";";
+				del = SEMICOLON;
 			}
 			sb.append("}, is not understood. ");
 			sb.append(message);
@@ -1997,7 +1998,7 @@ public class Macro {
 		String macro = args[1];
 		String result = Arrays.stream(args, 2, args.length)
 			.flatMap(Strings::splitAsStream)
-			.map(s -> process("${" + macro + ";" + s + "}"))
+			.map(s -> process("${" + macro + SEMICOLON + s + "}"))
 			.collect(Strings.joining());
 		return result;
 	}
@@ -2013,7 +2014,7 @@ public class Macro {
 		String macro = args[1];
 		List<String> list = toList(args, 2, args.length);
 		String result = IntStream.range(0, list.size())
-			.mapToObj(n -> process("${" + macro + ";" + list.get(n) + ";" + n + "}"))
+			.mapToObj(n -> process("${" + macro + SEMICOLON + list.get(n) + SEMICOLON + n + "}"))
 			.collect(Strings.joining());
 		return result;
 	}
@@ -2029,7 +2030,7 @@ public class Macro {
 		String macro = args[1];
 		String result = Arrays.stream(args, 2, args.length)
 			.flatMap(Strings::splitAsStream)
-			.collect(Collectors.joining(";", "${" + macro + ";", "}"));
+			.collect(Collectors.joining(SEMICOLON, "${" + macro + SEMICOLON, "}"));
 		return process(result);
 	}
 
