@@ -729,7 +729,7 @@ public class JUnitFramework implements AutoCloseable {
 		throws InvalidSyntaxException {
 		ServiceReference<?>[] references = tracker.getServiceReferences();
 		if (references == null) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		Arrays.sort(references);
 		return Arrays.asList(references);
