@@ -41,11 +41,8 @@ public class BndWorkspaceContentsPlugin implements ReportEntryPlugin<Workspace>,
     _properties.put(ReportEntryPlugin.ENTRY_NAME_PROPERTY, EntryNamesReference.PROJECTS);
     _properties.put(ReportEntryPlugin.SOURCE_CLASS_PROPERTY, Workspace.class.getCanonicalName());
 
-    _generatorBuilder = ReportGeneratorBuilder.create().useCustomConfig()
-        .addPlugin(EntryNamesReference.MANIFEST).addPlugin(EntryNamesReference.COMPONENTS)
-        .addPlugin(EntryNamesReference.METATYPES).addPlugin(EntryNamesReference.BUNDLES)
-        .addPlugin(EntryNamesReference.PROJECTS).addPlugin(EntryNamesReference.MAVEN_COORDINATE)
-        .addPlugin(EntryNamesReference.FILE_NAME);
+    _generatorBuilder =
+        ReportGeneratorBuilder.create().useCustomConfig().withProjectDefaultPlugins();
   }
 
   @Override

@@ -18,7 +18,6 @@ import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.justif.Justif;
 import biz.aQute.bnd.reporter.exporter.ReportExporterBuilder;
-import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorBuilder;
 
 @Description(value = "Generate and export reports of a workspace, a project or of a jar.")
@@ -109,8 +108,7 @@ public class ExportReportCommand extends Processor {
 			.setGenerator(ReportGeneratorBuilder.create()
 				.setProcessor(ws)
 				.useCustomConfig()
-				.addPlugin(EntryNamesReference.FILE_NAME)
-				.addPlugin(EntryNamesReference.PROJECTS)
+				.withAggregatorProjectDefaultPlugins()
 				.build())
 			.setScope("workspace")
 			.build()
@@ -125,12 +123,7 @@ public class ExportReportCommand extends Processor {
 			.setGenerator(ReportGeneratorBuilder.create()
 				.setProcessor(p)
 				.useCustomConfig()
-				.addPlugin(EntryNamesReference.BUNDLES)
-				.addPlugin(EntryNamesReference.COMPONENTS)
-				.addPlugin(EntryNamesReference.FILE_NAME)
-				.addPlugin(EntryNamesReference.MANIFEST)
-				.addPlugin(EntryNamesReference.MAVEN_COORDINATE)
-				.addPlugin(EntryNamesReference.METATYPES)
+				.withProjectDefaultPlugins()
 				.build())
 			.setScope("project")
 			.build()
@@ -196,10 +189,7 @@ public class ExportReportCommand extends Processor {
 				.setGenerator(ReportGeneratorBuilder.create()
 					.setProcessor(processor)
 					.useCustomConfig()
-					.addPlugin(EntryNamesReference.COMPONENTS)
-					.addPlugin(EntryNamesReference.MANIFEST)
-					.addPlugin(EntryNamesReference.MAVEN_COORDINATE)
-					.addPlugin(EntryNamesReference.METATYPES)
+					.withBundleDefaultPlugins()
 					.build())
 				.build()
 				.exportReportsOf(jar);
