@@ -1,6 +1,7 @@
 package aQute.bnd.remote.junit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -21,13 +22,16 @@ import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.remote.junit.test.inject.SomeService;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
@@ -51,6 +55,11 @@ public class JUnitFrameworkTest {
 	@After
 	public void after() throws Exception {
 		builder.close();
+	}
+
+	@Test
+	public void testWs() {
+		System.err.println("waiter");
 	}
 
 	@Test
@@ -180,20 +189,33 @@ public class JUnitFrameworkTest {
 			.nostart()
 			.create()
 			.inject(this)) {
+
 			Closeable hide = fw.hide(String.class);
 			fw.start();
-			assertThat(fw.getServices(String.class)).isEmpty();
 
-			// register via the framework since we do not hide services
-			// registered
-			// via the testbundle
+			boolean isHidden = fw.getServices(String.class)
+				.isEmpty();
+			assertThat(isHidden).isTrue();
 
-			fw.testbundle.getBundleContext()
-				.registerService(String.class, "Hello", null);
+			fw.framework.getBundleContext()
+				.registerService(String.class, "fw", null);
 
-			assertThat(fw.getServices(String.class)).isEmpty();
-			hide.close();
+			isHidden = fw.getServices(String.class)
+				.isEmpty();
+			assertThat(isHidden).isTrue();
+
+			ServiceRegistration<String> visibleToAllViaTestbundle = fw.register(String.class, "Hello");
+
 			assertThat(fw.getServices(String.class)).containsOnly("Hello");
+
+			visibleToAllViaTestbundle.unregister();
+
+			isHidden = fw.getServices(String.class)
+				.isEmpty();
+			assertThat(isHidden).isTrue();
+
+			hide.close();
+			assertThat(fw.getServices(String.class)).containsOnly("fw");
 		}
 
 	}
@@ -224,14 +246,16 @@ public class JUnitFrameworkTest {
 			.runfw("org.apache.felix.framework")
 			.create()) {
 
-			Bundle start = fw.bundle()
-				.addResource(Comp.class)
-				.start();
+			Closeable comp = fw.addComponent(Comp.class);
 
 			assertThat(semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)).isTrue();
 			assertThat(semaphore.tryAcquire(1, 200, TimeUnit.MILLISECONDS)).isFalse();
 
-			start.stop();
+			assertThat(fw.getService(Comp.class)).containsInstanceOf(Comp.class);
+
+			comp.close();
+
+			assertThat(fw.getService(Comp.class)).isEmpty();
 
 			assertThat(semaphore.tryAcquire(1, 1, TimeUnit.SECONDS)).isTrue();
 
@@ -257,8 +281,7 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testTimeoutWithInvisibleAndFiltered() throws Exception {
 		try {
-			try (JUnitFramework fw = builder
-				.runfw("org.apache.felix.framework")
+			try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
 				.create()) {
 
 				Hashtable<String, Object> properties = new Hashtable<>();
@@ -297,8 +320,7 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testTimeoutWithPrivatePackage() throws Exception {
 		try {
-			try (JUnitFramework fw = builder
-				.runfw("org.apache.felix.framework")
+			try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
 				.create()) {
 
 				Bundle a = fw.bundle()
@@ -327,25 +349,22 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testReportingHiddenService() throws Exception {
 		try {
-			try (JUnitFramework fw = builder
-				.runfw("org.apache.felix.framework")
+			try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
 				.create()) {
 
-				fw.hide(SomeService.class);
-				Hashtable<String, Object> properties = new Hashtable<>();
+				fw.framework.getBundleContext()
+					.registerService(SomeService.class, new SomeService(), null);
 
+				fw.hide(SomeService.class);
 				fw.getBundleContext()
-					.registerService(SomeService.class, new SomeService(), properties);
+					.registerService(SomeService.class, new SomeService(), null);
 
 				class X {
 					@Service(minimum = 2, timeout = 100)
 					List<aQute.bnd.remote.junit.test.inject.SomeService> l;
 				}
 				X x = new X();
-
 				fw.inject(x);
-				SomeService afoo = x.l.get(0);
-				SomeService bfoo = x.l.get(1);
 			}
 			fail();
 		} catch (TimeoutException toe) {
@@ -356,8 +375,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testReportingUnimportedExport() throws Exception {
-		try (JUnitFramework fw = builder
-			.runfw("org.apache.felix.framework")
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
 			.create()) {
 
 			Bundle a = fw.bundle()
@@ -367,6 +385,52 @@ public class JUnitFrameworkTest {
 				.start();
 
 			assertTrue(fw.check("is exporting but NOT importing package"));
+		}
+	}
+
+	@Test
+	public void testGetService() throws Exception {
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+			.create()) {
+
+			assertFalse(fw.getService(String.class)
+				.isPresent());
+		}
+	}
+
+	@Test
+	public void testRegisterService() throws Exception {
+		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+			.create()) {
+			fw.register(String.class, "Hello", "a", 1, "b", 2, "c", new int[] {
+				3, 4, 5
+			});
+
+			assertTrue(fw.getService(String.class, "(&(a=1)(b=2)(c=3))")
+				.isPresent());
+		}
+
+	}
+	// wait a bit until this is supported by gradle and Eclipse
+	// @Test(expected = IllegalArgumentException.class)
+	// public void testMissingBundle() throws Exception {
+	// try (JUnitFramework fw = builder.bndrun("missing.bndrun")
+	// .create()) {}
+	// }
+
+	@Component(service = ExternalRefComp.class)
+	public static class ExternalRefComp {
+
+		@Reference
+		Processor p;
+	}
+
+	@Test
+	public void componentWithExternalReferences() throws Exception {
+		try (JUnitFramework fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
+			.runfw("org.apache.felix.framework")
+			.create()) {
+			fw.addComponent(ExternalRefComp.class);
 		}
 	}
 }

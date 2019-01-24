@@ -13,6 +13,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.framework.Constants;
@@ -25,6 +26,7 @@ import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
 import aQute.bnd.service.specifications.RunSpecification;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 
 /**
  * This class is a builder for frameworks that can be used in JUnit testing.
@@ -77,6 +79,11 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 
 	public JUnitFrameworkBuilder bndrun(File file) {
 		RunSpecification setup = workspace.getRun(file.getAbsolutePath());
+		if (!setup.errors.isEmpty()) {
+			throw new IllegalArgumentException(
+				"Errors while get bndrun file " + file.getAbsolutePath() + "\n" + Strings.join("\n", setup.errors));
+
+		}
 		setup.target = null;
 		setup.bin = null;
 		setup.bin_test = null;
@@ -167,10 +174,11 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 			File storage = IO.getFile(new File(local.target), "junit-fw-" + counter.incrementAndGet());
 			IO.delete(storage);
 
-			String extra = toString(local.extraSystemPackages);
-			System.out.println(extra);
-			local.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extra);
-			local.properties.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, toString(local.extraSystemCapabilities));
+			String extraPackages = toString(local.extraSystemPackages);
+			String extraCapabilities = toString(local.extraSystemCapabilities);
+
+			local.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extraPackages);
+			local.properties.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, extraCapabilities);
 			local.properties.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
 			local.properties.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 			local.properties.put(Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_FRAMEWORK);
@@ -179,6 +187,16 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 
 			@SuppressWarnings("resource")
 			JUnitFramework jUnitFramework = new JUnitFramework(this, framework);
+
+			jUnitFramework.report("Extra system packages %s", local.extraSystemPackages.keySet()
+				.stream()
+				.collect(Collectors.joining("\n")));
+			jUnitFramework.report("Extra system capabilities %s", local.extraSystemCapabilities.keySet()
+				.stream()
+				.collect(Collectors.joining("\n")));
+			jUnitFramework.report("Storage %s", storage.getAbsolutePath());
+			jUnitFramework.report("Runpath %s", local.runpath);
+
 			if (start) {
 				jUnitFramework.start();
 			}
@@ -214,8 +232,13 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
 		for (Map.Entry<String, Map<String, String>> e : map.entrySet()) {
+
+			String key = e.getKey();
+			while (key.endsWith("~"))
+				key = key.substring(0, key.length() - 1);
+
 			sb.append(del);
-			sb.append(e.getKey());
+			sb.append(key);
 			e.getValue()
 				.entrySet()
 				.forEach(ee -> {
@@ -239,7 +262,6 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 				});
 			del = ", ";
 		}
-		System.out.println(sb.toString());
 		return sb.toString();
 	}
 
@@ -260,7 +282,6 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 			} else {
 				List<String> runpath = new ArrayList<>(local.runfw);
 				runpath.addAll(local.runpath);
-				System.out.println("-runpath " + runpath);
 				URL[] urls = runpath.stream()
 					.map(File::new)
 					.map(this::toURL)
