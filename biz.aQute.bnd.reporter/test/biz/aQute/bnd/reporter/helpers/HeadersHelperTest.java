@@ -36,93 +36,90 @@ import java.util.Map;
 import java.util.jar.Manifest;
 import junit.framework.TestCase;
 
-@SuppressWarnings("boxing")
 public class HeadersHelperTest extends TestCase {
 
   public void testBundleActivator() throws Exception {
     String expected = null;
-    perform(Constants.BUNDLE_ACTIVATOR, "bundleActivator", "", expected);
+    perform(Constants.BUNDLE_ACTIVATOR, "", expected);
 
     expected = "class.Name";
-    perform(Constants.BUNDLE_ACTIVATOR, "bundleActivator", "class.Name", expected);
+    perform(Constants.BUNDLE_ACTIVATOR, "class.Name", expected);
   }
 
   public void testBundleCategories() throws Exception {
     List<String> expected = null;
-    perform(Constants.BUNDLE_CATEGORY, "bundleCategories", "", expected);
+    perform(Constants.BUNDLE_CATEGORY, "", expected);
 
     expected = new LinkedList<>();
     expected.add("one");
-    perform(Constants.BUNDLE_CATEGORY, "bundleCategories", "one", expected);
+    perform(Constants.BUNDLE_CATEGORY, "one", expected);
 
     expected.add("two");
     expected.add("one");
     expected.add("two");
-    perform(Constants.BUNDLE_CATEGORY, "bundleCategories", "one, two, one, two", expected);
+    perform(Constants.BUNDLE_CATEGORY, "one, two, one, two", expected);
   }
 
   public void testBundleClasspaths() throws Exception {
     final List<String> expected = new LinkedList<>();
     expected.add(".");
-    perform(Constants.BUNDLE_CLASSPATH, "bundleClasspaths", "", expected);
+    perform(Constants.BUNDLE_CLASSPATH, "", expected);
 
     expected.clear();
     expected.add("class.Name");
-    perform(Constants.BUNDLE_CLASSPATH, "bundleClasspaths", "class.Name", expected);
+    perform(Constants.BUNDLE_CLASSPATH, "class.Name", expected);
 
     expected.add("class.Name1");
     expected.add("class.Name2");
-    perform(Constants.BUNDLE_CLASSPATH, "bundleClasspaths", "class.Name;class.Name1,class.Name2",
-        expected);
+    perform(Constants.BUNDLE_CLASSPATH, "class.Name;class.Name1,class.Name2", expected);
   }
 
   public void testBundleContactAddress() throws Exception {
     ContactAddressDTO expected = null;
-    perform(Constants.BUNDLE_CONTACTADDRESS, "bundleContactAddress", "", expected);
+    perform(Constants.BUNDLE_CONTACTADDRESS, "", expected);
 
     expected = new ContactAddressDTO();
     expected.address = "25 Argile Street Ottawa";
     expected.type = "postal";
-    perform(Constants.BUNDLE_CONTACTADDRESS, "bundleContactAddress", "25 Argile Street Ottawa",
-        expected);
+    perform(Constants.BUNDLE_CONTACTADDRESS, "25 Argile Street Ottawa", expected);
 
     expected = new ContactAddressDTO();
     expected.address = "http://google.com";
     expected.type = "url";
-    perform(Constants.BUNDLE_CONTACTADDRESS, "bundleContactAddress", "http://google.com", expected);
+    perform(Constants.BUNDLE_CONTACTADDRESS, "http://google.com", expected);
 
     expected = new ContactAddressDTO();
     expected.address = "cde@cde.cde";
     expected.type = "email";
-    perform(Constants.BUNDLE_CONTACTADDRESS, "bundleContactAddress", "cde@cde.cde", expected);
+    perform(Constants.BUNDLE_CONTACTADDRESS, "cde@cde.cde", expected);
   }
 
   public void testBundleCopyright() throws Exception {
     String expected = null;
-    perform(Constants.BUNDLE_COPYRIGHT, "bundleCopyright", "", expected);
+    perform(Constants.BUNDLE_COPYRIGHT, "", expected);
 
     expected = "My Copyright";
-    perform(Constants.BUNDLE_COPYRIGHT, "bundleCopyright", "My Copyright", expected);
+    perform(Constants.BUNDLE_COPYRIGHT, "My Copyright", expected);
   }
 
   public void testBundleDescription() throws Exception {
     String expected = null;
-    perform(Constants.BUNDLE_DESCRIPTION, "bundleDescription", "", expected);
+    perform(Constants.BUNDLE_DESCRIPTION, "", expected);
 
     expected = "My Description";
-    perform(Constants.BUNDLE_DESCRIPTION, "bundleDescription", "My Description", expected);
+    perform(Constants.BUNDLE_DESCRIPTION, "My Description", expected);
   }
 
   public void testBundleDevelopers() throws Exception {
     DeveloperDTO e = null;
     List<DeveloperDTO> expected = null;
-    perform(Constants.BUNDLE_DEVELOPERS, "bundleDevelopers", "", expected);
+    perform(Constants.BUNDLE_DEVELOPERS, "", expected);
 
     expected = new LinkedList<>();
     e = new DeveloperDTO();
     e.identifier = "cde@cde.cde";
     expected.add(e);
-    perform(Constants.BUNDLE_DEVELOPERS, "bundleDevelopers", "cde@cde.cde", expected);
+    perform(Constants.BUNDLE_DEVELOPERS, "cde@cde.cde", expected);
 
     expected.clear();
     e = new DeveloperDTO();
@@ -134,7 +131,7 @@ public class HeadersHelperTest extends TestCase {
     e.timezone = 1;
     e.roles.add("one");
     expected.add(e);
-    perform(Constants.BUNDLE_DEVELOPERS, "bundleDevelopers",
+    perform(Constants.BUNDLE_DEVELOPERS,
         "cde;email='cde@cde.cde';name='Clement Delgrange';organization='cdecode';"
             + "organizationUrl='cdecode.org';timezone=1;roles='one'",
         expected);
@@ -147,7 +144,7 @@ public class HeadersHelperTest extends TestCase {
     e.timezone = 1;
     e.roles.add("one");
     expected.add(e);
-    perform(Constants.BUNDLE_DEVELOPERS, "bundleDevelopers",
+    perform(Constants.BUNDLE_DEVELOPERS,
         "cde;email='cde@cde.cde';name='Clement Delgrange';organization='cdecode'"
             + ";organizationUrl='cdecode.org';timezone=1;roles='one, two',cde@two.com"
             + ";name='Clement Delgrange';organization='cdecode';organizationUrl='cdecode.org';"
@@ -157,15 +154,15 @@ public class HeadersHelperTest extends TestCase {
 
   public void testBundleDocUrl() throws Exception {
     String expected = null;
-    perform(Constants.BUNDLE_DOCURL, "bundleDocUrl", "", expected);
+    perform(Constants.BUNDLE_DOCURL, "", expected);
     expected = "www.google.com";
-    perform(Constants.BUNDLE_DOCURL, "bundleDocUrl", "www.google.com", expected);
+    perform(Constants.BUNDLE_DOCURL, "www.google.com", expected);
   }
 
   public void testDynamicImportPackages() throws Exception {
     DynamicImportPackageDTO i;
     List<DynamicImportPackageDTO> expected = null;
-    perform(Constants.DYNAMICIMPORT_PACKAGE, "dynamicImportPackages", "", expected);
+    perform(Constants.DYNAMICIMPORT_PACKAGE, "", expected);
 
     expected = new LinkedList<>();
     i = new DynamicImportPackageDTO();
@@ -183,7 +180,7 @@ public class HeadersHelperTest extends TestCase {
     i.version.floor.minor = 0;
     i.version.floor.micro = 0;
     expected.add(i);
-    perform(Constants.DYNAMICIMPORT_PACKAGE, "dynamicImportPackages", "com.test.*", expected);
+    perform(Constants.DYNAMICIMPORT_PACKAGE, "com.test.*", expected);
 
     expected.clear();
     i = new DynamicImportPackageDTO();
@@ -241,7 +238,7 @@ public class HeadersHelperTest extends TestCase {
     i.version.floor.minor = 0;
     i.version.floor.micro = 0;
     expected.add(i);
-    perform(Constants.DYNAMICIMPORT_PACKAGE, "dynamicImportPackages",
+    perform(Constants.DYNAMICIMPORT_PACKAGE,
         "com.test.*;com.test2;version='1.2.0';bundle-symbolic-name='symbolic.test';condi1=test;"
             + "directivetoignor:=test;bundle-version='1',com.test3;condi2=test2;bundle-version='[1.0,1.1)'",
         expected);
@@ -250,7 +247,7 @@ public class HeadersHelperTest extends TestCase {
   public void testExportPackages() throws Exception {
     ExportPackageDTO e;
     List<ExportPackageDTO> expected = null;
-    perform(Constants.EXPORT_PACKAGE, "exportPackages", "", expected);
+    perform(Constants.EXPORT_PACKAGE, "", expected);
 
     expected = new LinkedList<>();
     e = new ExportPackageDTO();
@@ -260,7 +257,7 @@ public class HeadersHelperTest extends TestCase {
     e.version.minor = 0;
     e.version.micro = 0;
     expected.add(e);
-    perform(Constants.EXPORT_PACKAGE, "exportPackages", "com.test", expected);
+    perform(Constants.EXPORT_PACKAGE, "com.test", expected);
 
     expected.clear();
     e = new ExportPackageDTO();
@@ -303,7 +300,7 @@ public class HeadersHelperTest extends TestCase {
     e.version.micro = 0;
     e.arbitraryAttributes.put("condi2", "test2");
     expected.add(e);
-    perform(Constants.EXPORT_PACKAGE, "exportPackages",
+    perform(Constants.EXPORT_PACKAGE,
         "com.test;com.test2;version='1.2.0';mandatory:='condi1, condi2';include:='com.t, org.t';"
             + "exclude:='com.tt, org.tt';uses:='com.test, org.test';condi1=test;directivetoignor:=test,com.test3;condi2=test2",
         expected);
@@ -311,7 +308,7 @@ public class HeadersHelperTest extends TestCase {
 
   public void testFragmentHost() throws Exception {
     FragmentHostDTO expected = null;
-    perform(Constants.FRAGMENT_HOST, "fragmentHost", "", expected);
+    perform(Constants.FRAGMENT_HOST, "", expected);
 
     expected = new FragmentHostDTO();
     expected.bundleSymbolicName = "symbolic.name";
@@ -322,7 +319,7 @@ public class HeadersHelperTest extends TestCase {
     expected.bundleVersion.floor.minor = 0;
     expected.bundleVersion.floor.micro = 0;
     expected.extension = "framework";
-    perform(Constants.FRAGMENT_HOST, "fragmentHost", "symbolic.name", expected);
+    perform(Constants.FRAGMENT_HOST, "symbolic.name", expected);
 
     expected = new FragmentHostDTO();
     expected.bundleSymbolicName = "symbolic.name";
@@ -338,7 +335,7 @@ public class HeadersHelperTest extends TestCase {
     expected.bundleVersion.ceiling.minor = 0;
     expected.bundleVersion.ceiling.micro = 0;
     expected.extension = "bootclasspath";
-    perform(Constants.FRAGMENT_HOST, "fragmentHost",
+    perform(Constants.FRAGMENT_HOST,
         "symbolic.name;extension:='bootclasspath';bundle-version='[1.2,2.0)'", expected);
 
     expected = new FragmentHostDTO();
@@ -351,34 +348,34 @@ public class HeadersHelperTest extends TestCase {
     expected.bundleVersion.floor.micro = 0;
     expected.extension = "bootclasspath";
     expected.arbitraryAttributes.put("otherattri", "cool");
-    perform(Constants.FRAGMENT_HOST, "fragmentHost",
+    perform(Constants.FRAGMENT_HOST,
         "symbolic.name;extension:='bootclasspath';otherattri='cool';notallow:=direct", expected);
   }
 
   public void testBundleIcons() throws Exception {
     IconDTO i;
     List<IconDTO> expected = null;
-    perform(Constants.BUNDLE_ICON, "bundleIcons", "", expected);
+    perform(Constants.BUNDLE_ICON, "", expected);
 
     expected = new LinkedList<>();
     i = new IconDTO();
     i.url = "./path";
     expected.add(i);
-    perform(Constants.BUNDLE_ICON, "bundleIcons", "./path", expected);
+    perform(Constants.BUNDLE_ICON, "./path", expected);
 
     i.size = 34;
     i = new IconDTO();
     i.url = "./path2";
     i.size = 34;
     expected.add(i);
-    perform(Constants.BUNDLE_ICON, "bundleIcons", "./path; ./path2;size=34", expected);
+    perform(Constants.BUNDLE_ICON, "./path; ./path2;size=34", expected);
   }
 
   public void testImportPackages() throws Exception {
     ImportPackageDTO i;
     List<ImportPackageDTO> expected = null;
 
-    perform(Constants.IMPORT_PACKAGE, "importPackages", "", expected);
+    perform(Constants.IMPORT_PACKAGE, "", expected);
 
     expected = new LinkedList<>();
     i = new ImportPackageDTO();
@@ -396,7 +393,7 @@ public class HeadersHelperTest extends TestCase {
     i.version.floor.minor = 0;
     i.version.floor.micro = 0;
     expected.add(i);
-    perform(Constants.IMPORT_PACKAGE, "importPackages", "com.test", expected);
+    perform(Constants.IMPORT_PACKAGE, "com.test", expected);
 
     expected = new LinkedList<>();
     i = new ImportPackageDTO();
@@ -477,7 +474,7 @@ public class HeadersHelperTest extends TestCase {
     i.version.floor.micro = 0;
     i.arbitraryAttributes.put("condi2", "test2");
     expected.add(i);
-    perform(Constants.IMPORT_PACKAGE, "importPackages",
+    perform(Constants.IMPORT_PACKAGE,
         "com.test.*;com.test2;version='[1.2.0.QUAL,2.0.0.QUAL)';resolution:='optional';"
             + "bundle-symbolic-name='symbolic.test';condi1=test;directivetoignor:=test;bundle-version='1',com.test3;condi2=test2",
         expected);
@@ -485,31 +482,31 @@ public class HeadersHelperTest extends TestCase {
 
   public void testBundleActivationPolicy() throws Exception {
     ActivationPolicyDTO expected = null;
-    perform(Constants.BUNDLE_ACTIVATIONPOLICY, "bundleActivationPolicy", "", expected);
+    perform(Constants.BUNDLE_ACTIVATIONPOLICY, "", expected);
 
     expected = new ActivationPolicyDTO();
     expected.policy = "lazy";
     expected.includes.add("com"); // we add this package in jar
-    perform(Constants.BUNDLE_ACTIVATIONPOLICY, "bundleActivationPolicy", "lazy", expected);
+    perform(Constants.BUNDLE_ACTIVATIONPOLICY, "lazy", expected);
 
     expected.excludes.add("test2");
     expected.excludes.add("test3");
     expected.includes.add("test");
     expected.includes.add("test1");
     expected.includes.remove("com");
-    perform(Constants.BUNDLE_ACTIVATIONPOLICY, "bundleActivationPolicy",
-        "lazy;include:='test,test1';exclude:='test2, test3'", expected);
+    perform(Constants.BUNDLE_ACTIVATIONPOLICY, "lazy;include:='test,test1';exclude:='test2, test3'",
+        expected);
   }
 
   public void testBundleLicenses() throws Exception {
     LicenseDTO l = new LicenseDTO();
     List<LicenseDTO> expected = null;
-    perform(Constants.BUNDLE_LICENSE, "bundleLicenses", "", expected);
+    perform(Constants.BUNDLE_LICENSE, "", expected);
 
     expected = new LinkedList<>();
     l.name = "Apache";
     expected.add(l);
-    perform(Constants.BUNDLE_LICENSE, "bundleLicenses", "Apache", expected);
+    perform(Constants.BUNDLE_LICENSE, "Apache", expected);
 
     expected = new LinkedList<>();
     l.name = "Apache";
@@ -519,29 +516,29 @@ public class HeadersHelperTest extends TestCase {
     l = new LicenseDTO();
     l.name = "Apache2";
     expected.add(l);
-    perform(Constants.BUNDLE_LICENSE, "bundleLicenses",
+    perform(Constants.BUNDLE_LICENSE,
         "Apache;description='description';link='www.google.com',Apache2", expected);
   }
 
   public void testBundleManifestVersion() throws Exception {
     Integer expected = 1;
-    perform(Constants.BUNDLE_MANIFESTVERSION, "bundleManifestVersion", "", expected);
+    perform(Constants.BUNDLE_MANIFESTVERSION, "", expected);
     expected = 2;
-    perform(Constants.BUNDLE_MANIFESTVERSION, "bundleManifestVersion", "2", expected);
+    perform(Constants.BUNDLE_MANIFESTVERSION, "2", expected);
   }
 
   public void testBundleName() throws Exception {
     String expected = null;
-    perform(Constants.BUNDLE_NAME, "bundleName", "", expected);
+    perform(Constants.BUNDLE_NAME, "", expected);
     expected = "Test";
-    perform(Constants.BUNDLE_NAME, "bundleName", "Test", expected);
+    perform(Constants.BUNDLE_NAME, "Test", expected);
   }
 
   public void testBundleNativeCode() throws Exception {
     VersionRangeDTO v;
     NativeCodeEntryDTO n;
     NativeCodeDTO expected = null;
-    perform(Constants.BUNDLE_NATIVECODE, "bundleNativeCode", "", expected);
+    perform(Constants.BUNDLE_NATIVECODE, "", expected);
 
     expected = new NativeCodeDTO();
     n = new NativeCodeEntryDTO();
@@ -587,7 +584,7 @@ public class HeadersHelperTest extends TestCase {
     n.osversions.add(v);
     expected.entries.add(n);
     expected.optional = true;
-    perform(Constants.BUNDLE_NATIVECODE, "bundleNativeCode",
+    perform(Constants.BUNDLE_NATIVECODE,
         "lib/http.dll; lib/zlib.dll;osname=Windows95;osname=Windows98;osversion='not';"
             + "osname=WindowsNT;processor=x86;selection-filter = '(com.acme.windowing=win32)';"
             + "language=en;language=se,"
@@ -601,13 +598,13 @@ public class HeadersHelperTest extends TestCase {
     ProvideCapabilityDTO c;
     List<ProvideCapabilityDTO> expected = null;
 
-    perform(Constants.PROVIDE_CAPABILITY, "provideCapabilities", "", expected);
+    perform(Constants.PROVIDE_CAPABILITY, "", expected);
 
     expected = new LinkedList<>();
     c = new ProvideCapabilityDTO();
     c.namespace = "com.namespace";
     expected.add(c);
-    perform(Constants.PROVIDE_CAPABILITY, "provideCapabilities", "com.namespace", expected);
+    perform(Constants.PROVIDE_CAPABILITY, "com.namespace", expected);
 
     expected = new LinkedList<>();
     c = new ProvideCapabilityDTO();
@@ -669,7 +666,7 @@ public class HeadersHelperTest extends TestCase {
     t.values.add("not");
     c.typedAttributes.put("q:Strange", t);
     expected.add(c);
-    perform(Constants.PROVIDE_CAPABILITY, "provideCapabilities",
+    perform(Constants.PROVIDE_CAPABILITY,
         "com.namespace;custom:=test;effective:='other';uses:='one,two';t=dde;tt:Double=5;"
             + "ttt:Long=6;tttt:String=6;ttttt:Version=6;"
             + "l:List='dd,e';ll:List<Double>='5,4';lll:List<Long>='6,7';"
@@ -680,7 +677,7 @@ public class HeadersHelperTest extends TestCase {
   public void testRequireBundles() throws Exception {
     RequireBundleDTO b;
     List<RequireBundleDTO> expected = null;
-    perform(Constants.REQUIRE_BUNDLE, "requireBundles", "", expected);
+    perform(Constants.REQUIRE_BUNDLE, "", expected);
 
     expected = new LinkedList<>();
     b = new RequireBundleDTO();
@@ -692,7 +689,7 @@ public class HeadersHelperTest extends TestCase {
     b.bundleVersion.floor.micro = 0;
     b.bundleVersion.floor.include = true;
     expected.add(b);
-    perform(Constants.REQUIRE_BUNDLE, "requireBundles", "bundle.symbolicName", expected);
+    perform(Constants.REQUIRE_BUNDLE, "bundle.symbolicName", expected);
 
     expected = new LinkedList<>();
     b = new RequireBundleDTO();
@@ -717,7 +714,7 @@ public class HeadersHelperTest extends TestCase {
     b.bundleVersion.floor.include = true;
     b.arbitraryAttributes.put("abri", "v");
     expected.add(b);
-    perform(Constants.REQUIRE_BUNDLE, "requireBundles",
+    perform(Constants.REQUIRE_BUNDLE,
         "bundle.symbolicName;visibility:='reexport';resolution:=optional;bundle-version=1,com.test;abri=v;notallow:=de",
         expected);
   }
@@ -726,13 +723,13 @@ public class HeadersHelperTest extends TestCase {
     TypedAttributeValueDTO t;
     RequireCapabilityDTO c;
     List<RequireCapabilityDTO> expected = null;
-    perform(Constants.REQUIRE_CAPABILITY, "requireCapabilities", "", expected);
+    perform(Constants.REQUIRE_CAPABILITY, "", expected);
 
     expected = new LinkedList<>();
     c = new RequireCapabilityDTO();
     c.namespace = "bundle.symbolicName";
     expected.add(c);
-    perform(Constants.REQUIRE_CAPABILITY, "requireCapabilities", "bundle.symbolicName", expected);
+    perform(Constants.REQUIRE_CAPABILITY, "bundle.symbolicName", expected);
 
     expected = new LinkedList<>();
     c = new RequireCapabilityDTO();
@@ -749,7 +746,7 @@ public class HeadersHelperTest extends TestCase {
     c = new RequireCapabilityDTO();
     c.namespace = "com.test";
     expected.add(c);
-    perform(Constants.REQUIRE_CAPABILITY, "requireCapabilities",
+    perform(Constants.REQUIRE_CAPABILITY,
         "bundle.symbolicName;filter:=cool;cardinality:=multiple;effective:='other';resolution:=optional;att:Double=5,com.test",
         expected);
 
@@ -810,7 +807,7 @@ public class HeadersHelperTest extends TestCase {
     t.values.add("not");
     c.typedAttributes.put("q:Strange", t);
     expected.add(c);
-    perform(Constants.REQUIRE_CAPABILITY, "requireCapabilities",
+    perform(Constants.REQUIRE_CAPABILITY,
         "com.namespace;custom:=test;t=dde;tt:Double=5;ttt:Long=6;tttt:String=6;ttttt:Version=6;"
             + "l:List='dd,e';ll:List<Double>='5,4';lll:List<Long>='6,7';llll:List<String>='6,dede';lllll:List<Version>='6,1.2';q:Strange=not",
         expected);
@@ -818,27 +815,24 @@ public class HeadersHelperTest extends TestCase {
 
   public void testBundleRequiredExecutionEnvironments() throws Exception {
     List<String> expected = null;
-    perform(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "bundleRequiredExecutionEnvironments",
-        "", expected);
+    perform(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "", expected);
 
     expected = new LinkedList<>();
     expected.add("one");
-    perform(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "bundleRequiredExecutionEnvironments",
-        "one", expected);
+    perform(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "one", expected);
 
     expected.add("two");
-    perform(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "bundleRequiredExecutionEnvironments",
-        "one,two", expected);
+    perform(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, "one,two", expected);
   }
 
   public void testBundleSymbolicName() throws Exception {
     BundleSymbolicNameDTO expected = new BundleSymbolicNameDTO();
     expected.symbolicName = "!! MISSING !!";
-    perform(Constants.BUNDLE_SYMBOLICNAME, "bundleSymbolicName", "", expected);
+    perform(Constants.BUNDLE_SYMBOLICNAME, "", expected);
 
     expected = new BundleSymbolicNameDTO();
     expected.symbolicName = "com.symbolic.name";
-    perform(Constants.BUNDLE_SYMBOLICNAME, "bundleSymbolicName", "com.symbolic.name", expected);
+    perform(Constants.BUNDLE_SYMBOLICNAME, "com.symbolic.name", expected);
 
     expected = new BundleSymbolicNameDTO();
     expected.symbolicName = "com.symbolic.name";
@@ -847,28 +841,33 @@ public class HeadersHelperTest extends TestCase {
     expected.mandatories.add("test");
     expected.mandatories.add("test2");
     expected.arbitraryAttributes.put("condi", "test");
-    perform(Constants.BUNDLE_SYMBOLICNAME, "bundleSymbolicName",
+    perform(Constants.BUNDLE_SYMBOLICNAME,
         "com.symbolic.name;singleton:=true;fragment-attachment:=never;mandatory:='test, test2';condi=test;toignore:=test",
         expected);
   }
 
   public void testBundleVendor() throws Exception {
     String expected = null;
-    perform(Constants.BUNDLE_VENDOR, "bundleVendor", "", expected);
+    perform(Constants.BUNDLE_VENDOR, "", expected);
     expected = "My vendor";
-    perform(Constants.BUNDLE_VENDOR, "bundleVendor", "My vendor", expected);
+    perform(Constants.BUNDLE_VENDOR, "My vendor", expected);
+  }
+
+  public void testBundleLocalization() throws Exception {
+    perform(Constants.BUNDLE_LOCALIZATION, null, "OSGI-INF/l10n/bundle");
+    perform(Constants.BUNDLE_LOCALIZATION, "OSGI-INF/custom/bundle", "OSGI-INF/custom/bundle");
   }
 
   public void testBundleScm() throws Exception {
     ScmDTO expected = null;
-    perform(Constants.BUNDLE_SCM, "bundleScm", "", expected);
+    perform(Constants.BUNDLE_SCM, "", expected);
 
     expected = new ScmDTO();
     expected.connection = "test";
     expected.developerConnection = "test";
     expected.url = "test";
     expected.tag = "test";
-    perform(Constants.BUNDLE_SCM, "bundleScm",
+    perform(Constants.BUNDLE_SCM,
         "url=test,connection=test,developerConnection=test,tag=test,notallow=test", expected);
   }
 
@@ -877,32 +876,32 @@ public class HeadersHelperTest extends TestCase {
     expected.major = 0;
     expected.minor = 0;
     expected.micro = 0;
-    perform(Constants.BUNDLE_VERSION, "bundleVersion", "", expected);
+    perform(Constants.BUNDLE_VERSION, "", expected);
 
     expected = new VersionDTO();
     expected.major = 0;
     expected.minor = 0;
     expected.micro = 0;
-    perform(Constants.BUNDLE_VERSION, "bundleVersion", "notver", expected);
+    perform(Constants.BUNDLE_VERSION, "notver", expected);
 
     expected = new VersionDTO();
     expected.major = 1;
     expected.minor = 2;
     expected.micro = 0;
-    perform(Constants.BUNDLE_VERSION, "bundleVersion", "1.2", expected);
+    perform(Constants.BUNDLE_VERSION, "1.2", expected);
 
     expected = new VersionDTO();
     expected.major = 1;
     expected.minor = 2;
     expected.micro = 0;
     expected.qualifier = "45689-SNAPSHOT";
-    perform(Constants.BUNDLE_VERSION, "bundleVersion", "1.2.0.45689-SNAPSHOT", expected);
+    perform(Constants.BUNDLE_VERSION, "1.2.0.45689-SNAPSHOT", expected);
 
     expected = new VersionDTO();
     expected.major = 0;
     expected.minor = 0;
     expected.micro = 0;
-    perform(Constants.BUNDLE_VERSION, "bundleVersion", "1.2-SNAPSHOT", expected);
+    perform(Constants.BUNDLE_VERSION, "1.2-SNAPSHOT", expected);
   }
 
   public void testExtract() {
@@ -914,8 +913,8 @@ public class HeadersHelperTest extends TestCase {
     assertTrue(p.isOk());
   }
 
-  public void perform(final String headerName, final String entryName, final String header,
-      final Object expected) throws Exception {
+  public void perform(final String headerName, final String header, final Object expected)
+      throws Exception {
     final Jar jar = new Jar("jar");
     final Map<String, Resource> dir = new HashMap<>();
     dir.put("com/test", new FileResource(new File("")));
@@ -926,7 +925,8 @@ public class HeadersHelperTest extends TestCase {
     final Processor p = new Processor();
     final HeadersHelper extractor = new HeadersHelper(
         ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("und")), jar, p);
-    final Object actual = extractor.getClass().getDeclaredMethod("_" + entryName).invoke(extractor);
+    final Object actual = extractor.getClass()
+        .getDeclaredMethod("extract" + headerName.replaceAll("-", "")).invoke(extractor);
     assertTrue(p.isOk());
     final JSONCodec c = new JSONCodec();
     final StringWriter es = new StringWriter();

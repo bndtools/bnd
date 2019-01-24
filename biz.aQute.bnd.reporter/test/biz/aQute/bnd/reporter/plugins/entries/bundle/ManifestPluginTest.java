@@ -1,12 +1,13 @@
 package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
+import biz.aQute.bnd.reporter.manifest.dto.OSGiHeadersDTO;
 import java.util.Locale;
-import java.util.Map;
 import java.util.jar.Manifest;
 import org.junit.Test;
 
@@ -21,11 +22,12 @@ public class ManifestPluginTest {
     manifest.getMainAttributes().putValue("Bundle-Name", "test");
     Processor p = new Processor();
     plugin.setReporter(p);
-    Object result;
+    OSGiHeadersDTO result;
     result = plugin.extract(jar, Locale.forLanguageTag("und"));
 
     assertTrue(p.isOk());
-    assertTrue(((Map<?, ?>) result).size() > 0);
+    assertNotNull(result);
+    assertEquals("test", result.bundleName);
 
     jar = new Jar("jar");
     p = new Processor();
