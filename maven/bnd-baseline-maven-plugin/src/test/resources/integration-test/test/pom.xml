@@ -19,6 +19,8 @@
 		<module>valid-with-provider</module>
 		<module>invalid-with-provider</module>
 		<module>invalid-with-consumer</module>
+		<module>pre-diff</module>
+		<module>diffpackages</module>
 	</modules>
 
 	<dependencyManagement>
