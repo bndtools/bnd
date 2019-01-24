@@ -148,6 +148,28 @@ calculation then this can be configured as follows:
         <fullReport>true</fullReport>
     </configuration>
 
+#### Diffpackages
+
+The names of the exported packages in the bundle to baseline. The default is all the exported packages but this property can be used to [specify](https://bnd.bndtools.org/chapters/820-instructions.html#selector) which exported packages are baselined.
+
+    <configuration>
+        <diffpackages>
+            <diffpackage>!*.internal.*</diffpackage>
+            <diffpackage>*</diffpackage>
+        </diffpackages>
+    </configuration>
+
+#### Diffignores
+
+The manifest header names and resource paths to ignore when baseline comparing. This property can be used to [exclude](https://bnd.bndtools.org/chapters/820-instructions.html#selector) items from baseline comparison.
+
+    <configuration>
+        <diffignores>
+            <diffignore>com/foo/xyz.properties</diffignore>
+            <diffignore>Some-Manifest-Header</diffignore>
+        </diffignores>
+    </configuration>
+
 ## Configuration Properties
 
 |Configuration Property | Description |
@@ -156,6 +178,8 @@ calculation then this can be configured as follows:
 |`failOnMissing`        | See [Fail on missing baseline](#fail-on-missing-baseline). _Defaults to `true`._ Override with property `bnd.baseline.fail.on.missing`.|
 |`includeDistributionManagement`| See [Include Distribution Management](#include-distribution-management). _Defaults to `true`._ Override with property `bnd.baseline.include.distribution.management`.|
 |`fullReport`           | See [Full Reporting](#full-reporting). _Defaults to `false`._ Override with property `bnd.baseline.full.report`.|
+|`diffpackages`         | See [Diffpackages](#diffpackages). _Defaults to `*`._|
+|`diffignores`          | See [Diffignores](#diffignores). _Optional._|
 |`continueOnError`      | See [Continue on Error](#continue-on-error). _Defaults to `false`._ Override with property `bnd.baseline.continue.on.error`.|
 |`skip`                 | Skip the baseline process altogether. _Defaults to `false`._ Override with property `bnd.baseline.skip`.|
 

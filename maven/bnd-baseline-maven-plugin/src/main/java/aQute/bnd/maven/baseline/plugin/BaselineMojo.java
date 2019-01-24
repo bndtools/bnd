@@ -36,7 +36,11 @@ import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.BundleInfo;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.differ.DiffPluginImpl;
+import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.lib.strings.Strings;
 import aQute.libg.reporter.ReporterAdapter;
 import aQute.service.reporter.Reporter;
 
@@ -69,6 +73,12 @@ public class BaselineMojo extends AbstractMojo {
 	@Parameter
 	private Base					base;
 
+	@Parameter(required = false)
+	private List<String>			diffignores;
+
+	@Parameter(required = false, defaultValue = "*")
+	private List<String>			diffpackages;
+
 	@Parameter(property = "bnd.baseline.skip", defaultValue = "false")
 	private boolean					skip;
 
@@ -95,7 +105,7 @@ public class BaselineMojo extends AbstractMojo {
 
 		setupBase(artifact);
 
-		try {
+		try (Processor processor = new Processor()) {
 			searchForBaseVersion(aetherRepos);
 			if (base.getVersion() != null && !base.getVersion()
 				.isEmpty()) {
@@ -110,9 +120,12 @@ public class BaselineMojo extends AbstractMojo {
 					reporter = new ReporterAdapter();
 				}
 
-				Baseline baseline = new Baseline(reporter, new DiffPluginImpl());
+				DiffPluginImpl differ = new DiffPluginImpl();
+				differ.setIgnore(new Parameters(Strings.join(",", diffignores), processor));
+				Baseline baseline = new Baseline(reporter, differ);
 
-				if (checkFailures(artifact, artifactResult, baseline)) {
+				if (checkFailures(artifact, artifactResult, baseline,
+					new Instructions(new Parameters(Strings.join(",", diffpackages), processor)))) {
 					if (continueOnError) {
 						logger.warn(
 							"The baselining check failed when checking {} against {} but the bnd-baseline-maven-plugin is configured not to fail the build.",
@@ -224,7 +237,7 @@ public class BaselineMojo extends AbstractMojo {
 		return system.resolveArtifact(session, new ArtifactRequest(toFind, aetherRepos, "baseline"));
 	}
 
-	private boolean checkFailures(Artifact artifact, ArtifactResult artifactResult, Baseline baseline)
+	private boolean checkFailures(Artifact artifact, ArtifactResult artifactResult, Baseline baseline, Instructions diffpackages)
 		throws Exception, IOException {
 		StringBuffer sb = new StringBuffer();
 		try (Formatter f = new Formatter(sb, Locale.US);
@@ -233,7 +246,7 @@ public class BaselineMojo extends AbstractMojo {
 				.getFile())) {
 			boolean failed = false;
 
-			for (Info info : baseline.baseline(newer, older, null)) {
+			for (Info info : baseline.baseline(newer, older, diffpackages)) {
 				if (info.mismatch) {
 					failed = true;
 					if (logger.isErrorEnabled()) {
