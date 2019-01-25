@@ -33,6 +33,7 @@ Import-Package: \
 	aQute.*;resolution:=optional, \
 	junit.*;version="[3.8,5)",\
 	sun.*; resolution:=optional,\
+	org.junit.jupiter.*;resolution:=optional,\
 	*
 
 Bundle-Activator: aQute.junit.Activator
