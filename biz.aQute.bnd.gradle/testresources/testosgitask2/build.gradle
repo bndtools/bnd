@@ -11,6 +11,7 @@ plugins {
 version = '1.0.0'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -19,8 +20,7 @@ configurations {
 }
 
 dependencies {
-    compile 'org.osgi:osgi.enroute.junit.wrapper:4.12.0'
-    compile 'org.osgi:osgi.enroute.hamcrest.wrapper:1.3.0'
+    compile 'biz.aQute.bnd:biz.aQute.junit:+'
     framework 'org.eclipse.platform:org.eclipse.osgi:3.13.0'
 }
 
