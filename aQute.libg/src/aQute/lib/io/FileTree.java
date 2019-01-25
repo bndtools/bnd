@@ -20,11 +20,12 @@ public class FileTree {
 	public FileTree() {}
 
 	/**
-	 * Can be used by subclasses to add specific files to the return value of
-	 * {@link #getFiles(File, String...)}.
+	 * Can be used to add specific files to the return value of
+	 * {@link #getFiles(File, String...)} and {@link #getFiles(File, List)}.
 	 *
 	 * @param file A file to include in the return value of
-	 *            {@link #getFiles(File, String...)}.
+	 *            {@link #getFiles(File, String...)} and
+	 *            {@link #getFiles(File, List)}.
 	 */
 	public void addFile(File file) {
 		if (file == null) {

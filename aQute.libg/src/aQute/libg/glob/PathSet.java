@@ -197,8 +197,8 @@ public class PathSet {
 		return path -> includes.stream()
 			.anyMatch(include -> include.matcher(path)
 				.matches())
-			&& !excludes.stream()
-				.anyMatch(exclude -> exclude.matcher(path)
+			&& excludes.stream()
+				.noneMatch(exclude -> exclude.matcher(path)
 					.matches());
 	}
 }

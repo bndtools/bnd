@@ -3103,8 +3103,10 @@ public class bnd extends Processor {
 	public void _grep(grepOptions opts) throws Exception {
 		List<String> args = opts._arguments();
 		String s = args.remove(0);
-		Pattern pattern = Glob.toPattern(s);
-		if (pattern == null) {
+		Pattern pattern;
+		try {
+			pattern = Glob.toPattern(s);
+		} catch (IllegalArgumentException e) {
 			messages.InvalidGlobPattern_(s);
 			return;
 		}

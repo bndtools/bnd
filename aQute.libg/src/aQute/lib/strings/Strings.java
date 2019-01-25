@@ -6,36 +6,49 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import aQute.libg.qtokens.QuotedTokenizer;
 
 public class Strings {
+	private static final String COMMA = ",";
 
 	public static String join(String middle, Iterable<?> objects) {
-		return join(middle, objects, null, null);
+		if (objects == null) {
+			return "";
+		}
+		return StreamSupport.stream(objects.spliterator(), false)
+			.filter(Objects::nonNull)
+			.map(Object::toString)
+			.collect(Collectors.joining(middle));
 	}
 
 	public static String join(Iterable<?> objects) {
-		return join(",", objects, null, null);
+		return join(COMMA, objects);
 	}
 
 	public static String join(String middle, Iterable<?> objects, Pattern pattern, String replace) {
+		if (pattern == null) {
+			return join(middle, objects);
+		}
 		StringBuilder sb = new StringBuilder();
 		join(sb, middle, objects, pattern, replace);
 		return sb.toString();
 	}
 
 	public static void join(StringBuilder sb, String middle, Iterable<?> objects, Pattern pattern, String replace) {
-		String del = "";
-		if (objects == null)
+		if (objects == null) {
 			return;
+		}
 
+		String del = "";
 		for (Object o : objects) {
 			if (o != null) {
 				sb.append(del);
@@ -58,7 +71,7 @@ public class Strings {
 	}
 
 	public static Collector<CharSequence, ?, String> joining() {
-		return Collectors.joining(",");
+		return Collectors.joining(COMMA);
 	}
 
 	public static Collector<CharSequence, ?, String> joining(CharSequence delimiter, CharSequence prefix,
@@ -88,11 +101,11 @@ public class Strings {
 	}
 
 	public static String join(String[] strings) {
-		return join(",", strings);
+		return join(Arrays.asList(strings));
 	}
 
 	public static String join(Object[] strings) {
-		return join(",", strings);
+		return join(Arrays.asList(strings));
 	}
 
 	public static String getLastSegment(String name, char c) {
@@ -127,7 +140,7 @@ public class Strings {
 	public static Stream<String> splitAsStream(String s) {
 		if (s == null || (s = s.trim()).isEmpty())
 			return Stream.empty();
-		return new QuotedTokenizer(s, ",").stream()
+		return new QuotedTokenizer(s, COMMA).stream()
 			.filter(element -> !element.isEmpty());
 	}
 
