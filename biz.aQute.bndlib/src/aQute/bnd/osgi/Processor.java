@@ -1105,7 +1105,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	public void addProperties(Map<?, ?> properties) {
 		for (Entry<?, ?> entry : properties.entrySet()) {
 			setProperty(entry.getKey()
-				.toString(), entry.getValue() + "");
+				.toString(), String.valueOf(entry.getValue()));
 		}
 	}
 
