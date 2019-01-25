@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://unpkg.com/vue"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP"
+    crossorigin="anonymous">
+<script src="https://d3js.org/d3.v3.js"></script>
+<style>
+    .link {
+        fill: none;
+        stroke: #666;
+        stroke-width: 1.5px;
+    }
+
+    #licensing {
+        fill: green;
+    }
+
+    .link.licensing {
+        stroke: green;
+    }
+
+    .link.resolved {
+        stroke-dasharray: 0, 2 1;
+    }
+
+    circle {
+        fill: #ccc;
+        stroke: #333;
+        stroke-width: 1.5px;
+    }
+
+    text {
+        font: 10px sans-serif;
+        pointer-events: none;
+        text-shadow: 0 1px 0 #fff, 1px 0 0 #fff, 0 -1px 0 #fff, -1px 0 0 #fff;
+    }
+</style>
+
+<body>
+
+    <div id="app">
+        <input class="box" type="file" @change="handleFileSelect">
+
+        <div v-for="(n,k) in nodes">
+            {{k}}={{n}}
+        </div>
+        <div v-for="l in links">
+            {{l}}
+        </div>
+        <svg id="framework">
+
+        </svg>
+
+    </div>
+    <script>
+        var app = new Vue({
+            el: "#app",
+            data: {
+                snapshot: {},
+                nodes: {},
+                links: []
+            },
+            methods: {
+                handleFileSelect: function (evt) {
+                    var file = evt.target.files[0]
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        var snapshot = JSON.parse(e.target.result)
+                        app.update(snapshot)
+                    }
+                    if (file)
+                        reader.readAsText(file)
+                },
+
+                update(snapshot) {
+                    this.snapshot = snapshot
+                    this.nodes = {};
+                    this.links = []
+                    var services = {}
+
+                    Object.keys(snapshot.framework.bundles).forEach((bundleId) => {
+                        var bundle = snapshot.framework.bundles[bundleId]
+                        var id = "b-" + bundleId
+                        bundle.lid = id
+                        this.nodes[id] = { name: bundle.symbolicName, type : 'b' } // bundle
+                    });
+                    Object.keys(snapshot.framework.services).forEach((serviceId) => {
+                        var service = snapshot.framework.services[serviceId]
+                        var id = "s-" + serviceId
+                        service.lid = id;
+                        var s = { name: service.properties.objectClass, type: 's' }
+                        this.nodes[id] = s // service
+                        this.links.push({
+                            source: this.nodes["b-"+service.bundle],
+                            target: s,
+                            type: "registrar"
+                        })
+                        service.usingBundles.forEach(b => this.links.push({
+                            source: this.nodes["b-"+b],
+                            target: s,
+                            type: "user"
+                        }))
+                    });
+
+                    var width = 2000,
+                        height = 1000;
+
+                    var force = d3.layout.force()
+                        .nodes(d3.values(this.nodes))
+                        .links(this.links)
+                        .size([width, height])
+                        .linkDistance(10)
+                        .charge(-500)
+                        .on("tick", tick)
+                        .start();
+
+                    var svg = d3.select("#framework")
+                        .attr("width", width)
+                        .attr("height", height);
+
+                    // Per-type markers, as they don't inherit styles.
+                    svg.append("defs").selectAll("marker")
+                        .data(["suit", "licensing", "resolved"])
+                        .enter().append("marker")
+                        .attr("id", function (d) {
+                            return d;
+                        })
+                        .attr("viewBox", "0 -5 10 10")
+                        .attr("refX", 15)
+                        .attr("refY", -1.5)
+                        .attr("markerWidth", 6)
+                        .attr("markerHeight", 6)
+                        .attr("orient", "auto")
+                        .append("path")
+                        .attr("d", "M0,-5L10,0L0,5");
+
+                    var path = svg.append("g").selectAll("path")
+                        .data(force.links())
+                        .enter().append("path")
+                        .attr("class", function (d) {
+                            return "link " + d.type;
+                        })
+                        .attr("marker-end", function (d) {
+                            return "url(#" + d.type + ")";
+                        });
+
+                    var circle = svg.append("g").selectAll("circle")
+                        .data(force.nodes())
+                        .enter().append("circle")
+                        .attr("r", n => {
+                            return n.type === 'b' ? 20 : 6
+                        })
+                        .call(force.drag);
+
+                    var text = svg.append("g").selectAll("text")
+                        .data(force.nodes())
+                        .enter().append("text")
+                        .attr("x", 8)
+                        .attr("y", ".31em")
+                        .text(function (d) {
+                            return d.name;
+                        });
+
+                    // Use elliptical arc path segments to doubly-encode directionality.
+                    function tick() {
+                        path.attr("d", linkArc);
+                        circle.attr("transform", transform);
+                        text.attr("transform", transform);
+                    }
+
+                    function linkArc(d) {
+                        var dx = d.target.x - d.source.x,
+                            dy = d.target.y - d.source.y,
+                            dr = Math.sqrt(dx * dx + dy * dy);
+                        return "M" + d.source.x + "," + d.source.y + "A" + dr + "," + dr + " 0 0,1 " + d.target
+                            .x + "," + d.target.y;
+                    }
+
+                    function transform(d) {
+                        return "translate(" + d.x + "," + d.y + ")";
+                    }
+                }
+
+            }
+        })
+    </script>

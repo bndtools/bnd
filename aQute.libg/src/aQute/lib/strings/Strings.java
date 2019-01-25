@@ -1,14 +1,19 @@
 package aQute.lib.strings;
 
+import static java.util.stream.Collectors.toList;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import aQute.libg.qtokens.QuotedTokenizer;
 
 public class Strings {
 
@@ -50,6 +55,10 @@ public class Strings {
 
 	public static String join(String middle, Object[] segments) {
 		return join(middle, Arrays.asList(segments));
+	}
+
+	public static Collector<CharSequence, ?, String> joining() {
+		return Collectors.joining(",");
 	}
 
 	public static Collector<CharSequence, ?, String> joining(CharSequence delimiter, CharSequence prefix,
@@ -115,25 +124,24 @@ public class Strings {
 		return s.substring(start, end);
 	}
 
-	private final static Pattern LIST_SPLITTER_PATTERN = Pattern.compile("\\s*,\\s*");
+	public static Stream<String> splitAsStream(String s) {
+		if (s == null || (s = s.trim()).isEmpty())
+			return Stream.empty();
+		return new QuotedTokenizer(s, ",").stream()
+			.filter(element -> !element.isEmpty());
+	}
 
 	public static List<String> split(String s) {
-		if (s == null || (s = s.trim()).isEmpty())
-			return new ArrayList<>();
-		return toList(LIST_SPLITTER_PATTERN.split(s, 0));
+		return splitAsStream(s).collect(toList());
 	}
 
 	public static List<String> split(String regex, String s) {
 		if (s == null || (s = s.trim()).isEmpty())
 			return new ArrayList<>();
-		return toList(s.split(regex, 0));
-	}
-
-	@SafeVarargs
-	private static <T> List<T> toList(T... array) {
-		List<T> list = new ArrayList<>(array.length);
-		Collections.addAll(list, array);
-		return list;
+		return Pattern.compile(regex)
+			.splitAsStream(s)
+			.filter(element -> !element.isEmpty())
+			.collect(toList());
 	}
 
 	public static boolean in(String[] skip, String key) {

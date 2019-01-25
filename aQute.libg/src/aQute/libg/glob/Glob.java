@@ -223,6 +223,14 @@ public class Glob {
 		return false;
 	}
 
+	public int finds(CharSequence s) {
+		Matcher matcher = matcher(s);
+		if (matcher.find()) {
+			return matcher.start();
+		}
+		return -1;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

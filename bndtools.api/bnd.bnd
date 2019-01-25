@@ -6,12 +6,15 @@
 	osgi.core;version=latest;maven-scope=provided, \
 	aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest, \
-	org.eclipse.equinox.common, \
 	org.eclipse.core.resources,\
 	org.eclipse.core.runtime,\
-	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
+	org.eclipse.equinox.common, \
+    org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
 	org.eclipse.jface
 
-Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+Import-Package: \
+ ${eclipse.importpackage},\
+ *
 
 -conditionalpackage: aQute.lib*

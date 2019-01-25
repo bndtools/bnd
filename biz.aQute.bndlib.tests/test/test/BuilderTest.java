@@ -464,21 +464,27 @@ public class BuilderTest extends BndTestCase {
 	}
 
 	/**
-	 * A Require-Bundle should not fail on missing imports, just warn
+	 * A Require-Bundle should remove imports that are exported by its target(s)
 	 * 
 	 * @throws Exception
 	 */
 
-	public void testMissingImportWithRequireBundle() throws Exception {
+	public void testRemovedImportWithRequireBundle() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(new File("bin_test"));
+			b.addClasspath(new File("jar/osgi.core.jar"));
 			b.setPedantic(true);
-			b.setExportPackage("test.classreference;version=1");
-			b.setImportPackage("!*");
-			b.setProperty("Require-Bundle", "com.abc");
+
+			// causes an import to org.osgi.framework and javax.swing
+			b.setExportPackage("test.classreference;version=1,test.classreferencetoosgijar;version=1");
+
+			// the require bundle will then remove the osgi ref
+			b.setProperty("Require-Bundle", "osgi.core");
 			b.build();
-			assertTrue(b.check());
+			assertTrue(b.check("Imports that lack version ranges: \\[javax.swing\\]"));
+			assertThat(b.getImports()
+				.keySet()).containsExactlyInAnyOrder(b.getPackageRef("javax.swing"));
 
 			Verifier v = new Verifier(b.getJar());
 			v.verify();
@@ -2100,7 +2106,7 @@ public class BuilderTest extends BndTestCase {
 		try {
 			Properties p = new Properties();
 			p.setProperty("Import-Package", "*");
-			p.setProperty("Export-Package", "org.*'");
+			p.setProperty("Export-Package", "org.*");
 			bmaker.setProperties(p);
 			bmaker.setClasspath(cp);
 			Jar jar = bmaker.build();
@@ -2765,6 +2771,8 @@ public class BuilderTest extends BndTestCase {
 			bmaker.setProperty("Bundle-Activator", "test.activator.Activator");
 			bmaker.setProperty("build", "xyz"); // for @Version annotation
 			bmaker.setProperty("Private-Package", "test.*");
+			bmaker.setProperty("-bundleannotations",
+				"!test.annotationheaders.attrs.std.activator.TypeInVersionedPackage,*");
 			bmaker.setProperty("-dsannotations", "!*");
 			bmaker.setProperty("-metatypeannotations", "!*");
 			bmaker.setClasspath(new File[] {
@@ -3261,6 +3269,31 @@ public class BuilderTest extends BndTestCase {
 		System.err.println("Errors      " + builder.getErrors());
 		System.err.println("Exports     " + builder.getExports());
 		System.err.println("Imports     " + builder.getImports());
+	}
+
+	public void testImportBSN() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(new File("jar/ecj-4.7.3a.jar"));
+			b.addClasspath(new File("jar/org.eclipse.osgi-3.5.0.jar"));
+			b.setProperty("Export-Package", "test.activator");
+			b.setProperty("Import-Package",
+				"org.eclipse.jdt.core.compiler;org.eclipse.osgi.framework.util;"
+					+ "bundle-symbolic-name=\"${@bundlesymbolicname}\";"
+					+ "bundle-version=\"${range;[==,+0);${@bundleversion}}\"");
+			Jar jar = b.build();
+			assertTrue(b.check());
+			Manifest manifest = jar.getManifest();
+			manifest.write(System.err);
+			Domain d = Domain.domain(manifest);
+			Parameters imports = d.getImportPackage();
+			Attrs attrs = imports.get("org.eclipse.jdt.core.compiler");
+			assertEquals("org.eclipse.jdt.core.compiler.batch", attrs.get("bundle-symbolic-name"));
+			assertEquals("[3.13,4.0)", attrs.get("bundle-version"));
+			attrs = imports.get("org.eclipse.osgi.framework.util");
+			assertEquals("org.eclipse.osgi", attrs.get("bundle-symbolic-name"));
+			assertEquals("[3.5,4.0)", attrs.get("bundle-version"));
+		}
 	}
 
 }

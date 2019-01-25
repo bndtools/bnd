@@ -1,7 +1,14 @@
 ---
 layout: default
 class: Project
-title: -dependson   
-summary: Add dependencies from the current project to other projects, before this project is build any project this project depends on will be built first. 
+title: -diffignore SELECTORS
+summary: Manifest header names
+and resource paths to ignore during baseline comparison.
 ---
 
+You can use the `-diffignore` instruction to specify manifest header names
+and resource paths to ignore during baseline comparison.
+
+## Example
+
+    -diffignore: com/foo/xyz.properties, Some-Manifest-Header

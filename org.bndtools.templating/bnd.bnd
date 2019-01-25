@@ -9,6 +9,7 @@
 	aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest,\
 	biz.aQute.repository;version=latest,\
+	org.eclipse.core.runtime,\
 	org.eclipse.equinox.common,\
 	org.antlr:ST4:jar:complete;maven-scope=provided,\
 	com.github.spullara.mustache.java:compiler;maven-scope=provided,\
@@ -23,15 +24,15 @@
 -conditionalpackage: \
 	org.stringtemplate.*, \
 	st4hidden.*, \
-	aQute.lib.*, \
-	aQute.libg.*,\
+	aQute.lib*,\
 	com.github.mustachejava.*,\
 	com.google.common.*
 	
 Bundle-ActivationPolicy: lazy
 
-# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
-Import-Package: sun.misc; resolution:=optional,\
-    com.google.appengine.*; resolution:=optional,\
-    com.google.apphosting.*; resolution:=optional,\
-	*;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
+Import-Package: \
+ sun.misc;resolution:=optional,\
+ com.google.appengine.*;resolution:=optional,\
+ com.google.apphosting.*;resolution:=optional,\
+ ${eclipse.importpackage},\
+ *

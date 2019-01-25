@@ -1,7 +1,10 @@
 package bndtools.central;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +17,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.bndtools.api.BndtoolsConstants;
@@ -531,11 +535,11 @@ public class Central implements IStartupParticipant {
         }
     }
 
-    public static void refreshFile(File f) throws Exception {
+    public static void refreshFile(File f) throws CoreException {
         refreshFile(f, null, false);
     }
 
-    public static void refreshFile(File file, IProgressMonitor monitor, boolean derived) throws Exception {
+    public static void refreshFile(File file, IProgressMonitor monitor, boolean derived) throws CoreException {
         IResource target = toResource(file);
         if (target == null) {
             return;
@@ -613,9 +617,16 @@ public class Central implements IStartupParticipant {
             if (owner == null) {
                 return null;
             }
-            final Throwable cause = new Throwable("This throwable holds the stacktrace of the thread owning the bndLock");
+            final Throwable cause = new Throwable(owner + " owns the bndLock\n\nFull thread dump:\n" + dumpAllThreads() + "Owner stacktrace:");
             cause.setStackTrace(owner.getStackTrace());
             return cause;
+        }
+
+        private String dumpAllThreads() {
+            ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+            return Arrays.stream(threadMXBean.dumpAllThreads(threadMXBean.isObjectMonitorUsageSupported(), threadMXBean.isSynchronizerUsageSupported()))
+                .map(Object::toString)
+                .collect(Collectors.joining());
         }
     }
 

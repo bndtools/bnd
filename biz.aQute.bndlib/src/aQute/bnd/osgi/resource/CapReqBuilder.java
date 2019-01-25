@@ -62,13 +62,7 @@ public class CapReqBuilder {
 
 	public CapReqBuilder(String namespace, Attrs attrs) throws Exception {
 		this(namespace);
-		for (Entry<String, String> entry : attrs.entrySet()) {
-			String key = entry.getKey();
-			if (key.endsWith(":"))
-				addDirective(key.substring(0, key.length() - 1), entry.getValue());
-			else
-				addAttribute(key, entry.getValue());
-		}
+		addAttributesOrDirectives(attrs);
 	}
 
 	public CapReqBuilder(Resource resource, String namespace) {

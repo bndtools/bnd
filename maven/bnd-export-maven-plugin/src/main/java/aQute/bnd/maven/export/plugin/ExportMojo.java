@@ -1,12 +1,14 @@
 package aQute.bnd.maven.export.plugin;
 
+import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 import static org.apache.maven.plugins.annotations.LifecyclePhase.PACKAGE;
 
 import java.io.File;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.artifact.DefaultArtifact;
@@ -28,22 +30,17 @@ import org.osgi.service.resolver.ResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.exporter.executable.ExecutableJarExporter;
 import aQute.bnd.exporter.runbundles.RunbundlesExporter;
-import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.configuration.Bundles;
-import aQute.bnd.maven.lib.resolve.DependencyResolver;
+import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.JarResource;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
-import aQute.bnd.repository.fileset.FileSetRepository;
-import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.io.IO;
-import biz.aQute.resolve.Bndrun;
 import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
@@ -51,89 +48,87 @@ public class ExportMojo extends AbstractMojo {
 	private static final Logger			logger	= LoggerFactory.getLogger(ExportMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
-	private MavenProject				project;
+	private MavenProject										project;
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
-	private Settings					settings;
+	private Settings											settings;
 
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
-	private RepositorySystemSession		repositorySession;
+	private RepositorySystemSession								repositorySession;
 
 	@Parameter
-	private Bndruns						bndruns	= new Bndruns();
+	private Bndruns												bndruns	= new Bndruns();
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	private File						targetDir;
+	private File												targetDir;
 
 	@Parameter
-	private Bundles						bundles	= new Bundles();
+	private Bundles												bundles	= new Bundles();
 
 	@Parameter(defaultValue = "true")
-	private boolean						useMavenDependencies;
+	private boolean												useMavenDependencies;
 
 	@Parameter(defaultValue = "false")
-	private boolean						resolve;
+	private boolean												resolve;
 
 	@Parameter(defaultValue = "true")
-	private boolean						reportOptional;
+	private boolean												reportOptional;
 
 	@Parameter(defaultValue = "true")
-	private boolean						failOnChanges;
+	private boolean												failOnChanges;
 
 	@Parameter(defaultValue = "false")
-	private boolean						bundlesOnly;
+	private boolean												bundlesOnly;
 
 	@Parameter
-	private String						exporter;
+	private String												exporter;
 
 	@Parameter(defaultValue = "true")
-	private boolean						attach;
+	private boolean												attach;
 
 	@Parameter(defaultValue = "${session}", readonly = true)
-	private MavenSession				session;
+	private MavenSession										session;
 
 	@Parameter(property = "bnd.export.scopes", defaultValue = "compile,runtime")
-	private Set<Scope>					scopes;
+	private Set<Scope>											scopes	= new HashSet<>(
+		Arrays.asList(Scope.compile, Scope.runtime));
 
 	@Parameter(property = "bnd.export.skip", defaultValue = "false")
-	private boolean						skip;
+	private boolean												skip;
 
-	private int							errors	= 0;
-
-	@Component
-	private RepositorySystem			system;
+	@Parameter(property = "bnd.export.include.dependency.management", defaultValue = "false")
+	private boolean												includeDependencyManagement;
 
 	@Component
-	private ProjectDependenciesResolver	resolver;
+	private RepositorySystem									system;
 
-	@Override
+	@Component
+	private ProjectDependenciesResolver							resolver;
+
+	@Component
+	@SuppressWarnings("deprecation")
+	protected org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
 			logger.debug("skip project as configured");
 			return;
 		}
 
+		int errors = 0;
+
 		try {
-			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
-				system, scopes);
+			BndrunContainer container = new BndrunContainer.Builder(project, session, repositorySession, resolver,
+				artifactFactory, system).setBundles(bundles.getFiles(project.getBasedir()))
+					.setIncludeDependencyManagement(includeDependencyManagement)
+					.setScopes(scopes)
+					.setUseMavenDependencies(useMavenDependencies)
+					.build();
 
-			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(),
-				bundles.getFiles(project.getBasedir()),
-				useMavenDependencies);
-
-			if (exporter == null) {
-				exporter = bundlesOnly ? RunbundlesExporter.RUNBUNDLES : ExecutableJarExporter.EXECUTABLE_JAR;
-			}
-
-			Properties beanProperties = new BeanProperties();
-			beanProperties.put("project", project);
-			beanProperties.put("settings", settings);
-			Properties mavenProperties = new Properties(beanProperties);
-			mavenProperties.putAll(project.getProperties());
-			Processor processor = new Processor(mavenProperties, false);
+			Operation operation = getOperation();
 
 			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
-				export(runFile, fileSetRepository, processor);
+				errors += container.execute(runFile, "export", targetDir, operation);
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -143,86 +138,51 @@ public class ExportMojo extends AbstractMojo {
 			throw new MojoFailureException(errors + " errors found");
 	}
 
-	private void export(File runFile, FileSetRepository fileSetRepository, Processor processor) throws Exception {
-		if (!runFile.exists()) {
-			logger.error("Could not find bnd run file {}", runFile);
-			errors++;
-			return;
-		}
-		String bndrun = getNamePart(runFile);
-		File temporaryDir = new File(targetDir, "tmp/export/" + bndrun);
-		File cnf = new File(temporaryDir, Workspace.CNFDIR);
-		IO.mkdirs(cnf);
-		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
-			run.setBase(temporaryDir);
-			Workspace workspace = run.getWorkspace();
-			workspace.setParent(processor);
-			workspace.setBuildDir(cnf);
-			workspace.setOffline(session.getSettings()
-				.isOffline());
-			workspace.addBasicPlugin(fileSetRepository);
-			for (RepositoryPlugin repo : workspace.getRepositories()) {
-				repo.list(null);
-			}
-			run.getInfo(workspace);
-			report(run);
-			if (!run.isOk()) {
-				return;
-			}
+	private Operation getOperation() {
+		return (file, bndrun, run) -> {
 			if (resolve) {
 				try {
 					String runBundles = run.resolve(failOnChanges, false);
-					if (!run.isOk()) {
-						return;
+					if (run.isOk()) {
+						run.setProperty(Constants.RUNBUNDLES, runBundles);
 					}
-					run.setProperty(Constants.RUNBUNDLES, runBundles);
 				} catch (ResolutionException re) {
 					logger.error(ResolveProcess.format(re, reportOptional));
 					throw re;
 				} finally {
-					report(run);
-				}
-			}
-			try {
-				Entry<String, Resource> export = run.export(exporter, Collections.emptyMap());
-				if (export != null) {
-					if (exporter.equals(RunbundlesExporter.RUNBUNDLES)) {
-						try (JarResource r = (JarResource) export.getValue()) {
-							File runbundlesDir = new File(targetDir, "export/" + bndrun);
-							r.getJar()
-								.writeFolder(runbundlesDir);
-						}
-					} else {
-						try (Resource r = export.getValue()) {
-							File exported = IO.getBasedFile(targetDir, export.getKey());
-							try (OutputStream out = IO.outputStream(exported)) {
-								r.write(out);
-							}
-							exported.setLastModified(r.lastModified());
-							attach(exported, bndrun);
-						}
+					int errors = report(run);
+					if (errors > 0) {
+						return errors;
 					}
 				}
-			} finally {
-				report(run);
 			}
-		}
-	}
-
-	private String getNamePart(File runFile) {
-		String nameExt = runFile.getName();
-		int pos = nameExt.lastIndexOf('.');
-		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
-	}
-
-	private void report(Bndrun run) {
-		for (String warning : run.getWarnings()) {
-			logger.warn("Warning : {}", warning);
-		}
-		for (String error : run.getErrors()) {
-			logger.error("Error   : {}", error);
-			errors++;
-		}
+			if (exporter == null) {
+				exporter = bundlesOnly ? RunbundlesExporter.RUNBUNDLES : ExecutableJarExporter.EXECUTABLE_JAR;
+			}
+			Entry<String, Resource> export = run.export(exporter, Collections.emptyMap());
+			if (export != null) {
+				if (exporter.equals(RunbundlesExporter.RUNBUNDLES)) {
+					try (JarResource r = (JarResource) export.getValue()) {
+						File runbundlesDir = targetDir.toPath()
+							.resolve("export")
+							.resolve(bndrun)
+							.toFile();
+						r.getJar()
+							.writeFolder(runbundlesDir);
+					}
+				} else {
+					try (Resource r = export.getValue()) {
+						File exported = IO.getBasedFile(targetDir, export.getKey());
+						try (OutputStream out = IO.outputStream(exported)) {
+							r.write(out);
+						}
+						exported.setLastModified(r.lastModified());
+						attach(exported, bndrun);
+					}
+				}
+			}
+			return 0;
+		};
 	}
 
 	private void attach(File file, String classifier) {

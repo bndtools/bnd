@@ -15,7 +15,7 @@ icon: data:image/gif;base64,${base64;icons/templates.gif}
 
 category: nnn/Template Projects
 
-Bundle-Name: Bndtools Template-Template
+Bundle-Description: Bndtools Template-Template
 
 templates-st: \
 	org.bndtools.template; \

@@ -1,8 +1,10 @@
 package aQute.bnd.maven.resolver.plugin;
 
+import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
+
 import java.io.File;
-import java.util.List;
-import java.util.Properties;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
@@ -22,16 +24,11 @@ import org.osgi.service.resolver.ResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.build.Workspace;
-import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.Bndruns;
-import aQute.bnd.maven.lib.resolve.DependencyResolver;
+import aQute.bnd.maven.lib.configuration.Bundles;
+import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.repository.fileset.FileSetRepository;
-import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.io.IO;
-import biz.aQute.resolve.Bndrun;
 import biz.aQute.resolve.ResolveProcess;
 
 /**
@@ -39,75 +36,78 @@ import biz.aQute.resolve.ResolveProcess;
  */
 @Mojo(name = "resolve", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
 public class ResolverMojo extends AbstractMojo {
-	private static final Logger			logger	= LoggerFactory.getLogger(ResolverMojo.class);
+	private static final Logger									logger	= LoggerFactory.getLogger(ResolverMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
-	private MavenProject				project;
+	private MavenProject										project;
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
-	private Settings					settings;
+	private Settings											settings;
 
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
-	private RepositorySystemSession		repositorySession;
+	private RepositorySystemSession								repositorySession;
 
 	@Parameter
-	private Bndruns						bndruns	= new Bndruns();
+	private Bndruns												bndruns	= new Bndruns();
 
 	@Parameter
-	private List<File>					bundles;
+	private Bundles												bundles	= new Bundles();
 
 	@Parameter(defaultValue = "true")
-	private boolean						useMavenDependencies;
+	private boolean												useMavenDependencies;
 
 	@Parameter(defaultValue = "true")
-	private boolean						failOnChanges;
+	private boolean												failOnChanges;
 
 	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
-	private File						targetDir;
+	private File												targetDir;
 
 	@Parameter(defaultValue = "${session}", readonly = true)
-	private MavenSession				session;
+	private MavenSession										session;
+
+	@Parameter(property = "bnd.resolve.include.dependency.management", defaultValue = "false")
+	private boolean												includeDependencyManagement;
 
 	@Parameter(defaultValue = "true")
-	private boolean						reportOptional;
+	private boolean												reportOptional;
 
 	@Parameter(property = "bnd.resolve.scopes", defaultValue = "compile,runtime")
-	private Set<Scope>					scopes;
+	private Set<Scope>											scopes	= new HashSet<>(
+		Arrays.asList(Scope.compile, Scope.runtime));
 
 	@Parameter(property = "bnd.resolve.skip", defaultValue = "false")
-	private boolean						skip;
-
-	private int							errors	= 0;
+	private boolean												skip;
 
 	@Component
-	private RepositorySystem			system;
+	private RepositorySystem									system;
 
 	@Component
-	private ProjectDependenciesResolver	resolver;
+	private ProjectDependenciesResolver							resolver;
 
-	@Override
+	@Component
+	@SuppressWarnings("deprecation")
+	private org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
+
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip) {
 			logger.debug("skip project as configured");
 			return;
 		}
 
+		int errors = 0;
+
 		try {
-			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
-				system, scopes);
+			BndrunContainer container = new BndrunContainer.Builder(project, session, repositorySession, resolver,
+				artifactFactory, system).setBundles(bundles.getFiles(project.getBasedir()))
+					.setIncludeDependencyManagement(includeDependencyManagement)
+					.setScopes(scopes)
+					.setUseMavenDependencies(useMavenDependencies)
+					.build();
 
-			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
-				useMavenDependencies);
-
-			Properties beanProperties = new BeanProperties();
-			beanProperties.put("project", project);
-			beanProperties.put("settings", settings);
-			Properties mavenProperties = new Properties(beanProperties);
-			mavenProperties.putAll(project.getProperties());
-			Processor processor = new Processor(mavenProperties, false);
+			Operation operation = getOperation();
 
 			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
-				resolve(runFile, fileSetRepository, processor);
+				errors += container.execute(runFile, "resolve", targetDir, operation);
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -117,57 +117,21 @@ public class ResolverMojo extends AbstractMojo {
 			throw new MojoFailureException(errors + " errors found");
 	}
 
-	private void resolve(File runFile, FileSetRepository fileSetRepository, Processor processor) throws Exception {
-		if (!runFile.exists()) {
-			logger.error("Could not find bnd run file {}", runFile);
-			errors++;
-			return;
-		}
-		String bndrun = getNamePart(runFile);
-		File temporaryDir = new File(targetDir, "tmp/resolve/" + bndrun);
-		File cnf = new File(temporaryDir, Workspace.CNFDIR);
-		IO.mkdirs(cnf);
-		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
-			run.setBase(temporaryDir);
-			Workspace workspace = run.getWorkspace();
-			workspace.setParent(processor);
-			workspace.setBuildDir(cnf);
-			workspace.setOffline(session.getSettings()
-				.isOffline());
-			workspace.addBasicPlugin(fileSetRepository);
-			for (RepositoryPlugin repo : workspace.getRepositories()) {
-				repo.list(null);
-			}
-			run.getInfo(workspace);
-			report(run);
-			if (!run.isOk()) {
-				return;
-			}
+	private Operation getOperation() {
+		return (file, runName, run) -> {
 			try {
 				run.resolve(failOnChanges, true);
 			} catch (ResolutionException re) {
 				logger.error(ResolveProcess.format(re, reportOptional));
 				throw re;
 			} finally {
-				report(run);
+				int errors = report(run);
+				if (errors > 0) {
+					return errors;
+				}
 			}
-		}
-	}
-
-	private String getNamePart(File runFile) {
-		String nameExt = runFile.getName();
-		int pos = nameExt.lastIndexOf('.');
-		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
-	}
-
-	private void report(Bndrun run) {
-		for (String warning : run.getWarnings()) {
-			logger.warn("Warning : {}", warning);
-		}
-		for (String error : run.getErrors()) {
-			logger.error("Error   : {}", error);
-			errors++;
-		}
+			return 0;
+		};
 	}
 
 }

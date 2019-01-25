@@ -71,7 +71,7 @@ public interface Constants {
 		PRIVATE_PACKAGE, IGNORE_PACKAGE, INCLUDE_RESOURCE, REQUIRE_BUNDLE, IMPORT_SERVICE, EXPORT_SERVICE,
 		CONDITIONAL_PACKAGE, BND_LASTMODIFIED, TESTCASES, REQUIRE_CAPABILITY, PROVIDE_CAPABILITY, BUNDLE_ICON,
 		REPOSITORIES, META_PERSISTENCE, BUNDLE_DEVELOPERS, BUNDLE_CONTRIBUTORS, BUNDLE_SCM, LAUNCHER_PLUGIN,
-		TESTER_PLUGIN, AUTOMATIC_MODULE_NAME
+		TESTER_PLUGIN, AUTOMATIC_MODULE_NAME, DYNAMICIMPORT_PACKAGE
 	};
 
 	String								OSGI_SYNTAX_HEADERS[]						= {
@@ -99,6 +99,7 @@ public interface Constants {
 	@Deprecated
 	String								BUILDPACKAGES								= "-buildpackages";
 	String								BUMPPOLICY									= "-bumppolicy";
+	String								BUNDLEANNOTATIONS							= "-bundleannotations";
 	String								CDIANNOTATIONS								= "-cdiannotations";
 	String								CHECK										= "-check";
 	String								CONDUIT										= "-conduit";
@@ -289,6 +290,8 @@ public interface Constants {
 
 	char								DUPLICATE_MARKER							= '~';
 	String								INTERNAL_EXPORTED_DIRECTIVE					= "-internal-exported:";
+	String								INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE		= "-internal-bundlesymbolicname:";
+	String								INTERNAL_BUNDLEVERSION_DIRECTIVE			= "-internal-bundleversion:";
 	String								INTERNAL_SOURCE_DIRECTIVE					= "-internal-source:";
 	String								SPECIFICATION_VERSION						= "specification-version";
 	String								SPLIT_PACKAGE_DIRECTIVE						= "-split-package:";
@@ -381,6 +384,8 @@ public interface Constants {
 
 	String								CURRENT_VERSION								= "@";
 	String								CURRENT_PACKAGE								= "@package";
+	String								CURRENT_BUNDLESYMBOLICNAME					= "@bundlesymbolicname";
+	String								CURRENT_BUNDLEVERSION						= "@bundleversion";
 
 	String								BUILDFILES									= "buildfiles";
 

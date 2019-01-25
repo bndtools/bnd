@@ -22,7 +22,7 @@ class TestBaselineTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'baseline', 'baselineSelf')
+            .withArguments('--stacktrace', '--debug', 'baseline', 'baselineSelf', 'baselineDiffpackages')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -31,12 +31,15 @@ class TestBaselineTask extends Specification {
           result.task(':jar').outcome == SUCCESS
           result.task(':baseline').outcome == SUCCESS
           result.task(':baselineSelf').outcome == SUCCESS
+          result.task(':baselineDiffpackages').outcome == SUCCESS
 
           testProjectReportsDir.isDirectory()
           File baseline = new File(testProjectReportsDir, "baseline/baseline/${testProject}-1.1.0.txt")
           baseline.isFile()
           File baselineSelf = new File(testProjectReportsDir, "foo/baselineSelf/${testProject}-1.1.0.txt")
           baselineSelf.isFile()
+          File baselineDiffpackages = new File(testProjectReportsDir, "baseline/baselineDiffpackages/${testProject}-1.1.0.txt")
+          baselineDiffpackages.isFile()
 
           //result.getOutput() =~ Pattern.quote("Baseline problems detected. See the report in ${baseline.absolutePath}")
     }

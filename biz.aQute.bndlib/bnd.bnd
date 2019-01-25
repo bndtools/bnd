@@ -1,8 +1,7 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
-Bundle-Name: bndlib
-Bundle-Description: A Swiss Army Knife for OSGi
+Bundle-Description: bndlib: A Swiss Army Knife for OSGi
 
 -includepackage: \
 	aQute.bnd.*,\
@@ -83,4 +82,3 @@ Bundle-Contributors: per.kristian.soreide@comactivity.net, ferry.huberts@pelagic
 -baseline: *
 
 -fixupmessages.converter: "Export aQute.bnd.http,* private references \\[aQute.lib.converter\\]"
--fixupmessages.bundleversion: "The bundle version \\(4.0.0/4.1.0\\) is too low, must be at least 5.0.0"

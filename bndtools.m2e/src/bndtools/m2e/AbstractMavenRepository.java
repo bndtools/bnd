@@ -18,7 +18,7 @@ import org.osgi.service.repository.Repository;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.service.RepositoryPlugin;
 
-public abstract class AbstractMavenRepository extends BaseRepository implements Repository, RepositoryPlugin, IMavenProjectChangedListener {
+public abstract class AbstractMavenRepository extends BaseRepository implements MavenRunListenerHelper, Repository, RepositoryPlugin, IMavenProjectChangedListener {
 
     final IMavenProjectRegistry mavenProjectRegistry = MavenPlugin.getMavenProjectRegistry();
 

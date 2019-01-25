@@ -82,6 +82,11 @@ class DeltaWrapper {
             return true;
         }
 
+        if (havePropertiesChanged(model)) {
+            log.basic("project properties have changed");
+            return true;
+        }
+
         final AtomicBoolean result = new AtomicBoolean(false);
         delta.accept(new IResourceDeltaVisitor() {
 
@@ -110,9 +115,6 @@ class DeltaWrapper {
                 }
 
                 if (IResourceDelta.MARKERS == delta.getFlags())
-                    return false;
-
-                if (check(path, Project.BNDFILE))
                     return false;
 
                 log.basic("%s changed", resource);

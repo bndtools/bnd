@@ -1,8 +1,11 @@
 package aQute.bnd.maven.testing.plugin;
 
+import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
+
 import java.io.File;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
@@ -23,19 +26,14 @@ import org.osgi.service.resolver.ResolutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import aQute.bnd.build.Workspace;
-import aQute.bnd.maven.lib.configuration.BeanProperties;
 import aQute.bnd.maven.lib.configuration.Bndruns;
-import aQute.bnd.maven.lib.resolve.DependencyResolver;
+import aQute.bnd.maven.lib.configuration.Bundles;
+import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.maven.lib.resolve.Operation;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.repository.fileset.FileSetRepository;
-import aQute.bnd.service.RepositoryPlugin;
-import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
-import biz.aQute.resolve.Bndrun;
 import biz.aQute.resolve.ResolveProcess;
 
 @Mojo(name = "testing", defaultPhase = LifecyclePhase.INTEGRATION_TEST, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
@@ -43,22 +41,22 @@ public class TestingMojo extends AbstractMojo {
 	private static final Logger			logger	= LoggerFactory.getLogger(TestingMojo.class);
 
 	@Parameter(defaultValue = "${project}", readonly = true, required = true)
-	private MavenProject				project;
+	private MavenProject										project;
 
 	@Parameter(defaultValue = "${settings}", readonly = true)
-	private Settings					settings;
+	private Settings											settings;
 
 	@Parameter(defaultValue = "${repositorySystemSession}", readonly = true, required = true)
-	private RepositorySystemSession		repositorySession;
+	private RepositorySystemSession								repositorySession;
 
 	@Parameter(property = "skipTests", defaultValue = "false")
-	private boolean						skipTests;
+	private boolean												skipTests;
 
 	@Parameter(property = "maven.test.skip", defaultValue = "false")
-	private boolean						skip;
+	private boolean												skip;
 
 	@Parameter
-	private Bndruns						bndruns	= new Bndruns();
+	private Bndruns												bndruns	= new Bndruns();
 
 	@Parameter(defaultValue = "${project.build.directory}/test", readonly = true)
 	private File						cwd;
@@ -76,68 +74,75 @@ public class TestingMojo extends AbstractMojo {
 	private String						test;
 
 	@Parameter(required = false)
-	private List<File>					bundles;
+	private Bundles												bundles	= new Bundles();
 
 	@Parameter(defaultValue = "true")
-	private boolean						useMavenDependencies;
+	private boolean												useMavenDependencies;
 
 	@Parameter(defaultValue = "false")
 	private boolean						resolve;
 
 	@Parameter(defaultValue = "true")
-	private boolean						reportOptional;
+	private boolean												reportOptional;
 
 	@Parameter(defaultValue = "true")
-	private boolean						failOnChanges;
+	private boolean												failOnChanges;
 
 	@Parameter(defaultValue = "${session}", readonly = true)
-	private MavenSession				session;
+	private MavenSession										session;
 
 	@Parameter(property = "bnd.testing.scopes", defaultValue = "compile,runtime")
-	private Set<Scope>					scopes;
+	private Set<Scope>											scopes	= new HashSet<>(
+		Arrays.asList(Scope.compile, Scope.runtime));
 
-	private int							errors	= 0;
+	@Parameter(property = "bnd.testing.include.dependency.management", defaultValue = "false")
+	private boolean												includeDependencyManagement;
+
+	@Parameter(defaultValue = "${project.build.directory}", readonly = true)
+	private File												targetDir;
 
 	@Component
-	private RepositorySystem			system;
+	private RepositorySystem									system;
 
 	@Component
-	private ProjectDependenciesResolver	resolver;
+	private ProjectDependenciesResolver							resolver;
+
+	@Component
+	@SuppressWarnings("deprecation")
+	private org.apache.maven.artifact.factory.ArtifactFactory	artifactFactory;
+
+	private Glob				glob	= new Glob("*");
 
 	@Override
 	public void execute() throws MojoExecutionException, MojoFailureException {
 		if (skip || skipTests) {
+			logger.debug("skip project as configured");
 			return;
 		}
+
+		if (testingSelect != null) {
+			logger.info("Using selected testing file {}", testingSelect);
+			bndruns = new Bndruns();
+			bndruns.setBndrun(testingSelect);
+		} else {
+			glob = new Glob(testing == null ? "*" : testing);
+			logger.info("Matching glob {}", glob);
+		}
+
+		int errors = 0;
+
 		try {
-			DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver,
-				system, scopes);
+			BndrunContainer container = new BndrunContainer.Builder(project, session, repositorySession, resolver,
+				artifactFactory, system).setBundles(bundles.getFiles(project.getBasedir()))
+					.setIncludeDependencyManagement(includeDependencyManagement)
+					.setScopes(scopes)
+					.setUseMavenDependencies(useMavenDependencies)
+					.build();
 
-			FileSetRepository fileSetRepository = dependencyResolver.getFileSetRepository(project.getName(), bundles,
-				useMavenDependencies);
+			Operation operation = getOperation();
 
-			Properties beanProperties = new BeanProperties();
-			beanProperties.put("project", project);
-			beanProperties.put("settings", settings);
-			Properties mavenProperties = new Properties(beanProperties);
-			mavenProperties.putAll(project.getProperties());
-			Processor processor = new Processor(mavenProperties, false);
-
-			if (testingSelect != null) {
-				logger.info("Using selected testing file {}", testingSelect);
-				testing(testingSelect, fileSetRepository, processor);
-			} else {
-
-				Glob g = new Glob(testing == null ? "*" : testing);
-				logger.info("Matching glob {}", g);
-
-				for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
-					if (g.matcher(runFile.getName())
-						.matches())
-						testing(runFile, fileSetRepository, processor);
-					else
-						logger.info("Skipping {}", g);
-				}
+			for (File runFile : bndruns.getFiles(project.getBasedir(), "*.bndrun")) {
+				errors += container.execute(runFile, "testing", cwd, operation);
 			}
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
@@ -156,68 +161,40 @@ public class TestingMojo extends AbstractMojo {
 		return Strings.split(test);
 	}
 
-	private void testing(File runFile, FileSetRepository fileSetRepository, Processor processor) throws Exception {
-		if (!runFile.exists()) {
-			logger.error("Could not find bnd run file {}", runFile);
-			errors++;
-			return;
-		}
-		String bndrun = getNamePart(runFile);
-		File workingDir = new File(cwd, bndrun);
-		File cnf = new File(workingDir, Workspace.CNFDIR);
-		IO.mkdirs(cnf);
-		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
-			run.setBase(workingDir);
-			Workspace workspace = run.getWorkspace();
-			workspace.setParent(processor);
-			workspace.setBuildDir(cnf);
-			workspace.setOffline(session.getSettings()
-				.isOffline());
-			workspace.addBasicPlugin(fileSetRepository);
-			for (RepositoryPlugin repo : workspace.getRepositories()) {
-				repo.list(null);
-			}
-			run.getInfo(workspace);
-			report(run);
-			if (!run.isOk()) {
-				return;
+	private Operation getOperation() {
+		return (file, bndrun, run) -> {
+			if (!glob.matcher(file.getName())
+				.matches()) {
+				logger.info("Skipping {}", bndrun);
+				return 0;
 			}
 			if (resolve) {
 				try {
 					String runBundles = run.resolve(failOnChanges, false);
-					if (!run.isOk()) {
-						return;
+					if (run.isOk()) {
+						run.setProperty(Constants.RUNBUNDLES, runBundles);
 					}
-					run.setProperty(Constants.RUNBUNDLES, runBundles);
 				} catch (ResolutionException re) {
 					logger.error(ResolveProcess.format(re, reportOptional));
 					throw re;
 				} finally {
-					report(run);
+					int errors = report(run);
+					if (errors > 0) {
+						return errors;
+					}
 				}
 			}
 			try {
 				run.test(new File(reportsDir, bndrun), getTests());
 			} finally {
-				report(run);
+				int errors = report(run);
+				if (errors > 0) {
+					return errors;
+				}
 			}
-		}
-	}
 
-	private String getNamePart(File runFile) {
-		String nameExt = runFile.getName();
-		int pos = nameExt.lastIndexOf('.');
-		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
-	}
-
-	private void report(Bndrun run) {
-		for (String warning : run.getWarnings()) {
-			logger.warn("Warning : {}", warning);
-		}
-		for (String error : run.getErrors()) {
-			logger.error("Error   : {}", error);
-			errors++;
-		}
+			return 0;
+		};
 	}
 
 }

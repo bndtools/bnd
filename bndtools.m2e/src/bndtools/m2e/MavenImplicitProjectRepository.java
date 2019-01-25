@@ -1,45 +1,51 @@
 package bndtools.m2e;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
 
-import org.eclipse.core.resources.IResource;
+import org.apache.maven.execution.MavenSession;
+import org.apache.maven.plugin.MojoExecution;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectDependenciesResolver;
+import org.eclipse.aether.RepositorySystem;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.core.IClasspathAttribute;
-import org.eclipse.jdt.core.IClasspathEntry;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.m2e.core.embedder.IMavenExecutionContext;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
-import org.eclipse.m2e.jdt.IClasspathManager;
-import org.eclipse.m2e.jdt.MavenJdtPlugin;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.maven.lib.configuration.Bndruns;
+import aQute.bnd.maven.lib.configuration.Bundles;
+import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.maven.lib.resolve.BndrunContainer.Builder;
+import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.Refreshable;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.central.Central;
 
 public class MavenImplicitProjectRepository extends AbstractMavenRepository implements Refreshable {
 
     private static final Logger logger = LoggerFactory.getLogger(MavenImplicitProjectRepository.class);
 
-    private final IClasspathManager buildpathManager = MavenJdtPlugin.getDefault()
-        .getBuildpathManager();
-
     private volatile FileSetRepository fileSetRepository;
 
     private final IMavenProjectFacade projectFacade;
+    private final File bndrunFile;
 
-    public MavenImplicitProjectRepository(IResource targetResource) {
-        projectFacade = mavenProjectRegistry.getProject(targetResource.getProject());
+    public MavenImplicitProjectRepository(IMavenProjectFacade projectFacade, File bndrunFile) {
+        this.projectFacade = projectFacade;
+        this.bndrunFile = bndrunFile;
 
         createRepo(projectFacade, new NullProgressMonitor());
 
@@ -100,45 +106,54 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
         return fileSetRepository.versions(bsn);
     }
 
-    private void createRepo(IMavenProjectFacade mavenProjectFacade, IProgressMonitor monitor) {
+    @SuppressWarnings({
+        "deprecation", "unchecked"
+    })
+    private void createRepo(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
         try {
-            List<File> toIndex = new ArrayList<>();
+            MavenProject mavenProject = getMavenProject(projectFacade);
+            IMavenExecutionContext executionContext = maven.getExecutionContext();
+            MavenSession mavenSession;
 
-            File file = guessBundleFile(mavenProjectFacade);
-            if (file != null) {
-                toIndex.add(file);
+            if (executionContext == null) {
+                executionContext = maven.createExecutionContext();
+                mavenSession = maven.createSession(executionContext.getExecutionRequest(), mavenProject);
+            } else {
+                mavenSession = executionContext.getSession();
             }
 
-            IClasspathEntry[] classpath = buildpathManager.getClasspath(mavenProjectFacade.getProject(), IClasspathManager.CLASSPATH_RUNTIME, true, monitor);
+            mavenSession.setCurrentProject(mavenProject);
 
-            for (IClasspathEntry cpe : classpath) {
-                IClasspathAttribute[] extraAttributes = cpe.getExtraAttributes();
+            Builder containerBuilder = new BndrunContainer.Builder(mavenProject, mavenSession, mavenSession.getRepositorySession(), lookupComponent(ProjectDependenciesResolver.class),
+                lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class), lookupComponent(RepositorySystem.class));
 
-                for (IClasspathAttribute ea : extraAttributes) {
-                    if (ea.getName()
-                        .equals("maven.scope")
-                        && (ea.getValue()
-                            .equals("compile")
-                            || ea.getValue()
-                                .equals("runtime"))) {
+            MojoExecution mojoExecution = projectFacade.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", monitor, "resolve")
+                .stream()
+                .filter(exe -> containsBndrun(exe, mavenProject, monitor))
+                .findFirst()
+                .orElse(null);
 
-                        if (cpe.getEntryKind() == IClasspathEntry.CPE_PROJECT) {
-                            file = getOutputFile(extraAttributes);
-                            if (file != null) {
-                                toIndex.add(file);
-                            }
-                        } else if ((cpe.getEntryKind() == IClasspathEntry.CPE_LIBRARY) && (cpe.getContentKind() == IPackageFragmentRoot.K_BINARY)) {
-                            file = cpe.getPath()
-                                .toFile();
-                            if (file != null) {
-                                toIndex.add(file);
-                            }
-                        }
-                    }
+            if (mojoExecution != null) {
+                Bundles bundles = maven.getMojoParameterValue(mavenProject, mojoExecution, "bundles", Bundles.class, monitor);
+                if (bundles == null) {
+                    bundles = new Bundles();
                 }
+
+                containerBuilder.setBundles(bundles.getFiles(mavenProject.getBasedir()));
+
+                containerBuilder.setIncludeDependencyManagement(maven.getMojoParameterValue(mavenProject, mojoExecution, "includeDependencyManagement", Boolean.class, monitor));
+
+                Set<String> scopeValues = maven.getMojoParameterValue(mavenProject, mojoExecution, "scopes", Set.class, monitor);
+                containerBuilder.setScopes(scopeValues.stream()
+                    .map(Scope::valueOf)
+                    .collect(Collectors.toSet()));
+
+                containerBuilder.setUseMavenDependencies(maven.getMojoParameterValue(mavenProject, mojoExecution, "useMavenDependencies", Boolean.class, monitor));
             }
 
-            fileSetRepository = new FileSetRepository(getName(), toIndex);
+            fileSetRepository = containerBuilder.build()
+                .getFileSetRepository();
+            fileSetRepository.list(null);
 
             Central.refreshPlugin(this);
         } catch (Exception e) {
@@ -148,22 +163,15 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
         }
     }
 
-    private File getOutputFile(IClasspathAttribute[] extraAttributes) {
-        String groupId = null, artifactId = null, version = null;
+    private boolean containsBndrun(MojoExecution mojoExecution, MavenProject mavenProject, IProgressMonitor monitor) {
+        try {
+            Bndruns bndruns = maven.getMojoParameterValue(mavenProject, mojoExecution, "bndruns", Bndruns.class, monitor);
 
-        for (IClasspathAttribute attribute : extraAttributes) {
-            if ("maven.groupId".equals(attribute.getName())) {
-                groupId = attribute.getValue();
-            } else if ("maven.artifactId".equals(attribute.getName())) {
-                artifactId = attribute.getValue();
-            } else if ("maven.version".equals(attribute.getName())) {
-                version = attribute.getValue();
-            }
+            return bndruns.getFiles(mavenProject.getBasedir())
+                .contains(bndrunFile);
+        } catch (Exception e) {
+            throw Exceptions.duck(e);
         }
-
-        IMavenProjectFacade mavenProjectFacade = mavenProjectRegistry.getMavenProject(groupId, artifactId, version);
-
-        return guessBundleFile(mavenProjectFacade);
     }
 
 }

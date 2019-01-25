@@ -185,7 +185,7 @@ public class ProjectBuilder extends Builder {
 	 */
 	@Override
 	public void doBaseline(Jar dot) throws Exception {
-		String diffignore = project.getProperty(Constants.DIFFIGNORE);
+		Parameters diffignore = new Parameters(project.getProperty(Constants.DIFFIGNORE), this);
 		logger.debug("ignore headers & paths {}", diffignore);
 		differ.setIgnore(diffignore);
 		Instructions diffpackages = new Instructions(new Parameters(project.getProperty(Constants.DIFFPACKAGES), this));

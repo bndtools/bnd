@@ -1,43 +1,44 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>biz.aQute.bnd-test</groupId>
-    <artifactId>resolver-test</artifactId>
-    <version>0.0.1</version>
-    <packaging>pom</packaging>
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>biz.aQute.bnd-test</groupId>
+	<artifactId>resolver-test</artifactId>
+	<version>0.0.1</version>
+	<packaging>pom</packaging>
 
-    <modules>
-        <module>resolve</module>
-        <module>resolve-from-dependencies</module>
-        <module>resolve-from-scopes</module>
-        <module>resolve-from-inputbundles</module>
-    </modules>
+	<modules>
+		<module>resolve</module>
+		<module>resolve-from-dependencies</module>
+		<module>resolve-from-dependencyManagement</module>
+		<module>resolve-from-scopes</module>
+		<module>resolve-from-inputbundles</module>
+	</modules>
 
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>biz.aQute.bnd</groupId>
-                    <artifactId>bnd-resolver-maven-plugin</artifactId>
-                    <version>@project.version@</version>
-                    <configuration>
-                        <failOnChanges>false</failOnChanges>
-                        <!-- Default to including *.bndrun
-                        <bndruns>
-                            <bndrun>test.bndrun</bndrun>
-                        </bndruns>
-                        -->
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>resolve</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>biz.aQute.bnd</groupId>
+					<artifactId>bnd-resolver-maven-plugin</artifactId>
+					<version>@project.version@</version>
+					<configuration>
+						<failOnChanges>false</failOnChanges>
+						<!-- Default to including *.bndrun
+						<bndruns>
+							<bndrun>test.bndrun</bndrun>
+						</bndruns>
+						-->
+					</configuration>
+					<executions>
+						<execution>
+							<phase>package</phase>
+							<goals>
+								<goal>resolve</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 </project>

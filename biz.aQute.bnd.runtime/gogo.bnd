@@ -1,0 +1,14 @@
+
+Bundle-Activator: aQute.bnd.runtime.gogo.Activator
+
+# YUCK!!!!!!!!!!!!!!!! The gogo maintainer screwed up. They made a breaking change in the package
+#                      and used mandatory attributes. No way to import old/new packages. Notice
+#                      that we also remove an import
+Require-Bundle:         org.apache.felix.gogo.runtime
+
+Import-Package: \
+    org.osgi.service.component.runtime;resolution:=optional,\
+    org.osgi.service.component.runtime.dto;resolution:=optional,\
+    !org.apache.felix.service.command, \
+    *
+-includepackage: aQute.bnd.runtime.gogo

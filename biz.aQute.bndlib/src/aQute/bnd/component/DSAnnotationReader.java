@@ -994,7 +994,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 				}
 
 				if (def.service != null) {
-					if (def.policy == null && member.isVolatile()) {
+					if ((def.policy == null) && member.isVolatile()) {
 						def.policy = ReferencePolicy.DYNAMIC;
 					}
 					if (def.isCollection) {
@@ -1004,31 +1004,51 @@ public class DSAnnotationReader extends ClassDataCollector {
 						if (annotation.get("collectionType") != null) {
 							def.collectionType = reference.collectionType();
 						}
-						if (def.isCollectionSubClass) {
-							if (def.policy != ReferencePolicy.DYNAMIC || def.fieldOption != FieldOption.UPDATE) {
-								analyzer.error(
-									"In component %s, collection type field: %s is a subclass of Collection but is not marked policy 'dynamic' and fieldOption 'update'. Changing this to 'dynamic' and 'update'.",
-									className, def.field)
-									.details(getDetails(def, ErrorType.COLLECTION_SUBCLASS_FIELD_WITH_REPLACE));
-								def.policy = ReferencePolicy.DYNAMIC;
-								def.fieldOption = FieldOption.UPDATE;
-							}
-						}
 					}
-					if (def.policy == ReferencePolicy.DYNAMIC && (def.cardinality == ReferenceCardinality.MULTIPLE
-						|| def.cardinality == ReferenceCardinality.AT_LEAST_ONE) && member.isFinal()) {
-						if (def.fieldOption == FieldOption.REPLACE) {
-							analyzer.error(
-								"In component %s, collection type field: %s is final and dynamic but marked with 'replace' fieldOption. Changing this to 'update'.",
-								className, def.field)
-								.details(getDetails(def, ErrorType.DYNAMIC_FINAL_FIELD_WITH_REPLACE));
-						}
+					if ((def.fieldOption == null) && (def.policy == ReferencePolicy.DYNAMIC)
+						&& ((def.cardinality == ReferenceCardinality.MULTIPLE)
+							|| (def.cardinality == ReferenceCardinality.AT_LEAST_ONE))
+						&& member.isFinal()) {
 						def.fieldOption = FieldOption.UPDATE;
+					}
+					if (def.fieldOption == FieldOption.UPDATE) {
+						if (def.policy != ReferencePolicy.DYNAMIC) {
+							analyzer
+								.error("In component %s, field %s fieldOption is 'update' but policy is not 'dynamic'.",
+									className, def.field)
+								.details(getDetails(def, ErrorType.UPDATE_FIELD_WITH_STATIC));
+						}
+						if ((def.cardinality != ReferenceCardinality.MULTIPLE)
+							&& (def.cardinality != ReferenceCardinality.AT_LEAST_ONE)) {
+							analyzer.error(
+								"In component %s, field %s fieldOption is 'update' but cardinality is not '0..n' or '1..n'.",
+								className, def.field)
+								.details(getDetails(def, ErrorType.UPDATE_FIELD_WITH_UNARY));
+						}
+					} else { // def.fieldOption == FieldOption.REPLACE
+						if (member.isFinal()) {
+							analyzer
+								.error("In component %s field %s is final and fieldOption is not 'update'.", className,
+									def.field)
+								.details(getDetails(def, ErrorType.FINAL_FIELD_WITH_REPLACE));
+						}
+						if ((def.policy == ReferencePolicy.DYNAMIC) && !member.isVolatile()) {
+							analyzer
+								.error("In component %s, field %s policy is 'dynamic' and field is not volatile.",
+									className, def.field)
+								.details(getDetails(def, ErrorType.DYNAMIC_FIELD_NOT_VOLATILE));
+						}
+						if (def.isCollectionSubClass) {
+							analyzer.error(
+								"In component %s, field %s is a subclass of Collection and fieldOption is not 'update'.",
+								className, def.field)
+								.details(getDetails(def, ErrorType.COLLECTION_SUBCLASS_FIELD_WITH_REPLACE));
+						}
 					}
 				} else {
 					analyzer
-						.error("In component %s, field %s, cannot recognize the signature of the descriptor: %s",
-							component.effectiveName(), def.name, member.getDescriptor())
+						.error("In component %s, field %s cannot recognize the signature of the descriptor: %s",
+							className, def.field, member.getDescriptor())
 						.details(getDetails(def, ErrorType.REFERENCE));
 				}
 				break;

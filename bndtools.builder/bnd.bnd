@@ -12,9 +12,6 @@
 	bndtools.utils;version=project;packages=*,\
 	bndtools.core;version=snapshot, \
 	org.eclipse.osgi,\
-	org.eclipse.equinox.common,\
-	org.eclipse.equinox.registry,\
-	org.eclipse.equinox.preferences,\
 	org.eclipse.core.contenttype,\
 	org.eclipse.core.runtime,\
 	org.eclipse.core.resources,\
@@ -28,7 +25,11 @@
 	org.eclipse.jdt.core,\
 	org.eclipse.jdt.launching,\
 	org.eclipse.jdt.ui,\
-	org.eclipse.swt.cocoa.macosx.x86_64;packages=*,\
+	org.eclipse.swt,\
+	org.eclipse.swt.cocoa.macosx.x86_64,\
+	org.eclipse.equinox.common,\
+	org.eclipse.equinox.registry,\
+	org.eclipse.equinox.preferences,\
 	org.eclipse.swt
 
 # Headers
@@ -36,11 +37,12 @@ Bundle-SymbolicName: bndtools.builder; singleton:=true
 Bundle-Activator: org.bndtools.builder.BuilderPlugin
 Bundle-ActivationPolicy: lazy
 
-# Disable ALL Eclipse split package attributes, to ensure we import from the "aggregator" bundle(s).
-Import-Package: *;ui.workbench=!;common=!;registry=!;texteditor=!;text=!
-
 -includepackage: \
 	org.bndtools.builder.*
+
+Import-Package: \
+ ${eclipse.importpackage},\
+ *
 
 -conditionalpackage: \
 	aQute.lib.*;-split-package:=merge-first, \

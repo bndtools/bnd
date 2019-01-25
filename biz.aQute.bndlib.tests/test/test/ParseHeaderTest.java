@@ -6,12 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.osgi.resource.Capability;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Attrs.Type;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.version.Version;
+import aQute.lib.filter.Filter;
 import aQute.lib.strings.Strings;
 import junit.framework.TestCase;
 
@@ -258,5 +262,44 @@ public class ParseHeaderTest extends TestCase {
 		Parameters map = Processor.parseHeader(s, null);
 		Collection<String> keyList = map.keyList();
 		assertEquals("--add-opens mod1 --add-opens mod2", Strings.join(" ", keyList));
+	}
+
+	@SuppressWarnings({
+		"null", "unchecked"
+	})
+	public void testParseListAttributesAndMatchWithFilter() throws Exception {
+		List<String> urls = null;
+		Filter f = new Filter("(url=http://three)");
+		Parameters p = new Parameters("foo;url:List<String>='http://one,http://two,http://three'");
+		for (Map.Entry<String, Attrs> entry : p.entrySet()) {
+			CapReqBuilder req = new CapReqBuilder(entry.getKey(), entry.getValue());
+			Capability c = req.buildSyntheticCapability();
+			if (f.matchMap(c.getAttributes())) {
+				urls = (List<String>) c.getAttributes()
+					.get("url");
+			}
+		}
+		assertNotNull(urls);
+		assertEquals(3, urls.size());
+	}
+
+	@SuppressWarnings({
+		"null", "unchecked"
+	})
+	public void testParseListAttributesAndMatchWithFilter_b() throws Exception {
+		List<String> urls = null;
+		Filter f = new Filter("(url=http://three)");
+		Parameters p = new Parameters("foo;url:List<String>='http://one,http://two,http://three'");
+		for (Map.Entry<String, Attrs> entry : p.entrySet()) {
+			CapReqBuilder req = new CapReqBuilder(entry.getKey());
+			req.addAttributesOrDirectives(entry.getValue());
+			Capability c = req.buildSyntheticCapability();
+			if (f.matchMap(c.getAttributes())) {
+				urls = (List<String>) c.getAttributes()
+					.get("url");
+			}
+		}
+		assertNotNull(urls);
+		assertEquals(3, urls.size());
 	}
 }

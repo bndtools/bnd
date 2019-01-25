@@ -1,32 +1,14 @@
 ---
 layout: default
 class: Project
-title: -diffignore PACKAGE-SPEC ( ',' PACKAGE-SPEC ) *  
-summary: Recursively add packages from the class path when referred and when they match one of the package specifications. 
+title: -dependson SELECTORS
+summary: Add dependencies from the current project to other projects, before this project is built, any project this project depends on will be built first.
 ---
 
-					// We might have some other projects we want build
-					// before we do anything, but these projects are not in
-					// our path. The -dependson allows you to build them before.
-					// The values are possibly negated globbing patterns.
+Projects referenced by [-buildpath](buildpath.html) are always built first but sometimes
+you need to specify projects to be build first which are not referenced by `-buildpath`.
+You can specify those additional projects using `-dependson`.
 
-					// dependencies.add( getWorkspace().getProject("cnf"));
+## Example
 
-					String dp = getProperty(Constants.DEPENDSON);
-					Set<String> requiredProjectNames = new LinkedHashSet<String>(new Parameters(dp).keySet());
-
-					// Allow DependencyConstributors to modify
-					// requiredProjectNames
-					List<DependencyContributor> dcs = getPlugins(DependencyContributor.class);
-					for (DependencyContributor dc : dcs)
-						dc.addDependencies(this, requiredProjectNames);
-
-					Instructions is = new Instructions(requiredProjectNames);
-
-					Set<Instruction> unused = new HashSet<Instruction>();
-					Collection<Project> projects = getWorkspace().getAllProjects();
-					Collection<Project> dependencies = is.select(projects, unused, false);
-
-					for (Instruction u : unused)
-						msgs.MissingDependson_(u.getInput());
-
+    -dependson: projA, projB

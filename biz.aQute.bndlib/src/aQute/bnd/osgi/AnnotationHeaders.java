@@ -133,6 +133,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	// same missing annotation for the same project. Note that this should not
 	// be reset for each #classStart(Clazz).
 	final Set<String>				loggedMissing		= new HashSet<>();
+	final Instructions				instructions;
 
 	// we parse the annotations separately at the end
 	boolean							finalizing;
@@ -141,7 +142,12 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	 * Initialize
 	 */
 	AnnotationHeaders(Analyzer analyzer) {
+		this(analyzer, new Instructions("*"));
+	}
+
+	AnnotationHeaders(Analyzer analyzer, Instructions instructions) {
 		this.analyzer = analyzer;
+		this.instructions = instructions;
 	}
 
 	@Override
@@ -152,8 +158,17 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		if (!c.isAnnotation() && !c.annotations()
 			.isEmpty()) {
 
-			current = c;
-			return true;
+			for (Instruction instruction : instructions.keySet()) {
+				if (instruction.matches(c.getFQN())) {
+					if (instruction.isNegated()) {
+						current = null;
+						return false;
+					}
+
+					current = c;
+					return true;
+				}
+			}
 		}
 		current = null;
 		return false;

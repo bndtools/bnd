@@ -188,7 +188,6 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	static Random								random					= new Random();
 	// TODO handle include files out of date
 	public final static String					LIST_SPLITTER			= "\\s*,\\s*";
-	private final static Pattern				LIST_SPLITTER_PATTERN	= Pattern.compile(LIST_SPLITTER);
 	final List<String>							errors					= new ArrayList<>();
 	final List<String>							warnings				= new ArrayList<>();
 	final Set<Object>							basicPlugins			= new HashSet<>();
@@ -1595,6 +1594,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			case PROVIDE_DIRECTIVE :
 			case SPLIT_PACKAGE_DIRECTIVE :
 			case FROM_DIRECTIVE :
+			case INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE :
+			case INTERNAL_BUNDLEVERSION_DIRECTIVE :
 				return true;
 			default :
 				return false;
@@ -1774,25 +1775,17 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return join(list, ",");
 	}
 
-	public static void split(String s, Collection<String> set) {
-		if (s == null || (s = s.trim()).isEmpty())
-			return;
-		for (String element : LIST_SPLITTER_PATTERN.split(s, 0)) {
-			if (!element.isEmpty())
-				set.add(element);
-		}
+	public static void split(String s, Collection<String> collection) {
+		Strings.splitAsStream(s)
+			.forEachOrdered(collection::add);
 	}
 
 	public static Collection<String> split(String s) {
-		if (s == null || (s = s.trim()).isEmpty())
-			return Collections.emptyList();
-		return Arrays.asList(LIST_SPLITTER_PATTERN.split(s, 0));
+		return Strings.split(s);
 	}
 
 	public static Collection<String> split(String s, String splitter) {
-		if (s == null || (s = s.trim()).isEmpty())
-			return Collections.emptyList();
-		return Arrays.asList(s.split(splitter, 0));
+		return Strings.split(splitter, s);
 	}
 
 	public static String merge(String... strings) {

@@ -1,5 +1,8 @@
 sudo: false
 
+git:
+  depth: false
+
 language: java
 
 env:
