@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -27,6 +28,7 @@ import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -76,9 +78,9 @@ public class JUnitFramework implements AutoCloseable {
 
 	private static final long					SERVICE_DEFAULT_TIMEOUT	= 60000L;
 	static final AtomicInteger					n						= new AtomicInteger();
+
 	final Framework								framework;
 	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
-
 	final JUnitFrameworkBuilder					builder;
 	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
 	final Injector<Service>						injector;
@@ -101,6 +103,8 @@ public class JUnitFramework implements AutoCloseable {
 			this.frameworkExports = getExports(framework).keySet();
 
 			report("Initialized framework %s", this.framework);
+			report("Classpath %s", System.getProperty("java.class.path")
+				.replace(File.pathSeparatorChar, '\n'));
 
 			framework.getBundleContext()
 				.addFrameworkListener(frameworkEvents::add);
@@ -323,7 +327,11 @@ public class JUnitFramework implements AutoCloseable {
 	 * @return a service
 	 */
 	public <T> Optional<T> getService(Class<T> serviceInterface) {
-		return getServices(serviceInterface, null, 0, 0).stream()
+		return getService(serviceInterface, null);
+	}
+
+	public <T> Optional<T> getService(Class<T> serviceInterface, @Nullable String target) {
+		return getServices(serviceInterface, target, 0, 0, false).stream()
 			.map(this::getService)
 			.findFirst();
 	}
@@ -335,7 +343,18 @@ public class JUnitFramework implements AutoCloseable {
 	 * @return a list of services
 	 */
 	public <T> List<T> getServices(Class<T> serviceClass) {
-		return getServices(serviceClass, null, 0, 0).stream()
+		return getServices(serviceClass, null);
+	}
+
+	/**
+	 * Get a list of services in the current registry
+	 * 
+	 * @param serviceClass the type of the service
+	 * @param target the target, may be null
+	 * @return a list of found services currently in the registry
+	 */
+	public <T> List<T> getServices(Class<T> serviceClass, @Nullable String target) {
+		return getServices(serviceClass, target, 0, 0, false).stream()
 			.map(this::getService)
 			.collect(Collectors.toList());
 	}
@@ -472,7 +491,7 @@ public class JUnitFramework implements AutoCloseable {
 	 */
 	public <T> Optional<ServiceReference<T>> waitForServiceReference(Class<T> class1, long timeoutInMs) {
 
-		return getServices(class1, null, 1, timeoutInMs).stream()
+		return getServices(class1, null, 1, timeoutInMs, false).stream()
 			.findFirst();
 
 	}
@@ -493,6 +512,308 @@ public class JUnitFramework implements AutoCloseable {
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	/**
+	 * Turn a service reference's properties into a Map
+	 * 
+	 * @param reference the reference
+	 * @return a Map with all the properties of the reference
+	 */
+	public Map<String, Object> toMap(ServiceReference<?> reference) {
+		Map<String, Object> map = new HashMap<>();
+
+		for (String key : reference.getPropertyKeys()) {
+			map.put(key, reference.getProperty(key));
+		}
+
+		return map;
+	}
+
+	/**
+	 * Get a bundle by symbolic name
+	 */
+	public Optional<Bundle> getBundle(String bsn) {
+		return Stream.of(getBundleContext().getBundles())
+			.filter(b -> bsn.equals(b.getSymbolicName()))
+			.findFirst();
+	}
+
+	/**
+	 * Broadcast a message to many services at once
+	 */
+
+	@SuppressWarnings("unchecked")
+	public <T> int broadcast(Class<T> type, Consumer<T> consumer) {
+		ServiceTracker<T, T> tracker = new ServiceTracker<>(getBundleContext(), type, null);
+		tracker.open();
+		int n = 0;
+		try {
+			for (T instance : (T[]) tracker.getServices()) {
+				consumer.accept(instance);
+				n++;
+			}
+		} finally {
+			tracker.close();
+		}
+		return n;
+	}
+
+	/**
+	 * Hide a service by registering a hook. This should in general be done
+	 * before you let others look. In general, the JUnit Framework should be
+	 * started in {@link JUnitFrameworkBuilder#nostart()} mode. This initializes
+	 * the OSGi framework making it possible to register a service before
+	 */
+
+	public Closeable hide(Class<?> type) {
+		return hide(type, "hide");
+	}
+
+	/**
+	 * Hide a service. This will register a FindHook and an EventHook for the
+	 * type. This will remove the visibility of all services with that type for
+	 * all bundles _except_ the testbundle. Notice that bundles that already
+	 * obtained a references are not affected. If you use this facility it is
+	 * best to not start the framework before you hide a service. You can
+	 * indicate this to the build with {@link JUnitFrameworkBuilder#nostart()}.
+	 * The framework can be started after creation with {@link #start()}. Notice
+	 * that services through the testbundle remain visible for this hide.
+	 * 
+	 * @param type the type to hide
+	 * @param reason the reason why it is hidden
+	 * @return a Closeable, when closed it will remove the hooks
+	 */
+	public Closeable hide(Class<?> type, String reason) {
+		ServiceRegistration<EventListenerHook> eventReg = framework.getBundleContext()
+			.registerService(EventListenerHook.class, new EventListenerHook() {
+				@Override
+				public void event(ServiceEvent event, Map<BundleContext, Collection<ListenerInfo>> listeners) {
+
+					ServiceReference<?> ref = event.getServiceReference();
+					if (selectForHiding(type, ref))
+						listeners.clear();
+				}
+
+				@Override
+				public String toString() {
+					return "JUnitFramework[" + reason + "]";
+				}
+			}, null);
+
+		ServiceRegistration<FindHook> findReg = framework.getBundleContext()
+			.registerService(FindHook.class, new FindHook() {
+
+				@Override
+				public void find(BundleContext context, String name, String filter, boolean allServices,
+					Collection<ServiceReference<?>> references) {
+					if (name == null || name.equals(type.getName())) {
+						references.removeIf(ref -> selectForHiding(type, ref));
+					}
+				}
+
+				@Override
+				public String toString() {
+					return "JUnitFramework[" + reason + "]";
+				}
+
+			}, null);
+
+		return () -> {
+			eventReg.unregister();
+			findReg.unregister();
+		};
+	}
+
+	/**
+	 * Check of a service reference has one of the given types in its object
+	 * class
+	 * 
+	 * @param serviceReference the service reference to check
+	 * @param types the set of types
+	 * @return true if one of the types name is in the service reference's
+	 *         objectClass property
+	 */
+	public boolean isOneOfType(ServiceReference<?> serviceReference, Class<?>... types) {
+		String[] objectClasses = (String[]) serviceReference.getProperty(Constants.OBJECTCLASS);
+		for (Class<?> type : types) {
+			String name = type.getName();
+
+			for (String objectClass : objectClasses) {
+				if (objectClass.equals(name))
+					return true;
+			}
+		}
+		return false;
+	}
+
+	private boolean selectForHiding(Class<?> type, ServiceReference<?> ref) {
+
+		//
+		// We never hide services registered by the testbundle
+		//
+
+		if (ref.getBundle() == testbundle)
+			return false;
+
+		// only hide references when one of their
+		// service interfaces is of the hidden type
+
+		return isOneOfType(ref, type);
+	}
+
+	/**
+	 * Start the framework if not yet started
+	 */
+
+	public void start() {
+		try {
+			framework.start();
+			List<Bundle> toBeStarted = new ArrayList<>();
+			for (String path : builder.local.runbundles) {
+				File file = new File(path);
+				if (!file.isFile())
+					throw new IllegalArgumentException("-runbundle " + file + " does not exist or is not a file");
+
+				Bundle b = install(file);
+				if (!isFragment(b))
+					toBeStarted.add(b);
+			}
+
+			toBeStarted.forEach(this::start);
+
+			if (builder.testbundle)
+				testbundle();
+
+			toBeStarted.forEach(this::start);
+
+		} catch (BundleException e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Stop the framework if not yet stopped
+	 */
+
+	public void stop() {
+		try {
+			report("Stopping the framework");
+			framework.stop();
+		} catch (BundleException e) {
+			report("Could not stop the framework : %s", e);
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Set the test bundle
+	 */
+	public void testbundle() {
+		if (testbundle != null) {
+			throw new IllegalArgumentException("Test bundle already exists");
+		}
+		try {
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			Manifest man = new Manifest();
+			man.getMainAttributes()
+				.putValue("Manifest-Version", "1");
+			String name = projectDir.getName()
+				.toUpperCase();
+			report("Creating test bundle %s", name);
+			man.getMainAttributes()
+				.putValue(Constants.BUNDLE_SYMBOLICNAME, name);
+			man.getMainAttributes()
+				.putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
+			JarOutputStream jout = new JarOutputStream(bout, man);
+			jout.close();
+			ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
+			this.testbundle = framework.getBundleContext()
+				.installBundle(name, bin);
+			this.testbundle.start();
+		} catch (Exception e) {
+			report("Failed to create test bundle");
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
+	 * Register a service. You can specify the type and the instance as well as
+	 * the properties. The properties are specified as varargs. That means you
+	 * can define a property by specifying the key (which must be a String) and
+	 * the value consecutively. The value can be any of the types allowed by the
+	 * service properties.
+	 * 
+	 * <pre>
+	 * fw.register(Foo.class, instance, "foo", 10, "bar", new long[] {
+	 * 	1, 2, 3
+	 * });
+	 * </pre>
+	 * 
+	 * @param type the service type
+	 * @param instance the service object
+	 * @param props the service properties specified as a seq of "key", value
+	 * @return the service registration
+	 */
+	public <T> ServiceRegistration<T> register(Class<T> type, T instance, Object... props) {
+		report("Registering service %s %s", type, instance, Arrays.toString(props));
+		Hashtable<String, Object> ht = new Hashtable<>();
+		for (int i = 0; i < props.length; i += 2) {
+			String key = (String) props[i];
+			Object value = null;
+			if (i + 1 < props.length) {
+				value = props[i + 1];
+			}
+			ht.put(key, value);
+		}
+		return getBundleContext().registerService(type, instance, ht);
+	}
+
+	/**
+	 * Return the framework object
+	 * 
+	 * @return the framework object
+	 */
+	public Framework getFramework() {
+		return framework;
+	}
+
+	/**
+	 * Add a component class. This creates a little bundle that holds the
+	 * component class so that bnd adds the DS XML. However, it also imports the
+	 * package of the component class so that in runtime DS will load it from
+	 * the classpath.
+	 */
+
+	public <T> Closeable addComponent(Class<T> type) {
+		Bundle b = bundle().addResource(type)
+			.start();
+		return () -> {
+			try {
+				b.uninstall();
+			} catch (BundleException e) {
+				throw Exceptions.duck(e);
+			}
+		};
+	}
+
+	private Parameters getExports(Bundle b) {
+		return new Parameters(b.getHeaders()
+			.get(Constants.EXPORT_PACKAGE));
+	}
+
+	private Parameters getImports(Bundle b) {
+		return new Parameters(b.getHeaders()
+			.get(Constants.IMPORT_PACKAGE));
+	}
+
+	private boolean isFragment(Bundle b) {
+		return b.getHeaders()
+			.get(Constants.FRAGMENT_HOST) != null;
+	}
+
+	private String toInstallURI(File c) {
+		return "reference:" + c.toURI();
 	}
 
 	Object getService(Injector.Target<Service> param) {
@@ -535,7 +856,7 @@ public class JUnitFramework implements AutoCloseable {
 			int cardinality = multiple ? service.minimum() : 1;
 
 			List<? extends ServiceReference<?>> matchedReferences = getServices(serviceClass, target, cardinality,
-				timeout);
+				timeout, true);
 
 			if (multiple)
 				return matchedReferences;
@@ -550,8 +871,8 @@ public class JUnitFramework implements AutoCloseable {
 	@SuppressWarnings({
 		"rawtypes", "unchecked"
 	})
-	private <T> List<ServiceReference<T>> getServices(Class<T> serviceClass, String target, int cardinality,
-		long timeout) {
+	private <T> List<ServiceReference<T>> getServices(Class<T> serviceClass, @Nullable String target, int cardinality,
+		long timeout, boolean exception) {
 		try {
 
 			String className = serviceClass.getName();
@@ -647,7 +968,10 @@ public class JUnitFramework implements AutoCloseable {
 						}
 					}
 
-					throw new TimeoutException(error);
+					if (exception)
+						throw new TimeoutException(error);
+
+					return Collections.emptyList();
 				}
 				Thread.sleep(100);
 			}
@@ -808,208 +1132,6 @@ public class JUnitFramework implements AutoCloseable {
 			}
 		});
 		return converter;
-	}
-
-	private String toInstallURI(File c) {
-		return "reference:" + c.toURI();
-	}
-
-	private Map<String, Object> toMap(ServiceReference<?> reference) {
-		Map<String, Object> map = new HashMap<>();
-
-		for (String key : reference.getPropertyKeys()) {
-			map.put(key, reference.getProperty(key));
-		}
-
-		return map;
-	}
-
-	/**
-	 * Get a bundle by symbolic name
-	 */
-	public Optional<Bundle> getBundle(String bsn) {
-		return Stream.of(getBundleContext().getBundles())
-			.filter(b -> bsn.equals(b.getSymbolicName()))
-			.findFirst();
-	}
-
-	/**
-	 * Broadcast a message to many services
-	 */
-
-	@SuppressWarnings("unchecked")
-	public <T> int broadcast(Class<T> type, Consumer<T> consumer) {
-		ServiceTracker<T, T> tracker = new ServiceTracker<>(getBundleContext(), type, null);
-		int n = 0;
-		try {
-			for (T instance : (T[]) tracker.getServices()) {
-				consumer.accept(instance);
-				n++;
-			}
-		} finally {
-			tracker.close();
-		}
-		return n;
-	}
-
-	/**
-	 * Hide a service by registering a hook. This should in general be done
-	 * before you let others look. In general, the JUnit Framework should be
-	 * started in {@link JUnitFrameworkBuilder#nostart()} mode. This initializes
-	 * the OSGi framework making it possible to register a service before
-	 */
-
-	public Closeable hide(Class<?> type) {
-		return hide(type, "hide");
-	}
-
-	public Closeable hide(Class<?> type, String reason) {
-		ServiceRegistration<EventListenerHook> eventReg = getBundleContext().registerService(EventListenerHook.class,
-			new EventListenerHook() {
-				@Override
-				public void event(ServiceEvent event, Map<BundleContext, Collection<ListenerInfo>> listeners) {
-					if (isOneOfType(event.getServiceReference(), type))
-						listeners.clear();
-				}
-
-				@Override
-				public String toString() {
-					return "JUnitFramework[" + reason + "]";
-				}
-			}, null);
-
-		ServiceRegistration<FindHook> findReg = getBundleContext().registerService(FindHook.class, new FindHook() {
-
-			@Override
-			public void find(BundleContext context, String name, String filter, boolean allServices,
-				Collection<ServiceReference<?>> references) {
-				if (name == null || name.equals(type.getName()))
-					references.clear();
-			}
-
-			@Override
-			public String toString() {
-				return "JUnitFramework[" + reason + "]";
-			}
-
-		}, null);
-
-		return () -> {
-			eventReg.unregister();
-			findReg.unregister();
-		};
-	}
-
-	public boolean isOneOfType(ServiceReference<?> serviceReference, Class<?>... types) {
-		String[] objectClasses = (String[]) serviceReference.getProperty(Constants.OBJECTCLASS);
-		for (Class<?> type : types) {
-			String name = type.getName();
-
-			for (String objectClass : objectClasses) {
-				if (objectClass.equals(name))
-					return true;
-			}
-		}
-		return false;
-	}
-
-	/**
-	 * Start the framework if not yet started
-	 */
-
-	public void start() {
-		try {
-			framework.start();
-			List<Bundle> toBeStarted = new ArrayList<>();
-			for (String path : builder.local.runbundles) {
-				File file = new File(path);
-				if (!file.isFile())
-					throw new IllegalArgumentException("-runbundle " + file + " does not exist or is not a file");
-
-				Bundle b = install(file);
-				if (!isFragment(b))
-					toBeStarted.add(b);
-			}
-
-			toBeStarted.forEach(this::start);
-
-			if (builder.testbundle)
-				testbundle();
-
-			toBeStarted.forEach(this::start);
-
-		} catch (BundleException e) {
-			throw Exceptions.duck(e);
-		}
-	}
-
-	private boolean isFragment(Bundle b) {
-		return b.getHeaders()
-			.get(Constants.FRAGMENT_HOST) != null;
-	}
-
-	/**
-	 * Stop the framework if not yet stopped
-	 */
-
-	public void stop() {
-		try {
-			report("Stopping the framework");
-			framework.stop();
-		} catch (BundleException e) {
-			report("Could not stop the framework : %s", e);
-			throw Exceptions.duck(e);
-		}
-	}
-
-	/**
-	 * Set the test bundle
-	 */
-	public void testbundle() {
-		if (testbundle != null) {
-			throw new IllegalArgumentException("Test bundle already exists");
-		}
-		try {
-			ByteArrayOutputStream bout = new ByteArrayOutputStream();
-			Manifest man = new Manifest();
-			man.getMainAttributes()
-				.putValue("Manifest-Version", "1");
-			String name = projectDir.getName()
-				.toUpperCase();
-			report("Creating test bundle %s", name);
-			man.getMainAttributes()
-				.putValue(Constants.BUNDLE_SYMBOLICNAME, name);
-			man.getMainAttributes()
-				.putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
-			JarOutputStream jout = new JarOutputStream(bout, man);
-			jout.close();
-			ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
-			this.testbundle = framework.getBundleContext()
-				.installBundle(name, bin);
-			this.testbundle.start();
-		} catch (Exception e) {
-			report("Failed to create test bundle");
-			throw Exceptions.duck(e);
-		}
-	}
-
-	public <T> ServiceRegistration<T> register(Class<T> type, T instance) {
-		report("Registering service %s %s", type, instance);
-		return getBundleContext().registerService(type, instance, null);
-	}
-
-	public Framework getFramework() {
-		return framework;
-	}
-
-	private Parameters getExports(Bundle b) {
-		return new Parameters(b.getHeaders()
-			.get(Constants.EXPORT_PACKAGE));
-	}
-
-	private Parameters getImports(Bundle b) {
-		return new Parameters(b.getHeaders()
-			.get(Constants.IMPORT_PACKAGE));
 	}
 
 }

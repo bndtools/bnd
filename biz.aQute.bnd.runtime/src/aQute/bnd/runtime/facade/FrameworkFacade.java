@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -182,16 +183,14 @@ public class FrameworkFacade implements SnapshotProvider {
 				for (ListenerInfo li : serviceListeners.get(b)) {
 					Map<String, Object> bean = asBean(ListenerInfo.class, li);
 					ServiceReference<?>[] allRefs = context.getAllServiceReferences(null, li.getFilter());
-					if (allRefs != null) {
-						List<ServiceReference<?>> all = new ArrayList<>(Arrays.asList(allRefs));
-						List<ServiceReference<?>> partial = Arrays.asList(b.getBundleContext()
-							.getAllServiceReferences(null, li.getFilter()));
-						all.removeAll(partial);
-						List<Long> hidden = all.stream()
-							.map(sr -> (Long) sr.getProperty(Constants.SERVICE_ID))
-							.collect(Collectors.toList());
-						bean.put("hidden", hidden);
-					}
+					List<ServiceReference<?>> all = new ArrayList<>(asList(allRefs));
+					List<ServiceReference<?>> partial = asList(b.getBundleContext()
+						.getAllServiceReferences(null, li.getFilter()));
+					all.removeAll(partial);
+					List<Long> hidden = all.stream()
+						.map(sr -> (Long) sr.getProperty(Constants.SERVICE_ID))
+						.collect(Collectors.toList());
+					bean.put("hidden", hidden);
 					xbundle.waiting.add(bean);
 				}
 			}
@@ -336,6 +335,13 @@ public class FrameworkFacade implements SnapshotProvider {
 	private Parameters getImports(Bundle b) {
 		return new Parameters(b.getHeaders()
 			.get(Constants.IMPORT_PACKAGE));
+	}
+
+	private List<ServiceReference<?>> asList(ServiceReference<?>[] refs) {
+		if (refs == null)
+			return Collections.emptyList();
+
+		return Arrays.asList(refs);
 	}
 
 }
