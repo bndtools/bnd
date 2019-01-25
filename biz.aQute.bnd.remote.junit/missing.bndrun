@@ -1,0 +1,2 @@
+-runfw          org.apache.felix.framework
+-runbundles     org.apache.felix.cm;version='[1.2,1.21)'

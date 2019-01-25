@@ -3386,6 +3386,7 @@ public class Project extends Processor {
 		} catch (Exception e) {
 			runspecification.errors.add(e.toString());
 		}
+		runspecification.errors.addAll(getErrors());
 		return runspecification;
 	}
 
