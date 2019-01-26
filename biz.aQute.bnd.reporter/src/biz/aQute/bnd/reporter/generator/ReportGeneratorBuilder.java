@@ -105,6 +105,47 @@ public class ReportGeneratorBuilder {
   }
 
   /**
+   * Add the default plugins used to extract bundle data.
+   * 
+   * @return the builder
+   */
+  public ReportGeneratorBuilder withBundleDefaultPlugins() {
+
+    addPlugin(EntryNamesReference.COMPONENTS);
+    addPlugin(EntryNamesReference.MANIFEST);
+    addPlugin(EntryNamesReference.MAVEN_COORDINATE);
+    addPlugin(EntryNamesReference.METATYPES);
+
+    return this;
+  }
+
+  /**
+   * Add the default plugins used to extract project data.
+   * 
+   * @return the builder
+   */
+  public ReportGeneratorBuilder withProjectDefaultPlugins() {
+
+    addPlugin(EntryNamesReference.FILE_NAME);
+    addPlugin(EntryNamesReference.BUNDLES);
+
+    return this;
+  }
+
+  /**
+   * Add the default plugins used to extract aggregator project or workspace data.
+   * 
+   * @return the builder
+   */
+  public ReportGeneratorBuilder withAggregatorProjectDefaultPlugins() {
+
+    addPlugin(EntryNamesReference.FILE_NAME);
+    addPlugin(EntryNamesReference.PROJECTS);
+
+    return this;
+  }
+
+  /**
    * Build the service.
    * 
    * @return the service

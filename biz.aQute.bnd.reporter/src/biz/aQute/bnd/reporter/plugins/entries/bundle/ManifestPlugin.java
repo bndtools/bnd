@@ -7,6 +7,7 @@ import aQute.bnd.service.reporter.ReportEntryPlugin;
 import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.helpers.HeadersHelper;
+import biz.aQute.bnd.reporter.manifest.dto.OSGiHeadersDTO;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
@@ -29,13 +30,11 @@ public class ManifestPlugin implements ReportEntryPlugin<Jar>, Plugin {
   }
 
   @Override
-  public Object extract(final Jar jar, final Locale locale) {
+  public OSGiHeadersDTO extract(final Jar jar, final Locale locale) {
     Objects.requireNonNull(jar, "jar");
     Objects.requireNonNull(locale, "locale");
 
-    final Map<String, Object> result = HeadersHelper.extract(jar, locale, _reporter);
-
-    return !result.isEmpty() ? result : null;
+    return HeadersHelper.extract(jar, locale, _reporter);
   }
 
   @Override

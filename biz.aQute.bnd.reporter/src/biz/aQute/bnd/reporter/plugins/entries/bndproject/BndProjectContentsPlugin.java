@@ -45,9 +45,8 @@ public class BndProjectContentsPlugin implements ReportEntryPlugin<Project>, Plu
     _properties.put(ReportEntryPlugin.ENTRY_NAME_PROPERTY, EntryNamesReference.BUNDLES);
     _properties.put(ReportEntryPlugin.SOURCE_CLASS_PROPERTY, Project.class.getCanonicalName());
 
-    _generatorBuilder = ReportGeneratorBuilder.create().useCustomConfig()
-        .addPlugin(EntryNamesReference.MANIFEST).addPlugin(EntryNamesReference.COMPONENTS)
-        .addPlugin(EntryNamesReference.METATYPES).addPlugin(EntryNamesReference.MAVEN_COORDINATE);
+    _generatorBuilder =
+        ReportGeneratorBuilder.create().useCustomConfig().withBundleDefaultPlugins();
 
   }
 

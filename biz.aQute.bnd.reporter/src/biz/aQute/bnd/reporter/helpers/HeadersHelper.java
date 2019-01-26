@@ -21,6 +21,7 @@ import biz.aQute.bnd.reporter.manifest.dto.ImportPackageDTO;
 import biz.aQute.bnd.reporter.manifest.dto.LicenseDTO;
 import biz.aQute.bnd.reporter.manifest.dto.NativeCodeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.NativeCodeEntryDTO;
+import biz.aQute.bnd.reporter.manifest.dto.OSGiHeadersDTO;
 import biz.aQute.bnd.reporter.manifest.dto.ProvideCapabilityDTO;
 import biz.aQute.bnd.reporter.manifest.dto.RequireBundleDTO;
 import biz.aQute.bnd.reporter.manifest.dto.RequireCapabilityDTO;
@@ -29,13 +30,10 @@ import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionInRangeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionRangeDTO;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
@@ -48,7 +46,7 @@ import java.util.Set;
  * Helper to extract (localized) and convert manifest headers into DTO. The extraction process
  * computes default values when possible.
  */
-public class HeadersHelper {
+final public class HeadersHelper {
 
   private final ManifestHelper _manifest;
   private final Jar _jar;
@@ -68,35 +66,53 @@ public class HeadersHelper {
    * @param jar the jar which contains the manifest headers to extract, must not {@code null}
    * @param locale the locale used to localize the extraction, must not be {@code null}
    * @param reporter the reporter to report error, must not be {@code null}
-   * @return a map of DTO headers
+   * @return a DTO or {@code null} if the Jar does not contain a manifest
    */
-  static public Map<String, Object> extract(final Jar jar, final Locale locale,
+  static public OSGiHeadersDTO extract(final Jar jar, final Locale locale,
       final Reporter reporter) {
     Objects.requireNonNull(jar, "jar");
     Objects.requireNonNull(locale, "locale");
     Objects.requireNonNull(reporter, "reporter");
 
-    final Map<String, Object> headers = new LinkedHashMap<>();
-
     final ManifestHelper manifest = ManifestHelper.createIfPresent(jar, locale);
     if (manifest != null) {
-      final HeadersHelper e = new HeadersHelper(manifest, jar, reporter);
-      for (final Method m : e.getClass().getDeclaredMethods()) {
-        if (m.getName().startsWith("_")) {
-          Object dto;
-          try {
-            dto = m.invoke(e);
-            if (dto != null) {
-              headers.put(m.getName().substring(1), dto);
-            }
-          } catch (IllegalAccessException | IllegalArgumentException
-              | InvocationTargetException exception) {
-            reporter.exception(exception, "bnd bug while converting manfinest to DTO");
-          }
-        }
-      }
+      final HeadersHelper helper = new HeadersHelper(manifest, jar, reporter);
+      final OSGiHeadersDTO headers = new OSGiHeadersDTO();
+
+      headers.bundleName = helper.extractBundleName();
+      headers.bundleDescription = helper.extractBundleDescription();
+      headers.bundleVersion = helper.extractBundleVersion();
+      headers.bundleCategories = helper.extractBundleCategory();
+      headers.bundleIcons = helper.extractBundleIcon();
+      headers.bundleDocURL = helper.extractBundleDocURL();
+      headers.bundleUpdateLocation = helper.extractBundleUpdateLocation();
+      headers.bundleLocalization = helper.extractBundleLocalization();
+      headers.bundleLicenses = helper.extractBundleLicense();
+      headers.bundleDevelopers = helper.extractBundleDevelopers();
+      headers.bundleSCM = helper.extractBundleSCM();
+      headers.bundleCopyright = helper.extractBundleCopyright();
+      headers.bundleVendor = helper.extractBundleVendor();
+      headers.bundleContactAddress = helper.extractBundleContactAddress();
+      headers.bundleSymbolicName = helper.extractBundleSymbolicName();
+      headers.importPackages = helper.extractImportPackage();
+      headers.dynamicImportPackages = helper.extractDynamicImportPackage();
+      headers.exportPackages = helper.extractExportPackage();
+      headers.provideCapabilities = helper.extractProvideCapability();
+      headers.requireCapabilities = helper.extractRequireCapability();
+      headers.requireBundles = helper.extractRequireBundle();
+      headers.bundleRequiredExecutionEnvironments =
+          helper.extractBundleRequiredExecutionEnvironment();
+      headers.bundleActivationPolicy = helper.extractBundleActivationPolicy();
+      headers.fragmentHost = helper.extractFragmentHost();
+      headers.bundleActivator = helper.extractBundleActivator();
+      headers.bundleClassPaths = helper.extractBundleClassPath();
+      headers.bundleNativeCode = helper.extractBundleNativeCode();
+      headers.bundleManifestVersion = helper.extractBundleManifestVersion();
+
+      return headers;
+    } else {
+      return null;
     }
-    return headers;
   }
 
   private VersionRangeDTO toOsgiRange(final String value) {
@@ -221,46 +237,46 @@ public class HeadersHelper {
     }
   }
 
-  protected Object _bundleActivator() {
-    Object result = null;
+
+  /*
+   * The following methods are protected to be used in unit tests. For method to be tested name it
+   * extract<the header name without "-">.
+   */
+
+  protected String extractBundleActivator() {
     final Parameters header = _manifest.getHeader(Constants.BUNDLE_ACTIVATOR, false);
     if (!header.isEmpty()) {
-      result = cleanKey(header.keySet().iterator().next());
+      return cleanKey(header.keySet().iterator().next());
+    } else {
+      return null;
     }
-    return result;
   }
 
-  protected Object _bundleCategories() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_CATEGORY, false);
+  protected List<String> extractBundleCategory() {
     final List<String> categories = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.BUNDLE_CATEGORY, false);
     for (final String category : cleanKey(header.keySet())) {
       categories.add(category);
     }
-    if (!categories.isEmpty()) {
-      result = categories;
-    }
-    return result;
+
+    return !categories.isEmpty() ? categories : null;
   }
 
-  protected Object _bundleClasspaths() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_CLASSPATH, false);
-
+  protected List<String> extractBundleClassPath() {
     final List<String> classpaths = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.BUNDLE_CLASSPATH, false);
     for (final String classpath : cleanKey(header.keySet())) {
       classpaths.add(classpath);
     }
+
     if (classpaths.isEmpty()) {
       classpaths.add(".");
     }
-    result = classpaths;
-    return result;
+
+    return classpaths;
   }
 
-  protected Object _bundleContactAddress() {
-    Object result = null;
-
+  protected ContactAddressDTO extractBundleContactAddress() {
     final String contact = _manifest.getHeaderAsString(Constants.BUNDLE_CONTACTADDRESS);
     if (!contact.isEmpty()) {
       final ContactAddressDTO adress = new ContactAddressDTO();
@@ -272,34 +288,27 @@ public class HeadersHelper {
       } else {
         adress.type = "postal";
       }
-      result = adress;
+      return adress;
+    } else {
+      return null;
     }
-
-    return result;
   }
 
-  protected Object _bundleCopyright() {
-    Object result = null;
+  protected String extractBundleCopyright() {
     final String copyright = _manifest.getHeaderAsString(Constants.BUNDLE_COPYRIGHT);
-    if (!copyright.isEmpty()) {
-      result = copyright;
-    }
-    return result;
+
+    return !copyright.isEmpty() ? copyright : null;
   }
 
-  protected Object _bundleDescription() {
-    Object result = null;
+  protected String extractBundleDescription() {
     final String description = _manifest.getHeaderAsString(Constants.BUNDLE_DESCRIPTION);
-    if (!description.isEmpty()) {
-      result = description;
-    }
-    return result;
+
+    return !description.isEmpty() ? description : null;
   }
 
-  protected Object _bundleDevelopers() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_DEVELOPERS, false);
+  protected List<DeveloperDTO> extractBundleDevelopers() {
     final List<DeveloperDTO> developers = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.BUNDLE_DEVELOPERS, false);
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final DeveloperDTO developer = new DeveloperDTO();
 
@@ -332,25 +341,19 @@ public class HeadersHelper {
       }
       developers.add(developer);
     }
-    if (!developers.isEmpty()) {
-      result = developers;
-    }
-    return result;
+
+    return !developers.isEmpty() ? developers : null;
   }
 
-  protected Object _bundleDocUrl() {
-    Object result = null;
+  protected String extractBundleDocURL() {
     final String docUrl = _manifest.getHeaderAsString(Constants.BUNDLE_DOCURL);
-    if (!docUrl.isEmpty()) {
-      result = docUrl;
-    }
-    return result;
+
+    return !docUrl.isEmpty() ? docUrl : null;
   }
 
-  protected Object _dynamicImportPackages() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.DYNAMICIMPORT_PACKAGE, false);
+  protected List<DynamicImportPackageDTO> extractDynamicImportPackage() {
     final List<DynamicImportPackageDTO> imports = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.DYNAMICIMPORT_PACKAGE, false);
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final DynamicImportPackageDTO myImport = new DynamicImportPackageDTO();
 
@@ -382,16 +385,13 @@ public class HeadersHelper {
       }
       imports.add(myImport);
     }
-    if (!imports.isEmpty()) {
-      result = imports;
-    }
-    return result;
+
+    return !imports.isEmpty() ? imports : null;
   }
 
-  protected Object _exportPackages() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.EXPORT_PACKAGE, false);
+  protected List<ExportPackageDTO> extractExportPackage() {
     final List<ExportPackageDTO> exports = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.EXPORT_PACKAGE, false);
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final ExportPackageDTO myExport = new ExportPackageDTO();
 
@@ -440,14 +440,11 @@ public class HeadersHelper {
       }
       exports.add(myExport);
     }
-    if (!exports.isEmpty()) {
-      result = exports;
-    }
-    return result;
+
+    return !exports.isEmpty() ? exports : null;
   }
 
-  protected Object _fragmentHost() {
-    Object result = null;
+  protected FragmentHostDTO extractFragmentHost() {
     final Parameters header = _manifest.getHeader(Constants.FRAGMENT_HOST, false);
     if (!header.isEmpty()) {
       final Attrs attibutes = header.values().iterator().next();
@@ -475,15 +472,15 @@ public class HeadersHelper {
 
         }
       }
-      result = frag;
+      return frag;
+    } else {
+      return null;
     }
-    return result;
   }
 
-  protected Object _bundleIcons() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_ICON, false);
+  protected List<IconDTO> extractBundleIcon() {
     final List<IconDTO> icons = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.BUNDLE_ICON, false);
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final IconDTO icon = new IconDTO();
 
@@ -494,16 +491,13 @@ public class HeadersHelper {
       }
       icons.add(icon);
     }
-    if (!icons.isEmpty()) {
-      result = icons;
-    }
-    return result;
+
+    return !icons.isEmpty() ? icons : null;
   }
 
-  protected Object _importPackages() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.IMPORT_PACKAGE, false);
+  protected List<ImportPackageDTO> extractImportPackage() {
     final List<ImportPackageDTO> imports = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.IMPORT_PACKAGE, false);
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final ImportPackageDTO myImport = new ImportPackageDTO();
 
@@ -542,14 +536,11 @@ public class HeadersHelper {
       }
       imports.add(myImport);
     }
-    if (!imports.isEmpty()) {
-      result = imports;
-    }
-    return result;
+
+    return !imports.isEmpty() ? imports : null;
   }
 
-  protected Object _bundleActivationPolicy() {
-    Object result = null;
+  protected ActivationPolicyDTO extractBundleActivationPolicy() {
     final Parameters header = _manifest.getHeader(Constants.BUNDLE_ACTIVATIONPOLICY, false);
     if (!header.isEmpty()) {
       final Attrs attributes = header.values().iterator().next();
@@ -572,15 +563,15 @@ public class HeadersHelper {
           act.includes.add(a);
         }
       }
-      result = act;
+      return act;
+    } else {
+      return null;
     }
-    return result;
   }
 
-  protected Object _bundleLicenses() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_LICENSE, false);
+  protected List<LicenseDTO> extractBundleLicense() {
     final List<LicenseDTO> licences = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.BUNDLE_LICENSE, false);
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final LicenseDTO licence = new LicenseDTO();
 
@@ -595,34 +586,26 @@ public class HeadersHelper {
       }
       licences.add(licence);
     }
-    if (!licences.isEmpty()) {
-      result = licences;
-    }
-    return result;
+
+    return !licences.isEmpty() ? licences : null;
   }
 
-  protected Object _bundleManifestVersion() {
-    Object result = null;
+  protected Integer extractBundleManifestVersion() {
     final Parameters header = _manifest.getHeader(Constants.BUNDLE_MANIFESTVERSION, false);
     if (!header.isEmpty()) {
-      result = Integer.valueOf(cleanKey(header.keySet().iterator().next()));
+      return Integer.valueOf(cleanKey(header.keySet().iterator().next()));
     } else {
-      result = Integer.valueOf(1);
+      return Integer.valueOf(1);
     }
-    return result;
   }
 
-  protected Object _bundleName() {
-    Object result = null;
+  protected String extractBundleName() {
     final String name = _manifest.getHeaderAsString(Constants.BUNDLE_NAME);
-    if (!name.isEmpty()) {
-      result = name;
-    }
-    return result;
+
+    return !name.isEmpty() ? name : null;
   }
 
-  protected Object _bundleNativeCode() {
-    Object result = null;
+  protected NativeCodeDTO extractBundleNativeCode() {
     final Parameters header = _manifest.getHeader(Constants.BUNDLE_NATIVECODE, true);
     if (!header.isEmpty()) {
       final Map<Attrs, NativeCodeEntryDTO> storedAttr = new HashMap<>();
@@ -675,15 +658,15 @@ public class HeadersHelper {
           nEntry.paths.add(cleanKey(entry.getKey()));
         }
       }
-      result = nativeCode;
+      return nativeCode;
+    } else {
+      return null;
     }
-    return result;
   }
 
-  protected Object _provideCapabilities() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.PROVIDE_CAPABILITY, false);
+  protected List<ProvideCapabilityDTO> extractProvideCapability() {
     final List<ProvideCapabilityDTO> capas = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.PROVIDE_CAPABILITY, false);
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final ProvideCapabilityDTO capa = new ProvideCapabilityDTO();
 
@@ -758,16 +741,13 @@ public class HeadersHelper {
       }
       capas.add(capa);
     }
-    if (!capas.isEmpty()) {
-      result = capas;
-    }
-    return result;
+
+    return !capas.isEmpty() ? capas : null;
   }
 
-  protected Object _requireBundles() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.REQUIRE_BUNDLE, false);
+  protected List<RequireBundleDTO> extractRequireBundle() {
     final List<RequireBundleDTO> reqs = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.REQUIRE_BUNDLE, false);
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final RequireBundleDTO req = new RequireBundleDTO();
 
@@ -798,16 +778,13 @@ public class HeadersHelper {
       }
       reqs.add(req);
     }
-    if (!reqs.isEmpty()) {
-      result = reqs;
-    }
-    return result;
+
+    return !reqs.isEmpty() ? reqs : null;
   }
 
-  protected Object _requireCapabilities() {
-    Object result = null;
-    final Parameters header = _manifest.getHeader(Constants.REQUIRE_CAPABILITY, false);
+  protected List<RequireCapabilityDTO> extractRequireCapability() {
     final List<RequireCapabilityDTO> capas = new LinkedList<>();
+    final Parameters header = _manifest.getHeader(Constants.REQUIRE_CAPABILITY, false);
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final RequireCapabilityDTO capa = new RequireCapabilityDTO();
 
@@ -878,30 +855,23 @@ public class HeadersHelper {
       }
       capas.add(capa);
     }
-    if (!capas.isEmpty()) {
-      result = capas;
-    }
-    return result;
+
+    return !capas.isEmpty() ? capas : null;
   }
 
-  protected Object _bundleRequiredExecutionEnvironments() {
-    Object result = null;
+  protected List<String> extractBundleRequiredExecutionEnvironment() {
+    final List<String> execs = new LinkedList<>();
     final Parameters header =
         _manifest.getHeader(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, true);
-    final List<String> execs = new LinkedList<>();
     for (final String e : cleanKey(header.keySet())) {
       execs.add(e);
     }
-    if (!execs.isEmpty()) {
-      result = execs;
-    }
-    return result;
+
+    return !execs.isEmpty() ? execs : null;
   }
 
-  protected Object _bundleScm() {
-    Object result = null;
+  protected ScmDTO extractBundleSCM() {
     final Parameters header = _manifest.getHeader(Constants.BUNDLE_SCM, false);
-
     final String scm = header.toString();
     if (scm.length() > 0) {
       final ScmDTO scmDto = new ScmDTO();
@@ -918,13 +888,13 @@ public class HeadersHelper {
           scmDto.tag = attrs.get(key);
         }
       }
-      result = scmDto;
+      return scmDto;
+    } else {
+      return null;
     }
-    return result;
   }
 
-  protected Object _bundleSymbolicName() {
-    Object result = null;
+  protected BundleSymbolicNameDTO extractBundleSymbolicName() {
     final Parameters header = _manifest.getHeader(Constants.BUNDLE_SYMBOLICNAME, false);
     if (!header.isEmpty()) {
       final Attrs attributes = header.values().iterator().next();
@@ -955,38 +925,44 @@ public class HeadersHelper {
           bsn.arbitraryAttributes.put(removeSpecial(a.getKey()), a.getValue());
         }
       }
-      result = bsn;
+      return bsn;
     } else {
       final BundleSymbolicNameDTO bsn = new BundleSymbolicNameDTO();
       bsn.symbolicName = "!! MISSING !!";
       _reporter.warning("the bundle does not declare a symbolic name");
-      result = bsn;
+      return bsn;
     }
-    return result;
   }
 
-  protected Object _bundleVendor() {
-    Object result = null;
+  protected String extractBundleVendor() {
     final String vendor = _manifest.getHeaderAsString(Constants.BUNDLE_VENDOR);
-    if (!vendor.isEmpty()) {
-      result = vendor;
-    }
-    return result;
+
+    return !vendor.isEmpty() ? vendor : null;
   }
 
-  protected Object _bundleVersion() {
-    Object result = null;
+  protected String extractBundleUpdateLocation() {
+    final String updateLocation = _manifest.getHeaderAsString(Constants.BUNDLE_UPDATELOCATION);
+
+    return !updateLocation.isEmpty() ? updateLocation : null;
+  }
+
+  protected String extractBundleLocalization() {
+    final String localization = _manifest.getHeaderAsString(Constants.BUNDLE_LOCALIZATION);
+
+    return !localization.isEmpty() ? localization : "OSGI-INF/l10n/bundle";
+  }
+
+  protected VersionDTO extractBundleVersion() {
     final Parameters header = _manifest.getHeader(Constants.BUNDLE_VERSION, false);
     if (!header.isEmpty()) {
       final VersionDTO version = toVersion(cleanKey(header.keySet().iterator().next()));
       if (version == null) {
-        result = getDefaultVersion();
+        return getDefaultVersion();
       } else {
-        result = version;
+        return version;
       }
     } else {
-      result = getDefaultVersion();
+      return getDefaultVersion();
     }
-    return result;
   }
 }
