@@ -252,8 +252,14 @@ public class ProjectBuilder extends Builder {
 					SetLocation l = error("%s", f.toString());
 					l.header(Constants.BASELINE);
 					fillInLocationForPackageInfo(l.location(), packageDiff.getName());
-					if (getPropertiesFile() != null)
-						l.file(getPropertiesFile().getAbsolutePath());
+					if (l.location().file == null) {
+						// Default to properties file
+						File propertiesFile = getPropertiesFile();
+						if (propertiesFile == null) {
+							propertiesFile = project.getPropertiesFile();
+						}
+						l.file(propertiesFile.getAbsolutePath());
+					}
 					l.details(info);
 				}
 
