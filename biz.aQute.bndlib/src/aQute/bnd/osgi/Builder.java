@@ -52,6 +52,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 
 /**
@@ -1271,6 +1272,9 @@ public class Builder extends Analyzer {
 		for (String name : sub.getResources()
 			.keySet()) {
 			if ("META-INF/MANIFEST.MF".equals(name))
+				continue;
+
+			if (doNotCopy(Strings.getLastSegment(name, '/')))
 				continue;
 
 			if (filter == null || filter.matches(name) ^ filter.isNegated())
