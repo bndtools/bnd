@@ -274,7 +274,7 @@ public class Jar implements Closeable {
 		}
 		Map<String, Resource> s = directories.computeIfAbsent(getDirectory(path), dir -> {
 			// make ancestor directories
-			for (int n = dir.lastIndexOf('/'); n > 0; n = dir.lastIndexOf('/')) {
+			for (int n; (n = dir.lastIndexOf('/')) > 0;) {
 				dir = dir.substring(0, n);
 				if (directories.containsKey(dir))
 					break;
@@ -340,8 +340,9 @@ public class Jar implements Closeable {
 
 	Optional<Manifest> manifest() {
 		check();
-		if (manifest != null) {
-			return manifest;
+		Optional<Manifest> optional = manifest;
+		if (optional != null) {
+			return optional;
 		}
 		try {
 			Resource manifestResource = getResource(manifestName);
@@ -358,8 +359,9 @@ public class Jar implements Closeable {
 
 	Optional<ModuleAttribute> moduleAttribute() throws Exception {
 		check();
-		if (moduleAttribute != null) {
-			return moduleAttribute;
+		Optional<ModuleAttribute> optional = moduleAttribute;
+		if (optional != null) {
+			return optional;
 		}
 		Resource module_info_resource = getResource(Constants.MODULE_INFO_CLASS);
 		if (module_info_resource == null) {

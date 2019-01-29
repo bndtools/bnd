@@ -2026,28 +2026,38 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * &#064;param prefix &#064;param suffix &#064;return
 	 */
 	public static String appendPath(String... parts) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(parts.length * 16);
 		boolean lastSlash = true;
 		for (String part : parts) {
-			for (int i = 0; i < part.length(); i++) {
-				char c = part.charAt(i);
-				if (c == '/') {
-					if (!lastSlash)
-						sb.append('/');
-					lastSlash = true;
-				} else {
-					sb.append(c);
-					lastSlash = false;
-				}
+			final int partlen = part.length();
+			if (partlen == 0) {
+				continue;
 			}
-
-			if (!lastSlash && sb.length() > 0) {
+			if (!lastSlash) {
 				sb.append('/');
 				lastSlash = true;
 			}
+			for (int i = 0; i < partlen; i++) {
+				char c = part.charAt(i);
+				if (lastSlash) {
+					if (c != '/') {
+						sb.append(c);
+						lastSlash = false;
+					}
+				} else {
+					sb.append(c);
+					if (c == '/') {
+						lastSlash = true;
+					}
+				}
+			}
 		}
-		if (lastSlash && sb.length() > 0)
-			sb.deleteCharAt(sb.length() - 1);
+		if (lastSlash) {
+			int sblen = sb.length();
+			if (sblen > 0) {
+				sb.setLength(sblen - 1);
+			}
+		}
 
 		return sb.toString();
 	}
