@@ -899,9 +899,8 @@ public class Jar implements Closeable {
 	public void close() {
 		this.closed = true;
 		IO.close(zipFile);
-		for (Resource r : resources.values()) {
-			IO.close(r);
-		}
+		resources.values()
+			.forEach(IO::close);
 		resources.clear();
 		directories.clear();
 		manifest = null;

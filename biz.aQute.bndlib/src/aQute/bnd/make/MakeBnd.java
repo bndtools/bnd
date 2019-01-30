@@ -39,17 +39,23 @@ public class MakeBnd implements MakePlugin, Constants {
 			bchild.setProperties(bndfile, builder.getBase());
 
 			Jar jar = bchild.build();
-			Jar dot = builder.getJar();
-
-			if (builder.hasSources()) {
-				for (String key : jar.getResources()
-					.keySet()) {
-					if (key.startsWith("OSGI-OPT/src"))
-						dot.putResource(key, jar.getResource(key));
-				}
-			}
 			builder.getInfo(bchild, bndfile.getName() + ": ");
-			return new JarResource(jar);
+			if (jar != null) {
+				builder.addClose(jar);
+
+				if (builder.hasSources()) {
+					Jar dot = builder.getJar();
+					if (dot != null) {
+						for (String key : jar.getResources()
+							.keySet()) {
+							if (key.startsWith("OSGI-OPT/src/"))
+								dot.putResource(key, jar.getResource(key));
+						}
+					}
+				}
+
+				return new JarResource(jar);
+			}
 		}
 		return null;
 	}
