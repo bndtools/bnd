@@ -2573,7 +2573,10 @@ public class Analyzer extends Processor {
 				if (resource != null) {
 					try {
 						Jar jar = Jar.fromResource(path, resource);
-						addClose(jar);
+						// Don't want to close Jar from JarResource
+						if (!(resource instanceof JarResource)) {
+							addClose(jar);
+						}
 						analyzeJar(jar, "", true);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);
