@@ -106,7 +106,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		for (Clazz c : analyzer.getClassspace()
 			.values()) {
 
-			if (c.isEnum() || c.isInterface() || c.isInnerClass() || c.isSynthetic()
+			if (c.isModule() || c.isEnum() || c.isInterface() || c.isInnerClass() || c.isSynthetic()
 				|| !c.is(QUERY.CONCRETE, null, analyzer)) {
 				// These types cannot be managed beans so don't bother scanning
 				// them. See
