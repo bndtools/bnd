@@ -44,12 +44,12 @@ public class DSAnnotationErrorHandler extends AbstractBuildErrorDetailsHandler {
             }
         }
 
-        if (md == null) {
+        if (md != null) {
+            result.add(md);
+        } else {
             // No other marker could be created, so add a marker to the bnd file
             result.add(new MarkerData(getDefaultResource(project), attribs, false));
         }
-
-        result.add(md);
 
         return result;
     }
