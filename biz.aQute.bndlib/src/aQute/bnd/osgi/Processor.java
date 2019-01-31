@@ -615,7 +615,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param pluginString
 	 */
 	protected void loadPlugins(Set<Object> instances, String pluginString, String pluginPathString) {
-		Parameters plugins = new Parameters(pluginString, this);
+		Parameters plugins = new Parameters(pluginString, this, true);
 		CL loader = getLoader();
 
 		// First add the plugin-specific paths from their path: directives
@@ -2842,5 +2842,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return parent.isInteractive();
 		}
 		return false;
+	}
+
+	@Override
+	public Parameters getParameters(String key, boolean allowDuplicates) {
+		return new Parameters(get(key), this, allowDuplicates);
 	}
 }
