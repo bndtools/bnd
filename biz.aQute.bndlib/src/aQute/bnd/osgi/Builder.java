@@ -407,8 +407,8 @@ public class Builder extends Analyzer {
 	@Override
 	public void analyze() throws Exception {
 		super.analyze();
-		cleanupVersion(getImports(), null);
-		cleanupVersion(getExports(), getVersion());
+		cleanupVersion(getImports(), null, Constants.IMPORT_PACKAGE);
+		cleanupVersion(getExports(), getVersion(), Constants.EXPORT_PACKAGE);
 		String version = getProperty(BUNDLE_VERSION);
 		if (version != null) {
 			version = cleanupVersion(version);
@@ -446,6 +446,10 @@ public class Builder extends Analyzer {
 	}
 
 	public void cleanupVersion(Packages packages, String defaultVersion) {
+		cleanupVersion(packages, defaultVersion, "external");
+	}
+
+	public void cleanupVersion(Packages packages, String defaultVersion, String what) {
 		if (defaultVersion != null) {
 			Matcher m = Verifier.VERSION.matcher(defaultVersion);
 			if (m.matches()) {
@@ -454,10 +458,28 @@ public class Builder extends Analyzer {
 					.toStringWithoutQualifier();
 			}
 		}
+		Set<String> visited = new HashSet<>();
+
 		for (Map.Entry<PackageRef, Attrs> entry : packages.entrySet()) {
+
+			String packageName = Processor.removeDuplicateMarker(entry.getKey().fqn);
+
 			Attrs attributes = entry.getValue();
 			String v = attributes.get(Constants.VERSION_ATTRIBUTE);
 			if (v == null && defaultVersion != null) {
+
+				if (visited.contains(packageName)) {
+
+					SetLocation warning = warning(
+						"%s duplicate package name (%s) that uses the default version because no version is specified (%s). Remove duplicate package or add an explicit version to it.",
+						what, packageName, defaultVersion);
+					try {
+						getHeader(Constants.EXPORT_PACKAGE, entry.getKey().fqn);
+					} catch (Exception e) {
+						// not so important
+					}
+				}
+
 				if (!isTrue(getProperty(Constants.NODEFAULTVERSION))) {
 					v = defaultVersion;
 					if (isPedantic())
@@ -469,6 +491,7 @@ public class Builder extends Analyzer {
 			}
 			if (v != null)
 				attributes.put(Constants.VERSION_ATTRIBUTE, cleanupVersion(v));
+			visited.add(packageName);
 		}
 	}
 
