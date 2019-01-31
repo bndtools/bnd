@@ -50,6 +50,25 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * There shouldn't be "Duplicate name..." warnings with pedantic flag set to
+	 * true #2803 https://github.com/bndtools/bnd/issues/2803
+	 * 
+	 * @throws Exception
+	 */
+
+	public void testNoDuplicateWarningForHeadersThatAllowDuplicates() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setPedantic(true);
+			b.addClasspath(IO.getFile("bin_test"));
+			b.set("Export-Package", "a;version=1,a;version=2");
+			b.set("Require-Capability", "ns;filter:='(foo=1)',ns;filter:='(foo=2)',ns;filter:='(foo=1)'");
+			b.set("Provide-Capability", "ns;foo=1,ns;foo=2");
+			Jar build = b.build();
+			b.check();
+		}
+	}
+
+	/**
 	 * Duplicate Export-Package clause exports second and later package with
 	 * bundle version #2864 https://github.com/bndtools/bnd/issues/2864
 	 */

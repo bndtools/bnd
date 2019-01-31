@@ -94,7 +94,7 @@ public class OSGiHeader {
 				// add a number of "~" to make it unique.
 				for (String clauseName : aliases) {
 					if (result.containsKey(clauseName)) {
-						if (logger != null && logger.isPedantic())
+						if (logger != null && logger.isPedantic() && !result.allowDuplicateAttributes())
 							logger.warning(
 								"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
 								clauseName, value);

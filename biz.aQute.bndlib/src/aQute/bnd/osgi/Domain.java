@@ -188,6 +188,10 @@ public abstract class Domain implements Iterable<String> {
 		return new Parameters(get(key));
 	}
 
+	public Parameters getParameters(String key, boolean allowDuplicates) {
+		return new Parameters(get(key), null, allowDuplicates);
+	}
+
 	public Parameters getParameters(String key, String deflt) {
 		return new Parameters(get(key, deflt));
 	}
@@ -205,7 +209,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public Parameters getExportPackage() {
-		return getParameters(EXPORT_PACKAGE);
+		return getParameters(EXPORT_PACKAGE, true);
 	}
 
 	public Parameters getBundleClassPath() {
@@ -230,7 +234,7 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public Parameters getExportContents() {
-		return getParameters(EXPORT_CONTENTS);
+		return getParameters(EXPORT_CONTENTS, true);
 	}
 
 	public String getBundleActivator() {
@@ -428,11 +432,11 @@ public abstract class Domain implements Iterable<String> {
 	}
 
 	public Parameters getRequireCapability() {
-		return getParameters(Constants.REQUIRE_CAPABILITY);
+		return getParameters(Constants.REQUIRE_CAPABILITY, true);
 	}
 
 	public Parameters getProvideCapability() {
-		return getParameters(Constants.PROVIDE_CAPABILITY);
+		return getParameters(Constants.PROVIDE_CAPABILITY, true);
 	}
 
 	public static Domain domain(File file) throws IOException {

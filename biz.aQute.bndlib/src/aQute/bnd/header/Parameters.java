@@ -27,11 +27,15 @@ public class Parameters implements Map<String, Attrs> {
 	}
 
 	public Parameters(String header) {
-		this(header, null);
+		this(header, null, false);
 	}
 
 	public Parameters(String header, Reporter reporter) {
-		this(false);
+		this(header, reporter, false);
+	}
+
+	public Parameters(String header, Reporter reporter, boolean duplicates) {
+		this(duplicates);
 		OSGiHeader.parseHeader(header, reporter, this);
 	}
 
