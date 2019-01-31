@@ -18,17 +18,13 @@
 			<artifactId>osgi.core</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>osgi.enroute.junit.wrapper</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.osgi</groupId>
-			<artifactId>osgi.enroute.hamcrest.wrapper</artifactId>
+			<groupId>biz.aQute.bnd</groupId>
+			<artifactId>biz.aQute.junit</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.apache.felix.framework</artifactId>
-      <scope>runtime</scope>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 
