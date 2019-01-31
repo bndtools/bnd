@@ -50,6 +50,21 @@ import aQute.service.reporter.Report.Location;
 public class BuilderTest extends BndTestCase {
 
 	/**
+	 * Duplicate Export-Package clause exports second and later package with
+	 * bundle version #2864 https://github.com/bndtools/bnd/issues/2864
+	 */
+
+	public void testDuplicateExportPackageClauseExportsSecondAndLaterPackageWithBundleVersion() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setBundleVersion("20");
+			b.set("Export-Package", "a;version=1,a");
+			Jar build = b.build();
+			assertTrue(b.check("Export-Package duplicate package name \\(a\\) that uses the default version"));
+		}
+	}
+
+	/**
 	 * Test the detection of usage of old components: Invalid Service-Component
 	 * header
 	 */
