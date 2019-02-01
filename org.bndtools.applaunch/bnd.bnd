@@ -1,0 +1,9 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/cnf/includes/bndtools.bnd
+
+-buildpath: \
+	osgi.annotation;version=latest;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
+	org.eclipse.osgi
+
+Bundle-Activator: org.bndtools.applaunch.Activator
