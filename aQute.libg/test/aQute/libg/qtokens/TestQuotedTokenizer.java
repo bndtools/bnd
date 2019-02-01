@@ -90,6 +90,15 @@ public class TestQuotedTokenizer extends TestCase {
 		assertEquals("'y", s);
 	}
 
+	public void testRetainQuotes() {
+		QuotedTokenizer qt = new QuotedTokenizer(" \" foo \", 'bar' ", ",", false, true);
+		assertThat(qt.nextToken()).isEqualTo("\" foo \"");
+		assertThat(qt.nextToken()).isEqualTo("'bar'");
+		qt = new QuotedTokenizer(" \" foo \", 'bar' ", ",", false, false);
+		assertThat(qt.nextToken()).isEqualTo(" foo ");
+		assertThat(qt.nextToken()).isEqualTo("bar");
+	}
+
 	public void testLongEscapedQuote() {
 		QuotedTokenizer qt = new QuotedTokenizer(
 			"\"{\\\":configurator:resource-version\\\": 1, \\\":configurator:version\\\":\\\"1\\\", \\\":configurator:symbolic-name\\\":\\\"dummy\\\", \\\"org.apache.aries.rsa.discovery.zookeeper\\\" : {}, \\\"org.apache.aries.rsa.discovery.zookeeper.server\\\" : {}}\",'{\":configurator:resource-version\": 1, \":configurator:version\":\"1\", \":configurator:symbolic-name\":\"dummy\", \"org.apache.aries.rsa.discovery.zookeeper\" : {}, \"org.apache.aries.rsa.discovery.zookeeper.server\" : {}}'",
