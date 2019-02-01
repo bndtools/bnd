@@ -6,7 +6,7 @@
 	osgi.cmpn;version=@4;maven-scope=provided,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest;maven-scope=provided,\
-    ${replace;${list;junit};$;\\;maven-scope=provided}
+    ${replacelist;${list;junit};$;\\;maven-scope=provided}
 
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 

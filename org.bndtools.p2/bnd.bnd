@@ -27,7 +27,7 @@ gittag: ${first;${system-allow-fail;git describe --abbrev=0},${base.version}.DEV
 
 other: org.slf4j.api
 
-plugins: ${map;repo;${replace;${-dependson},${other};$;\\\\\\;latest}}
+plugins: ${map;repo;${replacelist;${-dependson},${other};$;\\\\\\;latest}}
 
 -includeresource: ${target}/p2
 -resourceonly: true
