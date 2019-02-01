@@ -1,5 +1,7 @@
 package aQute.lib.strings;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import junit.framework.TestCase;
 
 public class StringsTest extends TestCase {
@@ -43,5 +45,23 @@ public class StringsTest extends TestCase {
 		assertEquals("a", Strings.trim("  a\n\r"));
 		assertEquals("a", Strings.trim("\r\n\r\na\t\f\n\r"));
 		assertEquals("a b", Strings.trim("\r\n\r\na b\t\f\n\r"));
+	}
+
+	public void testSplit() {
+		assertThat(Strings.split("  a,  b ,,c  ")).containsSequence("a", "b", "c");
+		assertThat(Strings.split("  a; version=\"[1,2)\",  'b' ,,c  ")).containsSequence("a; version=\"[1", "2)\"",
+			"'b'", "c");
+		assertThat(Strings.splitAsStream("  a,  b ,,c  ")).containsSequence("a", "b", "c");
+		assertThat(Strings.splitAsStream("  a; version=\"[1,2)\",  'b' ,,c  ")).containsSequence("a; version=\"[1",
+			"2)\"", "'b'", "c");
+	}
+
+	public void testSplitQuoted() {
+		assertThat(Strings.splitQuoted("  a,  b ,,c  ")).containsSequence("a", "b", "c");
+		assertThat(Strings.splitQuoted("  a; version=\"[1,2)\",  'b' ,,\"c\"  "))
+			.containsSequence("a; version=\"[1,2)\"", "'b'", "\"c\"");
+		assertThat(Strings.splitQuotedAsStream("  a,  b ,,c  ")).containsSequence("a", "b", "c");
+		assertThat(Strings.splitQuotedAsStream("  a; version=\"[1,2)\",  'b' ,,\"c\"  "))
+			.containsSequence("a; version=\"[1,2)\"", "'b'", "\"c\"");
 	}
 }

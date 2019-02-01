@@ -412,7 +412,7 @@ public class Macro {
 	public String _uniq(String[] args) {
 		verifyCommand(args, _uniqHelp, null, 1, Integer.MAX_VALUE);
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.distinct()
 			.collect(Strings.joining());
 		return result;
@@ -428,9 +428,9 @@ public class Macro {
 		if (args.length < 2) {
 			return "";
 		}
-		List<String> result = Strings.split(args[1]);
+		List<String> result = Strings.splitQuoted(args[1]);
 		if (args.length > 2) {
-			result.removeAll(Strings.split(args[2]));
+			result.removeAll(Strings.splitQuoted(args[2]));
 		}
 		return Strings.join(result);
 	}
@@ -445,8 +445,8 @@ public class Macro {
 		if (args.length < 3) {
 			return "";
 		}
-		List<String> result = Strings.split(args[1]);
-		result.retainAll(Strings.split(args[2]));
+		List<String> result = Strings.splitQuoted(args[1]);
+		result.retainAll(Strings.splitQuoted(args[2]));
 		return Strings.join(result);
 	}
 
@@ -482,7 +482,7 @@ public class Macro {
 		verifyCommand(args, String.format(_filterHelp, args[0]), null, 3, 3);
 
 		Pattern pattern = Pattern.compile(args[2]);
-		String result = Strings.splitAsStream(args[1])
+		String result = Strings.splitQuotedAsStream(args[1])
 			.filter(s -> pattern.matcher(s)
 				.matches() != include)
 			.collect(Strings.joining());
@@ -494,7 +494,7 @@ public class Macro {
 	public String _sort(String[] args) {
 		verifyCommand(args, _sortHelp, null, 2, Integer.MAX_VALUE);
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.sorted()
 			.collect(Strings.joining());
 		return result;
@@ -540,7 +540,7 @@ public class Macro {
 		verifyCommand(args, _sjoinHelp, null, 2, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 2, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collectors.joining(args[1]));
 		return result;
 	}
@@ -595,7 +595,7 @@ public class Macro {
 		verifyCommand(args, _fmodifiedHelp, null, 2, Integer.MAX_VALUE);
 
 		long time = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.map(File::new)
 			.filter(File::exists)
 			.mapToLong(File::lastModified)
@@ -633,7 +633,7 @@ public class Macro {
 
 		String result = Arrays.stream(args, 1, args.length)
 			.map(domain::getProperty)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.map(element -> (element.indexOf(';') < 0) ? element
 				: SEMICOLON_P.matcher(element)
 					.replaceAll(ESCAPED_SEMICOLON))
@@ -641,21 +641,16 @@ public class Macro {
 		return result;
 	}
 
-	private final static Pattern	SIMPLE_LIST_SPLITTER	= Pattern.compile("\\s*,\\s*");
 	static final String _replaceHelp = "${replace;<list>;<regex>;[<replace>[;delimiter]]}";
 
 	public String _replace(String[] args) {
-		/* TODO Change after a build cycle when we can use replacelist in our
-		* own build
-		return replace0(_replaceHelp, SIMPLE_LIST_SPLITTER::splitAsStream, args);
-		*/
 		return replace0(_replaceHelp, Strings::splitAsStream, args);
 	}
 
 	static final String _replacelistHelp = "${replacelist;<list>;<regex>;[<replace>[;delimiter]]}";
 
 	public String _replacelist(String[] args) {
-		return replace0(_replacelistHelp, Strings::splitAsStream, args);
+		return replace0(_replacelistHelp, Strings::splitQuotedAsStream, args);
 	}
 
 	private String replace0(String help, Function<String, Stream<String>> splitter, String[] args) {
@@ -877,7 +872,7 @@ public class Macro {
 		Collections.addAll(files, array);
 		List<String> result = new ArrayList<>(files.size());
 		Arrays.stream(args, 2, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.map(Instruction::new)
 			.forEachOrdered(ins -> {
 				for (Iterator<File> iter = files.iterator(); iter.hasNext();) {
@@ -1351,7 +1346,7 @@ public class Macro {
 
 	public String _path(String[] args) {
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collectors.joining(File.pathSeparator));
 		return result;
 	}
@@ -1361,7 +1356,7 @@ public class Macro {
 	public int _size(String[] args) {
 		verifyCommand(args, _sizeHelp, null, 1, Integer.MAX_VALUE);
 		long size = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.count();
 		return (int) size;
 	}
@@ -1568,7 +1563,7 @@ public class Macro {
 
 	private List<String> toList(String[] args, int startInclusive, int endExclusive) {
 		List<String> list = Arrays.stream(args, startInclusive, endExclusive)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collectors.toList());
 		return list;
 	}
@@ -1578,7 +1573,7 @@ public class Macro {
 	public String _first(String[] args) throws Exception {
 		verifyCommand(args, _firstHelp, null, 1, Integer.MAX_VALUE);
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.findFirst()
 			.orElse("");
 		return result;
@@ -1590,7 +1585,7 @@ public class Macro {
 		verifyCommand(args, _lastHelp, null, 1, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.reduce((first, second) -> second)
 			.orElse("");
 		return result;
@@ -1602,7 +1597,7 @@ public class Macro {
 		verifyCommand(args, _maxHelp, null, 2, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.max(String::compareTo)
 			.orElse("");
 		return result;
@@ -1614,7 +1609,7 @@ public class Macro {
 		verifyCommand(args, _minHelp, null, 2, Integer.MAX_VALUE);
 
 		String result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.min(String::compareTo)
 			.orElse("");
 		return result;
@@ -1664,7 +1659,7 @@ public class Macro {
 		verifyCommand(args, _sumHelp, null, 2, Integer.MAX_VALUE);
 
 		double result = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.mapToDouble(Double::parseDouble)
 			.average()
 			.orElseThrow(() -> new IllegalArgumentException("No members in list to calculate average"));
@@ -1677,7 +1672,7 @@ public class Macro {
 		verifyCommand(args, _reverseHelp, null, 2, Integer.MAX_VALUE);
 
 		Deque<String> reversed = Arrays.stream(args, 1, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collector.of(ArrayDeque::new, (deq, t) -> deq.addFirst(t), (d1, d2) -> {
 				d2.addAll(d1);
 				return d2;
@@ -2013,7 +2008,7 @@ public class Macro {
 		verifyCommand(args, _mapHelp, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		String result = Arrays.stream(args, 2, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.map(s -> process("${" + macro + SEMICOLON + s + "}"))
 			.collect(Strings.joining());
 		return result;
@@ -2045,7 +2040,7 @@ public class Macro {
 		verifyCommand(args, _applyHelp, null, 2, Integer.MAX_VALUE);
 		String macro = args[1];
 		String result = Arrays.stream(args, 2, args.length)
-			.flatMap(Strings::splitAsStream)
+			.flatMap(Strings::splitQuotedAsStream)
 			.collect(Collectors.joining(SEMICOLON, "${" + macro + SEMICOLON, "}"));
 		return process(result);
 	}
