@@ -17,6 +17,7 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.http.URLCache;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.progress.ProgressPlugin;
@@ -61,6 +62,15 @@ public class HttpClientTest extends TestCase {
 			second = true;
 		}
 
+		public String _cheshire(Request rq, Response rsp) throws Exception {
+			if (second) {
+				rsp.code = 404;
+				return "404";
+			} else {
+				rsp.code = 200;
+				return "ok";
+			}
+		}
 	}
 
 	@Override
@@ -79,6 +89,7 @@ public class HttpClientTest extends TestCase {
 		tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
 		tmp.mkdirs();
+		httpServer.second = false;
 	}
 
 	public void testHttpsVerification() throws Exception {
@@ -145,6 +156,35 @@ public class HttpClientTest extends TestCase {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	public void testClearCacheOn404() throws Exception {
+		try (HttpClient hc = new HttpClient();) {
+			hc.setCache(tmp);
+			URLCache cache = hc.cache();
+
+			URI cheshire = httpServer.getBaseURI("cheshire");
+			assertThat(cache.isCached(cheshire)).isFalse();
+
+			TaggedData tag = hc.build()
+				.useCache()
+				.asTag()
+				.go(cheshire);
+			assertNotNull(tag);
+			assertEquals(200, tag.getResponseCode());
+
+			assertThat(cache.isCached(cheshire)).isTrue();
+
+			httpServer.second = true;
+
+			tag = hc.build()
+				.useCache()
+				.asTag()
+				.go(cheshire);
+			assertNotNull(tag);
+			assertEquals(404, tag.getResponseCode());
+			assertThat(cache.isCached(cheshire)).isFalse();
 		}
 	}
 

@@ -197,4 +197,8 @@ public class URLCache {
 		return exists;
 	}
 
+	public boolean isCached(URI url) throws Exception {
+		return getCacheFileFor(url).isFile();
+	}
+
 }

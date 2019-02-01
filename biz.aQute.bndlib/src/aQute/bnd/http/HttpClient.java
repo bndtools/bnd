@@ -78,8 +78,8 @@ public class HttpClient implements Closeable, URLConnector {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 	// These are not in HttpURLConnection
-	private static final int					HTTP_TEMPORARY_REDIRECT	= 307;											// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
-	private static final int					HTTP_PERMANENT_REDIRECT	= 308;											// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
+	private static final int					HTTP_TEMPORARY_REDIRECT	= 307;					// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
+	private static final int					HTTP_PERMANENT_REDIRECT	= 308;					// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
 
 	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
 	private final List<URLConnectionHandler>	connectionHandlers		= new ArrayList<>();
@@ -253,16 +253,22 @@ public class HttpClient implements Closeable, URLConnector {
 					}
 
 					TaggedData in = send0(request);
-					if (in.getState() == State.UPDATED) {
 
-						//
-						// update the cache from the input stream
-						//
+					if (in.getState() == State.NOT_FOUND) {
+						cache.clear(request.url.toURI());
 
-						info.update(in.getInputStream(), in.getTag(), in.getModified());
-					} else if (in.getState() == State.UNMODIFIED)
-						info.jsonFile.setLastModified(System.currentTimeMillis());
+					} else {
 
+						if (in.getState() == State.UPDATED) {
+
+							//
+							// update the cache from the input stream
+							//
+
+							info.update(in.getInputStream(), in.getTag(), in.getModified());
+						} else if (in.getState() == State.UNMODIFIED)
+							info.jsonFile.setLastModified(System.currentTimeMillis());
+					}
 					return in;
 
 				} else {
