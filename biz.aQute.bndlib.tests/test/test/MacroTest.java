@@ -994,7 +994,7 @@ public class MacroTest extends TestCase {
 			Properties p = new Properties();
 			p.setProperty("l1", "1;version=\"[1.1,2)\",,2;version=1.2");
 			p.setProperty("l2", "3;version=1.3,");
-			p.setProperty("x", "${replace;${list;l1;l2};$;\\;maven-scope=provided}");
+			p.setProperty("x", "${replacelist;${list;l1;l2};$;\\;maven-scope=provided}");
 			builder.setProperties(p);
 			assertEquals(
 				"1;version=\"[1.1,2)\";maven-scope=provided,2;version=1.2;maven-scope=provided,3;version=1.3;maven-scope=provided",
@@ -1114,6 +1114,14 @@ public class MacroTest extends TestCase {
 		Macro m = new Macro(p);
 		assertEquals("xa0y,xb0y,xc0y,xd0y", m.process("${replace;${specs};([^\\s]+);x$1y}"));
 		assertEquals("a,b,c,d", m.process("${replace;${specs};0}"));
+	}
+
+	public void testReplaceString() {
+		Processor p = new Processor();
+		p.setProperty("json", "[{\"key1\": \"value\"}, {\"key2\": \"value\"}, {\"key\": \"value\"}]");
+		Macro m = new Macro(p);
+		assertEquals("[{\"name1key\": \"value\"}, {\"name2key\": \"value\"}, {\"key\": \"value\"}]",
+			m.process("${replacestring;${json};key(\\d);name$1key}"));
 	}
 
 	public void testToClassName() {
