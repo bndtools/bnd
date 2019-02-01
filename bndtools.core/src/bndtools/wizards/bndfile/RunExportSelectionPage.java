@@ -12,6 +12,7 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.wizard.IWizardNode;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -85,6 +86,10 @@ public class RunExportSelectionPage extends WizardSelectionPage {
         });
 
         viewer.setInput(elements);
+
+        if (elements.length > 0) {
+            viewer.setSelection(new StructuredSelection(elements[0]));
+        }
     }
 
 }
