@@ -9,6 +9,7 @@ import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
 
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -78,8 +79,8 @@ public class HttpClient implements Closeable, URLConnector {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 	// These are not in HttpURLConnection
-	private static final int					HTTP_TEMPORARY_REDIRECT	= 307;											// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
-	private static final int					HTTP_PERMANENT_REDIRECT	= 308;											// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
+	private static final int					HTTP_TEMPORARY_REDIRECT	= 307;					// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/307
+	private static final int					HTTP_PERMANENT_REDIRECT	= 308;					// https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/308
 
 	private final List<ProxyHandler>			proxyHandlers			= new ArrayList<>();
 	private final List<URLConnectionHandler>	connectionHandlers		= new ArrayList<>();
@@ -240,10 +241,6 @@ public class HttpClient implements Closeable, URLConnector {
 					// server
 					//
 
-					//
-					// Use etag if present, otherwise time of file
-					//
-
 					if (info.dto.etag != null)
 						request.ifNoneMatch(info.getETag());
 					else {
@@ -252,19 +249,21 @@ public class HttpClient implements Closeable, URLConnector {
 							request.ifModifiedSince(time + 1);
 					}
 
-					TaggedData in = send0(request);
-					if (in.getState() == State.UPDATED) {
+					TaggedData tag = send0(request);
+					switch (tag.getState()) {
+						default :
+						case OTHER :
+						case NOT_FOUND :
+							return tag;
 
-						//
-						// update the cache from the input stream
-						//
+						case UPDATED :
+							update(info, tag);
+							return tag;
 
-						info.update(in.getInputStream(), in.getTag(), in.getModified());
-					} else if (in.getState() == State.UNMODIFIED)
-						info.jsonFile.setLastModified(System.currentTimeMillis());
-
-					return in;
-
+						case UNMODIFIED :
+							info.jsonFile.setLastModified(System.currentTimeMillis());
+							return tag;
+					}
 				} else {
 					return new TaggedData(request.url.toURI(), HTTP_NOT_MODIFIED, info.file);
 				}
@@ -283,11 +282,32 @@ public class HttpClient implements Closeable, URLConnector {
 				}
 
 				TaggedData in = send0(request);
+				switch (in.getState()) {
+					case OTHER :
+					case NOT_FOUND :
+						return in;
 
-				if (in.isOk()) {
-					info.update(in.getInputStream(), in.getTag(), in.getModified());
+					case UNMODIFIED : // cannot happen
+						return in;
+
+					case UPDATED :
+						update(info, in); // consumes the InputStream!
+						return new TaggedData(in.getConnection(), new FileInputStream(info.file), info.file);
 				}
 				return in;
+			}
+		}
+	}
+
+	/*
+	 * Update the info in the cache with the new stream
+	 */
+	private void update(Info info, TaggedData in) throws Exception, IOException {
+		if (in.getConnection() instanceof HttpURLConnection) {
+			HttpURLConnection con = (HttpURLConnection) in.getConnection();
+			if ("get".equalsIgnoreCase(con.getRequestMethod())) {
+				if (!in.isTemporaryRedirected())
+					info.update(in.getInputStream(), in.getTag(), in.getModified());
 			}
 		}
 	}
@@ -516,11 +536,43 @@ public class HttpClient implements Closeable, URLConnector {
 			if (code == HTTP_MOVED_TEMP || code == HTTP_MOVED_PERM || code == HTTP_SEE_OTHER
 				|| code == HTTP_TEMPORARY_REDIRECT || code == HTTP_PERMANENT_REDIRECT) {
 				if (request.redirects-- > 0) {
+
+					boolean temporaryRedirected = code == HTTP_MOVED_TEMP || code == HTTP_TEMPORARY_REDIRECT;
+
 					String location = hcon.getHeaderField("Location");
-					request.url = new URL(request.url, location);
-					task.done("Redirected " + code + " " + location, null);
-					return send0(request);
+					if (location == null) {
+						return new TaggedData(request.url.toURI(), code, null);
+					}
+
+					URL url = new URL(request.url, location);
+					TaggedData tag = build().useCache()
+						.maxRedirects(request.redirects)
+						.headers(request.headers)
+						.asTag()
+						.go(url);
+
+					switch (tag.getState()) {
+						case NOT_FOUND :
+							return new TaggedData(request.url.toURI(), 404, null);
+
+						default :
+						case OTHER :
+							return new TaggedData(request.url.toURI(), tag.getResponseCode(), null);
+
+						case UNMODIFIED :
+							return new TaggedData(request.url.toURI(), tag.getResponseCode(), tag.getFile());
+
+						case UPDATED :
+							return new TaggedData(tag.getConnection(), tag.getInputStream(), tag.getFile(),
+								temporaryRedirected);
+					}
+				} else {
+					return new TaggedData(request.url.toURI(), 310, null);
 				}
+			}
+
+			if (code == HttpURLConnection.HTTP_NOT_FOUND) {
+				cache.clear(request.url.toURI());
 			}
 
 			if (isUpdateInfo(con, request, code)) {
@@ -557,6 +609,12 @@ public class HttpClient implements Closeable, URLConnector {
 		} catch (SocketTimeoutException ste) {
 			task.done(ste.toString(), null);
 			return new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
+		} catch (ProtocolException e) {
+			if (e.getMessage()
+				.contains("redirected"))
+				return new TaggedData(request.url.toURI(), 310, request.useCacheFile);
+			else
+				return new TaggedData(request.url.toURI(), 500, null);
 		}
 	}
 

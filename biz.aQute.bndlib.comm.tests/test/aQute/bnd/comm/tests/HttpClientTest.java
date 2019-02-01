@@ -17,6 +17,7 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.http.URLCache;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.progress.ProgressPlugin;
@@ -61,6 +62,26 @@ public class HttpClientTest extends TestCase {
 			second = true;
 		}
 
+		public String _cheshire(Request rq, Response rsp) throws Exception {
+			if (second) {
+				rsp.code = 404;
+				return "404";
+			} else {
+				rsp.code = 200;
+				return "ok";
+			}
+		}
+
+		public String _tmpredirect(Request rq, Response rsp) throws Exception {
+			rsp.code = HttpURLConnection.HTTP_MOVED_TEMP;
+			rsp.headers.put("Location", getBaseURI().resolve("constant")
+				.toString());
+			return "ok";
+		}
+
+		public String _constant(Request rq, Response rsp) {
+			return "ok";
+		}
 	}
 
 	@Override
@@ -79,6 +100,7 @@ public class HttpClientTest extends TestCase {
 		tmp = IO.getFile("generated/tmp");
 		IO.delete(tmp);
 		tmp.mkdirs();
+		httpServer.second = false;
 	}
 
 	public void testHttpsVerification() throws Exception {
@@ -147,6 +169,57 @@ public class HttpClientTest extends TestCase {
 			}
 		}
 	}
+
+	public void testClearCacheOn404() throws Exception {
+		try (HttpClient hc = new HttpClient();) {
+			hc.setCache(tmp);
+			URLCache cache = hc.cache();
+
+			URI cheshire = httpServer.getBaseURI("cheshire");
+			assertThat(cache.isCached(cheshire)).isFalse();
+
+			TaggedData tag = hc.build()
+				.useCache()
+				.asTag()
+				.go(cheshire);
+			assertNotNull(tag);
+			assertEquals(200, tag.getResponseCode());
+
+			assertThat(cache.isCached(cheshire)).isTrue();
+
+			httpServer.second = true;
+
+			tag = hc.build()
+				.useCache()
+				.asTag()
+				.go(cheshire);
+			assertNotNull(tag);
+			assertEquals(404, tag.getResponseCode());
+			assertThat(cache.isCached(cheshire)).isFalse();
+		}
+	}
+
+	// this test case is ok but the http server we use (nano)
+	// does not recognize the tmp redirect (302) and turns it into
+	// 200 :-( Need see if we can update the nano server
+
+	// public void testNotCachedOnTempRedirect() throws Exception {
+	// try (HttpClient hc = new HttpClient();) {
+	// hc.setCache(tmp);
+	// URLCache cache = hc.cache();
+	//
+	// URI url = httpServer.getBaseURI("tmpredirect");
+	// assertThat(cache.isCached(url)).isFalse();
+	//
+	// TaggedData tag = hc.build()
+	// .useCache()
+	// .asTag()
+	// .go(url);
+	// assertNotNull(tag);
+	// assertEquals(200, tag.getResponseCode());
+	// assertThat(cache.isCached(url)).isFalse();
+	// }
+	// }
 
 	public void testCancel() throws Exception {
 		final long deadline = System.currentTimeMillis() + 1000L;
@@ -257,7 +330,7 @@ public class HttpClientTest extends TestCase {
 		try (HttpClient hc = new HttpClient();) {
 			TaggedData tag = hc.build()
 				.get(TaggedData.class)
-				.go(httpServer.getBaseURI("redirect/3/200"));
+				.go(httpServer.getBaseURI("redirect/2/200"));
 			assertNotNull(tag);
 			assertEquals(200, tag.getResponseCode());
 		}
@@ -279,7 +352,7 @@ public class HttpClientTest extends TestCase {
 				.maxRedirects(3)
 				.get(TaggedData.class)
 				.go(httpServer.getBaseURI("redirect/200/200"));
-			assertEquals(3, tag.getResponseCode() / 100);
+			assertEquals(310, tag.getResponseCode());
 		}
 	}
 

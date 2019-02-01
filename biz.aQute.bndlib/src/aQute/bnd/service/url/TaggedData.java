@@ -29,6 +29,7 @@ public class TaggedData implements Closeable {
 	private final URI			url;
 	private final File			file;
 	private final String		message;
+	private final boolean		temporaryRedirected;
 
 	@Deprecated
 	public TaggedData(String tag, InputStream inputStream, int responseCode, long modified, URI url) {
@@ -50,7 +51,12 @@ public class TaggedData implements Closeable {
 	}
 
 	public TaggedData(URLConnection con, InputStream in, File file) throws Exception {
+		this(con, in, file, false);
+	}
+
+	public TaggedData(URLConnection con, InputStream in, File file, boolean temporaryRedirected) throws Exception {
 		this.con = con;
+		this.temporaryRedirected = temporaryRedirected;
 		this.responseCode = con instanceof HttpURLConnection ? ((HttpURLConnection) con).getResponseCode()
 			: (in != null ? 200 : -1);
 		this.in = in == null && con != null && (responseCode / 100 == 2) ? con.getInputStream() : in;
@@ -165,6 +171,7 @@ public class TaggedData implements Closeable {
 		this.responseCode = responseCode;
 		this.url = url;
 		this.message = null;
+		this.temporaryRedirected = false;
 	}
 
 	/**
@@ -237,6 +244,10 @@ public class TaggedData implements Closeable {
 
 	public boolean isNotFound() {
 		return responseCode == 404;
+	}
+
+	public boolean isTemporaryRedirected() {
+		return temporaryRedirected;
 	}
 
 	public File getFile() {
