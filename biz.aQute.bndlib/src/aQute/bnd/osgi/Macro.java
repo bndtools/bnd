@@ -43,6 +43,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.script.Bindings;
 import javax.script.ScriptContext;
@@ -640,25 +641,45 @@ public class Macro {
 		return result;
 	}
 
+	private final static Pattern	SIMPLE_LIST_SPLITTER	= Pattern.compile("\\s*,\\s*");
 	static final String _replaceHelp = "${replace;<list>;<regex>;[<replace>[;delimiter]]}";
 
-	/**
-	 * replace ; <list> ; regex ; replace
-	 *
-	 * @param args
-	 */
-	public String _replace(String args[]) {
-		verifyCommand(args, _replaceHelp, null, 3, 5);
+	public String _replace(String[] args) {
+		/* TODO Change after a build cycle when we can use replacelist in our
+		* own build
+		return replace0(_replaceHelp, SIMPLE_LIST_SPLITTER::splitAsStream, args);
+		*/
+		return replace0(_replaceHelp, Strings::splitAsStream, args);
+	}
 
+	static final String _replacelistHelp = "${replacelist;<list>;<regex>;[<replace>[;delimiter]]}";
+
+	public String _replacelist(String[] args) {
+		return replace0(_replacelistHelp, Strings::splitAsStream, args);
+	}
+
+	private String replace0(String help, Function<String, Stream<String>> splitter, String[] args) {
+		verifyCommand(args, help, null, 3, 5);
 		Pattern regex = Pattern.compile(args[2]);
 		String replace = (args.length > 3) ? args[3] : "";
 		Collector<CharSequence, ?, String> joining = (args.length > 4) ? Collectors.joining(args[4])
 			: Strings.joining();
 
-		String result = Strings.splitAsStream(args[1])
+		String result = splitter.apply(args[1])
 			.map(element -> regex.matcher(element)
 				.replaceAll(replace))
 			.collect(joining);
+		return result;
+	}
+
+	static final String _replacestringHelp = "${replacesting;<target>;<regex>;[<replace>]}";
+
+	public String _replacestring(String[] args) {
+		verifyCommand(args, _replacestringHelp, null, 3, 4);
+		Pattern regex = Pattern.compile(args[2]);
+		String replace = (args.length > 3) ? args[3] : "";
+		String result = regex.matcher(args[1])
+			.replaceAll(replace);
 		return result;
 	}
 
