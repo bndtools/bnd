@@ -116,7 +116,8 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
     }
 
     @Override
-    public void dispose() {}
+    public void dispose() {
+    }
 
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
@@ -276,13 +277,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
          * then we need to create a background job that will call list() and once it is finished, we tell the Viewer to
          * refresh this node and the next time this method gets called the 'results' will be available in the cache
          */
-        Map<String, Object[]> listResults = repoPluginListResults.get(repoPlugin);
-
-        if (listResults == null) {
-            listResults = new HashMap<>();
-
-            repoPluginListResults.put(repoPlugin, listResults);
-        }
+        Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin, p -> new HashMap<>());
 
         result = listResults.get(wildcardFilter);
 
@@ -310,7 +305,7 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
                             jobresult[i++] = new RepositoryBundle(repoPlugin, bsn);
                         }
 
-                        Map<String, Object[]> listResults = repoPluginListResults.get(repoPlugin);
+                        Map<String, Object[]> listResults = repoPluginListResults.computeIfAbsent(repoPlugin, p -> new HashMap<>());
                         listResults.put(wildcardFilter, jobresult);
 
                         Display.getDefault()
@@ -332,12 +327,13 @@ public class RepositoryTreeContentProvider implements ITreeContentProvider {
             // wait 100 ms and see if the job will complete fast (likely already cached)
             try {
                 Thread.sleep(100);
-            } catch (InterruptedException e) {}
+            } catch (InterruptedException e) {
+            }
 
             IStatus status = job.getResult();
 
             if (status != null && status.isOK()) {
-                Map<String, Object[]> fastResults = repoPluginListResults.get(repoPlugin);
+                Map<String, Object[]> fastResults = repoPluginListResults.computeIfAbsent(repoPlugin, p -> new HashMap<>());
                 result = fastResults.get(wildcardFilter);
             } else {
                 Object[] loading = new Object[] {
