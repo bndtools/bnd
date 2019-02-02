@@ -64,7 +64,7 @@ baseline:   aQute.libg,\
         location="${workspace}/cnf/cache/stable/EclipseM2EDeps/index.xml",\
      aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
         name="Baseline";\
-        revision="${replace;${baseline};.+;biz.aQute.bnd:$0:${baseline.version}}";\
+        revision="${replacelist;${baseline};.+;biz.aQute.bnd:$0:${baseline.version}}";\
         releaseUrls="${mavencentral}";\
         location="${workspace}/cnf/cache/stable/Baseline/index.xml"
 

@@ -16,18 +16,28 @@ public class QuotedTokenizer implements Iterable<String> {
 	private final String	string;
 	private final String	separators;
 	private final boolean	returnTokens;
+	private final boolean	retainQuotes;
 	private int				index	= 0;
 	private String			peek;
 	private char			separator;
 
-	public QuotedTokenizer(String string, String separators, boolean returnTokens) {
+	public QuotedTokenizer(String string, String separators, boolean returnTokens, boolean retainQuotes) {
 		this.string = requireNonNull(string, "string argument must be not null");
 		this.separators = requireNonNull(separators, "separators argument must be not null");
 		this.returnTokens = returnTokens;
+		this.retainQuotes = retainQuotes;
+	}
+
+	public QuotedTokenizer(String string, String separators, boolean returnTokens) {
+		this(string, separators, returnTokens, false);
 	}
 
 	public QuotedTokenizer(String string, String separators) {
 		this(string, separators, false);
+	}
+
+	private QuotedTokenizer copy() {
+		return new QuotedTokenizer(string, separators, returnTokens, retainQuotes);
 	}
 
 	@Override
@@ -105,14 +115,14 @@ public class QuotedTokenizer implements Iterable<String> {
 	}
 
 	private void quotedString(StringBuilder sb, char quote) {
-		boolean embedded = sb.length() != 0;
-		if (embedded) {
+		boolean retain = retainQuotes || (sb.length() != 0);
+		if (retain) {
 			sb.append(quote);
 		}
 		while (index < string.length()) {
 			char c = string.charAt(index++);
 			if (c == quote) {
-				if (embedded) {
+				if (retain) {
 					sb.append(quote);
 				}
 				break;
@@ -141,7 +151,7 @@ public class QuotedTokenizer implements Iterable<String> {
 	}
 
 	public Stream<String> stream() {
-		return stream(new QuotedTokenizer(string, separators, returnTokens));
+		return stream(copy());
 	}
 
 	private static Stream<String> stream(QuotedTokenizer qt) {
@@ -150,7 +160,7 @@ public class QuotedTokenizer implements Iterable<String> {
 
 	@Override
 	public Spliterator<String> spliterator() {
-		return spliterator(new QuotedTokenizer(string, separators, returnTokens));
+		return spliterator(copy());
 	}
 
 	private static Spliterator<String> spliterator(QuotedTokenizer qt) {
@@ -170,7 +180,7 @@ public class QuotedTokenizer implements Iterable<String> {
 
 	@Override
 	public Iterator<String> iterator() {
-		return iterator(new QuotedTokenizer(string, separators, returnTokens));
+		return iterator(copy());
 	}
 
 	private static Iterator<String> iterator(QuotedTokenizer qt) {

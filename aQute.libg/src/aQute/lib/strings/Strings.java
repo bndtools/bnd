@@ -137,23 +137,42 @@ public class Strings {
 		return s.substring(start, end);
 	}
 
+	public static boolean notEmpty(String s) {
+		return !s.isEmpty();
+	}
+
+	private final static Pattern SIMPLE_LIST_SPLITTER = Pattern.compile("\\s*,\\s*");
+
 	public static Stream<String> splitAsStream(String s) {
-		if (s == null || (s = s.trim()).isEmpty())
+		if ((s == null) || (s = s.trim()).isEmpty()) {
 			return Stream.empty();
-		return new QuotedTokenizer(s, COMMA).stream()
-			.filter(element -> !element.isEmpty());
+		}
+		return SIMPLE_LIST_SPLITTER.splitAsStream(s)
+			.filter(Strings::notEmpty);
 	}
 
 	public static List<String> split(String s) {
 		return splitAsStream(s).collect(toList());
 	}
 
+	public static Stream<String> splitQuotedAsStream(String s) {
+		if ((s == null) || (s = s.trim()).isEmpty()) {
+			return Stream.empty();
+		}
+		return new QuotedTokenizer(s, COMMA, false, true).stream()
+			.filter(Strings::notEmpty);
+	}
+
+	public static List<String> splitQuoted(String s) {
+		return splitQuotedAsStream(s).collect(toList());
+	}
+
 	public static List<String> split(String regex, String s) {
-		if (s == null || (s = s.trim()).isEmpty())
+		if ((s == null) || (s = s.trim()).isEmpty())
 			return new ArrayList<>();
 		return Pattern.compile(regex)
 			.splitAsStream(s)
-			.filter(element -> !element.isEmpty())
+			.filter(Strings::notEmpty)
 			.collect(toList());
 	}
 

@@ -55,7 +55,7 @@ Export-Package: \
 Import-Package: junit.framework;resolution:=optional,\
 	org.osgi.service.repository,\
 	org.osgi.service.log,\
-	${replace;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\
+	${replacelist;${retainall;${packages;CONDITIONAL};${packages;NAMED;org.osgi.*}};$;\\;provide:=false},\
 	*
 
 -includeresource: ${workspace}/LICENSE, img/=img/, {readme.md}
