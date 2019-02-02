@@ -10,7 +10,7 @@
 	org.jtwig:jtwig-core;version=latest,\
 	org.apache.commons.lang3;version=latest,\
 	org.parboiled:parboiled-java;version=latest,\
-	com.google.guava;version=18.0,\
+	com.google.guava;version="[18.0,19)",\
 	org.jtwig:jtwig-reflection;version=latest,\
 	com.googlecode.concurrentlinkedhashmap.lru;version=latest,\
 	org.objectweb.asm;version=latest,\
