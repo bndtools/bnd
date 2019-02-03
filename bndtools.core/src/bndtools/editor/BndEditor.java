@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.api.ResolveMode;
+import org.bndtools.api.RunMode;
 import org.bndtools.core.jobs.JobUtil;
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.core.resolve.ResolveJob;
@@ -100,7 +101,6 @@ import bndtools.editor.pages.TestSuitesPage;
 import bndtools.editor.pages.WorkspacePage;
 import bndtools.launch.LaunchConstants;
 import bndtools.launch.util.LaunchUtils;
-import bndtools.launch.util.LaunchUtils.Mode;
 import bndtools.preferences.BndPreferences;
 import bndtools.types.Pair;
 
@@ -589,7 +589,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
 
     private Promise<Workspace> loadEditModel() throws Exception {
         // Create the bnd edit model and workspace
-        Project bndProject = LaunchUtils.createRun(inputResource, Mode.EDIT);
+        Project bndProject = LaunchUtils.createRun(inputResource, RunMode.EDIT);
         model.setWorkspace(bndProject.getWorkspace());
         model.setProject(bndProject);
 

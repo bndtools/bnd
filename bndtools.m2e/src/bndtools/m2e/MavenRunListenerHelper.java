@@ -60,6 +60,27 @@ public interface MavenRunListenerHelper {
         return false;
     }
 
+    default boolean hasBndMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+        return projectFacade.getMojoExecutions("biz.aQute.bnd", "bnd-maven-plugin", new NullProgressMonitor(), "bnd-process")
+            .stream()
+            .findFirst()
+            .isPresent();
+    }
+
+    default boolean hasBndResolverMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+        return projectFacade.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", new NullProgressMonitor(), "resolve")
+            .stream()
+            .findFirst()
+            .isPresent();
+    }
+
+    default boolean hasBndTestingMavenPlugin(IMavenProjectFacade projectFacade) throws CoreException {
+        return projectFacade.getMojoExecutions("biz.aQute.bnd", "bnd-testing-maven-plugin", new NullProgressMonitor(), "testing")
+            .stream()
+            .findFirst()
+            .isPresent();
+    }
+
     default boolean isOffline() {
         try {
             return maven.getSettings()

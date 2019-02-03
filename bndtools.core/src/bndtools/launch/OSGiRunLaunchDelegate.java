@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.api.RunMode;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -92,6 +93,11 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
             }
         });
         bndLauncher.prepare();
+    }
+
+    @Override
+    protected RunMode getRunMode() {
+        return RunMode.LAUNCH;
     }
 
     @Override
