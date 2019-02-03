@@ -306,12 +306,10 @@ public class TemplateSelectionWizardPage extends WizardPage {
                         label = String.format("Template Loader service ID " + templateLoaderSvcRef.getProperty(Constants.SERVICE_ID));
 
                     TemplateLoader templateLoader = context.getService(templateLoaderSvcRef);
-                    try {
-                        Promise<? extends Collection<Template>> promise = templateLoader.findTemplates(templateType, new Processor());
-                        promises.add(new Pair<String, Promise<? extends Collection<Template>>>(label, promise));
-                    } finally {
-                        context.ungetService(templateLoaderSvcRef);
-                    }
+
+                    Promise<? extends Collection<Template>> promise = templateLoader.findTemplates(templateType, new Processor());
+                    promise.onResolve(() -> context.ungetService(templateLoaderSvcRef));
+                    promises.add(new Pair<String, Promise<? extends Collection<Template>>>(label, promise));
                 }
 
                 // Force the promises in sequence
