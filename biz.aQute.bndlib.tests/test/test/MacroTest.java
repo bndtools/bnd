@@ -1,8 +1,12 @@
 package test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
+import java.util.function.Predicate;
 import java.util.jar.Manifest;
 
 import aQute.bnd.osgi.Analyzer;
@@ -11,6 +15,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Macro;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import junit.framework.TestCase;
 
 @SuppressWarnings("resource")
@@ -935,23 +940,37 @@ public class MacroTest extends TestCase {
 	}
 
 	/**
-	 * Test the wc function
+	 * Test the lsa/lsr macros
 	 */
+	public void testLs() throws IOException {
+		String cwdPrefix = IO.absolutePath(new File("")) + "/";
+		Predicate<String> absolute = s -> s.startsWith(cwdPrefix);
+		try (Processor p = new Processor()) {
+			Macro macro = p.getReplacer();
+			List<String> a = Strings.split(macro.process("${lsr;test/test;*.java}"));
+			assertThat(a).contains("MacroTest.java", "ManifestTest.java")
+				.doesNotContain("bnd.info", "com.acme")
+				.noneMatch(absolute);
 
-	public void testWc() {
-		Processor p = new Processor();
-		Macro macro = new Macro(p);
-		String a = macro.process("${lsr;test/test;*.java}");
-		assertTrue(a.contains("MacroTest.java"));
-		assertTrue(a.contains("ManifestTest.java"));
-		assertFalse(a.contains("bnd.info"));
-		assertFalse(a.contains("com.acme"));
-		assertFalse(a.contains("test/test/MacroTest.java"));
-		assertFalse(a.contains("test/test/ManifestTest.java"));
+			List<String> b = Strings.split(macro.process("${lsr;test/test}"));
+			assertThat(b).contains("MacroTest.java", "ManifestTest.java", "bnd.info", "com.acme")
+				.noneMatch(absolute);
 
-		String b = macro.process("${lsa;test/test;*.java}");
-		assertTrue(b.contains("test/test/MacroTest.java"));
-		assertTrue(b.contains("test/test/ManifestTest.java"));
+			List<String> c = Strings.split(macro.process("${lsa;test/test;*.java}"));
+			assertThat(c)
+			.contains(IO.absolutePath(new File("test/test/MacroTest.java")),
+				IO.absolutePath(new File("test/test/ManifestTest.java")))
+			.doesNotContain(IO.absolutePath(new File("test/test/bnd.info")),
+					IO.absolutePath(new File("test/test/com.acme")))
+				.allMatch(absolute);
+
+			List<String> d = Strings.split(macro.process("${lsa;test/test}"));
+			assertThat(d)
+			.contains(IO.absolutePath(new File("test/test/MacroTest.java")),
+				IO.absolutePath(new File("test/test/ManifestTest.java")),
+				IO.absolutePath(new File("test/test/bnd.info")), IO.absolutePath(new File("test/test/com.acme")))
+				.allMatch(absolute);
+		}
 	}
 
 	/**

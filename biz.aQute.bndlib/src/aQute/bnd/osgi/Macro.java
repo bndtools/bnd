@@ -835,42 +835,50 @@ public class Macro {
 		return sdf.format(new Date(now));
 	}
 
-	/**
-	 * Wildcard a directory. The lists can contain Instruction that are matched
-	 * against the given directory ${lsr;<dir>;<list>(;<list>)*} ${lsa;<dir>;
-	 * <list>(;<list>)*}
-	 *
-	 * @author aqute
-	 */
+	static final String _lsrHelp = "${lsr;<dir>;[<selector>...]}";
 
 	public String _lsr(String[] args) {
-		return ls(args, true);
+		return ls(_lsrHelp, args, true);
 	}
+
+	static final String _lsaHelp = "${lsa;<dir>;[<selector>...]}";
 
 	public String _lsa(String[] args) {
-		return ls(args, false);
+		return ls(_lsaHelp, args, false);
 	}
 
-	String ls(String[] args, boolean relative) {
-		if (args.length < 2)
-			throw new IllegalArgumentException("the ${ls} macro must at least have a directory as parameter");
+	private String ls(String help, String[] args, boolean relative) {
+		verifyCommand(args, help, null, 2, Integer.MAX_VALUE);
 
 		File dir = domain.getFile(args[1]);
 		if (!dir.isAbsolute())
-			throw new IllegalArgumentException("the ${ls} macro directory parameter is not absolute: " + dir);
+			throw new IllegalArgumentException(
+				String.format("the ${%s} macro directory parameter is not absolute: %s", args[0], dir));
 
 		if (!dir.exists())
-			throw new IllegalArgumentException("the ${ls} macro directory parameter does not exist: " + dir);
+			throw new IllegalArgumentException(
+				String.format("the ${%s} macro directory parameter does not exist: %s", args[0], dir));
 
 		if (!dir.isDirectory())
 			throw new IllegalArgumentException(
-				"the ${ls} macro directory parameter points to a file instead of a directory: " + dir);
+				String.format("the ${%s} macro directory parameter points to a file instead of a directory: %s",
+					args[0], dir));
 
 		File[] array = dir.listFiles();
+		if ((array == null) || (array.length == 0)) {
+			return "";
+		}
 		Arrays.sort(array);
+		Function<File, String> mapper = relative ? File::getName : IO::absolutePath;
+		if (args.length < 3) {
+			String result = Arrays.stream(array)
+				.map(mapper)
+				.collect(Strings.joining());
+			return result;
+		}
 		List<File> files = new LinkedList<>();
 		Collections.addAll(files, array);
-		List<String> result = new ArrayList<>(files.size());
+		List<String> result = new ArrayList<>(array.length);
 		Arrays.stream(args, 2, args.length)
 			.flatMap(Strings::splitQuotedAsStream)
 			.map(Instruction::new)
@@ -880,7 +888,7 @@ public class Macro {
 					if (ins.matches(file.getPath())) {
 						iter.remove();
 						if (!ins.isNegated()) {
-							result.add(relative ? file.getName() : IO.absolutePath(file));
+							result.add(mapper.apply(file));
 						}
 					}
 				}
@@ -1002,10 +1010,11 @@ public class Macro {
 	 * </pre>
 	 */
 
-	static Pattern	RANGE_MASK		= Pattern.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
-	static String	_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
+	static final Pattern	RANGE_MASK		= Pattern
+		.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
+	static final String		_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
 		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
-	static Pattern	_rangePattern[]	= new Pattern[] {
+	static final Pattern	_rangePattern[]	= new Pattern[] {
 		null, RANGE_MASK
 	};
 
@@ -1495,8 +1504,8 @@ public class Macro {
 		return string.substring(start, end);
 	}
 
-	static String	_randHelp	= "${rand;[<min>[;<end>]]}";
-	static Random	random	= new Random();
+	static final String	_randHelp	= "${rand;[<min>[;<end>]]}";
+	static final Random	random		= new Random();
 
 	public long _rand(String[] args) throws Exception {
 		verifyCommand(args, _randHelp, null, 2, 3);
