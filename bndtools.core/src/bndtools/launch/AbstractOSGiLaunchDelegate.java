@@ -9,6 +9,7 @@ import java.util.logging.Level;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.api.RunMode;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
@@ -35,7 +36,6 @@ import aQute.bnd.build.Run;
 import bndtools.Plugin;
 import bndtools.StatusCode;
 import bndtools.launch.util.LaunchUtils;
-import bndtools.launch.util.LaunchUtils.Mode;
 import bndtools.preferences.BndPreferences;
 
 public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
@@ -50,6 +50,8 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
     protected abstract void initialiseBndLauncher(ILaunchConfiguration configuration, Project model) throws Exception;
 
     protected abstract IStatus getLauncherStatus();
+
+    protected abstract RunMode getRunMode();
 
     @Override
     public boolean preLaunchCheck(ILaunchConfiguration configuration, String mode, IProgressMonitor monitor) throws CoreException {
@@ -130,7 +132,7 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         boolean result = !prefs.getBuildBeforeLaunch() || super.buildForLaunch(configuration, mode, monitor);
 
         try {
-            run = LaunchUtils.createRun(configuration, Mode.LAUNCH);
+            run = LaunchUtils.createRun(configuration, getRunMode());
 
             initialiseBndLauncher(configuration, run);
         } catch (Exception e) {

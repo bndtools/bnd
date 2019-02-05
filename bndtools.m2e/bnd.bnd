@@ -20,6 +20,7 @@
 	org.apache.maven:maven-settings,\
 	org.codehaus.plexus:plexus-utils,\
 	org.eclipse.aether.api,\
+	org.eclipse.core.expressions,\
 	org.eclipse.core.jobs,\
 	org.eclipse.core.resources,\
 	org.eclipse.core.runtime,\
@@ -36,10 +37,10 @@ Bundle-SymbolicName: bndtools.m2e; singleton:=true
 Bundle-ActivationPolicy: lazy
 
 Import-Package: \
- org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
- org.codehaus.plexus.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
- ${eclipse.importpackage},\
- *
+	org.apache.maven.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
+	org.codehaus.plexus.*;bundle-symbolic-name="${@bundlesymbolicname}";bundle-version="${range;[==,+);${@bundleversion}}";version=!,\
+	${eclipse.importpackage},\
+	*
 
 -conditionalpackage: aQute.lib*;-split-package:=first
 

@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
+import org.bndtools.api.RunMode;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -29,7 +30,6 @@ import aQute.bnd.build.Container.TYPE;
 import aQute.bnd.build.Run;
 import bndtools.central.Central;
 import bndtools.launch.util.LaunchUtils;
-import bndtools.launch.util.LaunchUtils.Mode;
 
 public class BndDependencySourceContainer extends CompositeSourceContainer {
     private static final ILogger logger = Logger.getLogger(BndDependencySourceContainer.class);
@@ -77,7 +77,7 @@ public class BndDependencySourceContainer extends CompositeSourceContainer {
                 LaunchUtils.endRun(lastRun);
             }
 
-            Run run = LaunchUtils.createRun(config, Mode.SOURCES);
+            Run run = LaunchUtils.createRun(config, RunMode.SOURCES);
             if (run != null) {
                 Collection<Container> runbundles = run.getRunbundles();
                 for (Container runbundle : runbundles) {

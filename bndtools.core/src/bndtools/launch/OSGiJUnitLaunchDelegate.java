@@ -6,6 +6,7 @@ import java.text.MessageFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.bndtools.api.RunMode;
 import org.bndtools.utils.osgi.BundleUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -72,6 +73,11 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
             handler.handleStatus(junitStatus, null);
 
         return result;
+    }
+
+    @Override
+    protected RunMode getRunMode() {
+        return RunMode.TEST;
     }
 
     @Override

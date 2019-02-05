@@ -48,8 +48,20 @@ import org.osgi.service.component.annotations.Reference;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Packages;
+import bndtools.launch.JUnitShortcut;
 
 public class BndConfigurator extends AbstractProjectConfigurator {
+
+    protected final static Class<JUnitShortcut> shortcutClazz;
+    static {
+        /*
+         * The class JUnitShortcut is loaded here because: a) this class is loaded immediately to active the
+         * bndtools.m2e integration b) other bndtools.m2e extensions instruct Eclipse to add shortcuts using this type
+         * provided by bndtools.core and only referred to in the plugin.xml. This reference causes the import to be
+         * added to bndtools.m2e so that this process works.
+         */
+        shortcutClazz = JUnitShortcut.class;
+    }
 
     ILogger logger = Logger.getLogger(BndConfigurator.class);
 
@@ -104,7 +116,8 @@ public class BndConfigurator extends AbstractProjectConfigurator {
     }
 
     @Override
-    public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {}
+    public void configure(ProjectConfigurationRequest request, IProgressMonitor monitor) throws CoreException {
+    }
 
     @Override
     public AbstractBuildParticipant getBuildParticipant(final IMavenProjectFacade projectFacade, MojoExecution execution, IPluginExecutionMetadata executionMetadata) {

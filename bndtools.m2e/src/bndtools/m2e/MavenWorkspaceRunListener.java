@@ -1,12 +1,12 @@
 package bndtools.m2e;
 
 import org.bndtools.api.RunListener;
+import org.bndtools.api.RunMode;
 import org.eclipse.core.resources.IResource;
 import org.osgi.service.component.annotations.Component;
 
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
-import bndtools.launch.util.LaunchUtils.Mode;
 
 @Component
 public class MavenWorkspaceRunListener implements MavenRunListenerHelper, RunListener {
@@ -21,7 +21,9 @@ public class MavenWorkspaceRunListener implements MavenRunListenerHelper, RunLis
 
         Workspace workspace = run.getWorkspace();
 
-        if (Mode.getMode(run) == Mode.LAUNCH) {
+        RunMode runMode = RunMode.get(run);
+
+        if ((runMode == RunMode.LAUNCH) || (runMode == RunMode.TEST)) {
             MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
 
             if (repo == null) {
@@ -43,7 +45,9 @@ public class MavenWorkspaceRunListener implements MavenRunListenerHelper, RunLis
 
         Workspace workspace = run.getWorkspace();
 
-        if (Mode.getMode(run) == Mode.LAUNCH) {
+        RunMode runMode = RunMode.get(run);
+
+        if ((runMode == RunMode.LAUNCH) || (runMode == RunMode.TEST)) {
             MavenWorkspaceRepository repo = workspace.getPlugin(MavenWorkspaceRepository.class);
 
             if (repo != null) {
