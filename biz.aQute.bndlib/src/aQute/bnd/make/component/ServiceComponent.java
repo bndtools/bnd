@@ -201,7 +201,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 
 			TypeRef implRef = analyzer.getTypeRefFromFQN(impl);
 			// Check if such a class exists
-			analyzer.referTo(implRef);
+			analyzer.nonClassReferTo(implRef);
 
 			boolean designate = designate(name, info.get(COMPONENT_DESIGNATE), false)
 				|| designate(name, info.get(COMPONENT_DESIGNATEFACTORY), true);
@@ -238,7 +238,7 @@ public class ServiceComponent implements AnalyzerPlugin {
 				TypeRef ref = analyzer.getTypeRefFromFQN(c);
 				Clazz clazz = analyzer.findClass(ref);
 				if (clazz != null) {
-					analyzer.referTo(ref);
+					analyzer.nonClassReferTo(ref);
 					MetaTypeReader r = new MetaTypeReader(clazz, analyzer);
 					r.setDesignate(name, factory);
 					String rname = "OSGI-INF/metatype/" + name + ".xml";

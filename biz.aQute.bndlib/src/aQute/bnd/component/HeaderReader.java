@@ -294,7 +294,7 @@ public class HeaderReader extends Processor {
 				String interfaceName = st.nextToken();
 				TypeRef ref = analyzer.getTypeRefFromFQN(interfaceName);
 				provide.add(ref);
-				analyzer.referTo(ref);
+				analyzer.nonClassReferTo(ref);
 
 				// TODO verifies the impl. class extends or implements the
 				// interface
@@ -475,7 +475,7 @@ public class HeaderReader extends Processor {
 				target = m.group(2);
 			}
 			TypeRef ref = analyzer.getTypeRefFromFQN(interfaceName);
-			analyzer.referTo(ref);
+			analyzer.nonClassReferTo(ref);
 			ReferenceDef rd = new ReferenceDef(null);
 			rd.name = referenceName;
 			rd.service = interfaceName;

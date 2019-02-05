@@ -22,6 +22,8 @@ import static aQute.lib.exceptions.PredicateWithException.asPredicate;
  */
 import static aQute.libg.generics.Create.list;
 import static aQute.libg.generics.Create.map;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -131,6 +133,7 @@ public class Analyzer extends Processor {
 		AnalyzerMessages.class);
 	private AnnotationHeaders						annotationHeaders;
 	private Set<PackageRef>							packagesVisited			= new HashSet<>();
+	private Set<PackageRef>							nonClassReferences		= new HashSet<>();
 	private Set<Check>								checks;
 
 	public enum Check {
@@ -190,6 +193,7 @@ public class Analyzer extends Processor {
 			classpathExports.clear();
 			contracts.clear();
 			packagesVisited.clear();
+			nonClassReferences.clear();
 
 			// Parse all the class in the
 			// the jar according to the OSGi bcp
@@ -1776,78 +1780,46 @@ public class Analyzer extends Processor {
 	 * Not clear anymore ...
 	 */
 	Packages doExportsToImports(Packages exports) {
-
 		// private packages = contained - exported.
 		Set<PackageRef> privatePackages = new HashSet<>(contained.keySet());
 		privatePackages.removeAll(exports.keySet());
 
 		// private references = ∀ p : contained packages | uses(p)
-		Set<PackageRef> containedReferences = newSet();
-		for (PackageRef p : contained.keySet()) {
-			Collection<PackageRef> uses = this.uses.get(p);
-			if (uses != null)
-				containedReferences.addAll(uses);
-		}
+		Set<PackageRef> containedReferences = contained.keySet()
+			.stream()
+			.map(uses::get)
+			.filter(Objects::nonNull)
+			.flatMap(List::stream)
+			.collect(toSet());
+		// #2876 Add non-class references such as DS xml.
+		containedReferences.addAll(nonClassReferences);
 
 		// Assume we are going to import all exported packages
-		Set<PackageRef> toBeImported = new HashSet<>(exports.keySet());
-
-		// Remove packages that are not referenced locally
-		toBeImported.retainAll(containedReferences);
-
-		// Not necessary to import anything that is already
-		// imported in the Import-Package statement.
-		// TODO toBeImported.removeAll(imports.keySet());
-
-		// Remove exported packages that are referring to
-		// private packages.
-		// Each exported package has a uses clause. We just use
-		// the used packages for each exported package to find out
-		// if it refers to an internal package.
-		//
-
-		for (Iterator<PackageRef> i = toBeImported.iterator(); i.hasNext();) {
-			PackageRef next = i.next();
-			Collection<PackageRef> usedByExportedPackage = this.uses.get(next);
-
-			// We had an NPE on usedByExportedPackage in GF.
-			// I guess this can happen with hard coded
-			// imports that do not match reality ...
-			if (usedByExportedPackage == null || usedByExportedPackage.isEmpty()) {
-				continue;
-			}
-
-			for (PackageRef privatePackage : privatePackages) {
-				if (usedByExportedPackage.contains(privatePackage)) {
-					i.remove();
-					break;
+		Packages result = exports.keySet()
+			.stream()
+			// Remove packages that are not referenced locally
+			.filter(containedReferences::contains)
+			// Remove exported packages that are referring to
+			// private packages.
+			// Each exported package has a uses clause. We just use
+			// the used packages for each exported package to find out
+			// if it refers to an internal package.
+			.filter(p -> {
+				List<PackageRef> used = uses.get(p);
+				return (used == null) || used.isEmpty() || privatePackages.stream()
+					.noneMatch(used::contains);
+			})
+			// Remove packages with -noimport:=true
+			.filter(p -> {
+				Attrs parameters = exports.get(p);
+				if (parameters == null) {
+					return true;
 				}
-			}
-		}
-
-		// Clean up attributes and generate result map
-		Packages result = new Packages();
-		for (PackageRef ep : toBeImported) {
-			Attrs parameters = exports.get(ep);
-
-			String noimport = parameters == null ? null : parameters.get(NO_IMPORT_DIRECTIVE);
-			if (noimport != null && noimport.equalsIgnoreCase("true"))
-				continue;
-
-			// // we can't substitute when there is no version
-			// String version = parameters.get(VERSION_ATTRIBUTE);
-			// if (version == null) {
-			// if (isPedantic())
-			// warning(
-			// "Cannot automatically import exported package %s because it has
-			// no version defined",
-			// ep);
-			// continue;
-			// }
-
-			parameters = new Attrs();
-			result.put(ep, parameters);
-		}
+				String noimport = parameters.get(NO_IMPORT_DIRECTIVE);
+				return !Boolean.parseBoolean(noimport);
+			})
+			// Clean up attributes and generate result map
+			.collect(toMap(p -> p, p -> new Attrs(), (a1, a2) -> a1, Packages::new));
 		return result;
 	}
 
@@ -3057,6 +3029,12 @@ public class Analyzer extends Processor {
 		PackageRef pack = ref.getPackageRef();
 		if (!referred.containsKey(pack))
 			referred.put(pack, new Attrs());
+	}
+
+	public void nonClassReferTo(TypeRef ref) {
+		referTo(ref);
+		PackageRef pack = ref.getPackageRef();
+		nonClassReferences.add(pack);
 	}
 
 	public void referToByBinaryName(String binaryClassName) {
