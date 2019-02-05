@@ -11,6 +11,7 @@ import aQute.bnd.component.annotations.ReferencePolicy;
 import aQute.bnd.component.annotations.ReferencePolicyOption;
 import aQute.bnd.component.annotations.ReferenceScope;
 import aQute.bnd.osgi.Analyzer;
+import aQute.bnd.osgi.Descriptors.TypeRef;
 import aQute.bnd.osgi.Verifier;
 import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.ExtensionDef;
@@ -73,6 +74,9 @@ class ReferenceDef extends ExtensionDef {
 
 		if (service == null) {
 			analyzer.error("No interface specified on %s", name);
+		} else {
+			TypeRef ref = analyzer.getTypeRefFromFQN(service);
+			analyzer.nonClassReferTo(ref);
 		}
 
 		if (scope != null || field != null) {

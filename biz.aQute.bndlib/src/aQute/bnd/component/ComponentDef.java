@@ -110,14 +110,14 @@ class ComponentDef extends ExtensionDef {
 			return;
 		}
 
-		analyzer.referTo(implementation);
+		analyzer.nonClassReferTo(implementation);
 
 		if (name == null)
 			name = implementation.getFQN();
 
 		if (service != null && service.length > 0) {
 			for (TypeRef interfaceName : service)
-				analyzer.referTo(interfaceName);
+				analyzer.nonClassReferTo(interfaceName);
 		} else if (scope != null && scope != ServiceScope.BUNDLE)
 			analyzer.warning("The servicefactory:=true directive is set but no service is provided, ignoring it");
 

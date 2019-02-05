@@ -133,6 +133,7 @@ public class Analyzer extends Processor {
 		AnalyzerMessages.class);
 	private AnnotationHeaders						annotationHeaders;
 	private Set<PackageRef>							packagesVisited			= new HashSet<>();
+	private Set<PackageRef>							nonClassReferences		= new HashSet<>();
 	private Set<Check>								checks;
 
 	public enum Check {
@@ -192,6 +193,7 @@ public class Analyzer extends Processor {
 			classpathExports.clear();
 			contracts.clear();
 			packagesVisited.clear();
+			nonClassReferences.clear();
 
 			// Parse all the class in the
 			// the jar according to the OSGi bcp
@@ -1789,6 +1791,8 @@ public class Analyzer extends Processor {
 			.filter(Objects::nonNull)
 			.flatMap(List::stream)
 			.collect(toSet());
+		// #2876 Add non-class references such as DS xml.
+		containedReferences.addAll(nonClassReferences);
 
 		// Assume we are going to import all exported packages
 		Packages result = exports.keySet()
@@ -3025,6 +3029,12 @@ public class Analyzer extends Processor {
 		PackageRef pack = ref.getPackageRef();
 		if (!referred.containsKey(pack))
 			referred.put(pack, new Attrs());
+	}
+
+	public void nonClassReferTo(TypeRef ref) {
+		referTo(ref);
+		PackageRef pack = ref.getPackageRef();
+		nonClassReferences.add(pack);
 	}
 
 	public void referToByBinaryName(String binaryClassName) {

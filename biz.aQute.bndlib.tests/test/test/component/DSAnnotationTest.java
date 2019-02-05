@@ -55,6 +55,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -120,14 +121,34 @@ public class DSAnnotationTest extends BndTestCase {
 
 			if (!b.check())
 				fail();
-			String reqcap = jar.getManifest()
-				.getMainAttributes()
-				.getValue(Constants.REQUIRE_CAPABILITY);
-			Parameters reqs = new Parameters(reqcap);
+			Domain domain = Domain.domain(jar.getManifest());
+			Parameters exportPackages = domain.getExportPackage();
+			assertThat(exportPackages).isEmpty();
+			Parameters importPackages = domain.getImportPackage();
+			assertThat(importPackages).doesNotContainKeys("test.component.ds14");
+			Parameters reqs = domain.getRequireCapability();
 			System.out.println(reqs);
 			assertThat(reqs).containsOnlyKeys("osgi.extender", "osgi.ee");
 			assertThat(reqs.get("osgi.extender")).containsOnlyKeys("filter:");
 			checkExtenderVersion(reqs, ComponentConstants.COMPONENT_SPECIFICATION_VERSION);
+		}
+	}
+
+	// #2876
+	public void testExportComponentImplPackage() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.ds14.*");
+			b.setProperty("Export-Package", "test.component.ds14");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Domain domain = Domain.domain(jar.getManifest());
+			Parameters exportPackages = domain.getExportPackage();
+			assertThat(exportPackages).containsOnlyKeys("test.component.ds14");
+			Parameters importPackages = domain.getImportPackage();
+			assertThat(importPackages).containsKeys("test.component.ds14");
 		}
 	}
 	/**
