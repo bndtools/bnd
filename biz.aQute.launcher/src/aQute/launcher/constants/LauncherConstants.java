@@ -44,11 +44,12 @@ public class LauncherConstants {
 	final static String				LAUNCH_NAME					= "launch.name";
 	final static String				LAUNCH_NOREFERENCES			= "launch.noreferences";
 	final static String				LAUNCH_NOTIFICATION_PORT	= "launch.notificationPort";
+	final static String				LAUNCH_ACTIVATION_EAGER		= "launch.activation.eager";
 
 	public final static String[]	LAUNCHER_PROPERTY_KEYS		= {
 		LAUNCH_SERVICES, LAUNCH_STORAGE_DIR, LAUNCH_KEEP, LAUNCH_NOREFERENCES, LAUNCH_RUNBUNDLES, LAUNCH_SYSTEMPACKAGES,
 		LAUNCH_SYSTEMCAPABILITIES, LAUNCH_SYSTEMPACKAGES, LAUNCH_TRACE, LAUNCH_TIMEOUT, LAUNCH_ACTIVATORS,
-		LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT
+		LAUNCH_EMBEDDED, LAUNCH_NAME, LAUNCH_NOREFERENCES, LAUNCH_NOTIFICATION_PORT, LAUNCH_ACTIVATION_EAGER
 	};
 	/**
 	 * The command line arguments of the launcher. Launcher are not supposed to
@@ -71,6 +72,7 @@ public class LauncherConstants {
 	public boolean					embedded					= false;
 	public String					name;
 	public int						notificationPort			= -1;
+	public boolean					activationEager				= false;
 
 	/**
 	 * Translate a constants to properties.
@@ -94,6 +96,7 @@ public class LauncherConstants {
 			p.setProperty(LAUNCH_NAME, name);
 
 		p.setProperty(LAUNCH_NOTIFICATION_PORT, String.valueOf(notificationPort));
+		p.setProperty(LAUNCH_ACTIVATION_EAGER, activationEager + "");
 
 		for (Map.Entry<String, String> entry : runProperties.entrySet()) {
 			if (entry.getValue() == null) {
@@ -134,6 +137,7 @@ public class LauncherConstants {
 		embedded = s != null && Boolean.parseBoolean(s);
 		name = p.getProperty(LAUNCH_NAME);
 		notificationPort = Integer.valueOf(p.getProperty(LAUNCH_NOTIFICATION_PORT, "-1"));
+		activationEager = Boolean.valueOf(p.getProperty(LAUNCH_ACTIVATION_EAGER));
 		@SuppressWarnings({
 			"unchecked", "rawtypes"
 		})
