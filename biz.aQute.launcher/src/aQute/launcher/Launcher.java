@@ -514,11 +514,18 @@ public class Launcher implements ServiceListener {
 		// Add all bundles that we've tried to start but failed
 		all.addAll(wantsToBeStarted);
 
+		int startOptions = Bundle.START_ACTIVATION_POLICY;
+
+		// when activationEager remove start activation policy
+		if (parms.activationEager) {
+			startOptions &= ~Bundle.START_ACTIVATION_POLICY;
+		}
+
 		for (Bundle b : tobestarted) {
 			try {
 				trace("starting %s", b.getSymbolicName());
 				if (!isFragment(b))
-					b.start(Bundle.START_ACTIVATION_POLICY);
+					b.start(startOptions);
 				trace("started  %s", b.getSymbolicName());
 			} catch (BundleException e) {
 				wantsToBeStarted.add(b);
