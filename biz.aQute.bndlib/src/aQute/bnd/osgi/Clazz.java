@@ -511,11 +511,6 @@ public class Clazz {
 		}
 
 		@Override
-		public boolean isFinal() {
-			return super.isFinal() || Modifier.isFinal(classDef.getAccess());
-		}
-
-		@Override
 		public String getName() {
 			return name;
 		}
@@ -603,6 +598,11 @@ public class Clazz {
 
 		public boolean isConstructor() {
 			return name.equals("<init>") || name.equals("<clinit>");
+		}
+
+		@Override
+		public boolean isFinal() {
+			return super.isFinal() || Modifier.isFinal(classDef.getAccess());
 		}
 
 		@Override
