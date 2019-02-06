@@ -48,4 +48,6 @@ Import-Package: \
 
 -includeresource: \
 	lifecycle-mapping-metadata.xml,\
-	plugin.xml=_plugin.xml
+	plugin.xml=_plugin.xml,\
+	icons/bricks_junit.png=${workspace}/bndtools.core/resources/unprocessed/icons/bricks_junit.png,\
+	icons/bricks_run.png=${workspace}/bndtools.core/resources/unprocessed/icons/bricks_run.png

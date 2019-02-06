@@ -19,11 +19,16 @@
 	</extension>
 
 	<extension point="org.eclipse.core.expressions.propertyTesters">
-		<propertyTester id="bndtools.m2e.launchPropertyTester"
+		<propertyTester id="bndtools.m2e.launchPropertyTester.IJavaElement"
 			namespace="bndtools.m2e"
 			properties="isInBndMavenProject,isResolvableBndMavenProject,isTestableBndMavenProject"
 			class="bndtools.m2e.LaunchPropertyTester"
 			type="org.eclipse.jdt.core.IJavaElement"/>
+		<propertyTester id="bndtools.m2e.launchPropertyTester.IResource"
+			namespace="bndtools.m2e"
+			properties="isInBndMavenProject,isResolvableBndMavenProject,isTestableBndMavenProject"
+			class="bndtools.m2e.LaunchPropertyTester"
+			type="org.eclipse.core.resources.IResource"/>
 	</extension>
 
 	<!-- LAUNCH SHORTCUTS -->
@@ -38,33 +43,19 @@
 				path="bndtools.m2e.launch.core">
 			<contextualLaunch>
 				<enablement>
-				<and>
-					<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
-					<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.m2e.core.maven2Nature"/>
-					<test property="bndtools.m2e.isTestableBndMavenProject" forcePluginActivation="true" />
-					<with variable="selection">
-						<count value="1"/>
-						<iterate>
+				<with variable="selection">
+					<count value="1"/>
+					<iterate>
+						<adapt type="org.eclipse.jdt.core.IJavaElement">
+							<test property="bndtools.m2e.isTestableBndMavenProject" forcePluginActivation="true" />
+							<test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
 							<or>
-								<test property="org.eclipse.jdt.launching.isContainer"/>
-								<adapt type="org.eclipse.jdt.core.IJavaElement">
-									<test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
-									<or>
-										<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="org.junit.Test" />
-										<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
-									</or>
-								</adapt>
-								<and>
-									<instanceof value="org.eclipse.core.resources.IResource" />
-									<or>
-										<test property="org.eclipse.core.resources.name" value="bnd.bnd" />
-										<test property="org.eclipse.core.resources.extension" value="bndrun" />
-									</or>
-								</and>
+								<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="org.junit.Test" />
+								<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
 							</or>
-						</iterate>
-					</with>
-				</and>
+						</adapt>
+					</iterate>
+				</with>
 				</enablement>
 			</contextualLaunch>
 			<description
@@ -86,27 +77,14 @@
 				path="bndtools.m2e.launch.core">
 			<contextualLaunch>
 				<enablement>
-				<and>
-					<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
-					<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.m2e.core.maven2Nature"/>
-					<test property="bndtools.m2e.isResolvableBndMavenProject" forcePluginActivation="true" />
-					<with variable="selection">
-						<count value="1"/>
-						<iterate>
-							<or>
-								<test property="org.eclipse.jdt.launching.isContainer"/>
-								<adapt type="org.eclipse.jdt.core.IJavaElement" />
-								<and>
-									<instanceof value="org.eclipse.core.resources.IResource" />
-									<or>
-										<test property="org.eclipse.core.resources.name" value="bnd.bnd" />
-										<test property="org.eclipse.core.resources.extension" value="bndrun" />
-									</or>
-								</and>
-							</or>
-						</iterate>
-					</with>
-				</and>
+				<with variable="selection">
+					<count value="1"/>
+					<iterate>
+						<adapt type="org.eclipse.jdt.core.IJavaElement">
+							<test property="bndtools.m2e.isResolvableBndMavenProject" forcePluginActivation="true" />
+						</adapt>
+					</iterate>
+				</with>
 				</enablement>
 			</contextualLaunch>
 		</shortcut>
