@@ -5,7 +5,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.InetAddress;
 import java.net.URL;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -21,29 +20,25 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 
 public class JunitXmlReport implements TestReporter {
-	Tag				testsuite	= new Tag("testsuite");
-	Tag				testcase;
-	static String	hostname;
-	DateFormat		df			= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-	long			startTime;
-	long			testStartTime;
-	PrintWriter		out;
-	boolean			finished;
-	boolean			progress;
-	Bundle			bundle;
-	BasicTestReport	basic;
+	private static final SimpleDateFormat	sdf			= new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private final Tag						testsuite	= new Tag("testsuite");
+	private Tag								testcase;
+	private static String					hostname;
+	private long							startTime;
+	private long							testStartTime;
+	private final PrintWriter				out;
+	private boolean							finished;
+	private final BasicTestReport			basic;
 
 	public JunitXmlReport(Writer report, Bundle bundle, BasicTestReport basic) throws Exception {
 		if (hostname == null)
 			hostname = InetAddress.getLocalHost()
 				.getHostName();
 		out = new PrintWriter(report);
-		this.bundle = bundle;
 		this.basic = basic;
 	}
 
 	public void setProgress(boolean progress) {
-		this.progress = progress;
 	}
 
 	@Override
@@ -58,7 +53,11 @@ public class JunitXmlReport implements TestReporter {
 			testsuite.addAttribute("name", "test.run");
 
 		}
-		testsuite.addAttribute("timestamp", df.format(new Date()));
+		String timestamp;
+		synchronized (sdf) {
+			timestamp = sdf.format(new Date());
+		}
+		testsuite.addAttribute("timestamp", timestamp);
 		testsuite.addAttribute("framework", fw);
 		testsuite.addAttribute("framework-version", fw.getVersion());
 
@@ -110,7 +109,11 @@ public class JunitXmlReport implements TestReporter {
 			testsuite.addAttribute("errors", basic.getTestResult()
 				.errorCount());
 			testsuite.addAttribute("time", getFraction(System.currentTimeMillis() - startTime, 1000));
-			testsuite.addAttribute("timestamp", df.format(new Date()));
+			String timestamp;
+			synchronized (sdf) {
+				timestamp = sdf.format(new Date());
+			}
+			testsuite.addAttribute("timestamp", timestamp);
 			testsuite.print(0, out);
 			out.close();
 		}
