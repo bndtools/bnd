@@ -124,6 +124,15 @@ class ComponentDef extends ExtensionDef {
 		if (factory == null && (!factoryProperty.isEmpty() || !factoryProperties.isEmpty())) {
 			analyzer.error("The factoryProperty and/or factoryProperies elements are used on a non-factory component");
 		}
+
+		properties.stream()
+			.filter(p -> !analyzer.getJar()
+				.exists(p))
+			.forEach(p -> analyzer.warning("The properties entry \"%s\" is not found in the jar", p));
+		factoryProperties.stream()
+			.filter(p -> !analyzer.getJar()
+				.exists(p))
+			.forEach(p -> analyzer.warning("The factoryProperties entry \"%s\" is not found in the jar", p));
 	}
 
 	private void prepareVersion(Analyzer analyzer) throws Exception {

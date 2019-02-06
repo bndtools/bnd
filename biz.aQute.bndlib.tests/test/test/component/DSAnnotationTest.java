@@ -527,6 +527,7 @@ public class DSAnnotationTest extends BndTestCase {
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");
 		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.0.0");
 		b.setProperty("Private-Package", "test.component");
+		b.setProperty("-includeresource.resourceprops", "resource.props;literal=\"\"");
 		b.addClasspath(new File("bin_test"));
 
 		Jar jar = b.build();
@@ -2166,6 +2167,8 @@ public class DSAnnotationTest extends BndTestCase {
 		try (Builder b = new Builder()) {
 			b.setProperty(Constants.DSANNOTATIONS, "test.component.DSAnnotationTest$FactoryProperties");
 			b.setProperty("Private-Package", "test.component");
+			b.setProperty("-includeresource.factoryprops",
+				"factory.properties;literal=\"\"");
 			b.addClasspath(new File("bin_test"));
 
 			Jar jar = b.build();
