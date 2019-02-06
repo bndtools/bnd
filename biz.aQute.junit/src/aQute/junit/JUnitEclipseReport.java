@@ -1,23 +1,17 @@
 package aQute.junit;
 
-import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.lang.invoke.MethodHandle;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.util.List;
 
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 
 import junit.framework.AssertionFailedError;
 import junit.framework.JUnit4TestAdapter;
@@ -25,13 +19,11 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 public class JUnitEclipseReport implements TestReporter {
-	BufferedReader	in;
-	PrintWriter		out;
-	long			startTime;
-	Bundle			targetBundle;
-	List<Test>		tests;
-	boolean			verbose	= false;
-	Test			current;
+	private final BufferedReader	in;
+	private final PrintWriter		out;
+	private long					startTime;
+	private List<Test>				tests;
+	private boolean					verbose	= false;
 
 	public JUnitEclipseReport(int port) throws Exception {
 		Socket socket = null;
@@ -47,7 +39,7 @@ public class JUnitEclipseReport implements TestReporter {
 		if (socket == null) {
 			System.err.println("Cannot open the JUnit Port: " + port + " " + e);
 			System.exit(254);
-			return;
+			throw new AssertionError("unreachable");
 		}
 
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream(), UTF_8));
@@ -56,7 +48,6 @@ public class JUnitEclipseReport implements TestReporter {
 
 	@Override
 	public void setup(Bundle fw, Bundle targetBundle) {
-		this.targetBundle = targetBundle;
 	}
 
 	@Override
@@ -100,41 +91,7 @@ public class JUnitEclipseReport implements TestReporter {
 
 	@Override
 	public void startTest(Test test) {
-		this.current = test;
 		message("%TESTS  ", test);
-
-		BundleContext context = targetBundle.getBundleContext();
-		try {
-			MethodHandle mh;
-			try {
-				Method m = test.getClass()
-					.getMethod("setBundleContext", BundleContext.class);
-				m.setAccessible(true);
-				mh = publicLookup().unreflect(m);
-				if (!Modifier.isStatic(m.getModifiers())) {
-					mh = mh.bindTo(test);
-				}
-			} catch (NoSuchMethodException | IllegalAccessException e) {
-				try {
-					Field f = test.getClass()
-						.getField("context");
-					f.setAccessible(true);
-					mh = publicLookup().unreflectSetter(f);
-					if (!Modifier.isStatic(f.getModifiers())) {
-						mh = mh.bindTo(test);
-					}
-				} catch (NoSuchFieldException | IllegalAccessException e1) {
-					mh = null;
-				}
-			}
-			if (mh != null) {
-				mh.invoke(context);
-			}
-		} catch (Error e) {
-			throw e;
-		} catch (Throwable t) {
-			// Ok, no problem
-		}
 	}
 
 	private void message(String key, String payload) {
