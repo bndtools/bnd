@@ -3573,6 +3573,24 @@ public class DSAnnotationTest extends BndTestCase {
 	}
 
 	@Component
+	public static final class FinalClassNonFinalField {
+		@Reference
+		private LogService logService;
+	}
+
+	// A field in a final class is not final:
+	// https://github.com/bndtools/bnd/issues/2928
+	public void testFinalFieldReference() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty(Constants.DSANNOTATIONS, "test.component.*FinalClassNonFinalField*");
+			b.setProperty("Private-Package", "test.component");
+			b.addClasspath(new File("bin_test"));
+			b.build();
+			assertOk(b);
+		}
+	}
+
+	@Component
 	static class FieldCardinality {
 		@Reference
 		private List<LogService>				log1;
