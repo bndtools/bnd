@@ -30,40 +30,31 @@
 	<extension
 			point="org.eclipse.debug.ui.launchShortcuts">
 		<shortcut
-				label="Bnd OSGi Test Launcher (JUnit)"
-				icon="icons/bricks_junit.png"
 				class="bndtools.launch.JUnitShortcut"
+				icon="icons/bricks_junit.png"
+				id="bndtools.m2e.launch.junitShortcut"
+				label="Bnd OSGi Test Launcher (JUnit)"
 				modes="run, debug"
-				id="bndtools.launch.junitShortcut"
-				path="bndtools.launch.core">
+				path="bndtools.m2e.launch.core">
 			<contextualLaunch>
 				<enablement>
-				<or>
+				<and>
+					<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+					<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.m2e.core.maven2Nature"/>
+					<test property="bndtools.m2e.isTestableBndMavenProject" forcePluginActivation="true" />
 					<with variable="selection">
 						<count value="1"/>
 						<iterate>
 							<or>
-								<!-- Java/Maven/Bnd Project -->
-								<and>
-									<test property="org.eclipse.jdt.launching.isContainer"/>
-									<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
-									<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.m2e.core.maven2Nature"/>
-									<test property="bndtools.m2e.isTestableBndMavenProject" forcePluginActivation="true" />
-								</and>
-
-								<!--  Java element (src-folder, package or JUnit class) -->
+								<test property="org.eclipse.jdt.launching.isContainer"/>
 								<adapt type="org.eclipse.jdt.core.IJavaElement">
-									<test property="bndtools.m2e.isTestableBndMavenProject" forcePluginActivation="true" />
 									<test property="org.eclipse.jdt.junit.canLaunchAsJUnit" forcePluginActivation="true" />
 									<or>
 										<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="org.junit.Test" />
 										<test property="org.eclipse.jdt.core.hasTypeOnClasspath" value="junit.framework.Test" />
 									</or>
 								</adapt>
-
-								<!-- bnd.bnd or *.bndrun file -->
 								<and>
-									<test property="bndtools.m2e.isTestableBndMavenProject" forcePluginActivation="true" />
 									<instanceof value="org.eclipse.core.resources.IResource" />
 									<or>
 										<test property="org.eclipse.core.resources.name" value="bnd.bnd" />
@@ -73,13 +64,7 @@
 							</or>
 						</iterate>
 					</with>
-					<with variable="activeEditorId">
-						<or>
-							<equals value="bndtools.bndProjectEditor"/>
-							<equals value="bndtools.bndRunEditor"/>
-						</or>
-					</with>
-				</or>
+				</and>
 				</enablement>
 			</contextualLaunch>
 			<description
@@ -95,33 +80,23 @@
 		<shortcut
 				class="bndtools.launch.RunShortcut"
 				icon="icons/bricks_run.png"
-				id="bndtools.launch.runShortcut"
+				id="bndtools.m2e.launch.runShortcut"
 				label="Bnd OSGi Run Launcher"
 				modes="run, debug"
-				path="bndtools.launch.core">
+				path="bndtools.m2e.launch.core">
 			<contextualLaunch>
 				<enablement>
-				<or>
+				<and>
+					<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
+					<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.m2e.core.maven2Nature"/>
+					<test property="bndtools.m2e.isResolvableBndMavenProject" forcePluginActivation="true" />
 					<with variable="selection">
 						<count value="1"/>
 						<iterate>
 							<or>
-								<!-- Java/Maven/Bnd Project -->
+								<test property="org.eclipse.jdt.launching.isContainer"/>
+								<adapt type="org.eclipse.jdt.core.IJavaElement" />
 								<and>
-									<test property="org.eclipse.jdt.launching.isContainer"/>
-									<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.jdt.core.javanature"/>
-									<test property="org.eclipse.jdt.launching.hasProjectNature" args="org.eclipse.m2e.core.maven2Nature"/>
-									<test property="bndtools.m2e.isResolvableBndMavenProject" forcePluginActivation="true" />
-								</and>
-
-								<!--  Java element (src-folder, package or class) -->
-								<adapt type="org.eclipse.jdt.core.IJavaElement">
-									<test property="bndtools.m2e.isResolvableBndMavenProject" forcePluginActivation="true" />
-								</adapt>
-
-								<!-- bnd.bnd or *.bndrun file -->
-								<and>
-									<test property="bndtools.m2e.isResolvableBndMavenProject" forcePluginActivation="true" />
 									<instanceof value="org.eclipse.core.resources.IResource" />
 									<or>
 										<test property="org.eclipse.core.resources.name" value="bnd.bnd" />
@@ -131,13 +106,7 @@
 							</or>
 						</iterate>
 					</with>
-					<with variable="activeEditorId">
-						<or>
-							<equals value="bndtools.bndProjectEditor"/>
-							<equals value="bndtools.bndRunEditor"/>
-						</or>
-					</with>
-				</or>
+				</and>
 				</enablement>
 			</contextualLaunch>
 		</shortcut>
