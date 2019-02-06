@@ -29,6 +29,10 @@ public class PropertiesDef {
 			.map(p -> new Tag(element).addAttribute("entry", p));
 	}
 
+	Stream<String> stream() {
+		return properties.stream();
+	}
+
 	@Override
 	public String toString() {
 		return properties.toString();

@@ -28,6 +28,7 @@ public class PermissionGeneratorTest extends BndTestCase {
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*_basic");
 		b.setProperty("Private-Package", "test.component");
 		b.setProperty("Export-Package", "test.api");
+		b.setProperty("-includeresource.resourceprops", "resource.props;literal=\"\"");
 
 		File tmpFile = File.createTempFile("bndtest", "permissions.perm");
 		FileWriter fileWriter = new FileWriter(tmpFile);
