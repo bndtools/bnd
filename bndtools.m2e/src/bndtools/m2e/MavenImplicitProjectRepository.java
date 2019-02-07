@@ -151,6 +151,8 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
                 containerBuilder.setUseMavenDependencies(maven.getMojoParameterValue(mavenProject, mojoExecution, "useMavenDependencies", Boolean.class, monitor));
             }
 
+            containerBuilder.setPostProcessor(new WorkspaceProjectPostProcessor(monitor));
+
             fileSetRepository = containerBuilder.build()
                 .getFileSetRepository();
             fileSetRepository.list(null);
