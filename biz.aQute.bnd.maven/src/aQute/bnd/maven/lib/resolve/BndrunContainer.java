@@ -51,7 +51,12 @@ public class BndrunContainer {
 
 	private final RepositorySystem									system;
 
+	private final boolean											transitive;
+
+	private final PostProcessor										postProcessor;
+
 	private FileSetRepository										fileSetRepository;
+
 	private Processor												processor;
 
 	public static class Builder {
@@ -69,6 +74,8 @@ public class BndrunContainer {
 		private Set<Scope>												scopes						= new HashSet<>(
 			Arrays.asList(Scope.compile, Scope.runtime));
 		private boolean													useMavenDependencies		= true;
+		private boolean													transitive					= true;
+		private PostProcessor											postProcessor				= new LocalPostProcessor();
 
 		@SuppressWarnings("deprecation")
 		public Builder(MavenProject project, MavenSession session, RepositorySystemSession repositorySession,
@@ -93,8 +100,18 @@ public class BndrunContainer {
 			return this;
 		}
 
+		public Builder setPostProcessor(PostProcessor postProcessor) {
+			this.postProcessor = postProcessor;
+			return this;
+		}
+
 		public Builder setScopes(Set<Scope> scopes) {
 			this.scopes = scopes;
+			return this;
+		}
+
+		public Builder setTransitive(boolean transitive) {
+			this.transitive = transitive;
 			return this;
 		}
 
@@ -105,7 +122,7 @@ public class BndrunContainer {
 
 		public BndrunContainer build() {
 			return new BndrunContainer(project, session, resolver, repositorySession, artifactFactory, system, scopes,
-				bundles, useMavenDependencies, includeDependencyManagement);
+				bundles, useMavenDependencies, includeDependencyManagement, transitive, postProcessor);
 		}
 
 	}
@@ -126,7 +143,7 @@ public class BndrunContainer {
 	BndrunContainer(MavenProject project, MavenSession session, ProjectDependenciesResolver resolver,
 		RepositorySystemSession repositorySession, org.apache.maven.artifact.factory.ArtifactFactory artifactFactory,
 		RepositorySystem system, Set<Scope> scopes, List<File> bundles, boolean useMavenDependencies,
-		boolean includeDependencyManagement) {
+		boolean includeDependencyManagement, boolean transitive, PostProcessor postProcessor) {
 		this.project = project;
 		this.session = session;
 		this.resolver = resolver;
@@ -137,6 +154,8 @@ public class BndrunContainer {
 		this.bundles = bundles;
 		this.useMavenDependencies = useMavenDependencies;
 		this.includeDependencyManagement = includeDependencyManagement;
+		this.transitive = transitive;
+		this.postProcessor = postProcessor;
 	}
 
 	public int execute(File runFile, String task, File workingDir, Operation operation) throws Exception {
@@ -182,7 +201,7 @@ public class BndrunContainer {
 		}
 
 		DependencyResolver dependencyResolver = new DependencyResolver(project, repositorySession, resolver, system,
-			scopes);
+			scopes, transitive, postProcessor);
 
 		String name = project.getName()
 			.isEmpty() ? project.getArtifactId() : project.getName();
