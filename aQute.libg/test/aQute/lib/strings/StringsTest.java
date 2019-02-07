@@ -60,8 +60,12 @@ public class StringsTest extends TestCase {
 		assertThat(Strings.splitQuoted("  a,  b ,,c  ")).containsSequence("a", "b", "c");
 		assertThat(Strings.splitQuoted("  a; version=\"[1,2)\",  'b' ,,\"c\"  "))
 			.containsSequence("a; version=\"[1,2)\"", "'b'", "\"c\"");
+		assertThat(Strings.splitQuoted("someone,quote=\"He said, \\\"What!?\\\"\"")).containsSequence("someone",
+			"quote=\"He said, \\\"What!?\\\"\"");
 		assertThat(Strings.splitQuotedAsStream("  a,  b ,,c  ")).containsSequence("a", "b", "c");
 		assertThat(Strings.splitQuotedAsStream("  a; version=\"[1,2)\",  'b' ,,\"c\"  "))
 			.containsSequence("a; version=\"[1,2)\"", "'b'", "\"c\"");
+		assertThat(Strings.splitQuotedAsStream("someone,quote=\"He said, \\\"What!?\\\"\"")).containsSequence("someone",
+			"quote=\"He said, \\\"What!?\\\"\"");
 	}
 }
