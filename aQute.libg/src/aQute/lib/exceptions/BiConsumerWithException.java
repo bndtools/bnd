@@ -12,13 +12,30 @@ import java.util.function.BiConsumer;
 public interface BiConsumerWithException<T, U> {
 	void accept(T t, U u) throws Exception;
 
-	static <T, U> BiConsumer<T, U> asBiConsumer(BiConsumerWithException<T, U> unchecked) {
+	default BiConsumer<T, U> orElseThrow() {
 		return (t, u) -> {
 			try {
-				unchecked.accept(t, u);
+				accept(t, u);
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}
 		};
+	}
+
+	default BiConsumer<T, U> ignoreException() {
+		return (t, u) -> {
+			try {
+				accept(t, u);
+			} catch (Exception e) {
+			}
+		};
+	}
+
+	static <T, U> BiConsumer<T, U> asBiConsumer(BiConsumerWithException<T, U> unchecked) {
+		return unchecked.orElseThrow();
+	}
+
+	static <T, U> BiConsumer<T, U> asBiConsumerIgnoreException(BiConsumerWithException<T, U> unchecked) {
+		return unchecked.ignoreException();
 	}
 }

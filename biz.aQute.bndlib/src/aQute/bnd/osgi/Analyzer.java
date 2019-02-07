@@ -1,5 +1,6 @@
 package aQute.bnd.osgi;
 
+import static aQute.lib.exceptions.FunctionWithException.asFunctionOrElse;
 import static aQute.lib.exceptions.PredicateWithException.asPredicate;
 /**
  * This class can calculate the required headers for a (potential) JAR file. It
@@ -22,6 +23,7 @@ import static aQute.lib.exceptions.PredicateWithException.asPredicate;
  */
 import static aQute.libg.generics.Create.list;
 import static aQute.libg.generics.Create.map;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
@@ -63,7 +65,6 @@ import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.osgi.framework.namespace.ExecutionEnvironmentNamespace;
@@ -93,6 +94,7 @@ import aQute.lib.collections.SortedList;
 import aQute.lib.filter.Filter;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.MD5;
@@ -439,7 +441,7 @@ public class Analyzer extends Processor {
 					.stream()
 					.map(this::getPackageRef)
 					.filter(this::isNormalPackage)
-					.collect(Collectors.toSet()));
+					.collect(toSet()));
 			}
 
 			warning("Host %s for this fragment cannot be found on the classpath", host);
@@ -462,15 +464,9 @@ public class Analyzer extends Processor {
 		Set<PackageRef> refs = required.entrySet()
 			.stream()
 			.map(this::toJar)
-			.filter(jar -> jar != null)
-			.map(jar -> {
-				try {
-					return jar.getManifest();
-				} catch (Exception e) {
-					return null;
-				}
-			})
-			.filter(manifest -> manifest != null)
+			.filter(Objects::nonNull)
+			.map(asFunctionOrElse(Jar::getManifest, null))
+			.filter(Objects::nonNull)
 			.flatMap(manifest -> {
 				Domain domain = Domain.domain(manifest);
 				Parameters exportPackages = domain.getExportPackage();
@@ -479,7 +475,7 @@ public class Analyzer extends Processor {
 			})
 			.map(this::getPackageRef)
 			.filter(this::isNormalPackage)
-			.collect(Collectors.toSet());
+			.collect(toSet());
 
 		return Optional.of(refs);
 	}
@@ -1824,16 +1820,13 @@ public class Analyzer extends Processor {
 	}
 
 	public boolean referred(PackageRef packageName) {
-		// return true;
-		for (Map.Entry<PackageRef, List<PackageRef>> contained : uses.entrySet()) {
-			if (!contained.getKey()
-				.equals(packageName)) {
-				if (contained.getValue()
-					.contains(packageName))
-					return true;
-			}
-		}
-		return false;
+		boolean result = uses.entrySet()
+			.stream()
+			.filter(entry -> !entry.getKey()
+				.equals(packageName))
+			.anyMatch(entry -> entry.getValue()
+				.contains(packageName));
+		return result;
 	}
 
 	/**
@@ -2067,7 +2060,7 @@ public class Analyzer extends Processor {
 			.distinct()
 			.filter(this::isProvider)
 			.map(TypeRef::getPackageRef)
-			.collect(Collectors.toCollection(LinkedHashSet::new));
+			.collect(toCollection(LinkedHashSet::new));
 		return providers;
 	}
 
@@ -2922,17 +2915,13 @@ public class Analyzer extends Processor {
 	public String _exporters(String args[]) throws Exception {
 		Macro.verifyCommand(args, "${exporters;<packagename>}, returns the list of jars that export the given package",
 			null, 2, 2);
-		StringBuilder sb = new StringBuilder();
-		String del = "";
-		String pack = args[1].replace('.', '/');
-		for (Jar jar : classpath) {
-			if (jar.getDirectories()
-				.containsKey(pack)) {
-				sb.append(del);
-				sb.append(jar.getName());
-			}
-		}
-		return sb.toString();
+		String pack = Descriptors.fqnToBinary(args[1]);
+		String result = getClasspath().stream()
+			.filter(jar -> jar.getDirectories()
+				.containsKey(pack))
+			.map(Jar::getName)
+			.collect(Strings.joining());
+		return result;
 	}
 
 	public Map<TypeRef, Clazz> getClassspace() {
@@ -2949,9 +2938,7 @@ public class Analyzer extends Processor {
 			null, 2, 3);
 
 		String packageName = args[1];
-		String attrName = "version";
-		if (args.length > 2)
-			attrName = args[2];
+		String attrName = (args.length > 2) ? args[2] : "version";
 
 		Attrs attrs = contained.getByFQN(packageName);
 		if (attrs == null)
@@ -2971,12 +2958,12 @@ public class Analyzer extends Processor {
 	 * @return A resource or <code>null</code>
 	 */
 	public Resource findResource(String path) {
-		for (Jar entry : getClasspath()) {
-			Resource r = entry.getResource(path);
-			if (r != null)
-				return r;
-		}
-		return null;
+		Resource result = getClasspath().stream()
+			.map(entry -> entry.getResource(path))
+			.filter(Objects::nonNull)
+			.findFirst()
+			.orElse(null);
+		return result;
 	}
 
 	public Stream<Resource> findResources(Predicate<String> matches) {
@@ -3179,24 +3166,20 @@ public class Analyzer extends Processor {
 
 	Packages filter(Instructions instructions, Packages source, Set<Instruction> nomatch) {
 		Packages result = new Packages();
-		List<PackageRef> refs = new ArrayList<>(source.keySet());
-		Collections.sort(refs);
+		List<PackageRef> refs = source.keySet()
+			.stream()
+			.filter(packageRef -> !packageRef.isMetaData())
+			.sorted()
+			.collect(toCollection(LinkedList::new));
 
-		List<Instruction> filters = new ArrayList<>(instructions.keySet());
 		if (nomatch == null)
 			nomatch = Create.set();
 
-		for (Instruction instruction : filters) {
+		for (Instruction instruction : instructions.keySet()) {
 			boolean match = false;
 
 			for (Iterator<PackageRef> i = refs.iterator(); i.hasNext();) {
 				PackageRef packageRef = i.next();
-
-				if (packageRef.isMetaData()) {
-					i.remove(); // no use checking it again
-					continue;
-				}
-
 				String packageName = packageRef.getFQN();
 
 				if (instruction.matches(packageName)) {
@@ -3435,12 +3418,11 @@ public class Analyzer extends Processor {
 	 * @return a set of classes for the requested package.
 	 */
 	public Set<Clazz> getClassspace(PackageRef source) {
-		Set<Clazz> result = new HashSet<>();
-		for (Clazz c : getClassspace().values()) {
-			if (c.getClassName()
+		Set<Clazz> result = getClassspace().values()
+			.stream()
+			.filter(c -> c.getClassName()
 				.getPackageRef() == source)
-				result.add(c);
-		}
+			.collect(toSet());
 		return result;
 	}
 
