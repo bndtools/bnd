@@ -103,7 +103,7 @@ public class LauncherConstants {
 				if (entry.getKey() != null)
 					p.remove(entry.getKey());
 			} else {
-				p.put(entry.getKey(), entry.getValue());
+				p.setProperty(entry.getKey(), entry.getValue());
 			}
 
 		}
