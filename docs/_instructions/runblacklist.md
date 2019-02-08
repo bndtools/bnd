@@ -9,7 +9,5 @@ The blacklist is a set of requirements. These requirements are used to get a set
 
 For example:
 
-  -runblacklist: \
-    osgi.identity;filter:='(osgi.identity=com.foo.bad.bundle)'
-    
-  
+	-runblacklist: \
+		osgi.identity;filter:='(osgi.identity=com.foo.bad.bundle)'
