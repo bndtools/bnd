@@ -97,6 +97,12 @@ public class TestQuotedTokenizer extends TestCase {
 		qt = new QuotedTokenizer(" \" foo \", 'bar' ", ",", false, false);
 		assertThat(qt.nextToken()).isEqualTo(" foo ");
 		assertThat(qt.nextToken()).isEqualTo("bar");
+		qt = new QuotedTokenizer("someone;quote=\"He said, \\\"What!?\\\"\"", ";=,", false, true);
+		assertThat(qt.stream()).hasSize(3)
+			.containsSequence("someone", "quote", "\"He said, \\\"What!?\\\"\"");
+		qt = new QuotedTokenizer("someone;quote=\"He said, \\\"What!?\\\"\"", ";=,", false, false);
+		assertThat(qt.stream()).hasSize(3)
+			.containsSequence("someone", "quote", "He said, \"What!?\"");
 	}
 
 	public void testLongEscapedQuote() {

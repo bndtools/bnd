@@ -128,11 +128,10 @@ public class QuotedTokenizer implements Iterable<String> {
 				break;
 			}
 			if ((c == '\\') && (index < string.length())) {
-				char cc = string.charAt(index++);
-				if (cc != quote) {
-					sb.append("\\");
+				c = string.charAt(index++);
+				if (retain || (c != quote)) {
+					sb.append('\\');
 				}
-				c = cc;
 			}
 			sb.append(c);
 		}
