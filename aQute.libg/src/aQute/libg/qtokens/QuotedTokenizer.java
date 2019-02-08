@@ -163,7 +163,7 @@ public class QuotedTokenizer implements Iterable<String> {
 	}
 
 	private static Spliterator<String> spliterator(QuotedTokenizer qt) {
-		return new AbstractSpliterator<String>(Long.MAX_VALUE, Spliterator.ORDERED) {
+		return new AbstractSpliterator<String>(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.NONNULL) {
 			@Override
 			public boolean tryAdvance(Consumer<? super String> action) {
 				requireNonNull(action);
