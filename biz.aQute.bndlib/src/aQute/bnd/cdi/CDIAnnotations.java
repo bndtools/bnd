@@ -4,6 +4,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,7 +31,6 @@ import aQute.bnd.osgi.Clazz;
 import aQute.bnd.osgi.Clazz.QUERY;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Descriptors;
-import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
@@ -75,10 +75,9 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		if (header.size() == 0)
 			return false;
 
-		List<String> beanArchives = new ArrayList<>();
+		Map<Resource, Discover> discoverPerResource = new HashMap<>();
 		Parameters bcp = analyzer.getBundleClassPath();
 		Jar currentJar = analyzer.getJar();
-		beanArchives.add(getName(currentJar.getName(), currentJar.getVersion()));
 
 		for (Entry<String, Attrs> entry : bcp.entrySet()) {
 			String path = entry.getKey();
@@ -90,9 +89,9 @@ public class CDIAnnotations implements AnalyzerPlugin {
 
 				Discover discover = findDiscoveryMode(beansResource);
 
-				if (discover != Discover.none) {
-					beanArchives.add(getName(path, jar.getVersion()));
-				}
+				jar.getResources()
+					.values()
+					.forEach(r -> discoverPerResource.put(r, discover));
 			}
 		}
 
@@ -114,16 +113,6 @@ public class CDIAnnotations implements AnalyzerPlugin {
 				continue;
 			}
 
-			PackageRef packageRef = c.getClassName()
-				.getPackageRef();
-			Attrs packageAttrs = contained.get(packageRef);
-
-			// It must be inside a bean archive
-			String isd = packageAttrs.get(Constants.INTERNAL_SOURCE_DIRECTIVE);
-			if (!beanArchives.contains(isd)) {
-				continue;
-			}
-
 			for (Entry<Instruction, Attrs> entry : instructions.entrySet()) {
 				Instruction instruction = entry.getKey();
 				if (instruction.matches(c.getFQN())) {
@@ -139,6 +128,12 @@ public class CDIAnnotations implements AnalyzerPlugin {
 					} catch (IllegalArgumentException e) {
 						analyzer.error("Unrecognized discover '%s', expected values are %s", discover,
 							EnumSet.allOf(Discover.class));
+					}
+
+					if (discoverPerResource.containsKey(c.getResource())) {
+						options.clear();
+						Discover resourceDiscover = discoverPerResource.get(c.getResource());
+						options.add(resourceDiscover);
 					}
 
 					if (options.isEmpty()) {
@@ -288,13 +283,13 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		}
 
 		try {
-			Object versionResult = versionExpression.evaluate(beansResource, XPathConstants.STRING);
+			Object versionResult = versionExpression.evaluate(document, XPathConstants.STRING);
 
 			Version version = Version.valueOf(versionResult.toString());
 
-			if (CDIAnnotationReader.CDI_ARCHIVE_VERSION.compareTo(version) <= 0) {
+			if ((version.equals(Version.LOWEST)) || CDIAnnotationReader.CDI_ARCHIVE_VERSION.compareTo(version) <= 0) {
 				try {
-					Object beanDiscoveryMode = discoveryModeExpression.evaluate(beansResource, XPathConstants.STRING);
+					Object beanDiscoveryMode = discoveryModeExpression.evaluate(document, XPathConstants.STRING);
 
 					return Discover.valueOf(beanDiscoveryMode.toString());
 				} catch (NullPointerException | XPathExpressionException e) {

@@ -270,6 +270,27 @@ public class CDIAnnotationTest {
 		}
 	}
 
+	@Test
+	public void beansXmlInBCP() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty("Private-Package", "test.cdi.beans_h.*");
+			b.setProperty("-fixupmessages", "While traversing the type tree for;is:=ignore");
+			b.setProperty("-includeresource", "cxf-rt-rs-sse-*.jar;lib:=true,wicket-cdi-1.1-*.jar;lib:=true");
+			b.addClasspath(new File("bin_test"));
+			b.addClasspath(new File("jar/cxf-rt-rs-sse-3.2.5.jar"));
+			b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+			b.addClasspath(new File("jar/wicket-cdi-1.1-6.28.0.jar"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, Arrays.asList("test.cdi.beans_h.AppScopedBean", "org.apache.wicket.cdi.AutoConversation"),
+				"java.lang.Character", "java.lang.Integer", "java.lang.Long");
+		}
+	}
+
 	private void checkProvides(Attributes a, String[]... objectClass) {
 		String p = a.getValue(Constants.PROVIDE_CAPABILITY);
 		System.err.println(Constants.PROVIDE_CAPABILITY + ":" + p);
