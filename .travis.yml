@@ -51,6 +51,7 @@ script:
 before_cache:
   - "git status"
   - "rm -rf maven/target/m2/biz/aQute/bnd/"
+  - "rm -rf maven/target/m2/org/bndtools/"
   - "rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock"
   - "rm -rf $HOME/.gradle/caches/*/plugin-resolution/"
 
