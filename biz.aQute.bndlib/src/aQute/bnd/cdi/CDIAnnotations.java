@@ -264,13 +264,6 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		return getClass().getSimpleName();
 	}
 
-	private String getName(String name, String version) throws Exception {
-		if (version == null)
-			version = "0.0.0";
-
-		return name + "-" + version;
-	}
-
 	private Discover findDiscoveryMode(Resource beansResource) {
 		if (beansResource == null) {
 			return Discover.none;
