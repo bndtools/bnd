@@ -268,4 +268,8 @@ public class ServiceComponent implements AnalyzerPlugin {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return getClass().getSimpleName();
+	}
 }
