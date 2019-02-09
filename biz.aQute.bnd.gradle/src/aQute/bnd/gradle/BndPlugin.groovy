@@ -23,6 +23,7 @@ import static aQute.bnd.gradle.BndUtils.createTask
 import static aQute.bnd.gradle.BndUtils.namedTask
 import static aQute.bnd.osgi.Processor.isTrue
 
+import aQute.lib.strings.Strings
 import aQute.bnd.build.Container
 import aQute.bnd.build.Container.TYPE
 import aQute.bnd.build.Workspace
@@ -251,7 +252,8 @@ public class BndPlugin implements Plugin<Project> {
         project.configurations.archives.artifacts.files.find {
           t.archiveName = it.name /* use first artifact as archiveName */
         }
-        t.ext.projectDirInputsExcludes = [] /* Additional excludes for projectDir inputs */
+        /* Additional excludes for projectDir inputs */
+        t.ext.projectDirInputsExcludes = Strings.split(bnd(Constants.BUILDERIGNORE)).collect { it.concat('/') }
         /* all other files in the project like bnd and resources */
         t.inputs.files({
           project.fileTree(projectDir) { tree ->

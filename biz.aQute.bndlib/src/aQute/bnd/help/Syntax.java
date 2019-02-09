@@ -290,6 +290,9 @@ public class Syntax implements Constants {
 		new Syntax(BUILDPATH,
 			"Provides the class path for building the jar. The entries are references to the repository.",
 			BUILDPATH + "=osgi;version=4.1", "${repo;bsns}", Verifier.SYMBOLICNAME, path_version),
+		new Syntax(BUILDERIGNORE,
+			"List of project-relative directories to be ignored by the builder. This is processed by the Bndtools builder in Eclipse and the Bnd Gradle plugin for workspace model builds.",
+			BUILDERIGNORE + "=${if;${driver;gradle};bin,bin_test,generated;build}", null, null),
 		new Syntax(BUMPPOLICY, "Sets the version bump policy. This is a parameter to the ${version} macro.",
 			BUMPPOLICY + "==+0", "==+,=+0,+00", Pattern.compile("[=+-0][=+-0][=+-0]")),
 
