@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
@@ -18,6 +19,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import bndtools.central.Central;
 
 class DeltaWrapper {
@@ -104,14 +106,13 @@ class DeltaWrapper {
                     .toString();
 
                 if (resource.getType() == IResource.FOLDER) {
-                    if (check(path, model.getProperty(Constants.DEFAULT_PROP_SRC_DIR)) //
-                        || check(path, model.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR)) //
-                        || check(path, model.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR)) //
-                        || check(path, model.getProperty(Constants.DEFAULT_PROP_TARGET_DIR))) {
+                    if (check(path, Stream.of(model.getProperty(Constants.DEFAULT_PROP_SRC_DIR), //
+                        model.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR), //
+                        model.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR), //
+                        model.getProperty(Constants.DEFAULT_PROP_TARGET_DIR))) //
+                        || check(path, Strings.splitAsStream(model.getProperty(Constants.BUILDERIGNORE)))) {
                         return false;
-
                     }
-
                 }
 
                 if (IResourceDelta.MARKERS == delta.getFlags())
@@ -191,6 +192,10 @@ class DeltaWrapper {
             return true;
 
         return false;
+    }
+
+    static boolean check(String changed, Stream<String> prefixes) {
+        return prefixes.anyMatch(prefix -> check(changed, prefix));
     }
 
     public boolean isTestBin(IResource resource) {
