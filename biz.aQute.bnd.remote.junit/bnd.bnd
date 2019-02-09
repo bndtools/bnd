@@ -32,6 +32,8 @@ Import-Package: \
     biz.aQute.repository, \
     slf4j.api
 
+-builderignore: testresources
+
 -runbundles: \
     org.apache.felix.gogo.shell;version=latest
 

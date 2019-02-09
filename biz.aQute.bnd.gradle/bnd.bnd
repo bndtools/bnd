@@ -27,6 +27,8 @@ pluginClasspath: ${p-buildpath;\\${pathseparator}}
 	resources, \
 	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;latest}
 
+-builderignore: testresources
+
 # Use groovydoc task generated doc for -javadoc.jar
 -maven-release: pom;path=JAR,javadoc;path=${target}/docs/groovydoc
 

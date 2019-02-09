@@ -146,7 +146,7 @@ public class JUnitFrameworkTest {
 	public void testRunSystemPackages() throws Exception {
 		// Exports blabar
 
-		try (JUnitFramework fw = builder.bndrun(new File("resources/systempackages.bndrun").getAbsolutePath())
+		try (JUnitFramework fw = builder.bndrun(new File("testresources/systempackages.bndrun").getAbsolutePath())
 			.create()
 			.inject(this)) {
 
