@@ -32,4 +32,6 @@ aQute.agent.server.port = 29998
 #
 -nojunit: true
 
+-builderignore: testdata
+
 -baseline: *

@@ -35,12 +35,6 @@ subprojects {
         'GuardedBy:mf:"Guarded By:"'
       ]
     }
-    /* test folders are not part of jar but used by unit tests  */
-    def testfolders = ['testresources/', 'testdata/']
-    tasks.named('jar') {
-      projectDirInputsExcludes.add('.*')
-      projectDirInputsExcludes.addAll(testfolders)
-    }
     tasks.named('test') {
       testLogging {
         exceptionFormat 'full'
@@ -50,7 +44,7 @@ subprojects {
         environment 'JAVA_OPTS': java9options.join(' ')
       }
       inputs.files(fileTree(project.projectDir) {
-        include testfolders
+        include 'testresources/', 'testdata/'
         exclude {
           def f = it.file
           if (f.directory && f.list().length == 0) {

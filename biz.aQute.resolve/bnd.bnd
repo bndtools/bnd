@@ -32,6 +32,8 @@ Export-Package:  \
 
 -conditionalpackage: aQute.lib*
 
+-builderignore: testdata
+
 -fixupmessages.private: private references
 
 -baseline: *

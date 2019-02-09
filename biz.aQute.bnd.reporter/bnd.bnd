@@ -52,6 +52,8 @@ Private-Package: \
 	biz.aQute.bnd.reporter.component.dto,\
 	biz.aQute.bnd.reporter.manifest.dto
 
+-builderignore: testresources
+
 -baseline: *
 -fixupmessages.baseline: \
     'There is no baseline for biz\\.aQute\\.bnd\\.reporter'

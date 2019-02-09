@@ -36,3 +36,5 @@ Import-Package: \
  com.google.apphosting.*;resolution:=optional,\
  ${eclipse.importpackage},\
  *
+
+-builderignore: testdata
