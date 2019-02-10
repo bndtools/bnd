@@ -30,6 +30,7 @@ import aQute.bnd.maven.lib.resolve.BndrunContainer.Builder;
 import aQute.bnd.maven.lib.resolve.Scope;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.Refreshable;
+import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
 import bndtools.central.Central;
@@ -37,6 +38,7 @@ import bndtools.central.Central;
 public class MavenImplicitProjectRepository extends AbstractMavenRepository implements Refreshable {
 
     private static final Logger logger = LoggerFactory.getLogger(MavenImplicitProjectRepository.class);
+    private static final Version scopesVersion = new Version(4, 2, 0);
 
     private volatile FileSetRepository fileSetRepository;
 
@@ -141,14 +143,22 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 
                 containerBuilder.setBundles(bundles.getFiles(mavenProject.getBasedir()));
 
-                containerBuilder.setIncludeDependencyManagement(maven.getMojoParameterValue(mavenProject, mojoExecution, "includeDependencyManagement", Boolean.class, monitor));
-
-                Set<String> scopeValues = maven.getMojoParameterValue(mavenProject, mojoExecution, "scopes", Set.class, monitor);
-                containerBuilder.setScopes(scopeValues.stream()
-                    .map(Scope::valueOf)
-                    .collect(Collectors.toSet()));
-
                 containerBuilder.setUseMavenDependencies(maven.getMojoParameterValue(mavenProject, mojoExecution, "useMavenDependencies", Boolean.class, monitor));
+
+                // Comparing OSGi versions makes '4.2.0.SNAPSHOT' > '4.2.0'.
+                // Comparing Maven versions fails because '4.2.0-SNAPSHOT' is < '4.2.0'.
+                Version mojoVersion = new MavenVersion(mojoExecution.getVersion()).getOSGiVersion();
+
+                if (mojoVersion.compareTo(scopesVersion) >= 0) {
+                    containerBuilder.setIncludeDependencyManagement(maven.getMojoParameterValue(mavenProject, mojoExecution, "includeDependencyManagement", Boolean.class, monitor));
+
+                    Set<String> scopeValues = maven.getMojoParameterValue(mavenProject, mojoExecution, "scopes", Set.class, monitor);
+                    if (!scopeValues.isEmpty()) {
+                        containerBuilder.setScopes(scopeValues.stream()
+                            .map(Scope::valueOf)
+                            .collect(Collectors.toSet()));
+                    }
+                }
             }
 
             containerBuilder.setPostProcessor(new WorkspaceProjectPostProcessor(monitor));
