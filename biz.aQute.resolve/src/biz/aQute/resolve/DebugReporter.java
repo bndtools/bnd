@@ -41,11 +41,11 @@ public class DebugReporter {
 		doRepos();
 		doBlackList();
 		doSystemResource();
-		doAllMembers();
+		doProviders();
 	}
 
-	private void doAllMembers() {
-		header("RESOURCES");
+	private void doProviders() {
+		header("PROVIDERS");
 
 		Requirement r = CapReqBuilder.createBundleRequirement("*", null)
 			.buildSyntheticRequirement();
@@ -55,8 +55,6 @@ public class DebugReporter {
 		for (Resource resource : resources) {
 			resource(resource);
 		}
-
-		resource(context.getSystemResource());
 		nl();
 	}
 
@@ -108,19 +106,19 @@ public class DebugReporter {
 
 		String s = resolveError == null ? " " : "!";
 		if (id == null)
-			out.printf("%s %s%n", s, r);
+			out.printf("%s%s%n", s, r);
 		else
-			out.printf("%s %-50s %-20s %s%n", s, id.osgi_identity(), noNull(id.version()), id.description(""));
+			out.printf("%s%-50s %-20s %s%n", s, id.osgi_identity(), noNull(id.version()), id.description(""));
 
 		if (level >= 2) {
 			for (Capability c : r.getCapabilities(null)) {
-				capability("   ", c);
+				capability("  ", c);
 			}
 			for (Requirement rq : r.getRequirements(null)) {
 				requirement("  ", rq);
 			}
+			nl();
 		}
-
 	}
 
 	private void capability(String prefix, Capability c) {
@@ -131,7 +129,7 @@ public class DebugReporter {
 		try {
 			name = Converter.cnv(String.class, value);
 		} catch (Exception e) {
-			name = value + "";
+			name = String.valueOf(value);
 		}
 		switch (ns) {
 			case IdentityNamespace.IDENTITY_NAMESPACE :
@@ -152,7 +150,7 @@ public class DebugReporter {
 				try {
 					name = Converter.cnv(String.class, value);
 				} catch (Exception e) {
-					name = value + "";
+					name = String.valueOf(value);
 				}
 				break;
 		}
@@ -162,14 +160,12 @@ public class DebugReporter {
 	private void requirement(String prefix, Requirement c) {
 		Map<String, String> directives = new HashMap<>(c.getDirectives());
 		String namespace = c.getNamespace();
-		String filter = directives.remove("filter");
+		String filter = directives.get("filter");
 		if (filter != null) {
-			filter = fp.parse(filter)
+			namespace = fp.parse(filter)
 				.toString();
-			out.printf("%sr: %-20s %s || %s%n", prefix, filter, c.getAttributes(), c.getDirectives());
-		} else {
-			out.printf("%sr: %-20s %s || %s%n", prefix, namespace, c.getAttributes(), directives);
 		}
+		out.printf("%sr: %-20s %s || %s%n", prefix, namespace, c.getAttributes(), directives);
 	}
 
 	private String noNull(Object v) {
@@ -182,10 +178,11 @@ public class DebugReporter {
 		hr();
 		out.printf("%s%n", name);
 		hr();
-		out.println();
+		nl();
 	}
 
 	public void hr() {
-		out.println("-------------------------------------------");
+		out.print("-------------------------------------------");
+		nl();
 	}
 }
