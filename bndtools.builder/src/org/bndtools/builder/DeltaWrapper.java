@@ -1,9 +1,13 @@
 package org.bndtools.builder;
 
+import static java.util.stream.Collectors.toSet;
+
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
@@ -24,10 +28,17 @@ import bndtools.central.Central;
 
 class DeltaWrapper {
 
-    private static final Path EXT = new Path("/cnf/ext");
+    private static final IPath EXT = new Path("/cnf/ext");
     private final Project model;
     private final IResourceDelta delta;
     private final BuildLogger log;
+
+    static final String[] defaultIgnoreProperties = new String[] {
+        Constants.DEFAULT_PROP_SRC_DIR, //
+        Constants.DEFAULT_PROP_TESTSRC_DIR, //
+        Constants.DEFAULT_PROP_TESTBIN_DIR, //
+        Constants.DEFAULT_PROP_TARGET_DIR
+    };
 
     DeltaWrapper(Project model, IResourceDelta delta, BuildLogger log) {
         this.model = model;
@@ -91,6 +102,7 @@ class DeltaWrapper {
 
         final AtomicBoolean result = new AtomicBoolean(false);
         delta.accept(new IResourceDeltaVisitor() {
+            Set<String> ignore = null;
 
             @Override
             public boolean visit(IResourceDelta visitDelta) throws CoreException {
@@ -106,11 +118,14 @@ class DeltaWrapper {
                     .toString();
 
                 if (resource.getType() == IResource.FOLDER) {
-                    if (check(path, Stream.of(model.getProperty(Constants.DEFAULT_PROP_SRC_DIR), //
-                        model.getProperty(Constants.DEFAULT_PROP_TESTSRC_DIR), //
-                        model.getProperty(Constants.DEFAULT_PROP_TESTBIN_DIR), //
-                        model.getProperty(Constants.DEFAULT_PROP_TARGET_DIR))) //
-                        || check(path, Strings.splitAsStream(model.getProperty(Constants.BUILDERIGNORE)))) {
+                    if (ignore == null) {
+                        ignore = Stream.concat(Arrays.stream(defaultIgnoreProperties)
+                            .map(model::getProperty), //
+                            Strings.splitAsStream(model.mergeProperties(Constants.BUILDERIGNORE)))
+                            .collect(toSet());
+                    }
+
+                    if (check(path, ignore.stream())) {
                         return false;
                     }
                 }
