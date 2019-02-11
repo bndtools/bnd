@@ -233,10 +233,31 @@ public abstract class AbstractOSGiLaunchDelegate extends JavaLaunchDelegate {
         super.launch(configuration, mode, launch, monitor);
     }
 
+    /*
+     * This method is deprecated in Eclipse 4.11 and no longer called there. Instead getClasspathAndModulepath is
+     * called. We need it here for older versions of Eclipse.
+     */
     @Override
     public String[] getClasspath(ILaunchConfiguration configuration) throws CoreException {
         Collection<String> paths = getProjectLauncher().getClasspath();
         return paths.toArray(new String[0]);
+    }
+
+    /*
+     * This method has taken over getClasspath in 4.11. See
+     * https://github.com/eclipse/eclipse.jdt.debug/commit/89530b29cb538a73f57f4b32cdf3f543258b9bc6#diff-
+     * 9010920d00bc21b4c2749643470ff0cfL95 See https://bugs.eclipse.org/bugs/show_bug.cgi?id=529435
+     * https://github.com/bndtools/bnd/issues/2947
+     */
+    @Override
+    public String[][] getClasspathAndModulepath(ILaunchConfiguration config) throws CoreException {
+        String[][] classpathAndModulepath = super.getClasspathAndModulepath(config);
+        if (classpathAndModulepath == null) {
+            classpathAndModulepath = new String[2][];
+            classpathAndModulepath[1] = new String[0];
+        }
+        classpathAndModulepath[0] = getClasspath(config);
+        return classpathAndModulepath;
     }
 
     @Override
