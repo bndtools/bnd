@@ -253,7 +253,7 @@ public class BndPlugin implements Plugin<Project> {
           t.archiveName = it.name /* use first artifact as archiveName */
         }
         /* Additional excludes for projectDir inputs */
-        t.ext.projectDirInputsExcludes = Strings.split(bnd(Constants.BUILDERIGNORE)).collect { it.concat('/') }
+        t.ext.projectDirInputsExcludes = Strings.split(bndMerge(Constants.BUILDERIGNORE)).collect { it.concat('/') }
         /* all other files in the project like bnd and resources */
         t.inputs.files({
           project.fileTree(projectDir) { tree ->
