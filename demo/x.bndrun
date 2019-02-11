@@ -1,7 +1,7 @@
 Bundle-Version: 1.0.0
 
--runfw: org.apache.felix.framework;version='[4,5)'
--runee: JavaSE-1.6
+-runfw: org.apache.felix.framework
+-runee: JavaSE-1.8
 -runsystemcapabilities: ${native_capability}
 -resolve.effective: active
 
