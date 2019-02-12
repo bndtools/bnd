@@ -14,6 +14,8 @@
 -testpath: \
 	${junit}
 
+-dependson: biz.aQute.bnd
+
 -includeresource: \
 	templates=resources/templates/unprocessed,\
 	templates/cnf/plugins/biz.aQute.bnd/biz.aQute.bnd.jar=${repo;biz.aQute.bnd;latest}
