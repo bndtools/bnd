@@ -7,6 +7,13 @@
 
 import aQute.lib.io.IO
 
+apply plugin: 'com.gradle.build-scan'
+
+buildScan {
+    termsOfServiceUrl   = 'https://gradle.com/terms-of-service'
+    termsOfServiceAgree = 'yes'
+}
+
 if (JavaVersion.current().isJava9Compatible()) {
   ext.java9options = [
     '--add-opens=java.base/java.lang=ALL-UNNAMED', 

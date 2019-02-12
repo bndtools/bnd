@@ -46,7 +46,7 @@ before_script:
   - "./mvnw --version"
 
 script:
-  - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy"
+  - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue --scan :build :maven:deploy"
 
 before_cache:
   - "git status"
