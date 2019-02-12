@@ -1,4 +1,4 @@
-package aQute.bnd.remote.junit;
+package aQute.launchpad;
 
 import static org.junit.Assert.assertTrue;
 
@@ -10,9 +10,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import aQute.launchpad.LauchpadBuilder;
+import aQute.launchpad.Launchpad;
+
 public class RuleTest {
 
-	JUnitFrameworkBuilder builder = new JUnitFrameworkBuilder();
+	LauchpadBuilder builder = new LauchpadBuilder();
 
 	@Rule
 	public TemporaryFolder	folder	= new TemporaryFolder();
@@ -27,7 +30,7 @@ public class RuleTest {
 	public void test() throws Exception {
 
 
-		try (JUnitFramework framework = builder.runfw("org.apache.felix.framework")
+		try (Launchpad framework = builder.runfw("org.apache.felix.framework")
 			.create()) {
 			assertTrue(new File(System.getProperty("storage")).isDirectory());
 		}

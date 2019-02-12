@@ -1,4 +1,4 @@
-package aQute.bnd.remote.junit;
+package aQute.launchpad;
 
 import java.io.Closeable;
 import java.util.ArrayList;
@@ -10,6 +10,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import aQute.bnd.service.specifications.BuilderSpecification;
+import aQute.launchpad.BundleBuilder;
+import aQute.launchpad.BundleSpecBuilder;
+import aQute.launchpad.LauchpadBuilder;
+import aQute.launchpad.Launchpad;
 import aQute.lib.io.IO;
 
 /**
@@ -17,14 +21,14 @@ import aQute.lib.io.IO;
  */
 public class BundleBuilder implements BundleSpecBuilder {
 
-	final JUnitFramework		ws;
+	final Launchpad		ws;
 	final BuilderSpecification	spec		= new BuilderSpecification();
 	final List<Closeable>		closeables	= new ArrayList<>();
 
-	BundleBuilder(JUnitFramework ws) {
+	BundleBuilder(Launchpad ws) {
 		this.ws = ws;
 		spec.classpath.add(ws.builder.local.bin_test);
-		bundleSymbolicName("t-" + JUnitFrameworkBuilder.counter.incrementAndGet());
+		bundleSymbolicName("t-" + LauchpadBuilder.counter.incrementAndGet());
 	}
 
 	/**

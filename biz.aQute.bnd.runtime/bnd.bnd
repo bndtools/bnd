@@ -16,7 +16,7 @@
 
 -testpath: \
     ${junit}, \
-    biz.aQute.bnd.remote.junit;version=latest, \
+    biz.aQute.launchpad;version=latest, \
     org.apache.felix.framework;version=@5
 
 -conditionalpackage: \

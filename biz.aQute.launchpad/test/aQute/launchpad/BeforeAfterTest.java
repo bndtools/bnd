@@ -1,4 +1,4 @@
-package aQute.bnd.remote.junit;
+package aQute.launchpad;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -6,14 +6,17 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import aQute.launchpad.LauchpadBuilder;
+import aQute.launchpad.Launchpad;
+
 public class BeforeAfterTest {
 
-	JUnitFrameworkBuilder builder;
-	JUnitFramework			framework;
+	LauchpadBuilder builder;
+	Launchpad			framework;
 
 	@Before
 	public void before() {
-		builder = new JUnitFrameworkBuilder();
+		builder = new LauchpadBuilder();
 		framework = builder.runfw("org.apache.felix.framework")
 			.create();
 	}

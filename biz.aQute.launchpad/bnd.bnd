@@ -2,11 +2,11 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 Export-Package: \
-    aQute.bnd.remoteworkspace.client, \
+	aQute.bnd.remoteworkspace.client,\
 	aQute.bnd.service.remoteworkspace,\
-    aQute.bnd.remote.junit,\
+	aQute.launchpad,\
 	aQute.bnd.service.specifications,\
-    aQute.bnd.util.scr
+	aQute.bnd.util.scr
 
 Import-Package: \
     org.osgi.service.component.runtime;resolution:=optional,\
@@ -39,6 +39,4 @@ Import-Package: \
 
 -runfw: org.apache.felix.framework
 
--baseline: *
--fixupmessages.baseline: \
-    'There is no baseline for biz\\.aQute\\.bnd\\.remote\\.junit'
+-baseline: 

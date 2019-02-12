@@ -25,7 +25,7 @@
 	@${repo;biz.aQute.resolve;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.exporters;latest}!/!META-INF/*, \
 	@${repo;biz.aQute.bnd.reporter;latest}!/!META-INF/*, \
- 	@${repo;biz.aQute.bnd.remote.junit;latest}!/!META-INF/*, \
+ 	@${repo;biz.aQute.launchpad;latest}!/!META-INF/*, \
 	@${repo;slf4j.api;latest}!/!META-INF/*, \
 	@${repo;slf4j.simple;latest}!/!META-INF/*, \
 	@${repo;jline}!/!META-INF/*
@@ -69,7 +69,7 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	slf4j.api;version=latest;maven-scope=provided,\
 	slf4j.simple;version=latest;maven-scope=provided, \
 	jline;maven-scope=provided, \
-	biz.aQute.bnd.remote.junit;version=latest;maven-scope=provided
+	biz.aQute.launchpad;version=latest;maven-scope=provided
 
 -testpath: \
 	${junit},\

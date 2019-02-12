@@ -1,4 +1,4 @@
-package aQute.bnd.remote.junit;
+package aQute.launchpad;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -32,15 +32,15 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
-import aQute.bnd.remote.junit.test.inject.SomeService;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
+import aQute.launchpad.test.inject.SomeService;
 import aQute.lib.io.IO;
 
-public class JUnitFrameworkTest {
+public class LaunchpadTest {
 	static Workspace		ws;
-	JUnitFrameworkBuilder	builder;
+	LauchpadBuilder	builder;
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
@@ -49,7 +49,7 @@ public class JUnitFrameworkTest {
 
 	@Before
 	public void before() throws Exception {
-		builder = new JUnitFrameworkBuilder();
+		builder = new LauchpadBuilder();
 	}
 
 	@After
@@ -69,7 +69,7 @@ public class JUnitFrameworkTest {
 			assertThat(remote.getLatestBundles(IO.work.getAbsolutePath(), "biz.aQute.bnd"))
 				.contains(IO.getFile("../biz.aQute.bnd/generated/biz.aQute.bnd.jar")
 					.getAbsolutePath());
-			assertThat(remote.getProjects()).contains("biz.aQute.bnd.remote.junit");
+			assertThat(remote.getProjects()).contains("biz.aQute.launchpad");
 			assertThat(remote.getBndVersion()).contains(About.CURRENT.toString());
 
 			assertNotNull(remote.analyzeTestSetup(IO.work.getAbsolutePath()));
@@ -114,7 +114,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testInjectionInherited() throws Exception {
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.create()) {
 
 			Foo foo = fw.newInstance(Foo.class);
@@ -126,7 +126,7 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testBundleActivatorCalled() throws Exception {
 
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.create()) {
 
 			Bundle x = fw.bundle()
@@ -146,7 +146,7 @@ public class JUnitFrameworkTest {
 	public void testRunSystemPackages() throws Exception {
 		// Exports blabar
 
-		try (JUnitFramework fw = builder.bndrun(new File("testresources/systempackages.bndrun").getAbsolutePath())
+		try (Launchpad fw = builder.bndrun(new File("testresources/systempackages.bndrun").getAbsolutePath())
 			.create()
 			.inject(this)) {
 
@@ -163,7 +163,7 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testConfiguration() throws Exception {
 
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.create()
 			.inject(this)) {
 
@@ -185,7 +185,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testHiding() throws Exception {
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.nostart()
 			.create()
 			.inject(this)) {
@@ -242,7 +242,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testComponent() throws Exception {
-		try (JUnitFramework fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
+		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
 			.runfw("org.apache.felix.framework")
 			.create()) {
 
@@ -270,7 +270,7 @@ public class JUnitFrameworkTest {
 			String s;
 		}
 		X x = new X();
-		try (JUnitFramework fw = builder.bundles()
+		try (Launchpad fw = builder.bundles()
 			.runfw("org.apache.felix.framework")
 			.create()
 			.inject(x)) {
@@ -281,7 +281,7 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testTimeoutWithInvisibleAndFiltered() throws Exception {
 		try {
-			try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+			try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 				.create()) {
 
 				Hashtable<String, Object> properties = new Hashtable<>();
@@ -302,7 +302,7 @@ public class JUnitFrameworkTest {
 
 				class X {
 					@Service(minimum = 2, timeout = 100, target = "(!(foo=hello))")
-					List<aQute.bnd.remote.junit.test.inject.SomeService> l;
+					List<aQute.launchpad.test.inject.SomeService> l;
 				}
 				X x = new X();
 
@@ -320,7 +320,7 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testTimeoutWithPrivatePackage() throws Exception {
 		try {
-			try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+			try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 				.create()) {
 
 				Bundle a = fw.bundle()
@@ -331,7 +331,7 @@ public class JUnitFrameworkTest {
 
 				class X {
 					@Service(minimum = 2, timeout = 100)
-					List<aQute.bnd.remote.junit.test.inject.SomeService> l;
+					List<aQute.launchpad.test.inject.SomeService> l;
 				}
 				X x = new X();
 
@@ -349,7 +349,7 @@ public class JUnitFrameworkTest {
 	@Test
 	public void testReportingHiddenService() throws Exception {
 		try {
-			try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+			try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 				.create()) {
 
 				fw.framework.getBundleContext()
@@ -361,7 +361,7 @@ public class JUnitFrameworkTest {
 
 				class X {
 					@Service(minimum = 2, timeout = 100)
-					List<aQute.bnd.remote.junit.test.inject.SomeService> l;
+					List<aQute.launchpad.test.inject.SomeService> l;
 				}
 				X x = new X();
 				fw.inject(x);
@@ -375,7 +375,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testReportingUnimportedExport() throws Exception {
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.create()) {
 
 			Bundle a = fw.bundle()
@@ -390,7 +390,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testGetService() throws Exception {
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.create()) {
 
 			assertFalse(fw.getService(String.class)
@@ -400,7 +400,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void testRegisterService() throws Exception {
-		try (JUnitFramework fw = builder.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.create()) {
 			fw.register(String.class, "Hello", "a", 1, "b", 2, "c", new int[] {
 				3, 4, 5
@@ -427,7 +427,7 @@ public class JUnitFrameworkTest {
 
 	@Test
 	public void componentWithExternalReferences() throws Exception {
-		try (JUnitFramework fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
+		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
 			.runfw("org.apache.felix.framework")
 			.create()) {
 			fw.addComponent(ExternalRefComp.class);

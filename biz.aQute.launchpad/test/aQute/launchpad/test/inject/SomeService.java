@@ -1,4 +1,4 @@
-package aQute.bnd.remote.junit.test.inject;
+package aQute.launchpad.test.inject;
 
 import java.util.Hashtable;
 

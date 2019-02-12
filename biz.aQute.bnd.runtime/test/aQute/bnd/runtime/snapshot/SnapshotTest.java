@@ -7,19 +7,19 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
-import aQute.bnd.remote.junit.JUnitFramework;
-import aQute.bnd.remote.junit.JUnitFrameworkBuilder;
-import aQute.bnd.remote.junit.Service;
+import aQute.launchpad.LauchpadBuilder;
+import aQute.launchpad.Launchpad;
+import aQute.launchpad.Service;
 import exported_not_imported.ExportedNotImported;
 
 public class SnapshotTest {
 
-	JUnitFrameworkBuilder builder = new JUnitFrameworkBuilder().bundles(
+	LauchpadBuilder builder = new LauchpadBuilder().bundles(
 		"biz.aQute.bnd.runtime.snapshot, org.apache.felix.log, org.apache.felix.configadmin, org.apache.felix.scr, biz.aQute.bnd.runtime.gogo");
 
 	@Test
 	public void testMinimum() throws Exception {
-		try (JUnitFramework fw = builder.gogo()
+		try (Launchpad fw = builder.gogo()
 			.create()) {
 
 		}
@@ -32,7 +32,7 @@ public class SnapshotTest {
 
 	@Test
 	public void testMoreExtensive() throws Exception {
-		try (JUnitFramework fw = builder.gogo()
+		try (Launchpad fw = builder.gogo()
 			.closeTimeout(0)
 			.create()) {
 			Bundle start1 = fw.bundle()
@@ -67,7 +67,7 @@ public class SnapshotTest {
 
 	@Test
 	public void testNonImportedExportConflicts() throws Exception {
-		try (JUnitFramework fw = builder.gogo()
+		try (Launchpad fw = builder.gogo()
 			.closeTimeout(0)
 			.create()) {
 			Bundle start1 = fw.bundle()
