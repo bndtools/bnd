@@ -121,7 +121,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		try {
 			failed.clear();
 
-			systemCapabilityIndex.addResource(systemResource);
+			systemCapabilityIndex.addResource(getSystemResource());
 
 			if (level > 0) {
 				DebugReporter dr = new DebugReporter(System.out, this, level);
@@ -197,15 +197,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	private List<Capability> findProviders0(Requirement requirement) {
-
 		init();
-		List<Capability> result;
-
-		CacheKey cacheKey = getCacheKey(requirement);
-		List<Capability> cached = providerCache.get(cacheKey);
-		if (cached != null) {
-			result = new ArrayList<>(cached);
-		} else {
+		List<Capability> cached = providerCache.computeIfAbsent(getCacheKey(requirement), k -> {
 			// First stage: framework and self-capabilities. This should never
 			// be reordered by preferences or resolver
 			// hooks
@@ -231,24 +224,21 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
 				.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
 			if (optional && !optionalRoots.contains(requirement.getResource())) {
-
-				result = new ArrayList<>(firstStageResult);
-				Collections.sort(result, capabilityComparator);
-
+				List<Capability> value = new ArrayList<>(firstStageResult);
+				Collections.sort(value, capabilityComparator);
+				return value;
 			} else {
-
-				ArrayList<Capability> secondStageList = findProvidersFromRepositories(requirement, firstStageResult);
+				List<Capability> secondStageList = findProvidersFromRepositories(requirement, firstStageResult);
 
 				// Concatenate both stages, eliminating duplicates between the
 				// two
 				firstStageResult.addAll(secondStageList);
-				result = new ArrayList<>(firstStageResult);
+				return new ArrayList<>(firstStageResult);
 			}
-			providerCache.put(cacheKey, result);
-		}
+		});
+		List<Capability> result = new ArrayList<>(cached);
 		log.log(LogService.LOG_DEBUG, "for " + requirement + " found " + result);
 		return result;
-
 	}
 
 	protected void processMandatoryResource(Requirement requirement, LinkedHashSet<Capability> firstStageResult,
@@ -689,11 +679,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public boolean isInputResource(Resource resource) {
-		return AbstractResolveContext.resourceIdentityEquals(resource, inputResource);
+		return AbstractResolveContext.resourceIdentityEquals(resource, getInputResource());
 	}
 
 	public boolean isSystemResource(Resource resource) {
-		return AbstractResolveContext.resourceIdentityEquals(resource, systemResource);
+		return AbstractResolveContext.resourceIdentityEquals(resource, getSystemResource());
 	}
 
 	public Resource getHighestResource(String bsn, String range) {
