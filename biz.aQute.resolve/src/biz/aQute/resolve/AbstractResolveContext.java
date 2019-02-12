@@ -24,6 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -87,6 +88,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		IGNORED_NAMESPACES_FOR_SYSTEM_RESOURCES.add(HOST_NAMESPACE);
 	}
 
+	/**
+	 * The 'OSGiFramework' contract was something invented by the old indexer
+	 * which is no longer in use.
+	 */
+	@Deprecated
 	protected static final String					CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
 	protected static final String					IDENTITY_INITIAL_RESOURCE	= "<<INITIAL>>";
 	protected static final String					IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
@@ -121,7 +127,7 @@ public abstract class AbstractResolveContext extends ResolveContext {
 		try {
 			failed.clear();
 
-			systemCapabilityIndex.addResource(systemResource);
+			systemCapabilityIndex.addResource(getSystemResource());
 
 			if (level > 0) {
 				DebugReporter dr = new DebugReporter(System.out, this, level);
@@ -197,15 +203,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	private List<Capability> findProviders0(Requirement requirement) {
-
 		init();
-		List<Capability> result;
-
-		CacheKey cacheKey = getCacheKey(requirement);
-		List<Capability> cached = providerCache.get(cacheKey);
-		if (cached != null) {
-			result = new ArrayList<>(cached);
-		} else {
+		List<Capability> cached = providerCache.computeIfAbsent(getCacheKey(requirement), k -> {
 			// First stage: framework and self-capabilities. This should never
 			// be reordered by preferences or resolver
 			// hooks
@@ -231,24 +230,21 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			boolean optional = Namespace.RESOLUTION_OPTIONAL.equals(requirement.getDirectives()
 				.get(Namespace.REQUIREMENT_RESOLUTION_DIRECTIVE));
 			if (optional && !optionalRoots.contains(requirement.getResource())) {
-
-				result = new ArrayList<>(firstStageResult);
-				Collections.sort(result, capabilityComparator);
-
+				List<Capability> value = new ArrayList<>(firstStageResult);
+				Collections.sort(value, capabilityComparator);
+				return value;
 			} else {
-
-				ArrayList<Capability> secondStageList = findProvidersFromRepositories(requirement, firstStageResult);
+				List<Capability> secondStageList = findProvidersFromRepositories(requirement, firstStageResult);
 
 				// Concatenate both stages, eliminating duplicates between the
 				// two
 				firstStageResult.addAll(secondStageList);
-				result = new ArrayList<>(firstStageResult);
+				return new ArrayList<>(firstStageResult);
 			}
-			providerCache.put(cacheKey, result);
-		}
+		});
+		List<Capability> result = new ArrayList<>(cached);
 		log.log(LogService.LOG_DEBUG, "for " + requirement + " found " + result);
 		return result;
-
 	}
 
 	protected void processMandatoryResource(Requirement requirement, LinkedHashSet<Capability> firstStageResult,
@@ -388,13 +384,18 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	private boolean isPermitted(Resource resource) {
-		// OSGi frameworks cannot be selected as ordinary resources
-		Capability fwkCap = findFrameworkContractCapability(resource);
-		if (fwkCap != null) {
+		// OSGi frameworks cannot be selected as ordinary resources.
+		// We assume any exporter of the org.osgi.framework package is
+		// either a framework impl or osgi.core jar and is not meant
+		// to be used as a bundle.
+		if (resource.getCapabilities(PACKAGE_NAMESPACE)
+			.stream()
+			.anyMatch(c -> Objects.equals(c.getAttributes()
+				.get(PACKAGE_NAMESPACE), "org.osgi.framework"))) {
 			return false;
 		}
 
-		// Remove osgi.core and any ee JAR
+		// Remove any jars without an identity capability
 		List<Capability> idCaps = resource.getCapabilities(IDENTITY_NAMESPACE);
 		if (idCaps == null || idCaps.isEmpty()) {
 			log.log(LogService.LOG_ERROR, "Resource is missing an identity capability (osgi.identity).");
@@ -412,15 +413,18 @@ public abstract class AbstractResolveContext extends ResolveContext {
 			return false;
 		}
 
-		if ("osgi.core".equals(identity))
-			return false;
-
+		// Remove any ee JAR
 		if (identity.startsWith("ee."))
 			return false;
 
 		return true;
 	}
 
+	/**
+	 * This method is BROKEN. The 'OSGiFramework' contract was something
+	 * invented by the old indexer which is no longer in use.
+	 */
+	@Deprecated
 	protected static Capability findFrameworkContractCapability(Resource resource) {
 		List<Capability> contractCaps = resource.getCapabilities(CONTRACT_NAMESPACE);
 		if (contractCaps != null)
@@ -689,11 +693,11 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	}
 
 	public boolean isInputResource(Resource resource) {
-		return AbstractResolveContext.resourceIdentityEquals(resource, inputResource);
+		return AbstractResolveContext.resourceIdentityEquals(resource, getInputResource());
 	}
 
 	public boolean isSystemResource(Resource resource) {
-		return AbstractResolveContext.resourceIdentityEquals(resource, systemResource);
+		return AbstractResolveContext.resourceIdentityEquals(resource, getSystemResource());
 	}
 
 	public Resource getHighestResource(String bsn, String range) {

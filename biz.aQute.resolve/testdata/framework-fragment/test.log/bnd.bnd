@@ -1,0 +1,6 @@
+-buildpath: \
+	osgi.annotation;version=7.0,\
+	osgi.core;version=7.0,\
+	osgi.cmpn;version=7.0
+
+Private-Package: test.log

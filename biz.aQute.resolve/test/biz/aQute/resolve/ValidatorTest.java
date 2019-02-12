@@ -1,7 +1,10 @@
 package biz.aQute.resolve;
 
+import static org.osgi.framework.namespace.PackageNamespace.PACKAGE_NAMESPACE;
+
 import java.io.File;
 import java.util.List;
+import java.util.Objects;
 
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.resource.Resource;
@@ -134,6 +137,10 @@ public class ValidatorTest extends TestCase {
 			repository.add(builder.build());
 
 			List<Resource> resources = repository.getResources();
+			resources.removeIf(resource -> resource.getCapabilities(PACKAGE_NAMESPACE)
+				.stream()
+				.anyMatch(c -> Objects.equals(c.getAttributes()
+					.get(PACKAGE_NAMESPACE), "org.osgi.framework")));
 			validator.validateResources(repository, resources);
 			assertTrue(validator.check());
 		}
