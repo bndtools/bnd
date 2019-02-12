@@ -133,7 +133,9 @@ public class ResolverLogger implements LogService, AutoCloseable {
 	@Override
 	public void close() {
 		IO.close(printer);
-		IO.delete(file);
+		if (file != null) {
+			IO.delete(file);
+		}
 	}
 
 	public int getLogLevel() {
