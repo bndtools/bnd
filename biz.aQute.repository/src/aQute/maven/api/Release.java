@@ -55,4 +55,11 @@ public interface Release extends Closeable {
 	 * Force an overwrite even if the artifact exists
 	 */
 	void force();
+
+	/**
+	 * Set a pass phrase and indicate that the files must be signed.
+	 * 
+	 * @param passphrase the passphrase
+	 */
+	void setPassphrase(String passphrase);
 }
