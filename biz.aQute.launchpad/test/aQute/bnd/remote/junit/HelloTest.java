@@ -18,7 +18,7 @@ import aQute.lib.io.IO;
 
 public class HelloTest {
 	static Workspace		ws;
-	JUnitFrameworkBuilder	builder;
+	LauchpadBuilder	builder;
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
@@ -27,7 +27,7 @@ public class HelloTest {
 
 	@Before
 	public void before() throws Exception {
-		builder = new JUnitFrameworkBuilder();
+		builder = new LauchpadBuilder();
 	}
 
 	@After
@@ -53,7 +53,7 @@ public class HelloTest {
 	
 	@Test
 	public void testActivator() throws Exception {
-		try (JUnitFramework framework = builder.runfw("org.apache.felix.framework")
+		try (Launchpad framework = builder.runfw("org.apache.felix.framework")
 			.create()) {
 			Bundle hello = framework.bundle()
 				.bundleActivator(Hello.class)

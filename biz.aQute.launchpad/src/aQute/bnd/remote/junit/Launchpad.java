@@ -1,6 +1,6 @@
 package aQute.bnd.remote.junit;
 
-import static aQute.bnd.remote.junit.JUnitFrameworkBuilder.projectDir;
+import static aQute.bnd.remote.junit.LauchpadBuilder.projectDir;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -74,14 +74,14 @@ import aQute.libg.glob.Glob;
  * this framework starts in the same process as that the JUnit code runs. This
  * is normally a separately started VM.
  */
-public class JUnitFramework implements AutoCloseable {
+public class Launchpad implements AutoCloseable {
 
 	private static final long					SERVICE_DEFAULT_TIMEOUT	= 60000L;
 	static final AtomicInteger					n						= new AtomicInteger();
 
 	final Framework								framework;
 	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
-	final JUnitFrameworkBuilder					builder;
+	final LauchpadBuilder					builder;
 	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
 	final Injector<Service>						injector;
 	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new HashMap<>();
@@ -93,7 +93,7 @@ public class JUnitFramework implements AutoCloseable {
 	PrintStream									out						= System.err;
 	ServiceTracker<FindHook, FindHook>			hooks;
 
-	JUnitFramework(JUnitFrameworkBuilder jUnitFrameworkBuilder, Framework framework) {
+	Launchpad(LauchpadBuilder jUnitFrameworkBuilder, Framework framework) {
 		try {
 			this.builder = jUnitFrameworkBuilder;
 			this.debug = jUnitFrameworkBuilder.debug;
@@ -205,7 +205,7 @@ public class JUnitFramework implements AutoCloseable {
 	/**
 	 * Set the debug flag
 	 */
-	public JUnitFramework debug() {
+	public Launchpad debug() {
 		this.debug = true;
 		return this;
 	}
@@ -219,7 +219,7 @@ public class JUnitFramework implements AutoCloseable {
 	 */
 	public List<Bundle> bundles(String specification) {
 		try {
-			return JUnitFrameworkBuilder.workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
+			return LauchpadBuilder.workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
 				.stream()
 				.map(File::new)
 				.map(this::bundle)
@@ -386,7 +386,7 @@ public class JUnitFramework implements AutoCloseable {
 	/**
 	 * Add the standard Gogo bundles
 	 */
-	public JUnitFramework gogo() {
+	public Launchpad gogo() {
 		try {
 			bundles("org.apache.felix.gogo.runtime,org.apache.felix.gogo.command,org.apache.felix.gogo.shell");
 			return this;
@@ -401,7 +401,7 @@ public class JUnitFramework implements AutoCloseable {
 	 * @param object the object to inject
 	 */
 
-	public JUnitFramework inject(Object object) {
+	public Launchpad inject(Object object) {
 		try {
 			injector.inject(object);
 			return this;
@@ -562,7 +562,7 @@ public class JUnitFramework implements AutoCloseable {
 	/**
 	 * Hide a service by registering a hook. This should in general be done
 	 * before you let others look. In general, the JUnit Framework should be
-	 * started in {@link JUnitFrameworkBuilder#nostart()} mode. This initializes
+	 * started in {@link LauchpadBuilder#nostart()} mode. This initializes
 	 * the OSGi framework making it possible to register a service before
 	 */
 
@@ -576,7 +576,7 @@ public class JUnitFramework implements AutoCloseable {
 	 * all bundles _except_ the testbundle. Notice that bundles that already
 	 * obtained a references are not affected. If you use this facility it is
 	 * best to not start the framework before you hide a service. You can
-	 * indicate this to the build with {@link JUnitFrameworkBuilder#nostart()}.
+	 * indicate this to the build with {@link LauchpadBuilder#nostart()}.
 	 * The framework can be started after creation with {@link #start()}. Notice
 	 * that services through the testbundle remain visible for this hide.
 	 * 

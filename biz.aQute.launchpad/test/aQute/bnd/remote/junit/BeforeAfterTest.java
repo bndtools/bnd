@@ -8,12 +8,12 @@ import org.junit.Test;
 
 public class BeforeAfterTest {
 
-	JUnitFrameworkBuilder builder;
-	JUnitFramework			framework;
+	LauchpadBuilder builder;
+	Launchpad			framework;
 
 	@Before
 	public void before() {
-		builder = new JUnitFrameworkBuilder();
+		builder = new LauchpadBuilder();
 		framework = builder.runfw("org.apache.felix.framework")
 			.create();
 	}

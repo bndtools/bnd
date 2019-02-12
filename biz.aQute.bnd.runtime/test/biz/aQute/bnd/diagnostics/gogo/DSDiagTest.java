@@ -5,13 +5,13 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
 
-import aQute.bnd.remote.junit.JUnitFramework;
-import aQute.bnd.remote.junit.JUnitFrameworkBuilder;
+import aQute.bnd.remote.junit.Launchpad;
+import aQute.bnd.remote.junit.LauchpadBuilder;
 
 public class DSDiagTest {
 
-	JUnitFrameworkBuilder	builder	= new JUnitFrameworkBuilder().bndrun("run.bndrun");
-	JUnitFramework			fw		= builder.create();
+	LauchpadBuilder	builder	= new LauchpadBuilder().bndrun("run.bndrun");
+	Launchpad			fw		= builder.create();
 
 	interface IA {}
 

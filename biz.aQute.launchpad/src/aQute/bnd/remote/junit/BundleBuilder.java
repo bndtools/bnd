@@ -17,14 +17,14 @@ import aQute.lib.io.IO;
  */
 public class BundleBuilder implements BundleSpecBuilder {
 
-	final JUnitFramework		ws;
+	final Launchpad		ws;
 	final BuilderSpecification	spec		= new BuilderSpecification();
 	final List<Closeable>		closeables	= new ArrayList<>();
 
-	BundleBuilder(JUnitFramework ws) {
+	BundleBuilder(Launchpad ws) {
 		this.ws = ws;
 		spec.classpath.add(ws.builder.local.bin_test);
-		bundleSymbolicName("t-" + JUnitFrameworkBuilder.counter.incrementAndGet());
+		bundleSymbolicName("t-" + LauchpadBuilder.counter.incrementAndGet());
 	}
 
 	/**
