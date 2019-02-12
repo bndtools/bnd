@@ -7,6 +7,8 @@ Fragment-Host: biz.aQute.bndlib;bundle-version="[${base.version},${versionmask;=
 -buildpath: aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest
 
+-dependson: biz.aQute.bnd.embedded-repo
+
 Import-Package: \
 	javax.management,\
 	javax.management.remote
