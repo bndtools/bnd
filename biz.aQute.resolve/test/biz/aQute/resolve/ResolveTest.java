@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static test.lib.Utils.createRepo;
 
 import java.io.File;
@@ -31,6 +32,10 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
+import aQute.bnd.build.model.clauses.HeaderClause;
+import aQute.bnd.build.model.conversions.CollectionFormatter;
+import aQute.bnd.build.model.conversions.Converter;
+import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Domain;
@@ -504,6 +509,27 @@ public class ResolveTest extends TestCase {
 				e.printStackTrace();
 				fail("Resolve failed");
 			}
+		}
+	}
+
+	private static final Converter<String, Collection<? extends HeaderClause>> runbundlesListFormatter = new CollectionFormatter<>(
+		",", new HeaderClauseFormatter(), null, "", "");
+
+	public void testFrameworkFragmentResolve() throws Exception {
+		String wspath = "framework-fragment/";
+		String genWsPath = "generated/tmp/test/" + getName() + "/" + wspath;
+		File wsRoot = IO.getFile(genWsPath);
+		IO.delete(wsRoot);
+		IO.copy(IO.getFile("testdata/" + wspath), wsRoot);
+
+		File f = IO.getFile(wsRoot, "test.log/fragment.bndrun");
+		try (Workspace ws = new Workspace(wsRoot); Bndrun bndrun = Bndrun.createBndrun(ws, f)) {
+			String runbundles = bndrun.resolve(false, false, runbundlesListFormatter);
+			assertThat(bndrun.check()).isTrue();
+			Parameters p = new Parameters(runbundles);
+			assertThat(p.keySet()).hasSize(5)
+				.contains("org.apache.felix.scr", "test.log", "org.apache.felix.log.extension",
+					"org.apache.felix.gogo.command", "org.apache.felix.gogo.runtime");
 		}
 	}
 }

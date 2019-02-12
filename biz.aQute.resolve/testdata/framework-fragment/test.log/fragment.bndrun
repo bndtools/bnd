@@ -1,0 +1,13 @@
+-runfw: org.apache.felix.framework
+-runee: JavaSE-1.8
+
+-runrequires: \
+	bnd.identity;version='0.0.0';id='test.log',\
+	bnd.identity;id='org.apache.felix.gogo.command'
+
+-runbundles: \
+	org.apache.felix.scr;version='[2.1.12,2.1.13)',\
+	test.log;version=snapshot,\
+	org.apache.felix.log.extension;version='[1.0.0,1.0.1)'
+	
+#-resolvedebug: 2
