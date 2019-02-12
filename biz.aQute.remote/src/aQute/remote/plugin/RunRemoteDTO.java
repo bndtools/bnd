@@ -16,5 +16,5 @@ public class RunRemoteDTO extends DTO {
 	public int					jdb;
 	public int					timeout;
 	public int					shell		= 0;
-	public boolean				reachable	= true;
+	public boolean				reachable	= false;
 }

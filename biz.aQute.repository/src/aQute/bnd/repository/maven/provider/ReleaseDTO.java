@@ -35,4 +35,5 @@ public class ReleaseDTO extends DTO {
 	public PomDTO		pom			= new PomDTO();
 	public SourceDTO	sources		= new SourceDTO();
 	public long			snapshot	= -1;
+	public String		passphrase;
 }

@@ -86,4 +86,13 @@ public class SnapshotReleaser extends Releaser {
 
 	@Override
 	public void sign(Archive archive, File f) throws Exception {}
+
+	/*
+	 * Snapshots are never signed
+	 */
+	@Override
+	public void setPassphrase(String passphrase) {
+		// ignore
+	}
+
 }

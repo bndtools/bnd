@@ -175,6 +175,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 						logger.debug("Already released {}", pom.getRevision());
 						return result;
 					}
+
+					if (instructions.passphrase != null && !instructions.passphrase.trim()
+						.isEmpty()) {
+						releaser.setPassphrase(instructions.passphrase);
+					}
 					if (instructions.snapshot >= 0)
 						releaser.setBuild(instructions.snapshot, null);
 
@@ -364,6 +369,11 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		Attrs pom = p.remove("pom");
 		if (pom != null) {
 			release.pom.path = pom.get("path");
+		}
+
+		Attrs sign = p.remove("sign");
+		if (sign != null) {
+			release.passphrase = sign.get("passphrase");
 		}
 
 		if (!p.isEmpty()) {
