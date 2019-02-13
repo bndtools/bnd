@@ -24,8 +24,6 @@ import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
 import aQute.bnd.service.specifications.RunSpecification;
-import aQute.launchpad.LauchpadBuilder;
-import aQute.launchpad.Launchpad;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;

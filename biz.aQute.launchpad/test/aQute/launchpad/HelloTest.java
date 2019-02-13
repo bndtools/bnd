@@ -14,8 +14,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 import aQute.bnd.build.Workspace;
-import aQute.launchpad.LauchpadBuilder;
-import aQute.launchpad.Launchpad;
 import aQute.lib.io.IO;
 
 public class HelloTest {

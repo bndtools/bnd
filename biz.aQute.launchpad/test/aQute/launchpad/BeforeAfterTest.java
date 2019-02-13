@@ -6,9 +6,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import aQute.launchpad.LauchpadBuilder;
-import aQute.launchpad.Launchpad;
-
 public class BeforeAfterTest {
 
 	LauchpadBuilder builder;
