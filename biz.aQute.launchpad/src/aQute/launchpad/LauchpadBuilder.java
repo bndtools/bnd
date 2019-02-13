@@ -1,4 +1,4 @@
-package aQute.bnd.remote.junit;
+package aQute.launchpad;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +24,8 @@ import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
 import aQute.bnd.service.specifications.RunSpecification;
+import aQute.launchpad.LauchpadBuilder;
+import aQute.launchpad.Launchpad;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
@@ -31,7 +33,7 @@ import aQute.lib.strings.Strings;
 /**
  * This class is a builder for frameworks that can be used in JUnit testing.
  */
-public class JUnitFrameworkBuilder implements AutoCloseable {
+public class LauchpadBuilder implements AutoCloseable {
 
 	final static ExecutorService	executor	= Executors.newCachedThreadPool();
 	final static File				projectDir	= IO.work;
@@ -73,11 +75,11 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 	 * Start a framework assuming the current working directory is the project
 	 * directory.
 	 */
-	public JUnitFrameworkBuilder() {
+	public LauchpadBuilder() {
 		local = projectTestSetup.clone();
 	}
 
-	public JUnitFrameworkBuilder bndrun(File file) {
+	public LauchpadBuilder bndrun(File file) {
 		RunSpecification setup = workspace.getRun(file.getAbsolutePath());
 		if (!setup.errors.isEmpty()) {
 			throw new IllegalArgumentException(
@@ -91,32 +93,32 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 		return this;
 	}
 
-	public JUnitFrameworkBuilder bndrun(String path) {
+	public LauchpadBuilder bndrun(String path) {
 		return bndrun(IO.getFile(projectDir, path));
 	}
 
-	public JUnitFrameworkBuilder project() {
+	public LauchpadBuilder project() {
 		return bndrun(projectDir);
 	}
 
-	public JUnitFrameworkBuilder gogo() {
+	public LauchpadBuilder gogo() {
 		bundles("org.apache.felix.gogo.runtime,org.apache.felix.gogo.command,org.apache.felix.gogo.shell");
 		return this;
 	}
 
-	public JUnitFrameworkBuilder bundles(String specification) {
+	public LauchpadBuilder bundles(String specification) {
 		List<String> config = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		config.forEach(local.runbundles::add);
 		return this;
 	}
 
-	public JUnitFrameworkBuilder runpath(String specification) {
+	public LauchpadBuilder runpath(String specification) {
 		List<String> config = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		config.forEach(local.runpath::add);
 		return this;
 	}
 
-	public JUnitFrameworkBuilder bundles(File... files) {
+	public LauchpadBuilder bundles(File... files) {
 		Stream.of(files)
 			.map(File::getAbsolutePath)
 			.forEach(local.runpath::add);
@@ -124,7 +126,7 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 		return this;
 	}
 
-	public JUnitFrameworkBuilder runpath(File... files) {
+	public LauchpadBuilder runpath(File... files) {
 		Stream.of(files)
 			.map(File::getAbsolutePath)
 			.forEach(local.runpath::add);
@@ -132,44 +134,44 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 		return this;
 	}
 
-	public JUnitFrameworkBuilder nostart() {
+	public LauchpadBuilder nostart() {
 		this.start = false;
 		return this;
 	}
 
-	public JUnitFrameworkBuilder notestbundle() {
+	public LauchpadBuilder notestbundle() {
 		this.testbundle = false;
 		return this;
 	}
 
-	public JUnitFrameworkBuilder runfw(File file) {
+	public LauchpadBuilder runfw(File file) {
 		local.runfw.clear();
 		local.runfw.add(file.getAbsolutePath());
 
 		return this;
 	}
 
-	public JUnitFrameworkBuilder runfw(String specification) {
+	public LauchpadBuilder runfw(String specification) {
 		local.runfw = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		return this;
 	}
 
-	public JUnitFrameworkBuilder set(String key, String value) {
+	public LauchpadBuilder set(String key, String value) {
 		projectTestSetup.properties.put(key, value);
 		return this;
 	}
 
-	public JUnitFrameworkBuilder closeTimeout(long ms) {
+	public LauchpadBuilder closeTimeout(long ms) {
 		this.closeTimeout = ms;
 		return this;
 	}
 
-	public JUnitFrameworkBuilder debug() {
+	public LauchpadBuilder debug() {
 		this.debug = true;
 		return this;
 	}
 
-	public JUnitFramework create() {
+	public Launchpad create() {
 		try {
 			File storage = IO.getFile(new File(local.target), "junit-fw-" + counter.incrementAndGet());
 			IO.delete(storage);
@@ -186,7 +188,7 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 			Framework framework = getFramework();
 
 			@SuppressWarnings("resource")
-			JUnitFramework jUnitFramework = new JUnitFramework(this, framework);
+			Launchpad jUnitFramework = new Launchpad(this, framework);
 
 			jUnitFramework.report("Extra system packages %s", local.extraSystemPackages.keySet()
 				.stream()
@@ -324,7 +326,7 @@ public class JUnitFrameworkBuilder implements AutoCloseable {
 	}
 
 	private ClassLoader getMyClassLoader() {
-		return JUnitFrameworkBuilder.class.getClassLoader();
+		return LauchpadBuilder.class.getClassLoader();
 	}
 
 	private URL toURL(File file) {
