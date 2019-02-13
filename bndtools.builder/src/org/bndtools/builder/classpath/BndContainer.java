@@ -1,6 +1,9 @@
 package org.bndtools.builder.classpath;
 
+import static java.util.Objects.requireNonNull;
+
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bndtools.api.BndtoolsConstants;
@@ -19,18 +22,10 @@ public class BndContainer implements IClasspathContainer, Serializable {
     private final long lastModified;
     private transient volatile List<IResource> resources;
 
-    BndContainer() {
-        this(EMPTY_ENTRIES, 0L, null);
-    }
-
-    BndContainer(List<IClasspathEntry> entries, long lastModified, List<IResource> resources) {
-        this(entries.toArray(EMPTY_ENTRIES), lastModified, resources);
-    }
-
     private BndContainer(IClasspathEntry[] entries, long lastModified, List<IResource> resources) {
         this.entries = entries;
         this.lastModified = lastModified;
-        this.resources = (resources == null) || resources.isEmpty() ? null : resources;
+        this.resources = resources;
     }
 
     @Override
@@ -78,5 +73,57 @@ public class BndContainer implements IClasspathContainer, Serializable {
             }
         }
         resources = null;
+    }
+
+    static class Builder {
+        private final List<IClasspathEntry> entries = new ArrayList<>();
+        private final List<IResource> resources = new ArrayList<>();
+        private long lastModified = 0L;
+
+        Builder() {
+        }
+
+        Builder updateLastModified(long time) {
+            if (time > lastModified) {
+                lastModified = time;
+            }
+            return this;
+        }
+
+        long lastModified() {
+            return lastModified;
+        }
+
+        List<IClasspathEntry> entries() {
+            return entries;
+        }
+
+        Builder entries(List<IClasspathEntry> entries) {
+            requireNonNull(entries);
+            if (entries != this.entries) {
+                this.entries.clear();
+                this.entries.addAll(entries);
+            }
+            return this;
+        }
+
+        Builder entry(IClasspathEntry entry) {
+            entries.add(requireNonNull(entry));
+            return this;
+        }
+
+        Builder entry(int i, IClasspathEntry entry) {
+            entries.set(i, requireNonNull(entry));
+            return this;
+        }
+
+        Builder refresh(IResource resource) {
+            resources.add(requireNonNull(resource));
+            return this;
+        }
+
+        BndContainer build() {
+            return new BndContainer(entries.toArray(EMPTY_ENTRIES), lastModified, resources.isEmpty() ? null : new ArrayList<>(resources));
+        }
     }
 }
