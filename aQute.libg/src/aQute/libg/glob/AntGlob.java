@@ -14,7 +14,7 @@ public class AntGlob extends Glob {
 		super(globString, toPattern(globString, flags));
 	}
 
-	// match forward slash or back slash (windows)
+	// match forward slash or back slash (windows)? what about linux?
 	private static final String	SLASHY		= "[/\\\\]";
 	private static final String	NOT_SLASHY	= "[^/\\\\]";
 
