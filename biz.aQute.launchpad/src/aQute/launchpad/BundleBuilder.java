@@ -10,10 +10,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import aQute.bnd.service.specifications.BuilderSpecification;
-import aQute.launchpad.BundleBuilder;
-import aQute.launchpad.BundleSpecBuilder;
-import aQute.launchpad.LauchpadBuilder;
-import aQute.launchpad.Launchpad;
 import aQute.lib.io.IO;
 
 /**

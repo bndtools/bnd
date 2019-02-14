@@ -10,9 +10,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import aQute.launchpad.LauchpadBuilder;
-import aQute.launchpad.Launchpad;
-
 public class RuleTest {
 
 	LauchpadBuilder builder = new LauchpadBuilder();

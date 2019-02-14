@@ -52,10 +52,6 @@ import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
-import aQute.launchpad.BundleBuilder;
-import aQute.launchpad.LauchpadBuilder;
-import aQute.launchpad.Launchpad;
-import aQute.launchpad.Service;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.inject.Injector;
