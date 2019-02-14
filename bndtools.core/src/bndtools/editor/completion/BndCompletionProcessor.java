@@ -3,8 +3,10 @@ package bndtools.editor.completion;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.ITextViewer;
@@ -15,11 +17,14 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 
-import aQute.bnd.help.Syntax;
+import aQute.bnd.osgi.Constants;
 
 public class BndCompletionProcessor implements IContentAssistProcessor {
 
     private static final Pattern PREFIX_PATTERN = Pattern.compile("^(?:.*\\s)*(.*)$");
+    private static final String[] ALL_OPTIONS = Stream.of(Constants.options, Constants.BUNDLE_SPECIFIC_HEADERS)
+                                                      .flatMap(Stream::of)
+                                                      .toArray(String[]::new);
 
     @Override
     public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
@@ -45,15 +50,13 @@ public class BndCompletionProcessor implements IContentAssistProcessor {
     }
 
     private static ICompletionProposal[] proposals(String prefix, int offset) {
-        ArrayList<ICompletionProposal> results = new ArrayList<ICompletionProposal>(Syntax.HELP.size());
-        for (Syntax s : Syntax.HELP.values()) {
-            if (prefix == null || s.getHeader()
-                .startsWith(prefix)) {
-                IContextInformation info = new ContextInformation(s.getHeader(), s.getHeader());
-                String text = prefix == null ? s.getHeader()
-                    : s.getHeader()
-                        .substring(prefix.length());
-                results.add(new CompletionProposal(text + ": ", offset, 0, text.length() + 2, null, s.getHeader(), info, s.getLead())); //$NON-NLS-1$
+        List<ICompletionProposal> results = new ArrayList<>();
+
+        for (String s : ALL_OPTIONS) {
+            if (prefix == null || s.startsWith(prefix)) {
+                IContextInformation info = new ContextInformation(s, s);
+                String text = prefix == null ? s : s.substring(prefix.length());
+                results.add(new CompletionProposal(text + ": ", offset, 0, text.length() + 2, null, s, info, null));
             }
         }
         Collections.sort(results, new Comparator<ICompletionProposal>() {
