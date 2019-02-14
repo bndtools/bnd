@@ -36,6 +36,8 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaModelManager;
+import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
+import org.eclipse.jdt.launching.JavaRuntime;
 
 import aQute.bnd.build.CircularDependencyException;
 import aQute.bnd.build.Container;
@@ -62,6 +64,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
         super();
         Central.onWorkspace(workspace -> Central.getInstance()
             .addModelListener(BndContainerInitializer.this));
+        JavaRuntime.addContainerResolver(new BndContainerRuntimeClasspathEntryResolver(), BndtoolsConstants.BND_CLASSPATH_ID.segment(0));
     }
 
     @Override
@@ -254,8 +257,14 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 sb.append(container.getDescription())
                     .append(" for ")
                     .append(javaProject.getProject()
-                        .getName());
+                        .getName())
+                    .append("\n\n=== Compile Classpath ===");
                 for (IClasspathEntry cpe : container.getClasspathEntries()) {
+                    sb.append("\n--- ")
+                        .append(cpe);
+                }
+                sb.append("\n\n=== Runtime Classpath ===");
+                for (IRuntimeClasspathEntry cpe : container.getRuntimeClasspathEntries()) {
                     sb.append("\n--- ")
                         .append(cpe);
                 }
