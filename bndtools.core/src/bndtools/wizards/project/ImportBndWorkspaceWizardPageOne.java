@@ -8,9 +8,6 @@ import java.util.List;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.ui.JavaUI;
-import org.eclipse.jface.fieldassist.ControlDecoration;
-import org.eclipse.jface.fieldassist.FieldDecoration;
-import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -56,7 +53,6 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
      * TableViewer is used to display an image for the project which is not possible with a ListViewer
      */
     private TableViewer tableViewer;
-    private ControlDecoration txtFolderErrorDecorator;
 
     protected ImportBndWorkspaceWizardPageOne(String pageName) {
         super(pageName);
@@ -112,16 +108,6 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
                     .updateButtons();
             }
         });
-
-        // Adding the decorator
-        txtFolderErrorDecorator = new ControlDecoration(txtFolder, SWT.TOP | SWT.RIGHT);
-        FieldDecoration fieldDecoration = FieldDecorationRegistry.getDefault()
-            .getFieldDecoration(FieldDecorationRegistry.DEC_ERROR);
-        Image img = fieldDecoration.getImage();
-        txtFolderErrorDecorator.setImage(img);
-        txtFolderErrorDecorator.setDescriptionText("Selected folder must contain valid Bnd Workspace configuration project.");
-        // hiding it initially
-        txtFolderErrorDecorator.hide();
 
         Button btnOpenDialog = new Button(container, SWT.PUSH);
         btnOpenDialog.setText("Browse...");
@@ -244,8 +230,7 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
 
         getShell().setMinimumSize(470, 450);
 
-        // required to avoid an error in the system
-        setControl(parent);
+        setControl(container);
         setPageComplete(false);
 
         txtFolder.setText(ResourcesPlugin.getWorkspace()
@@ -283,7 +268,6 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
                 try {
                     bndWorkspace = Workspace.getWorkspace(chosenDirectory);
                     setErrorMessage(null);
-                    txtFolderErrorDecorator.hide();
                     List<Object> tableEntries = new ArrayList<Object>(bndWorkspace.getAllProjects());
                     tableEntries.add(bndWorkspace.getBuildDir());
                     tableViewer.setInput(tableEntries);
@@ -291,12 +275,10 @@ public class ImportBndWorkspaceWizardPageOne extends WizardPage {
                 } catch (Exception e) {
                     // not a valid Bnd Workspace folder
                     setErrorMessage(e.getMessage());
-                    txtFolderErrorDecorator.show();
                 }
             } else {
                 // handle non-existing folders
                 setErrorMessage("No Workspace found from: " + selectedFolder);
-                txtFolderErrorDecorator.show();
             }
         }
         if (!result) {
