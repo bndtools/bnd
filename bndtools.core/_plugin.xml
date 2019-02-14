@@ -1092,6 +1092,7 @@
             icon="icons/bndtools-logo-16x16.png"
             name="Existing Bnd Workspace"
             project="true">
+            <description>Imports an existing Bnd workspace</description>
       </wizard>
    </extension>
 
