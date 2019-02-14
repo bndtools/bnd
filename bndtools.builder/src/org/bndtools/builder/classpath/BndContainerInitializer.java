@@ -223,7 +223,7 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }
 
             try {
-                Central.bndCall(() -> calculateProjectClasspath());
+                Central.bndCall(this::calculateProjectClasspath);
             } catch (Exception e) {
                 SetLocation error = error("Unable to calculate classpath for project %s", e, project.getName());
                 logger.logError(error.location().message, e);
@@ -279,9 +279,9 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
             }, null);
         }
 
-        private BndContainer.Builder calculateProjectClasspath() {
+        private Void calculateProjectClasspath() {
             if (!project.isOpen()) {
-                return builder;
+                return null;
             }
 
             try {
@@ -295,12 +295,12 @@ public class BndContainerInitializer extends ClasspathContainerInitializer imple
                 calculateContainersClasspath(Constants.BUILDPATH, containers);
             } catch (CircularDependencyException e) {
                 error("Circular dependency during classpath calculation: %s", e, e.getMessage());
-                return builder.entries(Collections.emptyList());
+                builder.entries(Collections.emptyList());
             } catch (Exception e) {
                 error("Unexpected error during classpath calculation: %s", e, e.getMessage());
-                return builder.entries(Collections.emptyList());
+                builder.entries(Collections.emptyList());
             }
-            return builder;
+            return null;
         }
 
         private void calculateContainersClasspath(String instruction, Collection<Container> containers) {
