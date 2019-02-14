@@ -33,6 +33,10 @@
 	org.eclipse.equinox.preferences,\
 	org.eclipse.swt
 
+-testpath: \
+    ${junit},\
+    ${mockito}
+
 # Headers
 Bundle-SymbolicName: bndtools.builder; singleton:=true
 Bundle-Activator: org.bndtools.builder.BuilderPlugin
