@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" output="nested/bin" path="src"/>
-	<classpathentry kind="src" output="bin_test" path="test"/>
+  <classpathentry kind="src" output="bin_test" path="test">
+    <attributes>
+      <attribute name="test" value="true"/>
+    </attributes>
+  </classpathentry>
 	<classpathentry kind="src" path="srcb"/>
 	<classpathentry kind="src" path="srcc"/>
 	<classpathentry kind="src" path="nested/src"/>
