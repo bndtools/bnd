@@ -3,6 +3,7 @@ package test.properties;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -16,7 +17,7 @@ public class PropertiesTest extends TestCase {
 	public static void testBndEditModel() throws Exception {
 
 		Document doc = new Document("# Hello\nBundle-Description:\tTest \u2649\n"
-			+ "\n\nBundle-SymbolicName:\ttest.properties\n" + "Private-Package:\tpp1\n");
+			+ "\n\nBundle-SymbolicName:\ttest.properties\n" + "Private-Package:\tpp1\n" + "-privatepackage:\tppA\n");
 
 		BndEditModel model = new BndEditModel();
 
@@ -43,16 +44,23 @@ public class PropertiesTest extends TestCase {
 
 		assertEquals(props.getProperty("Bundle-Version"), model.getBundleVersionString());
 
-		List<String> privatePackages = model.getPrivatePackages();
-
-		String s = props.getProperty("Private-Package");
-		String[] pkgs = s.split("\\,");
-		for (String pkg : pkgs) {
-			assertTrue(privatePackages.remove(pkg));
-		}
-		assertEquals(0, privatePackages.size());
+		assertEquals(4, model.getPrivatePackages()
+			.size());
 
 		String desc = props.getProperty("Bundle-Description");
 		assertEquals(desc, "Test \u2649");
+
+		Document doc2 = new Document("# Hello\nBundle-Description:\tTest \u2649\n"
+			+ "\n\nBundle-SymbolicName:\ttest.properties\n" + "Private-Package:\tpp1\n" + "-privatepackage:\tppA\n");
+
+		BndEditModel model2 = new BndEditModel();
+
+		model2.loadFrom(doc2);
+
+		List<String> newPackages = Arrays.asList("pp1", "pp3", "pp5");
+		model2.setPrivatePackages(newPackages);
+
+		assertEquals(3, model2.getPrivatePackages()
+			.size());
 	}
 }
