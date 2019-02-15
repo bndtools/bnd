@@ -18,7 +18,7 @@ import aQute.lib.io.IO;
 
 public class HelloTest {
 	static Workspace		ws;
-	LauchpadBuilder	builder;
+	LaunchpadBuilder	builder;
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
@@ -27,7 +27,7 @@ public class HelloTest {
 
 	@Before
 	public void before() throws Exception {
-		builder = new LauchpadBuilder();
+		builder = new LaunchpadBuilder();
 	}
 
 	@After

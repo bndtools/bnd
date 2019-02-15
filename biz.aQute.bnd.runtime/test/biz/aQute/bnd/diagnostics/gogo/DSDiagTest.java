@@ -5,12 +5,12 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Reference;
 
-import aQute.launchpad.LauchpadBuilder;
+import aQute.launchpad.LaunchpadBuilder;
 import aQute.launchpad.Launchpad;
 
 public class DSDiagTest {
 
-	LauchpadBuilder	builder	= new LauchpadBuilder().bndrun("run.bndrun");
+	LaunchpadBuilder	builder	= new LaunchpadBuilder().bndrun("run.bndrun");
 	Launchpad			fw		= builder.create();
 
 	interface IA {}

@@ -12,7 +12,7 @@ import org.junit.rules.TemporaryFolder;
 
 public class RuleTest {
 
-	LauchpadBuilder builder = new LauchpadBuilder();
+	LaunchpadBuilder builder = new LaunchpadBuilder();
 
 	@Rule
 	public TemporaryFolder	folder	= new TemporaryFolder();
