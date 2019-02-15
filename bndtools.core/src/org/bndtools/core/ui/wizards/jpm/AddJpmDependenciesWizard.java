@@ -18,6 +18,7 @@ import org.eclipse.jface.wizard.Wizard;
 
 import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
 
 public class AddJpmDependenciesWizard extends Wizard {
@@ -72,7 +73,7 @@ public class AddJpmDependenciesWizard extends Wizard {
 
             return true;
         } catch (InvocationTargetException e) {
-            MessageDialog.openError(getShell(), "Error", e.getCause()
+            MessageDialog.openError(getShell(), "Error", Exceptions.unrollCause(e, InvocationTargetException.class)
                 .getMessage());
             return false;
         } catch (InterruptedException e) {

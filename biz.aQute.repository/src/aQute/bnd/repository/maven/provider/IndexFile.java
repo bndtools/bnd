@@ -38,6 +38,7 @@ import aQute.bnd.osgi.resource.ResourceUtils.BundleCap;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
 import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.maven.api.Archive;
@@ -247,13 +248,7 @@ class IndexFile {
 	}
 
 	private String getMessage(Throwable failure) {
-		if (failure instanceof InvocationTargetException) {
-			Throwable targetException = ((InvocationTargetException) failure).getTargetException();
-			if (targetException == null)
-				return failure.toString();
-
-			return getMessage(targetException);
-		}
+		failure = Exceptions.unrollCause(failure, InvocationTargetException.class);
 		if (failure instanceof FileNotFoundException) {
 			return "Not found";
 		}
@@ -380,7 +375,7 @@ class IndexFile {
 		try {
 			return bridge.getValue();
 		} catch (InvocationTargetException e) {
-			reporter.exception(e.getTargetException(), "Getting bridge failed");
+			reporter.exception(Exceptions.unrollCause(e, InvocationTargetException.class), "Getting bridge failed");
 		} catch (InterruptedException e) {
 			logger.info("Interrupted");
 			Thread.currentThread()

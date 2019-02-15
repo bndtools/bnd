@@ -66,6 +66,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.Constants;
 
 import aQute.bnd.build.model.BndEditModel;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
 import bndtools.UIConstants;
 import bndtools.editor.utils.ToolTips;
@@ -350,7 +351,7 @@ public class GeneralInfoPart extends SectionPart implements PropertyChangeListen
                 window.run(false, false, runnable);
                 return result;
             } catch (InvocationTargetException e) {
-                logger.logError("Error searching for BundleActivator types", e.getTargetException());
+                logger.logError("Error searching for BundleActivator types", Exceptions.unrollCause(e, InvocationTargetException.class));
                 return Collections.emptyList();
             } catch (InterruptedException e) {
                 Thread.currentThread()

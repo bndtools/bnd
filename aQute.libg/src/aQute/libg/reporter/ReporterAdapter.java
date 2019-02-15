@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 import aQute.service.reporter.Report;
@@ -149,11 +150,8 @@ public class ReporterAdapter implements Reporter, Report, Runnable {
 		errors.add(e);
 		trace("ERROR: %s", e);
 		if (isExceptions() || isTrace())
-			if (t instanceof InvocationTargetException)
-				t.getCause()
-					.printStackTrace(System.err);
-			else
-				t.printStackTrace(System.err);
+			Exceptions.unrollCause(t, InvocationTargetException.class)
+				.printStackTrace(System.err);
 		return location(e);
 	}
 

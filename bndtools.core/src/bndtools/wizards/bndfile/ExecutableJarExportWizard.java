@@ -11,6 +11,7 @@ import org.eclipse.jface.wizard.Wizard;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.model.BndEditModel;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
 
 public class ExecutableJarExportWizard extends Wizard implements IRunDescriptionExportWizard {
@@ -44,7 +45,7 @@ public class ExecutableJarExportWizard extends Wizard implements IRunDescription
             getContainer().run(true, true, task);
             return true;
         } catch (InvocationTargetException e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error occurred during export.", e.getTargetException()));
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error occurred during export.", Exceptions.unrollCause(e, InvocationTargetException.class)));
             return false;
         } catch (InterruptedException e) {
             return false;

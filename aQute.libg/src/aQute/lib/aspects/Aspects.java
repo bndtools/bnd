@@ -294,9 +294,7 @@ public class Aspects {
 
 					if (exceptions == null)
 						this.exceptions = (inv, exc) -> {
-							if (exc instanceof InvocationTargetException)
-								throw Exceptions.duck(((InvocationTargetException) exc).getTargetException());
-							throw Exceptions.duck(exc);
+							throw Exceptions.duck(Exceptions.unrollCause(exc, InvocationTargetException.class));
 						};
 
 					return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[] {

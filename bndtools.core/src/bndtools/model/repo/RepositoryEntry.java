@@ -20,6 +20,7 @@ import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.ResourceHandle.Location;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 
 abstract class VersionFinder {
     String versionSpec;
@@ -119,11 +120,7 @@ public abstract class RepositoryEntry implements IAdaptable {
             }
             return repo.get(bsn, version, Collections.emptyMap());
         } catch (Exception e) {
-            Throwable t = e;
-            for (Throwable cause; (t instanceof InvocationTargetException) && ((cause = t.getCause()) != null);) {
-                t = cause; // unwrap exception
-            }
-            logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", repo.getName(), bsn, versionFinder), t);
+            logger.logError(MessageFormat.format("Failed to query repository {0} for bundle {1} version {2}.", repo.getName(), bsn, versionFinder), Exceptions.unrollCause(e, InvocationTargetException.class));
             return null;
         }
     }

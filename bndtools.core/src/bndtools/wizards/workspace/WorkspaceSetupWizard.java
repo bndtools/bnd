@@ -41,6 +41,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 
 import aQute.bnd.build.Project;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -225,7 +226,7 @@ public class WorkspaceSetupWizard extends Wizard implements INewWizard {
             }
             return true;
         } catch (InvocationTargetException e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating template output", e.getTargetException()));
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating template output", Exceptions.unrollCause(e, InvocationTargetException.class)));
             return false;
         } catch (Exception e) {
             ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error generating template output", e));

@@ -34,6 +34,7 @@ import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
+import aQute.lib.exceptions.Exceptions;
 import bndtools.javamodel.IJavaSearchContext;
 import bndtools.utils.CachingContentProposalProvider;
 
@@ -114,7 +115,7 @@ public class PkgPatternsProposalProvider extends CachingContentProposalProvider 
             }
             return result;
         } catch (InvocationTargetException e) {
-            logger.logError("Error searching for packages.", e);
+            logger.logError("Error searching for packages.", Exceptions.unrollCause(e, InvocationTargetException.class));
             return Collections.emptyList();
         } catch (InterruptedException e) {
             Thread.currentThread()

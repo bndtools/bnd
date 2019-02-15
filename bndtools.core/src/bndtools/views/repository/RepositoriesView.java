@@ -109,6 +109,7 @@ import aQute.bnd.service.Refreshable;
 import aQute.bnd.service.RemoteRepositoryPlugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import bndtools.Plugin;
 import bndtools.central.Central;
@@ -615,9 +616,7 @@ public class RepositoriesView extends ViewPart implements RepositoriesViewRefres
                             refreshAction.setEnabled(false);
                             Central.refreshPlugins();
                         } catch (Exception e) {
-                            Throwable t = e;
-                            while (t instanceof InvocationTargetException)
-                                t = ((InvocationTargetException) e).getTargetException();
+                            Throwable t = Exceptions.unrollCause(e, InvocationTargetException.class);
 
                             logger.logError("Unexpected error in refreshing plugns", t);
 

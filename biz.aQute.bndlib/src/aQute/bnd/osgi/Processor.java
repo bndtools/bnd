@@ -409,10 +409,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		if (p.exceptions) {
 			printExceptionSummary(t, System.err);
 		}
-		// unwrap InvocationTargetException
-		while ((t instanceof InvocationTargetException) && (t.getCause() != null)) {
-			t = t.getCause();
-		}
+		// unroll InvocationTargetException
+		t = Exceptions.unrollCause(t, InvocationTargetException.class);
 		String s = formatArrays("Exception: %s", Exceptions.toString(t));
 		if (p.isFailOk()) {
 			p.warnings.add(s);

@@ -100,7 +100,7 @@ public class Activator implements BundleActivator {
 			});
 
 		} catch (InvocationTargetException e) {
-			e.getTargetException()
+			Exceptions.unrollCause(e, InvocationTargetException.class)
 				.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();

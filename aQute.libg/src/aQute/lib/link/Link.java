@@ -190,10 +190,7 @@ public class Link<L, R> extends Thread implements Closeable {
 
 						return waitForResult(msgId, method.getGenericReturnType());
 					} catch (InvocationTargetException e) {
-						Throwable t = e;
-						while (t instanceof InvocationTargetException)
-							t = ((InvocationTargetException) t).getTargetException();
-						throw t;
+						throw Exceptions.unrollCause(e, InvocationTargetException.class);
 					} catch (InterruptedException e) {
 						interrupt();
 						throw e;
@@ -561,9 +558,7 @@ public class Link<L, R> extends Thread implements Closeable {
 					return;
 				}
 			} catch (Throwable t) {
-				while (t instanceof InvocationTargetException
-					&& ((InvocationTargetException) t).getTargetException() != null)
-					t = ((InvocationTargetException) t).getTargetException();
+				t = Exceptions.unrollCause(t, InvocationTargetException.class);
 				// t.printStackTrace();
 				try {
 					send(-id, null, new Object[] {

@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
+import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
 
 public class EmptyBndFileWizard extends Wizard implements INewWizard {
@@ -69,7 +70,7 @@ public class EmptyBndFileWizard extends Wizard implements INewWizard {
                 }
             });
         } catch (InvocationTargetException e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "An error occurred while enabling sub-bundles", e.getCause()));
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "An error occurred while enabling sub-bundles", Exceptions.unrollCause(e, InvocationTargetException.class)));
             return false;
         } catch (InterruptedException e) {
             return false;
