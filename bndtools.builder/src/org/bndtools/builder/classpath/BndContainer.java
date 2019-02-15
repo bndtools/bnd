@@ -114,7 +114,7 @@ public class BndContainer implements IClasspathContainer, Serializable {
                                         output = javaProject.getOutputLocation();
                                     }
                                     if (seen.add(output)) {
-                                        runtime.add(JavaRuntime.newArchiveRuntimeClasspathEntry(output, raw.getSourceAttachmentPath(), raw.getSourceAttachmentRootPath(), raw.getAccessRules(), raw.getExtraAttributes(), false));
+                                        runtime.add(JavaRuntime.newArchiveRuntimeClasspathEntry(output, cpe.getPath(), null, cpe.getAccessRules(), cpe.getExtraAttributes(), false));
                                     }
                                 }
                             }
