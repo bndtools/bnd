@@ -122,6 +122,7 @@ import aQute.lib.base64.Base64;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.collections.SortedList;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.filter.Filter;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
@@ -454,8 +455,7 @@ public class bnd extends Processor {
 				settings.load(password);
 			}
 		} catch (Throwable t) {
-			while (t instanceof InvocationTargetException)
-				t = t.getCause();
+			t = Exceptions.unrollCause(t, InvocationTargetException.class);
 			exception(t, "%s", t);
 		}
 		out.flush();

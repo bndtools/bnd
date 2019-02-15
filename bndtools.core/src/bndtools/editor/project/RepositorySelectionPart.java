@@ -194,7 +194,7 @@ public class RepositorySelectionPart extends BndEditorPart implements IResourceC
                     // let it go
                 } catch (InvocationTargetException e) {
                     ErrorDialog.openError(editor.getSite()
-                        .getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Save error", e.getTargetException()));
+                        .getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Save error", Exceptions.unrollCause(e, InvocationTargetException.class)));
                 }
             }
         });

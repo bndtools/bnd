@@ -57,6 +57,7 @@ import aQute.bnd.service.url.TaggedData;
 import aQute.bnd.service.url.URLConnectionHandler;
 import aQute.bnd.service.url.URLConnector;
 import aQute.bnd.util.home.Home;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.libg.reporter.ReporterAdapter;
@@ -553,8 +554,7 @@ public class HttpClient implements Closeable, URLConnector {
 			in = createProgressWrappedStream(in, con.toString(), con.getContentLength(), task, request.timeout);
 			return new TaggedData(con, in, request.useCacheFile);
 		} catch (javax.net.ssl.SSLHandshakeException ste) {
-			task.done(ste.getCause()
-				.toString(), null);
+			task.done(Exceptions.causes(ste), null);
 			//
 			// 526 Invalid SSL Certificate
 			// Cloudflare could not validate the SSL/TLS certificate that the

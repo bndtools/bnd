@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Table;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.service.repository.SearchableRepository;
 import aQute.bnd.service.repository.SearchableRepository.ResourceDescriptor;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.central.Central;
 
 public class JpmDependencyWizardPage extends WizardPage {
@@ -240,7 +241,7 @@ public class JpmDependencyWizardPage extends WizardPage {
                 indirectResources = query.getIndirectResources();
                 selectedIndirectResources = new HashSet<ResourceDescriptor>();
             } catch (InvocationTargetException e) {
-                errorText = e.getCause()
+                errorText = Exceptions.unrollCause(e, InvocationTargetException.class)
                     .getMessage();
             } catch (InterruptedException e) {
                 // ignore

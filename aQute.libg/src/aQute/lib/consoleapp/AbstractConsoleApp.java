@@ -10,6 +10,7 @@ import java.util.List;
 
 import aQute.lib.collections.ExtList;
 import aQute.lib.env.Env;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.getopt.Description;
@@ -141,10 +142,7 @@ public abstract class AbstractConsoleApp extends Env {
 			}
 
 		} catch (InvocationTargetException t) {
-			Throwable tt = t;
-			while (tt instanceof InvocationTargetException)
-				tt = ((InvocationTargetException) tt).getTargetException();
-
+			Throwable tt = Exceptions.unrollCause(t, InvocationTargetException.class);
 			exception(tt, "%s", tt);
 		} catch (Throwable t) {
 			exception(t, "Failed %s", t);

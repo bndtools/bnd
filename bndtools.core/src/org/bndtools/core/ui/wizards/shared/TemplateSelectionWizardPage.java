@@ -70,6 +70,7 @@ import org.osgi.service.component.ComponentConstants;
 import org.osgi.util.promise.Promise;
 
 import aQute.bnd.osgi.Processor;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.tuple.Pair;
 import bndtools.Plugin;
@@ -383,8 +384,7 @@ public class TemplateSelectionWizardPage extends WizardPage {
             ProgressRunner.execute(true, new LoadTemplatesJob(shell, oldMessage), getContainer(), getContainer().getShell()
                 .getDisplay());
         } catch (InvocationTargetException e) {
-            Throwable exception = e.getTargetException();
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading templates.", exception));
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error loading templates.", Exceptions.unrollCause(e, InvocationTargetException.class)));
         }
     }
 

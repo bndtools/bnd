@@ -2845,7 +2845,7 @@ public class Project extends Processor {
 								return (constructor.getParameterCount() == 1) ? constructor.newInstance(this)
 									: constructor.newInstance(this, c);
 							} catch (InvocationTargetException e) {
-								throw Exceptions.duck(e.getCause());
+								throw Exceptions.duck(Exceptions.unrollCause(e, InvocationTargetException.class));
 							}
 						}
 					}

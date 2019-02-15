@@ -15,6 +15,7 @@ import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import aQute.bnd.build.model.BndEditModel;
+import aQute.lib.exceptions.Exceptions;
 import bndtools.Plugin;
 
 public class ResolutionResultsWizardPage extends WizardPage implements ResolutionResultPresenter {
@@ -85,7 +86,7 @@ public class ResolutionResultsWizardPage extends WizardPage implements Resolutio
 
             setResult(resolver.getResult());
         } catch (InvocationTargetException e) {
-            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unexpected error", e));
+            ErrorDialog.openError(getShell(), "Error", null, new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Unexpected error", Exceptions.unrollCause(e, InvocationTargetException.class)));
             setResult(null);
         } catch (InterruptedException e) {
             setResult(null);

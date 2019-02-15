@@ -22,6 +22,7 @@ import aQute.bnd.osgi.resource.RequirementBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.SHA256;
 import aQute.libg.reporter.slf4j.Slf4jReporter;
@@ -130,9 +131,9 @@ public class P2IndexerTest extends TestCase {
 				throw result.get();
 
 		} catch (InvocationTargetException ite) {
-			ite.getTargetException()
-				.printStackTrace();
-			throw ite.getTargetException();
+			Throwable t = Exceptions.unrollCause(ite, InvocationTargetException.class);
+			t.printStackTrace();
+			throw t;
 		}
 
 		try (
@@ -240,9 +241,9 @@ public class P2IndexerTest extends TestCase {
 				throw result.get();
 
 		} catch (InvocationTargetException ite) {
-			ite.getTargetException()
-				.printStackTrace();
-			throw ite.getTargetException();
+			Throwable t = Exceptions.unrollCause(ite, InvocationTargetException.class);
+			t.printStackTrace();
+			throw t;
 		}
 
 		try (P2Indexer p3 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client, input.toURI(), "test")) {
