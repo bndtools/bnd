@@ -141,7 +141,7 @@ public class About {
 		"Added ${versionmask} macro that is identical to ${version} but can be used when you want to use the version macro for yourself",
 		"Manifest Annotations use any defined methods as attributes from the annotation they are applied to",
 		"Made many more headers merged headers", "Added several support methods so bnd can generate a pom",
-		"Laucher moved to Java 6", "Always read bnd files with UTF-8 with a fallback to ISO-8859-1",
+		"Launcher moved to Java 6", "Always read bnd files with UTF-8 with a fallback to ISO-8859-1",
 		"Full Java 8 support", "Added life cycle plugin that can interact with workspace/project creation/deletion",
 		"Allow includes in bnd files to specify a URL", "Support for Gradle plugin", "Support Travis builds",
 		"Added support for gestalt, allows build tools to communicate out what the environment they run in supports. See -bnd-driver",

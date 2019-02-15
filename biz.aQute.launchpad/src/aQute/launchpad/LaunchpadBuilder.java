@@ -31,7 +31,7 @@ import aQute.lib.strings.Strings;
 /**
  * This class is a builder for frameworks that can be used in JUnit testing.
  */
-public class LauchpadBuilder implements AutoCloseable {
+public class LaunchpadBuilder implements AutoCloseable {
 
 	final static ExecutorService	executor	= Executors.newCachedThreadPool();
 	final static File				projectDir	= IO.work;
@@ -73,11 +73,11 @@ public class LauchpadBuilder implements AutoCloseable {
 	 * Start a framework assuming the current working directory is the project
 	 * directory.
 	 */
-	public LauchpadBuilder() {
+	public LaunchpadBuilder() {
 		local = projectTestSetup.clone();
 	}
 
-	public LauchpadBuilder bndrun(File file) {
+	public LaunchpadBuilder bndrun(File file) {
 		RunSpecification setup = workspace.getRun(file.getAbsolutePath());
 		if (!setup.errors.isEmpty()) {
 			throw new IllegalArgumentException(
@@ -91,32 +91,32 @@ public class LauchpadBuilder implements AutoCloseable {
 		return this;
 	}
 
-	public LauchpadBuilder bndrun(String path) {
+	public LaunchpadBuilder bndrun(String path) {
 		return bndrun(IO.getFile(projectDir, path));
 	}
 
-	public LauchpadBuilder project() {
+	public LaunchpadBuilder project() {
 		return bndrun(projectDir);
 	}
 
-	public LauchpadBuilder gogo() {
+	public LaunchpadBuilder gogo() {
 		bundles("org.apache.felix.gogo.runtime,org.apache.felix.gogo.command,org.apache.felix.gogo.shell");
 		return this;
 	}
 
-	public LauchpadBuilder bundles(String specification) {
+	public LaunchpadBuilder bundles(String specification) {
 		List<String> config = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		config.forEach(local.runbundles::add);
 		return this;
 	}
 
-	public LauchpadBuilder runpath(String specification) {
+	public LaunchpadBuilder runpath(String specification) {
 		List<String> config = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		config.forEach(local.runpath::add);
 		return this;
 	}
 
-	public LauchpadBuilder bundles(File... files) {
+	public LaunchpadBuilder bundles(File... files) {
 		Stream.of(files)
 			.map(File::getAbsolutePath)
 			.forEach(local.runpath::add);
@@ -124,7 +124,7 @@ public class LauchpadBuilder implements AutoCloseable {
 		return this;
 	}
 
-	public LauchpadBuilder runpath(File... files) {
+	public LaunchpadBuilder runpath(File... files) {
 		Stream.of(files)
 			.map(File::getAbsolutePath)
 			.forEach(local.runpath::add);
@@ -132,39 +132,39 @@ public class LauchpadBuilder implements AutoCloseable {
 		return this;
 	}
 
-	public LauchpadBuilder nostart() {
+	public LaunchpadBuilder nostart() {
 		this.start = false;
 		return this;
 	}
 
-	public LauchpadBuilder notestbundle() {
+	public LaunchpadBuilder notestbundle() {
 		this.testbundle = false;
 		return this;
 	}
 
-	public LauchpadBuilder runfw(File file) {
+	public LaunchpadBuilder runfw(File file) {
 		local.runfw.clear();
 		local.runfw.add(file.getAbsolutePath());
 
 		return this;
 	}
 
-	public LauchpadBuilder runfw(String specification) {
+	public LaunchpadBuilder runfw(String specification) {
 		local.runfw = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		return this;
 	}
 
-	public LauchpadBuilder set(String key, String value) {
+	public LaunchpadBuilder set(String key, String value) {
 		projectTestSetup.properties.put(key, value);
 		return this;
 	}
 
-	public LauchpadBuilder closeTimeout(long ms) {
+	public LaunchpadBuilder closeTimeout(long ms) {
 		this.closeTimeout = ms;
 		return this;
 	}
 
-	public LauchpadBuilder debug() {
+	public LaunchpadBuilder debug() {
 		this.debug = true;
 		return this;
 	}
@@ -324,7 +324,7 @@ public class LauchpadBuilder implements AutoCloseable {
 	}
 
 	private ClassLoader getMyClassLoader() {
-		return LauchpadBuilder.class.getClassLoader();
+		return LaunchpadBuilder.class.getClassLoader();
 	}
 
 	private URL toURL(File file) {

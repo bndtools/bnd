@@ -4,19 +4,19 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
 import aQute.bnd.build.Workspace;
-import aQute.launchpad.LauchpadBuilder;
+import aQute.launchpad.LaunchpadBuilder;
 import aQute.lib.io.IO;
 
 public class DiagnosticsTest {
 	static Workspace				workspace;
-	static LauchpadBuilder	builder;
+	static LaunchpadBuilder	builder;
 
 	@SuppressWarnings("resource")
 	@BeforeClass
 	public static void before() throws Exception {
 		Workspace.remoteWorkspaces = true;
 		workspace = Workspace.findWorkspace(IO.work);
-		builder = new LauchpadBuilder()
+		builder = new LaunchpadBuilder()
 			.runfw("org.apache.felix.framework")
 			.gogo()
 			.bundles("biz.aQute.bnd.diagnostics.gogo");

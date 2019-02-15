@@ -7,14 +7,14 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
-import aQute.launchpad.LauchpadBuilder;
+import aQute.launchpad.LaunchpadBuilder;
 import aQute.launchpad.Launchpad;
 import aQute.launchpad.Service;
 import exported_not_imported.ExportedNotImported;
 
 public class SnapshotTest {
 
-	LauchpadBuilder builder = new LauchpadBuilder().bundles(
+	LaunchpadBuilder builder = new LaunchpadBuilder().bundles(
 		"biz.aQute.bnd.runtime.snapshot, org.apache.felix.log, org.apache.felix.configadmin, org.apache.felix.scr, biz.aQute.bnd.runtime.gogo");
 
 	@Test

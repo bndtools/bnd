@@ -24,7 +24,7 @@ public class BundleBuilder implements BundleSpecBuilder {
 	BundleBuilder(Launchpad ws) {
 		this.ws = ws;
 		spec.classpath.add(ws.builder.local.bin_test);
-		bundleSymbolicName("t-" + LauchpadBuilder.counter.incrementAndGet());
+		bundleSymbolicName("t-" + LaunchpadBuilder.counter.incrementAndGet());
 	}
 
 	/**

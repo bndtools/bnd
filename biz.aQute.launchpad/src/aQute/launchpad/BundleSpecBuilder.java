@@ -926,7 +926,7 @@ public interface BundleSpecBuilder {
 	}
 
 	default Bundle install() throws Exception {
-		byte[] build = LauchpadBuilder.workspace.build(LauchpadBuilder.projectDir.getAbsolutePath(),
+		byte[] build = LaunchpadBuilder.workspace.build(LaunchpadBuilder.projectDir.getAbsolutePath(),
 				x().spec);
 		String name = x().spec.bundleSymbolicName.toString();
 		ByteArrayInputStream bin = new ByteArrayInputStream(build);

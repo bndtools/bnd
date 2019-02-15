@@ -1,6 +1,6 @@
 package aQute.launchpad;
 
-import static aQute.launchpad.LauchpadBuilder.projectDir;
+import static aQute.launchpad.LaunchpadBuilder.projectDir;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -81,7 +81,7 @@ public class Launchpad implements AutoCloseable {
 
 	final Framework								framework;
 	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
-	final LauchpadBuilder					builder;
+	final LaunchpadBuilder					builder;
 	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
 	final Injector<Service>						injector;
 	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new HashMap<>();
@@ -93,7 +93,7 @@ public class Launchpad implements AutoCloseable {
 	PrintStream									out						= System.err;
 	ServiceTracker<FindHook, FindHook>			hooks;
 
-	Launchpad(LauchpadBuilder jUnitFrameworkBuilder, Framework framework) {
+	Launchpad(LaunchpadBuilder jUnitFrameworkBuilder, Framework framework) {
 		try {
 			this.builder = jUnitFrameworkBuilder;
 			this.debug = jUnitFrameworkBuilder.debug;
@@ -219,7 +219,7 @@ public class Launchpad implements AutoCloseable {
 	 */
 	public List<Bundle> bundles(String specification) {
 		try {
-			return LauchpadBuilder.workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
+			return LaunchpadBuilder.workspace.getLatestBundles(projectDir.getAbsolutePath(), specification)
 				.stream()
 				.map(File::new)
 				.map(this::bundle)
@@ -562,7 +562,7 @@ public class Launchpad implements AutoCloseable {
 	/**
 	 * Hide a service by registering a hook. This should in general be done
 	 * before you let others look. In general, the JUnit Framework should be
-	 * started in {@link LauchpadBuilder#nostart()} mode. This initializes
+	 * started in {@link LaunchpadBuilder#nostart()} mode. This initializes
 	 * the OSGi framework making it possible to register a service before
 	 */
 
@@ -576,7 +576,7 @@ public class Launchpad implements AutoCloseable {
 	 * all bundles _except_ the testbundle. Notice that bundles that already
 	 * obtained a references are not affected. If you use this facility it is
 	 * best to not start the framework before you hide a service. You can
-	 * indicate this to the build with {@link LauchpadBuilder#nostart()}.
+	 * indicate this to the build with {@link LaunchpadBuilder#nostart()}.
 	 * The framework can be started after creation with {@link #start()}. Notice
 	 * that services through the testbundle remain visible for this hide.
 	 * 
