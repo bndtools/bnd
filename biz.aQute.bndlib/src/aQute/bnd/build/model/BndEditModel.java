@@ -1,6 +1,7 @@
 package aQute.bnd.build.model;
 
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -19,7 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import org.osgi.resource.Requirement;
@@ -77,7 +80,8 @@ public class BndEditModel {
 		Constants.BUNDLE_COPYRIGHT, Constants.BUNDLE_UPDATELOCATION, Constants.BUNDLE_VENDOR,
 		Constants.BUNDLE_CONTACTADDRESS, Constants.BUNDLE_DOCURL, Constants.BUNDLE_SYMBOLICNAME,
 		Constants.BUNDLE_VERSION, Constants.BUNDLE_ACTIVATOR, Constants.EXPORT_PACKAGE, Constants.IMPORT_PACKAGE,
-		aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, aQute.bnd.osgi.Constants.SOURCES,
+		Constants.PRIVATE_PACKAGE, Constants.PRIVATEPACKAGE,
+		aQute.bnd.osgi.Constants.SOURCES,
 		aQute.bnd.osgi.Constants.SERVICE_COMPONENT, aQute.bnd.osgi.Constants.CLASSPATH,
 		aQute.bnd.osgi.Constants.BUILDPATH, aQute.bnd.osgi.Constants.RUNBUNDLES, aQute.bnd.osgi.Constants.RUNPROPERTIES,
 		aQute.bnd.osgi.Constants.SUB, aQute.bnd.osgi.Constants.RUNFRAMEWORK, aQute.bnd.osgi.Constants.RUNFW,
@@ -303,6 +307,7 @@ public class BndEditModel {
 		converters.put(aQute.bnd.osgi.Constants.OUTPUT, stringConverter);
 		converters.put(aQute.bnd.osgi.Constants.SOURCES, includedSourcesConverter);
 		converters.put(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, listConverter);
+		converters.put(aQute.bnd.osgi.Constants.PRIVATEPACKAGE, listConverter);
 		converters.put(aQute.bnd.osgi.Constants.CLASSPATH, listConverter);
 		converters.put(Constants.EXPORT_PACKAGE, exportPackageConverter);
 		converters.put(aQute.bnd.osgi.Constants.SERVICE_COMPONENT, serviceComponentConverter);
@@ -323,6 +328,7 @@ public class BndEditModel {
 		// converters.put(BndConstants.RESOLVE_MODE, resolveModeConverter);
 		converters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListConverter);
 		converters.put(Constants.INCLUDE_RESOURCE, listConverter);
+		converters.put(Constants.INCLUDERESOURCE, listConverter);
 		converters.put(Constants.STANDALONE, headerClauseListConverter);
 
 		formatters.put(aQute.bnd.osgi.Constants.BUNDLE_LICENSE, newlineEscapeFormatter);
@@ -344,6 +350,7 @@ public class BndEditModel {
 		formatters.put(aQute.bnd.osgi.Constants.OUTPUT, newlineEscapeFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.SOURCES, defaultFalseBoolFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, stringListFormatter);
+		formatters.put(aQute.bnd.osgi.Constants.PRIVATEPACKAGE, stringListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.CLASSPATH, stringListFormatter);
 		formatters.put(Constants.EXPORT_PACKAGE, headerClauseListFormatter);
 		formatters.put(aQute.bnd.osgi.Constants.SERVICE_COMPONENT, headerClauseListFormatter);
@@ -364,6 +371,7 @@ public class BndEditModel {
 		// formatters.put(BndConstants.RESOLVE_MODE, resolveModeFormatter);
 		formatters.put(Constants.BUNDLE_BLUEPRINT, headerClauseListFormatter);
 		formatters.put(Constants.INCLUDE_RESOURCE, stringListFormatter);
+		formatters.put(Constants.INCLUDERESOURCE, stringListFormatter);
 		formatters.put(Constants.STANDALONE, standaloneLinkListFormatter);
 	}
 
@@ -677,12 +685,72 @@ public class BndEditModel {
 	}
 
 	public List<String> getPrivatePackages() {
-		return doGetObject(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, listConverter);
+		List<String> privatePackagesEntries1 = getEntries(Constants.PRIVATEPACKAGE, listConverter);
+		List<String> privatePackagesEntries2 = getEntries(Constants.PRIVATE_PACKAGE, listConverter);
+
+		return Stream.concat(privatePackagesEntries1.stream(), privatePackagesEntries2.stream())
+			.distinct()
+			.collect(toList());
 	}
 
-	public void setPrivatePackages(List<? extends String> packages) {
-		List<String> oldPackages = getPrivatePackages();
-		doSetObject(aQute.bnd.osgi.Constants.PRIVATE_PACKAGE, oldPackages, packages, stringListFormatter);
+	public void setPrivatePackages(List<String> newPackages) {
+		List<String> privatePackagesEntries1 = getEntries(Constants.PRIVATEPACKAGE, listConverter);
+		List<String> privatePackagesEntries2 = getEntries(Constants.PRIVATE_PACKAGE, listConverter);
+		
+		Set<String> privatePackages = Stream.concat(privatePackagesEntries1.stream(), privatePackagesEntries2.stream())
+			.collect(toSet());
+		
+		List<String> addedEntries = disjunction(newPackages, privatePackages);
+		List<String> removedEntries = disjunction(privatePackages, newPackages);
+
+		privatePackagesEntries1.removeAll(removedEntries);
+		if (privatePackagesEntries1.isEmpty()) {
+			removeEntries(Constants.PRIVATEPACKAGE);
+		} else {
+			setEntries(privatePackagesEntries1, Constants.PRIVATEPACKAGE);
+		}
+
+		privatePackagesEntries2.removeAll(removedEntries);
+		if (privatePackagesEntries2.isEmpty()) {
+			removeEntries(Constants.PRIVATE_PACKAGE);
+		} else {
+			setEntries(privatePackagesEntries2, Constants.PRIVATE_PACKAGE);
+		}
+		
+		if (hasPrivatePackageInstruction()) {
+			privatePackagesEntries1.addAll(addedEntries);
+			setEntries(privatePackagesEntries1, Constants.PRIVATEPACKAGE);
+		} else {
+			privatePackagesEntries2.addAll(addedEntries);
+			setEntries(privatePackagesEntries2, Constants.PRIVATE_PACKAGE);
+		}
+	}
+
+	private void setEntries(List<? extends String> packages, String key) {
+		List<String> oldPackages = getEntries(key, listConverter);
+		doSetObject(key, oldPackages, packages, stringListFormatter);
+	}
+
+	private void removeEntries(String key) {
+		List<String> oldPackages = getEntries(key, listConverter);
+		doRemoveObject(key, oldPackages, null, stringListFormatter);
+	}
+
+	public void addPrivatePackage(String packageName) {
+		String key = hasPrivatePackageInstruction() ? Constants.PRIVATEPACKAGE : Constants.PRIVATE_PACKAGE;
+		List<String> packages = getEntries(key, listConverter);
+		packages.add(packageName);
+		setEntries(packages, key);
+	}
+
+	private boolean hasPrivatePackageInstruction() {
+		return properties.containsKey(Constants.PRIVATEPACKAGE);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <E> List<String> getEntries(String instruction, Converter<? extends E, ? super String> converter) {
+		List<String> entries = (List<String>) doGetObject(instruction, converter);
+		return entries == null ? new ArrayList<>() : entries;
 	}
 
 	public List<ExportedPackage> getSystemPackages() {
@@ -696,16 +764,6 @@ public class BndEditModel {
 
 	public List<String> getClassPath() {
 		return doGetObject(aQute.bnd.osgi.Constants.CLASSPATH, listConverter);
-	}
-
-	public void addPrivatePackage(String packageName) {
-		List<String> packages = getPrivatePackages();
-		if (packages == null)
-			packages = new ArrayList<>();
-		else
-			packages = new ArrayList<>(packages);
-		packages.add(packageName);
-		setPrivatePackages(packages);
 	}
 
 	public void setClassPath(List<? extends String> classPath) {
@@ -1041,6 +1099,15 @@ public class BndEditModel {
 		}
 	}
 
+	private <T> void doRemoveObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
+		objectProperties.remove(name);
+		properties.remove(name);
+		String v = formatter.convert(newValue);
+		changesToSave.put(name, v);
+
+		propChangeSupport.firePropertyChange(name, oldValue, newValue);
+	}
+
 	private <T> void doSetObject(String name, T oldValue, T newValue, Converter<String, ? super T> formatter) {
 		objectProperties.put(name, newValue);
 		String v = formatter.convert(newValue);
@@ -1111,22 +1178,56 @@ public class BndEditModel {
 	}
 
 	public List<String> getIncludeResource() {
-		return doGetObject(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, listConverter);
+		List<String> includeResourceEntries1 = getEntries(Constants.INCLUDERESOURCE, listConverter);
+		List<String> includeResourceEntries2 = getEntries(Constants.INCLUDE_RESOURCE, listConverter);
+
+		return Stream.concat(includeResourceEntries1.stream(), includeResourceEntries2.stream())
+			.distinct()
+			.collect(toList());
 	}
 
-	public void setIncludeResource(List<String> includeResource) {
-		List<String> old = getIncludeResource();
-		doSetObject(aQute.bnd.osgi.Constants.INCLUDE_RESOURCE, old, includeResource, stringListFormatter);
+	public void setIncludeResource(List<String> newEntries) {
+		List<String> resourceEntries1 = getEntries(Constants.INCLUDERESOURCE, listConverter);
+		List<String> resourceEntries2 = getEntries(Constants.INCLUDE_RESOURCE, listConverter);
+
+		Set<String> resourceEntries = Stream.concat(resourceEntries1.stream(), resourceEntries2.stream())
+			.collect(toSet());
+
+		List<String> addedEntries = disjunction(newEntries, resourceEntries);
+		List<String> removedEntries = disjunction(resourceEntries, newEntries);
+
+		resourceEntries1.removeAll(removedEntries);
+		if (resourceEntries1.isEmpty()) {
+			removeEntries(Constants.INCLUDERESOURCE);
+		} else {
+			setEntries(resourceEntries1, Constants.INCLUDERESOURCE);
+		}
+
+		resourceEntries2.removeAll(removedEntries);
+		if (resourceEntries2.isEmpty()) {
+			removeEntries(Constants.INCLUDE_RESOURCE);
+		} else {
+			setEntries(resourceEntries2, Constants.INCLUDE_RESOURCE);
+		}
+
+		if (hasIncludeResourceInstruction()) {
+			resourceEntries1.addAll(addedEntries);
+			setEntries(resourceEntries1, Constants.INCLUDERESOURCE);
+		} else {
+			resourceEntries2.addAll(addedEntries);
+			setEntries(resourceEntries2, Constants.INCLUDE_RESOURCE);
+		}
 	}
 
 	public void addIncludeResource(String resource) {
-		List<String> includeResource = getIncludeResource();
-		if (includeResource == null)
-			includeResource = new ArrayList<>();
-		else
-			includeResource = new ArrayList<>(includeResource);
-		includeResource.add(resource);
-		setIncludeResource(includeResource);
+		String key = hasIncludeResourceInstruction() ? Constants.INCLUDERESOURCE : Constants.INCLUDE_RESOURCE;
+		List<String> entries = getEntries(key, listConverter);
+		entries.add(resource);
+		setEntries(entries, key);
+	}
+
+	private boolean hasIncludeResourceInstruction() {
+		return properties.containsKey(Constants.INCLUDERESOURCE);
 	}
 
 	public void setProject(Project project) {
@@ -1204,6 +1305,16 @@ public class BndEditModel {
 			return null;
 
 		return value.replaceAll("\\\\\n", "");
+	}
+
+	private static <E> List<E> disjunction(final Collection<E> collection, final Collection<?> remove) {
+		final List<E> list = new ArrayList<>();
+		for (final E obj : collection) {
+			if (!remove.contains(obj)) {
+				list.add(obj);
+			}
+		}
+		return list;
 	}
 
 	/**
