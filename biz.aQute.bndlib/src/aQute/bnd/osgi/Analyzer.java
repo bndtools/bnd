@@ -137,6 +137,7 @@ public class Analyzer extends Processor {
 	private Set<PackageRef>							packagesVisited			= new HashSet<>();
 	private Set<PackageRef>							nonClassReferences		= new HashSet<>();
 	private Set<Check>								checks;
+	private Map<TypeRef, String>					bcpTypes				= map();
 
 	public enum Check {
 		ALL,
@@ -196,6 +197,7 @@ public class Analyzer extends Processor {
 			contracts.clear();
 			packagesVisited.clear();
 			nonClassReferences.clear();
+			bcpTypes.clear();
 
 			// Parse all the class in the
 			// the jar according to the OSGi bcp
@@ -531,7 +533,7 @@ public class Analyzer extends Processor {
 
 		for (Jar extra = getExtra(); extra != null; extra = getExtra()) {
 			dot.addAll(extra);
-			analyzeJar(extra, "", true);
+			analyzeJar(extra, "", true, null);
 		}
 	}
 
@@ -2508,7 +2510,7 @@ public class Analyzer extends Processor {
 		Parameters bcp = getBundleClasspath();
 
 		if (bcp.isEmpty()) {
-			analyzeJar(dot, "", true);
+			analyzeJar(dot, "", true, null);
 		} else {
 			boolean okToIncludeDirs = true;
 
@@ -2524,7 +2526,7 @@ public class Analyzer extends Processor {
 				Attrs info = bcp.get(path);
 
 				if (path.equals(".")) {
-					analyzeJar(dot, "", okToIncludeDirs);
+					analyzeJar(dot, "", okToIncludeDirs, null);
 					continue;
 				}
 				//
@@ -2542,7 +2544,7 @@ public class Analyzer extends Processor {
 						if (!(resource instanceof JarResource)) {
 							addClose(jar);
 						}
-						analyzeJar(jar, "", true);
+						analyzeJar(jar, "", true, path);
 					} catch (Exception e) {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);
 					}
@@ -2556,7 +2558,7 @@ public class Analyzer extends Processor {
 							warning(Constants.BUNDLE_CLASSPATH
 								+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 								path);
-						analyzeJar(dot, Processor.appendPath(path) + "/", true);
+						analyzeJar(dot, Processor.appendPath(path) + "/", true, path);
 					} else {
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
 							warning("No sub JAR or directory %s", path);
@@ -2577,7 +2579,7 @@ public class Analyzer extends Processor {
 	 * @param uses
 	 * @throws IOException
 	 */
-	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs) throws Exception {
+	private boolean analyzeJar(Jar jar, String prefix, boolean okToIncludeDirs, String bcpEntry) throws Exception {
 		Map<String, Clazz> mismatched = new HashMap<>();
 
 		next: for (String path : jar.getResources()
@@ -2634,6 +2636,10 @@ public class Analyzer extends Processor {
 
 						// Collect the API
 						apiUses.addAll(packageRef, clazz.getAPIUses());
+
+						if (bcpEntry != null) {
+							bcpTypes.put(clazz.getClassName(), bcpEntry);
+						}
 					}
 				}
 			}
@@ -3677,6 +3683,10 @@ public class Analyzer extends Processor {
 			// we couldn't determine
 			return unknownResult;
 		}
+	}
+
+	public Optional<String> getBCPEntry(Clazz clazz) {
+		return Optional.ofNullable(bcpTypes.get(clazz.getClassName()));
 	}
 
 	private Boolean assignable0(Clazz annoServiceClazz, Clazz inferredServiceClazz)

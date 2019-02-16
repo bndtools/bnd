@@ -1224,7 +1224,7 @@ public class BuilderTest extends BndTestCase {
 				.getResources()
 				.keySet();
 			System.out.println(names);
-			assertThat(names).hasSize(14)
+			assertThat(names).hasSize(15)
 				.contains("AnnotationWithJSR14.jclass", "mandatorynoversion.bnd", "mina.bar", "minax.bnd", "rox.bnd",
 					"WithAnnotations.jclass");
 		}
