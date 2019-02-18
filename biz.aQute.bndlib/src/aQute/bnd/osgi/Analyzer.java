@@ -2616,10 +2616,12 @@ public class Analyzer extends Processor {
 					if (!calculatedPath.equals(relativePath)) {
 						// If there is a mismatch we
 						// warning
-						if (okToIncludeDirs) // assume already reported
+						if (okToIncludeDirs) { // assume already reported
 							mismatched.put(clazz.getAbsolutePath(), clazz);
-					} else {
-						classspace.put(clazz.getClassName(), clazz);
+						}
+						continue next;
+					}
+					if (classspace.putIfAbsent(clazz.getClassName(), clazz) == null) {
 						PackageRef packageRef = clazz.getClassName()
 							.getPackageRef();
 						learnPackage(jar, prefix, packageRef, contained);
