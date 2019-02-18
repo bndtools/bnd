@@ -146,6 +146,7 @@ public interface Constants {
 	String								INIT										= "-init";
 	String								BUILDREPO									= "-buildrepo";
 	String								JAVAAGENT									= "-javaagent";
+	String								JAVAC_ENCODING								= "javac.encoding";
 	String								JAVAC_SOURCE								= "javac.source";
 	String								JAVAC_TARGET								= "javac.target";
 	String								JAVAC_PROFILE								= "javac.profile";

@@ -12,6 +12,7 @@ import org.eclipse.jface.text.rules.RuleBasedScanner;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.rules.WhitespaceRule;
 
+import aQute.bnd.help.Syntax;
 import aQute.bnd.osgi.Constants;
 
 public class BndScanner extends RuleBasedScanner {
@@ -37,7 +38,11 @@ public class BndScanner extends RuleBasedScanner {
         Map<String, IToken> keyWords = new HashMap<String, IToken>();
 
         public BndWordRule() {
-            addWords(Constants.headers, bsvc.T_INSTRUCTION);
+            String[] instructions = Syntax.HELP.values()
+                .stream()
+                .map(s -> s.getHeader())
+                .toArray(String[]::new);
+            addWords(instructions, bsvc.T_INSTRUCTION);
             addWords(Constants.options, bsvc.T_OPTION);
             addWords(Constants.directives, bsvc.T_DIRECTIVE);
             // TODO need to move these constants to Constants to avoid the
