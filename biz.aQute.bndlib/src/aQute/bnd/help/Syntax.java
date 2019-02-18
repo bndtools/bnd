@@ -340,6 +340,8 @@ public class Syntax implements Constants {
 			BUILDERIGNORE + "=${if;${driver;gradle};bin,bin_test,generated;build}", null, null),
 		new Syntax(BUMPPOLICY, "Sets the version bump policy. This is a parameter to the ${version} macro.",
 			BUMPPOLICY + "==+0", "==+,=+0,+00", Pattern.compile("[=+-0][=+-0][=+-0]")),
+		new Syntax(BUNDLEANNOTATIONS, "Selects the classes that need processing for standard OSGi Bundle annotations.",
+			BUNDLEANNOTATIONS + ": com.foo.bar.MyClazz", null, Verifier.FQNPATTERN),
 
 		new Syntax(BASELINEREPO, "Define the repository to calculate baselining against.", BASELINEREPO + "=Baseline",
 			null, null),
@@ -400,6 +402,27 @@ public class Syntax implements Constants {
 		new Syntax(DSANNOTATIONS, "The " + DSANNOTATIONS
 			+ " instruction tells bnd which bundle classes, if any, to search for Declarative Services (DS) annotations. bnd will then process those classes into DS XML descriptors.",
 			DSANNOTATIONS + ": *", null, Verifier.FQNPATTERN),
+
+		new Syntax(DEFAULT_PROP_SRC_DIR,
+			"The " + DEFAULT_PROP_SRC_DIR + " instructs bnd to look for sources in the specified source directories",
+			DEFAULT_PROP_SRC_DIR + ": src/main/java, src/main/resources", null, null),
+
+		new Syntax(DEFAULT_PROP_BIN_DIR,
+			"The " + DEFAULT_PROP_BIN_DIR + " is used to specify the directory to generate the output binaries.",
+			DEFAULT_PROP_BIN_DIR + ": target/classes", null, null),
+
+		new Syntax(DEFAULT_PROP_TESTSRC_DIR,
+			"The " + DEFAULT_PROP_TESTSRC_DIR + " instructs bnd to look for test sources in the specified directories",
+			DEFAULT_PROP_TESTSRC_DIR + ": src/test/java", null, null),
+
+		new Syntax(DEFAULT_PROP_TESTBIN_DIR,
+			"The " + DEFAULT_PROP_TESTBIN_DIR
+				+ " is used to specify the directory to generate the output binaries for test sources.",
+			DEFAULT_PROP_TESTBIN_DIR + ": target/test-classes", null, null),
+
+		new Syntax(DEFAULT_PROP_TARGET_DIR,
+			"The " + DEFAULT_PROP_TARGET_DIR + " is used to specify the directory to generate output JAR.",
+			DEFAULT_PROP_TARGET_DIR + ": target", null, null),
 
 		new Syntax(DSANNOTATIONS_OPTIONS, "The " + DSANNOTATIONS_OPTIONS
 			+ " instruction configures how DS component annotations are processed and what metadata is generated.",
@@ -472,6 +495,7 @@ public class Syntax implements Constants {
 		new Syntax(JAVAAGENT, "Specify if classpath jars with Premain-Class headers are to be used as java agents.",
 			JAVAAGENT + ": true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(JAVAC, "Java Compiler Specific Settings.", null, null, null),
+		new Syntax(JAVAC_ENCODING, "Sets the Java Compiler Encoding Type.", JAVAC_ENCODING + ": UTF-8", null, null),
 		new Syntax(JAVAC_SOURCE, "Sets the Java source compatibility version.", JAVAC_SOURCE + ": 1.8", null, null),
 		new Syntax(JAVAC_PROFILE, "When using compact profiles, this option specifies the profile name when compiling.",
 			JAVAC_PROFILE + ": compact1", null, null),
@@ -519,6 +543,7 @@ public class Syntax implements Constants {
 		new Syntax(NAMESECTION,
 			"Create a name section (second part of manifest) with optional property expansion and addition of custom attributes.",
 			NAMESECTION + "=*;baz=true, abc/def/bar/X.class=3", null, null),
+		new Syntax(OUTPUT, "Specify the output directory or file.", OUTPUT + "=my_directory", null, null),
 		new Syntax(OUTPUTMASK,
 			"If set, is used a template to calculate the output file. It can use any macro but the ${@bsn} and ${@version} macros refer to the current JAR being saved. The default is bsn + \".jar\".",
 			OUTPUTMASK + "=my_file.zip", null, null),
@@ -549,6 +574,13 @@ public class Syntax implements Constants {
 
 		new Syntax(REPRODUCIBLE, "Use a fixed timestamp for all jar entries.", REPRODUCIBLE + "=true", "true,false",
 			Verifier.TRUEORFALSEPATTERN),
+
+		new Syntax("-resolve.effective",
+			"Each requirement and capability has an effective or is effective=resolve. An effective of resolve is always processed by the resolver.",
+			"-resolve.effective=resolve,active", "qname (',' qname )", null),
+
+		new Syntax("-resolve.preferences", "Override the default order and selection of repositories.",
+			"-resolve.preferences=com.example.bundle.most.priority", "${packages}", null),
 
 		new Syntax(RUNTIMEOUT, "Specifies the test execution timeout.", RUNTIMEOUT + "=10000", null, null),
 		new Syntax(REQUIRE_BND, "Require a specific version of bnd.", REQUIRE_BND + "=4.1",
@@ -591,6 +623,10 @@ public class Syntax implements Constants {
 			RUNPROVIDEDCAPABILITIES + "=some.namespace; some.namespace=foo", null, null),
 		new Syntax(RUNTIMEOUT, "Define extra capabilities for the remote VM.",
 			RUNSYSTEMCAPABILITIES + "=some.namespace; some.namespace=foo", null, null),
+		new Syntax(RUNBUILDS,
+			"Defines if this should add the bundles build by this project to the " + RUNBUNDLES
+				+ ". For a bndrun file this is default false, for a bnd file this is default true.",
+			RUNBUILDS + "=true", "true,false", Verifier.TRUEORFALSEPATTERN),
 		new Syntax(RUNBUNDLES,
 			"Add additional bundles, specified with their bsn and version like in " + BUILDPATH
 				+ ", that are started before the project is run.",
@@ -672,7 +708,10 @@ public class Syntax implements Constants {
 		new Syntax(WABLIB, "Specify the libraries that must be included in a Web Archive Bundle (WAB) or WAR.",
 			WABLIB + "=lib/a.jar, lib/b.jar", null, null),
 		new Syntax(WORKINGSET, "Groups the workspace into different working sets.",
-			WORKINGSET + "=Implementations, Drivers", null, null)
+			WORKINGSET + "=Implementations, Drivers", null, null),
+		new Syntax("-x-overwritestrategy",
+			"On windows we sometimes cannot delete a file because someone holds a lock in our or another process. So if we set the -overwritestrategy flag we use an avoiding strategy.",
+			"-x-overwritestrategy=gc", "(classic|delay|gc|windows-only-disposable-names|disposable-names)", null)
 	};
 
 	public final static Map<String, Syntax>	HELP					= new HashMap<>();
