@@ -192,6 +192,14 @@ public class Jar implements Closeable {
 
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					if (doNotCopy != null) {
+						String name = file.getFileName()
+							.toString();
+						if (doNotCopy.matcher(name)
+							.matches()) {
+							return FileVisitResult.CONTINUE;
+						}
+					}
 					String relativePath = IO.normalizePath(baseDir.relativize(file));
 					putResource(relativePath, new FileResource(file, attrs), true);
 					return FileVisitResult.CONTINUE;
