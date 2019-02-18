@@ -391,7 +391,7 @@ public class Builder extends Analyzer {
 			}
 		}
 		if (jar.getDirectories()
-			.size() == 0) {
+			.isEmpty()) {
 			logger.debug("extra dirs {}", jar.getDirectories());
 			return null;
 		}
@@ -770,11 +770,12 @@ public class Builder extends Analyzer {
 	private void copy(Jar dest, Jar srce, String path, boolean overwrite) {
 		logger.debug("copy d={} s={} p={}", dest, srce, path);
 		dest.copy(srce, path, overwrite);
-		if (hasSources())
-			dest.copy(srce, "OSGI-OPT/src/" + path, overwrite);
+		if (hasSources()) {
+			dest.copy(srce, appendPath("OSGI-OPT/src", path), overwrite);
+		}
 
 		// bnd.info sources must be preprocessed
-		String bndInfoPath = path + "/bnd.info";
+		String bndInfoPath = appendPath(path, "bnd.info");
 		Resource r = dest.getResource(bndInfoPath);
 		if (r != null && !(r instanceof PreprocessResource)) {
 			logger.debug("preprocessing bnd.info");
@@ -783,7 +784,7 @@ public class Builder extends Analyzer {
 		}
 
 		if (hasSources()) {
-			String srcPath = "OSGI-OPT/src/" + path;
+			String srcPath = appendPath("OSGI-OPT/src", path);
 			Map<String, Resource> srcContents = srce.getDirectory(srcPath);
 			if (srcContents != null) {
 				dest.addDirectory(srcContents, overwrite);
