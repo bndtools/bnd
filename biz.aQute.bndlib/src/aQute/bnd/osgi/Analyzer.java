@@ -137,7 +137,7 @@ public class Analyzer extends Processor {
 	private Set<PackageRef>							packagesVisited			= new HashSet<>();
 	private Set<PackageRef>							nonClassReferences		= new HashSet<>();
 	private Set<Check>								checks;
-	private Map<TypeRef, String>					bcpTypes				= map();
+	private final Map<TypeRef, String>				bcpTypes				= map();
 
 	public enum Check {
 		ALL,
@@ -3685,7 +3685,7 @@ public class Analyzer extends Processor {
 		}
 	}
 
-	public Optional<String> getBCPEntry(Clazz clazz) {
+	public Optional<String> getBundleClassPathEntry(Clazz clazz) {
 		return Optional.ofNullable(bcpTypes.get(clazz.getClassName()));
 	}
 

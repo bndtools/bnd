@@ -128,7 +128,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 							EnumSet.allOf(Discover.class));
 					}
 
-					analyzer.getBCPEntry(c)
+					analyzer.getBundleClassPathEntry(c)
 						.map(discoverPerBCPEntry::get)
 						.ifPresent(d -> {
 							options.clear();
