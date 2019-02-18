@@ -44,6 +44,10 @@ A plugin to resolve bndrun files.
 
 A plugin to run integration tests from bndrun files.
 
+## [bnd-run-maven-plugin][9]
+
+A plugin to run a bndrun file.
+
 # Building the Maven Plugins
 
 See the [.travis.yml][5] file in the root of the repo for the `script` section
@@ -59,4 +63,5 @@ run Maven to build the Maven plugins.
 [6]: https://maven.apache.org/maven-logging.html
 [7]: bnd-resolver-maven-plugin/README.md
 [8]: bnd-testing-maven-plugin/README.md
+[9]: bnd-run-maven-plugin/README.md
 

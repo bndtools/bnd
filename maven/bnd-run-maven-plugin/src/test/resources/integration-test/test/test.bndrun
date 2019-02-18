@@ -1,0 +1,4 @@
+-runfw: org.eclipse.osgi
+-runee: JavaSE-1.8
+-runrequires: osgi.identity;filter:='(osgi.identity=run-test)'
+-runbundles: run-test;version=latest
