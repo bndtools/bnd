@@ -259,11 +259,19 @@ public class Jar implements Closeable {
 		return putResource(path, resource, true);
 	}
 
+	private static String cleanPath(String path) {
+		int start = 0;
+		int end = path.length();
+		while ((start < end) && (path.charAt(start) == '/')) {
+			start++;
+		}
+		return path.substring(start);
+	}
+
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
 		check();
 		updateModified(resource.lastModified(), path);
-		while (path.startsWith("/"))
-			path = path.substring(1);
+		path = cleanPath(path);
 
 		if (path.equals(manifestName)) {
 			manifest = null;
@@ -292,6 +300,7 @@ public class Jar implements Closeable {
 
 	public Resource getResource(String path) {
 		check();
+		path = cleanPath(path);
 		return resources.get(path);
 	}
 
@@ -400,6 +409,7 @@ public class Jar implements Closeable {
 
 	public boolean exists(String path) {
 		check();
+		path = cleanPath(path);
 		return resources.containsKey(path);
 	}
 
@@ -924,7 +934,8 @@ public class Jar implements Closeable {
 
 	public boolean hasDirectory(String path) {
 		check();
-		return directories.get(path) != null;
+		path = cleanPath(path);
+		return directories.containsKey(path);
 	}
 
 	public List<String> getPackages() {
@@ -958,6 +969,7 @@ public class Jar implements Closeable {
 
 	public Resource remove(String path) {
 		check();
+		path = cleanPath(path);
 		Resource resource = resources.remove(path);
 		if (resource != null) {
 			String dir = getDirectory(path);
@@ -1202,6 +1214,7 @@ public class Jar implements Closeable {
 	}
 
 	public void removePrefix(String prefixLow) {
+		prefixLow = cleanPath(prefixLow);
 		String prefixHigh = prefixLow + "\uFFFF";
 		resources.subMap(prefixLow, prefixHigh)
 			.clear();
@@ -1214,6 +1227,7 @@ public class Jar implements Closeable {
 	}
 
 	public void removeSubDirs(String dir) {
+		dir = cleanPath(dir);
 		if (!dir.endsWith("/")) {
 			dir = dir + "/";
 		}
