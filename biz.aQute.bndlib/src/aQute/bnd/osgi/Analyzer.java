@@ -2510,15 +2510,9 @@ public class Analyzer extends Processor {
 		if (bcp.isEmpty()) {
 			analyzeJar(dot, "", true, null);
 		} else {
-			boolean okToIncludeDirs = true;
-
-			for (String path : bcp.keySet()) {
-				if (dot.getDirectories()
-					.containsKey(path)) {
-					okToIncludeDirs = false;
-					break;
-				}
-			}
+			boolean okToIncludeDirs = bcp.keySet()
+				.stream()
+				.noneMatch(dot::hasDirectory);
 
 			for (String path : bcp.keySet()) {
 				Attrs info = bcp.get(path);
@@ -2547,8 +2541,7 @@ public class Analyzer extends Processor {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);
 					}
 				} else {
-					if (dot.getDirectories()
-						.containsKey(path)) {
+					if (dot.hasDirectory(path)) {
 						// if directories are used, we should not have dot as we
 						// would have the classes in these directories on the
 						// class path twice.
@@ -2923,8 +2916,7 @@ public class Analyzer extends Processor {
 			null, 2, 2);
 		String pack = Descriptors.fqnToBinary(args[1]);
 		String result = getClasspath().stream()
-			.filter(jar -> jar.getDirectories()
-				.containsKey(pack))
+			.filter(jar -> jar.hasDirectory(pack))
 			.map(Jar::getName)
 			.collect(Strings.joining());
 		return result;
