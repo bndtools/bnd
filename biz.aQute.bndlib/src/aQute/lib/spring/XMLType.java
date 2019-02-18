@@ -79,8 +79,7 @@ public class XMLType {
 
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
-		Map<String, Resource> dir = jar.getDirectories()
-			.get(root);
+		Map<String, Resource> dir = jar.getDirectory(root);
 		if (dir == null || dir.isEmpty()) {
 			Resource resource = jar.getResource(root);
 			if (resource != null)

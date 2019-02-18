@@ -185,13 +185,19 @@ public class Jar implements Closeable {
 							return FileVisitResult.SKIP_SUBTREE;
 						}
 					}
-					updateModified(attrs.lastModifiedTime()
-						.toMillis(), "Dir change " + dir);
 					return FileVisitResult.CONTINUE;
 				}
 
 				@Override
 				public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+					if (doNotCopy != null) {
+						String name = file.getFileName()
+							.toString();
+						if (doNotCopy.matcher(name)
+							.matches()) {
+							return FileVisitResult.CONTINUE;
+						}
+					}
 					String relativePath = IO.normalizePath(baseDir.relativize(file));
 					putResource(relativePath, new FileResource(file, attrs), true);
 					return FileVisitResult.CONTINUE;
@@ -259,11 +265,18 @@ public class Jar implements Closeable {
 		return putResource(path, resource, true);
 	}
 
+	private static String cleanPath(String path) {
+		int start = 0;
+		int end = path.length();
+		while ((start < end) && (path.charAt(start) == '/')) {
+			start++;
+		}
+		return path.substring(start);
+	}
+
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
 		check();
-		updateModified(resource.lastModified(), path);
-		while (path.startsWith("/"))
-			path = path.substring(1);
+		path = cleanPath(path);
 
 		if (path.equals(manifestName)) {
 			manifest = null;
@@ -272,7 +285,7 @@ public class Jar implements Closeable {
 		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
 			moduleAttribute = null;
 		}
-		Map<String, Resource> s = directories.computeIfAbsent(getDirectory(path), dir -> {
+		Map<String, Resource> s = directories.computeIfAbsent(getParent(path), dir -> {
 			// make ancestor directories
 			for (int n; (n = dir.lastIndexOf('/')) > 0;) {
 				dir = dir.substring(0, n);
@@ -286,12 +299,14 @@ public class Jar implements Closeable {
 		if (!duplicate || overwrite) {
 			resources.put(path, resource);
 			s.put(path, resource);
+			updateModified(resource.lastModified(), path);
 		}
 		return duplicate;
 	}
 
 	public Resource getResource(String path) {
 		check();
+		path = cleanPath(path);
 		return resources.get(path);
 	}
 
@@ -303,7 +318,7 @@ public class Jar implements Closeable {
 			.map(resources::get);
 	}
 
-	private String getDirectory(String path) {
+	private String getParent(String path) {
 		check();
 		int n = path.lastIndexOf('/');
 		if (n < 0)
@@ -315,6 +330,12 @@ public class Jar implements Closeable {
 	public Map<String, Map<String, Resource>> getDirectories() {
 		check();
 		return directories;
+	}
+
+	public Map<String, Resource> getDirectory(String path) {
+		check();
+		path = cleanPath(path);
+		return directories.get(path);
 	}
 
 	public Map<String, Resource> getResources() {
@@ -400,6 +421,7 @@ public class Jar implements Closeable {
 
 	public boolean exists(String path) {
 		check();
+		path = cleanPath(path);
 		return resources.containsKey(path);
 	}
 
@@ -924,7 +946,8 @@ public class Jar implements Closeable {
 
 	public boolean hasDirectory(String path) {
 		check();
-		return directories.get(path) != null;
+		path = cleanPath(path);
+		return directories.containsKey(path);
 	}
 
 	public List<String> getPackages() {
@@ -958,9 +981,10 @@ public class Jar implements Closeable {
 
 	public Resource remove(String path) {
 		check();
+		path = cleanPath(path);
 		Resource resource = resources.remove(path);
 		if (resource != null) {
-			String dir = getDirectory(path);
+			String dir = getParent(path);
 			Map<String, Resource> mdir = directories.get(dir);
 			// must be != null
 			mdir.remove(path);
@@ -1113,8 +1137,7 @@ public class Jar implements Closeable {
 
 	public void copy(Jar srce, String path, boolean overwrite) {
 		check();
-		addDirectory(srce.getDirectories()
-			.get(path), overwrite);
+		addDirectory(srce.getDirectory(path), overwrite);
 	}
 
 	public void setCompression(Compression compression) {
@@ -1191,7 +1214,7 @@ public class Jar implements Closeable {
 	static Pattern SIGNER_FILES_P = Pattern.compile("(.+\\.(SF|DSA|RSA))|(.*/SIG-.*)", Pattern.CASE_INSENSITIVE);
 
 	public void stripSignatures() {
-		Map<String, Resource> map = getDirectories().get("META-INF");
+		Map<String, Resource> map = getDirectory("META-INF");
 		if (map != null) {
 			for (String file : new HashSet<>(map.keySet())) {
 				if (SIGNER_FILES_P.matcher(file)
@@ -1202,6 +1225,7 @@ public class Jar implements Closeable {
 	}
 
 	public void removePrefix(String prefixLow) {
+		prefixLow = cleanPath(prefixLow);
 		String prefixHigh = prefixLow + "\uFFFF";
 		resources.subMap(prefixLow, prefixHigh)
 			.clear();
@@ -1214,6 +1238,7 @@ public class Jar implements Closeable {
 	}
 
 	public void removeSubDirs(String dir) {
+		dir = cleanPath(dir);
 		if (!dir.endsWith("/")) {
 			dir = dir + "/";
 		}

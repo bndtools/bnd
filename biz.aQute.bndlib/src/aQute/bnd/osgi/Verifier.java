@@ -1174,15 +1174,14 @@ public class Verifier extends Processor {
 
 	public void verifyBundleClasspath() {
 		Parameters bcp = main.getBundleClassPath();
-		if (bcp.isEmpty() || bcp.containsKey("."))
+		if (bcp.isEmpty() || bcp.containsKey(".") || bcp.containsKey("/"))
 			return;
 
 		for (String path : bcp.keySet()) {
 			if (path.endsWith("/"))
 				error("A " + Constants.BUNDLE_CLASSPATH + " entry must not end with '/': %s", path);
 
-			if (dot.getDirectories()
-				.containsKey(path))
+			if (dot.hasDirectory(path))
 				// We assume that any classes are in a directory
 				// and therefore do not care when the bundle is included
 				return;

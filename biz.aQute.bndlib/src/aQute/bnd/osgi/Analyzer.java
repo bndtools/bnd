@@ -137,7 +137,7 @@ public class Analyzer extends Processor {
 	private Set<PackageRef>							packagesVisited			= new HashSet<>();
 	private Set<PackageRef>							nonClassReferences		= new HashSet<>();
 	private Set<Check>								checks;
-	private Map<TypeRef, String>					bcpTypes				= map();
+	private final Map<TypeRef, String>				bcpTypes				= map();
 
 	public enum Check {
 		ALL,
@@ -553,8 +553,7 @@ public class Analyzer extends Processor {
 		// not take the package slot. See #708
 		//
 
-		Map<String, Resource> dir = jar.getDirectories()
-			.get(prefix + packageRef.getBinary());
+		Map<String, Resource> dir = jar.getDirectory(appendPath(prefix, packageRef.getBinary()));
 		if (dir == null || dir.size() == 0)
 			return;
 
@@ -2096,8 +2095,7 @@ public class Analyzer extends Processor {
 				Attrs exporterAttributes = classpathExports.get(packageRef);
 				if (exporterAttributes == null) {
 					if (check(Check.EXPORTS)) {
-						Map<String, Resource> map = dot.getDirectories()
-							.get(packageRef.getBinary());
+						Map<String, Resource> map = dot.getDirectory(packageRef.getBinary());
 						if ((map == null || map.isEmpty())) {
 							error("Exporting an empty package '%s'", packageRef.getFQN());
 						}
@@ -2512,19 +2510,21 @@ public class Analyzer extends Processor {
 		if (bcp.isEmpty()) {
 			analyzeJar(dot, "", true, null);
 		} else {
-			boolean okToIncludeDirs = true;
+			// Cleanup entries
+			bcp = bcp.entrySet()
+				.stream()
+				.collect(toMap(e -> {
+					String path = e.getKey();
+					if (path.equals(".") || path.equals("/")) {
+						return ".";
+					}
+					return appendPath(path);
+				}, Entry::getValue, (u, v) -> u, Parameters::new));
+			boolean okToIncludeDirs = bcp.keySet()
+				.stream()
+				.noneMatch(dot::hasDirectory);
 
 			for (String path : bcp.keySet()) {
-				if (dot.getDirectories()
-					.containsKey(path)) {
-					okToIncludeDirs = false;
-					break;
-				}
-			}
-
-			for (String path : bcp.keySet()) {
-				Attrs info = bcp.get(path);
-
 				if (path.equals(".")) {
 					analyzeJar(dot, "", okToIncludeDirs, null);
 					continue;
@@ -2535,7 +2535,6 @@ public class Analyzer extends Processor {
 				// - directory
 				// - error
 				//
-
 				Resource resource = dot.getResource(path);
 				if (resource != null) {
 					try {
@@ -2549,8 +2548,7 @@ public class Analyzer extends Processor {
 						warning("Invalid bundle classpath entry: %s: %s", path, e);
 					}
 				} else {
-					if (dot.getDirectories()
-						.containsKey(path)) {
+					if (dot.hasDirectory(path)) {
 						// if directories are used, we should not have dot as we
 						// would have the classes in these directories on the
 						// class path twice.
@@ -2558,14 +2556,14 @@ public class Analyzer extends Processor {
 							warning(Constants.BUNDLE_CLASSPATH
 								+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 								path);
-						analyzeJar(dot, Processor.appendPath(path) + "/", true, path);
+						analyzeJar(dot, path + "/", true, path);
 					} else {
+						Attrs info = bcp.get(path);
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
 							warning("No sub JAR or directory %s", path);
 					}
 				}
 			}
-
 		}
 	}
 
@@ -2616,10 +2614,12 @@ public class Analyzer extends Processor {
 					if (!calculatedPath.equals(relativePath)) {
 						// If there is a mismatch we
 						// warning
-						if (okToIncludeDirs) // assume already reported
+						if (okToIncludeDirs) { // assume already reported
 							mismatched.put(clazz.getAbsolutePath(), clazz);
-					} else {
-						classspace.put(clazz.getClassName(), clazz);
+						}
+						continue next;
+					}
+					if (classspace.putIfAbsent(clazz.getClassName(), clazz) == null) {
 						PackageRef packageRef = clazz.getClassName()
 							.getPackageRef();
 						learnPackage(jar, prefix, packageRef, contained);
@@ -2923,8 +2923,7 @@ public class Analyzer extends Processor {
 			null, 2, 2);
 		String pack = Descriptors.fqnToBinary(args[1]);
 		String result = getClasspath().stream()
-			.filter(jar -> jar.getDirectories()
-				.containsKey(pack))
+			.filter(jar -> jar.hasDirectory(pack))
 			.map(Jar::getName)
 			.collect(Strings.joining());
 		return result;
@@ -3685,7 +3684,7 @@ public class Analyzer extends Processor {
 		}
 	}
 
-	public Optional<String> getBCPEntry(Clazz clazz) {
+	public Optional<String> getBundleClassPathEntry(Clazz clazz) {
 		return Optional.ofNullable(bcpTypes.get(clazz.getClassName()));
 	}
 

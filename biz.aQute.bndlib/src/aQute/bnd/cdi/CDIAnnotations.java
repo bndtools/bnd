@@ -1,5 +1,7 @@
 package aQute.bnd.cdi;
 
+import static java.util.stream.Collectors.toMap;
+
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,11 +36,15 @@ import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Packages;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.exceptions.FunctionWithException;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
 /**
@@ -75,23 +81,26 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		if (header.size() == 0)
 			return false;
 
-		Map<String, Discover> discoverPerBCPEntry = new HashMap<>();
-		Parameters bcp = analyzer.getBundleClassPath();
 		Jar currentJar = analyzer.getJar();
 
-		for (Entry<String, Attrs> entry : bcp.entrySet()) {
-			String path = entry.getKey();
-			Resource resource = currentJar.getResource(path);
-			if (resource != null) {
+		Map<String, Discover> discoverPerBCPEntry = analyzer.getBundleClassPath()
+			.keySet()
+			.stream()
+			.filter(path -> !path.equals(".") && !path.equals("/"))
+			.map(Processor::appendPath)
+			.filter(currentJar::exists)
+			.collect(toMap(path -> path, FunctionWithException.asFunction(path -> {
+				Resource resource = currentJar.getResource(path);
 				Jar jar = Jar.fromResource(path, resource);
-
-				Resource beansResource = jar.getResource("META-INF/beans.xml");
-
-				Discover discover = findDiscoveryMode(beansResource);
-
-				discoverPerBCPEntry.put(path, discover);
-			}
-		}
+				try {
+					Resource beansResource = jar.getResource("META-INF/beans.xml");
+					return findDiscoveryMode(beansResource);
+				} finally {
+					if (!(resource instanceof JarResource)) {
+						IO.close(jar);
+					}
+				}
+			}), (u, v) -> u, HashMap::new));
 
 		Instructions instructions = new Instructions(header);
 		Packages contained = analyzer.getContained();
@@ -128,7 +137,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 							EnumSet.allOf(Discover.class));
 					}
 
-					analyzer.getBCPEntry(c)
+					analyzer.getBundleClassPathEntry(c)
 						.map(discoverPerBCPEntry::get)
 						.ifPresent(d -> {
 							options.clear();
