@@ -36,6 +36,7 @@ import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Packages;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
@@ -43,6 +44,7 @@ import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.exceptions.FunctionWithException;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 
 /**
@@ -90,8 +92,14 @@ public class CDIAnnotations implements AnalyzerPlugin {
 			.collect(toMap(path -> path, FunctionWithException.asFunction(path -> {
 				Resource resource = currentJar.getResource(path);
 				Jar jar = Jar.fromResource(path, resource);
-				Resource beansResource = jar.getResource("META-INF/beans.xml");
-				return findDiscoveryMode(beansResource);
+				try {
+					Resource beansResource = jar.getResource("META-INF/beans.xml");
+					return findDiscoveryMode(beansResource);
+				} finally {
+					if (!(resource instanceof JarResource)) {
+						IO.close(jar);
+					}
+				}
 			}), (u, v) -> u, HashMap::new));
 
 		Instructions instructions = new Instructions(header);
