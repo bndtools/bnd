@@ -19,6 +19,7 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 
 public class CDIAnnotationTest {
@@ -288,6 +289,29 @@ public class CDIAnnotationTest {
 			checkProvides(a);
 			checkRequires(a, Arrays.asList("test.cdi.beans_h.AppScopedBean", "org.apache.wicket.cdi.AutoConversation"),
 				"java.lang.Character", "java.lang.Integer", "java.lang.Long");
+		}
+	}
+
+	@Test
+	public void beansXmlInWab() throws Exception {
+		try (Builder b = new Builder(); Jar wab = new Jar(new File("jar/tck-V3URLTests.wab.war"))) {
+			b.setJar(wab);
+			b.setProperty(Constants.CDIANNOTATIONS, "*;discover=all");
+			b.setProperty("-fixupmessages",
+				"'No sub JAR or directory ext/WEB-INF/classes';is:=ignore,'While traversing the type tree for';is:=ignore");
+			b.setProperty(Constants.BUNDLE_CLASSPATH, Domain.domain(wab.getManifest())
+				.getBundleClassPath()
+				.toString());
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a,
+				Arrays.asList("javax.portlet.tck.portlets.URLTests_ActionURL",
+					"javax.portlet.tck.portlets.URLTests_BaseURL", "javax.portlet.tck.portlets.URLTests_RenderURL",
+					"javax.portlet.tck.portlets.URLTests_ResourceURL", "javax.portlet.tck.util.ModuleTestCaseDetails"));
 		}
 	}
 

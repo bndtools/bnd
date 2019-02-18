@@ -75,7 +75,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		if (header.size() == 0)
 			return false;
 
-		Map<Resource, Discover> discoverPerResource = new HashMap<>();
+		Map<String, Discover> discoverPerBCPEntry = new HashMap<>();
 		Parameters bcp = analyzer.getBundleClassPath();
 		Jar currentJar = analyzer.getJar();
 
@@ -89,9 +89,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 
 				Discover discover = findDiscoveryMode(beansResource);
 
-				jar.getResources()
-					.values()
-					.forEach(r -> discoverPerResource.put(r, discover));
+				discoverPerBCPEntry.put(path, discover);
 			}
 		}
 
@@ -130,11 +128,12 @@ public class CDIAnnotations implements AnalyzerPlugin {
 							EnumSet.allOf(Discover.class));
 					}
 
-					if (discoverPerResource.containsKey(c.getResource())) {
-						options.clear();
-						Discover resourceDiscover = discoverPerResource.get(c.getResource());
-						options.add(resourceDiscover);
-					}
+					analyzer.getBCPEntry(c)
+						.map(discoverPerBCPEntry::get)
+						.ifPresent(d -> {
+							options.clear();
+							options.add(d);
+						});
 
 					if (options.isEmpty()) {
 						// set the default mode
