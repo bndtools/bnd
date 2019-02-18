@@ -185,8 +185,6 @@ public class Jar implements Closeable {
 							return FileVisitResult.SKIP_SUBTREE;
 						}
 					}
-					updateModified(attrs.lastModifiedTime()
-						.toMillis(), "Dir change " + dir);
 					return FileVisitResult.CONTINUE;
 				}
 
@@ -278,7 +276,6 @@ public class Jar implements Closeable {
 
 	public boolean putResource(String path, Resource resource, boolean overwrite) {
 		check();
-		updateModified(resource.lastModified(), path);
 		path = cleanPath(path);
 
 		if (path.equals(manifestName)) {
@@ -302,6 +299,7 @@ public class Jar implements Closeable {
 		if (!duplicate || overwrite) {
 			resources.put(path, resource);
 			s.put(path, resource);
+			updateModified(resource.lastModified(), path);
 		}
 		return duplicate;
 	}
