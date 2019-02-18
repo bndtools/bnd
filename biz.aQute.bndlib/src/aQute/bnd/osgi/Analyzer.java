@@ -2510,13 +2510,21 @@ public class Analyzer extends Processor {
 		if (bcp.isEmpty()) {
 			analyzeJar(dot, "", true, null);
 		} else {
+			// Cleanup entries
+			bcp = bcp.entrySet()
+				.stream()
+				.collect(toMap(e -> {
+					String path = e.getKey();
+					if (path.equals(".") || path.equals("/")) {
+						return ".";
+					}
+					return appendPath(path);
+				}, Entry::getValue, (u, v) -> u, Parameters::new));
 			boolean okToIncludeDirs = bcp.keySet()
 				.stream()
 				.noneMatch(dot::hasDirectory);
 
 			for (String path : bcp.keySet()) {
-				Attrs info = bcp.get(path);
-
 				if (path.equals(".")) {
 					analyzeJar(dot, "", okToIncludeDirs, null);
 					continue;
@@ -2527,7 +2535,6 @@ public class Analyzer extends Processor {
 				// - directory
 				// - error
 				//
-
 				Resource resource = dot.getResource(path);
 				if (resource != null) {
 					try {
@@ -2549,14 +2556,14 @@ public class Analyzer extends Processor {
 							warning(Constants.BUNDLE_CLASSPATH
 								+ " uses a directory '%s' as well as '.'. This means bnd does not know if a directory is a package.",
 								path);
-						analyzeJar(dot, Processor.appendPath(path) + "/", true, path);
+						analyzeJar(dot, path + "/", true, path);
 					} else {
+						Attrs info = bcp.get(path);
 						if (!"optional".equals(info.get(RESOLUTION_DIRECTIVE)))
 							warning("No sub JAR or directory %s", path);
 					}
 				}
 			}
-
 		}
 	}
 
