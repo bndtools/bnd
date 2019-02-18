@@ -280,7 +280,7 @@ public class Jar implements Closeable {
 		} else if (path.equals(Constants.MODULE_INFO_CLASS)) {
 			moduleAttribute = null;
 		}
-		Map<String, Resource> s = directories.computeIfAbsent(getDirectory(path), dir -> {
+		Map<String, Resource> s = directories.computeIfAbsent(getParent(path), dir -> {
 			// make ancestor directories
 			for (int n; (n = dir.lastIndexOf('/')) > 0;) {
 				dir = dir.substring(0, n);
@@ -312,7 +312,7 @@ public class Jar implements Closeable {
 			.map(resources::get);
 	}
 
-	private String getDirectory(String path) {
+	private String getParent(String path) {
 		check();
 		int n = path.lastIndexOf('/');
 		if (n < 0)
@@ -324,6 +324,12 @@ public class Jar implements Closeable {
 	public Map<String, Map<String, Resource>> getDirectories() {
 		check();
 		return directories;
+	}
+
+	public Map<String, Resource> getDirectory(String path) {
+		check();
+		path = cleanPath(path);
+		return directories.get(path);
 	}
 
 	public Map<String, Resource> getResources() {
@@ -972,7 +978,7 @@ public class Jar implements Closeable {
 		path = cleanPath(path);
 		Resource resource = resources.remove(path);
 		if (resource != null) {
-			String dir = getDirectory(path);
+			String dir = getParent(path);
 			Map<String, Resource> mdir = directories.get(dir);
 			// must be != null
 			mdir.remove(path);
@@ -1125,8 +1131,7 @@ public class Jar implements Closeable {
 
 	public void copy(Jar srce, String path, boolean overwrite) {
 		check();
-		addDirectory(srce.getDirectories()
-			.get(path), overwrite);
+		addDirectory(srce.getDirectory(path), overwrite);
 	}
 
 	public void setCompression(Compression compression) {
@@ -1203,7 +1208,7 @@ public class Jar implements Closeable {
 	static Pattern SIGNER_FILES_P = Pattern.compile("(.+\\.(SF|DSA|RSA))|(.*/SIG-.*)", Pattern.CASE_INSENSITIVE);
 
 	public void stripSignatures() {
-		Map<String, Resource> map = getDirectories().get("META-INF");
+		Map<String, Resource> map = getDirectory("META-INF");
 		if (map != null) {
 			for (String file : new HashSet<>(map.keySet())) {
 				if (SIGNER_FILES_P.matcher(file)

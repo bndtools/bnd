@@ -383,8 +383,7 @@ public class Builder extends Analyzer {
 		addClose(jar);
 		for (PackageRef pref : referred) {
 			for (Jar cpe : getClasspath()) {
-				Map<String, Resource> map = cpe.getDirectories()
-					.get(pref.getPath());
+				Map<String, Resource> map = cpe.getDirectory(pref.getPath());
 				if (map != null) {
 					copy(jar, cpe, pref.getPath(), false);
 					break;
@@ -785,8 +784,7 @@ public class Builder extends Analyzer {
 
 		if (hasSources()) {
 			String srcPath = "OSGI-OPT/src/" + path;
-			Map<String, Resource> srcContents = srce.getDirectories()
-				.get(srcPath);
+			Map<String, Resource> srcContents = srce.getDirectory(srcPath);
 			if (srcContents != null) {
 				dest.addDirectory(srcContents, overwrite);
 			}

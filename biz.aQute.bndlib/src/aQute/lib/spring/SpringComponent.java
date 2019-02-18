@@ -77,8 +77,7 @@ public class SpringComponent implements AnalyzerPlugin {
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
 		Jar jar = analyzer.getJar();
-		Map<String, Resource> dir = jar.getDirectories()
-			.get("META-INF/spring");
+		Map<String, Resource> dir = jar.getDirectory("META-INF/spring");
 		if (dir == null || dir.isEmpty())
 			return false;
 

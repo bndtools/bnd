@@ -553,8 +553,7 @@ public class Analyzer extends Processor {
 		// not take the package slot. See #708
 		//
 
-		Map<String, Resource> dir = jar.getDirectories()
-			.get(prefix + packageRef.getBinary());
+		Map<String, Resource> dir = jar.getDirectory(appendPath(prefix, packageRef.getBinary()));
 		if (dir == null || dir.size() == 0)
 			return;
 
@@ -2096,8 +2095,7 @@ public class Analyzer extends Processor {
 				Attrs exporterAttributes = classpathExports.get(packageRef);
 				if (exporterAttributes == null) {
 					if (check(Check.EXPORTS)) {
-						Map<String, Resource> map = dot.getDirectories()
-							.get(packageRef.getBinary());
+						Map<String, Resource> map = dot.getDirectory(packageRef.getBinary());
 						if ((map == null || map.isEmpty())) {
 							error("Exporting an empty package '%s'", packageRef.getFQN());
 						}
