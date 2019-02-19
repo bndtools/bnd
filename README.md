@@ -42,7 +42,11 @@ Bnd/Bndtools is continuously built on [Azure Pipeline](https://dev.azure.com/bnd
 A Maven repository of the latest build is available at <https://bndtools.jfrog.io/bndtools/libs-snapshot>.
 A snapshot version of all the bundles and Maven and Gradle plugins is there.
 
-An Eclipse p2 update site for the latest build of the Bndtools plugins is available at <https://bndtools.jfrog.io/bndtools/update>.
+### Using the latest development SNAPSHOT build of Bnd/Bndtools
+
+* [Bnd Gradle Plugins](biz.aQute.bnd.gradle/README.md#using-the-latest-development-snapshot-build-of-the-bnd-gradle-plugins)
+* [Bnd Maven Plugins](maven/README.md#using-the-latest-development-snapshot-build-of-the-bnd-maven-plugins)
+* [Eclipse p2 update site for Bndtools](https://bndtools.jfrog.io/bndtools/update) <https://bndtools.jfrog.io/bndtools/update>
 
 ![Powered by Artifactory](https://github.com/bndtools/bnd/raw/master/docs/img/Powered-by-artifactory_04.png)
 
