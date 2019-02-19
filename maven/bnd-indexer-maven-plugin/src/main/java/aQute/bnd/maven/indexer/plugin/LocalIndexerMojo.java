@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.maven.lib.configuration.FileTree;
 import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.lib.io.IO;
+import java.io.IOException;
+import java.util.stream.Collectors;
 
 /**
  * Exports project dependencies to OSGi R5 index format.
@@ -43,6 +45,9 @@ public class LocalIndexerMojo extends AbstractMojo {
 
 	@Parameter(property = "bnd.indexer.skip", defaultValue = "false")
 	private boolean				skip;
+
+	@Parameter(property = "bnd.indexer.absolute", defaultValue = "false")
+	private boolean				absolute;
 
 	/**
 	 * This configuration parameter is used to set the name of the repository in
@@ -70,15 +75,26 @@ public class LocalIndexerMojo extends AbstractMojo {
 		logger.debug("Indexing dependencies in folder: {}", inputDir.getAbsolutePath());
 		logger.debug("Outputting index to: {}", outputFile.getAbsolutePath());
 		logger.debug("Producing additional gzip index: {}", includeGzip);
-		logger.debug("URI paths will be relative to: {}", baseFile);
+		if (absolute) {
+			logger.debug("URI paths will be absolute");
+		} else {
+			logger.debug("URI paths will be relative to: {}", baseFile);
+		}
 
 		try {
 			List<File> toIndex = indexFiles.getFiles(inputDir, "**/*.jar");
+			if (absolute) {
+				toIndex = toIndex.stream()
+						.map(f -> f.toPath().normalize().toFile())
+						.collect(Collectors.toList());
+			}
 			logger.debug("Included files: {}", toIndex);
 			IO.mkdirs(outputFile.getParentFile());
-			new SimpleIndexer().files(toIndex)
-				.base(baseFile.toURI())
-				.name(indexName)
+			final SimpleIndexer simpleIndexer = new SimpleIndexer().files(toIndex);
+			if (!absolute) {
+				simpleIndexer.base(baseFile.toURI());
+			}
+			simpleIndexer.name(indexName)
 				.index(outputFile);
 		} catch (Exception e) {
 			throw new MojoExecutionException(e.getMessage(), e);
