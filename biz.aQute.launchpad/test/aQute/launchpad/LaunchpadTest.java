@@ -29,7 +29,6 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
@@ -70,7 +69,6 @@ public class LaunchpadTest {
 				.contains(IO.getFile("../biz.aQute.bnd/generated/biz.aQute.bnd.jar")
 					.getAbsolutePath());
 			assertThat(remote.getProjects()).contains("biz.aQute.launchpad");
-			assertThat(remote.getBndVersion()).contains(About.CURRENT.toString());
 
 			assertNotNull(remote.analyzeTestSetup(IO.work.getAbsolutePath()));
 			assertNotNull(remote.getRun(IO.work.getAbsolutePath()));
