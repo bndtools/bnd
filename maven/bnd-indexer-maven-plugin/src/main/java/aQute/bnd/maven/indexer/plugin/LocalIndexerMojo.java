@@ -5,6 +5,7 @@ import static org.apache.maven.plugins.annotations.LifecyclePhase.PROCESS_RESOUR
 import java.io.File;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -18,8 +19,6 @@ import org.slf4j.LoggerFactory;
 import aQute.bnd.maven.lib.configuration.FileTree;
 import aQute.bnd.osgi.repository.SimpleIndexer;
 import aQute.lib.io.IO;
-import java.io.IOException;
-import java.util.stream.Collectors;
 
 /**
  * Exports project dependencies to OSGi R5 index format.
