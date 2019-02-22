@@ -210,7 +210,6 @@ public interface Constants {
 
 	String								REMOTEWORKSPACE								= "-remoteworkspace";
 
-
 	/**
 	 * @deprecated This is for support of the legacy OBR requirement format, use
 	 *             {@link #RUNREQUIRES} for new format.
@@ -241,6 +240,7 @@ public interface Constants {
 	String								RUNFRAMEWORK_NONE							= "none";
 	String								REPORTNEWER									= "-reportnewer";
 	String								SIGN										= "-sign";
+	String								STALECHECK									= "-stalecheck";
 	String								STANDALONE									= "-standalone";
 	String								IGNORE_STANDALONE							= "-ignore-standalone";
 	String								TESTPACKAGES								= "-testpackages";
@@ -277,7 +277,7 @@ public interface Constants {
 		METATYPE_ANNOTATIONS_OPTIONS, PACKAGEINFOTYPE, JAVAC_SOURCE, JAVAC_TARGET, JAVAC_PROFILE, JAVAC, JAVA,
 		JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE,
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
-		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE
+		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK
 
 	};
 

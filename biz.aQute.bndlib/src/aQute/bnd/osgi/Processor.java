@@ -2873,14 +2873,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		process.getOutputStream()
 			.close();
 
-		String s = IO.collect(process.getInputStream(), UTF_8);
+		String out = IO.collect(process.getInputStream(), UTF_8);
+		String err = IO.collect(process.getErrorStream(), UTF_8);
 		int exitValue = -1;
 
 		exitValue = process.waitFor();
 
 		if (exitValue != 0) {
 			if (!allowFail) {
-				error("System command %s failed with exit code %d", command, exitValue);
+				error("System command %s failed with exit code %d: %s", command, exitValue, out + "\n---\n" + err);
 			} else {
 				warning("System command %s failed with exit code %d (allowed)", command, exitValue);
 
@@ -2888,7 +2889,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			return null;
 		}
 
-		return s.trim();
+		return out.trim();
 	}
 
 	public String system(String command, String input) throws IOException, InterruptedException {

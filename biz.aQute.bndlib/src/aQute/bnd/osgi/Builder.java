@@ -90,22 +90,7 @@ public class Builder extends Analyzer {
 		if (getProperty(CONDUIT) != null)
 			error("Specified " + CONDUIT + " but calls build() instead of builds() (might be a programmer error");
 
-		Jar dot = getJar();
-		if (dot == null) {
-			dot = new Jar("dot");
-
-			buildInstrs.compression()
-				.ifPresent(dot::setCompression);
-
-			dot.setReproducible(is(REPRODUCIBLE));
-			setJar(dot);
-		}
-		try {
-			long modified = Long.parseLong(getProperty("base.modified"));
-			dot.updateModified(modified, "Base modified");
-		} catch (Exception e) {
-			// Ignore
-		}
+		Jar dot = getBuildJar();
 
 		doExpand(dot);
 		doIncludeResources(dot);
@@ -172,6 +157,26 @@ public class Builder extends Analyzer {
 			File out = getFile(expand);
 			IO.mkdirs(out);
 			dot.expand(out);
+		}
+		return dot;
+	}
+
+	private Jar getBuildJar() {
+		Jar dot = getJar();
+		if (dot == null) {
+			dot = new Jar("dot");
+
+			buildInstrs.compression()
+				.ifPresent(dot::setCompression);
+
+			dot.setReproducible(is(REPRODUCIBLE));
+			setJar(dot);
+		}
+		try {
+			long modified = Long.parseLong(getProperty("base.modified"));
+			dot.updateModified(modified, "Base modified");
+		} catch (Exception e) {
+			// Ignore
 		}
 		return dot;
 	}
@@ -1952,8 +1957,8 @@ public class Builder extends Analyzer {
 
 		spec.other.entrySet()
 			.forEach(e -> {
-			setProperty(e.getKey(), e.getValue());
-		});
+				setProperty(e.getKey(), e.getValue());
+			});
 
 		return this;
 

@@ -31,6 +31,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
@@ -43,6 +45,7 @@ import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -59,6 +62,8 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.help.Syntax;
+import aQute.bnd.help.instructions.ProjectInstructions;
+import aQute.bnd.help.instructions.ProjectInstructions.StaleTest;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.maven.support.Pom;
 import aQute.bnd.maven.support.ProjectPom;
@@ -98,6 +103,7 @@ import aQute.lib.collections.ExtList;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
+import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
@@ -158,6 +164,7 @@ public class Project extends Processor {
 	private Makefile				makefile;
 	private volatile RefreshData	data							= new RefreshData();
 	public Map<String, Container>	unreferencedClasspathEntries	= new HashMap<>();
+	public ProjectInstructions		instructions					= getInstructions(ProjectInstructions.class);
 
 	public Project(Workspace workspace, File unused, File buildFile) {
 		super(workspace);
@@ -1673,6 +1680,7 @@ public class Project extends Processor {
 		}
 
 		logger.debug("building {}", this);
+
 		File[] files = buildLocal(underTest);
 		install(files);
 
@@ -1836,6 +1844,8 @@ public class Project extends Processor {
 		if (isNoBundles()) {
 			return files = null;
 		}
+
+		preBuildChecks();
 
 		versionMap.clear();
 		getMakefile().make();
@@ -3390,13 +3400,101 @@ public class Project extends Processor {
 		return runspecification;
 	}
 
-
 	public Parameters getRunSystemPackages() {
 		return new Parameters(mergeProperties(Constants.RUNSYSTEMPACKAGES));
 	}
 
 	public Parameters getRunSystemCapabilities() {
 		return new Parameters(mergeProperties(Constants.RUNSYSTEMCAPABILITIES));
+	}
+
+	/**
+	 * Check prebuild things.
+	 */
+	protected void preBuildChecks() {
+		instructions.stalecheck()
+			.forEach(this::staleCheck);
+	}
+
+	/*
+	 * Check if a set of files is out of date with another set of files. If so,
+	 * generate an error or warning, or execute a command
+	 */
+
+	private void staleCheck(String src, StaleTest st) {
+		try {
+			String useSrc = Strings.trim(Processor.removeDuplicateMarker(src));
+			if (useSrc.isEmpty() || useSrc.trim()
+				.equals(Constants.EMPTY_HEADER))
+				return;
+
+			if (st.newer() == null) {
+				setLocation(Constants.STALECHECK, Pattern.quote(useSrc),
+					warning("No `newer=...` files spec for src= '%s' found in %s", useSrc, Constants.STALECHECK));
+				return;
+			}
+
+			FileTree tree = new FileTree();
+
+			OptionalLong oldest = tree.getFiles(getBase(), Strings.splitQuoted(useSrc))
+				.stream()
+				.filter(File::isFile)
+				.mapToLong(File::lastModified)
+				.distinct()
+				.sorted()
+				.min();
+
+			if (!oldest.isPresent()) {
+				setLocation(Constants.STALECHECK, Pattern.quote(useSrc),
+					warning("No source files '%s' found for %s", useSrc, Constants.STALECHECK));
+				return;
+			}
+
+			long time = oldest.getAsLong();
+
+			List<String> defaultIncludes = Strings.split(st.newer())
+				.stream()
+				.map(p -> getFile(p).isDirectory() && !p.endsWith("/") ? p + "/" : p)
+				.collect(Collectors.toList());
+
+			List<File> dependentFiles = tree.getFiles(getBase(), defaultIncludes)
+				.stream()
+				.filter(File::isFile)
+				.filter(f -> f.lastModified() < time)
+				.sorted()
+				.collect(Collectors.toList());
+
+			String qsrc = Pattern.quote(useSrc);
+
+			boolean staleFiles = !dependentFiles.isEmpty();
+
+			if (staleFiles) {
+
+				Optional<String> warning = st.warning();
+				if (!warning.isPresent() && !st.error()
+					.isPresent()
+					&& !st.command()
+						.isPresent()) {
+					warning = Optional.ofNullable("detected stale files");
+				}
+
+				st.error()
+					.ifPresent(msg -> setLocation(Constants.STALECHECK, qsrc,
+						error("%s : %s > %s", msg, useSrc, dependentFiles)));
+				warning.ifPresent(
+					msg -> setLocation(Constants.STALECHECK, qsrc,
+						warning("%s : %s > %s", msg, useSrc, dependentFiles)));
+
+				if (st.command()
+					.isPresent()) {
+					system(st.command()
+						.get(), null);
+				}
+			}
+
+		} catch (Exception e) {
+			exception(e, "unexpected exception in %s", Constants.STALECHECK);
+		}
 	}
 
 }
