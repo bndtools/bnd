@@ -108,6 +108,7 @@ public interface Constants {
 	String								BUMPPOLICY									= "-bumppolicy";
 	String								BUNDLEANNOTATIONS							= "-bundleannotations";
 	String								CDIANNOTATIONS								= "-cdiannotations";
+	String								SPIANNOTATIONS								= "-spiannotations";
 	String								CHECK										= "-check";
 	String								CONDUIT										= "-conduit";
 	String								CONTRACT									= "-contract";
@@ -487,6 +488,13 @@ public interface Constants {
 	 * Module Section
 	 */
 	String								MODULE_INFO_CLASS							= "module-info.class";
+
+	/*
+	 * Service Loader Section
+	 */
+
+	String								SERVICELOADER_REGISTER_DIRECTIVE			= "register:";
+	String								SERVICELOADER_NAMESPACE						= "osgi.serviceloader";
 
 	/*
 	 * Deprecated Section
