@@ -64,7 +64,7 @@ Bnd Maven Plugins, you will need to adjust your pom to refer to the snapshot
 repository and select the latest version of the plugins. For example, edit the
 pom's `pluginManagement` section, to configure the repository:
 
-```
+```xml
 <pluginRepositories>
 	<pluginRepository>
 		<id>bnd-snapshots</id>
