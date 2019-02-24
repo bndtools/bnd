@@ -221,7 +221,6 @@ jar {
          'Bundle-Vendor': 'MyCompany',
          'Bundle-Description': 'Platform2: Metrics 2 Measures Framework',
          'Bundle-DocURL': 'http://www.mycompany.com')
-    }
 }
 ```
 
