@@ -16,10 +16,6 @@ public class Parameters extends LinkedHashMap<String, Map<String, String>> {
 		parse(headers);
 	}
 
-	enum Mode {
-
-	}
-
 	private void parse(String headers) {
 		QuotedTokenizer qt = new QuotedTokenizer(headers, ";=,", false);
 		Set<String> keys = new HashSet<>();
