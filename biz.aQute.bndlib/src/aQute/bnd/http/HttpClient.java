@@ -340,11 +340,11 @@ public class HttpClient implements Closeable, URLConnector {
 				return td;
 			} catch (TimeoutException toe) {
 				if (trial++ < retries) {
-					logger.debug("connection timed out. url={}, timout={}, trial={}", request.url, request.timeout,
-						trial);
+					logger.debug("retrying timed out connection. url={}, timeout={}, trial={}", request.url,
+						request.timeout, trial);
 				} else {
 					task.done(toe.toString(), null);
-					logger.warn("connection timed out. url={}, timout={}, trial={}", request.url, request.timeout,
+					logger.warn("connection timed out. url={}, timeout={}, trial={}", request.url, request.timeout,
 						trial);
 					return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT,
 						request.useCacheFile);
