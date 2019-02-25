@@ -50,8 +50,6 @@ import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.ServiceTracker;
 
-import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Builder;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.inject.Injector;
@@ -67,12 +65,12 @@ import aQute.libg.glob.Glob;
  * will ensure that. Once the framework is up and running it will be possible to
  * add bundles to it. There are a number of ways that this can be achieved:
  * <ul>
- * <li>Build a bundle – A bnd {@link Builder} is provided to create a bundle and
- * install it. This makes it possible to add classes from the src or test
- * directories or resources. See {@link #bundle()}. Convenience methods are
- * added to get services, see {@link #getService(Class)} et. al. Notice that
- * this framework starts in the same process as that the JUnit code runs. This
- * is normally a separately started VM.
+ * <li>Build a bundle – A bnd Builder is provided to create a bundle and install
+ * it. This makes it possible to add classes from the src or test directories or
+ * resources. See {@link #bundle()}. Convenience methods are added to get
+ * services, see {@link #getService(Class)} et. al. Notice that this framework
+ * starts in the same process as that the JUnit code runs. This is normally a
+ * separately started VM.
  */
 public class Launchpad implements AutoCloseable {
 
