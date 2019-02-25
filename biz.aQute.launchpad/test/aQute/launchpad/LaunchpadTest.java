@@ -367,7 +367,7 @@ public class LaunchpadTest {
 			fail();
 		} catch (TimeoutException toe) {
 			System.out.println(toe);
-			assertThat(toe.getMessage()).contains("Hidden (FindHook)", "JUnitFramework[hide]");
+			assertThat(toe.getMessage()).contains("Hidden (FindHook)", "Launchpad[hide]");
 		}
 	}
 
@@ -412,7 +412,7 @@ public class LaunchpadTest {
 	// wait a bit until this is supported by gradle and Eclipse
 	// @Test(expected = IllegalArgumentException.class)
 	// public void testMissingBundle() throws Exception {
-	// try (JUnitFramework fw = builder.bndrun("missing.bndrun")
+	// try (Launchpad lp = builder.bndrun("missing.bndrun")
 	// .create()) {}
 	// }
 

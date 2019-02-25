@@ -478,8 +478,7 @@ public interface BundleSpecBuilder {
 
 			/*
 			 * (non-Javadoc)
-			 * 
-			 * @see aQute.bnd.remote.junit.BundleSpecBuilder#x()
+			 * @see aQute.launchpad.BundleSpecBuilder#x()
 			 */
 			@Override
 			public BundleBuilder x() {
