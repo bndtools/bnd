@@ -307,13 +307,12 @@ public class Verifier extends Processor {
 	private boolean				frombuilder;
 
 	public Verifier(Jar jar) throws Exception {
-		this.analyzer = new Analyzer(this);
-		this.analyzer.use(this);
-		addClose(analyzer);
-		this.analyzer.setJar(jar);
-		this.manifest = this.analyzer.calcManifest();
-		this.main = Domain.domain(manifest);
+		super(new Analyzer(jar));
+		this.analyzer = (Analyzer) getParent();
 		this.dot = jar;
+		this.manifest = analyzer.calcManifest();
+		this.main = Domain.domain(manifest);
+		addClose(analyzer);
 		getInfo(analyzer);
 	}
 

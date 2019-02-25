@@ -8,43 +8,49 @@ import aQute.bnd.osgi.Verifier;
 import junit.framework.TestCase;
 
 public class NativeHeader extends TestCase {
-	static Builder b = new Builder();
+	Builder b;
 
-	static {
-		try {
+	@Override
+	protected void setUp() throws Exception {
+		b = new Builder();
+		b.setProperty("Include-Resource",
+			"x.so;literal='x',y.so;literal='y',native/libclib_jiio.so;literal='',native/libmlib_jai.so;literal='', org/osgi/test/cases/framework/fragments/tb8/linux_x86/libNative.so;literal=''");
+		b.build();
+	}
 
-			b.setProperty("Include-Resource",
-				"x.so;literal='x',y.so;literal='y',native/libclib_jiio.so;literal='',native/libmlib_jai.so;literal='', org/osgi/test/cases/framework/fragments/tb8/linux_x86/libNative.so;literal=''");
-			b.build();
-		} catch (Exception e) {
-			e.printStackTrace();
+	@Override
+	protected void tearDown() throws Exception {
+		b.close();
+	}
+
+	public void testFunnyHeader() throws Exception {
+		try (Verifier v = new Verifier(b)) {
+			v.doNative(
+				"org/osgi/test/cases/framework/fragments/tb8/linux_x86/libNative.so; osname=Linux; processor=x86; osversion=\"(1000,10000]\",");
+			assertBad(v, "name");
 		}
 	}
 
-	public static void testFunnyHeader() throws Exception {
-		Verifier v = new Verifier(b);
-		v.doNative(
-			"org/osgi/test/cases/framework/fragments/tb8/linux_x86/libNative.so; osname=Linux; processor=x86; osversion=\"(1000,10000]\",");
-		assertBad(v, "name");
+	public void testWildcardNotAtEnd() throws Exception {
+		try (Verifier v = new Verifier(b)) {
+			v.doNative("x.so;osname=win32,*,x.dll");
+			assertBad(v, "may only END in wildcard");
+		}
 	}
 
-	public static void testWildcardNotAtEnd() throws Exception {
-		Verifier v = new Verifier(b);
-		v.doNative("x.so;osname=win32,*,x.dll");
-		assertBad(v, "may only END in wildcard");
+	public void testWildcard() throws Exception {
+		try (Verifier v = new Verifier(b)) {
+			v.doNative("x.so ;y.so;osname=Linux;processor=amd64,*");
+			assertOk(v);
+		}
 	}
 
-	public static void testWildcard() throws Exception {
-		Verifier v = new Verifier(b);
-		v.doNative("x.so ;y.so;osname=Linux;processor=amd64,*");
-		assertOk(v);
-	}
-
-	public static void testSimple() throws Exception {
-		Verifier v = new Verifier(b);
-		v.doNative(
-			"\rnative/libclib_jiio.so ;\r" + "native/libmlib_jai.so;\r" + "osname=Linux ;\r" + "processor=amd64\r");
-		assertOk(v);
+	public void testSimple() throws Exception {
+		try (Verifier v = new Verifier(b)) {
+			v.doNative(
+				"\rnative/libclib_jiio.so ;\r" + "native/libmlib_jai.so;\r" + "osname=Linux ;\r" + "processor=amd64\r");
+			assertOk(v);
+		}
 	}
 
 	static void assertOk(Processor v) {

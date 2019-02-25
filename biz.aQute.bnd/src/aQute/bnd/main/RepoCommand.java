@@ -442,11 +442,12 @@ public class RepoCommand {
 				logger.debug("bsn {} version {}", bsn, jar.getVersion());
 
 				if (!opts.force()) {
-					Verifier v = new Verifier(jar);
-					v.setTrace(true);
-					v.setExceptions(true);
-					v.verify();
-					bnd.getInfo(v);
+					try (Verifier v = new Verifier(jar)) {
+						v.setTrace(true);
+						v.setExceptions(true);
+						v.verify();
+						bnd.getInfo(v);
+					}
 				}
 
 				if (bnd.isOk()) {

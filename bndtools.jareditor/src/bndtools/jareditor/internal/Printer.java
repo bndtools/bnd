@@ -66,10 +66,11 @@ public class Printer extends Processor {
     private void doPrint(File file, int options) throws ZipException, IOException, Exception {
         try (Jar jar = new Jar(file.getName(), file)) {
             if ((options & VERIFY) != 0) {
-                Verifier verifier = new Verifier(jar);
-                verifier.setPedantic(isPedantic());
-                verifier.verify();
-                getInfo(verifier);
+                try (Verifier verifier = new Verifier(jar)) {
+                    verifier.setPedantic(isPedantic());
+                    verifier.verify();
+                    getInfo(verifier);
+                }
             }
             if ((options & MANIFEST) != 0) {
                 Manifest manifest = jar.getManifest();
