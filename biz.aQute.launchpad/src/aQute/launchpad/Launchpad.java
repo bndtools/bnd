@@ -93,10 +93,10 @@ public class Launchpad implements AutoCloseable {
 	PrintStream									out						= System.err;
 	ServiceTracker<FindHook, FindHook>			hooks;
 
-	Launchpad(LaunchpadBuilder jUnitFrameworkBuilder, Framework framework) {
+	Launchpad(LaunchpadBuilder launchpadBuilder, Framework framework) {
 		try {
-			this.builder = jUnitFrameworkBuilder;
-			this.debug = jUnitFrameworkBuilder.debug;
+			this.builder = launchpadBuilder;
+			this.debug = launchpadBuilder.debug;
 			this.framework = framework;
 			this.framework.init();
 			this.injector = new Injector<>(makeConverter(), this::getService, Service.class);
@@ -561,9 +561,9 @@ public class Launchpad implements AutoCloseable {
 
 	/**
 	 * Hide a service by registering a hook. This should in general be done
-	 * before you let others look. In general, the JUnit Framework should be
-	 * started in {@link LaunchpadBuilder#nostart()} mode. This initializes
-	 * the OSGi framework making it possible to register a service before
+	 * before you let others look. In general, the Launchpad should be started
+	 * in {@link LaunchpadBuilder#nostart()} mode. This initializes the OSGi
+	 * framework making it possible to register a service before
 	 */
 
 	public Closeable hide(Class<?> type) {
@@ -597,7 +597,7 @@ public class Launchpad implements AutoCloseable {
 
 				@Override
 				public String toString() {
-					return "JUnitFramework[" + reason + "]";
+					return "Launchpad[" + reason + "]";
 				}
 			}, null);
 
@@ -614,7 +614,7 @@ public class Launchpad implements AutoCloseable {
 
 				@Override
 				public String toString() {
-					return "JUnitFramework[" + reason + "]";
+					return "Launchpad[" + reason + "]";
 				}
 
 			}, null);

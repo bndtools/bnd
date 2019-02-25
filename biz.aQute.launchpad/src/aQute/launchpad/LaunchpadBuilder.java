@@ -171,7 +171,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 	public Launchpad create() {
 		try {
-			File storage = IO.getFile(new File(local.target), "junit-fw-" + counter.incrementAndGet());
+			File storage = IO.getFile(new File(local.target), "launchpad-" + counter.incrementAndGet());
 			IO.delete(storage);
 
 			String extraPackages = toString(local.extraSystemPackages);
@@ -186,22 +186,22 @@ public class LaunchpadBuilder implements AutoCloseable {
 			Framework framework = getFramework();
 
 			@SuppressWarnings("resource")
-			Launchpad jUnitFramework = new Launchpad(this, framework);
+			Launchpad launchpad = new Launchpad(this, framework);
 
-			jUnitFramework.report("Extra system packages %s", local.extraSystemPackages.keySet()
+			launchpad.report("Extra system packages %s", local.extraSystemPackages.keySet()
 				.stream()
 				.collect(Collectors.joining("\n")));
-			jUnitFramework.report("Extra system capabilities %s", local.extraSystemCapabilities.keySet()
+			launchpad.report("Extra system capabilities %s", local.extraSystemCapabilities.keySet()
 				.stream()
 				.collect(Collectors.joining("\n")));
-			jUnitFramework.report("Storage %s", storage.getAbsolutePath());
-			jUnitFramework.report("Runpath %s", local.runpath);
+			launchpad.report("Storage %s", storage.getAbsolutePath());
+			launchpad.report("Runpath %s", local.runpath);
 
 			if (start) {
-				jUnitFramework.start();
+				launchpad.start();
 			}
 
-			return jUnitFramework;
+			return launchpad;
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
