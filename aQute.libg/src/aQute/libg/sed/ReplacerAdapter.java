@@ -52,7 +52,7 @@ import aQute.service.reporter.Reporter;
  */
 public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	static final Random	random		= new Random();
-	static Pattern		WILDCARD	= Pattern.compile("[*?|[\\\\]\\(\\)]");
+	static Pattern		WILDCARD	= Pattern.compile("[*?|({\\[]");
 	Domain				domain;
 	List<Object>		targets		= new ArrayList<>();
 	boolean				flattening;
