@@ -241,9 +241,11 @@ public class Analyzer extends Processor {
 			//
 			// calculate class versions in use
 			//
-			for (Clazz c : classspace.values()) {
-				ees.add(c.getFormat());
-			}
+			classspace.values()
+				.stream()
+				.filter(c -> !c.isModule())
+				.map(Clazz::getFormat)
+				.forEach(ees::add);
 
 			if (since(About._2_3)) {
 				try (ClassDataCollectors cds = new ClassDataCollectors(this)) {
