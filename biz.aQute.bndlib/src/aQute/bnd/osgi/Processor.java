@@ -1675,13 +1675,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	 * @param value
 	 */
 	public void setProperty(String key, String value) {
-		checkheader: for (int i = 0; i < headers.length; i++) {
-			if (headers[i].equalsIgnoreCase(key)) {
-				key = headers[i];
-				break checkheader;
-			}
-		}
-		getProperties().put(key, value);
+		getProperties().put(normalizeKey(key), value);
 	}
 
 	/**
