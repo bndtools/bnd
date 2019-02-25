@@ -71,6 +71,27 @@ public class HttpClientTest extends TestCase {
 				return "ok";
 			}
 		}
+
+		volatile boolean first = true;
+
+		public void _readtimeout(Request rq, Response rsp, int stage) throws InterruptedException {
+			if (stage == 1) {
+				if (first) {
+					first = false;
+					System.out.println("Read timeout, sleeping 2 secs");
+					TimeUnit.SECONDS.sleep(2);
+					System.out.println("Read timeout, returning after 2 secs");
+				} else {
+					System.out.println("Retry");
+					return;
+				}
+			}
+			if (stage == 2) {
+				System.out.println("Read timeout, sleeping 2 secs");
+				TimeUnit.SECONDS.sleep(2);
+				System.out.println("Read timeout, returning after 2 secs");
+			}
+		}
 	}
 
 	@Override
@@ -90,6 +111,55 @@ public class HttpClientTest extends TestCase {
 		IO.delete(tmp);
 		tmp.mkdirs();
 		httpServer.second = false;
+	}
+
+	public void testReadTimeOutButSucceed() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.timeout(1000)
+					.retries(4)
+					.asTag()
+					.go(httpServer.getBaseURI("readtimeout/1"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(200);
+			}
+		}
+	}
+
+	public void testNoRetriesOnPut() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.timeout(1000)
+					.verb("PUT")
+					.retries(2)
+					.asTag()
+					.go(httpServer.getBaseURI("readtimeout/1"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_GATEWAY_TIMEOUT);
+			}
+		}
+	}
+
+	public void testReadTimeOutButFail() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.timeout(1000)
+					.retries(2)
+					.asTag()
+					.go(httpServer.getBaseURI("readtimeout/2"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_GATEWAY_TIMEOUT);
+			}
+		}
 	}
 
 	public void testHttpsVerification() throws Exception {

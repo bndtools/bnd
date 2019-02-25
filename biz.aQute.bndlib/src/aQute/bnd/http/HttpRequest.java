@@ -39,6 +39,7 @@ public class HttpRequest<T> {
 	Reporter			reporter;
 	File				useCacheFile;
 	boolean				updateTag;
+	int					retries		= 3;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
@@ -273,6 +274,11 @@ public class HttpRequest<T> {
 
 	public HttpRequest<T> updateTag() {
 		updateTag = true;
+		return this;
+	}
+
+	public HttpRequest<T> retries(int retries) {
+		this.retries = retries;
 		return this;
 	}
 

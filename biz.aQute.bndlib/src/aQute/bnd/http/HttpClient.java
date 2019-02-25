@@ -1,7 +1,6 @@
 package aQute.bnd.http;
 
 import static java.net.HttpURLConnection.HTTP_CREATED;
-import static java.net.HttpURLConnection.HTTP_GATEWAY_TIMEOUT;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
 import static java.net.HttpURLConnection.HTTP_NOT_MODIFIED;
@@ -36,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -300,42 +300,61 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public TaggedData send0(final HttpRequest<?> request) throws Exception {
+		int retries = 0;
+		if ("GET".equalsIgnoreCase(request.verb))
+			retries = request.retries;
 
-		final ProxySetup proxy = getProxySetup(request.url);
-		final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
-		final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
+		int trial = 0;
+		while (true) {
+			final ProxySetup proxy = getProxySetup(request.url);
+			final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
+			final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
 
-		if (request.ifNoneMatch != null) {
-			request.headers.put("If-None-Match", entitytag(request.ifNoneMatch));
+			if (request.ifNoneMatch != null) {
+				request.headers.put("If-None-Match", entitytag(request.ifNoneMatch));
+			}
+
+			if (request.ifMatch != null) {
+				request.headers.put("If-Match", "\"" + entitytag(request.ifMatch));
+			}
+
+			if (request.ifModifiedSince > 0) {
+				request.headers.put("If-Modified-Since", httpDateFormat().format(new Date(request.ifModifiedSince)));
+			}
+
+			if (request.ifUnmodifiedSince != 0) {
+				request.headers.put("If-Unmodified-Since",
+					httpDateFormat().format(new Date(request.ifUnmodifiedSince)));
+			}
+
+			setHeaders(request.headers, con);
+
+			configureHttpConnection(request.verb, hcon);
+
+			final ProgressPlugin.Task task = getTask(request);
+			try {
+
+				TaggedData td = connectWithProxy(proxy,
+					() -> doConnect(request.upload, request.download, con, hcon, request, task));
+				logger.debug("result {}", td);
+				return td;
+			} catch (TimeoutException toe) {
+				if (trial++ < retries) {
+					logger.debug("connection timed out. url={}, timout={}, trial={}", request.url, request.timeout,
+						trial);
+				} else {
+					task.done(toe.toString(), null);
+					logger.warn("connection timed out. url={}, timout={}, trial={}", request.url, request.timeout,
+						trial);
+					return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT,
+						request.useCacheFile);
+				}
+			} catch (Throwable t) {
+				task.done("Failed " + t, t);
+				throw t;
+			}
 		}
 
-		if (request.ifMatch != null) {
-			request.headers.put("If-Match", "\"" + entitytag(request.ifMatch));
-		}
-
-		if (request.ifModifiedSince > 0) {
-			request.headers.put("If-Modified-Since", httpDateFormat().format(new Date(request.ifModifiedSince)));
-		}
-
-		if (request.ifUnmodifiedSince != 0) {
-			request.headers.put("If-Unmodified-Since", httpDateFormat().format(new Date(request.ifUnmodifiedSince)));
-		}
-
-		setHeaders(request.headers, con);
-
-		configureHttpConnection(request.verb, hcon);
-
-		final ProgressPlugin.Task task = getTask(request);
-		try {
-
-			TaggedData td = connectWithProxy(proxy,
-				() -> doConnect(request.upload, request.download, con, hcon, request, task));
-			logger.debug("result {}", td);
-			return td;
-		} catch (Throwable t) {
-			task.done("Failed " + t, t);
-			throw t;
-		}
 	}
 
 	ProgressPlugin.Task getTask(final HttpRequest<?> request) {
@@ -382,6 +401,7 @@ public class HttpClient implements Closeable, URLConnector {
 				.startTask(name, size);
 		} else {
 			task = new ProgressPlugin.Task() {
+
 				@Override
 				public void worked(int units) {}
 
@@ -393,6 +413,7 @@ public class HttpClient implements Closeable, URLConnector {
 					return Thread.currentThread()
 						.isInterrupted();
 				}
+
 			};
 		}
 		return task;
@@ -561,8 +582,7 @@ public class HttpClient implements Closeable, URLConnector {
 			// origin server presented.
 			return new TaggedData(request.url.toURI(), 526, request.useCacheFile);
 		} catch (SocketTimeoutException ste) {
-			task.done(ste.toString(), null);
-			return new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
+			throw new TimeoutException();
 		}
 	}
 
