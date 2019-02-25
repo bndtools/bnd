@@ -1,5 +1,11 @@
 package biz.aQute.bnd.reporter.generator;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -15,11 +21,6 @@ import biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.MavenCoordinatePlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.MetatypesPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.processor.FileNamePlugin;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * Build the {@link ReportGeneratorService}.
@@ -196,7 +197,7 @@ public class ReportGeneratorBuilder {
       if (!_plugins.isEmpty()) {
         final Processor configuredProcessor = new Processor(processor);
 
-        configuredProcessor.set("-plugin.AutoDefaultReportConfig",
+				configuredProcessor.setProperty("-plugin.AutoDefaultReportConfig",
             generateDefaultPlugins().toString());
         configuredProcessor.getPlugins();
         processor.getInfo(configuredProcessor);
@@ -208,8 +209,8 @@ public class ReportGeneratorBuilder {
     } else {
       final Processor configuredProcessor = new Processor(processor);
 
-      configuredProcessor.set("-plugin.AutoReportConfig", readPluginsConfig(processor).toString());
-      configuredProcessor.set("-plugin.AutoDefaultReportConfig",
+			configuredProcessor.setProperty("-plugin.AutoReportConfig", readPluginsConfig(processor).toString());
+			configuredProcessor.setProperty("-plugin.AutoDefaultReportConfig",
           generateDefaultPlugins().toString());
       configuredProcessor.getPlugins();
       processor.getInfo(configuredProcessor);

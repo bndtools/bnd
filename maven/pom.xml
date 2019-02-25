@@ -242,6 +242,14 @@
 							</goals>
 						</execution>
 					</executions>
+                <configuration>
+                    <javaApiLinks>
+                        <property>
+                            <name>jdk11-workaround</name>
+                            <value>https://bugs.openjdk.java.net/browse/JDK-8212233</value>
+                        </property>
+                    </javaApiLinks>
+                </configuration>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

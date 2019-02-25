@@ -851,7 +851,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 				// The header isn't in the bnd configuration, so we need to add
 				// it lest bnd completely ignores the header added by the
 				// annotation
-				analyzer.set(name, value);
+				analyzer.setProperty(name, value);
 			}
 			next.close();
 		} finally {

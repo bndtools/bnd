@@ -156,7 +156,7 @@ public class RemoteWorkspaceServer implements Closeable {
 				try (Builder a = new Builder()) {
 					a.setJar(project.getTestOutput());
 					a.setConditionalPackage("!java.*,*");
-					a.set(Constants.EXPORT_CONTENTS, "*");
+					a.setProperty(Constants.EXPORT_CONTENTS, "*");
 
 					a.addClasspath(project.getOutput());
 

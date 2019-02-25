@@ -11,8 +11,8 @@ public class LibDirectiveTest extends TestCase {
 	public void testLibDirective() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.set("Bundle-ClassPath", ".");
-			b.set("-includeresource", "lib/=jar/asm.jar;lib:=true");
+			b.setProperty("Bundle-ClassPath", ".");
+			b.setProperty("-includeresource", "lib/=jar/asm.jar;lib:=true");
 			b.build();
 			assertTrue(b.check());
 			Manifest m = b.getJar()
@@ -30,7 +30,7 @@ public class LibDirectiveTest extends TestCase {
 	public void testLibDirectiveWithDefaultedBundleClassPath() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.set("-includeresource", "lib/=jar/asm.jar;lib:=true");
+			b.setProperty("-includeresource", "lib/=jar/asm.jar;lib:=true");
 			b.build();
 			assertTrue(b.check());
 			Manifest m = b.getJar()

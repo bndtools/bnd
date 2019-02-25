@@ -79,6 +79,15 @@ public abstract class Domain implements Iterable<String> {
 
 	public abstract void set(String key, String value);
 
+	public static String normalizeKey(String key) {
+		for (String header : Constants.headers) {
+			if (header.equalsIgnoreCase(key)) {
+				return header;
+			}
+		}
+		return key;
+	}
+
 	public static Domain domain(final Manifest manifest) {
 		Attributes attrs = manifest.getMainAttributes();
 		return domain(attrs);
@@ -94,7 +103,7 @@ public abstract class Domain implements Iterable<String> {
 
 			@Override
 			public void set(String key, String value) {
-				attrs.putValue(key, value);
+				attrs.putValue(normalizeKey(key), value);
 			}
 
 			@Override
@@ -169,7 +178,7 @@ public abstract class Domain implements Iterable<String> {
 
 			@Override
 			public void set(String key, String value) {
-				map.put(key, value);
+				map.put(normalizeKey(key), value);
 			}
 
 			@Override

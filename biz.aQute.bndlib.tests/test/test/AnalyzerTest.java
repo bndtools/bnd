@@ -176,9 +176,9 @@ public class AnalyzerTest extends BndTestCase {
 			b.addClasspath(IO.getFile("jar/asm.jar"));
 			b.setExportPackage("*");
 			b.setImportPackage("something");
-			b.set("Foo", "Foo");
-			b.set("Bar", "Bar");
-			b.set(Constants.REMOVEHEADERS, "!Bundle-*,!*-Package,!Service-Component,*");
+			b.setProperty("Foo", "Foo");
+			b.setProperty("Bar", "Bar");
+			b.setProperty(Constants.REMOVEHEADERS, "!Bundle-*,!*-Package,!Service-Component,*");
 			b.build();
 			assertTrue(b.check());
 			Manifest m = b.getJar()
@@ -269,7 +269,7 @@ public class AnalyzerTest extends BndTestCase {
 	public static void testSanity() throws Exception {
 		Builder b = new Builder();
 		try {
-			b.set("Export-Package", "thinlet;version=1.0");
+			b.setProperty("Export-Package", "thinlet;version=1.0");
 			b.addClasspath(IO.getFile("jar/thinlet.jar"));
 			b.build();
 			assertTrue(b.check());
