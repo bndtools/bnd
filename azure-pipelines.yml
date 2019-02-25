@@ -7,7 +7,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu8.33.0.1-jdk8.0.192-linux_x64.tar.gz
+      source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu8.36.0.1-ca-jdk8.0.202-linux_x64.tar.gz
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -23,7 +23,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu11.2.3-jdk11.0.1-linux_x64.tar.gz
+      source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu11.29.3-ca-jdk11.0.2-linux_x64.tar.gz
       ./gradlew --no-daemon --version
       ./mvnw --version
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 --continue :build :maven:deploy
@@ -36,7 +36,7 @@ jobs:
   - bash: |
       set -ev
       curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh
-      source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu8.33.0.1-jdk8.0.192-linux_x64.tar.gz
+      source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu8.36.0.1-ca-jdk8.0.202-linux_x64.tar.gz
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded
       ./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 -Pbnd_repourl=./dist/bundles :buildscriptDependencies :build
     displayName: Build
