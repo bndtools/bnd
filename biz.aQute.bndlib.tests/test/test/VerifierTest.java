@@ -440,8 +440,8 @@ public class VerifierTest extends TestCase {
 	public void testSimple() throws Exception {
 		try (Builder bmaker = new Builder()) {
 			bmaker.addClasspath(IO.getFile("jar/mina.jar"));
-			bmaker.set("Export-Package", "org.apache.mina.*;version=1");
-			bmaker.set("DynamicImport-Package", "org.slf4j");
+			bmaker.setProperty("Export-Package", "org.apache.mina.*;version=1");
+			bmaker.setProperty("DynamicImport-Package", "org.slf4j");
 			Jar jar = bmaker.build();
 			assertTrue(bmaker.check());
 

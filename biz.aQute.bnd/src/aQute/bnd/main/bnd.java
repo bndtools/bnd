@@ -403,7 +403,7 @@ public class bnd extends Processor {
 	@Description("The swiss army tool for OSGi")
 	public void _bnd(bndOptions options) throws Exception {
 		try {
-			set(FAIL_OK, options.failok() + "");
+			setProperty(FAIL_OK, options.failok() + "");
 			setExceptions(options.exceptions());
 			setTrace(options.trace());
 			doLogging(options);
