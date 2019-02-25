@@ -15,8 +15,8 @@ public class AntGlob extends Glob {
 	}
 
 	// match forward slash or back slash (windows)
-	private static final String	SLASHY		= "[/\\\\]";
-	private static final String	NOT_SLASHY	= "[^/\\\\]";
+	private static final String	SLASHY		= "[\\\\/]";
+	private static final String	NOT_SLASHY	= "[^\\\\/]";
 
 	public static Pattern toPattern(String line) {
 		return toPattern(line, 0);

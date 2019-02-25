@@ -89,7 +89,7 @@ public class ADDef extends ExtensionDef {
 		return ad;
 	}
 
-	private static final Pattern escapes = Pattern.compile("[ ,\\\\]");
+	private static final Pattern escapes = Pattern.compile("[\\\\ ,]");
 
 	private void escape(String defaultValue, StringBuffer b) {
 		Matcher m = escapes.matcher(defaultValue);
