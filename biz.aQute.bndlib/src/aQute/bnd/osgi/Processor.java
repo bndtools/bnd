@@ -2296,7 +2296,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	@Override
 	public void set(String key, String value) {
-		getProperties().setProperty(key, value);
+		setProperty(key, value);
 	}
 
 	Stream<String> stream() {
