@@ -504,8 +504,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 
 	public void testRemovedImportWithRequireBundle() throws Exception {
-		Builder b = new Builder();
-		try {
+		try (Builder b = new Builder()) {
 			b.addClasspath(new File("bin_test"));
 			b.addClasspath(new File("jar/osgi.core.jar"));
 			b.setPedantic(true);
@@ -520,11 +519,10 @@ public class BuilderTest extends BndTestCase {
 			assertThat(b.getImports()
 				.keySet()).containsExactlyInAnyOrder(b.getPackageRef("javax.swing"));
 
-			Verifier v = new Verifier(b.getJar());
-			v.verify();
-			assertTrue(v.check());
-		} finally {
-			b.close();
+			try (Verifier v = new Verifier(b.getJar())) {
+				v.verify();
+				assertTrue(v.check("Host .* for this fragment"));
+			}
 		}
 	}
 
@@ -535,8 +533,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 
 	public void testMissingImportsWithDynamicImport() throws Exception {
-		Builder b = new Builder();
-		try {
+		try (Builder b = new Builder()) {
 			b.addClasspath(new File("bin_test"));
 			b.setPedantic(true);
 			b.setExportPackage("test.classreference;version=1");
@@ -545,15 +542,10 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check());
 
-			Verifier v = new Verifier(b.getJar());
-			try {
+			try (Verifier v = new Verifier(b.getJar())) {
 				v.verify();
 				assertTrue(v.check("Unresolved references to \\[javax.swing\\] by class\\(es\\)"));
-			} finally {
-				v.close();
 			}
-		} finally {
-			b.close();
 		}
 	}
 
@@ -564,8 +556,7 @@ public class BuilderTest extends BndTestCase {
 	 */
 
 	public void testMissingImportsWithoutDynamicImport() throws Exception {
-		Builder b = new Builder();
-		try {
+		try (Builder b = new Builder()) {
 			b.addClasspath(new File("bin_test"));
 			b.setPedantic(true);
 			b.setExportPackage("test.classreference;version=1");
@@ -573,15 +564,10 @@ public class BuilderTest extends BndTestCase {
 			b.build();
 			assertTrue(b.check());
 
-			Verifier v = new Verifier(b.getJar());
-			try {
+			try (Verifier v = new Verifier(b.getJar())) {
 				v.verify();
 				assertTrue(v.check("Unresolved references to \\[javax.swing\\] by class\\(es\\)"));
-			} finally {
-				v.close();
 			}
-		} finally {
-			b.close();
 		}
 
 	}
@@ -3288,12 +3274,11 @@ public class BuilderTest extends BndTestCase {
 
 	public void testVerify() throws Exception {
 		System.err.println("Erroneous bundle: tb1.jar");
-		Jar jar = new Jar("test", getClass().getResourceAsStream("tb1.jar"));
-		Verifier verifier = new Verifier(jar);
-		verifier.verify();
-		assertTrue(verifier.check());
-		jar.close();
-		verifier.close();
+		try (Jar jar = new Jar("test", getClass().getResourceAsStream("tb1.jar"));
+			Verifier verifier = new Verifier(jar)) {
+			verifier.verify();
+			assertTrue(verifier.check());
+		}
 	}
 
 	public static void report(String title, Analyzer builder, Jar jar) {

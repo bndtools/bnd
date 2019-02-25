@@ -1996,10 +1996,11 @@ public class bnd extends Processor {
 
 	private void doPrint(Jar jar, int options, printOptions po) throws ZipException, IOException, Exception {
 		if ((options & VERIFY) != 0) {
-			Verifier verifier = new Verifier(jar);
-			verifier.setPedantic(isPedantic());
-			verifier.verify();
-			getInfo(verifier);
+			try (Verifier verifier = new Verifier(jar)) {
+				verifier.setPedantic(isPedantic());
+				verifier.verify();
+				getInfo(verifier);
+			}
 		}
 		if ((options & MANIFEST) != 0) {
 			Manifest manifest = jar.getManifest();
@@ -2617,15 +2618,15 @@ public class bnd extends Processor {
 			if (!f.isFile()) {
 				error("No such file: %s", f);
 			} else {
-				Jar jar = new Jar(f);
-				if (jar.getManifest() == null || jar.getBsn() == null)
-					error("Not a bundle %s", f);
-				else {
-					Verifier v = new Verifier(jar);
-					getInfo(v, f.getName());
-					v.close();
+				try (Jar jar = new Jar(f)) {
+					if (jar.getManifest() == null || jar.getBsn() == null)
+						error("Not a bundle %s", f);
+					else {
+						try (Verifier v = new Verifier(jar)) {
+							getInfo(v, f.getName());
+						}
+					}
 				}
-				jar.close();
 			}
 		}
 	}

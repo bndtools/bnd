@@ -296,19 +296,22 @@ class RemoteCommand extends Processor {
 			if (opts.vendor() != null)
 				main.putValue(Constants.BUNDLE_VENDOR, opts.vendor());
 
-			Jar jar = new Jar("distro");
-			jar.setManifest(m);
+			try (Jar jar = new Jar("distro")) {
+				jar.setManifest(m);
 
-			Verifier v = new Verifier(jar);
-			v.setProperty(Constants.FIXUPMESSAGES, "osgi.* namespace must not be specified with generic capabilities");
-			v.verify();
-			v.getErrors();
+				try (Verifier v = new Verifier(jar)) {
+					v.setProperty(Constants.FIXUPMESSAGES,
+						"osgi.* namespace must not be specified with generic capabilities");
+					v.verify();
+					v.getErrors();
 
-			if (isFailOk() || v.isOk()) {
-				jar.updateModified(System.currentTimeMillis(), "Writing distro jar");
-				jar.write(output);
-			} else
-				getInfo(v);
+					if (isFailOk() || v.isOk()) {
+						jar.updateModified(System.currentTimeMillis(), "Writing distro jar");
+						jar.write(output);
+					} else
+						getInfo(v);
+				}
+			}
 		}
 
 	}
