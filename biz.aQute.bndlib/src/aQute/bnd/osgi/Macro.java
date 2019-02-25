@@ -1086,32 +1086,7 @@ public class Macro {
 			input = args[2];
 		}
 
-		if (File.separatorChar == '\\')
-			command = "cmd /c \"" + command + "\"";
-
-		Process process = Runtime.getRuntime()
-			.exec(command, null, domain.getBase());
-		if (input != null) {
-			process.getOutputStream()
-				.write(input.getBytes(UTF_8));
-		}
-		process.getOutputStream()
-			.close();
-
-		String s = IO.collect(process.getInputStream(), UTF_8);
-		int exitValue = process.waitFor();
-
-		if (exitValue != 0) {
-			if (!allowFail) {
-				reporter.error("System command %s failed with exit code %d", command, exitValue);
-			} else {
-				reporter.warning("System command %s failed with exit code %d (allowed)", command, exitValue);
-
-			}
-			return null;
-		}
-
-		return s.trim();
+		return domain.system(allowFail, command, input);
 	}
 
 	public String _system(String[] args) throws Exception {

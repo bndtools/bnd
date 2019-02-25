@@ -92,6 +92,59 @@ public class ProjectTest extends TestCase {
 	}
 
 	/**
+	 * Test -stalecheck
+	 * 
+	 * @throws Exception
+	 */
+	public void testStaleChecks() throws Exception {
+
+		Workspace ws = getWorkspace("testresources/ws-stalecheck");
+		Project project = ws.getProject("p1");
+		File foobar = project.getFile("foo.bar");
+
+		foobar.setLastModified(System.currentTimeMillis() + 100000);
+		File f = testStaleCheck(project, "foo.bar;newer=older;error=FOO", "FOO");
+		assertThat(f).isNull();
+
+		f = testStaleCheck(project, "foo.bar;newer=older", "detected stale files : foo.bar >");
+		assertThat(f).isNotNull();
+
+		f = testStaleCheck(project, "foo.bar;newer=older;warning=FOO", "FOO");
+		assertThat(f).isNotNull();
+
+		if (isLinuxy()) {
+			f = testStaleCheck(project, "foo.bar;newer=older;command='cp foo.bar older/");
+			try (Jar t = new Jar(f)) {
+				assertThat(t.getResource("b/c/foo.txt") != null).isIn(true);
+				assertThat(t.getResource("foo.bar") != null).isIn(true);
+			}
+		}
+
+		foobar.setLastModified(0);
+		testStaleCheck(project, "foo.bar;newer=older");
+		testStaleCheck(project, "foo.bar;newer=older;error=FOO");
+		testStaleCheck(project, "foo.bar;newer=older;warning=FOO");
+
+		testStaleCheck(project, "older/;newer=foo.bar", "detected");
+		testStaleCheck(project, "older/;newer=foo.bar;error=FOO", "FOO");
+		testStaleCheck(project, "older/;newer=foo.bar;warning=FOO", "FOO");
+	}
+
+	private boolean isLinuxy() {
+		return File.separatorChar == '/';
+	}
+
+	File testStaleCheck(Project project, String clauses, String... check) throws Exception {
+		project.clean();
+		project.setProperty("-resourcesonly", "true");
+		project.setProperty("-includeresource", "older");
+		project.setProperty("-stalecheck", clauses);
+		File[] build = project.build();
+		assertTrue(project.check(check));
+		return build != null ? build[0] : null;
+	}
+
+	/**
 	 * Test linked canonical name
 	 */
 	public void testCanonicalName() throws Exception {

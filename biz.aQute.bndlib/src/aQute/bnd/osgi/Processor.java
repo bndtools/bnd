@@ -183,34 +183,33 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		executor.setThreadFactory(shutdownHookInstallerThreadFactory);
 		scheduledExecutor.setThreadFactory(shutdownHookInstallerThreadFactory);
 	}
-	private static PromiseFactory				promiseFactory			= new PromiseFactory(executor,
-		scheduledExecutor);
-	static Random								random					= new Random();
+	private static PromiseFactory				promiseFactory	= new PromiseFactory(executor, scheduledExecutor);
+	static Random								random			= new Random();
 	// TODO handle include files out of date
-	public final static String					LIST_SPLITTER			= "\\s*,\\s*";
-	final List<String>							errors					= new ArrayList<>();
-	final List<String>							warnings				= new ArrayList<>();
-	final Set<Object>							basicPlugins			= new HashSet<>();
-	private final Set<Closeable>				toBeClosed				= new HashSet<>();
+	public final static String					LIST_SPLITTER	= "\\s*,\\s*";
+	final List<String>							errors			= new ArrayList<>();
+	final List<String>							warnings		= new ArrayList<>();
+	final Set<Object>							basicPlugins	= new HashSet<>();
+	private final Set<Closeable>				toBeClosed		= new HashSet<>();
 	private Set<Object>							plugins;
 
 	boolean										pedantic;
 	boolean										trace;
 	boolean										exceptions;
-	boolean										fileMustExist			= true;
+	boolean										fileMustExist	= true;
 
-	private File								base					= new File("").getAbsoluteFile();
-	private URI									baseURI					= base.toURI();
+	private File								base			= new File("").getAbsoluteFile();
+	private URI									baseURI			= base.toURI();
 
 	Properties									properties;
 	String										profile;
 	private Macro								replacer;
 	private long								lastModified;
 	private File								propertiesFile;
-	private boolean								fixup					= true;
+	private boolean								fixup			= true;
 	long										modified;
 	Processor									parent;
-	private final CopyOnWriteArrayList<File>	included				= new CopyOnWriteArrayList<>();
+	private final CopyOnWriteArrayList<File>	included		= new CopyOnWriteArrayList<>();
 
 	CL											pluginLoader;
 	Collection<String>							filter;
@@ -2429,6 +2428,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	}
 
+	public SetLocation setLocation(String header, String clause, SetLocation setLocation) {
+		try {
+			FileLine info = getHeader(header, clause);
+			if (info != null) {
+				info.set(setLocation);
+			}
+		} catch (Exception e) {
+			exception(e, "unexpected exception in setLocation");
+		}
+		return setLocation;
+	}
+
 	private SetLocation location(String s) {
 		SetLocationImpl loc = new SetLocationImpl(s);
 		locations.add(loc);
@@ -2845,5 +2856,49 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	@Override
 	public Parameters getParameters(String key, boolean allowDuplicates) {
 		return new Parameters(get(key), this, allowDuplicates);
+	}
+
+	public String system(boolean allowFail, String command, String input) throws IOException, InterruptedException {
+
+		if (File.separatorChar == '\\')
+			command = "cmd /c \"" + command + "\"";
+
+		Process process = Runtime.getRuntime()
+			.exec(command, null, getBase());
+
+		if (input != null) {
+			process.getOutputStream()
+				.write(input.getBytes(UTF_8));
+		}
+		process.getOutputStream()
+			.close();
+
+		String out = IO.collect(process.getInputStream(), UTF_8);
+		String err = IO.collect(process.getErrorStream(), UTF_8);
+		int exitValue = -1;
+
+		exitValue = process.waitFor();
+
+		if (exitValue != 0) {
+			if (!allowFail) {
+				error("System command %s failed with exit code %d: %s", command, exitValue, out + "\n---\n" + err);
+			} else {
+				warning("System command %s failed with exit code %d (allowed)", command, exitValue);
+
+			}
+			return null;
+		}
+
+		return out.trim();
+	}
+
+	public String system(String command, String input) throws IOException, InterruptedException {
+		boolean allowFail = false;
+		command = command.trim();
+		if (command.startsWith("-")) {
+			command = command.substring(1);
+			allowFail = true;
+		}
+		return system(allowFail, command, null);
 	}
 }
