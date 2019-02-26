@@ -236,7 +236,7 @@ public class TaggedData implements Closeable {
 	}
 
 	public boolean isNotFound() {
-		return responseCode == 404;
+		return responseCode == HttpURLConnection.HTTP_NOT_FOUND;
 	}
 
 	public File getFile() {
