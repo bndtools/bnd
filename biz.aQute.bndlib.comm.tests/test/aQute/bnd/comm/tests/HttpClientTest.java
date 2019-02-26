@@ -12,6 +12,7 @@ import java.nio.ByteBuffer;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.osgi.util.promise.Promise;
 
@@ -72,12 +73,12 @@ public class HttpClientTest extends TestCase {
 			}
 		}
 
-		volatile boolean first = true;
+		volatile boolean firstTimeout = true;
 
 		public void _readtimeout(Request rq, Response rsp, int stage) throws InterruptedException {
 			if (stage == 1) {
-				if (first) {
-					first = false;
+				if (firstTimeout) {
+					firstTimeout = false;
 					System.out.println("Read timeout, sleeping 2 secs");
 					TimeUnit.SECONDS.sleep(2);
 					System.out.println("Read timeout, returning after 2 secs");
@@ -90,6 +91,27 @@ public class HttpClientTest extends TestCase {
 				System.out.println("Read timeout, sleeping 2 secs");
 				TimeUnit.SECONDS.sleep(2);
 				System.out.println("Read timeout, returning after 2 secs");
+			}
+		}
+
+		final AtomicInteger failCount = new AtomicInteger(3);
+
+		public void _readfail(Request rq, Response rsp, int stage) {
+			if (stage == 1) {
+				if (failCount.getAndDecrement() > 0) {
+					System.out.println("Read failure 500");
+					rsp.code = 500;
+					rsp.content = "500".getBytes();
+				} else {
+					System.out.println("Retry");
+				}
+				return;
+			}
+			if (stage == 2) {
+				System.out.println("Read failure 500");
+				rsp.code = 500;
+				rsp.content = "500".getBytes();
+				return;
 			}
 		}
 	}
@@ -162,6 +184,36 @@ public class HttpClientTest extends TestCase {
 		}
 	}
 
+	public void testReadFailRetrySucceeds() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.retries(4)
+					.asTag()
+					.go(httpServer.getBaseURI("readfail/1"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(200);
+			}
+		}
+	}
+
+	public void testReadFailRetryFails() throws Exception {
+		try (Processor p = new Processor()) {
+			try (HttpClient client = new HttpClient()) {
+				client.setReporter(p);
+
+				TaggedData tag = client.build()
+					.retries(4)
+					.asTag()
+					.go(httpServer.getBaseURI("readfail/2"));
+				System.out.println(tag);
+				assertThat(tag.getResponseCode()).isEqualTo(500);
+			}
+		}
+	}
+
 	public void testHttpsVerification() throws Exception {
 		try (Processor p = new Processor()) {
 			p.setProperty("-connection-settings", "server;id=\"" + httpsServer.getBaseURI() + "\";verify=" + true
@@ -204,6 +256,7 @@ public class HttpClientTest extends TestCase {
 				extraServer.start();
 
 				TaggedData go3 = client.build()
+					.retries(0)
 					.asTag()
 					.go(extraServer.getBaseURI("get/foo"));
 
@@ -216,6 +269,7 @@ public class HttpClientTest extends TestCase {
 		try (HttpClient hc = new HttpClient();) {
 			try {
 				TaggedData tag = hc.build()
+					.retries(0)
 					.asTag()
 					.timeout(1000)
 					.go(httpServer.getBaseURI("timeout/60"));
@@ -239,6 +293,7 @@ public class HttpClientTest extends TestCase {
 
 			TaggedData tag = hc.build()
 				.useCache()
+				.retries(0)
 				.asTag()
 				.go(cheshire);
 			assertNotNull(tag);
@@ -250,6 +305,7 @@ public class HttpClientTest extends TestCase {
 
 			tag = hc.build()
 				.useCache()
+				.retries(0)
 				.asTag()
 				.go(cheshire);
 			assertNotNull(tag);
@@ -291,6 +347,7 @@ public class HttpClientTest extends TestCase {
 			hc.setRegistry(p);
 
 			TaggedData tag = hc.build()
+				.retries(0)
 				.asTag()
 				.go(httpServer.getBaseURI("timeout/50"));
 			assertNotNull(tag);
@@ -311,6 +368,7 @@ public class HttpClientTest extends TestCase {
 
 			Promise<TaggedData> a = hc.build()
 				.useCache()
+				.retries(0)
 				.age(1, TimeUnit.DAYS)
 				.asTag()
 				.async(httpServer.getBaseURI("mftch"));
@@ -318,6 +376,7 @@ public class HttpClientTest extends TestCase {
 
 			Promise<TaggedData> b = hc.build()
 				.useCache()
+				.retries(0)
 				.age(1, TimeUnit.DAYS)
 				.asTag()
 				.async(httpServer.getBaseURI("mftch"));
@@ -400,6 +459,7 @@ public class HttpClientTest extends TestCase {
 			URI go = httpsServer.getBaseURI("get/foo");
 
 			TaggedData tag = hc.build()
+				.retries(0)
 				.get(TaggedData.class)
 				.go(go);
 			assertNotNull(tag);
@@ -444,6 +504,7 @@ public class HttpClientTest extends TestCase {
 			URI go = httpsServer.getBaseURI("get/foo");
 
 			TaggedData tag = hc.build()
+				.retries(0)
 				.get(TaggedData.class)
 				.go(go);
 			assertNotNull(tag);

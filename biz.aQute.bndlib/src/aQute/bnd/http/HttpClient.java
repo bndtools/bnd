@@ -337,7 +337,15 @@ public class HttpClient implements Closeable, URLConnector {
 				TaggedData td = connectWithProxy(proxy,
 					() -> doConnect(request.upload, request.download, con, hcon, request, task));
 				logger.debug("result {}", td);
-				return td;
+				if ((td.getResponseCode() / 100) != 5) {
+					return td;
+				}
+				if (trial++ < retries) {
+					logger.debug("retrying failed connection. url={}, response code={}, trial={}", request.url,
+						td.getResponseCode(), trial);
+				} else {
+					return td;
+				}
 			} catch (TimeoutException toe) {
 				if (trial++ < retries) {
 					logger.debug("retrying timed out connection. url={}, timeout={}, trial={}", request.url,
