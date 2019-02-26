@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
@@ -300,11 +301,9 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public TaggedData send0(final HttpRequest<?> request) throws Exception {
-		int retries = 0;
-		if ("GET".equalsIgnoreCase(request.verb))
-			retries = request.retries;
-
+		int retries = "GET".equalsIgnoreCase(request.verb) ? request.retries : 0;
 		int trial = 0;
+		long delay = (request.retryDelay == 0L) ? 1000L : request.retryDelay;
 		while (true) {
 			final ProxySetup proxy = getProxySetup(request.url);
 			final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
@@ -360,6 +359,12 @@ public class HttpClient implements Closeable, URLConnector {
 			} catch (Throwable t) {
 				task.done("Failed " + t, t);
 				throw t;
+			}
+			logger.debug("delay before retrying connection. url={}, delay={}, trial={}", request.url, delay, trial);
+			Thread.sleep(delay);
+			if (request.retryDelay == 0L) {
+				// double delay for next retry; 10 minutes max delay
+				delay = Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10));
 			}
 		}
 

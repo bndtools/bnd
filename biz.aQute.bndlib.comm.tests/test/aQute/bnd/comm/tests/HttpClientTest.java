@@ -206,6 +206,7 @@ public class HttpClientTest extends TestCase {
 
 				TaggedData tag = client.build()
 					.retries(4)
+					.retryDelay(1)
 					.asTag()
 					.go(httpServer.getBaseURI("readfail/2"));
 				System.out.println(tag);

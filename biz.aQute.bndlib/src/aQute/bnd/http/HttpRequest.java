@@ -39,6 +39,7 @@ public class HttpRequest<T> {
 	File				useCacheFile;
 	boolean				updateTag;
 	int					retries		= 3;
+	long				retryDelay	= 0L;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
@@ -282,6 +283,11 @@ public class HttpRequest<T> {
 
 	public HttpRequest<T> retries(int retries) {
 		this.retries = retries;
+		return this;
+	}
+
+	public HttpRequest<T> retryDelay(int retryDelay) {
+		this.retryDelay = TimeUnit.SECONDS.toMillis(retryDelay);
 		return this;
 	}
 
