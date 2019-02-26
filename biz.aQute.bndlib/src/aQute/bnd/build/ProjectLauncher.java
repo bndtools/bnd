@@ -2,8 +2,6 @@ package aQute.bnd.build;
 
 import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +25,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Strategy;
 import aQute.lib.io.IO;
+import aQute.libg.classloaders.ModifiableURLClassLoader;
 import aQute.libg.command.Command;
 import aQute.libg.generics.Create;
 
@@ -293,6 +292,7 @@ public abstract class ProjectLauncher extends Processor {
 		java.add("-cp");
 		java.add(Processor.join(getClasspath(), File.pathSeparator));
 		java.addAll(getRunVM());
+		java.add("aQute.launcher.LauncherWrapper");
 		java.add(getMainTypeName());
 		java.addAll(getRunProgramArgs());
 		if (timeout != 0)
@@ -355,13 +355,13 @@ public abstract class ProjectLauncher extends Processor {
 		// i.e. the framework etc.
 		//
 
-		List<URL> cp = new ArrayList<>();
+		@SuppressWarnings("resource")
+		ModifiableURLClassLoader cl = new ModifiableURLClassLoader(fcl);
+
 		for (String path : getClasspath()) {
-			cp.add(new File(path).toURI()
+			cl.addURL(new File(path).toURI()
 				.toURL());
 		}
-		@SuppressWarnings("resource")
-		URLClassLoader cl = new URLClassLoader(cp.toArray(new URL[0]), fcl);
 
 		String[] args = getRunProgramArgs().toArray(new String[0]);
 

@@ -11,18 +11,16 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 
 import aQute.lib.io.IOConstants;
+import aQute.libg.classloaders.ModifiableURLClassLoader;
 
 public class EmbeddedLauncher {
 	private static final File	CWD					= new File(System.getProperty("user.dir"));
@@ -50,15 +48,14 @@ public class EmbeddedLauncher {
 				.getValue(EMBEDDED_RUNPATH);
 			if (runpath != null) {
 				MANIFEST = m;
-				List<URL> classpath = new ArrayList<>();
 
-				for (String path : runpath.split("\\s*,\\s*")) {
-					URL url = toFileURL(cl.getResource(path));
-					classpath.add(url);
-				}
+				try (ModifiableURLClassLoader ml = new ModifiableURLClassLoader(cl)) {
+					for (String path : runpath.split("\\s*,\\s*")) {
+						URL url = toFileURL(cl.getResource(path));
+						ml.addURL(url);
+					}
 
-				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]), cl)) {
-					Class<?> embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
+					Class<?> embeddedLauncher = ml.loadClass("aQute.launcher.Launcher");
 					MethodHandle mh = MethodHandles.publicLookup()
 						.findStatic(embeddedLauncher, "main", MethodType.methodType(void.class, String[].class));
 					try {
