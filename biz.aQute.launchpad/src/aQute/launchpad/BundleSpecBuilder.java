@@ -5,6 +5,7 @@ import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.LinkedHashMap;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,7 +22,8 @@ import aQute.lib.io.IO;
  * 
  */
 public interface BundleSpecBuilder {
-	final static String CONFIGURATION_JSON = "configuration/configuration.json";
+	final static String		CONFIGURATION_JSON	= "configuration/configuration.json";
+	final static Pattern	SYMBOLICNAME		= Pattern.compile("[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*");
 
 	BundleBuilder x();
 
@@ -30,9 +32,15 @@ public interface BundleSpecBuilder {
 	 */
 	default BundleSpecBsn bundleSymbolicName(String name) {
 		BundleBuilder x = x();
+		if (name == null) {
+			throw new IllegalArgumentException("bsn cannot be null");
+		}
+		if (!SYMBOLICNAME.matcher(name)
+			.matches()) {
+			throw new IllegalArgumentException("invalid bsn: " + name);
+		}
+		x.spec.bundleSymbolicName.clear();
 		x.spec.bundleSymbolicName.put(name, new LinkedHashMap<>());
-		if (x.spec.bundleSymbolicName.size() > 1)
-			throw new IllegalArgumentException("You can only have one Bundle-SymbolicName");
 
 		return new BundleSpecBsn() {
 

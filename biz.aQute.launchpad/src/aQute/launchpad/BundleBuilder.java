@@ -15,7 +15,7 @@ import aQute.lib.io.IO;
 /**
  * Implementation class for building bundles on the remote workspace server.
  */
-public class BundleBuilder implements BundleSpecBuilder {
+public class BundleBuilder implements BundleSpecBuilder, AutoCloseable {
 
 	final Launchpad		ws;
 	final BuilderSpecification	spec		= new BuilderSpecification();
@@ -76,8 +76,9 @@ public class BundleBuilder implements BundleSpecBuilder {
 		closeables.add(closeable);
 	}
 
-	void close() {
-		closeables.forEach( IO::close);
+	@Override
+	public void close() {
+		closeables.forEach(IO::close);
 	}
 
 }
