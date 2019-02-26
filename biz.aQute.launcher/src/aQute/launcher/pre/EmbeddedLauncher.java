@@ -57,7 +57,7 @@ public class EmbeddedLauncher {
 					classpath.add(url);
 				}
 
-				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]), cl)) {
+				try (LauncherLoader urlc = new LauncherLoader(classpath.toArray(new URL[0]), cl)) {
 					Class<?> embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
 					MethodHandle mh = MethodHandles.publicLookup()
 						.findStatic(embeddedLauncher, "main", MethodType.methodType(void.class, String[].class));
@@ -71,6 +71,18 @@ public class EmbeddedLauncher {
 				}
 			}
 		}
+	}
+
+	public static class LauncherLoader extends URLClassLoader {
+
+		public LauncherLoader(URL[] urls, ClassLoader parent) {
+			super(urls, parent);
+		}
+
+		public void addURL(URL url) {
+			super.addURL(url);
+		}
+
 	}
 
 	private static void extract(String... args) throws URISyntaxException, IOException {

@@ -56,6 +56,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	private final static Logger		logger					= LoggerFactory.getLogger(ProjectLauncherImpl.class);
 	private static final String		EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
 	private static final String		EMBEDDED_LAUNCHER		= "aQute/launcher/pre/EmbeddedLauncher.class";
+	private static final String		EMBEDDED_LAUNCHER_LOADER	= "aQute/launcher/pre/EmbeddedLauncher$LauncherLoader.class";
 	private BuilderInstructions		builderInstrs;
 	private LauncherInstructions	launcherInstrs;
 
@@ -327,9 +328,15 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			.putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
 		m.getMainAttributes()
 			.putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
-		Resource embeddedLauncher = Resource.fromURL(this.getClass()
+
+		Resource resource = Resource.fromURL(this.getClass()
 			.getResource("/" + EMBEDDED_LAUNCHER));
-		jar.putResource(EMBEDDED_LAUNCHER, embeddedLauncher);
+		jar.putResource(EMBEDDED_LAUNCHER, resource);
+
+		resource = Resource.fromURL(this.getClass()
+			.getResource("/" + EMBEDDED_LAUNCHER_LOADER));
+		jar.putResource(EMBEDDED_LAUNCHER_LOADER, resource);
+
 		doStart(jar, EMBEDDED_LAUNCHER_FQN);
 		if (getProject().getProperty(Constants.DIGESTS) != null)
 			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS)
