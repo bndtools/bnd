@@ -20,7 +20,6 @@ import aQute.service.reporter.Reporter;
  * 
  * @param <T>
  */
-@SuppressWarnings("unchecked")
 public class HttpRequest<T> {
 	String				verb		= "GET";
 	Object				upload;
@@ -48,6 +47,7 @@ public class HttpRequest<T> {
 	/**
 	 * Convert the result to a specific type
 	 */
+	@SuppressWarnings("unchecked")
 	public <X> HttpRequest<X> get(Class<X> type) {
 		this.download = type;
 		return (HttpRequest<X>) this;
@@ -56,6 +56,7 @@ public class HttpRequest<T> {
 	/**
 	 * Convert the result to a specific type
 	 */
+	@SuppressWarnings("unchecked")
 	public <X> HttpRequest<X> get(TypeReference<X> type) {
 		this.download = type.getType();
 		return (HttpRequest<X>) this;
@@ -64,6 +65,7 @@ public class HttpRequest<T> {
 	/**
 	 * Convert the result to a specific type
 	 */
+	@SuppressWarnings("unchecked")
 	public HttpRequest<Object> get(Type type) {
 		this.download = type;
 		return (HttpRequest<Object>) this;
@@ -180,6 +182,7 @@ public class HttpRequest<T> {
 		return this;
 	}
 
+	@SuppressWarnings("unchecked")
 	public T go(URL url) throws Exception {
 		this.url = url;
 		return (T) client.send(this);
@@ -194,6 +197,7 @@ public class HttpRequest<T> {
 		return this;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Promise<T> async(URL url) {
 		this.url = url;
 		return client.promiseFactory()
@@ -240,8 +244,7 @@ public class HttpRequest<T> {
 	public HttpRequest<File> useCache(long maxStale) {
 		this.maxStale = maxStale;
 		this.cached = true;
-		download = File.class;
-		return (HttpRequest<File>) this;
+		return get(File.class);
 	}
 
 	public HttpRequest<File> useCache() {
