@@ -346,11 +346,11 @@ public class HttpClient implements Closeable, URLConnector {
 					return td;
 				}
 			} catch (TimeoutException toe) {
+				task.done(toe.toString(), null);
 				if (trial++ < retries) {
 					logger.debug("retrying timed out connection. url={}, timeout={}, trial={}", request.url,
 						request.timeout, trial);
 				} else {
-					task.done(toe.toString(), null);
 					logger.warn("connection timed out. url={}, timeout={}, trial={}", request.url, request.timeout,
 						trial);
 					return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT,
