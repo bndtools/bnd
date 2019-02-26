@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 
+import org.junit.After;
 import org.junit.Test;
 
 import aQute.bnd.build.Run;
@@ -32,6 +33,12 @@ public class LauncherTest {
 	 * every change in the launcher since it embeds the launcher. This jar is
 	 * run twice to see if the second run will not reinstall the bundles.
 	 */
+
+	@After
+	public void after() {
+		System.getProperties()
+			.remove("launch.trace");
+	}
 
 	@Test
 	public void testPackaged() throws Exception {

@@ -116,7 +116,7 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
         warnings.addAll(launcherWarnings);
         warnings.addAll(projectWarnings);
 
-        String frameworkPath = validateClasspath(bndLauncher.getClasspath());
+        String frameworkPath = validateClasspath(bndLauncher.getRunpath());
         if (frameworkPath == null)
             errors.add("No OSGi framework has been added to the run path.");
 

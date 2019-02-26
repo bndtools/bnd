@@ -15,7 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.instrument.Instrumentation;
 import java.lang.invoke.MethodType;
@@ -194,9 +196,9 @@ public class Launcher implements ServiceListener {
 	}
 
 	public Launcher() throws Exception {
-		this.properties = new Properties(); 
+		this.properties = new Properties();
 	}
-	
+
 	public void init(String... args) throws Throwable {
 
 		final InputStream in;
@@ -479,7 +481,7 @@ public class Launcher implements ServiceListener {
 	 * Ensure that all the bundles in the parameters are actually started. We
 	 * can start in embedded mode (bundles are inside our main jar) or in file
 	 * system mode.
-	 * 
+	 *
 	 * @param begin
 	 */
 	List<Bundle> update(long before) throws Exception {
@@ -651,7 +653,7 @@ public class Launcher implements ServiceListener {
 	 * packager. This path is platform independent and must therefore be
 	 * translated to the executing platform. if no macro is present, we assume
 	 * the path is already native.
-	 * 
+	 *
 	 * @param s
 	 */
 	private String toNativePath(String s) {
@@ -1071,6 +1073,8 @@ public class Launcher implements ServiceListener {
 					public void frameworkEvent(FrameworkEvent event) {
 						switch (event.getType()) {
 							case FrameworkEvent.ERROR :
+								error(event.toString(), event.getThrowable());
+								break;
 							case FrameworkEvent.WAIT_TIMEDOUT :
 								trace("Refresh will end due to error or timeout %s", event.toString());
 
@@ -1094,7 +1098,7 @@ public class Launcher implements ServiceListener {
 
 	/**
 	 * Try to get the stupid service interface ...
-	 * 
+	 *
 	 * @param loader
 	 * @param string
 	 * @throws IOException
@@ -1461,6 +1465,9 @@ public class Launcher implements ServiceListener {
 				DataOutputStream dos = new DataOutputStream(outputStream)) {
 				dos.writeInt(severity);
 				dos.writeUTF(message.substring(2));
+				if (e != null) {
+					dos.writeUTF(toString(e));
+				}
 
 				ByteBuffer bb = outputStream.toByteBuffer();
 				socket.send(new DatagramPacket(bb.array(), bb.arrayOffset(), bb.remaining()));
@@ -1479,7 +1486,7 @@ public class Launcher implements ServiceListener {
 
 	/**
 	 * Find a bundle by its location.
-	 * 
+	 *
 	 * @param path the location to find
 	 */
 	private Bundle getBundleByLocation(String path) {
@@ -1490,6 +1497,12 @@ public class Launcher implements ServiceListener {
 				return b;
 		}
 		return null;
+	}
+
+	public static String toString(Throwable t) {
+		StringWriter sw = new StringWriter();
+		t.printStackTrace(new PrintWriter(sw));
+		return sw.toString();
 	}
 
 	private static final MethodType defaultConstructor = methodType(void.class);

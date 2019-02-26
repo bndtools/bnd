@@ -14,6 +14,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -22,15 +23,14 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 
-import aQute.lib.io.IOConstants;
-
 public class EmbeddedLauncher {
 
 	private static final File	CWD					= new File(System.getProperty("user.dir"));
 	private static final String	LAUNCH_TRACE		= "launch.trace";
-	static final int			BUFFER_SIZE			= IOConstants.PAGE_SIZE * 16;
+	private static final int	BUFFER_SIZE			= 4096 * 16;
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
+	public static final String	LAUNCHER_PATH		= "launcher.runpath";
 	public static Manifest		MANIFEST;
 
 	public static void main(String... args) throws Throwable {
@@ -82,13 +82,12 @@ public class EmbeddedLauncher {
 	 * @throws Throwable
 	 */
 	private static <T> T findAndExecute(boolean isVerbose, String methodName, Class<T> returnType, String... args)
-		throws Throwable, InvocationTargetException {
+		throws Throwable {
 		ClassLoader cl = EmbeddedLauncher.class.getClassLoader();
 		if (isVerbose)
 			log("looking for META-INF/MANIFEST.MF");
 		Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 		while (manifests.hasMoreElements()) {
-
 			if (isVerbose)
 				log("found one");
 
@@ -101,38 +100,57 @@ public class EmbeddedLauncher {
 				log("Going through the following runpath %s", runpath);
 			if (runpath != null) {
 				MANIFEST = m;
-				List<URL> classpath = new ArrayList<>();
-
-				for (String path : runpath.split("\\s*,\\s*")) {
-					URL url = toFileURL(cl.getResource(path));
-					if (isVerbose)
-						log("Adding to classpath %s", url.toString());
-					classpath.add(url);
-				}
-
-				if (isVerbose)
-					log("creating URLClassLoader");
-				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]), cl)) {
-					if (isVerbose)
-						log("Try to load aQute.launcher.Launcher");
-					Class<?> embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
-					if (isVerbose)
-						log("looking for method %s with return type %s", methodName, returnType.toString());
-					MethodHandle mh = MethodHandles.publicLookup()
-						.findStatic(embeddedLauncher, methodName, MethodType.methodType(returnType, String[].class));
-					try {
-						if (isVerbose)
-							log("found method and start executing");
-						return (T) mh.invoke(args);
-					} catch (Error | Exception e) {
-						throw e;
-					} catch (Throwable e) {
-						throw new InvocationTargetException(e);
-					}
-				}
+				return executeWithRunPath(isVerbose, methodName, returnType, cl, runpath, false, args);
 			}
 		}
-		throw new RuntimeException("Found Nothing to launch. Maybe no " + EMBEDDED_RUNPATH + " was set");
+		if (isVerbose)
+			log("looking for -D" + LAUNCHER_PATH);
+		String runpath = System.getProperty(LAUNCHER_PATH);
+		if (runpath != null) {
+			if (isVerbose)
+				log("Going through the following runpath %s", runpath);
+			return executeWithRunPath(isVerbose, methodName, returnType, cl, runpath, true, args);
+		}
+
+		throw new RuntimeException(
+			"Found Nothing to launch. Maybe no " + EMBEDDED_RUNPATH + " or -D" + LAUNCHER_PATH + " was set");
+	}
+
+	private static <T> T executeWithRunPath(boolean isVerbose, String methodName, Class<T> returnType, ClassLoader cl,
+		String runpath, boolean pathExternal, String... args) throws Throwable {
+		List<URL> classpath = new ArrayList<>();
+
+		for (String path : runpath.split("\\s*,\\s*")) {
+			URL url = !pathExternal ? toFileURL(cl.getResource(path))
+				: Paths.get(path)
+					.toUri()
+					.toURL();
+			if (isVerbose)
+				log("Adding to classpath %s", url.toString());
+			classpath.add(url);
+		}
+
+		if (isVerbose)
+			log("creating classloader using %s", Loader.class.getName());
+		try (Loader urlc = new Loader(classpath.toArray(new URL[0]), cl)) {
+			if (isVerbose)
+				log("Try to load aQute.launcher.Launcher");
+			Class<?> aQutelauncherLauncher = urlc.loadClass("aQute.launcher.Launcher");
+			if (isVerbose)
+				log("looking for method %s with return type %s", methodName, returnType.toString());
+
+			MethodHandle mh = MethodHandles.publicLookup()
+				.findStatic(aQutelauncherLauncher, methodName, MethodType.methodType(returnType, String[].class));
+			try {
+				if (isVerbose)
+					log("found method and start executing");
+				return (T) mh.invoke(args);
+			} catch (Error | Exception e) {
+				throw e;
+			} catch (Throwable e) {
+				throw new InvocationTargetException(e);
+			}
+		}
 	}
 
 	private static void log(String message, Object... args) {
@@ -243,6 +261,16 @@ public class EmbeddedLauncher {
 		f.deleteOnExit();
 		return f.toURI()
 			.toURL();
+	}
+
+	public static class Loader extends URLClassLoader {
+		public Loader(URL[] urls, ClassLoader parent) {
+			super(urls, parent);
+		}
+
+		public void addURL(URL url) {
+			super.addURL(url);
+		}
 	}
 
 }

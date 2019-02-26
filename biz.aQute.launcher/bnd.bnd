@@ -16,8 +16,13 @@
 Launcher-Plugin: aQute.launcher.plugin.ProjectLauncherImpl
 
 -conditionalpackage: aQute.lib*
-
-Premain-Class: aQute.launcher.agent.LauncherAgent
+-includepackage: \
+	aQute.launcher,\
+	aQute.launcher.constants,\
+	aQute.launcher.minifw,\
+	aQute.launcher.plugin
+-includeresource: \
+	pre.jar
 
 -builderignore: testresources
 
