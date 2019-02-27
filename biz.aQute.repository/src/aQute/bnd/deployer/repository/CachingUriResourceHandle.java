@@ -14,6 +14,7 @@ import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.ResourceHandle;
 import aQute.bnd.service.url.URLConnector;
 import aQute.lib.hex.Hex;
@@ -212,7 +213,7 @@ public class CachingUriResourceHandle implements ResourceHandle {
 			saveSHAFile(serverSHA);
 
 			return cachedFile;
-		} catch (IOException e) {
+		} catch (IOException | HttpRequestException e) {
 			if (sha == null) {
 				// Remote access failed, use the cache if it exists AND if the
 				// original SHA was not known.
