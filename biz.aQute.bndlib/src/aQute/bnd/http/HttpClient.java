@@ -18,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.ProtocolException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,7 +37,6 @@ import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
@@ -191,7 +191,8 @@ public class HttpClient implements Closeable, URLConnector {
 				return null;
 
 			case OTHER :
-				throw new HttpRequestException(tag);
+				tag.throwIt();
+				return null;
 
 			case UNMODIFIED :
 			case UPDATED :
@@ -332,7 +333,6 @@ public class HttpClient implements Closeable, URLConnector {
 
 			final ProgressPlugin.Task task = getTask(request);
 			try {
-
 				TaggedData td = connectWithProxy(proxy,
 					() -> doConnect(request.upload, request.download, con, hcon, request, task));
 				logger.debug("result {}", td);
@@ -344,17 +344,6 @@ public class HttpClient implements Closeable, URLConnector {
 						td.getResponseCode(), trial);
 				} else {
 					return td;
-				}
-			} catch (TimeoutException toe) {
-				task.done(toe.toString(), null);
-				if (trial++ < retries) {
-					logger.debug("retrying timed out connection. url={}, timeout={}, trial={}", request.url,
-						request.timeout, trial);
-				} else {
-					logger.warn("connection timed out. url={}, timeout={}, trial={}", request.url, request.timeout,
-						trial);
-					return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT,
-						request.useCacheFile);
 				}
 			} catch (Throwable t) {
 				task.done("Failed " + t, t);
@@ -587,15 +576,23 @@ public class HttpClient implements Closeable, URLConnector {
 			InputStream in = handleContentEncoding(hcon, xin);
 			in = createProgressWrappedStream(in, con.toString(), con.getContentLength(), task, request.timeout);
 			return new TaggedData(con, in, request.useCacheFile);
-		} catch (javax.net.ssl.SSLHandshakeException ste) {
-			task.done(Exceptions.causes(ste), null);
-			//
+		} catch (javax.net.ssl.SSLHandshakeException e) {
+			task.done(Exceptions.causes(e), null);
 			// 526 Invalid SSL Certificate
 			// Cloudflare could not validate the SSL/TLS certificate that the
 			// origin server presented.
 			return new TaggedData(request.url.toURI(), 526, request.useCacheFile);
-		} catch (SocketTimeoutException ste) {
-			throw new TimeoutException();
+		} catch (SocketTimeoutException e) {
+			task.done(e.toString(), null);
+			return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
+		} catch (SocketException e) {
+			task.done(e.toString(), null);
+			// 520 Unknown Error (Cloudflare)
+			// A 520 Unknown Error code is used as a “catch-all response” in the
+			// event that the origin server yields something unexpected. This
+			// could include listing large headers, connection resets or invalid
+			// or empty responses.
+			return new TaggedData(request.url.toURI(), 520, request.useCacheFile);
 		}
 	}
 
