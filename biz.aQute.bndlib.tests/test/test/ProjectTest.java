@@ -103,20 +103,21 @@ public class ProjectTest extends TestCase {
 		File foobar = project.getFile("foo.bar");
 
 		foobar.setLastModified(System.currentTimeMillis() + 100000);
-		File f = testStaleCheck(project, "foo.bar;newer=older;error=FOO", "FOO");
+		File f = testStaleCheck(project, "\"foo.bar,bnd.bnd\";newer=\"older\";error=FOO", "FOO");
 		assertThat(f).isNull();
 
-		f = testStaleCheck(project, "foo.bar;newer=older", "detected stale files : foo.bar >");
+		f = testStaleCheck(project, "'foo.bar,bnd.bnd';newer=\"older/,younger/\"",
+			"detected stale files : foo.bar,bnd.bnd >");
 		assertThat(f).isNotNull();
 
-		f = testStaleCheck(project, "foo.bar;newer=older;warning=FOO", "FOO");
+		f = testStaleCheck(project, "foo.bar;newer=older/;warning=FOO", "FOO");
 		assertThat(f).isNotNull();
 
 		if (isLinuxy()) {
-			f = testStaleCheck(project, "foo.bar;newer=older;command='cp foo.bar older/");
+			f = testStaleCheck(project, "foo.bar;newer=older;command='cp foo.bar older/'");
 			try (Jar t = new Jar(f)) {
-				assertThat(t.getResource("b/c/foo.txt") != null).isIn(true);
-				assertThat(t.getResource("foo.bar") != null).isIn(true);
+				assertThat(t.getResource("b/c/foo.txt")).isNotNull();
+				assertThat(t.getResource("foo.bar")).isNotNull();
 			}
 		}
 
@@ -140,7 +141,7 @@ public class ProjectTest extends TestCase {
 		project.setProperty("-includeresource", "older");
 		project.setProperty("-stalecheck", clauses);
 		File[] build = project.build();
-		assertTrue(project.check(check));
+		assertThat(project.check(check)).isTrue();
 		return build != null ? build[0] : null;
 	}
 

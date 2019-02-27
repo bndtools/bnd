@@ -1,6 +1,7 @@
 package aQute.bnd.build;
 
 import static aQute.bnd.build.Container.toPaths;
+import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -45,7 +46,6 @@ import java.util.jar.Attributes;
 import java.util.jar.Attributes.Name;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
@@ -102,6 +102,7 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.collections.ExtList;
 import aQute.lib.collections.Iterables;
 import aQute.lib.converter.Converter;
+import aQute.lib.exceptions.ConsumerWithException;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
@@ -3424,8 +3425,7 @@ public class Project extends Processor {
 	private void staleCheck(String src, StaleTest st) {
 		try {
 			String useSrc = Strings.trim(Processor.removeDuplicateMarker(src));
-			if (useSrc.isEmpty() || useSrc.trim()
-				.equals(Constants.EMPTY_HEADER))
+			if (useSrc.isEmpty() || useSrc.equals(Constants.EMPTY_HEADER))
 				return;
 
 			if (st.newer() == null) {
@@ -3436,39 +3436,36 @@ public class Project extends Processor {
 
 			FileTree tree = new FileTree();
 
-			OptionalLong oldest = tree.getFiles(getBase(), Strings.splitQuoted(useSrc))
+			OptionalLong newest = tree.getFiles(getBase(), Strings.split(useSrc))
 				.stream()
 				.filter(File::isFile)
 				.mapToLong(File::lastModified)
-				.distinct()
-				.sorted()
-				.min();
+				.max();
 
-			if (!oldest.isPresent()) {
+			if (!newest.isPresent()) {
 				setLocation(Constants.STALECHECK, Pattern.quote(useSrc),
 					warning("No source files '%s' found for %s", useSrc, Constants.STALECHECK));
 				return;
 			}
 
-			long time = oldest.getAsLong();
+			long time = newest.getAsLong();
 
-			List<String> defaultIncludes = Strings.split(st.newer())
-				.stream()
+			List<String> defaultIncludes = Strings.splitAsStream(st.newer())
 				.map(p -> getFile(p).isDirectory() && !p.endsWith("/") ? p + "/" : p)
-				.collect(Collectors.toList());
+				.collect(toList());
 
 			List<File> dependentFiles = tree.getFiles(getBase(), defaultIncludes)
 				.stream()
 				.filter(File::isFile)
 				.filter(f -> f.lastModified() < time)
 				.sorted()
-				.collect(Collectors.toList());
+				.collect(toList());
 
-			String qsrc = Pattern.quote(useSrc);
 
 			boolean staleFiles = !dependentFiles.isEmpty();
 
 			if (staleFiles) {
+				String qsrc = Pattern.quote(useSrc);
 
 				Optional<String> warning = st.warning();
 				if (!warning.isPresent() && !st.error()
@@ -3485,11 +3482,8 @@ public class Project extends Processor {
 					msg -> setLocation(Constants.STALECHECK, qsrc,
 						warning("%s : %s > %s", msg, useSrc, dependentFiles)));
 
-				if (st.command()
-					.isPresent()) {
-					system(st.command()
-						.get(), null);
-				}
+				st.command()
+					.ifPresent(ConsumerWithException.asConsumer(cmd -> system(cmd, null)));
 			}
 
 		} catch (Exception e) {
