@@ -46,7 +46,8 @@ public class RunSpecification implements Cloneable {
 			bin = spec.bin;
 		if (spec.bin_test != null)
 			bin_test = spec.bin_test;
-		runfw = spec.runfw;
+		runfw.clear();
+		runfw.addAll(spec.runfw);
 		runbundles.addAll(spec.runbundles);
 		runpath.addAll(spec.runpath);
 		putAll(extraSystemCapabilities, spec.extraSystemCapabilities);
