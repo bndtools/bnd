@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -45,13 +46,18 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 		//
 		// We only want the raw setup and not the run spec since this
-		// makes it impossible to start a clean framework
+		// makes it impossible to start a clean framework. Make them
+		// immutable so that they can't be modified accidentally.
 		//
 
-		projectTestSetup.runbundles.clear();
-		projectTestSetup.runpath.clear();
-		projectTestSetup.properties.clear();
-		projectTestSetup.runfw.clear();
+		projectTestSetup.runbundles = Collections.emptyList();
+		projectTestSetup.runpath = Collections.emptyList();
+		projectTestSetup.properties = Collections.emptyMap();
+		projectTestSetup.runfw = Collections.emptyList();
+
+		projectTestSetup.extraSystemPackages = Collections.unmodifiableMap(projectTestSetup.extraSystemPackages);
+		projectTestSetup.extraSystemCapabilities = Collections
+			.unmodifiableMap(projectTestSetup.extraSystemCapabilities);
 
 		Runtime.getRuntime()
 			.addShutdownHook(new Thread(() -> {
@@ -74,7 +80,9 @@ public class LaunchpadBuilder implements AutoCloseable {
 	 * directory.
 	 */
 	public LaunchpadBuilder() {
-		local = projectTestSetup.clone();
+		// This ensures a deep clone.
+		local = new RunSpecification();
+		local.mergeWith(projectTestSetup);
 	}
 
 	public LaunchpadBuilder bndrun(File file) {
@@ -155,7 +163,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	}
 
 	public LaunchpadBuilder set(String key, String value) {
-		projectTestSetup.properties.put(key, value);
+		local.properties.put(key, value);
 		return this;
 	}
 
