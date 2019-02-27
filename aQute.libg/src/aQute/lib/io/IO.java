@@ -892,7 +892,7 @@ public class IO {
 		}
 	}
 
-	public static Throwable close(Closeable in) {
+	public static Throwable close(AutoCloseable in) {
 		try {
 			if (in != null)
 				in.close();
@@ -900,6 +900,11 @@ public class IO {
 			return e;
 		}
 		return null;
+	}
+
+	// This method is required for binary backwards compatibility.
+	public static Throwable close(Closeable in) {
+		return close((AutoCloseable) in);
 	}
 
 	public static URL toURL(String s, File base) throws MalformedURLException {
