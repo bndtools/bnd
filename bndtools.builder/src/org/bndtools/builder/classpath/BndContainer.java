@@ -22,8 +22,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
 
-import aQute.bnd.osgi.Constants;
-
 public class BndContainer implements IClasspathContainer, Serializable {
     private static final long serialVersionUID = 2L;
     public static final String DESCRIPTION = "Bnd Bundle Path";
@@ -87,7 +85,6 @@ public class BndContainer implements IClasspathContainer, Serializable {
     }
 
     private static final IClasspathAttribute TEST = JavaCore.newClasspathAttribute("test", Boolean.TRUE.toString());
-    private static final IClasspathAttribute VERSION_PROJECT = JavaCore.newClasspathAttribute(Constants.VERSION_ATTRIBUTE, Constants.VERSION_ATTR_PROJECT);
 
     IRuntimeClasspathEntry[] getRuntimeClasspathEntries() throws JavaModelException {
         List<IRuntimeClasspathEntry> runtime = new ArrayList<>();
@@ -98,24 +95,21 @@ public class BndContainer implements IClasspathContainer, Serializable {
                     break;
                 }
                 case IClasspathEntry.CPE_PROJECT : {
-                    // if version=project; then next entry is not the project's CPE_LIBRARY entry
-                    if (hasAttribute(cpe, VERSION_PROJECT)) {
-                        IProject project = ResourcesPlugin.getWorkspace()
-                            .getRoot()
-                            .getProject(cpe.getPath()
-                                .segment(0));
-                        if (project.isOpen()) {
-                            IJavaProject javaProject = JavaCore.create(project);
-                            Set<IPath> seen = new HashSet<>();
-                            for (IClasspathEntry raw : javaProject.getRawClasspath()) {
-                                if ((raw.getEntryKind() == IClasspathEntry.CPE_SOURCE) && !hasAttribute(raw, TEST)) {
-                                    IPath output = raw.getOutputLocation();
-                                    if (output == null) { // use default output location
-                                        output = javaProject.getOutputLocation();
-                                    }
-                                    if (seen.add(output)) {
-                                        runtime.add(JavaRuntime.newArchiveRuntimeClasspathEntry(output, cpe.getPath(), null, cpe.getAccessRules(), cpe.getExtraAttributes(), false));
-                                    }
+                    IProject project = ResourcesPlugin.getWorkspace()
+                        .getRoot()
+                        .getProject(cpe.getPath()
+                            .segment(0));
+                    if (project.isOpen()) {
+                        IJavaProject javaProject = JavaCore.create(project);
+                        Set<IPath> seen = new HashSet<>();
+                        for (IClasspathEntry raw : javaProject.getRawClasspath()) {
+                            if ((raw.getEntryKind() == IClasspathEntry.CPE_SOURCE) && !hasAttribute(raw, TEST)) {
+                                IPath output = raw.getOutputLocation();
+                                if (output == null) { // use default output location
+                                    output = javaProject.getOutputLocation();
+                                }
+                                if (seen.add(output)) {
+                                    runtime.add(JavaRuntime.newArchiveRuntimeClasspathEntry(output, cpe.getPath(), null, cpe.getAccessRules(), cpe.getExtraAttributes(), false));
                                 }
                             }
                         }
