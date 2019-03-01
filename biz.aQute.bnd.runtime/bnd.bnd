@@ -17,6 +17,9 @@
 -testpath: \
     ${junit}, \
     biz.aQute.launchpad;version=latest, \
+    slf4j.api, \
+    slf4j.simple;version=latest, \
+    biz.aQute.repository, \
     org.apache.felix.framework;version=@5
 
 -conditionalpackage: \

@@ -19,7 +19,7 @@ public class DiagnosticsTest {
 		builder = new LaunchpadBuilder()
 			.runfw("org.apache.felix.framework")
 			.gogo()
-			.bundles("biz.aQute.bnd.diagnostics.gogo");
+			.bundles("biz.aQute.bnd.runtime.gogo");
 	}
 
 	@AfterClass
