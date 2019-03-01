@@ -3,6 +3,7 @@ package aQute.bnd.runtime.facade;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -33,6 +34,10 @@ public class LogFacade implements SnapshotProvider {
 			@Override
 			public LogReaderService addingService(ServiceReference<LogReaderService> reference) {
 				LogReaderService s = super.addingService(reference);
+				Enumeration<LogEntry> log = s.getLog();
+				while (log.hasMoreElements()) {
+					entry(log.nextElement());
+				}
 				s.addLogListener(LogFacade.this::entry);
 				return s;
 			}
