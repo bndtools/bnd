@@ -2,6 +2,7 @@ package bndtools.m2e;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +13,8 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
+import org.bndtools.api.ILogger;
+import org.bndtools.api.Logger;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -20,8 +23,6 @@ import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.configuration.Bundles;
@@ -37,7 +38,8 @@ import bndtools.central.Central;
 
 public class MavenImplicitProjectRepository extends AbstractMavenRepository implements Refreshable {
 
-    private static final Logger logger = LoggerFactory.getLogger(MavenImplicitProjectRepository.class);
+    private static final ILogger logger = Logger.getLogger(MavenImplicitProjectRepository.class);
+
     private static final Version scopesVersion = new Version(4, 2, 0);
 
     private volatile FileSetRepository fileSetRepository;
@@ -112,8 +114,8 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
         "deprecation", "unchecked"
     })
     private void createRepo(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
+        MavenProject mavenProject = getMavenProject(projectFacade);
         try {
-            MavenProject mavenProject = getMavenProject(projectFacade);
             IMavenExecutionContext executionContext = maven.getExecutionContext();
             MavenSession mavenSession;
 
@@ -169,8 +171,17 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 
             Central.refreshPlugin(this);
         } catch (Exception e) {
-            if (logger.isErrorEnabled()) {
-                logger.error("Failed to create implicit repository for m2e project {}", getName(), e);
+            logger.logError("Failed to create implicit repository for m2e project " + getName(), e);
+
+            try {
+                String name = mavenProject.getName()
+                    .isEmpty() ? mavenProject.getArtifactId() : mavenProject.getName();
+
+                fileSetRepository = new FileSetRepository(name, Collections.emptyList());
+
+                Central.refreshPlugin(this);
+            } catch (Exception e2) {
+                throw Exceptions.duck(e2);
             }
         }
     }
