@@ -2,7 +2,7 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 -buildpath: \
-    osgi.annotation;version=latest, \
+    osgi.annotation;version=latest;maven-scope=provided, \
     aQute.libg;version=project,\
     osgi.core;version=@6;maven-scope=provided,\
     org.osgi.service.coordinator;maven-scope=provided,\

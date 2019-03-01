@@ -1,12 +1,14 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
+-maven-scope: provided
+
 -buildpath: \
-	osgi.core;version=@4;maven-scope=provided,\
-	osgi.cmpn;version=@4;maven-scope=provided,\
+	osgi.core;version=@4,\
+	osgi.cmpn;version=@4,\
 	aQute.libg;version=project,\
-	biz.aQute.bndlib;version=latest;maven-scope=provided,\
-    ${replacelist;${list;junit};$;\\;maven-scope=provided}
+	biz.aQute.bndlib;version=latest,\
+    ${junit}
 
 Tester-Plugin: aQute.junit.plugin.ProjectTesterImpl
 

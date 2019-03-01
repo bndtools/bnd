@@ -1,19 +1,21 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
+-maven-scope: provided
+
 -buildpath: \
-	osgi.annotation;version=latest;maven-scope=provided,\
-	osgi.core;version=latest;maven-scope=provided,\
-	org.osgi.service.coordinator;version=latest;maven-scope=provided,\
+	osgi.annotation;version=latest,\
+	osgi.core;version=latest,\
+	org.osgi.service.coordinator;version=latest,\
 	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
-	org.osgi.util.function;version=latest;maven-scope=provided,\
-	org.osgi.util.promise;version=latest;maven-scope=provided,\
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\
 	biz.aQute.bnd.annotation;version=project,\
-	biz.aQute.bndlib;version=latest,\
-	slf4j.api;version=latest,\
-	org.tukaani.xz;version=latest;maven-scope=provided
+	biz.aQute.bndlib;version=latest;maven-scope=compile,\
+	slf4j.api;version=latest;maven-scope=compile,\
+	org.tukaani.xz;version=latest
 
 -testpath: \
 	${junit},\
