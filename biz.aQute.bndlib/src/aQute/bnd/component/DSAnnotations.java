@@ -2,10 +2,12 @@ package aQute.bnd.component;
 
 import static aQute.bnd.component.DSAnnotationReader.V1_0;
 import static aQute.bnd.component.DSAnnotationReader.V1_3;
+import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,7 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.AnalyzerPlugin;
 import aQute.bnd.version.Version;
 import aQute.bnd.xmlattribute.XMLAttributeFinder;
+import aQute.lib.collections.MultiMap;
 import aQute.lib.strings.Strings;
 
 /**
@@ -121,11 +124,13 @@ public class DSAnnotations implements AnalyzerPlugin {
 		Collection<Clazz> list = analyzer.getClassspace()
 			.values();
 		String sc = analyzer.getProperty(Constants.SERVICE_COMPONENT);
-		List<String> names = new ArrayList<>();
+		List<String> componentPaths = new ArrayList<>();
 		if (sc != null && sc.trim()
 			.length() > 0) {
-			names.add(sc);
+			componentPaths.add(sc);
 		}
+
+		MultiMap<String, ComponentDef> definitionsByName = new MultiMap<>();
 
 		TreeSet<String> provides = new TreeSet<>();
 		TreeSet<String> requires = new TreeSet<>();
@@ -139,7 +144,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 					if (instruction.isNegated()) {
 						break;
 					}
-					ComponentDef definition = DSAnnotationReader.getDefinition(c, analyzer, options, finder, minVersion);
+					ComponentDef definition = DSAnnotationReader.getDefinition(c, analyzer, options, finder,
+						minVersion);
 					if (definition == null) {
 						break;
 					}
@@ -147,11 +153,19 @@ public class DSAnnotations implements AnalyzerPlugin {
 					definition.sortReferences();
 					definition.prepare(analyzer);
 
-					String name = "OSGI-INF/" + analyzer.validResourcePath(definition.name, "Invalid component name")
+					//
+					// we need a unique definition.name
+					// according to the spec so we should deduplicate
+					// these names
+					//
+
+					makeUnique(definitionsByName, definition);
+
+					String path = "OSGI-INF/" + analyzer.validResourcePath(definition.name, "Invalid component name")
 						+ ".xml";
-					names.add(name);
+					componentPaths.add(path);
 					analyzer.getJar()
-						.putResource(name, new TagResource(definition.getTag()));
+						.putResource(path, new TagResource(definition.getTag()));
 
 					if (definition.service != null && !options.contains(Options.nocapabilities)) {
 						String[] objectClass = new String[definition.service.length];
@@ -176,23 +190,46 @@ public class DSAnnotations implements AnalyzerPlugin {
 				}
 			}
 		}
-		if (componentProcessed
-			&& (options.contains(Options.extender) || (maxVersion.compareTo(V1_3) >= 0))) {
+		if (componentProcessed && (options.contains(Options.extender) || (maxVersion.compareTo(V1_3) >= 0))) {
 			Clazz componentAnnotation = analyzer
 				.findClass(analyzer.getTypeRef("org/osgi/service/component/annotations/Component"));
 			if ((componentAnnotation == null) || !componentAnnotation.annotations()
-					.contains(
+				.contains(
 					analyzer.getTypeRef("org/osgi/service/component/annotations/RequireServiceComponentRuntime"))) {
 				maxVersion = ComponentDef.max(maxVersion, V1_3);
 				addExtenderRequirement(requires, maxVersion);
 			}
 		}
-		names = removeOverlapInServiceComponentHeader(names);
-		sc = Processor.append(names.toArray(new String[0]));
+		componentPaths = removeOverlapInServiceComponentHeader(componentPaths);
+		sc = Processor.append(componentPaths.toArray(new String[0]));
 		analyzer.setProperty(Constants.SERVICE_COMPONENT, sc);
 		updateHeader(analyzer, Constants.REQUIRE_CAPABILITY, requires);
 		updateHeader(analyzer, Constants.PROVIDE_CAPABILITY, provides);
+
+		definitionsByName.entrySet()
+			.stream()
+			.filter(e -> e.getValue()
+				.size() > 1)
+			.forEach(e -> {
+				analyzer.error("Same component name %s used in multiple component implementations: %s",
+					e.getKey(),
+					e.getValue()
+					.stream()
+					.map(def -> def.implementation)
+						.collect(toList()));
+			});
+
 		return false;
+	}
+
+	private void makeUnique(MultiMap<String, ComponentDef> definitionsByName, ComponentDef definition) {
+		String uniqueName = definition.name;
+		List<ComponentDef> l = definitionsByName.getOrDefault(definition.name, Collections.emptyList());
+		if (!l.isEmpty()) {
+			uniqueName += "-" + l.size();
+		}
+		definitionsByName.add(definition.name, definition);
+		definition.name = uniqueName;
 	}
 
 	public static List<String> removeOverlapInServiceComponentHeader(Collection<String> names) {
@@ -246,8 +283,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 		Parameters p = new Parameters();
 		Attrs a = new Attrs();
 		a.put(Constants.FILTER_DIRECTIVE,
-			"\"(&(" + ExtenderNamespace.EXTENDER_NAMESPACE + "=" + ComponentConstants.COMPONENT_CAPABILITY_NAME
-				+ ")(" + ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE + ">=" + version + ")(!("
+			"\"(&(" + ExtenderNamespace.EXTENDER_NAMESPACE + "=" + ComponentConstants.COMPONENT_CAPABILITY_NAME + ")("
+				+ ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE + ">=" + version + ")(!("
 				+ ExtenderNamespace.CAPABILITY_VERSION_ATTRIBUTE + ">=" + next + ")))\"");
 		p.put(ExtenderNamespace.EXTENDER_NAMESPACE, a);
 		String s = p.toString();
