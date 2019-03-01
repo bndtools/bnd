@@ -52,7 +52,7 @@ org.apache.geronimo.specs:geronimo-jcdi_2.0_spec:1.1
 org.apache.ant:ant:1.7.1
 
 org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
-org.assertj:assertj-core:3.11.1
+org.assertj:assertj-core:3.12.1
 
 org.mockito:mockito-core:2.23.0
 net.bytebuddy:byte-buddy:1.9.0

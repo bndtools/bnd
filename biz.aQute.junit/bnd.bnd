@@ -30,11 +30,19 @@ Export-Package: \
 # master side. When launched, those dependencies
 # are not necessary
 Import-Package: \
-	aQute.*;resolution:=optional, \
+	aQute.*;resolution:=optional,\
 	junit.*;version="[3.8,5)",\
-	sun.*; resolution:=optional,\
-	org.junit.jupiter.*;resolution:=optional,\
+	!org.junit.jupiter.*,\
+	sun.*;resolution:=optional,\
+	jdk.*;resolution:=optional,\
 	*
+
+# These packages can be referenced by assertj-core via Class.forName.
+DynamicImport-Package: \
+    org.opentest4j,\
+    org.testng,\
+    org.testng.*,\
+    org.junit.jupiter.*
 
 Bundle-Activator: aQute.junit.Activator
 Embedded-Activator: aQute.junit.Activator
