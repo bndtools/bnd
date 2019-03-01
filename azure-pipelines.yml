@@ -15,6 +15,13 @@ jobs:
     env:
       JFROG_USERNAME: $(JFrog.Username)
       JFROG_PASSWORD: $(JFrog.Password)
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: |-
+        */generated/test-reports/test/TEST-*.xml
+        maven/*/target/surefire-reports/TEST-*.xml
+    condition: succeededOrFailed()
 
 - job: OpenJDK11
   pool:
