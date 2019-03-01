@@ -25,7 +25,7 @@ pluginClasspath: ${p-buildpath;\\${pathseparator}}
 -includeresource: \
 	OSGI-OPT/src=src, \
 	resources, \
-	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;latest}
+	embedded-repo.jar=${repo;biz.aQute.bnd.embedded-repo;snapshot}
 
 -builderignore: testresources
 
