@@ -511,6 +511,9 @@ public class Syntax implements Constants {
 		new Syntax(MAVEN_RELEASE, "Set the Maven release options for the Maven Bnd Repository.",
 			MAVEN_RELEASE + ": local", "(local|remote)", null),
 
+		new Syntax(MAVEN_SCOPE, "Set the default Maven scope for dependencies in the generated POM.",
+			MAVEN_SCOPE + ": compile", "(compile|provided)", null),
+
 		new Syntax(MANIFEST, "Directly include a manifest, do not use the calculated manifest.",
 			MANIFEST + "=META-INF/MANIFEST.MF", null, null),
 

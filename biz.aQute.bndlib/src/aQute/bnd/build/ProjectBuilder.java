@@ -153,7 +153,7 @@ public class ProjectBuilder extends Builder {
 						attrs.put("artifactId", depArtifactId);
 						attrs.put("version", depVersion);
 						attrs.put("scope", c.getAttributes()
-							.getOrDefault("maven-scope", "compile"));
+							.getOrDefault("maven-scope", getProperty(MAVEN_SCOPE, "compile")));
 						StringBuilder key = new StringBuilder();
 						OSGiHeader.quote(key, IO.absolutePath(file));
 						dependencies.put(key.toString(), attrs);
