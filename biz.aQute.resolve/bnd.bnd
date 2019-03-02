@@ -1,20 +1,22 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
+-maven-scope: provided
+
 -buildpath: \
-	osgi.core;version=latest;maven-scope=provided,\
-	org.osgi.namespace.contract;version=latest;maven-scope=provided,\
-	org.osgi.namespace.service;version=latest;maven-scope=provided,\
-	org.osgi.service.log;version=latest;maven-scope=provided,\
+	osgi.core;version=latest,\
+	org.osgi.namespace.contract;version=latest,\
+	org.osgi.namespace.service;version=latest,\
+	org.osgi.service.log;version=latest,\
 	org.osgi.service.repository;version=latest,\
-	org.osgi.service.resolver;version=latest;maven-scope=provided, \
-	org.osgi.util.function;version=latest;maven-scope=provided,\
-	org.osgi.util.promise;version=latest;maven-scope=provided,\
+	org.osgi.service.resolver;version=latest, \
+	org.osgi.util.function;version=latest,\
+	org.osgi.util.promise;version=latest,\
 	aQute.libg;version=project,\
-	biz.aQute.bndlib;version=latest,\
-	biz.aQute.repository;version=latest,\
-	org.apache.felix.resolver;version=latest;packages=org.apache.felix.resolver.*;maven-scope=provided,\
-	slf4j.api;version=latest
+	biz.aQute.bndlib;version=latest;maven-scope=compile,\
+	biz.aQute.repository;version=latest;maven-scope=compile,\
+	org.apache.felix.resolver;version=latest;packages=org.apache.felix.resolver.*,\
+	slf4j.api;version=latest;maven-scope=compile
 
 -testpath: \
 	${junit},\
