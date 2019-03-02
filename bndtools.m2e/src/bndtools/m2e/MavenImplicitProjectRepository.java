@@ -1,10 +1,12 @@
 package bndtools.m2e;
 
 import java.io.File;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
@@ -16,11 +18,19 @@ import org.apache.maven.project.ProjectDependenciesResolver;
 import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.eclipse.aether.RepositorySystem;
+import org.eclipse.aether.RepositorySystemSession;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.embedder.ICallable;
 import org.eclipse.m2e.core.embedder.IMavenExecutionContext;
+import org.eclipse.m2e.core.internal.MavenPluginActivator;
+import org.eclipse.m2e.core.internal.project.registry.ProjectRegistryManager;
 import org.eclipse.m2e.core.project.IMavenProjectFacade;
+import org.eclipse.m2e.core.project.IProjectConfigurationManager;
 import org.eclipse.m2e.core.project.MavenProjectChangedEvent;
+import org.eclipse.m2e.core.project.ResolverConfiguration;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
@@ -41,6 +51,10 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
     private static final ILogger logger = Logger.getLogger(MavenImplicitProjectRepository.class);
 
     private static final Version scopesVersion = new Version(4, 2, 0);
+
+    private static final IProjectConfigurationManager configurationManager = MavenPlugin.getProjectConfigurationManager();
+    private static final ProjectRegistryManager projectManager = MavenPluginActivator.getDefault()
+        .getMavenProjectManagerImpl();
 
     private volatile FileSetRepository fileSetRepository;
 
@@ -69,7 +83,7 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
     @Override
     public String getName() {
         return projectFacade.getProject()
-            .getName();
+            .getName() + " (implicit)";
     }
 
     @Override
@@ -116,19 +130,20 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
     private void createRepo(IMavenProjectFacade projectFacade, IProgressMonitor monitor) {
         MavenProject mavenProject = getMavenProject(projectFacade);
         try {
-            IMavenExecutionContext executionContext = maven.getExecutionContext();
-            MavenSession mavenSession;
+            ResolverConfiguration resolverConfiguration = configurationManager.getResolverConfiguration(projectFacade.getProject());
+            IMavenExecutionContext context = projectManager.createExecutionContext(projectFacade.getPom(), resolverConfiguration);
 
-            if (executionContext == null) {
-                executionContext = maven.createExecutionContext();
-                mavenSession = maven.createSession(executionContext.getExecutionRequest(), mavenProject);
-            } else {
-                mavenSession = executionContext.getSession();
-            }
+            Entry<MavenSession, RepositorySystemSession> sessions = context.execute(mavenProject, new ICallable<Entry<MavenSession, RepositorySystemSession>>() {
+                @Override
+                public Entry<MavenSession, RepositorySystemSession> call(IMavenExecutionContext context, IProgressMonitor monitor) throws CoreException {
+                    return new SimpleEntry<>(context.getSession(), context.getRepositorySession());
+                }
+            }, monitor);
 
+            MavenSession mavenSession = sessions.getKey();
             mavenSession.setCurrentProject(mavenProject);
 
-            Builder containerBuilder = new BndrunContainer.Builder(mavenProject, mavenSession, mavenSession.getRepositorySession(), lookupComponent(ProjectDependenciesResolver.class),
+            Builder containerBuilder = new BndrunContainer.Builder(mavenProject, mavenSession, sessions.getValue(), lookupComponent(ProjectDependenciesResolver.class),
                 lookupComponent(org.apache.maven.artifact.factory.ArtifactFactory.class), lookupComponent(RepositorySystem.class));
 
             MojoExecution mojoExecution = projectFacade.getMojoExecutions("biz.aQute.bnd", "bnd-resolver-maven-plugin", monitor, "resolve")
