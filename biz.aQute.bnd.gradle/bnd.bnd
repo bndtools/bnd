@@ -1,5 +1,7 @@
 # Set javac settings from JDT prefs
--include: ${workspace}/cnf/includes/jdt.bnd
+# Include the gradle.properties to get the value of bnd_plugin which is used
+# for the bnd_version for the test cases.
+-include: ${workspace}/cnf/includes/jdt.bnd, ${workspace}/gradle.properties
 
 -dependson: biz.aQute.bnd.embedded-repo
 
@@ -21,6 +23,8 @@ Bundle-Description: The bnd gradle plugin.
 	biz.aQute.repository;version=latest
 
 pluginClasspath: ${p-buildpath;\\${pathseparator}}
+
+bnd_version: ${replace;${bnd_plugin};.*:(.*);$1}
 
 -includeresource: \
 	OSGI-OPT/src=src, \

@@ -21,6 +21,7 @@ if (JavaVersion.current().isJava9Compatible()) {
 
 tasks.named('test') {
     dependsOn 'jar'
+    systemProperty 'bnd_version', bnd('bnd_version')
     File source = project.file('testresources')
     File target = new File(project.buildDir, 'testresources')
     doFirst { // copy test resources into build dir
