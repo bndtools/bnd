@@ -30,7 +30,6 @@ Import-Package: \
 -testpath: \
     ${junit},\
     slf4j.simple;version=latest, \
-    biz.aQute.repository, \
     slf4j.api
 
 -builderignore: testresources

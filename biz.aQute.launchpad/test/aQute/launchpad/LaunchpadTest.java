@@ -240,18 +240,18 @@ public class LaunchpadTest {
 
 	@Test
 	public void testComponent() throws Exception {
-		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
+		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr;version='[2.0.10,2.0.10]'")
 			.runfw("org.apache.felix.framework")
 			.create()) {
 
-			Closeable comp = fw.addComponent(Comp.class);
+			Bundle comp = fw.component(Comp.class);
 
 			assertThat(semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)).isTrue();
 			assertThat(semaphore.tryAcquire(1, 200, TimeUnit.MILLISECONDS)).isFalse();
 
 			assertThat(fw.getService(Comp.class)).containsInstanceOf(Comp.class);
 
-			comp.close();
+			comp.uninstall();
 
 			assertThat(fw.getService(Comp.class)).isEmpty();
 
@@ -425,10 +425,10 @@ public class LaunchpadTest {
 
 	@Test
 	public void componentWithExternalReferences() throws Exception {
-		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
+		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr;version='[2.0.10,2.0.10]'")
 			.runfw("org.apache.felix.framework")
 			.create()) {
-			fw.addComponent(ExternalRefComp.class);
+			fw.component(ExternalRefComp.class);
 		}
 	}
 }

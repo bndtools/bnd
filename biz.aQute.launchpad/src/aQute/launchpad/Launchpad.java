@@ -74,12 +74,13 @@ import aQute.libg.glob.Glob;
  */
 public class Launchpad implements AutoCloseable {
 
+	public static final String					BUNDLE_PRIORITY			= "Bundle-Priority";
 	private static final long					SERVICE_DEFAULT_TIMEOUT	= 60000L;
 	static final AtomicInteger					n						= new AtomicInteger();
 
 	final Framework								framework;
 	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
-	final LaunchpadBuilder					builder;
+	final LaunchpadBuilder						builder;
 	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
 	final Injector<Service>						injector;
 	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new HashMap<>();
@@ -394,6 +395,18 @@ public class Launchpad implements AutoCloseable {
 	}
 
 	/**
+	 * Add the standard Gogo bundles
+	 */
+	public Launchpad snapshot() {
+		try {
+			bundles("biz.aQute.bnd.runtime.snapshot");
+			return this;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
 	 * Inject an object with services and other OSGi specific values.
 	 * 
 	 * @param object the object to inject
@@ -452,10 +465,11 @@ public class Launchpad implements AutoCloseable {
 	/**
 	 * Show the information of how the framework is setup and is running
 	 */
-	public void report() throws InvalidSyntaxException {
+	public Launchpad report() throws InvalidSyntaxException {
 		reportBundles();
 		reportServices();
 		reportEvents();
+		return this;
 	}
 
 	/**
@@ -495,6 +509,20 @@ public class Launchpad implements AutoCloseable {
 	}
 
 	/**
+	 * Wait for a Service Reference to be registered
+	 * 
+	 * @param class1 the name of the service
+	 * @param timeoutInMs the time to wait
+	 * @return a service reference
+	 */
+	public <T> Optional<ServiceReference<T>> waitForServiceReference(Class<T> class1, long timeoutInMs, String target) {
+
+		return getServices(class1, target, 1, timeoutInMs, false).stream()
+			.findFirst();
+
+	}
+
+	/**
 	 * Wait for service to be registered
 	 * 
 	 * @param class1 name of the service
@@ -503,10 +531,24 @@ public class Launchpad implements AutoCloseable {
 	 * @throws InterruptedException
 	 */
 	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs) throws InterruptedException {
+		return this.waitForService(class1, timeoutInMs, null);
+	}
+
+	/**
+	 * Wait for service to be registered
+	 * 
+	 * @param class1 name of the service
+	 * @param timeoutInMs timeout in ms
+	 * @param target filter, may be null
+	 * @return a service
+	 * @throws InterruptedException
+	 */
+	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs, String target)
+		throws InterruptedException {
 		try {
-			Optional<ServiceReference<T>> ref = waitForServiceReference(class1, timeoutInMs);
-			BundleContext context = getBundleContext();
-			return ref.map(context::getService);
+			return getServices(class1, null, 1, timeoutInMs, false).stream()
+				.findFirst()
+				.map(getBundleContext()::getService);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -574,8 +616,8 @@ public class Launchpad implements AutoCloseable {
 	 * all bundles _except_ the testbundle. Notice that bundles that already
 	 * obtained a references are not affected. If you use this facility it is
 	 * best to not start the framework before you hide a service. You can
-	 * indicate this to the build with {@link LaunchpadBuilder#nostart()}.
-	 * The framework can be started after creation with {@link #start()}. Notice
+	 * indicate this to the build with {@link LaunchpadBuilder#nostart()}. The
+	 * framework can be started after creation with {@link #start()}. Notice
 	 * that services through the testbundle remain visible for this hide.
 	 * 
 	 * @param type the type to hide
@@ -674,10 +716,12 @@ public class Launchpad implements AutoCloseable {
 					throw new IllegalArgumentException("-runbundle " + file + " does not exist or is not a file");
 
 				Bundle b = install(file);
-				if (!isFragment(b))
+				if (!isFragment(b)) {
 					toBeStarted.add(b);
+				}
 			}
 
+			Collections.sort(toBeStarted, this::startorder);
 			toBeStarted.forEach(this::start);
 
 			if (builder.testbundle)
@@ -688,6 +732,24 @@ public class Launchpad implements AutoCloseable {
 		} catch (BundleException e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	// reverse ordering. I.e. highest priority is first
+	int startorder(Bundle a, Bundle b) {
+
+		return Integer.compare(getPriority(b), getPriority(a));
+	}
+
+	private int getPriority(Bundle b) {
+		try {
+			String h = b.getHeaders()
+				.get(BUNDLE_PRIORITY);
+			if (h != null)
+				return Integer.parseInt(h);
+		} catch (Exception e) {
+			// ignore
+		}
+		return 0;
 	}
 
 	/**
@@ -783,17 +845,11 @@ public class Launchpad implements AutoCloseable {
 	 * the classpath.
 	 */
 
-	public <T> Closeable addComponent(Class<T> type) {
-		Bundle b = bundle().addResource(type)
+	public <T> Bundle component(Class<T> type) {
+		return bundle().addResource(type)
 			.start();
-		return () -> {
-			try {
-				b.uninstall();
-			} catch (BundleException e) {
-				throw Exceptions.duck(e);
-			}
-		};
 	}
+
 
 	private Parameters getExports(Bundle b) {
 		return new Parameters(b.getHeaders()
@@ -1131,5 +1187,6 @@ public class Launchpad implements AutoCloseable {
 		});
 		return converter;
 	}
+
 
 }

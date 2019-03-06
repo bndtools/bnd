@@ -344,4 +344,9 @@ public class LaunchpadBuilder implements AutoCloseable {
 		}
 	}
 
+	public LaunchpadBuilder snapshot() {
+		this.bundles("biz.aQute.bnd.runtime.snapshot");
+		return this;
+	}
+
 }
