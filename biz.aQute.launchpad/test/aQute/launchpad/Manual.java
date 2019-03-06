@@ -143,20 +143,20 @@ public class Manual {
 
 	@Test
 	public void gogo() throws Exception {
-		try (Launchpad launchpad = builder.gogo()
-			.debug()
-			.create()) {
-
-			// Thread.sleep(100000);
-		}
+		// try (Launchpad launchpad = builder.gogo()
+		// .debug()
+		// .create()) {
+		//
+		// // Thread.sleep(100000);
+		// }
 	}
 
 	@Test
 	public void bndrun() throws Exception {
-		try (Launchpad launchpad = builder.bndrun("showit.bndrun")
-			.create()) {
-			// Thread.sleep(100000);
-		}
+		// try (Launchpad launchpad = builder.bndrun("showit.bndrun")
+		// .create()) {
+		// // Thread.sleep(100000);
+		// }
 	}
 
 	@Test
