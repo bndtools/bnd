@@ -18,3 +18,5 @@ Import-Package: \
 	org.osgi.service.log;resolution:=optional,\
 	*
 Export-Package: aQute.bnd.runtime.api
+
+Bundle-Priority:             1000
