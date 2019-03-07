@@ -18,6 +18,11 @@ bnd is not a single product, it is a library (bndlib) used in many different sof
 ## Command Line
 That said, there is also a command line version of bnd, providing an easy way to try out its many features. You can install bnd through [brew][1] on MacOS.
 
+You can also run bnd command as executable jar, which can be downloaded from [JFrog][7]:
+```bash
+java -jar biz.aQute.bnd-{VERSION}.jar <command>
+```
+
 ## Libraries
 The binaries are available on [JFrog][4]. The latest version can be found at:
 
@@ -47,3 +52,4 @@ If you're behind a firewall that requires proxies or you use repositories that r
 [4]: https://bndtools.jfrog.io/bndtools/libs-snapshot
 [5]: https://github.com/bndtools/bnd/tree/master/docs
 [6]: /instructions/connection-settings
+[7]: https://bndtools.jfrog.io/bndtools/libs-snapshot/biz/aQute/bnd/biz.aQute.bnd/
