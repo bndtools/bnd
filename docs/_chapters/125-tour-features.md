@@ -14,7 +14,7 @@ This tour uses the bnd command line bnd to demonstrate much of the inner details
 
 bnd became the Swiss army knife to manipulate JARs and gained a lot of function you _should never attempt to use_. However, this chapter will give you an overview of what is in bnd.
 
-bnd has lots of commands to try out aspects of bndlib. The [install section](120-install.md) shows how to install bnd.
+bnd has lots of commands to try out aspects of bndlib. The [install section][6] shows how to install bnd.
 
 ## Wrapping
 
@@ -510,3 +510,4 @@ There are some common pitfalls that can be prevented by following the tips:
 [3]: http://ebr.springsource.com/repository/app/
 [4]: http://docs.oracle.com/javase/8/docs/technotes/guides/jar/jar.html#JARManifest
 [5]: 170-versioning.html
+[6]: 120-install.html
