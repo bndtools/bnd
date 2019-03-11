@@ -40,4 +40,4 @@ Import-Package: \
 
 -runfw: org.apache.felix.framework
 
--baseline: 
+-baseline: *
