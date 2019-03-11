@@ -55,5 +55,3 @@ Private-Package: \
 -builderignore: testresources
 
 -baseline: *
--fixupmessages.baseline: \
-    'There is no baseline for biz\\.aQute\\.bnd\\.reporter'

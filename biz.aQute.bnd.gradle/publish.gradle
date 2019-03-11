@@ -9,7 +9,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath 'com.gradle.publish:plugin-publish-plugin:0.10.0'
+    classpath 'com.gradle.publish:plugin-publish-plugin:0.10.1'
   }
 }
 
@@ -27,6 +27,14 @@ repositories {
 configurations {
   archives.artifacts.clear()
   plugin
+  plugin.dependencies.all { Dependency dep ->
+    if (dep instanceof ExternalDependency) {
+      dep.force = true
+    }
+    if (dep instanceof ModuleDependency) {
+      dep.transitive = false
+    }
+  }
 }
 
 dependencies {

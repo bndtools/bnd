@@ -1,0 +1,15 @@
+biz.aQute.bnd:aQute.libg:4.2.0
+biz.aQute.bnd:biz.aQute.bnd.exporters:4.2.0
+biz.aQute.bnd:biz.aQute.bnd.reporter:4.2.0
+biz.aQute.bnd:biz.aQute.bndlib:4.2.0
+biz.aQute.bnd:biz.aQute.junit:4.2.0
+biz.aQute.bnd:biz.aQute.launcher:4.2.0
+biz.aQute.bnd:biz.aQute.launchpad:4.2.0
+biz.aQute.bnd:biz.aQute.remote.agent:4.2.0
+biz.aQute.bnd:biz.aQute.remote.api:4.2.0
+biz.aQute.bnd:biz.aQute.remote.gc:4.2.0
+biz.aQute.bnd:biz.aQute.remote.launcher:4.2.0
+biz.aQute.bnd:biz.aQute.remote.main:4.2.0
+biz.aQute.bnd:biz.aQute.repository:4.2.0
+biz.aQute.bnd:biz.aQute.resolve:4.2.0
+biz.aQute.bnd:biz.aQute.tester:4.2.0

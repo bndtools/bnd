@@ -1,20 +1,6 @@
 releaserepo:            ${workspace}/dist/bundles
 mavencentral:           https://repo.maven.apache.org/maven2
 
-baseline:   aQute.libg,\
-            biz.aQute.bnd.exporters,\
-            biz.aQute.bndlib,\
-            biz.aQute.junit,\
-            biz.aQute.launcher,\
-            biz.aQute.remote.agent,\
-            biz.aQute.remote.api,\
-            biz.aQute.remote.gc,\
-            biz.aQute.remote.launcher,\
-            biz.aQute.remote.main,\
-            biz.aQute.repository,\
-            biz.aQute.resolve,\
-            biz.aQute.tester
-
 -plugin:\
     aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="Maven Central";\
@@ -53,20 +39,20 @@ baseline:   aQute.libg,\
         name="Eclipse EGit 4.7.1";\
         url="https://download.eclipse.org/egit/updates-4.7.1/";\
         location="${workspace}/cnf/cache/stable/EclipseEGit",\
-     aQute.bnd.repository.p2.provider.P2Repository;\
+    aQute.bnd.repository.p2.provider.P2Repository;\
         name="Eclipse m2e 1.8.3";\
         url="https://download.eclipse.org/technology/m2e/releases/1.8/1.8.3.20180227-2137/";\
         location="${workspace}/cnf/cache/stable/EclipseM2E",\
-     aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
+    aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
         name="Eclipse m2e 1.8.3 Dependencies";\
         revision="org.apache.maven:maven-core:3.3.9,org.sonatype.plexus:plexus-build-api:0.0.7";\
         releaseUrls="${mavencentral}";\
         location="${workspace}/cnf/cache/stable/EclipseM2EDeps/index.xml",\
-     aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
         name="Baseline";\
-        revision="${replacelist;${baseline};.+;biz.aQute.bnd:$0:${baseline.version}}";\
-        releaseUrls="${mavencentral}";\
-        location="${workspace}/cnf/cache/stable/Baseline/index.xml"
+        releaseUrl="${mavencentral}";\
+        index="${.}/baseline.mvn";\
+        readOnly=true
 
 # m2e debug repos
 #-plugin.m2e.debug:\
