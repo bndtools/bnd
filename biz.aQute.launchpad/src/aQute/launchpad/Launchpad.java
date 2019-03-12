@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -72,6 +73,7 @@ import aQute.libg.glob.Glob;
  * starts in the same process as that the JUnit code runs. This is normally a
  * separately started VM.
  */
+@ProviderType
 public class Launchpad implements AutoCloseable {
 
 	public static final String					BUNDLE_PRIORITY			= "Bundle-Priority";
@@ -851,6 +853,88 @@ public class Launchpad implements AutoCloseable {
 	}
 
 
+	/**
+	 * Check if a bundle is a fragement
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isFragment(Bundle b) {
+		return b.getHeaders()
+			.get(Constants.FRAGMENT_HOST) != null;
+	}
+
+	/**
+	 * Check if a bundle is in the ACTIVE state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isActive(Bundle b) {
+		return b.getState() == Bundle.ACTIVE;
+	}
+
+	/**
+	 * Check if a bundle is in the RESOLVED state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isResolved(Bundle b) {
+		return b.getState() == Bundle.RESOLVED;
+	}
+
+	/**
+	 * Check if a bundle is in the INSTALLED state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isInstalled(Bundle b) {
+		return b.getState() == Bundle.INSTALLED;
+	}
+
+	/**
+	 * Check if a bundle is in the UNINSTALLED state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isUninstalled(Bundle b) {
+		return b.getState() == Bundle.UNINSTALLED;
+	}
+
+	/**
+	 * Check if a bundle is in the STARTING state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isStarting(Bundle b) {
+		return b.getState() == Bundle.STARTING;
+	}
+
+	/**
+	 * Check if a bundle is in the STOPPING state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isStopping(Bundle b) {
+		return b.getState() == Bundle.STOPPING;
+	}
+
+	/**
+	 * Check if a bundle is in the ACTIVE or STARTING state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isRunning(Bundle b) {
+		return isActive(b) || isStarting(b);
+	}
+
+	/**
+	 * Check if a bundle is in the RESOLVED or ACTIVE or STARTING state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isReady(Bundle b) {
+		return isResolved(b) || isActive(b) || isStarting(b);
+	}
+
 	private Parameters getExports(Bundle b) {
 		return new Parameters(b.getHeaders()
 			.get(Constants.EXPORT_PACKAGE));
@@ -861,10 +945,6 @@ public class Launchpad implements AutoCloseable {
 			.get(Constants.IMPORT_PACKAGE));
 	}
 
-	private boolean isFragment(Bundle b) {
-		return b.getHeaders()
-			.get(Constants.FRAGMENT_HOST) != null;
-	}
 
 	private String toInstallURI(File c) {
 		return "reference:" + c.toURI();
@@ -1187,6 +1267,5 @@ public class Launchpad implements AutoCloseable {
 		});
 		return converter;
 	}
-
 
 }

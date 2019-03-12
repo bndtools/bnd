@@ -343,3 +343,109 @@ The following example shows how to create a bundle with a a special header.
 		}
 	}
 
+## Hiding a Service
+
+In some scenarios you'd like to hide a service so you can override it with a mocked version. Hiding in OSGi
+can be achieved with the [Servic Hooks] services. The easiest way is to hide a service via the Launchpad Builder.
+
+    	LaunchpadBuilder	builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework").hide(SomeService.class);
+
+If you now create a framework, all services _not_ registered via Launchpad will be invisible to all bundles. That is,
+only services registered through Launchpad can be seen by the other bundles in the OSGi framework.
+
+	@Test
+	public void testHidingViaBuilder() throws Exception {
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+				.create()) {
+
+			boolean isHidden = fw.getServices(String.class)
+					.isEmpty();			
+			assertThat(isHidden).isTrue();
+
+			fw.framework.getBundleContext()
+					.registerService(String.class, "fw", null);
+
+			isHidden = fw.getServices(String.class)
+					.isEmpty();
+			assertThat(isHidden).isTrue();
+
+			ServiceRegistration<String> visibleToAllViaTestbundle = fw.register(String.class, "Hello");
+
+			assertThat(fw.getServices(String.class)).containsOnly("Hello");
+			visibleToAllViaTestbundle.unregister();
+
+			isHidden = fw.getServices(String.class)
+					.isEmpty();
+			assertThat(isHidden).isTrue();
+		}
+	}
+
+Although hiding via the Launchpad Builder is the easiest way to hide services, it has the disadvantage that all
+tests hide the same service(s). It is also possible to handle the service hiding in a more controlled way
+by hiding via the Launchpad object.  Using this function does require a bit of orchestration. Once you hide 
+a service it becomes invisible to bundles that look for that service later. However, bundles that already 
+obtained this service will not lose sight of it. It is therefore necessary to hide a service before the 
+corresponding framework is started. Since the default is automatic start, the automatic start must be 
+disabled with the `nostart()` method on the builder.
+
+After the framework is then created. the service is hidden and then the framework is started. 
+
+	@Test
+	public void testHiding() throws Exception {
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+				.nostart()
+				.create()) {
+
+			@SuppressWarnings("resource")
+			Closeable hide = fw.hide(String.class);
+			fw.start();
+
+			boolean isHidden = fw.getServices(String.class)
+					.isEmpty();
+			assertThat(isHidden).isTrue();
+
+			fw.framework.getBundleContext()
+					.registerService(String.class, "fw", null);
+
+			isHidden = fw.getServices(String.class)
+					.isEmpty();
+			assertThat(isHidden).isTrue();
+
+			ServiceRegistration<String> visibleToAllViaTestbundle = fw.register(String.class, "Hello");
+
+			assertThat(fw.getServices(String.class)).containsOnly("Hello");
+			visibleToAllViaTestbundle.unregister();
+
+			isHidden = fw.getServices(String.class)
+					.isEmpty();
+			assertThat(isHidden).isTrue();
+
+			hide.close();
+			assertThat(fw.getServices(String.class)).containsOnly("fw");
+		}
+	}
+
+As you can see from the test code, the `hide` method in this case returns a `Closeable`. This object can be used to
+remove the hiding of the given service.
+
+### Visibility
+
+To diagnose any issues it is important to realize that there are some special rules around which bundle does what. Launchpad
+has the Bundle Context of the OSGi Framework as well as a special test bundle. The test bundle is empty but it used to have
+a Bundle Context for the test code that runs outside the Framework. When you hide a service it will register
+Service Hooks that only let services from the test bundle pass through, all other services of the given type are removed
+from visibility.
+
+
+
+
+
+ 
+
+    Closeable Launchpad.hide(SomeService.class);
+
+The service will remain hidden until you close the `Closeable`.
+
+
+
+[Service Hooks]: https://osgi.org/specification/osgi.core/7.0.0/framework.servicehooks.html

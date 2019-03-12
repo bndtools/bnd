@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.Closeable;
 import java.io.File;
 import java.net.URL;
 import java.util.Hashtable;
@@ -22,7 +21,6 @@ import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -178,47 +176,6 @@ public class LaunchpadTest {
 	}
 
 	/**
-	 * Hide a service
-	 */
-
-	@Test
-	public void testHiding() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
-			.nostart()
-			.create()
-			.inject(this)) {
-
-			Closeable hide = fw.hide(String.class);
-			fw.start();
-
-			boolean isHidden = fw.getServices(String.class)
-				.isEmpty();
-			assertThat(isHidden).isTrue();
-
-			fw.framework.getBundleContext()
-				.registerService(String.class, "fw", null);
-
-			isHidden = fw.getServices(String.class)
-				.isEmpty();
-			assertThat(isHidden).isTrue();
-
-			ServiceRegistration<String> visibleToAllViaTestbundle = fw.register(String.class, "Hello");
-
-			assertThat(fw.getServices(String.class)).containsOnly("Hello");
-
-			visibleToAllViaTestbundle.unregister();
-
-			isHidden = fw.getServices(String.class)
-				.isEmpty();
-			assertThat(isHidden).isTrue();
-
-			hide.close();
-			assertThat(fw.getServices(String.class)).containsOnly("fw");
-		}
-
-	}
-
-	/**
 	 * Test a built in component
 	 */
 
@@ -240,7 +197,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testComponent() throws Exception {
-		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr;version='[2.0.10,2.0.10]'")
+		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
 			.runfw("org.apache.felix.framework")
 			.create()) {
 
@@ -425,7 +382,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void componentWithExternalReferences() throws Exception {
-		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr;version='[2.0.10,2.0.10]'")
+		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
 			.runfw("org.apache.felix.framework")
 			.create()) {
 			fw.component(ExternalRefComp.class);

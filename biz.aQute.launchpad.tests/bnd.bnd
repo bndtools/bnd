@@ -1,0 +1,10 @@
+-buildpath: \
+    org.osgi.service.component.annotations
+    
+-testpath: \
+    slf4j.api, \
+    slf4j.simple, \
+	${junit},\
+	osgi.annotation; version=6.0.1,\
+	osgi.core; version=6.0, \
+	biz.aQute.launchpad;version=latest
