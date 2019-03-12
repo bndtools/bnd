@@ -798,11 +798,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public void end(Project p) {
-		System.out.println("Project ending is " + p);
 		try {
 			releasePlugin.end(p, storage);
 		} catch (Exception e) {
-			e.printStackTrace();
 			p.error("Could not end the release", e);
 		}
 	}

@@ -91,7 +91,6 @@ class ReleasePluginImpl {
 
 		for (IPom pom : releasedArtifacts) {
 			try {
-				System.out.println("Indexing " + pom);
 				Promise<File> promise = storage.get(pom.binaryArchive());
 				File file = promise.getValue();
 				ResourceBuilder rb = new ResourceBuilder();
