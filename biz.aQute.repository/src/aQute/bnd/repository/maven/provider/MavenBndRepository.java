@@ -531,7 +531,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				multi = tmp.trim()
 					.split("\\s*,\\s*");
 			}
-			this.index = new IndexFile(reporter, indexFile, storage, client.promiseFactory(), multi);
+			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
+			this.index = new IndexFile(domain, reporter, indexFile, storage, client.promiseFactory(), multi);
 			this.index.open();
 
 			startPoll();

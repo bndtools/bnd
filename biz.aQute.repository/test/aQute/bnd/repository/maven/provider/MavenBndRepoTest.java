@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
@@ -64,7 +62,7 @@ public class MavenBndRepoTest extends TestCase {
 
 	private MavenBndRepository	repo;
 	private FakeNexus			fnx;
-	private Processor			reporter;
+	private Processor					domain;
 
 	@Override
 	protected void setUp() throws Exception {
@@ -88,7 +86,7 @@ public class MavenBndRepoTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws IOException {
-		reporter.close();
+		domain.close();
 		repo.close();
 		fnx.close();
 	}
@@ -153,24 +151,26 @@ public class MavenBndRepoTest extends TestCase {
 		config.put("index", index.getAbsolutePath());
 		config.put("multi", " zip , par, foo");
 		config(config);
-		File file = repo.get("group:artifact:zip:", Version.parseVersion("1.0.0"), null);
+		String multi_version = "1.0.0";
+		domain.setProperty("multi_version", multi_version);
+		File file = repo.get("group:artifact:zip:", Version.parseVersion(multi_version), null);
 		assertNotNull(file);
 		assertTrue(file.isFile());
 
 		File file2 = repo.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 		assertNotNull(file2);
 
-		File file3 = repo.get("group:artifact:jar:1003", Version.parseVersion("1.0.0"), null);
+		File file3 = repo.get("group:artifact:jar:1003", Version.parseVersion(multi_version), null);
 		assertNotNull(file3);
 		assertTrue(file3.isFile());
 
 		assertTrue(file2.equals(file3));
 
-		repo.index.remove(Archive.valueOf("group:artifact:zip:1.0.0"));
+		repo.index.remove(Archive.valueOf("group:artifact:zip:" + multi_version));
 
 		file2 = repo.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 		assertNull(file2);
-		file3 = repo.get("group:artifact:jar:1003", Version.parseVersion("1.0.0"), null);
+		file3 = repo.get("group:artifact:jar:1003", Version.parseVersion(multi_version), null);
 		assertNull(file3);
 	}
 
@@ -271,14 +271,14 @@ public class MavenBndRepoTest extends TestCase {
 	}
 
 	public void testPutReleaseAndThenIndex() throws Exception {
-		Workspace ws = Workspace.findWorkspace(IO.getFile("testdata/releasews"));
+		Workspace ws = new Workspace(IO.getFile("testdata/releasews"));
 		Project p1 = ws.getProject("p1");
 		Project indexProject = ws.getProject("index");
 
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
 			.toString());
-		config(map);
+		config(ws, map);
 
 		repo.begin(indexProject);
 		File jar = IO.getFile("testresources/release.jar");
@@ -303,7 +303,7 @@ public class MavenBndRepoTest extends TestCase {
 		map.put("index", "generated/does_not_exist");
 		config(map);
 		repo.list(null);
-		assertTrue(reporter.check());
+		assertTrue(domain.check());
 	}
 
 	public void testGet() throws Exception {
@@ -627,6 +627,15 @@ public class MavenBndRepoTest extends TestCase {
 	}
 
 	void config(Map<String, String> override) throws Exception {
+		Processor domain = new Processor();
+		HttpClient client = new HttpClient();
+		client.setRegistry(domain);
+		domain.addBasicPlugin(client);
+		config(domain, override);
+	}
+
+	void config(Processor domain, Map<String, String> override) throws Exception {
+		this.domain = domain;
 		Map<String, String> config = new HashMap<>();
 		config.put("local", tmpName + "/local");
 		config.put("index", tmpName + "/index");
@@ -635,8 +644,7 @@ public class MavenBndRepoTest extends TestCase {
 		if (override != null)
 			config.putAll(override);
 
-		reporter = new Processor();
-		reporter.addBasicPlugin(new ProgressPlugin() {
+		domain.addBasicPlugin(new ProgressPlugin() {
 
 			@Override
 			public Task startTask(final String name, int size) {
@@ -660,15 +668,11 @@ public class MavenBndRepoTest extends TestCase {
 				};
 			}
 		});
-		HttpClient client = new HttpClient();
-		client.setRegistry(reporter);
-		Executor executor = Executors.newCachedThreadPool();
-		reporter.addBasicPlugin(client);
-		reporter.setTrace(true);
+		domain.setTrace(true);
 
 		repo = new MavenBndRepository();
-		repo.setReporter(reporter);
-		repo.setRegistry(reporter);
+		repo.setReporter(domain);
+		repo.setRegistry(domain);
 
 		repo.setProperties(config);
 	}

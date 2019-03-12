@@ -29,6 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Macro;
+import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.BridgeRepository.ResourceInfo;
 import aQute.bnd.osgi.repository.ResourcesRepository;
@@ -60,6 +62,7 @@ class IndexFile {
 
 	final File							indexFile;
 	final IMavenRepo					repo;
+	private final Processor				domain;
 	final Reporter						reporter;
 	final PromiseFactory				promiseFactory;
 	final Map<Archive, Resource>		archives	= new ConcurrentHashMap<>();
@@ -72,8 +75,10 @@ class IndexFile {
 	/*
 	 * Constructor
 	 */
-	IndexFile(Reporter reporter, File file, IMavenRepo repo, PromiseFactory promiseFactory, String... multi)
+	IndexFile(Processor domain, Reporter reporter, File file, IMavenRepo repo, PromiseFactory promiseFactory,
+		String... multi)
 		throws Exception {
+		this.domain = (domain != null) ? domain : new Processor();
 		this.reporter = reporter;
 		this.indexFile = file;
 		this.repo = repo;
@@ -329,17 +334,18 @@ class IndexFile {
 
 		assert file.isFile();
 
+		Macro replacer = domain.getReplacer();
 		Set<Archive> archives = new HashSet<>();
-		try (BufferedReader rdr = IO.reader(indexFile)) {
+		try (BufferedReader rdr = IO.reader(file)) {
 			String line;
 			while ((line = rdr.readLine()) != null) {
 				line = Strings.trim(line);
 				if (line.startsWith("#") || line.isEmpty())
 					continue;
-
+				line = replacer.process(line);
 				Archive a = Archive.valueOf(line);
 				if (a == null) {
-					reporter.error("MavenBndRepository: invalid entry %s in file %s", line, indexFile);
+					reporter.error("MavenBndRepository: invalid entry %s in file %s", line, file);
 				} else {
 					archives.add(a);
 				}
