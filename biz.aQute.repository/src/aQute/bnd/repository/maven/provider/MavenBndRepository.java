@@ -801,7 +801,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		try {
 			releasePlugin.end(p, storage);
 		} catch (Exception e) {
-			p.error("Could not end the release", e);
+			p.exception(e, "Could not end the release for project %s", releasePlugin.indexProject);
+		} finally {
+			releasePlugin = new ReleasePluginImpl(this, null);
 		}
 	}
 
