@@ -531,7 +531,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 				multi = tmp.trim()
 					.split("\\s*,\\s*");
 			}
-			this.index = new IndexFile(reporter, indexFile, storage, client.promiseFactory(), multi);
+			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
+			this.index = new IndexFile(domain, reporter, indexFile, storage, client.promiseFactory(), multi);
 			this.index.open();
 
 			startPoll();
@@ -798,12 +799,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	@Override
 	public void end(Project p) {
-		System.out.println("Project ending is " + p);
 		try {
 			releasePlugin.end(p, storage);
 		} catch (Exception e) {
-			e.printStackTrace();
-			p.error("Could not end the release", e);
+			p.exception(e, "Could not end the release for project %s", releasePlugin.indexProject);
+		} finally {
+			releasePlugin = new ReleasePluginImpl(this, null);
 		}
 	}
 
