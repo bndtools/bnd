@@ -9,12 +9,17 @@ javac.target:           1.8
 javac.compliance:       1.8
 javac.debug:            on
 
+# This build requires newer Bnd features
+-require-bnd: "(version>=4.3.0)"
+
 #
 # Custom Settings
 #
 Git-Descriptor:         ${system-allow-fail;git describe --dirty --always --abbrev=9}
 Git-SHA:                ${system-allow-fail;git rev-list -1 --no-abbrev-commit HEAD}
 
+# This is the version to baseline this build against. See cnf/ext/baseline.mvn.
+baseline.version:       4.2.0
 # biz.aQute.bndlib:aQute.bnd.osgi.About.CURRENT needs to be kept in sync with the base.version.
 base.version:           4.3.0
 # Uncomment the following line to build the non-snapshot version.
