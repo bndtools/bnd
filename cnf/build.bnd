@@ -9,6 +9,9 @@ javac.target:           1.8
 javac.compliance:       1.8
 javac.debug:            on
 
+# This build requires newer Bnd features
+-require-bnd: "(version>=4.3.0)"
+
 #
 # Custom Settings
 #
