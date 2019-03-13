@@ -15,6 +15,7 @@ import java.util.jar.Manifest;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
@@ -170,7 +171,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * The -removeheaders header can be used as a whitelist.
 	 */
 
-	public static void testRemoveheadersAsWhiteList() throws Exception {
+	public void testRemoveheadersAsWhiteList() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/asm.jar"));
@@ -207,7 +208,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Check if bnd detects references to private packages and gives a warning.
 	 */
 
-	public static void testExportReferencesToPrivatePackages() throws Exception {
+	public void testExportReferencesToPrivatePackages() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -226,7 +227,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Test basic functionality of he BCP
 	 */
 
-	public static void testBundleClasspath() throws Exception {
+	public void testBundleClasspath() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty(Constants.BUNDLE_CLASSPATH, "foo");
@@ -242,7 +243,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	}
 
-	public static void testBundleClasspathWithVersionedExports() throws Exception {
+	public void testBundleClasspathWithVersionedExports() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setBundleClasspath("foo");
@@ -266,7 +267,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Very basic sanity test
 	 */
 
-	public static void testSanity() throws Exception {
+	public void testSanity() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setProperty("Export-Package", "thinlet;version=1.0");
@@ -293,7 +294,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testGenerateManifest() throws Exception {
+	public void testGenerateManifest() throws Exception {
 		Analyzer analyzer = new Analyzer();
 		try {
 			Jar bin = new Jar(IO.getFile("jar/osgi.jar"));
@@ -325,7 +326,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Bundle-Classpath are considered during import/export calculation.
 	 */
 
-	public static void testExportContentsDirectory() throws Exception {
+	public void testExportContentsDirectory() throws Exception {
 		Builder b = new Builder();
 		try {
 			File embedded = IO.getFile("bin_test/test/refer")
@@ -351,7 +352,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testUsesFiltering() throws Exception {
+	public void testUsesFiltering() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.setTrace(true);
@@ -395,25 +396,27 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testRequire() throws Exception {
-		Builder b = new Builder();
-		try {
+	public void testRequireFail() throws Exception {
+		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Private-Package", "org.osgi.framework");
-			b.setProperty("-require-bnd", "10000");
+			b.setProperty("-require-bnd", "\"(version=10000)\"");
 			b.build();
-			System.err.println(b.getErrors());
-			System.err.println(b.getWarnings());
-			assertEquals(1, b.getErrors()
-				.size());
-			assertEquals(0, b.getWarnings()
-				.size());
-		} finally {
-			b.close();
+			assertTrue(b.check("-require-bnd fails for filter \\(version=10000\\) values=\\{version=.*\\}"));
 		}
 	}
 
-	public static void testComponentImportReference() throws Exception {
+	public void testRequirePass() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty("Private-Package", "org.osgi.framework");
+			b.setProperty("-require-bnd", "\"(version>=" + About.CURRENT + ")\"");
+			b.build();
+			assertTrue(b.check());
+		}
+	}
+
+	public void testComponentImportReference() throws Exception {
 		Builder b = new Builder();
 		try {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
@@ -432,7 +435,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	public static void testFindClass() throws Exception {
+	public void testFindClass() throws Exception {
 		Builder a = new Builder();
 		try {
 			a.setProperty("Export-Package", "org.osgi.service.io");
@@ -448,7 +451,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	public static void testMultilevelInheritance() throws Exception {
+	public void testMultilevelInheritance() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(new File("bin_test"));
 			a.analyze();
@@ -461,7 +464,7 @@ public class AnalyzerTest extends BndTestCase {
 
 	}
 
-	public static void testClassQuery() throws Exception {
+	public void testClassQuery() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/osgi.jar"));
 			a.analyze();
@@ -474,7 +477,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	public static void testClassQuery_b() throws Exception {
+	public void testClassQuery_b() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/osgi.jar"));
 			a.analyze();
@@ -494,7 +497,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testEmptyHeader() throws Exception {
+	public void testEmptyHeader() throws Exception {
 		try (Builder a = new Builder()) {
 			a.setProperty("Bundle-Blueprint", "  <<EMPTY>> ");
 			a.setProperty("Export-Package", "org.osgi.framework");
@@ -520,7 +523,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Test name section.
 	 */
 
-	public static void testNameSection() throws Exception {
+	public void testNameSection() throws Exception {
 		Builder a = new Builder();
 		try {
 			a.setProperty("Export-Package", "org.osgi.service.event, org.osgi.service.io");
@@ -554,7 +557,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Test if mandatory attributes are augmented even when the version is not
 	 * set.
 	 */
-	public static void testMandatoryWithoutVersion() throws Exception {
+	public void testMandatoryWithoutVersion() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -582,7 +585,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Test Import-Packages marked with resolution:=dynamic are expanded, moved
 	 * to DynamicImport-Packages with no original DIP instruction.
 	 */
-	public static void testDynamicImportExpansionPackagesAreSet() throws Exception {
+	public void testDynamicImportExpansionPackagesAreSet() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -618,7 +621,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * Test Import-Packages marked with resolution:=dynamic are expanded, moved
 	 * to DynamicImport-Packages and added to the original DIP instruction.
 	 */
-	public static void testDynamicImportExpansionPackagesAreAdded() throws Exception {
+	public void testDynamicImportExpansionPackagesAreAdded() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -657,7 +660,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testPrivataBundleActivatorNotImported() throws Exception {
+	public void testPrivataBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -687,7 +690,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleActivatorNotImported() throws Exception {
+	public void testBundleActivatorNotImported() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -716,7 +719,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleActivatorImport() throws Exception {
+	public void testBundleActivatorImport() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -751,7 +754,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleActivatorAbstract() throws Exception {
+	public void testBundleActivatorAbstract() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -778,7 +781,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleActivatorInterface() throws Exception {
+	public void testBundleActivatorInterface() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -806,7 +809,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleActivatorNoDefaultConstructor() throws Exception {
+	public void testBundleActivatorNoDefaultConstructor() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -834,7 +837,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleActivatorNotPublic() throws Exception {
+	public void testBundleActivatorNotPublic() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -864,7 +867,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testNotABundleActivator() throws Exception {
+	public void testNotABundleActivator() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -892,7 +895,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleActivatorNoType() throws Exception {
+	public void testBundleActivatorNoType() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -923,7 +926,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testBundleActivatorNotAType() throws Exception {
+	public void testBundleActivatorNotAType() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -955,7 +958,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testScanForABundleActivatorNoMatches() throws Exception {
+	public void testScanForABundleActivatorNoMatches() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -987,7 +990,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testScanForABundleActivatorMultipleMatches() throws Exception {
+	public void testScanForABundleActivatorMultipleMatches() throws Exception {
 		Builder a = new Builder();
 		try {
 			Properties p = new Properties();
@@ -1021,7 +1024,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * calculated.
 	 */
 
-	public static void testRemoveheaders() throws Exception {
+	public void testRemoveheaders() throws Exception {
 		try (Analyzer a = new Analyzer()) {
 			a.setJar(IO.getFile("jar/asm.jar"));
 			Manifest m = a.calcManifest();
@@ -1043,7 +1046,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws Exception
 	 */
-	public static void testExportForJar() throws Exception {
+	public void testExportForJar() throws Exception {
 		try (Analyzer an = new Analyzer()) {
 			Jar jar = new Jar("dot");
 			jar.putResource("target/aopalliance.jar", new FileResource(IO.getFile("jar/asm.jar")));
@@ -1068,7 +1071,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws IOException
 	 */
 
-	public static void testVersion() throws IOException {
+	public void testVersion() throws IOException {
 		try (Analyzer a = new Analyzer()) {
 			String v = a.getBndVersion();
 			assertNotNull(v);
@@ -1078,7 +1081,7 @@ public class AnalyzerTest extends BndTestCase {
 	/**
 	 * asm is a simple library with two packages. No imports are done.
 	 */
-	public static void testAsm() throws Exception {
+	public void testAsm() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
 		base.put(Constants.EXPORT_PACKAGE, "*;-noimport:=true");
@@ -1110,7 +1113,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws IOException
 	 */
-	public static void testAsm2() throws Exception {
+	public void testAsm2() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
 		base.put(Constants.EXPORT_PACKAGE, "org.objectweb.asm;name=short, org.objectweb.asm.signature;name=long");
@@ -1132,7 +1135,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	public static void testDs() throws Exception {
+	public void testDs() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
 		base.put(Constants.EXPORT_PACKAGE, "*;-noimport:=true");
@@ -1156,7 +1159,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	public static void testDsSkipOsgiImport() throws Exception {
+	public void testDsSkipOsgiImport() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "!org.osgi.*, *");
 		base.put(Constants.EXPORT_PACKAGE, "*;-noimport:=true");
@@ -1183,7 +1186,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	public static void testDsNoExport() throws Exception {
+	public void testDsNoExport() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
 		base.put(Constants.EXPORT_PACKAGE, "!*");
@@ -1207,7 +1210,7 @@ public class AnalyzerTest extends BndTestCase {
 		}
 	}
 
-	public static void testClasspath() throws Exception {
+	public void testClasspath() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*");
 		base.put(Constants.EXPORT_PACKAGE, "*;-noimport:=true");
@@ -1238,7 +1241,7 @@ public class AnalyzerTest extends BndTestCase {
 	 * 
 	 * @throws IOException
 	 */
-	public static void testSuperfluous() throws Exception {
+	public void testSuperfluous() throws Exception {
 		Properties base = new Properties();
 		base.put(Constants.IMPORT_PACKAGE, "*, =com.foo, com.foo.bar.*");
 		base.put(Constants.EXPORT_PACKAGE, "*, com.bar, baz.*");
