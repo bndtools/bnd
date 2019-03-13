@@ -43,7 +43,6 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -3044,15 +3043,15 @@ public class Analyzer extends Processor {
 		if (require == null || require.isEmpty())
 			return;
 
-		Hashtable<String, String> map = new Hashtable<>();
-		map.put(Constants.VERSION_FILTER, getBndVersion());
+		Map<String, Object> map = Collections.singletonMap(Constants.VERSION_FILTER,
+			Version.valueOf(getBndVersion()));
 
 		for (String filter : require.keySet()) {
 			try {
 				Filter f = new Filter(filter);
-				if (f.match(map))
+				if (f.matchMap(map))
 					continue;
-				error("%s fails for filter %s values=%s", REQUIRE_BND, require.get(filter), map);
+				error("%s fails for filter %s values=%s", REQUIRE_BND, filter, map);
 			} catch (Exception t) {
 				exception(t, "%s with value %s throws exception", REQUIRE_BND, require);
 			}

@@ -15,6 +15,7 @@ import java.util.jar.Manifest;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Analyzer;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Clazz;
@@ -395,21 +396,23 @@ public class AnalyzerTest extends BndTestCase {
 	 * @throws Exception
 	 */
 
-	public static void testRequire() throws Exception {
-		Builder b = new Builder();
-		try {
+	public static void testRequireFail() throws Exception {
+		try (Builder b = new Builder()) {
 			b.addClasspath(IO.getFile("jar/osgi.jar"));
 			b.setProperty("Private-Package", "org.osgi.framework");
-			b.setProperty("-require-bnd", "10000");
+			b.setProperty("-require-bnd", "\"(version=10000)\"");
 			b.build();
-			System.err.println(b.getErrors());
-			System.err.println(b.getWarnings());
-			assertEquals(1, b.getErrors()
-				.size());
-			assertEquals(0, b.getWarnings()
-				.size());
-		} finally {
-			b.close();
+			assertTrue(b.check("-require-bnd fails for filter \\(version=10000\\) values=\\{version=.*\\}"));
+		}
+	}
+
+	public static void testRequirePass() throws Exception {
+		try (Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("jar/osgi.jar"));
+			b.setProperty("Private-Package", "org.osgi.framework");
+			b.setProperty("-require-bnd", "\"(version>=" + About.CURRENT + ")\"");
+			b.build();
+			assertTrue(b.check());
 		}
 	}
 

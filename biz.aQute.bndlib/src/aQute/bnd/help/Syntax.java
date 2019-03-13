@@ -586,7 +586,7 @@ public class Syntax implements Constants {
 			"-resolve.preferences=com.example.bundle.most.priority", "${packages}", null),
 
 		new Syntax(RUNTIMEOUT, "Specifies the test execution timeout.", RUNTIMEOUT + "=10000", null, null),
-		new Syntax(REQUIRE_BND, "Require a specific version of bnd.", REQUIRE_BND + "=4.1",
+		new Syntax(REQUIRE_BND, "Require a specific version of bnd.", REQUIRE_BND + "=\"(version>=4.1)\"",
 			"(FILTER ( ',' FILTER )* )?", null),
 
 		new Syntax(RESOURCEONLY,

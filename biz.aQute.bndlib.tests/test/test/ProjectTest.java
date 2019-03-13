@@ -19,6 +19,7 @@ import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
 import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.About;
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -81,14 +82,24 @@ public class ProjectTest extends TestCase {
 	/**
 	 * Test require bnd
 	 */
-	public void testRequireBnd() throws Exception {
-		Workspace ws = getWorkspace(IO.getFile("testresources/ws"));
-		Project top = ws.getProject("p1");
-		top.setProperty("-resourceonly", "true");
-		top.setProperty("-includeresource", "a;literal=''");
-		top.setProperty("-require-bnd", "100000.0");
-		top.build();
-		assertTrue(top.check("-require-bnd fails for filter  values=\\{version="));
+	public void testRequireBndFail() throws Exception {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws")); Project top = ws.getProject("p1")) {
+			top.setProperty("-resourceonly", "true");
+			top.setProperty("-includeresource", "a;literal=''");
+			top.setProperty("-require-bnd", "\"(version=100000.0)\"");
+			top.build();
+			assertTrue(top.check("-require-bnd fails for filter \\(version=100000.0\\) values=\\{version=.*\\}"));
+		}
+	}
+
+	public void testRequireBndPass() throws Exception {
+		try (Workspace ws = getWorkspace(IO.getFile("testresources/ws")); Project top = ws.getProject("p1")) {
+			top.setProperty("-resourceonly", "true");
+			top.setProperty("-includeresource", "a;literal=''");
+			top.setProperty("-require-bnd", "\"(version>=" + About.CURRENT + ")\"");
+			top.build();
+			assertTrue(top.check());
+		}
 	}
 
 	/**
