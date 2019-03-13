@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.Nullable;
+import org.osgi.annotation.versioning.ProviderType;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
@@ -72,14 +73,16 @@ import aQute.libg.glob.Glob;
  * starts in the same process as that the JUnit code runs. This is normally a
  * separately started VM.
  */
+@ProviderType
 public class Launchpad implements AutoCloseable {
 
+	public static final String					BUNDLE_PRIORITY			= "Bundle-Priority";
 	private static final long					SERVICE_DEFAULT_TIMEOUT	= 60000L;
 	static final AtomicInteger					n						= new AtomicInteger();
 
 	final Framework								framework;
 	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
-	final LaunchpadBuilder					builder;
+	final LaunchpadBuilder						builder;
 	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
 	final Injector<Service>						injector;
 	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new HashMap<>();
@@ -394,6 +397,18 @@ public class Launchpad implements AutoCloseable {
 	}
 
 	/**
+	 * Add the standard Gogo bundles
+	 */
+	public Launchpad snapshot() {
+		try {
+			bundles("biz.aQute.bnd.runtime.snapshot");
+			return this;
+		} catch (Exception e) {
+			throw Exceptions.duck(e);
+		}
+	}
+
+	/**
 	 * Inject an object with services and other OSGi specific values.
 	 * 
 	 * @param object the object to inject
@@ -452,10 +467,11 @@ public class Launchpad implements AutoCloseable {
 	/**
 	 * Show the information of how the framework is setup and is running
 	 */
-	public void report() throws InvalidSyntaxException {
+	public Launchpad report() throws InvalidSyntaxException {
 		reportBundles();
 		reportServices();
 		reportEvents();
+		return this;
 	}
 
 	/**
@@ -495,6 +511,20 @@ public class Launchpad implements AutoCloseable {
 	}
 
 	/**
+	 * Wait for a Service Reference to be registered
+	 * 
+	 * @param class1 the name of the service
+	 * @param timeoutInMs the time to wait
+	 * @return a service reference
+	 */
+	public <T> Optional<ServiceReference<T>> waitForServiceReference(Class<T> class1, long timeoutInMs, String target) {
+
+		return getServices(class1, target, 1, timeoutInMs, false).stream()
+			.findFirst();
+
+	}
+
+	/**
 	 * Wait for service to be registered
 	 * 
 	 * @param class1 name of the service
@@ -503,10 +533,24 @@ public class Launchpad implements AutoCloseable {
 	 * @throws InterruptedException
 	 */
 	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs) throws InterruptedException {
+		return this.waitForService(class1, timeoutInMs, null);
+	}
+
+	/**
+	 * Wait for service to be registered
+	 * 
+	 * @param class1 name of the service
+	 * @param timeoutInMs timeout in ms
+	 * @param target filter, may be null
+	 * @return a service
+	 * @throws InterruptedException
+	 */
+	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs, String target)
+		throws InterruptedException {
 		try {
-			Optional<ServiceReference<T>> ref = waitForServiceReference(class1, timeoutInMs);
-			BundleContext context = getBundleContext();
-			return ref.map(context::getService);
+			return getServices(class1, null, 1, timeoutInMs, false).stream()
+				.findFirst()
+				.map(getBundleContext()::getService);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
@@ -574,8 +618,8 @@ public class Launchpad implements AutoCloseable {
 	 * all bundles _except_ the testbundle. Notice that bundles that already
 	 * obtained a references are not affected. If you use this facility it is
 	 * best to not start the framework before you hide a service. You can
-	 * indicate this to the build with {@link LaunchpadBuilder#nostart()}.
-	 * The framework can be started after creation with {@link #start()}. Notice
+	 * indicate this to the build with {@link LaunchpadBuilder#nostart()}. The
+	 * framework can be started after creation with {@link #start()}. Notice
 	 * that services through the testbundle remain visible for this hide.
 	 * 
 	 * @param type the type to hide
@@ -674,10 +718,12 @@ public class Launchpad implements AutoCloseable {
 					throw new IllegalArgumentException("-runbundle " + file + " does not exist or is not a file");
 
 				Bundle b = install(file);
-				if (!isFragment(b))
+				if (!isFragment(b)) {
 					toBeStarted.add(b);
+				}
 			}
 
+			Collections.sort(toBeStarted, this::startorder);
 			toBeStarted.forEach(this::start);
 
 			if (builder.testbundle)
@@ -688,6 +734,24 @@ public class Launchpad implements AutoCloseable {
 		} catch (BundleException e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	// reverse ordering. I.e. highest priority is first
+	int startorder(Bundle a, Bundle b) {
+
+		return Integer.compare(getPriority(b), getPriority(a));
+	}
+
+	private int getPriority(Bundle b) {
+		try {
+			String h = b.getHeaders()
+				.get(BUNDLE_PRIORITY);
+			if (h != null)
+				return Integer.parseInt(h);
+		} catch (Exception e) {
+			// ignore
+		}
+		return 0;
 	}
 
 	/**
@@ -783,16 +847,92 @@ public class Launchpad implements AutoCloseable {
 	 * the classpath.
 	 */
 
-	public <T> Closeable addComponent(Class<T> type) {
-		Bundle b = bundle().addResource(type)
+	public <T> Bundle component(Class<T> type) {
+		return bundle().addResource(type)
 			.start();
-		return () -> {
-			try {
-				b.uninstall();
-			} catch (BundleException e) {
-				throw Exceptions.duck(e);
-			}
-		};
+	}
+
+
+	/**
+	 * Check if a bundle is a fragement
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isFragment(Bundle b) {
+		return b.getHeaders()
+			.get(Constants.FRAGMENT_HOST) != null;
+	}
+
+	/**
+	 * Check if a bundle is in the ACTIVE state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isActive(Bundle b) {
+		return b.getState() == Bundle.ACTIVE;
+	}
+
+	/**
+	 * Check if a bundle is in the RESOLVED state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isResolved(Bundle b) {
+		return b.getState() == Bundle.RESOLVED;
+	}
+
+	/**
+	 * Check if a bundle is in the INSTALLED state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isInstalled(Bundle b) {
+		return b.getState() == Bundle.INSTALLED;
+	}
+
+	/**
+	 * Check if a bundle is in the UNINSTALLED state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isUninstalled(Bundle b) {
+		return b.getState() == Bundle.UNINSTALLED;
+	}
+
+	/**
+	 * Check if a bundle is in the STARTING state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isStarting(Bundle b) {
+		return b.getState() == Bundle.STARTING;
+	}
+
+	/**
+	 * Check if a bundle is in the STOPPING state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isStopping(Bundle b) {
+		return b.getState() == Bundle.STOPPING;
+	}
+
+	/**
+	 * Check if a bundle is in the ACTIVE or STARTING state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isRunning(Bundle b) {
+		return isActive(b) || isStarting(b);
+	}
+
+	/**
+	 * Check if a bundle is in the RESOLVED or ACTIVE or STARTING state
+	 * 
+	 * @param b the bundle to check
+	 */
+	public boolean isReady(Bundle b) {
+		return isResolved(b) || isActive(b) || isStarting(b);
 	}
 
 	private Parameters getExports(Bundle b) {
@@ -805,10 +945,6 @@ public class Launchpad implements AutoCloseable {
 			.get(Constants.IMPORT_PACKAGE));
 	}
 
-	private boolean isFragment(Bundle b) {
-		return b.getHeaders()
-			.get(Constants.FRAGMENT_HOST) != null;
-	}
 
 	private String toInstallURI(File c) {
 		return "reference:" + c.toURI();

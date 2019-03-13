@@ -8,9 +8,11 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -74,6 +76,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	boolean				testbundle	= true;
 	long				closeTimeout	= 60000;
 	boolean				debug;
+	final Set<Class<?>>	hide			= new HashSet<>();
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -145,6 +148,10 @@ public class LaunchpadBuilder implements AutoCloseable {
 		return this;
 	}
 
+	public LaunchpadBuilder hide(Class<?> hide) {
+		this.hide.add(hide);
+		return this;
+	}
 	public LaunchpadBuilder notestbundle() {
 		this.testbundle = false;
 		return this;
@@ -205,6 +212,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 			launchpad.report("Storage %s", storage.getAbsolutePath());
 			launchpad.report("Runpath %s", local.runpath);
 
+			hide.forEach(launchpad::hide);
 			if (start) {
 				launchpad.start();
 			}
@@ -342,6 +350,11 @@ public class LaunchpadBuilder implements AutoCloseable {
 		} catch (MalformedURLException e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	public LaunchpadBuilder snapshot() {
+		this.bundles("biz.aQute.bnd.runtime.snapshot");
+		return this;
 	}
 
 }

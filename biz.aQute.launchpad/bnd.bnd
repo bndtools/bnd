@@ -29,8 +29,8 @@ Import-Package: \
 
 -testpath: \
     ${junit},\
-    slf4j.simple;version=latest, \
     biz.aQute.repository, \
+    slf4j.simple;version=latest, \
     slf4j.api
 
 -builderignore: testresources
@@ -39,5 +39,3 @@ Import-Package: \
     org.apache.felix.gogo.shell;version=latest
 
 -runfw: org.apache.felix.framework
-
--baseline: *

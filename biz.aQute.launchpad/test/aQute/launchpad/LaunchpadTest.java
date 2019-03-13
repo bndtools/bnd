@@ -6,7 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.Closeable;
 import java.io.File;
 import java.net.URL;
 import java.util.Hashtable;
@@ -22,7 +21,6 @@ import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -178,47 +176,6 @@ public class LaunchpadTest {
 	}
 
 	/**
-	 * Hide a service
-	 */
-
-	@Test
-	public void testHiding() throws Exception {
-		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
-			.nostart()
-			.create()
-			.inject(this)) {
-
-			Closeable hide = fw.hide(String.class);
-			fw.start();
-
-			boolean isHidden = fw.getServices(String.class)
-				.isEmpty();
-			assertThat(isHidden).isTrue();
-
-			fw.framework.getBundleContext()
-				.registerService(String.class, "fw", null);
-
-			isHidden = fw.getServices(String.class)
-				.isEmpty();
-			assertThat(isHidden).isTrue();
-
-			ServiceRegistration<String> visibleToAllViaTestbundle = fw.register(String.class, "Hello");
-
-			assertThat(fw.getServices(String.class)).containsOnly("Hello");
-
-			visibleToAllViaTestbundle.unregister();
-
-			isHidden = fw.getServices(String.class)
-				.isEmpty();
-			assertThat(isHidden).isTrue();
-
-			hide.close();
-			assertThat(fw.getServices(String.class)).containsOnly("fw");
-		}
-
-	}
-
-	/**
 	 * Test a built in component
 	 */
 
@@ -244,14 +201,14 @@ public class LaunchpadTest {
 			.runfw("org.apache.felix.framework")
 			.create()) {
 
-			Closeable comp = fw.addComponent(Comp.class);
+			Bundle comp = fw.component(Comp.class);
 
 			assertThat(semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)).isTrue();
 			assertThat(semaphore.tryAcquire(1, 200, TimeUnit.MILLISECONDS)).isFalse();
 
 			assertThat(fw.getService(Comp.class)).containsInstanceOf(Comp.class);
 
-			comp.close();
+			comp.uninstall();
 
 			assertThat(fw.getService(Comp.class)).isEmpty();
 
@@ -428,7 +385,7 @@ public class LaunchpadTest {
 		try (Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
 			.runfw("org.apache.felix.framework")
 			.create()) {
-			fw.addComponent(ExternalRefComp.class);
+			fw.component(ExternalRefComp.class);
 		}
 	}
 }
