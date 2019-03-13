@@ -70,6 +70,7 @@ public class Manual {
 				.report()) {
 
 			ServiceRegistration<Foo> register = launchpad.register(Foo.class, () -> {
+				//
 			});
 			Optional<Foo> s = launchpad.waitForService(Foo.class, 100);
 			assertThat(s.isPresent()).isTrue();
@@ -91,6 +92,7 @@ public class Manual {
 		try (Launchpad launchpad = builder.create()) {
 
 			ServiceRegistration<Foo> register = launchpad.register(Foo.class, () -> {
+				//
 			});
 
 			class I {
@@ -98,6 +100,7 @@ public class Manual {
 				Foo				foo;
 				@Service
 				Bundle			bundles[];
+				@SuppressWarnings("hiding")
 				@Service
 				BundleContext	context;
 			}
@@ -145,7 +148,7 @@ public class Manual {
 				.bundles("org.apache.felix.configadmin")
 				.debug()
 				.create()) {
-
+			//
 		}
 
 	}
