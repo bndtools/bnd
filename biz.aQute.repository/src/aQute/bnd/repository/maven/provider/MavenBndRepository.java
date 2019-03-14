@@ -1,5 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
+import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
+
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -24,6 +26,7 @@ import java.util.jar.Manifest;
 
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
+import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +55,7 @@ import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.service.maven.PomOptions;
 import aQute.bnd.service.maven.ToDependencyPom;
 import aQute.bnd.service.release.ReleaseBracketingPlugin;
+import aQute.bnd.util.repository.DownloadListenerPromise;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
@@ -75,11 +79,13 @@ import aQute.service.reporter.Reporter;
 @BndPlugin(name = "MavenBndRepository")
 public class MavenBndRepository extends BaseRepository implements RepositoryPlugin, RegistryPlugin, Plugin, Closeable,
 	Refreshable, Actionable, ToDependencyPom, ReleaseBracketingPlugin {
-	private final static Logger	logger				= LoggerFactory.getLogger(MavenBndRepository.class);
-	private static final int	DEFAULT_POLL_TIME	= 5;
 
-	private static final String	NONE				= "NONE";
-	private static final String	MAVEN_REPO_LOCAL	= System.getProperty("maven.repo.local", "~/.m2/repository");
+	private final static Logger	logger						= LoggerFactory.getLogger(MavenBndRepository.class);
+	private static final int	DEFAULT_POLL_TIME			= 5;
+
+	private static final String	NONE						= "NONE";
+	private static final String	MAVEN_REPO_LOCAL			= System.getProperty("maven.repo.local",
+		"~/.m2/repository");
 	private Configuration		configuration;
 	private Registry			registry;
 	private File				localRepo;
@@ -88,10 +94,10 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private boolean				inited;
 	IndexFile					index;
 	private ScheduledFuture<?>	indexPoller;
-	private RepoActions			actions				= new RepoActions(this);
+	private RepoActions			actions						= new RepoActions(this);
 	private String				name;
 	private HttpClient			client;
-	private ReleasePluginImpl	releasePlugin		= new ReleasePluginImpl(this, null);
+	private ReleasePluginImpl	releasePlugin				= new ReleasePluginImpl(this, null);
 
 	/**
 	 * Put result
@@ -283,7 +289,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			jar = tool.doSource();
 		}
 		jar.ensureManifest();
-		jar.setName("sources"); // set jar name to classifier
+		jar.setName(Archive.SOURCES_CLASSIFIER); // set jar name to classifier
 		tool.addClose(jar);
 		return jar;
 	}
@@ -295,7 +301,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			jar = tool.doJavadoc(options, exports);
 		}
 		jar.ensureManifest();
-		jar.setName("javadoc"); // set jar name to classifier
+		jar.setName(Archive.JAVADOC_CLASSIFIER); // set jar name to classifier
 		tool.addClose(jar);
 		return jar;
 	}
@@ -451,7 +457,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Archive archive = index.find(bsn, version);
 		if (archive == null) {
-			return null;
+			return trySources(bsn, version, listeners);
 		}
 
 		File f = storage.toLocalFile(archive);
@@ -811,6 +817,34 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	@Deprecated
 	public IndexFile.BundleDescriptor getDescriptor(String bsn, aQute.bnd.version.Version version) {
 		throw new UnsupportedOperationException();
+	}
+
+	/*
+	 * Bndtools ask for a JAR with a bsn that as ".source" appended to get the
+	 * source code. We can automate that by looking for it. The bsn - ".source"
+	 * must exist in the index
+	 */
+	private File trySources(String sourceBsn, Version version, DownloadListener... listeners) throws Exception {
+		if (!sourceBsn.endsWith(BSN_SOURCE_SUFFIX))
+			return null;
+
+		String originalBsn = sourceBsn.substring(0, sourceBsn.length() - BSN_SOURCE_SUFFIX.length());
+
+		Archive primaryArchive = index.find(originalBsn, version);
+		if (primaryArchive == null)
+			return null; // don't get sources when not in index
+
+		Archive sources = primaryArchive.getOther("jar", Archive.SOURCES_CLASSIFIER);
+		if (sources == null)
+			return null;
+
+		Promise<File> promise = storage.get(primaryArchive);
+		if (listeners.length != 0) {
+			new DownloadListenerPromise(reporter, "Get sources " + sourceBsn + "-" + version + " for " + getName(), promise,
+				listeners);
+			return storage.toLocalFile(primaryArchive);
+		} else
+			return promise.getValue();
 	}
 
 }

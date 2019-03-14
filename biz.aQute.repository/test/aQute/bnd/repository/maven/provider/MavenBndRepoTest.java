@@ -1,5 +1,7 @@
 package aQute.bnd.repository.maven.provider;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -224,7 +226,7 @@ public class MavenBndRepoTest extends TestCase {
 		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc))
 			.get(wc);
 		Set<Resource> resources = ResourceUtils.getResources(caps);
-		assertEquals(2, resources.size());
+		assertEquals(3, resources.size());
 		IdentityCapability bc = ResourceUtils.getIdentityCapability(resources.iterator()
 			.next());
 		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());
@@ -243,7 +245,7 @@ public class MavenBndRepoTest extends TestCase {
 		POM pom = new POM((MavenRepository) repo.storage, bin);
 
 		assertEquals(Revision.valueOf("test:test:1.0"), pom.getRevision());
-		assertEquals(3, pom.getDependencies(EnumSet.of(MavenScope.runtime), false)
+		assertEquals(4, pom.getDependencies(EnumSet.of(MavenScope.runtime), false)
 			.size());
 		System.out.println(new String(bout.toByteArray(), StandardCharsets.UTF_8));
 	}
@@ -264,7 +266,7 @@ public class MavenBndRepoTest extends TestCase {
 		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc))
 			.get(wc);
 		Set<Resource> resources = ResourceUtils.getResources(caps);
-		assertEquals(2, resources.size());
+		assertEquals(3, resources.size());
 		IdentityCapability bc = ResourceUtils.getIdentityCapability(resources.iterator()
 			.next());
 		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());
@@ -313,6 +315,16 @@ public class MavenBndRepoTest extends TestCase {
 		assertTrue(file.isFile());
 	}
 
+	public void testGetWithSource() throws Exception {
+		config(null);
+		File jar = repo.get("org.osgi.dto", new Version("1.0.0.201505202023"), null);
+		assertThat(jar.isFile()).isTrue();
+
+		File sources = repo.get("org.osgi.dto.source", new Version("1.0.0.201505202023"), null);
+		assertThat(sources.isFile()).isTrue();
+
+	}
+
 	public void testGetFileRepo() throws Exception {
 		Map<String, String> map = new HashMap<>();
 		map.put("releaseUrl", remote.toURI()
@@ -344,7 +356,7 @@ public class MavenBndRepoTest extends TestCase {
 		config(null);
 		List<String> l = repo.list(null);
 		System.out.println(l);
-		assertEquals(4, l.size());
+		assertEquals(5, l.size());
 		assertTrue(l.contains("commons-cli:commons-cli"));
 
 		SortedSet<Version> versions = repo.versions("commons-cli:commons-cli");
@@ -353,13 +365,16 @@ public class MavenBndRepoTest extends TestCase {
 		versions = repo.versions("org.apache.commons.cli");
 		assertEquals("[1.2.0]", versions.toString());
 
+		versions = repo.versions("org.osgi.dto");
+		assertEquals("[1.0.0.201505202023]", versions.toString());
+
 		Requirement all = ResourceUtils.createWildcardRequirement();
 		Collection<Capability> providers = repo.findProviders(Collections.singleton(all))
 			.get(all);
 		Set<Resource> resources = ResourceUtils.getResources(providers);
 
-		// there is only one bundle in the store
-		assertEquals(1, resources.size());
+		// there are only two bundles in the store
+		assertEquals(2, resources.size());
 	}
 
 	public void testPutDefaultLocal() throws Exception {

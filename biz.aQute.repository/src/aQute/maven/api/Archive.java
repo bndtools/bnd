@@ -17,6 +17,10 @@ public class Archive implements Comparable<Archive> {
 			+ "\\s*",																																																			// skip
 																																																								// whitespace
 		Pattern.COMMENTS);
+
+	public static final String	SOURCES_CLASSIFIER	= "sources";
+	public static final String	JAVADOC_CLASSIFIER	= "javadoc";
+
 	public final Revision		revision;
 	public final String			classifier;
 	public final String			extension;
@@ -228,4 +232,7 @@ public class Archive implements Comparable<Archive> {
 		return extension != null && !extension.isEmpty() && !extension.equals("jar");
 	}
 
+	public Archive getOther(String extension, String classifier) {
+		return getRevision().archive(extension, classifier);
+	}
 }

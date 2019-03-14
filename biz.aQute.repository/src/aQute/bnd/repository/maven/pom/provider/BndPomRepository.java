@@ -1,5 +1,6 @@
 package aQute.bnd.repository.maven.pom.provider;
 
+import static aQute.bnd.osgi.Constants.BSN_SOURCE_SUFFIX;
 import static java.util.stream.Collectors.toList;
 
 import java.io.Closeable;
@@ -227,13 +228,19 @@ public class BndPomRepository extends BaseRepository
 	public File get(String bsn, Version version, Map<String, String> properties, DownloadListener... listeners)
 		throws Exception {
 		init();
-		ResourceInfo resource = bridge.getInfo(bsn, version);
-		if (resource == null)
-			return null;
 
-		String name = resource.getInfo()
-			.name();
-		Archive archive = Archive.valueOf(name);
+		Archive archive;
+		ResourceInfo resource = bridge.getInfo(bsn, version);
+		if (resource == null) {
+			archive = trySources(bsn, version);
+			if (archive == null)
+				return null;
+		} else {
+
+			String name = resource.getInfo()
+				.name();
+			archive = Archive.valueOf(name);
+		}
 
 		Promise<File> p = repoImpl.getMavenRepository()
 			.get(archive);
@@ -306,4 +313,22 @@ public class BndPomRepository extends BaseRepository
 		if (pomPoller != null)
 			pomPoller.cancel(true);
 	}
+
+	/*
+	 * Try to fetch sources
+	 */
+	private Archive trySources(String bsn, Version version) throws Exception {
+		if (!bsn.endsWith(BSN_SOURCE_SUFFIX))
+			return null;
+
+		String rawBsn = bsn.substring(0, bsn.length() - BSN_SOURCE_SUFFIX.length());
+		ResourceInfo resource = bridge.getInfo(rawBsn, version);
+		if (resource == null)
+			return null;
+
+		return Archive.valueOf(resource.getInfo()
+			.name())
+			.getOther("jar", Archive.SOURCES_CLASSIFIER);
+	}
+
 }
