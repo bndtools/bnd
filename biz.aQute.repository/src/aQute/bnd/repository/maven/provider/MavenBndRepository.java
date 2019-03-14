@@ -538,7 +538,12 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					.split("\\s*,\\s*");
 			}
 			Processor domain = (registry != null) ? registry.getPlugin(Processor.class) : null;
-			this.index = new IndexFile(domain, reporter, indexFile, storage, client.promiseFactory(), multi);
+			String source = configuration.source();
+			if (source != null) {
+				source = source.replaceAll("(\\s|,|;|\n|\r)+", "\n");
+			}
+			this.index = new IndexFile(domain, reporter, indexFile, source, storage,
+				client.promiseFactory(), multi);
 			this.index.open();
 
 			startPoll();

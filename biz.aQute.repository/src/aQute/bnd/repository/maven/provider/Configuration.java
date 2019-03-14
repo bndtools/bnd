@@ -39,6 +39,13 @@ public interface Configuration {
 	String index(String deflt);
 
 	/**
+	 * Content added to the index file. Content maybe one line without CR/LF as
+	 * long as there is a comma or whitespace separating the GAVs. Further same
+	 * format as the index file.
+	 */
+	String source();
+
+	/**
 	 * Do not update the index when a file is released
 	 */
 	boolean noupdateOnRelease();

@@ -6,8 +6,6 @@ summary: A plugin to use and release to Maven repositories
 
 The Maven Bnd Repository plugin provides a full interface to the Maven local repository in `~/.m2/repository` and remote repositories like [Nexus] or [Artifactory]. And it provides of course full access to Maven Central. It implements the standard bnd Repository Plugin and can provide an OSGi Repository for resolving.
 
-## Use Cases
-
 ### Maven Central
 
 To access Maven Central use the following configuration:
@@ -18,7 +16,9 @@ To access Maven Central use the following configuration:
 			index=${.}/central.maven; \
 			name="Central"
 
-### Local Repository
+You can add `Group:Artifact:Version` coordinates in the `central.maven` file. The file can contain comments, empty lines, and can use macros per line. That is, you cannot create a macro with a load of GAV's.
+
+### Use of .m2 Local Repository
 
 To use your local Maven repository (`~/.m2/repository`) you can define the following plugin:
 
@@ -69,6 +69,7 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 | `readOnly`       | `true|false` | `false` | If set to _truthy_ then this repository is read only.|
 | `name`           | `NAME`| `Maven` | The name of the repository.|
 | `index`          | `PATH`| `cnf/<name>.mvn` | The path to the _index_ file. The index file is a list of Maven _coordinates_.|
+| `source`         | `STRING`| `org.osgi:org.osgi.service.log:1.3.0 org.osgi:org.osgi.service.log:1.2.0` | A space, comma, semicolon, or newline separated GAV string. |
 | `noupdateOnRelease` | `true|false` | `false` | If set to _truthy_ then this repository will not update the `index` when a non-snapshot artifact is released.|
 | `poll.time`      | `integer` | 5 seconds | Number of seconds between checks for changes to the `index` file. If the value is negative or the workspace is in batch/CI mode, then no polling takes place.|
 | `multi`          | `NAME`|        | Comma separated list of extensions to be searched for indexing containing bundles. For example, a zip file could comprise further bundles. Hence, this zip artifact can be referenced in this plugin for indexing the internal JARs. |
@@ -76,6 +77,10 @@ The class name of the plugin is `aQute.bnd.repository.maven.provider.MavenBndRep
 If no `releaseUrl` nor a `snapshotUrl` are specified then the repository is _local only_. For finding archives, both URLs are used, first `releaseUrl`.
 
 The `index` file specifies a view on the remote repository, it _scopes_ it. Since we use the bnd repositories to resolve against, it is impossible to resolve against the world. The index file falls under source control, it is stored in the source control management system. This guarantees that at any time the project is checked out it has the same views on its repository. This is paramount to prevent build breackages due to changes in repositories.
+
+Alternative, the GAV's can be specified in the file where the repository is defined with the  `source` configuration property. This is a string separated by either whitespace, commas, semicolons, or any combination thereof.
+
+Both the index file and the source configuration can be replaced by macros. The only difference is that the source can use macros for more than one GAV while the indexFile is processed per line and that line must deliver at most single GAV.
 
 ## Coordinates & Terminology
 
@@ -93,6 +98,11 @@ Valid coordinates are:
 	commons-logging:commons-logging:1.2
 	org.osgi:osgi.core:6.0.0
 	org.osgi:osgi.annotation:6.0.1
+
+The file can contain comments (start the line with `#`), empty lines and also macros. The domain of the macros is the Workspace. A comment may also be placed after the GAV.
+
+    # This is a comment
+    ${osgi}:${osgi}.service.log:1.4.0
 
 ## Local Repository
 
