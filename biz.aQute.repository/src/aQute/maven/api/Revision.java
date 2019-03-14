@@ -74,7 +74,7 @@ public class Revision implements Comparable<Revision> {
 	}
 
 	public Archive pomArchive() {
-		return archive("pom", null);
+		return archive(Archive.POM_EXTENSION, null);
 	}
 
 	public static Revision fromProjectPath(Path projectDirPath) {
@@ -100,7 +100,7 @@ public class Revision implements Comparable<Revision> {
 	}
 
 	public Archive getPomArchive() {
-		return archive("pom", null);
+		return archive(Archive.POM_EXTENSION, null);
 	}
 
 	@Override

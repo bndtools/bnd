@@ -66,7 +66,7 @@ public class MavenRepoTest extends TestCase {
 		assertNotNull(snapshotArchives);
 		assertEquals(10, snapshotArchives.size());
 
-		Archive archive = storage.getResolvedArchive(revision, "pom", null);
+		Archive archive = storage.getResolvedArchive(revision, Archive.POM_EXTENSION, null);
 		assertNotNull(archive);
 		assertEquals("1.4-20160119.062305-9", archive.snapshot.toString());
 
@@ -82,7 +82,7 @@ public class MavenRepoTest extends TestCase {
 		Program program = Program.valueOf("commons-cli", "commons-cli");
 		Revision revision = Program.valueOf("commons-cli", "commons-cli")
 			.version("1.4-SNAPSHOT");
-		Archive apom = revision.archive("pom", null);
+		Archive apom = revision.archive(Archive.POM_EXTENSION, null);
 		assertFalse(fpom.exists());
 		assertFalse(apom.isResolved());
 
@@ -139,12 +139,12 @@ public class MavenRepoTest extends TestCase {
 		Program program = Program.valueOf("commons-cli", "commons-cli");
 		Revision revision = Program.valueOf("commons-cli", "commons-cli")
 			.version("1.4-SNAPSHOT");
-		Archive apom = revision.archive("pom", null);
+		Archive apom = revision.archive(Archive.POM_EXTENSION, null);
 		assertFalse(fpom.exists());
 
 		Release r = storage.release(revision, new Properties());
 		r.setBuild(10000, null);
-		r.add("pom", null, new ByteArrayInputStream(new byte[0]));
+		r.add(Archive.POM_EXTENSION, null, new ByteArrayInputStream(new byte[0]));
 
 		r.close();
 

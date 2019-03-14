@@ -6,20 +6,24 @@ import java.util.regex.Pattern;
 import aQute.bnd.version.MavenVersion;
 
 public class Archive implements Comparable<Archive> {
-	public static final Pattern	ARCHIVE_P	= Pattern.compile(																																									//
-		"\\s*"																																																					// skip
-																																																								// whitespace
-			+ "(?<program>[^:]+:[^:]+)         # program\n"																																										//
-			+ "(:(?<extension>[^:]+)         # optional extension\n"																																							//
+	public static final Pattern	ARCHIVE_P			= Pattern.compile(																																															//
+		"\\s*"																																																													// skip
+																																																																// whitespace
+			+ "(?<program>[^:]+:[^:]+)         # program\n"																																																		//
+			+ "(:(?<extension>[^:]+)         # optional extension\n"																																															//
 			+ "    (:(?<classifier>[^:]*))?  # optional classifer (must be preceded by extension)\n"																																			//
-			+ ")?                            # end of extension\n"																																								//
-			+ ":(?<version>[^:]+)           # version is last\n"																																								//
-			+ "\\s*",																																																			// skip
-																																																								// whitespace
+			+ ")?                            # end of extension\n"																																																//
+			+ ":(?<version>[^:]+)           # version is last\n"																																																//
+			+ "\\s*",																																																											// skip
+																																																																// whitespace
 		Pattern.COMMENTS);
 
 	public static final String	SOURCES_CLASSIFIER	= "sources";
 	public static final String	JAVADOC_CLASSIFIER	= "javadoc";
+	public static final String	JAR_EXTENSION		= "jar";
+	public static final String	DEFAULT_EXTENSION	= JAR_EXTENSION;
+	public static final String	POM_EXTENSION		= "pom";
+	public static final String	ZIP_EXTENSION		= "zip";
 
 	public final Revision		revision;
 	public final String			classifier;
@@ -148,7 +152,7 @@ public class Archive implements Comparable<Archive> {
 	}
 
 	public boolean isPom() {
-		return "pom".equals(extension);
+		return Archive.POM_EXTENSION.equals(extension);
 	}
 
 	public Archive getPomArchive() {

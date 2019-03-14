@@ -358,7 +358,7 @@ public class MavenRepository implements IMavenRepo, Closeable {
 
 	@Override
 	public boolean exists(Archive archive) throws Exception {
-		File file = File.createTempFile("pom", ".xml");
+		File file = File.createTempFile(Archive.POM_EXTENSION, ".xml");
 		try {
 			File result = getFile(archive.getPomArchive(), file);
 			return result != null;

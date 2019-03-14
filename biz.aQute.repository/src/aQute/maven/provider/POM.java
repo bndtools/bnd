@@ -59,7 +59,7 @@ public class POM implements IPom {
 	private Map<Program, Dependency>	dependencyManagement	= new LinkedHashMap<>();
 	private XPath						xp;
 	private String[]					JAR_PACKAGING			= {
-		"bundle", "eclipse-plugin", "eclipse-test-plugin", "pom"
+		"bundle", "eclipse-plugin", "eclipse-test-plugin", Archive.POM_EXTENSION
 	};
 
 	private MavenRepository				repo;
@@ -507,7 +507,7 @@ public class POM implements IPom {
 	}
 
 	public boolean isPomOnly() {
-		return "pom".equals(packaging);
+		return Archive.POM_EXTENSION.equals(packaging);
 	}
 
 	@Override

@@ -116,7 +116,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	public PutResult put(InputStream stream, PutOptions options) throws Exception {
 		init();
 		File binaryFile = File.createTempFile("put", ".jar");
-		File pomFile = File.createTempFile("pom", ".xml");
+		File pomFile = File.createTempFile(Archive.POM_EXTENSION, ".xml");
 		LocalPutResult result = new LocalPutResult();
 		try {
 
@@ -752,8 +752,8 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 		if (filePath != null) {
 			Archive archive = Archive.fromFilepath(filePath);
 			if (archive != null) {
-				if (archive.extension.equals("pom"))
-					archive = archive.revision.archive("jar", null);
+				if (archive.extension.equals(Archive.POM_EXTENSION))
+					archive = archive.revision.archive(Archive.JAR_EXTENSION, null);
 				index.add(archive);
 				return true;
 			}
