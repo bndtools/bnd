@@ -155,11 +155,11 @@ public class PomRepositoryTest extends TestCase {
 
 			File file = bpr.get("slf4j.api", new Version("1.7.5"), null);
 			assertNotNull(file);
-			assertThat(file.isFile()).isTrue();
+			assertThat(file).isFile();
 
 			File source = bpr.get("slf4j.api.source", new Version("1.7.5"), null);
 			assertNotNull(source);
-			assertThat(source.isFile()).isTrue();
+			assertThat(source).isFile();
 		}
 	}
 

@@ -318,10 +318,10 @@ public class MavenBndRepoTest extends TestCase {
 	public void testGetWithSource() throws Exception {
 		config(null);
 		File jar = repo.get("org.osgi.dto", new Version("1.0.0.201505202023"), null);
-		assertThat(jar.isFile()).isTrue();
+		assertThat(jar).isFile();
 
 		File sources = repo.get("org.osgi.dto.source", new Version("1.0.0.201505202023"), null);
-		assertThat(sources.isFile()).isTrue();
+		assertThat(sources).isFile();
 
 	}
 
