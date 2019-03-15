@@ -3,6 +3,7 @@ package aQute.bnd.repository.p2.provider;
 import static aQute.bnd.osgi.repository.ResourcesRepository.toResourcesRepository;
 import static aQute.bnd.osgi.resource.ResourceUtils.toVersion;
 import static aQute.lib.promise.PromiseCollectors.toPromise;
+import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
 
@@ -214,10 +215,10 @@ class P2Indexer implements Closeable {
 			.filter(tag -> checkDownload(a, tag))
 			.recoverWith(failed -> {
 				if (retries < 1) {
-					logger.debug("No retries remaining for failed download. url={}", a.uri);
+					logger.info(LIFECYCLE, "No retries remaining for failed download. url={}", a.uri);
 					return null;
 				}
-				logger.debug("Delay before retrying failed download. url={}, delay={}, retries={}",
+				logger.info(LIFECYCLE, "Delay before retrying failed download. url={}, delay={}, retries={}",
 					a.uri, delay, retries);
 				return promiseFactory.resolved(null)
 					.delay(delay)
@@ -246,7 +247,7 @@ class P2Indexer implements Closeable {
 						continue;
 					}
 				}
-				logger.info("Invalid content checksum {} for {}; expected {}", fileDigest, a.uri,
+				logger.info(LIFECYCLE, "Invalid content checksum {} for {}; expected {}", fileDigest, a.uri,
 					remoteDigest);
 				IO.delete(file);
 				return false;
@@ -254,7 +255,7 @@ class P2Indexer implements Closeable {
 		} else if (a.download_size != -1L) {
 			long download_size = file.length();
 			if (download_size != a.download_size) {
-				logger.info("Invalid content size {} for {}; expected {}", download_size, a.uri,
+				logger.info(LIFECYCLE, "Invalid content size {} for {}; expected {}", download_size, a.uri,
 					a.download_size);
 				IO.delete(file);
 				return false;
