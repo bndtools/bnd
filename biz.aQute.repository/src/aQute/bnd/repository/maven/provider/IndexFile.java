@@ -4,15 +4,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Formatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +20,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.osgi.resource.Resource;
 import org.osgi.util.promise.Promise;
@@ -343,10 +339,9 @@ class IndexFile {
 		assert file.isFile();
 		return read(IO.collect(file), true);
 	}
-	
+
 	private Set<Archive> read(String source, boolean macro) {
-		Set<Archive> archives = Stream.of(source.split("(\r|\n)+"))
-			.map(Strings::trim)
+		Set<Archive> archives = Strings.splitLinesAsStream(source)
 			.map(s -> toArchive(s, macro))
 			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
@@ -364,14 +359,12 @@ class IndexFile {
 	}
 
 	private synchronized void save(Set<Archive> add, Set<Archive> remove) throws Exception {
-		Path index = indexFile.toPath();
-		Path tmp = Files.createTempFile(IO.mkdirs(index.getParent()), "index", null);
-		Macro replacer = domain.getReplacer();
 
-		try (PrintWriter pw = IO.writer(tmp)) {
+		try (Formatter f = new Formatter()) {
 
 			if (indexFile.isFile()) {
-				Files.lines(indexFile.toPath(), StandardCharsets.UTF_8)
+				String content = IO.collect(indexFile);
+				Strings.splitLinesAsStream(content)
 					.filter(s -> {
 						Archive archive = toArchive(s, true);
 						if (archive == null)
@@ -379,12 +372,16 @@ class IndexFile {
 
 						return !remove.contains(archive);
 					})
-					.forEach(pw::println);
+					.forEach(archive -> f.format("%s\n", archive));
 			}
 
-			add.forEach(pw::println);
+			add.forEach(archive -> f.format("%s\n", archive));
+			if (!indexFile.getParentFile()
+				.isDirectory())
+				IO.mkdirs(indexFile.getParentFile());
+			IO.store(f.toString(), indexFile);
 		}
-		IO.rename(tmp, index);
+
 		lastModified = indexFile.lastModified();
 	}
 
