@@ -56,6 +56,12 @@ public class StringsTest extends TestCase {
 			"2)\"", "'b'", "c");
 	}
 
+	public void testSplitLines() {
+		assertThat(Strings.splitLinesAsStream("x")).containsSequence("x");
+		assertThat(Strings.splitLinesAsStream("a\nb\r\n\nc  d")).containsSequence("a", "b", "", "c  d");
+		assertThat(Strings.splitLinesAsStream(" a \n b \r\n\n c  d \r\n")).containsSequence(" a ", " b ", "", " c  d ");
+	}
+
 	public void testSplitQuoted() {
 		assertThat(Strings.splitQuoted("  a,  b ,,c  ")).containsSequence("a", "b", "c");
 		assertThat(Strings.splitQuoted("  a; version=\"[1,2)\",  'b' ,,\"c\"  "))

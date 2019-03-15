@@ -151,6 +151,8 @@ public class Strings {
 			.filter(Strings::notEmpty);
 	}
 
+
+
 	public static List<String> split(String s) {
 		return splitAsStream(s).collect(toList());
 	}
@@ -161,6 +163,19 @@ public class Strings {
 		}
 		return new QuotedTokenizer(s, COMMA, false, true).stream()
 			.filter(Strings::notEmpty);
+	}
+
+	private final static Pattern SIMPLE_LINE_SPLITTER = Pattern.compile("\r?\n");
+
+	public static Stream<String> splitLinesAsStream(String s) {
+		if (s == null) {
+			return Stream.empty();
+		}
+		return SIMPLE_LINE_SPLITTER.splitAsStream(s);
+	}
+
+	public static List<String> splitLines(String s) {
+		return splitLinesAsStream(s).collect(toList());
 	}
 
 	public static List<String> splitQuoted(String s) {
