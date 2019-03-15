@@ -12,6 +12,12 @@ import java.util.regex.Pattern;
 public interface Constants {
 	String								AUTOMATIC_MODULE_NAME						= "Automatic-Module-Name";
 
+	/**
+	 * Magic suffix to bsn that when used imply that the caller wants the
+	 * sources for the bsn- suffix.
+	 */
+	String								BSN_SOURCE_SUFFIX							= ".source";
+
 	/*
 	 * Defined in OSGi
 	 */

@@ -49,6 +49,7 @@ import org.eclipse.m2e.core.project.configurator.MojoExecutionKey;
 import org.eclipse.m2e.core.project.configurator.ProjectConfigurationRequest;
 
 import aQute.lib.exceptions.Exceptions;
+import aQute.maven.api.Archive;
 
 public class IndexConfigurator extends AbstractProjectConfigurator implements IResourceChangeListener {
 
@@ -217,7 +218,7 @@ public class IndexConfigurator extends AbstractProjectConfigurator implements IR
     private static File getMavenOutputFile(String extension, IMavenProjectFacade found, IProgressMonitor monitor) {
         File f = null;
 
-        if ("pom".equals(extension)) {
+        if (Archive.POM_EXTENSION.equals(extension)) {
             f = found.getPomFile();
         } else {
             MavenProject mp = null;

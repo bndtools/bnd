@@ -1005,7 +1005,7 @@ public class Launchpad implements AutoCloseable {
 	@SuppressWarnings({
 		"rawtypes", "unchecked"
 	})
-	private <T> List<ServiceReference<T>> getServices(Class<T> serviceClass, @Nullable String target, int cardinality,
+	public <T> List<ServiceReference<T>> getServices(Class<T> serviceClass, @Nullable String target, int cardinality,
 		long timeout, boolean exception) {
 		try {
 

@@ -1,5 +1,7 @@
 package aQute.bnd.repository.maven.pom.provider;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.net.URL;
 import java.nio.file.Files;
@@ -135,6 +137,29 @@ public class PomRepositoryTest extends TestCase {
 			}
 			assertNotNull(list);
 			assertEquals(4, list.size());
+		}
+	}
+
+	public void testWithSources() throws Exception {
+		try (BndPomRepository bpr = new BndPomRepository()) {
+			Workspace w = Workspace.createStandaloneWorkspace(new Processor(), tmp.toURI());
+			w.setBase(tmp);
+			bpr.setRegistry(w);
+
+			Map<String, String> config = new HashMap<>();
+			config.put("revision", "com.mchange:mchange-commons-java:0.2.10");
+			config.put("snapshotUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("releaseUrls", "https://repo.maven.apache.org/maven2/");
+			config.put("name", "test");
+			bpr.setProperties(config);
+
+			File file = bpr.get("slf4j.api", new Version("1.7.5"), null);
+			assertNotNull(file);
+			assertThat(file).isFile();
+
+			File source = bpr.get("slf4j.api.source", new Version("1.7.5"), null);
+			assertNotNull(source);
+			assertThat(source).isFile();
 		}
 	}
 
