@@ -76,7 +76,8 @@ public abstract class MavenBackingRepository implements Closeable {
 					if (us == them || Character.toLowerCase(us) == Character.toLowerCase(them))
 						continue;
 				}
-				throw new IllegalArgumentException("Invalid checksum content " + remoteDigest + " for " + file);
+				throw new IllegalArgumentException(
+					"Invalid content checksum " + fileDigest + " for " + file + "; expected " + remoteDigest);
 			}
 
 		} catch (Exception e) {
