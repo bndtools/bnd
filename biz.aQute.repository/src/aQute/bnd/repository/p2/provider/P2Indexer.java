@@ -194,7 +194,7 @@ class P2Indexer implements Closeable {
 						return rb.build();
 					})
 					.recover(failed -> {
-						logger.debug("{}: Failed to create resource for {}", name, a, failed.getFailure());
+						logger.info(LIFECYCLE, "{}: Failed to create resource for {}", name, a, failed.getFailure());
 						return RECOVERY;
 					});
 			})
@@ -212,23 +212,21 @@ class P2Indexer implements Closeable {
 			.useCache(MAX_STALE)
 			.asTag()
 			.async(a.uri)
-			.filter(tag -> checkDownload(a, tag))
-			.recoverWith(failed -> {
-				if (retries < 1) {
-					logger.info(LIFECYCLE, "No retries remaining for failed download. url={}", a.uri);
-					return null;
-				}
-				logger.info(LIFECYCLE, "Delay before retrying failed download. url={}, delay={}, retries={}",
-					a.uri, delay, retries);
-				return promiseFactory.resolved(null)
-					.delay(delay)
-					.flatMap(x -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
-			});
+			.then(success -> success.thenAccept(tag -> checkDownload(a, tag))
+				.recoverWith(failed -> {
+					if (retries < 1) {
+						return null; // no recovery
+					}
+					logger.info(LIFECYCLE, "Retrying failed download: {}. delay={}, retries={}", failed.getFailure()
+						.getMessage(), delay, retries);
+					return success.delay(delay)
+						.flatMap(tag -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+				}));
 	}
 
-	private boolean checkDownload(Artifact a, TaggedData tag) throws Exception {
+	private void checkDownload(Artifact a, TaggedData tag) throws Exception {
 		if (tag.getState() != State.UPDATED) {
-			return true;
+			return;
 		}
 		File file = tag.getFile();
 		String remoteDigest = a.md5;
@@ -247,21 +245,18 @@ class P2Indexer implements Closeable {
 						continue;
 					}
 				}
-				logger.info(LIFECYCLE, "Invalid content checksum {} for {}; expected {}", fileDigest, a.uri,
-					remoteDigest);
 				IO.delete(file);
-				return false;
+				throw new IOException(
+					String.format("Invalid content checksum %s for %s; expected %s", fileDigest, a.uri, remoteDigest));
 			}
 		} else if (a.download_size != -1L) {
 			long download_size = file.length();
 			if (download_size != a.download_size) {
-				logger.info(LIFECYCLE, "Invalid content size {} for {}; expected {}", download_size, a.uri,
-					a.download_size);
 				IO.delete(file);
-				return false;
+				throw new IOException(String.format("Invalid content size %s for %s; expected %s", download_size, a.uri,
+					a.download_size));
 			}
 		}
-		return true;
 	}
 
 	private Repository save(Repository repository) throws IOException, Exception {
