@@ -110,6 +110,12 @@ class ArtifactRepository extends XML {
 					continue;
 				}
 
+				Map<String, String> artifactProperties = getProperties(artifactNode, "properties/property");
+				xmlArtifact.format = artifactProperties.get("format");
+				if (xmlArtifact.format != null) {
+					continue; // we do not currently support packed format
+				}
+
 				Map<String, String> map = Converter.cnv(new TypeReference<Map<String, String>>() {
 				}, xmlArtifact);
 				try (Processor domain = new Processor(parent)) {
@@ -126,7 +132,6 @@ class ArtifactRepository extends XML {
 							artifact.uri = uri;
 							artifact.id = xmlArtifact.id;
 							artifact.version = new Version(xmlArtifact.version);
-							Map<String, String> artifactProperties = getProperties(artifactNode, "properties/property");
 							artifact.md5 = artifactProperties.get("download.md5");
 							String download_size = artifactProperties.getOrDefault("download.size", "-1L");
 							try {

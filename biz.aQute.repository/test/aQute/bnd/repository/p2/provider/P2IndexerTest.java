@@ -29,12 +29,34 @@ import aQute.libg.reporter.slf4j.Slf4jReporter;
 import junit.framework.TestCase;
 
 public class P2IndexerTest extends TestCase {
-	File tmp = IO.getFile("generated/tmp");
+	File tmp;
 
 	@Override
-	public void setUp() {
+	protected void setUp() {
+		tmp = IO.getFile("generated/tmp/test/" + getName());
 		IO.delete(tmp);
 		tmp.mkdirs();
+	}
+
+	public void testEclipseP2Repo() throws Exception {
+		HttpClient client = new HttpClient();
+		client.setCache(IO.getFile(tmp, "cache"));
+
+		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client,
+			new URI("https://download.eclipse.org/egit/updates-4.7.1/"), getName())) {
+			List<String> bsns = p2.list(null);
+			System.out.println(bsns);
+			assertThat(bsns).contains("org.kohsuke.args4j", "org.slf4j.api", "org.apache.httpcomponents.httpclient",
+				"org.eclipse.egit.ui.source", "org.eclipse.jgit.archive", "org.eclipse.jgit.pgm.source",
+				"org.eclipse.egit", "org.eclipse.egit.ui", "org.eclipse.egit.mylyn.ui.source", "org.eclipse.jgit.pgm",
+				"org.apache.commons.compress", "org.eclipse.egit.gitflow.ui", "org.slf4j.impl.log4j12",
+				"org.eclipse.jgit.ui", "javaewah", "org.apache.httpcomponents.httpcore", "org.eclipse.jgit.source",
+				"org.eclipse.jgit.http.apache", "org.eclipse.egit.gitflow.source", "org.eclipse.jgit",
+				"org.eclipse.egit.core.source", "org.eclipse.egit.gitflow.ui.source", "org.eclipse.egit.mylyn.ui",
+				"org.eclipse.jgit.lfs", "org.eclipse.egit.gitflow", "org.eclipse.egit.core",
+				"org.eclipse.egit.ui.smartimport", "org.eclipse.jgit.lfs.server", "org.eclipse.egit.doc",
+				"org.apache.log4j", "com.google.gson", "com.jcraft.jsch");
+		}
 	}
 
 	public void testURI() throws Exception {
@@ -42,8 +64,9 @@ public class P2IndexerTest extends TestCase {
 		client.setCache(IO.getFile(tmp, "cache"));
 
 		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client,
-			new URI("https://dl.bintray.com/bndtools/bndtools/3.5.0/"), "test")) {
+			new URI("https://dl.bintray.com/bndtools/bndtools/3.5.0/"), getName())) {
 			List<String> bsns = p2.list(null);
+			System.out.println(bsns);
 			assertThat(bsns).contains("javax.xml", "org.bndtools.templating.gitrepo",
 				"org.bndtools.headless.build.manager", "javax.xml.stream", "org.bndtools.templating", "org.slf4j.api",
 				"bndtools.api", "bndtools.jareditor", "org.bndtools.versioncontrol.ignores.plugin.git", "bndtools.m2e",
@@ -51,7 +74,6 @@ public class P2IndexerTest extends TestCase {
 				"bndtools.builder", "bndtools.core", "biz.aQute.repository",
 				"org.bndtools.headless.build.plugin.gradle", "bndtools.release",
 				"org.bndtools.headless.build.plugin.ant", "org.osgi.impl.bundle.repoindex.lib", "biz.aQute.bndlib");
-			System.out.println(bsns);
 		}
 	}
 
@@ -64,7 +86,8 @@ public class P2IndexerTest extends TestCase {
 			.isDirectory();
 
 		try (
-			P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client, input.toURI(), "test")) {
+			P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client, input.toURI(),
+				getName())) {
 			List<String> bsns = p2.list(null);
 			assertThat(bsns).containsExactly("name.njbartlett.eclipse.macbadge");
 
@@ -151,7 +174,7 @@ public class P2IndexerTest extends TestCase {
 		client.setCache(IO.getFile(tmp, "cache"));
 
 		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client,
-			new URI("https://dl.bintray.com/bndtools/bndtools/3.5.0/"), "test")) {
+			new URI("https://dl.bintray.com/bndtools/bndtools/3.5.0/"), getName())) {
 
 			assertThat(p2.versions("bndtools.core")).hasSize(1);
 
@@ -174,7 +197,8 @@ public class P2IndexerTest extends TestCase {
 		IO.store(content, targetFile);
 
 		try (P2Indexer p2 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client, targetFile.getAbsoluteFile()
-			.toURI(), "test")) {
+				.toURI(),
+			getName())) {
 			List<String> bsns = p2.list(null);
 			assertThat(bsns).containsExactly("name.njbartlett.eclipse.macbadge");
 
@@ -246,7 +270,8 @@ public class P2IndexerTest extends TestCase {
 			throw t;
 		}
 
-		try (P2Indexer p3 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client, input.toURI(), "test")) {
+		try (P2Indexer p3 = new P2Indexer(new Slf4jReporter(P2IndexerTest.class), tmp, client, input.toURI(),
+			getName())) {
 			File f = p3.get("name.njbartlett.eclipse.macbadge", new Version("1.0.0.201110100042"), null);
 			assertThat(f).isNotNull()
 				.hasName("name.njbartlett.eclipse.macbadge-1.0.0.201110100042.jar");
