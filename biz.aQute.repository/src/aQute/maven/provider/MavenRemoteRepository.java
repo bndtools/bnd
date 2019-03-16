@@ -58,7 +58,6 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 
 					if (!path.endsWith("/maven-metadata.xml")) {
 						URL shaUrl = new URL(base + path + ".sha1");
-						URL md5Url = new URL(base + path + ".md5");
 						String sha = client.build()
 							.asString()
 							.timeout(15000)
@@ -68,6 +67,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 								.asHex();
 							checkDigest(fileSha, sha, file);
 						} else {
+							URL md5Url = new URL(base + path + ".md5");
 							String md5 = client.build()
 								.asString()
 								.timeout(15000)

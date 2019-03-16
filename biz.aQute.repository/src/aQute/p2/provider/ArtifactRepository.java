@@ -126,7 +126,14 @@ class ArtifactRepository extends XML {
 							artifact.uri = uri;
 							artifact.id = xmlArtifact.id;
 							artifact.version = new Version(xmlArtifact.version);
-							artifact.md5 = getProperties(artifactNode, "properties/property").get("download.md5");
+							Map<String, String> artifactProperties = getProperties(artifactNode, "properties/property");
+							artifact.md5 = artifactProperties.get("download.md5");
+							String download_size = artifactProperties.getOrDefault("download.size", "-1L");
+							try {
+								artifact.download_size = Long.parseLong(download_size);
+							} catch (NumberFormatException e) {
+								artifact.download_size = -1L;
+							}
 							artifacts.add(artifact);
 							break;
 						}

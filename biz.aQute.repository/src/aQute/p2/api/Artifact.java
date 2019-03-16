@@ -136,5 +136,6 @@ public class Artifact extends DTO {
 	public String	id;
 	public Version	version;
 	public String	md5;
+	public long			download_size;
 
 }
