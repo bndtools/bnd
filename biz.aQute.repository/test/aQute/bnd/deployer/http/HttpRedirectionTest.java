@@ -77,7 +77,10 @@ public class HttpRedirectionTest extends TestCase {
 			public void run() {
 				try (HttpClient connector = new HttpClient()) {
 					try {
-						InputStream stream = connector.connect(new URL("http://localhost:" + httpd.getPort() + "/foo"));
+						InputStream stream = connector.build()
+							.retries(0)
+							.get(InputStream.class)
+							.go(new URL("http://localhost:" + httpd.getPort() + "/foo"));
 						IO.collect(stream);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -86,7 +89,7 @@ public class HttpRedirectionTest extends TestCase {
 			}
 		});
 		try {
-			future.get(1, TimeUnit.SECONDS);
+			future.get(5, TimeUnit.SECONDS);
 		} finally {
 			future.cancel(true);
 			executor.shutdownNow();
