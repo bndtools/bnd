@@ -13,6 +13,7 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.converter.TypeReference;
+import aQute.lib.exceptions.Exceptions;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -183,10 +184,14 @@ public class HttpRequest<T> {
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	public T go(URL url) throws Exception {
 		this.url = url;
-		return (T) client.send(this);
+		Promise<T> promise = client.sendRetry(this, client.inlinePromiseFactory());
+		Throwable failure = promise.getFailure(); // wait for completion
+		if (failure != null) {
+			throw Exceptions.duck(failure);
+		}
+		return promise.getValue();
 	}
 
 	public T go(URI url) throws Exception {
@@ -198,11 +203,9 @@ public class HttpRequest<T> {
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
 	public Promise<T> async(URL url) {
 		this.url = url;
-		return client.promiseFactory()
-			.submit(() -> (T) client.send(this));
+		return client.sendRetry(this, client.promiseFactory());
 	}
 
 	public Promise<T> async(URI uri) {

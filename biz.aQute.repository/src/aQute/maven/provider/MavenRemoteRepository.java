@@ -1,5 +1,7 @@
 package aQute.maven.provider;
 
+import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -9,6 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.osgi.util.promise.Promise;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,6 +19,7 @@ import aQute.bnd.http.HttpClient;
 import aQute.bnd.http.HttpRequestException;
 import aQute.bnd.service.url.State;
 import aQute.bnd.service.url.TaggedData;
+import aQute.lib.exceptions.Exceptions;
 import aQute.libg.cryptography.MD5;
 import aQute.libg.cryptography.SHA1;
 import aQute.maven.api.Program;
@@ -40,53 +44,62 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 
 	@Override
 	public TaggedData fetch(String path, File file) throws Exception {
-		URL url = new URL(base + path);
-		int n = 0;
-		while (true)
-			try {
-				logger.debug("Fetching {}", path);
+		Promise<TaggedData> promise = fetch(path, file, new URL(base + path), 3, 1000L);
+		Throwable failure = promise.getFailure(); // wait for completion
+		if (failure != null) {
+			throw Exceptions.duck(failure);
+		}
+		return promise.getValue();
+	}
 
-				TaggedData tag = client.build()
-					.headers("User-Agent", "Bnd")
-					.useCache(file, DEFAULT_MAX_STALE)
-					.asTag()
-					.go(url);
+	private Promise<TaggedData> fetch(String path, File file, URL url, int retries, long delay) throws Exception {
+		logger.debug("Fetching {}", path);
+		return client.build()
+			.headers("User-Agent", "Bnd")
+			.useCache(file, DEFAULT_MAX_STALE)
+			.asTag()
+			.async(url)
+			.then(success -> success.thenAccept(tag -> {
 				logger.debug("Fetched {}", tag);
-				if (tag.getState() == State.UPDATED) {
+				if (tag.getState() != State.UPDATED) {
+					return;
+				}
 
-					// https://issues.sonatype.org/browse/NEXUS-4900
-
-					if (!path.endsWith("/maven-metadata.xml")) {
-						URL shaUrl = new URL(base + path + ".sha1");
-						String sha = client.build()
+				// https://issues.sonatype.org/browse/NEXUS-4900
+				if (!path.endsWith("/maven-metadata.xml")) {
+					URL shaUrl = new URL(base + path + ".sha1");
+					String sha = client.build()
+						.asString()
+						.timeout(15000)
+						.go(shaUrl);
+					if (sha != null) {
+						String fileSha = SHA1.digest(file)
+							.asHex();
+						checkDigest(fileSha, sha, file);
+					} else {
+						URL md5Url = new URL(base + path + ".md5");
+						String md5 = client.build()
 							.asString()
 							.timeout(15000)
-							.go(shaUrl);
-						if (sha != null) {
-							String fileSha = SHA1.digest(file)
+							.go(md5Url);
+						if (md5 != null) {
+							String fileMD5 = MD5.digest(file)
 								.asHex();
-							checkDigest(fileSha, sha, file);
-						} else {
-							URL md5Url = new URL(base + path + ".md5");
-							String md5 = client.build()
-								.asString()
-								.timeout(15000)
-								.go(md5Url);
-							if (md5 != null) {
-								String fileMD5 = MD5.digest(file)
-									.asHex();
-								checkDigest(fileMD5, md5, file);
-							}
+							checkDigest(fileMD5, md5, file);
 						}
 					}
 				}
-				return tag;
-			} catch (Exception e) {
-				n++;
-				if (n > 3)
-					throw e;
-				Thread.sleep(1000 * n);
-			}
+			})
+				.recoverWith(failed -> {
+					if (retries < 1) {
+						return null; // no recovery
+					}
+					logger.info(LIFECYCLE, "Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
+						.getMessage(), delay, retries);
+					return success.delay(delay)
+						.flatMap(tag -> fetch(path, file, url, retries - 1,
+							Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+				}));
 	}
 
 	@Override

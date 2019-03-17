@@ -212,18 +212,16 @@ class P2Indexer implements Closeable {
 			.useCache(MAX_STALE)
 			.asTag()
 			.async(a.uri)
-			.thenAccept(tag -> checkDownload(a, tag))
-			.recoverWith(failed -> {
-				if (retries < 1) {
-					return null; // no recovery
-				}
-				logger.info(LIFECYCLE, "Retrying failed download: {}. delay={}, retries={}", failed.getFailure()
-					.getMessage(), delay, retries);
-				@SuppressWarnings("unchecked")
-				Promise<TaggedData> promise = (Promise<TaggedData>) failed;
-				return promise.delay(delay)
-					.recoverWith(f -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
-			});
+			.then(success -> success.thenAccept(tag -> checkDownload(a, tag))
+				.recoverWith(failed -> {
+					if (retries < 1) {
+						return null; // no recovery
+					}
+					logger.info(LIFECYCLE, "Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
+						.getMessage(), delay, retries);
+					return success.delay(delay)
+						.flatMap(tag -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+				}));
 	}
 
 	private void checkDownload(Artifact a, TaggedData tag) throws Exception {
