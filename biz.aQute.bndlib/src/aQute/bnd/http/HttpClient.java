@@ -184,6 +184,10 @@ public class HttpClient implements Closeable, URLConnector {
 				// double delay for next retry; 10 minutes max delay
 				long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))
 					: delay;
+				if (factory == inlinePromiseFactory()) {
+					delayed.getFailure(); // wait on the current thread
+					return sendRetry(request, retries - 1, nextDelay, factory);
+				}
 				return delayed.recoverWith(f -> sendRetry(request, retries - 1, nextDelay, factory));
 			});
 	}
