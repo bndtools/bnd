@@ -1,5 +1,6 @@
 package aQute.bnd.http;
 
+import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
 import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
@@ -41,6 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.InflaterInputStream;
 
+import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,10 +96,12 @@ public class HttpClient implements Closeable, URLConnector {
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;
 	private final PromiseFactory				promiseFactory;
+	private final PromiseFactory				inlinePromiseFactory;
 	private ConnectionSettings					connectionSettings;
 
 	public HttpClient() {
 		promiseFactory = Processor.getPromiseFactory();
+		inlinePromiseFactory = new PromiseFactory(PromiseFactory.inlineExecutor(), promiseFactory.scheduledExecutor());
 	}
 
 	synchronized void init() {
@@ -151,6 +155,37 @@ public class HttpClient implements Closeable, URLConnector {
 
 	public HttpRequest<Object> build() {
 		return new HttpRequest<>(this);
+	}
+
+	<T> Promise<T> sendRetry(final HttpRequest<T> request, PromiseFactory factory) {
+		int retries = "GET".equalsIgnoreCase(request.verb) ? request.retries : 0;
+		long delay = (request.retryDelay == 0L) ? 1000L : request.retryDelay;
+		return sendRetry(request, retries, delay, factory);
+	}
+
+	@SuppressWarnings("unchecked")
+	private <T> Promise<T> sendRetry(final HttpRequest<T> request, int retries, long delay, PromiseFactory factory) {
+		return factory.submit(() -> (T) send(request))
+			.recoverWith(failed -> {
+				Throwable failure = failed.getFailure();
+				if (retries < 1) {
+					if (failure instanceof RetryException) {
+						TaggedData tag = ((RetryException) failure).getTag();
+						if (request.download == TaggedData.class) {
+							return factory.resolved((T) tag);
+						}
+						tag.throwIt(); // replace failure exception
+					}
+					return null; // no recovery
+				}
+				logger.info(LIFECYCLE, "Retrying failed connection. url={}, message={}, delay={}, retries={}",
+					request.url, failure.getMessage(), delay, retries);
+				Promise<T> delayed = (Promise<T>) failed.delay(delay);
+				// double delay for next retry; 10 minutes max delay
+				long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))
+					: delay;
+				return delayed.recoverWith(f -> sendRetry(request, retries - 1, nextDelay, factory));
+			});
 	}
 
 	public Object send(final HttpRequest<?> request) throws Exception {
@@ -302,61 +337,42 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public TaggedData send0(final HttpRequest<?> request) throws Exception {
-		int retries = "GET".equalsIgnoreCase(request.verb) ? request.retries : 0;
-		int trial = 0;
-		long delay = (request.retryDelay == 0L) ? 1000L : request.retryDelay;
-		while (true) {
-			final ProxySetup proxy = getProxySetup(request.url);
-			final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
-			final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
+		final ProxySetup proxy = getProxySetup(request.url);
+		final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
+		final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
 
-			if (request.ifNoneMatch != null) {
-				request.headers.put("If-None-Match", entitytag(request.ifNoneMatch));
-			}
-
-			if (request.ifMatch != null) {
-				request.headers.put("If-Match", "\"" + entitytag(request.ifMatch));
-			}
-
-			if (request.ifModifiedSince > 0) {
-				request.headers.put("If-Modified-Since", httpDateFormat().format(new Date(request.ifModifiedSince)));
-			}
-
-			if (request.ifUnmodifiedSince != 0) {
-				request.headers.put("If-Unmodified-Since",
-					httpDateFormat().format(new Date(request.ifUnmodifiedSince)));
-			}
-
-			setHeaders(request.headers, con);
-
-			configureHttpConnection(request.verb, hcon);
-
-			final ProgressPlugin.Task task = getTask(request);
-			try {
-				TaggedData td = connectWithProxy(proxy,
-					() -> doConnect(request.upload, request.download, con, hcon, request, task));
-				logger.debug("result {}", td);
-				if ((td.getResponseCode() / 100) != 5) {
-					return td;
-				}
-				if (trial++ < retries) {
-					logger.debug("retrying failed connection. url={}, response code={}, trial={}", request.url,
-						td.getResponseCode(), trial);
-				} else {
-					return td;
-				}
-			} catch (Throwable t) {
-				task.done("Failed " + t, t);
-				throw t;
-			}
-			logger.debug("delay before retrying connection. url={}, delay={}, trial={}", request.url, delay, trial);
-			Thread.sleep(delay);
-			if (request.retryDelay == 0L) {
-				// double delay for next retry; 10 minutes max delay
-				delay = Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10));
-			}
+		if (request.ifNoneMatch != null) {
+			request.headers.put("If-None-Match", entitytag(request.ifNoneMatch));
 		}
 
+		if (request.ifMatch != null) {
+			request.headers.put("If-Match", "\"" + entitytag(request.ifMatch));
+		}
+
+		if (request.ifModifiedSince > 0) {
+			request.headers.put("If-Modified-Since", httpDateFormat().format(new Date(request.ifModifiedSince)));
+		}
+
+		if (request.ifUnmodifiedSince != 0) {
+			request.headers.put("If-Unmodified-Since", httpDateFormat().format(new Date(request.ifUnmodifiedSince)));
+		}
+
+		setHeaders(request.headers, con);
+
+		configureHttpConnection(request.verb, hcon);
+
+		final ProgressPlugin.Task task = getTask(request);
+		try {
+			TaggedData td = connectWithProxy(proxy,
+				() -> doConnect(request.upload, request.download, con, hcon, request, task));
+			logger.debug("result {}", td);
+			return td;
+		} catch (RetryException t) {
+			throw t;
+		} catch (Throwable t) {
+			task.done("Failed " + t, t);
+			throw t;
+		}
 	}
 
 	ProgressPlugin.Task getTask(final HttpRequest<?> request) {
@@ -563,9 +579,14 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 
 			if ((code / 100) != 2) {
-				task.done("Finished " + code + " " + con.getURL()
-					.toURI(), null);
-				return new TaggedData(con, null, request.useCacheFile);
+				String message = "Finished " + code + " " + con.getURL()
+					.toURI();
+				task.done(message, null);
+				TaggedData tag = new TaggedData(con, null, request.useCacheFile);
+				if ((code / 100) == 5) {
+					throw new RetryException(tag, message);
+				}
+				return tag;
 			}
 
 			// Do not enclose in resource try! InputStream is potentially
@@ -581,10 +602,11 @@ public class HttpClient implements Closeable, URLConnector {
 			// 526 Invalid SSL Certificate
 			// Cloudflare could not validate the SSL/TLS certificate that the
 			// origin server presented.
-			return new TaggedData(request.url.toURI(), 526, request.useCacheFile);
+			throw new RetryException(new TaggedData(request.url.toURI(), 526, request.useCacheFile), e);
 		} catch (SocketTimeoutException e) {
 			task.done(e.toString(), null);
-			return new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT, request.useCacheFile);
+			throw new RetryException(
+				new TaggedData(request.url.toURI(), HttpURLConnection.HTTP_GATEWAY_TIMEOUT, request.useCacheFile), e);
 		} catch (SocketException e) {
 			task.done(e.toString(), null);
 			// 520 Unknown Error (Cloudflare)
@@ -592,7 +614,7 @@ public class HttpClient implements Closeable, URLConnector {
 			// event that the origin server yields something unexpected. This
 			// could include listing large headers, connection resets or invalid
 			// or empty responses.
-			return new TaggedData(request.url.toURI(), 520, request.useCacheFile);
+			throw new RetryException(new TaggedData(request.url.toURI(), 520, request.useCacheFile), e);
 		}
 	}
 
@@ -762,6 +784,10 @@ public class HttpClient implements Closeable, URLConnector {
 
 	public PromiseFactory promiseFactory() {
 		return promiseFactory;
+	}
+
+	PromiseFactory inlinePromiseFactory() {
+		return inlinePromiseFactory;
 	}
 
 	public URLCache cache() {
