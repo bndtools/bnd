@@ -185,8 +185,7 @@ public class HttpRequest<T> {
 	}
 
 	public T go(URL url) throws Exception {
-		this.url = url;
-		Promise<T> promise = client.sendRetry(this, client.inlinePromiseFactory());
+		Promise<T> promise = async(url);
 		Throwable failure = promise.getFailure(); // wait for completion
 		if (failure != null) {
 			throw Exceptions.duck(failure);
@@ -205,7 +204,7 @@ public class HttpRequest<T> {
 
 	public Promise<T> async(URL url) {
 		this.url = url;
-		return client.sendRetry(this, client.promiseFactory());
+		return client.sendRetry(this);
 	}
 
 	public Promise<T> async(URI uri) {

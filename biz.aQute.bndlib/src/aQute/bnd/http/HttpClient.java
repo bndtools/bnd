@@ -96,12 +96,10 @@ public class HttpClient implements Closeable, URLConnector {
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;
 	private final PromiseFactory				promiseFactory;
-	private final PromiseFactory				inlinePromiseFactory;
 	private ConnectionSettings					connectionSettings;
 
 	public HttpClient() {
 		promiseFactory = Processor.getPromiseFactory();
-		inlinePromiseFactory = new PromiseFactory(PromiseFactory.inlineExecutor(), promiseFactory.scheduledExecutor());
 	}
 
 	synchronized void init() {
@@ -157,22 +155,26 @@ public class HttpClient implements Closeable, URLConnector {
 		return new HttpRequest<>(this);
 	}
 
-	<T> Promise<T> sendRetry(final HttpRequest<T> request, PromiseFactory factory) {
+	<T> Promise<T> sendRetry(HttpRequest<T> request) {
 		int retries = "GET".equalsIgnoreCase(request.verb) ? request.retries : 0;
 		long delay = (request.retryDelay == 0L) ? 1000L : request.retryDelay;
-		return sendRetry(request, retries, delay, factory);
+		return sendRetry(request, retries, delay);
 	}
 
+	private static final long	FIVE_MINUTES	= TimeUnit.MINUTES.toMillis(5);
+	private static final long	TEN_MINUTES		= TimeUnit.MINUTES.toMillis(10);
+
 	@SuppressWarnings("unchecked")
-	private <T> Promise<T> sendRetry(final HttpRequest<T> request, int retries, long delay, PromiseFactory factory) {
-		return factory.submit(() -> (T) send(request))
+	private <T> Promise<T> sendRetry(HttpRequest<T> request, int retries, long delay) {
+		return promiseFactory().submit(() -> (T) send(request))
+			.timeout(Math.max(FIVE_MINUTES, request.timeout * 10L))
 			.recoverWith(failed -> {
 				Throwable failure = failed.getFailure();
 				if (retries < 1) {
 					if (failure instanceof RetryException) {
 						TaggedData tag = ((RetryException) failure).getTag();
 						if (request.download == TaggedData.class) {
-							return factory.resolved((T) tag);
+							return promiseFactory().resolved((T) tag);
 						}
 						// replace failure exception
 						throw new HttpRequestException(tag, failure.getCause());
@@ -183,13 +185,9 @@ public class HttpClient implements Closeable, URLConnector {
 					request.url, failure.getMessage(), delay, retries);
 				Promise<T> delayed = (Promise<T>) failed.delay(delay);
 				// double delay for next retry; 10 minutes max delay
-				long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))
+				long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, TEN_MINUTES)
 					: delay;
-				if (factory == inlinePromiseFactory()) {
-					delayed.getFailure(); // use current thread to wait
-					return sendRetry(request, retries - 1, nextDelay, factory);
-				}
-				return delayed.recoverWith(f -> sendRetry(request, retries - 1, nextDelay, factory));
+				return delayed.recoverWith(f -> sendRetry(request, retries - 1, nextDelay));
 			});
 	}
 
@@ -789,10 +787,6 @@ public class HttpClient implements Closeable, URLConnector {
 
 	public PromiseFactory promiseFactory() {
 		return promiseFactory;
-	}
-
-	PromiseFactory inlinePromiseFactory() {
-		return inlinePromiseFactory;
 	}
 
 	public URLCache cache() {
