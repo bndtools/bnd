@@ -174,7 +174,8 @@ public class HttpClient implements Closeable, URLConnector {
 						if (request.download == TaggedData.class) {
 							return factory.resolved((T) tag);
 						}
-						tag.throwIt(); // replace failure exception
+						// replace failure exception
+						throw new HttpRequestException(tag, failure.getCause());
 					}
 					return null; // no recovery
 				}
@@ -185,7 +186,7 @@ public class HttpClient implements Closeable, URLConnector {
 				long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))
 					: delay;
 				if (factory == inlinePromiseFactory()) {
-					delayed.getFailure(); // wait on the current thread
+					delayed.getFailure(); // use current thread to wait
 					return sendRetry(request, retries - 1, nextDelay, factory);
 				}
 				return delayed.recoverWith(f -> sendRetry(request, retries - 1, nextDelay, factory));
