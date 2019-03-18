@@ -1,5 +1,7 @@
 package aQute.bnd.http;
 
+import static aQute.bnd.http.HttpClient.getValue;
+
 import java.io.File;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
@@ -13,7 +15,6 @@ import org.osgi.util.promise.Promise;
 
 import aQute.bnd.service.url.TaggedData;
 import aQute.lib.converter.TypeReference;
-import aQute.lib.exceptions.Exceptions;
 import aQute.service.reporter.Reporter;
 
 /**
@@ -185,12 +186,7 @@ public class HttpRequest<T> {
 	}
 
 	public T go(URL url) throws Exception {
-		Promise<T> promise = async(url);
-		Throwable failure = promise.getFailure(); // wait for completion
-		if (failure != null) {
-			throw Exceptions.duck(failure);
-		}
-		return promise.getValue();
+		return getValue(async(url));
 	}
 
 	public T go(URI url) throws Exception {
@@ -204,7 +200,7 @@ public class HttpRequest<T> {
 
 	public Promise<T> async(URL url) {
 		this.url = url;
-		return client.sendRetry(this);
+		return client.async(this);
 	}
 
 	public Promise<T> async(URI uri) {
