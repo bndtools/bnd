@@ -37,17 +37,21 @@ public class HttpRedirectionTest extends TestCase {
 				return r;
 			}
 		};
-		String baseUrl = "http://localhost:" + httpd.getPort() + "/";
-		String originalUrl = baseUrl + "foo";
-		String redirectUrl = baseUrl + "bar";
+		try {
+			String baseUrl = "http://localhost:" + httpd.getPort() + "/";
+			String originalUrl = baseUrl + "foo";
+			String redirectUrl = baseUrl + "bar";
 
-		try (HttpClient connector = new HttpClient()) {
-			connector.setReporter(reporter);
+			try (HttpClient connector = new HttpClient()) {
+				connector.setReporter(reporter);
 
-			InputStream stream = connector.connect(new URL(originalUrl));
-			String result = IO.collect(stream);
+				InputStream stream = connector.connect(new URL(originalUrl));
+				String result = IO.collect(stream);
 
-			assertEquals("got it", result);
+				assertEquals("got it", result);
+			}
+		} finally {
+			httpd.stop();
 		}
 	}
 
@@ -69,30 +73,34 @@ public class HttpRedirectionTest extends TestCase {
 			}
 		};
 
-		// Use a future to ensure we timeout after 1s if the redirect does
-		// actually loop forever
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-		Future<?> future = executor.submit(new Runnable() {
-			@Override
-			public void run() {
-				try (HttpClient connector = new HttpClient()) {
-					try {
-						InputStream stream = connector.build()
-							.retries(0)
-							.get(InputStream.class)
-							.go(new URL("http://localhost:" + httpd.getPort() + "/foo"));
-						IO.collect(stream);
-					} catch (Exception e) {
-						e.printStackTrace();
+		try {
+			// Use a future to ensure we timeout after 1s if the redirect does
+			// actually loop forever
+			ExecutorService executor = Executors.newSingleThreadExecutor();
+			Future<?> future = executor.submit(new Runnable() {
+				@Override
+				public void run() {
+					try (HttpClient connector = new HttpClient()) {
+						try {
+							InputStream stream = connector.build()
+								.retries(0)
+								.get(InputStream.class)
+								.go(new URL("http://localhost:" + httpd.getPort() + "/foo"));
+							IO.collect(stream);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
 					}
 				}
+			});
+			try {
+				future.get(5, TimeUnit.SECONDS);
+			} finally {
+				future.cancel(true);
+				executor.shutdownNow();
 			}
-		});
-		try {
-			future.get(5, TimeUnit.SECONDS);
 		} finally {
-			future.cancel(true);
-			executor.shutdownNow();
+			httpd.stop();
 		}
 	}
 }

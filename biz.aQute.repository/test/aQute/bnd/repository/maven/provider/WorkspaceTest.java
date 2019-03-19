@@ -44,6 +44,11 @@ public class WorkspaceTest extends TestCase {
 		fnx.start();
 	}
 
+	@Override
+	protected void tearDown() throws Exception {
+		IO.close(fnx);
+	}
+
 	public void testEnv() throws Exception {
 		config(null);
 		assertNotNull(workspace);

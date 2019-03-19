@@ -496,9 +496,10 @@ public class HttpClientTest extends TestCase {
 
 			Config c = new Config();
 			c.https = true;
-			Httpbin httpbin = new Httpbin(c);
-			X509Certificate[] invalidChain = httpbin.getCertificateChain();
-			httpbin.close();
+			X509Certificate[] invalidChain;
+			try (Httpbin httpbin = new Httpbin(c)) {
+				invalidChain = httpbin.getCertificateChain();
+			}
 
 			HttpsVerification httpsVerification = new HttpsVerification(invalidChain, true, hc.getReporter());
 			hc.addURLConnectionHandler(httpsVerification);

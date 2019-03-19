@@ -62,8 +62,9 @@ public class HttpClientCacheTest extends TestCase {
 	}
 
 	@Override
-	public void tearDown() {
+	public void tearDown() throws Exception {
 		IO.delete(tmp);
+		IO.close(httpServer);
 	}
 
 	public void testGetNewThenUnmodifiedThenModified() throws URISyntaxException, Exception {

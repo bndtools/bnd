@@ -27,24 +27,26 @@ public class HttpTestServerTest extends TestCase {
 	final static TypeReference<Map<String, Object>> MAP_REF = new TypeReference<Map<String, Object>>() {};
 
 	public void testSimple() throws Exception {
-		HttpTestServer http = getHttps();
-		System.out.println(http.getBaseURI());
-		System.out.println(Arrays.toString(http.getCertificateChain()));
-		assertFalse(0 == http.getAddress()
-			.getPort());
+		try (HttpTestServer http = getHttps()) {
+			System.out.println(http.getBaseURI());
+			System.out.println(Arrays.toString(http.getCertificateChain()));
+			assertFalse(0 == http.getAddress()
+				.getPort());
+		}
 	}
 
 	static Pattern DN_P = Pattern.compile("(^|\\s)CN=(?<cn>[^, ]+)", Pattern.CASE_INSENSITIVE);
 
 	public void testCorrectCommonName() throws Exception {
-		HttpTestServer http = getHttps();
-		X509Certificate cert = http.getCertificateChain()[0];
-		String name = cert.getSubjectDN()
-			.getName();
-		Matcher m = DN_P.matcher(name);
-		assertTrue(m.find());
-		assertEquals(m.group("cn"), http.getAddress()
-			.getHostName());
+		try (HttpTestServer http = getHttps()) {
+			X509Certificate cert = http.getCertificateChain()[0];
+			String name = cert.getSubjectDN()
+				.getName();
+			Matcher m = DN_P.matcher(name);
+			assertTrue(m.find());
+			assertEquals(m.group("cn"), http.getAddress()
+				.getHostName());
+		}
 	}
 
 	public void testURI() throws Exception {
