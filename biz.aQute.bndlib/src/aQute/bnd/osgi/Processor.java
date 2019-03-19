@@ -53,6 +53,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
@@ -110,14 +111,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	private final static ScheduledThreadPoolExecutor	scheduledExecutor;
 	private final static ThreadPoolExecutor				executor;
 	static {
-		ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
-		ThreadFactory threadFactory = (Runnable r) -> {
-			Thread t = defaultThreadFactory.newThread(r);
-			t.setName("Bnd-Processor," + t.getName());
-			t.setDaemon(true);
-			return t;
+		Function<String, ThreadFactory> threadFactoryFactory = prefix -> {
+			ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
+			return (Runnable r) -> {
+				Thread t = defaultThreadFactory.newThread(r);
+				t.setName(prefix + t.getName());
+				t.setDaemon(true);
+				return t;
+			};
 		};
-		RejectedExecutionHandler handler = (Runnable r, ThreadPoolExecutor e) -> {
+		ThreadFactory executorThreadFactory = threadFactoryFactory.apply("Bnd-Executor,");
+		ThreadFactory scheduledExecutorThreadFactory = threadFactoryFactory.apply("Bnd-ScheduledExecutor,");
+		RejectedExecutionHandler rejectedExecutionHandler = (Runnable r, ThreadPoolExecutor e) -> {
 			if (e.isShutdown()) {
 				return;
 			}
@@ -138,21 +143,25 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 				}
 			}
 		};
-		executor = new ThreadPoolExecutor(0, 64, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(), threadFactory,
-			handler);
-		scheduledExecutor = new ScheduledThreadPoolExecutor(4, threadFactory, handler);
+		final int corePoolSize = 2;
+		final int maximumPoolSize = Integer.getInteger("bnd.executor.maximumPoolSize", 256)
+			.intValue();
+		executor = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, 60L, TimeUnit.SECONDS,
+			new SynchronousQueue<>(), executorThreadFactory, rejectedExecutionHandler);
+		scheduledExecutor = new ScheduledThreadPoolExecutor(corePoolSize, scheduledExecutorThreadFactory,
+			rejectedExecutionHandler);
 		scheduledExecutor.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 		scheduledExecutor.setContinueExistingPeriodicTasksAfterShutdownPolicy(false);
 
 		// Handle shutting down executors via shutdown hook
 		AtomicBoolean shutdownHookInstalled = new AtomicBoolean();
-		ThreadFactory shutdownHookInstallerThreadFactory = (Runnable r) -> {
+		Function<ThreadFactory, ThreadFactory> shutdownHookInstaller = threadFactory -> (Runnable r) -> {
 			if (shutdownHookInstalled.compareAndSet(false, true)) {
-				executor.setThreadFactory(threadFactory);
-				scheduledExecutor.setThreadFactory(threadFactory);
-				Thread shutdownThread = defaultThreadFactory.newThread(() -> {
+				executor.setThreadFactory(executorThreadFactory);
+				scheduledExecutor.setThreadFactory(scheduledExecutorThreadFactory);
+				Thread shutdownThread = new Thread(() -> {
 					// limit new thread creation
-					executor.setMaximumPoolSize(Math.max(1, executor.getPoolSize()));
+					executor.setMaximumPoolSize(Math.max(corePoolSize, executor.getPoolSize()));
 					scheduledExecutor.shutdown();
 					try {
 						scheduledExecutor.awaitTermination(20, TimeUnit.SECONDS);
@@ -167,8 +176,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 						Thread.currentThread()
 							.interrupt();
 					}
-				});
-				shutdownThread.setName("Bnd-ExecutorShutdownHook," + shutdownThread.getName());
+				}, "Bnd-ExecutorShutdownHook");
 				try {
 					Runtime.getRuntime()
 						.addShutdownHook(shutdownThread);
@@ -180,8 +188,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 			}
 			return threadFactory.newThread(r);
 		};
-		executor.setThreadFactory(shutdownHookInstallerThreadFactory);
-		scheduledExecutor.setThreadFactory(shutdownHookInstallerThreadFactory);
+		executor.setThreadFactory(shutdownHookInstaller.apply(executorThreadFactory));
+		scheduledExecutor.setThreadFactory(shutdownHookInstaller.apply(scheduledExecutorThreadFactory));
 	}
 	private static PromiseFactory				promiseFactory	= new PromiseFactory(executor, scheduledExecutor);
 	static Random								random			= new Random();
