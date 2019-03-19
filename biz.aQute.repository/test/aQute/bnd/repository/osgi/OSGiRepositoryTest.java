@@ -49,6 +49,11 @@ public class OSGiRepositoryTest extends TestCase {
 		IO.copy(IO.getFile("testdata/bundles"), IO.getFile(remote, "bundles"));
 	}
 
+	@Override
+	protected void tearDown() throws Exception {
+		IO.close(fnx);
+	}
+
 	public void testSimple() throws Exception {
 		try (OSGiRepository r = new OSGiRepository();) {
 			assertTrue(testRepo(r));
