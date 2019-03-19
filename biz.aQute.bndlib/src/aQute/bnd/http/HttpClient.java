@@ -23,7 +23,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.ProtocolException;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -624,7 +623,7 @@ public class HttpClient implements Closeable, URLConnector {
 				task.done(e.toString(), null);
 				throw new RetryException(
 					new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile), e);
-			} catch (SocketException e) {
+			} catch (IOException e) {
 				task.done(e.toString(), null);
 				// 520 Unknown Error (Cloudflare)
 				// A 520 Unknown Error code is used as a “catch-all response” in
