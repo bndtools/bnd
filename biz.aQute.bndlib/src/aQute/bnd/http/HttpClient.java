@@ -23,7 +23,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.ProtocolException;
-import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -351,8 +350,12 @@ public class HttpClient implements Closeable, URLConnector {
 						}
 						return null; // no recovery
 					}
+					String message = failure.getMessage();
+					if (message == null) {
+						message = failure.toString();
+					}
 					logger.info(LIFECYCLE, "Retrying failed connection. url={}, message={}, delay={}, retries={}",
-						request.url, failure.getMessage(), delay, retries);
+						request.url, message, delay, retries);
 					Promise<T> delayed = (Promise<T>) failed.delay(delay);
 					// double delay for next retry; 10 minutes max delay
 					long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, TEN_MINUTES) : delay;
@@ -624,7 +627,7 @@ public class HttpClient implements Closeable, URLConnector {
 				task.done(e.toString(), null);
 				throw new RetryException(
 					new TaggedData(request.url.toURI(), HTTP_GATEWAY_TIMEOUT, request.useCacheFile), e);
-			} catch (SocketException e) {
+			} catch (IOException e) {
 				task.done(e.toString(), null);
 				// 520 Unknown Error (Cloudflare)
 				// A 520 Unknown Error code is used as a “catch-all response” in
