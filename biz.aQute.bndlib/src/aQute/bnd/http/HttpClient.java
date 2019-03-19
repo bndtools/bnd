@@ -350,8 +350,12 @@ public class HttpClient implements Closeable, URLConnector {
 						}
 						return null; // no recovery
 					}
+					String message = failure.getMessage();
+					if (message == null) {
+						message = failure.toString();
+					}
 					logger.info(LIFECYCLE, "Retrying failed connection. url={}, message={}, delay={}, retries={}",
-						request.url, failure.getMessage(), delay, retries);
+						request.url, message, delay, retries);
 					Promise<T> delayed = (Promise<T>) failed.delay(delay);
 					// double delay for next retry; 10 minutes max delay
 					long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, TEN_MINUTES) : delay;
