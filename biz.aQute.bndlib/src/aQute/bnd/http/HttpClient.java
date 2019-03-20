@@ -99,6 +99,8 @@ public class HttpClient implements Closeable, URLConnector {
 	private volatile AtomicBoolean				offline;
 	private final PromiseFactory				promiseFactory;
 	private ConnectionSettings					connectionSettings;
+	int											retries					= 3;
+	long										retryDelay				= 0L;
 
 	public HttpClient() {
 		promiseFactory = Processor.getPromiseFactory();
@@ -319,6 +321,16 @@ public class HttpClient implements Closeable, URLConnector {
 		if (connectionSettings != null) {
 			connectionSettings.report(out);
 		}
+	}
+
+	public HttpClient retries(int retries) {
+		this.retries = retries;
+		return this;
+	}
+
+	public HttpClient retryDelay(int retryDelay) {
+		this.retryDelay = TimeUnit.SECONDS.toMillis(retryDelay);
+		return this;
 	}
 
 	class HttpConnection<T> implements Callable<T> {

@@ -40,11 +40,13 @@ public class HttpRequest<T> {
 	Reporter			reporter;
 	File				useCacheFile;
 	boolean				updateTag;
-	int					retries		= 3;
-	long				retryDelay	= 0L;
+	int					retries;
+	long				retryDelay;
 
 	HttpRequest(HttpClient client) {
 		this.client = client;
+		this.retries = client.retries;
+		this.retryDelay = client.retryDelay;
 	}
 
 	/**
