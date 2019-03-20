@@ -194,7 +194,8 @@ class P2Indexer implements Closeable {
 						return rb.build();
 					})
 					.recover(failed -> {
-						logger.info(LIFECYCLE, "{}: Failed to create resource for {}", name, a, failed.getFailure());
+						logger.info(LIFECYCLE, "{}: Failed to create resource for {}", name, a.uri,
+							failed.getFailure());
 						return RECOVERY;
 					});
 			})
