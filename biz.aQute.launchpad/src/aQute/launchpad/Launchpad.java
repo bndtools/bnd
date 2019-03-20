@@ -49,6 +49,7 @@ import org.osgi.framework.launch.Framework;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
+import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.lib.converter.Converter;
@@ -722,6 +723,9 @@ public class Launchpad implements AutoCloseable {
 					toBeStarted.add(b);
 				}
 			}
+
+			FrameworkWiring fw = framework.adapt(FrameworkWiring.class);
+			fw.resolveBundles(toBeStarted);
 
 			Collections.sort(toBeStarted, this::startorder);
 			toBeStarted.forEach(this::start);

@@ -13,7 +13,7 @@
 	slf4j.api;version='[1.7.25,1.7.26)',\
 	slf4j.simple;version='[1.7.25,1.7.26)',\
 	biz.aQute.bnd.runtime.gogo;version=snapshot,\
-	org.apache.felix.log;version='[1.0.1,1.0.2)'
+	org.apache.felix.log;version='[1.2.0,1.2.1)'
 
 -runtrace: true
 -runblacklist: \

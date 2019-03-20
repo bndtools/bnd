@@ -7,8 +7,8 @@
     osgi.core;version=@6;maven-scope=provided,\
     org.osgi.service.coordinator;maven-scope=provided,\
     org.osgi.service.cm, \
-    org.osgi.service.component;version='[1.3,1.4)',\
-    org.osgi.service.component.annotations;version='[1.3,1.4)';maven-scope=provided,\
+    org.osgi.service.component;version='[1.4,1.5)',\
+    org.osgi.service.component.annotations;version='[1.4,1.5)';maven-scope=provided,\
     biz.aQute.bndlib;version=latest;maven-scope=provided,\
     org.apache.felix.gogo.runtime;version=0.12,\
     org.apache.felix.gogo.command,\
@@ -17,10 +17,9 @@
 -testpath: \
     ${junit}, \
     biz.aQute.launchpad;version=latest, \
-    slf4j.api, \
-    slf4j.simple;version=latest, \
     biz.aQute.repository, \
-    org.apache.felix.framework;version=@5
+    slf4j.api, \
+    slf4j.simple;version=latest
 
 -conditionalpackage: \
     aQute.lib*,\

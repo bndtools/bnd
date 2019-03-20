@@ -2,19 +2,35 @@ package aQute.bnd.runtime.snapshot;
 
 import org.junit.Test;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.hooks.service.ListenerHook;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
+import org.osgi.service.component.annotations.Reference;
 
-import aQute.launchpad.LaunchpadBuilder;
+import aQute.bnd.build.Workspace;
 import aQute.launchpad.Launchpad;
+import aQute.launchpad.LaunchpadBuilder;
 import aQute.launchpad.Service;
+import aQute.lib.io.IO;
 import exported_not_imported.ExportedNotImported;
 
 public class SnapshotTest {
 
-	LaunchpadBuilder builder = new LaunchpadBuilder().bundles(
+	static Workspace w;
+
+	static {
+		try {
+			Workspace.findWorkspace(IO.work);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	LaunchpadBuilder builder = new LaunchpadBuilder().runfw("org.apache.felix.framework")
+		.bundles(
 		"biz.aQute.bnd.runtime.snapshot, org.apache.felix.log, org.apache.felix.configadmin, org.apache.felix.scr, biz.aQute.bnd.runtime.gogo");
 
 	@Test
@@ -34,16 +50,13 @@ public class SnapshotTest {
 	public void testMoreExtensive() throws Exception {
 		try (Launchpad fw = builder.gogo()
 			.closeTimeout(0)
+			.debug()
 			.create()) {
 			Bundle start1 = fw.bundle()
 				.addResource(Comp.class)
 				.start();
-			Bundle start2 = fw.bundle()
-				.addResource(Comp.class)
-				.start();
-			Thread.sleep(1000);
+			System.out.println();
 		}
-		System.out.println();
 
 	}
 
@@ -53,6 +66,8 @@ public class SnapshotTest {
 
 	@Component(immediate = true, service = Comp.class)
 	public static class Comp {
+		@Reference
+		ListenerHook hook;
 
 		@Activate
 		void activate() {

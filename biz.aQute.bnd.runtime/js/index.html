@@ -20,6 +20,10 @@
             width: 100%;
             height: 100%;
         }
+
+        span.timing {
+            font-size: smaller
+        }
     </style>
 </head>
 
@@ -54,7 +58,8 @@
                         <a @click="active='configs'">Configuration</a>
                     </li>
                     <li :class="{ 'is-active': active==='logs'}">
-                        <a @click="active='logs'">Logs{{getLog().filter( function(l) {  "ERROR" === l.level || "WARNING" == l.level } ).length != 0 ? "!" : ""}}</a>
+                        <a @click="active='logs'">Logs{{getLog().filter( function(l) { "ERROR" === l.level || "WARNING" == l.level } ).length != 0
+                            ? "!" : ""}}</a>
                     </li>
                 </ul>
             </div>
@@ -63,7 +68,7 @@
 
                 <div class="notification" v-for="e in getErrors()">
                     {{e}}
-                </div>                
+                </div>
 
                 <template v-for="bundle in getBundles()">
                     <template v-for="wait in bundle.waiting">
@@ -182,7 +187,6 @@
                                                             </td>
                                                             <td>
                                                                 <div v-for="w in bundle.waiting">
-
                                                                     {{w.filter}}
                                                                     <service-ref class="is-danger" v-for="hiddenId in w.hidden" :serviceid="hiddenId" :key="hiddenId" />
                                                                 </div>
@@ -213,9 +217,10 @@
                                                                     {{getComponentState(instance )}}
                                                                 </td>
                                                                 <td>
-                                                                    <div v-for="ref in Object.values(instance.references)" :class="{ 'has-text-danger': !ref.satisfied , 'has-text-success': ref.satisfied }">
-                                                                        {{ref.name}}
-                                                                    </div>
+                                                                    {{ref.name}} (
+                                                                    <span v-for="id in ref.boundedServiceIds">
+                                                                        <service-timing :service="getService(id)"> </service-timing>
+                                                                    </span>)
                                                                 </td>
                                                             </tr>
                                                         </tbody>
@@ -266,6 +271,7 @@
                     <th></th>
                     <th>Id</th>
                     <th>Interface(s)</th>
+                    <th>Timing(s)</th>
                     <th>Scope</th>
                     <th>Component</th>
                     <th>Registrar</th>
@@ -284,6 +290,9 @@
                                 <b :title="service.properties.objectClass">{{objectClass(service.properties.objectClass)}}</b>
                                 <p>{{service.properties['service.description']}}</p>
 
+                            </td>
+                            <td>
+                                <service-timing :service="service" />
                             </td>
                             <td>
                                 {{service.properties['service.scope']}}
@@ -313,6 +322,7 @@
                 <thead>
                     <th></th>
                     <th>Id</th>
+                    <th>Timing</th>
                     <th>Template</th>
                     <th>State</th>
                     <th>Service</th>
@@ -327,6 +337,9 @@
                             </td>
                             <td :id="'i-'+instance.id">{{instance.id}}</td>
                             <td>
+                                <service-timing v-if="instance.serviceId" :service="getService(instance.serviceId)"/>
+                            </td>
+                            <td>
                                 <template-ref :templateid="instance.templateId" />
                             </td>
                             <td>
@@ -340,7 +353,10 @@
                             </td>
                             <td>
                                 <div v-for="ref in Object.values(instance.references)" :class="{ 'has-text-danger': !ref.satisfied , 'has-text-success': ref.satisfied }">
-                                    {{ref.name}}
+                                    {{ref.name}} (
+                                    <span v-for="id in ref.boundedServiceIds">
+                                        <service-timing :service="getService(id)"> </service-timing>
+                                    </span>)
                                 </div>
                             </td>
                         </tr>
@@ -373,15 +389,15 @@
                                                             <td>
                                                                 {{tref.cardinality}}
                                                             </td>
-                                                            <td >
+                                                            <td>
                                                                 <service-ref v-for="boundId in ref.boundedServiceIds" :serviceid="boundId" :key="boundId" />
                                                                 <div v-if="ref.candidateServiceIds">
                                                                     <b>Candidates</b>
-                                                                    <service-ref v-for="boundId in ref.candidateServiceIds" :serviceid="boundId" :key="boundId"/>
+                                                                    <service-ref v-for="boundId in ref.candidateServiceIds" :serviceid="boundId" :key="boundId" />
                                                                 </div>
                                                                 <div v-if="ref.candidateServiceIds">
                                                                     <b>Hidden</b>
-                                                                    <service-ref v-for="boundId in ref.candidateServiceIds" :serviceid="boundId" class="has-text-danger" :key="boundId"/>
+                                                                    <service-ref v-for="boundId in ref.candidateServiceIds" :serviceid="boundId" class="has-text-danger" :key="boundId" />
                                                                 </div>
                                                             </td>
                                                         </tr>
@@ -434,7 +450,7 @@
                                             <td>
                                                 <div v-for="pid in getTemplate(instance.templateId).configurationPid" :class="{'has-text-danger': hasPid(pid).length==0}">
                                                     <b>{{pid}}</b>
-                                                    <bnd-properties v-for="cnf in hasPid(pid)" :properties="cnf" :key="pid"/>
+                                                    <bnd-properties v-for="cnf in hasPid(pid)" :properties="cnf" :key="pid" />
                                                 </div>
                                             </td>
                                         </tr>
@@ -482,7 +498,8 @@
                                 {{template.isEnabled}}
                             </td>
                             <td>
-                                <instance-ref v-for="instance in getInstances().filter( i => i.templateId == template.id )" :instanceid="instance.id" :key="instance.id"/>
+                                <instance-ref v-for="instance in getInstances().filter( i => i.templateId == template.id )" :instanceid="instance.id" :key="instance.id"
+                                />
                             </td>
                         </tr>
                         <tr v-if="selectedTemplate==template.id">
@@ -578,7 +595,7 @@
                                         <td>
                                             <div v-for="pid in template.configurationPid" :class="{'has-text-danger': hasPid(pid).length==0}">
                                                 <b>{{pid}}</b>
-                                                <bnd-properties v-for="cnf in hasPid(pid)" :properties="cnf" :key="pid"/>
+                                                <bnd-properties v-for="cnf in hasPid(pid)" :properties="cnf" :key="pid" />
                                             </div>
                                         </td>
                                     </tr>
@@ -616,7 +633,8 @@
                         <th>Removal Pend.</th>
                     </thead>
                     <tbody>
-                        <tr v-for="p in getPackages()" :class="{ 'has-text-danger': p.duplicates.length }" v-if="!hideNoImporters || p.importingBundles.length > 0" :key="p.id">
+                        <tr v-for="p in getPackages()" :class="{ 'has-text-danger': p.duplicates.length }" v-if="!hideNoImporters || p.importingBundles.length > 0"
+                            :key="p.id">
                             <td :id="'p-'+p.id">{{p.id}}</td>
                             <td>{{p.name}}</td>
                             <td>
@@ -629,7 +647,7 @@
                                 <bundle-ref v-for="bundleId in p.importingBundles" :bundleid="bundleId" :key="bundleId" />
                             </td>
                             <td>
-                                <package-ref v-for="v in p.duplicates" :packageid="v" :key="v"/>
+                                <package-ref v-for="v in p.duplicates" :packageid="v" :key="v" />
                             </td>
                             <td>{{p.removalPending}}</td>
                         </tr>
@@ -668,7 +686,7 @@
                         <tr v-if="selectedConfiguration===cnf.pid">
                             <td colspan="1"></td>
                             <td colspan="4" class="table">
-                                <bnd-properties :properties="cnf.properties"/>
+                                <bnd-properties :properties="cnf.properties" />
                             </td>
                         </tr>
                     </template>
@@ -711,8 +729,8 @@
 
     <script>
         /**
-                                                                                                                                                                  DURATION
-                                                                                                                                                                */
+                                                                                                                                                                                  DURATION
+                                                                                                                                                                                */
         Vue.component("duration", {
             props: ["global", "t"],
             data: function () {
@@ -869,6 +887,22 @@
 
         })
 
+        /**
+         * SERVICE-TIMING
+         */
+
+        Vue.component("service-timing", {
+            props: ["service"],
+            methods: {},
+            template: `
+                  <span>
+                    <span v-for="t in service.timings" class="timing">
+                        {{ this.$parent.scaleTime(Math.round(t / 100000) / 10) }} ms
+                    </span>
+                  </span>
+            `
+        })
+
         var bundleStates = {
             1: "fas fa-ban", // uninstalled
             2: "far fa-paper-plane", // installed
@@ -904,6 +938,9 @@
                     }
                     if (file)
                         reader.readAsText(file)
+                },
+                scaleTime: function(t) {
+                    return Math.round(t/100000)/10;
                 },
                 bundleState: function (state) {
                     var r = bundleStates[state]
@@ -1011,16 +1048,16 @@
                 getLogByBundle: function (bundleId) {
                     return this.getLog().filter(l => l.bundle === bundleId)
                 },
-                getConfigurations : function() {
+                getConfigurations: function () {
                     return Object.values(this.snapshot.cnf.configurations)
                 },
                 hasPid: function (pid) {
                     return this.getConfigurations().filter(cnf => cnf.pid === pid)
                 },
-                getErrors: function() {
+                getErrors: function () {
                     var errors = []
-                    Object.values(this.snapshot).forEach( obj => {
-                        if ( obj.errors) {
+                    Object.values(this.snapshot).forEach(obj => {
+                        if (obj.errors) {
                             errors = errors.concat(obj.errors);
                         }
                     })
@@ -1034,35 +1071,35 @@
                         this.active = 'bundles'
                         return;
                     }
-                    
+
                     result = /#s-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedService = parseInt(result[1])
                         this.active = 'services'
                         return;
                     }
-                    
+
                     result = /#i-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedInstance = parseInt(result[1])
                         this.active = 'instances'
                         return;
                     }
-                    
+
                     result = /#t-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedTemplate = parseInt(result[1])
                         this.active = 'templates'
                         return;
                     }
-                    
+
                     result = /#l-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedLog = parseInt(result[1])
                         this.active = 'logs'
                         return;
                     }
-                    
+
                     result = /#c-(\d+)/.exec(hash);
                     if (result) {
                         this.selectedConfiguration = parseInt(result[1])

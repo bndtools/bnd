@@ -107,6 +107,7 @@ public class Snapshot implements BundleActivator {
 			.removeShutdownHook(snapshotThread);
 		providers.values()
 			.forEach(IO::close);
+		tracker.close();
 	}
 
 	@Descriptor("Create a snapshot of the framework state")
