@@ -47,6 +47,7 @@ import java.util.zip.InflaterInputStream;
 
 import org.osgi.util.promise.Promise;
 import org.osgi.util.promise.PromiseFactory;
+import org.osgi.util.promise.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,8 +81,9 @@ public class HttpClient implements Closeable, URLConnector {
 		"EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH);
 
 	private static final ThreadLocal<DateFormat>	HTTP_DATE_FORMATTER	= new ThreadLocal<>();
-	static final long								FIVE_MINUTES		= TimeUnit.MINUTES.toMillis(5);
-	static final long								TEN_MINUTES			= TimeUnit.MINUTES.toMillis(10);
+	static final long								INITIAL_TIMEOUT		= TimeUnit.MINUTES.toMillis(3);
+	static final long								FINAL_TIMEOUT		= TimeUnit.MINUTES.toMillis(5);
+	static final long								MAX_RETRY_DELAY		= TimeUnit.MINUTES.toMillis(10);
 
 	static {
 		sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -92,9 +94,9 @@ public class HttpClient implements Closeable, URLConnector {
 	private ThreadLocal<PasswordAuthentication>	passwordAuthentication	= new ThreadLocal<>();
 	private boolean								inited;
 	static final JSONCodec						codec					= new JSONCodec();
-	URLCache									cache					= new URLCache(
+	private URLCache							cache					= new URLCache(
 		IO.getFile(Home.getUserHomeBnd() + "/urlcache"));
-	Registry									registry				= null;
+	private Registry							registry				= null;
 	private Reporter							reporter;
 	private volatile AtomicBoolean				offline;
 	private final PromiseFactory				promiseFactory;
@@ -159,29 +161,68 @@ public class HttpClient implements Closeable, URLConnector {
 		return new HttpRequest<>(this);
 	}
 
-	<T> Promise<T> async(HttpRequest<T> request) {
-		HttpConnection<T> connection = new HttpConnection<>(request);
+	<T> Promise<T> sendAsync(HttpRequest<T> request) {
 		int retries = "GET".equalsIgnoreCase(request.verb) ? request.retries : 0;
 		long delay = (request.retryDelay == 0L) ? 1000L : request.retryDelay;
-		return connection.async(retries, delay);
+		return sendAsync(request, retries, delay);
 	}
 
-	@Deprecated
-	public Object send(HttpRequest<?> request) throws Exception {
-		return getValue(async(request));
+	@SuppressWarnings("unchecked")
+	private <T> Promise<T> sendAsync(HttpRequest<T> request, int retries, long delay) {
+		HttpConnection<T> connection = new HttpConnection<>(request);
+		return promiseFactory().submit(connection)
+			.timeout(Math.max((retries < 1) ? FINAL_TIMEOUT : INITIAL_TIMEOUT, request.timeout * 10L))
+			.recoverWith(failed -> {
+				Throwable failure = failed.getFailure();
+				Throwable logFailure = null;
+				if (failure instanceof TimeoutException) {
+					Thread requestThread = connection.requestThread();
+					if (requestThread != null) {
+						failure.setStackTrace(requestThread.getStackTrace());
+					}
+					connection.cancel();
+					logFailure = failure;
+				}
+				if (retries < 1) {
+					if (failure instanceof RetryException) {
+						TaggedData tag = ((RetryException) failure).getTag();
+						if (request.download == TaggedData.class) {
+							return promiseFactory().resolved((T) tag);
+						}
+						// replace failure exception
+						throw new HttpRequestException(tag, failure.getCause());
+					}
+					return null; // no recovery
+				}
+				String message = failure.getMessage();
+				if (message == null) {
+					message = failure.toString();
+				}
+				logger.info(LIFECYCLE, "Retrying failed connection. url={}, message={}, delay={}, retries={}",
+					request.url, message, delay, retries, logFailure);
+				Promise<T> delayed = (Promise<T>) failed.delay(delay);
+				// double delay for next retry; 10 minutes max delay
+				long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, MAX_RETRY_DELAY) : delay;
+				return delayed.recoverWith(f -> sendAsync(request, retries - 1, nextDelay));
+			});
 	}
 
-	@Deprecated
-	public TaggedData send0(HttpRequest<?> request) throws Exception {
-		return getValue(async(request.asTag()));
-	}
-
-	static <T> T getValue(Promise<T> promise) throws Exception {
+	public <T> T send(HttpRequest<T> request) throws Exception {
+		Promise<T> promise = sendAsync(request);
 		Throwable failure = promise.getFailure(); // wait for completion
 		if (failure != null) {
 			throw Exceptions.duck(failure);
 		}
 		return promise.getValue();
+	}
+
+	public TaggedData send0(HttpRequest<?> request) throws Exception {
+		final Type download = request.download;
+		try {
+			return send(request.asTag());
+		} finally {
+			request.download = download;
+		}
 	}
 
 	public ProxySetup getProxySetup(URL url) throws Exception {
@@ -237,6 +278,14 @@ public class HttpClient implements Closeable, URLConnector {
 		return proxyHandlers;
 	}
 
+	InputStream createProgressWrappedStream(InputStream inputStream, String name, int size, Task task, long timeout) {
+		if (registry == null) {
+			return inputStream;
+		}
+
+		return new ProgressWrappingStream(inputStream, name, size, task, timeout);
+	}
+
 	public void setCache(File cache) {
 		this.cache = new URLCache(cache);
 	}
@@ -279,8 +328,7 @@ public class HttpClient implements Closeable, URLConnector {
 	}
 
 	public File getCacheFileFor(URI url) throws Exception {
-
-		return cache.getCacheFileFor(url);
+		return cache().getCacheFileFor(url);
 	}
 
 	public void readSettings(Processor processor) throws IOException, Exception {
@@ -340,66 +388,66 @@ public class HttpClient implements Closeable, URLConnector {
 		private static final int		HTTP_UNKNOWN_ERROR				= 520;	// https://support.cloudflare.com/hc/en-us/articles/200171936-Error-520-Web-server-is-returning-an-unknown-error
 		private static final int		HTTP_INVALID_SSL_CERTIFICATE	= 526;	// https://support.cloudflare.com/hc/en-us/articles/200721975-Error-526-Invalid-SSL-certificate
 		private final HttpRequest<T>	request;
+		private volatile Thread			requestThread;
+		private volatile TaggedData		connected;
 
 		HttpConnection(HttpRequest<T> request) {
 			this.request = requireNonNull(request);
-		}
-
-		@SuppressWarnings("unchecked")
-		Promise<T> async(int retries, long delay) {
-			return promiseFactory().submit(this)
-				.timeout(Math.max(FIVE_MINUTES, request.timeout * 10L))
-				.recoverWith(failed -> {
-					Throwable failure = failed.getFailure();
-					if (retries < 1) {
-						if (failure instanceof RetryException) {
-							TaggedData tag = ((RetryException) failure).getTag();
-							if (request.download == TaggedData.class) {
-								return promiseFactory().resolved((T) tag);
-							}
-							// replace failure exception
-							throw new HttpRequestException(tag, failure.getCause());
-						}
-						return null; // no recovery
-					}
-					String message = failure.getMessage();
-					if (message == null) {
-						message = failure.toString();
-					}
-					logger.info(LIFECYCLE, "Retrying failed connection. url={}, message={}, delay={}, retries={}",
-						request.url, message, delay, retries);
-					Promise<T> delayed = (Promise<T>) failed.delay(delay);
-					// double delay for next retry; 10 minutes max delay
-					long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, TEN_MINUTES) : delay;
-					return delayed.recoverWith(f -> async(retries - 1, nextDelay));
-				});
+			requireNonNull(request.url);
 		}
 
 		@SuppressWarnings("unchecked")
 		public T call() throws Exception {
-			if (isOffline() || request.isCache()) {
-				return doCached();
+			final Thread thread = requestThread = Thread.currentThread();
+			final String threadName = thread.getName();
+			thread.setName(toString());
+			try {
+				if (isOffline() || request.isCache()) {
+					return doCached();
+				}
+				TaggedData tag = connect();
+				if (request.download == TaggedData.class) {
+					return (T) tag;
+				}
+
+				if (request.download == State.class) {
+					return (T) tag.getState();
+				}
+
+				switch (tag.getState()) {
+					case NOT_FOUND :
+						return null;
+
+					case OTHER :
+						throw new HttpRequestException(tag);
+
+					case UNMODIFIED :
+					case UPDATED :
+					default :
+						return (T) convert(request.download, tag.getInputStream());
+				}
+			} finally {
+				thread.setName(threadName);
 			}
-			TaggedData tag = connect();
-			if (request.download == TaggedData.class) {
-				return (T) tag;
-			}
+		}
 
-			if (request.download == State.class) {
-				return (T) tag.getState();
-			}
+		@Override
+		public String toString() {
+			return "HttpClient," + request.url;
+		}
 
-			switch (tag.getState()) {
-				case NOT_FOUND :
-					return null;
+		Thread requestThread() {
+			return requestThread;
+		}
 
-				case OTHER :
-					throw new HttpRequestException(tag);
-
-				case UNMODIFIED :
-				case UPDATED :
-				default :
-					return (T) convert(request.download, tag.getInputStream());
+		void cancel() {
+			TaggedData tag = connected;
+			if (tag != null) {
+				IO.close(tag);
+				File file = tag.getFile();
+				if (file != null) {
+					IO.delete(file);
+				}
 			}
 		}
 
@@ -434,7 +482,7 @@ public class HttpClient implements Closeable, URLConnector {
 			final URI uri = url.toURI();
 			logger.debug("cached {}", url);
 
-			try (Info info = cache.get(request.useCacheFile, uri)) {
+			try (Info info = cache().get(request.useCacheFile, uri)) {
 				//
 				// Do we have a file url?
 				//
@@ -484,7 +532,7 @@ public class HttpClient implements Closeable, URLConnector {
 						TaggedData tag = connect();
 
 						if (tag.getState() == State.NOT_FOUND) {
-							cache.clear(uri);
+							cache().clear(uri);
 						} else if (tag.getState() == State.UPDATED) {
 							//
 							// update the cache from the input stream
@@ -520,7 +568,7 @@ public class HttpClient implements Closeable, URLConnector {
 			}
 		}
 
-		TaggedData connect() throws Exception {
+		private TaggedData connect() throws Exception {
 			final ProxySetup proxy = getProxySetup(request.url);
 			final URLConnection con = getProxiedAndConfiguredConnection(request.url, proxy);
 			final HttpURLConnection hcon = (HttpURLConnection) (con instanceof HttpURLConnection ? con : null);
@@ -546,9 +594,9 @@ public class HttpClient implements Closeable, URLConnector {
 
 			configureHttpConnection(request.verb, hcon);
 
-			TaggedData td = connectWithProxy(proxy, () -> doConnect(request.upload, request.download, con, hcon));
-			logger.debug("result {}", td);
-			return td;
+			TaggedData tag = connectWithProxy(proxy, () -> doConnect(request.upload, request.download, con, hcon));
+			logger.debug("result {}", tag);
+			return connected = tag;
 		}
 
 		private TaggedData doConnect(Object put, Type ref, URLConnection con, HttpURLConnection hcon) throws Exception {
@@ -586,6 +634,12 @@ public class HttpClient implements Closeable, URLConnector {
 
 				int code = hcon.getResponseCode();
 
+				// -1 can be returned if no code can be discerned
+				// from the response (i.e., the response is not valid HTTP).
+				if (code == -1) {
+					throw new IOException("Invalid response code (-1) from connection");
+				}
+
 				//
 				// Though we ask Java to handle the redirects
 				// it does not do it for https <-> http :-(
@@ -595,6 +649,7 @@ public class HttpClient implements Closeable, URLConnector {
 					if (request.redirects-- > 0) {
 						String location = hcon.getHeaderField("Location");
 						request.url = new URL(request.url, location);
+						requestThread().setName(toString());
 						task.done("Redirected " + code + " " + location, null);
 						return connect();
 					}
@@ -603,7 +658,7 @@ public class HttpClient implements Closeable, URLConnector {
 				if (isUpdateInfo(code, con)) {
 					File file = (File) request.upload;
 					String etag = con.getHeaderField("ETag");
-					try (Info info = cache.get(file, con.getURL()
+					try (Info info = cache().get(file, con.getURL()
 						.toURI())) {
 						info.update(etag);
 					}
@@ -701,15 +756,6 @@ public class HttpClient implements Closeable, URLConnector {
 			return codec.dec()
 				.from(s)
 				.get(ref);
-		}
-
-		private InputStream createProgressWrappedStream(InputStream inputStream, String name, int size, Task task,
-			long timeout) {
-			if (registry == null) {
-				return inputStream;
-			}
-
-			return new ProgressWrappingStream(inputStream, name, size, task, timeout);
 		}
 
 		private void doOutput(Object put, URLConnection con) throws Exception {

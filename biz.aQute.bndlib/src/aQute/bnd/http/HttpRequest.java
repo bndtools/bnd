@@ -1,7 +1,5 @@
 package aQute.bnd.http;
 
-import static aQute.bnd.http.HttpClient.getValue;
-
 import java.io.File;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
@@ -188,7 +186,8 @@ public class HttpRequest<T> {
 	}
 
 	public T go(URL url) throws Exception {
-		return getValue(async(url));
+		this.url = url;
+		return client.send(this);
 	}
 
 	public T go(URI url) throws Exception {
@@ -202,7 +201,7 @@ public class HttpRequest<T> {
 
 	public Promise<T> async(URL url) {
 		this.url = url;
-		return client.async(this);
+		return client.sendAsync(this);
 	}
 
 	public Promise<T> async(URI uri) {
