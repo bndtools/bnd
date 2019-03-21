@@ -38,10 +38,10 @@ public class HttpClientTest extends TestCase {
 
 	@Override
 	protected void tearDown() throws Exception {
-		super.tearDown();
-		httpServer.close();
-		httpsServer.close();
+		IO.close(httpServer);
+		IO.close(httpsServer);
 		IO.delete(tmp);
+		super.tearDown();
 	}
 
 	public static class TestServer extends Httpbin {
