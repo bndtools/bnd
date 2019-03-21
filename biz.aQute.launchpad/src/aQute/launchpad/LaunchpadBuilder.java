@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -77,6 +79,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	long				closeTimeout	= 60000;
 	boolean				debug;
 	final Set<Class<?>>	hide			= new HashSet<>();
+	final List<Predicate<String>>	excludePackageFilters	= new ArrayList<>();
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -124,6 +127,47 @@ public class LaunchpadBuilder implements AutoCloseable {
 	public LaunchpadBuilder runpath(String specification) {
 		List<String> config = workspace.getLatestBundles(projectDir.getAbsolutePath(), specification);
 		config.forEach(local.runpath::add);
+		return this;
+	}
+
+	/**
+	 * Specify packages to exclude from the system bundle's list of exports. By
+	 * default, all packages exported by the bundles on the test path are
+	 * exported by the Launchpad's system bundle.
+	 *
+	 * @param packages packages to exclude. If a package ends with ".*", then it
+	 *            will exclude that package and all subpackages; otherwise it
+	 *            will exclude that package only and leave any other subpackages
+	 *            that are already included.
+	 * @return This builder, to facilitate chained builder calls.
+	 * @see #excludePackages(Predicate...)
+	 */
+	public LaunchpadBuilder excludePackages(String... packages) {
+		for (String prefix : packages) {
+			if (prefix.endsWith(".*")) {
+				excludePackageFilters.add(x -> x.startsWith(prefix.substring(0, prefix.length() - 2)));
+			} else {
+				excludePackageFilters.add(x -> x.equals(prefix));
+			}
+		}
+		return this;
+	}
+
+	/**
+	 * Specify packages to exclude from the system bundle's list of exports. By
+	 * default, all packages exported by the bundles on the test path are
+	 * exported by the Launchpad's system bundle.
+	 *
+	 * @param filters filters to apply to the package list. If a package matches
+	 *            any of the filters then it will be excluded.
+	 * @return This builder, to facilitate chained builder calls.
+	 * @see #excludePackages(String...)
+	 */
+	@SafeVarargs
+	final public LaunchpadBuilder excludePackages(Predicate<String>... filters) {
+		for (Predicate<String> filter : filters) {
+			excludePackageFilters.add(filter);
+		}
 		return this;
 	}
 
@@ -189,7 +233,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 			File storage = IO.getFile(new File(local.target), "launchpad-" + counter.incrementAndGet());
 			IO.delete(storage);
 
-			String extraPackages = toString(local.extraSystemPackages);
+			String extraPackages = toString(local.extraSystemPackages, excludePackageFilters);
 			String extraCapabilities = toString(local.extraSystemCapabilities);
 
 			local.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extraPackages);
@@ -245,13 +289,26 @@ public class LaunchpadBuilder implements AutoCloseable {
 	// }
 
 	private String toString(Map<String, Map<String, String>> map) {
+		return toString(map, null);
+	}
+
+	private String toString(Map<String, Map<String, String>> map, Collection<Predicate<String>> exclusions) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
+		OUTER:
 		for (Map.Entry<String, Map<String, String>> e : map.entrySet()) {
 
 			String key = e.getKey();
 			while (key.endsWith("~"))
 				key = key.substring(0, key.length() - 1);
+
+			if (exclusions != null) {
+				for (Predicate<String> ex : exclusions) {
+					if (ex.test(key)) {
+						continue OUTER;
+					}
+				}
+			}
 
 			sb.append(del);
 			sb.append(key);
