@@ -50,6 +50,7 @@
 	<build>
 		<plugins>
 			<plugin>
+        <groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-invoker-plugin</artifactId>
 				<configuration>
 					<cloneProjectsTo>${project.build.directory}/integration-test/projects</cloneProjectsTo>
