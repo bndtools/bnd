@@ -103,8 +103,7 @@ public class Verifier extends Processor {
 			+ "|J2SE-1\\.[2-5]"																												//
 			+ "|JavaSE-1\\.[6-8]"																											//
 			+ "|JavaSE-9"																													//
-			+ "|JavaSE-10"																													//
-			+ "|JavaSE-11"																																	//
+			+ "|JavaSE-[1-9][0-9]"																															//
 			+ "|PersonalJava-1\\.[12]"																										//
 			+ "|CDC-1\\.0/PersonalBasis-1\\.0"																								//
 			+ "|CDC-1\\.0/PersonalJava-1\\.0"																								//
@@ -127,6 +126,8 @@ public class Verifier extends Processor {
 		"JavaSE-9",																															//
 		"JavaSE-10",																														//
 		"JavaSE-11",																																		//
+		"JavaSE-12",																																		//
+		"JavaSE-13",																																		//
 		"PersonalJava-1.1",																													//
 		"PersonalJava-1.2",																													//
 		"CDC-1.0/PersonalBasis-1.0",																										//
