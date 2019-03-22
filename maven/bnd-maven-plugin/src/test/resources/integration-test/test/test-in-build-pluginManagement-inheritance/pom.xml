@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>biz.aQute.bnd-test</groupId>
@@ -14,7 +15,7 @@
 	<modules>
 		<module>test-inheriting-api-bundle</module>
 	</modules>
-	
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -39,12 +40,11 @@ Bundle-SymbolicName: ${project.groupId}.${project.artifactId}
 ]]></bnd>
 					</configuration>
 				</plugin>
-	
-				<!--
-				The following configuration is required because bnd-maven-plugin generates the manifest to 
-				target/classes/META-INF/MANIFEST.MF but the normal maven-jar-plugin does not use it. If the jar-plugin
-				is patched to pick up the manifest from this location, then the following config is not needed.
-				-->
+
+				<!-- The following configuration is required because bnd-maven-plugin
+					generates the manifest to target/classes/META-INF/MANIFEST.MF but the normal
+					maven-jar-plugin does not use it. If the jar-plugin is patched to pick up
+					the manifest from this location, then the following config is not needed. -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
