@@ -31,18 +31,11 @@ mavencentral:           https://repo.maven.apache.org/maven2
         releaseUrl="https://bndtools.jfrog.io/bndtools/libs-release-local/";\
         snapshotUrl="https://bndtools.jfrog.io/bndtools/libs-snapshot-local/";\
         noupdateOnRelease=true,\
-    aQute.bnd.repository.p2.provider.P2Repository;\
+    aQute.bnd.repository.osgi.OSGiRepository;\
         name="Eclipse Oxygen 4.7.3a";\
-        url="https://download.eclipse.org/eclipse/updates/4.7/R-4.7.3a-201803300640/";\
-        location="${workspace}/cnf/cache/stable/Eclipse",\
-    aQute.bnd.repository.p2.provider.P2Repository;\
-        name="Eclipse EGit 4.7.1";\
-        url="https://download.eclipse.org/egit/updates-4.7.1/";\
-        location="${workspace}/cnf/cache/stable/EclipseEGit",\
-    aQute.bnd.repository.p2.provider.P2Repository;\
-        name="Eclipse m2e 1.8.3";\
-        url="https://download.eclipse.org/technology/m2e/releases/1.8/1.8.3.20180227-2137/";\
-        location="${workspace}/cnf/cache/stable/EclipseM2E",\
+        locations="https://dl.bintray.com/bndtools/eclipse-repo/4.7.3a/index.xml.gz";\
+        poll.time=-1;\
+        cache="${workspace}/cnf/cache/stable/EclipseOxygen",\
     aQute.bnd.repository.maven.pom.provider.BndPomRepository;\
         name="Eclipse m2e 1.8.3 Dependencies";\
         revision="org.apache.maven:maven-core:3.3.9,org.sonatype.plexus:plexus-build-api:0.0.7";\
