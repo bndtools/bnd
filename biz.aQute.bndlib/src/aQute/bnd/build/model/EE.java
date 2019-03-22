@@ -46,6 +46,8 @@ public enum EE {
 
 	JavaSE_12_0("JavaSE-12", "JavaSE", new Version("12"), JavaSE_11_0),
 
+	JavaSE_13_0("JavaSE-13", "JavaSE", new Version("13"), JavaSE_12_0),
+
 	UNKNOWN("Unknown", "unknown", new Version(0));
 
 	private final String			eeName;

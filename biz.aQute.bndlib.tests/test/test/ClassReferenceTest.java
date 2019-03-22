@@ -66,6 +66,22 @@ public class ClassReferenceTest extends TestCase {
 		doit("sun_1_8");
 	}
 
+	public void testJdk_9_0() throws Exception {
+		doit("jdk_9_0");
+	}
+
+	public void testJdk_10_0() throws Exception {
+		doit("jdk_10_0");
+	}
+
+	public void testJdk_11_0() throws Exception {
+		doit("jdk_11_0");
+	}
+
+	public void testJdk_12_0() throws Exception {
+		doit("jdk_12_0");
+	}
+
 	public void testEclipse_1_1() throws Exception {
 		doit("eclipse_1_1");
 	}
@@ -92,6 +108,26 @@ public class ClassReferenceTest extends TestCase {
 
 	public void testEclipse_1_7() throws Exception {
 		doit("eclipse_1_7");
+	}
+
+	public void testEclipse_1_8() throws Exception {
+		doit("eclipse_1_8");
+	}
+
+	public void testEclipse_9_0() throws Exception {
+		doit("eclipse_9_0");
+	}
+
+	public void testEclipse_10_0() throws Exception {
+		doit("eclipse_10_0");
+	}
+
+	public void testEclipse_11_0() throws Exception {
+		doit("eclipse_11_0");
+	}
+
+	public void testEclipse_12_0() throws Exception {
+		doit("eclipse_12_0");
 	}
 
 	public void doit(String p) throws Exception {
