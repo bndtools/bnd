@@ -16,6 +16,9 @@ matrix:
     - name: "OpenJDK11"
       install:
         - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu11.29.3-ca-jdk11.0.2-linux_x64.tar.gz"
+    - name: "OpenJDK12"
+      install:
+        - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu12.1.3-ca-jdk12-linux_x64.tar.gz"
     - name: "Local rebuild"
       script: 
         - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded"

@@ -8,3 +8,4 @@ buildfiles
 /.gradle/
 /reports/
 /generated/
+/install-jdk.sh

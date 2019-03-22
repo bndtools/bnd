@@ -8,7 +8,8 @@
 import aQute.lib.io.IO
 
 if (JavaVersion.current().isJava9Compatible()) {
-  ext.java9options = [
+  ext.jpmsOptions = [
+    '--illegal-access=warn',
     '--add-opens=java.base/java.lang=ALL-UNNAMED', 
     '--add-opens=java.base/java.lang.invoke=ALL-UNNAMED', 
     '--add-opens=java.base/java.io=ALL-UNNAMED',
@@ -18,7 +19,13 @@ if (JavaVersion.current().isJava9Compatible()) {
     '--add-opens=java.base/java.util.jar=ALL-UNNAMED',
     '--add-opens=java.base/java.util.regex=ALL-UNNAMED',
     '--add-opens=java.base/java.util.zip=ALL-UNNAMED',
-    '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
+    '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED',
+    '--add-opens=java.base/sun.net.www.protocol.file=ALL-UNNAMED',
+    '--add-opens=java.base/sun.net.www.protocol.ftp=ALL-UNNAMED',
+    '--add-opens=java.base/sun.net.www.protocol.http=ALL-UNNAMED',
+    '--add-opens=java.base/sun.net.www.protocol.https=ALL-UNNAMED',
+    '--add-opens=java.base/sun.net.www.protocol.jar=ALL-UNNAMED',
+    '--add-opens=java.base/sun.net.www.protocol.jrt=ALL-UNNAMED'
   ]
 }
 
@@ -40,8 +47,8 @@ subprojects {
         exceptionFormat 'full'
       }
       if (JavaVersion.current().isJava9Compatible()) {
-        jvmArgs java9options
-        environment 'JAVA_OPTS': java9options.join(' ')
+        jvmArgs jpmsOptions
+        environment 'JAVA_OPTS': jpmsOptions.join(' ')
       }
       inputs.files(fileTree(project.projectDir) {
         include 'testresources/', 'testdata/'
