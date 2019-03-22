@@ -292,8 +292,8 @@ public class CDIAnnotations implements AnalyzerPlugin {
 				try {
 					Object beanDiscoveryMode = discoveryModeExpression.evaluate(document, XPathConstants.STRING);
 
-					return Discover.valueOf(beanDiscoveryMode.toString());
-				} catch (NullPointerException | XPathExpressionException e) {
+					return Discover.parse(beanDiscoveryMode.toString());
+				} catch (IllegalArgumentException | NullPointerException | XPathExpressionException e) {
 					return Discover.annotated;
 				}
 			}
