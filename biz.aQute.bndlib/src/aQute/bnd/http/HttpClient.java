@@ -1,6 +1,5 @@
 package aQute.bnd.http;
 
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.net.HttpURLConnection.HTTP_CREATED;
 import static java.net.HttpURLConnection.HTTP_GATEWAY_TIMEOUT;
 import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
@@ -198,8 +197,8 @@ public class HttpClient implements Closeable, URLConnector {
 				if (message == null) {
 					message = failure.toString();
 				}
-				logger.info(LIFECYCLE, "Retrying failed connection. url={}, message={}, delay={}, retries={}",
-					request.url, message, delay, retries, logFailure);
+				logger.info("Retrying failed connection. url={}, message={}, delay={}, retries={}", request.url,
+					message, delay, retries, logFailure);
 				Promise<T> delayed = (Promise<T>) failed.delay(delay);
 				// double delay for next retry; 10 minutes max delay
 				long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, MAX_RETRY_DELAY) : delay;

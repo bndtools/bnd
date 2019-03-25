@@ -1,7 +1,5 @@
 package aQute.maven.provider;
 
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -94,7 +92,7 @@ public class MavenRemoteRepository extends MavenBackingRepository {
 					if (retries < 1) {
 						return null; // no recovery
 					}
-					logger.info(LIFECYCLE, "Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
+					logger.info("Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
 						.getMessage(), delay, retries);
 					return success.delay(delay)
 						.flatMap(

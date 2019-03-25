@@ -3,7 +3,6 @@ package aQute.bnd.repository.p2.provider;
 import static aQute.bnd.osgi.repository.ResourcesRepository.toResourcesRepository;
 import static aQute.bnd.osgi.resource.ResourceUtils.toVersion;
 import static aQute.lib.promise.PromiseCollectors.toPromise;
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toMap;
 
@@ -194,8 +193,7 @@ class P2Indexer implements Closeable {
 						return rb.build();
 					})
 					.recover(failed -> {
-						logger.info(LIFECYCLE, "{}: Failed to create resource for {}", name, a.uri,
-							failed.getFailure());
+						logger.info("{}: Failed to create resource for {}", name, a.uri, failed.getFailure());
 						return RECOVERY;
 					});
 			})
@@ -218,7 +216,7 @@ class P2Indexer implements Closeable {
 					if (retries < 1) {
 						return null; // no recovery
 					}
-					logger.info(LIFECYCLE, "Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
+					logger.info("Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
 						.getMessage(), delay, retries);
 					return success.delay(delay)
 						.flatMap(tag -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));

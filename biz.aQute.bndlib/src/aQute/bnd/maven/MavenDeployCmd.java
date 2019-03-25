@@ -1,7 +1,5 @@
 package aQute.bnd.maven;
 
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -37,7 +35,7 @@ public class MavenDeployCmd extends Processor {
 	/**
 	 * maven deploy [-url repo] [-passphrase passphrase] [-homedir homedir]
 	 * [-keyname keyname] bundle ...
-	 * 
+	 *
 	 * @param args
 	 * @param i
 	 * @throws Exception
@@ -96,7 +94,7 @@ public class MavenDeployCmd extends Processor {
 		if (maven == null)
 			return false; // we're not playing for this bundle
 
-		logger.info(LIFECYCLE, "deploying {} to Maven repo: {}", original, repository);
+		logger.info("deploying {} to Maven repo: {}", original, repository);
 		File target = project.getTarget();
 		File tmp = Processor.getFile(target, repository);
 		if (!tmp.exists() && !tmp.mkdirs()) {
@@ -107,7 +105,7 @@ public class MavenDeployCmd extends Processor {
 		if (manifest == null)
 			project.error("Jar has no manifest: %s", original);
 		else {
-			logger.info(LIFECYCLE, "Writing pom.xml");
+			logger.info("Writing pom.xml");
 			PomResource pom = new PomResource(manifest);
 			pom.setProperties(maven);
 			File pomFile = write(tmp, pom, "pom.xml");
@@ -118,20 +116,20 @@ public class MavenDeployCmd extends Processor {
 					.getValue(Constants.EXPORT_PACKAGE));
 				File jdoc = new File(tmp, "jdoc");
 				IO.mkdirs(jdoc);
-				logger.info(LIFECYCLE, "Generating Javadoc for: {}", exports.keySet());
+				logger.info("Generating Javadoc for: {}", exports.keySet());
 				Jar javadoc = javadoc(jdoc, project, exports.keySet());
-				logger.info(LIFECYCLE, "Writing javadoc jar");
+				logger.info("Writing javadoc jar");
 				File javadocFile = write(tmp, new JarResource(javadoc), "javadoc.jar");
-				logger.info(LIFECYCLE, "Writing main file");
+				logger.info("Writing main file");
 				File mainFile = write(tmp, new JarResource(main), "main.jar");
-				logger.info(LIFECYCLE, "Writing sources file");
+				logger.info("Writing sources file");
 				File srcFile = write(tmp, new JarResource(main), "src.jar");
 
-				logger.info(LIFECYCLE, "Deploying main file");
+				logger.info("Deploying main file");
 				maven_gpg_sign_and_deploy(project, mainFile, null, pomFile);
-				logger.info(LIFECYCLE, "Deploying main sources file");
+				logger.info("Deploying main sources file");
 				maven_gpg_sign_and_deploy(project, srcFile, "sources", null);
-				logger.info(LIFECYCLE, "Deploying main javadoc file");
+				logger.info("Deploying main javadoc file");
 				maven_gpg_sign_and_deploy(project, javadocFile, "javadoc", null);
 			}
 		}
