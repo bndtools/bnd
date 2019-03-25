@@ -108,6 +108,10 @@ This Agreement is governed by the laws of the State of New York and the intellec
       <update label="Bndtools Update Site" url="https://dl.bintray.com/bndtools/bndtools/@base-version@/"/>
    </url>
 
+   <requires>
+      <import feature="org.eclipse.platform" version="4.7.3" match="greaterOrEqual"/>
+   </requires>
+
    <plugin
          id="biz.aQute.bndlib"
          download-size="0"
