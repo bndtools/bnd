@@ -503,11 +503,11 @@ public class IO {
 		return copy(in, new ByteBufferOutputStream()).toByteArray();
 	}
 
-	public static void write(byte[] data, OutputStream out) throws Exception {
+	public static void write(byte[] data, OutputStream out) throws IOException {
 		copy(data, out);
 	}
 
-	public static void write(byte[] data, File file) throws Exception {
+	public static void write(byte[] data, File file) throws IOException {
 		copy(data, file);
 	}
 
@@ -1094,11 +1094,11 @@ public class IO {
 		return new PrintWriter(new OutputStreamWriter(out, encoding));
 	}
 
-	public static boolean createSymbolicLink(File link, File target) throws Exception {
+	public static boolean createSymbolicLink(File link, File target) throws IOException {
 		return createSymbolicLink(link.toPath(), target.toPath());
 	}
 
-	public static boolean createSymbolicLink(Path link, Path target) throws Exception {
+	public static boolean createSymbolicLink(Path link, Path target) throws IOException {
 		if (isSymbolicLink(link)) {
 			Path linkTarget = Files.readSymbolicLink(link);
 
@@ -1299,7 +1299,7 @@ public class IO {
 		 * Get the value of a system environment variable. Expand any macros
 		 * (%...%) if run on windows. Generally, on Linux et. al. environment
 		 * variables are already expanded.
-		 * 
+		 *
 		 * @param key the environment variable name
 		 * @return the value with expanded macros if on windows.
 		 */
