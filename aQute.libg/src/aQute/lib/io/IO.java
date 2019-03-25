@@ -34,6 +34,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -862,7 +863,14 @@ public class IO {
 
 	public static Path mkdirs(Path dir) throws IOException {
 		if (Files.isSymbolicLink(dir)) {
-			return mkdirs(Files.readSymbolicLink(dir));
+			Path target = Files.readSymbolicLink(dir);
+			boolean recreateSymlink = isWindows() && !Files.exists(target, LinkOption.NOFOLLOW_LINKS);
+			Path result = mkdirs(target);
+			if (recreateSymlink) { // recreate symlink on windows
+				delete(dir);
+				createSymbolicLink(dir, target);
+			}
+			return result;
 		}
 		return Files.createDirectories(dir);
 	}
