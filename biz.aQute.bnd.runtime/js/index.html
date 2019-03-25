@@ -292,7 +292,7 @@
 
                             </td>
                             <td>
-                                <service-timing :service="service" />
+                                <service-timing :service="service" ></service-timing>
                             </td>
                             <td>
                                 {{service.properties['service.scope']}}
@@ -897,7 +897,7 @@
             template: `
                   <span>
                     <span v-for="t in service.timings" class="timing">
-                        {{ this.$parent.scaleTime(Math.round(t / 100000) / 10) }} ms
+                        {{ Math.round(t / 100000) / 10 }} ms
                     </span>
                   </span>
             `

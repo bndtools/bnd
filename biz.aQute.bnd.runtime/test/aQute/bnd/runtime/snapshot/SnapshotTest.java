@@ -46,19 +46,6 @@ public class SnapshotTest {
 	@Service
 	ConfigurationAdmin configAdmin;
 
-	@Test
-	public void testMoreExtensive() throws Exception {
-		try (Launchpad fw = builder.gogo()
-			.closeTimeout(0)
-			.debug()
-			.create()) {
-			Bundle start1 = fw.bundle()
-				.addResource(Comp.class)
-				.start();
-			System.out.println();
-		}
-
-	}
 
 	/**
 	 * Test a built in commponent

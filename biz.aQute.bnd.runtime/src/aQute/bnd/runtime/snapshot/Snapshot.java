@@ -52,8 +52,8 @@ public class Snapshot implements BundleActivator {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
+		this.context = context;
 		this.framework = context.getBundle(0);
-		this.context = this.framework.getBundleContext();
 
 		add("scr", ServiceComponentRuntimeFacade.class);
 		add("log", LogFacade.class);
