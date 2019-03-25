@@ -469,9 +469,12 @@ public class Launchpad implements AutoCloseable {
 	 * Show the information of how the framework is setup and is running
 	 */
 	public Launchpad report() throws InvalidSyntaxException {
+		boolean old = debug;
+		debug = true;
 		reportBundles();
 		reportServices();
 		reportEvents();
+		debug = old;
 		return this;
 	}
 

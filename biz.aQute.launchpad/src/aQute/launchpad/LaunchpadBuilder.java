@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,6 +32,7 @@ import aQute.bnd.service.specifications.RunSpecification;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
+import aQute.libg.glob.Glob;
 
 /**
  * This class is a builder for frameworks that can be used in JUnit testing.
@@ -71,12 +74,13 @@ public class LaunchpadBuilder implements AutoCloseable {
 			}));
 	}
 
-	RunSpecification	local;
-	boolean				start		= true;
-	boolean				testbundle	= true;
-	long				closeTimeout	= 60000;
-	boolean				debug;
-	final Set<Class<?>>	hide			= new HashSet<>();
+	RunSpecification				local;
+	boolean							start			= true;
+	boolean							testbundle		= true;
+	long							closeTimeout	= 60000;
+	boolean							debug;
+	final Set<Class<?>>				hide			= new HashSet<>();
+	final List<Predicate<String>>	excludeExports	= new ArrayList<>();
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -152,6 +156,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 		this.hide.add(hide);
 		return this;
 	}
+
 	public LaunchpadBuilder notestbundle() {
 		this.testbundle = false;
 		return this;
@@ -184,12 +189,34 @@ public class LaunchpadBuilder implements AutoCloseable {
 		return this;
 	}
 
+	public LaunchpadBuilder excludeExport(String... globs) {
+		Stream.of(globs)
+			.flatMap((x) -> Strings.splitAsStream(x))
+			.map(this::toPredicate)
+			.forEach(excludeExports::add);
+		return this;
+	}
+
+	public LaunchpadBuilder excludeExport(Predicate<String> exclude) {
+		excludeExports.add(exclude);
+		return this;
+	}
+
 	public Launchpad create() {
 		try {
 			File storage = IO.getFile(new File(local.target), "launchpad-" + counter.incrementAndGet());
 			IO.delete(storage);
 
-			String extraPackages = toString(local.extraSystemPackages);
+			List<Predicate<String>> excludes = new ArrayList<>(excludeExports);
+			Parameters p = new Parameters(local.properties.get("-exportexcludes"));
+			p.keySet()
+				.stream()
+				.map(this::toPredicate)
+				.forEach(excludes::add);
+
+			Map<String, Map<String, String>> restrictedExports = restrict(local.extraSystemPackages, excludeExports);
+			String extraPackages = toString(restrictedExports);
+
 			String extraCapabilities = toString(local.extraSystemCapabilities);
 
 			local.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extraPackages);
@@ -357,4 +384,25 @@ public class LaunchpadBuilder implements AutoCloseable {
 		return this;
 	}
 
+	private Map<String, Map<String, String>> restrict(Map<String, Map<String, String>> map,
+		Collection<Predicate<String>> globs) {
+		if (globs == null || globs.isEmpty())
+			return map;
+
+		return local.extraSystemPackages.entrySet()
+			.stream()
+			.filter(e -> {
+				for (Predicate<String> p : excludeExports) {
+					if (p.test(e.getKey()))
+						return false;
+				}
+				return true;
+			})
+			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+	}
+
+	Predicate<String> toPredicate(String specification) {
+		Glob g = new Glob(specification);
+		return (test) -> g.matches(test);
+	}
 }
