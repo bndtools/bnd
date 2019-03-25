@@ -34,6 +34,7 @@ import java.nio.file.FileVisitOption;
 import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -503,11 +504,11 @@ public class IO {
 		return copy(in, new ByteBufferOutputStream()).toByteArray();
 	}
 
-	public static void write(byte[] data, OutputStream out) throws Exception {
+	public static void write(byte[] data, OutputStream out) throws IOException {
 		copy(data, out);
 	}
 
-	public static void write(byte[] data, File file) throws Exception {
+	public static void write(byte[] data, File file) throws IOException {
 		copy(data, file);
 	}
 
@@ -862,7 +863,14 @@ public class IO {
 
 	public static Path mkdirs(Path dir) throws IOException {
 		if (Files.isSymbolicLink(dir)) {
-			return mkdirs(Files.readSymbolicLink(dir));
+			Path target = Files.readSymbolicLink(dir);
+			boolean recreateSymlink = isWindows() && !Files.exists(target, LinkOption.NOFOLLOW_LINKS);
+			Path result = mkdirs(target);
+			if (recreateSymlink) { // recreate symlink on windows
+				delete(dir);
+				createSymbolicLink(dir, target);
+			}
+			return result;
 		}
 		return Files.createDirectories(dir);
 	}
@@ -1094,11 +1102,11 @@ public class IO {
 		return new PrintWriter(new OutputStreamWriter(out, encoding));
 	}
 
-	public static boolean createSymbolicLink(File link, File target) throws Exception {
+	public static boolean createSymbolicLink(File link, File target) throws IOException {
 		return createSymbolicLink(link.toPath(), target.toPath());
 	}
 
-	public static boolean createSymbolicLink(Path link, Path target) throws Exception {
+	public static boolean createSymbolicLink(Path link, Path target) throws IOException {
 		if (isSymbolicLink(link)) {
 			Path linkTarget = Files.readSymbolicLink(link);
 
@@ -1299,7 +1307,7 @@ public class IO {
 		 * Get the value of a system environment variable. Expand any macros
 		 * (%...%) if run on windows. Generally, on Linux et. al. environment
 		 * variables are already expanded.
-		 * 
+		 *
 		 * @param key the environment variable name
 		 * @return the value with expanded macros if on windows.
 		 */
