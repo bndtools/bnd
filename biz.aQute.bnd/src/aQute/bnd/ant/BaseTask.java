@@ -1,7 +1,5 @@
 package aQute.bnd.ant;
 
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -183,19 +181,17 @@ public class BaseTask extends Task implements Reporter {
 	}
 
 	/**
-	 * @deprecated Use SLF4J
-	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
-	 *             instead.
+	 * @deprecated Use SLF4J Logger.info() instead.
 	 */
 	@Override
 	@Deprecated
 	public void progress(float progress, String s, Object... args) {
-		if (logger.isInfoEnabled(LIFECYCLE)) {
+		if (logger.isInfoEnabled()) {
 			String message = Strings.format(s, args);
 			if (progress > 0)
-				logger.info(LIFECYCLE, "[{}] {}", (int) progress, message);
+				logger.info("[{}] {}", (int) progress, message);
 			else
-				logger.info(LIFECYCLE, "{}", message);
+				logger.info("{}", message);
 		}
 	}
 

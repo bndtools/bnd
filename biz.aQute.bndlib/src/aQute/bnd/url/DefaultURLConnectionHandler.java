@@ -1,7 +1,5 @@
 package aQute.bnd.url;
 
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
-
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashSet;
@@ -65,7 +63,7 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 
 	/**
 	 * Convenience method to make it easier to verify connections
-	 * 
+	 *
 	 * @param connection The connection to match
 	 * @return true if this connection should be handled.
 	 */
@@ -142,19 +140,17 @@ public class DefaultURLConnectionHandler implements URLConnectionHandler, Plugin
 	}
 
 	/**
-	 * @deprecated Use SLF4J
-	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
-	 *             instead.
+	 * @deprecated Use SLF4J Logger.info() instead.
 	 */
 	@Override
 	@Deprecated
 	public void progress(float progress, String format, Object... args) {
-		if (logger.isInfoEnabled(LIFECYCLE)) {
+		if (logger.isInfoEnabled()) {
 			String message = Strings.format(format, args);
 			if (progress > 0)
-				logger.info(LIFECYCLE, "[{}] {}", (int) progress, message);
+				logger.info("[{}] {}", (int) progress, message);
 			else
-				logger.info(LIFECYCLE, "{}", message);
+				logger.info("{}", message);
 		}
 	}
 

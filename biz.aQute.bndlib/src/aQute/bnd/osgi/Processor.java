@@ -1,6 +1,5 @@
 package aQute.bnd.osgi;
 
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.lang.invoke.MethodHandles.publicLookup;
 import static java.lang.invoke.MethodType.methodType;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -378,20 +377,18 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * @deprecated Use SLF4J
-	 *             Logger.info(aQute.libg.slf4j.GradleLogging.LIFECYCLE)
-	 *             instead.
+	 * @deprecated Use SLF4J Logger.info() instead.
 	 */
 	@Override
 	@Deprecated
 	public void progress(float progress, String format, Object... args) {
 		Logger l = getLogger();
-		if (l.isInfoEnabled(LIFECYCLE)) {
+		if (l.isInfoEnabled()) {
 			String message = formatArrays(format, args);
 			if (progress > 0)
-				l.info(LIFECYCLE, "[{}] {}", (int) progress, message);
+				l.info("[{}] {}", (int) progress, message);
 			else
-				l.info(LIFECYCLE, "{}", message);
+				l.info("{}", message);
 		}
 	}
 

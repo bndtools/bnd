@@ -1,7 +1,6 @@
 package aQute.bnd.repository.osgi;
 
 import static aQute.lib.promise.PromiseCollectors.toPromise;
-import static aQute.libg.slf4j.GradleLogging.LIFECYCLE;
 import static java.util.stream.Collectors.toList;
 
 import java.io.BufferedInputStream;
@@ -76,7 +75,7 @@ class OSGiIndex {
 
 	/**
 	 * Return the bridge repository in {@link Promise} form.
-	 * 
+	 *
 	 * @return promise representing the repository
 	 */
 	Promise<BridgeRepository> getBridgeRepository() {
@@ -194,7 +193,7 @@ class OSGiIndex {
 				if (retries < 1) {
 					return null; // no recovery
 				}
-				logger.info(LIFECYCLE, "Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
+				logger.info("Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
 					.getMessage(), delay, retries);
 				return success.delay(delay)
 					.flatMap(tag -> get(url, file, remoteDigest, retries - 1,
@@ -212,7 +211,7 @@ class OSGiIndex {
 
 	/**
 	 * Check any of the URL indexes are stale.
-	 * 
+	 *
 	 * @return
 	 * @throws Exception
 	 */
