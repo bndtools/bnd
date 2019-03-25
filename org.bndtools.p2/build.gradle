@@ -6,9 +6,9 @@ import aQute.bnd.osgi.Jar
 import org.apache.tools.ant.filters.ReplaceTokens
 
 /* Configure this project */
-String masterVersion = String.format('%s-%tY%<tm%<td-%<tH%<tM%<tS-g%.7s',
+String masterVersion = String.format('%s-%s-g%.7s',
                           bnd('gittag'),
-                          Calendar.getInstance(TimeZone.getTimeZone("UTC")),
+                          bnd('timestamp'),
                           bnd('Git-SHA'))
 
 def p2Plugins = tasks.register('p2Plugins', Sync.class) {
