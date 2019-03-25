@@ -27,6 +27,9 @@ class BndPluginConvention {
   Object bnd(String name, Object defaultValue) {
     return project.bnd.get(name, defaultValue)
   }
+  String bndProcess(String line) {
+    return project.bnd.process(line)
+  }
   Object bndUnprocessed(String name, Object defaultValue) {
     def value = project.bnd.project.getUnprocessedProperty(name, null)
     if (value == null) {

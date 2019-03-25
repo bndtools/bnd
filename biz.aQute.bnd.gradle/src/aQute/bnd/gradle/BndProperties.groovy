@@ -36,6 +36,10 @@ class BndProperties {
     return trimmed(project.mergeProperties(name))
   }
 
+  def process(String line) {
+    return project.getReplacer().process(line)
+  }
+
   def propertyMissing(String name) {
     if ((name == 'ext') || extensions.extraProperties.has(name) || extensions.findByName(name)) {
       throw new MissingPropertyException(name, String)
