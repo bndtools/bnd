@@ -29,7 +29,7 @@ public class SnapshotTest {
 
 	LaunchpadBuilder builder = new LaunchpadBuilder().runfw("org.apache.felix.framework")
 		.bundles(
-		"biz.aQute.bnd.runtime.snapshot, org.apache.felix.log, org.apache.felix.configadmin, org.apache.felix.scr, biz.aQute.bnd.runtime.gogo");
+			"biz.aQute.bnd.runtime.snapshot, org.apache.felix.log, org.apache.felix.configadmin, org.apache.felix.scr");
 
 	@Test
 	public void testMinimum() throws Exception {
