@@ -70,8 +70,6 @@ class IndexFile {
 	final String[]						multi;
 	final String						source;
 
-	private long						lastModified;
-	private long						last		= 0L;
 	volatile Promise<BridgeRepository>	bridge;
 
 	/*
@@ -179,7 +177,6 @@ class IndexFile {
 	 * @throws Exception
 	 */
 	private synchronized Promise<BridgeRepository> load() throws Exception {
-		lastModified = indexFile.lastModified();
 		Set<Archive> toBeAdded = new HashSet<>();
 
 		if (indexFile.isFile()) {
@@ -335,7 +332,6 @@ class IndexFile {
 				}
 			}
 		}
-		last = System.currentTimeMillis();
 		this.bridge = load();
 		return true;
 	}
@@ -386,8 +382,6 @@ class IndexFile {
 				IO.mkdirs(indexFile.getParentFile());
 			IO.store(f.toString(), indexFile);
 		}
-
-		lastModified = indexFile.lastModified();
 	}
 
 	private Archive toArchive(String s, boolean macro) {
