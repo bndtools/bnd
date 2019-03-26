@@ -534,9 +534,8 @@ public class Launchpad implements AutoCloseable {
 	 * @param class1 name of the service
 	 * @param timeoutInMs timeout in ms
 	 * @return a service
-	 * @throws InterruptedException
 	 */
-	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs) throws InterruptedException {
+	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs) {
 		return this.waitForService(class1, timeoutInMs, null);
 	}
 
@@ -547,10 +546,8 @@ public class Launchpad implements AutoCloseable {
 	 * @param timeoutInMs timeout in ms
 	 * @param target filter, may be null
 	 * @return a service
-	 * @throws InterruptedException
 	 */
-	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs, String target)
-		throws InterruptedException {
+	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs, String target) {
 		try {
 			return getServices(class1, null, 1, timeoutInMs, false).stream()
 				.findFirst()
@@ -1143,7 +1140,7 @@ public class Launchpad implements AutoCloseable {
 			Bundle bundle = FrameworkUtil.getBundle(loadClass);
 
 			if (bundle == null)
-				return Optional.ofNullable("from class path");
+				return Optional.of("from class path");
 			else {
 				BundleWiring wiring = bundle.adapt(BundleWiring.class);
 				String exported = "PRIVATE! ";
@@ -1158,7 +1155,7 @@ public class Launchpad implements AutoCloseable {
 					}
 				}
 
-				return Optional.ofNullable(exported + " " + bundle.toString());
+				return Optional.of(exported + " " + bundle.toString());
 			}
 		} catch (Exception e) {
 			return Optional.empty();
@@ -1190,8 +1187,7 @@ public class Launchpad implements AutoCloseable {
 		}
 	}
 
-	private List<? extends ServiceReference<?>> getReferences(ServiceTracker<?, ?> tracker, Class<?> serviceClass)
-		throws InvalidSyntaxException {
+	private List<? extends ServiceReference<?>> getReferences(ServiceTracker<?, ?> tracker, Class<?> serviceClass) {
 		ServiceReference<?>[] references = tracker.getServiceReferences();
 		if (references == null) {
 			return Collections.emptyList();
