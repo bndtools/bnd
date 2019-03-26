@@ -1,7 +1,6 @@
 package aQute.bnd.runtime.snapshot;
 
 import org.junit.Test;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.hooks.service.ListenerHook;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
@@ -14,7 +13,6 @@ import aQute.launchpad.Launchpad;
 import aQute.launchpad.LaunchpadBuilder;
 import aQute.launchpad.Service;
 import aQute.lib.io.IO;
-import exported_not_imported.ExportedNotImported;
 
 public class SnapshotTest {
 
@@ -35,7 +33,7 @@ public class SnapshotTest {
 
 	@Test
 	public void testMinimum() throws Exception {
-		try (Launchpad fw = builder.gogo()
+		try (Launchpad fw = builder
 			.create()) {
 
 		}
@@ -67,17 +65,4 @@ public class SnapshotTest {
 		}
 	}
 
-	@Test
-	public void testNonImportedExportConflicts() throws Exception {
-		try (Launchpad fw = builder.gogo()
-			.closeTimeout(0)
-			.create()) {
-			Bundle start1 = fw.bundle()
-				.exportPackage(ExportedNotImported.class.getPackage()
-					.getName())
-				.start();
-		}
-		System.out.println();
-
-	}
 }
