@@ -139,12 +139,11 @@ public class Tool extends Processor {
 			}
 		}
 
-		StringBuilder sb = new StringBuilder();
-		for (String arg : args) {
-			sb.append(arg);
-			sb.append('\n');
+		try (PrintWriter writer = IO.writer(javadocOptions)) {
+			for (String arg : args) {
+				writer.println(arg);
+			}
 		}
-		IO.store(sb, javadocOptions);
 
 		Command command = new Command();
 		command.add(getProperty("javadoc", "javadoc"));
