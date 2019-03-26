@@ -10,6 +10,7 @@ import java.io.File;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -57,6 +58,17 @@ public class LaunchpadTest {
 	@Test
 	public void testWs() {
 		System.err.println("waiter");
+	}
+
+	@Test
+	public void testExportExcludes() throws Exception {
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			.excludeExport("org.slf4j*,aQute.lib*")
+			.create()) {
+			Set<String> p = new Parameters(fw.getBundleContext()
+				.getProperty("org.osgi.framework.system.packages.extra")).keySet();
+			assertThat(p).doesNotContain("aQute.lib.io", "org.slf4j");
+		}
 	}
 
 	@Test

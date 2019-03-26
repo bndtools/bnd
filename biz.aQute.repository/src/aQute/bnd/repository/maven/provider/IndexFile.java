@@ -327,12 +327,17 @@ class IndexFile {
 	}
 
 	boolean refresh() throws Exception {
-		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
-			last = System.currentTimeMillis();
-			this.bridge = load();
-			return true;
+		for (Archive archive : archives.keySet()) {
+			if (archive.isSnapshot()) {
+				File localFile = repo.toLocalFile(archive);
+				if (localFile.isFile()) {
+					localFile.setLastModified(0L);
+				}
+			}
 		}
-		return false;
+		last = System.currentTimeMillis();
+		this.bridge = load();
+		return true;
 	}
 
 	private Set<Archive> read(File file) throws IOException {

@@ -126,10 +126,6 @@ public interface Constants {
 	String								DSANNOTATIONS_OPTIONS						= "-dsannotations-options";
 
 	String								DONOTCOPY									= "-donotcopy";
-	@Deprecated
-	String								DEBUG										= "-debug";
-	@Deprecated
-	String								EXPERIMENTS									= "-experiments";
 	String								EXPORT_CONTENTS								= "-exportcontents";
 	String								EXTENSION									= "-extension";
 	String								EEPROFILE									= "-eeprofile";
@@ -528,5 +524,10 @@ public interface Constants {
 	 */
 	@Deprecated
 	String								PACKAGE										= "-package";
+
+	@Deprecated
+	String								DEBUG										= "-debug";
+	@Deprecated
+	String								EXPERIMENTS									= "-experiments";
 
 }

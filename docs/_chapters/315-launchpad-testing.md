@@ -119,7 +119,8 @@ Launchpad builder is first called it will contact the _Remote Workspace_ in the 
 the test code. The Remote Workspace then uses the project setup to calculate a bundle that would export all the
 test code and its imports. The Launchpad Builder then makes the OSGi framework export all packages that that
 virtual test bundle would have exported. That is, any class visible from the test cases will be exported by 
-the OSGi framework.
+the OSGi framework by default. It is possible to _exclude exports_ using glob expressions or predicates from a test case.
+See the `excludeExport()` methods.
 
 ### Bundles
 
@@ -435,12 +436,6 @@ has the Bundle Context of the OSGi Framework as well as a special test bundle. T
 a Bundle Context for the test code that runs outside the Framework. When you hide a service it will register
 Service Hooks that only let services from the test bundle pass through, all other services of the given type are removed
 from visibility.
-
-
-
-
-
- 
 
     Closeable Launchpad.hide(SomeService.class);
 

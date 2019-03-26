@@ -10,6 +10,7 @@
             biz.aQute.bnd.testextension, \
             biz.aQute.bnd.exporters, \
             biz.aQute.bnd.reporter, \
+            biz.aQute.bnd.runtime, \
             biz.aQute.bnd.gradle, \
             biz.aQute.bndlib, \
             biz.aQute.bndlib.tests, \

@@ -59,7 +59,7 @@ public class LogFacade implements SnapshotProvider {
 	public LogDTO doLog() {
 		LogDTO log = new LogDTO();
 		if (reader.size() == 0 && queue.size() == 0) {
-			log.errors.add("No log service registered");
+			log.errors.add("No LogReaderService registered");
 		}
 
 		for (LogEntry e : queue) {

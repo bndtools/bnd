@@ -53,6 +53,7 @@ public class FrameworkFacade implements SnapshotProvider {
 	final ServiceTracker<PackageAdmin, PackageAdmin>	packageAdminTracker;
 	final AtomicLong									number				= new AtomicLong();
 	final Map<String, PackageDTO>						packages			= new ConcurrentHashMap<>();
+	final TimeMeasurement								timing;
 
 	private ServiceRegistration<ListenerHook>			listenerHook;
 
@@ -68,11 +69,13 @@ public class FrameworkFacade implements SnapshotProvider {
 		public Set<Long>					registeredServices;
 		public Set<Long>					usingServices;
 		public int							revisions;
+		public long							startTime;
 	}
 
 	public static class ServiceDTO extends ServiceReferenceDTO {
-		public long			registered;
-		public List<Long>	usingBundles;
+		public List<Long>	timings	= new ArrayList<>();
+		public boolean		registered;
+		public boolean		unregistered;
 	}
 
 	public static class PackageDTO extends DTO {
@@ -88,22 +91,41 @@ public class FrameworkFacade implements SnapshotProvider {
 	}
 
 	public static class XFrameworkDTO extends DTO {
-		public int								startLevel;
-		public int								initialBundleStartLevel;
+		public int							startLevel;
+		public int							initialBundleStartLevel;
 
-		public Map<Long, XBundleDTO>			bundles		= new LinkedHashMap<>();
-		public Map<Long, ServiceReferenceDTO>	services	= new LinkedHashMap<>();
-		public Map<String, Object>				properties	= new LinkedHashMap<>();
-		public Map<String, Object>				system		= new LinkedHashMap<>();
-		public Map<Long, PackageDTO>			packages	= new LinkedHashMap<>();
-		public Set<String>						errors		= new HashSet<>();
-		public Map<Long, BundleWiringDTO>		wiring		= new LinkedHashMap<>();
+		public Map<Long, XBundleDTO>		bundles		= new LinkedHashMap<>();
+		public Map<Long, ServiceDTO>		services	= new LinkedHashMap<>();
+		public Map<String, Object>			properties	= new LinkedHashMap<>();
+		public Map<String, Object>			system		= new LinkedHashMap<>();
+		public Map<Long, PackageDTO>		packages	= new LinkedHashMap<>();
+		public Set<String>					errors		= new HashSet<>();
+		public Map<Long, BundleWiringDTO>	wiring		= new LinkedHashMap<>();
+	}
+
+	public static class XFrameworkEventDTO extends DTO {
+		public long		bundleId;
+		public String	message;
+		public int		type;
+		public long		time;
+	}
+
+	public static class ServiceTiming extends DTO {
+		public List<Long>	timings	= new ArrayList<>();
+		public boolean		registered;
+		public boolean		unregistered;
+
+		public ServiceTiming getTiming(long id) {
+			// TODO Auto-generated method stub
+			return null;
+		}
 	}
 
 	public FrameworkFacade(BundleContext context) {
 		this.context = context;
 		packageAdminTracker = new ServiceTracker<PackageAdmin, PackageAdmin>(context, PackageAdmin.class, null);
 		packageAdminTracker.open();
+		this.timing = new TimeMeasurement(context);
 
 		ListenerHook listeners = new ListenerHook() {
 
@@ -151,7 +173,19 @@ public class FrameworkFacade implements SnapshotProvider {
 		// xframework.system.putAll((Map) System.getProperties());
 
 		for (ServiceReferenceDTO sref : adapt.services) {
-			xframework.services.put(sref.id, sref);
+			ServiceDTO sdto = new ServiceDTO();
+			sdto.id = sref.id;
+			sdto.bundle = sref.bundle;
+			sdto.properties = sref.properties;
+			sdto.usingBundles = sref.usingBundles;
+
+			ServiceTiming timing = this.timing.getTiming(sdto.id);
+			if (timing != null) {
+				sdto.registered = timing.registered;
+				sdto.unregistered = timing.unregistered;
+				sdto.timings = timing.timings;
+			}
+			xframework.services.put(sdto.id, sdto);
 		}
 
 		Set<String> frameworkExports = getExports(context.getBundle()).keySet();
@@ -160,6 +194,8 @@ public class FrameworkFacade implements SnapshotProvider {
 			XBundleDTO xbundle = Util.copy(XBundleDTO.class, bundle);
 			Bundle b = context.getBundle(xbundle.id);
 			xbundle.location = b.getLocation();
+
+			xbundle.startTime = timing.getStart(bundle.id);
 
 			Dictionary<String, String> headers = b.getHeaders();
 			Enumeration<String> e = headers.keys();
@@ -217,7 +253,6 @@ public class FrameworkFacade implements SnapshotProvider {
 				xframework.wiring.put(b.getBundleId(), b.adapt(BundleWiringDTO.class));
 			}
 		}
-
 		return xframework;
 	}
 
@@ -320,6 +355,7 @@ public class FrameworkFacade implements SnapshotProvider {
 	public void close() throws IOException {
 		listenerHook.unregister();
 		packageAdminTracker.close();
+		timing.close();
 	}
 
 	@Override
