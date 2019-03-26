@@ -62,6 +62,20 @@ public class Tool extends Processor {
 		}
 	}
 
+	void setSources(Jar sourcesJar) throws Exception {
+		IO.delete(sources);
+		for (Entry<String, Resource> e : sourcesJar.getResources()
+			.entrySet()) {
+			String path = e.getKey();
+			File out = IO.getFile(sources, path);
+			IO.mkdirs(out.getParentFile());
+			try (OutputStream os = IO.outputStream(out)) {
+				e.getValue()
+					.write(os);
+			}
+		}
+	}
+
 	public boolean hasSources() {
 		return sources.isDirectory();
 	}

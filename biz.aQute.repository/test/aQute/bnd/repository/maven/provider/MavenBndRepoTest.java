@@ -29,6 +29,7 @@ import org.w3c.dom.Document;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
@@ -51,7 +52,7 @@ import junit.framework.TestCase;
 
 /*
  * Create a remote and local repository with a lot of bad stuff. The repo contains:
- * 
+ *
  */
 public class MavenBndRepoTest extends TestCase {
 	private static final Version		DTO_VERSION	= Version.parseVersion("1.0.0.201505202023");
@@ -254,6 +255,33 @@ public class MavenBndRepoTest extends TestCase {
 		IdentityCapability bc = ResourceUtils.getIdentityCapability(resources.iterator()
 			.next());
 		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());
+	}
+
+	public void testPutMavenReleaseSources() throws Exception {
+		Map<String, String> map = new HashMap<>();
+		map.put("releaseUrl", remote.toURI()
+			.toString());
+		config(map);
+		try (Processor context = new Processor()) {
+			context.setProperty("-maven-release",
+				"sources;path=testresources/src,javadoc;packages=all");
+			File jar = IO.getFile("testresources/release.jar");
+			PutOptions options = new PutOptions();
+			options.context = context;
+			PutResult put = repo.put(new FileInputStream(jar), options);
+
+			assertIsFile(remote, "biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0.jar", 140212);
+			File sources = assertIsFile(remote,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-sources.jar", 0);
+			try (Jar sourcesJar = new Jar(sources)) {
+				assertThat(sourcesJar.exists("X.java")).isTrue();
+			}
+			File javadoc = assertIsFile(remote,
+				"biz/aQute/bnd/biz.aQute.bnd.maven/3.2.0/biz.aQute.bnd.maven-3.2.0-javadoc.jar", 0);
+			try (Jar javadocJar = new Jar(javadoc)) {
+				assertThat(javadocJar.exists("X.html")).isTrue();
+			}
+		}
 	}
 
 	public void testPomGenerate() throws Exception {

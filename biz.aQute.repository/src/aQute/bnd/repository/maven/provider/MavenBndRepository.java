@@ -201,22 +201,20 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					releaser.add(binaryArchive, binaryFile);
 
 					if (!isLocal(instructions)) {
-
 						try (Tool tool = new Tool(options.context, binary)) {
+							if (instructions.sources != null) {
+								if (!NONE.equals(instructions.sources.path)) {
+									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
+										save(releaser, pom.getRevision(), jar);
+									}
+								}
+							}
 
 							if (instructions.javadoc != null) {
 								if (!NONE.equals(instructions.javadoc.path)) {
 									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
 										instructions.javadoc.options,
 										instructions.javadoc.packages == JavadocPackages.EXPORT)) {
-										save(releaser, pom.getRevision(), jar);
-									}
-								}
-							}
-
-							if (instructions.sources != null) {
-								if (!NONE.equals(instructions.sources.path)) {
-									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
 										save(releaser, pom.getRevision(), jar);
 									}
 								}
@@ -286,7 +284,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private Jar getSources(Tool tool, Processor context, String path) throws Exception {
 		Jar jar = toJar(context, path);
-		if (jar == null) {
+		if (jar != null) {
+			tool.setSources(jar);
+		} else {
 			jar = tool.doSource();
 		}
 		jar.ensureManifest();
