@@ -3,6 +3,7 @@ package aQute.bnd.repository.maven.provider;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -52,8 +53,10 @@ public class Tool extends Processor {
 					.substring(OSGI_OPT_SRC.length());
 				File out = IO.getFile(sources, path);
 				IO.mkdirs(out.getParentFile());
-				IO.copy(e.getValue()
-					.openInputStream(), out);
+				try (OutputStream os = IO.outputStream(out)) {
+					e.getValue()
+						.write(os);
+				}
 			}
 		}
 	}
