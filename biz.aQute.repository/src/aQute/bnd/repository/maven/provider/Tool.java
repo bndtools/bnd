@@ -15,12 +15,13 @@ import java.util.Properties;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.version.Version;
-import aQute.lib.fileset.FileSet;
+import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
@@ -127,16 +128,16 @@ public class Tool extends Processor {
 			}
 		}
 
-		FileSet set = new FileSet(sources, "**.java");
-		for (File f : set.getFiles()) {
-			args.add(String.format("'%s'", fileName(f)));
-		}
-
+		FileTree sourcefiles = new FileTree();
 		if (exportsOnly) {
 			Parameters exports = manifest.getExportPackage();
-			for (String packageName : exports.keySet()) {
-				args.add(String.format("'%s'", packageName));
-			}
+			exports.keySet()
+				.stream()
+				.map(packageName -> Descriptors.fqnToBinary(packageName) + "/*.java")
+				.forEach(sourcefiles::addIncludes);
+		}
+		for (File f : sourcefiles.getFiles(sources, "**/*.java")) {
+			args.add(String.format("'%s'", fileName(f)));
 		}
 
 		try (PrintWriter writer = IO.writer(javadocOptions)) {
