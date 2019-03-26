@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.concurrent.ScheduledFuture;
@@ -200,22 +201,20 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 					releaser.add(binaryArchive, binaryFile);
 
 					if (!isLocal(instructions)) {
-
 						try (Tool tool = new Tool(options.context, binary)) {
+							if (instructions.sources != null) {
+								if (!NONE.equals(instructions.sources.path)) {
+									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
+										save(releaser, pom.getRevision(), jar);
+									}
+								}
+							}
 
 							if (instructions.javadoc != null) {
 								if (!NONE.equals(instructions.javadoc.path)) {
 									try (Jar jar = getJavadoc(tool, options.context, instructions.javadoc.path,
 										instructions.javadoc.options,
 										instructions.javadoc.packages == JavadocPackages.EXPORT)) {
-										save(releaser, pom.getRevision(), jar);
-									}
-								}
-							}
-
-							if (instructions.sources != null) {
-								if (!NONE.equals(instructions.sources.path)) {
-									try (Jar jar = getSources(tool, options.context, instructions.sources.path)) {
 										save(releaser, pom.getRevision(), jar);
 									}
 								}
@@ -285,7 +284,9 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 	private Jar getSources(Tool tool, Processor context, String path) throws Exception {
 		Jar jar = toJar(context, path);
-		if (jar == null) {
+		if (jar != null) {
+			tool.setSources(jar);
+		} else {
 			jar = tool.doSource();
 		}
 		jar.ensureManifest();
@@ -358,11 +359,22 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		Attrs javadoc = p.remove("javadoc");
 		if (javadoc != null) {
-			release.javadoc.path = javadoc.get("path");
+			release.javadoc.path = javadoc.remove("path");
 			if (NONE.equals(release.javadoc.path)) {
 				release.javadoc = null;
-			} else
+			} else {
+				String packages = javadoc.remove("packages");
+				if (packages != null) {
+					try {
+						release.javadoc.packages = JavadocPackages.valueOf(packages.toUpperCase(Locale.ROOT));
+					} catch (Exception e) {
+						reporter.warning(
+							"The -maven-release instruction contains unrecognized javadoc packages option: %s",
+							packages);
+					}
+				}
 				release.javadoc.options = javadoc;
+			}
 		}
 
 		Attrs sources = p.remove("sources");

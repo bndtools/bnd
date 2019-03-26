@@ -3,6 +3,7 @@ package aQute.bnd.repository.maven.provider;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -14,12 +15,13 @@ import java.util.Properties;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.Descriptors;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.version.Version;
-import aQute.lib.fileset.FileSet;
+import aQute.lib.io.FileTree;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.lib.tag.Tag;
@@ -52,8 +54,24 @@ public class Tool extends Processor {
 					.substring(OSGI_OPT_SRC.length());
 				File out = IO.getFile(sources, path);
 				IO.mkdirs(out.getParentFile());
-				IO.copy(e.getValue()
-					.openInputStream(), out);
+				try (OutputStream os = IO.outputStream(out)) {
+					e.getValue()
+						.write(os);
+				}
+			}
+		}
+	}
+
+	void setSources(Jar sourcesJar) throws Exception {
+		IO.delete(sources);
+		for (Entry<String, Resource> e : sourcesJar.getResources()
+			.entrySet()) {
+			String path = e.getKey();
+			File out = IO.getFile(sources, path);
+			IO.mkdirs(out.getParentFile());
+			try (OutputStream os = IO.outputStream(out)) {
+				e.getValue()
+					.write(os);
 			}
 		}
 	}
@@ -124,24 +142,23 @@ public class Tool extends Processor {
 			}
 		}
 
-		FileSet set = new FileSet(sources, "**.java");
-		for (File f : set.getFiles()) {
+		FileTree sourcefiles = new FileTree();
+		if (exportsOnly) {
+			Parameters exports = manifest.getExportPackage();
+			exports.keySet()
+				.stream()
+				.map(packageName -> Descriptors.fqnToBinary(packageName) + "/*.java")
+				.forEach(sourcefiles::addIncludes);
+		}
+		for (File f : sourcefiles.getFiles(sources, "**/*.java")) {
 			args.add(String.format("'%s'", fileName(f)));
 		}
 
-		if (exportsOnly) {
-			Parameters exports = manifest.getExportPackage();
-			for (String packageName : exports.keySet()) {
-				args.add(String.format("'%s'", packageName));
+		try (PrintWriter writer = IO.writer(javadocOptions)) {
+			for (String arg : args) {
+				writer.println(arg);
 			}
 		}
-
-		StringBuilder sb = new StringBuilder();
-		for (String arg : args) {
-			sb.append(arg);
-			sb.append('\n');
-		}
-		IO.store(sb, javadocOptions);
 
 		Command command = new Command();
 		command.add(getProperty("javadoc", "javadoc"));
