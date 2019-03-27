@@ -264,6 +264,7 @@
 						<properties>
 							<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
 							<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+							<org.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener>warn</org.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener>
 						</properties>
 						<scriptVariables>
 							<bndVersion>${project.version}</bndVersion>
