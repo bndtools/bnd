@@ -29,7 +29,7 @@ Bundle-Version:         ${base.version}.${tstamp}-SNAPSHOT
 # Maven info. The maven artifactId defaults to Bundle-SymbolicName
 -groupid:               biz.aQute.bnd
 -pom:                   version=${versionmask;===s;${@version}}
--maven-release:         pom;path=JAR
+-maven-release:         pom;path=JAR,javadoc;-classpath="${project.buildpath}"
 
 Automatic-Module-Name:  ${def;bsn}
 Bundle-Vendor:          Bndtools https://bndtools.org/
