@@ -34,6 +34,7 @@ public class LogFacade implements SnapshotProvider {
 			@Override
 			public LogReaderService addingService(ServiceReference<LogReaderService> reference) {
 				LogReaderService s = super.addingService(reference);
+				@SuppressWarnings("unchecked")
 				Enumeration<LogEntry> log = s.getLog();
 				while (log.hasMoreElements()) {
 					entry(log.nextElement());

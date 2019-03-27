@@ -26,11 +26,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
-import org.osgi.service.packageadmin.ExportedPackage;
-import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.packageadmin.RequiredBundle;
 
-@SuppressWarnings("deprecation")
 public class Inspect42
 {
     public static final String LEGACY_PACKAGE_NAMESPACE = "package";
@@ -171,6 +167,7 @@ public class Inspect42
         }
     }
 
+	@SuppressWarnings("deprecation")
     public static boolean printExportedPackages(BundleContext bc, Bundle b)
     {
         boolean matches = false;
@@ -182,7 +179,8 @@ public class Inspect42
         if (!isFragment(b))
         {
             // Get package admin service.
-            PackageAdmin pa = Util.getService(bc, PackageAdmin.class, refs);
+			org.osgi.service.packageadmin.PackageAdmin pa = Util.getService(bc,
+				org.osgi.service.packageadmin.PackageAdmin.class, refs);
             if (pa == null)
             {
                 System.out.println("PackageAdmin service is unavailable.");
@@ -191,10 +189,10 @@ public class Inspect42
             {
                 try
                 {
-                    ExportedPackage[] exports = pa.getExportedPackages(b);
+					org.osgi.service.packageadmin.ExportedPackage[] exports = pa.getExportedPackages(b);
                     if (exports != null)
                     {
-                        for (ExportedPackage ep : exports)
+						for (org.osgi.service.packageadmin.ExportedPackage ep : exports)
                         {
                             matches = true;
                             Bundle[] importers = ep.getImportingBundles();
@@ -238,6 +236,7 @@ public class Inspect42
         return matches;
     }
 
+	@SuppressWarnings("deprecation")
     private static boolean printImportedPackages(BundleContext bc, Bundle b)
     {
         boolean matches = false;
@@ -249,17 +248,18 @@ public class Inspect42
         if (!isFragment(b))
         {
             // Get package admin service.
-            PackageAdmin pa = Util.getService(bc, PackageAdmin.class, refs);
+			org.osgi.service.packageadmin.PackageAdmin pa = Util.getService(bc,
+				org.osgi.service.packageadmin.PackageAdmin.class, refs);
             if (pa == null)
             {
                 System.out.println("PackageAdmin service is unavailable.");
             }
             else
             {
-                ExportedPackage[] exports = pa.getExportedPackages((Bundle) null);
+				org.osgi.service.packageadmin.ExportedPackage[] exports = pa.getExportedPackages((Bundle) null);
                 if (exports != null)
                 {
-                    for (ExportedPackage ep : exports)
+					for (org.osgi.service.packageadmin.ExportedPackage ep : exports)
                     {
                         Bundle[] importers = ep.getImportingBundles();
                         if (importers != null)
@@ -294,6 +294,7 @@ public class Inspect42
         return matches;
     }
 
+	@SuppressWarnings("deprecation")
     public static boolean printRequiringBundles(BundleContext bc, Bundle b)
     {
         boolean matches = false;
@@ -305,7 +306,8 @@ public class Inspect42
         if (!isFragment(b))
         {
             // Get package admin service.
-            PackageAdmin pa = Util.getService(bc, PackageAdmin.class, refs);
+			org.osgi.service.packageadmin.PackageAdmin pa = Util.getService(bc,
+				org.osgi.service.packageadmin.PackageAdmin.class, refs);
             if (pa == null)
             {
                 System.out.println("PackageAdmin service is unavailable.");
@@ -314,10 +316,10 @@ public class Inspect42
             {
                 try
                 {
-                    RequiredBundle[] rbs = pa.getRequiredBundles(b.getSymbolicName());
+					org.osgi.service.packageadmin.RequiredBundle[] rbs = pa.getRequiredBundles(b.getSymbolicName());
                     if (rbs != null)
                     {
-                        for (RequiredBundle rb : rbs)
+						for (org.osgi.service.packageadmin.RequiredBundle rb : rbs)
                         {
                             if (rb.getBundle() == b)
                             {
@@ -367,6 +369,7 @@ public class Inspect42
         return matches;
     }
 
+	@SuppressWarnings("deprecation")
     private static boolean printRequiredBundles(BundleContext bc, Bundle b)
     {
         boolean matches = false;
@@ -378,17 +381,18 @@ public class Inspect42
         if (!isFragment(b))
         {
             // Get package admin service.
-            PackageAdmin pa = Util.getService(bc, PackageAdmin.class, refs);
+			org.osgi.service.packageadmin.PackageAdmin pa = Util.getService(bc,
+				org.osgi.service.packageadmin.PackageAdmin.class, refs);
             if (pa == null)
             {
                 System.out.println("PackageAdmin service is unavailable.");
             }
             else
             {
-                RequiredBundle[] rbs = pa.getRequiredBundles(null);
+				org.osgi.service.packageadmin.RequiredBundle[] rbs = pa.getRequiredBundles(null);
                 if (rbs != null)
                 {
-                    for (RequiredBundle rb : rbs)
+					for (org.osgi.service.packageadmin.RequiredBundle rb : rbs)
                     {
                         Bundle[] requirers = rb.getRequiringBundles();
                         if (requirers != null)
@@ -417,6 +421,7 @@ public class Inspect42
         return matches;
     }
 
+	@SuppressWarnings("deprecation")
     public static boolean printHostedFragments(BundleContext bc, Bundle b)
     {
         boolean matches = false;
@@ -425,7 +430,8 @@ public class Inspect42
         List<ServiceReference<?>> refs = new ArrayList<>();
 
         // Get package admin service.
-        PackageAdmin pa = Util.getService(bc, PackageAdmin.class, refs);
+		org.osgi.service.packageadmin.PackageAdmin pa = Util.getService(bc,
+			org.osgi.service.packageadmin.PackageAdmin.class, refs);
         if (pa == null)
         {
             System.out.println("PackageAdmin service is unavailable.");
@@ -476,6 +482,7 @@ public class Inspect42
         return matches;
     }
 
+	@SuppressWarnings("deprecation")
     public static boolean printFragmentHosts(BundleContext bc, Bundle b)
     {
         boolean matches = false;
@@ -484,7 +491,8 @@ public class Inspect42
         List<ServiceReference<?>> refs = new ArrayList<>();
 
         // Get package admin service.
-        PackageAdmin pa = Util.getService(bc, PackageAdmin.class, refs);
+		org.osgi.service.packageadmin.PackageAdmin pa = Util.getService(bc,
+			org.osgi.service.packageadmin.PackageAdmin.class, refs);
         if (pa == null)
         {
             System.out.println("PackageAdmin service is unavailable.");
