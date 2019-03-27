@@ -253,6 +253,34 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-invoker-plugin</artifactId>
 					<version>3.2.0</version>
+					<configuration>
+						<cloneProjectsTo>${project.build.directory}/integration-test/projects</cloneProjectsTo>
+						<cloneClean>true</cloneClean>
+						<projectsDirectory>src/test/resources/integration-test</projectsDirectory>
+						<settingsFile>src/test/resources/integration-test/settings.xml</settingsFile>
+						<streamLogs>true</streamLogs>
+						<localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
+						<postBuildHookScript>verify.groovy</postBuildHookScript>
+						<properties>
+							<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+							<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+						</properties>
+						<scriptVariables>
+							<bndVersion>${project.version}</bndVersion>
+						</scriptVariables>
+						<goals>
+							<goal>package</goal>
+						</goals>
+					</configuration>
+					<executions>
+						<execution>
+							<id>integration-test</id>
+							<goals>
+								<goal>install</goal>
+								<goal>run</goal>
+							</goals>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>

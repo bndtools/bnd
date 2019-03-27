@@ -76,14 +76,7 @@
 					</dependency>
 				</dependencies>
 				<configuration>
-					<cloneProjectsTo>${project.build.directory}/integration-test/projects</cloneProjectsTo>
-					<cloneClean>true</cloneClean>
-					<projectsDirectory>src/test/resources/integration-test</projectsDirectory>
-					<settingsFile>src/test/resources/integration-test/settings.xml</settingsFile>
-					<streamLogs>true</streamLogs>
-					<localRepositoryPath>${project.build.directory}/integration-test/repo</localRepositoryPath>
 					<preBuildHookScript>setup.groovy</preBuildHookScript>
-					<postBuildHookScript>verify.groovy</postBuildHookScript>
 					<scriptVariables>
 						<pluginBasedir>${project.basedir}</pluginBasedir>
 						<pluginBuildDirectory>${project.build.directory}</pluginBuildDirectory>
@@ -92,22 +85,8 @@
 						<jsse.enableSNIExtension>false</jsse.enableSNIExtension>
 						<!-- Used in the "no-dist-mgmt" deploy test -->
 						<altSnapshotDeploymentRepository>LocalSnapshotDeploy::default::file://${project.build.directory}/integration-test/projects/test/localsnapshotdeployrepo</altSnapshotDeploymentRepository>
-						<maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
-						<maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
 					</properties>
-					<goals>
-						<goal>package</goal>
-					</goals>
 				</configuration>
-				<executions>
-					<execution>
-						<id>integration-test</id>
-						<goals>
-							<goal>install</goal>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
