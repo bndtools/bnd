@@ -50,6 +50,7 @@ public class Tool extends Processor {
 
 	void setSources(Jar sourcesJar, String prefix) throws Exception {
 		IO.delete(sources);
+		IO.mkdirs(sources);
 		final int prefix_length = prefix.length();
 		for (Entry<String, Resource> e : sourcesJar.getResources()
 			.entrySet()) {
