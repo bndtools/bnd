@@ -264,7 +264,7 @@ public class MavenBndRepoTest extends TestCase {
 		config(map);
 		try (Processor context = new Processor()) {
 			context.setProperty("-maven-release",
-				"sources;path=testresources/src,javadoc;packages=all");
+				"sources;path=\"testresources/src\",javadoc;packages=all");
 			File jar = IO.getFile("testresources/release.jar");
 			PutOptions options = new PutOptions();
 			options.context = context;
