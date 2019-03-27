@@ -285,7 +285,7 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 	private Jar getSources(Tool tool, Processor context, String path) throws Exception {
 		Jar jar = toJar(context, path);
 		if (jar != null) {
-			tool.setSources(jar);
+			tool.setSources(jar, "");
 		} else {
 			jar = tool.doSource();
 		}

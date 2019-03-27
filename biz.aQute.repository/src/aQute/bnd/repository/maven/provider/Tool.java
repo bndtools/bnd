@@ -30,44 +30,34 @@ import aQute.libg.command.Command;
 
 public class Tool extends Processor {
 
-	private static final String	OSGI_OPT_SRC	= "OSGI-OPT/src/";
+	private static final String	OSGI_OPT_SRC		= "OSGI-OPT/src";
+	private static final String	OSGI_OPT_SRC_PREFIX	= OSGI_OPT_SRC + "/";
+	private final Jar			jar;
 	private final File			tmp;
 	private final File			sources;
 	private final File			javadoc;
 	private final File			javadocOptions;
-	private final Domain		manifest;
 
 	public Tool(Processor parent, Jar jar) throws Exception {
 		super(parent);
+		this.jar = jar;
 		tmp = Files.createTempDirectory("tool")
 			.toFile();
 		sources = new File(tmp, "sources");
 		javadoc = new File(tmp, "javadoc");
 		javadocOptions = new File(tmp, "javadoc.options");
-		manifest = Domain.domain(jar.getManifest());
-
-		for (Entry<String, Resource> e : jar.getResources()
-			.entrySet()) {
-			if (e.getKey()
-				.startsWith(OSGI_OPT_SRC)) {
-				String path = e.getKey()
-					.substring(OSGI_OPT_SRC.length());
-				File out = IO.getFile(sources, path);
-				IO.mkdirs(out.getParentFile());
-				try (OutputStream os = IO.outputStream(out)) {
-					e.getValue()
-						.write(os);
-				}
-			}
-		}
 	}
 
-	void setSources(Jar sourcesJar) throws Exception {
+	void setSources(Jar sourcesJar, String prefix) throws Exception {
 		IO.delete(sources);
+		final int prefix_length = prefix.length();
 		for (Entry<String, Resource> e : sourcesJar.getResources()
 			.entrySet()) {
 			String path = e.getKey();
-			File out = IO.getFile(sources, path);
+			if (!path.startsWith(prefix)) {
+				continue;
+			}
+			File out = IO.getFile(sources, path.substring(prefix_length));
 			IO.mkdirs(out.getParentFile());
 			try (OutputStream os = IO.outputStream(out)) {
 				e.getValue()
@@ -77,12 +67,17 @@ public class Tool extends Processor {
 	}
 
 	public boolean hasSources() {
-		return sources.isDirectory();
+		return sources.isDirectory() || jar.hasDirectory(OSGI_OPT_SRC);
 	}
 
 	public Jar doJavadoc(Map<String, String> options, boolean exportsOnly) throws Exception {
-		if (!hasSources())
+		if (!hasSources()) {
 			return new Jar("javadoc");
+		}
+
+		if (!sources.isDirectory()) { // extract source if not already present
+			setSources(jar, OSGI_OPT_SRC_PREFIX);
+		}
 
 		IO.mkdirs(javadoc);
 		List<String> args = new ArrayList<>();
@@ -95,6 +90,7 @@ public class Tool extends Processor {
 		Properties pp = new UTF8Properties();
 		pp.putAll(options);
 
+		Domain manifest = Domain.domain(jar.getManifest());
 		String name = manifest.getBundleName();
 		if (name == null)
 			name = manifest.getBundleSymbolicName()
@@ -108,7 +104,7 @@ public class Tool extends Processor {
 
 		if (bundleDescription != null && !Strings.trim(bundleDescription)
 			.isEmpty()) {
-			printOverview(name, version, bundleDescription);
+			printOverview(manifest, name, version, bundleDescription);
 		}
 
 		set(pp, "-doctitle", name);
@@ -182,7 +178,8 @@ public class Tool extends Processor {
 			.replace(System.getProperty("line.separator"), "\\" + System.getProperty("line.separator"));
 	}
 
-	void printOverview(String name, String version, String bundleDescription) throws FileNotFoundException {
+	private void printOverview(Domain manifest, String name, String version, String bundleDescription)
+		throws FileNotFoundException {
 		Tag body = new Tag("body");
 		new Tag(body, "h1", name);
 		new Tag(body, "p", "Version " + version);
@@ -214,9 +211,14 @@ public class Tool extends Processor {
 		pp.put(key, value);
 	}
 
-	public Jar doSource() throws IOException {
-		if (!hasSources())
+	public Jar doSource() throws Exception {
+		if (!hasSources()) {
 			return new Jar("sources");
+		}
+
+		if (!sources.isDirectory()) { // extract source if not already present
+			setSources(jar, OSGI_OPT_SRC_PREFIX);
+		}
 
 		return new Jar(sources);
 	}
