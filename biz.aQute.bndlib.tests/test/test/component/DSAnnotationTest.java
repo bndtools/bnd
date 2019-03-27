@@ -91,6 +91,17 @@ public class DSAnnotationTest extends BndTestCase {
 
 	}
 
+	public void testExceedsVersion() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;maximum=1.2.0");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+		Jar jar = b.build();
+		assertTrue(b.check(
+			"component 1.3.0 version test.component.DSAnnotationTest.ValidNSVersion exceeds -dsannotations-options version;maximum version 1.2.0 because base"));
+	}
 	public void testValidNamespaceVersion() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");

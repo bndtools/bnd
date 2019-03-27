@@ -45,6 +45,7 @@ class ReferenceDef extends ExtensionDef {
 	boolean					isCollection;
 	boolean					isCollectionSubClass;
 	Integer					parameter;
+	String					reasonForVersion;
 
 	public ReferenceDef(XMLAttributeFinder finder) {
 		super(finder);
@@ -62,7 +63,7 @@ class ReferenceDef extends ExtensionDef {
 		}
 
 		if ((updated != null && !updated.equals("-")) || policyOption != null) {
-			updateVersion(V1_2);
+			updateVersion(V1_2, "lowest in prepare");
 		}
 
 		if (target != null) {
@@ -80,7 +81,7 @@ class ReferenceDef extends ExtensionDef {
 		}
 
 		if (scope != null || field != null) {
-			updateVersion(V1_3);
+			updateVersion(V1_3, "use of scope or field");
 		}
 
 	}
@@ -129,8 +130,12 @@ class ReferenceDef extends ExtensionDef {
 		return name;
 	}
 
-	void updateVersion(Version version) {
-		this.version = ComponentDef.max(this.version, version);
+	void updateVersion(Version version, String reason) {
+		if (this.version.compareTo(version) >= 0)
+			return;
+
+		this.version = version;
+		this.reasonForVersion = reason;
 	}
 
 }

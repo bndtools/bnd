@@ -14,6 +14,12 @@ The `-dsannotations-options` instruction configures how DS component annotations
 
 The example above, will restrict the use of OSGi DS annotations to minimum 1.2.0 version. The version number denotes that the users are free to use any version equal to or higher than 1.2.0, provided that the users have the SCR annotations included in the workspace.
 
+It is also possible to set a `maximum`. The maximum will generate an error if the use of DS causes a version number that is higher than the given `maximum`. For example:
+
+```properties
+-dsannotations-options: version;minimum=1.2.0;maximum=1.2.0
+```
+    
 The following options are supported:
 
 |option||
@@ -23,4 +29,4 @@ The following options are supported:
 |extender|add the `osgi.extender=osgi.component` requirement to the manifest|
 |nocapabilities|do not add `osgi.service` capabilities to the manifest|
 |norequirements|do not add `osgi.service` requirements to the manifest|
-|version|set the minimum version of the `osgi.extender=osgi.component` requirement added to the manifest|
+|version|set the minimum version of the `osgi.extender=osgi.component` requirement added to the manifest. It is also possible to set a maximum. The maximum generates an error when the calculated version of the component is higher.|
