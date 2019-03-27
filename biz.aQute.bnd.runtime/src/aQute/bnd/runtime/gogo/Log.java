@@ -55,7 +55,8 @@ public class Log implements Closeable {
 				LogReaderService service = super.addingService(reference);
 				synchronized (entries) {
 					service.addLogListener(Log.this::logentry);
-					for (Enumeration<LogEntry> e = service.getLog(); e.hasMoreElements();) {
+					for (@SuppressWarnings("unchecked")
+					Enumeration<LogEntry> e = service.getLog(); e.hasMoreElements();) {
 						logentry(e.nextElement());
 					}
 				}

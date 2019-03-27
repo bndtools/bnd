@@ -35,9 +35,6 @@ import org.osgi.framework.hooks.service.ListenerHook.ListenerInfo;
 import org.osgi.framework.startlevel.BundleStartLevel;
 import org.osgi.framework.wiring.BundleRevisions;
 import org.osgi.framework.wiring.dto.BundleWiringDTO;
-import org.osgi.service.packageadmin.ExportedPackage;
-import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.service.packageadmin.RequiredBundle;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.header.Parameters;
@@ -45,12 +42,12 @@ import aQute.bnd.runtime.api.SnapshotProvider;
 import aQute.bnd.runtime.util.Util;
 import aQute.lib.collections.MultiMap;
 
-@SuppressWarnings("deprecation")
 public class FrameworkFacade implements SnapshotProvider {
 
 	final BundleContext									context;
 	final MultiMap<Bundle, ListenerInfo>				serviceListeners	= new MultiMap<>();
-	final ServiceTracker<PackageAdmin, PackageAdmin>	packageAdminTracker;
+	@SuppressWarnings("deprecation")
+	final ServiceTracker<org.osgi.service.packageadmin.PackageAdmin, org.osgi.service.packageadmin.PackageAdmin>	packageAdminTracker;
 	final AtomicLong									number				= new AtomicLong();
 	final Map<String, PackageDTO>						packages			= new ConcurrentHashMap<>();
 	final TimeMeasurement								timing;
@@ -121,9 +118,11 @@ public class FrameworkFacade implements SnapshotProvider {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public FrameworkFacade(BundleContext context) {
 		this.context = context;
-		packageAdminTracker = new ServiceTracker<PackageAdmin, PackageAdmin>(context, PackageAdmin.class, null);
+		packageAdminTracker = new ServiceTracker<org.osgi.service.packageadmin.PackageAdmin, org.osgi.service.packageadmin.PackageAdmin>(
+			context, org.osgi.service.packageadmin.PackageAdmin.class, null);
 		packageAdminTracker.open();
 		this.timing = new TimeMeasurement(context);
 
@@ -156,13 +155,13 @@ public class FrameworkFacade implements SnapshotProvider {
 	}
 
 	@SuppressWarnings({
-		"unchecked", "rawtypes"
+		"unchecked", "rawtypes", "deprecation"
 	})
 	public XFrameworkDTO getFrameworkDTO() throws InvalidSyntaxException {
 		XFrameworkDTO xframework = new XFrameworkDTO();
-		PackageAdmin packageAdmin = packageAdminTracker.getService();
+		org.osgi.service.packageadmin.PackageAdmin packageAdmin = packageAdminTracker.getService();
 
-		RequiredBundle[] requiredBundles = null;
+		org.osgi.service.packageadmin.RequiredBundle[] requiredBundles = null;
 
 		requiredBundles = packageAdmin.getRequiredBundles(null);
 
@@ -277,13 +276,15 @@ public class FrameworkFacade implements SnapshotProvider {
 		}
 	}
 
-	private void doPackages(XFrameworkDTO xframework, PackageAdmin packageAdmin) {
+	@SuppressWarnings("deprecation")
+	private void doPackages(XFrameworkDTO xframework, org.osgi.service.packageadmin.PackageAdmin packageAdmin) {
 		if (packageAdmin != null) {
-			ExportedPackage[] exportedPackages = packageAdmin.getExportedPackages((Bundle) null);
+			org.osgi.service.packageadmin.ExportedPackage[] exportedPackages = packageAdmin
+				.getExportedPackages((Bundle) null);
 			if (exportedPackages != null) {
 				MultiMap<String, PackageDTO> duplicates = new MultiMap<>();
 
-				for (ExportedPackage ep : exportedPackages) {
+				for (org.osgi.service.packageadmin.ExportedPackage ep : exportedPackages) {
 
 					doPackage(xframework, duplicates, number, packages, ep);
 				}
@@ -317,8 +318,9 @@ public class FrameworkFacade implements SnapshotProvider {
 		return true;
 	}
 
+	@SuppressWarnings("deprecation")
 	private void doPackage(XFrameworkDTO xframework, MultiMap<String, PackageDTO> duplicates, AtomicLong number,
-		Map<String, PackageDTO> packages, ExportedPackage ep) {
+		Map<String, PackageDTO> packages, org.osgi.service.packageadmin.ExportedPackage ep) {
 		String packageId = ep.getName() + "-" + ep.getExportingBundle() + "-" + ep.isRemovalPending();
 
 		PackageDTO packageDto = packages.computeIfAbsent(packageId, k -> {
