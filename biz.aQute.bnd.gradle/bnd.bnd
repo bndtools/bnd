@@ -14,15 +14,13 @@
 
 -digests: MD5, SHA1
 
-Bundle-Description: The bnd gradle plugin.
+Bundle-Description: The Bnd Gradle plugin.
 
 -buildpath: \
 	aQute.libg;version=project, \
 	biz.aQute.bndlib;version=latest, \
 	biz.aQute.resolve;version=latest, \
 	biz.aQute.repository;version=latest
-
-pluginClasspath: ${p-buildpath;\\${pathseparator}}
 
 bnd_version: ${replace;${bnd_plugin};.*:(.*);$1}
 
