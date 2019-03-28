@@ -17,8 +17,8 @@ class TestBndPlugin extends Specification {
     String pluginClasspath
 
     def setup() {
-      File propertiesFile = new File('bin/plugin-under-test-metadata.properties')
-      assert propertiesFile.isFile()
+      URL propertiesFile = getClass().getResource('/plugin-under-test-metadata.properties')
+      assert propertiesFile != null
       def properties = new Properties()
       propertiesFile.withInputStream {
         properties.load(it)
