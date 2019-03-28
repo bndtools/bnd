@@ -66,7 +66,7 @@ Since bnd files are property files, you cannot repeat a property. Later properti
 
 We can now wrap the source JAR with the following command:
 
-	$ bnd javax.activation.bnd
+	$ bnd javax.activation.jar
 
 bnd has many commands, you can find out more about them with the`bnd help [sub]` command. In this case we rely on bnd detecting a bnd file and doing the right thing. bnd is also prepared to show the manifest of any bundle, so let's take a look at the bundle we just generated:
 
