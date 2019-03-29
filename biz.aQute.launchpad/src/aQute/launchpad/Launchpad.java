@@ -549,7 +549,7 @@ public class Launchpad implements AutoCloseable {
 	 */
 	public <T> Optional<T> waitForService(Class<T> class1, long timeoutInMs, String target) {
 		try {
-			return getServices(class1, null, 1, timeoutInMs, false).stream()
+			return getServices(class1, target, 1, timeoutInMs, false).stream()
 				.findFirst()
 				.map(getBundleContext()::getService);
 		} catch (Exception e) {
