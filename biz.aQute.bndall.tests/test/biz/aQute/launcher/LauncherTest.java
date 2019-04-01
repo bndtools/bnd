@@ -1,5 +1,6 @@
 package biz.aQute.launcher;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
@@ -34,7 +35,7 @@ public class LauncherTest {
 
 	@Test
 	public void testPackaged() throws Exception {
-		File file = buildPackage();
+		File file = buildPackage("keep.bndrun");
 
 		System.setProperty("test.cmd", "quit.no.exit");
 		File fwdir = IO.getFile(base, "generated/keepfw");
@@ -47,12 +48,79 @@ public class LauncherTest {
 
 		result = runFramework(file);
 		assertTrue(result.contains("not updating jar/demo.jar because identical digest"));
+	}
+
+	/**
+	 * Tests the EmbeddedLauncher by creating an instance and calling the run
+	 * method. We Check if the expected exit value is printed in the result.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testEmbeddedLauncherWithRunMethod() throws Exception {
+		File file = buildPackage("keep.bndrun");
+
+		System.setProperty("test.cmd", "quit.no.exit");
+		File fwdir = IO.getFile(base, "generated/keepfw");
+		IO.delete(fwdir);
+
+		assertTrue(file.isFile());
+
+		String result = runFrameworkWithRunMethod(file);
+		assertTrue(result.contains("installing jar/demo.jar"));
+		assertTrue(result.contains("Exited with 197"));
 
 	}
 
-	private File buildPackage() throws Exception, IOException {
+	/**
+	 * Tests the EmbeddedLauncher without any trace logging
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testEmbeddedLauncherNoTrace() throws Exception {
+		File file = buildPackage("keep_notrace.bndrun");
+
+		System.setProperty("test.cmd", "quit.no.exit");
+		File fwdir = IO.getFile(base, "generated/keepfw");
+		IO.delete(fwdir);
+
+		assertTrue(file.isFile());
+
+		System.setProperty("launch.trace", "false");
+
+		String result = runFrameworkWithRunMethod(file);
+		assertTrue(result.contains("quit.no.exit"));
+
+		assertFalse(result.contains("[EmbeddedLauncher] looking for META-INF/MANIFEST.MF"));
+	}
+
+	/**
+	 * Tests the EmbeddedLauncher without trace logging
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testEmbeddedLauncherTrace() throws Exception {
+		File file = buildPackage("keep_notrace.bndrun");
+
+		System.setProperty("test.cmd", "quit.no.exit");
+		File fwdir = IO.getFile(base, "generated/keepfw");
+		IO.delete(fwdir);
+
+		assertTrue(file.isFile());
+
+		System.setProperty("launch.trace", "true");
+
+		String result = runFrameworkWithRunMethod(file);
+		assertTrue(result.contains("installing jar/demo.jar"));
+
+		assertTrue(result.contains("[EmbeddedLauncher] looking for META-INF/MANIFEST.MF"));
+	}
+
+	private File buildPackage(String bndrun) throws Exception, IOException {
 		Workspace ws = Workspace.getWorkspace(base.getParentFile());
-		Run run = Run.createRun(ws, IO.getFile(base, "keep.bndrun"));
+		Run run = Run.createRun(ws, IO.getFile(base, bndrun));
 
 		File file = IO.getFile(base, GENERATED_PACKAGED_JAR);
 		try (Jar pack = run.pack(null)) {
@@ -82,6 +150,36 @@ public class LauncherTest {
 			out2.flush();
 		} finally {
 			System.setErr(out);
+		}
+
+		return new String(bout.toByteArray(), StandardCharsets.UTF_8);
+	}
+
+	private String runFrameworkWithRunMethod(File file)
+		throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+		IOException, MalformedURLException, InstantiationException, IllegalArgumentException, SecurityException {
+		PrintStream err = System.err;
+		PrintStream out = System.out;
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream out2 = new PrintStream(bout);
+		System.setErr(out2);
+		System.setOut(out2);
+		try {
+			try (URLClassLoader l = new URLClassLoader(new URL[] {
+				file.toURI()
+					.toURL()
+			}, null)) {
+				Class<?> launcher = l.loadClass("aQute.launcher.pre.EmbeddedLauncher");
+				Object o = launcher.getConstructor()
+					.newInstance();
+				Method run = launcher.getDeclaredMethod("run", String[].class);
+				int result = (int) run.invoke(o, (Object) new String[] {});
+				System.out.println("Exited with " + result);
+			}
+			out2.flush();
+		} finally {
+			System.setErr(err);
+			System.setOut(out);
 		}
 
 		return new String(bout.toByteArray(), StandardCharsets.UTF_8);

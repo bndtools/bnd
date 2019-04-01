@@ -15,6 +15,7 @@ public class LauncherConstants {
 	public final static String		DEFAULT_LAUNCHER_PROPERTIES	= "launcher.properties";
 	public final static String		LAUNCHER_ARGUMENTS			= "launcher.arguments";
 	public final static String		LAUNCHER_READY				= "launcher.ready";
+	public final static String		LAUNCH_TRACE				= "launch.trace";
 
 	// MUST BE ALIGNED WITH ProjectLauncher! Do not want to create coupling
 	// so cannot refer.
@@ -37,7 +38,6 @@ public class LauncherConstants {
 	final static String				LAUNCH_RUNBUNDLES			= "launch.bundles";
 	final static String				LAUNCH_SYSTEMPACKAGES		= "launch.system.packages";
 	final static String				LAUNCH_SYSTEMCAPABILITIES	= "launch.system.capabilities";
-	final static String				LAUNCH_TRACE				= "launch.trace";
 	final static String				LAUNCH_TIMEOUT				= "launch.timeout";
 	final static String				LAUNCH_ACTIVATORS			= "launch.activators";
 	final static String				LAUNCH_EMBEDDED				= "launch.embedded";
