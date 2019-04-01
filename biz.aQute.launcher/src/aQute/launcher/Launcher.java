@@ -116,40 +116,8 @@ public class Launcher implements ServiceListener {
 		try {
 			int exitcode = 0;
 			try {
-				final InputStream in;
-				final File propertiesFile;
 
-				String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
-				if (path != null) {
-					Matcher matcher = Pattern.compile("^([\"'])(.*)\\1$")
-						.matcher(path);
-					if (matcher.matches()) {
-						path = matcher.group(2);
-					}
-
-					propertiesFile = new File(path).getAbsoluteFile();
-					if (!propertiesFile.isFile())
-						errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path,
-							propertiesFile.getAbsolutePath());
-					in = IO.stream(propertiesFile);
-				} else {
-					propertiesFile = null;
-					in = Launcher.class.getClassLoader()
-						.getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
-					if (in == null) {
-						printUsage();
-						errorAndExit("Launch file not specified, and no embedded properties found.");
-						return;
-					}
-				}
-
-				Properties properties = new Properties();
-				load(in, properties);
-
-				augmentWithSystemProperties(properties);
-
-				Launcher target = new Launcher(properties, propertiesFile);
-				exitcode = target.run(args);
+				exitcode = Launcher.run(args);
 			} catch (Throwable t) {
 				exitcode = 127;
 				// Last resort ... errors should be handled lower
@@ -220,12 +188,54 @@ public class Launcher implements ServiceListener {
 	}
 
 	public static int main(String[] args, Properties p) throws Throwable {
-		Launcher target = new Launcher(p, null);
-		return target.run(args);
+		Launcher target = new Launcher();
+		target.init(p, null);
+		return target.runWithoutInit(args);
 	}
 
-	public Launcher(Properties properties, final File propertiesFile) throws Exception {
-		this.properties = properties;
+	public Launcher() throws Exception {
+		this.properties = new Properties(); 
+	}
+	
+	public void init(String... args) throws Throwable {
+
+		final InputStream in;
+		final File propertiesFile;
+
+		String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
+		if (path != null) {
+			Matcher matcher = Pattern.compile("^([\"'])(.*)\\1$")
+				.matcher(path);
+			if (matcher.matches()) {
+				path = matcher.group(2);
+			}
+
+			propertiesFile = new File(path).getAbsoluteFile();
+			if (!propertiesFile.isFile())
+				errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path,
+					propertiesFile.getAbsolutePath());
+			in = IO.stream(propertiesFile);
+		} else {
+			propertiesFile = null;
+			in = Launcher.class.getClassLoader()
+				.getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
+			if (in == null) {
+				printUsage();
+				errorAndExit("Launch file not specified, and no embedded properties found.");
+				return;
+			}
+		}
+
+		Properties properties = new Properties();
+		load(in, properties);
+
+		augmentWithSystemProperties(properties);
+		
+		init(properties, null);
+	}
+
+	public void init(Properties properties, final File propertiesFile) {
+		this.properties.putAll(properties);
 
 		// Allow the system to override any properties with -Dkey=value
 
@@ -299,7 +309,13 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	private int run(String args[]) throws Throwable {
+	public static int run(String args[]) throws Throwable {
+		Launcher target = new Launcher();
+		target.init(args);
+		return target.runWithoutInit(args);
+	}
+
+	private int runWithoutInit(String args[]) throws Throwable {
 		try {
 			trace("version %s", getVersion());
 

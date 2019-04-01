@@ -25,44 +25,105 @@ import java.util.zip.ZipEntry;
 import aQute.lib.io.IOConstants;
 
 public class EmbeddedLauncher {
-	private static final File	CWD					= new File(System.getProperty("user.dir"));
 
+	private static final File	CWD					= new File(System.getProperty("user.dir"));
+	private static final String	LAUNCH_TRACE		= "launch.trace";
 	static final int			BUFFER_SIZE			= IOConstants.PAGE_SIZE * 16;
 
 	public static final String	EMBEDDED_RUNPATH	= "Embedded-Runpath";
 	public static Manifest		MANIFEST;
 
-	public static void main(String... args) throws Exception {
+	public static void main(String... args) throws Throwable {
+
+		boolean isVerbose = isTrace();
 
 		if (args.length > 0 && args[0].equals("-extract")) {
+			if (isVerbose)
+				log("running in extraction mode");
 			extract(args);
 			return;
 		}
 
+		findAndExecute(isVerbose, "main", void.class, args);
+	}
+
+	/**
+	 * Runs the Launcher like the main method, but returns an usable exit Code.
+	 * This Method was introduced to enable compatibility with the Equinox
+	 * native executables.
+	 * 
+	 * @param args the arguments to run the Launcher with
+	 * @return an exit code
+	 * @throws Throwable
+	 */
+	public int run(String... args) throws Throwable {
+
+		boolean isVerbose = isTrace();
+
+		if (isVerbose) {
+			log("The following arguments are given:");
+			for (String arg : args) {
+				log(arg);
+			}
+		}
+
+		String methodName = "run";
+		Class<Integer> returnType = int.class;
+
+		return findAndExecute(isVerbose, methodName, returnType, args);
+	}
+
+	/**
+	 * @param isVerbose should we log debug messages
+	 * @param methodName the method name to look for
+	 * @param returnType the expected return type
+	 * @param args the arguments for the method
+	 * @return what ever the method returns
+	 * @throws Throwable
+	 */
+	private static <T> T findAndExecute(boolean isVerbose, String methodName, Class<T> returnType, String... args)
+		throws Throwable, InvocationTargetException {
 		ClassLoader cl = EmbeddedLauncher.class.getClassLoader();
+		if (isVerbose)
+			log("looking for META-INF/MANIFEST.MF");
 		Enumeration<URL> manifests = cl.getResources("META-INF/MANIFEST.MF");
 		while (manifests.hasMoreElements()) {
+
+			if (isVerbose)
+				log("found one");
 
 			URL murl = manifests.nextElement();
 
 			Manifest m = new Manifest(murl.openStream());
 			String runpath = m.getMainAttributes()
 				.getValue(EMBEDDED_RUNPATH);
+			if (isVerbose)
+				log("Going through the following runpath %s", runpath);
 			if (runpath != null) {
 				MANIFEST = m;
 				List<URL> classpath = new ArrayList<>();
 
 				for (String path : runpath.split("\\s*,\\s*")) {
 					URL url = toFileURL(cl.getResource(path));
+					if (isVerbose)
+						log("Adding to classpath %s", url.toString());
 					classpath.add(url);
 				}
 
+				if (isVerbose)
+					log("creating URLClassLoader");
 				try (URLClassLoader urlc = new URLClassLoader(classpath.toArray(new URL[0]), cl)) {
+					if (isVerbose)
+						log("Try to load aQute.launcher.Launcher");
 					Class<?> embeddedLauncher = urlc.loadClass("aQute.launcher.Launcher");
+					if (isVerbose)
+						log("looking for method %s with return type %s", methodName, returnType.toString());
 					MethodHandle mh = MethodHandles.publicLookup()
-						.findStatic(embeddedLauncher, "main", MethodType.methodType(void.class, String[].class));
+						.findStatic(embeddedLauncher, methodName, MethodType.methodType(returnType, String[].class));
 					try {
-						mh.invoke(args);
+						if (isVerbose)
+							log("found method and start executing");
+						return (T) mh.invoke(args);
 					} catch (Error | Exception e) {
 						throw e;
 					} catch (Throwable e) {
@@ -71,6 +132,15 @@ public class EmbeddedLauncher {
 				}
 			}
 		}
+		throw new RuntimeException("Found Nothing to launch. Maybe no " + EMBEDDED_RUNPATH + " was set");
+	}
+
+	private static void log(String message, Object... args) {
+		System.out.println("[" + EmbeddedLauncher.class.getSimpleName() + "] " + String.format(message, args));
+	}
+
+	private static boolean isTrace() {
+		return Boolean.getBoolean(LAUNCH_TRACE);
 	}
 
 	private static void extract(String... args) throws URISyntaxException, IOException {
