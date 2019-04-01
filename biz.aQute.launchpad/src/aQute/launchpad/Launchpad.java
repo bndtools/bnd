@@ -1,7 +1,5 @@
 package aQute.launchpad;
 
-import static aQute.launchpad.LaunchpadBuilder.projectDir;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -55,8 +53,10 @@ import org.osgi.util.tracker.ServiceTracker;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.inject.Injector;
+import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
+import aQute.libg.parameters.ParameterMap;
 
 /**
  * This class provides an OSGi framework that is configured with the current bnd
@@ -80,6 +80,7 @@ public class Launchpad implements AutoCloseable {
 	public static final String					BUNDLE_PRIORITY			= "Bundle-Priority";
 	private static final long					SERVICE_DEFAULT_TIMEOUT	= 60000L;
 	static final AtomicInteger					n						= new AtomicInteger();
+	final File									projectDir;
 
 	final Framework								framework;
 	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
@@ -89,14 +90,19 @@ public class Launchpad implements AutoCloseable {
 	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new HashMap<>();
 	final Set<String>							frameworkExports;
 	final List<String>							errors					= new ArrayList<>();
+	final String								name;
+	final String								className;
 
 	Bundle										testbundle;
 	boolean										debug;
 	PrintStream									out						= System.err;
 	ServiceTracker<FindHook, FindHook>			hooks;
 
-	Launchpad(LaunchpadBuilder launchpadBuilder, Framework framework) {
+	Launchpad(LaunchpadBuilder launchpadBuilder, Framework framework, String name, String className) {
 		try {
+			this.className = className;
+			this.name = name;
+			this.projectDir = IO.work;
 			this.builder = launchpadBuilder;
 			this.debug = launchpadBuilder.debug;
 			this.framework = framework;
@@ -113,10 +119,12 @@ public class Launchpad implements AutoCloseable {
 
 			hooks = new ServiceTracker<FindHook, FindHook>(framework.getBundleContext(), FindHook.class, null);
 			hooks.open();
+
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
 	}
+
 
 	public void report(String format, Object... args) {
 		if (!debug)
@@ -856,7 +864,6 @@ public class Launchpad implements AutoCloseable {
 			.start();
 	}
 
-
 	/**
 	 * Check if a bundle is a fragement
 	 * 
@@ -939,16 +946,15 @@ public class Launchpad implements AutoCloseable {
 		return isResolved(b) || isActive(b) || isStarting(b);
 	}
 
-	private Parameters getExports(Bundle b) {
-		return new Parameters(b.getHeaders()
+	private ParameterMap getExports(Bundle b) {
+		return new ParameterMap(b.getHeaders()
 			.get(Constants.EXPORT_PACKAGE));
 	}
 
-	private Parameters getImports(Bundle b) {
-		return new Parameters(b.getHeaders()
+	private ParameterMap getImports(Bundle b) {
+		return new ParameterMap(b.getHeaders()
 			.get(Constants.IMPORT_PACKAGE));
 	}
-
 
 	private String toInstallURI(File c) {
 		return "reference:" + c.toURI();
@@ -1271,4 +1277,11 @@ public class Launchpad implements AutoCloseable {
 		return converter;
 	}
 
+	public String getName() {
+		return name;
+	}
+
+	public String getClassName() {
+		return className;
+	}
 }

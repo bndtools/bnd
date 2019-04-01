@@ -1,0 +1,2 @@
+-excludeexports f.1
+-runfw org.apache.felix.framework

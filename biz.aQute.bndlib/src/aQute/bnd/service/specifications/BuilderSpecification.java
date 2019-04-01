@@ -15,7 +15,15 @@ import java.util.Map;
  * code that is severely handicapped by these kind of dependencies.
  */
 public class BuilderSpecification {
-	public boolean							inherit				= false;
+
+	public static final String				WORKSPACE			= "WORKSPACE";
+	public static final String				PROJECT				= "PROJECT";
+
+	/**
+	 * Defines inheritance. Either {@link #WORKSPACE}, {@link #PROJECT}, or a
+	 * path to a bnd file. Last entry may be WORKSPACE or PROJECT
+	 */
+	public List<String>						parent				= new ArrayList<>();
 	public List<String>						classpath			= new ArrayList<>();
 	public Map<String, Map<String, String>>	bundleSymbolicName	= new LinkedHashMap<>();
 	public String							bundleVersion;
@@ -34,4 +42,7 @@ public class BuilderSpecification {
 	public boolean							sources;
 	public Map<String, String>				other				= new HashMap<>();
 	public boolean							resourceOnly;
+
+	@Deprecated
+	public boolean							inherit				= false;
 }

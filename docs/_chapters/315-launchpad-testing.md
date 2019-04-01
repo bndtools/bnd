@@ -344,6 +344,26 @@ The following example shows how to create a bundle with a a special header.
 		}
 	}
 
+### Inheriting from the project, workspace, or a bnd file
+
+When you create a bundle from the Launchpad class then by default you inherit nothing from the enironment. However,
+it is possible to set the parent of the builder. The `parent(String)` or `parent(File)` method can set multiple
+parents. 
+
+    parent ::= FILE* ( WORKSPACE | PROJECT )?
+        
+
+* `WORKSPACE` – Inherit from the workspace, excludes inheriting from the project and must be specified last in the set of parents.
+* `PROJECT` – Inherit from the workspace, excludes inheriting from the project and must be specified last in the set of parents.
+* `FILE`    – A file path with forward slashes on all platforms. This must point to a bnd/properties file.  
+
+The order of the parents is important. Earlier bnd files override the same named value in later bnd files.
+
+Example:
+
+    Bundle b = lp.bundle().parent('foo.bnd').parent(WORKSPACE).start();
+
+
 ## Hiding a Service
 
 In some scenarios you'd like to hide a service so you can override it with a mocked version. Hiding in OSGi

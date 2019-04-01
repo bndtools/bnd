@@ -1,17 +1,21 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
+
 Export-Package: \
 	aQute.bnd.remoteworkspace.client,\
 	aQute.bnd.service.remoteworkspace,\
 	aQute.launchpad,\
 	aQute.bnd.service.specifications,\
-	aQute.bnd.util.scr
+	aQute.bnd.util.scr,\
+	aQute.launchpad.junit
 
 Import-Package: \
-    org.osgi.service.component.runtime;resolution:=optional,\
-    org.osgi.service.component.runtime.dto;resolution:=optional,\
-    *
+	org.junit.rules;version=4.0;resolution:=optional,\
+	org.junit.runner;version=4.0;resolution:=optional,\
+	org.osgi.service.component.runtime;resolution:=optional,\
+	org.osgi.service.component.runtime.dto;resolution:=optional,\
+	*
 
 -conditionalpackage: \
     aQute.lib*
@@ -25,10 +29,11 @@ Import-Package: \
     org.osgi.service.component.annotations;version='[1.3,1.4)',\
     aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest;packages=*,\
-    org.eclipse.jdt.annotation;version=@2
+    org.eclipse.jdt.annotation;version=@2, \
+    ${junit},\
+    
 
 -testpath: \
-    ${junit},\
     biz.aQute.repository, \
     slf4j.simple;version=latest, \
     slf4j.api
@@ -39,3 +44,7 @@ Import-Package: \
     org.apache.felix.gogo.shell;version=latest
 
 -runfw: org.apache.felix.framework
+
+# For testing purpose, see BundleBuilderTest.java
+Project                 true
+LaunchPadInheritTest    Project

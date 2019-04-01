@@ -95,6 +95,30 @@ public class LaunchpadBuilderTest {
 		}
 	}
 
+	/*
+	 * Requires support from the workspace, enable when we have this support in
+	 * gradle/bndtools. It requires the remote workspace to return the
+	 * instructions
+	 */
+
+	// @Test
+	// public void excludePackagesWithBndrun() throws Exception {
+	// builder.excludeExport("org.*", "junit.*", "*aQute.*", "javax.*");
+	// addPackage("f.1", "1.2.3");
+	// addPackage("f.2", "1.2.3");
+	// builder.bndrun("testresources/excludePackagesWithBndrun.bndrun");
+	// try (Launchpad lp = builder.create()) {
+	// String ep = lp.getBundleContext()
+	// .getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA);
+	//
+	// ParameterMap map = new ParameterMap(ep);
+	// System.out.println(map);
+	// softly.assertThat(map.keySet())
+	// .doesNotContain("f.2")
+	// .contains("f.2");
+	// }
+	// }
+
 	@Test
 	public void excludePackages_withPredicates_filtersSystemPackages() throws Exception {
 		addPackage("m.n.o.p", "3.2.1");
