@@ -9,17 +9,19 @@ import java.util.NoSuchElementException;
 import java.util.Spliterator;
 import java.util.Spliterators.AbstractSpliterator;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public class QuotedTokenizer implements Iterable<String> {
-	private final String	string;
-	private final String	separators;
-	private final boolean	returnTokens;
-	private final boolean	retainQuotes;
-	private int				index	= 0;
-	private String			peek;
-	private char			separator;
+	private final static Pattern	TOKEN_P	= Pattern.compile("[-a-zA-Z0-9_]+");
+	private final String			string;
+	private final String			separators;
+	private final boolean			returnTokens;
+	private final boolean			retainQuotes;
+	private int						index	= 0;
+	private String					peek;
+	private char					separator;
 
 	public QuotedTokenizer(String string, String separators, boolean returnTokens, boolean retainQuotes) {
 		this.string = requireNonNull(string, "string argument must be not null");
@@ -206,4 +208,43 @@ public class QuotedTokenizer implements Iterable<String> {
 			}
 		};
 	}
+
+	/**
+	 * Quote a string when it is not a token (OSGi). If the string is already
+	 * quoted (or backslash quoted) then these are removed before inspection to
+	 * see if it is a token.
+	 * 
+	 * @param sb the output
+	 * @param value the value to quote
+	 */
+	public static boolean quote(StringBuilder sb, String value) {
+		if (value.startsWith("\\\""))
+			value = value.substring(2);
+		if (value.endsWith("\\\""))
+			value = value.substring(0, value.length() - 2);
+		if (value.startsWith("\"") && value.endsWith("\""))
+			value = value.substring(1, value.length() - 1);
+
+		boolean clean = (value.length() >= 2 && value.charAt(0) == '"' && value.charAt(value.length() - 1) == '"')
+			|| TOKEN_P.matcher(value)
+				.matches();
+		if (!clean)
+			sb.append("\"");
+		for (int i = 0; i < value.length(); i++) {
+			char c = value.charAt(i);
+			switch (c) {
+				case '"' :
+					sb.append('\\')
+						.append('"');
+					break;
+
+				default :
+					sb.append(c);
+			}
+		}
+		if (!clean)
+			sb.append("\"");
+		return clean;
+	}
+
 }
