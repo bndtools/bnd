@@ -143,8 +143,37 @@ have the OSGi framework packages on the `-buildpath`. The version of these packa
 of the Framework because of backward compatibility. Actually, bnd generally recommends to compile against the
 lowest possible framework packages. However, with launchpad these packages will also be used by the Framework, there
 is unfortunately no good way around this. The consequence is that the `-buildpath` version of the Framework
-packages must match the exact version used by the implementation of the framework. Suggestions to remove this
-restriction would be welcome.
+packages must match the exact version used by the implementation of the framework.
+
+### Excluding Exported System Packages
+
+Launchpad will calculate the set of packages that are exported by the framework from the claspath. The so called
+`org.osgi.framework.system.packages.extra`. It calculates this by creating bundle from the test sources, adding
+all dependencies, and then exporting the full content. That export statement is then uses for `org.osgi.framework.system.packages.extra`.
+
+However, this is generally too wide since it includes all dependencies, not just public dependencies. Version mismatches
+can create nasty problems and sometimes the solution is to exclude exports. 
+
+The Launchpad Builder provides a number of methods called `excludeExport()` that take either a _glob_ or a predicate.
+The globs/predicates are then ran against the list of calculated export package names. Any matching entry is then
+not exported.
+
+    Launchpad b = new LaunchpadBuilder()
+        .excludeExports( "slf4j.*")
+        .create();
+
+If a bndrun file is the `-excludeexports` instruction can be placed in the bndrun file containing a list globs.
+
+    -excludeexports     aQute.lib*, slf4j.*
+
+## Naming
+
+The Launchpad has a default name of the method and class that called `create()`. These names can be overwritten with
+`create(name)` and `create(name,className)`. The actual name of Launchpad is set under the following framework 
+property names:
+
+    launchpad.name
+    launchpad.className
 
 ## Interaction with Services
 
