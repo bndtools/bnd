@@ -193,6 +193,12 @@ public class LaunchpadBuilder implements AutoCloseable {
 		return this;
 	}
 
+	/**
+	 * Exclude the exports that are matched by any of the given globs
+	 * 
+	 * @param globs the globs to match against the system framework exports
+	 * @return this
+	 */
 	public LaunchpadBuilder excludeExport(String... globs) {
 		Stream.of(globs)
 			.flatMap((x) -> Strings.splitAsStream(x))
@@ -201,8 +207,15 @@ public class LaunchpadBuilder implements AutoCloseable {
 		return this;
 	}
 
-	public LaunchpadBuilder excludeExport(Predicate<String> exclude) {
-		excludeExports.add(exclude);
+	/**
+	 * Exclude the exports that are matched by any of the given predicates
+	 * 
+	 * @param predicate the predicates to match against the system framework
+	 *            exports
+	 * @return this
+	 */
+	public LaunchpadBuilder excludeExport(Predicate<String> predicate) {
+		excludeExports.add(predicate);
 		return this;
 	}
 
