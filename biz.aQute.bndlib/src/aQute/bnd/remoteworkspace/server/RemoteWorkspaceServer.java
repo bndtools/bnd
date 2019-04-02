@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +39,7 @@ import aQute.lib.aspects.Aspects;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
+import aQute.lib.utf8properties.UTF8Properties;
 
 /**
  * Implements an RPC interface to a workspace. When a workspace is created then
@@ -197,7 +200,9 @@ public class RemoteWorkspaceServer implements Closeable {
 				if (project == null)
 					throw new IllegalArgumentException("No such project " + projectPath);
 
-				try (Builder builder = spec.inherit ? project.getBuilder(null) : new Builder()) {
+				try (Builder builder = getBuilder(project, spec.parent)) {
+
+					builder.setBase(project.getBase());
 
 					Jar build = builder.from(spec)
 						.build();
@@ -215,6 +220,62 @@ public class RemoteWorkspaceServer implements Closeable {
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}
+		}
+
+		/**
+		 * Calculate the builder with the properly inheritance structure.
+		 * 
+		 * @param project The context project
+		 * @param parent The comma separated parent string. The last entry may
+		 *            be either PROJECT or WORKSPACE
+		 */
+		private Builder getBuilder(Project project, List<String> parent) throws Exception {
+
+			if (parent == null || parent.isEmpty())
+				return new Builder();
+
+			Builder builder = new Builder();
+			builder.setBase(project.getBase());
+
+			List<String> paths = new ArrayList<>(parent);
+			String last = paths.get(paths.size() - 1);
+
+			boolean workspaceParent = BuilderSpecification.WORKSPACE.equals(last);
+			boolean projectParent = BuilderSpecification.PROJECT.equals(last);
+			if (workspaceParent || projectParent) {
+
+				paths.remove(paths.size() - 1);
+
+				if (projectParent)
+					builder.setParent(project);
+				else if (workspaceParent)
+					builder.setParent(project.getWorkspace());
+			}
+
+			workspaceParent = paths.remove(BuilderSpecification.WORKSPACE);
+			projectParent = paths.remove(BuilderSpecification.PROJECT);
+
+			if (workspaceParent || projectParent) {
+				builder.error("PROJECT or WORKSPACE parent can only be specified as the last entry");
+			}
+
+			// earlier entries are prioritized
+			Collections.reverse(paths);
+
+			paths.forEach(path -> {
+				File file = IO.getFile(path);
+				try {
+					if (file.isFile()) {
+						UTF8Properties p = new UTF8Properties();
+						p.load(file, builder);
+						builder.setProperties(p);
+					} else
+						builder.error("specified file %s as parent for build but no such file exist", file.toString());
+				} catch (Exception e) {
+					builder.exception(e, "Reading properties %s", file);
+				}
+			});
+			return builder;
 		}
 
 		void doPackage(Parameters extraPackages, PackageRef p, Attrs a) {

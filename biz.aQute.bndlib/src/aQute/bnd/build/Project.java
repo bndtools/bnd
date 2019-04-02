@@ -3394,6 +3394,13 @@ public class Project extends Processor {
 			runspecification.runbundles = toPaths(runspecification.errors, getRunbundles());
 			runspecification.runfw = toPaths(runspecification.errors, getRunFw());
 			runspecification.runpath = toPaths(runspecification.errors, getRunpath());
+
+			for (String key : Iterables.iterable(getProperties().propertyNames(), String.class::cast)) {
+				// skip non instructions to prevent macro expansions we do not
+				// want
+				if (key.startsWith("-"))
+					runspecification.instructions.put(key, getProperty(key));
+			}
 		} catch (Exception e) {
 			runspecification.errors.add(e.toString());
 		}

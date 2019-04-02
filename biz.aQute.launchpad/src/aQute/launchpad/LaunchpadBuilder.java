@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -33,18 +32,23 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.strings.Strings;
 import aQute.libg.glob.Glob;
+import aQute.libg.parameters.ParameterMap;
 
 /**
  * This class is a builder for frameworks that can be used in JUnit testing.
  */
 public class LaunchpadBuilder implements AutoCloseable {
 
-	final static ExecutorService	executor	= Executors.newCachedThreadPool();
-	final static File				projectDir	= IO.work;
-	final static RemoteWorkspace	workspace	= RemoteWorkspaceClientFactory.create(projectDir,
+	private static final String		LAUNCHPAD_NAME		= "launchpad.name";
+	private static final String		LAUNCHPAD_CLASSNAME	= "launchpad.classname";
+
+	private static final String		EXCLUDEEXPORTS		= "-excludeexports";
+	final static ExecutorService	executor			= Executors.newCachedThreadPool();
+	final static File				projectDir			= IO.work;
+	final static RemoteWorkspace	workspace			= RemoteWorkspaceClientFactory.create(projectDir,
 		new RemoteWorkspaceClient() {});
 	final static RunSpecification	projectTestSetup;
-	final static AtomicInteger		counter		= new AtomicInteger();
+	final static AtomicInteger		counter				= new AtomicInteger();
 
 	static {
 		projectTestSetup = workspace.analyzeTestSetup(IO.work.getAbsolutePath());
@@ -203,32 +207,44 @@ public class LaunchpadBuilder implements AutoCloseable {
 	}
 
 	public Launchpad create() {
+		StackTraceElement element = new Exception().getStackTrace()[1];
+		return create(element.getMethodName(), element.getClassName());
+	}
+
+	public Launchpad create(String name) {
+		StackTraceElement element = new Exception().getStackTrace()[1];
+		return create(name, element.getClassName());
+	}
+
+	public Launchpad create(String name, String className) {
 		try {
 			File storage = IO.getFile(new File(local.target), "launchpad-" + counter.incrementAndGet());
 			IO.delete(storage);
 
-			List<Predicate<String>> excludes = new ArrayList<>(excludeExports);
-			Parameters p = new Parameters(local.properties.get("-exportexcludes"));
-			p.keySet()
+			List<Predicate<String>> localExcludeExports = new ArrayList<>(excludeExports);
+			new ParameterMap(local.instructions.get(EXCLUDEEXPORTS)).keySet()
 				.stream()
 				.map(this::toPredicate)
-				.forEach(excludes::add);
+				.forEach(localExcludeExports::add);
 
-			Map<String, Map<String, String>> restrictedExports = restrict(local.extraSystemPackages, excludeExports);
-			String extraPackages = toString(restrictedExports);
+			ParameterMap restrictedExports = restrict(new ParameterMap(local.extraSystemPackages), localExcludeExports);
 
-			String extraCapabilities = toString(local.extraSystemCapabilities);
+			String extraPackages = restrictedExports.toString();
+
+			String extraCapabilities = new ParameterMap(local.extraSystemCapabilities).toString();
 
 			local.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extraPackages);
 			local.properties.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, extraCapabilities);
 			local.properties.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
 			local.properties.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 			local.properties.put(Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_FRAMEWORK);
+			local.properties.put(LAUNCHPAD_NAME, name);
+			local.properties.put(LAUNCHPAD_CLASSNAME, className);
 
 			Framework framework = getFramework();
 
 			@SuppressWarnings("resource")
-			Launchpad launchpad = new Launchpad(this, framework);
+			Launchpad launchpad = new Launchpad(this, framework, name, className);
 
 			launchpad.report("Extra system packages %s", local.extraSystemPackages.keySet()
 				.stream()
@@ -270,43 +286,6 @@ public class LaunchpadBuilder implements AutoCloseable {
 	// });
 	// return extraSystemPackages;
 	// }
-
-	private String toString(Map<String, Map<String, String>> map) {
-		StringBuilder sb = new StringBuilder();
-		String del = "";
-		for (Map.Entry<String, Map<String, String>> e : map.entrySet()) {
-
-			String key = e.getKey();
-			while (key.endsWith("~"))
-				key = key.substring(0, key.length() - 1);
-
-			sb.append(del);
-			sb.append(key);
-			e.getValue()
-				.entrySet()
-				.forEach(ee -> {
-					sb.append(";");
-					sb.append(ee.getKey());
-					sb.append("=");
-					sb.append("\"");
-					for (int i = 0; i < ee.getValue()
-						.length(); i++) {
-						char c = ee.getValue()
-							.charAt(i);
-						switch (c) {
-							case '\n' :
-							case '"' :
-								sb.append('\\');
-								break;
-						}
-						sb.append(c);
-					}
-					sb.append("\"");
-				});
-			del = ", ";
-		}
-		return sb.toString();
-	}
 
 	/**
 	 * We're not closing the framework and reuse the static variables. That
@@ -384,12 +363,12 @@ public class LaunchpadBuilder implements AutoCloseable {
 		return this;
 	}
 
-	private Map<String, Map<String, String>> restrict(Map<String, Map<String, String>> map,
-		Collection<Predicate<String>> globs) {
+	private ParameterMap restrict(ParameterMap map, Collection<Predicate<String>> globs) {
 		if (globs == null || globs.isEmpty())
 			return map;
 
-		return local.extraSystemPackages.entrySet()
+		ParameterMap parameters = new ParameterMap();
+		local.extraSystemPackages.entrySet()
 			.stream()
 			.filter(e -> {
 				for (Predicate<String> p : excludeExports) {
@@ -398,11 +377,13 @@ public class LaunchpadBuilder implements AutoCloseable {
 				}
 				return true;
 			})
-			.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+			.forEach(e -> parameters.put(e.getKey(), e.getValue()));
+		return parameters;
 	}
 
 	Predicate<String> toPredicate(String specification) {
 		Glob g = new Glob(specification);
 		return (test) -> g.matches(test);
 	}
+
 }

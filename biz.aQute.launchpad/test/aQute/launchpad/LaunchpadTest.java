@@ -35,9 +35,10 @@ import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
 import aQute.launchpad.test.inject.SomeService;
 import aQute.lib.io.IO;
+import aQute.libg.parameters.ParameterMap;
 
 public class LaunchpadTest {
-	static Workspace		ws;
+	static Workspace	ws;
 	LaunchpadBuilder	builder;
 
 	@BeforeClass
@@ -65,7 +66,7 @@ public class LaunchpadTest {
 		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.excludeExport("org.slf4j*,aQute.lib*")
 			.create()) {
-			Set<String> p = new Parameters(fw.getBundleContext()
+			Set<String> p = new ParameterMap(fw.getBundleContext()
 				.getProperty("org.osgi.framework.system.packages.extra")).keySet();
 			assertThat(p).doesNotContain("aQute.lib.io", "org.slf4j");
 		}
@@ -398,6 +399,34 @@ public class LaunchpadTest {
 			.runfw("org.apache.felix.framework")
 			.create()) {
 			fw.component(ExternalRefComp.class);
+		}
+	}
+
+	@Test
+	public void testAutoname() throws Exception {
+		try (Launchpad fw = builder
+			.runfw("org.apache.felix.framework")
+			.create()) {
+			assertThat(fw.getName()).isEqualTo("testAutoname");
+			assertThat(fw.getClassName()).isEqualTo(LaunchpadTest.class.getName());
+		}
+	}
+
+	@Test
+	public void testSetName() throws Exception {
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			.create("foo")) {
+			assertThat(fw.getName()).isEqualTo("foo");
+			assertThat(fw.getClassName()).isEqualTo(LaunchpadTest.class.getName());
+		}
+	}
+
+	@Test
+	public void testSetNameAndClassName() throws Exception {
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			.create("foo", "bar")) {
+			assertThat(fw.getName()).isEqualTo("foo");
+			assertThat(fw.getClassName()).isEqualTo("bar");
 		}
 	}
 }

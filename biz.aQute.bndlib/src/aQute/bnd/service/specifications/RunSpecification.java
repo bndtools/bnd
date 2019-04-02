@@ -1,6 +1,7 @@
 package aQute.bnd.service.specifications;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class RunSpecification implements Cloneable {
 	public Map<String, String>				properties				= new LinkedHashMap<>();
 	public List<String>						errors					= new ArrayList<>();
 	public List<String>						runfw					= new ArrayList<>();
+	public Map<String, String>				instructions			= new HashMap<>();;
 
 	/**
 	 * Create a clone of this specification.
@@ -54,6 +56,7 @@ public class RunSpecification implements Cloneable {
 		putAll(extraSystemPackages, spec.extraSystemPackages);
 		properties.putAll(spec.properties);
 		errors.addAll(spec.errors);
+		instructions.putAll(spec.instructions);
 	}
 
 	private void putAll(Map<String, Map<String, String>> to, Map<String, Map<String, String>> from) {
