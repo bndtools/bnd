@@ -70,6 +70,8 @@ class IndexFile {
 	final String[]						multi;
 	final String						source;
 
+	private long						lastModified;
+	private long						last		= 0L;
 	volatile Promise<BridgeRepository>	bridge;
 
 	/*
@@ -177,6 +179,7 @@ class IndexFile {
 	 * @throws Exception
 	 */
 	private synchronized Promise<BridgeRepository> load() throws Exception {
+		lastModified = indexFile.lastModified();
 		Set<Archive> toBeAdded = new HashSet<>();
 
 		if (indexFile.isFile()) {
@@ -324,16 +327,12 @@ class IndexFile {
 	}
 
 	boolean refresh() throws Exception {
-		for (Archive archive : archives.keySet()) {
-			if (archive.isSnapshot()) {
-				File localFile = repo.toLocalFile(archive);
-				if (localFile.isFile()) {
-					localFile.setLastModified(0L);
-				}
-			}
+		if (indexFile.lastModified() != lastModified && last + 10000 < System.currentTimeMillis()) {
+			last = System.currentTimeMillis();
+			this.bridge = load();
+			return true;
 		}
-		this.bridge = load();
-		return true;
+		return false;
 	}
 
 	private Set<Archive> read(File file) throws IOException {
@@ -382,6 +381,8 @@ class IndexFile {
 				IO.mkdirs(indexFile.getParentFile());
 			IO.store(f.toString(), indexFile);
 		}
+
+		lastModified = indexFile.lastModified();
 	}
 
 	private Archive toArchive(String s, boolean macro) {
