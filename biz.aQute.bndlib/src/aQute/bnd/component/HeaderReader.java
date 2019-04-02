@@ -215,7 +215,7 @@ public class HeaderReader extends Processor {
 		if (version != null) {
 			try {
 				Version v = new Version(version);
-				cd.updateVersion(v);
+				cd.updateVersion(v, "set XML namespace version: " + version);
 			} catch (Exception e) {
 				error("version: specified on component header but not a valid version: %s", version);
 				return;
@@ -223,20 +223,21 @@ public class HeaderReader extends Processor {
 		}
 		for (String key : info.keySet()) {
 			if (SET_COMPONENT_DIRECTIVES_1_2.contains(key)) {
-				cd.updateVersion(V1_2);
+				cd.updateVersion(V1_2,
+					"uses 1.2 component directives like " + SET_COMPONENT_DIRECTIVES_1_2);
 				return;
 			}
 		}
 		for (ReferenceDef rd : cd.references.values()) {
 			if (rd.updated != null) {
-				cd.updateVersion(V1_2);
+				cd.updateVersion(V1_2, "updated");
 				return;
 			}
 		}
 		// among other things this picks up any specified lifecycle methods
 		for (String key : info.keySet()) {
 			if (SET_COMPONENT_DIRECTIVES_1_1.contains(key)) {
-				cd.updateVersion(V1_1);
+				cd.updateVersion(V1_1, "1.1 component directives like " + SET_COMPONENT_DIRECTIVES_1_1);
 				return;
 			}
 		}
@@ -246,7 +247,7 @@ public class HeaderReader extends Processor {
 			MethodDef test = descriptors.get(lifecycle);
 			if (descriptors.containsKey(lifecycle) && (!(test.isPublic() || test.isProtected())
 				|| rateLifecycle(test, "deactivate".equals(lifecycle) ? allowedDeactivate : allowed) > 1)) {
-				cd.updateVersion(V1_1);
+				cd.updateVersion(V1_1, "base lifecyle methods " + LIFECYCLE_METHODS);
 				return;
 			}
 		}

@@ -2,6 +2,7 @@ package aQute.bnd.component;
 
 import static aQute.bnd.component.DSAnnotationReader.V1_0;
 import static aQute.bnd.component.DSAnnotationReader.V1_3;
+import static aQute.bnd.component.DSAnnotationReader.VMAX;
 import static java.util.stream.Collectors.toList;
 
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ import org.osgi.namespace.service.ServiceNamespace;
 import org.osgi.resource.Namespace;
 
 import aQute.bnd.component.annotations.ReferenceCardinality;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError;
+import aQute.bnd.component.error.DeclarativeServicesAnnotationError.ErrorType;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -40,6 +43,7 @@ import aQute.lib.strings.Strings;
  */
 public class DSAnnotations implements AnalyzerPlugin {
 
+
 	public enum Options {
 		inherit,
 		felixExtensions,
@@ -50,9 +54,14 @@ public class DSAnnotations implements AnalyzerPlugin {
 		version {
 			@Override
 			void process(DSAnnotations anno, Attrs attrs) {
-				String v = attrs.get("minimum");
-				if (v != null && v.length() > 0) {
-					anno.minVersion = new Version(v);
+				String min = attrs.get("minimum");
+				if (min != null && min.length() > 0) {
+					anno.minVersion = Version.valueOf(min);
+				}
+				String max = attrs.get("maximum");
+
+				if (max != null && max.length() > 0) {
+					anno.maxVersion = Version.valueOf(max);
 				}
 			}
 
@@ -93,6 +102,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 	};
 
 	Version minVersion;
+	Version	maxVersion;
 
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
@@ -102,6 +112,8 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 
 		minVersion = V1_3;
+		maxVersion = VMAX;
+
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.mergeProperties(Constants.DSANNOTATIONS_OPTIONS));
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
 		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
@@ -134,7 +146,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 		TreeSet<String> provides = new TreeSet<>();
 		TreeSet<String> requires = new TreeSet<>();
-		Version maxVersion = V1_0;
+		Version maxVersionUsedByAnyComponent = V1_0;
 
 		XMLAttributeFinder finder = new XMLAttributeFinder(analyzer);
 		boolean componentProcessed = false;
@@ -149,6 +161,9 @@ public class DSAnnotations implements AnalyzerPlugin {
 					if (definition == null) {
 						break;
 					}
+
+					checkVersionConflicts(analyzer, definition);
+
 					componentProcessed = true;
 					definition.sortReferences();
 					definition.prepare(analyzer);
@@ -185,19 +200,21 @@ public class DSAnnotations implements AnalyzerPlugin {
 						}
 						requires.addAll(serviceReqMerge.toStringList());
 					}
-					maxVersion = ComponentDef.max(maxVersion, definition.version);
+					maxVersionUsedByAnyComponent = ComponentDef.max(maxVersionUsedByAnyComponent, definition.version);
+					
 					break;
 				}
 			}
 		}
-		if (componentProcessed && (options.contains(Options.extender) || (maxVersion.compareTo(V1_3) >= 0))) {
+		if (componentProcessed
+			&& (options.contains(Options.extender) || (maxVersionUsedByAnyComponent.compareTo(V1_3) >= 0))) {
 			Clazz componentAnnotation = analyzer
 				.findClass(analyzer.getTypeRef("org/osgi/service/component/annotations/Component"));
 			if ((componentAnnotation == null) || !componentAnnotation.annotations()
 				.contains(
 					analyzer.getTypeRef("org/osgi/service/component/annotations/RequireServiceComponentRuntime"))) {
-				maxVersion = ComponentDef.max(maxVersion, V1_3);
-				addExtenderRequirement(requires, maxVersion);
+				maxVersionUsedByAnyComponent = ComponentDef.max(maxVersionUsedByAnyComponent, V1_3);
+				addExtenderRequirement(requires, maxVersionUsedByAnyComponent);
 			}
 		}
 		componentPaths = removeOverlapInServiceComponentHeader(componentPaths);
@@ -220,6 +237,24 @@ public class DSAnnotations implements AnalyzerPlugin {
 			});
 
 		return false;
+	}
+
+	/*
+	 * Check for any version conflicts and report them as errors
+	 */
+	private void checkVersionConflicts(Analyzer analyzer, ComponentDef definition) {
+
+		if (definition.version.compareTo(this.maxVersion) > 0) {
+			DeclarativeServicesAnnotationError dse = new DeclarativeServicesAnnotationError(
+				definition.implementation.getFQN(), null, ErrorType.VERSION_MISMATCH);
+			analyzer
+				.error("component %s version %s exceeds -dsannotations-options version;maximum version %s because %s",
+					definition.version,
+					definition.name, this.maxVersion,
+					definition.versionReason)
+				.details(dse);
+		}
+
 	}
 
 	private void makeUnique(MultiMap<String, ComponentDef> definitionsByName, ComponentDef definition) {
