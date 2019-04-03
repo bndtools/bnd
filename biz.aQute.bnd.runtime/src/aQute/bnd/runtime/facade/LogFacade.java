@@ -21,7 +21,7 @@ import aQute.bnd.util.dto.DTO;
 
 public class LogFacade implements SnapshotProvider {
 	private static final int									MAX_ENTRIES	= Integer
-		.parseInt(System.getProperty("snapshot.MAX_LOG_ENTRIES", "1000")
+		.parseInt(System.getProperty("snapshot.MAX_LOG_ENTRIES", "5000")
 			.trim());
 	final ServiceTracker<LogReaderService, LogReaderService>	reader;
 	final BundleContext											context;
@@ -46,10 +46,16 @@ public class LogFacade implements SnapshotProvider {
 		this.reader.open();
 	}
 
-	private synchronized void entry(LogEntry entry) {
-		queue.add(entry);
-		if (queue.size() > MAX_ENTRIES)
-			queue.poll();
+	private void entry(LogEntry entry) {
+		synchronized (queue) {
+			//
+			// if queue is full we discard oldest entry
+			//
+			if (queue.size() > MAX_ENTRIES)
+				queue.poll();
+
+			queue.add(entry);
+		}
 	}
 
 	public static class LogDTO extends DTO {
@@ -60,13 +66,20 @@ public class LogFacade implements SnapshotProvider {
 	public LogDTO doLog() {
 		LogDTO log = new LogDTO();
 		if (reader.size() == 0 && queue.size() == 0) {
-			log.errors.add("No LogReaderService registered");
+			log.errors.add("No LogReaderService registered, no logs");
 		}
 
-		for (LogEntry e : queue) {
+		while (true) {
 			try {
+				LogEntry e;
+				synchronized (queue) {
+					e = queue.poll();
+					if (e == null)
+						break;
+				}
+
 				Map<String, Object> entry = Util.asBean(LogEntry.class, e);
-				if ( !entry.containsKey("sequence"))
+				if (!entry.containsKey("sequence"))
 					entry.put("sequence", sequencer.incrementAndGet());
 				log.log.add(entry);
 			} catch (Exception e1) {
