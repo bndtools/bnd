@@ -463,5 +463,5 @@ wrapping. The placeholders on the first three lines must be filled in:
 [JDOM library]: https://search.maven.org/search?q=g:org.jdom%20AND%20a:jdom&core=gav
 [1.1.2]: https://search.maven.org/artifact/org.jdom/jdom/1.1.2/jar
 [OSGi enRoute Wrap Tutorial]: http://enroute.osgi.org/tutorial_wrap/050-start
-[Semantic Versioning]: https://www.osgi.org/wp-content/uploads/SemanticVersioning.pdf
+[Semantic Versioning]: https://www.osgi.org/wp-content/uploads/Semantic-Versioning-20190110.pdf
 
