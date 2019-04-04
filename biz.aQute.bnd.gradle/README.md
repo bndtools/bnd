@@ -207,7 +207,7 @@ jar {
             'org.mycomp.package2'
         instruction 'Bundle-Vendor', 'MyCompany'
         instruction 'Bundle-Description', 'Platform2: Metrics 2 Measures Framework'
-        instruction 'Bundle-DocURL', 'http://www.mycompany.com'
+        instruction 'Bundle-DocURL', 'https://www.mycompany.com'
     }
 }
 ```
@@ -220,7 +220,7 @@ jar {
          'Private-Package': 'org.mycomp.package1,org.mycomp.package2',
          'Bundle-Vendor': 'MyCompany',
          'Bundle-Description': 'Platform2: Metrics 2 Measures Framework',
-         'Bundle-DocURL': 'http://www.mycompany.com')
+         'Bundle-DocURL': 'https://www.mycompany.com')
 }
 ```
 
@@ -777,9 +777,9 @@ Gradle stops using the prior version of the plugin.
 For full details on what the Bnd Gradle Plugins do, check out the
 [source code][10].
 
-[1]: http://gradle.org/
+[1]: https://gradle.org/
 [2]: https://github.com/bndtools/bnd/tree/master/biz.aQute.bnd.gradle
-[3]: http://gradle.org/docs/current/userguide/java_plugin.html
+[3]: https://gradle.org/docs/current/userguide/java_plugin.html
 [4]: https://bnd.bndtools.org/instructions/buildpath.html
 [5]: https://bnd.bndtools.org/instructions/testpath.html
 [6]: https://bnd.bndtools.org/instructions/releaserepo.html
