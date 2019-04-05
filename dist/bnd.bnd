@@ -18,6 +18,8 @@
             biz.aQute.bndlib.comm.tests, \
             biz.aQute.junit, \
             biz.aQute.launcher, \
+            biz.aQute.launchpad, \
+            biz.aQute.launchpad.test, \
             biz.aQute.remote, \
             biz.aQute.repository, \
             biz.aQute.resolve, \
