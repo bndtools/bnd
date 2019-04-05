@@ -13,6 +13,8 @@ import java.util.Map;
  * This class should not inherit DTO, however convenient this might be, since
  * this creates unwanted dependencies on clients. These clients include test
  * code that is severely handicapped by these kind of dependencies.
+ * <p>
+ * All file paths must be absolute and platform specific format
  */
 public class BuilderSpecification {
 

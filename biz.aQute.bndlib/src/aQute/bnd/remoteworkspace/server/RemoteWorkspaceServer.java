@@ -10,6 +10,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -54,6 +56,8 @@ public class RemoteWorkspaceServer implements Closeable {
 	final Closeable	server;
 	final File		remotewsPort;
 	final Workspace	workspace;
+	final ScheduledFuture<?>	registerPort;
+	private long				startingTime;
 
 	/**
 	 * Create a new Remote Workspace Server. This will create a server socket on
@@ -85,17 +89,34 @@ public class RemoteWorkspaceServer implements Closeable {
 			Processor.getExecutor());
 
 		File remotews = RemoteWorkspaceClientFactory.getPortDirectory(workspace.getBase(), workspace.getBase());
+
 		remotews.mkdirs();
 		if (!remotews.isDirectory())
 			throw new IllegalStateException(
 				"Cannot create the remote workspace directory with port numbers " + remotews);
 
 		remotewsPort = new File(remotews, server.getLocalPort() + "");
-		IO.store(server.getLocalPort() + "", remotewsPort);
-		logger.info("Opening remote workspace server {}", remotewsPort);
 		remotewsPort.deleteOnExit();
+		startingTime = System.currentTimeMillis();
+		register();
+		registerPort = Processor.getScheduledExecutor()
+			.scheduleAtFixedRate(this::register, 2 /* nice for testing */, 5, TimeUnit.SECONDS);
 	}
 
+	void register() {
+		if (remotewsPort.isFile())
+			return;
+
+		try {
+			IO.delete(remotewsPort);
+			IO.mkdirs(remotewsPort.getParentFile());
+			IO.store(remotewsPort.getName(), remotewsPort);
+			remotewsPort.setLastModified(startingTime);
+			logger.info("Registering remote workspace server {}", remotewsPort);
+		} catch (IOException e) {
+			logger.warn("Cannot open remote workspace server {} {}", remotewsPort, e);
+		}
+	}
 	/**
 	 * Close the server. This generally happens when the corresponding workspace
 	 * is closed. It will release the ephemeral port and delete the registration
@@ -104,6 +125,7 @@ public class RemoteWorkspaceServer implements Closeable {
 	@Override
 	public void close() throws IOException {
 		logger.info("Closing remote workspace server {}", remotewsPort);
+		registerPort.cancel(false);
 		IO.delete(remotewsPort);
 		server.close();
 	}
@@ -263,7 +285,7 @@ public class RemoteWorkspaceServer implements Closeable {
 			Collections.reverse(paths);
 
 			paths.forEach(path -> {
-				File file = IO.getFile(path);
+				File file = new File(path);
 				try {
 					if (file.isFile()) {
 						UTF8Properties p = new UTF8Properties();

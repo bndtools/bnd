@@ -23,7 +23,7 @@ public class BundleBuilder implements BundleSpecBuilder, AutoCloseable {
 
 	BundleBuilder(Launchpad ws) {
 		this.ws = ws;
-		spec.classpath.add(ws.builder.local.bin_test);
+		spec.classpath.add(ws.runspec.bin_test);
 		bundleSymbolicName("t-" + LaunchpadBuilder.counter.incrementAndGet());
 	}
 
