@@ -1,6 +1,7 @@
 package aQute.launchpad;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 
@@ -38,13 +39,19 @@ public class WorkspaceTest {
 
 			IO.delete(portDirectory);
 
+			int n = 100;
 			while (true) {
 				try {
-					if (portDirectory.isDirectory())
+					if (portFile.isFile())
 						break;
+
+					if (n-- < 0)
+						fail("Waiting too long for the portfile to be created");
 				} catch (Exception e) {
-					Thread.sleep(100);
+					e.printStackTrace();
+					fail("exception " + e);
 				}
+				Thread.sleep(100);
 			}
 			assertThat(portDirectory.isDirectory());
 			assertThat(portFile).exists();
