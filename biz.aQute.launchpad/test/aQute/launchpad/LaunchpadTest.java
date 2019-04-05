@@ -10,7 +10,9 @@ import java.io.File;
 import java.net.URL;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -40,6 +42,7 @@ import aQute.libg.parameters.ParameterMap;
 public class LaunchpadTest {
 	static Workspace	ws;
 	LaunchpadBuilder	builder;
+	File				tmp;
 
 	@BeforeClass
 	public static void beforeClass() throws Exception {
@@ -49,6 +52,7 @@ public class LaunchpadTest {
 	@Before
 	public void before() throws Exception {
 		builder = new LaunchpadBuilder();
+
 	}
 
 	@After
@@ -404,8 +408,7 @@ public class LaunchpadTest {
 
 	@Test
 	public void testAutoname() throws Exception {
-		try (Launchpad fw = builder
-			.runfw("org.apache.felix.framework")
+		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.create()) {
 			assertThat(fw.getName()).isEqualTo("testAutoname");
 			assertThat(fw.getClassName()).isEqualTo(LaunchpadTest.class.getName());
@@ -428,5 +431,43 @@ public class LaunchpadTest {
 			assertThat(fw.getName()).isEqualTo("foo");
 			assertThat(fw.getClassName()).isEqualTo("bar");
 		}
+	}
+
+	@Test
+	public void testLaunchpadStressByCreatingLotsOfFrameworksInDifferentThreads() throws Exception {
+		List<Launchpad> l = new CopyOnWriteArrayList<>();
+		List<Throwable> e = new CopyOnWriteArrayList<>();
+		Random r = new Random();
+		Semaphore s = new Semaphore(0);
+
+		int n = 20;
+		for (int i = 0; i < n; i++) {
+			Processor.getExecutor()
+				.execute(() -> {
+					try {
+
+						Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
+							.runfw("org.apache.felix.framework")
+							.create("foo", "bar");
+						l.add(fw);
+						Bundle bundle = fw.component(ExternalRefComp.class);
+						int sleep = Math.abs(r.nextInt() % 100) + 1;
+						System.out.println(
+							fw.runspec.properties.get(org.osgi.framework.Constants.FRAMEWORK_STORAGE) + " " + sleep);
+						Thread.sleep(sleep);
+						assertThat(fw.getService(ExternalRefComp.class)).isNotNull();
+						bundle.stop();
+					} catch (Throwable ee) {
+						e.add(ee);
+						ee.printStackTrace();
+					} finally {
+						s.release();
+					}
+				});
+		}
+		s.acquire(n);
+		System.out.println("Closing " + n + " frameworks");
+		l.forEach(IO::close);
+		assertThat(e).isEmpty();
 	}
 }

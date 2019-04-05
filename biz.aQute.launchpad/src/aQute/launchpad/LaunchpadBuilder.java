@@ -231,7 +231,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 	public Launchpad create(String name, String className) {
 		try {
-			File storage = IO.getFile(new File(local.target), "launchpad-" + counter.incrementAndGet());
+			File storage = IO.getFile(new File(local.target), "launchpad/launchpad-" + counter.incrementAndGet());
 			IO.delete(storage);
 
 			List<Predicate<String>> localExcludeExports = new ArrayList<>(excludeExports);
@@ -246,18 +246,21 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 			String extraCapabilities = new ParameterMap(local.extraSystemCapabilities).toString();
 
-			local.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extraPackages);
-			local.properties.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, extraCapabilities);
-			local.properties.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
-			local.properties.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-			local.properties.put(Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_FRAMEWORK);
-			local.properties.put(LAUNCHPAD_NAME, name);
-			local.properties.put(LAUNCHPAD_CLASSNAME, className);
+			RunSpecification runspec = new RunSpecification();
+			runspec.mergeWith(local);
 
-			Framework framework = getFramework();
+			runspec.properties.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, extraPackages);
+			runspec.properties.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, extraCapabilities);
+			runspec.properties.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
+			runspec.properties.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+			runspec.properties.put(Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_FRAMEWORK);
+			runspec.properties.put(LAUNCHPAD_NAME, name);
+			runspec.properties.put(LAUNCHPAD_CLASSNAME, className);
+
+			Framework framework = getFramework(runspec);
 
 			@SuppressWarnings("resource")
-			Launchpad launchpad = new Launchpad(this, framework, name, className);
+			Launchpad launchpad = new Launchpad(framework, name, className, runspec, closeTimeout, debug, testbundle);
 
 			launchpad.report("Extra system packages %s", local.extraSystemPackages.keySet()
 				.stream()
@@ -308,15 +311,15 @@ public class LaunchpadBuilder implements AutoCloseable {
 	@Override
 	public void close() throws Exception {}
 
-	Framework getFramework() {
+	Framework getFramework(RunSpecification runspec) {
 		try {
 			ClassLoader loader;
 
-			if (local.runpath.isEmpty() && local.runfw.isEmpty()) {
+			if (runspec.runpath.isEmpty() && local.runfw.isEmpty()) {
 				loader = getMyClassLoader();
 			} else {
 				List<String> runpath = new ArrayList<>(local.runfw);
-				runpath.addAll(local.runpath);
+				runpath.addAll(runspec.runpath);
 				URL[] urls = runpath.stream()
 					.map(File::new)
 					.map(this::toURL)
@@ -329,7 +332,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 			if (factory == null) {
 				throw new IllegalArgumentException("Could not find an OSGi Framework on the runpath " + local.runpath);
 			}
-			return factory.newFramework(local.properties);
+			return factory.newFramework(runspec.properties);
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}

@@ -986,6 +986,8 @@ public interface BundleSpecBuilder {
 			File f = IO.getFile(x().ws.projectDir, path);
 			if (!f.isFile())
 				throw new IllegalArgumentException("No such parent file " + f.getAbsolutePath());
+
+			path = f.getAbsolutePath();
 		}
 		x().spec.parent.add(path);
 		return this;

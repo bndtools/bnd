@@ -50,6 +50,7 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.util.tracker.ServiceTracker;
 
+import aQute.bnd.service.specifications.RunSpecification;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.inject.Injector;
@@ -84,7 +85,6 @@ public class Launchpad implements AutoCloseable {
 
 	final Framework								framework;
 	final List<ServiceTracker<?, ?>>			trackers				= new ArrayList<>();
-	final LaunchpadBuilder						builder;
 	final List<FrameworkEvent>					frameworkEvents			= new CopyOnWriteArrayList<FrameworkEvent>();
 	final Injector<Service>						injector;
 	final Map<Class<?>, ServiceTracker<?, ?>>	injectedDoNotClose		= new HashMap<>();
@@ -92,19 +92,26 @@ public class Launchpad implements AutoCloseable {
 	final List<String>							errors					= new ArrayList<>();
 	final String								name;
 	final String								className;
+	final RunSpecification						runspec;
+	final boolean								hasTestBundle;
 
 	Bundle										testbundle;
 	boolean										debug;
 	PrintStream									out						= System.err;
 	ServiceTracker<FindHook, FindHook>			hooks;
+	private long								closeTimeout;
 
-	Launchpad(LaunchpadBuilder launchpadBuilder, Framework framework, String name, String className) {
+	Launchpad(Framework framework, String name, String className,
+		RunSpecification runspec, long closeTimeout, boolean debug, boolean hasTestBundle) {
+		this.runspec = runspec;
+		this.closeTimeout = closeTimeout;
+		this.hasTestBundle = hasTestBundle;
+
 		try {
 			this.className = className;
 			this.name = name;
 			this.projectDir = IO.work;
-			this.builder = launchpadBuilder;
-			this.debug = launchpadBuilder.debug;
+			this.debug = debug;
 			this.framework = framework;
 			this.framework.init();
 			this.injector = new Injector<>(makeConverter(), this::getService, Service.class);
@@ -124,7 +131,6 @@ public class Launchpad implements AutoCloseable {
 			throw Exceptions.duck(e);
 		}
 	}
-
 
 	public void report(String format, Object... args) {
 		if (!debug)
@@ -310,7 +316,7 @@ public class Launchpad implements AutoCloseable {
 		report("Stop the framework");
 		framework.stop();
 		report("Stopped the framework");
-		framework.waitForStop(builder.closeTimeout);
+		framework.waitForStop(closeTimeout);
 		report("Framework fully stopped");
 	}
 
@@ -721,7 +727,7 @@ public class Launchpad implements AutoCloseable {
 		try {
 			framework.start();
 			List<Bundle> toBeStarted = new ArrayList<>();
-			for (String path : builder.local.runbundles) {
+			for (String path : runspec.runbundles) {
 				File file = new File(path);
 				if (!file.isFile())
 					throw new IllegalArgumentException("-runbundle " + file + " does not exist or is not a file");
@@ -738,7 +744,7 @@ public class Launchpad implements AutoCloseable {
 			Collections.sort(toBeStarted, this::startorder);
 			toBeStarted.forEach(this::start);
 
-			if (builder.testbundle)
+			if (hasTestBundle)
 				testbundle();
 
 			toBeStarted.forEach(this::start);

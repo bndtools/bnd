@@ -86,7 +86,8 @@ public class LaunchpadBuilderTest {
 		try (Launchpad lp = builder.create()) {
 			System.out.println(lp.getBundleContext()
 				.getProperty("org.osgi.framework.system.packages.extra"));
-			softly.assertThat(builder.local.properties.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA))
+			softly.assertThat(lp.framework.getBundleContext()
+				.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA))
 				.doesNotContain("my.pkg1;")
 				.doesNotContain("my.pkg.pkg2;")
 				.doesNotContain("our.other;")
@@ -106,7 +107,8 @@ public class LaunchpadBuilderTest {
 			.excludeExport(y -> y.equals("our.other"))
 			.runfw("org.apache.felix.framework");
 		try (Launchpad lp = builder.create()) {
-			softly.assertThat(builder.local.properties.get(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA))
+			softly.assertThat(lp.framework.getBundleContext()
+				.getProperty(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA))
 				.doesNotContain("my.pkg1;")
 				.doesNotContain("my.pkg.pkg2;")
 				.doesNotContain("our.other;")
