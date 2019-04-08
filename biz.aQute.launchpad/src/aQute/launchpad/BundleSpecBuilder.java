@@ -871,6 +871,28 @@ public interface BundleSpecBuilder {
 		return this;
 	}
 
+	/**
+	 * Actually add the specified class into the bundle. This contrasts with
+	 * {@link #addResource(Class)}, which imports the specified class via OSGi
+	 * (typically from the system classloader). Classes added using this method
+	 * will be loaded from within the framework, rather than by the system
+	 * framework.
+	 * 
+	 * @param class1 the class to add as a resource
+	 */
+	default BundleSpecBuilder addResourceWithCopy(Class<?> class1) {
+		String className = class1.getName();
+		String path = className.replace('.', '/') + ".class";
+		URL url = class1.getClassLoader()
+			.getResource(path);
+		if (url == null) {
+			throw new IllegalArgumentException(
+				"Couldn't find class file for " + className + ", possibly a synthetic class");
+		}
+		addResource(path, url);
+		return this;
+	}
+
 	default BundleSpecBuilder addResource(String path, URL url) {
 		try {
 			File f;

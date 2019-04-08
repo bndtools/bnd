@@ -1,6 +1,7 @@
 package aQute.launchpad;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -16,6 +17,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 import org.junit.After;
 import org.junit.Before;
@@ -24,6 +26,7 @@ import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
@@ -469,5 +472,50 @@ public class LaunchpadTest {
 		System.out.println("Closing " + n + " frameworks");
 		l.forEach(IO::close);
 		assertThat(e).isEmpty();
+	}
+
+	public static class TestClass implements Supplier<Bundle> {
+		@Override
+		public Bundle get() {
+			return FrameworkUtil.getBundle(this.getClass());
+		}
+	}
+
+	public static class TestClass2 implements Supplier<Object[]> {
+
+		private final Object[] args;
+
+		public TestClass2(Object[]... args) {
+			this.args = args;
+		}
+
+		@Override
+		public Object[] get() {
+			return args;
+		}
+	}
+
+	@Test
+	public void instantiateInFramework_instantiatesTheClass_insideTheFramework() throws Exception {
+		try (Launchpad lp = builder.runfw("org.apache.felix.framework")
+			.create()) {
+			Supplier<Bundle> b = lp.instantiateInFramework(TestClass.class);
+			assertThat(b).as("inside")
+				.isNotNull();
+			assertThat(b).isNotInstanceOf(TestClass.class);
+			assertThat(b.getClass()
+				.getName()).isEqualTo(TestClass.class.getName());
+			// Indicates that it actually ran inside the bundle.
+			assertThat(b.get()).isNotNull();
+		}
+	}
+
+	@Test
+	public void instantiateInFramework_withNoDefaultConstructor_throwsException() throws Exception {
+		try (Launchpad lp = builder.runfw("org.apache.felix.framework")
+			.create()) {
+			assertThatThrownBy(() -> lp.instantiateInFramework(TestClass2.class))
+				.isInstanceOf(NoSuchMethodException.class);
+		}
 	}
 }
