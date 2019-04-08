@@ -83,6 +83,15 @@ public class CDIAnnotations implements AnalyzerPlugin {
 
 		Jar currentJar = analyzer.getJar();
 
+		Attrs attrs = header.get("*");
+		if ((attrs != null) && !attrs.containsKey("discover")) {
+			Resource beansXml = currentJar.getResource("META-INF/beans.xml");
+			if (beansXml != null) {
+				Discover discover = findDiscoveryMode(beansXml);
+				attrs.put("discover", discover.toString());
+			}
+		}
+
 		Map<String, Discover> discoverPerBCPEntry = analyzer.getBundleClassPath()
 			.keySet()
 			.stream()
@@ -127,7 +136,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 						break;
 					}
 
-					Attrs attrs = entry.getValue();
+					attrs = entry.getValue();
 					String discover = attrs.get("discover");
 					EnumSet<Discover> options = EnumSet.noneOf(Discover.class);
 					try {
