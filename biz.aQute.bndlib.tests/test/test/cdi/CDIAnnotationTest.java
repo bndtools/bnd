@@ -24,6 +24,22 @@ import aQute.bnd.osgi.Jar;
 
 public class CDIAnnotationTest {
 
+	@Test
+	public void discoveryFromBeansXML() throws Exception {
+		try (Builder b = new Builder()) {
+			b.setProperty("Private-Package", "test.cdi.beans_i.*");
+			b.setProperty("-includeresource", "META-INF/beans.xml=test/test/cdi/beans_i/beans.xml");
+			b.addClasspath(new File("bin_test"));
+			Jar jar = b.build();
+
+			if (!b.check())
+				fail();
+			Attributes a = getAttr(jar);
+			checkProvides(a);
+			checkRequires(a, Arrays.asList("test.cdi.beans_i.AppScopedBean"));
+		}
+	}
+
 	@Test(expected = AssertionError.class)
 	public void noRequiresNoSpecifiedBeans() throws Exception {
 		try (Builder b = new Builder()) {
