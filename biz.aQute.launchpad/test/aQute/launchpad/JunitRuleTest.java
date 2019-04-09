@@ -25,4 +25,8 @@ public class JunitRuleTest {
 			assertThat(fw.getClassName()).isEqualTo(JunitRuleTest.class.getName());
 		}
 	}
+
+	@Test
+	public void whenGetLaunchpadIsNotCalled_thenDontTryToCloseIt() {
+	}
 }

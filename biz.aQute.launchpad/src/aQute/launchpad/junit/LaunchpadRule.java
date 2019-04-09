@@ -26,6 +26,9 @@ public class LaunchpadRule extends TestWatcher {
 	@Override
 	protected void finished(Description description) {
 		super.finished(description);
+		if (launchpad == null) {
+			return;
+		}
 		try {
 			this.launchpad.close();
 		} catch (Exception e) {
