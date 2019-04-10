@@ -16,8 +16,6 @@ import aQute.bnd.annotation.headers.BundleCopyright;
 import aQute.bnd.annotation.headers.BundleDevelopers;
 import aQute.bnd.annotation.headers.BundleDocURL;
 import aQute.bnd.annotation.headers.Category;
-import aQute.bnd.annotation.headers.ProvideCapability;
-import aQute.bnd.annotation.headers.RequireCapability;
 import aQute.bnd.annotation.licenses.ASL_2_0;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -28,6 +26,7 @@ import aQute.bnd.osgi.Jar;
 import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
+@SuppressWarnings("deprecation")
 public class AnnotationHeadersTest extends TestCase {
 
 	/**
@@ -175,12 +174,12 @@ public class AnnotationHeadersTest extends TestCase {
 		}
 	}
 
-	@RequireCapability(ns = "osgi.webresource", filter = "(&(osgi.webresource=/google/angular)${frange;${@version}})")
+	@aQute.bnd.annotation.headers.RequireCapability(ns = "osgi.webresource", filter = "(&(osgi.webresource=/google/angular)${frange;${@version}})")
 	@interface Angular {
 
 	}
 
-	@RequireCapability(ns = "not.there", filter = "(a=3)")
+	@aQute.bnd.annotation.headers.RequireCapability(ns = "not.there", filter = "(a=3)")
 	@interface Notused {
 
 	}
@@ -197,7 +196,7 @@ public class AnnotationHeadersTest extends TestCase {
 	@BundleContributors(value = "Mischa.Kriens@aQute.biz", name = "Mischa Kriens", organization = "aQute")
 	@interface mischakriens {}
 
-	@RequireCapability(ns = "abcdef", filter = "(&(abcdef=xyz)${frange;${@version}})")
+	@aQute.bnd.annotation.headers.RequireCapability(ns = "abcdef", filter = "(&(abcdef=xyz)${frange;${@version}})")
 	@ASL_2_0
 	@pkriens
 	@mkriens
@@ -231,22 +230,22 @@ public class AnnotationHeadersTest extends TestCase {
 	//
 	// Check if we can
 	interface X {
-		@RequireCapability(ns = "x", filter = "(x=xx)")
+		@aQute.bnd.annotation.headers.RequireCapability(ns = "x", filter = "(x=xx)")
 		@interface Require {}
 
-		@ProvideCapability(ns = "x", name = "xx")
+		@aQute.bnd.annotation.headers.ProvideCapability(ns = "x", name = "xx")
 		@interface Provide {}
 	}
 
 	@X.Provide
 	class XImpl {}
 
-	@ProvideCapability(ns = "extrattrs", name = "extrattrs", value = "extra=YES")
+	@aQute.bnd.annotation.headers.ProvideCapability(ns = "extrattrs", name = "extrattrs", value = "extra=YES")
 	interface ExtraAttrs {
 
 	}
 
-	@RequireCapability(ns = "nofilter", filter = "")
+	@aQute.bnd.annotation.headers.RequireCapability(ns = "nofilter", filter = "")
 	@interface NoFilterRequirement {}
 
 	@NoFilterRequirement

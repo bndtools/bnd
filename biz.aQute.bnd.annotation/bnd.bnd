@@ -2,5 +2,6 @@
 -include: ${workspace}/cnf/includes/jdt.bnd
 
 Bundle-Description:     bnd Annotations Library
--exportcontents:        aQute.bnd.annotation.*
 
+-buildpath: \
+	osgi.annotation;version=latest

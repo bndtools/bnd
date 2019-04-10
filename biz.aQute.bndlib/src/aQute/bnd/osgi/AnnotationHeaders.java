@@ -27,8 +27,6 @@ import aQute.bnd.annotation.headers.BundleDevelopers;
 import aQute.bnd.annotation.headers.BundleDocURL;
 import aQute.bnd.annotation.headers.BundleLicense;
 import aQute.bnd.annotation.headers.Category;
-import aQute.bnd.annotation.headers.ProvideCapability;
-import aQute.bnd.annotation.headers.RequireCapability;
 import aQute.bnd.bundle.annotations.Capabilities;
 import aQute.bnd.bundle.annotations.Capability;
 import aQute.bnd.bundle.annotations.Header;
@@ -179,6 +177,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	/*
 	 * Called when an annotation is found. Dispatch on the known types.
 	 */
+	@SuppressWarnings("deprecation")
 	@Override
 	public void annotation(Annotation annotation) throws Exception {
 		TypeRef name = annotation.getName();
@@ -537,8 +536,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	/*
 	 * Provide-Capability header
 	 */
+	@SuppressWarnings("deprecation")
 	private void doProvideCapability(Annotation a) throws Exception {
-		ProvideCapability annotation = a.getAnnotation(ProvideCapability.class);
+		aQute.bnd.annotation.headers.ProvideCapability annotation = a
+			.getAnnotation(aQute.bnd.annotation.headers.ProvideCapability.class);
 
 		Parameters p = new Parameters();
 		Attrs attrs = getAttributes(a, "ns");
@@ -561,8 +562,10 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	/*
 	 * Require-Capability header
 	 */
+	@SuppressWarnings("deprecation")
 	private void doRequireCapability(Annotation a) throws Exception {
-		RequireCapability annotation = a.getAnnotation(RequireCapability.class);
+		aQute.bnd.annotation.headers.RequireCapability annotation = a
+			.getAnnotation(aQute.bnd.annotation.headers.RequireCapability.class);
 		Parameters p = new Parameters();
 		Attrs attrs = getAttributes(a, "ns");
 		directivesAndVersion(attrs, "filter", "effective", "resolution");
