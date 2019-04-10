@@ -1067,7 +1067,9 @@ public class Verifier extends Processor {
 						if (m.matches())
 							continue;
 
-						warning("Unknown directive %s in %s, allowed directives are %s, and 'x-*'.", key, header,
+						warning(
+							"Unknown directive '%s' for namespace '%s' in '%s'. Allowed directives are [%s], and 'x-*'.",
+							key, pname, header,
 							pattern.toString()
 								.replace('|', ','));
 					}
