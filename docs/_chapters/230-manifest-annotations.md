@@ -1,136 +1,282 @@
 ---
 order: 230
-title: Manifest Annotations
+title: Bundle Annotations
 layout: default
 ---
 
-Entering manifest headers is error prone for a number of reasons since these headers are often complex, have different often hard to remember fields, and are singletons. Because they are singletons, there is only one place where they can be entered: the manifest. This is in contrast with the promoted component model where a component is stand-alone. Components should be cheap and easy to rename or move between bundles. This works fine for its Java imports but if you have an associated header in the manifest then it is easy to forget to also move its corresponding headers from the manifest. This can cause orphaned headers or missing headers either in the old bundle or the new bundle. The old bundle can miss the header because multiple components were depending on that header but it was mistakingly removed.
+Manifest headers are challenging to keep in sync with the code in the bundle. It often takes several attempts to get all the details correct.
 
-These headers are notoriously hard to write, it often takes several trials to get all the parts of the requirements correct. Also headers like Bundle-License are non trivial, especially if multiple licenses need to be entered. It is often hard to get the names right, especially if headers are not used very often.
+One of the goals of bnd is to eliminate such issues by relying on Java's type system to express the semantics of OSGi metadata.
 
-One of the goals of bnd is to rely on Java and not escape to strings in Java to express semantics. The Java language is a rather steep cost from the point of view of coding but the type engine makes this cost-effective especially since it enables the IDE to assist the developers. However, when information then gets encoded in strings the advantages are voided and what is left is the cost.
+## Bundle Annotations
 
-## Manifest Annotations
+To address this bnd developers pioneered _manifest annotations_ which evolved into OSGi's [_bundle annotations_](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle). A **bundle annotation** is used to express metadata that cannot otherwise be derived from code.
 
-To address these problems bnd has _manifest annotations_. A manifest annotation is applied to either a type or another annotation that is then customized. Using the type or the customized annotation on a type will then generate the corresponding header in the manifest. The resulting manifest header will only have  distinct clauses and not have errors. 
+A *bundle annotation* is applied to a type or package and when processed by bnd will cause the generation of corresponding manifest headers (and header clauses). Generating manifest headers from type safe structures is far less likely to result in errors, simplifies the developers life and is more conducive to code refactoring which won't result in information loss.
 
-String fields in the manifest annotations are processed through bnd's macro processor. This macro processor provides access to all default, builder, project, and workspace macros.
+The following example shows the _preferred way_ to handle package versioning by applying the [`@Export`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Export) and [`@Version`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.versioning.Version) _bundle annotations_ to `com/acme/package-info.java`.
 
-The use of manifest annotations is two-fold. If applied to a type then they cause a clause in the manifest. If they are applied to another annotation then this annotation is a customized annotation. Only when a customized annotation is used to annotate a type then it will generate the corresponding clause in the manifest. The rationale is that this makes it possible to create an annotation for a subsystem. For example, it is possible to create an `@Angular` annotation that creates a requirement on a bundle with the javascript for Angular JS. Another example is an annotation `@ASL_2_0` that sets the Bundle-License header to the Apache Software License version 2.0.
+```java
+@Export
+@Version("1.3.4")
+package com.acme;
+```
 
-All these annotations can be found in the biz.aQute.bndlib or biz.aQute.bnd.annotations bundles.
+which results in the manifest header:
 
-## Require & Provide Capability Manifest Annotations
+```
+Export-Package: com.acme;version="1.3.4"
+```
 
-Though the class files contain enough information to find the code dependencies, there are many dependencies that are indirect. OSGi _extenders_ are often a hard requirement to make a bundle function correctly but often have clients have no code dependency on the extender. For example, Declarative Services (DS) went out of its way to allow components to be Plain Old Java Objects (POJO). This is good, but the result is that resolving a closure of bundles starting from a client of DS would not drag in the Service Component Runtime (SCR), resulting in a satisfied but rather idle closure.
+### @Requirement & @Capability Annotations
 
-Meet the `@RequireCapability` and `@ProvideCapability` headers. 
+Though Java class files contain enough information to find code dependencies, there are many dependencies that are indirect. OSGi _extenders_ for instance are often a requirement to make a bundle function correctly but often client bundles have no code dependency on the extender. For example, Declarative Services (DS) went out of its way to allow components to be Plain Old Java Objects (POJO). The result is that resolving a closure of bundles starting from a DS client bundle would not drag in the Service Component Runtime (SCR), resulting in a satisfied but rather idle closure.
 
-These annotations can be applied to a type or any other annotation. If applied to a type then the annotation's requirement or capability will be added to the manifest. If applied to an annotation then this annotation is a customized annotation. Nothing happens until the annotated annotation is used. When this annotation is applied somewhere, bnd will automatically add the requirement or capability to the manifest.
+The solution was to describe the requirement for the runtime SCR dependency using [Requirements and Capabilities](https://osgi.org/specification/osgi.core/7.0.0/framework.module.html#framework.module.dependencies). But again, writing these complex clauses in the manifest by hand is both error prone and painful.
 
-### RequireCapability
+The [`@Requirement`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Requirement) and [`@Capability`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Capability) annotations were designed to address this issue. These annotations can be used to create [*custom bundle annotations*](#custom-bundle-annotations), described later on. Let's discuss the DS example.
 
-The `@RequireCapability` annotation creates a clause in the Require-Capability manifest header. The annotation has the following fields (for more details consult the Javadoc):
+Recent DS specifications require implementations to provide the following capability:
 
-* `value` – (String) Anything in the value field is appended after the calculated header.
-* `ns` – (String) The namespace of the requirement
-* `effective` – (String default `resolve`) The effective time
-* `filter` – The filter directive. There is a handy macro [${frange;<version>][1] that turns a version into a filter expression for a filter range.  
-* `resolution` – (`mandatory` | `optional`) The resolution of the requirement.
+```
+Provide-Capability: osgi.extender;
+    osgi.extender="osgi.component";
+    version:Version="1.4.0";
+    uses:="org.osgi.service.component"
+```
 
-### ProvideCapability
+While this provides a capability that can be required, we need a requirement to be generated from client code that uses DS. Enter recent versions of DS annotations which are meta-annotated with `@RequireServiceComponentRuntime`, a _custom bundle annotation_ which is specified as:
 
-The `@ProvideCapability` annotation creates a clause in the Provide-Capability manifest header. The annotation has the following fields (for more details consult the Javadoc):
+```java
+@Requirement(
+    namespace = ExtenderNamespace.EXTENDER_NAMESPACE,
+	name = ComponentConstants.COMPONENT_CAPABILITY_NAME,
+	version = ComponentConstants.COMPONENT_SPECIFICATION_VERSION)
+public @interface RequireServiceComponentRuntime { }
+```
 
-* `value` – (String) Anything in the value field is appended after the calculated header.
-* `ns` – (String) The namespace of the requirement
-* `effective` – (String default `resolve`) The effective time
-* `name` – (String) This creates a `<namespace>=<name>` attribute, the common convention to set the primary name attribute of a capability in most OSGi namespaces.
-* `version` – (String) Set the version of the capability.
-* `uses` – (String[]) Package names that are used by this capability and require the same class loader
-* `mandatory` – (String[]) List of mandatory attributes
+If you inspect the source code for `@Component` you'll find it is meta-annotated with `@RequireServiceComponentRuntime`. When you write a DS component using `@Component` as follows
 
-### Example
+```java
+@Component
+class Foo { ... }
+```
 
-For example the following defines a capability for the OSGi enRoute Configurer.
+and because of the inherent _bundle annotations_ it holds, the following manifest clause is generated
 
-	@RequireCapability(
-	  ns        = “osgi.extender”, 
-	  filter    = "(&(osgi.extender=osgi.enroute.configurer)${frange;1.2.3})",
-	  effective = "active")
+```
+Require-Capability: \
+	osgi.extender; \
+	filter:="(&(osgi.extender=osgi.component)(version>=1.4.0)(!(version>=2.0.0)))"
+```
 
-If this capability is applied to a type then the manifest will contain the corresponding requirement:
+The invisible link created between user code and the indirect requirement is a powerful mechanism that enables automatic validation of a bundle closure.
 
-	@RequireCapability(
-	  ns        = “osgi.extender”, 
-	  filter    = "(&(osgi.extender=osgi.enroute.configurer)${frange;1.2.3})",
-	  effective = "active")
-	public class Peggy { ... }
+### Arbitrary Manifest Headers
 
-This generates the following manifest headers (though the actual header can be larger since it can contain additional requirements):
+_Bundle annotations_ aren't just about package versioning or requirements and capabilities. They are about lifting *metadata* out of our code to avoid, among other things, error prone duplication of information. A common example is the bundle activator. Bundle Activators are require to be described in a manifest header. This association is not visible to refactoring tools and as such can easily end up out of sync.
 
-	Require-Capability: osgi.extender;filter:='(&(osgi.extender=osgi.enroute.configurer`)
-		(&(version>=1.2.3)(!(version>=2.0.0))))';effective:=active
+The [`@Header`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Header) annotation exists to address this problem.
 
-It is also possible to create a customized annotation:
+```java
+package com.acme;
 
-	@RequireCapability(
-	  ns        = “osgi.extender”, 
-	  filter    = "(&(osgi.extender=osgi.enroute.configurer)${frange;1.2.3})",
-	  effective = "active")
-	@Retention(RetentionPolicy)
-	@Target( ElementType.TYPE )
-	public @interface RequireConfigurer {}
+@Header(name = Constants.BUNDLE_ACTIVATOR, value = "${@class}")
+public Activator implements BundleActivator { ... }
+```
 
-This by itself does not create a clause in the manifest header. To make this happen we need to annotate a type:
+results in the manifest header:
 
-	@RequireConfigurer
-	public class Peggy { ... }
+`Bundle-Activator: com.acme.Activator`
 
-Now the same header will be generated.
 
-## Bundle License
+### Macros
 
-The `@BundleLicense` annotation creates entries in the Bundle-License header. The annotation has the following fields:
+You'll note the string `${@class}` used in the above example. String fields in *bundle annotations* are processed through bnd's macro processor. This macro processor provides access to all default and builder macros. *More info on bnd macros can be found in the [macros chapter](/chapters/850-macros.html).*
 
-* `name` – The name of the license, should preferably the URI to the corresponding [Open Source Initiative][2] page about this license.
-* `description` – A short description of the license.
-* `url` – The URL to further information about the license
+Bnd also provides access to certain key properties of the current processing state.
 
-A number of licenses have gotten their own custom annotation:
+- ***@class*** - gives the fully qualified name of the annotated class
+- ***@class-short*** - gives the simple name of the annotated class
+- ***@package*** - gives the package of the annotated class
+- ***@version*** - gives the package version of the annotated class
 
-* `ASL_2_0`
-* `BSD_2_Clause`
-* `BSD_3_Clause`
-* `CDDL_1_0`
-* `CPL_1_0`
-* `EPL_1_0`
-* `GPL_2_0`
-* `GPL_3_0`
-* `LGPL_2_1`
-* `MIT_1_0`
-* `MPL_2_0`
+The `@Header` example above used the macro `${@class}` which lifted the `@class` property holding the class name of the activator into the header to avoid having to duplicate it. This also means that refactoring the activator won't cause the manifest to get out of sync.
 
-See the Javadoc for additional details.
+### Custom Bundle Annotations
 
-### Example
+Certain *bundle annotations* have a second important use. We know that if applied to a type or package *bundle annotations* result in a clause in the manifest. However, many can be used as meta-annotations to a second annotation. The second annotation is considered a ***custom bundle annotation***. The *custom bundle annotation* results in a manifest clause only when applied to a type or package.
 
-	@ASL_2_0
-	public class Peggy { ... }
+This makes it possible to create an annotation for a subsystem. For example, an annotation `@ASL_2_0` that sets the `Bundle-License` header to the Apache Software License version 2.0.
 
-	Bundle-License: \
-		http://www.opensource.org/licenses/apache2.0.php; \
-		description='Apache Software License 2.0';\
-		link='http://www.apache.org/licenses/LICENSE-2.0.html'
+```java
+@BundleLicense(
+    name = "http://www.opensource.org/licenses/apache2.0.php",
+    link = "http://www.apache.org/licenses/LICENSE-2.0.html",
+    description = "Apache Software License 2.0")
+@interface ASL_2_0 {}
 
-## More Manifest Annotations
+// takes effect when applied to a type
 
-* `@BundleCopyright` – Sets the copyright header.
+@ASL_2_0
+class Foo { ... }
+```
+
+### Adding Attributes and Directives
+
+When creating *custom bundle annotations* a common requirement is to make them parameterizable such that the values of the *custom bundle annotation* feed into the header clauses resulting from the *bundle annotation* applied to it (*remember; a **custom bundle annotation** is meta-annotated with a **bundle annotation***.)
+
+[OSGi](https://osgi.org/specification/osgi.core/7.0.0/) specifies two annotations, [`@Attribute`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Attribute) and [`@Directive`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Directive), for this purpose. Any methods of the **custom bundle annotation** annotated with `@Attribute` or  `@Directive` will result in those becoming additional attributes or directives respectively of the resulting header clause _when a value is supplied_.
+
+##### `@Attribute`
+
+`@Attribute` allows you to add new or update existing attributes from the _bundle annotation_.
+
+```java
+@Capability(namespace = "foo.namespace")
+@interface Extended {
+	@Attribute("foo.attribute") // this attribute enhances the @Capability
+	String value();
+}
+
+// usage
+
+@Extended("bar")
+class Foo {}
+```
+
+which results in the manifest header:
+
+`Provide-Capability: foo.namespace;foo.attribute=bar`
+
+##### `@Directive`
+
+`@Directive` behaves similarly; with some caveats. You can add new or update existing directives for namespaces _not_ defined by OSGi specifications.
+
+```java
+@Capability(namespace = "foo.namespace")
+@interface Extended {
+	@Directive("foo.directive")
+	String value();
+}
+
+// usage
+
+@Extended("bar")
+class Foo {}
+```
+
+results in the manifest header:
+
+`Provide-Capability: foo.namespace;foo.directive:=bar`
+
+**However**, namespaces defined by OSGi specifications will be validated and will not accept directives which are not part of the spec _unless_ they are prefixed with `x-`.
+
+```java
+@Capability(namespace = "osgi.extender", name = "bar", version = "1.0.0")
+@interface Extended {
+	@Directive("foo")
+	String value();
+}
+
+// usage
+
+@Extended("bar")
+public class Foo {}
+```
+
+will result in an error:
+
+`Unknown directive 'foo:' for namespace 'osgi.extender' in 'Provide-Capability'. Allowed directives are [effective:,uses:], and 'x-*'.`
+
+**It should be noted** that it's possible to elide such errors using bnd's [`-fixupmessages`](/instructions/fixupmessages.html) instruction.
+
+This next example however:
+
+```java
+@Capability(namespace = "osgi.extender", name = "bar", version = "1.0.0")
+@interface Extended {
+	@Directive("x-foo")
+	String value();
+}
+
+// usage
+
+@Extended("bar")
+public class Foo {}
+```
+
+results in the manifest header:
+
+`Provide-Capability: osgi.extender;osgi.extender=bar;version:Version="1.0.0";x-foo:=bar`
+
+**It should be noted** that default values for methods annotated with `@Attribute` and `@Directive` are deemed to be for documentation purposes only and will not be emitted into resulting headers.
+
+### Where to find Bundle Annotations
+
+**OSGi** *bundle annotations* can be found in the `osgi.annotation` bundle.
+
+```xml
+<dependency>
+  <groupId>org.osgi</groupId>
+  <artifactId>osgi.annotation</artifactId>
+  <version>7.0.0</version>
+</dependency>
+```
+
+**Bnd** *bundle annotations* can be found in the `biz.aQute.bnd.annotations` bundle.
+
+```xml
+<dependency>
+  <groupId>biz.aQute.bnd</groupId>
+  <artifactId>biz.aQute.bnd.annotation</artifactId>
+  <version>${bnd.version}</version>
+</dependency>
+```
+
+## List of Bundle Annotations
+
+OSGi Bundle Annotations:
+
+- [`@Attribute`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Attribute)
+- [`@Capability`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Capability)
+- [`@Directive`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Directive)
+- [`@Export`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Export)
+- [`@Header`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Header)
+- [`@Requirement`](https://osgi.org/specification/osgi.core/7.0.0/framework.api.html#org.osgi.annotation.bundle.Requirement)
+- Many OSGi Specifications also define their own _custom bundle annotations_
+  - [`@RequireConfigurationAdmin`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.cm.html#org.osgi.service.cm.annotations.RequireConfigurationAdmin)
+  - [`@RequireMetaTypeExtender`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.metatype.html#org.osgi.service.metatype.annotations.RequireMetaTypeExtender)
+  - [`@RequireMetaTypeImplementation`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.metatype.html#org.osgi.service.metatype.annotations.RequireMetaTypeImplementation)
+  - [`@RequireServiceComponentRuntime`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.component.html#org.osgi.service.component.annotations.RequireServiceComponentRuntime)
+  - [`@RequireEventAdmin`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.event.html#org.osgi.service.event.annotations.RequireEventAdmin)
+  - [`@RequireJPAExtender`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.jpa.html#org.osgi.service.jpa.annotations.RequireJPAExtender)
+  - [`@RequireHttpWhiteboard`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.http.whiteboard.html#org.osgi.service.http.whiteboard.annotations.RequireHttpWhiteboard)
+  - [`@RequireConfigurator`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.configurator.html#org.osgi.service.configurator.annotations.RequireConfigurator)
+  - [`@RequireJaxrsWhiteboard`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.jaxrs.html#org.osgi.service.jaxrs.whiteboard.annotations.RequireJaxrsWhiteboard)
+  - [`@JSONRequired`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.jaxrs.html#org.osgi.service.jaxrs.whiteboard.propertytypes.JSONRequired)
+  - [`@RequireCDIExtender`](https://osgi.org/specification/osgi.enterprise/7.0.0/service.cdi.html#org.osgi.service.cdi.annotations.RequireCDIExtender)
+  - [`@RequireCDIImplementation`](https://osgi.org/specification/osgi.enterprise/7.0.0/service.cdi.html#org.osgi.service.cdi.annotations.RequireCDIImplementation)
+
+Bnd Bundle Annotations:
+
 * `@BundleCategory` – Sets the bundle category, existing categories are defined in an enum.
-* `@BundleContributors` – Creates an OSGi header for contributors that maps to the Maven contributors element.
+* `@BundleContributors` – Creates an OSGi header for contributors that maps to the Maven contributors element.
+* `@BundleCopyright` – Sets the copyright header.
 * `@BundleDevelopers` – Creates an OSGi header for developers that maps to the Maven developers element.
 * `@BundleDocUrl` – Provides a documentation URL.
+* `@BundleLicense` -  Creates entries in the `Bundle-License` header.
+  * `@ASL_2_0`
+  * `@BSD_2_Clause`
+  * `@BSD_3_Clause`
+  * `@CDDL_1_0`
+  * `@CPL_1_0`
+  * `@EPL_1_0`
+  * `@GPL_2_0`
+  * `@GPL_3_0`
+  * `@LGPL_2_1`
+  * `@MIT_1_0`
+  * `@MPL_2_0`
 
-
-[1]: /macros/frange.html
-[2]: http://opensource.org
+* `@ServiceConsumer` - Generates requirements in support of the consumer side of the [Service Loader Mediator](https://osgi.org/specification/osgi.cmpn/7.0.0/service.loader.html) specification.
+* `@ServiceProvider` - Generates requirements and capabilities in support of the provider side of the [Service Loader Mediator](https://osgi.org/specification/osgi.cmpn/7.0.0/service.loader.html) specification. Also generates `META-INF/service` descriptors.
