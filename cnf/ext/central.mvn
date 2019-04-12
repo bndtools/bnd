@@ -6,6 +6,7 @@ org.osgi:org.osgi.namespace.contract:1.0.0
 org.osgi:org.osgi.namespace.extender:1.0.1
 org.osgi:org.osgi.namespace.implementation:1.0.0
 org.osgi:org.osgi.namespace.service:1.0.0
+org.osgi:org.osgi.resource:1.0.0
 org.osgi:org.osgi.service.blueprint:1.0.2
 org.osgi:org.osgi.service.cdi:1.0.0
 org.osgi:org.osgi.service.cm:1.5.0
@@ -23,6 +24,7 @@ org.osgi:org.osgi.service.metatype:1.4.0
 org.osgi:org.osgi.service.metatype.annotations:1.4.0
 org.osgi:org.osgi.service.repository:1.1.0
 org.osgi:org.osgi.service.resolver:1.1.0
+org.osgi:org.osgi.service.serviceloader:1.0.0
 org.osgi:org.osgi.service.subsystem:1.1.0
 org.osgi:org.osgi.service.wireadmin:1.0.1
 org.osgi:org.osgi.util.function:1.1.0

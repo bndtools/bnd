@@ -108,7 +108,6 @@ public interface Constants {
 	String								BUMPPOLICY									= "-bumppolicy";
 	String								BUNDLEANNOTATIONS							= "-bundleannotations";
 	String								CDIANNOTATIONS								= "-cdiannotations";
-	String								SPIANNOTATIONS								= "-spiannotations";
 	String								CHECK										= "-check";
 	String								CONDUIT										= "-conduit";
 	String								CONTRACT									= "-contract";

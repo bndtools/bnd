@@ -79,7 +79,9 @@ public @interface RequireCapability {
 	 * when this Requirement cannot be resolved, this can result in Class Not
 	 * Found Exceptions when the bundle attempts to use a package that was not
 	 * resolved because it was optional.
+	 *
+	 * @deprecated
 	 */
-	Resolution resolution() default Resolution.mandatory;
+	aQute.bnd.annotation.headers.Resolution resolution() default aQute.bnd.annotation.headers.Resolution.mandatory;
 
 }

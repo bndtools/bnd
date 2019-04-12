@@ -1,12 +1,25 @@
 package aQute.bnd.annotation.spi;
 
+import static aQute.bnd.annotation.Constants.CARDINALITY_MACRO;
+import static aQute.bnd.annotation.Constants.RESOLUTION_MACRO;
+import static aQute.bnd.annotation.spi.Constants.SERVICELOADER_PROCESSOR;
+import static aQute.bnd.annotation.spi.Constants.SERVICELOADER_VERSION;
+import static aQute.bnd.annotation.spi.Constants.VALUE_MACRO;
 import static java.lang.annotation.ElementType.PACKAGE;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.CLASS;
+import static org.osgi.namespace.extender.ExtenderNamespace.EXTENDER_NAMESPACE;
+import static org.osgi.service.serviceloader.ServiceLoaderNamespace.SERVICELOADER_NAMESPACE;
 
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
+
+import org.osgi.annotation.bundle.Directive;
+import org.osgi.annotation.bundle.Requirement;
+
+import aQute.bnd.annotation.Cardinality;
+import aQute.bnd.annotation.Resolution;
 
 /**
  * Annotation used to generate requirements necessary for supporting the
@@ -21,6 +34,12 @@ import java.lang.annotation.Target;
 @Target({
 	PACKAGE, TYPE
 })
+@Requirement(name = VALUE_MACRO, namespace = SERVICELOADER_NAMESPACE, attribute = {
+	SERVICELOADER_NAMESPACE + "=" + VALUE_MACRO, CARDINALITY_MACRO, RESOLUTION_MACRO
+})
+@Requirement(name = SERVICELOADER_PROCESSOR, namespace = EXTENDER_NAMESPACE, version = SERVICELOADER_VERSION, attribute = {
+	RESOLUTION_MACRO
+})
 public @interface ServiceConsumer {
 	/**
 	 * The service <em>type</em>.
@@ -30,17 +49,19 @@ public @interface ServiceConsumer {
 	Class<?> value();
 
 	/**
-	 * The effective time of the {@code serviceloader} requirements.
+	 * The effective time of the {@code osgi.serviceloader} and
+	 * {@code osgi.extender} requirements.
 	 * <p>
 	 * Specifies the time the service loader requirements are available. The
 	 * OSGi framework resolver only considers requirements without an effective
-	 * directive or effective:=resolve. Requirements with other values for the
-	 * effective directive can be considered by an external agent.
+	 * directive or {@code effective:=resolve}. Requirements with other values
+	 * for the effective directive can be considered by an external agent.
 	 * <p>
 	 * If not specified, the {@code effective} directive is omitted from the
 	 * requirement clause.
 	 */
-	String effective() default "resolve"; // Namespace.EFFECTIVE_RESOLVE
+	@Directive
+	String effective() default "";
 
 	/**
 	 * The cardinality of this requirement.
@@ -51,36 +72,11 @@ public @interface ServiceConsumer {
 	 * If not specified, the {@code cardinality} directive is omitted from the
 	 * requirement clause.
 	 */
-	Cardinality cardinality() default Cardinality.SINGLE;
+	Cardinality cardinality() default Cardinality.DEFAULT;
 
 	/**
-	 * Cardinality for this requirement.
-	 */
-	public enum Cardinality {
-		/**
-		 * Indicates if the requirement can only be wired a single time.
-		 */
-		SINGLE("single"), // Namespace.CARDINALITY_SINGLE
-
-		/**
-		 * Indicates if the requirement can be wired multiple times.
-		 */
-		MULTIPLE("multiple"); // Namespace.CARDINALITY_MULTIPLE
-
-		private final String value;
-
-		Cardinality(String value) {
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return value;
-		}
-	}
-
-	/**
-	 * The resolution policy of this requirement.
+	 * The resolution policy of the {@code osgi.serviceloader} and
+	 * {@code osgi.extender} requirements.
 	 * <p>
 	 * A mandatory requirement forbids the bundle to resolve when this
 	 * requirement is not satisfied; an optional requirement allows a bundle to
@@ -89,33 +85,6 @@ public @interface ServiceConsumer {
 	 * If not specified, the {@code resolution} directive is omitted from the
 	 * requirement clause.
 	 */
-	Resolution resolution() default Resolution.MANDATORY;
+	Resolution resolution() default Resolution.DEFAULT;
 
-	/**
-	 * Resolution for this requirement.
-	 */
-	public enum Resolution {
-		/**
-		 * A mandatory requirement forbids the bundle to resolve when the
-		 * requirement is not satisfied.
-		 */
-		MANDATORY("mandatory"), // Namespace.RESOLUTION_MANDATORY
-
-		/**
-		 * An optional requirement allows a bundle to resolve even if the
-		 * requirement is not satisfied.
-		 */
-		OPTIONAL("optional"); // Namespace.RESOLUTION_OPTIONAL
-
-		private final String value;
-
-		Resolution(String value) {
-			this.value = value;
-		}
-
-		@Override
-		public String toString() {
-			return value;
-		}
-	}
 }
