@@ -1,5 +1,6 @@
 package aQute.bnd.annotation.spi;
 
+import static aQute.bnd.annotation.Constants.EFFECTIVE_DEFAULT;
 import static aQute.bnd.annotation.Constants.EFFECTIVE_MACRO;
 import static aQute.bnd.annotation.Constants.RESOLUTION_MACRO;
 import static aQute.bnd.annotation.Constants.USES_MACRO;
@@ -62,7 +63,7 @@ public @interface ServiceProvider {
 	 * If not specified, the {@code effective} directive is omitted from the
 	 * requirement clause.
 	 */
-	String effective() default "";
+	String effective() default EFFECTIVE_DEFAULT;
 
 	/**
 	 * A list of classes whose packages are inspected to calculate the

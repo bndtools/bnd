@@ -11,6 +11,11 @@ public final class Constants {
 	public static final String	CARDINALITY_MACRO	= "${if;${is;${#cardinality};default};;cardinality:=${#cardinality}}";
 
 	/**
+	 * Default value for effective
+	 */
+	public static final String	EFFECTIVE_DEFAULT	= "";
+
+	/**
 	 * Not emitted if default is used
 	 */
 	public static final String	EFFECTIVE_MACRO		= "${if;${size;${#effective}};effective:=${#effective}}";

@@ -1,6 +1,7 @@
 package aQute.bnd.annotation.spi;
 
 import static aQute.bnd.annotation.Constants.CARDINALITY_MACRO;
+import static aQute.bnd.annotation.Constants.EFFECTIVE_DEFAULT;
 import static aQute.bnd.annotation.Constants.RESOLUTION_MACRO;
 import static aQute.bnd.annotation.spi.Constants.SERVICELOADER_PROCESSOR;
 import static aQute.bnd.annotation.spi.Constants.SERVICELOADER_VERSION;
@@ -61,7 +62,7 @@ public @interface ServiceConsumer {
 	 * requirement clause.
 	 */
 	@Directive
-	String effective() default "";
+	String effective() default EFFECTIVE_DEFAULT;
 
 	/**
 	 * The cardinality of this requirement.

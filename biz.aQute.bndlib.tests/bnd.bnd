@@ -8,6 +8,7 @@
 	osgi.annotation;version=latest,\
 	osgi.core;version=latest,\
 	org.osgi.namespace.extender;version=latest,\
+	org.osgi.namespace.implementation;version=latest,\
 	org.osgi.namespace.service;version=latest,\
 	org.osgi.service.blueprint;version=latest,\
 	org.osgi.service.cdi;version=latest,\
@@ -21,6 +22,7 @@
 	org.osgi.service.metatype;version=latest,\
 	org.osgi.service.metatype.annotations;version=latest,\
 	org.osgi.service.repository;version=latest,\
+	org.osgi.service.serviceloader;version=latest,\
 	org.osgi.service.wireadmin;version=latest,\
 	org.osgi.util.function;version=latest,\
 	org.osgi.util.measurement;version=latest,\
