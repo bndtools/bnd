@@ -20,6 +20,54 @@ import junit.framework.TestCase;
  */
 public class StdAnnotationHeadersTest extends TestCase {
 
+	public void testCardinalityDirectiveOverride() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.attrs.std.b");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			Props p = req.get("foo");
+			assertNotNull(p);
+			assertTrue(p.containsKey("foo"));
+			assertEquals("bar", p.get("foo"));
+			assertTrue(p.containsKey("cardinality:"));
+			assertEquals("multiple", p.get("cardinality:"));
+		}
+	}
+
+	public void testResolutionDirectiveOverride() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.attrs.std.a");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			Props p = req.get("foo");
+			assertNotNull(p);
+			assertTrue(p.containsKey("foo"));
+			assertEquals("bar", p.get("foo"));
+			assertTrue(p.containsKey("resolution:"));
+			assertEquals("optional", p.get("resolution:"));
+		}
+	}
+
 	/**
 	 * A directly annotated class
 	 */
