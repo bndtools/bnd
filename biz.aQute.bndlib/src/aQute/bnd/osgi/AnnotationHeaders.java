@@ -115,6 +115,8 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	static final String				BUNDLE_CONTRIBUTORS	= "aQute.bnd.annotation.headers.BundleContributors";
 	static final String				BUNDLE_COPYRIGHT	= "aQute.bnd.annotation.headers.BundleCopyright";
 	static final String				STD_REQUIREMENT		= "org.osgi.annotation.bundle.Requirement";
+	static final String				STD_REQUIREMENT_CARDINALITY	= "org.osgi.annotation.bundle.Requirement$Cardinality";
+	static final String				STD_REQUIREMENT_RESOLUTION	= "org.osgi.annotation.bundle.Requirement$Resolution";
 	static final String				STD_REQUIREMENTS	= "org.osgi.annotation.bundle.Requirements";
 	static final String				STD_CAPABILITY		= "org.osgi.annotation.bundle.Capability";
 	static final String				STD_CAPABILITIES	= "org.osgi.annotation.bundle.Capabilities";
@@ -314,7 +316,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 	private final class MetaAnnotationCollector extends ClassDataCollector {
 		private final Clazz			c;
 		private final Annotation	annotation;
-		private String				lastMethodSeen;
+		private MethodDef			lastMethodSeen;
 		private Set<String>			processed;
 		private Attrs				attributesAndDirectives	= new Attrs();
 
@@ -398,18 +400,29 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 		}
 
 		private void handleAttributeOrDirective(Annotation a) {
-			Object o = annotation.get(lastMethodSeen);
+			Object o = annotation.get(lastMethodSeen.name);
 
 			if (o != null) {
 				String attributeName = a.get("value");
 				if (attributeName == null) {
-					attributeName = lastMethodSeen;
+					attributeName = lastMethodSeen.name;
 				}
 				if (STD_DIRECTIVE.equals(a.getName()
 					.getFQN())) {
 					attributeName += ":";
 				}
 				if (!attributesAndDirectives.containsKey(attributeName)) {
+					if (lastMethodSeen.getType()
+						.getFQN()
+						.equals(STD_REQUIREMENT_CARDINALITY)
+						|| lastMethodSeen.getType()
+							.getFQN()
+							.equals(STD_REQUIREMENT_RESOLUTION)) {
+
+						o = String.valueOf(o)
+							.toLowerCase();
+					}
+
 					attributesAndDirectives.putTyped(attributeName, o);
 				}
 			}
@@ -417,7 +430,7 @@ class AnnotationHeaders extends ClassDataCollector implements Closeable {
 
 		@Override
 		public void method(MethodDef defined) {
-			lastMethodSeen = defined.getName();
+			lastMethodSeen = defined;
 		}
 	}
 
