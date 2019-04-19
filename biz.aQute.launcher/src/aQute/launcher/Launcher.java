@@ -230,8 +230,8 @@ public class Launcher implements ServiceListener {
 		load(in, properties);
 
 		augmentWithSystemProperties(properties);
-		
-		init(properties, null);
+
+		init(properties, propertiesFile);
 	}
 
 	public void init(Properties properties, final File propertiesFile) {
