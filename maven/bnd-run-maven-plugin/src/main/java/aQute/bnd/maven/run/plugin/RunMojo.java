@@ -2,6 +2,12 @@ package aQute.bnd.maven.run.plugin;
 
 import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 
+import aQute.bnd.maven.lib.configuration.Bndruns;
+import aQute.bnd.maven.lib.configuration.Bundles;
+import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.maven.lib.resolve.Operation;
+import aQute.bnd.maven.lib.resolve.Scope;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -22,12 +28,6 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
-
-import aQute.bnd.maven.lib.configuration.Bndruns;
-import aQute.bnd.maven.lib.configuration.Bundles;
-import aQute.bnd.maven.lib.resolve.BndrunContainer;
-import aQute.bnd.maven.lib.resolve.Operation;
-import aQute.bnd.maven.lib.resolve.Scope;
 
 @Mojo(name = "run", defaultPhase = LifecyclePhase.VERIFY, requiresDirectInvocation = true, requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST)
 @Execute(goal = "run")
@@ -100,7 +100,7 @@ public class RunMojo extends AbstractMojo {
 	private Operation getOperation() {
 		return (file, runName, run) -> {
 			try {
-				run.runLocal();
+				run.run();
 			} finally {
 				int errors = report(run);
 				if (errors > 0) {
