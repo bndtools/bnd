@@ -1,0 +1,94 @@
+{% macro bundleTitleBlock (printer, report) -%}
+{%- set title = default(report.manifest.bundleName,report.manifest.bundleSymbolicName.symbolicName) -%}
+{{ printer.printTitle(title,1) }}
+
+{% if not empty(report.manifest.bundleCategories) -%}
+{{ printer.printTips(report.manifest.bundleCategories) }}
+{% else %}
+Fail: MISSING Bundle-Category
+'''
+Bundle-Category: YourCategory
+'''
+{%- endif %}
+{%- endmacro %}
+
+{% macro bundleOverviewBlock (printer, report) -%}
+{% if not empty(report.manifest.bundleDescription) -%}
+{{ printer.printTitle('Overview',2) }}
+
+{{ report.manifest.bundleDescription -}}
+{%- endif %}
+{%- endmacro %}
+
+{% macro bundleCoordinatesBlock (printer, report) -%}
+{{ printer.printTitle('Coordinates',2) }}  
+
+{% if not empty(report.mavenCoordinate) -%}
+{{ printer.printTitle('Maven',3) }}
+
+{{ printer.printMavenCoordinate(report.mavenCoordinate) }}
+{%- endif %}
+
+{{ printer.printTitle('Osgi',3) }}
+
+{{ printer.printOsgiCoordinate(report.manifest.bundleSymbolicName.symbolicName,report.manifest.bundleVersion) }}
+{%- endmacro %}
+
+{% macro bundleComponentsBlock (printer, report) -%}
+{% if report.components.size > 0 -%}
+{{ printer.printTitle('Components',2) }}
+
+{{ printer.printComponents(report.components, report.metatypes) }}
+{%- endif %}
+{%- endmacro %}
+
+{% macro bundleLicensesBlock (printer, report) -%}
+{% if report.manifest.bundleLicenses.size > 0 -%}
+{{ printer.printTitle('Licenses',2) }}
+
+{{ printer.printLicenses(report.manifest.bundleLicenses) }}
+{%- endif %}
+{%- endmacro %}
+
+{% macro bundleDevelopersBlock (printer, report) -%}
+{% if report.manifest.bundleDevelopers.size > 0 -%}
+{{ printer.printTitle('Developers',2) }}
+
+{{ printer.printDevelopers(report.manifest.bundleDevelopers) }}
+{%- endif %}
+{%- endmacro %}
+
+{% macro bundleCopyrightBlock (printer, report) -%}
+{% if not empty(report.manifest.bundleCopyright) -%}
+{{ printer.printTitle('Copyright',2) }}
+
+{{ report.manifest.bundleCopyright }}
+{%- endif %}
+{%- endmacro %}
+
+{% macro workspaceTitleBlock (printer, report) -%}
+{{ printer.printTitle(report.bndWorkspaceSettings.folderName,1) }}
+{%- endmacro %}
+
+{% macro workspaceStructureBlock (printer, report) -%}
+{{ printer.printTitle('Project Structure',2) }}
+
+All folders in this workspace are projects except the `cnf` folder which contains 
+build configuration data. Each project can build one or more *bundes*. By convention, the 
+*bundle* name ends by a classifier that describe the intended use. Here is the list of all
+the artifacts built by this workspace:
+
+{{ printer.printWorkspaceBundles (report.projects) }}
+{%- endmacro %}
+
+{% macro projectTitleBlock (printer, report) -%}
+{{ printer.printTitle(report.fileName,1) }}
+{%- endmacro %}
+
+{% macro projectStructureBlock (printer, report) -%}
+{{ printer.printTitle('Bundles',2) }}
+
+Here is the list of all the artifacts built by this project:
+
+{{ printer.printProjectBundles (report.bundles) }}
+{%- endmacro %}

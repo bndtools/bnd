@@ -1,0 +1,239 @@
+{% macro printTitle (title, level, iconPath) -%}
+{% for i in [1..level] %}#{% endfor %} {{(not empty(iconPath))?'![]('~iconPath~') ':''}}{{- title }}
+{%- endmacro %}
+
+{% macro printMavenCoordinate (mavenCoordinate, prefix) -%}
+```xml
+{{ prefix }}<dependency>
+{{ prefix }}    <groupId>{{- mavenCoordinate.groupId -}}</groupId>
+{{ prefix }}    <artifactId>{{- mavenCoordinate.artifactId -}}</artifactId>
+{{ prefix }}    <version>{{- mavenCoordinate.version -}}</version>
+{{ prefix }}</dependency>
+{{ prefix }}```
+{%- endmacro %}
+
+{% macro printOsgiCoordinate (symbolicName, version, prefix) -%}
+{% import _self as this -%}
+```
+{{ prefix }}Bundle symbolic name: {{- symbolicName }}
+{{ prefix }}Version             : {{- this.printOsgiVersion(version) }}
+{{ prefix }}```
+{%- endmacro %}
+
+{% macro printOsgiVersion (osgiVersion) -%}
+{{ osgiVersion.major }}{{ '.'~osgiVersion.minor }}{{ '.'~osgiVersion.micro }}
+{%- if not (osgiVersion.qualifier is null) %}
+{{- '.'~osgiVersion.qualifier }}
+{%- endif %}
+{%- endmacro %}
+
+{% macro printTableHeaders (headers, layout, prefix) -%}
+{% for h in headers %}{{ (loop.first) ? '|'~h~' |' : h~' |' }}{% endfor %}
+{% if empty (layout) -%}
+{{ prefix }}{% for h in headers %}{{ (loop.first) ? '|--- |' : '--- |' }}{% endfor %}
+{%- else %}
+{%- set layoutTab = split(layout, '') -%}
+{{ prefix }}{% for l in layoutTab %}
+{%- if l == 'r' -%}
+{{ (loop.first) ? '|---: |' : '---: |' }}
+{%- elseif l == 'c' -%}
+{{ (loop.first) ? '|:---: |' : ':---: |' }}
+{%- else -%}
+{{ (loop.first) ? '|--- |' : '--- |' }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}
+
+{% macro printPropertyType (type, multiValue) -%}
+{{ type }}{{ (multiValue) ? '[]' : ''}}
+{%- endmacro %}
+
+{% macro printPropertyValues (type, values, multiValue) -%}
+{%- if multiValue -%}
+{{ '[' }}{% for v in values %}{{ (loop.first) ? '' : ', ' }}{{ (type == 'String' ) ? '"'~v~'"' : v}}{% endfor %}{{ ']' }}
+{%- else -%}
+{{ (type == 'String' ) ? '"'~(values[0])~'"' : values[0] }}
+{%- endif -%}
+{%- endmacro %}
+
+{% macro printOptions (option) -%}
+{% for o in option %}{{ (loop.first) ? '' : ', ' }}{{ '"'~o.value~'"' }}{% endfor %}
+{%- endmacro %}
+
+{% macro printComponents (components, metatypes) -%}
+{% import _self as this -%}
+{% for c in components -%}
+{% if loop.first -%}
+{{ this.printTitle(c.name,3) -}}
+{%- else %}
+
+---
+
+{{ this.printTitle(c.name,3) -}}
+{% endif -%}
+{{ (c.defaultEnabled) ? ' - `enabled`' : ' - `not enabled`' -}}
+{{ (c.immediate) ? ', `activation = immediate`' : ', `activation = delayed`' }}
+
+{% if length(c.serviceInterfaces) > 0 -%}
+{{ this.printTitle('Services - `scope = '~c.scope~'`',4) }}
+
+{{ this.printTableHeaders(['Interface name']) }}
+{%- for s in c.serviceInterfaces %}
+| {{ s }} |
+{%- endfor %}
+{%- else -%}
+{{ this.printTitle('Services',4) }}
+
+No services.
+{%- endif %}
+
+{{ this.printTitle('Properties',4) }}
+
+{% if length(c.properties) > 0 -%}
+{{ this.printTableHeaders(['Name','Type','Value']) }}
+{%- for key, value in c.properties %}
+| {{key}} | {{ this.printPropertyType(value.type,value.multiValue)}} | {{ this.printPropertyValues(value.type,value.values,value.multiValue) }} |
+{%- endfor %}
+{%- else -%}
+No properties.
+{%- endif %}
+
+{% if not (c.factory is null) -%}
+{{ this.printTitle('Configuration - `factory`',4) }}
+
+* **facory name**: {{ '`'~c.factory~'`'}}
+{%- elseif c.configurationPolicy == 'ignore' -%}
+{{ this.printTitle('Configuration',4) }}
+
+No configuration.
+{%- else -%}
+{{ this.printTitle('Configuration - `policy = '~c.configurationPolicy~'`',4) }}
+
+{% for pid in c.configurationPid %}
+{%- set pidOcd = "notset" -%}
+{%- set factoryPidOcd = "notset" -%}
+{%- for ocd in metatypes -%}
+{%- if pid in ocd.pids -%}
+{%- set pidOcd = ocd -%}
+{%- elseif pid in ocd.factoryPids -%}
+{%- set factoryPidOcd = ocd -%}
+{%- endif -%}
+{%- endfor -%}
+{%- set o = "notset" -%}
+{%- if pidOcd != 'notset' -%}
+{{ this.printTitle('Pid: `'~pid~'`',5) }}
+{%- set o = pidOcd -%}
+{%- elseif factoryPidOcd != 'notset' -%}
+{{ this.printTitle('Factory pid: `'~pid~'`',5) }}
+{%- set o = factoryPidOcd -%}
+{%- else -%}
+{{ this.printTitle('Pid: `'~pid~'`',5) }}
+No information available.
+{%- endif %}
+{%- if o != 'notset' -%}
+{% for a in o.attributes -%}
+{% if loop.first %}
+
+{% endif -%}
+{{ this.printTableHeaders(['Id','`'~a.id~'`']) }}
+| Required | **{{a.required}}** |
+| Type | **{{ this.printPropertyType(a.type,(a.cardinality != 0)) }}** |
+{%- if not empty(a.description) %}
+| Description | {{ a.description }} |
+{%- endif %}
+{%- if length(a.values) > 0 %}
+| Default | {{ this.printPropertyValues(a.type,a.values,(a.cardinality != 0)) }} |
+{%- endif %}
+{%- if (not empty(a.max)) or (not empty(a.min)) %}
+| Value restriction | `min = {{a.min}}` / `max = {{a.max}}` |
+{%- elseif length(a.options) > 0 %}
+| Value restriction | {{ this.printOptions(a.options) }} |
+{%- endif %}
+
+{% endfor %}
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endmacro %}
+
+{% macro printDevelopers (developers) -%}
+{% import _self as this -%}
+{% for d in developers %}
+{% if empty(d.email) and empty(d.name) -%}
+* [{{d.identifier}}](mailto:{{d.identifier}})
+{%- elseif empty(d.email) -%}
+* **{{d.name}}** ([{{d.identifier}}](mailto:{{d.identifier}}))
+{%- else -%}
+* @{{d.identifier}}
+{%- endif -%}
+{%- if not empty(d.email) and empty(d.name) -%}
+{{ ' - ' }}[{{d.email}}](mailto:{{d.email}})
+{%- elseif not empty(d.email) -%}
+{{ ' - ' }}**{{d.name}}** ([{{d.email}}](mailto:{{d.email}}))
+{%- endif -%}
+{%- if not empty(d.organization) and not empty(d.organizationUrl) -%}
+{{ ', ' }}[{{d.organization}}]({{d.organizationUrl}})
+{%- elseif not empty(d.organization) and empty(d.organizationUrl) -%}
+{{ ', ' }}{{d.organization}}
+ {%- elseif empty(d.organization) and not empty(d.organizationUrl) -%}
+{{ ', ' }}[{{d.organizationUrl}}]({{d.organizationUrl}})
+{%- endif -%}
+{%- if length(d.roles) > 0 -%}
+{{ ' - ' }}{% for r in d.roles %}*{{r}}*{{ (loop.last) ? '' : ', '}}{% endfor %}
+{%- endif -%}
+{%- endfor %}
+{%- endmacro %}
+
+{% macro printLicenses (licenses) -%}
+{% import _self as this -%}
+{% for l in licenses %}
+**{{ l.name }}**
+{%- if not empty(l.description) %}
+  > {{ l.description }}
+  > 
+{%- endif -%}
+{%- if not empty(l.link) %}
+  > For more information see [{{l.link}}]({{l.link}}).
+{%- endif %}
+{% endfor %}
+{%- endmacro %}
+
+{% macro printTips (categories) -%}
+{% if 'api' in categories -%}
+> This is an *API* bundle. Generally, bundles of this type contain only Java interfaces which are used as contracts between *Consumer* and *Provider* bundles. They are intended to be used at compile time and should not be part of a runtime.
+{%- elseif 'provider' in categories -%}
+> This is a *Provider* bundle. Bundles of this type contain implementations which may (or not) be accessed through the OSGI service registry. They are intended to be used at runtime and should not be used at compile time.
+{%- elseif 'command' in categories -%}
+> This is a *Command* bundle. Bundles of this type provide *Gogo* commands. They are intended to be used at runtime and should not be used at compile time.
+{%- elseif 'rest' in categories -%}
+> This is a *REST* bundle. Bundles of this type provide *REST APIs*. They are intended to be used at runtime and should not be used at compile time.
+{%- elseif 'fragment' in categories -%}
+> This is a *Fragment* bundle. Bundles of this type are intended to be used at runtime to enhance another bundle.
+{%- elseif 'wrapper' in categories -%}
+> This is a *Wrapper* bundle. Bundles of this type wrap a non OSGI library.
+{%- elseif 'tests' in categories -%}
+> This is a *Tests* bundle. Bundles of this type contain integration tests.
+{%- elseif 'application' in categories -%}
+> This is an *Application* bundle. Bundles of this type contain the top level requirements and some resources of an application, a subsystem, a feature, etc. They are intended to be used as the very top level required bundle of an application.
+{%- elseif 'library' in categories -%}
+> This is a *library* bundle. Bundles of this type contain simple implementations (no services or components) which are used to share common implementations between the *Provider* bundles of an *API*. They are intended to be used at compile time by *Provider* bundles and should not be part of a runtime. The using bundle should embed the implementation packages and keep them private.
+{%- endif %}
+{%- endmacro %}
+
+{% macro printWorkspaceBundles (contents) -%}
+{% for p in contents %}
+{% for b in p.bundles %}
+{% if loop.length == 1 %}
+{% set link = "readme" %}
+{% else %}
+{% set link = b.manifest.bundleSymbolicName.symbolicName %}
+{% endif %}
+* [*folder*]({{ p.fileName }}) / [{{ b.manifest.bundleName }}]({{ p.fileName }}/{{ link }}.md): {{ b.manifest.bundleDescription }}{% endfor %}{% endfor %}
+{%- endmacro %}
+
+{% macro printProjectBundles (contents) -%}
+{% for b in contents %}
+* [{{ b.manifest.bundleName }}]({{ b.manifest.bundleSymbolicName.symbolicName }}.md): {{ b.manifest.bundleDescription }}{% endfor %}
+{%- endmacro %}

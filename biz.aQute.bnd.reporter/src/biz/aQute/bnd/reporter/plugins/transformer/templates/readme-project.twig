@@ -1,0 +1,62 @@
+{%- set templateDir = default(templateDir,'default:') %}
+{%- import concat(templateDir,'/library-block.twig') as blocks -%}
+{%- import concat(templateDir,'/library-printer.twig') as printer -%}
+
+{%- if empty(currentBsn) and length(report.bundles) > 1 -%}
+
+{%- block title -%}
+{{ blocks.projectTitleBlock(printer, report, iconUrl) }}
+{%- endblock %}
+
+{% block structure -%}
+{{ blocks.projectStructureBlock(printer, report) }}
+{%- endblock %}
+
+{%- else -%}
+
+{%- set bundleReport = '' -%}
+
+{%- if empty(currentBsn) -%}
+{%- for r in report.bundles -%}
+{%- set bundleReport = r -%}
+{%- endfor -%}
+{%- else -%}
+{%- for r in report.bundles -%}
+{%- if currentBsn == r.manifest.bundleSymbolicName.symbolicName -%}
+{%- set bundleReport = r -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endif -%}
+
+{%- block title -%}
+{{ blocks.bundleTitleBlock(printer, bundleReport) }}
+{%- endblock %}
+
+{% block overview -%}
+{{ blocks.bundleOverviewBlock(printer, bundleReport) }}
+{%- endblock %}
+
+{% block coordinates -%}
+{{ blocks.bundleCoordinatesBlock(printer, bundleReport) }}
+{%- endblock %}
+
+{% block usecases -%}
+{%- endblock %}
+
+{% block components -%}
+{{ blocks.bundleComponentsBlock(printer, bundleReport) }}
+{%- endblock %}
+
+{% block developers -%}
+{{ blocks.bundleDevelopersBlock(printer, bundleReport) }}
+{%- endblock %}
+
+{% block licenses -%}
+{{ blocks.bundleLicensesBlock(printer, bundleReport) }}
+{%- endblock %}
+
+{% block copyright -%}
+{{ blocks.bundleCopyrightBlock(printer, bundleReport) }}
+{%- endblock %}
+
+{%- endif -%}

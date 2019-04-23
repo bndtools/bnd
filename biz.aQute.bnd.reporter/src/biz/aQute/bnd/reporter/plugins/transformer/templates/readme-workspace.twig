@@ -1,0 +1,14 @@
+{%- set templateDir = default(templateDir,'default:') %}
+{%- import concat(templateDir,'/library-block.twig') as blocks -%}
+{%- import concat(templateDir,'/library-printer.twig') as printer -%}
+
+{%- block title -%}
+{{ blocks.workspaceTitleBlock(printer, report) }}
+{%- endblock %}
+
+{%- block overview -%}
+{%- endblock %}
+
+{% block structure -%}
+{{ blocks.workspaceStructureBlock(printer, report) }}
+{%- endblock %}

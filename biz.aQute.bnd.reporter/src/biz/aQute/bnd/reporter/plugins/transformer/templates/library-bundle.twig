@@ -1,0 +1,31 @@
+{%- set templateDir = default(templateDir,'default:') %}
+{%- import concat(templateDir,'/library-block.twig') as blocks -%}
+{%- import concat(templateDir,'/library-printer.twig') as printer -%}
+
+{%- block title -%}
+{{ blocks.bundleTitleBlock(printer, report) }}
+{%- endblock %}
+
+{% block overview -%}
+{{ blocks.bundleOverviewBlock(printer, report) }}
+{%- endblock %}
+
+{% block coordinates -%}
+{{ blocks.bundleCoordinatesBlock(printer, report) }}
+{%- endblock %}
+
+{% block components -%}
+{{ blocks.bundleComponentsBlock(printer, report) }}
+{%- endblock %}
+
+{% block developers -%}
+{{ blocks.bundleDevelopersBlock(printer, report) }}
+{%- endblock %}
+
+{% block licenses -%}
+{{ blocks.bundleLicensesBlock(printer, report) }}
+{%- endblock %}
+
+{% block copyright -%}
+{{ blocks.bundleCopyrightBlock(printer, report) }}
+{%- endblock %}
