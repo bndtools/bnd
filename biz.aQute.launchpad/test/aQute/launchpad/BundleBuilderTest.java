@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Dictionary;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 
@@ -173,6 +174,63 @@ public class BundleBuilderTest {
 				.exportPackage("")
 				.start();
 
+		}
+	}
+
+	@Test
+	public void differentBundles_withSameSymbolicName_shouldNotBeTheSameBundle() throws Exception {
+		try (Launchpad lp = builder.create()) {
+			Bundle bundle = lp.bundle()
+				.bundleSymbolicName("test.bundle")
+				.bundleVersion("1.2.3")
+				.start();
+			Bundle bundle2 = lp.bundle()
+				.bundleSymbolicName("test.bundle")
+				.bundleVersion("2.3.4")
+				.start();
+			assertThat(bundle).as("identity")
+				.isNotSameAs(bundle2);
+			assertThat(bundle.getBundleId()).as("id")
+				.isNotEqualTo(bundle2.getBundleId());
+		}
+	}
+
+	@Test
+	public void location_defaultsToBSNPlusVersion() throws Exception {
+
+		try (Launchpad lp = builder.create(); AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+			Bundle bundle = lp.bundle()
+				.install();
+			softly.assertThat(bundle.getLocation())
+				.as("full default")
+				.contains(bundle.getSymbolicName())
+				.endsWith("-0");
+
+			bundle = lp.bundle()
+				.bundleSymbolicName("test.bundle")
+				.install();
+			softly.assertThat(bundle.getLocation())
+				.as("default version")
+				.contains("test.bundle")
+				.endsWith("-0");
+
+			bundle = lp.bundle()
+				.bundleSymbolicName("test.bundle")
+				.bundleVersion("1.2.3")
+				.install();
+			softly.assertThat(bundle.getLocation())
+				.as("explicit version")
+				.contains("test.bundle")
+				.endsWith("-1.2.3");
+
+			bundle = lp.bundle()
+				.bundleSymbolicName("test.bundle")
+				.bundleVersion("2.3.4")
+				.location("some string")
+				.install();
+			softly.assertThat(bundle.getLocation())
+				.as("explicit location")
+				.isEqualTo("some string");
 		}
 	}
 }
