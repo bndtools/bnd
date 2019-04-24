@@ -27,6 +27,7 @@ public class BuilderSpecification {
 	 */
 	public List<String>						parent				= new ArrayList<>();
 	public List<String>						classpath			= new ArrayList<>();
+	public String							location;
 	public Map<String, Map<String, String>>	bundleSymbolicName	= new LinkedHashMap<>();
 	public String							bundleVersion;
 	public String							bundleActivator;

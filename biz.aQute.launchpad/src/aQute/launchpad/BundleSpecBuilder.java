@@ -917,11 +917,21 @@ public interface BundleSpecBuilder {
 	}
 
 	default Bundle install() throws Exception {
-		byte[] build = LaunchpadBuilder.workspace.build(LaunchpadBuilder.projectDir.getAbsolutePath(), x().spec);
-		String name = x().spec.bundleSymbolicName.toString();
+		BuilderSpecification spec = x().spec;
+		byte[] build = LaunchpadBuilder.workspace.build(LaunchpadBuilder.projectDir.getAbsolutePath(), spec);
+		String location;
+		if (spec.location == null) {
+			String name = spec.bundleSymbolicName.toString();
+			String version = spec.bundleVersion;
+			version = (version == null) ? "0" : version;
+			location = name + '-' + version;
+		} else {
+			location = spec.location;
+		}
+
 		ByteArrayInputStream bin = new ByteArrayInputStream(build);
 		return x().ws.getBundleContext()
-			.installBundle(name, bin);
+			.installBundle(location, bin);
 	}
 
 	default Bundle start() {
@@ -993,4 +1003,19 @@ public interface BundleSpecBuilder {
 		return this;
 	}
 
+	/**
+	 * Specify the install location of a bundle. This is the value that is
+	 * passed to {@link BundleContext#installBundle(String, InputStream} as the
+	 * location parameter.
+	 * <p>
+	 * If not specified, the location will default to the string
+	 * <tt>bsn-bundleVersion</tt>.
+	 * 
+	 * @param location the location string to use for this bundle.
+	 * @return The builder object for chained invocations.
+	 */
+	default BundleSpecBuilder location(String location) {
+		x().spec.location = location;
+		return this;
+	}
 }
