@@ -1,9 +1,12 @@
 package aQute.bnd.main;
 
+import java.io.File;
+
 import org.junit.Test;
 
 import aQute.bnd.main.testrules.WatchedFolder.FileStatus;
 import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Resource;
 
 public class TestBndMain extends TestBndMainBase {
 
@@ -253,6 +256,16 @@ public class TestBndMain extends TestBndMainBase {
 		expectFileStatus(FileStatus.CREATED, "p/generated/p.jar");
 		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
 		expectFileStatus(FileStatus.CREATED, "p3/generated/p3.jar");
+
+		File f = folder.getFile("p3/generated/p3.jar");
+
+		Jar jar = Jar.fromResource("test.jar", Resource.fromURL(f.toPath()
+			.toUri()
+			.toURL()));
+		expectJarEntry(jar, "somepackage/SomeClass.class");
+		expectJarEntry(jar, "somepackage/SomeRes.ext");
+
+		expectFileStatus(FileStatus.CREATED, "p3/bin/somepackage/SomeRes.ext");
 	}
 
 	@Test
@@ -264,8 +277,6 @@ public class TestBndMain extends TestBndMainBase {
 		executeBndCmd("build", "-p", "p2");
 
 		expectNoError();
-
-		expectFileStatus(FileStatus.CREATED, "p2/bin/somepackage/SomeRes.ext");
 
 		expectFileStatus(FileStatus.UNMODIFIED_NOT_EXISTS, "p/generated/p.jar");
 		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
