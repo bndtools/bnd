@@ -265,6 +265,8 @@ public class TestBndMain extends TestBndMainBase {
 
 		expectNoError();
 
+		expectFileStatus(FileStatus.CREATED, "p2/bin/somepackage/SomeRes.ext");
+
 		expectFileStatus(FileStatus.UNMODIFIED_NOT_EXISTS, "p/generated/p.jar");
 		expectFileStatus(FileStatus.CREATED, "p2/generated/p2.jar");
 		expectFileStatus(FileStatus.UNMODIFIED_NOT_EXISTS, "p3/generated/p3.jar");
