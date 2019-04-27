@@ -35,6 +35,7 @@ import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
+import aQute.bnd.osgi.Processor
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -125,6 +126,11 @@ public class Bndrun extends DefaultTask {
     runClass.createRun(workspace, bndrun).withCloseable { run ->
       def runWorkspace = run.getWorkspace()
       project.mkdir(workingDir)
+      Properties gradleProperties = new PropertiesWrapper()
+      gradleProperties.put('task', this)
+      gradleProperties.put('project', project)
+      Class processorClass = workspace ? Class.forName(Processor.class.getName(), true, workspace.getClass().getClassLoader()) : Processor.class
+      run.setParent(processorClass.newInstance([runWorkspace, gradleProperties, false] as Object[]))
       run.setBase(workingDir)
       if (run.isStandalone()) {
         runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
