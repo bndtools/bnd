@@ -4,11 +4,6 @@ import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Attrs.Type;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
-import aQute.bnd.osgi.Constants;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.version.Version;
-import aQute.bnd.version.VersionRange;
-import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.manifest.dto.ActivationPolicyDTO;
 import biz.aQute.bnd.reporter.manifest.dto.BundleSymbolicNameDTO;
 import biz.aQute.bnd.reporter.manifest.dto.ContactAddressDTO;
@@ -21,14 +16,12 @@ import biz.aQute.bnd.reporter.manifest.dto.ImportPackageDTO;
 import biz.aQute.bnd.reporter.manifest.dto.LicenseDTO;
 import biz.aQute.bnd.reporter.manifest.dto.NativeCodeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.NativeCodeEntryDTO;
-import biz.aQute.bnd.reporter.manifest.dto.OSGiHeadersDTO;
 import biz.aQute.bnd.reporter.manifest.dto.ProvideCapabilityDTO;
 import biz.aQute.bnd.reporter.manifest.dto.RequireBundleDTO;
 import biz.aQute.bnd.reporter.manifest.dto.RequireCapabilityDTO;
 import biz.aQute.bnd.reporter.manifest.dto.ScmDTO;
 import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
-import biz.aQute.bnd.reporter.manifest.dto.VersionInRangeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionRangeDTO;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -36,215 +29,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 
 /**
- * Helper to extract (localized) and convert manifest headers into DTO. The extraction process
- * computes default values when possible.
+ * Helper to convert manifest headers into DTO.
  */
-final public class HeadersHelper {
+public class HeadersHelper {
 
-  private final ManifestHelper _manifest;
-  private final Jar _jar;
-  private final Reporter _reporter;
-
-  protected HeadersHelper(final ManifestHelper manifest, final Jar jar, final Reporter reporter) {
-    _manifest = manifest;
-    _jar = jar;
-    _reporter = reporter;
-  }
-
-
-  /**
-   * Extract and convert the manifest headers from the jar in arguments into DTO. The extraction
-   * process computes default values when possible.
-   * 
-   * @param jar the jar which contains the manifest headers to extract, must not {@code null}
-   * @param locale the locale used to localize the extraction, must not be {@code null}
-   * @param reporter the reporter to report error, must not be {@code null}
-   * @return a DTO or {@code null} if the Jar does not contain a manifest
-   */
-  static public OSGiHeadersDTO extract(final Jar jar, final Locale locale,
-      final Reporter reporter) {
-    Objects.requireNonNull(jar, "jar");
-    Objects.requireNonNull(locale, "locale");
-    Objects.requireNonNull(reporter, "reporter");
-
-    final ManifestHelper manifest = ManifestHelper.createIfPresent(jar, locale);
-    if (manifest != null) {
-      final HeadersHelper helper = new HeadersHelper(manifest, jar, reporter);
-      final OSGiHeadersDTO headers = new OSGiHeadersDTO();
-
-      headers.bundleName = helper.extractBundleName();
-      headers.bundleDescription = helper.extractBundleDescription();
-      headers.bundleVersion = helper.extractBundleVersion();
-      headers.bundleCategories = helper.extractBundleCategory();
-      headers.bundleIcons = helper.extractBundleIcon();
-      headers.bundleDocURL = helper.extractBundleDocURL();
-      headers.bundleUpdateLocation = helper.extractBundleUpdateLocation();
-      headers.bundleLocalization = helper.extractBundleLocalization();
-      headers.bundleLicenses = helper.extractBundleLicense();
-      headers.bundleDevelopers = helper.extractBundleDevelopers();
-      headers.bundleSCM = helper.extractBundleSCM();
-      headers.bundleCopyright = helper.extractBundleCopyright();
-      headers.bundleVendor = helper.extractBundleVendor();
-      headers.bundleContactAddress = helper.extractBundleContactAddress();
-      headers.bundleSymbolicName = helper.extractBundleSymbolicName();
-      headers.importPackages = helper.extractImportPackage();
-      headers.dynamicImportPackages = helper.extractDynamicImportPackage();
-      headers.exportPackages = helper.extractExportPackage();
-      headers.provideCapabilities = helper.extractProvideCapability();
-      headers.requireCapabilities = helper.extractRequireCapability();
-      headers.requireBundles = helper.extractRequireBundle();
-      headers.bundleRequiredExecutionEnvironments =
-          helper.extractBundleRequiredExecutionEnvironment();
-      headers.bundleActivationPolicy = helper.extractBundleActivationPolicy();
-      headers.fragmentHost = helper.extractFragmentHost();
-      headers.bundleActivator = helper.extractBundleActivator();
-      headers.bundleClassPaths = helper.extractBundleClassPath();
-      headers.bundleNativeCode = helper.extractBundleNativeCode();
-      headers.bundleManifestVersion = helper.extractBundleManifestVersion();
-
-      return headers;
-    } else {
-      return null;
-    }
-  }
-
-  private VersionRangeDTO toOsgiRange(final String value) {
-    if (value != null && VersionRange.isOSGiVersionRange(value)) {
-      return toRange(VersionRange.parseOSGiVersionRange(value));
-    } else {
-      return null;
-    }
-  }
-
-  private VersionRangeDTO toRange(final VersionRange range) {
-    final VersionRangeDTO result = new VersionRangeDTO();
-
-    result.floor = new VersionInRangeDTO();
-    result.floor.include = range.includeLow();
-    result.floor.major = range.getLow().getMajor();
-    result.floor.minor = Integer.valueOf(range.getLow().getMinor());
-    result.floor.micro = Integer.valueOf(range.getLow().getMicro());
-    if (range.getLow().getQualifier() != null && !range.getLow().getQualifier().isEmpty()) {
-      result.floor.qualifier = range.getLow().getQualifier();
-    }
-
-    if (!range.isSingleVersion()) {
-      result.ceiling = new VersionInRangeDTO();
-      result.ceiling.include = range.includeHigh();
-      result.ceiling.major = range.getHigh().getMajor();
-      result.ceiling.minor = Integer.valueOf(range.getHigh().getMinor());
-      result.ceiling.micro = Integer.valueOf(range.getHigh().getMicro());
-      if (range.getHigh().getQualifier() != null && !range.getHigh().getQualifier().isEmpty()) {
-        result.ceiling.qualifier = range.getHigh().getQualifier();
-      }
-    }
-
-    return result;
-  }
-
-  private VersionDTO toVersion(final String value) {
-    if (value != null && Version.isVersion(value)) {
-      final Version version = Version.parseVersion(value);
-      final VersionDTO result = new VersionDTO();
-
-      result.major = version.getMajor();
-      result.minor = Integer.valueOf(version.getMinor());
-      result.micro = Integer.valueOf(version.getMicro());
-      if (version.getQualifier() != null && !version.getQualifier().isEmpty()) {
-        result.qualifier = version.getQualifier();
-      }
-
-      return result;
-    } else {
-      return null;
-    }
-  }
-
-  private VersionRangeDTO getDefaultRange() {
-    final VersionRangeDTO range = new VersionRangeDTO();
-
-    range.floor = new VersionInRangeDTO();
-    range.floor.major = 0;
-    range.floor.minor = Integer.valueOf(0);
-    range.floor.micro = Integer.valueOf(0);
-    range.floor.include = true;
-
-    return range;
-  }
-
-  private VersionDTO getDefaultVersion() {
-    final VersionDTO version = new VersionDTO();
-
-    version.major = 0;
-    version.minor = Integer.valueOf(0);
-    version.micro = Integer.valueOf(0);
-
-    return version;
-  }
-
-  private String removeSpecial(final String key) {
-    String result = key;
-    if (key != null) {
-      while (!result.isEmpty() && !Character.isLetterOrDigit(result.charAt(0))) {
-        result = result.substring(1, result.length());
-      }
-    }
-    return result;
-  }
-
-  private String cleanKey(final String key) {
-    String result = key;
-    if (key != null) {
-      while (result.endsWith("~")) {
-        result = result.substring(0, result.length() - 1);
-      }
-    }
-    return result;
-  }
-
-  private List<String> cleanKey(final Set<String> keys) {
-    final List<String> result = new LinkedList<>();
-    if (keys != null) {
-      for (final String key : keys) {
-        result.add(cleanKey(key));
-      }
-    }
-    return result;
-  }
-
-  @SuppressWarnings("unused")
-  private boolean isUrl(final String value) {
-    try {
-      new URL(value);
-      return true;
-    } catch (final MalformedURLException e) {
-      return false;
-    }
-  }
-
-  private boolean isEmail(final String value) {
-    if (!value.contains(" ") && value.matches(".+@.+")) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-
-  /*
-   * The following methods are protected to be used in unit tests. For method to be tested name it
-   * extract<the header name without "-">.
-   */
-
-  protected String extractBundleActivator() {
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_ACTIVATOR, false);
+  static public String convertBundleActivator(final Parameters header) {
     if (!header.isEmpty()) {
       return cleanKey(header.keySet().iterator().next());
     } else {
@@ -252,9 +46,9 @@ final public class HeadersHelper {
     }
   }
 
-  protected List<String> extractBundleCategory() {
+  static public List<String> convertBundleCategories(final Parameters header) {
     final List<String> categories = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_CATEGORY, false);
+
     for (final String category : cleanKey(header.keySet())) {
       categories.add(category);
     }
@@ -262,9 +56,9 @@ final public class HeadersHelper {
     return !categories.isEmpty() ? categories : null;
   }
 
-  protected List<String> extractBundleClassPath() {
+  static public List<String> convertBundleClassPaths(final Parameters header) {
     final List<String> classpaths = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_CLASSPATH, false);
+
     for (final String classpath : cleanKey(header.keySet())) {
       classpaths.add(classpath);
     }
@@ -276,8 +70,8 @@ final public class HeadersHelper {
     return classpaths;
   }
 
-  protected ContactAddressDTO extractBundleContactAddress() {
-    final String contact = _manifest.getHeaderAsString(Constants.BUNDLE_CONTACTADDRESS);
+  static public ContactAddressDTO convertBundleContactAddress(final Parameters header) {
+    final String contact = header.toString();
     if (!contact.isEmpty()) {
       final ContactAddressDTO adress = new ContactAddressDTO();
       adress.address = contact;
@@ -294,21 +88,21 @@ final public class HeadersHelper {
     }
   }
 
-  protected String extractBundleCopyright() {
-    final String copyright = _manifest.getHeaderAsString(Constants.BUNDLE_COPYRIGHT);
+  static public String convertBundleCopyright(final Parameters header) {
+    final String copyright = header.toString();
 
     return !copyright.isEmpty() ? copyright : null;
   }
 
-  protected String extractBundleDescription() {
-    final String description = _manifest.getHeaderAsString(Constants.BUNDLE_DESCRIPTION);
+  static public String convertBundleDescription(final Parameters header) {
+    final String description = header.toString();
 
     return !description.isEmpty() ? description : null;
   }
 
-  protected List<DeveloperDTO> extractBundleDevelopers() {
+  static public List<DeveloperDTO> convertBundleDevelopers(final Parameters header) {
     final List<DeveloperDTO> developers = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_DEVELOPERS, false);
+
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final DeveloperDTO developer = new DeveloperDTO();
 
@@ -345,15 +139,16 @@ final public class HeadersHelper {
     return !developers.isEmpty() ? developers : null;
   }
 
-  protected String extractBundleDocURL() {
-    final String docUrl = _manifest.getHeaderAsString(Constants.BUNDLE_DOCURL);
+  static public String convertBundleDocURL(final Parameters header) {
+    final String docUrl = header.toString();
 
     return !docUrl.isEmpty() ? docUrl : null;
   }
 
-  protected List<DynamicImportPackageDTO> extractDynamicImportPackage() {
+  static public List<DynamicImportPackageDTO> convertDynamicImportPackages(
+      final Parameters header) {
     final List<DynamicImportPackageDTO> imports = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.DYNAMICIMPORT_PACKAGE, false);
+
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final DynamicImportPackageDTO myImport = new DynamicImportPackageDTO();
 
@@ -363,14 +158,14 @@ final public class HeadersHelper {
         myImport.bundleSymbolicName = entry.getValue().get("bundle-symbolic-name");
       }
 
-      myImport.version = toOsgiRange(entry.getValue().get("version", ""));
+      myImport.version = VersionHelper.toRange(entry.getValue().get("version", ""));
       if (myImport.version == null) {
-        myImport.version = getDefaultRange();
+        myImport.version = VersionHelper.createDefaultRange();
       }
 
-      myImport.bundleVersion = toOsgiRange(entry.getValue().get("bundle-version", ""));
+      myImport.bundleVersion = VersionHelper.toRange(entry.getValue().get("bundle-version", ""));
       if (myImport.bundleVersion == null) {
-        myImport.bundleVersion = getDefaultRange();
+        myImport.bundleVersion = VersionHelper.createDefaultRange();
       }
 
       final Attrs attribute = new Attrs(entry.getValue());
@@ -389,17 +184,17 @@ final public class HeadersHelper {
     return !imports.isEmpty() ? imports : null;
   }
 
-  protected List<ExportPackageDTO> extractExportPackage() {
+  static public List<ExportPackageDTO> convertExportPackages(final Parameters header) {
     final List<ExportPackageDTO> exports = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.EXPORT_PACKAGE, false);
+
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final ExportPackageDTO myExport = new ExportPackageDTO();
 
       myExport.packageName = cleanKey(entry.getKey());
 
-      myExport.version = toVersion(entry.getValue().get("version", ""));
+      myExport.version = VersionHelper.toVersion(entry.getValue().get("version", ""));
       if (myExport.version == null) {
-        myExport.version = getDefaultVersion();
+        myExport.version = VersionHelper.createDefaultVersion();
       }
 
       if (entry.getValue().containsKey("exclude:")) {
@@ -444,8 +239,7 @@ final public class HeadersHelper {
     return !exports.isEmpty() ? exports : null;
   }
 
-  protected FragmentHostDTO extractFragmentHost() {
-    final Parameters header = _manifest.getHeader(Constants.FRAGMENT_HOST, false);
+  static public FragmentHostDTO convertFragmentHost(final Parameters header) {
     if (!header.isEmpty()) {
       final Attrs attibutes = header.values().iterator().next();
       final FragmentHostDTO frag = new FragmentHostDTO();
@@ -458,9 +252,9 @@ final public class HeadersHelper {
         frag.extension = "framework";
       }
 
-      frag.bundleVersion = toOsgiRange(attibutes.get("bundle-version", ""));
+      frag.bundleVersion = VersionHelper.toRange(attibutes.get("bundle-version", ""));
       if (frag.bundleVersion == null) {
-        frag.bundleVersion = getDefaultRange();
+        frag.bundleVersion = VersionHelper.createDefaultRange();
       }
 
       attibutes.remove("bundle-version");
@@ -478,9 +272,9 @@ final public class HeadersHelper {
     }
   }
 
-  protected List<IconDTO> extractBundleIcon() {
+  static public List<IconDTO> convertBundleIcons(final Parameters header) {
     final List<IconDTO> icons = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_ICON, false);
+
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final IconDTO icon = new IconDTO();
 
@@ -495,9 +289,9 @@ final public class HeadersHelper {
     return !icons.isEmpty() ? icons : null;
   }
 
-  protected List<ImportPackageDTO> extractImportPackage() {
+  static public List<ImportPackageDTO> convertImportPackages(final Parameters header) {
     final List<ImportPackageDTO> imports = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.IMPORT_PACKAGE, false);
+
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final ImportPackageDTO myImport = new ImportPackageDTO();
 
@@ -513,14 +307,14 @@ final public class HeadersHelper {
         myImport.bundleSymbolicName = entry.getValue().get("bundle-symbolic-name");
       }
 
-      myImport.version = toOsgiRange(entry.getValue().get("version", ""));
+      myImport.version = VersionHelper.toRange(entry.getValue().get("version", ""));
       if (myImport.version == null) {
-        myImport.version = getDefaultRange();
+        myImport.version = VersionHelper.createDefaultRange();
       }
 
-      myImport.bundleVersion = toOsgiRange(entry.getValue().get("bundle-version", ""));
+      myImport.bundleVersion = VersionHelper.toRange(entry.getValue().get("bundle-version", ""));
       if (myImport.bundleVersion == null) {
-        myImport.bundleVersion = getDefaultRange();
+        myImport.bundleVersion = VersionHelper.createDefaultRange();
       }
 
       final Attrs attribute = new Attrs(entry.getValue());
@@ -540,8 +334,8 @@ final public class HeadersHelper {
     return !imports.isEmpty() ? imports : null;
   }
 
-  protected ActivationPolicyDTO extractBundleActivationPolicy() {
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_ACTIVATIONPOLICY, false);
+  static public ActivationPolicyDTO convertBundleActivationPolicy(final Parameters header,
+      final List<String> defaultPackages) {
     if (!header.isEmpty()) {
       final Attrs attributes = header.values().iterator().next();
       final ActivationPolicyDTO act = new ActivationPolicyDTO();
@@ -559,9 +353,7 @@ final public class HeadersHelper {
           act.includes.add(a.trim());
         }
       } else {
-        for (final String a : _jar.getPackages()) {
-          act.includes.add(a);
-        }
+        act.includes.addAll(defaultPackages);
       }
       return act;
     } else {
@@ -569,9 +361,9 @@ final public class HeadersHelper {
     }
   }
 
-  protected List<LicenseDTO> extractBundleLicense() {
+  static public List<LicenseDTO> convertBundleLicenses(final Parameters header) {
     final List<LicenseDTO> licences = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_LICENSE, false);
+
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final LicenseDTO licence = new LicenseDTO();
 
@@ -590,8 +382,7 @@ final public class HeadersHelper {
     return !licences.isEmpty() ? licences : null;
   }
 
-  protected Integer extractBundleManifestVersion() {
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_MANIFESTVERSION, false);
+  static public Integer convertBundleManifestVersion(final Parameters header) {
     if (!header.isEmpty()) {
       return Integer.valueOf(cleanKey(header.keySet().iterator().next()));
     } else {
@@ -599,14 +390,13 @@ final public class HeadersHelper {
     }
   }
 
-  protected String extractBundleName() {
-    final String name = _manifest.getHeaderAsString(Constants.BUNDLE_NAME);
+  static public String convertBundleName(final Parameters header) {
+    final String name = header.toString();
 
     return !name.isEmpty() ? name : null;
   }
 
-  protected NativeCodeDTO extractBundleNativeCode() {
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_NATIVECODE, true);
+  static public NativeCodeDTO convertBundleNativeCode(final Parameters header) {
     if (!header.isEmpty()) {
       final Map<Attrs, NativeCodeEntryDTO> storedAttr = new HashMap<>();
       final NativeCodeDTO nativeCode = new NativeCodeDTO();
@@ -646,7 +436,7 @@ final public class HeadersHelper {
 
             key = "osversion";
             while (entry.getValue().get(key) != null) {
-              final VersionRangeDTO r = toOsgiRange(entry.getValue().get(key, ""));
+              final VersionRangeDTO r = VersionHelper.toRange(entry.getValue().get(key, ""));
               if (r != null) {
                 nEntry.osversions.add(r);
               }
@@ -664,9 +454,9 @@ final public class HeadersHelper {
     }
   }
 
-  protected List<ProvideCapabilityDTO> extractProvideCapability() {
+  static public List<ProvideCapabilityDTO> convertProvideCapabilities(final Parameters header) {
     final List<ProvideCapabilityDTO> capas = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.PROVIDE_CAPABILITY, false);
+
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final ProvideCapabilityDTO capa = new ProvideCapabilityDTO();
 
@@ -745,9 +535,9 @@ final public class HeadersHelper {
     return !capas.isEmpty() ? capas : null;
   }
 
-  protected List<RequireBundleDTO> extractRequireBundle() {
+  static public List<RequireBundleDTO> convertRequireBundles(final Parameters header) {
     final List<RequireBundleDTO> reqs = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.REQUIRE_BUNDLE, false);
+
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final RequireBundleDTO req = new RequireBundleDTO();
 
@@ -761,9 +551,9 @@ final public class HeadersHelper {
         req.visibility = entry.getValue().get("visibility:");
       }
 
-      req.bundleVersion = toOsgiRange(entry.getValue().get("bundle-version", ""));
+      req.bundleVersion = VersionHelper.toRange(entry.getValue().get("bundle-version", ""));
       if (req.bundleVersion == null) {
-        req.bundleVersion = getDefaultRange();
+        req.bundleVersion = VersionHelper.createDefaultRange();
       }
 
       final Attrs attribute = new Attrs(entry.getValue());
@@ -782,9 +572,9 @@ final public class HeadersHelper {
     return !reqs.isEmpty() ? reqs : null;
   }
 
-  protected List<RequireCapabilityDTO> extractRequireCapability() {
+  static public List<RequireCapabilityDTO> convertRequireCapabilities(final Parameters header) {
     final List<RequireCapabilityDTO> capas = new LinkedList<>();
-    final Parameters header = _manifest.getHeader(Constants.REQUIRE_CAPABILITY, false);
+
     for (final Entry<String, Attrs> entry : header.entrySet()) {
       final RequireCapabilityDTO capa = new RequireCapabilityDTO();
 
@@ -859,10 +649,9 @@ final public class HeadersHelper {
     return !capas.isEmpty() ? capas : null;
   }
 
-  protected List<String> extractBundleRequiredExecutionEnvironment() {
+  static public List<String> convertBundleRequiredExecutionEnvironments(final Parameters header) {
     final List<String> execs = new LinkedList<>();
-    final Parameters header =
-        _manifest.getHeader(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT, true);
+
     for (final String e : cleanKey(header.keySet())) {
       execs.add(e);
     }
@@ -870,8 +659,7 @@ final public class HeadersHelper {
     return !execs.isEmpty() ? execs : null;
   }
 
-  protected ScmDTO extractBundleSCM() {
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_SCM, false);
+  static public ScmDTO convertBundleSCM(final Parameters header) {
     final String scm = header.toString();
     if (scm.length() > 0) {
       final ScmDTO scmDto = new ScmDTO();
@@ -894,8 +682,7 @@ final public class HeadersHelper {
     }
   }
 
-  protected BundleSymbolicNameDTO extractBundleSymbolicName() {
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_SYMBOLICNAME, false);
+  static public BundleSymbolicNameDTO convertBundleSymbolicName(final Parameters header) {
     if (!header.isEmpty()) {
       final Attrs attributes = header.values().iterator().next();
       final BundleSymbolicNameDTO bsn = new BundleSymbolicNameDTO();
@@ -927,42 +714,87 @@ final public class HeadersHelper {
       }
       return bsn;
     } else {
-      final BundleSymbolicNameDTO bsn = new BundleSymbolicNameDTO();
-      bsn.symbolicName = "!! MISSING !!";
-      _reporter.warning("the bundle does not declare a symbolic name");
-      return bsn;
+      return null;
     }
   }
 
-  protected String extractBundleVendor() {
-    final String vendor = _manifest.getHeaderAsString(Constants.BUNDLE_VENDOR);
+  static public String convertBundleVendor(final Parameters header) {
+    final String vendor = header.toString();
 
     return !vendor.isEmpty() ? vendor : null;
   }
 
-  protected String extractBundleUpdateLocation() {
-    final String updateLocation = _manifest.getHeaderAsString(Constants.BUNDLE_UPDATELOCATION);
+  static public String convertBundleUpdateLocation(final Parameters header) {
+    final String updateLocation = header.toString();
 
     return !updateLocation.isEmpty() ? updateLocation : null;
   }
 
-  protected String extractBundleLocalization() {
-    final String localization = _manifest.getHeaderAsString(Constants.BUNDLE_LOCALIZATION);
+  static public String convertBundleLocalization(final Parameters header) {
+    final String localization = header.toString();
 
     return !localization.isEmpty() ? localization : "OSGI-INF/l10n/bundle";
   }
 
-  protected VersionDTO extractBundleVersion() {
-    final Parameters header = _manifest.getHeader(Constants.BUNDLE_VERSION, false);
+  static public VersionDTO convertBundleVersion(final Parameters header) {
     if (!header.isEmpty()) {
-      final VersionDTO version = toVersion(cleanKey(header.keySet().iterator().next()));
+      final VersionDTO version =
+          VersionHelper.toVersion(cleanKey(header.keySet().iterator().next()));
       if (version == null) {
-        return getDefaultVersion();
+        return VersionHelper.createDefaultVersion();
       } else {
         return version;
       }
     } else {
-      return getDefaultVersion();
+      return VersionHelper.createDefaultVersion();
     }
+  }
+
+  static private String removeSpecial(final String key) {
+    String result = key;
+    if (key != null) {
+      while (!result.isEmpty() && !Character.isLetterOrDigit(result.charAt(0))) {
+        result = result.substring(1, result.length());
+      }
+    }
+    return result;
+  }
+
+  @SuppressWarnings("unused")
+  static private boolean isUrl(final String value) {
+    try {
+      new URL(value);
+      return true;
+    } catch (final MalformedURLException e) {
+      return false;
+    }
+  }
+
+  static private boolean isEmail(final String value) {
+    if (!value.contains(" ") && value.matches(".+@.+")) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  static private String cleanKey(final String key) {
+    String result = key;
+    if (key != null) {
+      while (result.endsWith("~")) {
+        result = result.substring(0, result.length() - 1);
+      }
+    }
+    return result;
+  }
+
+  static private List<String> cleanKey(final Set<String> keys) {
+    final List<String> result = new LinkedList<>();
+    if (keys != null) {
+      for (final String key : keys) {
+        result.add(cleanKey(key));
+      }
+    }
+    return result;
   }
 }
