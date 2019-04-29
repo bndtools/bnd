@@ -9,9 +9,9 @@ The purpose of the `-reportconfig` instruction is to configure the content of th
 
 When a report is generated, a set of plugins is used to extract a specific piece of data from the source (for example, the information contain in metatypes from a bundle source). Those plugins are generally designed to not require a configuration and are silently ignored if they do not find any data, thus, this instruction should rarely be used.
 
-Additional plugins can be declared and configured with the [-plugin.*](./plugin.md) instruction and will be available for all your reports, however the `-reportconfig` instruction gives more control on the  plugins that should be used when generating a specific report. This instruction diverges from the `-plugins.*` instruction as you can declare named configuration, for example `-reportconfig.api-bundle:...` will have the name `api-bundle` that you can then use for a specific report `-exportreport:file.json;configName=api-bundle`. In addition, this instruction allows to declare plugins with a short name instead of the canonical name of the plugin class (`importFile` instead of `biz.aQute.bnd.reporter.plugins.entries.any.ImportResourcePlugin`).
+Additional plugins can be declared and configured with the [-plugin.*](./plugin.html) instruction and will be available for all your reports, however the `-reportconfig` instruction gives more control on the  plugins that should be used when generating a specific report. This instruction diverges from the `-plugins.*` instruction as you can declare named configuration, for example `-reportconfig.api-bundle:...` will have the name `api-bundle` that you can then use for a specific report `-exportreport:file.json;configName=api-bundle`. In addition, this instruction allows to declare plugins with a short name instead of the canonical name of the plugin class (`importFile` instead of `biz.aQute.bnd.reporter.plugins.entries.any.ImportResourcePlugin`).
 
-*See [-exportreport](./exportreport.md) instruction documentation.*
+*See [-exportreport](./exportreport.html) instruction documentation.*
 
 ## Syntax
 
@@ -123,7 +123,7 @@ Add the file name or the folder name in which the source is backed up.
 * Short name: `fileName`
 * Default Plugin: yes
 
-### Nundles
+### Bundles
 
 Add a list of bundle data (for example, the bundles built by a project).
 

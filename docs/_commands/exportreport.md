@@ -8,9 +8,9 @@ summary: Generate and export reports of a workspace, a project or of a Jar.
 
 {{page.summary}}
 
-Reports must first be configured in the project or the workspace with the [-exportreport](../instructions/exportreport.md) intruction and optionaly with the [-reportconfig](../instructions/reportconfig.md) intruction. For an "external" Jar the reports can be configured directly with the command line (replacing the `-exportreport` instruction), however if you need to fine tune the report the `-reportconfig` has to be in a properties file. 
+Reports must first be configured in the project or the workspace with the [-exportreport](../instructions/exportreport.html) intruction and optionaly with the [-reportconfig](../instructions/reportconfig.html) intruction. For an "external" Jar the reports can be configured directly with the command line (replacing the `-exportreport` instruction), however if you need to fine tune the report the `-reportconfig` has to be in a properties file. 
 
-For a general introduction of the feature you can look at the [-exportreport](../instructions/exportreport.md) instruction documentation.
+For a general introduction of the feature you can look at the [-exportreport](../instructions/exportreport.html) instruction documentation.
 
 ## Synopsis
 
