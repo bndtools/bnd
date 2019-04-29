@@ -1005,8 +1005,8 @@ public interface BundleSpecBuilder {
 
 	/**
 	 * Specify the install location of a bundle. This is the value that is
-	 * passed to {@link BundleContext#installBundle(String, InputStream} as the
-	 * location parameter.
+	 * passed to {@Link BundleContext#installBundle(String,
+	 * java.io.InputStream)} as the location parameter.
 	 * <p>
 	 * If not specified, the location will default to the string
 	 * <tt>bsn-bundleVersion</tt>.
