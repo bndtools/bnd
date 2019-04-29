@@ -1,18 +1,9 @@
 package biz.aQute.bnd.reporter.helpers;
 
-import java.io.File;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.jar.Manifest;
-
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
 import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.lib.json.JSONCodec;
 import biz.aQute.bnd.reporter.manifest.dto.ActivationPolicyDTO;
@@ -35,10 +26,52 @@ import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionInRangeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionRangeDTO;
+import java.io.File;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.jar.Manifest;
 import junit.framework.TestCase;
 
 @SuppressWarnings("boxing")
 public class HeadersHelperTest extends TestCase {
+
+  static Map<String, Function<Parameters, Object>> headerToFunc = new HashMap<>();
+
+  static {
+    headerToFunc.put(Constants.BUNDLE_NAME, HeadersHelper::convertBundleName);
+    headerToFunc.put(Constants.BUNDLE_DESCRIPTION, HeadersHelper::convertBundleDescription);
+    headerToFunc.put(Constants.BUNDLE_VERSION, HeadersHelper::convertBundleVersion);
+    headerToFunc.put(Constants.BUNDLE_CATEGORY, HeadersHelper::convertBundleCategories);
+    headerToFunc.put(Constants.BUNDLE_ICON, HeadersHelper::convertBundleIcons);
+    headerToFunc.put(Constants.BUNDLE_DOCURL, HeadersHelper::convertBundleDocURL);
+    headerToFunc.put(Constants.BUNDLE_UPDATELOCATION, HeadersHelper::convertBundleUpdateLocation);
+    headerToFunc.put(Constants.BUNDLE_LOCALIZATION, HeadersHelper::convertBundleLocalization);
+    headerToFunc.put(Constants.BUNDLE_LICENSE, HeadersHelper::convertBundleLicenses);
+    headerToFunc.put(Constants.BUNDLE_DEVELOPERS, HeadersHelper::convertBundleDevelopers);
+    headerToFunc.put(Constants.BUNDLE_SCM, HeadersHelper::convertBundleSCM);
+    headerToFunc.put(Constants.BUNDLE_COPYRIGHT, HeadersHelper::convertBundleCopyright);
+    headerToFunc.put(Constants.BUNDLE_VENDOR, HeadersHelper::convertBundleVendor);
+    headerToFunc.put(Constants.BUNDLE_CONTACTADDRESS, HeadersHelper::convertBundleContactAddress);
+    headerToFunc.put(Constants.BUNDLE_SYMBOLICNAME, HeadersHelper::convertBundleSymbolicName);
+    headerToFunc.put(Constants.IMPORT_PACKAGE, HeadersHelper::convertImportPackages);
+    headerToFunc.put(Constants.DYNAMICIMPORT_PACKAGE, HeadersHelper::convertDynamicImportPackages);
+    headerToFunc.put(Constants.EXPORT_PACKAGE, HeadersHelper::convertExportPackages);
+    headerToFunc.put(Constants.PROVIDE_CAPABILITY, HeadersHelper::convertProvideCapabilities);
+    headerToFunc.put(Constants.REQUIRE_CAPABILITY, HeadersHelper::convertRequireCapabilities);
+    headerToFunc.put(Constants.REQUIRE_BUNDLE, HeadersHelper::convertRequireBundles);
+    headerToFunc.put(Constants.BUNDLE_REQUIREDEXECUTIONENVIRONMENT,
+        HeadersHelper::convertBundleRequiredExecutionEnvironments);
+    headerToFunc.put(Constants.FRAGMENT_HOST, HeadersHelper::convertFragmentHost);
+    headerToFunc.put(Constants.BUNDLE_ACTIVATOR, HeadersHelper::convertBundleActivator);
+    headerToFunc.put(Constants.BUNDLE_CLASSPATH, HeadersHelper::convertBundleClassPaths);
+    headerToFunc.put(Constants.BUNDLE_NATIVECODE, HeadersHelper::convertBundleNativeCode);
+    headerToFunc.put(Constants.BUNDLE_MANIFESTVERSION, HeadersHelper::convertBundleManifestVersion);
+  }
 
   public void testBundleActivator() throws Exception {
     String expected = null;
@@ -246,7 +279,7 @@ public class HeadersHelperTest extends TestCase {
         expected);
   }
 
-	public void testExportPackages() throws Exception {
+  public void testExportPackages() throws Exception {
     ExportPackageDTO e;
     List<ExportPackageDTO> expected = null;
     perform(Constants.EXPORT_PACKAGE, "", expected);
@@ -829,8 +862,8 @@ public class HeadersHelperTest extends TestCase {
 
   public void testBundleSymbolicName() throws Exception {
     BundleSymbolicNameDTO expected = new BundleSymbolicNameDTO();
-    expected.symbolicName = "!! MISSING !!";
-    perform(Constants.BUNDLE_SYMBOLICNAME, "", expected);
+
+    perform(Constants.BUNDLE_SYMBOLICNAME, "", null);
 
     expected = new BundleSymbolicNameDTO();
     expected.symbolicName = "com.symbolic.name";
@@ -906,15 +939,6 @@ public class HeadersHelperTest extends TestCase {
     perform(Constants.BUNDLE_VERSION, "1.2-SNAPSHOT", expected);
   }
 
-  public void testExtract() {
-    final Jar jar = new Jar("jar");
-    final Manifest manifest = new Manifest();
-    jar.setManifest(manifest);
-    final Processor p = new Processor();
-    assertNotNull(HeadersHelper.extract(jar, Locale.forLanguageTag("und"), p));
-    assertTrue(p.isOk());
-  }
-
   public void perform(final String headerName, final String header, final Object expected)
       throws Exception {
     final Jar jar = new Jar("jar");
@@ -924,12 +948,20 @@ public class HeadersHelperTest extends TestCase {
     final Manifest manifest = new Manifest();
     jar.setManifest(manifest);
     manifest.getMainAttributes().putValue(headerName, header);
-    final Processor p = new Processor();
-    final HeadersHelper extractor = new HeadersHelper(
-        ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("und")), jar, p);
-    final Object actual = extractor.getClass()
-        .getDeclaredMethod("extract" + headerName.replaceAll("-", "")).invoke(extractor);
-    assertTrue(p.isOk());
+    final ManifestHelper manifestHelper =
+        ManifestHelper.createIfPresent(jar, Locale.forLanguageTag("und"));
+    Function<Parameters, Object> f = headerToFunc.get(headerName);
+    if (f == null) {
+      f = pa -> HeadersHelper.convertBundleActivationPolicy(pa, jar.getPackages());
+    }
+
+    Object actual = null;
+    if (Constants.BUNDLE_NATIVECODE.equals(headerName)) {
+      actual = f.apply(manifestHelper.getHeader(headerName, true));
+    } else {
+      actual = f.apply(manifestHelper.getHeader(headerName, false));
+    }
+
     final JSONCodec c = new JSONCodec();
     final StringWriter es = new StringWriter();
     final StringWriter as = new StringWriter();

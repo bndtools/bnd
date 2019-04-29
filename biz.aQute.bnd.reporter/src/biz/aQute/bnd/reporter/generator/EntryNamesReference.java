@@ -54,6 +54,11 @@ public interface EntryNamesReference {
   static final String PROJECTS = "projects";
 
   /**
+   * The common info of a multi-module project (eg; a workspace).
+   */
+  static final String COMMON_INFO = "commonInfo";
+
+  /**
    * The version, the artifactId and the groupId of the analyzed object.
    */
   static final String MAVEN_COORDINATE = "mavenCoordinate";

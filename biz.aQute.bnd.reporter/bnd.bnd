@@ -27,7 +27,8 @@ Export-Package: \
 	org.osgi.dto,\
 	biz.aQute.bnd.reporter.service.resource.converter,\
 	biz.aQute.bnd.reporter.exporter,\
-	biz.aQute.bnd.reporter.generator
+	biz.aQute.bnd.reporter.generator,\
+	biz.aQute.bnd.reporter.manifest.dto
 
 Import-Package: \
     sun.*; resolution:=optional,\

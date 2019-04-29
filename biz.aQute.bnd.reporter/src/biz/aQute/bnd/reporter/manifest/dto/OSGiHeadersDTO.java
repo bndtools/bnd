@@ -18,7 +18,6 @@ public class OSGiHeadersDTO extends DTO {
   public String bundleCopyright;
   public String bundleVendor;
   public ContactAddressDTO bundleContactAddress;
-
   public BundleSymbolicNameDTO bundleSymbolicName;
   public List<ImportPackageDTO> importPackages;
   public List<DynamicImportPackageDTO> dynamicImportPackages;

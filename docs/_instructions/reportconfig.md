@@ -92,6 +92,12 @@ This plugin allows to add a file contains in a bundle to the report. The type of
 ```
 -reportconfig.bundle:
 ```
+### CommonInfo
+
+Add some multi-module common data to the report. If data are extracted from the workspace, the following properties will be read in the build.bnd file: `ws-name`, `ws-description`, `ws-version`, `ws-icons`, `ws-docURL`, `ws-updateLocation`, `ws-licenses`, `ws-developers`, `ws-scm`, `ws-copyright`, `ws-vendor`, `ws-contactAddress`; otherwise, the corresponding headers will be read.
+
+* Short name: `commonInfo`
+* Default Plugin: yes
 
 ### Manifest
 

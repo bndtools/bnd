@@ -1,11 +1,5 @@
 package biz.aQute.bnd.reporter.generator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -15,12 +9,18 @@ import biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.any.ImportResourcePlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndproject.BndProjectContentsPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.BndWorkspaceContentsPlugin;
+import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.CommonInfoPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ComponentsPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ImportJarResourcePlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.MavenCoordinatePlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.MetatypesPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.processor.FileNamePlugin;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Build the {@link ReportGeneratorService}.
@@ -142,6 +142,7 @@ public class ReportGeneratorBuilder {
 
     addPlugin(EntryNamesReference.FILE_NAME);
     addPlugin(EntryNamesReference.PROJECTS);
+    addPlugin(EntryNamesReference.COMMON_INFO);
 
     return this;
   }
@@ -190,6 +191,7 @@ public class ReportGeneratorBuilder {
     registerPlugin(ImportJarResourcePlugin.class.getCanonicalName());
     registerPlugin(ManifestPlugin.class.getCanonicalName());
     registerPlugin(MetatypesPlugin.class.getCanonicalName());
+    registerPlugin(CommonInfoPlugin.class.getCanonicalName());
   }
 
   private Processor configureProcessor(final Processor processor) {
@@ -197,7 +199,7 @@ public class ReportGeneratorBuilder {
       if (!_plugins.isEmpty()) {
         final Processor configuredProcessor = new Processor(processor);
 
-				configuredProcessor.setProperty("-plugin.AutoDefaultReportConfig",
+        configuredProcessor.setProperty("-plugin.AutoDefaultReportConfig",
             generateDefaultPlugins().toString());
         configuredProcessor.getPlugins();
         processor.getInfo(configuredProcessor);
@@ -209,8 +211,9 @@ public class ReportGeneratorBuilder {
     } else {
       final Processor configuredProcessor = new Processor(processor);
 
-			configuredProcessor.setProperty("-plugin.AutoReportConfig", readPluginsConfig(processor).toString());
-			configuredProcessor.setProperty("-plugin.AutoDefaultReportConfig",
+      configuredProcessor.setProperty("-plugin.AutoReportConfig",
+          readPluginsConfig(processor).toString());
+      configuredProcessor.setProperty("-plugin.AutoDefaultReportConfig",
           generateDefaultPlugins().toString());
       configuredProcessor.getPlugins();
       processor.getInfo(configuredProcessor);
