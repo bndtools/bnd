@@ -174,11 +174,11 @@ public class BndrunContainer {
 		try (Bndrun run = Bndrun.createBndrun(null, runFile)) {
 			run.setBase(temporaryDir);
 			Workspace workspace = run.getWorkspace();
-			workspace.setParent(getProcessor());
 			workspace.setBuildDir(cnf);
 			workspace.setOffline(session.getSettings()
 				.isOffline());
 			workspace.addBasicPlugin(getFileSetRepository());
+			run.setParent(getProcessor(workspace));
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
 			}
@@ -215,7 +215,7 @@ public class BndrunContainer {
 		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
 	}
 
-	private Processor getProcessor() {
+	private Processor getProcessor(Workspace workspace) {
 		if (processor != null) {
 			return processor;
 		}
@@ -225,7 +225,7 @@ public class BndrunContainer {
 		beanProperties.put("settings", session.getSettings());
 		Properties mavenProperties = new Properties(beanProperties);
 		mavenProperties.putAll(project.getProperties());
-		return processor = new Processor(mavenProperties, false);
+		return processor = new Processor(workspace, mavenProperties, false);
 	}
 
 	@SuppressWarnings("deprecation")
