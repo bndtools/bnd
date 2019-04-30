@@ -21,6 +21,10 @@ dependencies {
     bundles 'org.apache.felix:org.apache.felix.eventadmin:1.4.6'
 }
 
+ext {
+	osgiIdentity = 'org.apache.felix.eventadmin'
+}
+
 task export(type: Export) {
    description "Export ${name}.bndrun"
    group 'export'

@@ -47,6 +47,7 @@ import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Run
 import aQute.bnd.build.Workspace
+import aQute.bnd.osgi.Processor
 import aQute.lib.io.IO
 
 import org.gradle.api.DefaultTask
@@ -189,6 +190,11 @@ public class Export extends DefaultTask {
     Class runClass = workspace ? Class.forName(Run.class.getName(), true, workspace.getClass().getClassLoader()) : Run.class
     runClass.createRun(workspace, bndrun).withCloseable { run ->
       def runWorkspace = run.getWorkspace()
+      Properties gradleProperties = new PropertiesWrapper()
+      gradleProperties.put('task', this)
+      gradleProperties.put('project', project)
+      Class processorClass = workspace ? Class.forName(Processor.class.getName(), true, workspace.getClass().getClassLoader()) : Processor.class
+      run.setParent(processorClass.newInstance([runWorkspace, gradleProperties, false] as Object[]))
       run.setBase(temporaryDir)
       if (run.isStandalone()) {
         runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)

@@ -37,6 +37,7 @@ import static aQute.bnd.gradle.BndUtils.logReport
 
 import aQute.bnd.build.Workspace
 import aQute.bnd.osgi.Constants
+import aQute.bnd.osgi.Processor
 import biz.aQute.resolve.Bndrun
 import biz.aQute.resolve.ResolveProcess
 
@@ -117,6 +118,11 @@ public class Resolve extends DefaultTask {
     Class runClass = workspace ? Class.forName(Bndrun.class.getName(), true, workspace.getClass().getClassLoader()) : Bndrun.class
     runClass.createBndrun(workspace, bndrun).withCloseable { run ->
       def runWorkspace = run.getWorkspace()
+      Properties gradleProperties = new PropertiesWrapper()
+      gradleProperties.put('task', this)
+      gradleProperties.put('project', project)
+      Class processorClass = workspace ? Class.forName(Processor.class.getName(), true, workspace.getClass().getClassLoader()) : Processor.class
+      run.setParent(processorClass.newInstance([runWorkspace, gradleProperties, false] as Object[]))
       run.setBase(temporaryDir)
       if (run.isStandalone()) {
         runWorkspace.setOffline(workspace != null ? workspace.isOffline() : project.gradle.startParameter.offline)
