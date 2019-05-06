@@ -122,7 +122,7 @@ This makes it possible to create an annotation for a subsystem. For example, an 
 class Foo { ... }
 ```
 
-### Adding Attributes and Directives
+#### Adding Attributes and Directives
 
 When creating *custom bundle annotations* a common requirement is to make them parameterizable such that the values of the *custom bundle annotation* feed into the header clauses resulting from the *bundle annotation* applied to it (*remember; a **custom bundle annotation** is meta-annotated with a **bundle annotation***.)
 
@@ -212,6 +212,10 @@ results in the manifest header:
 
 **It should be noted** that default values for methods annotated with `@Attribute` and `@Directive` are deemed to be for documentation purposes only and will not be emitted into resulting headers.
 
+#### Accessor Properties
+
+For more customisation options see chapter on [Accessor Properties](/chapters/235-accessor-properties.html).
+
 ### Where to find Bundle Annotations
 
 **OSGi** *bundle annotations* can be found in the `osgi.annotation` bundle.
@@ -234,7 +238,7 @@ results in the manifest header:
 </dependency>
 ```
 
-## List of Bundle Annotations
+### List of Bundle Annotations
 
 OSGi Bundle Annotations:
 

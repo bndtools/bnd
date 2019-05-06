@@ -42,7 +42,7 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
-import aQute.bnd.plugin.spi.SPIAnnotations;
+import aQute.bnd.plugin.spi.SPIDescriptorGenerator;
 import aQute.bnd.service.SignerPlugin;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
@@ -1685,7 +1685,7 @@ public class Builder extends Analyzer {
 	static CDIAnnotations		cdiAnnotations		= new CDIAnnotations();
 	static DSAnnotations		dsAnnotations		= new DSAnnotations();
 	static MetatypeAnnotations	metatypeAnnotations	= new MetatypeAnnotations();
-	static SPIAnnotations	serviceLoaderAnnotations	= new SPIAnnotations();
+	static SPIDescriptorGenerator	serviceLoaderAnnotations	= new SPIDescriptorGenerator();
 
 	@Override
 	protected void setTypeSpecificPlugins(Set<Object> list) {

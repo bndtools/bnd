@@ -1,8 +1,7 @@
 package test.annotationheaders.attrs;
 
-import aQute.bnd.annotation.headers.RequireCapability;
-
-@RequireCapability(ns = "nsy", effective = "active", filter = "(foo=bar)")
+@SuppressWarnings("deprecation")
+@aQute.bnd.annotation.headers.RequireCapability(ns = "nsy", effective = "active", filter = "(foo=bar)")
 public @interface AnnotationWithValue {
 	String value();
 }

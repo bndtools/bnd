@@ -1,5 +1,3 @@
-package aQute.bnd.annotation.headers;
-
 /**
  * This package contains a number of annotations that create or append headers
  * in the manifest. These annotations simplify maintaining these headers:
@@ -43,21 +41,21 @@ package aQute.bnd.annotation.headers;
  * then create the appropriate clauses.
  * <p>
  * For example:
- * 
+ *
  * <pre>
  * public class Webserver {
  *   &#64;RequireCapability(ns="osgi.extender", name="webserver", version="${&#64;version}")
  *   &#64;interface Require {}
- *   &#64;ProvideCapability(ns="osgi.extender", filter="(&(osgi.extender=webserver)${&#64;frange;${&#64;version}}))")
+ *   &#64;ProvideCapability(ns="osgi.extender", filter="(&amp;(osgi.extender=webserver)${&#64;frange;${&#64;version}}))")
  *   &#64;interface Provide {}
  *   ...
  * }
  * </pre>
- * 
+ *
  * This resource can now be stored in a library to be used by others. If a
  * component now wants to depend this resource, it can declare its component as
  * follows:
- * 
+ *
  * <pre>
  * &#64;Webserver.Require
  * public class MyResource {
@@ -65,6 +63,6 @@ package aQute.bnd.annotation.headers;
  * }
  * </pre>
  */
-public class About {
-
-}
+@org.osgi.annotation.bundle.Export
+@org.osgi.annotation.versioning.Version("2.0.0")
+package aQute.bnd.annotation.headers;

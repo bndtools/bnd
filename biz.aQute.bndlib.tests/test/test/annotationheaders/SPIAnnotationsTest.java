@@ -25,10 +25,117 @@ import aQute.lib.io.IO;
 public class SPIAnnotationsTest {
 
 	@Test
+	public void testServiceProvider_warning() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerE");
+			b.setProperty("-includeresource",
+				"META-INF/services/test.annotationheaders.spi.SPIService=testresources/services");
+			b.setProperty("Provide-Capability",
+				"osgi.serviceloader;osgi.serviceloader=\"test.annotationheaders.spi.SPIService\"");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check(
+				"osgi.serviceloader capability found with no 'register:' directive. Descriptor cannot be managed for osgi.serviceloader;osgi.serviceloader=\"test.annotationheaders.spi.SPIService\""));
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(1, req.size());
+
+			assertEE(req);
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertEquals(1, cap.size());
+
+			Props p = cap.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertNotNull(p.get("osgi.serviceloader"));
+			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+			assertNull(p.get("register:"));
+
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
+				"another.provider.ProviderImpl");
+		}
+	}
+
+	@Test
+	public void testServiceProvider_mergeDescriptor() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerD");
+			b.setProperty("-includeresource",
+				"META-INF/services/test.annotationheaders.spi.SPIService=testresources/services");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(2, req.size());
+
+			assertExtender(req, "osgi.serviceloader.registrar");
+			assertEE(req);
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertEquals(1, cap.size());
+
+			Props p = cap.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertNotNull(p.get("osgi.serviceloader"));
+			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+			assertNotNull(p.get("register:"));
+			assertThat(p.get("register:")).isIn("test.annotationheaders.spi.providerD.Provider");
+			assertNotNull(p.get("foo"));
+			assertEquals("bar", p.get("foo"));
+
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
+				"test.annotationheaders.spi.providerD.Provider");
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
+				"another.provider.ProviderImpl");
+		}
+	}
+
+	@Test
+	public void testServiceConsumerMetaAnnotatingCustom() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.consumerE.*");
+			b.build();
+			assertTrue(b.check());
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(3, req.size());
+
+			assertExtender(req, "osgi.serviceloader.processor");
+
+			Props p = req.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+		}
+	}
+
+	@Test
 	public void testFilteredAnalysis() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
-			b.setProperty(Constants.SPIANNOTATIONS, "test.annotationheaders.spi.providerC.other.*");
+			b.setProperty(Constants.BUNDLEANNOTATIONS, "test.annotationheaders.spi.providerC.other.*");
 			b.setPrivatePackage("test.annotationheaders.spi.providerC.*");
 			b.build();
 			assertTrue(b.check());
@@ -59,6 +166,42 @@ public class SPIAnnotationsTest {
 	}
 
 	@Test
+	public void testServiceConsumerMultiple() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.consumerF");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(4, req.size());
+
+			assertExtender(req, "osgi.serviceloader.processor");
+			assertEE(req);
+
+			Props p = req.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertThat(p.get("osgi.serviceloader")).isIn("test.annotationheaders.spi.SPIService", "java.lang.Integer");
+			assertNull(p.get("cardinality:"));
+			assertNull(p.get("effective:"));
+			assertNull(p.get("resolution:"));
+
+			p = req.get("osgi.extender");
+			assertNotNull(p);
+			assertNull(p.get("cardinality:"));
+			assertNull(p.get("effective:"));
+			assertNull(p.get("resolution:"));
+		}
+	}
+
+	@Test
 	public void testServiceConsumer_cardinalityMultiple() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
@@ -84,15 +227,19 @@ public class SPIAnnotationsTest {
 			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
 			assertNotNull(p.get("cardinality:"));
 			assertEquals("multiple", p.get("cardinality:"));
-			assertNotNull(p.get("effective:"));
-			assertEquals("resolve", p.get("effective:"));
-			assertNotNull(p.get("resolution:"));
-			assertEquals("mandatory", p.get("resolution:"));
+			assertNull(p.get("effective:"));
+			assertNull(p.get("resolution:"));
 			Filter filter = new Filter(p.get(Constants.FILTER_DIRECTIVE));
 			Map<String, Object> map = new HashMap<>();
 			map.put("osgi.serviceloader", "test.annotationheaders.spi.SPIService");
 			map.put("version", new Version(1, 0, 0));
 			assertTrue(filter.matchMap(map));
+
+			p = req.get("osgi.extender");
+			assertNotNull(p);
+			assertNull(p.get("cardinality:"));
+			assertNull(p.get("effective:"));
+			assertNull(p.get("resolution:"));
 		}
 	}
 
@@ -102,10 +249,10 @@ public class SPIAnnotationsTest {
 			b.addClasspath(IO.getFile("bin_test"));
 			b.setPrivatePackage("test.annotationheaders.spi.consumerC");
 			b.build();
-			assertTrue(b.check());
 			b.getJar()
 				.getManifest()
 				.write(System.out);
+			assertTrue(b.check());
 
 			Attributes mainAttributes = b.getJar()
 				.getManifest()
@@ -120,10 +267,8 @@ public class SPIAnnotationsTest {
 			Props p = req.get("osgi.serviceloader");
 			assertNotNull(p);
 			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
-			assertNotNull(p.get("cardinality:"));
-			assertEquals("single", p.get("cardinality:"));
-			assertNotNull(p.get("effective:"));
-			assertEquals("resolve", p.get("effective:"));
+			assertNull(p.get("cardinality:"));
+			assertNull(p.get("effective:"));
 			assertNotNull(p.get("resolution:"));
 			assertEquals("optional", p.get("resolution:"));
 			Filter filter = new Filter(p.get(Constants.FILTER_DIRECTIVE));
@@ -131,6 +276,13 @@ public class SPIAnnotationsTest {
 			map.put("osgi.serviceloader", "test.annotationheaders.spi.SPIService");
 			map.put("version", new Version(1, 0, 0));
 			assertTrue(filter.matchMap(map));
+
+			p = req.get("osgi.extender");
+			assertNotNull(p);
+			assertNull(p.get("cardinality:"));
+			assertNull(p.get("effective:"));
+			assertNotNull(p.get("resolution:"));
+			assertEquals("optional", p.get("resolution:"));
 		}
 	}
 
@@ -140,10 +292,10 @@ public class SPIAnnotationsTest {
 			b.addClasspath(IO.getFile("bin_test"));
 			b.setPrivatePackage("test.annotationheaders.spi.consumerB");
 			b.build();
-			assertTrue(b.check());
 			b.getJar()
 				.getManifest()
 				.write(System.out);
+			assertTrue(b.check());
 
 			Attributes mainAttributes = b.getJar()
 				.getManifest()
@@ -158,17 +310,22 @@ public class SPIAnnotationsTest {
 			Props p = req.get("osgi.serviceloader");
 			assertNotNull(p);
 			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
-			assertNotNull(p.get("cardinality:"));
-			assertEquals("single", p.get("cardinality:"));
+			assertNull(p.get("cardinality:"));
 			assertNotNull(p.get("effective:"));
 			assertEquals("active", p.get("effective:"));
-			assertNotNull(p.get("resolution:"));
-			assertEquals("mandatory", p.get("resolution:"));
+			assertNull(p.get("resolution:"));
 			Filter filter = new Filter(p.get(Constants.FILTER_DIRECTIVE));
 			Map<String, Object> map = new HashMap<>();
 			map.put("osgi.serviceloader", "test.annotationheaders.spi.SPIService");
 			map.put("version", new Version(1, 0, 0));
 			assertTrue(filter.matchMap(map));
+
+			p = req.get("osgi.extender");
+			assertNotNull(p);
+			assertNull(p.get("cardinality:"));
+			assertNotNull(p.get("effective:"));
+			assertEquals("active", p.get("effective:"));
+			assertNull(p.get("resolution:"));
 		}
 	}
 
@@ -178,10 +335,10 @@ public class SPIAnnotationsTest {
 			b.addClasspath(IO.getFile("bin_test"));
 			b.setPrivatePackage("test.annotationheaders.spi.consumer");
 			b.build();
-			assertTrue(b.check());
 			b.getJar()
 				.getManifest()
 				.write(System.out);
+			assertTrue(b.check());
 
 			Attributes mainAttributes = b.getJar()
 				.getManifest()
@@ -196,11 +353,20 @@ public class SPIAnnotationsTest {
 			Props p = req.get("osgi.serviceloader");
 			assertNotNull(p);
 			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+			assertNull(p.get("cardinality:"));
+			assertNull(p.get("effective:"));
+			assertNull(p.get("resolution:"));
 			Filter filter = new Filter(p.get(Constants.FILTER_DIRECTIVE));
 			Map<String, Object> map = new HashMap<>();
 			map.put("osgi.serviceloader", "test.annotationheaders.spi.SPIService");
 			map.put("version", new Version(1, 0, 0));
 			assertTrue(filter.matchMap(map));
+
+			p = req.get("osgi.extender");
+			assertNotNull(p);
+			assertNull(p.get("cardinality:"));
+			assertNull(p.get("effective:"));
+			assertNull(p.get("resolution:"));
 		}
 	}
 
@@ -250,10 +416,10 @@ public class SPIAnnotationsTest {
 			b.addClasspath(IO.getFile("bin_test"));
 			b.setPrivatePackage("test.annotationheaders.spi.provider");
 			b.build();
-			assertTrue(b.check());
 			b.getJar()
 				.getManifest()
 				.write(System.out);
+			assertTrue(b.check());
 
 			Attributes mainAttributes = b.getJar()
 				.getManifest()

@@ -1,10 +1,8 @@
 package test.annotationheaders.multiple;
 
-import aQute.bnd.annotation.headers.ProvideCapability;
-import aQute.bnd.annotation.headers.RequireCapability;
-
-@ProvideCapability(ns = "provide")
-@RequireCapability(ns = "require", filter = "(a=b)")
+@SuppressWarnings("deprecation")
+@aQute.bnd.annotation.headers.ProvideCapability(ns = "provide")
+@aQute.bnd.annotation.headers.RequireCapability(ns = "require", filter = "(a=b)")
 @interface WebApplication {
 	String name();
 }
