@@ -2,21 +2,29 @@ package test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.assertj.core.util.Files;
 
 import aQute.bnd.build.Container;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.build.ProjectLauncher.NotificationListener;
+import aQute.bnd.build.ProjectLauncher.NotificationType;
 import aQute.bnd.build.ProjectTester;
 import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
@@ -24,6 +32,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
+import aQute.launcher.constants.LauncherConstants;
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 import junit.framework.TestCase;
@@ -34,10 +43,17 @@ public class LauncherTest extends TestCase {
 	private Project		project;
 
 	@Override
+	@SuppressWarnings("restriction")
 	public void tearDown() throws IOException {
 		if (project != null) {
 			project.close();
 			workspace.close();
+		}
+		System.getProperties()
+			.remove("test.cmd");
+		for (String key : LauncherConstants.LAUNCHER_PROPERTY_KEYS) {
+			System.getProperties()
+				.remove(key);
 		}
 	}
 
@@ -718,4 +734,76 @@ public class LauncherTest extends TestCase {
 		l.setTrace(true);
 		assertEquals(1, l.launch());
 	}
+
+	public void testFrameworkExtension() throws Exception {
+		Project project = getProject();
+		project.clear();
+
+		try (Run run = new Run(project.getWorkspace(), project.getFile("frameworkextension.bndrun"))) {
+			run.setProperty(Constants.RUNTRACE, "true");
+			ProjectTester tester = run.getProjectTester();
+			ProjectLauncher l = tester.getProjectLauncher();
+			AtomicReference<String> error = new AtomicReference<>();
+			l.registerForNotifications(new NotificationListener() {
+				@Override
+				public void notify(NotificationType type, final String notification) {
+					if (type == NotificationType.ERROR) {
+						error.set(notification);
+					}
+				}
+			});
+			l.setTimeout(25000, TimeUnit.MILLISECONDS);
+			l.setTrace(true);
+			l.launch();
+
+			assertNull(error.get(), error.get());
+		}
+	}
+
+	File	base					= new File("").getAbsoluteFile();
+	String	GENERATED_PACKAGED_JAR	= "generated/packaged.jar";
+
+	public void testOlderLauncherOnRunpath() throws Exception {
+		Project project = getProject();
+		project.clear();
+
+		try (Run run = new Run(project.getWorkspace(), project.getFile("old-launcher.bndrun"))) {
+			run.setProperty(Constants.RUNTRACE, "true");
+
+			File file = IO.getFile(base, GENERATED_PACKAGED_JAR);
+			try (Jar pack = run.pack(null)) {
+				assertTrue(run.check());
+				pack.write(file);
+			}
+
+			System.setProperty("test.cmd", "quit.no.exit");
+			String result = runFramework(file);
+			assertTrue(result.contains("installing jar/demo.jar"));
+		}
+	}
+
+	private String runFramework(File file) throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException,
+		InvocationTargetException, IOException, MalformedURLException {
+		PrintStream out = System.err;
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream out2 = new PrintStream(bout);
+		System.setErr(out2);
+		try {
+			try (URLClassLoader l = new URLClassLoader(new URL[] {
+				file.toURI()
+					.toURL()
+			}, null)) {
+				Class<?> launcher = l.loadClass("aQute.launcher.pre.EmbeddedLauncher");
+				Method main = launcher.getDeclaredMethod("main", String[].class);
+				main.invoke(null, (Object) new String[] {});
+			}
+
+			out2.flush();
+		} finally {
+			System.setErr(out);
+		}
+
+		return new String(bout.toByteArray(), StandardCharsets.UTF_8);
+	}
+
 }

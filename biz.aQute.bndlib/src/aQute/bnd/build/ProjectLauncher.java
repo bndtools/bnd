@@ -1,9 +1,15 @@
 package aQute.bnd.build;
 
+import static aQute.lib.exceptions.ConsumerWithException.asConsumer;
+import static aQute.lib.exceptions.FunctionWithException.asFunction;
+
 import java.io.File;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +17,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.jar.Manifest;
@@ -25,7 +32,9 @@ import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.Strategy;
+import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
 import aQute.libg.command.Command;
 import aQute.libg.generics.Create;
@@ -39,9 +48,16 @@ import aQute.libg.generics.Create;
  * project to run the code. Launchers must extend this class.
  */
 public abstract class ProjectLauncher extends Processor {
+	public static final String			EMBEDDED_ACTIVATOR	= "Embedded-Activator";
+	public static final String			EMBEDDED_RUNPATH	= "Embedded-Runpath";
+	public static final String			LAUNCHER_CLASS		= "aQute.launcher.Launcher";
+	public static final String			LAUNCHER_PATH		= "launcher.runpath";
+	public static final String			preJar				= "pre.jar";
+
 	private final static Logger			logger				= LoggerFactory.getLogger(ProjectLauncher.class);
 	private final Project				project;
 	private long						timeout				= 0;
+	private final List<String>			launcherpath		= new ArrayList<>();
 	private final List<String>			classpath			= new ArrayList<>();
 	private List<String>				runbundles			= Create.list();
 	private final List<String>			runvm				= new ArrayList<>();
@@ -79,12 +95,43 @@ public abstract class ProjectLauncher extends Processor {
 	public final static int				ACTIVATOR_ERROR		= 126 - 8;
 	public final static int				STOPPED				= 126 - 9;
 
-	public final static String			EMBEDDED_ACTIVATOR	= "Embedded-Activator";
-
 	public ProjectLauncher(Project project) throws Exception {
 		this.project = project;
 
 		updateFromProject();
+
+		Optional<Jar> launcher = project.getBundles(Strategy.HIGHEST, Constants.DEFAULT_LAUNCHER_BSN, null)
+			.stream()
+			.findFirst()
+			.map(Container::getFile)
+			.filter(File::exists)
+			.map(asFunction(Jar::new));
+
+		if (launcher.isPresent()) {
+			Optional<Resource> embeddedPreJar = launcher.map(jar -> jar.getResource(preJar));
+
+			Version version = new Version(launcher.get()
+				.getVersion());
+			String prePath = "bnd-cache/" + Constants.DEFAULT_LAUNCHER_BSN + ".pre/" + Constants.DEFAULT_LAUNCHER_BSN
+				+ ".pre-" + version.getWithoutQualifier() + ".jar";
+
+			File cachedPre = this.project.getWorkspace()
+				.getCache(prePath);
+
+			embeddedPreJar.ifPresent(asConsumer(embeddedPre -> {
+				if (cachedPre.exists() && embeddedPre.lastModified() > cachedPre.lastModified()) {
+					Files.copy(embeddedPre.openInputStream(), cachedPre.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					cachedPre.setLastModified(embeddedPre.lastModified());
+				} else if (!cachedPre.exists()) {
+					cachedPre.getParentFile()
+						.mkdirs();
+					Files.copy(embeddedPre.openInputStream(), cachedPre.toPath());
+					cachedPre.setLastModified(embeddedPre.lastModified());
+				}
+			}));
+
+			addClasspath(new Container(project, cachedPre), launcherpath);
+		}
 	}
 
 	/**
@@ -127,6 +174,22 @@ public abstract class ProjectLauncher extends Processor {
 
 		runpath.addAll(project.getRunFw());
 
+		// Detect if there's a launcher on the runpath
+		try (URLClassLoader findLauncherClassLoader = new URLClassLoader(runpath.stream()
+			.map(Container::getFile)
+			.map(File::toURI)
+			.map(asFunction(URI::toURL))
+			.toArray(URL[]::new), null)) {
+
+			findLauncherClassLoader.loadClass(LAUNCHER_CLASS);
+		} catch (ClassNotFoundException cnfe) {
+			// Add a launcher to the runpath
+			getProject().getBundles(Strategy.HIGHEST, Constants.DEFAULT_LAUNCHER_BSN, null)
+				.stream()
+				.findFirst()
+				.ifPresent(runpath::add);
+		}
+
 		for (Container c : runpath) {
 			addClasspath(c);
 		}
@@ -150,13 +213,17 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public void addClasspath(Container container) throws Exception {
+		addClasspath(container, classpath);
+	}
+
+	private void addClasspath(Container container, List<String> pathlist) throws Exception {
 		if (container.getError() != null) {
 			project.error("Cannot launch because %s has reported %s", container.getProject(), container.getError());
 		} else {
 			Collection<Container> members = container.getMembers();
 			for (Container m : members) {
 				String path = IO.absolutePath(m.getFile());
-				if (!classpath.contains(path)) {
+				if (!pathlist.contains(path)) {
 
 					Manifest manifest = m.getManifest();
 
@@ -193,7 +260,7 @@ public abstract class ProjectLauncher extends Processor {
 						if (activator != null)
 							activators.add(activator);
 					}
-					classpath.add(path);
+					pathlist.add(path);
 				}
 			}
 		}
@@ -226,11 +293,13 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	public Collection<String> getClasspath() {
-		return classpath;
+		return launcherpath;
 	}
 
 	public Collection<String> getRunVM() {
-		return runvm;
+		List<String> list = new ArrayList<>(runvm);
+		list.add("-D" + LAUNCHER_PATH + "=" + Processor.join(getRunpath()));
+		return list;
 	}
 
 	@Deprecated
@@ -267,7 +336,7 @@ public abstract class ProjectLauncher extends Processor {
 			java.var(e.getKey(), e.getValue());
 		}
 
-		java.add(project.getProperty("java", getJavaExecutable()));
+		java.add(getJavaExecutable());
 		String javaagent = project.getProperty(Constants.JAVAAGENT);
 		if (Processor.isTrue(javaagent)) {
 			for (String agent : agents) {
@@ -295,8 +364,9 @@ public abstract class ProjectLauncher extends Processor {
 		java.addAll(getRunVM());
 		java.add(getMainTypeName());
 		java.addAll(getRunProgramArgs());
-		if (timeout != 0)
-			java.setTimeout(timeout + 1000, TimeUnit.MILLISECONDS);
+		if (getTimeout() != 0) {
+			java.setTimeout(getTimeout() + 1000, TimeUnit.MILLISECONDS);
+		}
 
 		File cwd = getCwd();
 		if (cwd != null)
@@ -316,9 +386,21 @@ public abstract class ProjectLauncher extends Processor {
 	}
 
 	private String getJavaExecutable() {
-		String javaHome = System.getProperty("java.home");
+		String javaExecutable = project.getProperty("java");
+		String javaExecutableDeflt = getJavaExecutable0();
+		if ((javaExecutable == null) || "java".equals(javaExecutable) && (javaExecutableDeflt != null)) {
+			javaExecutable = javaExecutableDeflt;
+		}
+		return javaExecutable;
+	}
+
+	private String getJavaExecutable0() {
+		String javaHome = System.getenv("JAVA_HOME");
 		if (javaHome == null) {
-			return "java";
+			javaHome = System.getProperty("java.home");
+			if (javaHome == null) {
+				return null;
+			}
 		}
 		File java = new File(javaHome, "bin/java");
 		return IO.absolutePath(java);
@@ -356,16 +438,20 @@ public abstract class ProjectLauncher extends Processor {
 		//
 
 		List<URL> cp = new ArrayList<>();
-		for (String path : getClasspath()) {
+		for (String path : getRunpath()) {
 			cp.add(new File(path).toURI()
 				.toURL());
 		}
 		@SuppressWarnings("resource")
-		URLClassLoader cl = new URLClassLoader(cp.toArray(new URL[0]), fcl);
+		URLClassLoader cl = new URLClassLoader(cp.toArray(new URL[0]), fcl) {
+			public void addURL(URL url) {
+				super.addURL(url);
+			}
+		};
 
 		String[] args = getRunProgramArgs().toArray(new String[0]);
 
-		Class<?> main = cl.loadClass(getMainTypeName());
+		Class<?> main = cl.loadClass(LAUNCHER_CLASS);
 		return invoke(main, args);
 	}
 

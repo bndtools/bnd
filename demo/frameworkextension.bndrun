@@ -1,0 +1,24 @@
+Bundle-Version: 1.0.0
+
+#-runjdb: 8000
+-runtrace: true
+-runfw: org.eclipse.osgi
+-runee: JavaSE-9
+-runsystemcapabilities: ${native_capability}
+-resolve.effective: active
+
+-runbundles:\
+	biz.aQute.junit,\
+	org.apache.aries.spifly.dynamic.framework.extension,\
+	org.apache.felix.gogo.runtime,\
+	org.apache.felix.gogo.shell,\
+	org.apache.felix.gogo.command
+
+-runrequires: osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
+
+-testcontinuous: true
+
+-exporttype: bnd.executablejar;foo=x, bnd.runbundles;bar=x
+
+-executable: rejar=STORE, strip=OSGI-OPT/*

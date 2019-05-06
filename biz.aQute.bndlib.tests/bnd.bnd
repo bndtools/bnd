@@ -28,6 +28,7 @@
 	org.apache.geronimo.specs.geronimo-interceptor_1.2_spec;version=latest,\
 	org.apache.geronimo.specs.geronimo-jcdi_2.0_spec;version=latest,\
 	aQute.libg;version=project,\
+	biz.aQute.launcher;version=snapshot,\
 	biz.aQute.bnd.annotation;version=project,\
 	biz.aQute.bndlib;version=project;packages=*,\
 	biz.aQute.repository;version=snapshot,\

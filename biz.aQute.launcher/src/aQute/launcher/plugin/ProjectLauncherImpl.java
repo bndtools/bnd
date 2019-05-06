@@ -43,7 +43,6 @@ import aQute.bnd.osgi.JarResource;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import aQute.launcher.constants.LauncherConstants;
-import aQute.launcher.pre.EmbeddedLauncher;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.io.ByteBufferDataInput;
 import aQute.lib.io.ByteBufferOutputStream;
@@ -55,7 +54,6 @@ import aQute.libg.glob.Glob;
 public class ProjectLauncherImpl extends ProjectLauncher {
 	private final static Logger		logger					= LoggerFactory.getLogger(ProjectLauncherImpl.class);
 	private static final String		EMBEDDED_LAUNCHER_FQN	= "aQute.launcher.pre.EmbeddedLauncher";
-	private static final String		EMBEDDED_LAUNCHER		= "aQute/launcher/pre/EmbeddedLauncher.class";
 	private BuilderInstructions		builderInstrs;
 	private LauncherInstructions	launcherInstrs;
 
@@ -81,8 +79,6 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			project.warning(
 				"The noframework property in -runproperties is replaced by a project setting: '-runframework: none'");
 		}
-
-		super.addDefault(Constants.DEFAULT_LAUNCHER_BSN);
 	}
 
 	//
@@ -119,7 +115,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public String getMainTypeName() {
-		return "aQute.launcher.Launcher";
+		return EMBEDDED_LAUNCHER_FQN;
 	}
 
 	@Override
@@ -186,6 +182,9 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 									packet.getLength());
 								NotificationType type = NotificationType.values()[dai.readInt()];
 								String message = dai.readUTF();
+								if (type == NotificationType.ERROR) {
+									message += "\n" + dai.readUTF();
+								}
 								for (NotificationListener listener : getNotificationListeners()) {
 									listener.notify(type, message);
 								}
@@ -326,10 +325,14 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		m.getMainAttributes()
 			.putValue("Main-Class", EMBEDDED_LAUNCHER_FQN);
 		m.getMainAttributes()
-			.putValue(EmbeddedLauncher.EMBEDDED_RUNPATH, Processor.join(classpath));
-		Resource embeddedLauncher = Resource.fromURL(this.getClass()
-			.getResource("/" + EMBEDDED_LAUNCHER));
-		jar.putResource(EMBEDDED_LAUNCHER, embeddedLauncher);
+			.putValue(EMBEDDED_RUNPATH, Processor.join(classpath));
+
+		Resource preJar = Resource.fromURL(this.getClass()
+			.getResource("/pre.jar"));
+		try (Jar pre = new Jar("pre", preJar.openInputStream(), preJar.lastModified())) {
+			jar.addAll(pre);
+		}
+
 		doStart(jar, EMBEDDED_LAUNCHER_FQN);
 		if (getProject().getProperty(Constants.DIGESTS) != null)
 			jar.setDigestAlgorithms(getProject().getProperty(Constants.DIGESTS)
