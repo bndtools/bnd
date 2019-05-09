@@ -28,6 +28,7 @@
 		<module>bnd-testing-maven-plugin</module>
 		<module>bnd-resolver-maven-plugin</module>
 		<module>bnd-run-maven-plugin</module>
+		<module>bnd-reporter-maven-plugin</module>
 	</modules>
 
 	<url>https://bnd.bndtools.org/</url>
@@ -136,6 +137,11 @@
 			<dependency>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>biz.aQute.repository</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>biz.aQute.bnd.reporter</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
