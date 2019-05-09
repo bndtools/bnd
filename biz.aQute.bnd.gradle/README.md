@@ -202,9 +202,6 @@ For example:
 jar {
     manifest { // the manifest of the default jar is of type OsgiManifest
         name = 'overwrittenSpecialOsgiName'
-        instruction 'Private-Package',
-            'org.mycomp.package1',
-            'org.mycomp.package2'
         instruction 'Bundle-Vendor', 'MyCompany'
         instruction 'Bundle-Description', 'Platform2: Metrics 2 Measures Framework'
         instruction 'Bundle-DocURL', 'https://www.mycompany.com'
@@ -217,7 +214,6 @@ becomes:
 ```groovy
 jar {
     bnd ('Bundle-Name': 'overwrittenSpecialOsgiName',
-         'Private-Package': 'org.mycomp.package1,org.mycomp.package2',
          'Bundle-Vendor': 'MyCompany',
          'Bundle-Description': 'Platform2: Metrics 2 Measures Framework',
          'Bundle-DocURL': 'https://www.mycompany.com')
