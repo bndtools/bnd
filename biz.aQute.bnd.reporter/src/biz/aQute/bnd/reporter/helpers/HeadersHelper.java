@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Helper to convert manifest headers into DTO.
@@ -125,7 +127,13 @@ public class HeadersHelper {
       }
 
       if (entry.getValue().containsKey("timezone")) {
-        developer.timezone = Integer.valueOf(entry.getValue().get("timezone"));
+        if (isInteger(entry.getValue().get("timezone"))) {
+          developer.timezone = Integer.valueOf(entry.getValue().get("timezone"));
+        } else {
+          developer.timezone = (int) TimeUnit.HOURS.convert(
+              TimeZone.getTimeZone(entry.getValue().get("timezone")).getRawOffset(),
+              TimeUnit.MILLISECONDS);
+        }
       }
 
       if (entry.getValue().containsKey("roles")) {
@@ -796,5 +804,14 @@ public class HeadersHelper {
       }
     }
     return result;
+  }
+
+  static private boolean isInteger(final String s) {
+    try {
+      Integer.parseInt(s);
+    } catch (@SuppressWarnings("unused") final NumberFormatException e) {
+      return false;
+    }
+    return true;
   }
 }

@@ -40,7 +40,7 @@ public class ImportJarResourcePlugin implements ReportEntryPlugin<Jar>, Plugin, 
 
   public ImportJarResourcePlugin() {
     _properties.put(ReportEntryPlugin.ENTRY_NAME_PROPERTY, EntryNamesReference.IMPORT_JAR_FILE);
-    _properties.put(ReportEntryPlugin.SOURCE_CLASS_PROPERTY, Object.class.getCanonicalName());
+    _properties.put(ReportEntryPlugin.SOURCE_CLASS_PROPERTY, Jar.class.getCanonicalName());
   }
 
   @Override

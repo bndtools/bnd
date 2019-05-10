@@ -48,6 +48,10 @@ A plugin to run integration tests from bndrun files.
 
 A plugin to run a bndrun file.
 
+## [bnd-reporter-maven-plugin][10]
+
+A plugin to generate and export reports of projects.
+
 # Building the Maven Plugins
 
 See the [.travis.yml][5] file in the root of the repo for the `script` section
@@ -86,4 +90,4 @@ pom's `pluginManagement` section, to configure the repository:
 [7]: bnd-resolver-maven-plugin/README.md
 [8]: bnd-testing-maven-plugin/README.md
 [9]: bnd-run-maven-plugin/README.md
-
+[10]: bnd-reporter-maven-plugin/README.md

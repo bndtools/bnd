@@ -14,7 +14,10 @@
 	aQute.configurable,\
 	aQute.remote.*,\
 	org.osgi.*,\
-	org.yaml.*
+	org.yaml.*,\
+	com.google.common.*,\
+	com.googlecode.concurrentlinkedhashmap,\
+	org.apache.commons.lang3.*
 
 -includeresource: \
 	${workspace}/LICENSE, \
@@ -31,7 +34,7 @@
 	@${repo;jline}!/!META-INF/*
 
 
-Import-Package: org.slf4j, *
+Import-Package: org.slf4j,!com.google.appengine.*,!com.google.apphosting.*, *
 # About the aQute.library.bndrepo dep. Needed to add them here
 # by hand even though they are in bndlib. However, they are added
 # and we can unfortunately not see those packages ...
@@ -39,6 +42,9 @@ Private-Package: \
     aQute.bnd.ant,\
     aQute.bnd.enroute.commands,\
     aQute.bnd.main, \
+    org.objectweb.asm.*,\
+	org.jtwig.*,\
+	org.parboiled.*;-split-package:=merge-first,\
 	!org.slf4j.impl,\
 	org.slf4j.*
 
@@ -66,6 +72,17 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	biz.aQute.repository;version=latest,\
 	biz.aQute.bnd.exporters;version=latest,\
  	biz.aQute.bnd.reporter;version=latest,\
+ 	org.jtwig:jtwig-core;version=latest,\
+ 	org.jtwig:jtwig-reflection;version=latest,\
+	org.parboiled:parboiled-java;version=latest,\
+	org.parboiled:parboiled-core;version=latest,\
+	org.apache.commons.lang3;version="[3.4,4.0)",\
+	com.google.guava;version="[18.0,19.0)",\
+	com.googlecode.concurrentlinkedhashmap.lru;version="[1.4.2,2.0.0)",\
+	org.objectweb.asm;version="[5.0.3,6.0.0)",\
+	org.objectweb.asm.analysis;version="[5.0.3,6.0.0)",\
+	org.objectweb.asm.tree;version="[5.0.3,6.0.0)",\
+	org.objectweb.asm.util;version="[5.0.3,6.0.0)",\
 	biz.aQute.bnd.annotation;version=project,\
 	org.apache.ant:ant;version=latest,\
 	biz.aQute.remote.api;version=latest,\

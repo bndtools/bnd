@@ -1,0 +1,50 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+	<localRepository />
+	<interactiveMode>false</interactiveMode>
+	<usePluginRegistry />
+	<offline />
+	<pluginGroups />
+	<servers />
+	<mirrors />
+	<proxies />
+	<profiles>
+		<profile>
+			<id>it-repo</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<repositories>
+				<repository>
+					<id>local.central</id>
+					<url>@localRepositoryUrl@</url>
+					<releases>
+						<checksumPolicy>ignore</checksumPolicy>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<checksumPolicy>ignore</checksumPolicy>
+						<enabled>true</enabled>
+					</snapshots>
+				</repository>
+			</repositories>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>local.central</id>
+					<url>@localRepositoryUrl@</url>
+					<releases>
+						<checksumPolicy>ignore</checksumPolicy>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<checksumPolicy>ignore</checksumPolicy>
+						<enabled>true</enabled>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
+		</profile>
+	</profiles>
+	<activeProfiles />
+</settings>

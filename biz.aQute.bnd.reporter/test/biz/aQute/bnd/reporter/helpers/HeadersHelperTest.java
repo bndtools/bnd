@@ -33,6 +33,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.jar.Manifest;
 import junit.framework.TestCase;
@@ -176,14 +178,15 @@ public class HeadersHelperTest extends TestCase {
     e.name = "Clement Delgrange";
     e.organization = "cdecode";
     e.organizationUrl = "cdecode.org";
-    e.timezone = 1;
+    e.timezone = (int) TimeUnit.HOURS.convert(TimeZone.getTimeZone("Asia/Damascus").getRawOffset(),
+        TimeUnit.MILLISECONDS);
     e.roles.add("one");
     expected.add(e);
     perform(Constants.BUNDLE_DEVELOPERS,
         "cde;email='cde@cde.cde';name='Clement Delgrange';organization='cdecode'"
             + ";organizationUrl='cdecode.org';timezone=1;roles='one, two',cde@two.com"
             + ";name='Clement Delgrange';organization='cdecode';organizationUrl='cdecode.org';"
-            + "timezone=1;roles='one'",
+            + "timezone='Asia/Damascus';roles='one'",
         expected);
   }
 
