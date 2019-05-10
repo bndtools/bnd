@@ -7,7 +7,7 @@ public class SourceFileAttribute implements Attribute {
 	public static final String	NAME	= "SourceFile";
 	public final String			sourcefile;
 
-	SourceFileAttribute(String sourcefile) {
+	public SourceFileAttribute(String sourcefile) {
 		this.sourcefile = sourcefile;
 	}
 
@@ -21,7 +21,7 @@ public class SourceFileAttribute implements Attribute {
 		return NAME + " " + sourcefile;
 	}
 
-	static SourceFileAttribute parseSourceFileAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
+	static SourceFileAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int sourcefile_index = in.readUnsignedShort();
 		return new SourceFileAttribute(constant_pool.utf8(sourcefile_index));
 	}

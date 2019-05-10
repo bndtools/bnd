@@ -8,7 +8,7 @@ public class ExceptionsAttribute implements Attribute {
 	public static final String	NAME	= "Exceptions";
 	public final String[]		exceptions;
 
-	ExceptionsAttribute(String[] exceptions) {
+	public ExceptionsAttribute(String[] exceptions) {
 		this.exceptions = exceptions;
 	}
 
@@ -22,7 +22,7 @@ public class ExceptionsAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(exceptions);
 	}
 
-	static ExceptionsAttribute parseExceptionsAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
+	static ExceptionsAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int number_of_exceptions = in.readUnsignedShort();
 		String[] exceptions = new String[number_of_exceptions];
 		for (int i = 0; i < number_of_exceptions; i++) {

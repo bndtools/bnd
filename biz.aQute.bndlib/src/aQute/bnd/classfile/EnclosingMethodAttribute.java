@@ -11,7 +11,7 @@ public class EnclosingMethodAttribute implements Attribute {
 	public final String			method_name;
 	public final String			method_descriptor;
 
-	EnclosingMethodAttribute(String class_name, String method_name, String method_descriptor) {
+	public EnclosingMethodAttribute(String class_name, String method_name, String method_descriptor) {
 		this.class_name = class_name;
 		this.method_name = method_name;
 		this.method_descriptor = method_descriptor;
@@ -27,8 +27,7 @@ public class EnclosingMethodAttribute implements Attribute {
 		return NAME + " " + class_name + "." + method_name + method_descriptor;
 	}
 
-	static EnclosingMethodAttribute parseEnclosingMethodAttribute(DataInput in, ConstantPool constant_pool)
-		throws IOException {
+	static EnclosingMethodAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int class_index = in.readUnsignedShort();
 		int method_index = in.readUnsignedShort();
 		String class_name = constant_pool.className(class_index);

@@ -8,7 +8,7 @@ public class SourceDebugExtensionAttribute implements Attribute {
 	public static final String	NAME	= "SourceDebugExtension";
 	public final ByteBuffer		debug_extension;
 
-	SourceDebugExtensionAttribute(ByteBuffer debug_extension) {
+	public SourceDebugExtensionAttribute(ByteBuffer debug_extension) {
 		this.debug_extension = debug_extension;
 	}
 
@@ -22,8 +22,7 @@ public class SourceDebugExtensionAttribute implements Attribute {
 		return NAME;
 	}
 
-	static SourceDebugExtensionAttribute parseSourceDebugExtensionAttribute(DataInput in, int attribute_length)
-		throws IOException {
+	static SourceDebugExtensionAttribute read(DataInput in, int attribute_length) throws IOException {
 		if (attribute_length < 0) {
 			throw new IOException("attribute length > 2Gb");
 		}

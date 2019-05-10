@@ -1,5 +1,8 @@
 package aQute.bnd.osgi;
 
+import static aQute.bnd.classfile.ClassFile.ACC_ANNOTATION;
+import static aQute.bnd.classfile.ClassFile.ACC_ENUM;
+import static aQute.bnd.classfile.ClassFile.ACC_MODULE;
 import static aQute.bnd.classfile.ConstantPool.CONSTANT_Class;
 import static aQute.bnd.classfile.ConstantPool.CONSTANT_Fieldref;
 import static aQute.bnd.classfile.ConstantPool.CONSTANT_InterfaceMethodref;
@@ -244,9 +247,6 @@ public class Clazz {
 
 	final static int					ACC_SYNTHETIC	= 0x1000;
 	final static int					ACC_BRIDGE		= 0x0040;
-	final static int					ACC_ANNOTATION	= 0x2000;
-	final static int					ACC_ENUM		= 0x4000;
-	final static int					ACC_MODULE		= 0x8000;
 
 	@Deprecated
 	static protected class Assoc {

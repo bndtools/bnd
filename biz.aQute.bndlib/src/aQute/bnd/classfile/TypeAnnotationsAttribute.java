@@ -17,12 +17,12 @@ public abstract class TypeAnnotationsAttribute implements Attribute {
 		return name() + " " + Arrays.toString(type_annotations);
 	}
 
-	static <A extends TypeAnnotationsAttribute> A parseTypeAnnotationsAttribute(DataInput in,
-		ConstantPool constant_pool, Function<TypeAnnotationInfo[], A> constructor) throws IOException {
+	static <A extends TypeAnnotationsAttribute> A read(DataInput in, ConstantPool constant_pool,
+		Function<TypeAnnotationInfo[], A> constructor) throws IOException {
 		int num_annotations = in.readUnsignedShort();
 		TypeAnnotationInfo[] type_annotations = new TypeAnnotationInfo[num_annotations];
 		for (int i = 0; i < num_annotations; i++) {
-			type_annotations[i] = TypeAnnotationInfo.parseTypeAnnotationInfo(in, constant_pool);
+			type_annotations[i] = TypeAnnotationInfo.read(in, constant_pool);
 		}
 
 		return constructor.apply(type_annotations);

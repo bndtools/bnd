@@ -7,7 +7,7 @@ public class SignatureAttribute implements Attribute {
 	public static final String	NAME	= "Signature";
 	public final String			signature;
 
-	SignatureAttribute(String signature) {
+	public SignatureAttribute(String signature) {
 		this.signature = signature;
 	}
 
@@ -21,7 +21,7 @@ public class SignatureAttribute implements Attribute {
 		return NAME + " " + signature;
 	}
 
-	static SignatureAttribute parseSignatureAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
+	static SignatureAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int signature_index = in.readUnsignedShort();
 		return new SignatureAttribute(constant_pool.utf8(signature_index));
 	}

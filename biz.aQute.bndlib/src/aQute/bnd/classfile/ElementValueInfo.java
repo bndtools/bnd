@@ -8,7 +8,7 @@ public class ElementValueInfo {
 	public final String	name;
 	public final Object	value;
 
-	ElementValueInfo(String name, Object value) {
+	public ElementValueInfo(String name, Object value) {
 		this.name = name;
 		this.value = value;
 	}
@@ -18,13 +18,13 @@ public class ElementValueInfo {
 		return name + "=" + ((value instanceof Object[]) ? Arrays.toString((Object[]) value) : value);
 	}
 
-	static ElementValueInfo parseElementValueInfo(DataInput in, ConstantPool constant_pool) throws IOException {
+	static ElementValueInfo read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int element_name_index = in.readUnsignedShort();
-		Object value = parseElementValue(in, constant_pool);
+		Object value = readValue(in, constant_pool);
 		return new ElementValueInfo(constant_pool.utf8(element_name_index), value);
 	}
 
-	static Object parseElementValue(DataInput in, ConstantPool constant_pool) throws IOException {
+	static Object readValue(DataInput in, ConstantPool constant_pool) throws IOException {
 		int tag = in.readUnsignedByte();
 		switch (tag) {
 			case 'B' : // Byte
@@ -49,16 +49,16 @@ public class ElementValueInfo {
 
 			case 'e' : // enum constant
 			{
-				return EnumConst.parseEnumConst(in, constant_pool);
+				return EnumConst.read(in, constant_pool);
 			}
 
 			case 'c' : // Class
 			{
-				return ResultConst.parseResultConst(in, constant_pool);
+				return ResultConst.read(in, constant_pool);
 			}
 			case '@' : // Annotation type
 			{
-				return AnnotationInfo.parseAnnotationInfo(in, constant_pool);
+				return AnnotationInfo.read(in, constant_pool);
 			}
 
 			case '[' : // Array
@@ -66,7 +66,7 @@ public class ElementValueInfo {
 				int num_values = in.readUnsignedShort();
 				Object[] array_value = new Object[num_values];
 				for (int i = 0; i < num_values; i++) {
-					array_value[i] = parseElementValue(in, constant_pool);
+					array_value[i] = readValue(in, constant_pool);
 				}
 				return array_value;
 			}
@@ -81,7 +81,7 @@ public class ElementValueInfo {
 		public final String	type;
 		public final String	name;
 
-		EnumConst(String type, String name) {
+		public EnumConst(String type, String name) {
 			this.type = type;
 			this.name = name;
 		}
@@ -91,7 +91,7 @@ public class ElementValueInfo {
 			return type + "." + name;
 		}
 
-		static EnumConst parseEnumConst(DataInput in, ConstantPool constant_pool) throws IOException {
+		static EnumConst read(DataInput in, ConstantPool constant_pool) throws IOException {
 			int type_name_index = in.readUnsignedShort();
 			int const_name_index = in.readUnsignedShort();
 			return new EnumConst(constant_pool.utf8(type_name_index), constant_pool.utf8(const_name_index));
@@ -101,7 +101,7 @@ public class ElementValueInfo {
 	public static class ResultConst {
 		public final String descriptor;
 
-		ResultConst(String descriptor) {
+		public ResultConst(String descriptor) {
 			this.descriptor = descriptor;
 		}
 
@@ -110,7 +110,7 @@ public class ElementValueInfo {
 			return descriptor;
 		}
 
-		static ResultConst parseResultConst(DataInput in, ConstantPool constant_pool) throws IOException {
+		static ResultConst read(DataInput in, ConstantPool constant_pool) throws IOException {
 			int class_index = in.readUnsignedShort();
 			return new ResultConst(constant_pool.utf8(class_index));
 		}

@@ -8,7 +8,7 @@ public class UnrecognizedAttribute implements Attribute {
 	public final String		name;
 	public final ByteBuffer	value;
 
-	UnrecognizedAttribute(String name, ByteBuffer value) {
+	public UnrecognizedAttribute(String name, ByteBuffer value) {
 		this.name = name;
 		this.value = value;
 	}
@@ -23,8 +23,7 @@ public class UnrecognizedAttribute implements Attribute {
 		return name();
 	}
 
-	static UnrecognizedAttribute parseUnrecognizedAttribute(DataInput in, String name, int attribute_length)
-		throws IOException {
+	static UnrecognizedAttribute read(DataInput in, String name, int attribute_length) throws IOException {
 		if (attribute_length < 0) {
 			throw new IOException("attribute length > 2Gb");
 		}

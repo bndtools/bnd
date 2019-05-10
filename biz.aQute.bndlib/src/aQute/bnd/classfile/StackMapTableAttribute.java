@@ -7,15 +7,6 @@ import static aQute.bnd.classfile.StackMapTableAttribute.StackMapFrame.RESERVED;
 import static aQute.bnd.classfile.StackMapTableAttribute.StackMapFrame.SAME;
 import static aQute.bnd.classfile.StackMapTableAttribute.StackMapFrame.SAME_FRAME_EXTENDED;
 import static aQute.bnd.classfile.StackMapTableAttribute.StackMapFrame.SAME_LOCALS_1_STACK_ITEM_EXTENDED;
-import static aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo.ITEM_Double;
-import static aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo.ITEM_Float;
-import static aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo.ITEM_Integer;
-import static aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo.ITEM_Long;
-import static aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo.ITEM_Null;
-import static aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo.ITEM_Object;
-import static aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo.ITEM_Top;
-import static aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo.ITEM_Uninitialized;
-import static aQute.bnd.classfile.StackMapTableAttribute.VerificationTypeInfo.ITEM_UninitializedThis;
 
 import java.io.DataInput;
 import java.io.IOException;
@@ -25,7 +16,7 @@ public class StackMapTableAttribute implements Attribute {
 	public static final String		NAME	= "StackMapTable";
 	public final StackMapFrame[]	entries;
 
-	StackMapTableAttribute(StackMapFrame[] entries) {
+	public StackMapTableAttribute(StackMapFrame[] entries) {
 		this.entries = entries;
 	}
 
@@ -39,8 +30,7 @@ public class StackMapTableAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(entries);
 	}
 
-	static StackMapTableAttribute parseStackMapTableAttribute(DataInput in, ConstantPool constant_pool)
-		throws IOException {
+	static StackMapTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int number_of_entries = in.readUnsignedShort();
 		StackMapFrame[] entries = new StackMapFrame[number_of_entries];
 		for (int i = 0; i < number_of_entries; i++) {
@@ -48,13 +38,13 @@ public class StackMapTableAttribute implements Attribute {
 			if (frame_type <= SAME) { // same_frame
 				entries[i] = new SameFrame(frame_type);
 			} else if (frame_type <= StackMapFrame.SAME_LOCALS_1_STACK_ITEM) { // same_locals_1_stack_item_frame
-				VerificationTypeInfo stack = parseVerificationTypeInfo(in, constant_pool);
+				VerificationTypeInfo stack = VerificationTypeInfo.read(in, constant_pool);
 				entries[i] = new SameLocals1StackItemFrame(frame_type, stack);
 			} else if (frame_type <= RESERVED) { // RESERVED
 				throw new IOException("Unrecognized stack map frame type " + frame_type);
 			} else if (frame_type <= SAME_LOCALS_1_STACK_ITEM_EXTENDED) { // same_locals_1_stack_item_frame_extended
 				int offset_delta = in.readUnsignedShort();
-				VerificationTypeInfo stack = parseVerificationTypeInfo(in, constant_pool);
+				VerificationTypeInfo stack = VerificationTypeInfo.read(in, constant_pool);
 				entries[i] = new SameLocals1StackItemFrameExtended(frame_type, offset_delta, stack);
 			} else if (frame_type <= CHOP) { // chop_frame
 				int offset_delta = in.readUnsignedShort();
@@ -67,7 +57,7 @@ public class StackMapTableAttribute implements Attribute {
 				int number_of_locals = frame_type - SAME_FRAME_EXTENDED;
 				VerificationTypeInfo[] locals = new VerificationTypeInfo[number_of_locals];
 				for (int n = 0; n < number_of_locals; n++) {
-					locals[n] = parseVerificationTypeInfo(in, constant_pool);
+					locals[n] = VerificationTypeInfo.read(in, constant_pool);
 				}
 				entries[i] = new AppendFrame(frame_type, offset_delta, locals);
 			} else if (frame_type <= FULL_FRAME) { // full_frame
@@ -75,12 +65,12 @@ public class StackMapTableAttribute implements Attribute {
 				int number_of_locals = in.readUnsignedShort();
 				VerificationTypeInfo[] locals = new VerificationTypeInfo[number_of_locals];
 				for (int n = 0; n < number_of_locals; n++) {
-					locals[n] = parseVerificationTypeInfo(in, constant_pool);
+					locals[n] = VerificationTypeInfo.read(in, constant_pool);
 				}
 				int number_of_stack_items = in.readUnsignedShort();
 				VerificationTypeInfo[] stack = new VerificationTypeInfo[number_of_stack_items];
 				for (int n = 0; n < number_of_stack_items; n++) {
-					stack[n] = parseVerificationTypeInfo(in, constant_pool);
+					stack[n] = VerificationTypeInfo.read(in, constant_pool);
 				}
 				entries[i] = new FullFrame(frame_type, offset_delta, locals, stack);
 			}
@@ -112,7 +102,7 @@ public class StackMapTableAttribute implements Attribute {
 	}
 
 	public static class SameFrame extends StackMapFrame {
-		SameFrame(int tag) {
+		public SameFrame(int tag) {
 			super(tag);
 		}
 
@@ -125,7 +115,7 @@ public class StackMapTableAttribute implements Attribute {
 	public static class SameLocals1StackItemFrame extends StackMapFrame {
 		public final VerificationTypeInfo stack;
 
-		SameLocals1StackItemFrame(int tag, VerificationTypeInfo stack) {
+		public SameLocals1StackItemFrame(int tag, VerificationTypeInfo stack) {
 			super(tag);
 			this.stack = stack;
 		}
@@ -145,7 +135,7 @@ public class StackMapTableAttribute implements Attribute {
 		public final int					delta;
 		public final VerificationTypeInfo	stack;
 
-		SameLocals1StackItemFrameExtended(int tag, int delta, VerificationTypeInfo stack) {
+		public SameLocals1StackItemFrameExtended(int tag, int delta, VerificationTypeInfo stack) {
 			super(tag);
 			this.delta = delta;
 			this.stack = stack;
@@ -165,7 +155,7 @@ public class StackMapTableAttribute implements Attribute {
 	public static class ChopFrame extends StackMapFrame {
 		public final int delta;
 
-		ChopFrame(int tag, int delta) {
+		public ChopFrame(int tag, int delta) {
 			super(tag);
 			this.delta = delta;
 		}
@@ -184,7 +174,7 @@ public class StackMapTableAttribute implements Attribute {
 	public static class SameFrameExtended extends StackMapFrame {
 		public final int delta;
 
-		SameFrameExtended(int tag, int delta) {
+		public SameFrameExtended(int tag, int delta) {
 			super(tag);
 			this.delta = delta;
 		}
@@ -204,7 +194,7 @@ public class StackMapTableAttribute implements Attribute {
 		public final int					delta;
 		public final VerificationTypeInfo[]	locals;
 
-		AppendFrame(int tag, int delta, VerificationTypeInfo[] locals) {
+		public AppendFrame(int tag, int delta, VerificationTypeInfo[] locals) {
 			super(tag);
 			this.delta = delta;
 			this.locals = locals;
@@ -226,7 +216,7 @@ public class StackMapTableAttribute implements Attribute {
 		public final VerificationTypeInfo[]	locals;
 		public final VerificationTypeInfo[]	stack;
 
-		FullFrame(int tag, int delta, VerificationTypeInfo[] locals, VerificationTypeInfo[] stack) {
+		public FullFrame(int tag, int delta, VerificationTypeInfo[] locals, VerificationTypeInfo[] stack) {
 			super(tag);
 			this.delta = delta;
 			this.locals = locals;
@@ -256,8 +246,37 @@ public class StackMapTableAttribute implements Attribute {
 		public static final int	ITEM_Uninitialized		= 8;
 		public final int		tag;
 
-		VerificationTypeInfo(int tag) {
+		public VerificationTypeInfo(int tag) {
 			this.tag = tag;
+		}
+
+		static VerificationTypeInfo read(DataInput in, ConstantPool constant_pool) throws IOException {
+			int tag = in.readUnsignedByte();
+			switch (tag) {
+				case ITEM_Top : // Top_variable_info
+				case ITEM_Integer : // Integer_variable_info
+				case ITEM_Float : // Float_variable_info
+				case ITEM_Double : // Double_variable_info
+				case ITEM_Long : // Long_variable_info
+				case ITEM_Null : // Null_variable_info
+				case ITEM_UninitializedThis : // UninitializedThis_variable_info
+				{
+					return new VerificationTypeInfo(tag);
+				}
+				case ITEM_Object : // Object_variable_info
+				{
+					int cpool_index = in.readUnsignedShort();
+					return new ObjectVariableInfo(tag, constant_pool.className(cpool_index));
+				}
+				case ITEM_Uninitialized : // Uninitialized_variable_info
+				{
+					int offset = in.readUnsignedShort();
+					return new UninitializedVariableInfo(tag, offset);
+				}
+				default : {
+					throw new IOException("Unrecognized verification type tag " + tag);
+				}
+			}
 		}
 
 		@Override
@@ -269,7 +288,7 @@ public class StackMapTableAttribute implements Attribute {
 	public static class ObjectVariableInfo extends VerificationTypeInfo {
 		public final String type;
 
-		ObjectVariableInfo(int tag, String type) {
+		public ObjectVariableInfo(int tag, String type) {
 			super(tag);
 			this.type = type;
 		}
@@ -283,7 +302,7 @@ public class StackMapTableAttribute implements Attribute {
 	public static class UninitializedVariableInfo extends VerificationTypeInfo {
 		public final int offset;
 
-		UninitializedVariableInfo(int tag, int offset) {
+		public UninitializedVariableInfo(int tag, int offset) {
 			super(tag);
 			this.offset = offset;
 		}
@@ -291,35 +310,6 @@ public class StackMapTableAttribute implements Attribute {
 		@Override
 		public String toString() {
 			return tag + ":" + offset;
-		}
-	}
-
-	static VerificationTypeInfo parseVerificationTypeInfo(DataInput in, ConstantPool constant_pool) throws IOException {
-		int tag = in.readUnsignedByte();
-		switch (tag) {
-			case ITEM_Top : // Top_variable_info
-			case ITEM_Integer : // Integer_variable_info
-			case ITEM_Float : // Float_variable_info
-			case ITEM_Double : // Double_variable_info
-			case ITEM_Long : // Long_variable_info
-			case ITEM_Null : // Null_variable_info
-			case ITEM_UninitializedThis : // UninitializedThis_variable_info
-			{
-				return new VerificationTypeInfo(tag);
-			}
-			case ITEM_Object : // Object_variable_info
-			{
-				int cpool_index = in.readUnsignedShort();
-				return new ObjectVariableInfo(tag, constant_pool.className(cpool_index));
-			}
-			case ITEM_Uninitialized : // Uninitialized_variable_info
-			{
-				int offset = in.readUnsignedShort();
-				return new UninitializedVariableInfo(tag, offset);
-			}
-			default : {
-				throw new IOException("Unrecognized verification type tag " + tag);
-			}
 		}
 	}
 }

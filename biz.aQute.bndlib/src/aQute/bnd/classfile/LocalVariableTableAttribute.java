@@ -8,7 +8,7 @@ public class LocalVariableTableAttribute implements Attribute {
 	public static final String		NAME	= "LocalVariableTable";
 	public final LocalVariable[]	local_variable_table;
 
-	LocalVariableTableAttribute(LocalVariable[] local_variable_table) {
+	public LocalVariableTableAttribute(LocalVariable[] local_variable_table) {
 		this.local_variable_table = local_variable_table;
 	}
 
@@ -22,12 +22,11 @@ public class LocalVariableTableAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(local_variable_table);
 	}
 
-	static LocalVariableTableAttribute parseLocalVariableTableAttribute(DataInput in, ConstantPool constant_pool)
-		throws IOException {
+	static LocalVariableTableAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int local_variable_table_length = in.readUnsignedShort();
 		LocalVariable[] local_variable_table = new LocalVariable[local_variable_table_length];
 		for (int i = 0; i < local_variable_table_length; i++) {
-			local_variable_table[i] = LocalVariable.parseLocalVariable(in, constant_pool);
+			local_variable_table[i] = LocalVariable.read(in, constant_pool);
 		}
 		return new LocalVariableTableAttribute(local_variable_table);
 	}
@@ -39,7 +38,7 @@ public class LocalVariableTableAttribute implements Attribute {
 		public final String	descriptor;
 		public final int	index;
 
-		LocalVariable(int start_pc, int length, String name, String descriptor, int index) {
+		public LocalVariable(int start_pc, int length, String name, String descriptor, int index) {
 			this.start_pc = start_pc;
 			this.length = length;
 			this.name = name;
@@ -52,7 +51,7 @@ public class LocalVariableTableAttribute implements Attribute {
 			return start_pc + ":" + length + ":" + name + ":" + descriptor + ":" + index;
 		}
 
-		static LocalVariable parseLocalVariable(DataInput in, ConstantPool constant_pool) throws IOException {
+		static LocalVariable read(DataInput in, ConstantPool constant_pool) throws IOException {
 			int start_pc = in.readUnsignedShort();
 			int length = in.readUnsignedShort();
 			int name_index = in.readUnsignedShort();
