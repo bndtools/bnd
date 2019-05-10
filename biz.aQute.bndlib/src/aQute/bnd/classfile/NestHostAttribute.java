@@ -7,7 +7,7 @@ public class NestHostAttribute implements Attribute {
 	public static final String	NAME	= "NestHost";
 	public final String			host_class;
 
-	NestHostAttribute(String host_class) {
+	public NestHostAttribute(String host_class) {
 		this.host_class = host_class;
 	}
 
@@ -21,7 +21,7 @@ public class NestHostAttribute implements Attribute {
 		return NAME + " " + host_class;
 	}
 
-	static NestHostAttribute parseNestHostAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
+	static NestHostAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int host_class_index = in.readUnsignedShort();
 		return new NestHostAttribute(constant_pool.className(host_class_index));
 	}

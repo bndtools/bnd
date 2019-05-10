@@ -4,6 +4,8 @@ import java.io.DataInput;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.osgi.annotation.versioning.ProviderType;
+
 public class ConstantPool {
 	public static final int	CONSTANT_Utf8				= 1;
 	public static final int	CONSTANT_Integer			= 3;
@@ -25,7 +27,7 @@ public class ConstantPool {
 
 	final Object[]			pool;
 
-	ConstantPool(Object[] pool) {
+	public ConstantPool(Object[] pool) {
 		this.pool = pool;
 	}
 
@@ -86,26 +88,26 @@ public class ConstantPool {
 		return Arrays.toString(pool);
 	}
 
-	static ConstantPool parseConstantPool(DataInput in) throws IOException {
+	static ConstantPool read(DataInput in) throws IOException {
 		int constant_pool_count = in.readUnsignedShort();
 		Object[] pool = new Object[constant_pool_count];
 		for (int index = 1; index < constant_pool_count; index++) {
 			int tag = in.readUnsignedByte();
 			switch (tag) {
 				case CONSTANT_Utf8 : {
-					pool[index] = parseUtf8Info(in);
+					pool[index] = readUtf8Info(in);
 					break;
 				}
 				case CONSTANT_Integer : {
-					pool[index] = parseIntegerInfo(in);
+					pool[index] = readIntegerInfo(in);
 					break;
 				}
 				case CONSTANT_Float : {
-					pool[index] = parseFloatInfo(in);
+					pool[index] = readFloatInfo(in);
 					break;
 				}
 				case CONSTANT_Long : {
-					pool[index] = parseLongInfo(in);
+					pool[index] = readLongInfo(in);
 					// For some insane optimization reason, the Long(5) and
 					// Double(6) entries take two slots in the constant pool.
 					// See 4.4.5
@@ -113,7 +115,7 @@ public class ConstantPool {
 					break;
 				}
 				case CONSTANT_Double : {
-					pool[index] = parseDoubleInfo(in);
+					pool[index] = readDoubleInfo(in);
 					// For some insane optimization reason, the Long(5) and
 					// Double(6) entries take two slots in the constant pool.
 					// See 4.4.5
@@ -121,51 +123,51 @@ public class ConstantPool {
 					break;
 				}
 				case CONSTANT_Class : {
-					pool[index] = parseClassInfo(in);
+					pool[index] = ClassInfo.read(in);
 					break;
 				}
 				case CONSTANT_String : {
-					pool[index] = parseStringInfo(in);
+					pool[index] = StringInfo.read(in);
 					break;
 				}
 				case CONSTANT_Fieldref : {
-					pool[index] = parseFieldrefInfo(in);
+					pool[index] = FieldrefInfo.read(in);
 					break;
 				}
 				case CONSTANT_Methodref : {
-					pool[index] = parseMethodrefInfo(in);
+					pool[index] = MethodrefInfo.read(in);
 					break;
 				}
 				case CONSTANT_InterfaceMethodref : {
-					pool[index] = parseInterfaceMethodrefInfo(in);
+					pool[index] = InterfaceMethodrefInfo.read(in);
 					break;
 				}
 				case CONSTANT_NameAndType : {
-					pool[index] = parseNameAndTypeInfo(in);
+					pool[index] = NameAndTypeInfo.read(in);
 					break;
 				}
 				case CONSTANT_MethodHandle : {
-					pool[index] = parseMethodHandleInfo(in);
+					pool[index] = MethodHandleInfo.read(in);
 					break;
 				}
 				case CONSTANT_MethodType : {
-					pool[index] = parseMethodTypeInfo(in);
+					pool[index] = MethodTypeInfo.read(in);
 					break;
 				}
 				case CONSTANT_Dynamic : {
-					pool[index] = parseDynamicInfo(in);
+					pool[index] = DynamicInfo.read(in);
 					break;
 				}
 				case CONSTANT_InvokeDynamic : {
-					pool[index] = parseInvokeDynamicInfo(in);
+					pool[index] = InvokeDynamicInfo.read(in);
 					break;
 				}
 				case CONSTANT_Module : {
-					pool[index] = parseModuleInfo(in);
+					pool[index] = ModuleInfo.read(in);
 					break;
 				}
 				case CONSTANT_Package : {
-					pool[index] = parsePackageInfo(in);
+					pool[index] = PackageInfo.read(in);
 					break;
 				}
 				default : {
@@ -174,34 +176,36 @@ public class ConstantPool {
 			}
 		}
 
-		return new ConstantPool(pool);
+		ConstantPool constant_pool = new ConstantPool(pool);
+		return constant_pool;
 	}
 
-	static String parseUtf8Info(DataInput in) throws IOException {
+	static String readUtf8Info(DataInput in) throws IOException {
 		String constant = in.readUTF();
 		return constant.intern();
 	}
 
-	static Integer parseIntegerInfo(DataInput in) throws IOException {
+	static Integer readIntegerInfo(DataInput in) throws IOException {
 		int constant = in.readInt();
 		return Integer.valueOf(constant);
 	}
 
-	static Float parseFloatInfo(DataInput in) throws IOException {
+	static Float readFloatInfo(DataInput in) throws IOException {
 		float constant = in.readFloat();
 		return Float.valueOf(constant);
 	}
 
-	static Long parseLongInfo(DataInput in) throws IOException {
+	static Long readLongInfo(DataInput in) throws IOException {
 		long constant = in.readLong();
 		return Long.valueOf(constant);
 	}
 
-	static Double parseDoubleInfo(DataInput in) throws IOException {
+	static Double readDoubleInfo(DataInput in) throws IOException {
 		double constant = in.readDouble();
 		return Double.valueOf(constant);
 	}
 
+	@ProviderType
 	public interface Info {
 		int tag();
 	}
@@ -209,8 +213,13 @@ public class ConstantPool {
 	public static class ClassInfo implements Info {
 		public final int class_index;
 
-		ClassInfo(int class_index) {
+		public ClassInfo(int class_index) {
 			this.class_index = class_index;
+		}
+
+		static ClassInfo read(DataInput in) throws IOException {
+			int name_index = in.readUnsignedShort();
+			return new ClassInfo(name_index);
 		}
 
 		@Override
@@ -224,16 +233,16 @@ public class ConstantPool {
 		}
 	}
 
-	static ClassInfo parseClassInfo(DataInput in) throws IOException {
-		int name_index = in.readUnsignedShort();
-		return new ClassInfo(name_index);
-	}
-
 	public static class StringInfo implements Info {
 		public final int string_index;
 
-		StringInfo(int string_index) {
+		public StringInfo(int string_index) {
 			this.string_index = string_index;
+		}
+
+		static StringInfo read(DataInput in) throws IOException {
+			int string_index = in.readUnsignedShort();
+			return new StringInfo(string_index);
 		}
 
 		@Override
@@ -247,9 +256,9 @@ public class ConstantPool {
 		}
 	}
 
-	static StringInfo parseStringInfo(DataInput in) throws IOException {
-		int string_index = in.readUnsignedShort();
-		return new StringInfo(string_index);
+	@FunctionalInterface
+	interface IntBiFunction<R> {
+		R apply(int a, int b);
 	}
 
 	public abstract static class AbstractRefInfo implements Info {
@@ -260,22 +269,21 @@ public class ConstantPool {
 			this.class_index = class_index;
 			this.name_and_type_index = name_and_type_index;
 		}
-	}
 
-	@FunctionalInterface
-	interface IntBiFunction<R> {
-		R apply(int a, int b);
-	}
-
-	static <R extends AbstractRefInfo> R parseRefInfo(DataInput in, IntBiFunction<R> constructor) throws IOException {
-		int class_index = in.readUnsignedShort();
-		int name_and_type_index = in.readUnsignedShort();
-		return constructor.apply(class_index, name_and_type_index);
+		static <R extends AbstractRefInfo> R read(DataInput in, IntBiFunction<R> constructor) throws IOException {
+			int class_index = in.readUnsignedShort();
+			int name_and_type_index = in.readUnsignedShort();
+			return constructor.apply(class_index, name_and_type_index);
+		}
 	}
 
 	public static class FieldrefInfo extends AbstractRefInfo {
-		FieldrefInfo(int class_index, int name_and_type_index) {
+		public FieldrefInfo(int class_index, int name_and_type_index) {
 			super(class_index, name_and_type_index);
+		}
+
+		static FieldrefInfo read(DataInput in) throws IOException {
+			return AbstractRefInfo.read(in, FieldrefInfo::new);
 		}
 
 		@Override
@@ -289,13 +297,13 @@ public class ConstantPool {
 		}
 	}
 
-	static FieldrefInfo parseFieldrefInfo(DataInput in) throws IOException {
-		return parseRefInfo(in, FieldrefInfo::new);
-	}
-
 	public static class MethodrefInfo extends AbstractRefInfo {
-		MethodrefInfo(int class_index, int name_and_type_index) {
+		public MethodrefInfo(int class_index, int name_and_type_index) {
 			super(class_index, name_and_type_index);
+		}
+
+		static MethodrefInfo read(DataInput in) throws IOException {
+			return AbstractRefInfo.read(in, MethodrefInfo::new);
 		}
 
 		@Override
@@ -309,13 +317,13 @@ public class ConstantPool {
 		}
 	}
 
-	static MethodrefInfo parseMethodrefInfo(DataInput in) throws IOException {
-		return parseRefInfo(in, MethodrefInfo::new);
-	}
-
 	public static class InterfaceMethodrefInfo extends AbstractRefInfo {
-		InterfaceMethodrefInfo(int class_index, int name_and_type_index) {
+		public InterfaceMethodrefInfo(int class_index, int name_and_type_index) {
 			super(class_index, name_and_type_index);
+		}
+
+		static InterfaceMethodrefInfo read(DataInput in) throws IOException {
+			return AbstractRefInfo.read(in, InterfaceMethodrefInfo::new);
 		}
 
 		@Override
@@ -329,17 +337,19 @@ public class ConstantPool {
 		}
 	}
 
-	static InterfaceMethodrefInfo parseInterfaceMethodrefInfo(DataInput in) throws IOException {
-		return parseRefInfo(in, InterfaceMethodrefInfo::new);
-	}
-
 	public static class NameAndTypeInfo implements Info {
 		public final int	name_index;
 		public final int	descriptor_index;
 
-		NameAndTypeInfo(int name_index, int descriptor_index) {
+		public NameAndTypeInfo(int name_index, int descriptor_index) {
 			this.name_index = name_index;
 			this.descriptor_index = descriptor_index;
+		}
+
+		static NameAndTypeInfo read(DataInput in) throws IOException {
+			int name_index = in.readUnsignedShort();
+			int descriptor_index = in.readUnsignedShort();
+			return new NameAndTypeInfo(name_index, descriptor_index);
 		}
 
 		@Override
@@ -351,12 +361,6 @@ public class ConstantPool {
 		public String toString() {
 			return "NameAndTypeInfo:" + name_index + ":" + descriptor_index;
 		}
-	}
-
-	static NameAndTypeInfo parseNameAndTypeInfo(DataInput in) throws IOException {
-		int name_index = in.readUnsignedShort();
-		int descriptor_index = in.readUnsignedShort();
-		return new NameAndTypeInfo(name_index, descriptor_index);
 	}
 
 	public static class MethodHandleInfo implements Info {
@@ -372,9 +376,15 @@ public class ConstantPool {
 		public final int		reference_kind;
 		public final int		reference_index;
 
-		MethodHandleInfo(int reference_kind, int reference_index) {
+		public MethodHandleInfo(int reference_kind, int reference_index) {
 			this.reference_kind = reference_kind;
 			this.reference_index = reference_index;
+		}
+
+		static MethodHandleInfo read(DataInput in) throws IOException {
+			int reference_kind = in.readUnsignedByte();
+			int reference_index = in.readUnsignedShort();
+			return new MethodHandleInfo(reference_kind, reference_index);
 		}
 
 		@Override
@@ -388,17 +398,16 @@ public class ConstantPool {
 		}
 	}
 
-	static MethodHandleInfo parseMethodHandleInfo(DataInput in) throws IOException {
-		int reference_kind = in.readUnsignedByte();
-		int reference_index = in.readUnsignedShort();
-		return new MethodHandleInfo(reference_kind, reference_index);
-	}
-
 	public static class MethodTypeInfo implements Info {
 		public final int descriptor_index;
 
-		MethodTypeInfo(int descriptor_index) {
+		public MethodTypeInfo(int descriptor_index) {
 			this.descriptor_index = descriptor_index;
+		}
+
+		static MethodTypeInfo read(DataInput in) throws IOException {
+			int descriptor_index = in.readUnsignedShort();
+			return new MethodTypeInfo(descriptor_index);
 		}
 
 		@Override
@@ -412,11 +421,6 @@ public class ConstantPool {
 		}
 	}
 
-	static MethodTypeInfo parseMethodTypeInfo(DataInput in) throws IOException {
-		int descriptor_index = in.readUnsignedShort();
-		return new MethodTypeInfo(descriptor_index);
-	}
-
 	public abstract static class AbstractDynamicInfo implements Info {
 		public final int	bootstrap_method_attr_index;
 		public final int	name_and_type_index;
@@ -425,18 +429,21 @@ public class ConstantPool {
 			this.bootstrap_method_attr_index = bootstrap_method_attr_index;
 			this.name_and_type_index = name_and_type_index;
 		}
-	}
 
-	static <D extends AbstractDynamicInfo> D parseAbstractDynamicInfo(DataInput in, IntBiFunction<D> constructor)
-		throws IOException {
-		int bootstrap_method_attr_index = in.readUnsignedShort();
-		int name_and_type_index = in.readUnsignedShort();
-		return constructor.apply(bootstrap_method_attr_index, name_and_type_index);
+		static <D extends AbstractDynamicInfo> D read(DataInput in, IntBiFunction<D> constructor) throws IOException {
+			int bootstrap_method_attr_index = in.readUnsignedShort();
+			int name_and_type_index = in.readUnsignedShort();
+			return constructor.apply(bootstrap_method_attr_index, name_and_type_index);
+		}
 	}
 
 	public static class DynamicInfo extends AbstractDynamicInfo {
-		DynamicInfo(int bootstrap_method_attr_index, int name_and_type_index) {
+		public DynamicInfo(int bootstrap_method_attr_index, int name_and_type_index) {
 			super(bootstrap_method_attr_index, name_and_type_index);
+		}
+
+		static DynamicInfo read(DataInput in) throws IOException {
+			return AbstractDynamicInfo.read(in, DynamicInfo::new);
 		}
 
 		@Override
@@ -450,13 +457,13 @@ public class ConstantPool {
 		}
 	}
 
-	static DynamicInfo parseDynamicInfo(DataInput in) throws IOException {
-		return parseAbstractDynamicInfo(in, DynamicInfo::new);
-	}
-
 	public static class InvokeDynamicInfo extends AbstractDynamicInfo {
-		InvokeDynamicInfo(int bootstrap_method_attr_index, int name_and_type_index) {
+		public InvokeDynamicInfo(int bootstrap_method_attr_index, int name_and_type_index) {
 			super(bootstrap_method_attr_index, name_and_type_index);
+		}
+
+		static InvokeDynamicInfo read(DataInput in) throws IOException {
+			return AbstractDynamicInfo.read(in, InvokeDynamicInfo::new);
 		}
 
 		@Override
@@ -470,15 +477,16 @@ public class ConstantPool {
 		}
 	}
 
-	static InvokeDynamicInfo parseInvokeDynamicInfo(DataInput in) throws IOException {
-		return parseAbstractDynamicInfo(in, InvokeDynamicInfo::new);
-	}
-
 	public static class ModuleInfo implements Info {
 		public final int name_index;
 
-		ModuleInfo(int name_index) {
+		public ModuleInfo(int name_index) {
 			this.name_index = name_index;
+		}
+
+		static ModuleInfo read(DataInput in) throws IOException {
+			int name_index = in.readUnsignedShort();
+			return new ModuleInfo(name_index);
 		}
 
 		@Override
@@ -492,16 +500,16 @@ public class ConstantPool {
 		}
 	}
 
-	static ModuleInfo parseModuleInfo(DataInput in) throws IOException {
-		int name_index = in.readUnsignedShort();
-		return new ModuleInfo(name_index);
-	}
-
 	public static class PackageInfo implements Info {
 		public final int name_index;
 
-		PackageInfo(int name_index) {
+		public PackageInfo(int name_index) {
 			this.name_index = name_index;
+		}
+
+		static PackageInfo read(DataInput in) throws IOException {
+			int name_index = in.readUnsignedShort();
+			return new PackageInfo(name_index);
 		}
 
 		@Override
@@ -513,10 +521,5 @@ public class ConstantPool {
 		public String toString() {
 			return "PackageInfo:" + name_index;
 		}
-	}
-
-	static PackageInfo parsePackageInfo(DataInput in) throws IOException {
-		int name_index = in.readUnsignedShort();
-		return new PackageInfo(name_index);
 	}
 }

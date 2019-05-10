@@ -13,7 +13,7 @@ public class CodeAttribute implements Attribute {
 	public final ExceptionHandler[]	exception_table;
 	public final Attribute[]		attributes;
 
-	CodeAttribute(int max_stack, int max_locals, ByteBuffer code, ExceptionHandler[] exception_table,
+	public CodeAttribute(int max_stack, int max_locals, ByteBuffer code, ExceptionHandler[] exception_table,
 		Attribute[] attributes) {
 		this.max_stack = max_stack;
 		this.max_locals = max_locals;
@@ -32,7 +32,7 @@ public class CodeAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(attributes);
 	}
 
-	static CodeAttribute parseCodeAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
+	static CodeAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int max_stack = in.readUnsignedShort();
 		int max_locals = in.readUnsignedShort();
 		int code_length = in.readInt();
@@ -40,9 +40,9 @@ public class CodeAttribute implements Attribute {
 		int exception_table_length = in.readUnsignedShort();
 		ExceptionHandler[] exception_table = new ExceptionHandler[exception_table_length];
 		for (int i = 0; i < exception_table_length; i++) {
-			exception_table[i] = ExceptionHandler.parseExceptionHandler(in, constant_pool);
+			exception_table[i] = ExceptionHandler.read(in, constant_pool);
 		}
-		Attribute[] attributes = ClassFile.parseAttributes(in, constant_pool);
+		Attribute[] attributes = ClassFile.readAttributes(in, constant_pool);
 		return new CodeAttribute(max_stack, max_locals, code, exception_table, attributes);
 	}
 
@@ -52,7 +52,7 @@ public class CodeAttribute implements Attribute {
 		public final int	handler_pc;
 		public final String	catch_type;
 
-		ExceptionHandler(int start_pc, int end_pc, int handler_pc, String catch_type) {
+		public ExceptionHandler(int start_pc, int end_pc, int handler_pc, String catch_type) {
 			this.start_pc = start_pc;
 			this.end_pc = end_pc;
 			this.handler_pc = handler_pc;
@@ -64,7 +64,7 @@ public class CodeAttribute implements Attribute {
 			return String.format("from=%d to=%d target=%d type=%s", start_pc, end_pc, handler_pc, catch_type);
 		}
 
-		static ExceptionHandler parseExceptionHandler(DataInput in, ConstantPool constant_pool) throws IOException {
+		static ExceptionHandler read(DataInput in, ConstantPool constant_pool) throws IOException {
 			int start_pc = in.readUnsignedShort();
 			int end_pc = in.readUnsignedShort();
 			int handler_pc = in.readUnsignedShort();

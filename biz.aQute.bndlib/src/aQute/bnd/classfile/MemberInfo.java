@@ -34,12 +34,12 @@ public abstract class MemberInfo extends ElementInfo {
 		M apply(int access_flags, String name, String descriptor, Attribute[] attributes);
 	}
 
-	static <M extends MemberInfo> M parseMemberInfo(DataInput in, ConstantPool constant_pool,
-		Constructor<M> constructor) throws IOException {
+	static <M extends MemberInfo> M read(DataInput in, ConstantPool constant_pool, Constructor<M> constructor)
+		throws IOException {
 		int access_flags = in.readUnsignedShort();
 		int name_index = in.readUnsignedShort();
 		int descriptor_index = in.readUnsignedShort();
-		Attribute[] attributes = ClassFile.parseAttributes(in, constant_pool);
+		Attribute[] attributes = ClassFile.readAttributes(in, constant_pool);
 
 		return constructor.apply(access_flags, constant_pool.utf8(name_index), constant_pool.utf8(descriptor_index),
 			attributes);

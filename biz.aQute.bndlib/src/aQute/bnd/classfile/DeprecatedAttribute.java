@@ -6,7 +6,8 @@ import java.io.IOException;
 public class DeprecatedAttribute implements Attribute {
 	public static final String NAME = "Deprecated";
 
-	DeprecatedAttribute() {}
+	public DeprecatedAttribute() {
+	}
 
 	@Override
 	public String name() {
@@ -18,7 +19,7 @@ public class DeprecatedAttribute implements Attribute {
 		return NAME;
 	}
 
-	static DeprecatedAttribute parseDeprecatedAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
+	static DeprecatedAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		return new DeprecatedAttribute();
 	}
 }

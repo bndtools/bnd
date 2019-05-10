@@ -10,9 +10,9 @@ import aQute.lib.io.ByteBufferDataInput;
 
 public class ClassFile extends ElementInfo {
 	public static final int		MAJOR_VERSION	= 55;
-	private static final int	ACC_ANNOTATION	= 0x2000;
-	private static final int	ACC_ENUM		= 0x4000;
-	private static final int	ACC_MODULE		= 0x8000;
+	public static final int		ACC_ANNOTATION	= 0x2000;
+	public static final int		ACC_ENUM		= 0x4000;
+	public static final int		ACC_MODULE		= 0x8000;
 
 	public final int			minor_version;
 	public final int			major_version;
@@ -23,8 +23,9 @@ public class ClassFile extends ElementInfo {
 	public final FieldInfo[]	fields;
 	public final MethodInfo[]	methods;
 
-	ClassFile(int minor_version, int major_version, ConstantPool constant_pool, int access_flags, String this_class,
-		String super_class, String[] interfaces, FieldInfo[] fields, MethodInfo[] methods, Attribute[] attributes) {
+	public ClassFile(int minor_version, int major_version, ConstantPool constant_pool, int access_flags,
+		String this_class, String super_class, String[] interfaces, FieldInfo[] fields, MethodInfo[] methods,
+		Attribute[] attributes) {
 		super(access_flags, attributes);
 		this.minor_version = minor_version;
 		this.major_version = major_version;
@@ -68,7 +69,7 @@ public class ClassFile extends ElementInfo {
 		int minor_version = in.readUnsignedShort();
 		int major_version = in.readUnsignedShort();
 
-		ConstantPool constant_pool = ConstantPool.parseConstantPool(in);
+		ConstantPool constant_pool = ConstantPool.read(in);
 
 		int access_flags = in.readUnsignedShort();
 
@@ -88,128 +89,123 @@ public class ClassFile extends ElementInfo {
 		int fields_count = in.readUnsignedShort();
 		FieldInfo[] fields = new FieldInfo[fields_count];
 		for (int i = 0; i < fields_count; i++) {
-			fields[i] = FieldInfo.parseFieldInfo(in, constant_pool);
+			fields[i] = FieldInfo.read(in, constant_pool);
 		}
 
 		int methods_count = in.readUnsignedShort();
 		MethodInfo[] methods = new MethodInfo[methods_count];
 		for (int i = 0; i < methods_count; i++) {
-			methods[i] = MethodInfo.parseMethodInfo(in, constant_pool);
+			methods[i] = MethodInfo.read(in, constant_pool);
 		}
 
-		Attribute[] attributes = parseAttributes(in, constant_pool);
+		Attribute[] attributes = readAttributes(in, constant_pool);
 
 		ClassFile class_file = new ClassFile(minor_version, major_version, constant_pool, access_flags, this_class,
 			super_class, interfaces, fields, methods, attributes);
 		return class_file;
 	}
 
-	static Attribute[] parseAttributes(DataInput in, ConstantPool constant_pool) throws IOException {
+	static Attribute[] readAttributes(DataInput in, ConstantPool constant_pool) throws IOException {
 		int attributes_count = in.readUnsignedShort();
 		Attribute[] attributes = new Attribute[attributes_count];
 		for (int i = 0; i < attributes_count; i++) {
-			attributes[i] = parseAttribute(in, constant_pool);
+			attributes[i] = readAttribute(in, constant_pool);
 		}
 
 		return attributes;
 	}
 
-	static Attribute parseAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
+	static Attribute readAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
 		int attribute_name_index = in.readUnsignedShort();
 		int attribute_length = in.readInt();
 		String attribute_name = constant_pool.utf8(attribute_name_index);
 		switch (attribute_name) {
 			case AnnotationDefaultAttribute.NAME : {
-				return AnnotationDefaultAttribute.parseAnnotationDefaultAttribute(in, constant_pool);
+				return AnnotationDefaultAttribute.read(in, constant_pool);
 			}
 			case BootstrapMethodsAttribute.NAME : {
-				return BootstrapMethodsAttribute.parseBootstrapMethodsAttribute(in, constant_pool);
+				return BootstrapMethodsAttribute.read(in, constant_pool);
 			}
 			case CodeAttribute.NAME : {
-				return CodeAttribute.parseCodeAttribute(in, constant_pool);
+				return CodeAttribute.read(in, constant_pool);
 			}
 			case ConstantValueAttribute.NAME : {
-				return ConstantValueAttribute.parseConstantValueAttribute(in, constant_pool);
+				return ConstantValueAttribute.read(in, constant_pool);
 			}
 			case DeprecatedAttribute.NAME : {
-				return DeprecatedAttribute.parseDeprecatedAttribute(in, constant_pool);
+				return DeprecatedAttribute.read(in, constant_pool);
 			}
 			case EnclosingMethodAttribute.NAME : {
-				return EnclosingMethodAttribute.parseEnclosingMethodAttribute(in, constant_pool);
+				return EnclosingMethodAttribute.read(in, constant_pool);
 			}
 			case ExceptionsAttribute.NAME : {
-				return ExceptionsAttribute.parseExceptionsAttribute(in, constant_pool);
+				return ExceptionsAttribute.read(in, constant_pool);
 			}
 			case InnerClassesAttribute.NAME : {
-				return InnerClassesAttribute.parseInnerClassesAttribute(in, constant_pool);
+				return InnerClassesAttribute.read(in, constant_pool);
 			}
 			case LineNumberTableAttribute.NAME : {
-				return LineNumberTableAttribute.parseLineNumberTableAttribute(in, constant_pool);
+				return LineNumberTableAttribute.read(in, constant_pool);
 			}
 			case LocalVariableTableAttribute.NAME : {
-				return LocalVariableTableAttribute.parseLocalVariableTableAttribute(in, constant_pool);
+				return LocalVariableTableAttribute.read(in, constant_pool);
 			}
 			case LocalVariableTypeTableAttribute.NAME : {
-				return LocalVariableTypeTableAttribute.parseLocalVariableTypeTableAttribute(in, constant_pool);
+				return LocalVariableTypeTableAttribute.read(in, constant_pool);
 			}
 			case MethodParametersAttribute.NAME : {
-				return MethodParametersAttribute.parseMethodParametersAttribute(in, constant_pool);
+				return MethodParametersAttribute.read(in, constant_pool);
 			}
 			case ModuleAttribute.NAME : {
-				return ModuleAttribute.parseModuleAttribute(in, constant_pool);
+				return ModuleAttribute.read(in, constant_pool);
 			}
 			case ModuleMainClassAttribute.NAME : {
-				return ModuleMainClassAttribute.parseModuleMainClassAttribute(in, constant_pool);
+				return ModuleMainClassAttribute.read(in, constant_pool);
 			}
 			case ModulePackagesAttribute.NAME : {
-				return ModulePackagesAttribute.parseModulePackagesAttribute(in, constant_pool);
+				return ModulePackagesAttribute.read(in, constant_pool);
 			}
 			case NestHostAttribute.NAME : {
-				return NestHostAttribute.parseNestHostAttribute(in, constant_pool);
+				return NestHostAttribute.read(in, constant_pool);
 			}
 			case NestMembersAttribute.NAME : {
-				return NestMembersAttribute.parseNestMembersAttribute(in, constant_pool);
+				return NestMembersAttribute.read(in, constant_pool);
 			}
 			case RuntimeInvisibleAnnotationsAttribute.NAME : {
-				return RuntimeInvisibleAnnotationsAttribute.parseRuntimeInvisibleAnnotationsAttribute(in,
-					constant_pool);
+				return RuntimeInvisibleAnnotationsAttribute.read(in, constant_pool);
 			}
 			case RuntimeInvisibleParameterAnnotationsAttribute.NAME : {
-				return RuntimeInvisibleParameterAnnotationsAttribute
-					.parseRuntimeInvisibleParameterAnnotationsAttribute(in, constant_pool);
+				return RuntimeInvisibleParameterAnnotationsAttribute.read(in, constant_pool);
 			}
 			case RuntimeInvisibleTypeAnnotationsAttribute.NAME : {
-				return RuntimeInvisibleTypeAnnotationsAttribute.parseRuntimeInvisibleTypeAnnotationsAttribute(in,
-					constant_pool);
+				return RuntimeInvisibleTypeAnnotationsAttribute.read(in, constant_pool);
 			}
 			case RuntimeVisibleAnnotationsAttribute.NAME : {
-				return RuntimeVisibleAnnotationsAttribute.parseRuntimeVisibleAnnotationsAttribute(in, constant_pool);
+				return RuntimeVisibleAnnotationsAttribute.read(in, constant_pool);
 			}
 			case RuntimeVisibleParameterAnnotationsAttribute.NAME : {
-				return RuntimeVisibleParameterAnnotationsAttribute.parseRuntimeVisibleParameterAnnotationsAttribute(in,
-					constant_pool);
+				return RuntimeVisibleParameterAnnotationsAttribute.read(in, constant_pool);
 			}
 			case RuntimeVisibleTypeAnnotationsAttribute.NAME : {
-				return RuntimeVisibleTypeAnnotationsAttribute.parseRuntimeVisibleTypeAnnotationsAttribute(in,
-					constant_pool);
+				return RuntimeVisibleTypeAnnotationsAttribute.read(in, constant_pool);
 			}
 			case SignatureAttribute.NAME : {
-				return SignatureAttribute.parseSignatureAttribute(in, constant_pool);
+				return SignatureAttribute.read(in, constant_pool);
 			}
 			case SourceDebugExtensionAttribute.NAME : {
-				return SourceDebugExtensionAttribute.parseSourceDebugExtensionAttribute(in, attribute_length);
+				return SourceDebugExtensionAttribute.read(in, attribute_length);
 			}
 			case SourceFileAttribute.NAME : {
-				return SourceFileAttribute.parseSourceFileAttribute(in, constant_pool);
+				return SourceFileAttribute.read(in, constant_pool);
 			}
 			case StackMapTableAttribute.NAME : {
-				return StackMapTableAttribute.parseStackMapTableAttribute(in, constant_pool);
+				return StackMapTableAttribute.read(in, constant_pool);
 			}
 			case SyntheticAttribute.NAME : {
-				return SyntheticAttribute.parseSyntheticAttribute(in, constant_pool);
+				return SyntheticAttribute.read(in, constant_pool);
 			}
 			default : {
-				return UnrecognizedAttribute.parseUnrecognizedAttribute(in, attribute_name, attribute_length);
+				return UnrecognizedAttribute.read(in, attribute_name, attribute_length);
 			}
 		}
 	}

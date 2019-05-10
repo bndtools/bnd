@@ -9,7 +9,7 @@ public class ConstantValueAttribute implements Attribute {
 	public static final String	NAME	= "ConstantValue";
 	public final Object			value;
 
-	ConstantValueAttribute(Object value) {
+	public ConstantValueAttribute(Object value) {
 		this.value = value;
 	}
 
@@ -23,8 +23,7 @@ public class ConstantValueAttribute implements Attribute {
 		return NAME + "=" + value;
 	}
 
-	static ConstantValueAttribute parseConstantValueAttribute(DataInput in, ConstantPool constant_pool)
-		throws IOException {
+	static ConstantValueAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int constantvalue_index = in.readUnsignedShort();
 		Object value = constant_pool.entry(constantvalue_index);
 		if (value instanceof StringInfo) {

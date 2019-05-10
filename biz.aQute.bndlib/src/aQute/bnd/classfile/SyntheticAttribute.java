@@ -6,7 +6,8 @@ import java.io.IOException;
 public class SyntheticAttribute implements Attribute {
 	public static final String NAME = "Synthetic";
 
-	SyntheticAttribute() {}
+	public SyntheticAttribute() {
+	}
 
 	@Override
 	public String name() {
@@ -18,7 +19,7 @@ public class SyntheticAttribute implements Attribute {
 		return NAME;
 	}
 
-	static SyntheticAttribute parseSyntheticAttribute(DataInput in, ConstantPool constant_pool) throws IOException {
+	static SyntheticAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		return new SyntheticAttribute();
 	}
 }

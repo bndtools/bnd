@@ -8,7 +8,7 @@ public class InnerClassesAttribute implements Attribute {
 	public static final String	NAME	= "InnerClasses";
 	public final InnerClass[]	classes;
 
-	InnerClassesAttribute(InnerClass[] classes) {
+	public InnerClassesAttribute(InnerClass[] classes) {
 		this.classes = classes;
 	}
 
@@ -22,12 +22,11 @@ public class InnerClassesAttribute implements Attribute {
 		return NAME + " " + Arrays.toString(classes);
 	}
 
-	static InnerClassesAttribute parseInnerClassesAttribute(DataInput in, ConstantPool constant_pool)
-		throws IOException {
+	static InnerClassesAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int number_of_classes = in.readUnsignedShort();
 		InnerClass[] classes = new InnerClass[number_of_classes];
 		for (int i = 0; i < number_of_classes; i++) {
-			classes[i] = InnerClass.parseInnerClass(in, constant_pool);
+			classes[i] = InnerClass.read(in, constant_pool);
 		}
 		return new InnerClassesAttribute(classes);
 	}
@@ -38,7 +37,7 @@ public class InnerClassesAttribute implements Attribute {
 		public final String	inner_name;
 		public final int	inner_access;
 
-		InnerClass(String inner_class, String outer_class, String inner_name, int inner_access) {
+		public InnerClass(String inner_class, String outer_class, String inner_name, int inner_access) {
 			this.inner_class = inner_class;
 			this.outer_class = outer_class;
 			this.inner_name = inner_name;
@@ -51,7 +50,7 @@ public class InnerClassesAttribute implements Attribute {
 				outer_class, inner_name, inner_access);
 		}
 
-		static InnerClass parseInnerClass(DataInput in, ConstantPool constant_pool) throws IOException {
+		static InnerClass read(DataInput in, ConstantPool constant_pool) throws IOException {
 			int inner_class_info_index = in.readUnsignedShort();
 			int outer_class_info_index = in.readUnsignedShort();
 			int inner_name_index = in.readUnsignedShort();

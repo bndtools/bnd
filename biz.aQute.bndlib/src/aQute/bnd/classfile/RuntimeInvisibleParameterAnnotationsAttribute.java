@@ -6,7 +6,7 @@ import java.io.IOException;
 public class RuntimeInvisibleParameterAnnotationsAttribute extends ParameterAnnotationsAttribute {
 	public static final String NAME = "RuntimeInvisibleParameterAnnotations";
 
-	RuntimeInvisibleParameterAnnotationsAttribute(ParameterAnnotationInfo[] parameter_annotations) {
+	public RuntimeInvisibleParameterAnnotationsAttribute(ParameterAnnotationInfo[] parameter_annotations) {
 		super(parameter_annotations);
 	}
 
@@ -15,9 +15,8 @@ public class RuntimeInvisibleParameterAnnotationsAttribute extends ParameterAnno
 		return NAME;
 	}
 
-	static RuntimeInvisibleParameterAnnotationsAttribute parseRuntimeInvisibleParameterAnnotationsAttribute(
-		DataInput in, ConstantPool constant_pool) throws IOException {
-		return parseParameterAnnotationsAttribute(in, constant_pool,
-			RuntimeInvisibleParameterAnnotationsAttribute::new);
+	static RuntimeInvisibleParameterAnnotationsAttribute read(DataInput in, ConstantPool constant_pool)
+		throws IOException {
+		return read(in, constant_pool, RuntimeInvisibleParameterAnnotationsAttribute::new);
 	}
 }

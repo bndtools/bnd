@@ -7,7 +7,7 @@ public class ModuleMainClassAttribute implements Attribute {
 	public static final String	NAME	= "ModuleMainClass";
 	public final String			main_class;
 
-	ModuleMainClassAttribute(String main_class) {
+	public ModuleMainClassAttribute(String main_class) {
 		this.main_class = main_class;
 	}
 
@@ -21,8 +21,7 @@ public class ModuleMainClassAttribute implements Attribute {
 		return NAME + " " + main_class;
 	}
 
-	static ModuleMainClassAttribute parseModuleMainClassAttribute(DataInput in, ConstantPool constant_pool)
-		throws IOException {
+	static ModuleMainClassAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
 		int main_class_index = in.readUnsignedShort();
 		return new ModuleMainClassAttribute(constant_pool.className(main_class_index));
 	}

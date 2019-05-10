@@ -12,7 +12,7 @@ public class TypeAnnotationInfo extends AnnotationInfo {
 	public final int		target_index;
 	public final byte[]		type_path;
 
-	TypeAnnotationInfo(int target_type, byte[] target_info, int target_index, byte[] type_path, String type,
+	public TypeAnnotationInfo(int target_type, byte[] target_info, int target_index, byte[] type_path, String type,
 		ElementValueInfo[] values) {
 		super(type, values);
 		this.target_type = target_type;
@@ -26,7 +26,7 @@ public class TypeAnnotationInfo extends AnnotationInfo {
 		return type + " " + Arrays.toString(values);
 	}
 
-	static TypeAnnotationInfo parseTypeAnnotationInfo(DataInput in, ConstantPool constant_pool) throws IOException {
+	static TypeAnnotationInfo read(DataInput in, ConstantPool constant_pool) throws IOException {
 		// Table 4.7.20-A. Interpretation of target_type values (Part 1)
 		int target_type = in.readUnsignedByte();
 		byte[] target_info;
@@ -173,7 +173,7 @@ public class TypeAnnotationInfo extends AnnotationInfo {
 		in.readFully(type_path);
 
 		// Rest is identical to the normal annotations
-		return parseAnnotationInfo(in, constant_pool,
+		return read(in, constant_pool,
 			(type, values) -> new TypeAnnotationInfo(target_type, target_info, target_index, type_path, type, values));
 	}
 }

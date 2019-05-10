@@ -38,9 +38,10 @@ configurations {
 }
 
 dependencies {
-  plugin "${groupId}:${artifactId}:${artifactVersion}"
-  plugin "${groupId}:${artifactId}:${artifactVersion}:javadoc"
-  plugin "${groupId}:${artifactId}:${artifactVersion}:sources"
+  plugin "${groupId}:${artifactId}:${artifactVersion}@pom"
+  plugin "${groupId}:${artifactId}:${artifactVersion}@jar"
+  plugin "${groupId}:${artifactId}:${artifactVersion}:javadoc@jar"
+  plugin "${groupId}:${artifactId}:${artifactVersion}:sources@jar"
 }
 
 artifacts {

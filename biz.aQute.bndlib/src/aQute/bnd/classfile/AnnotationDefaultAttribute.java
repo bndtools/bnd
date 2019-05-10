@@ -7,7 +7,7 @@ public class AnnotationDefaultAttribute implements Attribute {
 	public static final String	NAME	= "AnnotationDefault";
 	public final Object			value;
 
-	AnnotationDefaultAttribute(Object value) {
+	public AnnotationDefaultAttribute(Object value) {
 		this.value = value;
 	}
 
@@ -21,9 +21,8 @@ public class AnnotationDefaultAttribute implements Attribute {
 		return NAME + " " + value;
 	}
 
-	static AnnotationDefaultAttribute parseAnnotationDefaultAttribute(DataInput in, ConstantPool constant_pool)
-		throws IOException {
-		Object value = ElementValueInfo.parseElementValue(in, constant_pool);
+	static AnnotationDefaultAttribute read(DataInput in, ConstantPool constant_pool) throws IOException {
+		Object value = ElementValueInfo.readValue(in, constant_pool);
 		return new AnnotationDefaultAttribute(value);
 	}
 }
