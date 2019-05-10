@@ -161,11 +161,9 @@ public class Descriptors {
 			if (isDefaultPackage())
 				return true;
 
-			for (int i = 0; i < Constants.METAPACKAGES.length; i++) {
-				if (fqn.startsWith(Constants.METAPACKAGES[i]))
-					return true;
-			}
-			return false;
+			return Arrays.stream(Constants.METAPACKAGES)
+				.anyMatch(meta -> binaryName.startsWith(meta)
+					&& ((binaryName.length() == meta.length()) || (binaryName.charAt(meta.length()) == '/')));
 		}
 
 	}

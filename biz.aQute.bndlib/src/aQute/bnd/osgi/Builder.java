@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static java.util.stream.Collectors.toList;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -255,15 +257,17 @@ public class Builder extends Analyzer {
 		logger.debug("wab {} {}", wab, wablib);
 		setBundleClasspath(append("WEB-INF/classes", getProperty(BUNDLE_CLASSPATH)));
 
-		Set<String> paths = new HashSet<>(dot.getResources()
-			.keySet());
-
-		for (String path : paths) {
-			if (path.indexOf('/') > 0 && !Character.isUpperCase(path.charAt(0))) {
+		dot.getResources()
+			.keySet()
+			.stream()
+			.filter(path -> !pathStartsWith(path, "WEB-INF") && Arrays.stream(Constants.METAPACKAGES)
+				.noneMatch(meta -> pathStartsWith(path, meta)))
+			// we collect since we need to mutate the source set
+			.collect(toList())
+			.forEach(path -> {
 				logger.debug("wab: moving: {}", path);
 				dot.rename(path, "WEB-INF/classes/" + path);
-			}
-		}
+			});
 
 		Parameters clauses = parseHeader(getProperty(WABLIB));
 		for (Map.Entry<String, Attrs> entry : clauses.entrySet()) {
@@ -272,6 +276,10 @@ public class Builder extends Analyzer {
 		}
 		doIncludeResource(dot, wab);
 		return dot;
+	}
+
+	private static boolean pathStartsWith(String path, String prefix) {
+		return path.startsWith(prefix) && ((path.length() == prefix.length()) || (path.charAt(prefix.length()) == '/'));
 	}
 
 	/**
