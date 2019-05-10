@@ -1,5 +1,17 @@
 package biz.aQute.bnd.reporter.helpers;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Attrs.Type;
 import aQute.bnd.header.OSGiHeader;
@@ -23,17 +35,6 @@ import biz.aQute.bnd.reporter.manifest.dto.ScmDTO;
 import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionRangeDTO;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Helper to convert manifest headers into DTO.
@@ -130,9 +131,9 @@ public class HeadersHelper {
         if (isInteger(entry.getValue().get("timezone"))) {
           developer.timezone = Integer.valueOf(entry.getValue().get("timezone"));
         } else {
-          developer.timezone = (int) TimeUnit.HOURS.convert(
+					developer.timezone = Integer.valueOf((int) TimeUnit.HOURS.convert(
               TimeZone.getTimeZone(entry.getValue().get("timezone")).getRawOffset(),
-              TimeUnit.MILLISECONDS);
+							TimeUnit.MILLISECONDS));
         }
       }
 
