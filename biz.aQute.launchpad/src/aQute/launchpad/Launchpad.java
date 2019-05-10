@@ -874,14 +874,12 @@ public class Launchpad implements AutoCloseable {
 	 * Runs the given code within the context of a synthetic bundle. Creates a
 	 * synthetic bundle and adds the supplied class to it using
 	 * {@link BundleBuilder#addResourceWithCopy}. It then loads the class using
-	 * the synthetic bundles class loader, and instantiates it using the default
-	 * constructor.
+	 * the synthetic bundle's class loader and instantiates it using the public,
+	 * no-parameter constructor.
 	 * 
 	 * @param clazz the class to instantiate within the context of the
 	 *            framework.
 	 * @return The instantiated object.
-	 * @throws NoSuchMethodException if the supplied class doesn't have a
-	 *             default constructor.
 	 * @see BundleBuilder#addResourceWithCopy(Class)
 	 */
 	public <T> T instantiateInFramework(Class<? extends T> clazz) {
