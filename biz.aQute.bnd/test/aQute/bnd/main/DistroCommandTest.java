@@ -1,5 +1,7 @@
 package aQute.bnd.main;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,6 +30,7 @@ import aQute.bnd.main.testlib.MockRegistry;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.repository.XMLResourceParser;
 import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.lib.getopt.CommandLine;
 import aQute.lib.io.IO;
@@ -119,11 +122,38 @@ public class DistroCommandTest extends TestCase {
 		builder.addManifest(manifest);
 
 		Resource resource = builder.build();
+		verifyResource(resource);
+	}
 
-		List<Capability> capabilities = resource.getCapabilities(null);
+	public void testXmlOutput() throws Exception {
+		bnd bnd = new bnd();
+		CommandLine cmdline = new CommandLine(null);
+		List<String> remoteArgs = new ArrayList<>();
+		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
 
-		assertNotNull(capabilities);
+		File distro = new File("generated/tmp/test.distro.xml").getAbsoluteFile();
 
+		List<String> distroArgs = new ArrayList<>();
+		distroArgs.add("-x");
+		distroArgs.add("-o");
+		distroArgs.add(distro.getPath());
+		distroArgs.add("test.distro");
+		distroArgs.add("1.0.0");
+		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
+		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+
+		assertTrue(distro.exists());
+
+		XMLResourceParser parser = new XMLResourceParser(distro);
+		List<Resource> resources = parser.parse();
+		assertThat(resources).hasSize(1);
+
+		Resource resource = resources.get(0);
+		assertThat(resource.getRequirements(null)).isEmpty();
+		verifyResource(resource);
+	}
+
+	public void verifyResource(Resource resource) {
 		List<Capability> extenderCaps = resource.getCapabilities(ExtenderNamespace.EXTENDER_NAMESPACE);
 
 		int jspTaglibCapabilityCount = 0;
@@ -222,6 +252,17 @@ public class DistroCommandTest extends TestCase {
 		assertTrue(distro.exists());
 
 		assertTrue(distro.lastModified() > 0);
+
+		//
+		// Verify that we can parse the XML
+		// inside the JAR
+		//
+		try (Jar jar = new Jar(distro)) {
+			assertThat(jar.getResource("OSGI-OPT/obr.xml")).isNotNull();
+			List<Resource> resources = XMLResourceParser.getResources(jar.getResource("OSGI-OPT/obr.xml")
+				.openInputStream(), IO.work.toURI());
+			assertThat(resources).hasSize(1);
+		}
 	}
 
 	public void testDistroJarNotResolvable() throws Exception {

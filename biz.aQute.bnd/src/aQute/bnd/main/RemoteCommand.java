@@ -1,5 +1,6 @@
 package aQute.bnd.main;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -15,6 +16,7 @@ import java.util.jar.Manifest;
 import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
+import org.osgi.resource.Resource;
 import org.osgi.resource.dto.CapabilityDTO;
 import org.osgi.service.repository.ContentNamespace;
 import org.slf4j.Logger;
@@ -24,10 +26,13 @@ import org.yaml.snakeyaml.Yaml;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
+import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Verifier;
+import aQute.bnd.osgi.repository.XMLResourceGenerator;
 import aQute.bnd.osgi.resource.CapabilityBuilder;
+import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.version.Version;
 import aQute.lib.converter.Converter;
 import aQute.lib.converter.TypeReference;
@@ -144,22 +149,28 @@ class RemoteCommand extends Processor {
 	 * Create a distro from a remote agent
 	 */
 
-	@Description("Create a distro jar from a remote agent")
+	@Description("Create a distro jar (or xml) from a remote agent")
 	@Arguments(arg = {
 		"bsn", "[version]"
 	})
 	interface DistroOptions extends Options {
+		@Description("The Bundle-Vendor header")
 		String vendor();
 
+		@Description("The Bundle-Description header")
 		String description();
 
+		@Description("The Bundle-Copyright header")
 		String copyright();
 
+		@Description("The Bundle-License header")
 		String license();
 
-		String extra();
-
+		@Description("Output name")
 		String output(String deflt);
+
+		@Description("Generate xml instead of a jar with manifest")
+		boolean xml();
 	}
 
 	public void _distro(DistroOptions opts) throws Exception {
@@ -182,7 +193,7 @@ class RemoteCommand extends Processor {
 			}
 		}
 
-		File output = getFile(opts.output("distro.jar"));
+		File output = getFile(opts.output(opts.xml() ? bsn + ".xml" : "distro.jar"));
 		if (output.getParentFile() == null || !output.getParentFile()
 			.isDirectory()) {
 			error("Cannot write to %s because parent not a directory", output);
@@ -200,9 +211,11 @@ class RemoteCommand extends Processor {
 		Parameters packages = new Parameters();
 		List<Parameters> provided = new ArrayList<>();
 
+		ResourceBuilder resourceBuilder = new ResourceBuilder();
+
 		for (BundleRevisionDTO brd : bundleRevisons) {
-			for (CapabilityDTO c : brd.capabilities) {
-				CapabilityBuilder cb = new CapabilityBuilder(c.namespace);
+			for (CapabilityDTO capabilityDTO : brd.capabilities) {
+				CapabilityBuilder capabilityBuilder = new CapabilityBuilder(capabilityDTO.namespace);
 
 				//
 				// We need to fixup versions :-(
@@ -211,7 +224,7 @@ class RemoteCommand extends Processor {
 				// special
 				//
 
-				for (Entry<String, Object> e : c.attributes.entrySet()) {
+				for (Entry<String, Object> e : capabilityDTO.attributes.entrySet()) {
 					String key = e.getKey();
 					Object value = e.getValue();
 
@@ -222,22 +235,24 @@ class RemoteCommand extends Processor {
 						else
 							value = new Version((String) value);
 					}
-					cb.addAttribute(key, value);
+					capabilityBuilder.addAttribute(key, value);
 				}
-				cb.addDirectives(c.directives);
+				capabilityBuilder.addDirectives(capabilityDTO.directives);
 
-				Attrs attrs = cb.toAttrs();
+				Attrs attrs = capabilityBuilder.toAttrs();
 
-				if (cb.isPackage()) {
+				resourceBuilder.addCapability(capabilityBuilder);
+
+				if (capabilityBuilder.isPackage()) {
 					attrs.remove(Constants.BUNDLE_SYMBOLIC_NAME_ATTRIBUTE);
 					attrs.remove(Constants.BUNDLE_VERSION_ATTRIBUTE);
 					String pname = attrs.remove(PackageNamespace.PACKAGE_NAMESPACE);
 					if (pname == null) {
-						warning("Invalid package capability found %s", c);
+						warning("Invalid package capability found %s", capabilityDTO);
 					} else
 						packages.put(pname, attrs);
 					logger.debug("P: {};{}", pname, attrs);
-				} else if (NativeNamespace.NATIVE_NAMESPACE.equals(c.namespace)) {
+				} else if (NativeNamespace.NATIVE_NAMESPACE.equals(capabilityDTO.namespace)) {
 					Attrs newAttrs = new Attrs();
 					for (Entry<String, String> entry : attrs.entrySet()) {
 						if (entry.getKey()
@@ -246,74 +261,100 @@ class RemoteCommand extends Processor {
 						}
 					}
 					Parameters p = new Parameters();
-					p.put(c.namespace, newAttrs);
+					p.put(capabilityDTO.namespace, newAttrs);
 					provided.add(p);
-				} else if (!IGNORED_NAMESPACES.contains(c.namespace)) {
-					logger.debug("C {};{}", c.namespace, attrs);
+				} else if (!IGNORED_NAMESPACES.contains(capabilityDTO.namespace)) {
+					logger.debug("C {};{}", capabilityDTO.namespace, attrs);
 					Parameters p = new Parameters();
-					p.put(c.namespace, attrs);
+					p.put(capabilityDTO.namespace, attrs);
 					provided.add(p);
 				}
 			}
 		}
 
 		if (isOk()) {
-			Manifest m = new Manifest();
-			Attributes main = m.getMainAttributes();
-
-			main.putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
-
-			main.putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
-			main.putValue(Constants.BUNDLE_VERSION, version);
-
-			main.putValue(Constants.EXPORT_PACKAGE, packages.toString());
-
-			// Make distro unresolvable
-			Parameters unresolveable = new Parameters(
-				"osgi.unresolvable; filter:='(&(must.not.resolve=*)(!(must.not.resolve=*)))'");
-			main.putValue(Constants.REQUIRE_CAPABILITY, unresolveable.toString());
-
-			provided.add(new Parameters("osgi.unresolvable"));
-
-			StringBuilder sb = new StringBuilder();
-
-			for (Parameters parameter : provided) {
-				sb.append(parameter.toString());
-				sb.append(",");
-			}
-
-			String capabilities = sb.toString()
-				.substring(0, sb.length() - 1);
-
-			main.putValue(Constants.PROVIDE_CAPABILITY, capabilities);
-
-			if (opts.description() != null)
-				main.putValue(Constants.BUNDLE_DESCRIPTION, opts.description());
-			if (opts.license() != null)
-				main.putValue(Constants.BUNDLE_LICENSE, opts.license());
-			if (opts.copyright() != null)
-				main.putValue(Constants.BUNDLE_COPYRIGHT, opts.copyright());
-			if (opts.vendor() != null)
-				main.putValue(Constants.BUNDLE_VENDOR, opts.vendor());
-
-			try (Jar jar = new Jar("distro")) {
-				jar.setManifest(m);
-
-				try (Verifier v = new Verifier(jar)) {
-					v.setProperty(Constants.FIXUPMESSAGES,
-						"osgi.* namespace must not be specified with generic capabilities");
-					v.verify();
-					v.getErrors();
-
-					if (isFailOk() || v.isOk()) {
-						jar.updateModified(System.currentTimeMillis(), "Writing distro jar");
-						jar.write(output);
-					} else
-						getInfo(v);
-				}
+			if (opts.xml()) {
+				buildXML(bsn + ":" + version, output, resourceBuilder.build());
+			} else {
+				buildjar(opts, bsn, version, output, packages, provided, resourceBuilder.build());
 			}
 		}
+	}
 
+	public void buildXML(String name, File output, Resource resource) throws IOException {
+		XMLResourceGenerator xrg = getGenerator(name, resource);
+		xrg.save(output);
+	}
+
+	public XMLResourceGenerator getGenerator(String name, Resource resource) {
+		XMLResourceGenerator xrg = new XMLResourceGenerator().name(name)
+			.resource(resource);
+		return xrg;
+	}
+
+	public void buildjar(DistroOptions opts, String bsn, String version, File output, Parameters packages,
+		List<Parameters> provided, Resource resource) throws Exception, IOException {
+		Manifest m = new Manifest();
+		Attributes main = m.getMainAttributes();
+
+		main.putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
+
+		main.putValue(Constants.BUNDLE_SYMBOLICNAME, bsn);
+		main.putValue(Constants.BUNDLE_VERSION, version);
+
+		main.putValue(Constants.EXPORT_PACKAGE, packages.toString());
+
+		// Make distro unresolvable
+		Parameters unresolveable = new Parameters(
+			"osgi.unresolvable; filter:='(&(must.not.resolve=*)(!(must.not.resolve=*)))'");
+		main.putValue(Constants.REQUIRE_CAPABILITY, unresolveable.toString());
+
+		provided.add(new Parameters("osgi.unresolvable"));
+
+		StringBuilder sb = new StringBuilder();
+
+		for (Parameters parameter : provided) {
+			sb.append(parameter.toString());
+			sb.append(",");
+		}
+
+		String capabilities = sb.toString()
+			.substring(0, sb.length() - 1);
+
+		main.putValue(Constants.PROVIDE_CAPABILITY, capabilities);
+
+		if (opts.description() != null)
+			main.putValue(Constants.BUNDLE_DESCRIPTION, opts.description());
+		if (opts.license() != null)
+			main.putValue(Constants.BUNDLE_LICENSE, opts.license());
+		if (opts.copyright() != null)
+			main.putValue(Constants.BUNDLE_COPYRIGHT, opts.copyright());
+		if (opts.vendor() != null)
+			main.putValue(Constants.BUNDLE_VENDOR, opts.vendor());
+
+		try (Jar jar = new Jar(bsn + ":" + version)) {
+			jar.setManifest(m);
+
+			XMLResourceGenerator generator = getGenerator(bsn + ":" + version, resource);
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			generator.save(bout);
+
+			EmbeddedResource r = new EmbeddedResource(bout.toByteArray(), System.currentTimeMillis());
+			jar.putResource("OSGI-OPT/obr.xml", r);
+
+			try (Verifier v = new Verifier(jar)) {
+				v.setProperty(Constants.FIXUPMESSAGES,
+					"osgi.* namespace must not be specified with generic capabilities");
+				v.verify();
+				v.getErrors();
+
+				if (isFailOk() || v.isOk()) {
+					jar.updateModified(System.currentTimeMillis(), "Writing distro jar");
+					jar.write(output);
+				} else
+					getInfo(v);
+			}
+		}
 	}
 
 	private void dump(Object o) {
