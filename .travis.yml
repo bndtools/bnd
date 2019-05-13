@@ -13,10 +13,10 @@ matrix:
         - secure: JuFTmYTsnmzZzWTvf/hNkRDkpQhLrtl8BRLBdxGR79pzGxmoq961pgaYO615DFJUBggmZm1VkLSao3sC8eWfanTng9Qm1r1CUVsHbLiBDrIR2kwUU7DFiPOEkqwuf9YDjlTl1D4bRKwOZXPVMzlbwfWNr5yj2iRS8PSRS/76f3k=
     - name: "OpenJDK11"
       install:
-        - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu11.29.3-ca-jdk11.0.2-linux_x64.tar.gz"
+        - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu11.31.11-ca-jdk11.0.3-linux_x64.tar.gz"
     - name: "OpenJDK12"
       install:
-        - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu12.1.3-ca-jdk12-linux_x64.tar.gz"
+        - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu12.2.3-ca-jdk12.0.1-linux_x64.tar.gz"
     - name: "Local rebuild"
       script: 
         - "./gradlew --no-daemon -Dmaven.repo.local=maven/target/m2 :biz.aQute.bnd.gradle:build :biz.aQute.bnd.gradle:releaseNeeded"
@@ -40,7 +40,7 @@ before_install:
   - "curl -O -L --retry 3 https://github.com/sormuras/bach/raw/master/install-jdk.sh"
 
 install:
-  - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu8.36.0.1-ca-jdk8.0.202-linux_x64.tar.gz"
+  - "source install-jdk.sh --url https://cdn.azul.com/zulu/bin/zulu8.38.0.13-ca-jdk8.0.212-linux_x64.tar.gz"
 
 before_script:
   - "./gradlew --no-daemon --version"
