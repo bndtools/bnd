@@ -36,7 +36,7 @@ Bundle-Vendor:          Bndtools https://bndtools.org/
 Bundle-Copyright:       Copyright (c) aQute SARL (2000, ${tstamp;yyyy}) and others. All Rights Reserved.
 Bundle-License:         Apache-2.0; \
                         description="Apache License, Version 2.0"; \
-                        link="https://opensource.org/licenses/apache2.0.php"
+                        link="https://opensource.org/licenses/Apache-2.0"
 Bundle-DocURL:          https://bnd.bndtools.org/
 Bundle-SCM:             url=https://github.com/bndtools/bnd, \
                         connection=scm:git:https://github.com/bndtools/bnd.git, \
