@@ -2,6 +2,7 @@ package biz.aQute.remote;
 
 import java.io.File;
 import java.net.ConnectException;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ public class AgentTest extends TestCase {
 	private File			t1;
 	private File			t2;
 	private File			t3;
+	private File			t4;
 	private TestSupervisor	supervisor;
 
 	@Override
@@ -45,6 +47,7 @@ public class AgentTest extends TestCase {
 		t1 = create("bsn-1", new Version(1, 0, 0));
 		t2 = create("bsn-2", new Version(2, 0, 0));
 		t3 = create("bsn-3", new Version(3, 0, 0));
+		t4 = create("bsn-4", new Version(4, 0, 0));
 
 		ServiceLoader<FrameworkFactory> sl = ServiceLoader.load(FrameworkFactory.class, this.getClass()
 			.getClassLoader());
@@ -238,6 +241,35 @@ public class AgentTest extends TestCase {
 			testSupervisor.connect("localhost", 12345, -2);
 			fail("Excepted illegal argument exception");
 		} catch (IllegalArgumentException e) {}
+	}
+
+	public void testAgentInstallBundleSinceNoExistingBundleMathcesBsnAndVersion() throws Exception {
+		BundleDTO bundle = supervisor.getAgent()
+			.install(t4.getAbsolutePath(), Files.readAllBytes(t4.toPath()));
+
+		assertNotNull(bundle);
+		assertEquals(4, bundle.id);
+		assertEquals("bsn-4", bundle.symbolicName);
+		assertEquals("4.0.0", bundle.version);
+	}
+
+	public void testAgentUpdateBundleSinceBsnAndVersionMatchFound() throws Exception {
+		BundleDTO t4Bundle = supervisor.getAgent()
+			.getBundles(4)
+			.get(0);
+
+		long previousModified = t4Bundle.lastModified;
+
+		File t3prime = create("bsn-4", new Version(4, 0, 1));
+
+		assertNotNull(supervisor.getAgent()
+			.install(t4.getAbsolutePath(), Files.readAllBytes(t4.toPath())));
+
+		t4Bundle = supervisor.getAgent()
+			.getBundles(4)
+			.get(0);
+
+		assertTrue(previousModified != t4Bundle.lastModified);
 	}
 
 	/**
