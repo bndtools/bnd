@@ -16,7 +16,7 @@ import aQute.bnd.annotation.headers.BundleCopyright;
 import aQute.bnd.annotation.headers.BundleDevelopers;
 import aQute.bnd.annotation.headers.BundleDocURL;
 import aQute.bnd.annotation.headers.Category;
-import aQute.bnd.annotation.licenses.ASL_2_0;
+import aQute.bnd.annotation.licenses.Apache_2_0;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Builder;
@@ -197,7 +197,7 @@ public class AnnotationHeadersTest extends TestCase {
 	@interface mischakriens {}
 
 	@aQute.bnd.annotation.headers.RequireCapability(ns = "abcdef", filter = "(&(abcdef=xyz)${frange;${@version}})")
-	@ASL_2_0
+	@Apache_2_0
 	@pkriens
 	@mkriens
 	@tkriens
@@ -290,7 +290,7 @@ public class AnnotationHeadersTest extends TestCase {
 			.getValue(Constants.BUNDLE_LICENSE);
 		assertNotNull(bl);
 		System.out.println(bl);
-		assertTrue(bl.contains("http://www.opensource.org/licenses/apache2.0.php;"));
+		assertTrue(bl.contains("Apache-2.0"));
 		assertTrue(bl.contains("MIT"));
 		assertFalse(bl.contains("GPL"));
 
