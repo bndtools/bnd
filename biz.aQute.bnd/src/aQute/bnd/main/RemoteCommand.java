@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -27,8 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 
-import com.google.common.io.ByteStreams;
-
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
@@ -45,6 +42,7 @@ import aQute.lib.converter.TypeReference;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
+import aQute.lib.io.IO;
 import aQute.lib.json.JSONCodec;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
@@ -183,11 +181,11 @@ class RemoteCommand extends Processor {
 		URL u = checkURL(fileSpec);
 
 		if (u != null) {
-			data = ByteStreams.toByteArray(u.openStream());
+			data = IO.read(u);
 		} else {
 			File f = checkFile(fileSpec);
 			if (f != null) {
-				data = Files.readAllBytes(f.toPath());
+				data = IO.read(f);
 			}
 		}
 		install(location, data);
