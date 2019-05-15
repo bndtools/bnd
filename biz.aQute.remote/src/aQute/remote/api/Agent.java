@@ -9,6 +9,8 @@ import org.osgi.framework.dto.BundleDTO;
 import org.osgi.framework.dto.FrameworkDTO;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
 
+import aQute.bnd.annotation.ProviderType;
+
 /**
  * An agent runs on remote OSGi framework and provides the means to control this
  * framework. This API can also be used to install a framework before an agent
@@ -16,6 +18,7 @@ import org.osgi.framework.wiring.dto.BundleRevisionDTO;
  * {@link #createFramework(String, Collection, Map)} and {@link #isEnvoy()} only
  * but switches to the agent API once the framework is installed.
  */
+@ProviderType
 public interface Agent {
 
 	/**
@@ -77,6 +80,22 @@ public interface Agent {
 	 * Get the framework DTO
 	 */
 	FrameworkDTO getFramework() throws Exception;
+
+	/**
+	 * Install or update a bundle from the specified byte array instance.
+	 * <p>
+	 * This method does check if there is any existing bundle with the specified
+	 * {@code location} identifier. If found, the existing bundle gets updated
+	 * with the specified byte array instance. Otherwise, a new bundle gets
+	 * installed with the specified byte array instance.
+	 * 
+	 * @param location The bundle location (cannot be {@code null})
+	 * @param data The byte array instance from which this bundle will be read
+	 *            (cannot be {@code null})
+	 * @return A Bundle DTO (cannot be {@code null})
+	 * @throws Exception if the bundle cannot be installed or updated
+	 */
+	BundleDTO install(String location, byte[] data) throws Exception;
 
 	/**
 	 * Install a new bundle at the given bundle location. The SHA identifies the

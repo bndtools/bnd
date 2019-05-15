@@ -120,6 +120,21 @@ public class AgentServer implements Agent, Closeable, FrameworkListener {
 	}
 
 	@Override
+	public BundleDTO install(String location, byte[] data) throws Exception {
+		Bundle installedBundle = null;
+		try (InputStream stream = new ByteArrayInputStream(data)) {
+			installedBundle = context.getBundle(location);
+			if (installedBundle == null) {
+				installedBundle = context.installBundle(location, stream);
+			} else {
+				installedBundle.update(stream);
+				refresh(true);
+			}
+		}
+		return toDTO(installedBundle);
+	}
+
+	@Override
 	public BundleDTO install(String location, String sha) throws Exception {
 		InputStream in = cache.getStream(sha, source);
 		if (in == null)

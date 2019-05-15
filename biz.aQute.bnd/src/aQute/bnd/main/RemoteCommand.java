@@ -3,7 +3,10 @@ package aQute.bnd.main;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -13,6 +16,7 @@ import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
+import org.osgi.framework.dto.BundleDTO;
 import org.osgi.framework.namespace.NativeNamespace;
 import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.dto.BundleRevisionDTO;
@@ -22,6 +26,8 @@ import org.osgi.service.repository.ContentNamespace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
+
+import com.google.common.io.ByteStreams;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -39,6 +45,7 @@ import aQute.lib.converter.TypeReference;
 import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
+import aQute.lib.json.JSONCodec;
 import aQute.remote.api.Agent;
 import aQute.remote.api.Event;
 import aQute.remote.api.Supervisor;
@@ -107,6 +114,120 @@ class RemoteCommand extends Processor {
 		launcher = new LauncherSupervisor();
 		launcher.connect(host = options.host("localhost"), port = options.port(Agent.DEFAULT_PORT));
 		agent = launcher.getAgent();
+	}
+
+	@Description("Communicate with the remote framework to list the installed bundles")
+	interface ListOptions extends Options {
+		@Description("Specify to return the output as JSON")
+		boolean json();
+	}
+
+	@Description("List the bundles installed in the remote framework")
+	public void _list(ListOptions options) throws Exception {
+		List<BundleDTO> installedBundles = agent.getBundles();
+		outputAs(options.json(), installedBundles);
+	}
+
+	private void outputAs(boolean isJsonOutput, List<BundleDTO> bundles) throws IOException, Exception {
+		if (isJsonOutput) {
+			new JSONCodec().enc()
+				.to((OutputStream) bnd.out)
+				.put(bundles)
+				.flush();
+		} else {
+			bundles.stream()
+				.map(b -> b.symbolicName + "-" + b.version)
+				.forEach(bnd.out::println);
+		}
+	}
+
+	@Description("Communicate with the remote framework to perform bundle operation")
+	@Arguments(arg = {
+		"bundleId..."
+	})
+	interface BundleOptions extends Options {
+	}
+
+	@Description("Start the specified bundles")
+	public void _start(BundleOptions options) throws Exception {
+		long[] ids = Converter.cnv(long[].class, options._arguments());
+		agent.start(ids);
+	}
+
+	@Description("Stop the specified bundles")
+	public void _stop(BundleOptions options) throws Exception {
+		long[] ids = Converter.cnv(long[].class, options._arguments());
+		agent.stop(ids);
+	}
+
+	@Description("Uninstall the specified bundles")
+	public void _uninstall(BundleOptions options) throws Exception {
+		long[] ids = Converter.cnv(long[].class, options._arguments());
+		agent.uninstall(ids);
+	}
+
+	@Description("Communicate with the remote framework to install or update bundle")
+	@Arguments(arg = {
+		"filespec", "location"
+	})
+	interface InstallOptions extends Options {
+	}
+
+	@Description("Install/update the specified bundle")
+	public void _install(InstallOptions options) throws Exception {
+		List<String> args = options._arguments();
+		String fileSpec = args.remove(0);
+		String location = args.remove(0);
+
+		byte[] data = null;
+		URL u = checkURL(fileSpec);
+
+		if (u != null) {
+			data = ByteStreams.toByteArray(u.openStream());
+		} else {
+			File f = checkFile(fileSpec);
+			if (f != null) {
+				data = Files.readAllBytes(f.toPath());
+			}
+		}
+		install(location, data);
+	}
+
+	private URL checkURL(String filespec) {
+		try {
+			URL url = new URL(filespec);
+			return url;
+		} catch (Exception e) {
+			// nothing to do
+		}
+		return null;
+	}
+
+	private File checkFile(String file) {
+		try {
+			File f = new File(file);
+			Jar jar = new Jar(f);
+			// check if the jar is a bundle
+			if (jar.getBsn() != null) {
+				return f;
+			}
+		} catch (Exception e) {
+			// nothing to do
+		}
+		return null;
+	}
+
+	private void install(String location, byte[] data) throws Exception {
+		if (data == null) {
+			error("Error occurred while parsing the specified file");
+			return;
+		}
+		if (location == null) {
+			error("Error occurred while parsing the location identifier");
+			return;
+		}
+		BundleDTO dto = agent.install(location, data);
+		bnd.out.println(dto);
 	}
 
 	@Override
