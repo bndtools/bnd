@@ -72,17 +72,6 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	biz.aQute.repository;version=latest,\
 	biz.aQute.bnd.exporters;version=latest,\
  	biz.aQute.bnd.reporter;version=latest,\
- 	org.jtwig:jtwig-core;version=latest,\
- 	org.jtwig:jtwig-reflection;version=latest,\
-	org.parboiled:parboiled-java;version=latest,\
-	org.parboiled:parboiled-core;version=latest,\
-	org.apache.commons.lang3;version="[3.4,4.0)",\
-	com.google.guava;version="[18.0,19.0)",\
-	com.googlecode.concurrentlinkedhashmap.lru;version="[1.4.2,2.0.0)",\
-	org.objectweb.asm;version="[5.0.3,6.0.0)",\
-	org.objectweb.asm.analysis;version="[5.0.3,6.0.0)",\
-	org.objectweb.asm.tree;version="[5.0.3,6.0.0)",\
-	org.objectweb.asm.util;version="[5.0.3,6.0.0)",\
 	biz.aQute.bnd.annotation;version=project,\
 	org.apache.ant:ant;version=latest,\
 	biz.aQute.remote.api;version=latest,\
@@ -96,5 +85,34 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
 	org.osgi.namespace.extender;version=latest,\
 	org.apache.felix.framework, \
 	biz.aQute.bnd.embedded-repo; version=snapshot
+
+# Dependencies needed by the inclusion of biz.aQute.bnd.reporter in the jar.
+# These dependencies are not on the -buildpath so no other part of bnd can
+# use them in the source code.
+-classpath: \
+    ${repo;org.jtwig:jtwig-core;latest},\
+    ${repo;org.jtwig:jtwig-reflection;latest},\
+    ${repo;org.parboiled:parboiled-java;latest},\
+    ${repo;org.parboiled:parboiled-core;latest},\
+    ${repo;org.apache.commons.lang3;[3.4,4.0)},\
+    ${repo;com.google.guava;[18.0,19.0)},\
+    ${repo;com.googlecode.concurrentlinkedhashmap.lru;[1.4.2,2.0.0)},\
+    ${repo;org.objectweb.asm;[5.0.3,6.0.0)},\
+    ${repo;org.objectweb.asm.analysis;[5.0.3,6.0.0)},\
+    ${repo;org.objectweb.asm.tree;[5.0.3,6.0.0)},\
+    ${repo;org.objectweb.asm.util;[5.0.3,6.0.0)}
+
+-testpath.reporter: \
+    org.jtwig:jtwig-core;version=latest,\
+    org.jtwig:jtwig-reflection;version=latest,\
+    org.parboiled:parboiled-java;version=latest,\
+    org.parboiled:parboiled-core;version=latest,\
+    org.apache.commons.lang3;version="[3.4,4.0)",\
+    com.google.guava;version="[18.0,19.0)",\
+    com.googlecode.concurrentlinkedhashmap.lru;version="[1.4.2,2.0.0)",\
+    org.objectweb.asm;version="[5.0.3,6.0.0)",\
+    org.objectweb.asm.analysis;version="[5.0.3,6.0.0)",\
+    org.objectweb.asm.tree;version="[5.0.3,6.0.0)",\
+    org.objectweb.asm.util;version="[5.0.3,6.0.0)"
 
 -builderignore: testdata, testruns, installers
