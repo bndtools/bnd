@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 import aQute.bnd.annotation.headers.BundleLicense;
 
 /**
- * An annotation to indicate that the type depends on the Common Development and
- * Distribution license. Applying this annotation will add a Bundle-License
+ * An annotation to indicate that the type depends on the GNU Lesser Public
+ * License v2.1 or later. Applying this annotation will add a Bundle-License
  * clause.
  */
 @Documented
@@ -18,5 +18,6 @@ import aQute.bnd.annotation.headers.BundleLicense;
 @Target({
 	ElementType.PACKAGE, ElementType.TYPE
 })
-@BundleLicense(name = "CDDL-1.0", link = "https://opensource.org/licenses/CDDL-1.0", description = "Common Development and Distribution License 1.0")
-public @interface CDDL_1_0 {}
+@BundleLicense(name = "LGPL-2.1-or-later", link = "https://opensource.org/licenses/LGPL-2.1", description = "GNU Lesser General Public License v2.1 or later")
+public @interface LGPL_2_1_or_later {
+}

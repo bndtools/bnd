@@ -2,7 +2,7 @@
 Bundle-Copyright: Copyright (c) Neil Bartlett (2009, ${tstamp;yyyy}) and others. All Rights Reserved.
 Bundle-License: EPL-1.0; \
                 description="Eclipse Public License, Version 1.0"; \
-                link="http://www.eclipse.org/legal/epl-v10.html"
+                link="https://opensource.org/licenses/EPL-1.0"
 Bundle-DocURL: https://bndtools.org/
 
 # Import-Package clauses for Eclipse packages
