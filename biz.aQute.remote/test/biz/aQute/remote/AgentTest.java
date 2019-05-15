@@ -2,7 +2,6 @@ package biz.aQute.remote;
 
 import java.io.File;
 import java.net.ConnectException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -245,7 +244,7 @@ public class AgentTest extends TestCase {
 
 	public void testAgentInstallBundleSinceNoExistingBundleMathcesBsnAndVersion() throws Exception {
 		BundleDTO bundle = supervisor.getAgent()
-			.install(t4.getAbsolutePath(), Files.readAllBytes(t4.toPath()));
+			.install(t4.getAbsolutePath(), IO.read(t4));
 
 		assertNotNull(bundle);
 		assertEquals(4, bundle.id);
@@ -263,7 +262,7 @@ public class AgentTest extends TestCase {
 		File t3prime = create("bsn-4", new Version(4, 0, 1));
 
 		assertNotNull(supervisor.getAgent()
-			.install(t4.getAbsolutePath(), Files.readAllBytes(t4.toPath())));
+			.install(t4.getAbsolutePath(), IO.read(t4)));
 
 		t4Bundle = supervisor.getAgent()
 			.getBundles(4)
