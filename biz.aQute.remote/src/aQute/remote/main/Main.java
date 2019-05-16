@@ -5,7 +5,9 @@ import java.io.IOException;
 
 import aQute.bnd.util.home.Home;
 import aQute.lib.collections.ExtList;
+import aQute.lib.getopt.Arguments;
 import aQute.lib.getopt.CommandLine;
+import aQute.lib.getopt.Description;
 import aQute.lib.getopt.Options;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
@@ -42,25 +44,35 @@ public class Main extends ReporterAdapter {
 	/**
 	 * Options
 	 */
+	@Description("Start an envoy server. This envoy server can be contacted by a remote system which can then set a runpath and install an agent.")
+	@Arguments(arg = {})
 	interface RunOptions extends Options {
+		@Description("Show exception stack traces")
 		boolean exceptions();
 
+		@Description("Show trace information")
 		boolean trace();
 
+		@Description("Set the agent's binary SHA cache directory")
 		String cache(String deflt);
 
+		@Description("Set the directory for the framework storage")
 		String storage(String deflt);
 
+		@Description("Set the port to listen to, default is " + Agent.DEFAULT_PORT)
 		int port(int deflt);
 
+		@Description("Set the network interface to register the socket listener on. If `-a` is set then the default is 0.0.0.0, else localhost")
 		String network(String deflt);
 
+		@Description("Register on all network interfaces")
 		boolean all();
 	}
 
 	/**
 	 * The real one
 	 */
+	@Description("Start an envoy server. This envoy server can be contacted by a remote system which can then set a runpath and install an agent.")
 	public void _run(RunOptions options) throws Exception {
 
 		setTrace(options.trace());
