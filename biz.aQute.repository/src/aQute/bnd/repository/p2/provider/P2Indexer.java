@@ -218,8 +218,10 @@ class P2Indexer implements Closeable {
 					}
 					logger.info("Retrying invalid download: {}. delay={}, retries={}", failed.getFailure()
 						.getMessage(), delay, retries);
-					return success.delay(delay)
-						.flatMap(tag -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+					@SuppressWarnings("unchecked")
+					Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
+					return delayed
+						.recoverWith(tag -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
 				}));
 	}
 
