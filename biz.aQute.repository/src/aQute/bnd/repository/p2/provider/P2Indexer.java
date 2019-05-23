@@ -221,7 +221,7 @@ class P2Indexer implements Closeable {
 					@SuppressWarnings("unchecked")
 					Promise<TaggedData> delayed = (Promise<TaggedData>) failed.delay(delay);
 					return delayed
-						.recoverWith(tag -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
+						.recoverWith(f -> fetch(a, retries - 1, Math.min(delay * 2L, TimeUnit.MINUTES.toMillis(10))));
 				}));
 	}
 
