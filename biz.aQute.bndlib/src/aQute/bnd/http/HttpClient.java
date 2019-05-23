@@ -166,7 +166,6 @@ public class HttpClient implements Closeable, URLConnector {
 		return sendAsync(request, retries, delay);
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T> Promise<T> sendAsync(HttpRequest<T> request, int retries, long delay) {
 		HttpConnection<T> connection = new HttpConnection<>(request);
 		return promiseFactory().submit(connection)
@@ -186,10 +185,14 @@ public class HttpClient implements Closeable, URLConnector {
 					if (failure instanceof RetryException) {
 						TaggedData tag = ((RetryException) failure).getTag();
 						if (request.download == TaggedData.class) {
-							return promiseFactory().resolved((T) tag);
+							// recover with TaggedData object
+							@SuppressWarnings("unchecked")
+							Promise<T> recovery = (Promise<T>) promiseFactory().resolved(tag);
+							return recovery;
 						}
 						// replace failure exception
-						throw new HttpRequestException(tag, failure.getCause());
+						return promiseFactory()
+							.failed(new HttpRequestException(tag, failure.getCause()));
 					}
 					return null; // no recovery
 				}
@@ -199,6 +202,7 @@ public class HttpClient implements Closeable, URLConnector {
 				}
 				logger.info("Retrying failed connection. url={}, message={}, delay={}, retries={}", request.url,
 					message, delay, retries, logFailure);
+				@SuppressWarnings("unchecked")
 				Promise<T> delayed = (Promise<T>) failed.delay(delay);
 				// double delay for next retry; 10 minutes max delay
 				long nextDelay = (request.retryDelay == 0L) ? Math.min(delay * 2L, MAX_RETRY_DELAY) : delay;
