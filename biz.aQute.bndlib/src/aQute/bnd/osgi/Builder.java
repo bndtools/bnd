@@ -236,9 +236,10 @@ public class Builder extends Analyzer {
 
 		// Check if we have sensible setup
 
-		if (getClasspath().size() == 0 && (getProperty(EXPORT_PACKAGE) != null || getProperty(EXPORT_PACKAGE) != null
-			|| getProperty(PRIVATE_PACKAGE) != null || getProperty(PRIVATEPACKAGE) != null))
-			warning("Classpath is empty. " + Constants.PRIVATE_PACKAGE + " (-privatepackage) and " + EXPORT_PACKAGE
+		if (getClasspath().size() == 0 && (getProperty(EXPORT_PACKAGE) != null || getProperty(PRIVATE_PACKAGE) != null
+			|| getProperty(PRIVATEPACKAGE) != null))
+			warning("Classpath is empty. " + Constants.PRIVATE_PACKAGE + ", " + Constants.PRIVATEPACKAGE + ", and "
+				+ EXPORT_PACKAGE
 				+ " can only expand from the classpath when there is one");
 
 	}

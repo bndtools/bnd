@@ -680,17 +680,19 @@ public class ProjectBuilder extends Builder {
 		 * ProjectBuilder (not Builder which is used by non-workspace builds) to
 		 * use the source output folder (e.g. bin folder) as the default
 		 * contents if the bundle's bnd file does not specify any of the
-		 * following instructions: Private-Package, Export-Package,
-		 * Include-Resource, -includeresource, or -resourceonly. If the bnd file
-		 * specifies any of these instructions, then they will fully control the
-		 * contents of the bundle.
+		 * following instructions: -resourceonly, -includepackage,
+		 * Private-Package, -privatepackage, Export-Package, Include-Resource,
+		 * or -includeresource. If the bnd file specifies any of these
+		 * instructions, then they will fully control the contents of the
+		 * bundle.
 		 */
 		if (!project.isNoBundles() && (builder.getJar() == null)
 			&& (builder.getProperty(Constants.RESOURCEONLY) == null)
+			&& (builder.getProperty(Constants.INCLUDEPACKAGE) == null)
 			&& (builder.getProperty(Constants.PRIVATE_PACKAGE) == null)
+			&& (builder.getProperty(Constants.PRIVATEPACKAGE) == null)
 			&& (builder.getProperty(Constants.EXPORT_PACKAGE) == null)
 			&& (builder.getProperty(Constants.INCLUDE_RESOURCE) == null)
-			&& (builder.getProperty(Constants.INCLUDEPACKAGE) == null)
 			&& (builder.getProperty(Constants.INCLUDERESOURCE) == null) && project.getOutput()
 				.isDirectory()) {
 			Jar outputDirJar = new Jar(project.getName(), project.getOutput());
