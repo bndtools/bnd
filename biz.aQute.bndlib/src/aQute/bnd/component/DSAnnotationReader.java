@@ -1314,10 +1314,10 @@ public class DSAnnotationReader extends ClassDataCollector {
 				if ((type instanceof ClassTypeSignature)
 					&& ((ClassTypeSignature) type).binary.equals("java/util/Map")) {
 					minVersion = V1_1;
-					minReason = "use of map in method reference";
+					minReason = "use of map in method reference in second position";
 				} else {
 					minVersion = V1_3;
-					minReason = "use of map in method reference";
+					minReason = "use of map in method reference not in second position";
 				}
 				break;
 			default :
@@ -1359,7 +1359,7 @@ public class DSAnnotationReader extends ClassDataCollector {
 				if (tryInfer) {
 					// first argument using type supported starting in 1.3
 					minVersion = V1_3;
-					minReason = "first argument using type supported starting in 1.3";
+					minReason = "first argument using more types supported starting in 1.3";
 				}
 				break;
 			default :

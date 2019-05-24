@@ -63,6 +63,7 @@ import aQute.bnd.test.BndTestCase;
 import aQute.bnd.test.XmlTester;
 import aQute.bnd.version.Version;
 import aQute.lib.filter.Filter;
+import aQute.lib.io.IO;
 import junit.framework.AssertionFailedError;
 
 /**
@@ -102,6 +103,36 @@ public class DSAnnotationTest extends BndTestCase {
 		assertTrue(b.check(
 			"component 1.3.0 version test.component.DSAnnotationTest.ValidNSVersion exceeds -dsannotations-options version;maximum version 1.2.0 because base"));
 	}
+
+	@Component()
+	public static class RequiresV1_3 {
+
+		@Reference(service = String.class)
+		void setX(Map<String, Object> map) {
+
+		}
+	}
+
+	public void testRequires1_3() throws Exception {
+		Builder b = new Builder();
+		b.setProperty(Constants.DSANNOTATIONS, "test.component.*RequiresV1_3");
+		b.setProperty(Constants.DSANNOTATIONS_OPTIONS, "version;minimum=1.2.0;maximum=1.2.0");
+		b.setProperty("Private-Package", "test.component");
+		b.addClasspath(new File("bin_test"));
+		b.addClasspath(new File("jar/osgi.jar")); // v1.0.0
+		Jar jar = b.build();
+		assertTrue(b.check(
+			"component 1.3.0 version test.component.DSAnnotationTest\\$RequiresV1_3 exceeds"));
+
+		System.out.println(jar.getResources()
+			.keySet());
+
+		Resource resource = jar.getResource("OSGI-INF/test.component.DSAnnotationTest$RequiresV1_3.xml");
+		assertThat(resource).isNotNull();
+		String s = IO.collect(resource.openInputStream());
+		System.out.println(s);
+	}
+
 	public void testValidNamespaceVersion() throws Exception {
 		Builder b = new Builder();
 		b.setProperty(Constants.DSANNOTATIONS, "test.component.*ValidNSVersion");

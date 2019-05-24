@@ -162,11 +162,12 @@ public class DSAnnotations implements AnalyzerPlugin {
 						break;
 					}
 
-					checkVersionConflicts(analyzer, definition);
 
 					componentProcessed = true;
 					definition.sortReferences();
 					definition.prepare(analyzer);
+
+					checkVersionConflicts(analyzer, definition);
 
 					//
 					// we need a unique definition.name
