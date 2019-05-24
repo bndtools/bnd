@@ -648,6 +648,9 @@ public class Syntax implements Constants {
 			RUNJDB + ": 10001", null, null),
 		new Syntax(RUNKEEP, "Decides to keep the framework storage directory between launching.", RUNKEEP + ": true",
 			"true,false", Verifier.TRUEORFALSEPATTERN),
+		new Syntax(RUNORDER, "After a resolver order the " + RUNBUNDLES
+			+ " by their wiring dependencies. That is, general utilities are started before application code and likely the application last. If not set or false, the order is random",
+			RUNORDER + "=true", null, Verifier.BOOLEANPATTERN),
 		new Syntax(RUNPATH, "Additional JARs for the VM path, can include a framework",
 			RUNPATH + "=org.eclipse.osgi;version=3.5", null, null, path_version),
 		new Syntax(RUNNOREFERENCES,

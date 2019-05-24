@@ -204,6 +204,7 @@ public interface Constants {
 	String								RUNSYSTEMPACKAGES							= "-runsystempackages";
 	String								RUNSYSTEMCAPABILITIES						= "-runsystemcapabilities";
 	String								RUNPROVIDEDCAPABILITIES						= "-runprovidedcapabilities";
+	String								RUNORDER									= "-runorder";
 
 	String								RUNBUNDLES									= "-runbundles";
 	String								AUGMENT										= "-augment";
@@ -281,7 +282,7 @@ public interface Constants {
 		JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE,
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
 		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK,
-		MAVEN_SCOPE
+		MAVEN_SCOPE, RUNORDER
 
 	};
 

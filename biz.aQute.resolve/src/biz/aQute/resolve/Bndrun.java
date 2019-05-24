@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
@@ -96,7 +98,7 @@ public class Bndrun extends Run {
 				if (!projectResolver.isOk()) {
 					return runbundlesFormatter.convert(Collections.<VersionedClause> emptyList());
 				}
-				Set<Resource> resources = resolution.keySet();
+				Collection<Resource> resources = getResources(resolution);
 				List<VersionedClause> runBundles = new ArrayList<>();
 				for (Resource resource : resources) {
 					VersionedClause runBundle = ResourceUtils.toVersionClause(resource, "[===,==+)");
@@ -156,5 +158,55 @@ public class Bndrun extends Run {
 				getInfo(projectResolver);
 			}
 		}
+	}
+
+	class Node {
+		final Resource	r;
+		final Set<Node>	children	= new HashSet<>();
+
+		Node(Resource resource) {
+			r = resource;
+		}
+
+		public void addDependents(List<Node> resources) {
+			if (resources.contains(this))
+				return;
+
+			for (Node c : children) {
+				c.addDependents(resources);
+			}
+
+			// if we have cycles, break them
+			if (resources.contains(this))
+				return;
+
+			resources.add(this);
+		}
+	}
+
+	public Collection<Resource> getResources(Map<Resource, List<Wire>> resolution) {
+		if (!Processor.isTrue(getProperty(Constants.RUNORDER)))
+			return resolution.keySet();
+
+		Map<Resource, Node> map = resolution.keySet()
+			.stream()
+			.collect(Collectors.toMap(r -> r, Node::new));
+
+		resolution.values()
+			.stream()
+			.flatMap(Collection::stream)
+			.forEach(wire -> {
+				Node rq = map.get(wire.getRequirer());
+				rq.children.add(map.get(wire.getProvider()));
+			});
+
+		List<Node> resources = new ArrayList<>();
+		for (Node n : map.values()) {
+			n.addDependents(resources);
+		}
+
+		return resources.stream()
+			.map(node -> node.r)
+			.collect(Collectors.toList());
 	}
 }
