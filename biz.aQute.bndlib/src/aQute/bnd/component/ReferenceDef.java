@@ -142,7 +142,7 @@ class ReferenceDef extends ExtensionDef {
 			return;
 
 		this.version = version;
-		this.reasonForVersion = version + ":" + reason;
+		this.reasonForVersion = reason;
 	}
 
 }

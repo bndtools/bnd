@@ -56,10 +56,14 @@ public class ResolveCommand extends Processor {
 		getSettings(bnd);
 	}
 
+	@Description("Resolve a number of bndrun files (either standalone or based on the workspace) and print the bundles ")
+	@Arguments(arg = "bndrun...")
 	interface FindOptions extends projectOptions {
+		@Description("Override the workspace, if inside a workspace directory then the current workspace is used")
 		String workspace();
 	}
 
+	@Description("Resolve a number of bndrun files (either standalone or based on the workspace) and print the bundles ")
 	public void _find(FindOptions options, bnd bnd) throws Exception {
 
 		List<String> args = options._arguments();
@@ -96,7 +100,16 @@ public class ResolveCommand extends Processor {
 		if (!args.isEmpty())
 			version = args.remove(0);
 
-		ProjectResolver pr = new ProjectResolver(bnd.getProject(options.project()));
+		Project project = bnd.getProject(options.project());
+		if (project == null) {
+			project = Run.createRun(bnd.getWorkspace(), null);
+			if (project == null) {
+				bnd.error("Cannot find project or workspace in %s", IO.work);
+				return;
+			}
+		}
+
+		ProjectResolver pr = new ProjectResolver(project);
 		addClose(pr);
 
 		IdentityCapability resource = pr.getResource(bsn, version);
