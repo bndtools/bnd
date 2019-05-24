@@ -53,33 +53,29 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 		version {
 			@Override
-			void process(DSAnnotations anno, Attrs attrs) {
+			void process(VersionSettings settings, Attrs attrs) {
 				String min = attrs.get("minimum");
 				if (min != null && min.length() > 0) {
-					anno.minVersion = Version.valueOf(min);
+					settings.minVersion = Version.valueOf(min);
 				}
 				String max = attrs.get("maximum");
 
 				if (max != null && max.length() > 0) {
-					anno.maxVersion = Version.valueOf(max);
+					settings.maxVersion = Version.valueOf(max);
 				}
 			}
 
-			@Override
-			void reset(DSAnnotations anno) {
-				anno.minVersion = V1_3;
-			}
 		};
 
-		void process(DSAnnotations anno, Attrs attrs) {
+		void process(VersionSettings anno, Attrs attrs) {
 
 		}
 
-		void reset(DSAnnotations anno) {
+		void reset(VersionSettings anno) {
 
 		}
 
-		static void parseOption(Map.Entry<String, Attrs> entry, EnumSet<Options> options, DSAnnotations state) {
+		static void parseOption(Map.Entry<String, Attrs> entry, EnumSet<Options> options, VersionSettings state) {
 			String s = entry.getKey();
 			boolean negation = false;
 			if (s.startsWith("!")) {
@@ -101,24 +97,26 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 	};
 
-	Version minVersion;
-	Version	maxVersion;
+	static class VersionSettings {
+		Version	minVersion	= V1_3;
+		Version	maxVersion	= VMAX;
+	}
 
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
+		
+		VersionSettings settings = new VersionSettings();
+		
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.DSANNOTATIONS, "*"));
 		if (header.size() == 0) {
 			return false;
 		}
 
-		minVersion = V1_3;
-		maxVersion = VMAX;
-
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.mergeProperties(Constants.DSANNOTATIONS_OPTIONS));
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
 		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
 			try {
-				Options.parseOption(entry, options, this);
+				Options.parseOption(entry, options, settings);
 			} catch (IllegalArgumentException e) {
 				analyzer.error("Unrecognized %s value %s with attributes %s, expected values are %s",
 					Constants.DSANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(), EnumSet.allOf(Options.class));
@@ -157,7 +155,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 						break;
 					}
 					ComponentDef definition = DSAnnotationReader.getDefinition(c, analyzer, options, finder,
-						minVersion);
+						settings.minVersion);
 					if (definition == null) {
 						break;
 					}
@@ -167,7 +165,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 					definition.sortReferences();
 					definition.prepare(analyzer);
 
-					checkVersionConflicts(analyzer, definition);
+					checkVersionConflicts(analyzer, definition, settings);
 
 					//
 					// we need a unique definition.name
@@ -243,15 +241,15 @@ public class DSAnnotations implements AnalyzerPlugin {
 	/*
 	 * Check for any version conflicts and report them as errors
 	 */
-	private void checkVersionConflicts(Analyzer analyzer, ComponentDef definition) {
+	private void checkVersionConflicts(Analyzer analyzer, ComponentDef definition, VersionSettings settings) {
 
-		if (definition.version.compareTo(this.maxVersion) > 0) {
+		if (definition.version.compareTo(settings.maxVersion) > 0) {
 			DeclarativeServicesAnnotationError dse = new DeclarativeServicesAnnotationError(
 				definition.implementation.getFQN(), null, ErrorType.VERSION_MISMATCH);
 			analyzer
 				.error("component %s version %s exceeds -dsannotations-options version;maximum version %s because %s",
 					definition.version,
-					definition.name, this.maxVersion,
+					definition.name, settings.maxVersion,
 					definition.versionReason)
 				.details(dse);
 		}

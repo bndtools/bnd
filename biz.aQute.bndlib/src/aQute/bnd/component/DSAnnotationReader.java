@@ -69,11 +69,11 @@ public class DSAnnotationReader extends ClassDataCollector {
 	private static final Logger					logger						= LoggerFactory
 		.getLogger(DSAnnotationReader.class);
 
-	public static final Version					V1_0						= new Version("1.0.0");			// "1.0.0"
-	public static final Version					V1_1						= new Version("1.1.0");			// "1.1.0"
-	public static final Version					V1_2						= new Version("1.2.0");			// "1.2.0"
-	public static final Version					V1_3						= new Version("1.3.0");			// "1.3.0"
-	public static final Version					V1_4						= new Version("1.4.0");			// "1.3.0"
+	public static final Version					V1_0						= new Version("1.0.0");
+	public static final Version					V1_1						= new Version("1.1.0");
+	public static final Version					V1_2						= new Version("1.2.0");
+	public static final Version					V1_3						= new Version("1.3.0");
+	public static final Version					V1_4						= new Version("1.4.0");
 	public static final Version					VMAX						= new Version("2.0.0");
 
 	private static final Pattern				BINDNAME					= Pattern
