@@ -1,5 +1,6 @@
 package aQute.bnd.repository.fileset;
 
+import static aQute.lib.exceptions.FunctionWithException.asFunction;
 import static aQute.lib.promise.PromiseCollectors.toPromise;
 
 import java.io.File;
@@ -9,9 +10,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.SortedSet;
-import java.util.jar.JarFile;
 
+import org.osgi.framework.namespace.IdentityNamespace;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 import org.osgi.resource.Resource;
@@ -24,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.osgi.Domain;
+import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.bnd.osgi.repository.BridgeRepository;
 import aQute.bnd.osgi.repository.ResourcesRepository;
@@ -34,10 +37,12 @@ import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.RepositoryPlugin;
 import aQute.bnd.util.repository.DownloadListenerPromise;
+import aQute.bnd.version.MavenVersion;
 import aQute.bnd.version.Version;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA256;
+import aQute.maven.provider.POM;
 import aQute.service.reporter.Reporter;
 
 public class FileSetRepository extends BaseRepository implements Plugin, RepositoryPlugin {
@@ -87,11 +92,49 @@ public class FileSetRepository extends BaseRepository implements Plugin, Reposit
 				return null;
 			}
 			ResourceBuilder rb = new ResourceBuilder();
-			try (JarFile jar = new JarFile(file)) {
+			try (Jar jar = new Jar(file)) {
 				Domain manifest = Domain.domain(jar.getManifest());
 				boolean hasIdentity = rb.addManifest(manifest);
 				if (!hasIdentity) {
-					return null;
+					Optional<POM> pom = jar.getPomXmlResources()
+						.findFirst()
+						.map(asFunction(pomResource -> new POM(null, pomResource.openInputStream(), true)));
+
+					String name;
+
+					if (jar.getModuleName() != null) {
+						name = jar.getModuleName();
+					}
+					else if (pom.isPresent()) {
+						name = pom.get()
+							.getRevision().group + ":"
+							+ pom.get()
+								.getRevision().artifact;
+					} else {
+						return null;
+					}
+
+					String version = null;
+
+					if (pom.isPresent()) {
+						version = pom.get()
+							.getRevision().version.getOSGiVersion()
+							.toString();
+					}
+					else if (jar.getModuleVersion() != null) {
+						version = new MavenVersion(jar.getModuleVersion()).getOSGiVersion()
+							.toString();
+					}
+
+					if (version == null) {
+						version = "0.0.0";
+					}
+
+					CapReqBuilder identity = new CapReqBuilder(IdentityNamespace.IDENTITY_NAMESPACE);
+					identity.addAttribute(IdentityNamespace.IDENTITY_NAMESPACE, name);
+					identity.addAttribute(IdentityNamespace.CAPABILITY_TYPE_ATTRIBUTE, IdentityNamespace.TYPE_UNKNOWN);
+					identity.addAttribute(IdentityNamespace.CAPABILITY_VERSION_ATTRIBUTE, version);
+					rb.addCapability(identity);
 				}
 			} catch (Exception f) {
 				return null;
