@@ -1599,8 +1599,10 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	private static boolean skipPrint(String key) {
 		switch (key) {
-			case INTERNAL_SOURCE_DIRECTIVE :
 			case INTERNAL_EXPORTED_DIRECTIVE :
+			case INTERNAL_EXPORT_TO_MODULES_DIRECTIVE :
+			case INTERNAL_OPEN_TO_MODULES_DIRECTIVE :
+			case INTERNAL_SOURCE_DIRECTIVE :
 			case NO_IMPORT_DIRECTIVE :
 			case PROVIDE_DIRECTIVE :
 			case SPLIT_PACKAGE_DIRECTIVE :

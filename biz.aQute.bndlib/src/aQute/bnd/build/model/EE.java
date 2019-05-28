@@ -6,6 +6,7 @@ import java.util.EnumSet;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.version.Version;
+import aQute.lib.exceptions.Exceptions;
 import aQute.lib.utf8properties.UTF8Properties;
 
 public enum EE {
@@ -56,6 +57,7 @@ public enum EE {
 	private final EE[]				compatible;
 	private transient EnumSet<EE>	compatibleSet;
 	private transient Parameters	packages	= null;
+	private transient Parameters	modules		= null;
 
 	EE(String name, String capabilityName, Version capabilityVersion, EE... compatible) {
 		this.eeName = name;
@@ -109,20 +111,46 @@ public enum EE {
 
 	/**
 	 * Return the list of packages
-	 * 
-	 * @throws IOException
+	 *
+	 * @throws IOException (Unchecked via {@link Exceptions})
 	 */
-	public Parameters getPackages() throws IOException {
+	@SuppressWarnings("javadoc")
+	public Parameters getPackages() {
 		if (packages == null) {
-			try (InputStream stream = EE.class.getResourceAsStream(name() + ".properties")) {
-				if (stream == null)
-					return new Parameters();
-				UTF8Properties props = new UTF8Properties();
-				props.load(stream);
-				String exports = props.getProperty("org.osgi.framework.system.packages");
-				packages = new Parameters(exports);
-			}
+			init();
 		}
 		return packages;
+	}
+
+	/**
+	 * Return the list of modules
+	 *
+	 * @throws IOException (Unchecked via {@link Exceptions})
+	 */
+	@SuppressWarnings("javadoc")
+	public Parameters getModules() {
+		if (modules == null) {
+			init();
+		}
+		return modules;
+	}
+
+	private void init() {
+		try (InputStream stream = EE.class.getResourceAsStream(name() + ".properties")) {
+			if (stream == null) {
+				packages = new Parameters();
+				modules = new Parameters();
+				return;
+			}
+			UTF8Properties props = new UTF8Properties();
+			props.load(stream);
+			String packagesProp = props.getProperty("org.osgi.framework.system.packages");
+			packages = new Parameters(packagesProp);
+			String modulesProp = props.getProperty("jpms.modules");
+			modules = new Parameters(modulesProp);
+		}
+		catch (IOException ioe) {
+			throw Exceptions.duck(ioe);
+		}
 	}
 }

@@ -52,6 +52,7 @@ public interface Constants {
 	String								IMPORT_PACKAGE								= "Import-Package";
 	String								IMPORT_SERVICE								= "Import-Service";
 	String								LAUNCHER_PLUGIN								= "Launcher-Plugin";
+	String								MAIN_CLASS									= "Main-Class";
 	String								META_PERSISTENCE							= "Meta-Persistence";
 	String								PROVIDE_CAPABILITY							= "Provide-Capability";
 	String								REQUIRE_BUNDLE								= "Require-Bundle";
@@ -298,6 +299,9 @@ public interface Constants {
 	String								INTERNAL_EXPORTED_DIRECTIVE					= "-internal-exported:";
 	String								INTERNAL_BUNDLESYMBOLICNAME_DIRECTIVE		= "-internal-bundlesymbolicname:";
 	String								INTERNAL_BUNDLEVERSION_DIRECTIVE			= "-internal-bundleversion:";
+	String								INTERNAL_EXPORT_TO_MODULES_DIRECTIVE		= "-internal-export-to-modules:";
+	String								INTERNAL_MODULE_VERSION_DIRECTIVE			= "-internal-module-version:";
+	String								INTERNAL_OPEN_TO_MODULES_DIRECTIVE			= "-internal-open-to-modules:";
 	String								INTERNAL_SOURCE_DIRECTIVE					= "-internal-source:";
 	String								SPECIFICATION_VERSION						= "specification-version";
 	String								SPLIT_PACKAGE_DIRECTIVE						= "-split-package:";
@@ -486,6 +490,7 @@ public interface Constants {
 	/*
 	 * Module Section
 	 */
+	String								JPMS_MODULE_INFO							= "-jpms-module-info";
 	String								MODULE_INFO_CLASS							= "module-info.class";
 
 	/*
