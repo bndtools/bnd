@@ -10,10 +10,9 @@ import java.util.regex.Pattern;
 public class MavenVersion implements Comparable<MavenVersion> {
 
 	private static final Pattern			fuzzyVersion		= Pattern
-		.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?", Pattern.DOTALL);
+		.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9]?(.*))?", Pattern.DOTALL);
 	private static final Pattern			fuzzyVersionRange	= Pattern
 		.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
-	private static final Pattern			fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
 	private static final String				VERSION_STRING		= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
 	private static final SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
 	private static final Pattern			VERSIONRANGE		= Pattern
@@ -51,31 +50,36 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public MavenVersion(String maven) {
-		this.version = new Version(cleanupVersion(maven));
-		this.qualifier = ComparableVersion.parseVersion(version.qualifier);
+		Version osgiVersion = new Version(cleanupVersion(maven));
+		this.version = osgiVersion;
+		this.qualifier = ComparableVersion.parseVersion(osgiVersion.qualifier);
 		this.literal = maven;
-		this.snapshot = maven.endsWith("-" + SNAPSHOT);
+		this.snapshot = osgiVersion.isSnapshot();
 	}
 
-	private MavenVersion(String literal, Version version, boolean snapshot) {
-		this.version = version;
-		this.qualifier = ComparableVersion.parseVersion(version.qualifier);
+	private MavenVersion(String literal, Version osgiVersion, boolean snapshot) {
+		this.version = osgiVersion;
+		this.qualifier = ComparableVersion.parseVersion(osgiVersion.qualifier);
 		this.literal = literal;
 		this.snapshot = snapshot;
 	}
 
-	public static final MavenVersion parseString(String versionStr) {
-		if (versionStr == null) {
-			versionStr = "0";
+	/**
+	 * This parses an OSGi Version string into a MavenVersion which is not very
+	 * interesting. You probably want {@link #parseMavenString(String)}.
+	 */
+	public static final MavenVersion parseString(String osgiVersionStr) {
+		if (osgiVersionStr == null) {
+			osgiVersionStr = "0";
 		} else {
-			versionStr = versionStr.trim();
-			if (versionStr.isEmpty()) {
-				versionStr = "0";
+			osgiVersionStr = osgiVersionStr.trim();
+			if (osgiVersionStr.isEmpty()) {
+				osgiVersionStr = "0";
 			}
 		}
-		Matcher m = VERSION.matcher(versionStr);
+		Matcher m = VERSION.matcher(osgiVersionStr);
 		if (!m.matches())
-			throw new IllegalArgumentException("Invalid syntax for version: " + versionStr);
+			throw new IllegalArgumentException("Invalid syntax for version: " + osgiVersionStr);
 
 		int major = Integer.parseInt(m.group(1));
 		int minor = (m.group(3) != null) ? Integer.parseInt(m.group(3)) : 0;
@@ -169,12 +173,9 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public static String toDateStamp(long epoch) {
-		String datestamp;
 		synchronized (snapshotTimestamp) {
-			datestamp = snapshotTimestamp.format(new Date(epoch));
+			return snapshotTimestamp.format(new Date(epoch));
 		}
-		return datestamp;
-
 	}
 
 	public static String toDateStamp(long epoch, String build) {
@@ -308,10 +309,6 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	static void cleanupModifier(StringBuilder result, String modifier) {
 		int l = result.length();
-		Matcher m = fuzzyModifier.matcher(modifier);
-		if (m.matches())
-			modifier = m.group(2);
-
 		for (int i = 0; i < modifier.length(); i++) {
 			char c = modifier.charAt(i);
 			if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c == '-')
