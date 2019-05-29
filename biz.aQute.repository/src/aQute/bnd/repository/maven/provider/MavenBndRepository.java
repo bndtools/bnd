@@ -241,14 +241,18 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 
 		if (instructions.pom.path != null) {
 			if (instructions.pom.path.equals("JAR")) {
-				pom = getPomResource(binary);
+				pom = binary.getPomXmlResources()
+					.findFirst()
+					.orElse(null);
 			} else {
 				pom = createPomFromFile(options.context.getFile(instructions.pom.path));
 			}
 		} else {
 			if (!configuration.ignore_metainf_maven()) {
 				if (options.context.is(Constants.POM)) {
-					pom = getPomResource(binary);
+					pom = binary.getPomXmlResources()
+						.findFirst()
+						.orElse(null);
 				} else {
 					pom = createPomFromFirstMavenPropertiesInJar(binary, options.context);
 				}
@@ -406,17 +410,6 @@ public class MavenBndRepository extends BaseRepository implements RepositoryPlug
 			return null;
 
 		return new FileResource(file);
-	}
-
-	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();
-	private Resource getPomResource(Jar jar) {
-		return jar.getResources()
-			.keySet()
-			.stream()
-			.filter(pomXmlFilter)
-			.findFirst()
-			.map(jar::getResource)
-			.orElse(null);
 	}
 
 	private static final Predicate<String> pomPropertiesFilter = new PathSet("META-INF/maven/*/*/pom.properties")

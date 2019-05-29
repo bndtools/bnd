@@ -59,6 +59,7 @@ import aQute.lib.io.ByteBufferOutputStream;
 import aQute.lib.io.IO;
 import aQute.lib.io.IOConstants;
 import aQute.lib.zip.ZipUtil;
+import aQute.libg.glob.PathSet;
 
 public class Jar implements Closeable {
 	private static final int	BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
@@ -1246,4 +1247,15 @@ public class Jar implements Closeable {
 			.keySet());
 		subDirs.forEach(subDir -> removePrefix(subDir + "/"));
 	}
+
+	private static final Predicate<String> pomXmlFilter = new PathSet("META-INF/maven/*/*/pom.xml").matches();
+
+	public Stream<Resource> getPomXmlResources() {
+		return getResources()
+			.keySet()
+			.stream()
+			.filter(pomXmlFilter)
+			.map(this::getResource);
+	}
+
 }
