@@ -7,13 +7,14 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.bnd.version.maven.ComparableVersion;
+
 public class MavenVersion implements Comparable<MavenVersion> {
 
 	private static final Pattern			fuzzyVersion		= Pattern
-		.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?", Pattern.DOTALL);
+		.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9]?(.*))?", Pattern.DOTALL);
 	private static final Pattern			fuzzyVersionRange	= Pattern
 		.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
-	private static final Pattern			fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
 	private static final String				VERSION_STRING		= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
 	private static final SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
 	private static final Pattern			VERSIONRANGE		= Pattern
@@ -27,55 +28,39 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	public static final MavenVersion	UNRESOLVED		= new MavenVersion("0-UNRESOLVED");
 
 	private static final String			SNAPSHOT		= "SNAPSHOT";
-	public static final MavenVersion	HIGHEST			= new MavenVersion(Version.HIGHEST);
-	public static final MavenVersion	LOWEST			= new MavenVersion("0-SNAPSHOT", Version.LOWEST, true);
-	static final MavenVersion			RANGE_HIGHEST	= new MavenVersion("", Version.HIGHEST, false);
-	static final MavenVersion			RANGE_LOWEST	= new MavenVersion("", Version.LOWEST, true);
+	public static final MavenVersion	HIGHEST			= new MavenVersion(
+		"2147483647.2147483647.2147483647.2147483647");
+	public static final MavenVersion	LOWEST			= new MavenVersion("alpha");
 
 	private final Version				version;
-	private final String				literal;
-	private final boolean				snapshot;
-	private final ComparableVersion		qualifier;
+	private final ComparableVersion		comparable;
 
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;
-		String q = osgiVersion.qualifier;
-		this.qualifier = ComparableVersion.parseVersion(q);
-
-		String l = osgiVersion.toStringWithoutQualifier();
-		if (q != null) {
-			l += "-" + q;
-		}
-		this.literal = l;
-		this.snapshot = osgiVersion.isSnapshot();
+		this.comparable = new ComparableVersion(osgiVersion.toMavenString());
 	}
 
 	public MavenVersion(String maven) {
 		this.version = new Version(cleanupVersion(maven));
-		this.qualifier = ComparableVersion.parseVersion(version.qualifier);
-		this.literal = maven;
-		this.snapshot = maven.endsWith("-" + SNAPSHOT);
+		this.comparable = new ComparableVersion((maven != null) ? maven : "");
 	}
 
-	private MavenVersion(String literal, Version version, boolean snapshot) {
-		this.version = version;
-		this.qualifier = ComparableVersion.parseVersion(version.qualifier);
-		this.literal = literal;
-		this.snapshot = snapshot;
-	}
-
-	public static final MavenVersion parseString(String versionStr) {
-		if (versionStr == null) {
-			versionStr = "0";
+	/**
+	 * This parses an OSGi Version string into a MavenVersion which is not very
+	 * interesting. You probably want {@link #parseMavenString(String)}.
+	 */
+	public static final MavenVersion parseString(String osgiVersionStr) {
+		if (osgiVersionStr == null) {
+			osgiVersionStr = "0";
 		} else {
-			versionStr = versionStr.trim();
-			if (versionStr.isEmpty()) {
-				versionStr = "0";
+			osgiVersionStr = osgiVersionStr.trim();
+			if (osgiVersionStr.isEmpty()) {
+				osgiVersionStr = "0";
 			}
 		}
-		Matcher m = VERSION.matcher(versionStr);
+		Matcher m = VERSION.matcher(osgiVersionStr);
 		if (!m.matches())
-			throw new IllegalArgumentException("Invalid syntax for version: " + versionStr);
+			throw new IllegalArgumentException("Invalid syntax for version: " + osgiVersionStr);
 
 		int major = Integer.parseInt(m.group(1));
 		int minor = (m.group(3) != null) ? Integer.parseInt(m.group(3)) : 0;
@@ -103,7 +88,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	 */
 
 	public boolean isSnapshot() {
-		return snapshot;
+		return version.isSnapshot();
 	}
 
 	@Override
@@ -111,33 +96,17 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		if (other == this)
 			return 0;
 
-		Version o = other.version;
-		int cmp = version.major - o.major;
-		if (cmp != 0)
-			return cmp;
-
-		cmp = version.minor - o.minor;
-		if (cmp != 0)
-			return cmp;
-
-		cmp = version.micro - o.micro;
-		if (cmp != 0)
-			return cmp;
-
-		return qualifier.compareTo(other.qualifier);
+		return comparable.compareTo(other.comparable);
 	}
 
 	@Override
 	public String toString() {
-		return literal;
+		return comparable.toString();
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((literal == null) ? 0 : literal.hashCode());
-		return result;
+		return comparable.hashCode();
 	}
 
 	@Override
@@ -149,7 +118,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		if (getClass() != obj.getClass())
 			return false;
 		MavenVersion other = (MavenVersion) obj;
-		return literal.equals(other.literal);
+		return comparable.equals(other.comparable);
 	}
 
 	public MavenVersion toSnapshot() {
@@ -169,12 +138,9 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	public static String toDateStamp(long epoch) {
-		String datestamp;
 		synchronized (snapshotTimestamp) {
-			datestamp = snapshotTimestamp.format(new Date(epoch));
+			return snapshotTimestamp.format(new Date(epoch));
 		}
-		return datestamp;
-
 	}
 
 	public static String toDateStamp(long epoch, String build) {
@@ -197,6 +163,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	public MavenVersion toSnapshot(String dateStamp) {
 		// -SNAPSHOT == 9 characters
+		String literal = comparable.toString();
 		String clean = literal.substring(0, literal.length() - 9);
 		String result = clean + "-" + dateStamp;
 
@@ -308,10 +275,6 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	static void cleanupModifier(StringBuilder result, String modifier) {
 		int l = result.length();
-		Matcher m = fuzzyModifier.matcher(modifier);
-		if (m.matches())
-			modifier = m.group(2);
-
 		for (int i = 0; i < modifier.length(); i++) {
 			char c = modifier.charAt(i);
 			if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_' || c == '-')

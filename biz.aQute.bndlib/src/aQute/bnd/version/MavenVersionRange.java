@@ -48,7 +48,7 @@ public class MavenVersionRange {
 			String v = m.group("low")
 				.trim();
 			if (v.isEmpty()) {
-				low = MavenVersion.RANGE_LOWEST;
+				low = MavenVersion.LOWEST;
 			} else {
 				low = MavenVersion.parseMavenString(v);
 			}
@@ -56,7 +56,7 @@ public class MavenVersionRange {
 			v = m.group("high")
 				.trim();
 			if (v.isEmpty()) {
-				high = MavenVersion.RANGE_HIGHEST;
+				high = MavenVersion.HIGHEST;
 			} else {
 				high = MavenVersion.parseMavenString(v);
 			}
@@ -65,7 +65,7 @@ public class MavenVersionRange {
 			if (single != null) {
 				li = hi = true;
 				low = new MavenVersion(single);
-				high = MavenVersion.RANGE_HIGHEST;
+				high = MavenVersion.HIGHEST;
 			} else {
 				String exact = m.group("exact");
 				li = hi = true;
@@ -83,7 +83,7 @@ public class MavenVersionRange {
 
 	public boolean includes(MavenVersion mvr) {
 		int l = mvr.compareTo(low);
-		int h = (high == MavenVersion.RANGE_HIGHEST) ? -1 : mvr.compareTo(high);
+		int h = (high == MavenVersion.HIGHEST) ? -1 : mvr.compareTo(high);
 
 		boolean lowOk = l > 0 || (li && l == 0);
 		boolean highOk = h < 0 || (hi && h == 0);
@@ -106,11 +106,15 @@ public class MavenVersionRange {
 
 	private void toString(StringBuilder sb) {
 		if (pair) {
-			sb.append(li ? '[' : '(')
-				.append(low)
-				.append(',')
-				.append(high)
-				.append(hi ? ']' : ')');
+			sb.append(li ? '[' : '(');
+			if (low != MavenVersion.LOWEST) {
+				sb.append(low);
+			}
+			sb.append(',');
+			if (high != MavenVersion.HIGHEST) {
+				sb.append(high);
+			}
+			sb.append(hi ? ']' : ')');
 		} else if (low == high) { // exact
 			sb.append('[')
 				.append(low)
@@ -135,7 +139,7 @@ public class MavenVersionRange {
 	}
 
 	public boolean wasSingle() {
-		return !pair && (high == MavenVersion.RANGE_HIGHEST) && (nextOr == null);
+		return !pair && (high == MavenVersion.HIGHEST) && (nextOr == null);
 	}
 
 	public static boolean isRange(String version) {
