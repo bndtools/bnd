@@ -13,12 +13,22 @@
 	<version>0.0.1</version>
 
 	<properties>
-		<runrequires>osgi.identity;filter:='(osgi.identity=org.apache.felix.eventadmin)'</runrequires>
 		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 
 	<build>
 		<plugins>
+			<plugin>
+				<groupId>biz.aQute.bnd</groupId>
+				<artifactId>bnd-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>bnd-process</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<plugin>
 				<groupId>biz.aQute.bnd</groupId>
 				<artifactId>bnd-resolver-maven-plugin</artifactId>
@@ -27,6 +37,14 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
 					<target>${maven.compiler.target}</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+					</archive>
 				</configuration>
 			</plugin>
 		</plugins>

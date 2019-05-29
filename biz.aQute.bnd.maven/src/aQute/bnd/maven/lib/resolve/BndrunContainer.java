@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
@@ -187,6 +188,7 @@ public class BndrunContainer {
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
 			}
+			setRunrequiresFromProjectArtifact(run);
 			setEEfromBuild(run);
 			run.getInfo(workspace);
 			int errors = report(run);
@@ -215,6 +217,21 @@ public class BndrunContainer {
 		return fileSetRepository = dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
 	}
 
+	private void setRunrequiresFromProjectArtifact(Bndrun run) {
+		String runrequires = run.getProperty(Constants.RUNREQUIRES);
+
+		if (runrequires == null && ("jar".equals(project.getPackaging()) || "war".equals(project.getPackaging()))
+			&& (project.getPlugin("biz.aQute.bnd:bnd-maven-plugin") != null)) {
+
+			Artifact artifact = project.getArtifact();
+
+			run.setProperty(Constants.RUNREQUIRES,
+				String.format("osgi.identity;filter:='(osgi.identity=%s)'", artifact.getArtifactId()));
+
+			logger.info("Bnd inferred {}: {}", Constants.RUNREQUIRES, run.getProperty(Constants.RUNREQUIRES));
+		}
+	}
+
 	private void setEEfromBuild(Bndrun run) {
 		String runee = run.getProperty(Constants.RUNEE);
 
@@ -225,7 +242,11 @@ public class BndrunContainer {
 				.map(dom -> dom.getChild("target"))
 				.map(Xpp3Dom::getValue)
 				.flatMap(EE::highestFromTargetVersion)
-				.ifPresent(ee -> run.setProperty(Constants.RUNEE, ee.getEEName()));
+				.ifPresent(ee -> {
+					run.setProperty(Constants.RUNEE, ee.getEEName());
+
+					logger.info("Bnd inferred {}: {}", Constants.RUNEE, run.getProperty(Constants.RUNEE));
+				});
 		}
 	}
 
