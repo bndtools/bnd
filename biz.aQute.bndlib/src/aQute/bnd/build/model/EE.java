@@ -2,7 +2,10 @@ package aQute.bnd.build.model;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Optional;
 
 import aQute.bnd.header.Parameters;
 import aQute.bnd.version.Version;
@@ -99,6 +102,14 @@ public enum EE {
 
 	public Version getCapabilityVersion() {
 		return capabilityVersion;
+	}
+
+	public static Optional<EE> highestFromTargetVersion(String targetVersion) {
+		Version version = new Version(targetVersion);
+		return Arrays.stream(values())
+			.filter(ee -> ee.capabilityVersion.compareTo(version) == 0)
+			.sorted(Collections.reverseOrder())
+			.findFirst();
 	}
 
 	public static EE parse(String str) {
