@@ -124,25 +124,39 @@ public class Version implements Comparable<Version> {
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(major);
-		sb.append(".");
-		sb.append(minor);
-		sb.append(".");
-		sb.append(micro);
+		sb.append(major)
+			.append('.')
+			.append(minor)
+			.append('.')
+			.append(micro);
 		if (qualifier != null) {
-			sb.append(".");
-			sb.append(qualifier);
+			sb.append('.')
+				.append(qualifier);
+		}
+		return sb.toString();
+	}
+
+	String toMavenString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(major)
+			.append('.')
+			.append(minor)
+			.append('.')
+			.append(micro);
+		if (qualifier != null) {
+			sb.append('-')
+				.append(qualifier);
 		}
 		return sb.toString();
 	}
 
 	public String toStringWithoutQualifier() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(major);
-		sb.append(".");
-		sb.append(minor);
-		sb.append(".");
-		sb.append(micro);
+		sb.append(major)
+			.append('.')
+			.append(minor)
+			.append('.')
+			.append(micro);
 		return sb.toString();
 	}
 

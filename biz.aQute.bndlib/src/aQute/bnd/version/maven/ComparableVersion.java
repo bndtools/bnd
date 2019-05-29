@@ -1,4 +1,4 @@
-package aQute.bnd.version;
+package aQute.bnd.version.maven;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -65,16 +65,21 @@ import java.util.Properties;
  * @author <a href="mailto:kenney@apache.org">Kenney Westerhof</a>
  * @author <a href="mailto:hboutemy@apache.org">Hervé Boutemy</a>
  */
-class ComparableVersion implements Comparable<ComparableVersion> {
-	private static final ComparableVersion	empty	= new ComparableVersion("");
-	private final String					value;
+public class ComparableVersion implements Comparable<ComparableVersion> {
+	private static final int	MAX_INTITEM_LENGTH	= 9;
 
-	private final String					canonical;
+	private static final int	MAX_LONGITEM_LENGTH	= 18;
 
-	private final ListItem					items;
+	private String				value;
+
+	private String				canonical;
+
+	private ListItem			items;
 
 	private interface Item {
-		int	INTEGER_ITEM	= 0;
+		int	INT_ITEM		= 3;
+		int	LONG_ITEM		= 4;
+		int	BIGINTEGER_ITEM	= 0;
 		int	STRING_ITEM		= 1;
 		int	LIST_ITEM		= 2;
 
@@ -86,43 +91,45 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 	}
 
 	/**
-	 * Represents a numeric item in the version item list.
+	 * Represents a numeric item in the version item list that can be
+	 * represented with an int.
 	 */
-	private static class IntegerItem implements Item {
-		private static final BigInteger	BIG_INTEGER_ZERO	= new BigInteger("0");
+	private static class IntItem implements Item {
+		private final int			value;
 
-		private final BigInteger		value;
+		public static final IntItem	ZERO	= new IntItem();
 
-		public static final IntegerItem	ZERO				= new IntegerItem();
-
-		private IntegerItem() {
-			this.value = BIG_INTEGER_ZERO;
+		private IntItem() {
+			this.value = 0;
 		}
 
-		IntegerItem(String str) {
-			this.value = new BigInteger(str);
+		IntItem(String str) {
+			this.value = Integer.parseInt(str);
 		}
 
 		@Override
 		public int getType() {
-			return INTEGER_ITEM;
+			return INT_ITEM;
 		}
 
 		@Override
 		public boolean isNull() {
-			return BIG_INTEGER_ZERO.equals(value);
+			return value == 0;
 		}
 
 		@Override
 		public int compareTo(Item item) {
 			if (item == null) {
-				return BIG_INTEGER_ZERO.equals(value) ? 0 : 1; // 1.0 == 1, 1.1
-																// > 1
+				return (value == 0) ? 0 : 1; // 1.0 == 1, 1.1 > 1
 			}
 
 			switch (item.getType()) {
-				case INTEGER_ITEM :
-					return value.compareTo(((IntegerItem) item).value);
+				case INT_ITEM :
+					int itemValue = ((IntItem) item).value;
+					return (value < itemValue) ? -1 : ((value == itemValue) ? 0 : 1);
+				case LONG_ITEM :
+				case BIGINTEGER_ITEM :
+					return -1;
 
 				case STRING_ITEM :
 					return 1; // 1.1 > 1-sp
@@ -131,11 +138,175 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 					return 1; // 1.1 > 1-1
 
 				default :
-					throw new RuntimeException("invalid item: " + item.getClass());
+					throw new IllegalStateException("invalid item: " + item.getClass());
 			}
 		}
 
 		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			IntItem intItem = (IntItem) o;
+
+			return value == intItem.value;
+
+		}
+
+		@Override
+		public int hashCode() {
+			return value;
+		}
+
+		@Override
+		public String toString() {
+			return Integer.toString(value);
+		}
+	}
+
+	/**
+	 * Represents a numeric item in the version item list that can be
+	 * represented with a long.
+	 */
+	private static class LongItem implements Item {
+		private final long value;
+
+		LongItem(String str) {
+			this.value = Long.parseLong(str);
+		}
+
+		@Override
+		public int getType() {
+			return LONG_ITEM;
+		}
+
+		@Override
+		public boolean isNull() {
+			return value == 0;
+		}
+
+		@Override
+		public int compareTo(Item item) {
+			if (item == null) {
+				return (value == 0) ? 0 : 1; // 1.0 == 1, 1.1 > 1
+			}
+
+			switch (item.getType()) {
+				case INT_ITEM :
+					return 1;
+				case LONG_ITEM :
+					long itemValue = ((LongItem) item).value;
+					return (value < itemValue) ? -1 : ((value == itemValue) ? 0 : 1);
+				case BIGINTEGER_ITEM :
+					return -1;
+
+				case STRING_ITEM :
+					return 1; // 1.1 > 1-sp
+
+				case LIST_ITEM :
+					return 1; // 1.1 > 1-1
+
+				default :
+					throw new IllegalStateException("invalid item: " + item.getClass());
+			}
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			LongItem longItem = (LongItem) o;
+
+			return value == longItem.value;
+
+		}
+
+		@Override
+		public int hashCode() {
+			return (int) (value ^ (value >>> 32));
+		}
+
+		@Override
+		public String toString() {
+			return Long.toString(value);
+		}
+	}
+
+	/**
+	 * Represents a numeric item in the version item list.
+	 */
+	private static class BigIntegerItem implements Item {
+		private final BigInteger value;
+
+		BigIntegerItem(String str) {
+			this.value = new BigInteger(str);
+		}
+
+		@Override
+		public int getType() {
+			return BIGINTEGER_ITEM;
+		}
+
+		@Override
+		public boolean isNull() {
+			return BigInteger.ZERO.equals(value);
+		}
+
+		@Override
+		public int compareTo(Item item) {
+			if (item == null) {
+				return BigInteger.ZERO.equals(value) ? 0 : 1; // 1.0 == 1, 1.1 >
+																// 1
+			}
+
+			switch (item.getType()) {
+				case INT_ITEM :
+				case LONG_ITEM :
+					return 1;
+
+				case BIGINTEGER_ITEM :
+					return value.compareTo(((BigIntegerItem) item).value);
+
+				case STRING_ITEM :
+					return 1; // 1.1 > 1-sp
+
+				case LIST_ITEM :
+					return 1; // 1.1 > 1-1
+
+				default :
+					throw new IllegalStateException("invalid item: " + item.getClass());
+			}
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			BigIntegerItem that = (BigIntegerItem) o;
+
+			return value.equals(that.value);
+
+		}
+
+		@Override
+		public int hashCode() {
+			return value.hashCode();
+		}
+
 		public String toString() {
 			return value.toString();
 		}
@@ -145,16 +316,14 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 	 * Represents a string in the version item list, usually a qualifier.
 	 */
 	private static class StringItem implements Item {
-		private static final String[]		QUALIFIERS	= {
-			"alpha", "beta", "milestone", "rc", "snapshot", "", "sp"
-		};
-
-		private static final List<String>	_QUALIFIERS	= Arrays.asList(QUALIFIERS);
+		private static final List<String>	QUALIFIERS	= Arrays.asList("alpha", "beta", "milestone", "rc", "snapshot",
+			"", "sp");
 
 		private static final Properties		ALIASES		= new Properties();
 		static {
 			ALIASES.put("ga", "");
 			ALIASES.put("final", "");
+			ALIASES.put("release", "");
 			ALIASES.put("cr", "rc");
 		}
 
@@ -163,7 +332,7 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 		 * to determine if a given qualifier makes the version older than one
 		 * without a qualifier, or more recent.
 		 */
-		private static final String	RELEASE_VERSION_INDEX	= String.valueOf(_QUALIFIERS.indexOf(""));
+		private static final String	RELEASE_VERSION_INDEX	= String.valueOf(QUALIFIERS.indexOf(""));
 
 		private final String		value;
 
@@ -209,9 +378,9 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 		 * @return an equivalent value that can be used with lexical comparison
 		 */
 		public static String comparableQualifier(String qualifier) {
-			int i = _QUALIFIERS.indexOf(qualifier);
+			int i = QUALIFIERS.indexOf(qualifier);
 
-			return i == -1 ? (_QUALIFIERS.size() + "-" + qualifier) : String.valueOf(i);
+			return i == -1 ? (QUALIFIERS.size() + "-" + qualifier) : String.valueOf(i);
 		}
 
 		@Override
@@ -221,7 +390,9 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 				return comparableQualifier(value).compareTo(RELEASE_VERSION_INDEX);
 			}
 			switch (item.getType()) {
-				case INTEGER_ITEM :
+				case INT_ITEM :
+				case LONG_ITEM :
+				case BIGINTEGER_ITEM :
 					return -1; // 1.any < 1.1 ?
 
 				case STRING_ITEM :
@@ -231,11 +402,30 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 					return -1; // 1.any < 1-1
 
 				default :
-					throw new RuntimeException("invalid item: " + item.getClass());
+					throw new IllegalStateException("invalid item: " + item.getClass());
 			}
 		}
 
 		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (o == null || getClass() != o.getClass()) {
+				return false;
+			}
+
+			StringItem that = (StringItem) o;
+
+			return value.equals(that.value);
+
+		}
+
+		@Override
+		public int hashCode() {
+			return value.hashCode();
+		}
+
 		public String toString() {
 			return value;
 		}
@@ -247,9 +437,10 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 	 * specification).
 	 */
 	private static class ListItem extends ArrayList<Item> implements Item {
+		/**
+		 * 
+		 */
 		private static final long serialVersionUID = 1L;
-
-		ListItem() {}
 
 		@Override
 		public int getType() {
@@ -284,7 +475,9 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 				return first.compareTo(null);
 			}
 			switch (item.getType()) {
-				case INTEGER_ITEM :
+				case INT_ITEM :
+				case LONG_ITEM :
+				case BIGINTEGER_ITEM :
 					return -1; // 1-1 < 1.0.x
 
 				case STRING_ITEM :
@@ -310,7 +503,7 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 					return 0;
 
 				default :
-					throw new RuntimeException("invalid item: " + item.getClass());
+					throw new IllegalStateException("invalid item: " + item.getClass());
 			}
 		}
 
@@ -327,14 +520,11 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 		}
 	}
 
-	static ComparableVersion parseVersion(String version) {
-		if (version == null) {
-			return empty;
-		}
-		return new ComparableVersion(version);
+	public ComparableVersion(String version) {
+		parseVersion(version);
 	}
 
-	private ComparableVersion(String version) {
+	public final void parseVersion(String version) {
 		this.value = version;
 
 		items = new ListItem();
@@ -343,7 +533,7 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 
 		ListItem list = items;
 
-		Deque<ListItem> stack = new ArrayDeque<>();
+		Deque<Item> stack = new ArrayDeque<>();
 		stack.push(list);
 
 		boolean isDigit = false;
@@ -355,14 +545,14 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 
 			if (c == '.') {
 				if (i == startIndex) {
-					list.add(IntegerItem.ZERO);
+					list.add(IntItem.ZERO);
 				} else {
 					list.add(parseItem(isDigit, version.substring(startIndex, i)));
 				}
 				startIndex = i + 1;
 			} else if (c == '-') {
 				if (i == startIndex) {
-					list.add(IntegerItem.ZERO);
+					list.add(IntItem.ZERO);
 				} else {
 					list.add(parseItem(isDigit, version.substring(startIndex, i)));
 				}
@@ -398,15 +588,37 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 		}
 
 		while (!stack.isEmpty()) {
-			list = stack.pop();
+			list = (ListItem) stack.pop();
 			list.normalize();
 		}
-
-		canonical = items.toString();
 	}
 
 	private static Item parseItem(boolean isDigit, String buf) {
-		return isDigit ? new IntegerItem(buf) : new StringItem(buf, false);
+		if (isDigit) {
+			buf = stripLeadingZeroes(buf);
+			if (buf.length() <= MAX_INTITEM_LENGTH) {
+				// lower than 2^31
+				return new IntItem(buf);
+			} else if (buf.length() <= MAX_LONGITEM_LENGTH) {
+				// lower than 2^63
+				return new LongItem(buf);
+			}
+			return new BigIntegerItem(buf);
+		}
+		return new StringItem(buf, false);
+	}
+
+	private static String stripLeadingZeroes(String buf) {
+		if (buf == null || buf.isEmpty()) {
+			return "0";
+		}
+		for (int i = 0; i < buf.length(); ++i) {
+			char c = buf.charAt(i);
+			if (c != '0') {
+				return buf.substring(i);
+			}
+		}
+		return buf;
 	}
 
 	@Override
@@ -419,13 +631,20 @@ class ComparableVersion implements Comparable<ComparableVersion> {
 		return value;
 	}
 
+	public String getCanonical() {
+		if (canonical == null) {
+			canonical = items.toString();
+		}
+		return canonical;
+	}
+
 	@Override
 	public boolean equals(Object o) {
-		return (o instanceof ComparableVersion) && canonical.equals(((ComparableVersion) o).canonical);
+		return (o instanceof ComparableVersion) && items.equals(((ComparableVersion) o).items);
 	}
 
 	@Override
 	public int hashCode() {
-		return canonical.hashCode();
+		return items.hashCode();
 	}
 }

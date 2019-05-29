@@ -7,6 +7,8 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.bnd.version.maven.ComparableVersion;
+
 public class MavenVersion implements Comparable<MavenVersion> {
 
 	private static final Pattern			fuzzyVersion		= Pattern
@@ -26,42 +28,21 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	public static final MavenVersion	UNRESOLVED		= new MavenVersion("0-UNRESOLVED");
 
 	private static final String			SNAPSHOT		= "SNAPSHOT";
-	public static final MavenVersion	HIGHEST			= new MavenVersion(Version.HIGHEST);
-	public static final MavenVersion	LOWEST			= new MavenVersion("0-SNAPSHOT", Version.LOWEST, true);
-	static final MavenVersion			RANGE_HIGHEST	= new MavenVersion("", Version.HIGHEST, false);
-	static final MavenVersion			RANGE_LOWEST	= new MavenVersion("", Version.LOWEST, true);
+	public static final MavenVersion	HIGHEST			= new MavenVersion(
+		"2147483647.2147483647.2147483647.2147483647");
+	public static final MavenVersion	LOWEST			= new MavenVersion("alpha");
 
 	private final Version				version;
-	private final String				literal;
-	private final boolean				snapshot;
-	private final ComparableVersion		qualifier;
+	private final ComparableVersion		comparable;
 
 	public MavenVersion(Version osgiVersion) {
 		this.version = osgiVersion;
-		String q = osgiVersion.qualifier;
-		this.qualifier = ComparableVersion.parseVersion(q);
-
-		String l = osgiVersion.toStringWithoutQualifier();
-		if (q != null) {
-			l += "-" + q;
-		}
-		this.literal = l;
-		this.snapshot = osgiVersion.isSnapshot();
+		this.comparable = new ComparableVersion(osgiVersion.toMavenString());
 	}
 
 	public MavenVersion(String maven) {
-		Version osgiVersion = new Version(cleanupVersion(maven));
-		this.version = osgiVersion;
-		this.qualifier = ComparableVersion.parseVersion(osgiVersion.qualifier);
-		this.literal = maven;
-		this.snapshot = osgiVersion.isSnapshot();
-	}
-
-	private MavenVersion(String literal, Version osgiVersion, boolean snapshot) {
-		this.version = osgiVersion;
-		this.qualifier = ComparableVersion.parseVersion(osgiVersion.qualifier);
-		this.literal = literal;
-		this.snapshot = snapshot;
+		this.version = new Version(cleanupVersion(maven));
+		this.comparable = new ComparableVersion((maven != null) ? maven : "");
 	}
 
 	/**
@@ -107,7 +88,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	 */
 
 	public boolean isSnapshot() {
-		return snapshot;
+		return version.isSnapshot();
 	}
 
 	@Override
@@ -115,33 +96,17 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		if (other == this)
 			return 0;
 
-		Version o = other.version;
-		int cmp = version.major - o.major;
-		if (cmp != 0)
-			return cmp;
-
-		cmp = version.minor - o.minor;
-		if (cmp != 0)
-			return cmp;
-
-		cmp = version.micro - o.micro;
-		if (cmp != 0)
-			return cmp;
-
-		return qualifier.compareTo(other.qualifier);
+		return comparable.compareTo(other.comparable);
 	}
 
 	@Override
 	public String toString() {
-		return literal;
+		return comparable.toString();
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((literal == null) ? 0 : literal.hashCode());
-		return result;
+		return comparable.hashCode();
 	}
 
 	@Override
@@ -153,7 +118,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 		if (getClass() != obj.getClass())
 			return false;
 		MavenVersion other = (MavenVersion) obj;
-		return literal.equals(other.literal);
+		return comparable.equals(other.comparable);
 	}
 
 	public MavenVersion toSnapshot() {
@@ -198,6 +163,7 @@ public class MavenVersion implements Comparable<MavenVersion> {
 
 	public MavenVersion toSnapshot(String dateStamp) {
 		// -SNAPSHOT == 9 characters
+		String literal = comparable.toString();
 		String clean = literal.substring(0, literal.length() - 9);
 		String result = clean + "-" + dateStamp;
 
