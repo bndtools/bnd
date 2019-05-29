@@ -89,10 +89,11 @@ public class MavenBndRepoTest extends TestCase {
 	}
 
 	@Override
-	protected void tearDown() throws IOException {
+	protected void tearDown() throws Exception {
 		domain.close();
 		repo.close();
 		fnx.close();
+		super.tearDown();
 	}
 
 	public void testProgramRemoveFromIndex() throws Exception {
@@ -143,7 +144,7 @@ public class MavenBndRepoTest extends TestCase {
 		assertThat(repo.list("org.osgi.service.log")).isNotEmpty();
 	}
 
-	public void testTooltiEtAlp() throws Exception {
+	public void testTooltip() throws Exception {
 		config(null);
 		String tooltip = repo.tooltip();
 		assertNotNull(tooltip);
