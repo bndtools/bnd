@@ -44,6 +44,8 @@ import aQute.bnd.maven.PomResource;
 import aQute.bnd.metatype.MetatypeAnnotations;
 import aQute.bnd.osgi.Descriptors.PackageRef;
 import aQute.bnd.osgi.Descriptors.TypeRef;
+import aQute.bnd.plugin.jpms.JPMSAnnotations;
+import aQute.bnd.plugin.jpms.JPMSModuleInfoPlugin;
 import aQute.bnd.plugin.spi.SPIDescriptorGenerator;
 import aQute.bnd.service.SignerPlugin;
 import aQute.bnd.service.diff.Delta;
@@ -138,8 +140,8 @@ public class Builder extends Analyzer {
 		if (!isNoBundle())
 			doVerify(dot);
 
-		if (dot.getResources()
-			.isEmpty())
+		Map<String, Resource> resources = dot.getResources();
+		if (resources.size() == 0 || ((resources.size() == 1) && resources.get("module-info.class") != null))
 			warning(
 				"The JAR is empty: The instructions for the JAR named %s did not cause any content to be included, this is likely wrong",
 				getBsn());
@@ -1694,7 +1696,9 @@ public class Builder extends Analyzer {
 	static CDIAnnotations		cdiAnnotations		= new CDIAnnotations();
 	static DSAnnotations		dsAnnotations		= new DSAnnotations();
 	static MetatypeAnnotations	metatypeAnnotations	= new MetatypeAnnotations();
-	static SPIDescriptorGenerator	serviceLoaderAnnotations	= new SPIDescriptorGenerator();
+	static JPMSAnnotations	moduleAnnotations	= new JPMSAnnotations();
+	static JPMSModuleInfoPlugin		moduleInfoPlugin	= new JPMSModuleInfoPlugin();
+	static SPIDescriptorGenerator	spiDescriptorGenerator	= new SPIDescriptorGenerator();
 
 	@Override
 	protected void setTypeSpecificPlugins(Set<Object> list) {
@@ -1704,7 +1708,9 @@ public class Builder extends Analyzer {
 		list.add(cdiAnnotations);
 		list.add(dsAnnotations);
 		list.add(metatypeAnnotations);
-		list.add(serviceLoaderAnnotations);
+		list.add(moduleAnnotations);
+		list.add(moduleInfoPlugin);
+		list.add(spiDescriptorGenerator);
 		super.setTypeSpecificPlugins(list);
 	}
 

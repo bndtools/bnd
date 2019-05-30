@@ -343,6 +343,20 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 				"SHA-1", "MD-5"
 			});
 		jar.setManifest(m);
+
+		String moduleInstruction = getProject().getProperty(Constants.JPMS_MODULE_INFO);
+		if (moduleInstruction != null) {
+			String name = jar.getName();
+			try (Builder b = new Builder()) {
+				b.setProperty(Constants.JPMS_MODULE_INFO, moduleInstruction);
+				b.setJar(jar);
+				b.addClasspath(jar);
+				jar = b.build();
+				b.removeClose(jar);
+				jar.setName(name);
+			}
+		}
+
 		cleanup();
 		return jar;
 	}
