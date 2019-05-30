@@ -132,8 +132,6 @@ public class MavenVersionTest extends TestCase {
 		assertEquals(new Version(1, 2, 3), mv.getOSGiVersion());
 		mv = MavenVersion.parseMavenString("1.0.2016062300");
 		assertEquals(new Version(1, 0, 2016062300), mv.getOSGiVersion());
-		mv = new MavenVersion("1.0.2016062300");
-		assertEquals(new Version(1, 0, 2016062300), mv.getOSGiVersion());
 	}
 
 	public void testMajorMinor() {
@@ -172,6 +170,22 @@ public class MavenVersionTest extends TestCase {
 		assertEquals(new Version(1, 2, 3, "01"), mv.getOSGiVersion());
 		mv = MavenVersion.parseMavenString("1.2.3.01");
 		assertEquals(new Version(1, 2, 3, "01"), mv.getOSGiVersion());
+		mv = MavenVersion.parseMavenString("1.2.3.201209091230120");
+		assertEquals(new Version(1, 2, 3, "201209091230120"), mv.getOSGiVersion());
+		mv = MavenVersion.parseMavenString("1.2.3.201209091230120-5");
+		assertEquals(new Version(1, 2, 3, "201209091230120-5"), mv.getOSGiVersion());
+		mv = MavenVersion.parseMavenString("1.2.201209091230120");
+		assertEquals(new Version(1, 2, 0, "201209091230120"), mv.getOSGiVersion());
+		mv = MavenVersion.parseMavenString("1.2.201209091230120.4-5");
+		assertEquals(new Version(1, 2, 0, "2012090912301204-5"), mv.getOSGiVersion());
+		mv = MavenVersion.parseMavenString("1.201209091230120");
+		assertEquals(new Version(1, 0, 0, "201209091230120"), mv.getOSGiVersion());
+		mv = MavenVersion.parseMavenString("1.201209091230120.3.4-5");
+		assertEquals(new Version(1, 0, 0, "20120909123012034-5"), mv.getOSGiVersion());
+		mv = MavenVersion.parseMavenString("201209091230120");
+		assertEquals(new Version(0, 0, 0, "201209091230120"), mv.getOSGiVersion());
+		mv = MavenVersion.parseMavenString("201209091230120.2.3.4-5");
+		assertEquals(new Version(0, 0, 0, "201209091230120234-5"), mv.getOSGiVersion());
 	}
 
 	public void testQualifierWithDashSeparator() {

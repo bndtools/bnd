@@ -12,20 +12,21 @@ import aQute.bnd.version.maven.ComparableVersion;
 public class MavenVersion implements Comparable<MavenVersion> {
 
 	private static final Pattern			fuzzyVersion		= Pattern
-		.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9]?(.*))?", Pattern.DOTALL);
+		.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([-.]?(.*))?");
 	private static final Pattern			fuzzyVersionRange	= Pattern
-		.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
-	private static final String				VERSION_STRING		= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10}))?)?([-\\.]?([-_\\.\\da-zA-Z]+))?";
-	private static final SimpleDateFormat	snapshotTimestamp	= new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
+		.compile("(\\(|\\[)\\s*([-.\\w]+)\\s*,\\s*([-.\\w]+)\\s*(\\]|\\))");
+	private static final String				VERSION_STRING		= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10})(\\.([-\\w]+))?)?)?";
+	private static final Pattern			VERSION				= Pattern.compile(VERSION_STRING);
 	private static final Pattern			VERSIONRANGE		= Pattern
 		.compile("((\\(|\\[)" + VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
 
+	private static final SimpleDateFormat	snapshotTimestamp;
 	static {
+		snapshotTimestamp = new SimpleDateFormat("yyyyMMdd.HHmmss", Locale.ROOT);
 		snapshotTimestamp.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 
-	private static final Pattern		VERSION			= Pattern.compile(VERSION_STRING);
-	public static final MavenVersion	UNRESOLVED		= new MavenVersion("0-UNRESOLVED");
+	public static final MavenVersion	UNRESOLVED	= new MavenVersion("0-UNRESOLVED");
 
 	private static final String			SNAPSHOT		= "SNAPSHOT";
 	public static final MavenVersion	HIGHEST			= new MavenVersion(
@@ -171,13 +172,11 @@ public class MavenVersion implements Comparable<MavenVersion> {
 	}
 
 	static public String cleanupVersion(String version) {
-
-		if (version == null || version.trim()
-			.isEmpty())
+		if ((version == null) || (version = version.trim()).isEmpty()) {
 			return "0";
+		}
 
 		Matcher m = VERSIONRANGE.matcher(version);
-
 		if (m.matches()) {
 			try {
 				VersionRange vr = new VersionRange(version);
@@ -187,60 +186,67 @@ public class MavenVersion implements Comparable<MavenVersion> {
 			}
 		}
 
+		StringBuilder result = new StringBuilder();
+
 		m = fuzzyVersionRange.matcher(version);
 		if (m.matches()) {
 			String prefix = m.group(1);
 			String first = m.group(2);
 			String last = m.group(3);
 			String suffix = m.group(4);
-			return prefix + cleanupVersion(first) + "," + cleanupVersion(last) + suffix;
+			result.append(prefix)
+				.append(cleanupVersion(first))
+				.append(',')
+				.append(cleanupVersion(last))
+				.append(suffix);
+			return result.toString();
 		}
 
 		m = fuzzyVersion.matcher(version);
 		if (m.matches()) {
-			StringBuilder result = new StringBuilder();
 			String major = removeLeadingZeroes(m.group(1));
-			String minor = removeLeadingZeroes(m.group(3));
-			String micro = removeLeadingZeroes(m.group(5));
-			String qualifier = m.group(7);
-
-			if (qualifier == null) {
-				if (!isInteger(minor)) {
-					qualifier = minor;
-					minor = "0";
-				} else if (!isInteger(micro)) {
-					qualifier = micro;
-					micro = "0";
-				}
-			}
-			if (major != null) {
+			if (isInteger(major)) {
 				result.append(major);
-				if (minor != null) {
-					result.append(".");
-					result.append(minor);
+				String minor = removeLeadingZeroes(m.group(3));
+				if (!isInteger(minor)) {
+					result.append(".0.0.")
+						.append(minor); // minor is all digits
+					String micro = m.group(4);
 					if (micro != null) {
-						result.append(".");
-						result.append(micro);
-						if (qualifier != null) {
-							result.append(".");
-							cleanupModifier(result, qualifier);
-						}
-					} else if (qualifier != null) {
-						result.append(".0.");
+						cleanupModifier(result, micro);
+					}
+					String qualifier = m.group(6);
+					if (!qualifier.isEmpty()) {
 						cleanupModifier(result, qualifier);
 					}
-				} else if (qualifier != null) {
-					result.append(".0.0.");
+					return result.toString();
+				}
+				result.append('.')
+					.append(minor);
+				String micro = removeLeadingZeroes(m.group(5));
+				if (!isInteger(micro)) {
+					result.append(".0.")
+						.append(micro); // micro is all digits
+					String qualifier = m.group(6);
+					if (!qualifier.isEmpty()) {
+						cleanupModifier(result, qualifier);
+					}
+					return result.toString();
+				}
+				result.append('.')
+					.append(micro);
+				String qualifier = m.group(7);
+				if (!qualifier.isEmpty()) {
+					result.append('.');
 					cleanupModifier(result, qualifier);
 				}
 				return result.toString();
 			}
 		}
-		StringBuilder sb = new StringBuilder();
-		sb.append("0.0.0.");
-		cleanupModifier(sb, version);
 
-		return sb.toString();
+		result.append("0.0.0.");
+		cleanupModifier(result, version);
+		return result.toString();
 	}
 
 	/**

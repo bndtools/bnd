@@ -305,8 +305,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			}
 			// Set Bundle-Version
 			if (builder.getProperty(Constants.BUNDLE_VERSION) == null) {
-				Version version = MavenVersion.parseString(project.getVersion())
-					.getOSGiVersion();
+				Version version = new MavenVersion(project.getVersion()).getOSGiVersion();
 				builder.setProperty(Constants.BUNDLE_VERSION, version.toString());
 				if (builder.getProperty(Constants.SNAPSHOT) == null) {
 					builder.setProperty(Constants.SNAPSHOT, TSTAMP);
