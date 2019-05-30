@@ -28,6 +28,28 @@ StringBuilder sb = new StringBuilder()
 bemRunBundles.get(0).formatTo(sb)
 assert sb.toString() == "org.apache.felix.eventadmin;version='[1.4.6,1.4.7)'"
 
+// The resolve-from-defaults case
+
+// Check the bndrun file exist!
+bndrunFile = new File(basedir, 'resolve-from-defaults/test.bndrun')
+assert bndrunFile.isFile()
+
+// Load the BndEditModel of the bndrun file so we can inspect the result
+processor = new Processor()
+processor.setProperties(bndrunFile)
+bem = new BndEditModel(Workspace.createStandaloneWorkspace(processor, bndrunFile.toURI()))
+doc = new Document(IO.collect(bndrunFile))
+bem.loadFrom(doc)
+
+// Get the -runbundles.
+bemRunBundles = bem.getRunBundles()
+assert bemRunBundles
+assert bemRunBundles.size() == 1
+
+sb = new StringBuilder()
+bemRunBundles.get(0).formatTo(sb)
+assert sb.toString() == "org.apache.felix.eventadmin;version='[1.4.6,1.4.7)'"
+
 // The resolve-from-dependencies case
 
 // Check the bndrun file exist!

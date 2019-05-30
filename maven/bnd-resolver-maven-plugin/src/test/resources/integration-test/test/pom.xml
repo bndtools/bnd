@@ -9,6 +9,7 @@
 
 	<modules>
 		<module>resolve</module>
+		<module>resolve-from-defaults</module>
 		<module>resolve-from-dependencies</module>
 		<module>resolve-from-dependencyManagement</module>
 		<module>resolve-from-scopes</module>

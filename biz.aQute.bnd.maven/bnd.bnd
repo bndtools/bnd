@@ -23,6 +23,7 @@ Import-Package: \
 	org.apache.maven:maven-plugin-api,\
 	org.apache.maven:maven-repository-metadata,\
 	org.apache.maven:maven-settings,\
+	org.codehaus.plexus:plexus-utils,\
 	org.eclipse.aether.api,\
 	org.slf4j.api;version=latest
 

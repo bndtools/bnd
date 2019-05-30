@@ -1,0 +1,3 @@
+-standalone: ${.}/../index/index.xml.gz
+-runfw: org.apache.felix.framework;version='[5.4.0,5.4.0]'
+-runrequires: ${runrequires}
