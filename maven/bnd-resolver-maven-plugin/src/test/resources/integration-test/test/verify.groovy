@@ -48,7 +48,7 @@ assert bemRunBundles.size() == 1
 
 sb = new StringBuilder()
 bemRunBundles.get(0).formatTo(sb)
-assert sb.toString() == "org.apache.felix.eventadmin;version='[1.4.6,1.4.7)'"
+assert sb.toString() == "resolve-from-defaults;version='[0.0.1,0.0.2)'"
 
 // The resolve-from-dependencies case
 
