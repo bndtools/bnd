@@ -6,20 +6,25 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Plugin;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.project.ProjectDependenciesResolver;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.eclipse.aether.RepositorySystem;
 import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import aQute.bnd.build.Workspace;
+import aQute.bnd.build.model.EE;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.repository.fileset.FileSetRepository;
 import aQute.bnd.service.RepositoryPlugin;
@@ -182,6 +187,7 @@ public class BndrunContainer {
 			for (RepositoryPlugin repo : workspace.getRepositories()) {
 				repo.list(null);
 			}
+			setEEfromBuild(run);
 			run.getInfo(workspace);
 			int errors = report(run);
 			if (!run.isOk()) {
@@ -207,6 +213,20 @@ public class BndrunContainer {
 			.isEmpty() ? project.getArtifactId() : project.getName();
 
 		return fileSetRepository = dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
+	}
+
+	private void setEEfromBuild(Bndrun run) {
+		String runee = run.getProperty(Constants.RUNEE);
+
+		if (runee == null) {
+			Optional.ofNullable(project.getPlugin("org.apache.maven.plugins:maven-compiler-plugin"))
+				.map(Plugin::getConfiguration)
+				.map(Xpp3Dom.class::cast)
+				.map(dom -> dom.getChild("target"))
+				.map(Xpp3Dom::getValue)
+				.flatMap(EE::highestFromTargetVersion)
+				.ifPresent(ee -> run.setProperty(Constants.RUNEE, ee.getEEName()));
+		}
 	}
 
 	private String getNamePart(File runFile) {
