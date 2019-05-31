@@ -284,6 +284,10 @@ public class BndPlugin implements Plugin<Project> {
           File[] built
           try {
             built = bndProject.build()
+            long now = System.currentTimeMillis()
+            built?.each {
+              it.setLastModified(now)
+            }
           } catch (Exception e) {
             throw new GradleException("Project ${bndProject.getName()} failed to build", e)
           }
