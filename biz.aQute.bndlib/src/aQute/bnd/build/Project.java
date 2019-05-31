@@ -1993,11 +1993,10 @@ public class Project extends Processor {
 					break swtch;
 
 				case "windows-only-disposable-names" :
-					boolean isWindows = File.separatorChar == '\\';
-					if (!isWindows) {
+					if (!IO.isWindows()) {
 						IO.deleteWithException(outputFile);
 						jar.write(outputFile);
-						break;
+						break swtch;
 					}
 					// Fall through
 
