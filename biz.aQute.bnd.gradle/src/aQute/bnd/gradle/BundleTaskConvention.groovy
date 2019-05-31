@@ -295,6 +295,8 @@ class BundleTaskConvention {
 
         // Write out the bundle
         builtJar.write(archivePath)
+        long now = System.currentTimeMillis()
+        archivePath.setLastModified(now)
 
         logReport(builder, logger)
         if (!builder.isOk()) {

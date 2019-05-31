@@ -1891,8 +1891,8 @@ public class Project extends Processor {
 					return null;
 				}
 				builtFiles.add(file);
-				if (lastModified < file.lastModified()) {
-					lastModified = file.lastModified();
+				if (lastModified < jar.lastModified()) {
+					lastModified = jar.lastModified();
 				}
 			}
 
