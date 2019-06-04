@@ -335,7 +335,10 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		// Get all of the repositories from the plugin registry
 		//
 
+		ensureWorkspaceRepository();
+
 		List<Repository> allRepos = registry.getPlugins(Repository.class);
+
 		Collection<Repository> orderedRepositories;
 
 		String rn = properties.mergeProperties(Constants.RUNREPOS);
@@ -388,6 +391,24 @@ public class BndrunResolveContext extends AbstractResolveContext {
 		}
 
 		return repositoryAugments;
+	}
+
+	/*
+	 * Ensure that the workspace has a repository that models its projects.
+	 */
+	private void ensureWorkspaceRepository() throws Exception {
+		if (project != null) {
+			if (!project.isStandalone() && project.getWorkspace()
+				.getPlugins(WorkspaceRepositoryMarker.class)
+				.isEmpty()) {
+
+				assert !project.getWorkspace()
+					.isInteractive() : "A static workspace repo cannot be used in an interactive environment";
+
+				project.getWorkspace()
+					.addBasicPlugin(new WorkspaceResourcesRepository(project.getWorkspace()));
+			}
+		}
 	}
 
 	private Processor findRepositoryAugments(Collection<Repository> orderedRepositories) {

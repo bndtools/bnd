@@ -1,0 +1,18 @@
+Bundle-Version: 0.0.0.${tstamp}
+Private-Package: test.simple
+Test-Cases: test.simple.Test
+
+-buildpath: osgi.enroute.junit.wrapper
+
+-includeresource: test.txt
+
+-runfw: org.eclipse.osgi;version='[3.13.0,3.14.0)'
+-runee: JavaSE-1.8
+-runrequires: osgi.identity;filter:='(osgi.identity=test.simple)'
+
+-runbundles: \
+	osgi.enroute.junit.wrapper
+	
+-runproperties: 
+
+-runtrace: true

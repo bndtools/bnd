@@ -50,6 +50,7 @@ import aQute.bnd.deployer.repository.CapabilityIndex;
 import aQute.bnd.deployer.repository.MapToDictionaryAdapter;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Domain;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
@@ -94,8 +95,8 @@ public abstract class AbstractResolveContext extends ResolveContext {
 	 */
 	@Deprecated
 	protected static final String					CONTRACT_OSGI_FRAMEWORK		= "OSGiFramework";
-	protected static final String					IDENTITY_INITIAL_RESOURCE	= "<<INITIAL>>";
-	protected static final String					IDENTITY_SYSTEM_RESOURCE	= "<<SYSTEM>>";
+	protected static final String					IDENTITY_INITIAL_RESOURCE	= Constants.IDENTITY_INITIAL_RESOURCE;
+	protected static final String					IDENTITY_SYSTEM_RESOURCE	= Constants.IDENTITY_SYSTEM_RESOURCE;
 
 	protected final LogService						log;
 	private final CapabilityIndex					systemCapabilityIndex		= new CapabilityIndex();
