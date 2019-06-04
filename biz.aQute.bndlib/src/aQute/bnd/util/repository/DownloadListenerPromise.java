@@ -41,7 +41,7 @@ public class DownloadListenerPromise {
 		logger.debug("{}: starting", task);
 		promise.thenAccept(file -> {
 			if (file == null) {
-				throw new FileNotFoundException("Download failed");
+				throw new FileNotFoundException("Download failed " + task);
 			}
 			logger.debug("{}: success {}", this, file);
 

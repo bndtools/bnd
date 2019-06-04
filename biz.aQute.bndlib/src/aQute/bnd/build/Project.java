@@ -3467,7 +3467,6 @@ public class Project extends Processor {
 				.sorted()
 				.collect(toList());
 
-
 			boolean staleFiles = !dependentFiles.isEmpty();
 
 			if (staleFiles) {
@@ -3484,9 +3483,8 @@ public class Project extends Processor {
 				st.error()
 					.ifPresent(msg -> setLocation(Constants.STALECHECK, qsrc,
 						error("%s : %s > %s", msg, useSrc, dependentFiles)));
-				warning.ifPresent(
-					msg -> setLocation(Constants.STALECHECK, qsrc,
-						warning("%s : %s > %s", msg, useSrc, dependentFiles)));
+				warning.ifPresent(msg -> setLocation(Constants.STALECHECK, qsrc,
+					warning("%s : %s > %s", msg, useSrc, dependentFiles)));
 
 				st.command()
 					.ifPresent(ConsumerWithException.asConsumer(cmd -> system(cmd, null)));
@@ -3497,4 +3495,27 @@ public class Project extends Processor {
 		}
 	}
 
+	public Container getBundle(org.osgi.resource.Resource r) throws Exception {
+		IdentityCapability identity = ResourceUtils.getIdentityCapability(r);
+		if (identity == null)
+			return Container.error(this, r.toString());
+
+		if (r.getCapabilities(ResourceUtils.WORKSPACE_NAMESPACE) != null) {
+			Container bundle = getBundle(identity.osgi_identity(), "snapshot", Strategy.HIGHEST, null);
+			if (bundle != null)
+				return bundle;
+		}
+
+		Container bundle = getBundle(identity.osgi_identity(), identity.version()
+			.toString(), Strategy.EXACT, null);
+		if (bundle != null)
+			return bundle;
+
+
+		return Container.error(this, identity.osgi_identity() + "-" + identity.version());
+	}
+
+	public boolean isStandalone() {
+		return getWorkspace().getLayout() == WorkspaceLayout.STANDALONE;
+	}
 }

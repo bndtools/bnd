@@ -18,6 +18,9 @@ public interface Constants {
 	 */
 	String								BSN_SOURCE_SUFFIX							= ".source";
 
+	String								IDENTITY_INITIAL_RESOURCE					= "<<INITIAL>>";
+	String								IDENTITY_SYSTEM_RESOURCE					= "<<SYSTEM>>";
+
 	/*
 	 * Defined in OSGi
 	 */
@@ -207,6 +210,7 @@ public interface Constants {
 	String								RUNPROVIDEDCAPABILITIES						= "-runprovidedcapabilities";
 
 	String								RUNBUNDLES									= "-runbundles";
+	String								RUNORDER									= "-runorder";
 	String								AUGMENT										= "-augment";
 	String								AUGMENT_RANGE_ATTRIBUTE						= "version:";
 	String								AUGMENT_CAPABILITY_DIRECTIVE				= "capability:";
@@ -282,7 +286,7 @@ public interface Constants {
 		JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE,
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
 		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK,
-		MAVEN_SCOPE
+		MAVEN_SCOPE, RUNORDER
 
 	};
 
