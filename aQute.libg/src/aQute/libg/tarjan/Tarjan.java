@@ -5,10 +5,8 @@ import static java.lang.Math.min;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class Tarjan<T> {
 
@@ -28,36 +26,10 @@ public class Tarjan<T> {
 		}
 	}
 
-	private int			index	= 0;
-	private List<Node>	stack	= new ArrayList<>();
-	private Set<Set<T>>	scc		= new HashSet<>();
-	private Node		root	= new Node(null);
-
-	// public ArrayList<ArrayList<Node>> tarjan(Node v, AdjacencyList list){
-	// v.index = index;
-	// v.lowlink = index;
-	// index++;
-	// stack.add(0, v);
-	// for(Edge e : list.getAdjacent(v)){
-	// Node n = e.to;
-	// if(n.index == -1){
-	// tarjan(n, list);
-	// v.lowlink = Math.min(v.lowlink, n.lowlink);
-	// }else if(stack.contains(n)){
-	// v.lowlink = Math.min(v.lowlink, n.index);
-	// }
-	// }
-	// if(v.lowlink == v.index){
-	// Node n;
-	// ArrayList<Node> component = new ArrayList<Node>();
-	// do{
-	// n = stack.remove(0);
-	// component.add(n);
-	// }while(n != v);
-	// SCC.add(component);
-	// }
-	// return SCC;
-	// }
+	private int				index	= 0;
+	private List<Node>		stack	= new ArrayList<>();
+	private List<List<T>>	scc		= new ArrayList<>();
+	private Node			root	= new Node(null);
 
 	void tarjan(Node v) {
 		v.index = index;
@@ -75,7 +47,7 @@ public class Tarjan<T> {
 		}
 
 		if (v != root && v.low == v.index) {
-			Set<T> component = new HashSet<>();
+			List<T> component = new ArrayList<>();
 			Node n;
 			do {
 				n = stack.remove(0);
@@ -85,7 +57,7 @@ public class Tarjan<T> {
 		}
 	}
 
-	Set<Set<T>> getResult(Map<T, ? extends Collection<T>> graph) {
+	List<List<T>> getResult(Map<T, ? extends Collection<T>> graph) {
 		Map<T, Node> index = new HashMap<>();
 
 		for (Map.Entry<T, ? extends Collection<T>> entry : graph.entrySet()) {
