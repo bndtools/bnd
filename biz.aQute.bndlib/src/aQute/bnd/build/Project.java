@@ -1815,7 +1815,7 @@ public class Project extends Processor {
 				List<File> list = newList();
 				for (String s = rdr.readLine(); s != null; s = rdr.readLine()) {
 					s = s.trim();
-					File ff = new File(s);
+					File ff = getFile(getTarget(), s);
 					if (!ff.isFile()) {
 						// Originally we warned the user
 						// but lets just rebuild. That way

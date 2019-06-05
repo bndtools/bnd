@@ -10,7 +10,7 @@ import org.junit.Test;
 import aQute.bnd.build.Workspace;
 import aQute.lib.io.IO;
 
-public class ResolutionTest {
+public class RunResolutionTest {
 
 	Workspace workspace;
 

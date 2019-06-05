@@ -4,7 +4,6 @@
 Archive
 .DS_Store
 .*.swp
-buildfiles
 /.gradle/
 /reports/
 /generated/
