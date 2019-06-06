@@ -742,7 +742,6 @@ public class Launchpad implements AutoCloseable {
 			fw.resolveBundles(toBeStarted);
 
 			Collections.sort(toBeStarted, this::startorder);
-			toBeStarted.forEach(this::start);
 
 			if (hasTestBundle)
 				testbundle();
