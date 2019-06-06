@@ -15,6 +15,7 @@ import org.eclipse.ui.PlatformUI;
 import aQute.bnd.build.Project;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.lib.collections.ExtList;
 import aQute.service.reporter.Reporter.SetLocation;
@@ -39,7 +40,7 @@ public class WorkingSetTracker {
         IWorkbench workbench = PlatformUI.getWorkbench();
         final IWorkingSetManager workingSetManager = workbench.getWorkingSetManager();
 
-        String mergeProperties = model.mergeProperties("-workingset");
+        String mergeProperties = model.mergeProperties(Constants.WORKINGSET);
         if (mergeProperties == null)
             return;
 
@@ -47,6 +48,10 @@ public class WorkingSetTracker {
         IWorkingSet[] allWorkingSets = workingSetManager.getAllWorkingSets();
 
         for (IWorkingSet currentWorkingSet : allWorkingSets) {
+
+            if (!JAVAID_P.matcher(currentWorkingSet.getName())
+                .matches())
+                continue;
 
             Attrs attrs = memberShips.remove(currentWorkingSet.getName());
             boolean shouldBeMember = attrs != null && Processor.isTrue(attrs.get("member", "true"));
