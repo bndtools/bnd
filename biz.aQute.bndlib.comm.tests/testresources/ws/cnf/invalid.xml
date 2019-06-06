@@ -1,0 +1,9 @@
+
+<settings >
+	<servers>
+		<server>
+			<id>httpbin.org</id>
+			<username>user</username>
+			<password>passwd</password>
+		</server>
+</settings>

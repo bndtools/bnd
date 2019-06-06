@@ -38,7 +38,11 @@ public class CommunicationCommands extends Processor {
 		this.options = options;
 		this.workspace = bnd.getWorkspace((String) null);
 		this.httpClient = workspace.getPlugin(HttpClient.class);
-		this.cache = httpClient.cache();
+		if (this.httpClient == null) {
+			error("No http client");
+			this.cache = null;
+		} else
+			this.cache = httpClient.cache();
 	}
 
 	@Arguments(arg = "url...")

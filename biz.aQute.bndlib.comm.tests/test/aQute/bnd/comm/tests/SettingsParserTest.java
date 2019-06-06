@@ -1,16 +1,23 @@
 package aQute.bnd.comm.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.net.Proxy.Type;
+import java.net.URL;
 import java.util.List;
 
+import aQute.bnd.build.Workspace;
 import aQute.bnd.connection.settings.ConnectionSettings;
 import aQute.bnd.connection.settings.ProxyDTO;
 import aQute.bnd.connection.settings.ServerDTO;
 import aQute.bnd.connection.settings.SettingsDTO;
 import aQute.bnd.connection.settings.SettingsParser;
 import aQute.bnd.http.HttpClient;
+import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.url.URLConnectionHandler;
+import aQute.lib.io.IO;
 import junit.framework.TestCase;
 
 public class SettingsParserTest extends TestCase {
@@ -30,6 +37,26 @@ public class SettingsParserTest extends TestCase {
 
 			assertEquals("encrypted-password", s.id);
 			assertEquals("FOOBAR", s.password);
+		}
+	}
+
+	public void testValidXLMViaWorkspace() throws Exception {
+		try (Workspace ws = new Workspace(IO.getFile("testresources/ws"))) {
+			ws.setProperty(Constants.CONNECTION_SETTINGS, "cnf/valid.xml");
+			HttpClient plugin = ws.getPlugin(HttpClient.class);
+			assertThat(ws.check()).isTrue();
+			URLConnectionHandler handler = plugin.findMatchingHandler(new URL("http://httpbin.org"));
+			assertThat(handler).isNotNull();
+		}
+	}
+
+	public void testInvalidXLMViaWorkspace() throws Exception {
+		try (Workspace ws = new Workspace(IO.getFile("testresources/ws"))) {
+			ws.setProperty(Constants.CONNECTION_SETTINGS, "cnf/invalid.xml");
+			HttpClient plugin = ws.getPlugin(HttpClient.class);
+			assertThat(ws.check("Invalid XML in connection settings for file ")).isTrue();
+			URLConnectionHandler handler = plugin.findMatchingHandler(new URL("http://httpbin.org"));
+			assertThat(handler).isNull();
 		}
 	}
 

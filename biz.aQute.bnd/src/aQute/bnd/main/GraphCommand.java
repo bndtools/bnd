@@ -34,7 +34,7 @@ public class GraphCommand implements AutoCloseable {
 	GraphCommand(bnd bnd, GraphOptions options) throws Exception {
 		this.bnd = bnd;
 		this.options = options;
-		this.workspace = bnd.getWorkspace((String) null);
+		this.workspace = bnd.getWorkspace();
 	}
 
 	@Description("Find the roots in a set of bundles. A root is a resource that is present but not dependent on by any other resource in the set")

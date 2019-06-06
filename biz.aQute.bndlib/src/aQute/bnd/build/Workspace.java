@@ -112,9 +112,10 @@ public class Workspace extends Processor {
 	private final static Map<File, WeakReference<Workspace>>	cache				= newHashMap();
 	static Processor											defaults			= null;
 	final Map<String, Action>									commands			= newMap();
-	final Maven													maven			= new Maven(Processor.getExecutor());
+	final Maven													maven				= new Maven(
+		Processor.getExecutor());
 	private final AtomicBoolean									offline				= new AtomicBoolean();
-	Settings													settings		= new Settings(
+	Settings													settings			= new Settings(
 		Home.getUserHomeBnd() + "/settings.json");
 	WorkspaceRepository											workspaceRepo		= new WorkspaceRepository(this);
 	static String												overallDriver		= "unset";
@@ -620,16 +621,16 @@ public class Workspace extends Processor {
 			list.add(new ExecutableJarExporter());
 			list.add(new RunbundlesExporter());
 
+			HttpClient client = new HttpClient();
 			try {
-				HttpClient client = new HttpClient();
 				client.setOffline(getOffline());
 				client.setRegistry(this);
 				client.readSettings(this);
 
-				list.add(client);
 			} catch (Exception e) {
 				exception(e, "Failed to load the communication settings");
 			}
+			list.add(client);
 
 		} catch (RuntimeException e) {
 			throw e;

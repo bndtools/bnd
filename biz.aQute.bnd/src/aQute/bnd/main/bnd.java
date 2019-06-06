@@ -462,6 +462,8 @@ public class bnd extends Processor {
 		err.flush();
 		if (ws != null)
 			getInfo(ws);
+		if (workspace != null)
+			getInfo(workspace);
 
 		if (!check(options.ignore())) {
 			err.flush();
@@ -3929,6 +3931,7 @@ public class bnd extends Processor {
 
 			out.printf("%03d %s%n", n++, s);
 		}
+		getInfo(ws);
 
 	}
 
@@ -3974,7 +3977,7 @@ public class bnd extends Processor {
 		}
 
 		out.println(justif.wrap());
-
+		getInfo(ws);
 	}
 
 	/**
@@ -4714,12 +4717,18 @@ public class bnd extends Processor {
 	@Description("Commands to verify the bnd communications setup")
 	public void _com(CommunicationCommands.CommunicationOptions options) throws Exception {
 		try (CommunicationCommands cc = new CommunicationCommands(this, options)) {
-			String help = options._command()
-				.subCmd(options, cc);
-			if (help != null)
-				out.println(help);
+			if (cc.isOk() && isWorkspaceOk()) {
+				String help = options._command()
+					.subCmd(options, cc);
+				if (help != null)
+					out.println(help);
+			}
 			getInfo(cc);
 		}
+	}
+
+	private boolean isWorkspaceOk() {
+		return ws == null || ws.isOk();
 	}
 
 	@Description("Commands to inspect a dependency graph of a set of bundles")

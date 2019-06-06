@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXParseException;
 
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -418,42 +419,45 @@ public class ConnectionSettings {
 	}
 
 	private void parse(File file) throws Exception {
-		assert file != null : "File must be set";
-		assert file.isFile() : "File must be a file and exist";
-		parsed.add(file.getAbsolutePath());
-		SettingsParser parser = new SettingsParser(file);
+		try {
+			assert file != null : "File must be set";
+			assert file.isFile() : "File must be a file and exist";
+			parsed.add(file.getAbsolutePath());
+			SettingsParser parser = new SettingsParser(file);
 
-		SettingsDTO settings = parser.getSettings();
-		for (ProxyDTO proxyDTO : settings.proxies) {
-			if (isActive(proxyDTO)) {
+			SettingsDTO settings = parser.getSettings();
+			for (ProxyDTO proxyDTO : settings.proxies) {
+				if (isActive(proxyDTO)) {
 
-				add(proxyDTO);
-			}
-		}
-		ServerDTO deflt = null;
-		for (ServerDTO serverDTO : settings.servers) {
-			serverDTO.trust = makeAbsolute(file.getParentFile(), serverDTO.trust);
-
-			if (MavenPasswordObfuscator.isObfuscatedPassword(serverDTO.password)) {
-				String masterPassphrase = mavenMasterPassphrase.get();
-				if (masterPassphrase != null) {
-					try {
-						serverDTO.password = MavenPasswordObfuscator.decrypt(serverDTO.password, masterPassphrase);
-					} catch (Exception e) {
-						processor.exception(e, "Could not decrypt the password for server %s", serverDTO.id);
-					}
+					add(proxyDTO);
 				}
 			}
-			if ("default".equals(serverDTO.id))
-				deflt = serverDTO;
-			else {
-				add(serverDTO);
+			ServerDTO deflt = null;
+			for (ServerDTO serverDTO : settings.servers) {
+				serverDTO.trust = makeAbsolute(file.getParentFile(), serverDTO.trust);
+
+				if (MavenPasswordObfuscator.isObfuscatedPassword(serverDTO.password)) {
+					String masterPassphrase = mavenMasterPassphrase.get();
+					if (masterPassphrase != null) {
+						try {
+							serverDTO.password = MavenPasswordObfuscator.decrypt(serverDTO.password, masterPassphrase);
+						} catch (Exception e) {
+							processor.exception(e, "Could not decrypt the password for server %s", serverDTO.id);
+						}
+					}
+				}
+				if ("default".equals(serverDTO.id))
+					deflt = serverDTO;
+				else {
+					add(serverDTO);
+				}
 			}
+
+			if (deflt != null)
+				add(deflt);
+		} catch (SAXParseException e) {
+			processor.error("Invalid XML in connection settings for file : %s: %s", file, e.getMessage());
 		}
-
-		if (deflt != null)
-			add(deflt);
-
 	}
 
 	final static String	IPNR_PART_S	= "([01]\\d\\d)|(2[0-4]\\d)|(25[0-5])";
