@@ -143,6 +143,7 @@ public class LaunchpadTest {
 	public void testBundleActivatorCalled() throws Exception {
 
 		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
+			.debug()
 			.create()) {
 
 			Bundle x = fw.bundle()
@@ -454,7 +455,7 @@ public class LaunchpadTest {
 							.create("foo", "bar");
 						l.add(fw);
 						Bundle bundle = fw.component(ExternalRefComp.class);
-						int sleep = Math.abs(r.nextInt() % 100) + 1;
+						int sleep = Math.abs(r.nextInt() % 100) + 30;
 						System.out.println(
 							fw.runspec.properties.get(org.osgi.framework.Constants.FRAMEWORK_STORAGE) + " " + sleep);
 						Thread.sleep(sleep);

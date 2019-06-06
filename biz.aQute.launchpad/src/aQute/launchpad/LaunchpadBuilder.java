@@ -262,12 +262,10 @@ public class LaunchpadBuilder implements AutoCloseable {
 			@SuppressWarnings("resource")
 			Launchpad launchpad = new Launchpad(framework, name, className, runspec, closeTimeout, debug, testbundle);
 
-			launchpad.report("Extra system packages %s", local.extraSystemPackages.keySet()
-				.stream()
-				.collect(Collectors.joining("\n")));
-			launchpad.report("Extra system capabilities %s", local.extraSystemCapabilities.keySet()
-				.stream()
-				.collect(Collectors.joining("\n")));
+			launchpad.report("ALL extra system packages\n     %s", toLines(local.extraSystemPackages.keySet()));
+			launchpad.report("Filtered extra system packages\n     %s", toLines(restrictedExports.keySet()));
+			launchpad.report("ALL extra system capabilities\n     %s", toLines(local.extraSystemCapabilities.keySet()));
+
 			launchpad.report("Storage %s", storage.getAbsolutePath());
 			launchpad.report("Runpath %s", local.runpath);
 
@@ -280,6 +278,12 @@ public class LaunchpadBuilder implements AutoCloseable {
 		} catch (Exception e) {
 			throw Exceptions.duck(e);
 		}
+	}
+
+	private String toLines(Collection<String> set) {
+		return set.stream()
+			.sorted()
+			.collect(Collectors.joining("\n     "));
 	}
 
 	// private Map<String, Map<String, String>> addUses(Map<String, Map<String,
