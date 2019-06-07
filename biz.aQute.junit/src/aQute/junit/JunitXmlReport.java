@@ -31,9 +31,13 @@ public class JunitXmlReport implements TestReporter {
 	private final BasicTestReport			basic;
 
 	public JunitXmlReport(Writer report, Bundle bundle, BasicTestReport basic) throws Exception {
-		if (hostname == null)
-			hostname = InetAddress.getLocalHost()
-				.getHostName();
+		try {
+			if (hostname == null)
+				hostname = InetAddress.getLocalHost()
+					.getHostName();
+		} catch (Exception e) {
+			hostname = e.getMessage();
+		}
 		out = new PrintWriter(report);
 		this.basic = basic;
 	}
