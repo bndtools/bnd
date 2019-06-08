@@ -59,6 +59,11 @@ public interface EntryNamesReference {
   static final String COMMON_INFO = "commonInfo";
 
   /**
+   * A list of code snippet.
+   */
+  static final String CODE_SNIPPETS = "codeSnippets";
+
+  /**
    * The version, the artifactId and the groupId of the analyzed object.
    */
   static final String MAVEN_COORDINATE = "mavenCoordinate";

@@ -143,6 +143,82 @@ Add a list of bundle data (for example, the bundles built by a project).
 -reportconfig.project:bundles;useConfig=api-bundle;excludes="com.domain.product.provider"
 ```
 
+### Code Snippets
+
+Add a list of code snippet extracted from source files in a project. By default, source files containing code snippets must be located in a `<root test source dir>/examples` folder and its sub directories (eg; `src/test/java/examples/**`). The actual supported file types are: `java`.
+
+Code snippets can either be a single sample code with a title and a description or have multiple steps.
+
+* Short name: `codeSnippets`
+* Properties:
+   * `path`: The directory path from which code snippets will be looked up. (optional)
+* Default Plugin: yes
+
+#### Java Code Snippets
+
+You can either export a full type or a method. For the snippet to be extracted you must add a comment block to the type or the method. The comment must contain the `${snippet }` tag with the following optional properties:
+
+* `title` (String): A title for the code snippet.
+* `description` (String): A short description of the code snippet.
+* `includeDeclaration` (Boolean): If true, the type declaration (or the method declaration) will be include, otherwise only its content. Default is true.
+* `includeImports` (Boolean): If true, the imports declration will be include. Default is true.
+* `groupName` (String): A user defined group name. If set, it will turn the actual snippet into a snippet with multiple steps, only the title and the description considered then and                the snippet children must reference its `groupName` in their `parentGroup` property.
+* `parentGroup` (String): The parent group name. If set, it will make the actual snippet a step in the referenced snippet group.
+* `id` (String): A user defined id of the snippet. By default, the Id is the type name or the method name, optionally appended by a counting starting from 1 if not unique (eg; MyType, MyType1, etc).
+
+Here is an example illustrating a code snippet with steps:
+
+```java
+/**
+ * ${snippet title=How to Print Something in Java, description="In this example we will show how to
+ * print a string to the console.", groupName=print} 
+ */
+public class PrintExample {
+
+  /**
+   * ${snippet title=Print No New Line, description="Here, we print without a new line at the end.",
+   * parentGroup=print, includeDeclaration=false} 
+   */
+  public void printNoNewLine() {
+    System.out.print("Hello");
+  }
+
+  /**
+   * ${snippet title=Print With New Line, description="Here, we print with a new line at the end.",
+   * parentGroup=print, includeDeclaration=false} 
+   */
+  public void printWithNewLine() {
+    System.out.println("Hello");
+  }
+}
+```
+
+Which will result in the following `json` object:
+
+```json
+{ 
+   "id": "PrintExample",
+   "title":"How to Print Something in Java",
+   "description":"In this example we will show how to print a string to the console.",
+   "steps":[
+      {
+         "id": "printNoNewLine",
+         "title":"Print No New Line",
+         "description":"Here, we print without a new line at the end.",
+         "programmingLangague":"java",
+         "codeSnippet":"System.out.print(\"Hello\");"
+      },
+      {
+         "id": "printWithNewLine",
+         "title":"Print With New Line",
+         "description":"Here, we print with a new line at the end.",
+         "programmingLangague":"java",
+         "codeSnippet":"System.out.println(\"Hello\");"
+      }
+   ]
+}
+```
+
 ### Projects
 
 Add a list of project data (for example, the projects built by the workspace).

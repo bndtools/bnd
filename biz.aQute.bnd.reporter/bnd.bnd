@@ -30,7 +30,8 @@
 	org.objectweb.asm;version="[5.0.3,6.0.0)",\
 	org.objectweb.asm.analysis;version="[5.0.3,6.0.0)",\
 	org.objectweb.asm.tree;version="[5.0.3,6.0.0)",\
-	org.objectweb.asm.util;version="[5.0.3,6.0.0)"
+	org.objectweb.asm.util;version="[5.0.3,6.0.0)",\
+	com.github.javaparser.javaparser-core;version=3.13
 	
 -testpath: \
 	${junit}
@@ -41,7 +42,9 @@ Export-Package: \
 	biz.aQute.bnd.reporter.service.resource.converter,\
 	biz.aQute.bnd.reporter.exporter,\
 	biz.aQute.bnd.reporter.generator,\
-	biz.aQute.bnd.reporter.manifest.dto
+	biz.aQute.bnd.reporter.manifest.dto,\
+	biz.aQute.bnd.reporter.codesnippet,\
+	biz.aQute.bnd.reporter.codesnippet.dto
 
 -conditionalpackage: \
 	aQute.lib.*,\
