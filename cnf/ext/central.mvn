@@ -105,6 +105,7 @@ org.ow2.asm:asm:jar:5.0.3
 org.ow2.asm:asm-tree:jar:5.0.3
 org.ow2.asm:asm-analysis:jar:5.0.3
 org.ow2.asm:asm-util:jar:5.0.3
+com.github.javaparser:javaparser-core:3.13.10
 
 javax.json:javax.json-api:1.1.2
 javax.json.bind:javax.json.bind-api:1.0

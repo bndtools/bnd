@@ -1,5 +1,6 @@
 package aQute.bnd.maven.reporter.plugin;
 
+import aQute.bnd.maven.reporter.plugin.entries.mavenproject.CodeSnippetPlugin;
 import aQute.bnd.maven.reporter.plugin.entries.mavenproject.CommonInfoPlugin;
 import aQute.bnd.maven.reporter.plugin.entries.mavenproject.FileNamePlugin;
 import aQute.bnd.maven.reporter.plugin.entries.mavenproject.MavenAggregatorConcentPlugin;
@@ -16,6 +17,7 @@ final public class ReportGeneratorFactory {
 			.registerPlugin(CommonInfoPlugin.class.getCanonicalName())
 			.registerPlugin(MavenProjectContentPlugin.class.getCanonicalName())
 			.registerPlugin(MavenAggregatorConcentPlugin.class.getCanonicalName())
-			.registerPlugin(FileNamePlugin.class.getCanonicalName());
+			.registerPlugin(FileNamePlugin.class.getCanonicalName())
+			.registerPlugin(CodeSnippetPlugin.class.getCanonicalName());
 	}
 }

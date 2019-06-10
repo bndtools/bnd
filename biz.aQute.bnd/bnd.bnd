@@ -45,6 +45,7 @@ Private-Package: \
     org.objectweb.asm.*,\
 	org.jtwig.*,\
 	org.parboiled.*;-split-package:=merge-first,\
+	com.github.javaparser.*,\
 	!org.slf4j.impl,\
 	org.slf4j.*
 
@@ -100,7 +101,9 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
     ${repo;org.objectweb.asm;[5.0.3,6.0.0)},\
     ${repo;org.objectweb.asm.analysis;[5.0.3,6.0.0)},\
     ${repo;org.objectweb.asm.tree;[5.0.3,6.0.0)},\
-    ${repo;org.objectweb.asm.util;[5.0.3,6.0.0)}
+    ${repo;org.objectweb.asm.util;[5.0.3,6.0.0)},\
+	${repo;com.github.javaparser.javaparser-core;3.13}
+
 
 -testpath.reporter: \
     org.jtwig:jtwig-core;version=latest,\
@@ -113,6 +116,8 @@ Bundle-Description: This command line utility is the Swiss army knife of OSGi. I
     org.objectweb.asm;version="[5.0.3,6.0.0)",\
     org.objectweb.asm.analysis;version="[5.0.3,6.0.0)",\
     org.objectweb.asm.tree;version="[5.0.3,6.0.0)",\
-    org.objectweb.asm.util;version="[5.0.3,6.0.0)"
+    org.objectweb.asm.util;version="[5.0.3,6.0.0)",\
+	com.github.javaparser.javaparser-core;version=3.13
+
 
 -builderignore: testdata, testruns, installers

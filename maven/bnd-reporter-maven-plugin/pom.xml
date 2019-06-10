@@ -60,6 +60,11 @@
 			<groupId>biz.aQute.bnd</groupId>
 			<artifactId>biz.aQute.bnd.reporter</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

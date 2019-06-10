@@ -8,6 +8,7 @@ import aQute.bnd.service.reporter.ReportGeneratorService;
 import biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.any.ImportResourcePlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndproject.BndProjectContentsPlugin;
+import biz.aQute.bnd.reporter.plugins.entries.bndproject.CodeSnippetPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.BndWorkspaceContentsPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.CommonInfoPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ComponentsPlugin;
@@ -129,6 +130,7 @@ public class ReportGeneratorBuilder {
 
     addPlugin(EntryNamesReference.FILE_NAME);
     addPlugin(EntryNamesReference.BUNDLES);
+    addPlugin(EntryNamesReference.CODE_SNIPPETS);
 
     return this;
   }
@@ -192,6 +194,7 @@ public class ReportGeneratorBuilder {
     registerPlugin(ManifestPlugin.class.getCanonicalName());
     registerPlugin(MetatypesPlugin.class.getCanonicalName());
     registerPlugin(CommonInfoPlugin.class.getCanonicalName());
+    registerPlugin(CodeSnippetPlugin.class.getCanonicalName());
   }
 
   private Processor configureProcessor(final Processor processor) {
