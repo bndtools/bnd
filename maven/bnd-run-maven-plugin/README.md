@@ -108,6 +108,13 @@ The resulting invocation from the reactor, where one of the modules is configure
 mvn package bnd-run:run@bar
 ```
 
+## Bndrun Details Inferred from Maven
+
+The `-runee` and `-runrequires` values can be inferred from the maven project as follows:
+
+  * `-runee`, if omitted from the bndrun file, will be inferred from the `<target>` configuration of `maven-compiler-plugin`
+  * `-runrequires`, if omitted from the bndrun file, will be inferred from the project's `artifactId` and applied as `osgi.identity;filter:='(osgi.identity=<artifactId>)'`, if the project packaging is `jar` or `war` and the project has the `bnd-maven-plugin`
+
 ## Configuration Properties
 
 |Configuration Property       | Description |
