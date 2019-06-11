@@ -1,3 +1,4 @@
+//@formatter:off
 package biz.aQute.bnd.reporter.codesnippet;
 
 import biz.aQute.bnd.reporter.codesnippet.geneimport.MyClass;

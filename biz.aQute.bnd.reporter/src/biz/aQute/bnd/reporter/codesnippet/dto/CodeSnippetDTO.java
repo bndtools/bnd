@@ -7,22 +7,18 @@ import org.osgi.dto.DTO;
  */
 public class CodeSnippetDTO extends DTO {
 
-  /**
-   * Id of this code snippet.
-   * 
-   */
-  public String id;
+	/**
+	 * Id of this code snippet.
+	 */
+	public String	id;
 
+	/**
+	 * Title of this code snippet (optional).
+	 */
+	public String	title;
 
-  /**
-   * Title of this code snippet (optional).
-   * 
-   */
-  public String title;
-
-  /**
-   * Short description of this code snippet (optional).
-   * 
-   */
-  public String description;
+	/**
+	 * Short description of this code snippet (optional).
+	 */
+	public String	description;
 }

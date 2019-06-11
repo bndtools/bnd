@@ -11,15 +11,16 @@ import org.junit.Test;
 
 public class JsonReportSerializerPluginTest {
 
-  @Test
-  public void testJsonSerialization() throws Exception {
-    final Map<String, Object> toSerialize = new HashMap<>();
+	@Test
+	public void testJsonSerialization() throws Exception {
+		final Map<String, Object> toSerialize = new HashMap<>();
 		toSerialize.put("test", Boolean.TRUE);
-    final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    new JsonReportSerializerPlugin().serialize(toSerialize, out);
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		new JsonReportSerializerPlugin().serialize(toSerialize, out);
 
-    assertTrue(out.size() > 0);
-    assertArrayEquals(new String[] {"json"},
-        new JsonReportSerializerPlugin().getHandledExtensions());
-  }
+		assertTrue(out.size() > 0);
+		assertArrayEquals(new String[] {
+			"json"
+		}, new JsonReportSerializerPlugin().getHandledExtensions());
+	}
 }

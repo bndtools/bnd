@@ -5,17 +5,17 @@ import java.util.Properties;
 
 import aQute.bnd.osgi.WriteResource;
 
-public class PropResource extends WriteResource{
+public class PropResource extends WriteResource {
 
 	Properties prop = new Properties();
-	
+
 	@Override
 	public void write(OutputStream out) throws Exception {
-		prop.store(out, null);	
+		prop.store(out, null);
 		out.flush();
 	}
-	
-	public void add(String key,String value) {
+
+	public void add(String key, String value) {
 		prop.setProperty(key, value);
 	}
 
