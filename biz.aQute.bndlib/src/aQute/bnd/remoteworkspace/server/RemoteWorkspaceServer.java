@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -42,6 +43,7 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
 import aQute.lib.link.Link;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.glob.Glob;
 
 /**
  * Implements an RPC interface to a workspace. When a workspace is created then
@@ -52,10 +54,10 @@ import aQute.lib.utf8properties.UTF8Properties;
  * registration is deleted when the process properly exits.
  */
 public class RemoteWorkspaceServer implements Closeable {
-	final Logger	logger	= LoggerFactory.getLogger(RemoteWorkspaceServer.class);
-	final Closeable	server;
-	final File		remotewsPort;
-	final Workspace	workspace;
+	final Logger				logger	= LoggerFactory.getLogger(RemoteWorkspaceServer.class);
+	final Closeable				server;
+	final File					remotewsPort;
+	final Workspace				workspace;
 	final ScheduledFuture<?>	registerPort;
 	private long				startingTime;
 
@@ -117,6 +119,7 @@ public class RemoteWorkspaceServer implements Closeable {
 			logger.warn("Cannot open remote workspace server {} {}", remotewsPort, e);
 		}
 	}
+
 	/**
 	 * Close the server. This generally happens when the corresponding workspace
 	 * is closed. It will release the ephemeral port and delete the registration
@@ -235,6 +238,31 @@ public class RemoteWorkspaceServer implements Closeable {
 							.collect(Collectors.joining("\n")));
 					}
 
+					if (spec.testBundle != null) {
+						File[] buildFiles = project.getBuildFiles(false);
+						if (buildFiles == null)
+							throw new IllegalStateException(projectPath + ": merge requested but has no build JAR");
+
+
+						Glob glob = new Glob(spec.testBundle);
+						boolean found = false;
+						buildfiles: for (File f : buildFiles) {
+							if (glob.matches(f.getName())) {
+								found = true;
+
+								Jar jar = new Jar(buildFiles[0]);
+								builder.addClose(jar);
+								jar.addAll(build);
+								Manifest manifest = jar.getManifest();
+								manifest.getMainAttributes()
+									.putValue("DynamicImport-Package", "*");
+								merge(manifest, build.getManifest(), Constants.SERVICE_COMPONENT);
+								jar.setManifest(manifest);
+								build = jar;
+								break buildfiles;
+							}
+						}
+					}
 					ByteArrayOutputStream bout = new ByteArrayOutputStream();
 					build.write(bout);
 					return bout.toByteArray();
@@ -242,6 +270,34 @@ public class RemoteWorkspaceServer implements Closeable {
 			} catch (Exception e) {
 				throw Exceptions.duck(e);
 			}
+		}
+
+		private void merge(Manifest a, Manifest b, String hdr) {
+			if (a == null)
+				return;
+
+			if (b == null)
+				return;
+
+			String aa = a.getMainAttributes()
+				.getValue(hdr);
+			String bb = b.getMainAttributes()
+				.getValue(hdr);
+			if (aa == null && bb == null)
+				return;
+
+			if (bb == null)
+				return;
+
+			if (aa == null) {
+				a.getMainAttributes()
+					.putValue(hdr, bb);
+				return;
+			}
+
+			String cc = aa + "," + bb;
+			a.getMainAttributes()
+				.putValue(hdr, bb);
 		}
 
 		/**
