@@ -5,8 +5,8 @@ package biz.aQute.bnd.reporter.manifest.dto;
  */
 public class VersionInRangeDTO extends VersionDTO {
 
-  /**
-   * Indicates if the version is included in the range.
-   */
-  public boolean include = false;
+	/**
+	 * Indicates if the version is included in the range.
+	 */
+	public boolean include = false;
 }

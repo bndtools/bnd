@@ -10,21 +10,21 @@ import org.osgi.dto.DTO;
  */
 public class NativeCodeDTO extends DTO {
 
-  /**
-   * A list of native code entries.
-   * <p>
-   * This is declared in the {@code Bundle-NativeCode} header, this list must contain at least one
-   * native code entry.
-   * </p>
-   */
-  public List<NativeCodeEntryDTO> entries = new LinkedList<>();
+	/**
+	 * A list of native code entries.
+	 * <p>
+	 * This is declared in the {@code Bundle-NativeCode} header, this list must
+	 * contain at least one native code entry.
+	 * </p>
+	 */
+	public List<NativeCodeEntryDTO>	entries		= new LinkedList<>();
 
-  /**
-   * Indicates if native codes are optional.
-   * <p>
-   * This is declared in the {@code Bundle-NativeCode} header, if it is not specified this field
-   * must be set to false.
-   * </p>
-   */
-  public boolean optional = false;
+	/**
+	 * Indicates if native codes are optional.
+	 * <p>
+	 * This is declared in the {@code Bundle-NativeCode} header, if it is not
+	 * specified this field must be set to false.
+	 * </p>
+	 */
+	public boolean					optional	= false;
 }

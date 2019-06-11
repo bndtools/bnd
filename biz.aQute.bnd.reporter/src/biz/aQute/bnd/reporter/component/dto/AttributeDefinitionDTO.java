@@ -10,83 +10,84 @@ import org.osgi.dto.DTO;
  */
 public class AttributeDefinitionDTO extends DTO {
 
-  /**
-   * The id of the attribute.
-   * <p>
-   * Must not be {@code null}.
-   * </p>
-   */
-  public String id;
+	/**
+	 * The id of the attribute.
+	 * <p>
+	 * Must not be {@code null}.
+	 * </p>
+	 */
+	public String			id;
 
-  /**
-   * The name of the AD.
-   * <p>
-   * If it is not specified this field must be set to the default value.
-   * </p>
-   */
-  public String name;
+	/**
+	 * The name of the AD.
+	 * <p>
+	 * If it is not specified this field must be set to the default value.
+	 * </p>
+	 */
+	public String			name;
 
-  /**
-   * The description of the AD.
-   * <p>
-   * If it is not specified this field must be {@code null}.
-   * </p>
-   */
-  public String description;
+	/**
+	 * The description of the AD.
+	 * <p>
+	 * If it is not specified this field must be {@code null}.
+	 * </p>
+	 */
+	public String			description;
 
-  /**
-   * The type of the attribute.
-   * <p>
-   * The type must be the name of the scalar type (eg: {@code String}). The default is "String".
-   * </p>
-   */
-  public String type = "String";
+	/**
+	 * The type of the attribute.
+	 * <p>
+	 * The type must be the name of the scalar type (eg: {@code String}). The
+	 * default is "String".
+	 * </p>
+	 */
+	public String			type		= "String";
 
-  /**
-   * A list of values.
-   * <p>
-   * If it not specified this field must be empty.
-   * </p>
-   */
-  public List<String> values = new LinkedList<>();
+	/**
+	 * A list of values.
+	 * <p>
+	 * If it not specified this field must be empty.
+	 * </p>
+	 */
+	public List<String>		values		= new LinkedList<>();
 
-  /**
-   * The cardinality of the AD.
-   * <p>
-   * If it is not specified this field must be set to the default value.
-   * </p>
-   */
-  public int cardinality = 0;
+	/**
+	 * The cardinality of the AD.
+	 * <p>
+	 * If it is not specified this field must be set to the default value.
+	 * </p>
+	 */
+	public int				cardinality	= 0;
 
-  /**
-   * The minimal value of the AD.
-   * <p>
-   * If it is not specified this field must be {@code null}.
-   * </p>
-   */
-  public String min;
+	/**
+	 * The minimal value of the AD.
+	 * <p>
+	 * If it is not specified this field must be {@code null}.
+	 * </p>
+	 */
+	public String			min;
 
-  /**
-   * The maximal value of the AD.
-   * <p>
-   * If it is not specified this field must be {@code null}.
-   * </p>
-   */
-  public String max;
+	/**
+	 * The maximal value of the AD.
+	 * <p>
+	 * If it is not specified this field must be {@code null}.
+	 * </p>
+	 */
+	public String			max;
 
-  /**
-   * Indicates if the attribute is required.
-   * <p>
-   * If it is not specified this field must be set to true.
-   * </p>
-   */
-  public boolean required = true;
+	/**
+	 * Indicates if the attribute is required.
+	 * <p>
+	 * If it is not specified this field must be set to true.
+	 * </p>
+	 */
+	public boolean			required	= true;
 
-  /**
-   * A list of the option entry of the AD.
-   * <p>
-   * If it is not specified this field must be empty.
-   * </p>
-   */
-  public List<OptionDTO> options = new LinkedList<>();
+	/**
+	 * A list of the option entry of the AD.
+	 * <p>
+	 * If it is not specified this field must be empty.
+	 * </p>
+	 */
+	public List<OptionDTO>	options		= new LinkedList<>();
 }

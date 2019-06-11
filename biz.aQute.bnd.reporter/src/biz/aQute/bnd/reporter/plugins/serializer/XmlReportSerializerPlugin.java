@@ -13,25 +13,27 @@ import aQute.lib.tag.Tag;
 
 public class XmlReportSerializerPlugin implements ReportSerializerPlugin {
 
-  static private final String[] _ext = {"xml"};
+	static private final String[] _ext = {
+		"xml"
+	};
 
-  @Override
-  public String[] getHandledExtensions() {
-    return _ext;
-  }
+	@Override
+	public String[] getHandledExtensions() {
+		return _ext;
+	}
 
-  @Override
-  public void serialize(final Map<String, Object> data, final OutputStream output)
-      throws Exception {
-    Objects.requireNonNull(data, "data");
-    Objects.requireNonNull(output, "output");
+	@Override
+	public void serialize(final Map<String, Object> data, final OutputStream output) throws Exception {
+		Objects.requireNonNull(data, "data");
+		Objects.requireNonNull(output, "output");
 
-    final PrintWriter pw = IO.writer(output, UTF_8);
-    try {
-      pw.print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-      Tag.fromDTO("report", data).print(0, pw);
-    } finally {
-      pw.flush();
-    }
-  }
+		final PrintWriter pw = IO.writer(output, UTF_8);
+		try {
+			pw.print("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+			Tag.fromDTO("report", data)
+				.print(0, pw);
+		} finally {
+			pw.flush();
+		}
+	}
 }

@@ -7,19 +7,19 @@ import org.osgi.dto.DTO;
  */
 public class OptionDTO extends DTO {
 
-  /**
-   * The label of the option.
-   * <p>
-   * Must not be {@code null}.
-   * </p>
-   */
-  public String label;
+	/**
+	 * The label of the option.
+	 * <p>
+	 * Must not be {@code null}.
+	 * </p>
+	 */
+	public String	label;
 
-  /**
-   * The value of the option.
-   * <p>
-   * Must not be {@code null}.
-   * </p>
-   */
-  public String value;
+	/**
+	 * The value of the option.
+	 * <p>
+	 * Must not be {@code null}.
+	 * </p>
+	 */
+	public String	value;
 }

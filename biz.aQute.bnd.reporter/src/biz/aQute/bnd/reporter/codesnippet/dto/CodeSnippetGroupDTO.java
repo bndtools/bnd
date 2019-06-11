@@ -8,8 +8,8 @@ import java.util.List;
  */
 public class CodeSnippetGroupDTO extends CodeSnippetDTO {
 
-  /**
-   * A list of code snippet steps.
-   */
-  public List<CodeSnippetProgramDTO> steps = new LinkedList<>();
+	/**
+	 * A list of code snippet steps.
+	 */
+	public List<CodeSnippetProgramDTO> steps = new LinkedList<>();
 }

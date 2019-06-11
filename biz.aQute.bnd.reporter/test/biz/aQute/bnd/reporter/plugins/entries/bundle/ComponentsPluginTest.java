@@ -16,31 +16,31 @@ import junit.framework.TestCase;
 
 public class ComponentsPluginTest extends TestCase {
 
-  public void testComponents() throws Exception {
+	public void testComponents() throws Exception {
 
-    final Jar jar = new Jar("jar", "testresources/componentsEntry/source.jar");
-    final Processor p = new Processor();
-    final ComponentsPlugin e = new ComponentsPlugin();
-    final Map<String, Object> result = new HashMap<>();
-    e.setReporter(p);
+		final Jar jar = new Jar("jar", "testresources/componentsEntry/source.jar");
+		final Processor p = new Processor();
+		final ComponentsPlugin e = new ComponentsPlugin();
+		final Map<String, Object> result = new HashMap<>();
+		e.setReporter(p);
 
-    result.put(e.getProperties().get(ReportEntryPlugin.ENTRY_NAME_PROPERTY),
-        e.extract(jar, Locale.forLanguageTag("und")));
+		result.put(e.getProperties()
+			.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY), e.extract(jar, Locale.forLanguageTag("und")));
 
-    assertTrue(p.isOk());
+		assertTrue(p.isOk());
 
-    final ByteArrayOutputStream s = new ByteArrayOutputStream();
-    new JsonReportSerializerPlugin().serialize(result, s);
+		final ByteArrayOutputStream s = new ByteArrayOutputStream();
+		new JsonReportSerializerPlugin().serialize(result, s);
 
-    final StringBuffer ee = new StringBuffer();
+		final StringBuffer ee = new StringBuffer();
 
-    for (final String l : Files.readAllLines(Paths.get("testresources/componentsEntry/result.json"),
-        StandardCharsets.UTF_8)) {
+		for (final String l : Files.readAllLines(Paths.get("testresources/componentsEntry/result.json"),
+			StandardCharsets.UTF_8)) {
 
-      ee.append(l + "\n");
-    }
-    ee.deleteCharAt(ee.length() - 1);
+			ee.append(l + "\n");
+		}
+		ee.deleteCharAt(ee.length() - 1);
 
-    assertEquals(ee.toString(), new String(s.toByteArray()));
-  }
+		assertEquals(ee.toString(), new String(s.toByteArray()));
+	}
 }

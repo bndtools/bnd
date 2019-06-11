@@ -5,14 +5,13 @@ package biz.aQute.bnd.reporter.codesnippet.dto;
  */
 public class CodeSnippetProgramDTO extends CodeSnippetDTO {
 
-  /**
-   * The programming language of the code snippet.
-   *
-   */
-  public String programmingLanguage;
+	/**
+	 * The programming language of the code snippet.
+	 */
+	public String	programmingLanguage;
 
-  /**
-   * The code snippet.
-   */
-  public String codeSnippet;
+	/**
+	 * The code snippet.
+	 */
+	public String	codeSnippet;
 }

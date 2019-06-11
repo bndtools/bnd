@@ -15,10 +15,14 @@ import javax.xml.transform.stream.StreamSource;
 import aQute.bnd.service.reporter.ReportTransformerPlugin;
 
 public class XsltTransformerPlugin implements ReportTransformerPlugin {
-	static private final String[] _extT = { "xslt", "xsl" };
-	static private final String[] _extI = { "xml" };
+	static private final String[]		_extT				= {
+		"xslt", "xsl"
+	};
+	static private final String[]		_extI				= {
+		"xml"
+	};
 
-	private final TransformerFactory _transformerFactory = TransformerFactory.newInstance();
+	private final TransformerFactory	_transformerFactory	= TransformerFactory.newInstance();
 
 	@Override
 	public String[] getHandledTemplateExtensions() {
@@ -32,7 +36,7 @@ public class XsltTransformerPlugin implements ReportTransformerPlugin {
 
 	@Override
 	public void transform(final InputStream data, final InputStream template, final OutputStream output,
-			final Map<String, String> parameters) throws Exception {
+		final Map<String, String> parameters) throws Exception {
 
 		final Templates templates = _transformerFactory.newTemplates(new StreamSource(template));
 		final Source xmlSource = new StreamSource(data);

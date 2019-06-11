@@ -19,32 +19,33 @@ import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 @BndPlugin(name = "entry." + EntryNamesReference.FILE_NAME)
 public class FileNamePlugin implements ReportEntryPlugin<Processor>, Plugin {
 
-  private final Map<String, String> _properties = new HashMap<>();
+	private final Map<String, String> _properties = new HashMap<>();
 
-  public FileNamePlugin() {
-    _properties.put(ReportEntryPlugin.ENTRY_NAME_PROPERTY, EntryNamesReference.FILE_NAME);
-    _properties.put(ReportEntryPlugin.SOURCE_CLASS_PROPERTY, Processor.class.getCanonicalName());
-  }
+	public FileNamePlugin() {
+		_properties.put(ReportEntryPlugin.ENTRY_NAME_PROPERTY, EntryNamesReference.FILE_NAME);
+		_properties.put(ReportEntryPlugin.SOURCE_CLASS_PROPERTY, Processor.class.getCanonicalName());
+	}
 
-  @Override
-  public Object extract(final Processor processor, final Locale locale) throws Exception {
-    Objects.requireNonNull(processor, "processor");
+	@Override
+	public Object extract(final Processor processor, final Locale locale) throws Exception {
+		Objects.requireNonNull(processor, "processor");
 
-    return processor.getBase() != null ? processor.getBase().getName() : null;
-  }
+		return processor.getBase() != null ? processor.getBase()
+			.getName() : null;
+	}
 
-  @Override
-  public Map<String, String> getProperties() {
-    return Collections.unmodifiableMap(_properties);
-  }
+	@Override
+	public Map<String, String> getProperties() {
+		return Collections.unmodifiableMap(_properties);
+	}
 
-  @Override
-  public void setProperties(final Map<String, String> map) throws Exception {
-    _properties.putAll(map);
-  }
+	@Override
+	public void setProperties(final Map<String, String> map) throws Exception {
+		_properties.putAll(map);
+	}
 
-  @Override
-  public void setReporter(final Reporter processor) {
-    // not used
-  }
+	@Override
+	public void setReporter(final Reporter processor) {
+		// not used
+	}
 }

@@ -16,31 +16,31 @@ import junit.framework.TestCase;
 
 public class MetatypesPluginTest extends TestCase {
 
-  public void testMetatype() throws Exception {
+	public void testMetatype() throws Exception {
 
-    final Jar jar = new Jar("jar", "testresources/metatypesEntry/source.jar");
+		final Jar jar = new Jar("jar", "testresources/metatypesEntry/source.jar");
 
-    final Processor p = new Processor();
-    final MetatypesPlugin e = new MetatypesPlugin();
-    e.setReporter(p);
-    final Map<String, Object> result = new HashMap<>();
+		final Processor p = new Processor();
+		final MetatypesPlugin e = new MetatypesPlugin();
+		e.setReporter(p);
+		final Map<String, Object> result = new HashMap<>();
 
-    result.put(e.getProperties().get(ReportEntryPlugin.ENTRY_NAME_PROPERTY),
-        e.extract(jar, Locale.forLanguageTag("und")));
+		result.put(e.getProperties()
+			.get(ReportEntryPlugin.ENTRY_NAME_PROPERTY), e.extract(jar, Locale.forLanguageTag("und")));
 
-    assertTrue(p.isOk());
+		assertTrue(p.isOk());
 
-    final ByteArrayOutputStream s = new ByteArrayOutputStream();
-    new JsonReportSerializerPlugin().serialize(result, s);
+		final ByteArrayOutputStream s = new ByteArrayOutputStream();
+		new JsonReportSerializerPlugin().serialize(result, s);
 
-    final StringBuffer ee = new StringBuffer();
+		final StringBuffer ee = new StringBuffer();
 
-    for (final String l : Files.readAllLines(Paths.get("testresources/metatypesEntry/result.json"),
-        StandardCharsets.UTF_8)) {
+		for (final String l : Files.readAllLines(Paths.get("testresources/metatypesEntry/result.json"),
+			StandardCharsets.UTF_8)) {
 
-      ee.append(l + "\n");
-    }
-    ee.deleteCharAt(ee.length() - 1);
-    assertEquals(ee.toString(), new String(s.toByteArray()));
-  }
+			ee.append(l + "\n");
+		}
+		ee.deleteCharAt(ee.length() - 1);
+		assertEquals(ee.toString(), new String(s.toByteArray()));
+	}
 }
