@@ -1,12 +1,14 @@
 package biz.aQute.bnd.reporter.generator;
 
+import java.util.Locale;
+import java.util.Map;
+
+import com.google.common.collect.Maps;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
 import aQute.service.reporter.Reporter;
-import com.google.common.collect.Maps;
-import java.util.Locale;
-import java.util.Map;
 
 @BndPlugin(name = "entry.entryTest")
 public class TestEntryPlugin implements ReportEntryPlugin<String>, Plugin {

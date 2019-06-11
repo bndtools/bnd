@@ -1,11 +1,12 @@
 package biz.aQute.bnd.reporter.plugins.resource.converter;
 
-import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+
+import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
 
 public class PropertiesConverterPlugin implements ResourceConverterPlugin {
 

@@ -1,6 +1,5 @@
 package biz.aQute.bnd.reporter.plugins.resource.converter;
 
-import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -8,15 +7,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+
+import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
 
 public class XmlConverterPlugin implements ResourceConverterPlugin {
 

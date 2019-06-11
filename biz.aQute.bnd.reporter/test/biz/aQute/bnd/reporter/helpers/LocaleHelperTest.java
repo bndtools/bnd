@@ -2,9 +2,12 @@ package biz.aQute.bnd.reporter.helpers;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import aQute.bnd.osgi.Jar;
+
 import java.util.Locale;
+
 import org.junit.Test;
+
+import aQute.bnd.osgi.Jar;
 
 public class LocaleHelperTest {
 

@@ -3,17 +3,19 @@ package biz.aQute.bnd.reporter.plugins.entries.bundle;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
+import org.junit.Test;
+
 import aQute.bnd.osgi.EmbeddedResource;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.any.ImportResourcePlugin;
-import biz.aQute.bnd.reporter.plugins.entries.bundle.ImportJarResourcePlugin;
 import biz.aQute.bnd.reporter.plugins.resource.converter.PropertiesConverterPlugin;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import org.junit.Test;
 
 public class ImportJarResourcePluginTest {
 

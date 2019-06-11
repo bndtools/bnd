@@ -1,13 +1,14 @@
 package biz.aQute.bnd.reporter.generator;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 import aQute.bnd.service.Registry;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
 import aQute.bnd.service.reporter.ReportGeneratorService;
 import aQute.lib.filter.Filter;
 import aQute.service.reporter.Reporter;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 class ReportGenerator implements ReportGeneratorService {
 

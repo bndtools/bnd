@@ -1,5 +1,17 @@
 package biz.aQute.bnd.reporter.plugins.entries.bndproject;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.ProjectBuilder;
@@ -13,17 +25,6 @@ import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorBuilder;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorConstants;
-import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * This plugins allows to extract all the bundles built by a bnd project. The user can set the

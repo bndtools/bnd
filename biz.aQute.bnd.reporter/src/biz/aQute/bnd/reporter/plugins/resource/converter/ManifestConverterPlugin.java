@@ -1,8 +1,5 @@
 package biz.aQute.bnd.reporter.plugins.resource.converter;
 
-import aQute.bnd.header.OSGiHeader;
-import aQute.bnd.header.Parameters;
-import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -12,6 +9,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.jar.Manifest;
+
+import aQute.bnd.header.OSGiHeader;
+import aQute.bnd.header.Parameters;
+import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
 
 public class ManifestConverterPlugin implements ResourceConverterPlugin {
 

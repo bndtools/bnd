@@ -1,13 +1,14 @@
 package biz.aQute.bnd.reporter.exporter;
 
+import java.util.Map;
+import java.util.jar.Manifest;
+
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorBuilder;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorConstants;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;
-import java.util.Map;
-import java.util.jar.Manifest;
 import junit.framework.TestCase;
 
 public class ReportExporterTest extends TestCase {

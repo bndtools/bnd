@@ -1,5 +1,12 @@
 package biz.aQute.bnd.reporter.plugins.entries.bndworkspace;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Parameters;
@@ -10,12 +17,6 @@ import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.helpers.HeadersHelper;
 import biz.aQute.bnd.reporter.manifest.dto.CommonInfoDTO;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.function.Function;
 
 /**
  * This plugins extract common info from a workspace. Data are extracted from headers and properties

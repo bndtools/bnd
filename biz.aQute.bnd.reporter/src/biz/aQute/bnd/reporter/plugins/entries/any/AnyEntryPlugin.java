@@ -1,14 +1,15 @@
 package biz.aQute.bnd.reporter.plugins.entries.any;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
 import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 
 /**

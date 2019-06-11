@@ -2,7 +2,9 @@ package biz.aQute.bnd.reporter.plugins.resource.converter;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
+
 import org.junit.Test;
 
 public class JsonConverterPluginTest {

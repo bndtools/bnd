@@ -2,6 +2,7 @@ package biz.aQute.bnd.reporter.component.dto;
 
 import java.util.LinkedList;
 import java.util.List;
+
 import org.osgi.dto.DTO;
 
 /**

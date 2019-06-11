@@ -1,15 +1,16 @@
 package biz.aQute.bnd.reporter.plugins.entries.workspace;
 
-import aQute.bnd.build.Workspace;
-import aQute.bnd.osgi.Constants;
-import biz.aQute.bnd.reporter.manifest.dto.CommonInfoDTO;
-import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.CommonInfoPlugin;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Locale;
+
+import aQute.bnd.build.Workspace;
+import aQute.bnd.osgi.Constants;
+import biz.aQute.bnd.reporter.manifest.dto.CommonInfoDTO;
+import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.CommonInfoPlugin;
 import junit.framework.TestCase;
 
 public class CommonInfoPluginTest extends TestCase {

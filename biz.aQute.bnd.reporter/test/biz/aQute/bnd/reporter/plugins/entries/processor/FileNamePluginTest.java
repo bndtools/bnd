@@ -1,8 +1,9 @@
 package biz.aQute.bnd.reporter.plugins.entries.processor;
 
-import aQute.bnd.osgi.Processor;
 import java.io.File;
 import java.util.Locale;
+
+import aQute.bnd.osgi.Processor;
 import junit.framework.TestCase;
 
 public class FileNamePluginTest extends TestCase {

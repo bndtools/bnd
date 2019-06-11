@@ -2,15 +2,18 @@ package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.osgi.WriteResource;
+
 import java.io.OutputStream;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.jar.Manifest;
+
 import org.junit.Test;
+
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.osgi.WriteResource;
 
 public class MavenCoordinatePluginTest {
 

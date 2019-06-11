@@ -1,17 +1,18 @@
 package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
-import aQute.bnd.annotation.plugin.BndPlugin;
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.service.Plugin;
-import aQute.bnd.service.reporter.ReportEntryPlugin;
-import aQute.service.reporter.Reporter;
-import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.reporter.ReportEntryPlugin;
+import aQute.service.reporter.Reporter;
+import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 
 /**
  * This plugin find and add the content of the pom.properties file to the report.

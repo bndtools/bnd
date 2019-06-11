@@ -1,13 +1,15 @@
 package biz.aQute.bnd.reporter.plugins.serializer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import aQute.bnd.service.reporter.ReportSerializerPlugin;
-import aQute.lib.io.IO;
-import aQute.lib.tag.Tag;
+
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Objects;
+
+import aQute.bnd.service.reporter.ReportSerializerPlugin;
+import aQute.lib.io.IO;
+import aQute.lib.tag.Tag;
 
 public class XmlReportSerializerPlugin implements ReportSerializerPlugin {
 

@@ -1,6 +1,7 @@
 package biz.aQute.bnd.reporter.manifest.dto;
 
 import java.util.List;
+
 import org.osgi.dto.DTO;
 
 public class CommonInfoDTO extends DTO {

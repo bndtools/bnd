@@ -1,5 +1,17 @@
 package biz.aQute.bnd.reporter.helpers;
 
+import java.io.File;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.jar.Manifest;
+
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.FileResource;
@@ -26,17 +38,6 @@ import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionInRangeDTO;
 import biz.aQute.bnd.reporter.manifest.dto.VersionRangeDTO;
-import java.io.File;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.jar.Manifest;
 import junit.framework.TestCase;
 
 @SuppressWarnings("boxing")

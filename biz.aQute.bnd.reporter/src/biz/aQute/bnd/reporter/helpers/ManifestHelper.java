@@ -1,12 +1,13 @@
 package biz.aQute.bnd.reporter.helpers;
 
+import java.util.Locale;
+import java.util.Objects;
+import java.util.jar.Manifest;
+
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.jar.Manifest;
 
 /**
  * An helper to extract manifest headers taking into account the localization.

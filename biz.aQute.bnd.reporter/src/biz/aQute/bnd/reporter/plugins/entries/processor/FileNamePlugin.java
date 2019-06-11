@@ -1,16 +1,17 @@
 package biz.aQute.bnd.reporter.plugins.entries.processor;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.Plugin;
 import aQute.bnd.service.reporter.ReportEntryPlugin;
 import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * This plugin extracts the file name of the base of a Processor.

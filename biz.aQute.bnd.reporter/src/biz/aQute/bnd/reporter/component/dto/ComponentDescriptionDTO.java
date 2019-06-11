@@ -1,11 +1,13 @@
 package biz.aQute.bnd.reporter.component.dto;
 
-import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import org.osgi.dto.DTO;
+
+import biz.aQute.bnd.reporter.manifest.dto.TypedAttributeValueDTO;
 
 /**
  * A representation of a declared component description.

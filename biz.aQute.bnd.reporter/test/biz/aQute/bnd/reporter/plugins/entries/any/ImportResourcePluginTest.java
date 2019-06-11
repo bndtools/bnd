@@ -3,16 +3,19 @@ package biz.aQute.bnd.reporter.plugins.entries.any;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.service.reporter.ReportEntryPlugin;
-import aQute.lib.io.IO;
-import biz.aQute.bnd.reporter.plugins.resource.converter.PropertiesConverterPlugin;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
 import org.junit.Test;
+
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.reporter.ReportEntryPlugin;
+import aQute.lib.io.IO;
+import biz.aQute.bnd.reporter.plugins.resource.converter.PropertiesConverterPlugin;
 
 public class ImportResourcePluginTest {
 

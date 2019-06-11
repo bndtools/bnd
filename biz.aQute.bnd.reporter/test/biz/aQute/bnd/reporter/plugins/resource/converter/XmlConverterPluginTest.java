@@ -2,8 +2,7 @@ package biz.aQute.bnd.reporter.plugins.resource.converter;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import aQute.lib.io.IO;
-import biz.aQute.bnd.reporter.plugins.serializer.JsonReportSerializerPlugin;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Paths;
@@ -12,7 +11,11 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.Test;
+
+import aQute.lib.io.IO;
+import biz.aQute.bnd.reporter.plugins.serializer.JsonReportSerializerPlugin;
 
 public class XmlConverterPluginTest {
 

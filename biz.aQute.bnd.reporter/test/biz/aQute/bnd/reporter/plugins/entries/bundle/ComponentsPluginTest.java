@@ -1,9 +1,5 @@
 package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
-import aQute.bnd.osgi.Jar;
-import aQute.bnd.osgi.Processor;
-import aQute.bnd.service.reporter.ReportEntryPlugin;
-import biz.aQute.bnd.reporter.plugins.serializer.JsonReportSerializerPlugin;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -11,6 +7,11 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import aQute.bnd.osgi.Jar;
+import aQute.bnd.osgi.Processor;
+import aQute.bnd.service.reporter.ReportEntryPlugin;
+import biz.aQute.bnd.reporter.plugins.serializer.JsonReportSerializerPlugin;
 import junit.framework.TestCase;
 
 public class ComponentsPluginTest extends TestCase {

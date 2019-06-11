@@ -1,5 +1,15 @@
 package biz.aQute.bnd.reporter.plugins.entries.bndworkspace;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
@@ -11,15 +21,6 @@ import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorBuilder;
 import biz.aQute.bnd.reporter.generator.ReportGeneratorConstants;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 /**
  * This plugins allows to extract all the bnd projects built by a bnd workspace. The user can set

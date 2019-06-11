@@ -1,5 +1,11 @@
 package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
@@ -10,11 +16,6 @@ import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.helpers.HeadersHelper;
 import biz.aQute.bnd.reporter.helpers.ManifestHelper;
 import biz.aQute.bnd.reporter.manifest.dto.OSGiHeadersDTO;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * This plugin allows to add some of the bundle manifest headers to the report.

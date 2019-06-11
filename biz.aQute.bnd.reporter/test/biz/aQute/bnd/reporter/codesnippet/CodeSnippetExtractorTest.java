@@ -1,10 +1,11 @@
 package biz.aQute.bnd.reporter.codesnippet;
 
+import java.io.File;
+import java.util.List;
+
 import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetDTO;
 import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetGroupDTO;
 import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetProgramDTO;
-import java.io.File;
-import java.util.List;
 import junit.framework.TestCase;
 
 public class CodeSnippetExtractorTest extends TestCase {

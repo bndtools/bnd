@@ -1,11 +1,14 @@
 package biz.aQute.bnd.reporter.plugins.entries.any;
 
 import static org.junit.Assert.assertEquals;
-import aQute.bnd.service.reporter.ReportEntryPlugin;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+
 import org.junit.Test;
+
+import aQute.bnd.service.reporter.ReportEntryPlugin;
 
 public class AnyEntryPluginTest {
 

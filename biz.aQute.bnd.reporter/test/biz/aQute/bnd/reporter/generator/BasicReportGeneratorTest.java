@@ -1,11 +1,12 @@
 package biz.aQute.bnd.reporter.generator;
 
+import java.util.Map;
+import java.util.jar.Manifest;
+
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.reporter.ReportGeneratorService;
-import java.util.Map;
-import java.util.jar.Manifest;
 import junit.framework.TestCase;
 
 public class BasicReportGeneratorTest extends TestCase {

@@ -1,22 +1,25 @@
 package biz.aQute.bnd.reporter.plugins.transformer;
 
-import aQute.bnd.osgi.Resource;
-import aQute.bnd.service.reporter.ReportTransformerPlugin;
-import aQute.lib.io.IO;
-import aQute.lib.json.JSONCodec;
-import com.google.common.base.Optional;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Map;
+
 import org.jtwig.JtwigModel;
 import org.jtwig.JtwigTemplate;
 import org.jtwig.environment.EnvironmentConfigurationBuilder;
 import org.jtwig.resource.exceptions.ResourceNotFoundException;
 import org.jtwig.resource.loader.ResourceLoader;
 import org.jtwig.resource.loader.TypedResourceLoader;
+
+import com.google.common.base.Optional;
+
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.reporter.ReportTransformerPlugin;
+import aQute.lib.io.IO;
+import aQute.lib.json.JSONCodec;
 
 public class JtwigTransformerPlugin implements ReportTransformerPlugin {
 

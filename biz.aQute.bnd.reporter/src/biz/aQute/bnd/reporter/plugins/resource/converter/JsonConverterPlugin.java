@@ -1,10 +1,11 @@
 package biz.aQute.bnd.reporter.plugins.resource.converter;
 
+import java.io.InputStream;
+import java.util.Objects;
+
 import aQute.lib.json.Decoder;
 import aQute.lib.json.JSONCodec;
 import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
-import java.io.InputStream;
-import java.util.Objects;
 
 public class JsonConverterPlugin implements ResourceConverterPlugin {
 

@@ -1,5 +1,15 @@
 package biz.aQute.bnd.reporter.plugins.entries.bundle;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Resource;
@@ -12,15 +22,6 @@ import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 import biz.aQute.bnd.reporter.helpers.ArrayHelper;
 import biz.aQute.bnd.reporter.helpers.FileHelper;
 import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * This plugin allows to add a file localized in a Jar to the report. The file will be converted

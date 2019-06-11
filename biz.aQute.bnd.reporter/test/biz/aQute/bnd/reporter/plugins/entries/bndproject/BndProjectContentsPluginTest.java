@@ -1,7 +1,5 @@
 package biz.aQute.bnd.reporter.plugins.entries.bndproject;
 
-import aQute.bnd.build.Project;
-import aQute.bnd.build.Workspace;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -9,6 +7,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import aQute.bnd.build.Project;
+import aQute.bnd.build.Workspace;
 import junit.framework.TestCase;
 
 public class BndProjectContentsPluginTest extends TestCase {

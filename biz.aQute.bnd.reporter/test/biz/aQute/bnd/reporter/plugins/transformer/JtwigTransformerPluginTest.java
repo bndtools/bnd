@@ -1,12 +1,14 @@
 package biz.aQute.bnd.reporter.plugins.transformer;
 
 import static org.junit.Assert.assertArrayEquals;
-import aQute.lib.io.IO;
-import biz.aQute.bnd.reporter.plugins.serializer.JsonReportSerializerPlugin;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+
+import aQute.lib.io.IO;
+import biz.aQute.bnd.reporter.plugins.serializer.JsonReportSerializerPlugin;
 import junit.framework.TestCase;
 
 public class JtwigTransformerPluginTest extends TestCase {

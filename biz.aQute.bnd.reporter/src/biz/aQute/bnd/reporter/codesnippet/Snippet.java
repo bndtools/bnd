@@ -1,8 +1,9 @@
 package biz.aQute.bnd.reporter.codesnippet;
 
+import java.util.Objects;
+
 import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetGroupDTO;
 import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetProgramDTO;
-import java.util.Objects;
 
 
 class Snippet {

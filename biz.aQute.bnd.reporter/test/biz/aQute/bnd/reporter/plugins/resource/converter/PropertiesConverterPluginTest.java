@@ -2,9 +2,11 @@ package biz.aQute.bnd.reporter.plugins.resource.converter;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayInputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.junit.Test;
 
 public class PropertiesConverterPluginTest {

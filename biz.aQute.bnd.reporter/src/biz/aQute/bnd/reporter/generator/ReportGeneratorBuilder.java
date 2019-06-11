@@ -1,5 +1,11 @@
 package biz.aQute.bnd.reporter.generator;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.Parameters;
@@ -17,11 +23,6 @@ import biz.aQute.bnd.reporter.plugins.entries.bundle.ManifestPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.MavenCoordinatePlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.MetatypesPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.processor.FileNamePlugin;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * Build the {@link ReportGeneratorService}.

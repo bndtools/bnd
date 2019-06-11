@@ -1,6 +1,7 @@
 package biz.aQute.bnd.reporter.service.resource.converter;
 
 import java.io.InputStream;
+
 import org.osgi.annotation.versioning.ProviderType;
 
 /**

@@ -2,6 +2,7 @@ package biz.aQute.bnd.reporter.manifest.dto;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import org.osgi.dto.DTO;
 
 /**

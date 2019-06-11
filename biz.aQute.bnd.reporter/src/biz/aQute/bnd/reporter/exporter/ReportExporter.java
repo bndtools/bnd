@@ -1,5 +1,20 @@
 package biz.aQute.bnd.reporter.exporter;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.AbstractMap;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import aQute.bnd.header.Attrs;
 import aQute.bnd.help.SyntaxAnnotation;
 import aQute.bnd.osgi.EmbeddedResource;
@@ -15,20 +30,6 @@ import biz.aQute.bnd.reporter.exporter.ReportExporter.ReportExporterInstructions
 import biz.aQute.bnd.reporter.generator.ReportGeneratorConstants;
 import biz.aQute.bnd.reporter.helpers.ArrayHelper;
 import biz.aQute.bnd.reporter.helpers.FileHelper;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.AbstractMap;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Provide the ReportExporterService service. This implementation is configured by the user with the

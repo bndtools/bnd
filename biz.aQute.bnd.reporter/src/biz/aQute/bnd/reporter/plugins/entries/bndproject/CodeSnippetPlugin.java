@@ -1,5 +1,13 @@
 package biz.aQute.bnd.reporter.plugins.entries.bndproject;
 
+import java.io.File;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+
 import aQute.bnd.annotation.plugin.BndPlugin;
 import aQute.bnd.build.Project;
 import aQute.bnd.service.Plugin;
@@ -8,13 +16,6 @@ import aQute.service.reporter.Reporter;
 import biz.aQute.bnd.reporter.codesnippet.CodeSnippetExtractor;
 import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetDTO;
 import biz.aQute.bnd.reporter.generator.EntryNamesReference;
-import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * This plugins allows to extract code snippets from a project. The user can set the

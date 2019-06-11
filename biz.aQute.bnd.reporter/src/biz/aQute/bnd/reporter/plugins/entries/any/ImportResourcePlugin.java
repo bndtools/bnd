@@ -1,17 +1,5 @@
 package biz.aQute.bnd.reporter.plugins.entries.any;
 
-import aQute.bnd.annotation.plugin.BndPlugin;
-import aQute.bnd.osgi.Resource;
-import aQute.bnd.service.Plugin;
-import aQute.bnd.service.Registry;
-import aQute.bnd.service.RegistryPlugin;
-import aQute.bnd.service.reporter.ReportEntryPlugin;
-import aQute.lib.io.IO;
-import aQute.service.reporter.Reporter;
-import biz.aQute.bnd.reporter.generator.EntryNamesReference;
-import biz.aQute.bnd.reporter.helpers.ArrayHelper;
-import biz.aQute.bnd.reporter.helpers.FileHelper;
-import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +12,19 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import aQute.bnd.annotation.plugin.BndPlugin;
+import aQute.bnd.osgi.Resource;
+import aQute.bnd.service.Plugin;
+import aQute.bnd.service.Registry;
+import aQute.bnd.service.RegistryPlugin;
+import aQute.bnd.service.reporter.ReportEntryPlugin;
+import aQute.lib.io.IO;
+import aQute.service.reporter.Reporter;
+import biz.aQute.bnd.reporter.generator.EntryNamesReference;
+import biz.aQute.bnd.reporter.helpers.ArrayHelper;
+import biz.aQute.bnd.reporter.helpers.FileHelper;
+import biz.aQute.bnd.reporter.service.resource.converter.ResourceConverterPlugin;
 
 /**
  * This plugin allows to add a local or remote file to the report. The file will be converted into
