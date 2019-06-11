@@ -1,9 +1,14 @@
 package biz.aQute.bnd.reporter.codesnippet;
 
-import aQute.bnd.header.Attrs;
-import aQute.bnd.header.OSGiHeader;
-import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetGroupDTO;
-import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetProgramDTO;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.function.Supplier;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
 import com.github.javaparser.ParserConfiguration;
@@ -13,14 +18,11 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.printer.PrettyPrinterConfiguration;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import aQute.bnd.header.Attrs;
+import aQute.bnd.header.OSGiHeader;
+import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetGroupDTO;
+import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetProgramDTO;
 
 
 /**
@@ -263,5 +265,8 @@ class JavaSnippetReader extends SnippetReader {
     public boolean includeDeclaration;
     public String parentGroup;
     public String groupName;
+
+		CodeSnippetConfig() {
+		}
   }
 }

@@ -1,10 +1,5 @@
 package biz.aQute.bnd.reporter.codesnippet;
 
-import aQute.lib.fileset.FileSet;
-import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetDTO;
-import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetGroupDTO;
-import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetProgramDTO;
-import biz.aQute.bnd.reporter.helpers.FileHelper;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,6 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import aQute.lib.fileset.FileSet;
+import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetDTO;
+import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetGroupDTO;
+import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetProgramDTO;
+import biz.aQute.bnd.reporter.helpers.FileHelper;
 
 /**
  * This class allows to extract code snippets from source codes contained in a set of directory
@@ -125,7 +126,8 @@ public class CodeSnippetExtractor {
   }
 
   private String generateId(final String baseId) {
-    final Integer count = _idCache.put(baseId, _idCache.getOrDefault(baseId, 0) + 1);
+		final Integer count = _idCache.put(baseId,
+				Integer.valueOf(_idCache.getOrDefault(baseId, Integer.valueOf(0)).intValue() + 1));
     if (count != null) {
       return baseId + count;
     } else {
