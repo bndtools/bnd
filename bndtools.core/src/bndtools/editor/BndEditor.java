@@ -336,7 +336,7 @@ public class BndEditor extends ExtendedFormEditor implements IResourceChangeList
                 }
 
                 // Create resolver job and pre-validate
-                final ResolveJob job = new ResolveJob(model);
+                final ResolveJob job = new ResolveJob(model, inputResource);
                 IStatus validation = job.validateBeforeRun();
                 if (!validation.isOK()) {
                     if (onSave)
