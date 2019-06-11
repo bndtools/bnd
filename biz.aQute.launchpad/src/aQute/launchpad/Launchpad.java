@@ -4,6 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -48,9 +51,12 @@ import org.osgi.framework.namespace.PackageNamespace;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.framework.wiring.FrameworkWiring;
+//import org.osgi.service.component.runtime.ServiceComponentRuntime;
+//import org.osgi.service.component.runtime.dto.ComponentDescriptionDTO;
 import org.osgi.util.tracker.ServiceTracker;
 
 import aQute.bnd.service.specifications.RunSpecification;
+import aQute.launchpad.internal.ProbeImpl;
 import aQute.lib.converter.Converter;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.inject.Injector;
@@ -97,16 +103,21 @@ public class Launchpad implements AutoCloseable {
 
 	Bundle										testbundle;
 	boolean										debug;
+	final boolean								byReference;
+
 	PrintStream									out						= System.err;
 	ServiceTracker<FindHook, FindHook>			hooks;
 	private long								closeTimeout;
+	private Bundle								proxyBundle;
+	private Probe								probe					= new ProbeImpl();
 
-	Launchpad(Framework framework, String name, String className,
-		RunSpecification runspec, long closeTimeout, boolean debug, boolean hasTestBundle) {
+	Launchpad(Framework framework, String name, String className, RunSpecification runspec, long closeTimeout,
+		boolean debug, boolean hasTestBundle, boolean byReference) {
 		this.runspec = runspec;
 		this.closeTimeout = closeTimeout;
 		this.hasTestBundle = hasTestBundle;
-
+		this.byReference = byReference;
+		this.proxyBundle = framework;
 		try {
 			this.className = className;
 			this.name = name;
@@ -446,9 +457,22 @@ public class Launchpad implements AutoCloseable {
 	 */
 	public Bundle install(File file) {
 		try {
-			report("Installing %s", file);
-			return framework.getBundleContext()
-				.installBundle(toInstallURI(file));
+			if (byReference) {
+				String installURI = toInstallURI(file);
+				report("Installing %s", installURI);
+				return framework.getBundleContext()
+					.installBundle(installURI);
+			}
+			try (FileInputStream fin = new FileInputStream(file)) {
+				return framework.getBundleContext()
+					.installBundle("-> " + file, fin);
+			} catch (FileNotFoundException e) {
+				report("Failed to install %s  because file could not be found", file);
+				throw Exceptions.duck(e);
+			} catch (IOException e) {
+				report("Failed to install %s  because %s", file, e.getMessage());
+				throw Exceptions.duck(e);
+			}
 		} catch (BundleException e) {
 			report("Failed to install %s : %s", file, e);
 			throw Exceptions.duck(e);
@@ -992,12 +1016,18 @@ public class Launchpad implements AutoCloseable {
 	}
 
 	private String toInstallURI(File c) {
-		return "reference:" + c.toURI();
+		if (byReference)
+			return "reference:" + c.toURI();
+		return c.toURI()
+			.toString();
 	}
 
 	Object getService(Injector.Target<Service> param) {
 
 		try {
+			if (param.type == Launchpad.class) {
+				return this;
+			}
 			if (param.type == BundleContext.class) {
 				return getBundleContext();
 			}
@@ -1075,7 +1105,7 @@ public class Launchpad implements AutoCloseable {
 					serviceClass);
 
 				List<ServiceReference<T>> visibleReferences = allReferences.stream()
-					.filter(ref -> ref.isAssignableTo(framework, className))
+					.filter(ref -> ref.isAssignableTo(proxyBundle, className))
 					.collect(Collectors.toList());
 
 				List<ServiceReference<T>> unhiddenReferences = new ArrayList<>(visibleReferences);
@@ -1123,8 +1153,8 @@ public class Launchpad implements AutoCloseable {
 							String[] objectClass = (String[]) r.getProperty(Constants.OBJECTCLASS);
 							for (String clazz : objectClass) {
 								error += "\n  " + clazz + "\n     registrar: "
-									+ getSource(clazz, r.getBundle()).orElse("null") + "\n     framework: "
-									+ getSource(clazz, framework).orElse("null");
+									+ getSource(clazz, r.getBundle()).orElse("null") + "\n     proxybundle: "
+									+ getSource(clazz, proxyBundle).orElse("null");
 							}
 						}
 					}
@@ -1147,7 +1177,7 @@ public class Launchpad implements AutoCloseable {
 						}
 					}
 
-					if (exception)
+					if (exception && timeout > 1)
 						throw new TimeoutException(error);
 
 					return Collections.emptyList();
@@ -1318,5 +1348,24 @@ public class Launchpad implements AutoCloseable {
 
 	public String getClassName() {
 		return className;
+	}
+
+	public Closeable enable(Class<?> componentClass) {
+		return probe.enable(componentClass);
+	}
+
+	public void setProxyBundle(Bundle tb) {
+		this.proxyBundle = tb;
+	}
+
+	public Launchpad setProbe(Probe probe) {
+		try {
+			inject(probe);
+		} catch (NoClassDefFoundError e) {
+			// ignore
+			return this;
+		}
+		this.probe = probe;
+		return this;
 	}
 }

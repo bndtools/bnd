@@ -1,13 +1,19 @@
 package aQute.libg.parameters;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import aQute.libg.glob.Glob;
 import aQute.libg.qtokens.QuotedTokenizer;
 
 public class ParameterMap extends LinkedHashMap<String, Attributes> {
 	private static final char	DUPLICATE_MARKER	= '~';
-	private static final long serialVersionUID = 1L;
+	private static final long	serialVersionUID	= 1L;
 
 	public ParameterMap(String headers) {
 		if (headers == null)
@@ -148,4 +154,33 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 		return key;
 	}
 
+	public ParameterMap restrict(Collection<String> matchers) {
+		ParameterMap result = new ParameterMap();
+		Set<Glob> negated = new HashSet<>();
+		List<Glob> sequence = new ArrayList<>();
+
+		for (String s : matchers) {
+			Glob g;
+			if (s.startsWith("!")) {
+				g = new Glob(s.substring(1));
+				negated.add(g);
+			} else {
+				g = new Glob(s);
+			}
+			sequence.add(g);
+		}
+
+		nextEntry: for (java.util.Map.Entry<String, Attributes> e : this.entrySet()) {
+			for (Glob g : sequence) {
+				if (g.matches(e.getKey())) {
+					if (!negated.contains(g))
+						result.put(e.getKey(), e.getValue());
+					continue nextEntry;
+				}
+			}
+		}
+
+		return result;
+
+	}
 }

@@ -1,7 +1,6 @@
 # Set javac settings from JDT prefs
 -include: ${workspace}/cnf/includes/jdt.bnd
 
-
 Export-Package: \
 	aQute.bnd.remoteworkspace.client,\
 	aQute.bnd.service.remoteworkspace,\
@@ -13,9 +12,15 @@ Export-Package: \
 Import-Package: \
 	org.junit.rules;version=4.0;resolution:=optional,\
 	org.junit.runner;version=4.0;resolution:=optional,\
-	org.osgi.service.component.runtime;resolution:=optional,\
+	org.junit.runners;resolution:=optional,\
+    org.junit.runners.model;resolution:=optional,\
+    org.junit.internal.runners.statements;resolution:=optional,\
+    org.osgi.service.component.runtime;resolution:=optional,\
+	org.osgi.util.promise;resolution:=optional,\
 	org.osgi.service.component.runtime.dto;resolution:=optional,\
 	*
+
+-includeresource: probe.jar
 
 -conditionalpackage: \
     aQute.lib*
@@ -25,12 +30,12 @@ Import-Package: \
 -buildpath: \
     osgi.annotation;version=latest,\
     osgi.core;version=latest,\
-    org.osgi.service.component;version='[1.3,1.4)',\
+    org.osgi.service.component;version='[1.4,1.5)',\
+    aQute.libg;version=latest, \
     org.osgi.service.component.annotations;version='[1.3,1.4)',\
-    aQute.libg;version=project,\
     biz.aQute.bndlib;version=latest;packages=*,\
     org.eclipse.jdt.annotation;version=@2, \
-    ${junit},\
+    ${junit}
     
 
 -testpath: \
@@ -48,3 +53,4 @@ Import-Package: \
 # For testing purpose, see BundleBuilderTest.java
 Project                 true
 LaunchPadInheritTest    Project
+-privatepackage: aQute.launchpad.internal
