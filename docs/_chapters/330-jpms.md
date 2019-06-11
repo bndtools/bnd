@@ -1,6 +1,6 @@
 ---
 order: 330
-title: Creating OSGi Bundles that are also JPMS libraries
+title: JPMS Libraries
 summary: Discusses how to use bnd to create JPMS libraries
 layout: default
 author: Raymond Augé
