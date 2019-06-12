@@ -5,5 +5,10 @@ public enum Scope {
 	provided,
 	runtime,
 	system,
-	test;
+	test,
+
+	/**
+	 * Custom scope for isolating bnd distro artifacts
+	 */
+	distro;
 }
