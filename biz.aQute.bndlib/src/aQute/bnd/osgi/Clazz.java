@@ -309,7 +309,7 @@ public class Clazz {
 		}
 
 		public boolean isSynthetic() {
-			return (access & ACC_SYNTHETIC) != 0;
+			return Clazz.isSynthetic(access);
 		}
 
 		public boolean isModule() {
@@ -1830,6 +1830,10 @@ public class Clazz {
 
 	public boolean isSynthetic() {
 		return classDef.isSynthetic();
+	}
+
+	static boolean isSynthetic(int access) {
+		return (access & ACC_SYNTHETIC) != 0;
 	}
 
 	public boolean isModule() {
