@@ -1099,6 +1099,9 @@ public class Clazz {
 	}
 
 	private void processSignature(SignatureAttribute attribute, ElementType elementType, int access_flags) {
+		if (isSynthetic(access_flags)) {
+			return; // Ignore generic signatures on synthetic elements
+		}
 		String signature = attribute.signature;
 		Signature sig;
 		switch (elementType) {
