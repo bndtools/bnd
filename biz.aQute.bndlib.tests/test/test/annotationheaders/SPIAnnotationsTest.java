@@ -25,6 +25,45 @@ import aQute.lib.io.IO;
 public class SPIAnnotationsTest {
 
 	@Test
+	public void testServiceProvider_existingdescriptor() throws Exception {
+		try (Builder b = new Builder();) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setPrivatePackage("test.annotationheaders.spi.providerE");
+			b.setProperty("-includeresource",
+				"META-INF/services/test.annotationheaders.spi.SPIService;literal='test.annotationheaders.spi.providerE.Provider'");
+			b.setProperty("Provide-Capability",
+				"osgi.serviceloader;osgi.serviceloader='test.annotationheaders.spi.SPIService';register:='test.annotationheaders.spi.providerE.Provider'");
+			b.build();
+			b.getJar()
+				.getManifest()
+				.write(System.out);
+			assertTrue(b.check());
+
+			Attributes mainAttributes = b.getJar()
+				.getManifest()
+				.getMainAttributes();
+
+			Header req = Header.parseHeader(mainAttributes.getValue(Constants.REQUIRE_CAPABILITY));
+			assertEquals(1, req.size());
+
+			assertEE(req);
+
+			Header cap = Header.parseHeader(mainAttributes.getValue(Constants.PROVIDE_CAPABILITY));
+			assertEquals(1, cap.size());
+
+			Props p = cap.get("osgi.serviceloader");
+			assertNotNull(p);
+			assertNotNull(p.get("osgi.serviceloader"));
+			assertEquals("test.annotationheaders.spi.SPIService", p.get("osgi.serviceloader"));
+			assertNotNull(p.get("register:"));
+			assertEquals("test.annotationheaders.spi.providerE.Provider", p.get("register:"));
+
+			assertServiceMappingFile(b.getJar(), "test.annotationheaders.spi.SPIService",
+				"test.annotationheaders.spi.providerE.Provider");
+		}
+	}
+
+	@Test
 	public void testServiceProvider_warning() throws Exception {
 		try (Builder b = new Builder();) {
 			b.addClasspath(IO.getFile("bin_test"));
