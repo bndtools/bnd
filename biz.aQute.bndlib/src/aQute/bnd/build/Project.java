@@ -593,8 +593,11 @@ public class Project extends Processor {
 	 */
 
 	public List<Container> getBundles(Strategy strategyx, String spec, String source) throws Exception {
+		Instructions decorator = new Instructions(mergeProperties(source + "+"));
+
 		List<Container> result = new ArrayList<>();
 		Parameters bundles = new Parameters(spec, this);
+		decorator.decorate(bundles);
 
 		try {
 			for (Iterator<Entry<String, Attrs>> i = bundles.entrySet()
@@ -3510,7 +3513,6 @@ public class Project extends Processor {
 			.toString(), Strategy.EXACT, null);
 		if (bundle != null)
 			return bundle;
-
 
 		return Container.error(this, identity.osgi_identity() + "-" + identity.version());
 	}

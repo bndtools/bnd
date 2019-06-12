@@ -82,7 +82,7 @@ public class Container {
 		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, attributes, db);
 	}
 
-	public Container(Project project, String message) {
+	private Container(Project project, String message) {
 		this.project = project;
 		this.bsn = "<unknown>";
 		this.version = "<unknown>";

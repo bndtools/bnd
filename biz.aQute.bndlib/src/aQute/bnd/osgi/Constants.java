@@ -210,6 +210,7 @@ public interface Constants {
 	String								RUNPROVIDEDCAPABILITIES						= "-runprovidedcapabilities";
 
 	String								RUNBUNDLES									= "-runbundles";
+	String								RUNBUNDLES_STARTLEVEL_ATTRIBUTE				= "startlevel";
 	String								RUNORDER									= "-runorder";
 	String								AUGMENT										= "-augment";
 	String								AUGMENT_RANGE_ATTRIBUTE						= "version:";

@@ -14,8 +14,8 @@ Bundle-SymbolicName: demo
 	org.apache.felix.framework;version='[5.6.8,6)', \
 	biz.aQute.launcher; version=snapshot
 
--runbundles: org.apache.felix.scr,\
-	org.apache.felix.configadmin, \
+-runbundles: org.apache.felix.scr;startlevel=10,\
+	org.apache.felix.configadmin;startlevel=11, \
 	${junit}
 
 Bundle-Activator: test.TestActivator

@@ -33,6 +33,7 @@ import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.Resource;
+import aQute.bnd.osgi.Verifier;
 import aQute.bnd.service.Strategy;
 import aQute.bnd.version.Version;
 import aQute.lib.io.IO;
@@ -60,6 +61,7 @@ public abstract class ProjectLauncher extends Processor {
 	private final List<String>			launcherpath		= new ArrayList<>();
 	private final List<String>			classpath			= new ArrayList<>();
 	private List<String>				runbundles			= Create.list();
+	private List<Integer>				startlevels			= Create.list();
 	private final List<String>			runvm				= new ArrayList<>();
 	private final List<String>			runprogramargs		= new ArrayList<>();
 	private Map<String, String>			runproperties;
@@ -146,12 +148,16 @@ public abstract class ProjectLauncher extends Processor {
 		// pkr: could not use this because this is killing the runtests.
 		// project.refresh();
 		runbundles.clear();
+		startlevels.clear();
 		Collection<Container> run = project.getRunbundles();
 
 		for (Container container : run) {
 			File file = container.getFile();
 			if (file != null && (file.isFile() || file.isDirectory())) {
 				runbundles.add(IO.absolutePath(file));
+				int bundleIndex = runbundles.size() - 1;
+
+				doStartLevel(container, bundleIndex);
 			} else {
 				project.error("Bundle file \"%s\" does not exist, given error is %s", file, container.getError());
 			}
@@ -201,6 +207,28 @@ public abstract class ProjectLauncher extends Processor {
 		storageDir = project.getRunStorage();
 
 		setKeep(project.getRunKeep());
+	}
+
+	private void doStartLevel(Container container, int bundleIndex) {
+		Map<String, String> attributes = container.getAttributes();
+		if (attributes != null) {
+			String startlevel = attributes.get(Constants.RUNBUNDLES_STARTLEVEL_ATTRIBUTE);
+			if (startlevel != null) {
+				if (!Verifier.isNumber(startlevel)) {
+					project.error("Startlevel on %s is not a number but %s", container, startlevel);
+				} else {
+					int sl = Integer.parseInt(startlevel);
+					if (sl < 1) {
+						project.error("Startlevel on %s is less than 1: %s", container, startlevel);
+					} else {
+						while (startlevels.size() <= bundleIndex)
+							startlevels.add(-1);
+
+						startlevels.set(bundleIndex, sl);
+					}
+				}
+			}
+		}
 	}
 
 	private int getRunframework(String property) {
@@ -683,4 +711,7 @@ public abstract class ProjectLauncher extends Processor {
 
 	}
 
+	public List<Integer> getStartlevels() {
+		return startlevels;
+	}
 }
