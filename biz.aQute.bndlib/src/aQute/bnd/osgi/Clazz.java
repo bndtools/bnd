@@ -309,7 +309,7 @@ public class Clazz {
 		}
 
 		public boolean isSynthetic() {
-			return (access & ACC_SYNTHETIC) != 0;
+			return Clazz.isSynthetic(access);
 		}
 
 		public boolean isModule() {
@@ -1099,6 +1099,9 @@ public class Clazz {
 	}
 
 	private void processSignature(SignatureAttribute attribute, ElementType elementType, int access_flags) {
+		if (isSynthetic(access_flags)) {
+			return; // Ignore generic signatures on synthetic elements
+		}
 		String signature = attribute.signature;
 		Signature sig;
 		switch (elementType) {
@@ -1830,6 +1833,10 @@ public class Clazz {
 
 	public boolean isSynthetic() {
 		return classDef.isSynthetic();
+	}
+
+	static boolean isSynthetic(int access) {
+		return (access & ACC_SYNTHETIC) != 0;
 	}
 
 	public boolean isModule() {
