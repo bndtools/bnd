@@ -151,7 +151,7 @@ public class LaunchpadTest {
 				.start();
 
 			assertThat(semaphore.tryAcquire(1, 1, TimeUnit.SECONDS)).isTrue();
-			assertThat(semaphore.tryAcquire(1, 200, TimeUnit.MILLISECONDS)).isFalse();
+			assertThat(semaphore.tryAcquire(1, 500, TimeUnit.MILLISECONDS)).isFalse();
 
 			x.stop();
 

@@ -45,7 +45,10 @@ public class BuilderSpecification {
 	public boolean							sources;
 	public Map<String, String>				other				= new HashMap<>();
 	public boolean							resourceOnly;
-
+	/**
+	 * A glob expression on the file name of the bundle to merge
+	 */
+	public String							testBundle;
 	@Deprecated
 	public boolean							inherit				= false;
 }

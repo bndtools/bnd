@@ -1,4 +1,4 @@
-package aQute.launchpad;
+package aQute.xlaunchpad;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -15,6 +15,10 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+
+import aQute.launchpad.Launchpad;
+import aQute.launchpad.LaunchpadBuilder;
+import aQute.launchpad.Service;
 
 public class Manual {
 	LaunchpadBuilder	builder	= new LaunchpadBuilder().runfw("org.apache.felix.framework");
@@ -202,7 +206,8 @@ public class Manual {
 					.isEmpty();
 			assertThat(isHidden).isTrue();
 
-			fw.framework.getBundleContext()
+			fw.getFramework()
+				.getBundleContext()
 					.registerService(String.class, "fw", null);
 
 			isHidden = fw.getServices(String.class)
@@ -237,7 +242,8 @@ public class Manual {
 			
 			assertThat(isHidden).isTrue();
 
-			fw.framework.getBundleContext()
+			fw.getFramework()
+				.getBundleContext()
 					.registerService(String.class, "fw", null);
 
 			isHidden = fw.getServices(String.class)

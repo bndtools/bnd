@@ -9,8 +9,10 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -27,6 +29,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspace;
 import aQute.bnd.service.remoteworkspace.RemoteWorkspaceClient;
+import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.bnd.service.specifications.RunSpecification;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
@@ -81,10 +84,12 @@ public class LaunchpadBuilder implements AutoCloseable {
 	RunSpecification				local;
 	boolean							start			= true;
 	boolean							testbundle		= true;
+	boolean							byReference		= true;
 	long							closeTimeout	= 60000;
 	boolean							debug;
 	final Set<Class<?>>				hide			= new HashSet<>();
 	final List<Predicate<String>>	excludeExports	= new ArrayList<>();
+	final List<String>				exports			= new ArrayList<>();
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -253,14 +258,15 @@ public class LaunchpadBuilder implements AutoCloseable {
 			runspec.properties.put(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, extraCapabilities);
 			runspec.properties.put(Constants.FRAMEWORK_STORAGE, storage.getAbsolutePath());
 			runspec.properties.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
-			runspec.properties.put(Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_FRAMEWORK);
+			runspec.properties.put(Constants.FRAMEWORK_BUNDLE_PARENT, Constants.FRAMEWORK_BUNDLE_PARENT_BOOT);
 			runspec.properties.put(LAUNCHPAD_NAME, name);
 			runspec.properties.put(LAUNCHPAD_CLASSNAME, className);
 
 			Framework framework = getFramework(runspec);
 
 			@SuppressWarnings("resource")
-			Launchpad launchpad = new Launchpad(framework, name, className, runspec, closeTimeout, debug, testbundle);
+			Launchpad launchpad = new Launchpad(framework, name, className, runspec, closeTimeout, debug, testbundle,
+				byReference);
 
 			launchpad.report("ALL extra system packages\n     %s", toLines(local.extraSystemPackages.keySet()));
 			launchpad.report("Filtered extra system packages\n     %s", toLines(restrictedExports.keySet()));
@@ -384,6 +390,10 @@ public class LaunchpadBuilder implements AutoCloseable {
 	}
 
 	private ParameterMap restrict(ParameterMap map, Collection<Predicate<String>> globs) {
+		if (!exports.isEmpty()) {
+			return map.restrict(exports);
+		}
+
 		if (globs == null || globs.isEmpty())
 			return map;
 
@@ -406,4 +416,33 @@ public class LaunchpadBuilder implements AutoCloseable {
 		return (test) -> g.matches(test);
 	}
 
+	public LaunchpadBuilder copyInstall() {
+		byReference = false;
+		return this;
+	}
+
+	public LaunchpadBuilder addCapability(String namespace, String... keyVal) {
+		Map<String, String> attrs = new HashMap<>();
+		for (int i = 0; i < keyVal.length - 1; i += 2) {
+			attrs.put(keyVal[i], keyVal[i + 1]);
+		}
+		while (local.extraSystemCapabilities.containsKey(namespace))
+			namespace += "~";
+
+		local.extraSystemCapabilities.put(namespace, attrs);
+		return this;
+	}
+
+	public RunSpecification getLocal() {
+		return local;
+	}
+
+	public byte[] build(String path, BuilderSpecification spec) {
+		return workspace.build(path, spec);
+	}
+
+	public LaunchpadBuilder export(String spec) {
+		exports.add(spec);
+		return this;
+	}
 }

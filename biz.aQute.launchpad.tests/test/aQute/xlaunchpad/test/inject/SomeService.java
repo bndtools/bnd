@@ -1,4 +1,4 @@
-package aQute.launchpad.test.inject;
+package aQute.xlaunchpad.test.inject;
 
 import java.util.Hashtable;
 
