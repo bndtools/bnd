@@ -68,7 +68,9 @@ public class DistroCommandTest extends TestCase {
 		String[] bundles = {
 			"../biz.aQute.remote/generated/biz.aQute.remote.agent.jar",
 			"testdata/bundles/com.liferay.dynamic.data.mapping.taglib.jar",
-			"testdata/bundles/com.liferay.item.selector.taglib.jar"
+			"testdata/bundles/com.liferay.item.selector.taglib.jar",
+			"testdata/bundles/org.apache.felix.log-1.2.0.jar",
+			"testdata/bundles/org.apache.felix.log-1.0.1.jar"
 		};
 
 		List<Bundle> toBeStarted = new ArrayList<>();
@@ -94,6 +96,43 @@ public class DistroCommandTest extends TestCase {
 		framework.waitForStop(10000);
 		IO.delete(tmp);
 		super.tearDown();
+	}
+
+	public void testMultiplePackageVersionsKeepsHighest() throws Exception {
+		bnd bnd = new bnd();
+		CommandLine cmdline = new CommandLine(null);
+		List<String> remoteArgs = new ArrayList<>();
+		RemoteOptions remoteOptions = cmdline.getOptions(RemoteOptions.class, remoteArgs);
+
+		File distro = new File("generated/tmp/test.distro.jar");
+
+		List<String> distroArgs = new ArrayList<>();
+		distroArgs.add("-o");
+		distroArgs.add(distro.getPath());
+		distroArgs.add("test.distro");
+		distroArgs.add("1.0.0");
+		DistroOptions distroOptions = cmdline.getOptions(DistroOptions.class, distroArgs);
+
+		new RemoteCommand(bnd, remoteOptions)._distro(distroOptions);
+
+		assertTrue(distro.exists());
+
+		ResourceBuilder builder = new ResourceBuilder();
+
+		Domain manifest = Domain.domain(new Jar(distro).getManifest());
+
+		builder.addManifest(manifest);
+
+		Resource resource = builder.build();
+
+		assertEquals("1.4.0", resource.getCapabilities("osgi.wiring.package")
+			.stream()
+			.map(Capability::getAttributes)
+			.filter(atts -> ((String) atts.get("osgi.wiring.package")).equals("org.osgi.service.log"))
+			.findAny()
+			.map(atts -> atts.get("version"))
+			.map(String::valueOf)
+			.get());
 	}
 
 	public void testMultipleCapabilitiesPerNamespace() throws Exception {

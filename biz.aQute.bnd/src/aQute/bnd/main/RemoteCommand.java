@@ -368,6 +368,14 @@ class RemoteCommand extends Processor {
 					String pname = attrs.remove(PackageNamespace.PACKAGE_NAMESPACE);
 					if (pname == null) {
 						warning("Invalid package capability found %s", capabilityDTO);
+					} else if (packages.containsKey(pname)) {
+						Attrs existing = packages.get(pname);
+						Version existingPackageVersion = existing.getTyped(Attrs.VERSION, "version");
+						Version newPackageVersion = attrs.getTyped(Attrs.VERSION, "version");
+						if ((existingPackageVersion != null) && (newPackageVersion != null)
+							&& newPackageVersion.compareTo(existingPackageVersion) > 0) {
+							packages.put(pname, attrs);
+						}
 					} else
 						packages.put(pname, attrs);
 					logger.debug("P: {};{}", pname, attrs);
