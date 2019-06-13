@@ -75,7 +75,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 
 		}
 
-		static void parseOption(Map.Entry<String, Attrs> entry, EnumSet<Options> options, VersionSettings state) {
+		static void parseOption(Map.Entry<String, Attrs> entry, Set<Options> options, VersionSettings state) {
 			String s = entry.getKey();
 			boolean negation = false;
 			if (s.startsWith("!")) {
@@ -113,7 +113,7 @@ public class DSAnnotations implements AnalyzerPlugin {
 		}
 
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.mergeProperties(Constants.DSANNOTATIONS_OPTIONS));
-		EnumSet<Options> options = EnumSet.noneOf(Options.class);
+		Set<Options> options = EnumSet.noneOf(Options.class);
 		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
 			try {
 				Options.parseOption(entry, options, settings);

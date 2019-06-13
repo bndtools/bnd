@@ -55,7 +55,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 
 		}
 
-		static void parseOption(Map.Entry<String, Attrs> entry, EnumSet<Options> options, VersionSettings state) {
+		static void parseOption(Map.Entry<String, Attrs> entry, Set<Options> options, VersionSettings state) {
 			String s = entry.getKey();
 			boolean negation = false;
 			if (s.startsWith("!")) {
@@ -90,7 +90,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 			return false;
 
 		Parameters optionsHeader = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS_OPTIONS));
-		EnumSet<Options> options = EnumSet.noneOf(Options.class);
+		Set<Options> options = EnumSet.noneOf(Options.class);
 		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
 			try {
 				Options.parseOption(entry, options, settings);
