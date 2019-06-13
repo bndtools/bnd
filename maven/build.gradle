@@ -18,6 +18,9 @@ def deploy = tasks.register('deploy', Exec.class) {
     executable rootProject.file('mvnw')
   }
   args '--batch-mode'
+  if (project.gradle.startParameter.parallelProjectExecutionEnabled) {
+    args '-T1C'
+  }
   args '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
   if (logger.isDebugEnabled()) {
     args '--debug'
