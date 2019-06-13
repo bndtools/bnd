@@ -87,7 +87,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	protected int invoke(Class<?> main, String args[]) throws Exception {
-		LauncherConstants lc = getConstants(getRunBundles(), false);
+		LauncherConstants lc = getConstants(getRunBundles(), getStartlevels(), false);
 
 		Method mainMethod = main.getMethod("main", args.getClass(), Properties.class);
 		Object o = mainMethod.invoke(null, args, lc.getProperties(new UTF8Properties()));
@@ -139,7 +139,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	}
 
 	void writeProperties() throws Exception {
-		LauncherConstants lc = getConstants(getRunBundles(), false);
+		LauncherConstants lc = getConstants(getRunBundles(), getStartlevels(), false);
 		try (OutputStream out = IO.outputStream(launchPropertiesFile)) {
 			lc.getProperties(new UTF8Properties())
 				.store(out, "Launching " + getProject());
@@ -151,7 +151,8 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private LauncherConstants getConstants(Collection<String> runbundles, boolean exported)
+	private LauncherConstants getConstants(Collection<String> runbundles, Collection<Integer> startlevels,
+		boolean exported)
 		throws Exception, FileNotFoundException, IOException {
 		logger.debug("preparing the aQute launcher plugin");
 
@@ -161,6 +162,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 		lc.storageDir = getStorageDir();
 		lc.keep = isKeep();
 		lc.runbundles.addAll(runbundles);
+		lc.startlevels.addAll(startlevels);
 		lc.trace = getTrace();
 		lc.timeout = getTimeout();
 		lc.services = super.getRunFramework() == SERVICES ? true : false;
@@ -296,7 +298,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 			}
 		}
 
-		LauncherConstants lc = getConstants(actualPaths, true);
+		LauncherConstants lc = getConstants(actualPaths, getStartlevels(), true);
 		lc.embedded = true;
 
 		try (ByteBufferOutputStream bout = new ByteBufferOutputStream()) {

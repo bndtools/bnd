@@ -14,7 +14,7 @@ import aQute.bnd.osgi.resource.ResourceBuilder;
 import aQute.bnd.osgi.resource.ResourceUtils;
 import aQute.libg.cryptography.SHA256;
 
-public class WorkspaceResourcesRepository extends ResourcesRepository {
+public class WorkspaceResourcesRepository extends ResourcesRepository implements WorkspaceRepositoryMarker {
 
 	public static final String WORKSPACE_NAMESPACE = ResourceUtils.WORKSPACE_NAMESPACE;
 

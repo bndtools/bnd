@@ -82,6 +82,15 @@ public class Container {
 		this(null, file.getName(), "project", TYPE.EXTERNAL, file, null, attributes, db);
 	}
 
+	private Container(Project project, String message) {
+		this.project = project;
+		this.bsn = "<unknown>";
+		this.version = "<unknown>";
+		this.warning = message;
+		this.type = TYPE.ERROR;
+		this.path = "unknown";
+	}
+
 	public File getFile() {
 		DownloadBlocker blocker = db;
 		if (blocker != null) {
@@ -392,6 +401,11 @@ public class Container {
 			.map(container -> container.getFile())
 			.map(File::getAbsolutePath)
 			.collect(Collectors.toList());
+	}
+
+	public static Container error(Project project, String message) {
+
+		return new Container(project, message);
 	}
 
 }

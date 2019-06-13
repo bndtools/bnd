@@ -54,6 +54,7 @@ import aQute.bnd.build.model.conversions.SimpleListConverter;
 import aQute.bnd.build.model.conversions.VersionedClauseConverter;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
+import aQute.bnd.properties.Document;
 import aQute.bnd.properties.IDocument;
 import aQute.bnd.properties.IRegion;
 import aQute.bnd.properties.LineType;
@@ -282,6 +283,7 @@ public class BndEditModel {
 	private Converter<String, Collection<? extends String>>			runReposFormatter			= new CollectionFormatter<>(
 		LIST_SEPARATOR, aQute.bnd.osgi.Constants.EMPTY_HEADER);
 	private Workspace												workspace;
+	private IDocument												document;
 
 	// Converter<String, ResolveMode> resolveModeFormatter =
 	// EnumFormatter.create(ResolveMode.class, ResolveMode.manual);
@@ -391,6 +393,13 @@ public class BndEditModel {
 	public BndEditModel(IDocument document) throws IOException {
 		this();
 		loadFrom(document);
+	}
+
+	public BndEditModel(Project project) throws IOException {
+		this(project.getWorkspace());
+		this.project = project;
+		this.document = new Document(IO.collect(project.getPropertiesFile()));
+		loadFrom(this.document);
 	}
 
 	public void loadFrom(IDocument document) throws IOException {
@@ -1262,6 +1271,7 @@ public class BndEditModel {
 	 * file and the changes from the model.
 	 * 
 	 * @return a processor that reflects the actual project or bndrun file setup
+	 * @throws Exception
 	 */
 	public Processor getProperties() throws Exception {
 		Processor parent = null;
@@ -1323,5 +1333,24 @@ public class BndEditModel {
 
 	public Map<String, String> getDocumentChanges() {
 		return changesToSave;
+	}
+
+	/**
+	 * If this BndEditModel was created with a project then this method will
+	 * save the changes in the document and will store them in the associated
+	 * file.
+	 * 
+	 * @throws IOException
+	 */
+	public void saveChanges() throws IOException {
+		assert document != null
+			&& project != null : "you can only call saveChanges when you created this edit model with a project";
+
+		saveChangesTo(document);
+		store(document, getProject().getPropertiesFile());
+	}
+
+	public static void store(IDocument document, File file) throws IOException {
+		IO.store(document.get(), file);
 	}
 }

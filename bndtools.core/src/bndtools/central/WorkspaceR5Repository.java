@@ -30,8 +30,9 @@ import aQute.bnd.deployer.repository.api.Referral;
 import aQute.bnd.deployer.repository.providers.R5RepoContentProvider;
 import aQute.bnd.osgi.repository.BaseRepository;
 import aQute.lib.io.IO;
+import biz.aQute.resolve.WorkspaceRepositoryMarker;
 
-public class WorkspaceR5Repository extends BaseRepository {
+public class WorkspaceR5Repository extends BaseRepository implements WorkspaceRepositoryMarker {
 
     private static final String NAME = "Workspace";
 

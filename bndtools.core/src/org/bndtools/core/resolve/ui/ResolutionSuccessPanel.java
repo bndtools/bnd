@@ -1,6 +1,7 @@
 package org.bndtools.core.resolve.ui;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,8 +9,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-
 import org.bndtools.core.resolve.ResolutionResult;
 import org.bndtools.utils.resources.ResourceUtils;
 import org.eclipse.jface.dialogs.IMessageProvider;
@@ -273,8 +272,12 @@ public class ResolutionSuccessPanel {
         this.result = result;
         checkedOptional.clear();
 
-        Set<Resource> wirings = (result != null && result.getResourceWirings() != null) ? result.getResourceWirings()
-            .keySet() : null;
+        Collection<Resource> wirings = null;
+        if (result != null && result.getResolution() != null) {
+            wirings = result.getResolution()
+                .getOrderedResources();
+        }
+
         requiredViewer.setInput(wirings != null ? wirings : null);
         wirings = (result != null && result.getOptionalResources() != null) ? new HashSet<Resource>(result.getOptionalResources()
             .keySet()) : new HashSet<Resource>();
@@ -329,8 +332,7 @@ public class ResolutionSuccessPanel {
         return checkedOptional.isEmpty();
     }
 
-    public void dispose() {
-    }
+    public void dispose() {}
 
     private void doOptionalReasonUpdate(Resource resource) {
         reasonsContentProvider.setOptional(true);

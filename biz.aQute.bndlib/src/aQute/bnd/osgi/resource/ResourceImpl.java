@@ -21,8 +21,6 @@ import org.osgi.resource.Resource;
 import org.osgi.service.repository.RepositoryContent;
 
 import aQute.bnd.osgi.resource.ResourceUtils.ContentCapability;
-import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
-import aQute.bnd.version.Version;
 
 class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent {
 
@@ -112,37 +110,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	@Override
 	public int compareTo(Resource o) {
-		IdentityCapability me = ResourceUtils.getIdentityCapability(this);
-		IdentityCapability them = ResourceUtils.getIdentityCapability(o);
-
-		String myName = me.osgi_identity();
-		String theirName = them.osgi_identity();
-		if (myName == theirName)
-			return 0;
-
-		if (myName == null)
-			return -1;
-
-		if (theirName == null)
-			return 1;
-
-		int n = myName.compareTo(theirName);
-		if (n != 0)
-			return n;
-
-		Version myVersion = me.version();
-		Version theirVersion = them.version();
-
-		if (myVersion == theirVersion)
-			return 0;
-
-		if (myVersion == null)
-			return -1;
-
-		if (theirVersion == null)
-			return 1;
-
-		return myVersion.compareTo(theirVersion);
+		return ResourceUtils.compareTo(this, o);
 	}
 
 	@SuppressWarnings("unchecked")

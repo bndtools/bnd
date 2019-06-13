@@ -8,14 +8,13 @@ import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
 import org.osgi.service.resolver.ResolutionException;
 
+import biz.aQute.resolve.RunResolution;
+
 public class ResolutionResult {
 
     private final Outcome outcome;
-    private final Map<Resource, List<Wire>> resourceWirings;
-    private final Map<Resource, List<Wire>> optionalResources;
     private final IStatus status;
-    private final String log;
-    private final ResolutionException resolutionException;
+    private final RunResolution resolution;
 
     public static enum Outcome {
         Resolved,
@@ -24,13 +23,10 @@ public class ResolutionResult {
         Cancelled
     }
 
-    public ResolutionResult(Outcome outcome, Map<Resource, List<Wire>> resourceWirings, Map<Resource, List<Wire>> optionalResources, ResolutionException resolutionExceptoin, IStatus status, String log) {
+    public ResolutionResult(Outcome outcome, RunResolution resolution, IStatus status) {
         this.outcome = outcome;
-        this.resourceWirings = resourceWirings;
-        this.optionalResources = optionalResources;
-        this.resolutionException = resolutionExceptoin;
+        this.resolution = resolution;
         this.status = status;
-        this.log = log;
     }
 
     public Outcome getOutcome() {
@@ -38,15 +34,17 @@ public class ResolutionResult {
     }
 
     public Map<Resource, List<Wire>> getResourceWirings() {
-        return resourceWirings;
+        return resolution.required;
     }
 
     public Map<Resource, List<Wire>> getOptionalResources() {
-        return optionalResources;
+        return resolution.optional;
     }
 
     public ResolutionException getResolutionException() {
-        return resolutionException;
+        if (resolution.exception instanceof ResolutionException)
+            return (ResolutionException) resolution.exception;
+        return null;
     }
 
     public IStatus getStatus() {
@@ -54,7 +52,11 @@ public class ResolutionResult {
     }
 
     public String getLog() {
-        return log;
+        return resolution.log;
+    }
+
+    public RunResolution getResolution() {
+        return resolution;
     }
 
 }

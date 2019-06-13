@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+import aQute.bnd.header.Parameters;
 import aQute.bnd.osgi.Instruction;
 import aQute.bnd.osgi.Instructions;
 import aQute.libg.glob.AntGlob;
@@ -17,6 +18,31 @@ public class InstructionTest extends TestCase {
 		assertEquals(Arrays.asList("a", "c"), new Instructions("b").reject(Arrays.asList("a", "b", "c")));
 		assertEquals(Arrays.asList("a", "c"), new Instructions("a,c").select(Arrays.asList("a", "b", "c"), false));
 		assertEquals(Arrays.asList("a", "c"), new Instructions("!b,*").select(Arrays.asList("a", "b", "c"), false));
+	}
+
+	public void testDecorate() {
+		Instructions instrs = new Instructions("a;x=1,b*;y=2, literal;n=1, foo.com.example.bar;startlevel=10");
+		Parameters params = new Parameters("foo.com.example.bar;version=1, a;v=0, bbb;v=1");
+		instrs.decorate(params);
+		System.out.println(params);
+		assertThat(params.get("a")).isNotNull()
+			.containsEntry("v", "0")
+			.containsEntry("x", "1");
+
+		assertThat(params.get("bbb")).isNotNull()
+			.containsEntry("v", "1")
+			.containsEntry("y", "2");
+
+		assertThat(params.get("bbb")).isNotNull()
+			.containsEntry("v", "1")
+			.containsEntry("y", "2");
+
+		assertThat(params.get("foo.com.example.bar")).isNotNull()
+			.containsEntry("version", "1")
+			.containsEntry("startlevel", "10");
+
+		assertThat(params.get("literal")).isNotNull()
+			.containsEntry("n", "1");
 	}
 
 	public void testWildcard() {

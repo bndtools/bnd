@@ -125,6 +125,29 @@ public class LauncherTest {
 		assertTrue(result.contains("[EmbeddedLauncher] looking for META-INF/MANIFEST.MF"));
 	}
 
+	/**
+	 * Tests the EmbeddedLauncher withstartlevels
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testEmbeddedStartlevels() throws Exception {
+		File file = buildPackage("startlevels.bndrun");
+
+		System.setProperty("test.cmd", "quit.no.exit");
+		File fwdir = IO.getFile(base, "generated/keepfw");
+		IO.delete(fwdir);
+
+		assertTrue(file.isFile());
+
+		System.setProperty("launch.trace", "true");
+
+		String result = runFrameworkWithRunMethod(file);
+		assertTrue(result.contains("installing jar/demo.jar"));
+
+		assertTrue(result.contains("[EmbeddedLauncher] looking for META-INF/MANIFEST.MF"));
+	}
+
 	private File buildPackage(String bndrun) throws Exception, IOException {
 		Workspace ws = Workspace.getWorkspace(base.getParentFile());
 		Run run = Run.createRun(ws, IO.getFile(base, bndrun));

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 public class LauncherConstants {
 
@@ -36,6 +37,7 @@ public class LauncherConstants {
 	final static String				LAUNCH_STORAGE_DIR			= "launch.storage.dir";
 	final static String				LAUNCH_KEEP					= "launch.keep";
 	final static String				LAUNCH_RUNBUNDLES			= "launch.bundles";
+	final static String				LAUNCH_STARTLEVELS			= "launch.startlevels";
 	final static String				LAUNCH_SYSTEMPACKAGES		= "launch.system.packages";
 	final static String				LAUNCH_SYSTEMCAPABILITIES	= "launch.system.capabilities";
 	final static String				LAUNCH_TIMEOUT				= "launch.timeout";
@@ -63,6 +65,7 @@ public class LauncherConstants {
 	public File						storageDir;
 	public boolean					keep;
 	public final List<String>		runbundles					= new ArrayList<>();
+	public final List<Integer>		startlevels					= new ArrayList<>();
 	public String					systemPackages;
 	public String					systemCapabilities;
 	public boolean					trace;
@@ -83,7 +86,10 @@ public class LauncherConstants {
 		if (storageDir != null)
 			p.setProperty(LAUNCH_STORAGE_DIR, storageDir.getAbsolutePath());
 		p.setProperty(LAUNCH_KEEP, keep + "");
+
 		p.setProperty(LAUNCH_RUNBUNDLES, join(runbundles, ","));
+		p.setProperty(LAUNCH_STARTLEVELS, join(startlevels, ","));
+
 		if (systemPackages != null)
 			p.setProperty(LAUNCH_SYSTEMPACKAGES, systemPackages + "");
 		if (systemCapabilities != null)
@@ -92,6 +98,7 @@ public class LauncherConstants {
 		p.setProperty(LAUNCH_TIMEOUT, timeout + "");
 		p.setProperty(LAUNCH_ACTIVATORS, join(activators, ","));
 		p.setProperty(LAUNCH_EMBEDDED, embedded + "");
+
 		if (name != null)
 			p.setProperty(LAUNCH_NAME, name);
 
@@ -128,6 +135,10 @@ public class LauncherConstants {
 		noreferences = Boolean.valueOf(p.getProperty(LAUNCH_NOREFERENCES));
 		keep = Boolean.valueOf(p.getProperty(LAUNCH_KEEP));
 		runbundles.addAll(split(p.getProperty(LAUNCH_RUNBUNDLES), ","));
+		startlevels.addAll(split(p.getProperty(LAUNCH_STARTLEVELS), ",").stream()
+			.map(Integer::parseInt)
+			.collect(Collectors.toList()));
+
 		systemPackages = p.getProperty(LAUNCH_SYSTEMPACKAGES);
 		systemCapabilities = p.getProperty(LAUNCH_SYSTEMCAPABILITIES);
 		trace = Boolean.valueOf(p.getProperty(LAUNCH_TRACE));
@@ -155,10 +166,10 @@ public class LauncherConstants {
 		return result;
 	}
 
-	private static String join(List<String> runbundles2, String string) {
+	private static String join(List<?> runbundles2, String string) {
 		StringBuilder sb = new StringBuilder();
 		String del = "";
-		for (String r : runbundles2) {
+		for (Object r : runbundles2) {
 			sb.append(del);
 			sb.append(r);
 			del = string;

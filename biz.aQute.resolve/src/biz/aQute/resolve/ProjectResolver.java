@@ -34,6 +34,7 @@ import aQute.bnd.service.Strategy;
  * and uses the facilities to provide the different logging schemes used.
  */
 
+@Deprecated
 public class ProjectResolver extends Processor implements ResolutionCallback {
 	private final static org.slf4j.Logger logger = LoggerFactory.getLogger(ProjectResolver.class);
 

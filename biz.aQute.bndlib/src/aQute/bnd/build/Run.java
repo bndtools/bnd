@@ -50,7 +50,4 @@ public class Run extends Project {
 		return getPropertiesFile().getName();
 	}
 
-	public boolean isStandalone() {
-		return getWorkspace().getLayout() == WorkspaceLayout.STANDALONE;
-	}
 }

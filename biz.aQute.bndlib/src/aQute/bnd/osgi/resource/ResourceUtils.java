@@ -11,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -18,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collector;
@@ -100,7 +102,9 @@ public class ResourceUtils {
 
 			if (o1 instanceof ResourceImpl && o2 instanceof ResourceImpl) {
 				return ((ResourceImpl) o1).compareTo(o2);
-			}
+			} else {
+
+		}
 
 			return o1.toString()
 				.compareTo(o2.toString());
@@ -180,6 +184,11 @@ public class ResourceUtils {
 	public static ContentCapability getContentCapability(Resource resource) {
 		return capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE, ContentCapability.class).findFirst()
 			.orElse(null);
+	}
+
+	public static Optional<URI> getURI(Resource resource) {
+		return capabilityStream(resource, ContentNamespace.CONTENT_NAMESPACE, ContentCapability.class).findFirst()
+			.map(ContentCapability::url);
 	}
 
 	public static List<ContentCapability> getContentCapabilities(Resource resource) {
@@ -492,6 +501,10 @@ public class ResourceUtils {
 	 * represent a project in the bnd workspace, then instead the VersionClause
 	 * will refer to it as a snapshot version: e.g. <bsn>;version=snapshot
 	 */
+	public static VersionedClause toVersionClause(Resource resource) {
+		return toVersionClause(resource, "[===,==+)");
+	}
+
 	public static VersionedClause toVersionClause(Resource resource, String mask) {
 		Capability idCap = getIdentityCapability(resource);
 		String identity = getIdentity(idCap);
@@ -511,6 +524,17 @@ public class ResourceUtils {
 		return new VersionedClause(identity, attribs);
 	}
 
+	public static List<VersionedClause> toVersionedClauses(Collection<Resource> resources) {
+		List<VersionedClause> runBundles = new ArrayList<>();
+		for (Resource resource : resources) {
+			VersionedClause runBundle = toVersionClause(resource);
+			if (!runBundles.contains(runBundle)) {
+				runBundles.add(runBundle);
+			}
+		}
+		return runBundles;
+	}
+
 	private final static Collection<Requirement> all = Collections.singleton(createWildcardRequirement());
 
 	/**
@@ -526,4 +550,72 @@ public class ResourceUtils {
 			.stream()
 			.flatMap(Collection::stream));
 	}
+
+	/**
+	 * Compare two resources. This can be used to act as a comparator. The
+	 * comparison is first done on name and then version.
+	 * 
+	 * @param a the left resource
+	 * @param b the right resource
+	 * @return 0 if equal bame and version, 1 if left has a higher name or same
+	 *         name and higher version, -1 otherwise
+	 */
+	public static int compareTo(Resource a, Resource b) {
+		IdentityCapability left = ResourceUtils.getIdentityCapability(a);
+		IdentityCapability right = ResourceUtils.getIdentityCapability(b);
+
+		String myName = left.osgi_identity();
+		String theirName = right.osgi_identity();
+		if (myName == theirName)
+			return 0;
+
+		if (myName == null)
+			return -1;
+
+		if (theirName == null)
+			return 1;
+
+		int n = myName.compareTo(theirName);
+		if (n != 0)
+			return n;
+
+		Version myVersion = left.version();
+		Version theirVersion = right.version();
+
+		if (myVersion == theirVersion)
+			return 0;
+
+		if (myVersion == null)
+			return -1;
+
+		if (theirVersion == null)
+			return 1;
+
+		return myVersion.compareTo(theirVersion);
+	}
+
+	/**
+	 * Sort the resources by symbolic name and version
+	 * 
+	 * @param resources the set of resources to sort
+	 * @return a sorted set of resources
+	 */
+	public static List<Resource> sortByNameVersion(Collection<Resource> resources) {
+		ArrayList<Resource> sorted = new ArrayList<Resource>(resources);
+		Collections.sort(sorted, ResourceUtils::compareTo);
+		return sorted;
+	}
+
+	public static boolean isInitialRequirement(Resource resource) {
+		IdentityCapability identityCapability = getIdentityCapability(resource);
+		if (identityCapability == null)
+			return false;
+
+		String osgi_identity = identityCapability.osgi_identity();
+		if (osgi_identity == null)
+			return false;
+
+		return Constants.IDENTITY_INITIAL_RESOURCE.equals(osgi_identity);
+	}
+
 }

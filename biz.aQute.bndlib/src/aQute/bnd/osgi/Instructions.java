@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -322,6 +323,41 @@ public class Instructions implements Map<Instruction, Attrs> {
 			}
 		}
 		return result;
+	}
+
+	/**
+	 * Match the instruction against the parameters and merge the attributes if
+	 * matches. Remove any negated instructions. Literal unmatched instructions
+	 * are added
+	 * 
+	 * @param parameters
+	 */
+	public void decorate(Parameters parameters) {
+		Iterator<Map.Entry<String, Attrs>> it = parameters.entrySet()
+			.iterator();
+		Set<Instruction> used = new HashSet<>(keySet());
+
+		while (it.hasNext()) {
+			Entry<String, Attrs> next = it.next();
+
+			Instruction matching = matcher(next.getKey());
+			if (matching != null) {
+				used.remove(matching);
+				if (matching.isNegated())
+					it.remove();
+				else {
+					next.getValue()
+						.putAll(get(matching));
+				}
+			}
+		}
+		//
+		// Add the literals
+		used.stream()
+			.filter(Instruction::isLiteral)
+			.forEach(i -> {
+				parameters.put(i.getLiteral(), new Attrs(get(i)));
+			});
 	}
 
 }

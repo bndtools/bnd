@@ -1589,4 +1589,9 @@ public class Verifier extends Processor {
 	public void setFrombuilder(boolean frombuilder) {
 		this.frombuilder = frombuilder;
 	}
+
+	public static boolean isNumber(String number) {
+		return NUMBERPATTERN.matcher(number)
+			.matches();
+	}
 }

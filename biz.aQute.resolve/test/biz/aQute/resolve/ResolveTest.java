@@ -32,10 +32,6 @@ import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.build.model.clauses.ExportedPackage;
-import aQute.bnd.build.model.clauses.HeaderClause;
-import aQute.bnd.build.model.conversions.CollectionFormatter;
-import aQute.bnd.build.model.conversions.Converter;
-import aQute.bnd.build.model.conversions.HeaderClauseFormatter;
 import aQute.bnd.header.Parameters;
 import aQute.bnd.http.HttpClient;
 import aQute.bnd.osgi.Domain;
@@ -43,7 +39,10 @@ import aQute.bnd.osgi.Processor;
 import aQute.bnd.osgi.repository.ResourcesRepository;
 import aQute.bnd.osgi.resource.CapReqBuilder;
 import aQute.bnd.osgi.resource.ResourceBuilder;
+import aQute.bnd.osgi.resource.ResourceUtils;
+import aQute.bnd.osgi.resource.ResourceUtils.IdentityCapability;
 import aQute.bnd.repository.osgi.OSGiRepository;
+import aQute.lib.dot.DOT;
 import aQute.lib.io.IO;
 import aQute.libg.reporter.ReporterAdapter;
 import junit.framework.TestCase;
@@ -512,8 +511,6 @@ public class ResolveTest extends TestCase {
 		}
 	}
 
-	private static final Converter<String, Collection<? extends HeaderClause>> runbundlesListFormatter = new CollectionFormatter<>(
-		",", new HeaderClauseFormatter(), null, "", "");
 
 	public void testFrameworkFragmentResolve() throws Exception {
 		String wspath = "framework-fragment/";
@@ -524,7 +521,9 @@ public class ResolveTest extends TestCase {
 
 		File f = IO.getFile(wsRoot, "test.log/fragment.bndrun");
 		try (Workspace ws = new Workspace(wsRoot); Bndrun bndrun = Bndrun.createBndrun(ws, f)) {
-			String runbundles = bndrun.resolve(false, false, runbundlesListFormatter);
+			String runbundles = bndrun.resolve(false, false);
+
+			System.out.println(runbundles);
 			assertThat(bndrun.check()).isTrue();
 			Parameters p = new Parameters(runbundles);
 			assertThat(p.keySet()).hasSize(5)
@@ -532,4 +531,36 @@ public class ResolveTest extends TestCase {
 					"org.apache.felix.gogo.command", "org.apache.felix.gogo.runtime");
 		}
 	}
+
+	public void testResolveWithDependencyOrdering() throws Exception {
+		File f = IO.getFile("testdata/enroute/resolver.bndrun");
+		try (Bndrun bndrun = Bndrun.createBndrun(null, f)) {
+			bndrun.setProperty("-runorder", "leastdependencieslast");
+			String runbundles = bndrun.resolve(false, false);
+			System.out.println(runbundles);
+			assertThat(bndrun.check()).isTrue();
+		}
+	}
+
+	public void testDot() throws Exception {
+		File f = IO.getFile("testdata/enroute/resolver.bndrun");
+		try (Bndrun bndrun = Bndrun.createBndrun(null, f)) {
+			RunResolution resolution = RunResolution.resolve(bndrun, null);
+			assertThat(resolution.exception).isNull();
+
+			Map<Resource, List<Wire>> required = resolution.required;
+			Map<Resource, List<Resource>> resolve = resolution.getGraph(required);
+			assertThat(bndrun.check()).isTrue();
+			DOT<Resource> dot = new DOT<>("test", resolve);
+			int n = 0;
+			Collection<Resource> sortByDependencies = resolution.sortByDependencies(required);
+			for (Resource r : sortByDependencies) {
+				IdentityCapability ic = ResourceUtils.getIdentityCapability(r);
+				dot.name(r, ic.osgi_identity());
+				n++;
+			}
+			System.out.println(dot.render());
+		}
+	}
+
 }
