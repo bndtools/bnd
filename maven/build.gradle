@@ -39,6 +39,7 @@ def deployOSSRH = tasks.register('deployOSSRH', Exec.class) {
   onlyIf {
     deploy.get().state.didWork && (deploy.get().state.failure == null)
   }
+  mustRunAfter dist.tasks.named('releaseDependencies')
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
     args '/c', rootProject.file('mvnw.cmd')
@@ -67,6 +68,7 @@ def deployJFrog = tasks.register('deployJFrog', Exec.class) {
   onlyIf {
     deploy.get().state.didWork && (deploy.get().state.failure == null)
   }
+  mustRunAfter dist.tasks.named('releaseDependencies')
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
     args '/c', rootProject.file('mvnw.cmd')
