@@ -34,28 +34,28 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		nested,
 		version {
 			@Override
-			void process(MetatypeAnnotations anno, Attrs attrs) {
+			void process(VersionSettings settings, Attrs attrs) {
 				String v = attrs.get("minimum");
 				if (v != null && v.length() > 0) {
-					anno.minVersion = MetatypeVersion.valueFor(v);
+					settings.minVersion = MetatypeVersion.valueFor(v);
 				}
 			}
 
 			@Override
-			void reset(MetatypeAnnotations anno) {
-				anno.minVersion = MetatypeVersion.VERSION_1_2;
+			void reset(VersionSettings settings) {
+				settings.minVersion = MetatypeVersion.VERSION_1_2;
 			}
 		};
 
-		void process(MetatypeAnnotations anno, Attrs attrs) {
+		void process(VersionSettings settings, Attrs attrs) {
 
 		}
 
-		void reset(MetatypeAnnotations anno) {
+		void reset(VersionSettings settings) {
 
 		}
 
-		static void parseOption(Map.Entry<String, Attrs> entry, EnumSet<Options> options, MetatypeAnnotations state) {
+		static void parseOption(Map.Entry<String, Attrs> entry, EnumSet<Options> options, VersionSettings state) {
 			String s = entry.getKey();
 			boolean negation = false;
 			if (s.startsWith("!")) {
@@ -77,11 +77,13 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		}
 	};
 
-	MetatypeVersion minVersion;
+	static class VersionSettings {
+		MetatypeVersion minVersion = MetatypeVersion.VERSION_1_2;
+	}
 
 	@Override
 	public boolean analyzeJar(Analyzer analyzer) throws Exception {
-		this.minVersion = MetatypeVersion.VERSION_1_2;
+		VersionSettings settings = new VersionSettings();
 		Parameters header = OSGiHeader.parseHeader(analyzer.getProperty(Constants.METATYPE_ANNOTATIONS, "*"));
 		logger.debug("Analyzing for Metatype annotations: " + Constants.METATYPE_ANNOTATIONS + ": {}", header);
 		if (header.size() == 0)
@@ -91,7 +93,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 		EnumSet<Options> options = EnumSet.noneOf(Options.class);
 		for (Map.Entry<String, Attrs> entry : optionsHeader.entrySet()) {
 			try {
-				Options.parseOption(entry, options, this);
+				Options.parseOption(entry, options, settings);
 			} catch (IllegalArgumentException e) {
 				analyzer.error("Unrecognized %s value %s with attributes %s, expected values are %s",
 					Constants.METATYPE_ANNOTATIONS_OPTIONS, entry.getKey(), entry.getValue(),
@@ -117,7 +119,7 @@ public class MetatypeAnnotations implements AnalyzerPlugin {
 						break;
 					}
 					list.add(c);
-					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder, minVersion);
+					OCDDef definition = OCDReader.getOCDDef(c, analyzer, options, finder, settings.minVersion);
 					if (definition != null) {
 						logger.debug("Found OCD class {} with id {}", c, definition.id);
 						classToOCDMap.put(c.getClassName(), definition);
