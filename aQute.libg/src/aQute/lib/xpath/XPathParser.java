@@ -10,7 +10,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -26,21 +25,13 @@ import aQute.lib.converter.Converter;
 public class XPathParser {
 	final static DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
 	final static XPathFactory			xpf	= XPathFactory.newInstance();
-	static DocumentBuilder				db;
-	static XPath						xp;
+	final XPath							xp;
 	final Document						doc;
 
-	static {
-		try {
-			db = dbf.newDocumentBuilder();
-			xp = xpf.newXPath();
-		} catch (Exception e) {
-			// ignore
-		}
-	}
-
 	public XPathParser(File file) throws Exception {
-		doc = db.parse(file);
+		doc = dbf.newDocumentBuilder()
+			.parse(file);
+		xp = xpf.newXPath();
 	}
 
 	public <X> void parse(String what, Class<X> type, List<X> map) throws XPathExpressionException, Exception {

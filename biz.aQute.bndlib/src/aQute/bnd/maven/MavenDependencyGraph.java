@@ -23,7 +23,6 @@ public class MavenDependencyGraph {
 	final static XPathFactory			xpathFactory	= XPathFactory.newInstance();
 	final List<Artifact>				dependencies	= new ArrayList<>();
 	final List<URL>						repositories	= new ArrayList<>();
-	final XPath							xpath			= xpathFactory.newXPath();
 	final Map<URI, Artifact>			cache			= new HashMap<>();
 	Artifact							root;
 
@@ -52,6 +51,7 @@ public class MavenDependencyGraph {
 				this.url = url;
 				DocumentBuilder db = docFactory.newDocumentBuilder();
 				Document doc = db.parse(url.toString());
+				XPath xpath = xpathFactory.newXPath();
 				Node node = (Node) xpath.evaluate("/project", doc, XPathConstants.NODE);
 
 				groupId = xpath.evaluate("groupId", node);
