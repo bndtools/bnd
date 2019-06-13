@@ -67,7 +67,7 @@ public class TestBndIndex extends TestBndMainBase {
 			// .peek(this::print)
 			.count();
 
-		assertEquals(count, 6L);
+		assertEquals(8L, count);
 	}
 
 	@Test
