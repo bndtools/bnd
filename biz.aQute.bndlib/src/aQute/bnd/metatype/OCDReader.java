@@ -3,7 +3,6 @@ package aQute.bnd.metatype;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Deque;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,12 +32,12 @@ import aQute.bnd.xmlattribute.XMLAttributeFinder;
 class OCDReader {
 	final Analyzer				analyzer;
 	private final Clazz			clazz;
-	final EnumSet<Options>		options;
+	final Set<Options>			options;
 	private final Set<TypeRef>	analyzed	= new HashSet<>();;
 	private final OCDDef		ocd;
 	final XMLAttributeFinder	finder;
 
-	private OCDReader(Analyzer analyzer, Clazz clazz, EnumSet<Options> options, XMLAttributeFinder finder,
+	private OCDReader(Analyzer analyzer, Clazz clazz, Set<Options> options, XMLAttributeFinder finder,
 		MetatypeVersion minVersion) {
 		this.analyzer = analyzer;
 		this.clazz = clazz;
@@ -47,7 +46,7 @@ class OCDReader {
 		this.ocd = new OCDDef(finder, minVersion);
 	}
 
-	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, EnumSet<Options> options, XMLAttributeFinder finder,
+	static OCDDef getOCDDef(Clazz c, Analyzer analyzer, Set<Options> options, XMLAttributeFinder finder,
 		MetatypeVersion minVersion) throws Exception {
 		OCDReader r = new OCDReader(analyzer, c, options, finder, minVersion);
 		return r.getDef();
