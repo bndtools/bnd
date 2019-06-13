@@ -1,6 +1,10 @@
 package aQute.launchpad;
 
 import static aQute.launchpad.LaunchpadBuilder.projectTestSetup;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -121,5 +125,25 @@ public class LaunchpadBuilderTest {
 		Map<String, String> attrs = new HashMap<>();
 		attrs.put("version", version);
 		builder.local.extraSystemPackages.put(bsn, attrs);
+	}
+
+	// This class is necessary to promote visibility of loadClass() from
+	// protected to public to allow Mockito to do verification on it.
+	static public class VisibleClassLoader extends ClassLoader {
+		@Override
+		public Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+			return super.loadClass(name, resolve);
+		}
+	}
+
+	@Test
+	public void usingClassLoader_usesSpecifiedClassLoader_toBootstrapFramework() throws Exception {
+		VisibleClassLoader loader = spy(VisibleClassLoader.class);
+		builder.runfw("org.apache.felix.framework")
+			.usingClassLoader(loader);
+
+		try (Launchpad lp = builder.create()) {
+			verify(loader).loadClass(eq("org.apache.felix.framework.FrameworkFactory"), anyBoolean());
+		}
 	}
 }

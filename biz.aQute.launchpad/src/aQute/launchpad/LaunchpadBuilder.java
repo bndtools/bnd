@@ -90,6 +90,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	final Set<Class<?>>				hide			= new HashSet<>();
 	final List<Predicate<String>>	excludeExports	= new ArrayList<>();
 	final List<String>				exports			= new ArrayList<>();
+	ClassLoader						myClassLoader;
 
 	/**
 	 * Start a framework assuming the current working directory is the project
@@ -190,6 +191,11 @@ public class LaunchpadBuilder implements AutoCloseable {
 
 	public LaunchpadBuilder closeTimeout(long ms) {
 		this.closeTimeout = ms;
+		return this;
+	}
+
+	public LaunchpadBuilder usingClassLoader(ClassLoader loader) {
+		this.myClassLoader = loader;
 		return this;
 	}
 
@@ -372,7 +378,7 @@ public class LaunchpadBuilder implements AutoCloseable {
 	}
 
 	private ClassLoader getMyClassLoader() {
-		return LaunchpadBuilder.class.getClassLoader();
+		return myClassLoader == null ? LaunchpadBuilder.class.getClassLoader() : myClassLoader;
 	}
 
 	private URL toURL(File file) {
