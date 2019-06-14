@@ -30,7 +30,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	private volatile transient Map<URI, String>		locations;
 
-	void setCapabilities(List<Capability> capabilities) {
+	void setCapabilities(Collection<Capability> capabilities) {
 		Map<String, List<Capability>> prepare = new HashMap<>();
 		for (Capability capability : capabilities) {
 			List<Capability> list = prepare.get(capability.getNamespace());
@@ -51,12 +51,13 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	@Override
 	public List<Capability> getCapabilities(String namespace) {
-		List<Capability> caps = (namespace != null) ? capabilityMap.get(namespace) : allCapabilities;
+		List<Capability> caps = (namespace != null) ? ((capabilityMap != null) ? capabilityMap.get(namespace) : null)
+			: allCapabilities;
 
 		return (caps != null) ? caps : Collections.emptyList();
 	}
 
-	void setRequirements(List<Requirement> requirements) {
+	void setRequirements(Collection<Requirement> requirements) {
 		Map<String, List<Requirement>> prepare = new HashMap<>();
 		for (Requirement requirement : requirements) {
 			List<Requirement> list = prepare.get(requirement.getNamespace());
@@ -76,7 +77,8 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 	@Override
 	public List<Requirement> getRequirements(String namespace) {
-		List<Requirement> reqs = (namespace != null) ? requirementMap.get(namespace) : allRequirements;
+		List<Requirement> reqs = (namespace != null) ? ((requirementMap != null) ? requirementMap.get(namespace) : null)
+			: allRequirements;
 
 		return (reqs != null) ? reqs : Collections.emptyList();
 	}

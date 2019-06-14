@@ -289,6 +289,43 @@ public class ResolveTest extends TestCase {
 	}
 
 	/**
+	 * Test if we can resolve with a distro
+	 *
+	 * @throws ResolutionException
+	 */
+	public void testResolveWithLargeDistro() throws Exception {
+
+		MockRegistry registry = new MockRegistry();
+		registry.addPlugin(createRepo(IO.getFile("testdata/repo3.index.xml"), getName()));
+
+		BndEditModel model = new BndEditModel();
+		model.setDistro(Arrays.asList("testdata/release.dxp.distro-7.2.10.jar;version=file"));
+		List<Requirement> requires = new ArrayList<>();
+		CapReqBuilder capReq = CapReqBuilder.createBundleRequirement("org.apache.felix.gogo.shell", "[0,1)");
+		requires.add(capReq.buildSyntheticRequirement());
+
+		model.setRunRequires(requires);
+		BndrunResolveContext context = new BndrunResolveContext(model, registry, log);
+		context.setLevel(0);
+		context.init();
+		try (ResolverLogger logger = new ResolverLogger(4)) {
+			Resolver resolver = new BndResolver(logger);
+
+			Map<Resource, List<Wire>> resolved = resolver.resolve(context);
+			Set<Resource> resources = resolved.keySet();
+			Resource shell = getResource(resources, "org.apache.felix.gogo.shell", "0.10.0");
+			assertNotNull(shell);
+		}
+	}
+
+	// public void testResolveWithLargeDistroRepeated() throws Exception {
+	// for (int i = 0; i < 1000; i++) {
+	// System.out.println("iteration " + i);
+	// testResolveWithLargeDistro();
+	// }
+	// }
+
+	/**
 	 * This is a basic test of resolving. This test is paired with
 	 * {@link #testResolveWithDistro()}. If you change the resources, make sure
 	 * this is done in the same way. The {@link #testResolveWithDistro()} has a
