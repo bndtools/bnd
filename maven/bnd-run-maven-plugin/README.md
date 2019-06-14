@@ -108,6 +108,10 @@ The resulting invocation from the reactor, where one of the modules is configure
 mvn package bnd-run:run@bar
 ```
 
+### Continuous Resolve
+
+During live coding executions if `resolve` configuration is set to `true` **continuous resolve** is enabled. As a result changes to code, pom, `bnd` file or `bndrun` file which affect the resolution result such that `-runbundles` changes will see those changes reflected in the runtime by installing and/or uninstalling bundles to match.
+
 ## Bndrun Details Inferred from Maven
 
 The `-runee` and `-runrequires` values can be inferred from the maven project as follows:
@@ -117,10 +121,13 @@ The `-runee` and `-runrequires` values can be inferred from the maven project as
 
 ## Configuration Properties
 
-|Configuration Property       | Description |
-| ---                         | ---         |
-|`bndrun`                     | A bndrun file to run. The file is relative to the `${project.basedir}` directory.|
-|`bundles`                    | This is the collection of files to use for locating bundles during the bndrun setup. Can contain `bundle` child elements specifying the path to a bundle. These can be absolute paths. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bundles. These are relative to the `${project.basedir}` directory. _Defaults to dependencies in the scopes specified by the `scopes` property, plus the current artifact (if any and `useMavenDependencies` is `true`)._|
-|`useMavenDependencies`       | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._|
-|`scopes`                     | Specify from which scopes to collect dependencies. _Defaults to `compile, runtime`._ Override with property `bnd.run.scopes`.|
-|`includeDependencyManagement`| Include `<dependencyManagement>` when locating bundles during the bndrun resolution. _Defaults to `false`._ Override with property `bnd.run.include.dependency.management`.|
+| Configuration Property        | Description                                                  |
+| ----------------------------- | ------------------------------------------------------------ |
+| `bndrun`                      | A bndrun file to run. The file is relative to the `${project.basedir}` directory. |
+| `resolve`                     | Whether to _continuously_ resolve the `-runbundles` required for a valid runtime. _Defaults to `false`._ |
+| `failOnChanges`               | Whether to fail the build if any change in the resolved `-runbundles` is discovered. _Defaults to `true`._ |
+| `bundles`                     | This is the collection of files to use for locating bundles during the bndrun setup. Can contain `bundle` child elements specifying the path to a bundle. These can be absolute paths. You can also specify `include` and `exclude` child elements using Ant-style globs to specify bundles. These are relative to the `${project.basedir}` directory. _Defaults to dependencies in the scopes specified by the `scopes` property, plus the current artifact (if any and `useMavenDependencies` is `true`)._ |
+| `useMavenDependencies`        | If `true`, adds the project's compile and runtime dependencies to the collection of files to use for locating bundles during the bndrun resolution. _Defaults to `true`._ |
+| `reportOptional`              | If `true`, resolution failure reports (see `resolve`) will include optional requirements. _Defaults to `true`._ |
+| `scopes`                      | Specify from which scopes to collect dependencies. _Defaults to `compile, runtime`._ Override with property `bnd.run.scopes`. |
+| `includeDependencyManagement` | Include `<dependencyManagement>` when locating bundles during the bndrun resolution. _Defaults to `false`._ Override with property `bnd.run.include.dependency.management`. |

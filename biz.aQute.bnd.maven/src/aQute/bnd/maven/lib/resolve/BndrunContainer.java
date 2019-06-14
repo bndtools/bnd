@@ -218,6 +218,11 @@ public class BndrunContainer {
 		return fileSetRepository = dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
 	}
 
+	public void refresh() {
+		fileSetRepository = null;
+		processor = null;
+	}
+
 	public void setRunrequiresFromProjectArtifact(Run run) {
 		String runrequires = run.getProperty(Constants.RUNREQUIRES);
 
@@ -257,7 +262,7 @@ public class BndrunContainer {
 		return (pos > 0) ? nameExt.substring(0, pos) : nameExt;
 	}
 
-	private Processor getProcessor(Workspace workspace) {
+	public Processor getProcessor(Workspace workspace) {
 		if (processor != null) {
 			return processor;
 		}
