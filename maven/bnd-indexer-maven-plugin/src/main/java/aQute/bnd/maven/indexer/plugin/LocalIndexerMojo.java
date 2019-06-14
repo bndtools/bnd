@@ -23,7 +23,7 @@ import aQute.lib.io.IO;
 /**
  * Exports project dependencies to OSGi R5 index format.
  */
-@Mojo(name = "local-index", defaultPhase = PROCESS_RESOURCES)
+@Mojo(name = "local-index", defaultPhase = PROCESS_RESOURCES, threadSafe = true)
 public class LocalIndexerMojo extends AbstractMojo {
 	private static final Logger	logger		= LoggerFactory.getLogger(LocalIndexerMojo.class);
 

@@ -43,7 +43,7 @@ import aQute.bnd.osgi.Resource;
 import aQute.lib.io.IO;
 import biz.aQute.resolve.ResolveProcess;
 
-@Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME)
+@Mojo(name = "export", defaultPhase = PACKAGE, requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, threadSafe = true)
 public class ExportMojo extends AbstractMojo {
 	private static final Logger			logger	= LoggerFactory.getLogger(ExportMojo.class);
 
