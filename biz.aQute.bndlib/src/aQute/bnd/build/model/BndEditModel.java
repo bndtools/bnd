@@ -28,6 +28,7 @@ import java.util.stream.StreamSupport;
 import org.osgi.resource.Requirement;
 
 import aQute.bnd.build.Project;
+import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.WorkspaceLayout;
 import aQute.bnd.build.model.clauses.ExportedPackage;
@@ -1276,7 +1277,7 @@ public class BndEditModel {
 	public Processor getProperties() throws Exception {
 		Processor parent = null;
 
-		if (isProjectFile() && project != null)
+		if ((isProjectFile() && project != null) || (project instanceof Run))
 			parent = project;
 		else if (getBndResource() != null) {
 			parent = Workspace.getRun(getBndResource());

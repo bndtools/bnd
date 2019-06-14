@@ -34,6 +34,7 @@ import org.eclipse.m2e.core.project.ResolverConfiguration;
 import org.osgi.resource.Capability;
 import org.osgi.resource.Requirement;
 
+import aQute.bnd.build.Run;
 import aQute.bnd.maven.lib.configuration.Bndruns;
 import aQute.bnd.maven.lib.configuration.Bundles;
 import aQute.bnd.maven.lib.resolve.BndrunContainer;
@@ -60,10 +61,12 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 
     private final IMavenProjectFacade projectFacade;
     private final File bndrunFile;
+    private final Run run;
 
-    public MavenImplicitProjectRepository(IMavenProjectFacade projectFacade, File bndrunFile) {
+    public MavenImplicitProjectRepository(IMavenProjectFacade projectFacade, File bndrunFile, Run run) {
         this.projectFacade = projectFacade;
         this.bndrunFile = bndrunFile;
+        this.run = run;
 
         createRepo(projectFacade, new NullProgressMonitor());
 
@@ -180,8 +183,11 @@ public class MavenImplicitProjectRepository extends AbstractMavenRepository impl
 
             containerBuilder.setPostProcessor(new WorkspaceProjectPostProcessor(monitor));
 
-            fileSetRepository = containerBuilder.build()
-                .getFileSetRepository();
+            BndrunContainer bndrunContainer = containerBuilder.build();
+            bndrunContainer.setRunrequiresFromProjectArtifact(run);
+            bndrunContainer.setEEfromBuild(run);
+
+            fileSetRepository = bndrunContainer.getFileSetRepository();
             fileSetRepository.list(null);
 
             Central.refreshPlugin(this);

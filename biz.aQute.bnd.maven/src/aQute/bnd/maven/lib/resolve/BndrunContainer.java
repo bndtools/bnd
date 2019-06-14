@@ -22,6 +22,7 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import aQute.bnd.build.Run;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.build.model.EE;
 import aQute.bnd.maven.lib.configuration.BeanProperties;
@@ -217,7 +218,7 @@ public class BndrunContainer {
 		return fileSetRepository = dependencyResolver.getFileSetRepository(name, bundles, useMavenDependencies);
 	}
 
-	private void setRunrequiresFromProjectArtifact(Bndrun run) {
+	public void setRunrequiresFromProjectArtifact(Run run) {
 		String runrequires = run.getProperty(Constants.RUNREQUIRES);
 
 		if (runrequires == null && ("jar".equals(project.getPackaging()) || "war".equals(project.getPackaging()))
@@ -232,7 +233,7 @@ public class BndrunContainer {
 		}
 	}
 
-	private void setEEfromBuild(Bndrun run) {
+	public void setEEfromBuild(Run run) {
 		String runee = run.getProperty(Constants.RUNEE);
 
 		if (runee == null) {

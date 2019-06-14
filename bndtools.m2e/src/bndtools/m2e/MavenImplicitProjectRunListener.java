@@ -45,7 +45,7 @@ public class MavenImplicitProjectRunListener implements MavenRunListenerHelper, 
             workspace.setBuildDir(cnf);
             workspace.setOffline(isOffline());
 
-            implicitRepo = new MavenImplicitProjectRepository(projectFacade, run.getPropertiesFile());
+            implicitRepo = new MavenImplicitProjectRepository(projectFacade, run.getPropertiesFile(), run);
             workspace.getRepositories()
                 .add(0, implicitRepo);
             workspace.addBasicPlugin(implicitRepo);
