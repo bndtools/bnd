@@ -21,7 +21,7 @@ class TestBundlePlugin extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'build')
+            .withArguments('--parallel', '--stacktrace', '--debug', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -108,7 +108,7 @@ class TestBundlePlugin extends Specification {
         when:
           result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'build')
+            .withArguments('--parallel', '--stacktrace', '--debug', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .build()

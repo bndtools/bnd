@@ -23,7 +23,7 @@ class TestIndexTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'build', 'indexer', 'indexer2')
+            .withArguments('--parallel', '--stacktrace', '--debug', 'build', 'indexer', 'indexer2')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -132,7 +132,7 @@ class TestIndexTask extends Specification {
         when:
           result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments('--stacktrace', '--debug', 'build', 'indexer', 'indexer2')
+            .withArguments('--parallel', '--stacktrace', '--debug', 'build', 'indexer', 'indexer2')
             .withPluginClasspath()
             .forwardOutput()
             .build()

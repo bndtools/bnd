@@ -24,7 +24,7 @@ class TestTestOSGiTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments("-Pbnd_version=${bnd_version}", '--stacktrace', '--debug', 'build')
+            .withArguments("-Pbnd_version=${bnd_version}", '--parallel', '--stacktrace', '--debug', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -97,7 +97,7 @@ class TestTestOSGiTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments("-Pbnd_version=${bnd_version}", '--stacktrace', '--debug', 'build')
+            .withArguments("-Pbnd_version=${bnd_version}", '--parallel', '--stacktrace', '--debug', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -146,7 +146,7 @@ class TestTestOSGiTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments("-Pbnd_version=${bnd_version}", '--stacktrace', '--debug', 'build')
+            .withArguments("-Pbnd_version=${bnd_version}", '--parallel', '--stacktrace', '--debug', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .build()
@@ -193,7 +193,7 @@ class TestTestOSGiTask extends Specification {
         when:
           def result = TestHelper.getGradleRunner()
             .withProjectDir(testProjectDir)
-            .withArguments("-Pbnd_version=${bnd_version}", '--stacktrace', '--debug', '--continue', 'build')
+            .withArguments("-Pbnd_version=${bnd_version}", '--parallel', '--stacktrace', '--debug', '--continue', 'build')
             .withPluginClasspath()
             .forwardOutput()
             .buildAndFail()
