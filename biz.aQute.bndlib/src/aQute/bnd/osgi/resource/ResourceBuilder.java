@@ -5,6 +5,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,8 +46,8 @@ public class ResourceBuilder {
 	private final static String		BUNDLE_MIME_TYPE	= "application/vnd.osgi.bundle";
 	private final static String		JAR_MIME_TYPE		= "application/java-archive";
 	private final ResourceImpl		resource			= new ResourceImpl();
-	private final List<Capability>	capabilities		= new LinkedList<>();
-	private final List<Requirement>	requirements		= new LinkedList<>();
+	private final Set<Capability>	capabilities		= new HashSet<>();
+	private final Set<Requirement>	requirements		= new HashSet<>();
 	private ReporterAdapter			reporter			= new ReporterAdapter();
 
 	private boolean					built				= false;
@@ -78,10 +79,6 @@ public class ResourceBuilder {
 	private Capability addCapability0(CapReqBuilder builder) {
 		Capability cap = builder.setResource(resource)
 			.buildCapability();
-		int i = capabilities.indexOf(cap);
-		if (i >= 0) {
-			return capabilities.get(i);
-		}
 		capabilities.add(cap);
 		return cap;
 	}
@@ -109,10 +106,6 @@ public class ResourceBuilder {
 	private Requirement addRequirement0(CapReqBuilder builder) {
 		Requirement req = builder.setResource(resource)
 			.buildRequirement();
-		int i = requirements.indexOf(req);
-		if (i >= 0) {
-			return requirements.get(i);
-		}
 		requirements.add(req);
 		return req;
 	}
@@ -122,22 +115,22 @@ public class ResourceBuilder {
 			throw new IllegalStateException("Resource already built");
 		built = true;
 
-		resource.setCapabilities(capabilities);
-		resource.setRequirements(requirements);
+		resource.setCapabilities(new ArrayList<>(capabilities));
+		resource.setRequirements(new ArrayList<>(requirements));
 		return resource;
 	}
 
 	public List<Capability> getCapabilities() {
-		return capabilities;
+		return new ArrayList<>(capabilities);
 	}
 
 	public List<Requirement> getRequirements() {
-		return requirements;
+		return new ArrayList<>(requirements);
 	}
 
 	/**
 	 * Parse the manifest and turn them into requirements & capabilities
-	 * 
+	 *
 	 * @param manifest The manifest to parse
 	 * @throws Exception
 	 */
