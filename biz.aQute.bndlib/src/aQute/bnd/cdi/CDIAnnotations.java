@@ -51,25 +51,14 @@ import aQute.lib.strings.Strings;
  * Analyze the class space for any classes that have an OSGi annotation for CCR.
  */
 public class CDIAnnotations implements AnalyzerPlugin {
-
-	static final DocumentBuilder		db;
-	static final XPathExpression		discoveryModeExpression;
-	static final XPathExpression		versionExpression;
+	static final DocumentBuilderFactory	dbf	= DocumentBuilderFactory.newInstance();
+	static final XPathFactory			xpf	= XPathFactory.newInstance();
 
 	static {
 		try {
-			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 			dbf.setXIncludeAware(false);
 			dbf.setExpandEntityReferences(false);
-
-			db = dbf.newDocumentBuilder();
-
-			XPath xPath = XPathFactory.newInstance()
-				.newXPath();
-
-			versionExpression = xPath.compile("/beans/@version");
-			discoveryModeExpression = xPath.compile("/beans/@bean-discovery-mode");
 		} catch (Throwable t) {
 			throw Exceptions.duck(t);
 		}
@@ -281,7 +270,7 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		return getClass().getSimpleName();
 	}
 
-	private Discover findDiscoveryMode(Resource beansResource) {
+	private Discover findDiscoveryMode(Resource beansResource) throws Exception {
 		if (beansResource == null) {
 			return Discover.none;
 		}
@@ -292,7 +281,11 @@ public class CDIAnnotations implements AnalyzerPlugin {
 			return Discover.all;
 		}
 
+
 		try {
+			XPath xPath = xpf.newXPath();
+			XPathExpression discoveryModeExpression = xPath.compile("/beans/@bean-discovery-mode");
+			XPathExpression versionExpression = xPath.compile("/beans/@version");
 			Object versionResult = versionExpression.evaluate(document, XPathConstants.STRING);
 
 			Version version = Version.valueOf(versionResult.toString());
@@ -313,7 +306,8 @@ public class CDIAnnotations implements AnalyzerPlugin {
 		}
 	}
 
-	private Document readXMLResource(Resource resource) {
+	private Document readXMLResource(Resource resource) throws Exception {
+		DocumentBuilder db = dbf.newDocumentBuilder();
 		try (InputStream is = resource.openInputStream()) {
 			return db.parse(is);
 		} catch (Throwable t) {

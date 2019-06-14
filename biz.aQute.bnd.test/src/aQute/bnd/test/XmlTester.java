@@ -8,9 +8,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.xml.namespace.NamespaceContext;
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
@@ -22,21 +20,18 @@ import org.w3c.dom.Element;
 public class XmlTester {
 	final static DocumentBuilderFactory	dbf		= DocumentBuilderFactory.newInstance();
 	final static XPathFactory			xpathf	= XPathFactory.newInstance();
-	final static DocumentBuilder		db;
 
 	static {
-		try {
-			dbf.setNamespaceAware(true);
-			db = dbf.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			throw new RuntimeException(e);
-		}
+		dbf.setNamespaceAware(true);
 	}
 
 	final Document	document;
-	final XPath		xpath	= xpathf.newXPath();
+	final XPath		xpath;
 
 	public XmlTester(InputStream in, final String... namespace) throws Exception {
+		document = dbf.newDocumentBuilder()
+			.parse(in);
+		xpath = xpathf.newXPath();
 		xpath.setNamespaceContext(new NamespaceContext() {
 
 			@Override
@@ -66,8 +61,6 @@ public class XmlTester {
 				return null;
 			}
 		});
-
-		document = db.parse(in);
 	}
 
 	public void assertExactAttribute(String value, String expr) throws XPathExpressionException {

@@ -18,6 +18,9 @@ def deploy = tasks.register('deploy', Exec.class) {
     executable rootProject.file('mvnw')
   }
   args '--batch-mode'
+  if (project.gradle.startParameter.parallelProjectExecutionEnabled) {
+    args '-T1C'
+  }
   args '-Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn'
   if (logger.isDebugEnabled()) {
     args '--debug'
@@ -39,6 +42,7 @@ def deployOSSRH = tasks.register('deployOSSRH', Exec.class) {
   onlyIf {
     deploy.get().state.didWork && (deploy.get().state.failure == null)
   }
+  mustRunAfter dist.tasks.named('releaseDependencies')
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
     args '/c', rootProject.file('mvnw.cmd')
@@ -67,6 +71,7 @@ def deployJFrog = tasks.register('deployJFrog', Exec.class) {
   onlyIf {
     deploy.get().state.didWork && (deploy.get().state.failure == null)
   }
+  mustRunAfter dist.tasks.named('releaseDependencies')
   if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
     executable 'cmd'
     args '/c', rootProject.file('mvnw.cmd')
