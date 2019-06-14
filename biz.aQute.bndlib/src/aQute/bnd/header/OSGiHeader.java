@@ -1,7 +1,11 @@
 package aQute.bnd.header;
 
+import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
+
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import aQute.libg.generics.Create;
@@ -33,6 +37,7 @@ public class OSGiHeader {
 			.length() == 0)
 			return result;
 
+		Map<String, String> duplicates = new HashMap<>();
 		QuotedTokenizer qt = new QuotedTokenizer(value, ";=,");
 		char del = 0;
 		do {
@@ -90,18 +95,23 @@ public class OSGiHeader {
 				}
 
 				// Check for duplicate names. The aliases list contains
-				// the list of nams, for each check if it exists. If so,
+				// the list of names, for each check if it exists. If so,
 				// add a number of "~" to make it unique.
 				for (String clauseName : aliases) {
-					if (result.containsKey(clauseName)) {
-						if (logger != null && logger.isPedantic() && !result.allowDuplicateAttributes())
-							logger.warning(
-								"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
-								clauseName, value);
-						while (result.containsKey(clauseName))
-							clauseName += "~";
+					String key = duplicates.compute(clauseName, (k, v) -> {
+						v = (v == null) ? k : v + DUPLICATE_MARKER;
+						while (result.containsKey(v)) {
+							v += DUPLICATE_MARKER;
+						}
+						return v;
+					});
+					if ((logger != null) && logger.isPedantic() && !result.allowDuplicateAttributes()
+						&& (key.indexOf(DUPLICATE_MARKER, key.length() - 1) >= 0)) {
+						logger.warning(
+							"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
+							clauseName, value);
 					}
-					result.put(clauseName, clause);
+					result.put(key, clause);
 				}
 			}
 		} while (del == ',');
