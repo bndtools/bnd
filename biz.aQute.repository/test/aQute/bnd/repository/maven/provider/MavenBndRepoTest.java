@@ -319,7 +319,7 @@ public class MavenBndRepoTest extends TestCase {
 		Collection<Capability> caps = repo.findProviders(Collections.singleton(wc))
 			.get(wc);
 		Set<Resource> resources = ResourceUtils.getResources(caps);
-		assertEquals(3, resources.size());
+		assertThat(resources).hasSize(3);
 		IdentityCapability bc = ResourceUtils.getIdentityCapability(resources.iterator()
 			.next());
 		assertEquals("biz.aQute.bnd.maven", bc.osgi_identity());

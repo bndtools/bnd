@@ -27,7 +27,7 @@ import biz.aQute.bnd.reporter.generator.EntryNamesReference;
 /**
  * Exports a set of reports.
  */
-@Mojo(name = "export")
+@Mojo(name = "export", threadSafe = true)
 public class ExportMojo extends AbstractMojo {
 
 	private static final String			AGGREGATOR_SCOPE	= "aggregator";

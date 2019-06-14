@@ -3,17 +3,6 @@ package aQute.bnd.maven.run.plugin;
 import static aQute.bnd.maven.lib.resolve.BndrunContainer.report;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 
-import aQute.bnd.build.Container;
-import aQute.bnd.build.ProjectLauncher;
-import aQute.bnd.maven.lib.configuration.Bndruns;
-import aQute.bnd.maven.lib.configuration.Bundles;
-import aQute.bnd.maven.lib.resolve.BndrunContainer;
-import aQute.bnd.maven.lib.resolve.Operation;
-import aQute.bnd.maven.lib.resolve.Scope;
-import aQute.bnd.osgi.Constants;
-
-import biz.aQute.resolve.Bndrun;
-
 import java.io.File;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
@@ -48,7 +37,17 @@ import org.eclipse.aether.RepositorySystemSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Mojo(name = "run", defaultPhase = LifecyclePhase.PACKAGE, requiresDirectInvocation = true, requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST)
+import aQute.bnd.build.Container;
+import aQute.bnd.build.ProjectLauncher;
+import aQute.bnd.maven.lib.configuration.Bndruns;
+import aQute.bnd.maven.lib.configuration.Bundles;
+import aQute.bnd.maven.lib.resolve.BndrunContainer;
+import aQute.bnd.maven.lib.resolve.Operation;
+import aQute.bnd.maven.lib.resolve.Scope;
+import aQute.bnd.osgi.Constants;
+import biz.aQute.resolve.Bndrun;
+
+@Mojo(name = "run", defaultPhase = LifecyclePhase.PACKAGE, requiresDirectInvocation = true, requiresProject = true, requiresDependencyResolution = ResolutionScope.TEST, threadSafe = true)
 public class RunMojo extends AbstractMojo {
 	private static final Logger									logger	= LoggerFactory.getLogger(RunMojo.class);
 

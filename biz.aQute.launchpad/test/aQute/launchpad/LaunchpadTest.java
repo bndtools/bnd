@@ -1,8 +1,9 @@
 package aQute.launchpad;
 
+import static aQute.lib.promise.PromiseCollectors.toPromise;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -13,15 +14,16 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
+import org.assertj.core.api.JUnitSoftAssertions;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
@@ -31,8 +33,9 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.util.promise.Promise;
+import org.osgi.util.promise.PromiseFactory;
 
-import aQute.bnd.build.Workspace;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.remoteworkspace.client.RemoteWorkspaceClientFactory;
@@ -43,14 +46,11 @@ import aQute.lib.io.IO;
 import aQute.libg.parameters.ParameterMap;
 
 public class LaunchpadTest {
-	static Workspace	ws;
+	@Rule
+	public final JUnitSoftAssertions	softly	= new JUnitSoftAssertions();
+
 	LaunchpadBuilder	builder;
 	File				tmp;
-
-	@BeforeClass
-	public static void beforeClass() throws Exception {
-		// ws = Workspace.findWorkspace(IO.work);
-	}
 
 	@Before
 	public void before() throws Exception {
@@ -61,11 +61,6 @@ public class LaunchpadTest {
 	@After
 	public void after() throws Exception {
 		builder.close();
-	}
-
-	@Test
-	public void testWs() {
-		System.err.println("waiter");
 	}
 
 	@Test
@@ -93,20 +88,21 @@ public class LaunchpadTest {
 		}
 	}
 
-	static Semaphore semaphore = new Semaphore(0);
 
+	static final CountDownLatch	activatedMyActivator	= new CountDownLatch(1);
+	static final CountDownLatch	deactivatedMyActivator	= new CountDownLatch(1);
 	public static class MyActivator implements BundleActivator {
 
 		@Override
 		public void start(BundleContext context) throws Exception {
 			System.out.println("Hello");
-			semaphore.release();
+			activatedMyActivator.countDown();
 		}
 
 		@Override
 		public void stop(BundleContext context) throws Exception {
 			System.out.println("Goodbye");
-			semaphore.release();
+			deactivatedMyActivator.countDown();
 		}
 
 	}
@@ -150,12 +146,12 @@ public class LaunchpadTest {
 				.bundleActivator(MyActivator.class)
 				.start();
 
-			assertThat(semaphore.tryAcquire(1, 1, TimeUnit.SECONDS)).isTrue();
-			assertThat(semaphore.tryAcquire(1, 500, TimeUnit.MILLISECONDS)).isFalse();
+			assertThat(activatedMyActivator.await(1, TimeUnit.SECONDS)).isTrue();
+			assertThat(deactivatedMyActivator.await(500, TimeUnit.MILLISECONDS)).isFalse();
 
 			x.stop();
 
-			assertThat(semaphore.tryAcquire(1, 1, TimeUnit.SECONDS)).isTrue();
+			assertThat(deactivatedMyActivator.await(1, TimeUnit.SECONDS)).isTrue();
 		}
 	}
 
@@ -200,18 +196,20 @@ public class LaunchpadTest {
 	 * Test a built in component
 	 */
 
+	static final CountDownLatch	activatedComp	= new CountDownLatch(1);
+	static final CountDownLatch	deactivatedComp	= new CountDownLatch(1);
 	@Component(immediate = true, service = Comp.class)
 	public static class Comp {
 
 		@Activate
 		void activate() {
-			semaphore.release();
+			activatedComp.countDown();
 			System.out.println("Activate");
 		}
 
 		@Deactivate
 		void deactivate() {
-			semaphore.release();
+			deactivatedComp.countDown();
 			System.out.println("Deactivate");
 		}
 	}
@@ -224,8 +222,8 @@ public class LaunchpadTest {
 
 			Bundle comp = fw.component(Comp.class);
 
-			assertThat(semaphore.tryAcquire(1, 5, TimeUnit.SECONDS)).isTrue();
-			assertThat(semaphore.tryAcquire(1, 200, TimeUnit.MILLISECONDS)).isFalse();
+			assertThat(activatedComp.await(5, TimeUnit.SECONDS)).isTrue();
+			assertThat(deactivatedComp.await(200, TimeUnit.MILLISECONDS)).isFalse();
 
 			assertThat(fw.getService(Comp.class)).containsInstanceOf(Comp.class);
 
@@ -233,7 +231,7 @@ public class LaunchpadTest {
 
 			assertThat(fw.getService(Comp.class)).isEmpty();
 
-			assertThat(semaphore.tryAcquire(1, 1, TimeUnit.SECONDS)).isTrue();
+			assertThat(deactivatedComp.await(1, TimeUnit.SECONDS)).isTrue();
 
 		}
 
@@ -369,8 +367,7 @@ public class LaunchpadTest {
 		try (Launchpad fw = builder.runfw("org.apache.felix.framework")
 			.create()) {
 
-			assertFalse(fw.getService(String.class)
-				.isPresent());
+			assertThat(fw.getService(String.class)).isEmpty();
 		}
 	}
 
@@ -382,8 +379,7 @@ public class LaunchpadTest {
 				3, 4, 5
 			});
 
-			assertTrue(fw.getService(String.class, "(&(a=1)(b=2)(c=3))")
-				.isPresent());
+			assertThat(fw.getService(String.class, "(&(a=1)(b=2)(c=3))")).isNotEmpty();
 		}
 
 	}
@@ -438,41 +434,41 @@ public class LaunchpadTest {
 	}
 
 	@Test
-	public void testLaunchpadStressByCreatingLotsOfFrameworksInDifferentThreads() throws Exception {
-		List<Launchpad> l = new CopyOnWriteArrayList<>();
-		List<Throwable> e = new CopyOnWriteArrayList<>();
+	public <T> void testLaunchpadStressByCreatingLotsOfFrameworksInDifferentThreads() throws Exception {
 		Random r = new Random();
-		Semaphore s = new Semaphore(0);
-
 		int n = 20;
-		for (int i = 0; i < n; i++) {
-			Processor.getExecutor()
-				.execute(() -> {
-					try {
+		PromiseFactory promiseFactory = Processor.getPromiseFactory();
+		List<Promise<Launchpad>> frameworks = IntStream.range(0, n)
+			.mapToObj(i -> promiseFactory.submit(() -> builder.bundles("org.apache.felix.log,org.apache.felix.scr")
+				.runfw("org.apache.felix.framework")
+				.create("foo", "bar")))
+			.collect(toList());
+		frameworks.stream()
+			.map(p -> p.map(fw -> {
+				Bundle bundle = fw.component(ExternalRefComp.class);
+				int sleep = Math.abs(r.nextInt() % 100) + 30;
+				System.out
+					.println(fw.runspec.properties.get(org.osgi.framework.Constants.FRAMEWORK_STORAGE) + " " + sleep);
+				Thread.sleep(sleep);
+				softly.assertThat(fw.getService(ExternalRefComp.class))
+					.isNotNull();
+				bundle.stop();
+				return fw;
+			})
+				.timeout(30000)
+				.recover(failed -> {
+					Throwable f = failed.getFailure();
+					softly.fail(f.toString(), f);
+					return null; // no recovery
+				}))
+			.collect(toPromise(promiseFactory))
+			.getFailure(); // wait for it
 
-						Launchpad fw = builder.bundles("org.apache.felix.log, org.apache.felix.scr")
-							.runfw("org.apache.felix.framework")
-							.create("foo", "bar");
-						l.add(fw);
-						Bundle bundle = fw.component(ExternalRefComp.class);
-						int sleep = Math.abs(r.nextInt() % 100) + 30;
-						System.out.println(
-							fw.runspec.properties.get(org.osgi.framework.Constants.FRAMEWORK_STORAGE) + " " + sleep);
-						Thread.sleep(sleep);
-						assertThat(fw.getService(ExternalRefComp.class)).isNotNull();
-						bundle.stop();
-					} catch (Throwable ee) {
-						e.add(ee);
-						ee.printStackTrace();
-					} finally {
-						s.release();
-					}
-				});
-		}
-		s.acquire(n);
 		System.out.println("Closing " + n + " frameworks");
-		l.forEach(IO::close);
-		assertThat(e).isEmpty();
+		frameworks.stream()
+			.map(p -> p.thenAccept(IO::close))
+			.collect(toPromise(promiseFactory))
+			.getFailure(); // close frameworks
 	}
 
 	public static class TestClass implements Supplier<Bundle> {

@@ -73,7 +73,7 @@ import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
 import aQute.service.reporter.Report.Location;
 
-@Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE)
+@Mojo(name = "bnd-process", defaultPhase = LifecyclePhase.PROCESS_CLASSES, requiresDependencyResolution = ResolutionScope.COMPILE, threadSafe = true)
 public class BndMavenPlugin extends AbstractMojo {
 	private static final Logger						logger					= LoggerFactory
 		.getLogger(BndMavenPlugin.class);
