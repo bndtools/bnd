@@ -1,5 +1,7 @@
 package aQute.bnd.service.specifications;
 
+import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -62,8 +64,9 @@ public class RunSpecification implements Cloneable {
 	private void putAll(Map<String, Map<String, String>> to, Map<String, Map<String, String>> from) {
 		for (Map.Entry<String, Map<String, String>> e : from.entrySet()) {
 			String key = e.getKey();
-			while (to.containsKey(key))
-				key += "~";
+			while (to.containsKey(key)) {
+				key += DUPLICATE_MARKER;
+			}
 			to.put(key, e.getValue());
 		}
 	}

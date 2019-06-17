@@ -74,8 +74,9 @@ public class OSGiHeader {
 						String advalue = qt.nextToken();
 						if (clause.containsKey(adname)) {
 							if (result.allowDuplicateAttributes()) {
-								while (clause.containsKey(adname))
-									adname += "~";
+								while (clause.containsKey(adname)) {
+									adname += DUPLICATE_MARKER;
+								}
 							} else {
 								if (logger != null && logger.isPedantic())
 									logger.warning(
@@ -108,7 +109,8 @@ public class OSGiHeader {
 					if ((logger != null) && logger.isPedantic() && !result.allowDuplicateAttributes()
 						&& (key.indexOf(DUPLICATE_MARKER, key.length() - 1) >= 0)) {
 						logger.warning(
-							"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a ~ at the end (which is stripped at printing time).",
+							"Duplicate name %s used in header: '%s'. Duplicate names are specially marked in Bnd with a "
+								+ DUPLICATE_MARKER + " at the end (which is stripped at printing time).",
 							clauseName, value);
 					}
 					result.put(key, clause);

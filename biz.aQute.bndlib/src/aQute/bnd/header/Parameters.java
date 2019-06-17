@@ -1,5 +1,6 @@
 package aQute.bnd.header;
 
+import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collection;
@@ -9,7 +10,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collector;
 
-import aQute.bnd.osgi.Constants;
 import aQute.lib.collections.SortedList;
 import aQute.service.reporter.Reporter;
 
@@ -53,8 +53,9 @@ public class Parameters implements Map<String, Attrs> {
 	}
 
 	public void add(String key, Attrs attrs) {
-		while (containsKey(key))
-			key += "~";
+		while (containsKey(key)) {
+			key += DUPLICATE_MARKER;
+		}
 		put(key, attrs);
 	}
 
@@ -185,8 +186,9 @@ public class Parameters implements Map<String, Attrs> {
 
 	private static int keyLength(String key) {
 		int i = key.length() - 1;
-		while (i >= 0 && key.charAt(i) == Constants.DUPLICATE_MARKER)
+		while ((i >= 0) && (key.charAt(i) == DUPLICATE_MARKER)) {
 			--i;
+		}
 		return i + 1;
 	}
 
