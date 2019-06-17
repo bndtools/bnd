@@ -1055,10 +1055,15 @@ public class Launcher implements ServiceListener {
 			trace("system capabilities used: %s", parms.systemCapabilities);
 		}
 
-		if (maxStartLevel > 0 && p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL) == null) {
-			int frameworkLevel = maxStartLevel + 1;
-			p.setProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL, frameworkLevel + "");
-			trace("setting beginning start level to %s", frameworkLevel);
+		if (maxStartLevel > 0) {
+			if (p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL) == null) {
+				int frameworkLevel = maxStartLevel + 1;
+				p.setProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL, frameworkLevel + "");
+				trace("setting automatic beginning start level: %s", frameworkLevel);
+			} else {
+				trace("start level set through properties: %s",
+					p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL) == null);
+			}
 		}
 
 		Framework systemBundle;

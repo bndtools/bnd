@@ -14,8 +14,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import aQute.bnd.build.Run;
@@ -28,6 +30,13 @@ public class LauncherTest {
 
 	private static final String	GENERATED_PACKAGED_JAR	= "generated/packaged.jar";
 
+	private Properties			prior;
+
+	@Before
+	public void before() {
+		prior = new Properties();
+		prior.putAll(System.getProperties());
+	}
 	/**
 	 * Testing the embedded launcher is quite tricky. This test uses a
 	 * prefabricated packaged jar. Notice that you need to reexport that jar for
@@ -35,10 +44,10 @@ public class LauncherTest {
 	 * run twice to see if the second run will not reinstall the bundles.
 	 */
 
+
 	@After
 	public void after() {
-		System.getProperties()
-			.remove("launch.trace");
+		System.setProperties(prior);
 	}
 
 	@Test
@@ -77,6 +86,8 @@ public class LauncherTest {
 
 	@Test
 	public void testRunOrder_3_manual_beginning_level() throws Exception {
+		System.getProperties()
+			.remove("launch.properties");
 		File file = buildPackage("order-03.bndrun");
 
 
