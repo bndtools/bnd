@@ -211,7 +211,12 @@ public interface Constants {
 
 	String								RUNBUNDLES									= "-runbundles";
 	String								RUNBUNDLES_STARTLEVEL_ATTRIBUTE				= "startlevel";
-	String								RUNORDER									= "-runorder";
+
+	String								RUNSTARTLEVEL								= "-runstartlevel";
+	String								RUNSTARTLEVEL_ORDER							= "order";
+	String								RUNSTARTLEVEL_BEGIN							= "begin";
+	String								RUNSTARTLEVEL_STEP							= "step";
+
 	String								AUGMENT										= "-augment";
 	String								AUGMENT_RANGE_ATTRIBUTE						= "version:";
 	String								AUGMENT_CAPABILITY_DIRECTIVE				= "capability:";
@@ -287,7 +292,7 @@ public interface Constants {
 		JAVA_DEBUG, EXPORTTYPE, RUNREMOTE, TESTER, AUGMENT, REQUIRE_BND, GROUPID, STANDALONE, IGNORE_STANDALONE,
 		RUNREPOS, INIT, MAVEN_RELEASE, BUILDREPO, CONNECTION_SETTINGS, RUNPROVIDEDCAPABILITIES, WORKINGSET, RUNSTORAGE,
 		REPRODUCIBLE, INCLUDEPACKAGE, CDIANNOTATIONS, REMOTEWORKSPACE, MAVEN_DEPENDENCIES, BUILDERIGNORE, STALECHECK,
-		MAVEN_SCOPE, RUNORDER
+		MAVEN_SCOPE, RUNSTARTLEVEL
 
 	};
 

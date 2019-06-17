@@ -45,6 +45,35 @@ public class InstructionTest extends TestCase {
 			.containsEntry("n", "1");
 	}
 
+	public void testDecoratePriority() {
+		Instructions instrs = new Instructions("def;x=1, *;x=0");
+		Parameters params = new Parameters("abc, def, ghi");
+		instrs.decorate(params);
+		System.out.println(params);
+		assertThat(params.get("abc")).isNotNull()
+			.containsEntry("x", "0");
+
+		assertThat(params.get("def")).isNotNull()
+			.containsEntry("x", "1");
+
+		assertThat(params.get("ghi")).isNotNull()
+			.containsEntry("x", "0");
+	}
+
+	public void testNegate() {
+		Instructions instrs = new Instructions("!def, *;x=0");
+		Parameters params = new Parameters("abc, def, ghi");
+		instrs.decorate(params);
+		System.out.println(params);
+		assertThat(params.get("abc")).isNotNull()
+			.containsEntry("x", "0");
+
+		assertThat(params.get("def")).isNull();
+
+		assertThat(params.get("ghi")).isNotNull()
+			.containsEntry("x", "0");
+	}
+
 	public void testWildcard() {
 		assertTrue(new Instruction("a|b").matches("a"));
 		assertTrue(new Instruction("a|b").matches("b"));
