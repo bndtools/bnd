@@ -1,5 +1,6 @@
 package biz.aQute.launcher;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -13,8 +14,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import aQute.bnd.build.Run;
@@ -27,6 +30,13 @@ public class LauncherTest {
 
 	private static final String	GENERATED_PACKAGED_JAR	= "generated/packaged.jar";
 
+	private Properties			prior;
+
+	@Before
+	public void before() {
+		prior = new Properties();
+		prior.putAll(System.getProperties());
+	}
 	/**
 	 * Testing the embedded launcher is quite tricky. This test uses a
 	 * prefabricated packaged jar. Notice that you need to reexport that jar for
@@ -34,10 +44,64 @@ public class LauncherTest {
 	 * run twice to see if the second run will not reinstall the bundles.
 	 */
 
+
 	@After
 	public void after() {
+		System.setProperties(prior);
+	}
+
+	@Test
+	public void testRunOrder_1_basic() throws Exception {
+		File file = buildPackage("order-01.bndrun");
+
+		System.setProperty("test.cmd", "quit.no.exit");
+
+		String result = runFramework(file);
+
+		System.out.println(result);
+		assertThat(result).containsPattern("Startlevel\\s+21");
+		assertThat(result).containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle");
+		assertThat(result).containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log");
+		assertThat(result).containsPattern("10\\s+ACTIV\\s+<>\\s+jar/.?demo.jar");
+		assertThat(result).containsPattern("20\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit");
+		assertThat(result).containsPattern("5\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin");
+	}
+
+	@Test
+	public void testRunOrder_2_decorations() throws Exception {
+		File file = buildPackage("order-02.bndrun");
+
+		System.setProperty("test.cmd", "quit.no.exit");
+
+		String result = runFramework(file);
+
+		System.out.println(result);
+		assertThat(result).containsPattern("Startlevel\\s+22");
+		assertThat(result).containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle");
+		assertThat(result).containsPattern("22\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.log");
+		assertThat(result).containsPattern("11\\s+ACTIV\\s+<>\\s+jar/.?demo.jar");
+		assertThat(result).containsPattern("21\\s+ACTIV\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit");
+		assertThat(result).containsPattern("6\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin");
+	}
+
+	@Test
+	public void testRunOrder_3_manual_beginning_level() throws Exception {
 		System.getProperties()
-			.remove("launch.trace");
+			.remove("launch.properties");
+		File file = buildPackage("order-03.bndrun");
+
+
+		System.setProperty("test.cmd", "quit.no.exit");
+
+		String result = runFramework(file);
+
+		System.out.println(result);
+		assertThat(result).containsPattern("Startlevel\\s+12");
+		assertThat(result).containsPattern("0\\s+ACTIV\\s+<>\\s+System Bundle");
+		assertThat(result).containsPattern("22\\s+RSLVD\\s+<>\\s+jar/.?org.apache.felix.log");
+		assertThat(result).containsPattern("11\\s+ACTIV\\s+<>\\s+jar/.?demo.jar");
+		assertThat(result).containsPattern("21\\s+RSLVD\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit");
+		assertThat(result).containsPattern("6\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin");
 	}
 
 	@Test
@@ -110,29 +174,6 @@ public class LauncherTest {
 	@Test
 	public void testEmbeddedLauncherTrace() throws Exception {
 		File file = buildPackage("keep_notrace.bndrun");
-
-		System.setProperty("test.cmd", "quit.no.exit");
-		File fwdir = IO.getFile(base, "generated/keepfw");
-		IO.delete(fwdir);
-
-		assertTrue(file.isFile());
-
-		System.setProperty("launch.trace", "true");
-
-		String result = runFrameworkWithRunMethod(file);
-		assertTrue(result.contains("installing jar/demo.jar"));
-
-		assertTrue(result.contains("[EmbeddedLauncher] looking for META-INF/MANIFEST.MF"));
-	}
-
-	/**
-	 * Tests the EmbeddedLauncher withstartlevels
-	 * 
-	 * @throws Exception
-	 */
-	@Test
-	public void testEmbeddedStartlevels() throws Exception {
-		File file = buildPackage("startlevels.bndrun");
 
 		System.setProperty("test.cmd", "quit.no.exit");
 		File fwdir = IO.getFile(base, "generated/keepfw");

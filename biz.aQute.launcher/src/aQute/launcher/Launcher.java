@@ -71,12 +71,13 @@ import org.osgi.framework.FrameworkEvent;
 import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
-import org.osgi.framework.ServiceReference;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.service.packageadmin.PackageAdmin;
+import org.osgi.framework.startlevel.BundleStartLevel;
+import org.osgi.framework.startlevel.FrameworkStartLevel;
+import org.osgi.framework.wiring.BundleRevision;
+import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.permissionadmin.PermissionInfo;
-import org.osgi.service.startlevel.StartLevel;
 
 import aQute.launcher.agent.LauncherAgent;
 import aQute.launcher.constants.LauncherConstants;
@@ -92,31 +93,25 @@ import aQute.lib.strings.Strings;
  */
 public class Launcher implements ServiceListener {
 
-	private static final String				BND_LAUNCHER						= ".bnd.launcher";
-
-	// Use our own constant for this rather than depend on OSGi core 4.3
-	private static final String				FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA	= "org.osgi.framework.system.capabilities.extra";
+	private static final String				BND_LAUNCHER		= ".bnd.launcher";
 
 	private PrintStream						out;
 	LauncherConstants						parms;
 	Framework								systemBundle;
-	volatile boolean						inrefresh;
+	FrameworkStartLevel						frameworkStartLevel;
+	FrameworkWiring							frameworkWiring;
 	private final Properties				properties;
 	private boolean							security;
 	private SimplePermissionPolicy			policy;
 	private Callable<Integer>				mainThread;
-	private final List<BundleActivator>		embedded							= new ArrayList<>();
-	private final Map<Bundle, Throwable>	errors								= new HashMap<>();
-	private final Map<File, Bundle>			installedBundles					= new LinkedHashMap<>();
-	private final Map<Bundle, Integer>		startLevels							= new LinkedHashMap<>();
-	private File							home								= new File(
-		System.getProperty("user.home"));
-	private File							bnd									= new File(home, "bnd");
-	private List<Bundle>					wantsToBeStarted					= new ArrayList<>();
-	AtomicBoolean							active								= new AtomicBoolean();
-	private AtomicReference<DatagramSocket>	commsSocket							= new AtomicReference<>();
-	private PackageAdmin					padmin;
-	private StartLevel						sadmin;
+	private final List<BundleActivator>		embedded			= new ArrayList<>();
+	private final Map<Bundle, Throwable>	errors				= new HashMap<>();
+	private final Map<File, Bundle>			installedBundles	= new LinkedHashMap<>();
+	private File							home				= new File(System.getProperty("user.home"));
+	private File							bnd					= new File(home, "bnd");
+	private List<Bundle>					wantsToBeStarted	= new ArrayList<>();
+	AtomicBoolean							active				= new AtomicBoolean();
+	private AtomicReference<DatagramSocket>	commsSocket			= new AtomicReference<>();
 	private int								maxStartLevel;
 
 	public static void main(String[] args) {
@@ -278,7 +273,6 @@ public class Launcher implements ServiceListener {
 							setParameters(properties);
 							List<Bundle> tobestarted = update(now);
 							startBundles(tobestarted);
-							setStartLevel();
 						} catch (Exception e) {
 							error("Error in updating the framework from the properties: %s", e);
 						}
@@ -372,7 +366,6 @@ public class Launcher implements ServiceListener {
 				trace("requested to register no services");
 			}
 
-
 			// Wait until a Runnable is registered with main.thread=true.
 			// not that this will never happen when we're running on the mini fw
 			// but the test case normally exits.
@@ -415,6 +408,10 @@ public class Launcher implements ServiceListener {
 		systemBundle = createFramework();
 		if (systemBundle == null)
 			return LauncherConstants.ERROR;
+
+		frameworkStartLevel = systemBundle.adapt(FrameworkStartLevel.class);
+		frameworkWiring = systemBundle.adapt(FrameworkWiring.class);
+
 		active.set(true);
 
 		doTimeoutHandler();
@@ -430,20 +427,7 @@ public class Launcher implements ServiceListener {
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 			+ Callable.class.getName() + "))(main.thread=true))");
 
-		// Initialize this framework so it becomes STARTING
 		systemBundle.start();
-
-		ServiceReference ref = systemContext.getServiceReference(PackageAdmin.class.getName());
-		if (ref != null) {
-			padmin = (PackageAdmin) systemContext.getService(ref);
-		} else
-			trace("could not get package admin");
-
-		ref = systemContext.getServiceReference(StartLevel.class.getName());
-		if (ref != null) {
-			sadmin = (StartLevel) systemContext.getService(ref);
-		} else
-			trace("could not get start level service");
 
 		trace("system bundle started ok");
 		// Start embedded activators
@@ -465,7 +449,6 @@ public class Launcher implements ServiceListener {
 			}
 		}
 
-		setStartLevel();
 		startBundles(tobestarted);
 
 		if (parms.trace) {
@@ -532,7 +515,7 @@ public class Launcher implements ServiceListener {
 			policy.setDefaultPermissions(null);
 
 		// Get the resolved status
-		if (padmin != null && padmin.resolveBundles(null) == false) {
+		if (frameworkWiring.resolveBundles(null) == false) {
 			List<String> failed = new ArrayList<>();
 
 			for (Bundle b : installedBundles.values()) {
@@ -578,18 +561,21 @@ public class Launcher implements ServiceListener {
 	}
 
 	private void refresh() throws InterruptedException {
-		if (padmin != null) {
-			inrefresh = true;
-			padmin.refreshPackages(null);
-			trace("Waiting for refresh to finish");
+		Semaphore semaphore = new Semaphore(0);
 
-			// Will be reset by the Framework listener we added
-			// when we created the framework.
-			while (inrefresh)
-				Thread.sleep(100);
+		frameworkWiring.refreshBundles(null, (e) -> {
+			if (e.getType() == FrameworkEvent.PACKAGES_REFRESHED)
+				semaphore.release();
+		});
 
-		} else
-			trace("cannot refresh the bundles because there is no Package Admin");
+		trace("Waiting for refresh to finish");
+
+		if (semaphore.tryAcquire(10, TimeUnit.MINUTES)) {
+			trace("Refresh is finished");
+			return;
+		}
+
+		trace("Could not refresh the framework in 5 minutes");
 	}
 
 	/**
@@ -628,19 +614,18 @@ public class Launcher implements ServiceListener {
 				Bundle bundle = installedBundles.get(f);
 				bundle.uninstall();
 				installedBundles.remove(f);
-				startLevels.remove(bundle);
 			} catch (Exception e) {
 				error("Failed to uninstall bundle %s, exception %s", f, e);
 			}
 
 		for (File f : tobeinstalled)
 			try {
+				int startLevel = desired.get(f);
 				trace("installing %s", f);
 				if (f.exists()) {
 					Bundle b = install(f);
 					installedBundles.put(f, b);
-					Integer startLevel = desired.get(f);
-					startLevels.put(b, startLevel);
+					setBundleStartLevel(b, startLevel);
 					tobestarted.add(b);
 				} else
 					error("should installing %s but file does not exist", f);
@@ -650,10 +635,10 @@ public class Launcher implements ServiceListener {
 
 		for (File f : tobeupdated)
 			try {
+				Integer startLevel = desired.get(f);
 				if (f.exists()) {
 					Bundle b = installedBundles.get(f);
-					Integer startLevel = desired.get(f);
-					startLevels.put(b, startLevel);
+					setBundleStartLevel(b, startLevel);
 
 					//
 					// Ensure we only update bundles that
@@ -817,7 +802,7 @@ public class Launcher implements ServiceListener {
 					tobestarted.add(bundle);
 				}
 			}
-			startLevels.put(bundle, getStartLevel(n));
+			setBundleStartLevel(bundle, getStartLevel(n));
 			n++;
 		}
 	}
@@ -935,6 +920,10 @@ public class Launcher implements ServiceListener {
 							System.exit(LauncherConstants.STOPPED);
 							break;
 
+						case FrameworkEvent.STARTLEVEL_CHANGED :
+							trace("start level changed");
+							break;
+
 						case FrameworkEvent.WAIT_TIMEDOUT :
 							trace("framework event timedout");
 							System.exit(LauncherConstants.TIMEDOUT);
@@ -981,11 +970,8 @@ public class Launcher implements ServiceListener {
 	}
 
 	private boolean isFragment(Bundle b) {
-		if (padmin != null)
-			return padmin.getBundleType(b) == PackageAdmin.BUNDLE_TYPE_FRAGMENT;
-
-		return b.getHeaders()
-			.get(Constants.FRAGMENT_HOST) != null;
+		return (b.adapt(BundleRevision.class)
+			.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0;
 	}
 
 	public void deactivate() throws Exception {
@@ -1065,8 +1051,19 @@ public class Launcher implements ServiceListener {
 		}
 
 		if (parms.systemCapabilities != null) {
-			p.setProperty(FRAMEWORK_SYSTEM_CAPABILITIES_EXTRA, parms.systemCapabilities);
+			p.setProperty(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, parms.systemCapabilities);
 			trace("system capabilities used: %s", parms.systemCapabilities);
+		}
+
+		if (maxStartLevel > 0) {
+			if (p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL) == null) {
+				int frameworkLevel = maxStartLevel + 1;
+				p.setProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL, frameworkLevel + "");
+				trace("setting automatic beginning start level: %s", frameworkLevel);
+			} else {
+				trace("start level set through properties: %s",
+					p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL) == null);
+			}
 		}
 
 		Framework systemBundle;
@@ -1116,16 +1113,13 @@ public class Launcher implements ServiceListener {
 							case FrameworkEvent.WAIT_TIMEDOUT :
 								trace("Refresh will end due to error or timeout %s", event.toString());
 
-							case FrameworkEvent.PACKAGES_REFRESHED :
-								inrefresh = false;
-								trace("refresh ended");
-								break;
 						}
 					}
 				});
 		} catch (Exception e) {
 			trace("could not register a framework listener: %s", e);
 		}
+
 		trace("inited system bundle %s", systemBundle);
 		return systemBundle;
 	}
@@ -1183,7 +1177,7 @@ public class Launcher implements ServiceListener {
 			row(out, "Storage", parms.storageDir);
 			row(out, "Keep", parms.keep);
 			row(out, "Security", security);
-			row(out, "Startlevel", getStartLevel());
+			row(out, "Startlevel", frameworkStartLevel.getStartLevel());
 			list(out, fill("Run bundles", 40), parms.runbundles);
 			row(out, "Java Home", System.getProperty("java.home"));
 			list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));
@@ -1559,84 +1553,28 @@ public class Launcher implements ServiceListener {
 	}
 
 	private int getBundleStartLevel(Bundle b) {
-		if (sadmin != null) {
-			return sadmin.getBundleStartLevel(b);
-		} else
-			return -1;
+		return b.adapt(BundleStartLevel.class)
+			.getStartLevel();
+	}
+
+	private void setBundleStartLevel(Bundle b, int level) {
+		if (level >= 1) {
+			b.adapt(BundleStartLevel.class)
+				.setStartLevel(level);
+			trace("startlevel %s %s", b, level);
+		}
 	}
 
 	private int getStartLevel(int n) {
-		return parms.startlevels != null && parms.startlevels.size() > n ? parms.startlevels.get(n) : maxStartLevel;
-	}
-
-	private void setStartLevel(Bundle bundle, Integer value) {
-		if (sadmin != null) {
-			if (bundle != null && value != null && value > 0) {
-				int bundleStartLevel = sadmin.getBundleStartLevel(bundle);
-				if (bundleStartLevel != value)
-					sadmin.setBundleStartLevel(bundle, value);
-				trace("bundle %s startlevels set to %s", bundle, value);
-			}
-		}
-	}
-
-	private void setStartLevel() {
-		if (sadmin != null && maxStartLevel >= 0) {
-
-			sadmin.setInitialBundleStartLevel(maxStartLevel);
-			startLevels.forEach(this::setStartLevel);
-
-			int sl = maxStartLevel + 1;
-			if (sadmin.getStartLevel() != sl) {
-				setFrameworkStartLevel(sl);
-			}
-
-			//
-			// Ensure that any new bundles (like testing)
-			// are getting a start level that is appropriate
-			//
-
-			trace("framework startlevel set to %s", sl);
-		} else {
-			trace("some startlevels set on bundles but no start level service so cannot set framework start level");
-		}
-	}
-
-	public void setFrameworkStartLevel(int sl) {
-		AtomicBoolean tickled = new AtomicBoolean(true);
-		Semaphore s = new Semaphore(0);
-		FrameworkListener listener = (e) -> {
-			tickled.set(true);
-			if (e.getType() == FrameworkEvent.STARTLEVEL_CHANGED) {
-				s.release();
-			}
-		};
-		systemBundle.getBundleContext()
-			.addFrameworkListener(listener);
-		try {
-			sadmin.setStartLevel(sl);
-			while (tickled.getAndSet(false)) {
-
-				trace("Will wait for reaching startlevel " + sl);
-				if (s.tryAcquire(1, TimeUnit.MINUTES))
-					break;
-			}
-		} catch (InterruptedException e) {
-			trace("Interrupted while waiting for startlevel");
-			Thread.currentThread()
-				.interrupt();
-		} finally {
-			trace("startlevel reached " + getStartLevel());
-			systemBundle.getBundleContext()
-				.removeFrameworkListener(listener);
-		}
-	}
-
-	private int getStartLevel() {
-		if (sadmin != null) {
-			return sadmin.getStartLevel();
-		} else
+		if (maxStartLevel < 1)
 			return -1;
+
+		int level = parms.startlevels != null && parms.startlevels.size() > n ? parms.startlevels.get(n) : -1;
+
+		if (level == -1)
+			return maxStartLevel + 1;
+
+		return level;
 	}
 
 }
