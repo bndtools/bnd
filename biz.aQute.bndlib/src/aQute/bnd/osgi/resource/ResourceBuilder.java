@@ -1,5 +1,7 @@
 package aQute.bnd.osgi.resource;
 
+import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
+
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
@@ -429,7 +431,7 @@ public class ResourceBuilder {
 			for (String name : names) {
 				sb.approximate(attribute, name);
 			}
-			key += "~";
+			key += DUPLICATE_MARKER;
 		}
 
 		sb.endOr();

@@ -1833,14 +1833,14 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	public static String removeDuplicateMarker(String key) {
 		int i = key.length() - 1;
-		while (i >= 0 && key.charAt(i) == DUPLICATE_MARKER)
+		while ((i >= 0) && (key.charAt(i) == DUPLICATE_MARKER)) {
 			--i;
-
+		}
 		return key.substring(0, i + 1);
 	}
 
-	public static boolean isDuplicate(String name) {
-		return name.length() > 0 && name.charAt(name.length() - 1) == DUPLICATE_MARKER;
+	public static boolean isDuplicate(String key) {
+		return key.indexOf(DUPLICATE_MARKER, key.length() - 1) >= 0;
 	}
 
 	public void setTrace(boolean x) {

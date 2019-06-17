@@ -1,5 +1,7 @@
 package aQute.bnd.osgi;
 
+import static aQute.bnd.osgi.Constants.DUPLICATE_MARKER;
+
 import java.util.Collection;
 import java.util.Formatter;
 import java.util.HashSet;
@@ -184,8 +186,9 @@ class Contracts {
 			Attrs attrs = new Attrs(c.decorators);
 			attrs.put(ContractNamespace.CONTRACT_NAMESPACE, c.name);
 			String name = ContractNamespace.CONTRACT_NAMESPACE;
-			while (requirements.containsKey(name))
-				name += "~";
+			while (requirements.containsKey(name)) {
+				name += DUPLICATE_MARKER;
+			}
 
 			try (Formatter f = new Formatter()) {
 				f.format("(&(%s=%s)(version=%s))", ContractNamespace.CONTRACT_NAMESPACE, c.name, c.version);
