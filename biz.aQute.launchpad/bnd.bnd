@@ -39,6 +39,7 @@ Import-Package: \
     
 
 -testpath: \
+    ${mockito}, \
     biz.aQute.repository, \
     slf4j.simple;version=latest, \
     slf4j.api
