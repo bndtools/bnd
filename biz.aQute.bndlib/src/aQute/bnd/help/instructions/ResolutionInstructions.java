@@ -1,7 +1,5 @@
 package aQute.bnd.help.instructions;
 
-import java.util.Optional;
-
 import aQute.bnd.help.SyntaxAnnotation;
 
 /**
@@ -34,18 +32,18 @@ public interface ResolutionInstructions {
 	 * Order the -runbundles sorted by name and merged with the existing value
 	 * if it exists. This is the default since it was the classic behavior.
 	 */
-	MERGESORTBYNAMEVERSION {
-		public boolean isMerge() {
-			return true;
-		}
-	};
-
-		public boolean isMerge() {
-			return false;
-		}
+	MERGESORTBYNAMEVERSION;
 	}
 
-	@SyntaxAnnotation(lead = "Specify the runorder of the resolved bundles", example = "'-runorder leastdependentfirst")
-	Optional<Runorder> runorder();
+	@interface RunStartLevel {
+		Runorder order() default Runorder.MERGESORTBYNAMEVERSION;
+
+		int begin() default 100;
+
+		int step() default 10;
+	}
+
+	@SyntaxAnnotation(lead = "Specify the runorder and startlevel behavior of the resolved bundles", example = "'-runstartlevel order=leastdependenciesfirst, begin=1, step=1")
+	RunStartLevel runstartlevel(RunStartLevel deflt);
 
 }

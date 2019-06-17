@@ -1,5 +1,6 @@
 package biz.aQute.resolve;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,6 +20,7 @@ import aQute.bnd.build.model.BndEditModel;
 import aQute.bnd.build.model.clauses.VersionedClause;
 import aQute.bnd.help.Syntax;
 import aQute.bnd.help.instructions.ResolutionInstructions;
+import aQute.bnd.help.instructions.ResolutionInstructions.RunStartLevel;
 import aQute.bnd.help.instructions.ResolutionInstructions.Runorder;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
@@ -44,8 +46,7 @@ public class RunResolution {
 	public final Map<Resource, List<Wire>>	optional;
 	public final Exception					exception;
 	public final String						log;
-
-	final ResolutionInstructions			instructions;
+	public final RunStartLevel				runstartlevel;
 
 	/**
 	 * The main workhorse to resolve
@@ -114,7 +115,7 @@ public class RunResolution {
 		this.optional = optional;
 		this.log = log;
 		this.exception = null;
-		this.instructions = Syntax.getInstructions(properties, ResolutionInstructions.class);
+		this.runstartlevel = getConfig(properties);
 	}
 
 	RunResolution(Project project, Processor properties, Exception e, String log) {
@@ -124,7 +125,7 @@ public class RunResolution {
 		this.log = log;
 		this.required = null;
 		this.optional = null;
-		this.instructions = Syntax.getInstructions(properties, ResolutionInstructions.class);
+		this.runstartlevel = getConfig(properties);
 	}
 
 	/**
@@ -138,12 +139,12 @@ public class RunResolution {
 
 	/**
 	 * Update the {@link BndEditModel} with the calculated set of runbundles.
-	 * Use the {@link ResolutionInstructions#runorder()} to order the bundles.
-	 * Do not update it if the list has not changed. In that case return false
-	 * (no changes)
+	 * Use the {@link ResolutionInstructions#runstartlevel(RunStartLevel)}.order
+	 * to order the bundles. Do not update it if the list has not changed. In
+	 * that case return false (no changes)
 	 * <p>
-	 * If the {@link ResolutionInstructions#runorder()} is
-	 * {@value Runorder#MERGESORTBYNAMEVERSION} then merge the list with the
+	 * If the {@link ResolutionInstructions#runstartlevel(RunStartLevel)}.order
+	 * is {@value Runorder#MERGESORTBYNAMEVERSION} then merge the list with the
 	 * previous one.
 	 * <p>
 	 * return true if the list was changed
@@ -161,9 +162,11 @@ public class RunResolution {
 		if (newer.equals(older))
 			return false;
 
-		Runorder runorder = getRunorder();
-
-		if (runorder.isMerge()) {
+		//
+		// For backward compatibility reason
+		// we merge the old case
+		//
+		if (runstartlevel.order() == Runorder.MERGESORTBYNAMEVERSION) {
 			older.retainAll(newer);
 			newer.removeAll(older);
 			older.addAll(newer);
@@ -173,22 +176,6 @@ public class RunResolution {
 		model.setRunBundles(newer);
 
 		return true;
-	}
-
-	/**
-	 * Get the runorder of this setup
-	 * 
-	 * @return the runorder of this setup
-	 */
-
-	public Runorder getRunorder() {
-		try {
-			return instructions.runorder()
-				.orElse(Runorder.MERGESORTBYNAMEVERSION);
-		} catch (Exception e) {
-			project.error("Invalid value for -runorder %s", properties.getProperty(Constants.RUNORDER));
-			return Runorder.MERGESORTBYNAMEVERSION;
-		}
 	}
 
 	/**
@@ -237,7 +224,19 @@ public class RunResolution {
 	 */
 	public List<VersionedClause> getRunBundles() {
 		List<Resource> orderedResources = getOrderedResources();
-		return ResourceUtils.toVersionedClauses(orderedResources);
+		List<VersionedClause> versionedClauses = ResourceUtils.toVersionedClauses(orderedResources);
+		int begin = runstartlevel.begin();
+		if (begin > 0) {
+			int step = Math.max(1, runstartlevel.step());
+
+			int n = begin;
+			for (VersionedClause vc : versionedClauses) {
+				vc.getAttribs()
+					.put(Constants.RUNBUNDLES_STARTLEVEL_ATTRIBUTE, Integer.toString(n));
+				n += step;
+			}
+		}
+		return versionedClauses;
 	}
 
 	/*
@@ -267,7 +266,7 @@ public class RunResolution {
 	}
 
 	public List<Resource> getOrderedResources() {
-		return getOrderedResources(required, getRunorder());
+		return getOrderedResources(required, runstartlevel.order());
 	}
 
 	public String dot(String name) {
@@ -305,6 +304,32 @@ public class RunResolution {
 			return rl;
 
 		return Collections.emptyList();
+	}
+
+	private RunStartLevel getConfig(Processor properties) {
+		ResolutionInstructions instructions = Syntax.getInstructions(properties, ResolutionInstructions.class);
+		return instructions.runstartlevel(new RunStartLevel() {
+
+			@Override
+			public int step() {
+				return -1;
+			}
+
+			@Override
+			public Runorder order() {
+				return Runorder.MERGESORTBYNAMEVERSION;
+			}
+
+			@Override
+			public int begin() {
+				return -1;
+			}
+
+			@Override
+			public Class<? extends Annotation> annotationType() {
+				return null;
+			}
+		});
 	}
 
 }
