@@ -53,7 +53,7 @@ public abstract class OSGiTestCase extends TestCase {
 	 */
 	protected void assertSvcAvail(String message, Class<?> service, String filter) {
 		BundleContext context = getBundleContext();
-		ServiceReference[] refs = null;
+		ServiceReference<?>[] refs = null;
 		try {
 			refs = context.getServiceReferences(service.getName(), filter);
 		} catch (InvalidSyntaxException e) {
@@ -141,18 +141,18 @@ public abstract class OSGiTestCase extends TestCase {
 		throws Exception {
 		BundleContext context = getBundleContext();
 
-		ServiceTracker tracker = null;
+		ServiceTracker<S, R> tracker = null;
 		if (filter != null) {
 			try {
 				Filter combined = FrameworkUtil
 					.createFilter("(" + Constants.OBJECTCLASS + "=" + service.getName() + ")");
-				tracker = new ServiceTracker(context, combined, null);
+				tracker = new ServiceTracker<>(context, combined, null);
 			} catch (InvalidSyntaxException e) {
 				fail("Invalid filter syntax.");
 				return null;
 			}
 		} else {
-			tracker = new ServiceTracker(context, service.getName(), null);
+			tracker = new ServiceTracker<>(context, service.getName(), null);
 		}
 		try {
 			tracker.open();

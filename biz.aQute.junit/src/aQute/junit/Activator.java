@@ -28,8 +28,9 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.Constants;
 import org.osgi.framework.SynchronousBundleListener;
 import org.osgi.framework.Version;
-import org.osgi.service.packageadmin.PackageAdmin;
-import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.framework.namespace.HostNamespace;
+import org.osgi.framework.wiring.BundleWire;
+import org.osgi.framework.wiring.BundleWiring;
 
 import aQute.junit.constants.TesterConstants;
 import junit.framework.JUnit4TestAdapter;
@@ -47,15 +48,12 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 	PrintStream			out			= System.err;
 	JUnitEclipseReport	jUnitEclipseReport;
 	volatile Thread		thread;
-	ServiceTracker		packageAdminTracker;
 
 	public Activator() {}
 
 	@Override
 	public void start(BundleContext context) throws Exception {
 		this.context = context;
-		this.packageAdminTracker = new ServiceTracker(context, PackageAdmin.class.getName(), null);
-		this.packageAdminTracker.open();
 		active = true;
 		if (!Boolean.valueOf(context.getProperty(TESTER_SEPARATETHREAD))
 			&& Boolean.valueOf(context.getProperty("launch.services"))) { // can't
@@ -76,13 +74,13 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	@Override
 	public void stop(BundleContext context) throws Exception {
-		this.packageAdminTracker.close();
 		active = false;
 		if (jUnitEclipseReport != null)
 			jUnitEclipseReport.close();
 
 		if (thread != null) {
 			thread.interrupt();
+
 			thread.join(10000);
 		}
 	}
@@ -146,7 +144,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 			}
 			if (testBundle != null) {
 				for (Bundle b : context.getBundles()) {
-					String testcasesheader = (String) b.getHeaders()
+					String testcasesheader = b.getHeaders()
 						.get(aQute.bnd.osgi.Constants.TESTCASES);
 					if (testcasesheader != null) {
 						testBundle = b;
@@ -233,7 +231,7 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 				trace("received bundle to test: %s", bundle.getLocation());
 				try (Writer report = getReportWriter(reportDir, bundleReportName(bundle))) {
 					trace("test will run");
-					result += test(bundle, (String) bundle.getHeaders()
+					result += test(bundle, bundle.getHeaders()
 						.get(aQute.bnd.osgi.Constants.TESTCASES), report);
 					trace("test ran");
 					if (queue.isEmpty() && !continuous) {
@@ -250,8 +248,9 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 	void checkBundle(List<Bundle> queue, Bundle bundle) {
 		Bundle host = findHost(bundle);
-		if (host.getState() == Bundle.ACTIVE || host.getState() == Bundle.STARTING) {
-			String testcases = (String) bundle.getHeaders()
+
+		if (host != null && (host.getState() == Bundle.ACTIVE || host.getState() == Bundle.STARTING)) {
+			String testcases = bundle.getHeaders()
 				.get(aQute.bnd.osgi.Constants.TESTCASES);
 			if (testcases != null) {
 				trace("found active bundle with test cases %s : %s", bundle, testcases);
@@ -375,38 +374,24 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 		if (bundle == null)
 			return null;
 
-		PackageAdmin packageAdmin = (PackageAdmin) packageAdminTracker.getService();
-		if (packageAdmin == null) {
-			trace("Have a potential fragment but Package Admin not present to find the host");
+
+		List<Bundle> hosts = new ArrayList<>();
+		List<BundleWire> wires = bundle.adapt(BundleWiring.class)
+			.getRequiredWires(HostNamespace.HOST_NAMESPACE);
+		System.err.println("required wires for " + bundle + " " + wires);
+
+		for (BundleWire wire : wires) {
+			hosts.add(wire.getProviderWiring()
+				.getRevision()
+				.getBundle());
+		}
+		if (hosts.isEmpty()) {
 			return bundle;
 		}
-
-		if ((packageAdmin.getBundleType(bundle) & PackageAdmin.BUNDLE_TYPE_FRAGMENT) == 0)
-			return bundle;
-
-		Bundle found = null;
-
-		for (Bundle potentialFragmentHost : context.getBundles()) {
-
-			if (potentialFragmentHost == bundle || potentialFragmentHost.getBundleId() == 0)
-				continue;
-
-			Bundle[] fragments = packageAdmin.getFragments(potentialFragmentHost);
-			if (fragments == null)
-				continue;
-
-			for (Bundle fragment : fragments) {
-				if (fragment == bundle) {
-					if (found != null) {
-						trace("Have a test fragment but find multiple hosts. Fragment=%s, Previous=%s, Next=%s ",
-							bundle, found, fragment);
-					} else
-						found = potentialFragmentHost;
-				}
-			}
+		if (hosts.size() > 1) {
+			trace("Found multiple hosts for fragment %s: %s", bundle, hosts);
 		}
-
-		return found == null ? bundle : found;
+		return hosts.get(0);
 	}
 
 	private TestSuite createSuite(Bundle tfw, List<String> testNames, TestResult result) {

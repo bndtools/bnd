@@ -4,8 +4,7 @@
 -maven-scope: provided
 
 -buildpath: \
-	osgi.core;version=@4,\
-	osgi.cmpn;version=@4,\
+	osgi.core;version=@6,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
     ${junit}
