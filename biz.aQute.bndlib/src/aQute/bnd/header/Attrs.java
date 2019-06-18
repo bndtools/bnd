@@ -70,17 +70,10 @@ public class Attrs implements Map<String, String> {
 	public static final DataType<List<Version>>	LIST_VERSION	= () -> Type.VERSIONS;
 
 	/**
-	 * <pre>
-	 *  Provide-Capability ::= capability ::= name-space ::= typed-attr ::=
-	 * type ::= scalar ::= capability ( ',' capability )* name-space ( ’;’
-	 * directive | typed-attr )* symbolic-name extended ( ’:’ type ) ’=’
-	 * argument scalar | list ’String’ | ’Version’ | ’Long’ list ::= ’List<’
-	 * scalar ’>’
-	 * </pre>
+	 * Pattern for List with list type
 	 */
-	private static final String					SCALAR			= "(String|Version|Long|Double)";
-	private static final String					LIST			= "List\\s*<\\s*" + SCALAR + "\\s*>|List";
-	public static final Pattern					TYPED			= Pattern.compile(SCALAR + "|" + LIST);
+	public static final Pattern					TYPED			= Pattern
+		.compile("List\\s*<\\s*(String|Version|Long|Double)\\s*>");
 
 	private final Map<String, String>	map;
 	private final Map<String, Type>		types;
@@ -270,50 +263,57 @@ public class Attrs implements Map<String, String> {
 		if (colon >= 0) {
 			String type = key.substring(colon + 1)
 				.trim();
-			if (!type.isEmpty()) { // not a directive
-				Matcher m = TYPED.matcher(type);
-				if (m.matches()) { // TYPED
-					key = key.substring(0, colon)
-						.trim();
-					type = m.group(1);
-					if (type != null) { // SCALAR
-						switch (type) {
+			typed_attribute: if (!type.isEmpty()) { // typed attribute
+				String attribute = key.substring(0, colon)
+					.trim();
+				switch (type) {
+					case "String" :
+						types.remove(attribute);
+						break;
+					case "Long" :
+						types.put(attribute, Type.LONG);
+						break;
+					case "Double" :
+						types.put(attribute, Type.DOUBLE);
+						break;
+					case "Version" :
+						types.put(attribute, Type.VERSION);
+						break;
+					case "List" :
+					case "List<String>" :
+						types.put(attribute, Type.STRINGS);
+						break;
+					case "List<Long>" :
+						types.put(attribute, Type.LONGS);
+						break;
+					case "List<Double>" :
+						types.put(attribute, Type.DOUBLES);
+						break;
+					case "List<Version>" :
+						types.put(attribute, Type.VERSIONS);
+						break;
+					default :
+						Matcher m = TYPED.matcher(type);
+						if (!m.matches()) {
+							break typed_attribute;
+						}
+						switch (m.group(1)) {
 							case "String" :
-								types.remove(key);
+								types.put(attribute, Type.STRINGS);
 								break;
 							case "Long" :
-								types.put(key, Type.LONG);
+								types.put(attribute, Type.LONGS);
 								break;
 							case "Double" :
-								types.put(key, Type.DOUBLE);
+								types.put(attribute, Type.DOUBLES);
 								break;
 							case "Version" :
-								types.put(key, Type.VERSION);
+								types.put(attribute, Type.VERSIONS);
 								break;
 						}
-					} else { // LIST
-						type = m.group(2);
-						if (type == null) {
-							types.put(key, Type.STRINGS);
-						} else {
-							switch (type) {
-								case "String" :
-									types.put(key, Type.STRINGS);
-									break;
-								case "Long" :
-									types.put(key, Type.LONGS);
-									break;
-								case "Double" :
-									types.put(key, Type.DOUBLES);
-									break;
-								case "Version" :
-									types.put(key, Type.VERSIONS);
-									break;
-							}
-						}
-					}
-					return map.put(key, value);
+						break;
 				}
+				return map.put(attribute, value);
 			}
 		}
 		// default String type
