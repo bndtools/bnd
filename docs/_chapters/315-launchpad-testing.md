@@ -92,7 +92,56 @@ shutdown the framework. The test is simply verifying that the injection has work
 
 Voila! The first Launchpad test case.
 
-## Some Theory
+## Two Models
+
+The Launchpad code can be used in different modes:
+
+* Using the class path. In this mode classes on the classpath are exported as framework classes and override 
+  any classes in the framework. This mode does not require any support from the test framework but there are
+  a number of caveats. This setup works very well if you want to tests POJOs that require an OSGi context.
+* JUnit Runner. In this mode bnd creates a bundle that is the project's bundle but includes the test classes. These
+  test classes use DynamicImport-Package to minimize disruptions to the manifest. The Launchpad Runner will then start
+  the framework, install the test bundle, and run the tests. This mode works well when you want to test your finished bundle.
+
+
+## JUnit Launchpad Runner Mode
+
+To use the Launchpad Runner it is necessary to add an `@RunWith` annotation on your JUnit test class:
+
+    @RunWith(LaunchpadRunner.class)
+    public class TestMyCode {
+
+        LaunchpadBuilder    builder = new LaunchpadBuilder().runfw("org.apache.felix.framework").debug();
+
+        @Service
+        Launchpad       launchpad;
+
+        @Test
+        public void testMyCode() {
+            launchpad.report();
+        }
+    }
+
+### Junit Theory
+
+The Launchpad Runner is in control to gather the tests and then execute them. The test gathering is handled via the
+standard JUnit support. However, when the test must run, LaunchpadRunner creates a bundle that has the following qualities:
+
+* Fully contains the project's build artifact. This is the sole bundle for a single bundle project or the first bundle (sorted 
+by name) if a multi bundle project is used. The code actually uses a prior build JAR.
+* All the test classes are added to this JAR
+* A DynamicImport-Package * is added 
+
+The runner then launches a framework based on a LaunchpadBuilder that it finds in the the `static` field `builder`.
+
+It then installs the bundles, and adds the test bundle. To execute a test, it loads the
+class from the test bundle and finds the appropriate method, instantiates the class in an instance, runs the injector
+on this object. and executes the methods.
+
+This mode is similar to the PAX Exam model. It has similar constraints. It does run the `@Before` and `@After` annotated
+methods but it cannot run the `@BeforeClass` and `@AfterClass`.
+
+## Classpath Mode
 
 Launchpad is quite awesome to use but there are some pitfalls to take into account. It is strongly recommended
 to read this section to get an idea how Launchpad handles class sharing between the test classes (which are on the
