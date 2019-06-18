@@ -268,49 +268,52 @@ public class Attrs implements Map<String, String> {
 
 		int colon = key.indexOf(':');
 		if (colon >= 0) {
-			Matcher m = TYPED.matcher(key.substring(colon + 1)
-				.trim());
-			if (m.matches()) { // TYPED
-				key = key.substring(0, colon)
-					.trim();
-				String type = m.group(1);
-				if (type != null) { // SCALAR
-					switch (type) {
-						case "String" :
-							types.remove(key);
-							break;
-						case "Long" :
-							types.put(key, Type.LONG);
-							break;
-						case "Double" :
-							types.put(key, Type.DOUBLE);
-							break;
-						case "Version" :
-							types.put(key, Type.VERSION);
-							break;
-					}
-				} else { // LIST
-					type = m.group(2);
-					if (type == null) {
-						types.put(key, Type.STRINGS);
-					} else {
+			String type = key.substring(colon + 1)
+				.trim();
+			if (!type.isEmpty()) { // not a directive
+				Matcher m = TYPED.matcher(type);
+				if (m.matches()) { // TYPED
+					key = key.substring(0, colon)
+						.trim();
+					type = m.group(1);
+					if (type != null) { // SCALAR
 						switch (type) {
 							case "String" :
-								types.put(key, Type.STRINGS);
+								types.remove(key);
 								break;
 							case "Long" :
-								types.put(key, Type.LONGS);
+								types.put(key, Type.LONG);
 								break;
 							case "Double" :
-								types.put(key, Type.DOUBLES);
+								types.put(key, Type.DOUBLE);
 								break;
 							case "Version" :
-								types.put(key, Type.VERSIONS);
+								types.put(key, Type.VERSION);
 								break;
 						}
+					} else { // LIST
+						type = m.group(2);
+						if (type == null) {
+							types.put(key, Type.STRINGS);
+						} else {
+							switch (type) {
+								case "String" :
+									types.put(key, Type.STRINGS);
+									break;
+								case "Long" :
+									types.put(key, Type.LONGS);
+									break;
+								case "Double" :
+									types.put(key, Type.DOUBLES);
+									break;
+								case "Version" :
+									types.put(key, Type.VERSIONS);
+									break;
+							}
+						}
 					}
+					return map.put(key, value);
 				}
-				return map.put(key, value);
 			}
 		}
 		// default String type
