@@ -67,7 +67,7 @@ public class ParseHeaderTest extends TestCase {
 			// ,\"start,\,start,end\",end\," (not handling escape of comma)
 			Parameters pp = new Parameters(
 				"a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"");
-			assertEquals("a;b:List=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"",
+			assertEquals("a;b:List<String>=\"a\\\"quote,a\\\\backslash,a\\,comma, aSpace ,\\\"start,\\,start\\,end\"",
 				pp.toString());
 		}
 

@@ -668,9 +668,11 @@ public class HeadersHelperTest extends TestCase {
 		t.values.add("6.0.0");
 		c.typedAttributes.put("ttttt", t);
 		t = new TypedAttributeValueDTO();
+		t.multiValue = true;
 		t.type = "String";
-		t.values.add("dd,e");
-		c.typedAttributes.put("l:List", t);
+		t.values.add("dd");
+		t.values.add("e");
+		c.typedAttributes.put("l", t);
 		t = new TypedAttributeValueDTO();
 		t.multiValue = true;
 		t.type = "Double";
@@ -808,9 +810,11 @@ public class HeadersHelperTest extends TestCase {
 		t.values.add("6.0.0");
 		c.typedAttributes.put("ttttt", t);
 		t = new TypedAttributeValueDTO();
+		t.multiValue = true;
 		t.type = "String";
-		t.values.add("dd,e");
-		c.typedAttributes.put("l:List", t);
+		t.values.add("dd");
+		t.values.add("e");
+		c.typedAttributes.put("l", t);
 		t = new TypedAttributeValueDTO();
 		t.multiValue = true;
 		t.type = "Double";
