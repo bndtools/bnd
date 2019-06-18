@@ -78,11 +78,9 @@ public class Attrs implements Map<String, String> {
 	 * scalar ’>’
 	 * </pre>
 	 */
-	private static final String			EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
-	private static final String			SCALAR		= "String|Version|Long|Double";
-	private static final String			LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
-	public static final Pattern			TYPED		= Pattern
-		.compile("\\s*(" + EXTENDED + ")\\s*:\\s*(" + SCALAR + "|" + LIST + ")\\s*");
+	private static final String					SCALAR			= "(String|Version|Long|Double)";
+	private static final String					LIST			= "List\\s*<\\s*" + SCALAR + "\\s*>|List";
+	public static final Pattern					TYPED			= Pattern.compile(SCALAR + "|" + LIST);
 
 	private final Map<String, String>	map;
 	private final Map<String, Type>		types;
@@ -268,43 +266,55 @@ public class Attrs implements Map<String, String> {
 		if (key == null)
 			return null;
 
-		Matcher m = TYPED.matcher(key);
-		if (m.matches()) { // typed-attr
-			key = m.group(1);
-			String type = m.group(2);
-			Type t = Type.STRING;
-
-			if (type.startsWith("List")) {
-				type = m.group(3);
-				if ("String".equals(type))
-					t = Type.STRINGS;
-				else if ("Long".equals(type))
-					t = Type.LONGS;
-				else if ("Double".equals(type))
-					t = Type.DOUBLES;
-				else if ("Version".equals(type))
-					t = Type.VERSIONS;
-			} else {
-				if ("String".equals(type))
-					t = Type.STRING;
-				else if ("Long".equals(type))
-					t = Type.LONG;
-				else if ("Double".equals(type))
-					t = Type.DOUBLE;
-				else if ("Version".equals(type))
-					t = Type.VERSION;
+		int colon = key.indexOf(':');
+		if (colon >= 0) {
+			Matcher m = TYPED.matcher(key.substring(colon + 1)
+				.trim());
+			if (m.matches()) { // TYPED
+				key = key.substring(0, colon)
+					.trim();
+				String type = m.group(1);
+				if (type != null) { // SCALAR
+					switch (type) {
+						case "String" :
+							types.remove(key);
+							break;
+						case "Long" :
+							types.put(key, Type.LONG);
+							break;
+						case "Double" :
+							types.put(key, Type.DOUBLE);
+							break;
+						case "Version" :
+							types.put(key, Type.VERSION);
+							break;
+					}
+				} else { // LIST
+					type = m.group(2);
+					if (type == null) {
+						types.put(key, Type.STRINGS);
+					} else {
+						switch (type) {
+							case "String" :
+								types.put(key, Type.STRINGS);
+								break;
+							case "Long" :
+								types.put(key, Type.LONGS);
+								break;
+							case "Double" :
+								types.put(key, Type.DOUBLES);
+								break;
+							case "Version" :
+								types.put(key, Type.VERSIONS);
+								break;
+						}
+					}
+				}
+				return map.put(key, value);
 			}
-			if (t != Type.STRING) {
-				types.put(key, t);
-			} else {
-				types.remove(key);
-			}
-
-			// TODO verify value?
-		} else {
-			types.remove(key); // default String type
 		}
-
+		// default String type
+		types.remove(key);
 		return map.put(key, value);
 	}
 
