@@ -344,7 +344,7 @@ public class OSGiRepositoryTest extends TestCase {
 				IO.store(s, index);
 			} while (index.lastModified() == time);
 			// refresh through Refreshable interface
-			boolean refreshed = testRepo.refresh();
+			boolean refreshed = testRepo.refresh(true);
 			// give the Promise time to resolve
 			Thread.sleep(1000);
 			assertTrue("The cache should have been modified after the refresh", testRepo.getIndex(false)
