@@ -79,7 +79,7 @@ public class Attrs implements Map<String, String> {
 	 * scalar ’>’
 	 * </pre>
 	 */
-	private static final String			EXTENDED	= "[\\-0-9a-zA-Z\\._]+";
+	private static final String					EXTENDED		= "[-0-9a-zA-Z._]+";
 	private static final String			SCALAR		= "String|Version|Long|Double";
 	private static final String			LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
 	public static final Pattern			TYPED		= Pattern
