@@ -80,9 +80,9 @@ public class Attrs implements Map<String, String> {
 	 * </pre>
 	 */
 	private static final String					EXTENDED		= "[-0-9a-zA-Z._]+";
-	private static final String			SCALAR		= "String|Version|Long|Double";
-	private static final String			LIST		= "List\\s*<\\s*(" + SCALAR + ")\\s*>";
-	public static final Pattern			TYPED		= Pattern
+	private static final String					SCALAR			= "String|Version|Long|Double";
+	private static final String					LIST			= "List(?:\\s*<\\s*(" + SCALAR + ")\\s*>)?";
+	public static final Pattern					TYPED			= Pattern
 		.compile("\\s*(" + EXTENDED + ")\\s*:\\s*(" + SCALAR + "|" + LIST + ")\\s*");
 
 	private final Map<String, String>	map;
@@ -276,7 +276,7 @@ public class Attrs implements Map<String, String> {
 			Type t = Type.STRING;
 
 			if (type.startsWith("List")) {
-				type = m.group(3);
+				type = m.group(3) == null ? "String" : m.group(3);
 				if ("String".equals(type))
 					t = Type.STRINGS;
 				else if ("Long".equals(type))
