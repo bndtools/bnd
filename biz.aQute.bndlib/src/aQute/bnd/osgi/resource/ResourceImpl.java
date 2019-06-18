@@ -1,6 +1,5 @@
 package aQute.bnd.osgi.resource;
 
-import static aQute.bnd.osgi.resource.ResourceUtils.getLocations;
 import static aQute.lib.collections.Logic.retain;
 import static java.util.Collections.unmodifiableList;
 
@@ -29,7 +28,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 	private volatile List<Requirement>				allRequirements;
 	private volatile Map<String, List<Requirement>>	requirementMap;
 
-	private transient Map<URI, String>				locations;
+	private volatile transient Map<URI, String>		locations;
 
 	void setCapabilities(List<Capability> capabilities) {
 		Map<String, List<Capability>> prepare = new HashMap<>();
@@ -47,6 +46,7 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 
 		allCapabilities = unmodifiableList(new ArrayList<>(capabilities));
 		capabilityMap = prepare;
+		locations = null; // clear so equals/hashCode can recompute
 	}
 
 	@Override
@@ -122,13 +122,13 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		if (other == null || !(other instanceof Resource))
 			return false;
 
-		Map<URI, String> thisLocations = getContentURIs();
+		Map<URI, String> thisLocations = getLocations();
 		Map<URI, String> otherLocations;
 
 		if (other instanceof ResourceImpl) {
-			otherLocations = ((ResourceImpl) other).getContentURIs();
+			otherLocations = ((ResourceImpl) other).getLocations();
 		} else {
-			otherLocations = getLocations((Resource) other);
+			otherLocations = ResourceUtils.getLocations((Resource) other);
 		}
 
 		Collection<URI> overlap = retain(thisLocations.keySet(), otherLocations.keySet());
@@ -148,16 +148,17 @@ class ResourceImpl implements Resource, Comparable<Resource>, RepositoryContent 
 		return false;
 	}
 
-	public Map<URI, String> getContentURIs() {
-		if (locations == null) {
-			locations = ResourceUtils.getLocations(this);
+	private Map<URI, String> getLocations() {
+		Map<URI, String> map = locations;
+		if (map != null) {
+			return map;
 		}
-		return locations;
+		return locations = ResourceUtils.getLocations(this);
 	}
 
 	@Override
 	public int hashCode() {
-		return getContentURIs().hashCode();
+		return getLocations().hashCode();
 	}
 
 	@Override
