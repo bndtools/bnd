@@ -44,6 +44,29 @@ public class ParseHeaderTest extends TestCase {
 		assertEquals(Arrays.asList(new Version("1.0.1"), new Version("1.0.2")), attrs.getTyped("h"));
 	}
 
+	public void testTypedSpaces() {
+		Parameters p = new Parameters("a;a : Long=1;b:Double  =3.2;c:  String=abc;d : Version =1"
+			+ ";e  :List < Long >='1,2,3';f: List<Double> ='1.0,1.1,1.2';g:List <String> ='abc,def,ghi';h  :  List  <  Version >  ='1.0.1,1.0.2'");
+
+		String s = p.toString();
+		System.out.println(s);
+		assertEquals("a;a:Long=1;b:Double=\"3.2\";c=abc;d:Version=1;"
+			+ "e:List<Long>=\"1,2,3\";f:List<Double>=\"1.0,1.1,1.2\";g:List<String>=\"abc,def,ghi\";h:List<Version>=\"1.0.1,1.0.2\"",
+			s);
+
+		Attrs attrs = p.get("a");
+		assertNotNull(attrs);
+
+		assertEquals(1L, attrs.getTyped("a"));
+		assertEquals(3.2d, attrs.getTyped("b"));
+		assertEquals("abc", attrs.getTyped("c"));
+		assertEquals(new Version("1"), attrs.getTyped("d"));
+		assertEquals(Arrays.asList(1L, 2L, 3L), attrs.getTyped("e"));
+		assertEquals(Arrays.asList(1.0D, 1.1D, 1.2D), attrs.getTyped("f"));
+		assertEquals(Arrays.asList("abc", "def", "ghi"), attrs.getTyped("g"));
+		assertEquals(Arrays.asList(new Version("1.0.1"), new Version("1.0.2")), attrs.getTyped("h"));
+	}
+
 	public void testMergeWithOverrideFalse() {
 		Parameters a = new Parameters("a;a=value_a;av:Version=\"1.0.0\"");
 		Parameters b = new Parameters("b;b=metal;bv:Version=\"1.0.0\"");
