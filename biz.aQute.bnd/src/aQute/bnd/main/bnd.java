@@ -4373,6 +4373,7 @@ public class bnd extends Processor {
 		Project project = getProject(options.project());
 		final Workspace cws = calcWorkspace(options);
 
+
 		File searchBaseDir = project != null ? project.getBase() : cws.getBase();
 
 		List<String> includePatterns = options._arguments();
@@ -4444,6 +4445,12 @@ public class bnd extends Processor {
 		} else {
 			ws = getWorkspace(getBase());
 		}
+
+		if (ws == null) {
+			warning("Using default workspace");
+			ws = Workspace.createDefaultWorkspace();
+		}
+
 		return ws;
 	}
 
