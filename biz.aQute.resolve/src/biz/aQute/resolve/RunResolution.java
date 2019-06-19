@@ -243,7 +243,8 @@ public class RunResolution {
 	 * Order the resources by Runorder
 	 */
 	public List<Resource> getOrderedResources(Map<Resource, List<Wire>> resolution, Runorder runorder) {
-
+		if (resolution == null)
+			return Collections.emptyList();
 		switch (runorder) {
 			case LEASTDEPENDENCIESFIRST :
 				return sortByDependencies(resolution);

@@ -273,7 +273,8 @@ public class ResolutionSuccessPanel {
         checkedOptional.clear();
 
         Collection<Resource> wirings = null;
-        if (result != null && result.getResolution() != null) {
+        if (result != null && result.getResolution() != null && result.getResolution()
+            .isOK() && result.getResolution().required != null) {
             wirings = result.getResolution()
                 .getOrderedResources();
         }
