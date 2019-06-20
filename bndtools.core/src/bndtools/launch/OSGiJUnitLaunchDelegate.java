@@ -55,7 +55,6 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		Pattern.UNIX_LINES | Pattern.MULTILINE | Pattern.COMMENTS);
 	public static final String		ORG_BNDTOOLS_TESTNAMES	= "org.bndtools.testnames";
 	private static final String		JDT_JUNIT_BSN			= "org.eclipse.jdt.junit";
-	private static final String		ATTR_JUNIT_PORT			= "org.eclipse.jdt.junit.PORT";
 
 	private int						junitPort;
 	private ProjectTester			bndTester;
@@ -248,12 +247,10 @@ public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
 
 			new Thread(controlThread).start();
 		} else {
-			try {
-				launch.setAttribute(ATTR_JUNIT_PORT, Integer.toString(junitPort));
-			} catch (Exception e) {
-				throw new CoreException(new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0,
-					"Error setting JUnit port for OSGi project tester.", e));
-			}
+
+			TestRunSessionAndPort testRunSessionAndPort = new TestRunSessionAndPort(launch, javaProject, junitPort);
+			DebugPlugin.getDefault()
+				.addDebugEventListener(new TerminationListener(launch, () -> testRunSessionAndPort.stopTestRun()));
 		}
 
 		super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
