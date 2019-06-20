@@ -4,20 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.bndtools.api.ILogger;
-import org.bndtools.api.Logger;
 import org.bndtools.api.RunMode;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -48,12 +38,8 @@ import aQute.bnd.build.ProjectLauncher;
 import aQute.bnd.build.ProjectLauncher.NotificationType;
 import aQute.bnd.osgi.Jar;
 import bndtools.Plugin;
-import bndtools.central.Central;
-import bndtools.launch.util.LaunchUtils;
 
 public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
-	private static final ILogger	logger		= Logger.getLogger(OSGiRunLaunchDelegate.class);
-
 	private ProjectLauncher			bndLauncher	= null;
 
 	private Display					display;
@@ -74,7 +60,6 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 		configureLauncher(configuration);
 
 		bndLauncher.registerForNotifications((type, notification) -> {
-
 			if (type == NotificationType.ERROR) {
 				display.syncExec(() -> {
 					dialog.open();
@@ -132,16 +117,6 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 	public void launch(final ILaunchConfiguration configuration, String mode, final ILaunch launch,
 		IProgressMonitor monitor) throws CoreException {
 		SubMonitor progress = SubMonitor.convert(monitor, 2);
-
-		try {
-			boolean dynamic = configuration.getAttribute(LaunchConstants.ATTR_DYNAMIC_BUNDLES,
-				LaunchConstants.DEFAULT_DYNAMIC_BUNDLES);
-			if (dynamic)
-				registerLaunchPropertiesRegenerator(run, launch);
-		} catch (Exception e) {
-			throw new CoreException(
-				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error obtaining OSGi project launcher.", e));
-		}
 
 		display = Workbench.getInstance()
 			.getDisplay();
@@ -208,107 +183,16 @@ public class OSGiRunLaunchDelegate extends AbstractOSGiLaunchDelegate {
 			}
 		});
 
-		super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
-	}
-
-	/**
-	 * Registers a resource listener with the project model file to update the
-	 * launcher when the model or any of the run-bundles changes. The resource
-	 * listener is automatically unregistered when the launched process
-	 * terminates.
-	 *
-	 * @param project
-	 * @param launch
-	 * @throws CoreException
-	 */
-	private void registerLaunchPropertiesRegenerator(final Project project, final ILaunch launch) throws CoreException {
-		final IResource targetResource = LaunchUtils.getTargetResource(launch.getLaunchConfiguration());
-		if (targetResource == null)
-			return;
-
-		final IPath bndbndPath;
-		try {
-			bndbndPath = Central.toPath(project.getPropertiesFile());
-		} catch (Exception e) {
-			throw new CoreException(
-				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying bnd.bnd file location", e));
-		}
-
-		try {
-			Central.toPath(project.getTarget());
-		} catch (Exception e) {
-			throw new CoreException(
-				new Status(IStatus.ERROR, Plugin.PLUGIN_ID, 0, "Error querying project output folder", e));
-		}
-		final IResourceChangeListener resourceListener = event -> {
-			try {
-				final AtomicBoolean update = new AtomicBoolean(false);
-
-				// Was the properties file (bnd.bnd or *.bndrun) included in
-				// the delta?
-				IResourceDelta propsDelta = event.getDelta()
-					.findMember(bndbndPath);
-				if (propsDelta == null && targetResource.getType() == IResource.FILE)
-					propsDelta = event.getDelta()
-						.findMember(targetResource.getFullPath());
-				if (propsDelta != null) {
-					if (propsDelta.getKind() == IResourceDelta.CHANGED) {
-						update.set(true);
-					}
-				}
-
-				// Check for bundles included in the launcher's runbundles
-				// list
-				if (!update.get()) {
-					final Set<String> runBundleSet = new HashSet<>();
-					for (String bundlePath : bndLauncher.getRunBundles()) {
-						runBundleSet.add(new org.eclipse.core.runtime.Path(bundlePath).toPortableString());
-					}
-					event.getDelta()
-						.accept(delta -> {
-							// Short circuit if we have already found a
-							// match
-							if (update.get())
-								return false;
-
-							IResource resource = delta.getResource();
-							if (resource.getType() == IResource.FILE) {
-								IPath location = resource.getLocation();
-								boolean isRunBundle = location != null
-									? runBundleSet.contains(location.toPortableString())
-									: false;
-								update.compareAndSet(false, isRunBundle);
-								return false;
-							}
-
-							// Recurse into containers
-							return true;
-						});
-				}
-
-				if (update.get()) {
-					bndLauncher.update();
-				}
-			} catch (Exception e) {
-				logger.logError("Error updating launch properties file.", e);
-			}
-		};
-		ResourcesPlugin.getWorkspace()
-			.addResourceChangeListener(resourceListener);
-
 		// Register a listener for termination of the launched process
-		Runnable onTerminate = () -> {
-			ResourcesPlugin.getWorkspace()
-				.removeResourceChangeListener(resourceListener);
-			display.asyncExec(() -> {
+		DebugPlugin.getDefault()
+			.addDebugEventListener(new TerminationListener(launch, () -> display.asyncExec(() -> {
 				if (dialog != null && dialog.getShell() != null) {
 					dialog.getShell()
 						.dispose();
 				}
-			});
-		};
-		DebugPlugin.getDefault()
-			.addDebugEventListener(new TerminationListener(launch, onTerminate));
+			})));
+
+		super.launch(configuration, mode, launch, progress.newChild(1, SubMonitor.SUPPRESS_NONE));
 	}
 
 	@Override
