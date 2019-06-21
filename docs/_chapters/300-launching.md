@@ -127,6 +127,8 @@ this `-runproperty` is not set then the launcher will set this property before s
 specified levels + 2. If a start level management agent is present then this property should be set, the launcher will
 then not interfere.
 
+The bundles are started at during start level 1.
+
 For example, a management agent that manages start levels is placed in start level 1 and all other bundles are placed
 at start level 100.
 

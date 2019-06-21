@@ -227,7 +227,8 @@ public class RunResolution {
 		List<VersionedClause> versionedClauses = ResourceUtils.toVersionedClauses(orderedResources);
 		int begin = runstartlevel.begin();
 		if (begin > 0) {
-			int step = Math.max(1, runstartlevel.step());
+			// We allow 0 to set all to 1 level
+			int step = Math.max(0, runstartlevel.step());
 
 			int n = begin;
 			for (VersionedClause vc : versionedClauses) {

@@ -102,6 +102,9 @@ public class LauncherTest {
 		assertThat(result).containsPattern("11\\s+ACTIV\\s+<>\\s+jar/.?demo.jar");
 		assertThat(result).containsPattern("21\\s+RSLVD\\s+<>\\s+jar/.?org.apache.servicemix.bundles.junit");
 		assertThat(result).containsPattern("6\\s+ACTIV\\s+<>\\s+jar/.?org.apache.felix.configadmin");
+
+		assertThat(result).containsPattern("start level set through properties:\\s+12");
+
 	}
 
 	@Test

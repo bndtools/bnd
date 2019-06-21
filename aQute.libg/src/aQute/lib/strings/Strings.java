@@ -151,8 +151,6 @@ public class Strings {
 			.filter(Strings::notEmpty);
 	}
 
-
-
 	public static List<String> split(String s) {
 		return splitAsStream(s).collect(toList());
 	}
@@ -389,6 +387,73 @@ public class Strings {
 			return Arrays.toString(makePrintableArray(object));
 		}
 		return object;
+	}
+
+	/**
+	 * Compare two strings except for where the first group in pattern. The
+	 * patterns is matched in the strings using find(). Only group 1 is ignored.
+	 * Use ignored groups {@code(?:...)} to ignore irrelevant groups.
+	 * 
+	 * <pre>
+	 * 		a = "abcdefxxxxghixxxxx678"
+	 * 		b = "abcdefxxghix678"
+	 * 		Pattern "(x+)"
+	 * </pre>
+	 * 
+	 * First developed to compare two XML files that only differed in their
+	 * increment number, which was a time long.
+	 * 
+	 * @param a the first string to compare
+	 * @param b the second string to compare
+	 * @param pattern where first group should be ignored in the comparison
+	 * @return true if the strings are equal ignoring the first group's pattern
+	 *         matches
+	 */
+	public static boolean compareExcept(String a, String b, Pattern pattern) {
+		Matcher ma = pattern.matcher(a);
+		Matcher mb = pattern.matcher(b);
+		int ra = 0, rb = 0;
+
+		while (ma.find()) {
+			if (!mb.find()) {
+				// pattern in first but not in second
+				return false;
+			}
+
+			int sa = ma.start(1);
+			int sb = mb.start(1);
+
+			if (sa - ra != sb - rb) {
+				// there must be differences before the pattern match
+				// since the length to the start of the match differs
+				// for both strings
+				return false;
+			}
+
+			for (int i = 0; i < sa - ra; i++) {
+				if (a.charAt(ra + i) != b.charAt(rb + i)) {
+					// strings do not match
+					return false;
+				}
+			}
+
+			ra = ma.end() + 1;
+			rb = mb.end() + 1;
+		}
+		if (a.length() - ra != b.length() - rb) {
+			// there must be differences before the pattern match
+			// since the length to the match differs
+			return false;
+		}
+
+		for (int i = 0; i < a.length() - ra; i++) {
+			if (a.charAt(ra + i) != b.charAt(rb + i)) {
+				// strings do not match
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

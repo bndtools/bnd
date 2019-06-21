@@ -2,14 +2,15 @@ package aQute.bnd.deployer.repository;
 
 import static aQute.bnd.deployer.repository.RepoConstants.DEFAULT_CACHE_DIR;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ import aQute.bnd.version.Version;
 import aQute.bnd.version.VersionRange;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.cryptography.SHA256;
 
@@ -201,6 +203,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		}
 	}
 
+	static Pattern INCREMENT_P = Pattern.compile("increment\\s*=\\s*\"(\\d+)\"");
+
 	private synchronized void generateIndex(File indexFile, IRepositoryContentProvider provider) throws Exception {
 		if (indexFile.exists() && !indexFile.isFile())
 			throw new IllegalArgumentException(String.format(
@@ -211,18 +215,31 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 
 		IO.mkdirs(storageDir);
 		File shaFile = new File(indexFile.getPath() + REPO_INDEX_SHA_EXTENSION);
-		try (OutputStream out = IO.outputStream(indexFile)) {
+		IO.delete(shaFile);
+
+		try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 			URI rootUri = storageDir.getCanonicalFile()
 				.toURI();
 			provider.generateIndex(allFiles, out, this.getName(), rootUri, pretty, registry, logService);
-		} finally {
-			IO.delete(shaFile);
-		}
 
-		MessageDigest md = MessageDigest.getInstance(SHA256.ALGORITHM);
-		IO.copy(indexFile, md);
-		IO.store(Hex.toHexString(md.digest())
-			.toLowerCase(), shaFile);
+			byte[] data = out.toByteArray();
+			if (pretty && indexFile.isFile()) {
+				String newer = new String(data, StandardCharsets.UTF_8);
+				String older = new String(IO.read(indexFile), StandardCharsets.UTF_8);
+
+				if (Strings.compareExcept(older, newer, INCREMENT_P)) {
+					logService.log(LogService.LOG_INFO,
+						getName() + " not saving because files are identical except increment");
+					return;
+				}
+			}
+			IO.delete(indexFile);
+			IO.write(data, indexFile);
+			MessageDigest md = MessageDigest.getInstance(SHA256.ALGORITHM);
+			md.update(data);
+			IO.store(Hex.toHexString(md.digest())
+				.toLowerCase(), shaFile);
+		}
 	}
 
 	@SuppressWarnings("deprecation")

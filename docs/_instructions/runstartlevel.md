@@ -56,6 +56,9 @@ If the `begin` value is not set, or it is set to a value < 1, then no startlevel
 order of the `-runbundles` will be in the specified `order`. In most cases, this is then some kind of _natural_ ordering
 since launchers start these 
 
+If you set the `step` to 0 then all bundles will be assigned the same startlevel. However, the `-runbundles` has the proper 
+order. 
+
 ## Example
 
     -runstartlevel: \
