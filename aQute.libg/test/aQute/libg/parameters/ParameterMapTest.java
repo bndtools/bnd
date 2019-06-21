@@ -23,7 +23,7 @@ public class ParameterMapTest {
 		assertThat(p.get("foo~")).containsKeys("abc", "def");
 		assertThat(p.get("foo~")).containsKeys("def");
 
-		assertThat(p.toString()).isEqualTo("foo, foo;abc=1;def=\"2.1\", foo;def=2, foo");
+		assertThat(p.toString()).isEqualTo("foo,foo;abc=1;def=\"2.1\",foo;def=2,foo");
 	}
 
 	@SuppressWarnings("unchecked")
