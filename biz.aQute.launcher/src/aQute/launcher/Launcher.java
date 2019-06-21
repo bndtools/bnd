@@ -427,6 +427,9 @@ public class Launcher implements ServiceListener {
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 			+ Callable.class.getName() + "))(main.thread=true))");
 
+		if (hasStartlevels()) {
+			frameworkStartLevel.setStartLevel(1);
+		}
 		systemBundle.start();
 
 		trace("system bundle started ok");
@@ -459,7 +462,36 @@ public class Launcher implements ServiceListener {
 			if (!isImmediate(activator))
 				result = start(systemContext, result, activator);
 
+		setRuntimeStartLevel();
 		return result;
+	}
+
+	public void setRuntimeStartLevel() {
+		String beginLevel = systemBundle.getBundleContext()
+			.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL);
+
+		// we set the start level property earlier if not set and there
+		// are start levels defined.
+
+		if (beginLevel != null) {
+			beginLevel = beginLevel.trim();
+			if (!beginLevel.matches("\\d+")) {
+				trace("Invalid value for (must > 0) " + Constants.FRAMEWORK_BEGINNING_STARTLEVEL + " property set to "
+					+ beginLevel);
+			} else {
+				int level = Integer.parseInt(beginLevel);
+				if (level < 1) {
+					trace("Too low a value for " + Constants.FRAMEWORK_BEGINNING_STARTLEVEL + " property set to "
+						+ level);
+				} else {
+					frameworkStartLevel.setStartLevel(level);
+				}
+			}
+		}
+	}
+
+	public boolean hasStartlevels() {
+		return maxStartLevel > 0;
 	}
 
 	private boolean isImmediate(BundleActivator activator) {
@@ -1055,14 +1087,14 @@ public class Launcher implements ServiceListener {
 			trace("system capabilities used: %s", parms.systemCapabilities);
 		}
 
-		if (maxStartLevel > 0) {
+		if (hasStartlevels()) {
 			if (p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL) == null) {
 				int frameworkLevel = maxStartLevel + 1;
 				p.setProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL, frameworkLevel + "");
 				trace("setting automatic beginning start level: %s", frameworkLevel);
 			} else {
 				trace("start level set through properties: %s",
-					p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL) == null);
+					p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL));
 			}
 		}
 

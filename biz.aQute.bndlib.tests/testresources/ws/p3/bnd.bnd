@@ -2,3 +2,5 @@
 -buildpath: org.apache.felix.configadmin
 
 Export-Package: *
+
+foo = 1

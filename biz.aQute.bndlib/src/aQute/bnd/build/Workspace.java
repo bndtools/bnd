@@ -43,6 +43,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.naming.TimeLimitExceededException;
 
@@ -85,6 +86,7 @@ import aQute.lib.io.NonClosingInputStream;
 import aQute.lib.settings.Settings;
 import aQute.lib.strings.Strings;
 import aQute.lib.utf8properties.UTF8Properties;
+import aQute.libg.glob.Glob;
 import aQute.libg.uri.URIUtil;
 import aQute.service.reporter.Reporter;
 
@@ -1342,4 +1344,64 @@ public class Workspace extends Processor {
 		}
 	}
 
+	/**
+	 * Provide a macro that lists all currently loaded project names that match
+	 * a macro. This macro checks for cycles since I am not sure if calling
+	 * getAllProjects is save for some macros in all cases. I.e. the primary use
+	 * case wants to use it in -dependson
+	 * 
+	 * <pre>
+	 *      ${projectswhere;key;glob}
+	 * </pre>
+	 */
+
+	static final String			_projectswhereHelp		= "${projectswhere[;<key>;<glob>]} - Make sure this cannot be called recursively at startup";
+	static ThreadLocal<Boolean>	projectswhereCycleCheck	= new ThreadLocal<>();
+
+	public String _projectswhere(String args[]) {
+		try {
+			if (projectswhereCycleCheck.get() != null) {
+				throw new IllegalStateException("The ${projectswhere[;<key>;<glob>]} is called recursively");
+			}
+			projectswhereCycleCheck.set(true);
+
+			Macro.verifyCommand(args, _globalHelp, null, 1, 3);
+
+			Set<Project> allProjects = projects.getAllProjects();
+			if (args.length == 1) {
+				return Strings.join(allProjects);
+			}
+			String key = args[1];
+			String glob = null;
+			boolean negate = false;
+
+			Glob g;
+			if (args.length > 2) {
+				if (args[2].startsWith("!")) {
+					g = new Glob(args[2].substring(1));
+					negate = true;
+				} else
+					g = new Glob(args[2]);
+			} else
+				g = null;
+
+			boolean finalnegate = negate;
+
+			return allProjects.stream()
+				.filter(p -> {
+					String value = p.getProperty(key);
+					if (value == null)
+						return finalnegate;
+
+					if (g == null || g == Glob.ALL)
+						return !finalnegate;
+
+					return finalnegate ? !g.matches(value) : g.matches(value);
+				})
+				.map(Project::getName)
+				.collect(Collectors.joining(","));
+		} finally {
+			projectswhereCycleCheck.set(null);
+		}
+	}
 }

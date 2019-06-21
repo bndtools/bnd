@@ -5,12 +5,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import aQute.bnd.build.Project;
 import aQute.bnd.build.Workspace;
 import aQute.bnd.header.Attrs;
 import aQute.lib.io.IO;
+import aQute.lib.strings.Strings;
 import junit.framework.TestCase;
 
 public class WorkspaceTest extends TestCase {
@@ -29,6 +33,43 @@ public class WorkspaceTest extends TestCase {
 	@Override
 	protected void tearDown() {
 		IO.delete(tmp);
+	}
+
+	/**
+	 * In an IDE the workspace must be informed if the set of projects change
+	 */
+	public void testProjectsWhereMacro() throws Exception {
+		try (Workspace ws = Workspace.getWorkspace(IO.getFile("testresources/ws"))) {
+			ws.setProperty("allprojects", "${projectswhere}");
+			List<String> projects = Strings.split(ws.getProperty("allprojects"));
+			assertThat(ws.check()).isTrue();
+			assertThat(projects).hasSize(21);
+			System.out.println(projects);
+
+			ws.setProperty("allprojects", "${projectswhere;foo}");
+			List<String> withFoo = Strings.split(ws.getProperty("allprojects"));
+			assertThat(ws.check()).isTrue();
+			System.out.println(withFoo);
+			assertThat(withFoo).hasSize(3);
+
+			ws.setProperty("allprojects", "${projectswhere;foo;!*}");
+			List<String> withoutFoo = Strings.split(ws.getProperty("allprojects"));
+			assertThat(ws.check()).isTrue();
+			System.out.println(withoutFoo);
+			assertThat(withoutFoo).hasSize(18);
+
+			ws.setProperty("allprojects", "${projectswhere;foo;1|2}");
+			List<String> twoProjects = Strings.split(ws.getProperty("allprojects"));
+			assertThat(ws.check()).isTrue();
+			System.out.println(twoProjects);
+			assertThat(twoProjects).hasSize(2);
+
+			List<String> total = new ArrayList<>(withFoo);
+			total.addAll(withoutFoo);
+			Collections.sort(projects);
+			Collections.sort(total);
+			assertThat(projects).isEqualTo(total);
+		}
 	}
 
 	/**

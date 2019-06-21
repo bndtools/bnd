@@ -15,6 +15,7 @@
     org.osgi.service.component.annotations;version=latest,\
     aQute.libg;version=project, \
     biz.aQute.bndlib;version=latest, \
+    biz.aQute.launcher;version=latest, \
     biz.aQute.resolve;version=latest, \
     biz.aQute.repository;version=latest, \
     biz.aQute.bnd.annotation;version=project,\
