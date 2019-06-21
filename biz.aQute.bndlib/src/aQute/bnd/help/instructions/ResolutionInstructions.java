@@ -36,10 +36,14 @@ public interface ResolutionInstructions {
 	}
 
 	@interface RunStartLevel {
+
+		@SyntaxAnnotation(lead = "Ordering of -runbundles of the resolved bundles", example = "'order=leastdependencieslast")
 		Runorder order() default Runorder.MERGESORTBYNAMEVERSION;
 
+		@SyntaxAnnotation(lead = "Beginning automatic startlevel calculation,  -1 indicates no automatic calculation. When bdn calculates the startlevel, this will be the first assigned startlevel", example = "'begin=10")
 		int begin() default 100;
 
+		@SyntaxAnnotation(lead = "Start level step for each next bundle. Startlevel is 0 when < 1", example = "'begin=1", pattern = "\\d+")
 		int step() default 10;
 	}
 
