@@ -103,10 +103,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 
 	static final int									BUFFER_SIZE			= IOConstants.PAGE_SIZE * 1;
 
-	static Pattern										PACKAGES_IGNORED	= Pattern
-		.compile("(java\\.lang\\.reflect|sun\\.reflect).*");
-
-	static ThreadLocal<Processor>						current				= new ThreadLocal<>();
+	final static ThreadLocal<Processor>					current				= new ThreadLocal<>();
 	private final static ScheduledThreadPoolExecutor	scheduledExecutor;
 	private final static ThreadPoolExecutor				executor;
 	static {
@@ -2149,14 +2146,15 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		return current().trace;
 	}
 
+	private static final Pattern DURATION_P = Pattern
+		.compile("\\s*(\\d+)\\s*(NANOSECONDS|MICROSECONDS|MILLISECONDS|SECONDS|MINUTES|HOURS|DAYS)?");
 	public static long getDuration(String tm, long dflt) {
 		if (tm == null)
 			return dflt;
 
 		tm = tm.toUpperCase();
 		TimeUnit unit = TimeUnit.MILLISECONDS;
-		Matcher m = Pattern.compile("\\s*(\\d+)\\s*(NANOSECONDS|MICROSECONDS|MILLISECONDS|SECONDS|MINUTES|HOURS|DAYS)?")
-			.matcher(tm);
+		Matcher m = DURATION_P.matcher(tm);
 		if (m.matches()) {
 			long duration = Long.parseLong(tm);
 			String u = m.group(2);
@@ -2467,7 +2465,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	/**
-	 * Get a header relative to this processor, tking its parents and includes
+	 * Get a header relative to this processor, taking its parents and includes
 	 * into account.
 	 *
 	 * @param header
@@ -2496,7 +2494,7 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 	}
 
 	public FileLine getHeader(String header, String clause) throws Exception {
-		return getHeader(toFullHeaderPattern(header), clause == null ? null : Pattern.compile(Pattern.quote(clause)));
+		return getHeader(toFullHeaderPattern(header), clause == null ? null : Pattern.compile(clause, Pattern.LITERAL));
 	}
 
 	public FileLine getHeader(Pattern header, Pattern clause) throws Exception {

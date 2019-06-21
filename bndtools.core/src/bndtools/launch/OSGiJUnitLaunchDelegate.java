@@ -35,8 +35,8 @@ import bndtools.Plugin;
 import bndtools.launch.util.LaunchUtils;
 
 public class OSGiJUnitLaunchDelegate extends AbstractOSGiLaunchDelegate {
-    static String JNAME_S = "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
-    static Pattern FAILURES_P = Pattern.compile("^(" + JNAME_S + ")   # method name\n" //
+    private final static String JNAME_S = "\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*";
+    private final static Pattern FAILURES_P = Pattern.compile("^(" + JNAME_S + ")   # method name\n" //
         + "\\(" //
         + "     (" + JNAME_S + "(?:\\." + JNAME_S + ")*)          # fqn class name\n" //
         + "\\)$                                                   # close\n", //

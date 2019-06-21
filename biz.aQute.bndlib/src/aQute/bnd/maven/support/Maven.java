@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
-import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
 
@@ -34,8 +33,6 @@ public class Maven {
 	}
 
 	// https://repo.maven.apache.org/maven2/junit/junit/maven-metadata.xml
-
-	static Pattern MAVEN_RANGE = Pattern.compile("(\\[|\\()(.+)(,(.+))(\\]|\\))");
 
 	public CachedPom getPom(String groupId, String artifactId, String version, URI... extra) throws Exception {
 		MavenEntry entry = getEntry(groupId, artifactId, version);

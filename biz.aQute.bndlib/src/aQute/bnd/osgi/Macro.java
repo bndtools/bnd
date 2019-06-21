@@ -678,10 +678,14 @@ public class Macro {
 		return result;
 	}
 
+	private static final Pattern	ANY			= Pattern.compile(".*");
+	private static final Pattern	ERROR_P		= Pattern.compile("\\$\\{error;");
+	private static final Pattern	WARNING_P	= Pattern.compile("\\$\\{warning;");
+
 	public String _warning(String[] args) throws Exception {
 		for (int i = 1; i < args.length; i++) {
 			SetLocation warning = reporter.warning("%s", process(args[i]));
-			FileLine header = domain.getHeader(Pattern.compile(".*"), Pattern.compile("\\$\\{warning;"));
+			FileLine header = domain.getHeader(ANY, WARNING_P);
 			if (header != null)
 				header.set(warning);
 		}
@@ -691,7 +695,7 @@ public class Macro {
 	public String _error(String[] args) throws Exception {
 		for (int i = 1; i < args.length; i++) {
 			SetLocation error = reporter.error("%s", process(args[i]));
-			FileLine header = domain.getHeader(Pattern.compile(".*"), Pattern.compile("\\$\\{error;"));
+			FileLine header = domain.getHeader(ANY, ERROR_P);
 			if (header != null)
 				header.set(error);
 		}
@@ -913,13 +917,16 @@ public class Macro {
 	 * qualifier version=&quot;[${version;==;${&#x40;}},${version;=+;${&#x40;}})&quot;
 	 * </pre>
 	 */
-	final static String		MASK_STRING			= "[\\-+=~0123456789]{0,3}[=~]?";
-	final static Pattern	MASK				= Pattern.compile(MASK_STRING);
+	private final static String		MASK_M				= "[-+=~\\d]";
+	private final static String		MASK_Q				= "[=~sS\\d]";
+	private final static String		MASK_STRING			= MASK_M + "(?:" + MASK_M + "(?:" + MASK_M + "(?:" + MASK_Q
+		+ ")?)?)?";
+	private final static Pattern	VERSION_MASK		= Pattern.compile(MASK_STRING);
 	final static String		_versionmaskHelp	= "${versionmask;<mask>;<version>}, modify a version\n"
 		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";
 	final static String		_versionHelp		= _versionmaskHelp;
-	final static Pattern	_versionPattern[]	= new Pattern[] {
-		null, null, MASK, Verifier.VERSION
+	final static Pattern[]			_versionPattern		= new Pattern[] {
+		null, VERSION_MASK
 	};
 
 	public String _version(String[] args) {
@@ -927,7 +934,7 @@ public class Macro {
 	}
 
 	public String _versionmask(String[] args) {
-		verifyCommand(args, _versionmaskHelp, null, 2, 3);
+		verifyCommand(args, _versionmaskHelp, _versionPattern, 2, 3);
 
 		String mask = args[1];
 
@@ -1010,7 +1017,7 @@ public class Macro {
 	 * </pre>
 	 */
 
-	static final Pattern	RANGE_MASK		= Pattern
+	private static final Pattern	RANGE_MASK		= Pattern
 		.compile("(\\[|\\()(" + MASK_STRING + "),(" + MASK_STRING + ")(\\]|\\))");
 	static final String		_rangeHelp		= "${range;<mask>[;<version>]}, range for version, if version not specified lookup ${@}\n"
 		+ "<mask> ::= [ M [ M [ M [ MQ ]]]\n" + "M ::= '+' | '-' | MQ\n" + "MQ ::= '~' | '='";

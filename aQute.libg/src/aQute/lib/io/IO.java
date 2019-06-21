@@ -53,8 +53,8 @@ import java.util.regex.Pattern;
 import aQute.libg.glob.Glob;
 
 public class IO {
-	static final Pattern								WINDOWS_MACROS			= Pattern.compile("%([^%]+)%");
-	static final int									BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
+	private static final Pattern						WINDOWS_MACROS			= Pattern.compile("%([^%]+)%");
+	private static final int							BUFFER_SIZE				= IOConstants.PAGE_SIZE * 16;
 	private static final int							DIRECT_MAP_THRESHOLD	= BUFFER_SIZE;
 	private static final boolean						isWindows				= File.separatorChar == '\\';
 	static final public File							work					= new File(
@@ -1285,7 +1285,7 @@ public class IO {
 		return sb.toString();
 	}
 
-	final static Pattern RESERVED_WINDOWS_P = Pattern.compile("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
+	private final static Pattern RESERVED_WINDOWS_P = Pattern.compile("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]");
 
 	public static boolean isWindows() {
 		return isWindows;

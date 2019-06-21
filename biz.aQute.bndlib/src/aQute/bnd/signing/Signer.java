@@ -34,7 +34,7 @@ import aQute.lib.io.IOConstants;
 public class Signer extends Processor {
 	static final int	BUFFER_SIZE		= IOConstants.PAGE_SIZE * 1;
 
-	static Pattern		METAINFDIR		= Pattern.compile("META-INF/[^/]*");
+	private final static Pattern	METAINFDIR		= Pattern.compile("META-INF/[^/]*");
 	String				digestNames[]	= new String[] {
 		"MD5"
 	};

@@ -93,9 +93,9 @@ public class TaggedData implements Closeable {
 		}
 	}
 
-	final static Pattern	HTML_TAGS_P	= Pattern.compile("<!--.*-->|<[^>]+>");
-	final static Pattern	NEWLINES_P	= Pattern.compile("(\\s*\n\r?\\s*)+");
-	final static Pattern	ENTITIES_P	= Pattern.compile("&(#(?<nr>[0-9]+))|(?<name>[a-z]+);",
+	private final static Pattern	HTML_TAGS_P	= Pattern.compile("<!--.*-->|<[^>]+>");
+	private final static Pattern	NEWLINES_P	= Pattern.compile("(\\s*\n\r?\\s*)+");
+	private final static Pattern	ENTITIES_P	= Pattern.compile("&(#(?<nr>[0-9]+))|(?<name>[a-z]+);",
 		Pattern.CASE_INSENSITIVE);
 
 	private String cleanHtml(CharSequence sb) {

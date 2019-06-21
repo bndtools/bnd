@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import aQute.lib.base64.Base64;
 import aQute.lib.hex.Hex;
@@ -14,9 +13,6 @@ import aQute.lib.hex.Hex;
  * Will now use hex for encoding byte arrays
  */
 public class ByteArrayHandler extends Handler {
-	Pattern ENCODING = Pattern.compile(
-		"((:?[\\dA-Za-z][\\dA-Za-z])*)|((:?ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/)+={1,3})");
-
 	@Override
 	public void encode(Encoder app, Object object, Map<Object, Type> visited) throws IOException, Exception {
 		StringHandler.string(app, Hex.toHexString((byte[]) object));

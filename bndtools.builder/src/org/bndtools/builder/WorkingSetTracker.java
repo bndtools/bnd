@@ -33,7 +33,7 @@ import aQute.service.reporter.Reporter.SetLocation;
  * </pre>
  */
 public class WorkingSetTracker {
-    static final Pattern JAVAID_P = Pattern.compile("\\p{javaJavaIdentifierPart}+");
+    private static final Pattern JAVAID_P = Pattern.compile("\\p{javaJavaIdentifierPart}+");
 
     static void doWorkingSets(final Project model, final IProject targetProject) {
 

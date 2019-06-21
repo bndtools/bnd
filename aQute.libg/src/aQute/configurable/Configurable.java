@@ -33,7 +33,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 public class Configurable<T> {
-	public static Pattern SPLITTER_P = Pattern.compile("(?<!\\\\)\\|");
+	public final static Pattern SPLITTER_P = Pattern.compile("(?<!\\\\)\\|");
 
 	public static <T> T createConfigurable(Class<T> c, Map<?, ?> properties) {
 		Object o = Proxy.newProxyInstance(c.getClassLoader(), new Class<?>[] {

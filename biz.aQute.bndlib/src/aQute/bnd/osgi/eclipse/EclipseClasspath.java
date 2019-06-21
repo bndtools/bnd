@@ -177,7 +177,7 @@ public class EclipseClasspath {
 		return result;
 	}
 
-	static Pattern PATH = Pattern.compile("([A-Z_]+)/(.*)");
+	private final static Pattern PATH = Pattern.compile("([A-Z_]+)/(.*)");
 
 	private File replaceVar(String path) {
 		if ((options & DO_VARIABLES) == 0)

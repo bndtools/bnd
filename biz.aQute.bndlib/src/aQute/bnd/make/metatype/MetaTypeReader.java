@@ -63,7 +63,7 @@ public class MetaTypeReader extends WriteResource {
 		this.inherit = Processor.isTrue(reporter.getProperty("-metatype-inherit"));
 	}
 
-	static Pattern COLLECTION = Pattern.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>;");
+	private final static Pattern COLLECTION = Pattern.compile("(.*(Collection|Set|List|Queue|Stack|Deque))<(L.+;)>;");
 
 	private void addMethod(MethodDef method, Annotation a) throws Exception {
 

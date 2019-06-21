@@ -47,13 +47,14 @@ import org.eclipse.swt.widgets.Widget;
 import aQute.bnd.differ.Baseline;
 import aQute.bnd.differ.Baseline.Info;
 import aQute.bnd.version.Version;
+import aQute.lib.regex.PatternConstants;
 import bndtools.release.Activator;
 import bndtools.release.api.ReleaseOption;
 import bndtools.release.nl.Messages;
 
 public class BundleTree extends Composite {
 
-    public final static String VERSION_STRING = "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.([-_\\da-zA-Z]+))?)?)?"; //$NON-NLS-1$
+    public final static String VERSION_STRING = "(\\d+)(\\.(\\d+)(\\.(\\d+)(\\.(" + PatternConstants.TOKEN + "))?)?)?"; //$NON-NLS-1$
     public final static Pattern VERSION = Pattern.compile(VERSION_STRING);
 
     protected SashForm sashForm;
@@ -320,7 +321,8 @@ public class BundleTree extends Composite {
                 }
 
                 @Override
-                public void widgetDefaultSelected(SelectionEvent e) {}
+                public void widgetDefaultSelected(SelectionEvent e) {
+                }
             });
         }
 

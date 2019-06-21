@@ -20,6 +20,7 @@ import org.osgi.framework.Version;
 import aQute.bnd.service.specifications.BuilderSpecification;
 import aQute.lib.exceptions.Exceptions;
 import aQute.lib.io.IO;
+import aQute.lib.regex.PatternConstants;
 
 /**
  * Provides all builder functions. Specified as default methods so that we can
@@ -27,7 +28,7 @@ import aQute.lib.io.IO;
  */
 public interface BundleSpecBuilder {
 	final static String		CONFIGURATION_JSON	= "configuration/configuration.json";
-	final static Pattern	SYMBOLICNAME		= Pattern.compile("[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*");
+	final static Pattern	SYMBOLICNAME		= Pattern.compile(PatternConstants.SYMBOLICNAME);
 
 	BundleBuilder x();
 

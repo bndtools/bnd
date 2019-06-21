@@ -6,13 +6,14 @@ import java.io.InputStream;
 import java.util.regex.Pattern;
 
 import aQute.lib.io.IO;
+import aQute.lib.regex.PatternConstants;
 import aQute.libg.cryptography.SHA1;
 
 /**
  * Provide a standardized cache based on the SHA-1 of a file.
  */
 public class ShaCache {
-	static Pattern		SHA_P	= Pattern.compile("[A-F0-9]{40,40}", Pattern.CASE_INSENSITIVE);
+	private final static Pattern	SHA_P	= Pattern.compile(PatternConstants.SHA1);
 
 	private final File	root;
 

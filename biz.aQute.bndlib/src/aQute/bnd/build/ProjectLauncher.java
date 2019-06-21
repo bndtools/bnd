@@ -437,7 +437,7 @@ public abstract class ProjectLauncher extends Processor {
 	/**
 	 * launch a framework internally. I.e. do not start a separate process.
 	 */
-	static Pattern IGNORE = Pattern.compile("org(/|\\.)osgi(/|\\.).resource.*");
+	final static Pattern IGNORE = Pattern.compile("org[./]osgi[./]resource.*");
 
 	public int start(ClassLoader parent) throws Exception {
 

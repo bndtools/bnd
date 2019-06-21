@@ -6,7 +6,7 @@ import java.net.URISyntaxException;
 import java.util.regex.Pattern;
 
 public final class URIUtil {
-	private static final Pattern WINDOWS_FILE_PATTERN = Pattern.compile("(?:[a-zA-Z]:[\\\\/]|\\\\\\\\|//)");
+	private static final Pattern WINDOWS_FILE_PATTERN = Pattern.compile("(?:\\p{Alpha}:[\\\\/]|\\\\\\\\|//)");
 
 	/**
 	 * Resolves a URI reference against a base URI. Work-around for bugs in

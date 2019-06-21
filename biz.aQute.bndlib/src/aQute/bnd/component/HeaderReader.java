@@ -35,7 +35,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.tag.Tag;
 
 public class HeaderReader extends Processor {
-	final static Pattern				PROPERTY_PATTERN	= Pattern
+	private final static Pattern		PROPERTY_PATTERN	= Pattern
 		.compile("(([^=:@]+)([:@](Boolean|Byte|Char|Short|Integer|Long|Float|Double|String))?)\\s*=(.*)");
 	private final static Set<String>	LIFECYCLE_METHODS	= new HashSet<>(
 		Arrays.asList("activate", "deactivate", "modified"));

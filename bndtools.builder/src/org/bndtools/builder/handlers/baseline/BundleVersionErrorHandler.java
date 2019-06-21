@@ -35,7 +35,7 @@ public class BundleVersionErrorHandler extends AbstractBuildErrorDetailsHandler 
 
     private static final String PROP_SUGGESTED_VERSION = "suggestedVersion";
 
-    private final static String VERSION_ACCEPTING_MACRO_STRING = "(\\d+)\\.(\\d+)\\.(\\d+)\\.([-_\\.\\$\\{\\}\\da-zA-Z]+)";//$NON-NLS-1$
+    private final static String VERSION_ACCEPTING_MACRO_STRING = "(\\d+)\\.(\\d+)\\.(\\d+)\\.([-.${}\\w]+)";//$NON-NLS-1$
     private final static Pattern VERSION_ACCEPTING_MACRO = Pattern.compile(VERSION_ACCEPTING_MACRO_STRING);
 
     @Override

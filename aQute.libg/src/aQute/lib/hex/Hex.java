@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
  * TODO Implement string to byte[]
  */
 public class Hex {
-	static Pattern		HEX_P	= Pattern.compile("(?:[0-9a-fA-F][0-9a-fA-Z])+");
+	private final static Pattern	HEX_P	= Pattern.compile("(?:\\p{XDigit}{2})+");
 
 	final static char[]	HEX		= {
 		'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'

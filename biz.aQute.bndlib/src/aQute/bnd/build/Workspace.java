@@ -102,7 +102,7 @@ public class Workspace extends Processor {
 
 	static final int			BUFFER_SIZE						= IOConstants.PAGE_SIZE * 16;
 	private static final String	PLUGIN_STANDALONE				= "-plugin.standalone_";
-	private final Pattern		EMBEDDED_REPO_TESTING_PATTERN	= Pattern
+	final static Pattern		EMBEDDED_REPO_TESTING_PATTERN	= Pattern
 		.compile(".*biz\\.aQute\\.bnd\\.embedded-repo(-.*)?\\.jar");
 
 	static class WorkspaceData {
@@ -1131,7 +1131,7 @@ public class Workspace extends Processor {
 		}
 	}
 
-	static Pattern ESCAPE_P = Pattern.compile("(\"|')(.*)\1");
+	private final static Pattern ESCAPE_P = Pattern.compile("([\"'])(.*)\\1");
 
 	private Object escaped(String value) {
 		Matcher matcher = ESCAPE_P.matcher(value);

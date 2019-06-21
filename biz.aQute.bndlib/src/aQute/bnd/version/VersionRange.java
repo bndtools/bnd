@@ -12,7 +12,7 @@ public class VersionRange {
 	char			start	= '[';
 	char			end		= ']';
 
-	static Pattern	RANGE	= Pattern
+	private final static Pattern	RANGE	= Pattern
 		.compile("(\\(|\\[)\\s*(" + Version.VERSION_STRING + ")\\s*,\\s*(" + Version.VERSION_STRING + ")\\s*(\\)|\\])");
 
 	public VersionRange(String string) {

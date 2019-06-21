@@ -28,9 +28,9 @@ import aQute.lib.exceptions.Exceptions;
 import aQute.libg.glob.Glob;
 
 public class Nexus {
-	final static String		MAVEN_INDEX_S	= "href\\s*=\\s*([\"'])(?<uri>[^\\./][^\"'\r\n]+)\\1";
-	final static Pattern	MAVEN_INDEX_P	= Pattern.compile(MAVEN_INDEX_S);
-	static Logger			logger			= LoggerFactory.getLogger(Nexus.class);
+	private final static String		MAVEN_INDEX_S	= "href\\s*=\\s*([\"'])(?<uri>[^\\./][^\"'\r\n]+)\\1";
+	private final static Pattern	MAVEN_INDEX_P	= Pattern.compile(MAVEN_INDEX_S);
+	final static Logger				logger			= LoggerFactory.getLogger(Nexus.class);
 	private URI				uri;
 	private HttpClient		client;
 	private Executor		executor;

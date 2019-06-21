@@ -1061,7 +1061,7 @@ public class Jar implements Closeable {
 		}
 	}
 
-	private final static Pattern BSN = Pattern.compile("\\s*([-\\w\\d\\._]+)\\s*;?.*");
+	private final static Pattern BSN = Pattern.compile("\\s*([-.\\w]+)\\s*;?.*");
 
 	/**
 	 * Get the jar bsn from the {@link Constants#BUNDLE_SYMBOLICNAME} manifest
@@ -1212,7 +1212,8 @@ public class Jar implements Closeable {
 		return md.digest();
 	}
 
-	static Pattern SIGNER_FILES_P = Pattern.compile("(.+\\.(SF|DSA|RSA))|(.*/SIG-.*)", Pattern.CASE_INSENSITIVE);
+	private final static Pattern SIGNER_FILES_P = Pattern.compile("(.+\\.(SF|DSA|RSA))|(.*/SIG-.*)",
+		Pattern.CASE_INSENSITIVE);
 
 	public void stripSignatures() {
 		Map<String, Resource> map = getDirectory("META-INF");

@@ -16,7 +16,7 @@ import aQute.lib.io.IO;
 @Deprecated
 public class FileRepo {
 	File	root;
-	Pattern	REPO_FILE	= Pattern.compile("([-a-zA-z0-9_\\.]+)-([0-9\\.]+)\\.(jar|lib)");
+	static final Pattern	REPO_FILE	= Pattern.compile("([-.\\w]+)-([.\\d]+)\\.(jar|lib)");
 
 	public FileRepo(File root) {
 		this.root = root;

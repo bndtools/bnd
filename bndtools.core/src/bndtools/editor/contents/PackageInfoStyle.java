@@ -59,7 +59,7 @@ public enum PackageInfoStyle {
         this.fileName = fileName;
         this.contentPattern = contentPattern;
         this.annotationTypeName = annotationTypeName;
-        this.searchRegex = annotationTypeName != null ? Pattern.compile("\\Q" + annotationTypeName + "\\E") : null;
+        this.searchRegex = annotationTypeName != null ? Pattern.compile(annotationTypeName, Pattern.LITERAL) : null;
     }
 
     public String getFileName() {

@@ -46,8 +46,8 @@ public class Utils {
 		public String	requirement;
 	}
 
-	public static Pattern	RESOLVE_MESSAGE_P		= Pattern.compile(		//
-		"(?:org.osgi.service.resolver.ResolutionException: )?"				//
+	public static final Pattern	RESOLVE_MESSAGE_P		= Pattern.compile(		//
+		"(?:org\\.osgi\\.service\\.resolver\\.ResolutionException: )?"		//
 			+ "(?<msg>[^:]+): # prefix\n"									//
 			+ "(?<bsn>[^\\s]+)  # the bsn\n"								//
 			+ "(?<version>[^:]+): # version\n"								//
@@ -56,11 +56,11 @@ public class Utils {
 			+ "\\{(?<attrs>[^}]*)\\} # attrs\n"								//
 			+ "\\{(?<directives>[^}]*)\\} # dirs\n"							//
 			+ "(?<cause>\\[caused by:)?",
-		Pattern.COMMENTS + Pattern.CASE_INSENSITIVE);
+		Pattern.COMMENTS | Pattern.CASE_INSENSITIVE);
 
-	public static Pattern	RESOLVE_DIRECTIVES_P	= Pattern.compile(		//
+	public static final Pattern	RESOLVE_DIRECTIVES_P	= Pattern.compile(		//
 		"(?:^|.*,)filter=(?<filter>[^,]+)(?:$|,.*)",						//
-		Pattern.COMMENTS + Pattern.CASE_INSENSITIVE);
+		Pattern.COMMENTS | Pattern.CASE_INSENSITIVE);
 
 	public static List<ResolveTrace> parseException(String message) {
 		Matcher m = RESOLVE_MESSAGE_P.matcher(message);

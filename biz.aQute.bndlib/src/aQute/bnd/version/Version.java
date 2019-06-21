@@ -3,6 +3,8 @@ package aQute.bnd.version;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.lib.regex.PatternConstants;
+
 public class Version implements Comparable<Version> {
 	private static final String	HIGHESTCHAR		= "\uFFFF";
 	final int					major;
@@ -11,7 +13,8 @@ public class Version implements Comparable<Version> {
 	final String				qualifier;
 	final boolean				snapshot;
 
-	public final static String	VERSION_STRING	= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10})(\\.([-_\\da-zA-Z]+))?)?)?";
+	public final static String	VERSION_STRING	= "(\\d{1,10})(\\.(\\d{1,10})(\\.(\\d{1,10})(\\.("
+		+ PatternConstants.TOKEN + "))?)?)?";
 	public final static Pattern	VERSION			= Pattern.compile(VERSION_STRING);
 	public final static Version	LOWEST			= new Version();
 	public final static Version	HIGHEST			= new Version(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE,
