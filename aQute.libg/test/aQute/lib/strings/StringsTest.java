@@ -2,6 +2,10 @@ package aQute.lib.strings;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.regex.Pattern;
+
 import junit.framework.TestCase;
 
 public class StringsTest extends TestCase {
@@ -10,6 +14,67 @@ public class StringsTest extends TestCase {
 		assertEquals("----", Strings.times("-", 4));
 		assertEquals("-", Strings.times("-", -100));
 
+	}
+
+	public void testJoin() {
+		assertThat(Strings.join("x", (Iterable<Object>) null)).isEqualTo("");
+		assertThat(Strings.join("x", Collections.emptyList())).isEqualTo("");
+		assertThat(Strings.join("x", Arrays.asList("a"))).isEqualTo("a");
+		assertThat(Strings.join("x", Arrays.asList("a", "b"))).isEqualTo("axb");
+
+		assertThat(Strings.join((Iterable<Object>) null)).isEqualTo("");
+		assertThat(Strings.join(Collections.emptyList())).isEqualTo("");
+		assertThat(Strings.join(Arrays.asList("a"))).isEqualTo("a");
+		assertThat(Strings.join(Arrays.asList("a", "b"))).isEqualTo("a,b");
+	}
+
+	public void testCompareExcept() {
+
+		assertThat(
+			Strings.compareExcept("foox", "foo", Pattern.compile("(x+)"))).isFalse();
+
+		assertThat(
+			Strings.compareExcept("xfooxfooxxfooxxxfooxxxx", "xxxxxfooxfooxxxxxxxfooxfoox", Pattern.compile("(x+)")))
+				.isTrue();
+		assertThat(Strings.compareExcept("fooxy", "fooxy", Pattern.compile("(x+)"))).isTrue();
+		assertThat(Strings.compareExcept("foox", "foox", Pattern.compile("(x+)"))).isTrue();
+		assertThat(Strings.compareExcept("foo", "foo", Pattern.compile("(x+)"))).isTrue();
+		assertThat(Strings.compareExcept("xxxxfoo", "xfoo", Pattern.compile("(x+)"))).isTrue();
+		assertThat(Strings.compareExcept("fooxxxxxxxx", "foox", Pattern.compile("(x+)"))).isTrue();
+		assertThat(Strings.compareExcept("abcxxxxxxxdefxxxxxghixxjkl",
+			"abcxdefxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxghixxjkl", Pattern.compile("(x+)"))).isTrue();
+
+
+		assertThat(Strings.compareExcept("<foo increment=\"1234567\"><xyz/></foo>",
+			"<foo increment=\"8907\"><xyz/></foo>", Pattern.compile("increment=\"([0-9]+)\""))).isTrue();
+
+		assertThat(Strings.compareExcept("abcxxxxxxxdef", "abcxdef", Pattern.compile("(x+)"))).isTrue();
+
+	}
+
+	public void testCompareExceptWithNoFirstMatch() {
+
+		assertThat(Strings.compareExcept("foo", "xfoo", Pattern.compile("(x+)"))).isFalse();
+	}
+
+	public void testCompareExceptWithNoSecondMatch() {
+
+		assertThat(Strings.compareExcept("foox", "foo", Pattern.compile("(x+)"))).isFalse();
+	}
+
+	public void testCompareExceptWithPrefixDifferentLength() {
+
+		assertThat(Strings.compareExcept("abcxfoo", "abxfoo", Pattern.compile("(x+)"))).isFalse();
+	}
+
+	public void testCompareExceptWithPrefixDifference() {
+
+		assertThat(Strings.compareExcept("abcxfoo", "abdxfoo", Pattern.compile("(x+)"))).isFalse();
+	}
+
+	public void testCompareExceptWithSuffixDifference() {
+
+		assertThat(Strings.compareExcept("abcxfoo", "abcxfox", Pattern.compile("(x+)"))).isFalse();
 	}
 
 	public void testStrip() {
