@@ -43,7 +43,6 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import javax.naming.TimeLimitExceededException;
 
@@ -404,7 +403,7 @@ public class Workspace extends Processor {
 		all.putAll(commands);
 	}
 
-	public Collection<Project> getAllProjects() throws Exception {
+	public Collection<Project> getAllProjects() {
 		return projects.getAllProjects();
 	}
 
@@ -1347,7 +1346,7 @@ public class Workspace extends Processor {
 	/**
 	 * Provide a macro that lists all currently loaded project names that match
 	 * a macro. This macro checks for cycles since I am not sure if calling
-	 * getAllProjects is save for some macros in all cases. I.e. the primary use
+	 * getAllProjects is safe for some macros in all cases. I.e. the primary use
 	 * case wants to use it in -dependson
 	 * 
 	 * <pre>
@@ -1356,50 +1355,52 @@ public class Workspace extends Processor {
 	 */
 
 	static final String			_projectswhereHelp		= "${projectswhere[;<key>;<glob>]} - Make sure this cannot be called recursively at startup";
-	static ThreadLocal<Boolean>	projectswhereCycleCheck	= new ThreadLocal<>();
+	private static final ThreadLocal<Boolean>	projectswhereCycleCheck	= new ThreadLocal<>();
 
 	public String _projectswhere(String args[]) {
+		if (projectswhereCycleCheck.get() != null) {
+			throw new IllegalStateException("The ${projectswhere} macro is called recursively");
+		}
+		projectswhereCycleCheck.set(Boolean.TRUE);
 		try {
-			if (projectswhereCycleCheck.get() != null) {
-				throw new IllegalStateException("The ${projectswhere[;<key>;<glob>]} is called recursively");
-			}
-			projectswhereCycleCheck.set(true);
 
-			Macro.verifyCommand(args, _globalHelp, null, 1, 3);
+			Macro.verifyCommand(args, _projectswhereHelp, null, 1, 3);
 
-			Set<Project> allProjects = projects.getAllProjects();
+			Collection<Project> allProjects = getAllProjects();
 			if (args.length == 1) {
 				return Strings.join(allProjects);
 			}
-			String key = args[1];
-			String glob = null;
-			boolean negate = false;
 
+			String key = args[1];
+			boolean negate;
 			Glob g;
 			if (args.length > 2) {
 				if (args[2].startsWith("!")) {
 					g = new Glob(args[2].substring(1));
 					negate = true;
-				} else
+				} else {
 					g = new Glob(args[2]);
-			} else
+					negate = false;
+				}
+			} else {
 				g = null;
-
-			boolean finalnegate = negate;
+				negate = false;
+			}
 
 			return allProjects.stream()
 				.filter(p -> {
 					String value = p.getProperty(key);
 					if (value == null)
-						return finalnegate;
+						return negate;
 
-					if (g == null || g == Glob.ALL)
-						return !finalnegate;
+					if (g == null)
+						return !negate;
 
-					return finalnegate ? !g.matches(value) : g.matches(value);
+					return negate ^ g.matcher(value)
+						.matches();
 				})
 				.map(Project::getName)
-				.collect(Collectors.joining(","));
+				.collect(Strings.joining());
 		} finally {
 			projectswhereCycleCheck.set(null);
 		}
