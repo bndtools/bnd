@@ -58,11 +58,24 @@ public class StringRoverTest {
 	public void testIndexOf() {
 		StringRover r = new StringRover("abcdefghijklmnopqrstuvwxyz");
 		assertThat(r.indexOf('c', 0)).isEqualTo(2);
-		assertThat(r.indexOf('c', 10)).isLessThan(0);
+		assertThat(r.indexOf('c', 10)).isEqualTo(-1);
 		assertThat(r.increment(2)
 			.indexOf('c', 0)).isEqualTo(0);
 		assertThat(r.increment()
-			.indexOf('c', 0)).isLessThan(0);
+			.indexOf('c', 0)).isEqualTo(-1);
+	}
+
+	@Test
+	public void testLastIndexOf() {
+		StringRover r = new StringRover("abcdefghijklmabcdefghijklm");
+		assertThat(r.lastIndexOf('c', 25)).isEqualTo(15);
+		assertThat(r.lastIndexOf('c', 10)).isEqualTo(2);
+		assertThat(r.lastIndexOf('m', 25)).isEqualTo(25);
+		assertThat(r.lastIndexOf('m', 10)).isEqualTo(-1);
+		assertThat(r.increment(10)
+			.lastIndexOf('c', 15)).isEqualTo(5);
+		assertThat(r.increment()
+			.lastIndexOf('f', 6)).isEqualTo(-1);
 	}
 
 	@Test

@@ -50,7 +50,19 @@ public class StringRover implements CharSequence {
 	}
 
 	public int indexOf(int ch, int from) {
-		return string.indexOf(ch, offset + from) - offset;
+		int index = string.indexOf(ch, offset + from) - offset;
+		if (index >= 0) {
+			return index;
+		}
+		return -1;
+	}
+
+	public int lastIndexOf(int ch, int from) {
+		int index = string.lastIndexOf(ch, offset + from) - offset;
+		if (index >= 0) {
+			return index;
+		}
+		return -1;
 	}
 
 	public String substring(int start, int end) {
