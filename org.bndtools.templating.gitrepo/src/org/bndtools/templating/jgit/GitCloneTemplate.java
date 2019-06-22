@@ -28,10 +28,11 @@ import org.osgi.framework.Version;
 import org.osgi.service.metatype.ObjectClassDefinition;
 
 import aQute.lib.io.IO;
+import aQute.lib.regex.PatternConstants;
 
 public class GitCloneTemplate implements Template {
 
-    private static final Pattern SHA1_PATTERN = Pattern.compile("\\p{XDigit}{40}");
+    private static final Pattern SHA1_PATTERN = Pattern.compile(PatternConstants.SHA1);
     private final GitCloneTemplateParams params;
 
     private Repository checkedOut = null;

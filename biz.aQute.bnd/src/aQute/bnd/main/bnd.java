@@ -155,7 +155,7 @@ import aQute.service.reporter.Reporter;
  */
 public class bnd extends Processor {
 	private static Logger						logger					= LoggerFactory.getLogger(bnd.class);
-	static Pattern								ASSIGNMENT				= Pattern.compile(															//
+	private final static Pattern				ASSIGNMENT				= Pattern.compile(							//
 		"([^=]+) (= ( ?: (\"|'|) (.+) \\3 )? ) ?", Pattern.COMMENTS);
 	Settings									settings				= new Settings(
 		Home.getUserHomeBnd() + "/settings.json");
@@ -176,13 +176,10 @@ public class bnd extends Processor {
 																		};
 	private static final String					DEFAULT_LOG_LEVEL_KEY	= "org.slf4j.simpleLogger.defaultLogLevel";
 
-	static Pattern								JARCOMMANDS				= Pattern
+	private final static Pattern				JARCOMMANDS				= Pattern
 		.compile("(cv?0?(m|M)?f?)|(uv?0?M?f?)|(xv?f?)|(tv?f?)|(i)");
 
-	static Pattern								COMMAND					= Pattern.compile("\\w[\\w\\d]+");
-	static Pattern								EMAIL_P					= Pattern.compile(
-		"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
-		Pattern.CASE_INSENSITIVE);
+	private final static Pattern				COMMAND					= Pattern.compile("\\w{2,}");
 	static final String							BND_BND					= "**/bnd.bnd";
 	static final String							BNDRUN_ALL				= "**/*.bndrun";
 
@@ -3562,8 +3559,8 @@ public class bnd extends Processor {
 		boolean all();
 	}
 
-	static Pattern	BUG_P			= Pattern.compile("#([0-9]+)");
-	static Pattern	BND_COMMAND_P	= Pattern.compile("\\[bnd\\s+([\\w\\d]+)\\s*\\]");
+	private final static Pattern	BUG_P			= Pattern.compile("#(\\d+)");
+	private final static Pattern	BND_COMMAND_P	= Pattern.compile("\\[bnd\\s+(\\w+)\\s*\\]");
 
 	public void _changes(ChangesOptions options) {
 		boolean first = true;
@@ -3827,7 +3824,7 @@ public class bnd extends Processor {
 
 	}
 
-	static Pattern LINE_P = Pattern.compile("\\s*(([^\\s]#|[^#])+)(\\s*#.*)?");
+	private final static Pattern LINE_P = Pattern.compile("\\s*((\\S#|[^#])+)(\\s*#.*)?");
 
 	public void _bsn2url(Bsn2UrlOptions opts) throws Exception {
 		Project p = getProject(opts.project());

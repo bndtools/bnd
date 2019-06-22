@@ -246,8 +246,8 @@ public class FileRepo implements Plugin, RepositoryPlugin, Refreshable, Registry
 	Registry								registry;
 	boolean									createLatest		= true;
 	boolean									canWrite			= true;
-	Pattern									REPO_FILE			= Pattern.compile(
-		"(?:([-a-zA-z0-9_\\.]+)-)(" + Version.VERSION_STRING + "|" + Constants.VERSION_ATTR_LATEST + ")\\.(jar|lib)");
+	private final static Pattern			REPO_FILE			= Pattern
+		.compile("(?:([-.\\w]+)-)(" + Version.VERSION_STRING + "|" + Constants.VERSION_ATTR_LATEST + ")\\.(jar|lib)");
 	Reporter								reporter;
 	boolean									dirty				= true;
 	String									name;

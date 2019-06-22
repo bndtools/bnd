@@ -8,12 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import  aQute.lib.regex.PatternConstants;
 import aQute.libg.generics.Create;
 import aQute.libg.qtokens.QuotedTokenizer;
 import aQute.service.reporter.Reporter;
 
 public class OSGiHeader {
-	public final static Pattern TOKEN_P = Pattern.compile("[-a-zA-Z0-9_]+");
+	public final static Pattern TOKEN_P = Pattern.compile(PatternConstants.TOKEN);
 
 	static public Parameters parseHeader(String value) {
 		return parseHeader(value, null);

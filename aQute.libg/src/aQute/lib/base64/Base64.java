@@ -26,10 +26,11 @@ public class Base64 {
 
 	byte[]						data;
 
-	static final String			alphabet					= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-	static byte[]				values						= new byte[128];
-	static Pattern				BASE64_P					= Pattern
-		.compile("(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?");
+	private static final String		alphabet					= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+	private static final byte[]		values						= new byte[128];
+	private static final String		BASE64_C					= "[\\p{Alnum}+/]";
+	private static final Pattern	BASE64_P					= Pattern
+		.compile("(?:" + BASE64_C + "{4})*(?:" + BASE64_C + "{2}==|" + BASE64_C + "{3}=)?");
 
 	static {
 		for (int i = 0; i < values.length; i++) {

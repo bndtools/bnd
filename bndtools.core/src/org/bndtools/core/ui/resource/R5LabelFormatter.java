@@ -40,16 +40,14 @@ import bndtools.Plugin;
 
 public class R5LabelFormatter {
 
-    static FilterParser filterParser = new FilterParser();
+    private final static Pattern EE_PATTERN = Pattern.compile("osgi.ee=([^)]*).*version=([^)]*)");
 
-    static Pattern EE_PATTERN = Pattern.compile("osgi.ee=([^\\)]*).*version=([^\\)]*)");
-
-    static final Map<String, Pattern> FILTER_PATTERNS;
+    private static final Map<String, Pattern> FILTER_PATTERNS;
 
     static {
         FILTER_PATTERNS = new HashMap<>();
         FILTER_PATTERNS.put(ExecutionEnvironmentNamespace.EXECUTION_ENVIRONMENT_NAMESPACE, EE_PATTERN);
-        FILTER_PATTERNS.put(PackageNamespace.PACKAGE_NAMESPACE, Pattern.compile("osgi\\.wiring\\.package=([^\\)]*)"));
+        FILTER_PATTERNS.put(PackageNamespace.PACKAGE_NAMESPACE, Pattern.compile("osgi\\.wiring\\.package=([^)]*)"));
     }
 
     public static String getVersionAttributeName(String ns) {

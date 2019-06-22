@@ -79,7 +79,7 @@ public class JunitXmlReport implements TestReporter {
 		}
 
 		if (targetBundle != null) {
-			String header = (String) targetBundle.getHeaders()
+			String header = targetBundle.getHeaders()
 				.get(aQute.bnd.osgi.Constants.BND_ADDXMLTOTEST);
 			if (header != null) {
 				StringTokenizer st = new StringTokenizer(header, " ,");
@@ -129,7 +129,7 @@ public class JunitXmlReport implements TestReporter {
 
 	// <testcase classname="test.AnnotationsTest" name="testComponentReader"
 	// time="0.045" />
-	static Pattern NAMEANDCLASS = Pattern.compile("(.*)\\((.*)\\)");
+	private final static Pattern NAMEANDCLASS = Pattern.compile("(.*)\\((.*)\\)");
 
 	@Override
 	public void startTest(Test test) {

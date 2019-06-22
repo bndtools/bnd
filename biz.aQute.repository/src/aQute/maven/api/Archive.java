@@ -187,7 +187,7 @@ public class Archive implements Comparable<Archive> {
 		return classifier.compareTo(o.classifier);
 	}
 
-	final static Pattern FILEPATH_P = Pattern
+	private final static Pattern FILEPATH_P = Pattern
 		.compile("(?<group>([^/]+)(/[^/]+)+)/(?<artifact>[^/]+)/(?<version>[^/]+)/(?<name>[^/]+)");
 
 	public static Archive fromFilepath(String filePath) {

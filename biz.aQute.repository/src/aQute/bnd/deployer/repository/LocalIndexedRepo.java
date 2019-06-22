@@ -50,8 +50,8 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 
 	private final String		UPWARDS_ARROW			= " \u2191";
 	private final String		DOWNWARDS_ARROW			= " \u2193";
-	Pattern						REPO_FILE				= Pattern
-		.compile("([-a-zA-z0-9_\\.]+)(-|_)([0-9\\.]+)(-[-a-zA-z0-9_]+)?\\.(jar|lib)");
+	private static final Pattern	REPO_FILE				= Pattern
+		.compile("([-.\\w]+)(-|_)([.\\d]+)(-[-\\w]+)?\\.(jar|lib)");
 	private static final String	CACHE_PATH				= ".cache";
 	public static final String	PROP_LOCAL_DIR			= "local";
 	public static final String	PROP_READONLY			= "readonly";
@@ -203,7 +203,7 @@ public class LocalIndexedRepo extends AbstractIndexedRepo implements Refreshable
 		}
 	}
 
-	static Pattern INCREMENT_P = Pattern.compile("increment\\s*=\\s*\"(\\d+)\"");
+	private final static Pattern INCREMENT_P = Pattern.compile("increment\\s*=\\s*\"(\\d+)\"");
 
 	private synchronized void generateIndex(File indexFile, IRepositoryContentProvider provider) throws Exception {
 		if (indexFile.exists() && !indexFile.isFile())

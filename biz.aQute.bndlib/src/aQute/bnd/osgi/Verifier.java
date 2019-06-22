@@ -26,6 +26,7 @@ import aQute.bnd.version.VersionRange;
 import aQute.lib.base64.Base64;
 import aQute.lib.filter.Filter;
 import aQute.lib.io.IO;
+import aQute.lib.regex.PatternConstants;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA1;
 import aQute.libg.qtokens.QuotedTokenizer;
@@ -91,26 +92,40 @@ public class Verifier extends Processor {
 	final static Pattern		CARDINALITY_PATTERN				= Pattern.compile("single|multiple");
 	final static Pattern		RESOLUTION_PATTERN				= Pattern.compile("optional|mandatory");
 	final static Pattern		BUNDLEMANIFESTVERSION			= Pattern.compile("2");
-	public final static String	SYMBOLICNAME_STRING				= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
+
+	public final static Pattern	TOKEN							= Pattern.compile(PatternConstants.TOKEN);
+	public final static String	EXTENDED_S						= "[-.\\w]+";
+	public final static Pattern	EXTENDED_P						= Pattern.compile(EXTENDED_S);
+	public final static String	QUOTEDSTRING					= "\"[^\"]*\"";
+	public final static Pattern	QUOTEDSTRING_P					= Pattern.compile(QUOTEDSTRING);
+	public final static String	ARGUMENT_S						= "(:?" + EXTENDED_S + ")|(?:" + QUOTEDSTRING + ")";
+	public final static Pattern	ARGUMENT_P						= Pattern.compile(ARGUMENT_S);
+	public final static String	SYMBOLICNAME_STRING				= PatternConstants.SYMBOLICNAME;
 	public final static Pattern	SYMBOLICNAME					= Pattern.compile(SYMBOLICNAME_STRING);
 
-	public final static String	VERSION_STRING					= "[0-9]{1,9}(\\.[0-9]{1,9}(\\.[0-9]{1,9}(\\.[0-9A-Za-z_-]+)?)?)?";
+	public final static String	VERSION_STRING					= "\\d{1,9}(\\.\\d{1,9}(\\.\\d{1,9}(\\."
+		+ PatternConstants.TOKEN + ")?)?)?";
+	public final static String	VERSION_S						= "\\d{1,9}(:?\\.\\d{1,9}(:?\\.\\d{1,9}(:?\\."
+		+ PatternConstants.TOKEN + ")?)?)?";
 	public final static Pattern	VERSION							= Pattern.compile(VERSION_STRING);
-	final static Pattern		FILTEROP						= Pattern.compile("=|<=|>=|~=");
+	public final static Pattern	VERSION_P						= Pattern.compile(VERSION_S);
 	public final static Pattern	VERSIONRANGE					= Pattern.compile("((\\(|\\[)"
-
 		+ VERSION_STRING + "," + VERSION_STRING + "(\\]|\\)))|" + VERSION_STRING);
+	public final static String	VERSION_RANGE_S					= "(?:(:?\\(|\\[)" + VERSION_S + "," + VERSION_S
+		+ "(\\]|\\)))|" + VERSION_S;
+	public final static Pattern	VERSIONRANGE_P					= VERSIONRANGE;
+
+	final static Pattern		FILTEROP						= Pattern.compile("=|<=|>=|~=");
 	final static Pattern		FILE							= Pattern
 		.compile("/?[^/\"\n\r\u0000]+(/[^/\"\n\r\u0000]+)*");
 	final static Pattern		WILDCARDPACKAGE					= Pattern
-		.compile("((\\p{Alnum}|_)+(\\.(\\p{Alnum}|_)+)*(\\.\\*)?)|\\*");
-	public final static Pattern	ISO639							= Pattern.compile("[A-Z][A-Z]");
-	public final static Pattern	HEADER_PATTERN					= Pattern.compile("[A-Za-z0-9][-a-zA-Z0-9_]+");
-	public final static Pattern	TOKEN							= Pattern.compile("[-a-zA-Z0-9_]+");
-
+		.compile("((\\w)+(\\.(\\w)+)*(\\.\\*)?)|\\*");
+	public final static Pattern	ISO639							= Pattern.compile("\\p{Upper}{2}");
+	public final static Pattern	HEADER_PATTERN					= Pattern
+		.compile("\\p{Alnum}" + PatternConstants.TOKEN);
 	public final static Pattern	NUMBERPATTERN					= Pattern.compile("\\d+");
 	public final static Pattern	FLOATPATTERN					= Pattern
-		.compile("[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?");
+		.compile("[-+]?\\d*\\.?\\d+([eE][-+]?\\d+)?");
 	public final static Pattern	BOOLEANPATTERN					= Pattern.compile("true|false",
 		Pattern.CASE_INSENSITIVE);
 	public final static Pattern	PACKAGEPATTERN					= Pattern.compile(
@@ -124,20 +139,8 @@ public class Verifier extends Processor {
 	public final static Pattern	ANYPATTERN						= Pattern.compile(".*");
 	public final static Pattern	FILTERPATTERN					= Pattern.compile(".*");
 	public final static Pattern	TRUEORFALSEPATTERN				= Pattern.compile("true|false|TRUE|FALSE");
-	public static final Pattern	WILDCARDNAMEPATTERN				= Pattern.compile(".*");
-	public static final Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
-
-	public final static String	VERSION_S						= "[0-9]{1,9}(:?\\.[0-9]{1,9}(:?\\.[0-9]{1,9}(:?\\.[0-9A-Za-z_-]+)?)?)?";
-	public final static Pattern	VERSION_P						= Pattern.compile(VERSION_S);
-	public final static String	VERSION_RANGE_S					= "(?:(:?\\(|\\[)" + VERSION_S + "," + VERSION_S
-		+ "(\\]|\\)))|" + VERSION_S;
-	public final static Pattern	VERSIONRANGE_P					= VERSIONRANGE;
-	public static String		EXTENDED_S						= "[-a-zA-Z0-9_.]+";
-	public static Pattern		EXTENDED_P						= Pattern.compile(EXTENDED_S);
-	public static String		QUOTEDSTRING					= "\"[^\"]*\"";
-	public static Pattern		QUOTEDSTRING_P					= Pattern.compile(QUOTEDSTRING);
-	public static String		ARGUMENT_S						= "(:?" + EXTENDED_S + ")|(?:" + QUOTEDSTRING + ")";
-	public static Pattern		ARGUMENT_P						= Pattern.compile(ARGUMENT_S);
+	public final static Pattern	WILDCARDNAMEPATTERN				= Pattern.compile(".*");
+	public final static Pattern	BUNDLE_ACTIVATIONPOLICYPATTERN	= Pattern.compile("lazy");
 
 	public final static String	OSNAMES[]						= {
 		"AIX",																																// IBM
@@ -1053,7 +1056,7 @@ public class Verifier extends Processor {
 					else
 						hpat = Pattern.compile(header);
 
-					FileLine fileLine = analyzer.getHeader(hpat, Pattern.compile(Pattern.quote(pname)));
+					FileLine fileLine = analyzer.getHeader(hpat, Pattern.compile(pname, Pattern.LITERAL));
 					fileLine.set(l);
 					l.context(pname);
 				}

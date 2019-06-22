@@ -199,6 +199,7 @@ public class Launcher implements ServiceListener {
 		this.properties = new Properties();
 	}
 
+	private static final Pattern QUOTED_P = Pattern.compile("^([\"'])(.*)\\1$");
 	public void init(String... args) throws Throwable {
 
 		final InputStream in;
@@ -206,8 +207,7 @@ public class Launcher implements ServiceListener {
 
 		String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
 		if (path != null) {
-			Matcher matcher = Pattern.compile("^([\"'])(.*)\\1$")
-				.matcher(path);
+			Matcher matcher = QUOTED_P.matcher(path);
 			if (matcher.matches()) {
 				path = matcher.group(2);
 			}

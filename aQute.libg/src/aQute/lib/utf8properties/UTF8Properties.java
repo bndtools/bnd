@@ -198,7 +198,7 @@ public class UTF8Properties extends Properties {
 		return result;
 	}
 
-	private static final Pattern HERE_PATTERN = Pattern.compile(Pattern.quote("${.}"));
+	private static final Pattern HERE_PATTERN = Pattern.compile("${.}", Pattern.LITERAL);
 
 	/**
 	 * Replace the string "${.}" in all the values with the path of the

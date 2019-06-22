@@ -37,8 +37,9 @@ import aQute.lib.io.IO;
 @BndPlugin(name = "spring")
 public class SpringComponent implements AnalyzerPlugin {
 	static Transformer	transformer;
-	static Pattern		SPRING_SOURCE	= Pattern.compile("META-INF/spring/.*\\.xml");
-	static Pattern		QN				= Pattern.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
+	private final static Pattern	SPRING_SOURCE	= Pattern.compile("META-INF/spring/.*\\.xml");
+	private final static Pattern	QN				= Pattern
+		.compile("[_A-Za-z$][_A-Za-z0-9$]*(\\.[_A-Za-z$][_A-Za-z0-9$]*)*");
 
 	public static Set<CharSequence> analyze(InputStream in) throws Exception {
 		if (transformer == null) {

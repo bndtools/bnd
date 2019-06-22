@@ -18,6 +18,8 @@ import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.Version;
 import org.osgi.framework.wiring.FrameworkWiring;
 
+import aQute.lib.regex.PatternConstants;
+
 /**
  * This activator is placed in bundles that will load embedded bundles when
  * activated. We mark installed bundles with our bsn + "@" their bsn. This makes
@@ -25,11 +27,11 @@ import org.osgi.framework.wiring.FrameworkWiring;
  */
 public class EmbeddedActivator implements BundleActivator {
 	final List<Bundle>			bundles			= new ArrayList<>();
-	final static String			SYMBOLICNAME_S	= "[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)*";
-	public final static String	VERSION_S		= "(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:[-_\\da-zA-Z]+))?)?)?";
+	private final static String		VERSION_S		= "(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:\\d{1,9})(?:\\.(?:"
+		+ PatternConstants.TOKEN + "))?)?)?";
 
-	final static Pattern		BSN_VERSION_P	= Pattern
-		.compile("\\s*(" + SYMBOLICNAME_S + ")\\s*=\\s*(" + VERSION_S + ")\\s*");
+	private final static Pattern	BSN_VERSION_P	= Pattern
+		.compile("\\s*(" + PatternConstants.SYMBOLICNAME + ")\\s*=\\s*(" + VERSION_S + ")\\s*");
 
 	/**
 	 * The activator start will install any bundles that are not already

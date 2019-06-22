@@ -2,7 +2,6 @@ package aQute.bnd.make;
 
 import java.io.File;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import aQute.bnd.osgi.Builder;
 import aQute.bnd.osgi.Constants;
@@ -12,7 +11,6 @@ import aQute.bnd.osgi.Resource;
 import aQute.bnd.service.MakePlugin;
 
 public class MakeBnd implements MakePlugin, Constants {
-	final static Pattern JARFILE = Pattern.compile("(.+)\\.(jar|ipa)");
 
 	@Override
 	public Resource make(Builder builder, String destination, Map<String, String> argumentsOnMake) throws Exception {

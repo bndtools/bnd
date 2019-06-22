@@ -18,11 +18,11 @@ import aQute.libg.remote.Delta;
 import aQute.libg.remote.Sink;
 
 class SourceFS {
-	static Pattern								WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
-	static Pattern								WINDOWS_FILE_P	= Pattern
+	private final static Pattern				WINDOWS_PREFIX	= Pattern.compile("(\\p{Alpha}):\\\\(.*)");
+	private final static Pattern				WINDOWS_FILE_P	= Pattern
 		.compile("(?:\\p{Alpha}:|\\\\)(\\\\[\\p{Alnum}-_+.~@$%&=]+)*");
-	static Pattern								UNIX_FILE_P		= Pattern.compile("(/[\\p{Alnum}-_+.~@$%&=]+)+");
-	static Pattern								LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P
+	private final static Pattern				UNIX_FILE_P		= Pattern.compile("(/[\\p{Alnum}-_+.~@$%&=]+)+");
+	private final static Pattern				LOCAL_P			= File.separatorChar == '\\' ? WINDOWS_FILE_P
 		: UNIX_FILE_P;
 
 	private MultiMap<String, File>				shas			= new MultiMap<>();

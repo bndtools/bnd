@@ -57,6 +57,7 @@ import aQute.bnd.version.Version;
 import aQute.lib.collections.MultiMap;
 import aQute.lib.hex.Hex;
 import aQute.lib.io.IO;
+import aQute.lib.regex.PatternConstants;
 import aQute.lib.strings.Strings;
 import aQute.libg.generics.Create;
 
@@ -67,7 +68,7 @@ import aQute.libg.generics.Create;
  */
 public class Builder extends Analyzer {
 	private final static Logger		logger						= LoggerFactory.getLogger(Builder.class);
-	static Pattern					IR_PATTERN					= Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
+	private final static Pattern	IR_PATTERN					= Pattern.compile("[{]?-?@?(?:[^=]+=)?\\s*([^}!]+).*");
 	private final DiffPluginImpl	differ						= new DiffPluginImpl();
 	private Pattern					xdoNotCopy					= null;
 	private static final int		SPLIT_MERGE_LAST			= 1;
@@ -1831,9 +1832,9 @@ public class Builder extends Analyzer {
 	 * a .git/HEAD file, going up in the file hierarchy. Then get this file, and
 	 * resolve any symbolic reference.
 	 */
-	static Pattern	GITREF_P		= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/([^\\s]+))\\s*");
+	private final static Pattern	GITREF_P		= Pattern.compile("ref:\\s*(refs/(heads|tags|remotes)/(\\S+))\\s*");
 
-	static String	_githeadHelp	= "${githead}, provide the SHA for the current git head";
+	final static String		_githeadHelp	= "${githead}, provide the SHA for the current git head";
 
 	public String _githead(String[] args) throws IOException {
 		Macro.verifyCommand(args, _githeadHelp, null, 1, 1);
@@ -1867,7 +1868,7 @@ public class Builder extends Analyzer {
 							if (file.isFile()) {
 								String refs = IO.collect(file);
 								Pattern packedReferenceLinePattern = Pattern
-									.compile("([a-fA-F0-9]{40,40})\\s+" + reference + "\\s*\n");
+									.compile("(" + PatternConstants.SHA1 + ")\\s+" + reference + "\\s*\n");
 								Matcher packedReferenceMatcher = packedReferenceLinePattern.matcher(refs);
 								if (packedReferenceMatcher.find()) {
 									head = packedReferenceMatcher.group(1);

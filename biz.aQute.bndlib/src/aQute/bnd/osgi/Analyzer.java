@@ -637,7 +637,7 @@ public class Analyzer extends Processor {
 	/*
 	 * Helper method to set the package info resource
 	 */
-	static Pattern OLD_PACKAGEINFO_SYNTAX_P = Pattern
+	final static Pattern OLD_PACKAGEINFO_SYNTAX_P = Pattern
 		.compile("class\\s+(.+)\\s+version\\s+(" + Verifier.VERSION_S + ")");
 
 	Attrs parsePackageinfo(PackageRef packageRef, Resource r) throws Exception {
@@ -690,7 +690,7 @@ public class Analyzer extends Processor {
 	/*
 	 * Parse the package-info.java class
 	 */
-	static Pattern OBJECT_REFERENCE = Pattern.compile("([^\\.]+\\.)*([^\\.]+)");
+	final static Pattern OBJECT_REFERENCE = Pattern.compile("([^.]+\\.)*([^.]+)");
 
 	private Attrs parsePackageInfoClass(Resource r) throws Exception {
 		final Attrs info = new Attrs();
@@ -1481,7 +1481,7 @@ public class Analyzer extends Processor {
 		return getBndInfo("version", "<unknown>");
 	}
 
-	static SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+	final static SimpleDateFormat df = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
 
 	static {
 		df.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -2658,13 +2658,11 @@ public class Analyzer extends Processor {
 	 * the version syntax. This method cleans up such a version to match an OSGi
 	 * version.
 	 */
-	static Pattern	fuzzyVersion		= Pattern.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^a-zA-Z0-9](.*))?",
+	final static Pattern	fuzzyVersion		= Pattern.compile("(\\d+)(\\.(\\d+)(\\.(\\d+))?)?([^\\p{Alnum}](.*))?",
 		Pattern.DOTALL);
-	static Pattern	fuzzyVersionRange	= Pattern
-		.compile("(\\(|\\[)\\s*([-\\da-zA-Z.]+)\\s*,\\s*([-\\da-zA-Z.]+)\\s*(\\]|\\))", Pattern.DOTALL);
-	static Pattern	fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
-
-	static Pattern	nummeric			= Pattern.compile("\\d*");
+	final static Pattern	fuzzyVersionRange	= Pattern
+		.compile("(\\(|\\[)\\s*([-.\\w]+)\\s*,\\s*([-.\\w]+)\\s*(\\]|\\))", Pattern.DOTALL);
+	final static Pattern	fuzzyModifier		= Pattern.compile("(\\d+[.-])*(.*)", Pattern.DOTALL);
 
 	static public String cleanupVersion(String version) {
 
@@ -3062,11 +3060,11 @@ public class Analyzer extends Processor {
 	 * md5 macro
 	 */
 
-	static String _md5Help = "${md5;path}";
-
+	private final static Pattern	BASE64HEX_P	= Pattern.compile("base64|hex");
+	final static String				_md5Help	= "${md5;path}";
 	public String _md5(String args[]) throws Exception {
 		Macro.verifyCommand(args, _md5Help, new Pattern[] {
-			null, null, Pattern.compile("base64|hex")
+			null, null, BASE64HEX_P
 		}, 2, 3);
 
 		try (Digester<MD5> digester = MD5.getDigester()) {
@@ -3089,11 +3087,11 @@ public class Analyzer extends Processor {
 	 * SHA1 macro
 	 */
 
-	static String _sha1Help = "${sha1;path}";
+	final static String _sha1Help = "${sha1;path}";
 
 	public String _sha1(String args[]) throws Exception {
 		Macro.verifyCommand(args, _sha1Help, new Pattern[] {
-			null, null, Pattern.compile("base64|hex")
+			null, null, BASE64HEX_P
 		}, 2, 3);
 		try (Digester<SHA1> digester = SHA1.getDigester()) {
 			Resource r = dot.getResource(args[1]);

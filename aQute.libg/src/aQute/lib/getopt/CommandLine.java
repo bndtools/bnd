@@ -37,8 +37,8 @@ import aQute.service.reporter.Reporter;
  */
 @SuppressWarnings("unchecked")
 public class CommandLine {
-	static int			LINELENGTH	= 60;
-	static Pattern		ASSIGNMENT	= Pattern.compile("(\\w[\\w\\d]*+)\\s*=\\s*([^\\s]+)\\s*");
+	final static int		LINELENGTH	= 60;
+	private final static Pattern	ASSIGNMENT	= Pattern.compile("(\\w++)\\s*=\\s*(\\S+)\\s*");
 	Reporter			reporter;
 	Justif				justif		= new Justif(80, 30, 32, 70);
 	CommandLineMessages	msg;
@@ -489,7 +489,7 @@ public class CommandLine {
 		return sb.toString();
 	}
 
-	static Pattern LAST_PART = Pattern.compile(".*[\\$\\.]([^\\$\\.]+)");
+	private final static Pattern LAST_PART = Pattern.compile(".*[.$]([^.$]+)");
 
 	private static String lastPart(String name) {
 		Matcher m = LAST_PART.matcher(name);

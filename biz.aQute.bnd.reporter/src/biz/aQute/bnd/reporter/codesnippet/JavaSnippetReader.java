@@ -29,7 +29,7 @@ import biz.aQute.bnd.reporter.codesnippet.dto.CodeSnippetProgramDTO;
  */
 class JavaSnippetReader extends SnippetReader {
 
-	private static Pattern						snippetPattern	= Pattern.compile("(?:\\$\\{\\s*snippet)(.*?)(?:\\})",
+	private static final Pattern				snippetPattern	= Pattern.compile("(?:\\$\\{\\s*snippet)(.*?)(?:\\})",
 		Pattern.DOTALL);
 
 	private final JavaParser					_parser;

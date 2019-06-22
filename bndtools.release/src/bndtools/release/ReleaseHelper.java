@@ -57,7 +57,7 @@ import bndtools.release.nl.Messages;
 
 public class ReleaseHelper {
 
-    public final static String VERSION_WITH_MACRO_STRING = "(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\$\\{[-_\\.\\da-zA-Z]+\\})";//$NON-NLS-1$
+    public final static String VERSION_WITH_MACRO_STRING = "(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\$\\{[-.\\w]+\\})";//$NON-NLS-1$
     public final static Pattern VERSION_WITH_MACRO = Pattern.compile(VERSION_WITH_MACRO_STRING);
 
     public static void updateProject(ReleaseContext context) throws Exception {
@@ -532,7 +532,8 @@ public class ReleaseHelper {
                             info.macro = bundleVersion;
                             bsns.add(info);
                         }
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                    }
                 }
             }
         }

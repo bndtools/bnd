@@ -2,6 +2,7 @@ package aQute.libg.parameters;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,17 +16,8 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 	private static final char	DUPLICATE_MARKER	= '~';
 	private static final long	serialVersionUID	= 1L;
 
-	public ParameterMap(String headers) {
-		if (headers == null)
-			return;
-		parse(headers);
+	public ParameterMap() {
 	}
-
-	public ParameterMap(Map<String, Map<String, String>> maps) {
-		maps.forEach((k, v) -> put(k, new Attributes(v)));
-	}
-
-	public ParameterMap() {}
 
 	/**
 	 * <pre>
@@ -37,83 +29,108 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 	 * 
 	 * @param parameters
 	 */
-	private void parse(String parameters) {
-		QuotedTokenizer qt = new QuotedTokenizer(parameters, ";=,", false);
-
-		do { // parameters ::= clause ( ',' clause ) *
-			clause(qt);
-		} while (qt.getSeparator() == ',');
-
-		String token = qt.nextToken();
-		error(token != null && !token.isEmpty(), qt, "Parsing header: '" + parameters + "' has trailing " + qt);
+	public ParameterMap(String parameters) {
+		this();
+		if (parameters != null) {
+			new Parser(parameters).parse();
+		}
 	}
 
-	/*
-	 * clause = key ( ';' keyOrAttribute )* ( '=' attributeValue ) attributes *
-	 */
-	private void clause(QuotedTokenizer qt) {
-		Attributes attrs = new Attributes();
+	public ParameterMap(Map<String, Map<String, String>> maps) {
+		this();
+		maps.forEach((k, v) -> put(k, new Attributes(v)));
+	}
 
-		// key
+	class Parser {
+		private final String				parameters;
+		private final QuotedTokenizer		qt;
+		private final Map<String, String>	duplicates	= new HashMap<>();
 
-		String key = qt.nextToken(";,");
-		if (key == null)
-			return;
+		Parser(String parameters) {
+			this.parameters = parameters;
+			qt = new QuotedTokenizer(parameters, ";=,", false);
+		}
 
-		put(uniqueKey(key), attrs);
+		void parse() {
+			do { // parameters ::= clause ( ',' clause ) *
+				clause();
+			} while (qt.getSeparator() == ',');
 
-		while (qt.getSeparator() == ';') {
+			String token = qt.nextToken();
+			error(token != null && !token.isEmpty(), "Parsing header: '" + parameters + "' has trailing " + qt);
+		}
 
-			String keyOrAttribute = qt.nextToken(";=,");
-			error(keyOrAttribute == null, qt, "expected a clause key or attribute key");
+		/*
+		 * clause = key ( ';' keyOrAttribute )* ( '=' attributeValue )
+		 * attributes *
+		 */
+		private void clause() {
+			Attributes attrs = new Attributes();
 
-			switch (qt.getSeparator()) {
-				case '=' :
-					String attributeValue = qt.nextToken(";,");
-					error(attributeValue == null, qt, "expected an attribute value");
+			// key
 
-					attrs.put(keyOrAttribute, attributeValue);
+			String key = qt.nextToken(";,");
+			if (key == null)
+				return;
 
-					attributes(qt, attrs);
-					break;
+			put(uniqueKey(key), attrs);
 
-				case ';' :
-				case ',' :
-					put(uniqueKey(keyOrAttribute), attrs);
-					break;
+			while (qt.getSeparator() == ';') {
 
-				default :
-					error(true, qt, "unrecognized separator ");
+				String keyOrAttribute = qt.nextToken(";=,");
+				error(keyOrAttribute == null, "expected a clause key or attribute key");
+
+				switch (qt.getSeparator()) {
+					case '=' :
+						String attributeValue = qt.nextToken(";,");
+						error(attributeValue == null, "expected an attribute value");
+
+						attrs.put(keyOrAttribute, attributeValue);
+
+						attributes(attrs);
+						break;
+
+					case ';' :
+					case ',' :
+						put(uniqueKey(keyOrAttribute), attrs);
+						break;
+
+					default :
+						error(true, "unrecognized separator ");
+				}
 			}
 		}
-	}
 
-	// attributes = attribute *
-	private void attributes(QuotedTokenizer qt, Map<String, String> attrs) {
-		while (qt.getSeparator() == ';') {
-			attribute(qt, attrs);
+		private String uniqueKey(String key) {
+			return duplicates.compute(key,
+				(k, v) -> ParameterMap.this.uniqueKey((v == null) ? k : v + DUPLICATE_MARKER));
 		}
-	}
 
-	private void attribute(QuotedTokenizer qt, Map<String, String> attrs) {
-		String attributeKey = qt.nextToken("=,;");
-		error(attributeKey == null, qt, "expected an attribute key");
-		error(qt.getSeparator() != '=', qt, "expected an equal sign after an attribute key");
-		String attributeValue = qt.nextToken(";,");
-		error(attributeValue == null, qt, "expected an attribute value");
-		attrs.put(attributeKey, attributeValue);
-	}
+		// attributes = attribute *
+		private void attributes(Map<String, String> attrs) {
+			while (qt.getSeparator() == ';') {
+				attribute(attrs);
+			}
+		}
 
-	private void error(boolean b, QuotedTokenizer qt, String string) {
-		if (b)
-			throw new IllegalArgumentException(string + " : " + qt);
+		private void attribute(Map<String, String> attrs) {
+			String attributeKey = qt.nextToken("=,;");
+			error(attributeKey == null, "expected an attribute key");
+			error(qt.getSeparator() != '=', "expected an equal sign after an attribute key");
+			String attributeValue = qt.nextToken(";,");
+			error(attributeValue == null, "expected an attribute value");
+			attrs.put(attributeKey, attributeValue);
+		}
+
+		private void error(boolean b, String string) {
+			if (b)
+				throw new IllegalArgumentException(string + " : " + qt);
+		}
 	}
 
 	public Map<String, String> put(String key, Map<String, String> attrs) {
 		key = uniqueKey(key);
-		if (attrs == null)
-			attrs = new LinkedHashMap<String, String>();
-		return super.put(key, new Attributes(attrs));
+		return super.put(key, (attrs == null) ? new Attributes() : new Attributes(attrs));
 	}
 
 	public String toString() {
@@ -133,25 +150,27 @@ public class ParameterMap extends LinkedHashMap<String, Attributes> {
 			appendable.append(key);
 			e.getValue()
 				.append(appendable);
-			del = ", ";
+			del = ",";
 		}
 	}
 
-	public static boolean isDuplicate(String name) {
-		return name.length() > 0 && name.charAt(name.length() - 1) == DUPLICATE_MARKER;
+	public static boolean isDuplicate(String key) {
+		return key.indexOf(DUPLICATE_MARKER, key.length() - 1) >= 0;
 	}
 
-	private String uniqueKey(String key) {
-		while (this.containsKey(key)) {
+	String uniqueKey(String key) {
+		while (containsKey(key)) {
 			key += DUPLICATE_MARKER;
 		}
 		return key;
 	}
 
-	public String removeDuplicateMarker(String key) {
-		while (isDuplicate(key))
-			key = key.substring(0, key.length() - 1);
-		return key;
+	public static String removeDuplicateMarker(String key) {
+		int i = key.length() - 1;
+		while ((i >= 0) && (key.charAt(i) == DUPLICATE_MARKER)) {
+			--i;
+		}
+		return key.substring(0, i + 1);
 	}
 
 	public ParameterMap restrict(Collection<String> matchers) {

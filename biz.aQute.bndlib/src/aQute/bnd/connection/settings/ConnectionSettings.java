@@ -23,7 +23,6 @@ import java.util.Formatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -459,10 +458,6 @@ public class ConnectionSettings {
 			processor.error("Invalid XML in connection settings for file : %s: %s", file, e.getMessage());
 		}
 	}
-
-	final static String	IPNR_PART_S	= "([01]\\d\\d)|(2[0-4]\\d)|(25[0-5])";
-	final static String	IPNR_S		= IPNR_PART_S + "." + IPNR_PART_S + "." + IPNR_PART_S + "." + IPNR_PART_S;
-	static Pattern		MASK_P		= Pattern.compile("(?<if>[^:]):(?<ip>[^/])/(?<valid>.*)");
 
 	private boolean isActive(ProxyDTO proxy) throws SocketException {
 		if (!proxy.active)

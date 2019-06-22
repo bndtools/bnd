@@ -38,9 +38,9 @@ import bndtools.model.resolution.RequirementWrapper;
 
 public abstract class PackageDropAdapter<T> extends ViewerDropAdapter {
 
-    private static final String PACKAGE_FILTER_PATTERN = "osgi.wiring.package=([^\\)]*)";
+    private static final String PACKAGE_FILTER_PATTERN = "osgi.wiring.package=([^)]*)";
 
-    private final Pattern pkgFilterPattern = Pattern.compile(PACKAGE_FILTER_PATTERN);
+    private static final Pattern pkgFilterPattern = Pattern.compile(PACKAGE_FILTER_PATTERN);
 
     public PackageDropAdapter(Viewer viewer) {
         super(viewer);

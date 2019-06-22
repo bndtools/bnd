@@ -285,9 +285,9 @@ public class ProjectBuilder extends Builder {
 
 	// *
 	private static final Pattern	PATTERN_EXPORT_PACKAGE		= Pattern
-		.compile(Pattern.quote(Constants.EXPORT_PACKAGE), Pattern.CASE_INSENSITIVE);
+		.compile(Constants.EXPORT_PACKAGE, Pattern.CASE_INSENSITIVE | Pattern.LITERAL);
 	private static final Pattern	PATTERN_EXPORT_CONTENTS		= Pattern
-		.compile(Pattern.quote(Constants.EXPORT_CONTENTS), Pattern.CASE_INSENSITIVE);
+		.compile(Constants.EXPORT_CONTENTS, Pattern.CASE_INSENSITIVE | Pattern.LITERAL);
 	private static final Pattern	PATTERN_VERSION_ANNOTATION	= Pattern
 		.compile("@(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*\\.)*Version\\s*([^)]+)");
 	private static final Pattern	PATTERN_VERSION_PACKAGEINFO	= Pattern.compile("^\\s*version\\s.*$");

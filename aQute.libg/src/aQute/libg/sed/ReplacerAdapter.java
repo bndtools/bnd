@@ -52,7 +52,7 @@ import aQute.service.reporter.Reporter;
  */
 public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	static final Random	random		= new Random();
-	static Pattern		WILDCARD	= Pattern.compile("[*?|({\\[]");
+	private final static Pattern	WILDCARD	= Pattern.compile("[*?|({\\[]");
 	Domain				domain;
 	List<Object>		targets		= new ArrayList<>();
 	boolean				flattening;
@@ -333,7 +333,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * Parse the key as a command. A command consist of parameters separated by
 	 * ':'.
 	 */
-	static Pattern commands = Pattern.compile("(?<!\\\\);");
+	private final static Pattern commands = Pattern.compile("(?<!\\\\);");
 
 	private String doCommands(String key, Link source) {
 		String[] args = commands.split(key);

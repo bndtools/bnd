@@ -25,7 +25,8 @@ public class PomFromManifest extends WriteResource {
 	final Manifest			manifest;
 	private List<String>	scm			= new ArrayList<>();
 	private List<String>	developers	= new ArrayList<>();
-	final static Pattern	NAME_URL	= Pattern.compile("(.*)(http://.*)");
+	private final static Pattern	NAME_URL	= Pattern.compile("(.*)(https?://.*)", Pattern.CASE_INSENSITIVE);
+	private final static Pattern	EMAIL_P		= Pattern.compile("([^@]+)@([-.\\w]+)\\.([-.\\w]+)");
 	String					xbsn;
 	String					xversion;
 	String					xgroupId;
@@ -168,8 +169,7 @@ public class PomFromManifest extends WriteResource {
 				String xname = email;
 				String organization = null;
 
-				Matcher m = Pattern.compile("([^@]+)@([\\d\\w\\-_\\.]+)\\.([\\d\\w\\-_\\.]+)")
-					.matcher(email);
+				Matcher m = EMAIL_P.matcher(email);
 				if (m.matches()) {
 					xname = m.group(1);
 					organization = m.group(2);

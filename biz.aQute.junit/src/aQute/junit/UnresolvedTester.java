@@ -14,7 +14,7 @@ import junit.framework.TestCase;
  */
 public class UnresolvedTester extends TestCase {
 	BundleContext	context;
-	static Pattern	IP_P	= Pattern
+	private final static Pattern	IP_P	= Pattern
 		.compile(" \\(&\\(osgi.wiring.package=([^)]+)\\)\\(version>=([^)]+)\\)\\(!\\(version>=([^)]+)\\)\\)\\)");
 
 	public void setBundleContext(BundleContext context) {

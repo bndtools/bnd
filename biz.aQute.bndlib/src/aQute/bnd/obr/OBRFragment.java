@@ -38,7 +38,8 @@ public class OBRFragment {
 
 	// The mime-type of an OSGi bundle
 	static final String	MIME_TYPE_OSGI_BUNDLE	= "application/vnd.osgi.bundle";
-	static Pattern		EE_PATTERN				= Pattern.compile("[^.]-([\\d]+(?:\\.[\\d]+(?:\\.[\\d]+(?:\\.)?)?)?)");
+	private final static Pattern	EE_PATTERN				= Pattern
+		.compile("[^.]-(\\d+(?:\\.\\d+(?:\\.\\d+(?:\\.)?)?)?)");
 
 	@SuppressWarnings("deprecation")
 	public static Reporter parse(Jar jar, ResourceBuilder resource) throws Exception {

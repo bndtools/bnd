@@ -522,7 +522,7 @@ public class CapReqBuilder {
 	 * characters are defined by Character.isWhiteSpace().
 	 */
 
-	static Pattern ESCAPE_FILTER_VALUE_P = Pattern.compile("[\\\\()*]");
+	private final static Pattern ESCAPE_FILTER_VALUE_P = Pattern.compile("[\\\\*()]");
 
 	public static String escapeFilterValue(String value) {
 		return ESCAPE_FILTER_VALUE_P.matcher(value)

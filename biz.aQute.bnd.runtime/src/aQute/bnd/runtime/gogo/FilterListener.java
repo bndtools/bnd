@@ -11,7 +11,7 @@ import org.osgi.framework.hooks.service.ListenerHook;
 import aQute.lib.collections.MultiMap;
 
 class FilterListener implements ListenerHook {
-	final static Pattern						LISTENER_INFO_PATTERN	= Pattern.compile("\\(objectClass=([^)]+)\\)");
+	private final static Pattern				LISTENER_INFO_PATTERN	= Pattern.compile("\\(objectClass=([^)]+)\\)");
 	final MultiMap<String, BundleContext>		listenerContexts		= new MultiMap<String, BundleContext>();
 
 	volatile boolean							quiting;

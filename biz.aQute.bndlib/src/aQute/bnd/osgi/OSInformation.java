@@ -23,8 +23,8 @@ public class OSInformation {
 	String					osnames							= null;
 	Version					osversion						= null;
 
-	static private String	regexQualifierNotAllowedChars	= "[^\\p{Alnum}-_]";
-	static private Pattern	digitPattern					= Pattern.compile("(\\d+).*");
+	private final static String		regexQualifierNotAllowedChars	= "[^-\\w]";
+	private final static Pattern	digitPattern					= Pattern.compile("(\\d+).*");
 
 	final static String[][]	processorFamilies				= {
 		new String[] {
@@ -65,7 +65,8 @@ public class OSInformation {
 			"V850e"
 		},
 	};
-	static String[]			osarch							= getProcessorAliases(System.getProperty("os.arch"));
+	final static String[]			osarch							= getProcessorAliases(
+		System.getProperty("os.arch"));
 
 	public static String[] getProcessorAliases(String osArch) {
 		for (String[] pnames : processorFamilies) {

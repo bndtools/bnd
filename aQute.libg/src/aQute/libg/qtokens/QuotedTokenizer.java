@@ -13,8 +13,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import aQute.lib.regex.PatternConstants;
+
 public class QuotedTokenizer implements Iterable<String> {
-	private final static Pattern	TOKEN_P	= Pattern.compile("[-a-zA-Z0-9_]+");
+	private final static Pattern	TOKEN_P	= Pattern.compile(PatternConstants.TOKEN);
 	private final String			string;
 	private final String			separators;
 	private final boolean			returnTokens;
