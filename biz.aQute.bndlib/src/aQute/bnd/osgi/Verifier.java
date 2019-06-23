@@ -16,6 +16,7 @@ import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import aQute.bnd.annotation.baseline.BaselineIgnore;
 import aQute.bnd.header.Attrs;
 import aQute.bnd.header.OSGiHeader;
 import aQute.bnd.header.Parameters;
@@ -94,11 +95,17 @@ public class Verifier extends Processor {
 	final static Pattern		BUNDLEMANIFESTVERSION			= Pattern.compile("2");
 
 	public final static Pattern	TOKEN							= Pattern.compile(PatternConstants.TOKEN);
+	@BaselineIgnore("4.3.0")
 	public final static String	EXTENDED_S						= "[-.\\w]+";
+	@BaselineIgnore("4.3.0")
 	public final static Pattern	EXTENDED_P						= Pattern.compile(EXTENDED_S);
+	@BaselineIgnore("4.3.0")
 	public final static String	QUOTEDSTRING					= "\"[^\"]*\"";
+	@BaselineIgnore("4.3.0")
 	public final static Pattern	QUOTEDSTRING_P					= Pattern.compile(QUOTEDSTRING);
+	@BaselineIgnore("4.3.0")
 	public final static String	ARGUMENT_S						= "(:?" + EXTENDED_S + ")|(?:" + QUOTEDSTRING + ")";
+	@BaselineIgnore("4.3.0")
 	public final static Pattern	ARGUMENT_P						= Pattern.compile(ARGUMENT_S);
 	public final static String	SYMBOLICNAME_STRING				= PatternConstants.SYMBOLICNAME;
 	public final static Pattern	SYMBOLICNAME					= Pattern.compile(SYMBOLICNAME_STRING);
