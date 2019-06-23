@@ -37,7 +37,5 @@ Export-Package:  \
 -builderignore: testdata
 
 -fixupmessages.private: private references
--fixupmessages.bundleversion: "The bundle version \\(4.2.0/4.3.0\\) is too low, must be at least 5.0.0"
--fixupmessages.biz.aQute.resolve: "RESOLVE_DIRECTIVES_P(\\r\\n|\\n)*ADDED*ACCESS*final"
 
 -baseline: *

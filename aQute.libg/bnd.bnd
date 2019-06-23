@@ -23,4 +23,3 @@ Bundle-Description: A library to be statically linked. Contains many small utili
 -builderignore: testresources
 
 -fixupmessages.bundleversion: "The bundle version \\(4.2.0/4.3.0\\) is too low, must be at least 5.0.0";is:=ignore
--fixupmessages.aQute.configurable: "SPLITTER_P(\\r\\n|\\n)*ADDED*ACCESS*final"
