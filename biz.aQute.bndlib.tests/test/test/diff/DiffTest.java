@@ -1,5 +1,7 @@
 package test.diff;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -159,6 +161,38 @@ public class DiffTest extends TestCase {
 		assertEquals(Delta.UNCHANGED, field.getDelta());
 
 		b.close();
+	}
+
+	public void testBaselineOverride() throws Exception {
+		try (Jar older = new Jar(IO.getFile("../demo/generated/demo.jar")); Builder b = new Builder()) {
+			b.addClasspath(IO.getFile("bin_test"));
+			b.setExportPackage("test.api");
+			b.build();
+			assertTrue(b.check());
+			Jar newer = b.getJar();
+
+			Processor processor = new Processor();
+
+			DiffPluginImpl differ = new DiffPluginImpl();
+			Baseline baseline = new Baseline(processor, differ);
+
+			Info info = baseline.baseline(newer, older, null)
+				.iterator()
+				.next();
+
+			Diff diff = info.packageDiff;
+			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			diff = info.packageDiff.get("test.api.A");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MINOR);
+			diff = info.packageDiff.get("test.api.B");
+			assertThat(diff.getDelta()).isEqualTo(Delta.UNCHANGED);
+			diff = info.packageDiff.get("test.api.C");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			diff = info.packageDiff.get("test.api.Interf");
+			assertThat(diff.getDelta()).isEqualTo(Delta.MAJOR);
+			assertThat(info.mismatch).isFalse();
+			show(info.packageDiff, 2);
+		}
 	}
 
 	public void testInheritanceII() throws Exception {
