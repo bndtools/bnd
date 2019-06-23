@@ -27,7 +27,6 @@ import aQute.bnd.osgi.Jar;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.diff.Delta;
 import aQute.bnd.service.diff.Diff;
-import aQute.bnd.service.diff.Diff.Ignore;
 import aQute.bnd.service.diff.Differ;
 import aQute.bnd.service.diff.Tree;
 import aQute.bnd.service.diff.Type;
@@ -148,7 +147,8 @@ public class Baseline {
 
 			info.newerVersion = getVersion(info.attributes);
 			info.olderVersion = getVersion(oExports.get(info.packageName));
-			if (pdiff.getDelta() == UNCHANGED) {
+			Delta delta = pdiff.getDelta();
+			if (delta == UNCHANGED) {
 				info.suggestedVersion = info.olderVersion;
 				// Fix previously released package containing version qualifier
 				if (info.olderVersion.getQualifier() != null) {
@@ -157,21 +157,63 @@ public class Baseline {
 				} else if (!info.newerVersion.equals(info.olderVersion)) {
 					info.warning += "No difference but versions are not equal";
 				}
-			} else if (pdiff.getDelta() == REMOVED) {
+			} else if (delta == REMOVED) {
 				info.suggestedVersion = null;
-			} else if (pdiff.getDelta() == ADDED) {
+			} else if (delta == ADDED) {
 				info.suggestedVersion = info.newerVersion;
-			} else {
-				// We have an API change
-				info.suggestedVersion = bump(pdiff.getDelta(), info.olderVersion, 1, 0);
+			} else { // We have an API change
+				// Process @BaselineIgnore annotations
+				delta = pdiff.getDelta(diff -> {
+					switch (diff.getDelta()) {
+						case UNCHANGED :
+						case IGNORED :
+							return false;
+						default :
+							break;
+					}
+					switch (diff.getType()) {
+						case ANNOTATION :
+						case INTERFACE :
+						case CLASS :
+						case ENUM :
+						case FIELD :
+						case METHOD :
+							boolean ignore = diff.getChildren()
+								.stream()
+								.filter(child -> (child.getType() == Type.ANNOTATED) && child.getName()
+									.equals("aQute.bnd.annotation.baseline.BaselineIgnore"))
+								.flatMap(child -> child.getChildren()
+									.stream())
+								.filter(child -> child.getType() == Type.PROPERTY)
+								.map(Diff::getName)
+								.filter(property -> property.startsWith("value='"))
+								.map(property -> property.substring(7, property.length() - 1))
+								.anyMatch(version -> {
+									try {
+										return Version.valueOf(version)
+											.compareTo(info.olderVersion) > 0;
+									} catch (Exception e) {
+										bnd.exception(e,
+											"BaselineIgnore unable to compare specified version %s to baseline package version %s",
+											version, info.olderVersion);
+										return false;
+									}
+								});
+							return ignore;
+						default :
+							return false;
+					}
+				});
+
+				info.suggestedVersion = bump(delta, info.olderVersion, 1, 0);
 
 				if (info.newerVersion.compareTo(info.suggestedVersion) < 0) {
-					// our suggested version is smaller than the old version!
+					// our suggested version is greater than the new version!
 					info.mismatch = mismatch(info.olderVersion, info.newerVersion);
 
 					// We can fix some major problems by assuming
 					// that an interface is a provider interface
-					if (pdiff.getDelta() == MAJOR) {
+					if (delta == MAJOR) {
 
 						info.providers = Create.set();
 						if (info.attributes != null)
@@ -180,15 +222,12 @@ public class Baseline {
 
 						// Calculate the new delta assuming we fix all the major
 						// interfaces by making them providers
-						Delta tryDelta = pdiff.getDelta(new Ignore() {
-							@Override
-							public boolean contains(Diff diff) {
-								if (diff.getType() == Type.INTERFACE && diff.getDelta() == MAJOR) {
-									info.providers.add(Descriptors.getShortName(diff.getName()));
-									return true;
-								}
-								return false;
+						Delta tryDelta = pdiff.getDelta(diff -> {
+							if (diff.getType() == Type.INTERFACE && diff.getDelta() == MAJOR) {
+								info.providers.add(Descriptors.getShortName(diff.getName()));
+								return true;
 							}
+							return false;
 						});
 
 						if (tryDelta != MAJOR) {
@@ -198,7 +237,7 @@ public class Baseline {
 				}
 			}
 			Delta content;
-			switch (pdiff.getDelta()) {
+			switch (delta) {
 				case IGNORED :
 				case UNCHANGED :
 					content = UNCHANGED;
@@ -213,13 +252,9 @@ public class Baseline {
 					break;
 
 				case MICRO :
-					content = pdiff.getDelta();
-					break;
 				case MINOR :
-					content = pdiff.getDelta();
-					break;
 				case MAJOR :
-					content = pdiff.getDelta();
+					content = delta;
 					break;
 
 				case REMOVED :

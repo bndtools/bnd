@@ -3,6 +3,9 @@ package test.api;
 import java.util.Collection;
 import java.util.List;
 
+import aQute.bnd.annotation.baseline.BaselineIgnore;
+
+@BaselineIgnore("1.1.0")
 public interface Interf {
 	/**
 	 * Test if a change in generic type is detected. The original has a String
