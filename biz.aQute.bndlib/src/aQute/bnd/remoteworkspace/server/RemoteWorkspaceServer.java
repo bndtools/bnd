@@ -297,7 +297,7 @@ public class RemoteWorkspaceServer implements Closeable {
 
 			String cc = aa + "," + bb;
 			a.getMainAttributes()
-				.putValue(hdr, bb);
+				.putValue(hdr, cc);
 		}
 
 		/**
