@@ -1,5 +1,13 @@
 package aQute.junit.plugin;
 
+import static aQute.junit.constants.TesterConstants.TESTER_CONTINUOUS;
+import static aQute.junit.constants.TesterConstants.TESTER_DIR;
+import static aQute.junit.constants.TesterConstants.TESTER_HOST;
+import static aQute.junit.constants.TesterConstants.TESTER_NAMES;
+import static aQute.junit.constants.TesterConstants.TESTER_PORT;
+import static aQute.junit.constants.TesterConstants.TESTER_TRACE;
+import static aQute.junit.constants.TesterConstants.TESTER_UNRESOLVED;
+
 import java.util.Collection;
 
 import aQute.bnd.build.Project;
@@ -8,9 +16,8 @@ import aQute.bnd.build.ProjectTester;
 import aQute.bnd.osgi.Constants;
 import aQute.bnd.osgi.Processor;
 import aQute.bnd.service.EclipseJUnitTester;
-import aQute.junit.constants.TesterConstants;
 
-public class ProjectTesterImpl extends ProjectTester implements TesterConstants, EclipseJUnitTester {
+public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTester {
 	int		port	= -1;
 	String	host;
 	boolean	prepared;
