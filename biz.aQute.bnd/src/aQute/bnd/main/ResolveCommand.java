@@ -279,13 +279,18 @@ public class ResolveCommand extends Processor {
 							}
 
 							bndrun.update(resolution, options.xchange(), options.write());
+						} else {
+							if (!options.quiet()) {
+								bnd.out.printf("Failed to resolve\n");
+								bnd.out.println(resolution.report(true));
+							}
 						}
 					} catch (Exception e) {
 						bnd.out.printf("%-50s %s\n", f.getName(), e);
 						exception(e, "Failed to resolve %s: %s", f, e);
+					} finally {
+						getInfo(bndrun);
 					}
-					getInfo(bndrun);
-
 				}
 			}
 		}

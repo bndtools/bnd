@@ -334,4 +334,15 @@ public class RunResolution {
 		});
 	}
 
+	public String report(boolean optionals) {
+		if (exception instanceof ResolutionException) {
+			return ResolveProcess.format((ResolutionException) exception, optionals);
+		} else if (exception != null) {
+			return Exceptions.toString(Exceptions.unrollCause(exception));
+		} else if (log != null) {
+			return log;
+		} else {
+			return "";
+		}
+	}
 }
