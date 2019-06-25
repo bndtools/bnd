@@ -4,7 +4,7 @@
 -buildpath: \
     osgi.annotation;version=latest;maven-scope=provided, \
     aQute.libg;version=project,\
-    osgi.core;version=@6;maven-scope=provided,\
+    osgi.core;version=latest;maven-scope=provided,\
     org.osgi.service.coordinator;maven-scope=provided,\
     org.osgi.service.cm, \
     org.osgi.service.component;version='[1.4,1.5)',\
