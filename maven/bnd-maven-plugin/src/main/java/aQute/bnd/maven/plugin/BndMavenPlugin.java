@@ -316,9 +316,7 @@ public class BndMavenPlugin extends AbstractMojo {
 			if (builder.getProperty(Constants.BUNDLE_DESCRIPTION) == null) {
 				// may be null
 				if (StringUtils.isNotBlank(project.getDescription())) {
-					StringBuilder description = new StringBuilder();
-					OSGiHeader.quote(description, project.getDescription());
-					builder.setProperty(Constants.BUNDLE_DESCRIPTION, description.toString());
+					builder.setProperty(Constants.BUNDLE_DESCRIPTION, project.getDescription());
 				}
 			}
 
