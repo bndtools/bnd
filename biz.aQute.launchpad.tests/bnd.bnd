@@ -1,9 +1,9 @@
 -buildpath: \
     org.osgi.service.component.annotations, \
-    osgi.annotation; version=6.0.1,\
-    osgi.core; version=6.0, \
+    osgi.annotation; version=latest,\
+    osgi.core; version=latest, \
     org.osgi.service.component
-    
+
 -testpath: \
     slf4j.api, \
     slf4j.simple, \

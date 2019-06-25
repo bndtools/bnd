@@ -4,7 +4,7 @@
 -dependson: demo
 
 -buildpath: \
-	osgi.core;version=4.2;maven-scope=provided,\
+	osgi.core;version=latest;maven-scope=provided,\
 	aQute.libg;version=project,\
 	biz.aQute.bndlib;version=latest,\
 	slf4j.api;version=latest
