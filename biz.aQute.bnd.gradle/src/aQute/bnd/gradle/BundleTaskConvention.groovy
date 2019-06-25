@@ -280,7 +280,7 @@ class BundleTaskConvention {
         // set bundle version from task's version if necessary
         String bundleVersion = builder.getProperty(Constants.BUNDLE_VERSION)
         if (isEmpty(bundleVersion)) {
-          builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseString(version?.toString()).getOSGiVersion().toString())
+          builder.setProperty(Constants.BUNDLE_VERSION, MavenVersion.parseMavenString(version?.toString()).getOSGiVersion().toString())
         }
 
         logger.debug 'builder properties: {}', builder.getProperties()
