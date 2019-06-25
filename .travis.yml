@@ -27,6 +27,7 @@ matrix:
         - "rvm use 2.4 --install --binary --fuzzy"
         - "ruby --version"
         - "gem --version"
+        - "gem install bundler -v '~> 2.0'"
         - "bundle --version"
       before_script:
         - "cd docs"
