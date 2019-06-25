@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import org.osgi.resource.Resource;
 import org.osgi.resource.Wire;
-import org.osgi.service.resolver.ResolutionException;
 import org.osgi.service.resolver.Resolver;
 
 import aQute.bnd.build.Container;
@@ -71,11 +70,7 @@ public class RunResolution {
 				resolve.resolveRequired(actualProperties, project, project, resolver, callbacks, logger);
 				return new RunResolution(project, actualProperties, resolve.getRequiredWiring(),
 					resolve.getOptionalWiring(), logger.getLog());
-			} catch (ResolutionException e) {
-				project.error("No resolution %s", e.getMessage());
-				return new RunResolution(project, actualProperties, e, logger.getLog());
 			} catch (Exception e) {
-				project.exception(e, "Resolution failed unexpectedly");
 				return new RunResolution(project, actualProperties, e, logger.getLog());
 			}
 		} finally {

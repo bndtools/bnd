@@ -3,7 +3,6 @@ package biz.aQute.resolve;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.osgi.resource.Requirement;
 import org.osgi.service.resolver.ResolutionException;
@@ -88,20 +87,23 @@ public class Bndrun extends Run {
 	public <T> T resolve(boolean failOnChanges, boolean writeOnChanges,
 		Converter<T, Collection<? extends HeaderClause>> runbundlesFormatter) throws Exception {
 
-		RunResolution resolution = resolve();
+		RunResolution resolution = resolve(true);
 
-		if (isOk()) {
+		if (resolution.exception == null) {
 			update(resolution, failOnChanges, writeOnChanges);
 			return runbundlesFormatter.convert(model.getRunBundles());
-		} else {
-			logger.info(getErrors().toString());
 		}
-		return runbundlesFormatter.convert(Collections.emptyList());
+
+		throw resolution.exception;
 	}
 
 	public RunResolution resolve(ResolutionCallback... callbacks) throws Exception {
+		return resolve(false, callbacks);
+	}
+
+	public RunResolution resolve(boolean sparseErrors, ResolutionCallback... callbacks) throws Exception {
 		RunResolution resolution = RunResolution.resolve(this, this, Arrays.asList(callbacks));
-		if (resolution.exception != null) {
+		if (!sparseErrors && (resolution.exception != null)) {
 			if (resolution.exception instanceof ResolutionException) {
 				ResolutionException re = (ResolutionException) resolution.exception;
 				FilterParser filterParser = new FilterParser();

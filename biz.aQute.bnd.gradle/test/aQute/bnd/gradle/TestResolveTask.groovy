@@ -143,7 +143,7 @@ class TestResolveTask extends Specification {
 
         then:
           result.task(":${taskname}").outcome == FAILED
-          result.output =~ /${taskname}\.bndrun resolution failure/
+          result.output =~ /${taskname}\.bndrun resolution exception/
           bndrun.isFile()
           props.load(bndrun, reporter)
           !props.getProperty('-runbundles')
