@@ -1,0 +1,22 @@
+releaserepo:            ${workspace}/dist/bundles
+mavencentral:           https://repo.maven.apache.org/maven2
+
+-plugin:\
+    aQute.bnd.repository.maven.provider.MavenBndRepository;\
+        name="Maven Central";\
+        releaseUrl="${mavencentral}";\
+        index="${.}/central.mvn";\
+        readOnly=true,\
+    aQute.bnd.deployer.repository.LocalIndexedRepo;\
+        name="Local";\
+        local="${.}/../cache/local",\
+    aQute.bnd.deployer.repository.LocalIndexedRepo;\
+        name="Bnd 4.3.0 embedded repo cache";\
+        local="${.}/../cache/4.3.0/bnd-cache",\
+    aQute.bnd.repository.osgi.OSGiRepository;\
+        name="Eclipse Oxygen 4.7.3a";\
+        locations="https://dl.bintray.com/bndtools/eclipse-repo/4.7.3a/index.xml.gz";\
+        poll.time=-1;\
+        cache="${workspace}/cnf/cache/stable/EclipseOxygen",\
+
+-buildrepo: Local

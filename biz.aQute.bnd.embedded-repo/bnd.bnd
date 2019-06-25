@@ -17,7 +17,8 @@ Bundle-Description: Embedded Repo for bnd workspace.
 	biz.aQute.junit, \
 	biz.aQute.launcher, \
 	biz.aQute.remote, \
-	biz.aQute.tester
+	biz.aQute.tester, \
+	biz.aQute.tester.junit-platform
 
 Import-Package: \
     javax.management,\

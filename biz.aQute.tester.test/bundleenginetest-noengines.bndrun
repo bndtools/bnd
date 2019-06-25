@@ -1,0 +1,23 @@
+-runbundles: \
+	org.junit.jupiter.api;version='[5.0.0,5.0.1)',\
+	org.junit.jupiter.params;version='[5.0.0,5.0.1)',\
+	org.apiguardian;version='[1.0.0,1.0.1)',\
+	org.opentest4j;version='[1.0.0,1.0.1)',\
+	org.apache.servicemix.bundles.junit;version=latest
+	
+-runfw: org.apache.felix.framework
+-runee: JavaSE-1.8
+
+-runsystempackages: \
+	org.junit.platform.commons;version=1.0.0,\
+	org.junit.platform.commons.annotation;version=1.0.0,\
+	org.junit.platform.commons.function;version=1.0.0,\
+	org.junit.platform.commons.logging;version=1.0.0,\
+	org.junit.platform.commons.util;version=1.0.0,\
+	org.junit.platform.engine;version=1.0.0,\
+	org.junit.platform.engine.discovery;version=1.0.0,\
+	org.junit.platform.engine.reporting;version=1.0.0,\
+	org.junit.platform.engine.support.descriptor;version=1.0.0,\
+	org.junit.platform.engine.support.filter;version=1.0.0,\
+	org.junit.platform.engine.support.hierarchical;version=1.0.0,\
+	aQute.tester.testbase

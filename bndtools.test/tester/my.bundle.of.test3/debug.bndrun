@@ -1,0 +1,46 @@
+-runfw: org.eclipse.osgi;version='[3.12.100.v20180210-1608,3.12.100.v20180210-1608]'
+-runee: JavaSE-1.8
+
+-runrequires: \
+	bnd.identity;id='test',\
+	bnd.identity;id='biz.aQute.tester',\
+	bnd.identity;id='biz.aQute.junit.jupiter.engine',\
+	bnd.identity;id='biz.aQute.junit.vintage.engine',\
+	bnd.identity;id='biz.aQute.junit.bundle.engine',\
+	bnd.identity;id='biz.aQute.junit.platform.launcher',\
+	osgi.identity;filter:='(&(osgi.identity=biz.aQute.junit.platform.reporting)(version>=4.3.0))',\
+	bnd.identity;id='org.eclipse.equinox.console',\
+	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.configadmin)(version>=1.9.10))',\
+	osgi.identity;filter:='(&(osgi.identity=org.osgi.service.event)(version>=1.4.0))',\
+	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.gogo.runtime)(version>=0.10.0)(!(version>=1.0.0)))',\
+	bnd.identity;id='test2'
+	
+-runbundles: \
+	org.apache.aries.spifly.dynamic.bundle;version='[1.2.1,1.2.2)',\
+	org.apache.felix.scr;version='[2.1.12,2.1.13)',\
+	org.apache.servicemix.bundles.junit;version='[4.12.0,4.12.1)',\
+	biz.aQute.junit.jupiter.engine;version=snapshot,\
+	biz.aQute.junit.vintage.engine;version=snapshot,\
+	biz.aQute.junit.bundle.engine;version=snapshot,\
+	test;version=snapshot,\
+	org.apiguardian;version='[1.0.0,1.0.1)',\
+	org.junit.jupiter.api;version='[5.0.0,5.0.1)',\
+	org.junit.platform.commons;version='[1.0.0,1.0.1)',\
+	org.opentest4j;version='[1.0.0,1.0.1)',\
+	org.junit.platform.engine;version='[1.0.0,1.0.1)',\
+	biz.aQute.junit.platform.launcher;version=snapshot,\
+	biz.aQute.junit.platform.reporting;version=snapshot,\
+	biz.aQute.tester;version=snapshot,\
+	org.apache.felix.gogo.runtime;version='[1.1.0,1.1.1)',\
+	org.apache.felix.gogo.shell;version='[1.1.0,1.1.1)',\
+	org.eclipse.equinox.console;version='[1.1.300,1.1.301)',\
+	org.apache.felix.configadmin;version='[1.9.10,1.9.11)',\
+	org.osgi.service.event;version='[1.4.0,1.4.1)',\
+	org.apache.felix.gogo.runtime;version='[0.10.0,0.10.1)',\
+	test2;version=snapshot
+	
+-runproperties: launcher.trace=true,\
+	osgi.console=,\
+    osgi.console.enable.builtin=false,\
+    tester.continuous=true,\
+    tester.trace=true

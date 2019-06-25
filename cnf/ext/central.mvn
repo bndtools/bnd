@@ -60,6 +60,7 @@ org.apache.servicemix.bundles:org.apache.servicemix.bundles.junit:4.12_1
 org.junit.platform:junit-platform-commons:1.5.2
 org.junit.platform:junit-platform-engine:1.5.2
 org.junit.platform:junit-platform-launcher:1.5.2
+org.junit.platform:junit-platform-testkit:1.5.2
 org.junit.jupiter:junit-jupiter-api:5.5.2
 org.junit.jupiter:junit-jupiter-engine:5.5.2
 org.junit.jupiter:junit-jupiter-params:5.5.2
@@ -67,6 +68,8 @@ org.junit.vintage:junit-vintage-engine:5.5.2
 org.opentest4j:opentest4j:1.2.0
 org.apiguardian:apiguardian-api:1.1.0
 org.assertj:assertj-core:3.13.2
+org.xmlunit:xmlunit-core:2.6.3
+org.xmlunit:xmlunit-assertj:2.6.3
 
 org.eclipse.platform:org.eclipse.osgi:3.13.300
 

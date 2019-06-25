@@ -1,0 +1,50 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+Bundle-Description: \
+	A bnd tester using JUnit Platform. Like biz.aQute.tester, this bundle \
+	will add itself to the -runbundles at the end. At startup, this bundle will then \
+	look for TestEngine implementations among the loaded bundles and use them to \
+	execute the tests. This bundle does NOT contain the necessary TestEngine \
+	implementations for JUnit 3, 4 or 5 - it will import them just like any other \
+	bundle.
+
+# The dependency on aQute packages is only for the
+# launcher side. When launched, those dependencies
+# are not necessary
+Import-Package: \
+	aQute.*;resolution:=optional,\
+	junit.*;version='[3.8,5)';resolution:=optional,\
+	org.junit.platform.*,\
+	org.junit;version='[4,5)';resolution:=optional,\
+	*
+
+Bundle-Activator: aQute.tester.junit.platform.Activator
+
+-includepackage: aQute.tester.*
+	
+-includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
+
+-includeresource: \
+	resources
+
+Tester-Plugin: \
+	aQute.tester.junit.platform.plugin.ProjectTesterImpl
+
+-conditionalpackage: aQute.lib*
+
+-maven-scope: provided
+
+-buildpath: \
+	aQute.libg;version=project,\
+	osgi.core;version=latest,\
+	biz.aQute.bndlib;version=snapshot,\
+	biz.aQute.junit;version=snapshot;packages=aQute.junit.constants,\
+	org.apache.servicemix.bundles.junit;version=latest,\
+	org.junit.platform.launcher,\
+	org.junit.platform.engine,\
+	org.junit.platform.commons,\
+	org.opentest4j,\
+	org.apiguardian
+
+#-baseline: *

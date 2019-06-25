@@ -62,8 +62,7 @@ public class ProjectTesterImpl extends ProjectTester implements EclipseJUnitTest
 
 			//
 			// We used to add this bundle to the -runpath. However, now we add
-			// it
-			// ad the add the end of the -runbundles
+			// it at the add the end of the -runbundles
 			//
 
 			launcher.addRunBundle(me.getFile()

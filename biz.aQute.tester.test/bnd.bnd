@@ -1,0 +1,40 @@
+# Set javac settings from JDT prefs
+-include: ${workspace}/cnf/includes/jdt.bnd
+
+-nobundles: true
+
+-buildpath: \
+	org.apache.servicemix.bundles.junit;version=latest,\
+	org.junit.jupiter.api,\
+	org.junit.jupiter.params,\
+	org.opentest4j,\
+	org.apiguardian,\
+	osgi.core;version=latest
+
+# Note: we don't use the ${junit} macro because we need to use the Oxygen
+# version of the JUnit 5 packages in the test where possible for maximum
+# compatibility. But we must use the latest version of the launcher
+# and its dependency (junit-platform-commons) as this is required when
+# tests are launched from within the IDE for later versions of
+# Eclipse. BundleEngineTest requires that we share org.junit.platform.engine
+# between the test and the framework-under-test so that needs to be the
+# Oxygen version too.
+-testpath: \
+	org.junit.platform:junit-platform-commons;version=latest,\
+	org.junit.platform:junit-platform-launcher;version=latest,\
+	org.junit.platform.engine,\
+	org.junit.jupiter.engine,\
+	org.assertj.core;version=latest,\
+	org.junit.platform:junit-platform-testkit;version=latest,\
+	aQute.libg;version=latest,\
+	biz.aQute.bndlib;version=snapshot;packages=aQute.bnd.osgi,\
+	biz.aQute.junit;version=snapshot;packages=aQute.junit.constants,\
+	biz.aQute.launchpad;version=project,\
+	biz.aQute.tester.junit-platform;version=project;packages=aQute.tester.bundle.engine,\
+	org.xmlunit:xmlunit-core;version=latest,\
+	org.xmlunit:xmlunit-assertj;version=latest,\
+	slf4j.api;version=latest,\
+	slf4j.simple;version=latest,\
+	org.eclipse.jdt.junit.core;version=latest,\
+	org.eclipse.core.runtime;version=latest,\
+	org.eclipse.equinox.common;version=latest

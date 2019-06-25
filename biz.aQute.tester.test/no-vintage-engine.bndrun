@@ -1,0 +1,3 @@
+-include: base.bndrun
+
+-runbundles.jupiter: org.junit.jupiter.engine

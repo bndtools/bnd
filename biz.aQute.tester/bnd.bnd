@@ -25,6 +25,8 @@ Bundle-Activator: \
 	aQute.junit.*
 -includeresource.perm: OSGI-INF/permissions.perm;literal="(java.security.AllPermission)"
 
+-builderignore: testresources
+
 Tester-Plugin: \
 	aQute.tester.plugin.ProjectTesterImpl
 
