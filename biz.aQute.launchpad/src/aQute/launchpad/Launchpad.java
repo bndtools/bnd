@@ -1363,6 +1363,9 @@ public class Launchpad implements AutoCloseable {
 		} catch (NoClassDefFoundError e) {
 			// ignore
 			return this;
+		} catch (Exception e) {
+			// ignore
+			return this;
 		}
 		this.probe = probe;
 		return this;

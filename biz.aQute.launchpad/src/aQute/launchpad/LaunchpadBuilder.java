@@ -451,4 +451,8 @@ public class LaunchpadBuilder implements AutoCloseable {
 		exports.add(spec);
 		return this;
 	}
+
+	public boolean isDebug() {
+		return debug;
+	}
 }
