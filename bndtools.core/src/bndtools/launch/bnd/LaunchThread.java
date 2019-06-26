@@ -24,7 +24,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 
 import aQute.bnd.build.ProjectLauncher;
-import aQute.bnd.build.Run;
 import aQute.bnd.build.RunSession;
 import bndtools.launch.OSGiRunLaunchDelegate;
 import bndtools.launch.UpdateGuard;
@@ -117,10 +116,6 @@ class LaunchThread extends Thread implements IProcess {
             //
             // TODO Should use listener
             //
-
-            if (launcher.getProject() instanceof Run)
-                launcher.getProject()
-                    .refresh();
 
             launcher.update();
         } catch (Exception e) {

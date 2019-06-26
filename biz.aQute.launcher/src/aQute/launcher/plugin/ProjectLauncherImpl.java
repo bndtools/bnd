@@ -120,6 +120,7 @@ public class ProjectLauncherImpl extends ProjectLauncher {
 
 	@Override
 	public void update() throws Exception {
+		super.update();
 		updateFromProject();
 		writeProperties();
 	}
