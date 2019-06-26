@@ -1,7 +1,6 @@
 package aQute.bnd.repository.fileset;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.Arrays;
@@ -20,15 +19,18 @@ public class FileSetRepositoryTest {
 			IO.getFile("testresources/nanohttpd-2.2.0.jar"),
 			IO.getFile("testresources/jsr250-api-1.0.jar"), IO.getFile("testresources/javafx-base-13-ea+8-linux.jar"));
 
-		assertTrue(files.size() > 0);
+		assertThat(files).hasSizeGreaterThan(0);
 
 		FileSetRepository repository = new FileSetRepository("test", files);
 
-		List<String> list = repository.list(null);
+		assertThat(repository.list(null)).contains("org.nanohttpd:nanohttpd", "javafx.base")
+			.doesNotContain("javax.annotation:jsr250-api");
 
-		assertFalse(list.contains("javax.annotation:jsr250-api"));
-		assertTrue(list.contains("org.nanohttpd:nanohttpd"));
-		assertTrue(list.contains("javafx.base"));
+		assertThat(repository.refresh()).isTrue();
+
+		assertThat(repository.list(null)).contains("org.nanohttpd:nanohttpd", "javafx.base")
+			.doesNotContain("javax.annotation:jsr250-api");
+
 	}
 
 }
