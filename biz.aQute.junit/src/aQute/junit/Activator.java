@@ -376,7 +376,13 @@ public class Activator implements BundleActivator, TesterConstants, Runnable {
 
 
 		List<Bundle> hosts = new ArrayList<>();
-		List<BundleWire> wires = bundle.adapt(BundleWiring.class)
+		BundleWiring wiring = bundle.adapt(BundleWiring.class);
+		// Bundle isn't resolved.
+		if (wiring == null) {
+			System.err.println("unresolved bundle: " + bundle);
+			return null;
+		}
+		List<BundleWire> wires = wiring
 			.getRequiredWires(HostNamespace.HOST_NAMESPACE);
 		System.err.println("required wires for " + bundle + " " + wires);
 
