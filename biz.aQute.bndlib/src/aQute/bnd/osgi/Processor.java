@@ -91,7 +91,7 @@ import aQute.service.reporter.Reporter;
 
 public class Processor extends Domain implements Reporter, Registry, Constants, Closeable {
 	private static final Logger	logger	= LoggerFactory.getLogger(Processor.class);
-	public static Reporter		log;;
+	public static Reporter		log;
 
 	static {
 		ReporterAdapter reporterAdapter = new ReporterAdapter(System.out);
@@ -187,9 +187,8 @@ public class Processor extends Domain implements Reporter, Registry, Constants, 
 		executor.setThreadFactory(shutdownHookInstaller.apply(executorThreadFactory));
 		scheduledExecutor.setThreadFactory(shutdownHookInstaller.apply(scheduledExecutorThreadFactory));
 	}
-	private static PromiseFactory				promiseFactory	= new PromiseFactory(executor, scheduledExecutor);
+	private static final PromiseFactory			promiseFactory	= new PromiseFactory(executor, scheduledExecutor);
 	static Random								random			= new Random();
-	// TODO handle include files out of date
 	public final static String					LIST_SPLITTER	= "\\s*,\\s*";
 	final List<String>							errors			= new ArrayList<>();
 	final List<String>							warnings		= new ArrayList<>();
