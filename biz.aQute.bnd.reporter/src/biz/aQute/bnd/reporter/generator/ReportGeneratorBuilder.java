@@ -15,6 +15,7 @@ import biz.aQute.bnd.reporter.plugins.entries.any.AnyEntryPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.any.ImportResourcePlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndproject.BndProjectContentsPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndproject.CodeSnippetPlugin;
+import biz.aQute.bnd.reporter.plugins.entries.bndproject.CommonInfoProjectPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.BndWorkspaceContentsPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bndworkspace.CommonInfoPlugin;
 import biz.aQute.bnd.reporter.plugins.entries.bundle.ComponentsPlugin;
@@ -91,6 +92,17 @@ public class ReportGeneratorBuilder {
 		return this;
 	}
 
+	private ReportGeneratorBuilder registerPluginIfAbsent(final String className) {
+		Objects.requireNonNull("className", className);
+
+		final String shortName = findPluginName(className);
+		if (!shortName.equals("") && !_pluginNames.containsKey(shortName)) {
+			_pluginNames.put(shortName, className);
+		}
+
+		return this;
+	}
+
 	/**
 	 * Add a plugin to be used as default plugins for custom configuration or in
 	 * addition to plugins defined by the processor.
@@ -133,6 +145,13 @@ public class ReportGeneratorBuilder {
 		addPlugin(EntryNamesReference.BUNDLES);
 		addPlugin(EntryNamesReference.CODE_SNIPPETS);
 
+		/*
+		 * Instead of this maybe we should allow multiple plugin impl to be
+		 * registered.
+		 */
+		registerPluginIfAbsent(CommonInfoProjectPlugin.class.getCanonicalName());
+		addPlugin(EntryNamesReference.COMMON_INFO);
+
 		return this;
 	}
 
@@ -146,6 +165,12 @@ public class ReportGeneratorBuilder {
 
 		addPlugin(EntryNamesReference.FILE_NAME);
 		addPlugin(EntryNamesReference.PROJECTS);
+
+		/*
+		 * Instead of this maybe we should allow multiple plugin impl to be
+		 * registered.
+		 */
+		registerPluginIfAbsent(CommonInfoPlugin.class.getCanonicalName());
 		addPlugin(EntryNamesReference.COMMON_INFO);
 
 		return this;
@@ -196,7 +221,6 @@ public class ReportGeneratorBuilder {
 		registerPlugin(ImportJarResourcePlugin.class.getCanonicalName());
 		registerPlugin(ManifestPlugin.class.getCanonicalName());
 		registerPlugin(MetatypesPlugin.class.getCanonicalName());
-		registerPlugin(CommonInfoPlugin.class.getCanonicalName());
 		registerPlugin(CodeSnippetPlugin.class.getCanonicalName());
 	}
 
