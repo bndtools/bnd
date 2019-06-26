@@ -349,7 +349,9 @@ public abstract class ProjectLauncher extends Processor {
 
 	public abstract String getMainTypeName();
 
-	public abstract void update() throws Exception;
+	public void update() throws Exception {
+		getProject().refresh();
+	}
 
 	public int launch() throws Exception {
 		prepare();

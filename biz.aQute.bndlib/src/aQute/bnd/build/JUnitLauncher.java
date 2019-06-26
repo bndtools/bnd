@@ -105,10 +105,4 @@ public class JUnitLauncher extends ProjectLauncher {
 	public String getMainTypeName() {
 		return "aQute.junit.Activator";
 	}
-
-	@Override
-	public void update() throws Exception {
-		// TODO Auto-generated method stub
-
-	}
 }
