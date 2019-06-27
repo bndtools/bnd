@@ -72,8 +72,6 @@ import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.framework.startlevel.BundleStartLevel;
-import org.osgi.framework.startlevel.FrameworkStartLevel;
 import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.wiring.FrameworkWiring;
 import org.osgi.service.permissionadmin.PermissionInfo;
@@ -88,17 +86,16 @@ import aQute.lib.strings.Strings;
 
 /**
  * This is the primary bnd launcher. It implements a launcher that runs on Java
- * 1.4.
+ * 1.8.
  */
 public class Launcher implements ServiceListener {
 
 	private static final String				BND_LAUNCHER		= ".bnd.launcher";
 
 	private PrintStream						out;
-	LauncherConstants						parms;
-	Framework								systemBundle;
-	FrameworkStartLevel						frameworkStartLevel;
-	FrameworkWiring							frameworkWiring;
+	private LauncherConstants				parms;
+	private Framework						systemBundle;
+	private FrameworkWiring					frameworkWiring;
 	private final Properties				properties;
 	private boolean							security;
 	private SimplePermissionPolicy			policy;
@@ -109,10 +106,14 @@ public class Launcher implements ServiceListener {
 	private File							home				= new File(System.getProperty("user.home"));
 	private File							bnd					= new File(home, "bnd");
 	private List<Bundle>					wantsToBeStarted	= new ArrayList<>();
-	AtomicBoolean							active				= new AtomicBoolean();
+	private AtomicBoolean					active				= new AtomicBoolean();
 	private AtomicReference<DatagramSocket>	commsSocket			= new AtomicReference<>();
-	private int								maxStartLevel;
+	private StartLevelHandler				startLevelhandler;
 
+	/**
+	 * Called from the commandline (and via EmbeddedLauncher in the embedded
+	 * mode.)
+	 */
 	public static void main(String[] args) {
 		try {
 			int exitcode = 0;
@@ -134,20 +135,21 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	private static void augmentWithSystemProperties(Properties properties) {
-		for (String key : LauncherConstants.LAUNCHER_PROPERTY_KEYS) {
-			String value = System.getProperty(key);
-			if (value == null)
-				continue;
-
-			properties.put(key, value);
-		}
+	/*
+	 * Without exit and properties are read. Called reflectively from embedded
+	 */
+	public static int run(String args[]) throws Throwable {
+		Launcher target = new Launcher();
+		target.loadPropertiesFromFileOrEmbedded();
+		return target.launch(args);
 	}
 
-	static void load(final InputStream in, Properties properties) throws UnsupportedEncodingException, IOException {
-		try (Reader ir = IO.reader(in, UTF_8)) {
-			properties.load(ir);
-		}
+	/**
+	 * Called from Eclipse launcher? passes the properties
+	 */
+	public static int main(String[] args, Properties p) throws Throwable {
+		Launcher target = new Launcher(p);
+		return target.launch(args);
 	}
 
 	private static String getVersion() {
@@ -188,37 +190,34 @@ public class Launcher implements ServiceListener {
 		System.exit(ERROR);
 	}
 
-	public static int main(String[] args, Properties p) throws Throwable {
-		Launcher target = new Launcher();
-		target.init(p, null);
-		return target.runWithoutInit(args);
+	public Launcher() throws Exception {
+		this(new Properties());
 	}
 
-	public Launcher() throws Exception {
-		this.properties = new Properties();
+	public Launcher(Properties p) {
+		this.properties = p;
+		out = System.err;
 	}
 
 	private static final Pattern QUOTED_P = Pattern.compile("^([\"'])(.*)\\1$");
 
-	public void init(String... args) throws Throwable {
+	private void loadPropertiesFromFileOrEmbedded() throws Throwable {
 
 		final InputStream in;
-		final File propertiesFile;
 
-		String path = System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
+		String path = getPropertiesPath();
 		if (path != null) {
 			Matcher matcher = QUOTED_P.matcher(path);
 			if (matcher.matches()) {
 				path = matcher.group(2);
 			}
 
-			propertiesFile = new File(path).getAbsoluteFile();
+			File propertiesFile = new File(path).getAbsoluteFile();
 			if (!propertiesFile.isFile())
 				errorAndExit("Specified launch file `%s' was not found - absolutePath='%s'", path,
 					propertiesFile.getAbsolutePath());
 			in = IO.stream(propertiesFile);
 		} else {
-			propertiesFile = null;
 			in = Launcher.class.getClassLoader()
 				.getResourceAsStream(DEFAULT_LAUNCHER_PROPERTIES);
 			if (in == null) {
@@ -227,19 +226,27 @@ public class Launcher implements ServiceListener {
 				return;
 			}
 		}
-
-		Properties properties = new Properties();
-		load(in, properties);
-
-		augmentWithSystemProperties(properties);
-
-		init(properties, propertiesFile);
+		loadProperties(in);
 	}
 
-	public void init(Properties properties, final File propertiesFile) {
-		this.properties.putAll(properties);
+	public String getPropertiesPath() {
+		return System.getProperty(LauncherConstants.LAUNCHER_PROPERTIES);
+	}
 
-		// Allow the system to override any properties with -Dkey=value
+	private void loadProperties(final InputStream in) throws UnsupportedEncodingException, IOException {
+		this.properties.clear();
+
+		try (Reader ir = IO.reader(in, UTF_8)) {
+			this.properties.load(ir);
+		}
+
+		for (String key : LauncherConstants.LAUNCHER_PROPERTY_KEYS) {
+			String value = System.getProperty(key);
+			if (value == null)
+				continue;
+
+			properties.put(key, value);
+		}
 
 		for (Object key : properties.keySet()) {
 			String s = (String) key;
@@ -247,17 +254,17 @@ public class Launcher implements ServiceListener {
 			if (v != null)
 				properties.put(key, v);
 		}
+	}
 
-		System.getProperties()
-			.putAll(properties);
-
-		setParameters(properties);
-		out = System.err;
-
-		setupComms();
-
-		trace("properties %s", properties);
-		trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
+	/*
+	 * If we have a properties file specified watch it and update
+	 */
+	private void watch() {
+		String propertiesPath = getPropertiesPath();
+		if (propertiesPath == null) {
+			return;
+		}
+		File propertiesFile = new File(propertiesPath).getAbsoluteFile();
 
 		if (propertiesFile != null && parms.embedded == false) {
 			TimerTask watchdog = new TimerTask() {
@@ -268,9 +275,7 @@ public class Launcher implements ServiceListener {
 					long now = propertiesFile.lastModified();
 					if (begin < now) {
 						try (InputStream in = IO.stream(propertiesFile)) {
-							Properties properties = new Properties();
-							load(in, properties);
-							setParameters(properties);
+							loadProperties(in);
 							List<Bundle> tobestarted = update(now);
 							startBundles(tobestarted);
 						} catch (Exception e) {
@@ -282,13 +287,6 @@ public class Launcher implements ServiceListener {
 			};
 			new Timer(true).scheduleAtFixedRate(watchdog, 5000, 1000);
 		}
-	}
-
-	public void setParameters(Properties properties) {
-		this.parms = new LauncherConstants(properties);
-		maxStartLevel = parms.startlevels.stream()
-			.max(Integer::compare)
-			.orElse(-1);
 	}
 
 	private void setupComms() {
@@ -318,14 +316,15 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	public static int run(String args[]) throws Throwable {
-		Launcher target = new Launcher();
-		target.init(args);
-		return target.runWithoutInit(args);
-	}
-
-	private int runWithoutInit(String args[]) throws Throwable {
+	private int launch(String args[]) throws Throwable {
 		try {
+
+			this.parms = new LauncherConstants(properties);
+			this.startLevelhandler = StartLevelHandler.create(this, properties, parms.startlevels);
+			setupComms();
+			watch();
+
+			trace("inited runbundles=%s activators=%s timeout=%s", parms.runbundles, parms.activators, parms.timeout);
 			trace("version %s", getVersion());
 
 			int status = activate();
@@ -402,14 +401,13 @@ public class Launcher implements ServiceListener {
 		return list;
 	}
 
-	public int activate() throws Exception {
+	private int activate() throws Exception {
 		Policy.setPolicy(new AllPolicy());
 
 		systemBundle = createFramework();
 		if (systemBundle == null)
 			return LauncherConstants.ERROR;
 
-		frameworkStartLevel = systemBundle.adapt(FrameworkStartLevel.class);
 		frameworkWiring = systemBundle.adapt(FrameworkWiring.class);
 
 		active.set(true);
@@ -427,12 +425,12 @@ public class Launcher implements ServiceListener {
 		systemContext.addServiceListener(this, "(&(|(objectclass=" + Runnable.class.getName() + ")(objectclass="
 			+ Callable.class.getName() + "))(main.thread=true))");
 
-		if (hasStartlevels()) {
-			frameworkStartLevel.setStartLevel(1);
-		}
+		startLevelhandler.beforeStart(systemBundle);
+
 		systemBundle.start();
 
 		trace("system bundle started ok");
+
 		// Start embedded activators
 		trace("start embedded activators");
 		if (parms.activators != null) {
@@ -454,44 +452,17 @@ public class Launcher implements ServiceListener {
 
 		startBundles(tobestarted);
 
-		if (parms.trace) {
-			report(out);
-		}
-
 		for (BundleActivator activator : embedded)
 			if (!isImmediate(activator))
 				result = start(systemContext, result, activator);
 
-		setRuntimeStartLevel();
-		return result;
-	}
+		startLevelhandler.afterStart(systemBundle);
 
-	public void setRuntimeStartLevel() {
-		String beginLevel = systemBundle.getBundleContext()
-			.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL);
-
-		// we set the start level property earlier if not set and there
-		// are start levels defined.
-
-		if (beginLevel != null) {
-			beginLevel = beginLevel.trim();
-			if (!beginLevel.matches("\\d+")) {
-				trace("Invalid value for (must > 0) " + Constants.FRAMEWORK_BEGINNING_STARTLEVEL + " property set to "
-					+ beginLevel);
-			} else {
-				int level = Integer.parseInt(beginLevel);
-				if (level < 1) {
-					trace("Too low a value for " + Constants.FRAMEWORK_BEGINNING_STARTLEVEL + " property set to "
-						+ level);
-				} else {
-					frameworkStartLevel.setStartLevel(level);
-				}
-			}
+		if (parms.trace) {
+			report(out);
 		}
-	}
 
-	public boolean hasStartlevels() {
-		return maxStartLevel > 0;
+		return result;
 	}
 
 	private boolean isImmediate(BundleActivator activator) {
@@ -523,7 +494,7 @@ public class Launcher implements ServiceListener {
 	 *
 	 * @param begin
 	 */
-	List<Bundle> update(long before) throws Exception {
+	private List<Bundle> update(long before) throws Exception {
 
 		trace("Updating framework with %s", parms.runbundles);
 		List<Bundle> tobestarted = new ArrayList<>();
@@ -535,7 +506,7 @@ public class Launcher implements ServiceListener {
 		return tobestarted;
 	}
 
-	void startBundles(List<Bundle> tobestarted) throws Exception {
+	private void startBundles(List<Bundle> tobestarted) throws Exception {
 		refresh();
 
 		trace("bundles administered %s", installedBundles.keySet());
@@ -613,7 +584,7 @@ public class Launcher implements ServiceListener {
 	/**
 	 * @param tobestarted
 	 */
-	void synchronizeFiles(List<Bundle> tobestarted, long before) {
+	private void synchronizeFiles(List<Bundle> tobestarted, long before) {
 		// Turn the bundle location paths into files
 		Map<File, Integer> desired = new LinkedHashMap<>();
 
@@ -622,8 +593,7 @@ public class Launcher implements ServiceListener {
 			String s = (String) o;
 			s = toNativePath(s);
 			File file = new File(s).getAbsoluteFile();
-			Integer startlevel = getStartLevel(n);
-			desired.put(file, startlevel);
+			desired.put(file, n);
 			n++;
 		}
 
@@ -652,12 +622,12 @@ public class Launcher implements ServiceListener {
 
 		for (File f : tobeinstalled)
 			try {
-				int startLevel = desired.get(f);
+				int index = desired.get(f);
 				trace("installing %s", f);
 				if (f.exists()) {
 					Bundle b = install(f);
 					installedBundles.put(f, b);
-					setBundleStartLevel(b, startLevel);
+					startLevelhandler.setStartLevelByIndex(b, index);
 					tobestarted.add(b);
 				} else
 					error("should installing %s but file does not exist", f);
@@ -667,10 +637,10 @@ public class Launcher implements ServiceListener {
 
 		for (File f : tobeupdated)
 			try {
-				Integer startLevel = desired.get(f);
+				Integer index = desired.get(f);
 				if (f.exists()) {
 					Bundle b = installedBundles.get(f);
-					setBundleStartLevel(b, startLevel);
+					startLevelhandler.setStartLevelByIndex(b, index);
 
 					//
 					// Ensure we only update bundles that
@@ -764,7 +734,7 @@ public class Launcher implements ServiceListener {
 		"SHA-512-Digest", "MD5-Digest"
 	};
 
-	String getDigest(String path) {
+	private String getDigest(String path) {
 		Manifest m = EmbeddedLauncher.MANIFEST;
 		if (m != null) {
 			for (String name : DIGESTS) {
@@ -783,7 +753,7 @@ public class Launcher implements ServiceListener {
 	/*
 	 * Install/Update the bundles from the current jar.
 	 */
-	void installEmbedded(List<Bundle> tobestarted) throws Exception {
+	private void installEmbedded(List<Bundle> tobestarted) throws Exception {
 		trace("starting in embedded mode");
 		BundleContext context = systemBundle.getBundleContext();
 		int n = 0;
@@ -834,7 +804,7 @@ public class Launcher implements ServiceListener {
 					tobestarted.add(bundle);
 				}
 			}
-			setBundleStartLevel(bundle, getStartLevel(n));
+			startLevelhandler.setStartLevelByIndex(bundle, n);
 			n++;
 		}
 	}
@@ -888,7 +858,7 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	Bundle install(File f) throws Exception {
+	private Bundle install(File f) throws Exception {
 		BundleContext context = systemBundle.getBundleContext();
 		try {
 			String location;
@@ -1006,7 +976,7 @@ public class Launcher implements ServiceListener {
 			.getTypes() & BundleRevision.TYPE_FRAGMENT) != 0;
 	}
 
-	public void deactivate() throws Exception {
+	private void deactivate() throws Exception {
 		if (active.getAndSet(false)) {
 			systemBundle.stop();
 			systemBundle.waitForStop(parms.timeout);
@@ -1085,17 +1055,6 @@ public class Launcher implements ServiceListener {
 		if (parms.systemCapabilities != null) {
 			p.setProperty(Constants.FRAMEWORK_SYSTEMCAPABILITIES_EXTRA, parms.systemCapabilities);
 			trace("system capabilities used: %s", parms.systemCapabilities);
-		}
-
-		if (hasStartlevels()) {
-			if (p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL) == null) {
-				int frameworkLevel = maxStartLevel + 1;
-				p.setProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL, frameworkLevel + "");
-				trace("setting automatic beginning start level: %s", frameworkLevel);
-			} else {
-				trace("start level set through properties: %s",
-					p.getProperty(Constants.FRAMEWORK_BEGINNING_STARTLEVEL));
-			}
 		}
 
 		Framework systemBundle;
@@ -1197,6 +1156,7 @@ public class Launcher implements ServiceListener {
 	}
 
 	public void report(PrintStream out) {
+		startLevelhandler.sync();
 		try {
 			out.println("------------------------------- REPORT --------------------------");
 			out.println();
@@ -1205,7 +1165,8 @@ public class Launcher implements ServiceListener {
 			row(out, "Storage", parms.storageDir);
 			row(out, "Keep", parms.keep);
 			row(out, "Security", security);
-			row(out, "Startlevel", frameworkStartLevel.getStartLevel());
+			row(out, "Has StartLevels", startLevelhandler.hasStartLevels());
+			row(out, "Startlevel", startLevelhandler.getStartLevel(systemBundle));
 			list(out, fill("Run bundles", 40), parms.runbundles);
 			row(out, "Java Home", System.getProperty("java.home"));
 			list(out, fill("Classpath", 40), split(System.getProperty("java.class.path"), File.pathSeparator));
@@ -1229,7 +1190,7 @@ public class Launcher implements ServiceListener {
 						loc = loc.replaceAll("\\w+:", "");
 						File f = new File(loc);
 						out.print(fill(Long.toString(bundles[i].getBundleId()), 6));
-						out.print(fill(getBundleStartLevel(bundles[i]) + "", 4));
+						out.print(fill(startLevelhandler.getBundleStartLevel(bundles[i]) + "", 4));
 						out.print(fill(toState(bundles[i].getState()), 6));
 						if (f.exists())
 							out.print(fill(toDate(f.lastModified()), 14));
@@ -1542,7 +1503,7 @@ public class Launcher implements ServiceListener {
 		}
 	}
 
-	public void error(String msg, Object... objects) {
+	void error(String msg, Object... objects) {
 		message("! ", msg, objects);
 	}
 
@@ -1561,7 +1522,7 @@ public class Launcher implements ServiceListener {
 		return null;
 	}
 
-	public static String toString(Throwable t) {
+	private static String toString(Throwable t) {
 		StringWriter sw = new StringWriter();
 		t.printStackTrace(new PrintWriter(sw));
 		return sw.toString();
@@ -1578,31 +1539,6 @@ public class Launcher implements ServiceListener {
 		} catch (Throwable e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	private int getBundleStartLevel(Bundle b) {
-		return b.adapt(BundleStartLevel.class)
-			.getStartLevel();
-	}
-
-	private void setBundleStartLevel(Bundle b, int level) {
-		if (level >= 1) {
-			b.adapt(BundleStartLevel.class)
-				.setStartLevel(level);
-			trace("startlevel %s %s", b, level);
-		}
-	}
-
-	private int getStartLevel(int n) {
-		if (maxStartLevel < 1)
-			return -1;
-
-		int level = parms.startlevels != null && parms.startlevels.size() > n ? parms.startlevels.get(n) : -1;
-
-		if (level == -1)
-			return maxStartLevel + 1;
-
-		return level;
 	}
 
 }
