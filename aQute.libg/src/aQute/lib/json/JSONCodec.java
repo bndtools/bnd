@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  * information, when present is taken into account.
  * </p>
  * Usage patterns to encode:
- * 
+ *
  * <pre>
  *  JSONCoder codec = new JSONCodec(); // assert "1".equals(
  * codec.enc().to().put(1).toString()); assert "[1,2,3]".equals(
@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * new D(); d.a = 41; assert "{\"a\":41}".equals(
  * codec.enc().to().put(d).toString());
  * </pre>
- * 
+ *
  * It is possible to redirect the encoder to another output (default is a
  * string). See {@link Encoder#to()},{@link Encoder#to(File)},
  * {@link Encoder#to(OutputStream)}, {@link Encoder#to(Appendable)}. To reset
@@ -71,7 +71,7 @@ public class JSONCodec {
 
 	/**
 	 * Create a new Encoder with the state and appropriate API.
-	 * 
+	 *
 	 * @return an Encoder
 	 */
 	public Encoder enc() {
@@ -80,7 +80,7 @@ public class JSONCodec {
 
 	/**
 	 * Create a new Decoder with the state and appropriate API.
-	 * 
+	 *
 	 * @return a Decoder
 	 */
 	public Decoder dec() {
@@ -117,7 +117,7 @@ public class JSONCodec {
 	 * stuff. It returns a handler for each type. If no appropriate handler
 	 * exists, it will create one for the given type. There are actually quite a
 	 * lot of handlers since Java is not very object oriented.
-	 * 
+	 *
 	 * @param type
 	 * @return a {@code Handler} appropriate for {@code type}
 	 * @throws Exception
@@ -527,7 +527,7 @@ public class JSONCodec {
 
 	/**
 	 * Ignore null values in output and input
-	 * 
+	 *
 	 * @param ignorenull
 	 * @return this
 	 */

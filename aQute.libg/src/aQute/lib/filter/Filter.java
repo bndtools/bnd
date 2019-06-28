@@ -25,35 +25,35 @@ public class Filter {
 	static final MethodHandles.Lookup	publicLookup		= MethodHandles.publicLookup();
 	static final MethodType				stringConstructor	= methodType(void.class, String.class);
 
-	static final String				GARBAGE		= "Trailing garbage";
-	static final String				MALFORMED	= "Malformed query";
-	static final String				EMPTY		= "Empty list";
-	static final String				SUBEXPR		= "No subexpression";
-	static final String				OPERATOR	= "Undefined operator";
-	static final String				TRUNCATED	= "Truncated expression";
-	static final String				EQUALITY	= "Only equality supported";
+	static final String					GARBAGE				= "Trailing garbage";
+	static final String					MALFORMED			= "Malformed query";
+	static final String					EMPTY				= "Empty list";
+	static final String					SUBEXPR				= "No subexpression";
+	static final String					OPERATOR			= "Undefined operator";
+	static final String					TRUNCATED			= "Truncated expression";
+	static final String					EQUALITY			= "Only equality supported";
 
-	final static char				WILDCARD	= 65535;
+	final static char					WILDCARD			= 65535;
 
-	final static int	EQ			= 0;
-	final static int	LE			= 1;
-	final static int	GE			= 2;
+	final static int					EQ					= 0;
+	final static int					LE					= 1;
+	final static int					GE					= 2;
 
 	// Extended operators
-	final static int	NEQ			= 100;
-	final static int	LT			= 101;
-	final static int	GT			= 102;
+	final static int					NEQ					= 100;
+	final static int					LT					= 101;
+	final static int					GT					= 102;
 
-	final static int	APPROX		= 3;
+	final static int					APPROX				= 3;
 
-	final String		filter;
-	final boolean		extended;
-	final Node						node;
-	final Exception					parseException;
-	private String					tail;
+	final String						filter;
+	final boolean						extended;
+	final Node							node;
+	final Exception						parseException;
+	private String						tail;
 
 	interface Arguments {
-		public Object getProp(String key) throws Exception;
+		Object getProp(String key) throws Exception;
 	}
 
 	class Query {

@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import aQute.lib.converter.Converter.Hook;
 import aQute.lib.io.IO;
 import aQute.libg.cryptography.Digester;
 import aQute.libg.cryptography.SHA1;
@@ -133,30 +132,21 @@ public class ConverterTest extends TestCase {
 	}
 
 	public static void hookTest() throws Exception {
-		Converter converter = new Converter().hook(File.class, new Hook() {
-
-			@Override
-			public Object convert(Type dest, Object o) {
-				if (o instanceof String) {
-					return IO.getFile(new File(""), o.toString());
-				}
-				return null;
+		Converter converter = new Converter().hook(File.class, (dest, o) -> {
+			if (o instanceof String) {
+				return IO.getFile(new File(""), o.toString());
 			}
-
+			return null;
 		});
 		assertEquals(Integer.valueOf(6), converter.convert(Integer.class, "6"));
 		assertEquals(new File("src").getAbsoluteFile(), converter.convert(File.class, "src"));
 
-		converter.hook(null, new Hook() {
-
-			@Override
-			public Object convert(Type dest, Object o) throws Exception {
-				if (dest instanceof Class) {
-					if (Number.class.isAssignableFrom((Class<?>) dest))
-						return 1;
-				}
-				return null;
+		converter.hook(null, (dest, o) -> {
+			if (dest instanceof Class) {
+				if (Number.class.isAssignableFrom((Class<?>) dest))
+					return 1;
 			}
+			return null;
 		});
 		assertEquals(Integer.valueOf(1), converter.convert(Integer.class, "6"));
 		assertEquals(Integer.valueOf(1), converter.convert(Long.class, "6"));
@@ -168,8 +158,8 @@ public class ConverterTest extends TestCase {
 	 */
 
 	public static class D {
-		public int		n;
-		public String	s;
+		public int					n;
+		public String				s;
 		public Map<String, Object>	__extra;
 	}
 
@@ -186,7 +176,7 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Digests as byte[]
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -222,7 +212,7 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Test string to primitives
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -251,7 +241,7 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Test the wrappers
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testWrappers() throws Exception {
@@ -267,7 +257,7 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Create an array and see if we can convert a single number
-	 * 
+	 *
 	 * @throws Exception
 	 */
 	public void testPrimitives() throws Exception {
@@ -431,7 +421,7 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Test constructor
-	 * 
+	 *
 	 * @throws Exception
 	 */
 
@@ -444,7 +434,7 @@ public class ConverterTest extends TestCase {
 
 	/**
 	 * Test valueOf
-	 * 
+	 *
 	 * @throws Exception
 	 */
 

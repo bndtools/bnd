@@ -194,7 +194,7 @@ public class Settings implements Map<String, String> {
 	/**
 	 * Return an encoded public RSA key. this key can be decoded with an
 	 * X509EncodedKeySpec
-	 * 
+	 *
 	 * @return an encoded public key.
 	 * @throws Exception
 	 */
@@ -206,7 +206,7 @@ public class Settings implements Map<String, String> {
 	/**
 	 * Return an encoded private RSA key. this key can be decoded with an
 	 * PKCS8EncodedKeySpec
-	 * 
+	 *
 	 * @return an encoded private key.
 	 * @throws Exception
 	 */

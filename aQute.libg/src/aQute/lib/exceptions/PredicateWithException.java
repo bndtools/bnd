@@ -7,7 +7,7 @@ import java.util.function.Predicate;
 
 /**
  * Predicate interface that allows exceptions.
- * 
+ *
  * @param <T> the type of the argument
  */
 @FunctionalInterface

@@ -18,6 +18,7 @@ public class IOTest extends TestCase {
 		Map<String, String> map = new HashMap<>();
 
 		EnvironmentCalculator ec = new IO.EnvironmentCalculator(false) {
+			@Override
 			String getenv(String key) {
 				return map.getOrDefault(key, System.getenv(key));
 			}
@@ -31,6 +32,7 @@ public class IOTest extends TestCase {
 		assertEquals(dir, ec.getHome());
 
 		EnvironmentCalculator ec2 = new IO.EnvironmentCalculator(true) {
+			@Override
 			String getenv(String key) {
 				return map.getOrDefault(key, System.getenv(key));
 			}

@@ -198,7 +198,7 @@ public class MultiMap<K, V> extends HashMap<K, List<V>> implements Map<K, List<V
 
 	/**
 	 * Return a collection with all values
-	 * 
+	 *
 	 * @return all values
 	 */
 	public List<V> allValues() {

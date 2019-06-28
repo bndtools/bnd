@@ -39,7 +39,7 @@ public class Selector {
 	 * Convert a string based pattern to a regular expression based pattern.
 	 * This is called an instruction, this object makes it easier to handle the
 	 * different cases
-	 * 
+	 *
 	 * @param string
 	 * @return new selector
 	 */

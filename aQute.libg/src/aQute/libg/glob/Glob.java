@@ -179,7 +179,7 @@ public class Glob {
 
 	/**
 	 * Get a list of files that match the glob expression
-	 * 
+	 *
 	 * @param root the directory to get the files from
 	 * @param recursive to traverse the dirs recursive
 	 * @return file list

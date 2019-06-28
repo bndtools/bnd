@@ -31,7 +31,7 @@ public class Injector<T extends Annotation> {
 
 	/**
 	 * The Target class describes the target injection point.
-	 * 
+	 *
 	 * @param <T> the annotation type
 	 */
 	public static class Target<T> {
@@ -69,7 +69,7 @@ public class Injector<T extends Annotation> {
 
 	/**
 	 * Create a new Injector
-	 * 
+	 *
 	 * @param converter the converter to use for conversions
 	 * @param domain the domain function that retrieves values
 	 * @param annotation the annotation that triggers a call to the domain
@@ -82,7 +82,7 @@ public class Injector<T extends Annotation> {
 
 	/**
 	 * Create a new Injector with a default converter
-	 * 
+	 *
 	 * @param domain the domain function that retrieves values
 	 * @param annotation the annotation that triggers a call to the domain
 	 */
@@ -94,13 +94,13 @@ public class Injector<T extends Annotation> {
 	 * Inject an object. This will inject fields and methods. Methods must have
 	 * one or more arguments. The first argument is special and is always passed
 	 * to the domain function as the primaryType.
-	 * 
+	 *
 	 * @param target the target object to inject
 	 */
 	public void inject(Object target) throws Exception {
 		Class<?> clazz = target.getClass();
 
-		Target<T> param = new Target<T>();
+		Target<T> param = new Target<>();
 
 		for (Field field : getFields(clazz)) {
 
@@ -131,7 +131,7 @@ public class Injector<T extends Annotation> {
 
 	@SuppressWarnings("unchecked")
 	public <F> F newInstance(Class<F> type) throws Exception {
-		Target<T> param = new Target<T>();
+		Target<T> param = new Target<>();
 
 		for (Constructor<?> c : type.getDeclaredConstructors()) {
 			param.annotation = c.getAnnotation(this.annotation);

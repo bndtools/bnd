@@ -7,7 +7,7 @@ import java.util.function.Supplier;
 
 /**
  * BiFunction interface that allows exceptions.
- * 
+ *
  * @param <T> the type 1 of the argument
  * @param <U> the type 2 of the argument
  * @param <R> the result type

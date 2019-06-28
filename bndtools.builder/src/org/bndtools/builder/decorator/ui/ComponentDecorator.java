@@ -21,8 +21,9 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 
 /**
- * A decorator for {@link CompilationUnit}'s that adds an icon if the class contains an OSGi
- * {@link org.osgi.service.component.annotations.Component} annotation.
+ * A decorator for {@link CompilationUnit}'s that adds an icon if the class
+ * contains an OSGi {@code org.osgi.service.component.annotations.Component}
+ * annotation.
  *
  * @author wodencafe
  */

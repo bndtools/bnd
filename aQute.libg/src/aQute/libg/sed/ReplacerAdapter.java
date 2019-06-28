@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Formatter;
 import java.util.HashMap;
@@ -51,13 +50,13 @@ import aQute.service.reporter.Reporter;
  * ${parameter##word} Remove largest prefix pattern.
  */
 public class ReplacerAdapter extends ReporterAdapter implements Replacer {
-	static final Random	random		= new Random();
+	static final Random				random		= new Random();
 	private final static Pattern	WILDCARD	= Pattern.compile("[*?|({\\[]");
-	Domain				domain;
-	List<Object>		targets		= new ArrayList<>();
-	boolean				flattening;
-	File				base		= new File(System.getProperty("user.dir"));
-	Reporter			reporter	= this;
+	Domain							domain;
+	List<Object>					targets		= new ArrayList<>();
+	boolean							flattening;
+	File							base		= new File(System.getProperty("user.dir"));
+	Reporter						reporter	= this;
 
 	public ReplacerAdapter(Domain domain) {
 		this.domain = domain;
@@ -146,7 +145,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * Traverses a string to find a macro. It can handle nested brackets.
-	 * 
+	 *
 	 * @param line The line with the macro
 	 * @param index Points to the character after the '$'
 	 * @return the end position
@@ -480,24 +479,20 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 		for (int i = 1; i < args.length; i++) {
 			result.addAll(ExtList.from(args[i]));
 		}
-		Collections.sort(result, new Comparator<String>() {
+		Collections.sort(result, (a, b) -> {
+			while (a.startsWith("0"))
+				a = a.substring(1);
 
-			@Override
-			public int compare(String a, String b) {
-				while (a.startsWith("0"))
-					a = a.substring(1);
+			while (b.startsWith("0"))
+				b = b.substring(1);
 
-				while (b.startsWith("0"))
-					b = b.substring(1);
+			if (a.length() == b.length())
+				return a.compareTo(b);
+			else if (a.length() > b.length())
+				return 1;
+			else
+				return -1;
 
-				if (a.length() == b.length())
-					return a.compareTo(b);
-				else if (a.length() > b.length())
-					return 1;
-				else
-					return -1;
-
-			}
 		});
 		return result.join();
 	}
@@ -580,7 +575,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * replace ; <list> ; regex ; replace
-	 * 
+	 *
 	 * @param args
 	 * @return result
 	 */
@@ -763,7 +758,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * Wildcard a directory. The lists can contain Instruction that are matched
 	 * against the given directory ${lsr;<dir>;<list>(;<list>)*} ${lsa;<dir>;
 	 * <list>(;<list>)*}
-	 * 
+	 *
 	 * @author aqute
 	 */
 
@@ -799,8 +794,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 		ExtList<String> result = new ExtList<>();
 		for (File file : files)
-			result.add(relative ? file.getName()
-				: IO.absolutePath(file));
+			result.add(relative ? file.getName() : IO.absolutePath(file));
 
 		return result.join(",");
 	}
@@ -876,7 +870,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 
 	/**
 	 * Get the contents of a file.
-	 * 
+	 *
 	 * @return contents of file
 	 * @throws IOException
 	 */
@@ -974,7 +968,7 @@ public class ReplacerAdapter extends ReporterAdapter implements Replacer {
 	 * takes the set properties and traverse them over all entries, including
 	 * the default properties for that properties. The values no longer contain
 	 * macros.
-	 * 
+	 *
 	 * @return A new Properties with the flattened values
 	 */
 	public Map<String, String> getFlattenedProperties() {

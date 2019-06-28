@@ -24,7 +24,7 @@ import java.util.Spliterator;
  * or it is not available in a sort ordering (MultiMap for example) ... I found
  * myself sorting these things over and over again and decided to just make an
  * immutable SortedList that is easy to slice and dice
- * 
+ *
  * @param <T>
  */
 @SuppressWarnings("unchecked")
@@ -325,7 +325,7 @@ public class SortedList<T> implements SortedSet<T>, List<T> {
 
 	/**
 	 * Find the first element that is equal or bigger than the given element
-	 * 
+	 *
 	 * @param toElement
 	 * @return absolute index (not relative!), returns end if not found
 	 */

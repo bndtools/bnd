@@ -23,7 +23,7 @@ public class ConfigurationProxyTest {
 
 	@Test
 	public void testConfigurationProxyBare() {
-		Map<String,Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
 		T1_Bare handle = ConfigurationProxy.create(T1_Bare.class, map);
 		assertEquals(handle.foo(), null);
 		map.put("?.foo", "FOO");
@@ -34,7 +34,7 @@ public class ConfigurationProxyTest {
 
 	@Test
 	public void testConfigurationProxyAnnotationWithDefault() {
-		Map<String,Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
 		T1_AnnnotationWithDefault handle = ConfigurationProxy.create(T1_AnnnotationWithDefault.class, map);
 		assertEquals(handle.foo(), "foo");
 		map.put("?.foo", "FOO");
@@ -45,7 +45,7 @@ public class ConfigurationProxyTest {
 
 	@Test
 	public void testConfigurationProxyAnnotationWithoutDefault() {
-		Map<String,Object> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
 		T1_AnnnotationWithoutDefault handle = ConfigurationProxy.create(T1_AnnnotationWithoutDefault.class, map);
 		assertEquals(handle.foo(), null);
 		map.put("?.foo", "FOO");

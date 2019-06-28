@@ -7,6 +7,7 @@ import org.bndtools.api.ILogger;
 import org.bndtools.api.Logger;
 import org.bndtools.build.api.IProjectDecorator.BndProjectInfo;
 import org.bndtools.builder.decorator.ui.ComponentDecorator;
+import org.bndtools.builder.decorator.ui.PackageDecorator;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -30,9 +31,10 @@ import org.eclipse.ui.IDecoratorManager;
 import org.eclipse.ui.PlatformUI;
 
 /**
- * This class creates markers for classes that contain the {@link org.osgi.service.component.annotations.Component}
- * annotation, and stores this information in the {@link BuilderPlugin} for use by {@link ComponentDecorator}and
- * {@link ComponentPackageDecorator}.
+ * This class creates markers for classes that contain the
+ * {@code org.osgi.service.component.annotations.Component} annotation, and
+ * stores this information in the {@link BuilderPlugin} for use by
+ * {@link ComponentDecorator} and {@link PackageDecorator}.
  *
  * @author wodencafe
  */
@@ -93,15 +95,12 @@ public class ComponentMarker {
 
     public static void updateComponentDecorators() {
         Display.getDefault()
-            .asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    IDecoratorManager idm = PlatformUI.getWorkbench()
-                        .getDecoratorManager();
-                    idm.update("bndtools.componentDecorator");
-                    idm.update("bndtools.componentPackageDecorator");
-                }
-            });
+            .asyncExec(() -> {
+			    IDecoratorManager idm = PlatformUI.getWorkbench()
+			        .getDecoratorManager();
+			    idm.update("bndtools.componentDecorator");
+			    idm.update("bndtools.componentPackageDecorator");
+			});
     }
 
     private static void parseChildrenForComponents(IPackageFragment pkg) throws JavaModelException, CoreException {

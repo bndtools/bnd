@@ -40,8 +40,7 @@ public class ParameterMapTest {
 		assertThat((double) attributes.getTyped("double")).isEqualTo(1.2D);
 		assertThat((Version) attributes.getTyped("version")).isEqualTo(Version.valueOf("1.2.3"));
 
-		assertThat((Collection<Long>) attributes.getTyped("longs")).containsExactlyInAnyOrder(1L, 2L,
-			3L);
+		assertThat((Collection<Long>) attributes.getTyped("longs")).containsExactlyInAnyOrder(1L, 2L, 3L);
 		assertThat((Collection<String>) attributes.getTyped("strings")).containsExactlyInAnyOrder("s1", "s2", "s3");
 		assertThat((Collection<Double>) attributes.getTyped("doubles")).containsExactlyInAnyOrder(1D, 2D, 3D);
 		assertThat((Collection<Version>) attributes.getTyped("versions")).containsExactlyInAnyOrder(new Version("1.0"),

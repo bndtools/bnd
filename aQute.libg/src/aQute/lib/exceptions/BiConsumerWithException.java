@@ -4,7 +4,7 @@ import java.util.function.BiConsumer;
 
 /**
  * Consumer interface that allows exceptions.
- * 
+ *
  * @param <T> the type of the first argument
  * @param <U> the type of the second argument
  */
@@ -26,8 +26,7 @@ public interface BiConsumerWithException<T, U> {
 		return (t, u) -> {
 			try {
 				accept(t, u);
-			} catch (Exception e) {
-			}
+			} catch (Exception e) {}
 		};
 	}
 

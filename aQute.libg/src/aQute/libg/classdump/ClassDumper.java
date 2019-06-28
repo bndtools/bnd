@@ -225,7 +225,7 @@ public class ClassDumper {
 
 	/**
 	 * Called for each attribute in the class, field, or method.
-	 * 
+	 *
 	 * @param in The stream
 	 * @throws IOException
 	 */
@@ -239,7 +239,7 @@ public class ClassDumper {
 
 	/**
 	 * Process a single attribute, if not recognized, skip it.
-	 * 
+	 *
 	 * @param in the data stream
 	 * @throws IOException
 	 */
@@ -287,7 +287,7 @@ public class ClassDumper {
 	 *  Signature_attribute { u2 attribute_name_index; u4 attribute_length;
 	 * u2 signature_index; }
 	 * </pre>
-	 * 
+	 *
 	 * @param in
 	 * @param indent
 	 */
@@ -318,7 +318,7 @@ public class ClassDumper {
 	 * attribute_length; u2 number_of_exceptions; u2
 	 * exception_index_table[number_of_exceptions]; }
 	 * </pre>
-	 * 
+	 *
 	 * @param in
 	 * @param indent
 	 */
@@ -347,7 +347,7 @@ public class ClassDumper {
 	 * catch_type; } exception_table[exception_table_length]; u2
 	 * attributes_count; attribute_info attributes[attributes_count]; }
 	 * </pre>
-	 * 
+	 *
 	 * @param in
 	 * @param pool
 	 * @throws IOException
@@ -377,7 +377,7 @@ public class ClassDumper {
 
 	/**
 	 * We must find Class.forName references ...
-	 * 
+	 *
 	 * @param code
 	 */
 	protected void printHex(byte[] code) {

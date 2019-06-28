@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 /**
  * Consumer interface that allows exceptions.
- * 
+ *
  * @param <T> the type of the argument
  */
 @FunctionalInterface
@@ -25,8 +25,7 @@ public interface ConsumerWithException<T> {
 		return t -> {
 			try {
 				accept(t);
-			} catch (Exception e) {
-			}
+			} catch (Exception e) {}
 		};
 	}
 

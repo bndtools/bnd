@@ -37,15 +37,12 @@ public class ConcurrentInitializeTest extends Assert {
 			}
 		};
 		for (int i = 0; i < 10; i++) {
-			executor.execute(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						ci.get();
-						result.release();
-					} catch (Exception e) {
-						// cant happen
-					}
+			executor.execute(() -> {
+				try {
+					ci.get();
+					result.release();
+				} catch (Exception e) {
+					// cant happen
 				}
 			});
 		}

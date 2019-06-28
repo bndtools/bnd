@@ -1394,7 +1394,8 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
             assert (root != null);
             if (project.exists() && packName.length() > 0) {
                 try {
-                    IPath rootPath = root.getPath();
+					@SuppressWarnings("null")
+					IPath rootPath = root.getPath();
                     IPath outputPath = project.getOutputLocation();
                     if (rootPath.isPrefixOf(outputPath) && !rootPath.equals(outputPath)) {
                         // if the bin folder is inside of our root, don't allow to name a package
@@ -1411,7 +1412,9 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
                 }
             }
 
-            fCurrPackage = root.getPackageFragment(packName);
+			@SuppressWarnings("null")
+			IPackageFragment frag = root.getPackageFragment(packName);
+			fCurrPackage = frag;
             IResource resource = fCurrPackage.getResource();
             if (resource != null) {
                 if (resource.isVirtual()) {
@@ -2539,19 +2542,16 @@ public abstract class NewTypeWizardPage extends NewContainerWizardPage {
      * @return the runnable to create the new type
      */
     public IRunnableWithProgress getRunnable() {
-        return new IRunnableWithProgress() {
-            @Override
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                try {
-                    IProgressMonitor monitorInternal = monitor;
-                    if (monitorInternal == null) {
-                        monitorInternal = new NullProgressMonitor();
-                    }
-                    createType(monitorInternal);
-                } catch (CoreException e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-        };
+        return monitor -> {
+		    try {
+		        IProgressMonitor monitorInternal = monitor;
+		        if (monitorInternal == null) {
+		            monitorInternal = new NullProgressMonitor();
+		        }
+		        createType(monitorInternal);
+		    } catch (CoreException e) {
+		        throw new InvocationTargetException(e);
+		    }
+		};
     }
 }

@@ -45,7 +45,7 @@ public class CommandTest extends TestCase {
 
 	}
 
-	static interface c1options extends Options {
+	interface c1options extends Options {
 		boolean flag();
 
 		boolean notset();

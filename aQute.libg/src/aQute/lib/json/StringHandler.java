@@ -103,7 +103,7 @@ public class StringHandler extends Handler {
 	 * <p>
 	 * This method parses the input for a complete block so that it can be
 	 * stored in a string. This allows envelopes.
-	 * 
+	 *
 	 * @param isr
 	 * @param c
 	 * @throws Exception

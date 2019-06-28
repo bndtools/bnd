@@ -14,7 +14,7 @@ import aQute.libg.glob.Glob;
  * segments. The last segment is Glob expression and the preceding segments
  * specify either a directory, a wildcard directory ('*'), or a set of wildcard
  * directories ('**').
- * 
+ *
  * <pre>
  * filesets ::= fileset ( ',' fileset )*
  * fileset  ::= ( segment '/' )* filematch
@@ -44,7 +44,9 @@ public class FileSet {
 			if (f.endsWith("/"))
 				f = f.substring(0, f.length() - 1);
 
-			sb.append(del).append(f).append("/**/" + filematch);
+			sb.append(del)
+				.append(f)
+				.append("/**/" + filematch);
 			del = ",";
 		}
 		this.source = sb.toString();
@@ -100,7 +102,7 @@ public class FileSet {
 	}
 
 	public Set<File> getFiles() {
-		Set<File> files = new HashSet<File>();
+		Set<File> files = new HashSet<>();
 		if (base.isDirectory()) {
 			for (File sub : base.listFiles()) {
 				dfa.match(files, sub);

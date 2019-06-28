@@ -69,7 +69,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 	/**
 	 * Constructor for a Content Addressable File Store
-	 * 
+	 *
 	 * @param home
 	 * @param create
 	 * @throws Exception
@@ -105,7 +105,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	/**
 	 * Store an input stream in the CAFS while calculating and returning the
 	 * SHA-1 code.
-	 * 
+	 *
 	 * @param in The input stream to store.
 	 * @return The SHA-1 code.
 	 * @throws Exception if anything goes wrong
@@ -166,7 +166,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 
 	/**
 	 * Read the contents of a sha 1 key.
-	 * 
+	 *
 	 * @param sha1 The key
 	 * @return An Input Stream on the content or null of key not found
 	 * @throws Exception
@@ -336,7 +336,7 @@ public class CAFS implements Closeable, Iterable<SHA1> {
 	/**
 	 * Update a record in the store, assuming the store is at the right
 	 * position.
-	 * 
+	 *
 	 * @param sha1 The checksum
 	 * @param compressed The compressed length
 	 * @param totalLength The uncompressed length

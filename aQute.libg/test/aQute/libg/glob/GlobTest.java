@@ -10,6 +10,7 @@ public class GlobTest extends TestCase {
 		match("xx(?i)xx(?i)xx", "xx(?i)xx(?i)xx", "xxXXxx", "xxXxxx", "xxxxxx", "xxxxXX");
 
 	}
+
 	public void testtail() {
 		match("com.foo.*", "com\\.foo\\..*", "~com.foo", "com.foo.bar");
 	}
@@ -128,8 +129,7 @@ public class GlobTest extends TestCase {
 		match("(a){1,2}?", "(a){1,2}.");
 		match("{[a],[b]}", "(?:[a]|[b])", "b");
 		match("{[a]?,[b]}", "(?:[a]?|[b])", "b", "", "a");
-		match("foobar.{java,groovy}", "foobar\\.(?:java|groovy)", "foobar.java", "foobar.groovy",
-			"~foobar.cxx");
+		match("foobar.{java,groovy}", "foobar\\.(?:java|groovy)", "foobar.java", "foobar.groovy", "~foobar.cxx");
 		match("{a,{b,c}}", "(?:a|(?:b|c))", "a", "b", "c");
 		match("{a,{b,{c,d}}}", "(?:a|(?:b|(?:c|d)))", "a", "b", "c", "d");
 		match("{a,b}{1,2}", "(?:a|b){1,2}", "b", "bb", "~bbb");
@@ -139,7 +139,6 @@ public class GlobTest extends TestCase {
 		match("abc|def|ghi", "abc|def|ghi", "abc", "ghi");
 		match("{abc,def,ghi}", "(?:abc|def|ghi)", "abc", "ghi");
 	}
-
 
 	public void testUrl() {
 		Glob glob;

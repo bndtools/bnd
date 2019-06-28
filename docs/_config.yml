@@ -37,3 +37,4 @@ exclude:
   - 'build.sh'
   - '/examples'
   - '/bundler'
+  - '/.settings'

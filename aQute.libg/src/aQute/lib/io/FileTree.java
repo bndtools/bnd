@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import aQute.libg.glob.PathSet;
 
 public class FileTree {
-	private final List<File> files = new ArrayList<>();
+	private final List<File>	files	= new ArrayList<>();
 	private final PathSet		paths	= new PathSet();
 
 	public FileTree() {}
@@ -38,7 +38,7 @@ public class FileTree {
 
 	/**
 	 * Add an Ant-style glob to the include patterns.
-	 * 
+	 *
 	 * @param includes Add an Ant-style glob
 	 */
 	public void addIncludes(List<String> includes) {
@@ -47,7 +47,7 @@ public class FileTree {
 
 	/**
 	 * Add an Ant-style glob to the include patterns.
-	 * 
+	 *
 	 * @param includes Add an Ant-style glob
 	 */
 	public void addIncludes(String... includes) {
@@ -56,7 +56,7 @@ public class FileTree {
 
 	/**
 	 * Add an Ant-style glob to the exclude patterns.
-	 * 
+	 *
 	 * @param excludes Add an Ant-style glob
 	 */
 	public void addExcludes(String... excludes) {
@@ -65,7 +65,7 @@ public class FileTree {
 
 	/**
 	 * Add an Ant-style glob to the exclude patterns.
-	 * 
+	 *
 	 * @param excludes Add an Ant-style glob
 	 */
 	public void addExcludes(List<String> excludes) {
@@ -75,7 +75,7 @@ public class FileTree {
 	/**
 	 * Return a list of files using the specified baseDir and the configured
 	 * include and exclude Ant-style glob expressions.
-	 * 
+	 *
 	 * @param baseDir The base directory for locating files.
 	 * @param defaultIncludes The default include patterns to use if no include
 	 *            patterns were configured.
@@ -89,7 +89,7 @@ public class FileTree {
 	/**
 	 * Return a list of files using the specified baseDir and the configured
 	 * include and exclude Ant-style glob expressions.
-	 * 
+	 *
 	 * @param baseDir The base directory for locating files.
 	 * @param defaultIncludes The default include patterns to use if no include
 	 *            patterns were configured.

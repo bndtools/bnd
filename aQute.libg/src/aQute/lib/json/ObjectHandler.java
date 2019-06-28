@@ -5,7 +5,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,13 +30,8 @@ public class ObjectHandler extends Handler {
 		this.fields = fields.toArray(new Field[0]);
 
 		// Sort the fields so the output is canonical
-		Arrays.sort(this.fields, new Comparator<Field>() {
-			@Override
-			public int compare(Field o1, Field o2) {
-				return o1.getName()
-					.compareTo(o2.getName());
-			}
-		});
+		Arrays.sort(this.fields, (o1, o2) -> o1.getName()
+			.compareTo(o2.getName()));
 
 		types = new Type[this.fields.length];
 		defaults = new Object[this.fields.length];

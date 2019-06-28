@@ -19,12 +19,12 @@ import java.util.regex.Pattern;
 
 /*
  * Base 64 converter.
- * 
+ *
  */
 public class Base64 {
-	private static final int	DEFAULT_MAX_INPUT_LENGTH	= 65000;
+	private static final int		DEFAULT_MAX_INPUT_LENGTH	= 65000;
 
-	byte[]						data;
+	byte[]							data;
 
 	private static final String		alphabet					= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 	private static final byte[]		values						= new byte[128];

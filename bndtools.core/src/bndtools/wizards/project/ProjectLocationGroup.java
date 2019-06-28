@@ -18,8 +18,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.internal.ui.JavaPlugin;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -132,20 +130,17 @@ public class ProjectLocationGroup {
 
         updateUI();
 
-        txtLocation.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                IPath oldValue = getLocation();
-                if (!useBndWorkspace) {
-                    externalPath = txtLocation.getText();
-                }
-                IPath newValue = getLocation();
-                if (!programmaticChange) {
-                    propSupport.firePropertyChange(PROP_LOCATION, oldValue, newValue);
-                    validate();
-                }
-            }
-        });
+        txtLocation.addModifyListener(e -> {
+		    IPath oldValue = getLocation();
+		    if (!useBndWorkspace) {
+		        externalPath = txtLocation.getText();
+		    }
+		    IPath newValue = getLocation();
+		    if (!programmaticChange) {
+		        propSupport.firePropertyChange(PROP_LOCATION, oldValue, newValue);
+		        validate();
+		    }
+		});
         btnUseBndWorkspace.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -176,7 +171,7 @@ public class ProjectLocationGroup {
 
                 assert (directoryName != null);
 
-                if (directoryName.length() > 0) {
+				if ((directoryName != null) && (directoryName.length() > 0)) {
                     File path = new File(directoryName);
                     if (path.exists())
                         dialog.setFilterPath(directoryName);
